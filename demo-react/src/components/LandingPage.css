@@ -1,0 +1,52 @@
+/* Demo-specific styles for the landing page */
+
+.demo-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.demo-window {
+  width: 100%;
+  max-width: 1000px;
+  height: 100%;
+  max-height: 650px;
+  display: flex;
+  flex-direction: column;
+}
+
+.demo-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-center {
+  text-align: center;
+  z-index: 10;
+}
+
+.demo-title {
+  font-size: clamp(48px, 10vw, 80px);
+  margin-bottom: 1rem;
+}
+
+.demo-subtitle {
+  font-size: clamp(12px, 2vw, 16px);
+}
+
+@media (max-width: 768px) {
+  .demo-container {
+    padding: 1rem;
+  }
+
+  .demo-window {
+    max-height: none;
+  }
+}
