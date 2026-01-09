@@ -5,7 +5,7 @@ declare module '*.md?raw' {
   export default content;
 }
 
-declare module '@design-guide/*.md?raw' {
+declare module 'plaza-design-guide/*.md?raw' {
   const content: string;
   export default content;
 }

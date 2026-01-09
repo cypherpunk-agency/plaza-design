@@ -2,10 +2,22 @@
   "name": "plaza-cms",
   "version": "0.1.0",
   "type": "module",
+  "main": "./index.ts",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./components": "./components/index.ts"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-markdown": "^10.0.0",
+    "remark-gfm": "^4.0.0"
   },
   "dependencies": {
-    "plaza-design-core": "workspace:*"
+    "plaza-design-core": "workspace:*",
+    "rehype-raw": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "~5.6.0"
   }
 }

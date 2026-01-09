@@ -6,18 +6,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 50px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 16px;
+  padding: var(--spacing-4) 50px;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 4px;
-  border: 2px solid var(--color-primary-500);
+  letter-spacing: var(--letter-spacing-widest);
+  border: var(--border-medium) solid var(--color-primary-500);
   background: transparent;
   color: var(--color-primary-500);
   cursor: pointer;
   outline: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-slow);
   text-decoration: none;
   box-shadow:
     0 0 10px rgba(var(--color-primary-500-rgb), 0.3),
@@ -35,14 +35,14 @@
   height: 100%;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 0, 0, 0.15),
-    rgba(0, 0, 0, 0.15) 1px,
+    rgba(var(--color-bg-overlay-rgb), 0.15),
+    rgba(var(--color-bg-overlay-rgb), 0.15) 1px,
     transparent 1px,
     transparent 2px
   );
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-slow);
 }
 
 .plaza-btn:hover::before {
@@ -69,14 +69,14 @@
 /* Secondary variant */
 .plaza-btn--secondary {
   background: transparent;
-  color: var(--color-gray-400);
-  border-color: var(--color-gray-600);
+  color: var(--color-text-body);
+  border-color: var(--color-border-default);
   box-shadow: none;
 }
 
 .plaza-btn--secondary:hover {
-  background: var(--color-gray-900);
-  border-color: var(--color-gray-500);
+  background: var(--color-bg-primary);
+  border-color: var(--color-border-strong);
   color: var(--color-primary-400);
   box-shadow: 0 0 15px rgba(var(--color-primary-500-rgb), calc(0.2 * var(--enable-glow)));
 }
@@ -98,9 +98,9 @@
 /* Tease variant - looks enabled but disables on hover */
 .plaza-btn--tease:hover,
 .plaza-btn--tease:active {
-  background: var(--color-gray-900);
-  color: var(--color-gray-700);
-  border-color: var(--color-gray-700);
+  background: var(--color-bg-primary);
+  color: var(--color-text-faint);
+  border-color: var(--color-text-faint);
   box-shadow: none;
   text-shadow: none;
   cursor: not-allowed;
@@ -116,43 +116,43 @@
    ======================================== */
 /* Small button */
 .plaza-btn--sm {
-  padding: 8px 20px;
-  font-size: 12px;
-  letter-spacing: 2px;
+  padding: var(--spacing-2) var(--spacing-5);
+  font-size: var(--text-xs);
+  letter-spacing: var(--letter-spacing-wide);
 }
 
 /* Large button */
 .plaza-btn--lg {
-  padding: 20px 64px;
-  font-size: 18px;
-  letter-spacing: 5px;
+  padding: var(--spacing-5) 64px;
+  font-size: var(--text-lg);
+  letter-spacing: var(--letter-spacing-widest);
 }
 
 /* Extra small (icon-like) */
 .plaza-btn--xs {
-  padding: 6px 12px;
-  font-size: 11px;
-  letter-spacing: 1px;
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--letter-spacing-normal);
 }
 
 /* ========================================
    ICON BUTTON
    ======================================== */
 .plaza-btn--icon {
-  padding: 12px;
-  min-width: 44px;
-  min-height: 44px;
+  padding: var(--spacing-3);
+  min-width: var(--size-touch-target);
+  min-height: var(--size-touch-target);
   letter-spacing: 0;
 }
 
 .plaza-btn--icon.plaza-btn--sm {
-  padding: 8px;
-  min-width: 32px;
-  min-height: 32px;
+  padding: var(--spacing-2);
+  min-width: var(--size-touch-target-sm);
+  min-height: var(--size-touch-target-sm);
 }
 
 .plaza-btn--icon.plaza-btn--lg {
-  padding: 16px;
-  min-width: 56px;
-  min-height: 56px;
+  padding: var(--spacing-4);
+  min-width: var(--size-touch-target-lg);
+  min-height: var(--size-touch-target-lg);
 }

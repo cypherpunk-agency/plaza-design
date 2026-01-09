@@ -27,10 +27,21 @@
   --color-bg-primary: #0c1929;
   --color-bg-accent: #0c1929;
 
-  /* Semantic */
+  /* Semantic - States */
   --color-error: #f87171;
   --color-warning: #fbbf24;
   --color-success: #4ade80;
+
+  /* Semantic - Text (cool grays) */
+  --color-text-body: #a0b8c8;
+  --color-text-muted: #6080a0;
+  --color-text-faint: #5070a0;
+  --color-text-heading: var(--color-primary-400);
+
+  /* Semantic - Borders (cool) */
+  --color-border-default: #2a3a4a;
+  --color-border-muted: #1a2a3a;
+  --color-border-strong: #4a5a6a;
 
   /* Glow control */
   --enable-glow: 1;
@@ -41,6 +52,11 @@
   --color-primary-700-rgb: 29, 78, 216;
   --color-accent-400-rgb: 165, 243, 252;
   --color-accent-500-rgb: 34, 211, 238;
+  --color-text-body-rgb: 160, 184, 200;
+  --color-bg-overlay-rgb: 12, 25, 41;
+  --color-error-rgb: 248, 113, 113;
+  --color-success-rgb: 74, 222, 128;
+  --color-warning-rgb: 251, 191, 36;
 
   /* Canvas colors */
   --canvas-grid: rgba(59, 130, 246, 0.35);

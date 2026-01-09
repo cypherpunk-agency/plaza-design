@@ -17,6 +17,7 @@ const themeRegistry = {
   grayscale: null,
   ice: null,
   forest: null,
+  modern: null,
 };
 
 /**

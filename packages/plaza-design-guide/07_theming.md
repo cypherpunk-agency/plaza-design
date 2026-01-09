@@ -30,53 +30,60 @@ Each theme file is self-contained with all variables needed for that palette. To
 
 ## Built-in Themes
 
-### Neon (Default)
-The original Plaza palette. Warm orange primary against electric cyan accents.
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0;">
+  <div style="flex: 1; min-width: 140px; padding: 1rem; background: #000000; border: 2px solid #ff8800;">
+    <div style="font-size: 12px; color: #ff8800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Neon</div>
+    <div style="display: flex; gap: 4px; margin-bottom: 0.5rem;">
+      <div style="width: 24px; height: 24px; background: #ff8800;"></div>
+      <div style="width: 24px; height: 24px; background: #00ffff;"></div>
+    </div>
+    <div style="font-size: 10px; color: #9ca3af;">Classic cyberpunk</div>
+  </div>
+  <div style="flex: 1; min-width: 140px; padding: 1rem; background: #0a0a0a; border: 2px solid #6b7280;">
+    <div style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Grayscale</div>
+    <div style="display: flex; gap: 4px; margin-bottom: 0.5rem;">
+      <div style="width: 24px; height: 24px; background: #6b7280;"></div>
+      <div style="width: 24px; height: 24px; background: #5b9fc7;"></div>
+    </div>
+    <div style="font-size: 10px; color: #9ca3af;">Professional</div>
+  </div>
+  <div style="flex: 1; min-width: 140px; padding: 1rem; background: #0c1929; border: 2px solid #3b82f6;">
+    <div style="font-size: 12px; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Ice</div>
+    <div style="display: flex; gap: 4px; margin-bottom: 0.5rem;">
+      <div style="width: 24px; height: 24px; background: #3b82f6;"></div>
+      <div style="width: 24px; height: 24px; background: #a5f3fc;"></div>
+    </div>
+    <div style="font-size: 10px; color: #9ca3af;">Cold precision</div>
+  </div>
+  <div style="flex: 1; min-width: 140px; padding: 1rem; background: #0a1f0a; border: 2px solid #22c55e;">
+    <div style="font-size: 12px; color: #22c55e; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Forest</div>
+    <div style="display: flex; gap: 4px; margin-bottom: 0.5rem;">
+      <div style="width: 24px; height: 24px; background: #22c55e;"></div>
+      <div style="width: 24px; height: 24px; background: #fcd34d;"></div>
+    </div>
+    <div style="font-size: 10px; color: #9ca3af;">Nature meets tech</div>
+  </div>
+</div>
 
-| Role | Color | Hex |
-|------|-------|-----|
-| Primary | Burnt orange | `#ff8800` |
-| Accent | Electric cyan | `#00ffff` |
-| Background | Pure black | `#000000` |
-| Glow | Enabled | `1` |
+### Neon (Default)
+Warm orange primary against electric cyan accents.
 
 **Mood:** Warm firelight in digital darkness. Classic cyberpunk.
 
 ### Grayscale
 Muted, professional. Same structure, desaturated palette.
 
-| Role | Color | Hex |
-|------|-------|-----|
-| Primary | Cool gray | `#6b7280` |
-| Accent | Steel blue | `#5b9fc7` |
-| Background | Near black | `#0a0a0a` |
-| Glow | Disabled | `0` |
-
 **Mood:** Professional terminal. Corporate secure. Less expressive.
 
 ### Ice
 Cool blue tones. Winter aesthetic with cyan highlights.
-
-| Role | Color | Hex |
-|------|-------|-----|
-| Primary | Electric blue | `#3b82f6` |
-| Accent | Light cyan | `#a5f3fc` |
-| Background | Deep navy | `#0c1929` |
-| Glow | Enabled | `1` |
 
 **Mood:** Cold precision. High-tech laboratory. Arctic networks.
 
 ### Forest
 Natural greens with amber accents. Organic meets digital.
 
-| Role | Color | Hex |
-|------|-------|-----|
-| Primary | Terminal green | `#22c55e` |
-| Accent | Amber gold | `#fcd34d` |
-| Background | Deep forest | `#0a1f0a` |
-| Glow | Enabled | `1` |
-
-**Mood:** Nature reclaiming technology. Matrix-era nostalgia. Sustainable futures.
+**Mood:** Nature reclaiming technology. Matrix-era nostalgia.
 
 ---
 

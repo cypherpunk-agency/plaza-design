@@ -7,6 +7,7 @@ import { GalleryDemo } from './components/demos/GalleryDemo';
 import { DashboardDemo } from './components/demos/DashboardDemo';
 import { ChatDemo } from './components/demos/ChatDemo';
 import { ForumDemo } from './components/demos/ForumDemo';
+import { MarkdownDemo } from './components/demos/MarkdownDemo';
 import { initPlazaTheme, cycleTheme } from './plaza';
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
           <Route path="dashboard" element={<DashboardDemo />} />
           <Route path="chat" element={<ChatDemo />} />
           <Route path="forum" element={<ForumDemo />} />
+          <Route path="markdown" element={<MarkdownDemo />} />
         </Route>
       </Routes>
     </BrowserRouter>

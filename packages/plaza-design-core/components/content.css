@@ -1,27 +1,29 @@
-/* MarkdownPage.css - Plaza-styled Markdown Rendering */
+/* content.css - Plaza base element styling
+   Apply .plaza class at any level: body, section, article, div
+   All descendant HTML elements get Plaza styling */
 
-.markdown-page {
+.plaza {
   max-width: 800px;
   padding: 1rem 0;
   font-family: var(--font-mono);
-  color: var(--color-gray-400);
-  line-height: 1.7;
+  color: var(--color-text-body);
+  line-height: var(--line-height-relaxed);
 }
 
 /* ========================================
    HEADINGS
    ======================================== */
-.markdown-page h1 {
+.plaza h1 {
   font-size: var(--text-2xl);
-  color: var(--color-primary-400);
+  color: var(--color-text-heading);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--letter-spacing-wider);
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--color-primary-500);
+  border-bottom: var(--border-medium) solid var(--color-primary-500);
 }
 
-.markdown-page h2 {
+.plaza h2 {
   font-size: var(--text-xl);
   color: var(--color-primary-500);
   text-transform: uppercase;
@@ -30,16 +32,16 @@
   margin-bottom: 1rem;
 }
 
-.markdown-page h3 {
+.plaza h3 {
   font-size: var(--text-lg);
   color: var(--color-accent-400);
   margin-top: 2rem;
   margin-bottom: 0.75rem;
 }
 
-.markdown-page h4 {
+.plaza h4 {
   font-size: var(--text-base);
-  color: var(--color-gray-300);
+  color: var(--color-text-heading);
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
@@ -47,16 +49,16 @@
 /* ========================================
    PARAGRAPHS & TEXT
    ======================================== */
-.markdown-page p {
+.plaza p {
   margin-bottom: 1rem;
 }
 
-.markdown-page strong {
+.plaza strong {
   color: var(--color-primary-400);
   font-weight: 600;
 }
 
-.markdown-page em {
+.plaza em {
   color: var(--color-accent-500);
   font-style: italic;
 }
@@ -64,14 +66,14 @@
 /* ========================================
    LINKS
    ======================================== */
-.markdown-page a {
+.plaza a {
   color: var(--color-accent-400);
   text-decoration: none;
-  border-bottom: 1px solid rgba(var(--color-accent-500-rgb), 0.4);
-  transition: all 0.15s ease;
+  border-bottom: var(--border-thin) solid rgba(var(--color-accent-500-rgb), 0.4);
+  transition: var(--transition-fast);
 }
 
-.markdown-page a:hover {
+.plaza a:hover {
   color: var(--color-accent-300);
   border-bottom-color: var(--color-accent-400);
   text-shadow: 0 0 8px rgba(var(--color-accent-500-rgb), 0.5);
@@ -80,7 +82,7 @@
 /* ========================================
    HORIZONTAL RULES
    ======================================== */
-.markdown-page hr {
+.plaza hr {
   border: none;
   border-top: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
   margin: 2rem 0;
@@ -89,7 +91,7 @@
 /* ========================================
    BLOCKQUOTES
    ======================================== */
-.markdown-page blockquote {
+.plaza blockquote {
   border-left: 3px solid var(--color-primary-500);
   padding-left: 1rem;
   margin: 1.5rem 0;
@@ -97,36 +99,36 @@
   font-style: italic;
 }
 
-.markdown-page blockquote p {
+.plaza blockquote p {
   margin-bottom: 0;
 }
 
 /* ========================================
    LISTS
    ======================================== */
-.markdown-page ul,
-.markdown-page ol {
+.plaza ul,
+.plaza ol {
   margin: 1rem 0;
   padding-left: 1.5rem;
 }
 
-.markdown-page li {
+.plaza li {
   margin-bottom: 0.5rem;
 }
 
-.markdown-page li::marker {
+.plaza li::marker {
   color: var(--color-primary-500);
 }
 
-.markdown-page li > ul,
-.markdown-page li > ol {
+.plaza li > ul,
+.plaza li > ol {
   margin: 0.5rem 0;
 }
 
 /* ========================================
    TABLES - Terminal Style
    ======================================== */
-.markdown-page table {
+.plaza table {
   width: 100%;
   border-collapse: collapse;
   margin: 1.5rem 0;
@@ -135,7 +137,7 @@
   display: block;
 }
 
-.markdown-page th {
+.plaza th {
   text-align: left;
   padding: 0.75rem;
   background: rgba(var(--color-primary-500-rgb), 0.15);
@@ -147,21 +149,21 @@
   white-space: nowrap;
 }
 
-.markdown-page td {
+.plaza td {
   padding: 0.75rem;
-  border: 1px solid rgba(var(--color-primary-500-rgb), 0.2);
-  color: var(--color-gray-400);
+  border: var(--border-thin) solid rgba(var(--color-primary-500-rgb), 0.2);
+  color: var(--color-text-body);
   vertical-align: top;
 }
 
-.markdown-page tr:hover td {
+.plaza tr:hover td {
   background: rgba(var(--color-primary-500-rgb), 0.08);
 }
 
 /* ========================================
    CODE - Inline
    ======================================== */
-.markdown-inline-code {
+.plaza code {
   background: rgba(var(--color-primary-500-rgb), 0.15);
   color: var(--color-primary-400);
   padding: 0.15rem 0.4rem;
@@ -173,40 +175,39 @@
 /* ========================================
    CODE - Blocks
    ======================================== */
-.markdown-code-block {
+.plaza pre {
+  background: rgba(var(--color-bg-overlay-rgb), 0.6);
+  border: var(--border-thin) solid rgba(var(--color-primary-500-rgb), 0.3);
+  padding: 1rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.plaza pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-body);
+}
+
+/* Syntax highlighter wrapper */
+.plaza .plaza-code-block {
   margin: 1.5rem 0 !important;
   border: 1px solid rgba(var(--color-primary-500-rgb), 0.3) !important;
   border-radius: 0 !important;
   font-size: var(--text-xs) !important;
 }
 
-/* Override syntax highlighter background to match Plaza */
-.markdown-code-block code {
-  background: rgba(0, 0, 0, 0.6) !important;
+.plaza .plaza-code-block code {
+  background: rgba(var(--color-bg-overlay-rgb), 0.6) !important;
   font-family: var(--font-mono) !important;
-}
-
-/* Fallback for code blocks without language */
-.markdown-page pre {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
-  padding: 1rem;
-  margin: 1.5rem 0;
-  overflow-x: auto;
-}
-
-.markdown-page pre code {
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-size: var(--text-xs);
-  color: var(--color-gray-400);
 }
 
 /* ========================================
    IMAGES
    ======================================== */
-.markdown-page img {
+.plaza img {
   max-width: 100%;
   height: auto;
   border: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
@@ -216,24 +217,24 @@
    RESPONSIVE
    ======================================== */
 @media (max-width: 640px) {
-  .markdown-page {
+  .plaza {
     font-size: var(--text-sm);
   }
 
-  .markdown-page h1 {
+  .plaza h1 {
     font-size: var(--text-xl);
   }
 
-  .markdown-page h2 {
+  .plaza h2 {
     font-size: var(--text-lg);
   }
 
-  .markdown-page table {
+  .plaza table {
     font-size: var(--text-xs);
   }
 
-  .markdown-page th,
-  .markdown-page td {
+  .plaza th,
+  .plaza td {
     padding: 0.5rem;
   }
 }

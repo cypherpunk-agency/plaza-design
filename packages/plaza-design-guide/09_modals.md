@@ -101,35 +101,30 @@ Right-aligned buttons by default. Optional `.plaza-modal__footer--between` for s
 
 ## Semantic Variants
 
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0;">
+  <div style="flex: 1; min-width: 180px; padding: 1rem; border: 2px solid var(--color-primary-500); background: var(--color-bg-base); box-shadow: 0 0 15px rgba(var(--color-primary-500-rgb), 0.3);">
+    <div style="font-size: 12px; color: var(--color-primary-400); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Default</div>
+    <div style="font-size: 11px; color: var(--color-text-muted);">Standard dialogs</div>
+  </div>
+  <div style="flex: 1; min-width: 180px; padding: 1rem; border: 2px solid var(--color-error); background: var(--color-bg-base); box-shadow: 0 0 15px rgba(var(--color-error-rgb), 0.3);">
+    <div style="font-size: 12px; color: var(--color-error); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Danger</div>
+    <div style="font-size: 11px; color: var(--color-text-muted);">Destructive actions</div>
+  </div>
+  <div style="flex: 1; min-width: 180px; padding: 1rem; border: 2px solid var(--color-success); background: var(--color-bg-base); box-shadow: 0 0 15px rgba(var(--color-success-rgb), 0.3);">
+    <div style="font-size: 12px; color: var(--color-success); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Success</div>
+    <div style="font-size: 11px; color: var(--color-text-muted);">Confirmations</div>
+  </div>
+</div>
+
 ### Danger Modal
 **Class:** `.plaza-modal--danger`
 
 Red border and header gradient. Use for destructive actions.
 
-```html
-<div class="plaza-modal plaza-modal--danger">
-  <div class="plaza-modal__header">
-    <h2 class="plaza-modal__title">DELETE ACCOUNT</h2>
-    ...
-  </div>
-  ...
-</div>
-```
-
 ### Success Modal
 **Class:** `.plaza-modal--success`
 
 Green border and header gradient. Use for confirmations.
-
-```html
-<div class="plaza-modal plaza-modal--success">
-  <div class="plaza-modal__header">
-    <h2 class="plaza-modal__title">TRANSACTION COMPLETE</h2>
-    ...
-  </div>
-  ...
-</div>
-```
 
 ---
 

@@ -4,7 +4,9 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Font sizes */
+  /* ========================================
+     TYPOGRAPHY - Font Sizes
+     ======================================== */
   --text-xs: 13px;
   --text-sm: 16px;
   --text-base: 18px;
@@ -16,7 +18,90 @@
   --text-5xl: 48px;
   --text-6xl: 60px;
 
-  /* Gray - neutral palette (theme-independent) */
+  /* ========================================
+     TYPOGRAPHY - Line Heights
+     ======================================== */
+  --line-height-none: 1;
+  --line-height-tight: 1.1;
+  --line-height-snug: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+
+  /* ========================================
+     TYPOGRAPHY - Letter Spacing
+     ======================================== */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.05em;
+  --letter-spacing-wider: 0.1em;
+  --letter-spacing-widest: 0.2em;
+
+  /* ========================================
+     SPACING - Base Scale (4px increments)
+     ======================================== */
+  --spacing-1: 0.25rem;   /* 4px */
+  --spacing-2: 0.5rem;    /* 8px */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-4: 1rem;      /* 16px */
+  --spacing-5: 1.25rem;   /* 20px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+  --spacing-10: 2.5rem;   /* 40px */
+  --spacing-12: 3rem;     /* 48px */
+
+  /* ========================================
+     SIZING - Touch Targets & Layout
+     ======================================== */
+  --size-touch-target: 44px;
+  --size-touch-target-sm: 32px;
+  --size-touch-target-lg: 56px;
+  --width-sidebar: 240px;
+  --width-panel: 270px;
+
+  /* ========================================
+     EFFECTS - Transitions
+     ======================================== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow: 0.3s ease;
+
+  /* ========================================
+     EFFECTS - Border Radius
+     ======================================== */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-full: 9999px;
+
+  /* ========================================
+     EFFECTS - Border Width
+     ======================================== */
+  --border-thin: 1px;
+  --border-medium: 2px;
+  --border-thick: 3px;
+
+  /* ========================================
+     Z-INDEX - Stacking Scale
+     ======================================== */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-overlay: 1000;
+  --z-modal: 1100;
+  --z-noise: 2000;
+
+  /* ========================================
+     BREAKPOINTS
+     ======================================== */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+
+  /* ========================================
+     DEPRECATED - Gray Palette
+     These will be replaced by semantic tokens
+     in theme files. Kept for backwards compat.
+     ======================================== */
   --color-gray-400: #9ca3af;
   --color-gray-500: #6b7280;
   --color-gray-600: #4b5563;

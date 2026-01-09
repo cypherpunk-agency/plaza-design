@@ -9,6 +9,21 @@ The most important design decision in Plaza: **what demands attention vs. what s
 > If it responds to interaction → **thick & glowing**
 > If it sets the mood → **thin & ambient**
 
+<div style="display: flex; gap: 2rem; margin: 2rem 0;">
+  <div style="flex: 1; text-align: center;">
+    <div style="padding: 1.5rem; border: 2px solid var(--color-primary-500); box-shadow: 0 0 15px rgba(var(--color-primary-500-rgb), 0.4); background: rgba(var(--color-bg-overlay-rgb), 0.4);">
+      <span style="color: var(--color-primary-400); text-transform: uppercase; letter-spacing: 0.1em;">Interactive</span>
+    </div>
+    <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 0.5rem;">2px border • glow • 100% opacity</p>
+  </div>
+  <div style="flex: 1; text-align: center;">
+    <div style="padding: 1.5rem; border: 1px solid rgba(var(--color-primary-500-rgb), 0.3); background: rgba(var(--color-bg-overlay-rgb), 0.2);">
+      <span style="color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7;">Decorative</span>
+    </div>
+    <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 0.5rem;">1px border • no glow • 40-75% opacity</p>
+  </div>
+</div>
+
 ---
 
 ## Interactive Elements

@@ -21,7 +21,11 @@
       "Bash(npm run generate-demos:*)",
       "Bash(timeout 5 pnpm dev:*)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm dev)"
+      "Bash(pnpm dev)",
+      "Bash(timeout:*)",
+      "Bash(pnpm dev:cms:*)",
+      "Bash(pnpm build:design-demo:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

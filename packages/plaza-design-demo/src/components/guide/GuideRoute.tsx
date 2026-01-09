@@ -9,7 +9,7 @@ export function GuideRoute() {
 
   if (!content) {
     return (
-      <div className="markdown-page">
+      <div className="plaza">
         <h1 style={{ color: 'var(--color-error)' }}>PAGE NOT FOUND</h1>
         <p>The guide page "{page}" does not exist.</p>
       </div>

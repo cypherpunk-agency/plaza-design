@@ -21,13 +21,19 @@ body {
   line-height: 1.5;
 }
 
-/* Custom Scrollbars */
+/* Custom Scrollbars - Subtle, unobtrusive */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-primary-500) var(--color-bg-primary);
+  scrollbar-color: rgba(var(--color-primary-500-rgb), 0.3) transparent;
 }
 
-*::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-track { background: var(--color-bg-primary); }
-*::-webkit-scrollbar-thumb { background: var(--color-primary-500); }
-*::-webkit-scrollbar-thumb:hover { background: var(--color-primary-400); }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-primary-500-rgb), 0.2);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-primary-500-rgb), 0.4);
+}
+*::-webkit-scrollbar-corner { background: transparent; }

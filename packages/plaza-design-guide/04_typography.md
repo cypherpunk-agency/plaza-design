@@ -22,48 +22,39 @@ Fallbacks ensure the terminal aesthetic survives even without the primary font.
 
 ## Weights
 
-| Weight | CSS Value | Use Case |
-|--------|-----------|----------|
-| Regular | 400 | Body text, descriptions |
-| Medium | 500 | Labels, navigation items |
-| SemiBold | 600 | Headings, emphasis |
-| Bold | 700 | Titles, strong emphasis |
-
-### When to Use Each
-
-- **400 (Regular):** Default for all body content
-- **500 (Medium):** Navigation links, form labels, subtle emphasis
-- **600 (SemiBold):** Section headings, panel titles
-- **700 (Bold):** Page titles, critical information
+<div style="margin: 1.5rem 0; padding: 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border-default);">
+  <p style="font-weight: 400; font-size: 18px; margin: 0.75rem 0; color: var(--color-text-body);">Regular 400 — Body text, descriptions</p>
+  <p style="font-weight: 500; font-size: 18px; margin: 0.75rem 0; color: var(--color-text-body);">Medium 500 — Labels, navigation</p>
+  <p style="font-weight: 600; font-size: 18px; margin: 0.75rem 0; color: var(--color-text-body);">SemiBold 600 — Headings, emphasis</p>
+  <p style="font-weight: 700; font-size: 18px; margin: 0.75rem 0; color: var(--color-text-body);">Bold 700 — Titles, strong emphasis</p>
+</div>
 
 ---
 
 ## Scale
 
-| Token | Size | Use Case |
-|-------|------|----------|
-| `--text-xs` | 11px | Hints, timestamps, meta |
-| `--text-sm` | 13px | Descriptions, secondary text |
-| `--text-base` | 15px | Body text default |
-| `--text-lg` | 18px | Section titles |
-| `--text-xl` | 22px | Panel headers |
-| `--text-2xl` | 28px | Page titles |
-| `--text-3xl` | 36px | Hero text |
-| `--text-4xl` | 48px | Display |
-| `--text-5xl` | 64px | Large display |
-| `--text-6xl` | 80px | Landing page hero |
+<div style="margin: 1.5rem 0;">
+  <p style="font-size: 11px; color: var(--color-text-muted); margin: 0.5rem 0;">--text-xs: 11px <span style="color: var(--color-text-faint);">— Hints, timestamps</span></p>
+  <p style="font-size: 13px; color: var(--color-text-muted); margin: 0.5rem 0;">--text-sm: 13px <span style="color: var(--color-text-faint);">— Secondary text</span></p>
+  <p style="font-size: 15px; color: var(--color-text-body); margin: 0.5rem 0;">--text-base: 15px <span style="color: var(--color-text-faint);">— Body text</span></p>
+  <p style="font-size: 18px; color: var(--color-text-body); margin: 0.5rem 0;">--text-lg: 18px <span style="color: var(--color-text-faint);">— Section titles</span></p>
+  <p style="font-size: 22px; color: var(--color-text-heading); margin: 0.5rem 0;">--text-xl: 22px <span style="color: var(--color-text-faint);">— Panel headers</span></p>
+  <p style="font-size: 28px; color: var(--color-text-heading); margin: 0.5rem 0;">--text-2xl: 28px <span style="color: var(--color-text-faint);">— Page titles</span></p>
+  <p style="font-size: 36px; color: var(--color-primary-400); margin: 0.5rem 0;">--text-3xl: 36px</p>
+  <p style="font-size: 48px; color: var(--color-primary-400); margin: 0.5rem 0;">--text-4xl: 48px</p>
+</div>
 
 ---
 
 ## Letter Spacing
 
-| Context | Spacing | Example |
-|---------|---------|---------|
-| Body text | 0 | Default prose |
-| Labels | 0.05em | Form labels |
-| Navigation | 0.1em | Nav items |
-| Headings | 0.1em–0.15em | Section titles |
-| Buttons | 0.2em | Call to action |
+<div style="margin: 1.5rem 0; padding: 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border-default);">
+  <p style="letter-spacing: 0; color: var(--color-text-body); margin: 0.5rem 0;">Body text — no extra spacing</p>
+  <p style="letter-spacing: 0.05em; color: var(--color-text-body); margin: 0.5rem 0; text-transform: uppercase;">Form labels — 0.05em</p>
+  <p style="letter-spacing: 0.1em; color: var(--color-primary-400); margin: 0.5rem 0; text-transform: uppercase;">Navigation — 0.1em</p>
+  <p style="letter-spacing: 0.15em; color: var(--color-text-heading); margin: 0.5rem 0; text-transform: uppercase; font-weight: 600;">Headings — 0.15em</p>
+  <p style="letter-spacing: 0.2em; color: var(--color-primary-500); margin: 0.5rem 0; text-transform: uppercase; font-weight: 600;">Buttons — 0.2em</p>
+</div>
 
 **The pattern:** More important = more spacing. Spacing creates authority.
 
@@ -71,10 +62,16 @@ Fallbacks ensure the terminal aesthetic survives even without the primary font.
 
 ## Text Transform
 
-- **Uppercase:** Headings, buttons, labels, navigation
-- **Normal case:** Body text, descriptions, long-form content
-
-Uppercase + letter spacing = terminal command aesthetic.
+<div style="display: flex; gap: 2rem; margin: 1.5rem 0;">
+  <div style="flex: 1; padding: 1rem; border: 1px solid var(--color-border-default);">
+    <p style="text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-primary-400); font-weight: 600; margin-bottom: 0.5rem;">UPPERCASE</p>
+    <p style="color: var(--color-text-muted); font-size: 13px;">Headings, buttons, labels, navigation</p>
+  </div>
+  <div style="flex: 1; padding: 1rem; border: 1px solid var(--color-border-default);">
+    <p style="color: var(--color-text-body); margin-bottom: 0.5rem;">Normal Case</p>
+    <p style="color: var(--color-text-muted); font-size: 13px;">Body text, descriptions, long-form</p>
+  </div>
+</div>
 
 ---
 
@@ -89,42 +86,18 @@ Uppercase + letter spacing = terminal command aesthetic.
 
 ---
 
-## Text Colors
+## Text Color Hierarchy
 
-Text color creates hierarchy. Not everything should be cyan — that would be exhausting to read.
+<div style="margin: 1.5rem 0; padding: 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border-default);">
+  <p style="color: var(--color-accent-400); margin: 0.5rem 0;">Link — Clickable, invites interaction</p>
+  <p style="color: var(--color-text-heading); margin: 0.5rem 0;">Title — Important information</p>
+  <p style="color: var(--color-primary-500); margin: 0.5rem 0;">Brand — Terminal aesthetic</p>
+  <p style="color: var(--color-text-body); margin: 0.5rem 0;">Body — Readable, comfortable</p>
+  <p style="color: var(--color-text-muted); margin: 0.5rem 0;">Muted — Supporting info</p>
+  <p style="color: var(--color-text-faint); margin: 0.5rem 0;">Faint — Barely visible</p>
+</div>
 
-### The Hierarchy
-
-```
-Brightest → Links, featured items (draws clicks)
-Prominent → Titles, values (important info)
-Brand     → Icons, symbols (terminal aesthetic)
-Readable  → Body text (neutral, comfortable)
-Muted     → Secondary text (supporting info)
-Small     → Labels, meta (contextual)
-Ghosted   → Placeholders (barely visible)
-```
-
-### When to Use What
-
-| Role | Use Case |
-|------|----------|
-| **Link** | Clickable titles, navigation items, call-to-action text |
-| **Title** | Section headings, panel headers, data values |
-| **Body** | Content, prose, messages, comments |
-| **Secondary** | Descriptions, supporting text, system messages |
-| **Label** | Timestamps, meta info, small category labels |
-| **Placeholder** | Input hints, ghosted text |
-
-### The Rules
-
-1. **Body text is gray, not cyan** — Cyan draws attention; gray is comfortable to read
-2. **Each step down = one shade muted** — Creates clear visual hierarchy
-3. **Values and titles share the same color** — Both are "important" information
-4. **Links are brighter than titles** — They invite interaction
-5. **Placeholders are almost invisible** — Present but not distracting
-
-See [Text Colors](./11_text-colors.md) for CSS variables and utility classes.
+See [Text Colors](./11_text-colors.md) for CSS variables.
 
 ---
 
@@ -135,7 +108,6 @@ See [Text Colors](./11_text-colors.md) for CSS variables and utility classes.
 - Use more than 3 weights on one screen
 - Skip the scale (no arbitrary sizes)
 - Forget letter spacing on uppercase text
-- Use centered text for long content
 
 **Do:**
 - Trust the scale
@@ -147,20 +119,9 @@ See [Text Colors](./11_text-colors.md) for CSS variables and utility classes.
 
 ## Example: Heading Hierarchy
 
-```html
-<h1 class="text-2xl font-bold uppercase" style="letter-spacing: 0.1em">
-  PAGE TITLE
-</h1>
-
-<h2 class="text-xl font-semibold uppercase" style="letter-spacing: 0.08em">
-  SECTION HEADING
-</h2>
-
-<h3 class="text-lg font-medium">
-  Subsection
-</h3>
-
-<p class="text-base text-gray-400">
-  Body text uses regular weight and normal case for readability.
-</p>
-```
+<div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--color-bg-base); border: 1px solid var(--color-border-default);">
+  <p style="font-size: 28px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-heading); margin: 0 0 1rem 0;">PAGE TITLE</p>
+  <p style="font-size: 22px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-primary-500); margin: 0 0 0.75rem 0;">SECTION HEADING</p>
+  <p style="font-size: 18px; font-weight: 500; color: var(--color-accent-400); margin: 0 0 0.5rem 0;">Subsection</p>
+  <p style="font-size: 15px; color: var(--color-text-body); margin: 0;">Body text uses regular weight and normal case for readability.</p>
+</div>

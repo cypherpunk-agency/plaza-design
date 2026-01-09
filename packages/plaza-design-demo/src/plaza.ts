@@ -283,6 +283,7 @@ export interface RouteItem {
 export function generateRoutes(): RouteItem[] {
   return [
     { path: '/enter', disabled: true },
+    { path: '/guide', disabled: false, href: '/guide/' },
     { path: '/polkadot-treasury-monitor', disabled: false, href: 'https://polkadot-treasury-monitor.vercel.app' }
   ];
 }

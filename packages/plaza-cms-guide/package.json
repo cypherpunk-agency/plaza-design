@@ -1,0 +1,10 @@
+{
+  "name": "plaza-cms-guide",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./*.md": "./*.md",
+    "./examples/*.md": "./examples/*.md"
+  },
+  "files": ["*.md", "examples/*.md"]
+}

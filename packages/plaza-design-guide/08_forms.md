@@ -8,7 +8,24 @@ Form inputs are **interactive elements** — they follow the same hierarchy rule
 
 > Form inputs use **2px borders** like buttons. They're meant to be interacted with.
 
-On focus, inputs gain enhanced glow to signal active state.
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0;">
+  <div style="flex: 1; min-width: 150px;">
+    <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Default</div>
+    <div style="padding: 0.75rem; border: 2px solid var(--color-primary-600); background: rgba(0,0,0,0.4); color: var(--color-text-faint);">Placeholder...</div>
+  </div>
+  <div style="flex: 1; min-width: 150px;">
+    <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Focus</div>
+    <div style="padding: 0.75rem; border: 2px solid var(--color-primary-500); background: rgba(0,0,0,0.4); color: var(--color-primary-400); box-shadow: 0 0 10px rgba(var(--color-primary-500-rgb), 0.3);">Input text</div>
+  </div>
+  <div style="flex: 1; min-width: 150px;">
+    <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Error</div>
+    <div style="padding: 0.75rem; border: 2px solid var(--color-error); background: rgba(0,0,0,0.4); color: var(--color-primary-400); box-shadow: 0 0 10px rgba(var(--color-error-rgb), 0.3);">Invalid value</div>
+  </div>
+  <div style="flex: 1; min-width: 150px;">
+    <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Success</div>
+    <div style="padding: 0.75rem; border: 2px solid var(--color-success); background: rgba(0,0,0,0.4); color: var(--color-primary-400); box-shadow: 0 0 10px rgba(var(--color-success-rgb), 0.3);">Valid input</div>
+  </div>
+</div>
 
 ---
 

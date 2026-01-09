@@ -1,0 +1,80 @@
+/* content-nav-windowed.css - Windowed/Framed Navigation Variant */
+/* Traditional, centered, bookmark-style navigation */
+
+.plaza-content-nav--windowed {
+  border-right: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+}
+
+/* Items */
+.plaza-content-nav--windowed .plaza-nav-item {
+  color: var(--color-text-body);
+}
+
+.plaza-content-nav--windowed .plaza-nav-item:hover {
+  background: rgba(var(--color-primary-500-rgb), 0.1);
+  color: var(--color-primary-400);
+}
+
+.plaza-content-nav--windowed .plaza-nav-item.active {
+  background: rgba(var(--color-primary-500-rgb), 0.2);
+  color: var(--color-primary-400);
+  border-left: 2px solid var(--color-primary-500);
+  margin-left: -2px;
+}
+
+/* Collapsible sections */
+.plaza-content-nav--windowed .plaza-nav-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-align: left;
+  transition: color var(--transition-fast);
+}
+
+.plaza-content-nav--windowed .plaza-nav-section-header:hover {
+  color: var(--color-primary-400);
+}
+
+.plaza-content-nav--windowed .plaza-nav-collapse-icon {
+  font-size: var(--text-xs);
+  opacity: 0.6;
+  width: 1em;
+  text-align: center;
+}
+
+.plaza-content-nav--windowed .plaza-nav-section-title {
+  flex: 1;
+}
+
+.plaza-content-nav--windowed .plaza-nav-item-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: rgba(var(--color-primary-500-rgb), 0.1);
+  padding: 0.1em 0.5em;
+  border-radius: var(--radius-full);
+}
+
+.plaza-content-nav--windowed .plaza-nav-section-items {
+  padding-left: 1rem;
+}
+
+.plaza-content-nav--windowed .plaza-nav-section.collapsed .plaza-nav-section-items {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plaza-content-nav--windowed {
+    border-right: none;
+    border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  }
+}

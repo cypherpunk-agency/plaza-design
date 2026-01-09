@@ -1,8 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import './MarkdownPage.css';
 
 interface MarkdownPageProps {
   content: string;
@@ -10,9 +10,10 @@ interface MarkdownPageProps {
 
 export function MarkdownPage({ content }: MarkdownPageProps) {
   return (
-    <article className="markdown-page">
+    <article className="plaza">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');

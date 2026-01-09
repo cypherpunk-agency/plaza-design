@@ -1,0 +1,69 @@
+/* modern.css - Plaza Modern Theme */
+/* Clean, professional, traditional design without cyberpunk aesthetics. */
+/* Mood: Enterprise software. Minimal. Sophisticated. */
+
+[data-theme="modern"] {
+  /* Primary - Slate (neutral blue-gray) */
+  --color-primary-300: #cbd5e1;
+  --color-primary-400: #94a3b8;
+  --color-primary-500: #64748b;
+  --color-primary-600: #475569;
+  --color-primary-700: #334155;
+  --color-primary-800: #1e293b;
+  --color-primary-900: #0f172a;
+  --color-primary-950: #020617;
+
+  /* Accent - Blue */
+  --color-accent-400: #60a5fa;
+  --color-accent-500: #3b82f6;
+  --color-accent-600: #2563eb;
+  --color-accent-700: #1d4ed8;
+  --color-accent-800: #1e40af;
+  --color-accent-900: #1e3a8a;
+  --color-accent-950: #172554;
+
+  /* Backgrounds - Dark slate */
+  --color-bg-base: #0f172a;
+  --color-bg-primary: #1e293b;
+  --color-bg-accent: #334155;
+
+  /* Semantic - States */
+  --color-error: #f87171;
+  --color-warning: #fbbf24;
+  --color-success: #4ade80;
+
+  /* Semantic - Text (slate grays) */
+  --color-text-body: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-faint: #64748b;
+  --color-text-heading: var(--color-primary-300);
+
+  /* Semantic - Borders (slate) */
+  --color-border-default: #334155;
+  --color-border-muted: #1e293b;
+  --color-border-strong: #475569;
+
+  /* Glow control - disabled for clean look */
+  --enable-glow: 0;
+
+  /* RGB versions for rgba() usage */
+  --color-primary-500-rgb: 100, 116, 139;
+  --color-primary-600-rgb: 71, 85, 105;
+  --color-primary-700-rgb: 51, 65, 85;
+  --color-accent-400-rgb: 96, 165, 250;
+  --color-accent-500-rgb: 59, 130, 246;
+  --color-text-body-rgb: 148, 163, 184;
+  --color-bg-overlay-rgb: 15, 23, 42;
+  --color-error-rgb: 248, 113, 113;
+  --color-success-rgb: 74, 222, 128;
+  --color-warning-rgb: 251, 191, 36;
+
+  /* Canvas colors */
+  --canvas-grid: rgba(148, 163, 184, 0.15);
+  --canvas-sun-core: rgba(96, 165, 250, 0.6);
+  --canvas-sun-glow: rgba(59, 130, 246, 0.4);
+  --canvas-horizon-glow: rgba(59, 130, 246, 0.3);
+  --canvas-ambient: rgba(100, 116, 139, 0.2);
+  --canvas-ambient-secondary: rgba(100, 116, 139, 0.08);
+  --canvas-ambient-tertiary: rgba(100, 116, 139, 0.03);
+}

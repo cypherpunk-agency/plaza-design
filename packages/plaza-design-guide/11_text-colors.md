@@ -4,6 +4,19 @@ Implementation details for the text color system. For the conceptual approach, s
 
 ---
 
+## Text Hierarchy
+
+<div style="margin: 1.5rem 0; padding: 1.5rem; background: var(--color-bg-base); border: 1px solid var(--color-border-default);">
+  <p style="color: var(--color-primary-300); margin: 0.5rem 0; font-size: 16px;">Link — Clickable, draws attention</p>
+  <p style="color: var(--color-primary-400); margin: 0.5rem 0; font-size: 16px;">Title — Section headings, panel titles</p>
+  <p style="color: var(--color-primary-500); margin: 0.5rem 0; font-size: 16px;">Icon — Terminal symbols, indicators</p>
+  <p style="color: var(--color-text-body); margin: 0.5rem 0; font-size: 16px;">Body — Content, prose, messages</p>
+  <p style="color: var(--color-text-muted); margin: 0.5rem 0; font-size: 16px;">Secondary — Descriptions, supporting</p>
+  <p style="color: var(--color-text-faint); margin: 0.5rem 0; font-size: 16px;">Label — Meta info, timestamps</p>
+</div>
+
+---
+
 ## Semantic Variables
 
 | Variable | Maps To | Purpose |
