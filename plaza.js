@@ -109,6 +109,30 @@ function randInt(min, max) {
 }
 
 /**
+ * Smoothly adjust a value relative to its previous state.
+ * Creates "living system" feel for fake telemetry — values drift
+ * instead of jumping randomly, making displays feel like real sensors.
+ *
+ * @param {number} current - The current value
+ * @param {number} min - Minimum allowed value
+ * @param {number} max - Maximum allowed value
+ * @param {number} maxDelta - Maximum change per adjustment
+ * @returns {number} New value within bounds
+ *
+ * @example
+ * // Track a "peer count" that drifts smoothly
+ * let peerCount = 42;
+ * setInterval(() => {
+ *   peerCount = adjustValue(peerCount, 20, 70, 5);
+ *   display.textContent = peerCount;
+ * }, 3000);
+ */
+export function adjustValue(current, min, max, maxDelta) {
+  const delta = (Math.random() - 0.5) * 2 * maxDelta;
+  return Math.max(min, Math.min(max, Math.round(current + delta)));
+}
+
+/**
  * Generate random hex string of specified length
  * @param {number} length
  * @returns {string}
@@ -640,6 +664,7 @@ export default {
   // Clock
   startClock,
   // Data generation
+  adjustValue,
   generateTelemetry,
   generateRoutes,
   generateKeys,
