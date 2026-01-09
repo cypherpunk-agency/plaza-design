@@ -1,0 +1,65 @@
+/* Demo-specific styles for the landing page */
+
+.demo-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.plaza-window.demo-window {
+  position: fixed;
+  inset: 34px;
+  display: flex;
+  flex-direction: column;
+}
+
+.demo-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 0 300px;
+}
+
+.demo-center {
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.demo-center * {
+  pointer-events: auto;
+}
+
+.demo-title {
+  font-size: clamp(44px, 7vw, 96px);
+  margin-bottom: 1rem;
+  line-height: 1.05;
+}
+
+.demo-subtitle {
+  font-size: clamp(14px, 1.8vw, 20px);
+  color: var(--color-accent-400);
+  text-shadow:
+    0 0 10px rgba(0, 255, 255, 0.6),
+    0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+@media (max-width: 980px) {
+  .plaza-side-panel {
+    display: none;
+  }
+
+  .demo-content {
+    padding: 0 28px;
+  }
+
+  .demo-window {
+    inset: 18px;
+  }
+}

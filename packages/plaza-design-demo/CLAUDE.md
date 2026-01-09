@@ -1,0 +1,4 @@
+- Our goal with the demo-react application is to research, develop, and fine-tune our design approach.
+- In general you should follow the design approach of design-guide/
+- before making any changes to the coe, always consider @design-guide/CLAUDE.md
+- if there is clear conflicts between the current implementation and the guide, please brief the user and ask for decisions on what to update

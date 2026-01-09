@@ -1,0 +1,22 @@
+.demo-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg-base);
+}
+
+.demo-main {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Responsive: stack nav on top for mobile */
+@media (max-width: 768px) {
+  .demo-layout {
+    flex-direction: column;
+  }
+
+  .demo-main {
+    padding: 1rem;
+  }
+}

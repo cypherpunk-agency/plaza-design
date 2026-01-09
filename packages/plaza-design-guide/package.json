@@ -1,0 +1,9 @@
+{
+  "name": "plaza-design-guide",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./*.md": "./*.md"
+  },
+  "files": ["*.md"]
+}

@@ -1,0 +1,217 @@
+/* form.css - Plaza Form Components */
+/* Text inputs, textareas, selects, checkboxes, radio buttons */
+
+/* ========================================
+   BASE INPUT STYLES
+   ======================================== */
+.plaza-input,
+.plaza-textarea,
+.plaza-select {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  color: var(--color-primary-400);
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--color-primary-600);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.plaza-input::placeholder,
+.plaza-textarea::placeholder {
+  color: var(--color-gray-600);
+}
+
+/* Focus state - enhanced glow */
+.plaza-input:focus,
+.plaza-textarea:focus,
+.plaza-select:focus {
+  border-color: var(--color-primary-500);
+  box-shadow:
+    0 0 15px rgba(var(--color-primary-500-rgb), calc(0.4 * var(--enable-glow))),
+    inset 0 0 10px rgba(var(--color-primary-500-rgb), calc(0.1 * var(--enable-glow)));
+}
+
+/* Disabled state */
+.plaza-input:disabled,
+.plaza-textarea:disabled,
+.plaza-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   TEXTAREA
+   ======================================== */
+.plaza-textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ========================================
+   SELECT
+   ======================================== */
+.plaza-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ff8800' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.plaza-select:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fb923c' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+/* ========================================
+   VALIDATION STATES
+   ======================================== */
+/* Error state */
+.plaza-input--error,
+.plaza-textarea--error,
+.plaza-select--error {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.plaza-input--error:focus,
+.plaza-textarea--error:focus,
+.plaza-select--error:focus {
+  box-shadow:
+    0 0 15px rgba(255, 0, 85, calc(0.4 * var(--enable-glow))),
+    inset 0 0 10px rgba(255, 0, 85, calc(0.1 * var(--enable-glow)));
+}
+
+/* Success state */
+.plaza-input--success,
+.plaza-textarea--success,
+.plaza-select--success {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.plaza-input--success:focus,
+.plaza-textarea--success:focus,
+.plaza-select--success:focus {
+  box-shadow:
+    0 0 15px rgba(34, 197, 94, calc(0.4 * var(--enable-glow))),
+    inset 0 0 10px rgba(34, 197, 94, calc(0.1 * var(--enable-glow)));
+}
+
+/* ========================================
+   CHECKBOX & RADIO
+   ======================================== */
+.plaza-checkbox,
+.plaza-radio {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-primary-600);
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.plaza-radio {
+  border-radius: 50%;
+}
+
+.plaza-checkbox:checked,
+.plaza-radio:checked {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-500);
+  box-shadow: 0 0 10px rgba(var(--color-primary-500-rgb), calc(0.4 * var(--enable-glow)));
+}
+
+.plaza-checkbox:checked::after {
+  content: '✓';
+  display: block;
+  color: var(--color-bg-base);
+  font-size: 12px;
+  text-align: center;
+  line-height: 14px;
+}
+
+.plaza-radio:checked::after {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: 3px;
+  background: var(--color-bg-base);
+  border-radius: 50%;
+}
+
+.plaza-checkbox:focus,
+.plaza-radio:focus {
+  outline: none;
+  box-shadow: 0 0 10px rgba(var(--color-primary-500-rgb), calc(0.5 * var(--enable-glow)));
+}
+
+.plaza-checkbox:disabled,
+.plaza-radio:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   FORM LABEL
+   ======================================== */
+.plaza-label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.plaza-label--required::after {
+  content: ' *';
+  color: var(--color-error);
+}
+
+/* ========================================
+   FORM GROUP
+   ======================================== */
+.plaza-form-group {
+  margin-bottom: 1.25rem;
+}
+
+/* ========================================
+   INLINE CHECKBOX/RADIO LABEL
+   ======================================== */
+.plaza-checkbox-label,
+.plaza-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.plaza-checkbox-label:hover,
+.plaza-radio-label:hover {
+  color: var(--color-primary-400);
+}
+
+/* ========================================
+   ERROR MESSAGE
+   ======================================== */
+.plaza-error-message {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--color-error);
+  margin-top: 6px;
+}

@@ -1,0 +1,235 @@
+/* modal.css - Plaza Modal Component */
+/* Modal dialogs with backdrop blur */
+
+/* ========================================
+   MODAL OVERLAY
+   ======================================== */
+.plaza-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: modal-fade-in 0.2s ease;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   MODAL CONTAINER
+   ======================================== */
+.plaza-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  background: var(--color-bg-base);
+  border: 2px solid var(--color-primary-500);
+  box-shadow:
+    0 0 30px rgba(var(--color-primary-500-rgb), calc(0.3 * var(--enable-glow))),
+    0 25px 50px rgba(0, 0, 0, 0.5);
+  animation: modal-slide-in 0.2s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Size variants */
+.plaza-modal--sm {
+  max-width: 360px;
+}
+
+.plaza-modal--lg {
+  max-width: 640px;
+}
+
+.plaza-modal--xl {
+  max-width: 800px;
+}
+
+/* ========================================
+   MODAL HEADER
+   ======================================== */
+.plaza-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  background: linear-gradient(
+    90deg,
+    rgba(var(--color-primary-500-rgb), 0.1) 0%,
+    transparent 100%
+  );
+}
+
+.plaza-modal__title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+/* ========================================
+   MODAL CLOSE BUTTON
+   ======================================== */
+.plaza-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--color-gray-700);
+  color: var(--color-gray-500);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.plaza-modal__close:hover {
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-500);
+  box-shadow: 0 0 10px rgba(var(--color-primary-500-rgb), calc(0.3 * var(--enable-glow)));
+}
+
+/* ========================================
+   MODAL BODY
+   ======================================== */
+.plaza-modal__body {
+  padding: 1.5rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.plaza-modal__body p {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  color: var(--color-gray-400);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.plaza-modal__body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================
+   MODAL FOOTER
+   ======================================== */
+.plaza-modal__footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(var(--color-primary-500-rgb), 0.2);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Footer with left-aligned content */
+.plaza-modal__footer--between {
+  justify-content: space-between;
+}
+
+/* ========================================
+   DANGER MODAL VARIANT
+   ======================================== */
+.plaza-modal--danger {
+  border-color: var(--color-error);
+  box-shadow:
+    0 0 30px rgba(255, 0, 85, calc(0.3 * var(--enable-glow))),
+    0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.plaza-modal--danger .plaza-modal__header {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 0, 85, 0.15) 0%,
+    transparent 100%
+  );
+  border-bottom-color: rgba(255, 0, 85, 0.3);
+}
+
+.plaza-modal--danger .plaza-modal__title {
+  color: var(--color-error);
+}
+
+/* ========================================
+   SUCCESS MODAL VARIANT
+   ======================================== */
+.plaza-modal--success {
+  border-color: var(--color-success);
+  box-shadow:
+    0 0 30px rgba(34, 197, 94, calc(0.3 * var(--enable-glow))),
+    0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.plaza-modal--success .plaza-modal__header {
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.15) 0%,
+    transparent 100%
+  );
+  border-bottom-color: rgba(34, 197, 94, 0.3);
+}
+
+.plaza-modal--success .plaza-modal__title {
+  color: var(--color-success);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+  .plaza-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .plaza-modal {
+    max-width: 100%;
+    max-height: 85vh;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    animation: modal-slide-up 0.2s ease;
+  }
+
+  @keyframes modal-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

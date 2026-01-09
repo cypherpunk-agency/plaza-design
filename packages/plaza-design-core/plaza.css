@@ -1,0 +1,76 @@
+/* plaza.css - Plaza Design System v2.0 */
+/* Main entry point - imports all modular CSS files */
+
+/* Design tokens (fonts, spacing) */
+@import './tokens.css';
+
+/* Themes (colors, glow, canvas) */
+@import './themes/_index.css';
+
+/* Base styles (reset, body, scrollbars) */
+@import './base.css';
+
+/* Utility classes (typography, colors, layout) */
+@import './utilities.css';
+
+/* Keyframe animations */
+@import './animations.css';
+
+/* Components */
+@import './components/button.css';
+@import './components/window.css';
+@import './components/panel.css';
+@import './components/effects.css';
+@import './components/form.css';
+@import './components/modal.css';
+
+/* ========================================
+   RESPONSIVE UTILITIES
+   ======================================== */
+@media (max-width: 1024px) {
+  .lg\:hidden { display: none; }
+  .lg\:block { display: block; }
+}
+
+@media (max-width: 768px) {
+  .md\:hidden { display: none; }
+  .md\:flex { display: flex; }
+
+  .plaza-side-panel {
+    display: none;
+  }
+
+  .plaza-window {
+    margin: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .sm\:hidden { display: none; }
+  .sm\:flex-col { flex-direction: column; }
+
+  :root {
+    --text-4xl: 32px;
+    --text-5xl: 40px;
+    --text-6xl: 48px;
+  }
+}
+
+/* ========================================
+   TOUCH TARGET (Mobile)
+   ======================================== */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ========================================
+   SAFE AREAS (iOS)
+   ======================================== */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}

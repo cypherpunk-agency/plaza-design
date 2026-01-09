@@ -1,0 +1,14 @@
+{
+  "name": "plaza-design",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter plaza-design-demo dev",
+    "dev:cms": "pnpm --filter plaza-cms-demo dev",
+    "build": "pnpm -r build",
+    "build:design-demo": "pnpm --filter plaza-design-demo build",
+    "build:cms-demo": "pnpm --filter plaza-cms-demo build"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.0"
+  }
+}

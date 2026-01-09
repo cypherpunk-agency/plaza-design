@@ -1,0 +1,11 @@
+{
+  "name": "plaza-cms",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "plaza-design-core": "workspace:*"
+  }
+}

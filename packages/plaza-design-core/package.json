@@ -1,0 +1,15 @@
+{
+  "name": "plaza-design-core",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./plaza.css": "./plaza.css",
+    "./tokens.css": "./tokens.css",
+    "./themes/*": "./themes/*",
+    ".": {
+      "import": "./plaza.ts",
+      "types": "./plaza.d.ts"
+    }
+  },
+  "files": ["*.css", "*.ts", "components/", "themes/"]
+}

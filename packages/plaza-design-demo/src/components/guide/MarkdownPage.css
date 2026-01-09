@@ -1,0 +1,239 @@
+/* MarkdownPage.css - Plaza-styled Markdown Rendering */
+
+.markdown-page {
+  max-width: 800px;
+  padding: 1rem 0;
+  font-family: var(--font-mono);
+  color: var(--color-gray-400);
+  line-height: 1.7;
+}
+
+/* ========================================
+   HEADINGS
+   ======================================== */
+.markdown-page h1 {
+  font-size: var(--text-2xl);
+  color: var(--color-primary-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-primary-500);
+}
+
+.markdown-page h2 {
+  font-size: var(--text-xl);
+  color: var(--color-primary-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-page h3 {
+  font-size: var(--text-lg);
+  color: var(--color-accent-400);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-page h4 {
+  font-size: var(--text-base);
+  color: var(--color-gray-300);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   PARAGRAPHS & TEXT
+   ======================================== */
+.markdown-page p {
+  margin-bottom: 1rem;
+}
+
+.markdown-page strong {
+  color: var(--color-primary-400);
+  font-weight: 600;
+}
+
+.markdown-page em {
+  color: var(--color-accent-500);
+  font-style: italic;
+}
+
+/* ========================================
+   LINKS
+   ======================================== */
+.markdown-page a {
+  color: var(--color-accent-400);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--color-accent-500-rgb), 0.4);
+  transition: all 0.15s ease;
+}
+
+.markdown-page a:hover {
+  color: var(--color-accent-300);
+  border-bottom-color: var(--color-accent-400);
+  text-shadow: 0 0 8px rgba(var(--color-accent-500-rgb), 0.5);
+}
+
+/* ========================================
+   HORIZONTAL RULES
+   ======================================== */
+.markdown-page hr {
+  border: none;
+  border-top: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  margin: 2rem 0;
+}
+
+/* ========================================
+   BLOCKQUOTES
+   ======================================== */
+.markdown-page blockquote {
+  border-left: 3px solid var(--color-primary-500);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: var(--color-primary-400);
+  font-style: italic;
+}
+
+.markdown-page blockquote p {
+  margin-bottom: 0;
+}
+
+/* ========================================
+   LISTS
+   ======================================== */
+.markdown-page ul,
+.markdown-page ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-page li {
+  margin-bottom: 0.5rem;
+}
+
+.markdown-page li::marker {
+  color: var(--color-primary-500);
+}
+
+.markdown-page li > ul,
+.markdown-page li > ol {
+  margin: 0.5rem 0;
+}
+
+/* ========================================
+   TABLES - Terminal Style
+   ======================================== */
+.markdown-page table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: var(--text-sm);
+  overflow-x: auto;
+  display: block;
+}
+
+.markdown-page th {
+  text-align: left;
+  padding: 0.75rem;
+  background: rgba(var(--color-primary-500-rgb), 0.15);
+  border: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  color: var(--color-primary-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.markdown-page td {
+  padding: 0.75rem;
+  border: 1px solid rgba(var(--color-primary-500-rgb), 0.2);
+  color: var(--color-gray-400);
+  vertical-align: top;
+}
+
+.markdown-page tr:hover td {
+  background: rgba(var(--color-primary-500-rgb), 0.08);
+}
+
+/* ========================================
+   CODE - Inline
+   ======================================== */
+.markdown-inline-code {
+  background: rgba(var(--color-primary-500-rgb), 0.15);
+  color: var(--color-primary-400);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.9em;
+  border: 1px solid rgba(var(--color-primary-500-rgb), 0.25);
+  font-family: var(--font-mono);
+}
+
+/* ========================================
+   CODE - Blocks
+   ======================================== */
+.markdown-code-block {
+  margin: 1.5rem 0 !important;
+  border: 1px solid rgba(var(--color-primary-500-rgb), 0.3) !important;
+  border-radius: 0 !important;
+  font-size: var(--text-xs) !important;
+}
+
+/* Override syntax highlighter background to match Plaza */
+.markdown-code-block code {
+  background: rgba(0, 0, 0, 0.6) !important;
+  font-family: var(--font-mono) !important;
+}
+
+/* Fallback for code blocks without language */
+.markdown-page pre {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  padding: 1rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.markdown-page pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
+}
+
+/* ========================================
+   IMAGES
+   ======================================== */
+.markdown-page img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 640px) {
+  .markdown-page {
+    font-size: var(--text-sm);
+  }
+
+  .markdown-page h1 {
+    font-size: var(--text-xl);
+  }
+
+  .markdown-page h2 {
+    font-size: var(--text-lg);
+  }
+
+  .markdown-page table {
+    font-size: var(--text-xs);
+  }
+
+  .markdown-page th,
+  .markdown-page td {
+    padding: 0.5rem;
+  }
+}

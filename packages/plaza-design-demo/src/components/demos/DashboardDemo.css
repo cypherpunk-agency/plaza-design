@@ -1,0 +1,213 @@
+.dashboard-demo {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-demo__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.2);
+}
+
+.dashboard-demo__status {
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+}
+
+/* Grid layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.dashboard-panel {
+  min-height: 200px;
+}
+
+.dashboard-panel--wide {
+  grid-column: span 2;
+}
+
+.dashboard-panel .plaza-window {
+  height: 100%;
+  position: relative;
+}
+
+.dashboard-panel__content {
+  padding: 1.25rem;
+}
+
+/* Telemetry */
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.telemetry-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.telemetry-item__label {
+  font-size: 10px;
+  color: var(--color-gray-600);
+  letter-spacing: 0.15em;
+}
+
+.telemetry-item__value {
+  font-size: var(--text-lg);
+  color: var(--color-primary-400);
+  font-weight: 500;
+}
+
+/* Net log */
+.netlog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.netlog-entry {
+  display: grid;
+  grid-template-columns: 80px 50px 40px 50px;
+  gap: 0.75rem;
+  font-size: var(--text-xs);
+  padding: 0.375rem 0;
+  border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.1);
+}
+
+.netlog-entry:last-child {
+  border-bottom: none;
+}
+
+.netlog-entry__verb {
+  color: var(--color-primary-500);
+  font-weight: 500;
+}
+
+.netlog-entry__chan {
+  color: var(--color-gray-500);
+}
+
+.netlog-entry__code {
+  font-weight: 500;
+}
+
+.netlog-entry__ms {
+  color: var(--color-gray-400);
+  text-align: right;
+}
+
+.text-success {
+  color: var(--color-success);
+}
+
+.text-warning {
+  color: var(--color-warning);
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+/* Status */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(var(--color-primary-500-rgb), 0.15);
+}
+
+.status-item__label {
+  font-size: 11px;
+  color: var(--color-gray-500);
+  letter-spacing: 0.1em;
+}
+
+.status-item__value {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.status-error {
+  padding: 0.5rem;
+  background: rgba(255, 0, 85, 0.1);
+  border: 1px solid rgba(255, 0, 85, 0.2);
+}
+
+/* Hex streams */
+.hex-streams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.hex-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hex-stream__label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.action-buttons .plaza-btn {
+  padding: 0.75rem 1rem;
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-panel--wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-demo__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-panel--wide {
+    grid-column: span 1;
+  }
+
+  .hex-streams {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,7 @@
+/* _index.css - Plaza Theme Collection */
+/* Imports all available themes */
+
+@import './neon.css';
+@import './grayscale.css';
+@import './ice.css';
+@import './forest.css';
