@@ -1,0 +1,53 @@
+/* neon.css - Plaza Neon Theme (Default) */
+/* Warm orange primary against electric cyan accents */
+/* Mood: Warm firelight in digital darkness. Classic cyberpunk. */
+
+:root {
+  /* Primary - Orange */
+  --color-primary-300: #fdba74;
+  --color-primary-400: #fb923c;
+  --color-primary-500: #ff8800;
+  --color-primary-600: #ea580c;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+  --color-primary-900: #7c2d12;
+  --color-primary-950: #431407;
+
+  /* Accent - Cyan */
+  --color-accent-400: #00ffff;
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+  --color-accent-700: #0e7490;
+  --color-accent-800: #155e75;
+  --color-accent-900: #164e63;
+  --color-accent-950: #083344;
+
+  /* Backgrounds */
+  --color-bg-base: #000000;
+  --color-bg-primary: #1a0f00;
+  --color-bg-accent: #001a1a;
+
+  /* Semantic */
+  --color-error: #ff0055;
+  --color-warning: #eab308;
+  --color-success: #22c55e;
+
+  /* Glow control */
+  --enable-glow: 1;
+
+  /* RGB versions for rgba() usage */
+  --color-primary-500-rgb: 255, 136, 0;
+  --color-primary-600-rgb: 234, 88, 12;
+  --color-primary-700-rgb: 194, 65, 12;
+  --color-accent-400-rgb: 57, 230, 255;
+  --color-accent-500-rgb: 6, 182, 212;
+
+  /* Canvas colors */
+  --canvas-grid: rgba(255, 100, 0, 0.35);
+  --canvas-sun-core: rgba(255, 200, 100, 0.8);
+  --canvas-sun-glow: rgba(255, 136, 0, 0.6);
+  --canvas-horizon-glow: rgba(255, 136, 0, 0.4);
+  --canvas-ambient: rgba(255, 136, 0, 0.25);
+  --canvas-ambient-secondary: rgba(255, 136, 0, 0.08);
+  --canvas-ambient-tertiary: rgba(255, 100, 0, 0.03);
+}

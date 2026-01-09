@@ -1,5 +1,5 @@
-/* tokens.css - Plaza Design System Tokens */
-/* CSS custom properties for colors, spacing, typography */
+/* tokens.css - Plaza Design System Base Tokens */
+/* Font import and theme-independent variables */
 
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
@@ -16,71 +16,11 @@
   --text-5xl: 48px;
   --text-6xl: 60px;
 
-  /* Primary - Orange */
-  --color-primary-300: #fdba74;
-  --color-primary-400: #fb923c;
-  --color-primary-500: #ff8800;
-  --color-primary-600: #ea580c;
-  --color-primary-700: #c2410c;
-  --color-primary-800: #9a3412;
-  --color-primary-900: #7c2d12;
-  --color-primary-950: #431407;
-
-  /* Accent - Cyan */
-  --color-accent-400: #00ffff;
-  --color-accent-500: #06b6d4;
-  --color-accent-600: #0891b2;
-  --color-accent-700: #0e7490;
-  --color-accent-800: #155e75;
-  --color-accent-900: #164e63;
-  --color-accent-950: #083344;
-
-  /* Backgrounds */
-  --color-bg-base: #000000;
-  --color-bg-primary: #1a0f00;
-  --color-bg-accent: #001a1a;
-
-  /* Semantic */
-  --color-error: #ff0055;
-  --color-warning: #eab308;
-  --color-success: #22c55e;
-
-  /* Gray */
+  /* Gray - neutral palette (theme-independent) */
   --color-gray-400: #9ca3af;
   --color-gray-500: #6b7280;
   --color-gray-600: #4b5563;
   --color-gray-700: #374151;
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
-
-  /* Glow control */
-  --enable-glow: 1;
-}
-
-/* Grayscale theme variant */
-[data-theme="grayscale"] {
-  --color-primary-300: #d1d5db;
-  --color-primary-400: #9ca3af;
-  --color-primary-500: #6b7280;
-  --color-primary-600: #4b5563;
-  --color-primary-700: #374151;
-  --color-primary-800: #1f2937;
-  --color-primary-900: #111827;
-  --color-primary-950: #030712;
-
-  --color-accent-400: #5b9fc7;
-  --color-accent-500: #4a8caf;
-  --color-accent-600: #3a7a99;
-  --color-accent-700: #2b5d75;
-  --color-accent-800: #1e4258;
-  --color-accent-900: #183649;
-  --color-accent-950: #0c1e2b;
-
-  --color-bg-primary: #0a0a0a;
-  --color-bg-accent: #0f1419;
-  --color-error: #dc2626;
-  --color-warning: #d97706;
-  --color-success: #16a34a;
-
-  --enable-glow: 0;
 }

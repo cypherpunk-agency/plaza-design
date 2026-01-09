@@ -10,6 +10,7 @@ This guide is about *decisions*, not documentation. The demos speak for themselv
 | [Hierarchy](./hierarchy.md) | Interactive vs decorative — when to use what |
 | [Language](./language.md) | Voice & tone — how the terminal speaks |
 | [Gimmicks](./gimmicks.md) | Fun patterns — and how much is too much |
+| [Theming](./theming.md) | Color palettes — built-in themes and custom themes |
 
 ## The One-Sentence Summary
 

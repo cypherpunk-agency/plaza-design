@@ -1,0 +1,53 @@
+/* grayscale.css - Plaza Grayscale Theme */
+/* Muted, professional. Same structure, desaturated palette. */
+/* Mood: Professional terminal. Corporate secure. Less expressive. */
+
+[data-theme="grayscale"] {
+  /* Primary - Cool Gray */
+  --color-primary-300: #d1d5db;
+  --color-primary-400: #9ca3af;
+  --color-primary-500: #6b7280;
+  --color-primary-600: #4b5563;
+  --color-primary-700: #374151;
+  --color-primary-800: #1f2937;
+  --color-primary-900: #111827;
+  --color-primary-950: #030712;
+
+  /* Accent - Steel Blue */
+  --color-accent-400: #5b9fc7;
+  --color-accent-500: #4a8caf;
+  --color-accent-600: #3a7a99;
+  --color-accent-700: #2b5d75;
+  --color-accent-800: #1e4258;
+  --color-accent-900: #183649;
+  --color-accent-950: #0c1e2b;
+
+  /* Backgrounds */
+  --color-bg-base: #000000;
+  --color-bg-primary: #0a0a0a;
+  --color-bg-accent: #0f1419;
+
+  /* Semantic */
+  --color-error: #dc2626;
+  --color-warning: #d97706;
+  --color-success: #16a34a;
+
+  /* Glow control - disabled for professional look */
+  --enable-glow: 0;
+
+  /* RGB versions for rgba() usage */
+  --color-primary-500-rgb: 107, 114, 128;
+  --color-primary-600-rgb: 75, 85, 99;
+  --color-primary-700-rgb: 55, 65, 81;
+  --color-accent-400-rgb: 91, 159, 199;
+  --color-accent-500-rgb: 74, 140, 175;
+
+  /* Canvas colors */
+  --canvas-grid: rgba(107, 114, 128, 0.35);
+  --canvas-sun-core: rgba(200, 200, 210, 0.8);
+  --canvas-sun-glow: rgba(107, 114, 128, 0.6);
+  --canvas-horizon-glow: rgba(107, 114, 128, 0.4);
+  --canvas-ambient: rgba(107, 114, 128, 0.15);
+  --canvas-ambient-secondary: rgba(107, 114, 128, 0.06);
+  --canvas-ambient-tertiary: rgba(107, 114, 128, 0.02);
+}

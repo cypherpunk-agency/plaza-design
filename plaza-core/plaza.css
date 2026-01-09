@@ -1,8 +1,11 @@
 /* plaza.css - Plaza Design System v2.0 */
 /* Main entry point - imports all modular CSS files */
 
-/* Design tokens (colors, fonts, spacing) */
+/* Design tokens (fonts, spacing) */
 @import './tokens.css';
+
+/* Themes (colors, glow, canvas) */
+@import './themes/_index.css';
 
 /* Base styles (reset, body, scrollbars) */
 @import './base.css';
