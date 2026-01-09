@@ -8,16 +8,25 @@ import {
   generateHexData,
   TelemetryData,
   StatusData,
+  RouteItem,
+  NetLogEntry,
 } from '../plaza';
 
 interface SidePanelProps {
   side: 'left' | 'right';
 }
 
+// Helper to format telemetry with dots alignment
+function formatTelemetryLine(label: string, value: string | number, totalWidth = 28): string {
+  const valueStr = String(value);
+  const dots = '.'.repeat(Math.max(1, totalWidth - label.length - valueStr.length));
+  return `${label}${dots} ${valueStr}`;
+}
+
 export function SidePanel({ side }: SidePanelProps) {
   const [telemetry, setTelemetry] = useState<TelemetryData>(() => generateTelemetry());
-  const [netLog, setNetLog] = useState<string[]>(() => generateNetLog(5));
-  const [hexData, setHexData] = useState(() => generateHexData(600));
+  const [netLog, setNetLog] = useState<NetLogEntry[]>(() => generateNetLog());
+  const [hexData] = useState(() => generateHexData(600));
 
   const routes = generateRoutes();
   const keys = generateKeys();
@@ -31,18 +40,12 @@ export function SidePanel({ side }: SidePanelProps) {
 
     // Update net log every 3 seconds
     const netLogInterval = setInterval(() => {
-      setNetLog(generateNetLog(5));
+      setNetLog(generateNetLog());
     }, 3000);
-
-    // Update hex data every 2.5 seconds
-    const hexInterval = setInterval(() => {
-      setHexData(generateHexData(600));
-    }, 2500);
 
     return () => {
       clearInterval(telemetryInterval);
       clearInterval(netLogInterval);
-      clearInterval(hexInterval);
     };
   }, []);
 
@@ -50,34 +53,36 @@ export function SidePanel({ side }: SidePanelProps) {
     return (
       <div className="plaza-side-panel plaza-side-panel--left">
         {/* Telemetry */}
-        <div className="mb-4">
-          <div className="plaza-side-panel__header">TELEMETRY:</div>
-          <div className="plaza-side-panel__divider">----------------</div>
-          <div>NODE_ID: {telemetry.nodeId}</div>
-          <div>LATENCY: {telemetry.latency}</div>
-          <div>PEERS: {telemetry.peers}</div>
-          <div>BLOCKS: {telemetry.blocks.toLocaleString()}</div>
-          <div>HASH_RATE: {telemetry.hashRate}</div>
-          <div>UPTIME: {telemetry.uptime}</div>
-          <div>MEMPOOL: {telemetry.mempool.toLocaleString()}</div>
-          <div>SYNC: {telemetry.syncStatus}</div>
+        <div className="plaza-side-panel__block">
+          <div className="plaza-side-panel__header">telemetry</div>
+          <div>{formatTelemetryLine('peer_count', telemetry.peerCount)}</div>
+          <div>{formatTelemetryLine('latency', `${telemetry.latency}ms`)}</div>
+          <div>{formatTelemetryLine('packet_loss', `${telemetry.packetLoss.toFixed(2)}%`)}</div>
+          <div>{formatTelemetryLine('mem_resident', `${telemetry.memResident}MB`)}</div>
+          <div>{formatTelemetryLine('cpu_load', `${telemetry.cpuLoad}%`)}</div>
         </div>
 
         {/* Routes */}
-        <div className="mb-4">
-          <div className="plaza-side-panel__header">ROUTES:</div>
-          <div className="plaza-side-panel__divider">----------------</div>
-          {routes.map((route, i) => (
-            <div key={i}>{route}</div>
+        <div className="plaza-side-panel__block">
+          <div className="plaza-side-panel__header">routes</div>
+          {routes.map((route: RouteItem, i: number) => (
+            <div key={i}>
+              {route.disabled ? (
+                <span className="route-disabled">{route.path}</span>
+              ) : (
+                <a href={route.href} target="_blank" rel="noopener noreferrer" className="route-link">
+                  {route.path}
+                </a>
+              )}
+            </div>
           ))}
         </div>
 
         {/* Keys */}
-        <div className="mb-4">
-          <div className="plaza-side-panel__header">KEYS:</div>
-          <div className="plaza-side-panel__divider">----------------</div>
+        <div className="plaza-side-panel__block">
+          <div className="plaza-side-panel__header">keys</div>
           {keys.map((k, i) => (
-            <div key={i}>{k.key} {k.action}</div>
+            <div key={i}><span className="text-ambient-amber">{k.key}</span> {k.action}</div>
           ))}
         </div>
 
@@ -91,25 +96,20 @@ export function SidePanel({ side }: SidePanelProps) {
 
   return (
     <div className="plaza-side-panel plaza-side-panel--right">
-      {/* Net Log */}
-      <div className="mb-4">
-        <div className="plaza-side-panel__header">NET:</div>
-        <div className="plaza-side-panel__divider">----------------</div>
-        {netLog.map((log, i) => (
-          <div key={i}>{log}</div>
+      {/* Processes */}
+      <div className="plaza-side-panel__block">
+        <div className="plaza-side-panel__header">processes</div>
+        {netLog.map((entry: NetLogEntry, i: number) => (
+          <div key={i}>
+            <span className="text-ambient-amber">{entry.verb}</span>.{entry.chan}... {entry.code} ({entry.ms}ms)
+          </div>
         ))}
       </div>
 
-      {/* Status */}
-      <div className="mb-4">
-        <div className="plaza-side-panel__header">STATUS:</div>
-        <div className="plaza-side-panel__divider">----------------</div>
-        <div>CONNECTIONS: {status.connections}</div>
-        <div>BANDWIDTH: {status.bandwidth}</div>
-        <div>ENCRYPTION: {status.encryption}</div>
-        <div>PROTOCOL: {status.protocol}</div>
-        <div>TLS: {status.tls}</div>
-        <div>MODE: {status.mode}</div>
+      {/* Updates */}
+      <div className="plaza-side-panel__block">
+        <div className="plaza-side-panel__header">updates</div>
+        <div className="text-dim-red">{status.error}</div>
       </div>
 
       {/* Hex Scroll */}

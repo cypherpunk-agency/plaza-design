@@ -44,45 +44,70 @@ export function getTheme(): 'neon' | 'grayscale' {
 // DATA GENERATION
 // ============================================
 
-function randInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// Adjust value relative to previous (living system drift)
+function adjustValue(current: number, min: number, max: number, maxDelta: number): number {
+  const delta = Math.floor(Math.random() * (maxDelta * 2 + 1)) - maxDelta;
+  return Math.max(min, Math.min(max, current + delta));
 }
 
-function randomHex(length: number): string {
-  let result = '';
-  const chars = '0123456789ABCDEF';
-  for (let i = 0; i < length; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return result;
-}
+// ============================================
+// STATEFUL DATA (persists across renders)
+// ============================================
+
+// Telemetry state that drifts instead of jumping randomly
+const telemetryState = {
+  peerCount: 38,
+  latency: 45,
+  packetLoss: 0.12,
+  memResident: 512,
+  cpuLoad: 8
+};
+
+// Net log state with drifting ms values
+const netLogState = {
+  entries: [
+    { verb: 'SYNC', chan: 'L1', code: 200, ms: 116 },
+    { verb: 'VERIFY', chan: 'P2P', code: 200, ms: 52 },
+    { verb: 'ROUTE', chan: 'RPC', code: 204, ms: 44 },
+    { verb: 'HANDSHAKE', chan: 'MESH', code: 200, ms: 137 },
+    { verb: 'ATTEST', chan: 'L2', code: 206, ms: 44 },
+    { verb: 'SYNC', chan: 'P2P', code: 200, ms: 21 }
+  ]
+};
+
+// Node count state
+let nodeCountState = 42;
 
 export interface TelemetryData {
-  nodeId: string;
-  latency: string;
-  peers: number;
-  blocks: number;
-  hashRate: string;
-  uptime: string;
-  mempool: number;
-  syncStatus: string;
+  peerCount: number;
+  latency: number;
+  packetLoss: number;
+  memResident: number;
+  cpuLoad: number;
 }
 
 export function generateTelemetry(): TelemetryData {
-  return {
-    nodeId: `NODE_${randomHex(8)}`,
-    latency: `${randInt(12, 89)}ms`,
-    peers: randInt(24, 156),
-    blocks: randInt(10000000, 99999999),
-    hashRate: `${randInt(100, 999)}.${randInt(10, 99)} TH/s`,
-    uptime: `${randInt(1, 30)}d ${randInt(0, 23)}h ${randInt(0, 59)}m`,
-    mempool: randInt(500, 5000),
-    syncStatus: Math.random() > 0.1 ? 'SYNCED' : 'SYNCING...',
-  };
+  // Adjust values relative to previous (living system feel)
+  telemetryState.peerCount = adjustValue(telemetryState.peerCount, 12, 64, 3);
+  telemetryState.latency = adjustValue(telemetryState.latency, 18, 120, 8);
+  telemetryState.packetLoss = Math.max(0, Math.min(2, telemetryState.packetLoss + (Math.random() - 0.5) * 0.1));
+  telemetryState.memResident = adjustValue(telemetryState.memResident, 256, 1024, 32);
+  telemetryState.cpuLoad = adjustValue(telemetryState.cpuLoad, 2, 45, 4);
+
+  return { ...telemetryState };
 }
 
-export function generateRoutes(): string[] {
-  return ['/enter', '/about', '/channels', '/dms', '/profile'];
+export interface RouteItem {
+  path: string;
+  disabled: boolean;
+  href?: string;
+}
+
+export function generateRoutes(): RouteItem[] {
+  return [
+    { path: '/enter', disabled: true },
+    { path: '/polkadot-treasury-monitor', disabled: false, href: 'https://polkadot-treasury-monitor.vercel.app' }
+  ];
 }
 
 export interface KeyBinding {
@@ -93,53 +118,36 @@ export interface KeyBinding {
 export function generateKeys(): KeyBinding[] {
   return [
     { key: '[Enter]', action: 'proceed' },
-    { key: '[A]', action: 'about' },
     { key: '[T]', action: 'toggle theme' },
-    { key: '[Esc]', action: 'close panel' },
   ];
 }
 
-export function generateNetLog(count = 5): string[] {
-  const actions = [
-    'PEER_CONNECTED',
-    'BLOCK_RECEIVED',
-    'TX_BROADCAST',
-    'HANDSHAKE_OK',
-    'SYNC_CHUNK',
-    'GOSSIP_MSG',
-    'VERIFY_SIG',
-    'ROUTE_UPDATE',
-  ];
+export interface NetLogEntry {
+  verb: string;
+  chan: string;
+  code: number;
+  ms: number;
+}
 
-  const logs: string[] = [];
-  for (let i = 0; i < count; i++) {
-    const action = actions[Math.floor(Math.random() * actions.length)];
-    const ip = `${randInt(1, 255)}.${randInt(0, 255)}.${randInt(0, 255)}.${randInt(1, 254)}`;
-    const code = [200, 204, 206, 304][randInt(0, 3)];
-    const ms = randInt(9, 180);
-    logs.push(`[${action}] ${ip} (${code}/${ms}ms)`);
-  }
+export function generateNetLog(): NetLogEntry[] {
+  // Drift the ms values
+  netLogState.entries = netLogState.entries.map(entry => ({
+    ...entry,
+    ms: adjustValue(entry.ms, 8, 200, 15)
+  }));
 
-  return logs;
+  return [...netLogState.entries];
 }
 
 export interface StatusData {
-  connections: string;
-  bandwidth: string;
-  encryption: string;
-  protocol: string;
-  tls: string;
-  mode: string;
+  updates: string;
+  error: string;
 }
 
 export function generateStatus(): StatusData {
   return {
-    connections: Math.random() > 0.05 ? 'OK' : 'DEGRADED',
-    bandwidth: ['OPTIMAL', 'GOOD', 'MODERATE'][randInt(0, 2)],
-    encryption: 'AES-256-GCM',
-    protocol: `v${randInt(2, 3)}.${randInt(0, 9)}.${randInt(0, 9)}`,
-    tls: 'TLS 1.3',
-    mode: 'P2P MESH',
+    updates: 'paused',
+    error: '500: connection reset'
   };
 }
 
@@ -150,7 +158,14 @@ export function generateHexData(length = 500): string {
     if (i > 0 && i % 32 === 0) hex += '\n';
     else if (i > 0 && i % 8 === 0 && Math.random() > 0.7) hex += ' ';
   }
-  return hex;
+  // Double it for seamless scroll animation
+  return hex + '\n' + hex;
+}
+
+export function getNodeCount(): number {
+  // Drift the node count
+  nodeCountState = adjustValue(nodeCountState, 20, 70, 3);
+  return nodeCountState;
 }
 
 // ============================================
@@ -212,7 +227,7 @@ export function initGridCanvas(canvas: HTMLCanvasElement | null): GridController
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, w, h);
 
-    const horizonY = h * 0.4;
+    const horizonY = h * 0.65;
     const centerX = w / 2;
 
     // Ambient glow at horizon

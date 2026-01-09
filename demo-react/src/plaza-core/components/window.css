@@ -1,0 +1,148 @@
+/* window.css - Plaza Window Frame Component */
+/* .plaza-window, header, footer, and corner brackets */
+
+.plaza-window {
+  border: 1px solid rgba(255, 122, 0, 0.55);
+  background: rgba(0, 0, 0, 0.10);
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(255, 122, 0, 0.18),
+    0 0 36px rgba(255, 136, 0, calc(0.08 * var(--enable-glow)));
+}
+
+/* Header */
+.plaza-window-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 122, 0, 0.35);
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.72);
+  background: linear-gradient(
+    to right,
+    rgba(255, 122, 0, 0.10),
+    transparent 40%,
+    rgba(57, 230, 255, 0.08)
+  );
+}
+
+/* Footer */
+.plaza-window-footer {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 122, 0, 0.28);
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: rgba(255, 255, 255, 0.62);
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 122, 0, 0.08),
+    transparent
+  );
+  gap: 8px;
+}
+
+/* Footer sub-components */
+.footer-timestamp {
+  color: var(--color-primary-600);
+}
+
+.footer-terminal {
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+.footer-prompt {
+  color: var(--color-primary-500);
+}
+
+.footer-input-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.footer-not-auth {
+  color: var(--color-gray-700);
+  font-size: 11px;
+  letter-spacing: 1px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.footer-send-btn {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255, 122, 0, 0.4);
+  background: transparent;
+  color: var(--color-primary-500);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.footer-send-btn:hover {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 10px rgba(255, 136, 0, 0.3);
+}
+
+.footer-send-btn--disabled {
+  background: var(--color-gray-900);
+  color: var(--color-gray-700);
+  border-color: var(--color-gray-700);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.footer-send-btn--disabled:hover {
+  border-color: var(--color-gray-700);
+  box-shadow: none;
+}
+
+/* Corner Brackets */
+.plaza-corner-bracket {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: rgba(255, 122, 0, 0.55);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+
+.plaza-corner-bracket--tl {
+  top: -1px;
+  left: -1px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+
+.plaza-corner-bracket--tr {
+  top: -1px;
+  right: -1px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+
+.plaza-corner-bracket--bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+
+.plaza-corner-bracket--br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 1px;
+  border-right-width: 1px;
+}

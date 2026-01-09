@@ -279,8 +279,8 @@ export function initGridCanvas(canvasId) {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, w, h);
 
-    // Horizon position (40% from top)
-    const horizonY = h * 0.4;
+    // Horizon position (65% from top - canonical)
+    const horizonY = h * 0.65;
     const centerX = w / 2;
 
     // Ambient glow at horizon
@@ -408,7 +408,7 @@ export function initGlitchEffect(elementId) {
  * @param {string} containerId - Container element ID
  * @param {number} [count=20] - Number of particles
  */
-export function createParticles(containerId, count = 20) {
+export function createParticles(containerId, count = 50) {
   const container = document.getElementById(containerId);
   if (!container) {
     console.warn(`Particle container '${containerId}' not found`);
@@ -423,9 +423,9 @@ export function createParticles(containerId, count = 20) {
     const isCyan = Math.random() > 0.5;
     particle.className = `plaza-particle plaza-particle--${isCyan ? 'cyan' : 'orange'}`;
     particle.style.left = `${Math.random() * 100}%`;
-    particle.style.animationDelay = `${Math.random() * 12}s`;
-    particle.style.animationDuration = `${10 + Math.random() * 8}s`;
-    particle.style.opacity = `${0.4 + Math.random() * 0.4}`;
+    particle.style.top = `${Math.random() * 100}%`;
+    particle.style.animationDelay = `${Math.random() * 10}s`;
+    particle.style.animationDuration = `${8 + Math.random() * 6}s`;
     container.appendChild(particle);
   }
 }
@@ -436,7 +436,7 @@ export function createParticles(containerId, count = 20) {
  * @param {number} [refreshRate=2000] - Refresh interval in ms
  * @returns {number} Interval ID for cleanup
  */
-export function startHexScroll(elementId, refreshRate = 2000) {
+export function startHexScroll(elementId, refreshRate = 2500) {
   const el = document.getElementById(elementId);
   if (!el) {
     console.warn(`Hex scroll element '${elementId}' not found`);
@@ -444,7 +444,9 @@ export function startHexScroll(elementId, refreshRate = 2000) {
   }
 
   const update = () => {
-    el.textContent = generateHexData(600);
+    // Double the hex data for seamless CSS scroll animation
+    const hexData = generateHexData(600);
+    el.textContent = hexData + hexData;
   };
 
   update();
@@ -452,101 +454,118 @@ export function startHexScroll(elementId, refreshRate = 2000) {
 }
 
 // ============================================
+// STATEFUL DATA (Living System Feel)
+// ============================================
+
+// Telemetry state - values drift instead of jumping randomly
+const telemetryState = {
+  peerCount: 38,
+  latency: 45,
+  packetLoss: 0.12,
+  memResident: 512,
+  cpuLoad: 8
+};
+
+// Network log state - ms values drift
+const netLogState = {
+  entries: [
+    { verb: 'SYNC', chan: 'L1', code: '200', ms: 45 },
+    { verb: 'VERIFY', chan: 'P2P', code: '200', ms: 78 },
+    { verb: 'ROUTE', chan: 'RPC', code: '204', ms: 32 },
+    { verb: 'HANDSHAKE', chan: 'MESH', code: '200', ms: 156 },
+    { verb: 'ATTEST', chan: 'L2', code: '206', ms: 91 },
+    { verb: 'SYNC', chan: 'P2P', code: '200', ms: 67 }
+  ]
+};
+
+// Node count state
+let nodeCountState = 42;
+
+/**
+ * Update node count with drift
+ * @param {string} elementId - Element ID to update
+ */
+export function updateNodeCount(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  nodeCountState = adjustValue(nodeCountState, 20, 70, 5);
+  el.textContent = nodeCountState;
+}
+
+// ============================================
 // UPDATE FUNCTIONS FOR GIMMICKS
 // ============================================
 
 /**
- * Render telemetry data to an element
+ * Render telemetry data to an element (with drift)
  * @param {string} elementId - Target element ID
- * @param {Object} [data] - Optional pre-generated data
  */
-export function renderTelemetry(elementId, data) {
+export function renderTelemetry(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  const t = data || generateTelemetry();
-  el.innerHTML = `
-<div class="plaza-side-panel__header">TELEMETRY:</div>
-<div class="plaza-side-panel__divider">----------------</div>
-<div>NODE_ID: ${t.nodeId}</div>
-<div>LATENCY: ${t.latency}</div>
-<div>PEERS: ${t.peers}</div>
-<div>BLOCKS: ${t.blocks.toLocaleString()}</div>
-<div>HASH_RATE: ${t.hashRate}</div>
-<div>UPTIME: ${t.uptime}</div>
-<div>MEMPOOL: ${t.mempool.toLocaleString()}</div>
-<div>SYNC: ${t.syncStatus}</div>
-  `.trim();
+  // Adjust values relative to previous (living system feel)
+  telemetryState.peerCount = adjustValue(telemetryState.peerCount, 12, 64, 3);
+  telemetryState.latency = adjustValue(telemetryState.latency, 18, 140, 8);
+  telemetryState.packetLoss = Math.max(0, Math.min(0.9, telemetryState.packetLoss + (Math.random() - 0.5) * 0.1));
+  telemetryState.memResident = adjustValue(telemetryState.memResident, 256, 1024, 20);
+  telemetryState.cpuLoad = adjustValue(telemetryState.cpuLoad, 3, 17, 2);
+
+  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">telemetry</div><div>peer_count........... ${telemetryState.peerCount}</div><div>latency_rtt.......... ${telemetryState.latency}ms</div><div>packet_loss.......... ${telemetryState.packetLoss.toFixed(2)}%</div><div>mem_resident......... ${telemetryState.memResident}MB</div><div>cpu_load............. ${telemetryState.cpuLoad}%</div><div>sig.................. 0x${randomHex(8)}…</div><div>attestation.......... VALID</div></div>`;
 }
 
 /**
- * Render routes to an element
+ * Render routes to an element (canonical format)
  * @param {string} elementId - Target element ID
  */
 export function renderRoutes(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  const routes = generateRoutes();
-  el.innerHTML = `
-<div class="plaza-side-panel__header">ROUTES:</div>
-<div class="plaza-side-panel__divider">----------------</div>
-${routes.map(r => `<div>${r}</div>`).join('\n')}
-  `.trim();
+  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">routes</div><div class="text-ambient-cyan"><span class="route-disabled">/enter</span></div><div class="text-ambient-cyan"><a href="https://polkadot-treasury-monitor.cypherpunk.agency/" target="_blank" class="route-link">/polkadot-treasury-monitor</a></div></div>`;
 }
 
 /**
- * Render keyboard shortcuts to an element
+ * Render keyboard shortcuts to an element (canonical format)
  * @param {string} elementId - Target element ID
  */
 export function renderKeys(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  const keys = generateKeys();
-  el.innerHTML = `
-<div class="plaza-side-panel__header">KEYS:</div>
-<div class="plaza-side-panel__divider">----------------</div>
-${keys.map(k => `<div>${k.key} ${k.action}</div>`).join('\n')}
-  `.trim();
+  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">keys</div><div class="text-ambient-amber">[Enter] proceed<br>[T] toggle theme</div></div>`;
 }
 
 /**
- * Render network log to an element
+ * Render network log to an element (with drift)
  * @param {string} elementId - Target element ID
- * @param {number} [count=5] - Number of log entries
  */
-export function renderNetLog(elementId, count = 5) {
+export function renderNetLog(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  const logs = generateNetLog(count);
-  el.innerHTML = `
-<div class="plaza-side-panel__header">NET:</div>
-<div class="plaza-side-panel__divider">----------------</div>
-${logs.map(l => `<div>${l}</div>`).join('\n')}
-  `.trim();
+  // Adjust ms values relative to previous (living system feel)
+  netLogState.entries.forEach(entry => {
+    entry.ms = adjustValue(entry.ms, 9, 220, 15);
+  });
+
+  let html = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">processes</div>`;
+  netLogState.entries.forEach(entry => {
+    html += `<div><span class="text-ambient-amber">${entry.verb}</span>.${entry.chan}... ${entry.code} (${entry.ms}ms)</div>`;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
 }
 
 /**
- * Render status to an element
+ * Render status to an element (canonical format)
  * @param {string} elementId - Target element ID
  */
 export function renderStatus(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  const s = generateStatus();
-  el.innerHTML = `
-<div class="plaza-side-panel__header">STATUS:</div>
-<div class="plaza-side-panel__divider">----------------</div>
-<div>CONNECTIONS: ${s.connections}</div>
-<div>BANDWIDTH: ${s.bandwidth}</div>
-<div>ENCRYPTION: ${s.encryption}</div>
-<div>PROTOCOL: ${s.protocol}</div>
-<div>TLS: ${s.tls}</div>
-<div>MODE: ${s.mode}</div>
-  `.trim();
+  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">updates</div><div class="text-dim-red">500: connection reset</div></div>`;
 }
 
 // ============================================
@@ -572,7 +591,7 @@ export function initPlazaDemo(config = {}) {
     statusId,
     hexLeftId,
     hexRightId,
-    particleCount = 25,
+    particleCount = 50,
     telemetryRefresh = 5000,
     netLogRefresh = 3000,
     hexRefresh = 2000,
@@ -682,6 +701,7 @@ export default {
   renderKeys,
   renderNetLog,
   renderStatus,
+  updateNodeCount,
   // Convenience
   initPlazaDemo,
 };

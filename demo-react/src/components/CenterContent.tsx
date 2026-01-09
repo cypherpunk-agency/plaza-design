@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { AboutModal } from './AboutModal';
+import { toggleTheme } from '../plaza';
 
 export function CenterContent() {
-  const [showAbout, setShowAbout] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const evolutionRef = useRef<HTMLSpanElement>(null);
+  const [isGlitching, setIsGlitching] = useState(false);
 
   const handleEnter = useCallback(() => {
     // Flash effect
@@ -16,15 +17,6 @@ export function CenterContent() {
         title.style.filter = '';
       }, 200);
     }
-    console.log('ENTER pressed - would navigate to main app');
-  }, []);
-
-  const handleAbout = useCallback(() => {
-    setShowAbout(true);
-  }, []);
-
-  const closeAbout = useCallback(() => {
-    setShowAbout(false);
   }, []);
 
   // Keyboard shortcuts
@@ -32,42 +24,51 @@ export function CenterContent() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         handleEnter();
-      } else if (e.key.toLowerCase() === 'a' && !showAbout) {
-        handleAbout();
-      } else if (e.key === 'Escape' && showAbout) {
-        closeAbout();
+      } else if (e.key.toLowerCase() === 't') {
+        toggleTheme();
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleEnter, handleAbout, closeAbout, showAbout]);
+  }, [handleEnter]);
+
+  // Evolution text hover effect - glitch once then revert
+  const handleEvolutionHover = useCallback(() => {
+    if (isGlitching) return;
+    setIsGlitching(true);
+    setTimeout(() => {
+      setIsGlitching(false);
+    }, 400);
+  }, [isGlitching]);
 
   return (
-    <>
-      <div className="demo-center">
-        <h1
-          ref={titleRef}
-          className="demo-title font-bold text-primary-500 text-shadow-neon uppercase tracking-wider plaza-glitch"
-          data-text="PLAZA"
-          style={{ transition: 'transform 0.2s, filter 0.2s' }}
+    <div className="demo-center">
+      <h1
+        id="title"
+        ref={titleRef}
+        className="demo-title font-bold text-primary-500 text-shadow-neon uppercase tracking-wider"
+        style={{ transition: 'transform 0.2s, filter 0.2s' }}
+      >
+        [CYPHERPUNK.AGENCY]
+      </h1>
+      <p className="demo-subtitle text-accent-400 tracking-widest uppercase mb-8">
+        DECENTRALIZED SOCIAL
+        <span
+          ref={evolutionRef}
+          id="evolution-word"
+          className={`evolution-text${isGlitching ? ' glitching' : ''}`}
+          data-hover=" REVOLUTION"
+          onMouseEnter={handleEvolutionHover}
         >
-          PLAZA
-        </h1>
-        <p className="demo-subtitle text-accent-400 tracking-widest uppercase mb-8">
-          Decentralized Social Protocol
-        </p>
-        <div className="flex gap-4 justify-center flex-wrap">
-          <button className="plaza-btn" onClick={handleEnter}>
-            ENTER
-          </button>
-          <button className="plaza-btn plaza-btn--secondary" onClick={handleAbout}>
-            ABOUT
-          </button>
-        </div>
+          &nbsp; EVOLUTION
+        </span>
+      </p>
+      <div className="flex gap-4 justify-center flex-wrap" style={{ marginTop: '46px' }}>
+        <button className="plaza-btn plaza-btn--tease">
+          enter
+        </button>
       </div>
-
-      {showAbout && <AboutModal onClose={closeAbout} />}
-    </>
+    </div>
   );
 }

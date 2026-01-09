@@ -12,7 +12,7 @@ export function LandingPage() {
       <GridBackground />
 
       {/* Floating Particles */}
-      <Particles count={30} />
+      <Particles count={50} />
 
       {/* Main Window Container */}
       <div className="demo-container z-20">

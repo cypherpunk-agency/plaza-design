@@ -13,6 +13,7 @@ export function Particles({ count = 30 }: ParticlesProps) {
         className: `plaza-particle plaza-particle--${isCyan ? 'cyan' : 'orange'}`,
         style: {
           left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
           animationDelay: `${Math.random() * 12}s`,
           animationDuration: `${10 + Math.random() * 8}s`,
           opacity: 0.4 + Math.random() * 0.4,
@@ -22,7 +23,7 @@ export function Particles({ count = 30 }: ParticlesProps) {
   }, [count]);
 
   return (
-    <div className="fixed inset-0 z-10 pointer-events-none">
+    <div id="particles" className="fixed inset-0 z-10 pointer-events-none">
       {particles.map((p) => (
         <div
           key={p.id}

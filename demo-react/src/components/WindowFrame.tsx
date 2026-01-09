@@ -1,5 +1,5 @@
 import { ReactNode, useState, useEffect } from 'react';
-import { formatClock } from '../plaza';
+import { formatClock, getNodeCount } from '../plaza';
 
 interface WindowFrameProps {
   children: ReactNode;
@@ -15,9 +15,9 @@ export function WindowFrame({ children }: WindowFrameProps) {
       setClock(formatClock('full'));
     }, 1000);
 
-    // Node count update every 8 seconds
+    // Node count update every 8 seconds with drift
     const nodeInterval = setInterval(() => {
-      setNodeCount(Math.floor(Math.random() * 50) + 20);
+      setNodeCount(getNodeCount());
     }, 8000);
 
     return () => {
@@ -37,11 +37,11 @@ export function WindowFrame({ children }: WindowFrameProps) {
       {/* Header Bar */}
       <div className="plaza-window-header">
         <span>
-          <span className="text-accent-400">&gt; INITIATE_ACCESS //</span>
-          <span className="text-primary-500 text-shadow-neon-sm ml-2">PROTOCOL ONLINE</span>
+          <span>INITIATING CONNECTION...</span>
+          <span style={{ color: 'rgba(80, 200, 120, 0.7)', marginLeft: '10px' }}>PROTOCOL ONLINE</span>
         </span>
-        <span className="text-primary-600">
-          NODE: {nodeCount} ACTIVE
+        <span style={{ color: 'rgba(255,122,0,0.75)' }}>
+          NODES: <span id="node-count">{nodeCount}</span> ACTIVE
         </span>
       </div>
 
@@ -50,11 +50,11 @@ export function WindowFrame({ children }: WindowFrameProps) {
 
       {/* Footer Bar */}
       <div className="plaza-window-footer">
-        <span className="text-accent-400">[SYSTEM ONLINE]</span>
-        <span className="text-primary-500">
-          READY<span className="terminal-cursor">_</span>
-        </span>
-        <span className="text-primary-600">{clock}</span>
+        <span className="footer-timestamp"><span id="clock">{clock}</span></span>
+        <span className="footer-terminal">TERMINAL</span>
+        <span className="footer-prompt">&gt;</span>
+        <span className="footer-input-area"><span className="footer-not-auth">[ NOT AUTHENTICATED ]</span></span>
+        <button className="footer-send-btn footer-send-btn--disabled" disabled>▶ SEND</button>
       </div>
     </div>
   );
