@@ -264,3 +264,26 @@
 .leading-snug { line-height: 1.375; }
 .leading-normal { line-height: 1.5; }
 .leading-relaxed { line-height: 1.625; }
+
+/* ========================================
+   CRT EFFECTS
+   ======================================== */
+/* Scanline overlay - adds horizontal CRT lines */
+.plaza-scanline {
+  position: relative;
+}
+
+.plaza-scanline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 1;
+}

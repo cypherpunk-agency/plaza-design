@@ -171,6 +171,35 @@ box-shadow: 0 0 15px rgba(var(--color-primary-500-rgb), calc(0.3 * var(--enable-
 4. Add import to `themes/_index.css`
 5. Test with both demos
 
+## Semantic Tokens First
+
+**CRITICAL: Always use semantic tokens. Never bypass them with palette colors.**
+
+Semantic tokens (`--color-border-*`, `--color-text-*`) are defined in theme files and reference the palette. Components use semantic tokens, themes define the mapping.
+
+```css
+/* CORRECT - component uses semantic token */
+border: var(--border-thin) solid var(--color-border-default);
+
+/* WRONG - component bypasses semantic token */
+border: var(--border-thin) solid var(--color-primary-600);
+```
+
+**When a color looks wrong:**
+1. Check which semantic token the component uses
+2. Fix the semantic token definition in the theme file(s)
+3. Do NOT change the component to use a palette color directly
+
+**Border tokens map to primary palette:**
+```css
+/* In each theme file */
+--color-border-muted: var(--color-primary-700);   /* Decorative */
+--color-border-default: var(--color-primary-600); /* Secondary */
+--color-border-strong: var(--color-primary-500);  /* Primary */
+```
+
+This ensures all components automatically get the right colors when themes change.
+
 ## Common Mistakes
 
 - Using `--color-gray-*` instead of `--color-text-*` or `--color-border-*`
@@ -178,3 +207,4 @@ box-shadow: 0 0 15px rgba(var(--color-primary-500-rgb), calc(0.3 * var(--enable-
 - Forgetting RGB variants when adding new colors
 - Not respecting `--enable-glow` for shadows
 - Using `rgba(var(--color-primary-500-rgb), 0.3)` for borders instead of `--color-border-*` tokens
+- **Bypassing semantic tokens by using palette colors directly in components**

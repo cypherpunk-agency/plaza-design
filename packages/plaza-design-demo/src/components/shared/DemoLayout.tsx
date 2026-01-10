@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate, NavLink } from 'react-router-dom';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { ContentNav, type Menu, type MenuFolder, type ComponentMenuItem } from 'plaza-cms';
 import { guideMenu, indexItem, designGuideFolder, devGuideFolder } from '../../guide-content';
 import { cycleTheme, getTheme } from '../../plaza';
@@ -12,11 +12,11 @@ const demosFolder: MenuFolder = {
   title: 'DEMOS',
   order: 2,
   children: [
-    { type: 'component', id: 'gallery', route: '/demos/gallery', label: 'GALLERY', description: 'Component reference' },
-    { type: 'component', id: 'dashboard', route: '/demos/dashboard', label: 'DASHBOARD', description: 'System monitoring' },
-    { type: 'component', id: 'chat', route: '/demos/chat', label: 'CHAT', description: 'Message interface' },
-    { type: 'component', id: 'forum', route: '/demos/forum', label: 'FORUM', description: 'Discussion threads' },
-    { type: 'component', id: 'markdown', route: '/demos/markdown', label: 'MARKDOWN', description: 'Content formatting' },
+    { type: 'component', id: 'gallery', route: '/demos/gallery', label: 'GALLERY' },
+    { type: 'component', id: 'dashboard', route: '/demos/dashboard', label: 'DASHBOARD' },
+    { type: 'component', id: 'chat', route: '/demos/chat', label: 'CHAT' },
+    { type: 'component', id: 'forum', route: '/demos/forum', label: 'FORUM' },
+    { type: 'component', id: 'markdown', route: '/demos/markdown', label: 'MARKDOWN' },
   ] as ComponentMenuItem[],
 };
 
@@ -24,6 +24,15 @@ export function DemoLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [theme, setTheme] = useState(getTheme());
+  const mainRef = useRef<HTMLElement>(null);
+
+  // Forward scroll events from outer padding area to main content
+  const handleOuterWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    // Only forward if the scroll originated from the outer layout (not the window)
+    if (e.target === e.currentTarget && mainRef.current) {
+      mainRef.current.scrollTop += e.deltaY;
+    }
+  }, []);
 
   // Combine sections: index (top), design guide, demos, dev guide
   const fullMenu: Menu = useMemo(() => ({
@@ -63,8 +72,8 @@ export function DemoLayout() {
   };
 
   return (
-    <div className="demo-layout">
-      <div className="demo-layout-window">
+    <div className="demo-layout" onWheel={handleOuterWheel}>
+      <div className="demo-layout-window plaza-window">
         <nav className="demo-sidebar">
           {/* Header */}
           <div className="demo-sidebar__header">
@@ -83,7 +92,7 @@ export function DemoLayout() {
               menu={{ ...fullMenu, title: '', subtitle: '' }}
               currentPath={getCurrentPath()}
               onNavigate={handleNavigate}
-              variant="borderless"
+              variant="windowed"
               basePath="/guide"
               useHashUrls={false}
               collapsible={true}
@@ -100,7 +109,7 @@ export function DemoLayout() {
           </div>
         </nav>
 
-        <main className="demo-main">
+        <main className="demo-main" ref={mainRef}>
           <Outlet />
         </main>
       </div>

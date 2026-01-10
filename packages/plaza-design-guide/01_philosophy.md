@@ -63,6 +63,21 @@ This distinction tells users what's clickable without thinking.
 
 ---
 
+## Timing & Motion
+
+### Fast for Feedback
+Interactive elements respond instantly. Buttons, hovers, focus states — **0.15s**. Users should never wait to know their input was received.
+
+### Normal for Transitions
+State changes that need to be noticed but not dwelt upon — **0.2s**. Menu opens, tab switches, content reveals.
+
+### Slow for Atmosphere
+Ambient, decorative motion that creates mood — **0.3s**. Scrollbar fade, background glows, subtle pulses. These shouldn't demand attention, just contribute to the feeling that the interface is alive.
+
+**The rule:** The more functional the motion, the faster it should be. The more decorative, the slower.
+
+---
+
 ## The Summary
 
 **Plaza looks like:** A secure terminal for the decentralized future — dark, glowing, sharp-edged. Orange neon warmth against infinite black. Cyan highlights for personal elements. Monospace everywhere. No curves.

@@ -36,20 +36,19 @@ export const guideContent: Record<string, string> = {
 export type GuidePageKey = keyof typeof guideContent;
 
 // Helper to create menu item with frontmatter title
-function createItem(id: string, content: string, description: string, order: number): MenuItem {
+function createItem(id: string, content: string, order: number): MenuItem {
   const { metadata } = parseFrontmatter(content);
   return {
     type: 'file',
     id,
     path: id,
     label: (metadata.title as string) || id.toUpperCase(),
-    description,
     order,
   };
 }
 
 // Top-level index item (outside folder hierarchy)
-const indexItem: MenuItem = createItem('index', readmeMd, 'Introduction', 0);
+const indexItem: MenuItem = createItem('index', readmeMd, 0);
 
 // Design Guide section - philosophy, principles, aesthetics
 const designGuideFolder: MenuFolder = {
@@ -58,11 +57,11 @@ const designGuideFolder: MenuFolder = {
   title: 'DESIGN GUIDE',
   order: 1,
   children: [
-    createItem('philosophy', philosophyMd, 'The soul of Plaza', 1),
-    createItem('hierarchy', hierarchyMd, 'Interactive vs decorative', 2),
-    createItem('color', colorMd, 'Palette & semantics', 3),
-    createItem('typography', typographyMd, 'Font scale & weights', 4),
-    createItem('language', languageMd, 'Voice & tone', 5),
+    createItem('philosophy', philosophyMd, 1),
+    createItem('hierarchy', hierarchyMd, 2),
+    createItem('color', colorMd, 3),
+    createItem('typography', typographyMd, 4),
+    createItem('language', languageMd, 5),
   ],
 };
 
@@ -73,13 +72,13 @@ const devGuideFolder: MenuFolder = {
   title: 'DEV GUIDE',
   order: 3,
   children: [
-    createItem('getting-started', gettingStartedMd, 'Installation & setup', 0),
-    createItem('theming', themingMd, 'Theme switching', 1),
-    createItem('text-colors', textColorsMd, 'Semantic text variables', 2),
-    createItem('markdown', markdownMd, 'Content formatting', 3),
-    createItem('gimmicks', gimmicksMd, 'Fun patterns', 4),
-    createItem('forms', formsMd, 'Input fields', 5),
-    createItem('modals', modalsMd, 'Dialog windows', 6),
+    createItem('getting-started', gettingStartedMd, 0),
+    createItem('theming', themingMd, 1),
+    createItem('text-colors', textColorsMd, 2),
+    createItem('markdown', markdownMd, 3),
+    createItem('gimmicks', gimmicksMd, 4),
+    createItem('forms', formsMd, 5),
+    createItem('modals', modalsMd, 6),
   ],
 };
 

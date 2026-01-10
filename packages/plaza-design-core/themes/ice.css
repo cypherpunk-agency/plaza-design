@@ -38,10 +38,10 @@
   --color-text-faint: #5070a0;
   --color-text-heading: var(--color-primary-400);
 
-  /* Semantic - Borders (cool) */
-  --color-border-muted: #3a4a5a;
-  --color-border-default: #5a6a7a;
-  --color-border-strong: #7a8a9a;
+  /* Semantic - Borders (from primary palette) */
+  --color-border-muted: var(--color-primary-700);
+  --color-border-default: var(--color-primary-600);
+  --color-border-strong: var(--color-primary-500);
 
   /* Semantic - Status Borders */
   --color-border-error: var(--color-error);

@@ -501,77 +501,44 @@ export function GalleryDemo() {
         </div>
       </section>
 
-      {/* Color Palette Section */}
+      {/* Navigation Items Section */}
       <section className="gallery-section">
-        <h2 className="gallery-section__title">Color Palette</h2>
+        <h2 className="gallery-section__title">Navigation Items</h2>
         <p className="gallery-section__desc">
-          Theme-aware colors that adapt to the current theme.
+          Menu items with optional subtitles. Used in sidebar navigation.
         </p>
 
-        <div className="gallery-colors">
-          <div className="gallery-color-group">
-            <span className="gallery-color-group__label">Primary</span>
-            <div className="gallery-color-swatches">
-              <div className="gallery-swatch bg-primary-300" title="primary-300"></div>
-              <div className="gallery-swatch bg-primary-400" title="primary-400"></div>
-              <div className="gallery-swatch bg-primary-500" title="primary-500"></div>
-              <div className="gallery-swatch bg-primary-600" title="primary-600"></div>
-              <div className="gallery-swatch bg-primary-700" title="primary-700"></div>
-              <div className="gallery-swatch bg-primary-800" title="primary-800"></div>
+        <div className="gallery-nav-items">
+          <div className="gallery-nav-item-demo">
+            <span className="gallery-item__label">With Subtitle</span>
+            <div className="plaza-nav-item">
+              <span className="plaza-nav-item-label">HIERARCHY</span>
+              <span className="plaza-nav-item-desc">Interactive vs decorative</span>
             </div>
           </div>
 
-          <div className="gallery-color-group">
-            <span className="gallery-color-group__label">Accent</span>
-            <div className="gallery-color-swatches">
-              <div className="gallery-swatch bg-accent-400" title="accent-400"></div>
-              <div className="gallery-swatch bg-accent-500" title="accent-500"></div>
-              <div className="gallery-swatch bg-accent-600" title="accent-600"></div>
-              <div className="gallery-swatch bg-accent-700" title="accent-700"></div>
-              <div className="gallery-swatch bg-accent-800" title="accent-800"></div>
-              <div className="gallery-swatch bg-accent-900" title="accent-900"></div>
+          <div className="gallery-nav-item-demo">
+            <span className="gallery-item__label">Active State</span>
+            <div className="plaza-nav-item active">
+              <span className="plaza-nav-item-label">COLOR</span>
+              <span className="plaza-nav-item-desc">Palette & semantics</span>
             </div>
           </div>
 
-          <div className="gallery-color-group">
-            <span className="gallery-color-group__label">Gray</span>
-            <div className="gallery-color-swatches">
-              <div className="gallery-swatch bg-gray-400" title="gray-400"></div>
-              <div className="gallery-swatch bg-gray-500" title="gray-500"></div>
-              <div className="gallery-swatch bg-gray-600" title="gray-600"></div>
-              <div className="gallery-swatch bg-gray-700" title="gray-700"></div>
-              <div className="gallery-swatch bg-gray-800" title="gray-800"></div>
-              <div className="gallery-swatch bg-gray-900" title="gray-900"></div>
+          <div className="gallery-nav-item-demo">
+            <span className="gallery-item__label">Without Subtitle</span>
+            <div className="plaza-nav-item">
+              <span className="plaza-nav-item-label">TYPOGRAPHY</span>
             </div>
           </div>
 
-          <div className="gallery-color-group">
-            <span className="gallery-color-group__label">Semantic</span>
-            <div className="gallery-color-swatches">
-              <div className="gallery-swatch" style={{ background: 'var(--color-error)' }} title="error"></div>
-              <div className="gallery-swatch" style={{ background: 'var(--color-warning)' }} title="warning"></div>
-              <div className="gallery-swatch" style={{ background: 'var(--color-success)' }} title="success"></div>
-            </div>
+          <div className="gallery-nav-item-demo">
+            <span className="gallery-item__label">Section Header</span>
+            <button className="plaza-nav-section-header">
+              <span className="plaza-nav-collapse-icon">▼</span>
+              DESIGN GUIDE
+            </button>
           </div>
-        </div>
-      </section>
-
-      {/* Typography Section */}
-      <section className="gallery-section">
-        <h2 className="gallery-section__title">Typography</h2>
-        <p className="gallery-section__desc">
-          IBM Plex Mono at various sizes. All caps with letter spacing.
-        </p>
-
-        <div className="gallery-typography">
-          <div className="gallery-type-sample text-xs">TEXT-XS (13px)</div>
-          <div className="gallery-type-sample text-sm">TEXT-SM (14px)</div>
-          <div className="gallery-type-sample text-base">TEXT-BASE (16px)</div>
-          <div className="gallery-type-sample text-lg">TEXT-LG (18px)</div>
-          <div className="gallery-type-sample text-xl">TEXT-XL (20px)</div>
-          <div className="gallery-type-sample text-2xl">TEXT-2XL (24px)</div>
-          <div className="gallery-type-sample text-3xl">TEXT-3XL (30px)</div>
-          <div className="gallery-type-sample text-4xl">TEXT-4XL (36px)</div>
         </div>
       </section>
 
