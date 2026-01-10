@@ -1,6 +1,6 @@
 .demo-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   padding: var(--spacing-6);
   background: var(--color-bg-base);
   box-sizing: border-box;
@@ -9,7 +9,7 @@
 .demo-layout-window {
   display: flex;
   flex: 1;
-  max-width: 1400px;
+  max-width: 1100px;
   margin: 0 auto;
   border: var(--border-thin) solid var(--color-border-default);
   background: rgba(var(--color-bg-overlay-rgb), 0.10);
@@ -21,6 +21,7 @@
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ========================================
