@@ -94,10 +94,9 @@
 
 /* Make active nav items extend to fill sidebar width */
 .demo-sidebar__nav .plaza-nav-item.active {
-  /* Extend past: section-items indent (1rem) + sections padding (1rem) = 2rem minimum */
-  width: calc(100% + 3rem);
-  margin-right: -3rem;
-  padding-right: calc(0.75rem + 3rem); /* Original padding + extension */
+  width: calc(100% + 1rem);
+  margin-right: -1rem;
+  padding-right: calc(0.75rem + 1rem); /* Original padding + extension */
 }
 
 /* ========================================

@@ -21,19 +21,26 @@ body {
   line-height: 1.5;
 }
 
-/* Custom Scrollbars - Subtle, unobtrusive */
+/* Custom Scrollbars - Hidden until hover */
 * {
   scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
   scrollbar-color: rgba(var(--color-primary-500-rgb), 0.15) transparent;
 }
 
 *::-webkit-scrollbar { width: 6px; height: 6px; }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-primary-500-rgb), 0.15);
+  background: transparent;
   border-radius: 3px;
 }
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-primary-500-rgb), 0.1);
+}
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-primary-500-rgb), 0.4);
+  background: rgba(var(--color-primary-500-rgb), 0.25);
 }
 *::-webkit-scrollbar-corner { background: transparent; }
