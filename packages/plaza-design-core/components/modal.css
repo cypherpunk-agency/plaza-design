@@ -78,7 +78,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  border-bottom: 1px solid var(--color-border-default);
   background: linear-gradient(
     90deg,
     rgba(var(--color-primary-500-rgb), 0.1) 0%,
@@ -149,7 +149,7 @@
   gap: var(--spacing-3);
   justify-content: flex-end;
   padding: var(--spacing-4) var(--spacing-5);
-  border-top: var(--border-thin) solid rgba(var(--color-primary-500-rgb), 0.2);
+  border-top: var(--border-thin) solid var(--color-border-muted);
   background: rgba(var(--color-bg-overlay-rgb), 0.3);
 }
 
@@ -174,7 +174,7 @@
     rgba(var(--color-error-rgb), 0.15) 0%,
     transparent 100%
   );
-  border-bottom-color: rgba(var(--color-error-rgb), 0.3);
+  border-bottom-color: rgba(var(--color-error-rgb), 0.5);
 }
 
 .plaza-modal--danger .plaza-modal__title {
@@ -197,7 +197,7 @@
     rgba(var(--color-success-rgb), 0.15) 0%,
     transparent 100%
   );
-  border-bottom-color: rgba(var(--color-success-rgb), 0.3);
+  border-bottom-color: rgba(var(--color-success-rgb), 0.5);
 }
 
 .plaza-modal--success .plaza-modal__title {

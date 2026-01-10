@@ -78,10 +78,10 @@ Each theme MUST define:
 --color-text-faint      /* Disabled/placeholder */
 --color-text-heading    /* Headings */
 
-/* Semantic Borders */
---color-border-default
---color-border-muted
---color-border-strong
+/* Semantic Borders (three-tier system) */
+--color-border-muted     /* Subtle: decorative, dividers */
+--color-border-default   /* Standard: tables, panels, nav */
+--color-border-strong    /* Prominent: windows, active states */
 
 /* Glow control */
 --enable-glow: 1;       /* or 0 to disable */
@@ -132,6 +132,17 @@ background: rgba(var(--color-bg-overlay-rgb), 0.4);
 box-shadow: 0 0 10px rgba(var(--color-primary-500-rgb), 0.3);
 ```
 
+### Border Pattern
+```css
+/* ALWAYS use semantic border tokens */
+border: var(--border-thin) solid var(--color-border-default);
+border: var(--border-thin) solid var(--color-border-muted);
+border: var(--border-thin) solid var(--color-border-strong);
+
+/* NEVER use rgba for borders */
+/* Bad: border: 1px solid rgba(var(--color-primary-500-rgb), 0.3); */
+```
+
 ### Glow Effect Pattern
 ```css
 /* Respects themes that disable glow */
@@ -166,3 +177,4 @@ box-shadow: 0 0 15px rgba(var(--color-primary-500-rgb), calc(0.3 * var(--enable-
 - Hardcoding `rgba(0,0,0,...)` instead of `rgba(var(--color-bg-overlay-rgb),...)`
 - Forgetting RGB variants when adding new colors
 - Not respecting `--enable-glow` for shadows
+- Using `rgba(var(--color-primary-500-rgb), 0.3)` for borders instead of `--color-border-*` tokens

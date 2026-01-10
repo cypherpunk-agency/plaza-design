@@ -39,9 +39,14 @@
   --color-text-heading: var(--color-primary-400);
 
   /* Semantic - Borders (warm) */
-  --color-border-default: #4a3a2a;
-  --color-border-muted: #3a2a1a;
-  --color-border-strong: #6a5a4a;
+  --color-border-muted: #5a4a3a;
+  --color-border-default: #7a6a5a;
+  --color-border-strong: #9a8a7a;
+
+  /* Semantic - Status Borders */
+  --color-border-error: var(--color-error);
+  --color-border-success: var(--color-success);
+  --color-border-warning: var(--color-warning);
 
   /* Glow control */
   --enable-glow: 1;

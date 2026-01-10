@@ -21,8 +21,6 @@
   /* ========================================
      TYPOGRAPHY - Line Heights
      ======================================== */
-  --line-height-none: 1;
-  --line-height-tight: 1.1;
   --line-height-snug: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.7;
@@ -30,7 +28,6 @@
   /* ========================================
      TYPOGRAPHY - Letter Spacing
      ======================================== */
-  --letter-spacing-tight: -0.025em;
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.05em;
   --letter-spacing-wider: 0.1em;
@@ -68,8 +65,6 @@
   /* ========================================
      EFFECTS - Border Radius
      ======================================== */
-  --radius-sm: 3px;
-  --radius-md: 6px;
   --radius-full: 9999px;
 
   /* ========================================
@@ -77,35 +72,35 @@
      ======================================== */
   --border-thin: 1px;
   --border-medium: 2px;
-  --border-thick: 3px;
+
+  /* ========================================
+     EFFECTS - Glow Intensity Scale
+     Maps to three-tier hierarchy:
+     - Primary elements: medium/strong
+     - Secondary elements: subtle/medium
+     - Decorative elements: none
+     ======================================== */
+  --glow-intensity-subtle: 0.2;
+  --glow-intensity-medium: 0.35;
+  --glow-intensity-strong: 0.5;
 
   /* ========================================
      Z-INDEX - Stacking Scale
      ======================================== */
-  --z-base: 0;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-fixed: 300;
-  --z-overlay: 1000;
   --z-modal: 1100;
   --z-noise: 2000;
 
   /* ========================================
      BREAKPOINTS
+     Note: CSS variables cannot be used in media queries.
+     These tokens are for documentation and JavaScript use.
+     Media queries must use hardcoded values:
+       @media (max-width: 640px)  - Mobile
+       @media (max-width: 768px)  - Tablet
+       @media (max-width: 1024px) - Desktop
      ======================================== */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
 
-  /* ========================================
-     DEPRECATED - Gray Palette
-     These will be replaced by semantic tokens
-     in theme files. Kept for backwards compat.
-     ======================================== */
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
 }

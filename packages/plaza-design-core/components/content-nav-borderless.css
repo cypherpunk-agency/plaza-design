@@ -4,7 +4,7 @@
 .plaza-content-nav--borderless {
   min-height: 100vh;
   background: rgba(var(--color-bg-overlay-rgb), 0.4);
-  border-right: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  border-right: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -33,7 +33,7 @@
   letter-spacing: var(--letter-spacing-widest);
   margin-top: 0.25rem;
   padding: 0 1rem 1rem;
-  border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.2);
+  border-bottom: 1px solid var(--color-border-muted);
 }
 
 /* Sections container */
@@ -95,7 +95,7 @@
 
 .plaza-content-nav--borderless .plaza-nav-item:hover {
   background: rgba(var(--color-primary-500-rgb), 0.1);
-  border-color: rgba(var(--color-primary-500-rgb), 0.3);
+  border-color: var(--color-border-default);
 }
 
 .plaza-content-nav--borderless .plaza-nav-item.active {
@@ -132,7 +132,7 @@
   .plaza-content-nav--borderless {
     min-height: auto;
     border-right: none;
-    border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+    border-bottom: 1px solid var(--color-border-default);
     flex-direction: column;
   }
 

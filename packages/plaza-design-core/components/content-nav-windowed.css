@@ -2,7 +2,7 @@
 /* Traditional, centered, bookmark-style navigation */
 
 .plaza-content-nav--windowed {
-  border-right: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+  border-right: 1px solid var(--color-border-default);
 }
 
 /* Items */
@@ -75,6 +75,6 @@
 @media (max-width: 768px) {
   .plaza-content-nav--windowed {
     border-right: none;
-    border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
+    border-bottom: 1px solid var(--color-border-default);
   }
 }

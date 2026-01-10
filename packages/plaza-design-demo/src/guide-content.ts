@@ -3,6 +3,7 @@ import { parseFrontmatter } from 'plaza-cms';
 import type { Menu, MenuItem, MenuFolder } from 'plaza-cms';
 
 import readmeMd from 'plaza-design-guide/README.md?raw';
+import gettingStartedMd from 'plaza-design-guide/00_getting-started.md?raw';
 import philosophyMd from 'plaza-design-guide/01_philosophy.md?raw';
 import hierarchyMd from 'plaza-design-guide/02_hierarchy.md?raw';
 import colorMd from 'plaza-design-guide/03_color.md?raw';
@@ -18,6 +19,7 @@ import textColorsMd from 'plaza-design-guide/11_text-colors.md?raw';
 // Content map for rendering
 export const guideContent: Record<string, string> = {
   index: readmeMd,
+  'getting-started': gettingStartedMd,
   philosophy: philosophyMd,
   hierarchy: hierarchyMd,
   color: colorMd,
@@ -46,6 +48,9 @@ function createItem(id: string, content: string, description: string, order: num
   };
 }
 
+// Top-level index item (outside folder hierarchy)
+const indexItem: MenuItem = createItem('index', readmeMd, 'Introduction', 0);
+
 // Design Guide section - philosophy, principles, aesthetics
 const designGuideFolder: MenuFolder = {
   type: 'folder',
@@ -53,7 +58,6 @@ const designGuideFolder: MenuFolder = {
   title: 'DESIGN GUIDE',
   order: 1,
   children: [
-    createItem('index', readmeMd, 'Introduction', 0),
     createItem('philosophy', philosophyMd, 'The soul of Plaza', 1),
     createItem('hierarchy', hierarchyMd, 'Interactive vs decorative', 2),
     createItem('color', colorMd, 'Palette & semantics', 3),
@@ -67,8 +71,9 @@ const devGuideFolder: MenuFolder = {
   type: 'folder',
   id: 'dev-guide',
   title: 'DEV GUIDE',
-  order: 2,
+  order: 3,
   children: [
+    createItem('getting-started', gettingStartedMd, 'Installation & setup', 0),
     createItem('theming', themingMd, 'Theme switching', 1),
     createItem('text-colors', textColorsMd, 'Semantic text variables', 2),
     createItem('markdown', markdownMd, 'Content formatting', 3),
@@ -78,15 +83,20 @@ const devGuideFolder: MenuFolder = {
   ],
 };
 
-// Full guide menu with sections
+// Export folders for DemoLayout to arrange with demos
+export { indexItem, designGuideFolder, devGuideFolder };
+
+// Full guide menu with sections (order: index, design guide, dev guide)
+// Note: DemoLayout inserts demos between design guide and dev guide
 export const guideMenu: Menu = {
   title: '[PLAZA]',
   subtitle: 'DESIGN KIT',
-  sections: [designGuideFolder, devGuideFolder],
+  sections: [indexItem, designGuideFolder, devGuideFolder],
 };
 
 // Flat menu (for simple navigation without folders)
 const allItems: MenuItem[] = [
+  indexItem,
   ...designGuideFolder.children as MenuItem[],
   ...devGuideFolder.children as MenuItem[],
 ];

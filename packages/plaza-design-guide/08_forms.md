@@ -11,21 +11,19 @@ Form inputs are **interactive elements** — they follow the same hierarchy rule
 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0;">
   <div style="flex: 1; min-width: 150px;">
     <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Default</div>
-    <div style="padding: 0.75rem; border: 2px solid var(--color-primary-600); background: rgba(0,0,0,0.4); color: var(--color-text-faint);">Placeholder...</div>
-  </div>
-  <div style="flex: 1; min-width: 150px;">
-    <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Focus</div>
-    <div style="padding: 0.75rem; border: 2px solid var(--color-primary-500); background: rgba(0,0,0,0.4); color: var(--color-primary-400); box-shadow: 0 0 10px rgba(var(--color-primary-500-rgb), 0.3);">Input text</div>
+    <input type="text" class="plaza-input" placeholder="Placeholder..." style="width: 100%;">
   </div>
   <div style="flex: 1; min-width: 150px;">
     <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Error</div>
-    <div style="padding: 0.75rem; border: 2px solid var(--color-error); background: rgba(0,0,0,0.4); color: var(--color-primary-400); box-shadow: 0 0 10px rgba(var(--color-error-rgb), 0.3);">Invalid value</div>
+    <input type="text" class="plaza-input plaza-input--error" value="Invalid value" style="width: 100%;">
   </div>
   <div style="flex: 1; min-width: 150px;">
     <div style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Success</div>
-    <div style="padding: 0.75rem; border: 2px solid var(--color-success); background: rgba(0,0,0,0.4); color: var(--color-primary-400); box-shadow: 0 0 10px rgba(var(--color-success-rgb), 0.3);">Valid input</div>
+    <input type="text" class="plaza-input plaza-input--success" value="Valid input" style="width: 100%;">
   </div>
 </div>
+
+*(Click to focus and see the glow effect)*
 
 ---
 
@@ -190,6 +188,26 @@ Error = red, success = green. These are universal patterns that work across all 
 ---
 
 ## Example Form
+
+<div style="max-width: 400px; margin: 1.5rem 0; padding: 1.5rem; border: 1px solid var(--color-border-default); background: rgba(var(--color-bg-overlay-rgb), 0.3);">
+  <div class="plaza-form-group">
+    <label class="plaza-label plaza-label--required">Username</label>
+    <input type="text" class="plaza-input" placeholder="Enter username...">
+  </div>
+  <div class="plaza-form-group">
+    <label class="plaza-label plaza-label--required">Password</label>
+    <input type="password" class="plaza-input" placeholder="Enter password...">
+  </div>
+  <div class="plaza-form-group">
+    <label class="plaza-checkbox-label">
+      <input type="checkbox" class="plaza-checkbox">
+      Remember me
+    </label>
+  </div>
+  <button type="button" class="plaza-btn">SUBMIT</button>
+</div>
+
+**Code:**
 
 ```html
 <form>
