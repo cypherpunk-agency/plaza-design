@@ -30,6 +30,11 @@
   text-align: center;
   z-index: 10;
   pointer-events: none;
+  /* As a flex item this defaults to min-width: auto, whose floor is the
+     max-content width. "[CYPHERPUNK.AGENCY]" is one unbreakable token, so
+     without this the box can never shrink below ~543px and .demo-content's
+     overflow: hidden clips the title off both edges on narrow screens. */
+  min-width: 0;
 }
 
 .demo-center * {
@@ -37,7 +42,10 @@
 }
 
 .demo-title {
-  font-size: clamp(44px, 7vw, 96px);
+  /* The 44px floor was wider than a 375px viewport can hold at 19 characters.
+     24px lets the clamp scale down far enough on phones while desktop, where
+     7vw dominates, is unchanged. */
+  font-size: clamp(24px, 7vw, 96px);
   margin-bottom: 1rem;
   line-height: 1.05;
 }
@@ -56,7 +64,7 @@
   }
 
   .demo-content {
-    padding: 0 28px;
+    padding: 0 16px;
   }
 
   .demo-window {

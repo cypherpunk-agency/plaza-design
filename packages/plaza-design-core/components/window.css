@@ -172,3 +172,23 @@
   border-bottom-width: var(--border-thin);
   border-right-width: var(--border-thin);
 }
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+/* The footer is a nowrap flex row and every child defaults to
+   min-width: auto, so on a narrow viewport the row cannot compress and the
+   send button is pushed outside the window frame. Drop the two decorative
+   items and let the status area shrink, which keeps both the button and
+   [ NOT AUTHENTICATED ] inside the window. */
+@media (max-width: 640px) {
+  .footer-timestamp,
+  .footer-terminal {
+    display: none;
+  }
+
+  .footer-input-area {
+    min-width: 0;
+  }
+}

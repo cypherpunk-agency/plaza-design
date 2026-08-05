@@ -12,6 +12,7 @@ const demosFolder: MenuFolder = {
   title: 'DEMOS',
   order: 2,
   children: [
+    { type: 'component', id: 'landing', route: '/demos/landing', label: 'LANDING' },
     { type: 'component', id: 'gallery', route: '/demos/gallery', label: 'GALLERY' },
     { type: 'component', id: 'dashboard', route: '/demos/dashboard', label: 'DASHBOARD' },
     { type: 'component', id: 'chat', route: '/demos/chat', label: 'CHAT' },

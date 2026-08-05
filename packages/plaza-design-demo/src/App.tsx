@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from './components/LandingPage';
 import { DemoLayout } from './components/shared/DemoLayout';
 import { GuideRoute } from './components/guide';
@@ -33,11 +33,18 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        {/* This domain is the design system, so the guide is the front door.
+            Redirecting rather than rendering the guide here keeps one canonical
+            URL per page instead of serving the index at both / and /guide. */}
+        <Route path="/" element={<Navigate to="/guide" replace />} />
         <Route path="/guide" element={<DemoLayout />}>
           <Route index element={<GuideRoute />} />
           <Route path=":page" element={<GuideRoute />} />
         </Route>
+        {/* The landing page is a full-screen takeover (h-screen, its own window
+            frame), so it sits outside DemoLayout rather than inside its <main>.
+            It is listed in the demos nav for discoverability. */}
+        <Route path="/demos/landing" element={<LandingPage />} />
         <Route path="/demos" element={<DemoLayout />}>
           <Route path="gallery" element={<GalleryDemo />} />
           <Route path="dashboard" element={<DashboardDemo />} />
