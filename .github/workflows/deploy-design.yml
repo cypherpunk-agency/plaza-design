@@ -1,0 +1,122 @@
+name: Deploy design.cypherpunk.agency
+
+# Push to main → build packages/plaza-design-demo → publish to the Caddy VM at
+# /mnt/pd/data/services/static/design → live at https://design.cypherpunk.agency.
+#
+# Mirrors the Escape-Velocity static-deploy convention (business/deploy-sites.yml):
+# scp a tarball into the SA's own /tmp, extract there (no sudo), then ONE pinned
+# sudo command lands it in the served tree. The deploy user may run exactly that
+# command and nothing else.
+#
+# ONE DEVIATION from the EV workflows, deliberate: the privileged step is
+#   sudo /usr/bin/rsync -a --delete /tmp/plaza-design-deploy/ /mnt/pd/data/services/static/design/
+# not `cp -rT`. Vite content-hashes every asset filename, so an overlay copy would
+# leave every previous build's JS/CSS/woff2 in place forever (~1.4 MB per deploy,
+# never reclaimed). rsync --delete keeps the served tree an exact mirror of dist/.
+# The sudoers pin is glob-free with both paths fixed, so it can only ever write or
+# delete inside /mnt/pd/data/services/static/design.
+#
+# Because --delete is destructive if handed an empty tree, the build is guarded
+# twice: once in CI (dist/index.html must exist) and once on the VM after extract
+# (same check) — the deploy aborts before the rsync rather than emptying the site.
+#
+# OPS PREREQS (already done on the server-setup side, 2026-08-05):
+#   - Caddy block `design.cypherpunk.agency` → root /static/design, try_files SPA
+#     fallback, @assets immutable / @nonassets no-cache. Explicit block required:
+#     cypherpunk.agency has NO wildcard, so without it the host gets no cert.
+#   - DNS: existing wildcard *.cypherpunk.agency A → 34.156.178.10 (easyname).
+#   - Root-precreated /mnt/pd/data/services/static/design/.
+#   - sudoers pin above in /etc/sudoers.d/deploy-escapevelocity.
+#   - Repo secrets GCP_SA_KEY + GCP_DEPLOY_SSH_KEY.
+#
+# NOTE: fonts must stay self-hosted. The VM's shared CSP has no font-src (falls back
+# to default-src 'self'), so any @import from fonts.googleapis.com silently drops the
+# site to fallback monospace while still returning 200 everywhere. Verify with
+# `document.fonts.size` (must be 4), never by looking at the page — IBM Plex Mono is
+# installed locally on the author's machine and masks the bug.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build:design-demo
+
+      - name: Guard + package
+        # Fail before anything leaves the runner if the build produced no entry point.
+        # A missing index.html would mean an empty tree meeting `rsync --delete`.
+        run: |
+          set -euo pipefail
+          DIST=packages/plaza-design-demo/dist
+          test -f "$DIST/index.html" || { echo "::error::$DIST/index.html missing — refusing to deploy"; exit 1; }
+          grep -q 'src="/assets/' "$DIST/index.html" || { echo "::error::index.html does not reference /assets/ absolutely — Vite base must be '/' or deep links white-page"; exit 1; }
+          ! grep -rq 'fonts.googleapis.com' "$DIST"/assets/*.css || { echo "::error::built CSS imports Google Fonts — the VM CSP blocks it; self-host the font"; exit 1; }
+          tar -czf design.tar.gz -C "$DIST" .
+          ls -l design.tar.gz
+
+      - uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      # Persistent deploy SSH key. Without it, `gcloud compute scp/ssh` mints a fresh
+      # ephemeral key every run and appends it to project `ssh-keys` metadata, which is
+      # hard-capped at 262144 bytes — once full, gcloud evicts keys and blocks ~4 min on
+      # propagation, so the scp silently never lands. The public half is pre-registered
+      # in project metadata; --ssh-key-file makes gcloud reuse it and never write metadata.
+      - name: Materialize deploy SSH key
+        run: |
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "${{ secrets.GCP_DEPLOY_SSH_KEY }}" > "$HOME/.ssh/gcp_deploy"
+          chmod 600 "$HOME/.ssh/gcp_deploy"
+          ssh-keygen -y -f "$HOME/.ssh/gcp_deploy" > "$HOME/.ssh/gcp_deploy.pub"
+
+      - name: Deploy
+        run: |
+          set -euo pipefail
+          gcloud compute scp design.tar.gz \
+            web-server:/tmp/plaza-design-deploy.tar.gz \
+            --zone=europe-west1-b --tunnel-through-iap \
+            --ssh-key-file="$HOME/.ssh/gcp_deploy"
+
+          gcloud compute ssh web-server \
+            --zone=europe-west1-b --tunnel-through-iap \
+            --ssh-key-file="$HOME/.ssh/gcp_deploy" \
+            --command="set -e; rm -rf /tmp/plaza-design-deploy && mkdir -p /tmp/plaza-design-deploy && tar -xzf /tmp/plaza-design-deploy.tar.gz -C /tmp/plaza-design-deploy && test -f /tmp/plaza-design-deploy/index.html && sudo /usr/bin/rsync -a --delete /tmp/plaza-design-deploy/ /mnt/pd/data/services/static/design/ && rm -rf /tmp/plaza-design-deploy /tmp/plaza-design-deploy.tar.gz"
+
+      - name: Verify live
+        # A green deploy is not proof the site serves. Check the deep route (a broken
+        # SPA still 200s on /), that the served shell references the hash we just built,
+        # and that the font files are reachable.
+        run: |
+          set -euo pipefail
+          sleep 5
+          JS=$(grep -o '/assets/[^"]*\.js' packages/plaza-design-demo/dist/index.html | head -1)
+          echo "expecting asset: $JS"
+          code=$(curl -sS -o /dev/null -w '%{http_code}' https://design.cypherpunk.agency/demos/gallery)
+          [ "$code" = "200" ] || { echo "::error::/demos/gallery returned $code"; exit 1; }
+          curl -sS https://design.cypherpunk.agency/demos/gallery | grep -q "$JS" \
+            || { echo "::error::served index.html does not reference $JS — deploy did not land"; exit 1; }
+          acode=$(curl -sS -o /dev/null -w '%{http_code}' "https://design.cypherpunk.agency$JS")
+          [ "$acode" = "200" ] || { echo "::error::asset $JS returned $acode"; exit 1; }
+          echo "live: https://design.cypherpunk.agency"
