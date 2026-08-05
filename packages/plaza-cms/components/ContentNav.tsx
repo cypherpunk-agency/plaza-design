@@ -1,4 +1,4 @@
-import type { Menu, MenuNode, MenuItem, MenuFolder, FileMenuItem, ComponentMenuItem } from '../types';
+import type { Menu, MenuNode, MenuItem, MenuFolder } from '../types';
 import { useCollapsedSections } from '../hooks/useCollapsedSections';
 
 export type NavVariant = 'windowed' | 'borderless';
