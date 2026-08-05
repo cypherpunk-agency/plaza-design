@@ -297,7 +297,7 @@ timestamp | TERMINAL | > | [ NOT AUTHENTICATED ] | ▶ SEND
 
 ### Left Panel
 - **Telemetry block:** peer_count, latency, packet_loss, mem_resident, cpu_load (with dots alignment)
-- **Routes block:** `/enter` (disabled), `/polkadot-treasury-monitor` (cyan link)
+- **Routes block:** `/enter` (disabled)
 - **Keys block:** `[Enter] proceed`, `[T] toggle theme`
 - **Hex scroll**
 

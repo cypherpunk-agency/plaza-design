@@ -755,7 +755,7 @@ export function renderRoutes(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">routes</div><div class="text-ambient-cyan"><span class="route-disabled">/enter</span></div><div class="text-ambient-cyan"><a href="https://polkadot-treasury-monitor.cypherpunk.agency/" target="_blank" class="route-link">/polkadot-treasury-monitor</a></div></div>`;
+  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">routes</div><div class="text-ambient-cyan"><span class="route-disabled">/enter</span></div></div>`;
 }
 
 /**
