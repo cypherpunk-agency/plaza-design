@@ -212,8 +212,12 @@
     border-bottom: 1px solid rgba(var(--color-primary-500-rgb), 0.3);
   }
 
+  /* Stacked above the content on mobile, so the nav needs its own bounded
+     scroll area. Unbounded it runs to ~1150px and pushes the page content
+     off the first screen. */
   .demo-sidebar__content {
-    overflow-y: visible;
+    max-height: 40vh;
+    overflow-y: auto;
   }
 
   .demo-sidebar__header {
@@ -227,31 +231,16 @@
     margin-top: 0;
   }
 
+  /* Keeps the column direction from the base .plaza-nav-sections rule. This
+     used to set flex-direction: row to make a horizontal scrolling nav, but
+     the companion rules that would have laid the items out inline targeted
+     .demo-sidebar__section / __items / __item — classes ContentNav never
+     renders (it emits .plaza-nav-section / .plaza-nav-item). Only the row
+     direction applied, so the sections became tall columns side by side and
+     DEMOS and DEV GUIDE were clipped off the right edge. */
   .demo-sidebar__nav .plaza-nav-sections {
-    flex-direction: row;
     padding: 0.5rem 1rem;
     gap: 1rem;
-    overflow-x: auto;
-  }
-
-  .demo-sidebar__section {
-    flex-shrink: 0;
-    padding: 0.5rem 1rem;
-  }
-
-  .demo-sidebar__items {
-    flex-direction: row;
-    gap: 0.5rem;
-    overflow-x: auto;
-  }
-
-  .demo-sidebar__item {
-    white-space: nowrap;
-    padding: 0.5rem 0.75rem;
-  }
-
-  .demo-sidebar__item-desc {
-    display: none;
   }
 
   .demo-sidebar__footer {
