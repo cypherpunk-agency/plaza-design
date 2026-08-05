@@ -6,10 +6,11 @@
     "./plaza.css": "./plaza.css",
     "./tokens.css": "./tokens.css",
     "./themes/*": "./themes/*",
+    "./fonts/*": "./fonts/*",
     ".": {
       "import": "./plaza.ts",
       "types": "./plaza.d.ts"
     }
   },
-  "files": ["*.css", "*.ts", "components/", "themes/"]
+  "files": ["*.css", "*.ts", "components/", "themes/", "fonts/"]
 }

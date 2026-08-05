@@ -1,7 +1,44 @@
 /* tokens.css - Plaza Design System Base Tokens */
-/* Font import and theme-independent variables */
+/* Font faces and theme-independent variables */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+/* IBM Plex Mono is self-hosted rather than pulled from Google Fonts. A
+   default-src 'self' CSP blocks both the fonts.googleapis.com stylesheet
+   and the fonts.gstatic.com files, and the page then renders in fallback
+   monospace without failing any request. Keeping the font same-origin
+   means the design survives a strict CSP untouched.
+   Files vendored from @fontsource/ibm-plex-mono 5.3.0 (latin subset). */
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-mono-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/ibm-plex-mono-latin-700-normal.woff2') format('woff2');
+}
 
 :root {
   /* ========================================
