@@ -1,6 +1,15 @@
 # Plaza Design Guide
 
+**Plaza is a hacker's terminal from a cyberpunk future — dark, glowing, sharp-edged, and exclusively typographic.**
+
 This guide is about *decisions*, not documentation. The demos speak for themselves.
+
+## Start Here
+
+1. Read [Philosophy](./01_philosophy.md) to understand the mood
+2. Read [Hierarchy](./02_hierarchy.md) before designing any interface
+3. Reference [Language](./05_language.md) when writing copy
+4. Check [Gimmicks](./06_gimmicks.md) to add personality (sparingly)
 
 ## Design Guide
 
@@ -22,14 +31,3 @@ This guide is about *decisions*, not documentation. The demos speak for themselv
 | [Gimmicks](./06_gimmicks.md) | Fun patterns — and how much is too much |
 | [Forms](./08_forms.md) | Input fields, validation, checkboxes |
 | [Modals](./09_modals.md) | Dialog windows, confirmations, alerts |
-
-## The One-Sentence Summary
-
-**Plaza is a hacker's terminal from a cyberpunk future — dark, glowing, sharp-edged, and exclusively typographic.**
-
-## Start Here
-
-1. Read [Philosophy](./01_philosophy.md) to understand the mood
-2. Read [Hierarchy](./02_hierarchy.md) before designing any interface
-3. Reference [Language](./03_language.md) when writing copy
-4. Check [Gimmicks](./04_gimmicks.md) to add personality (sparingly)
