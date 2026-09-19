@@ -40,6 +40,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Keyless auth via Workload Identity Federation (migrated 2026-09-19, deploy-standards SS2).
+# id-token: write is REQUIRED - without it the runner cannot mint the OIDC token and
+# google-github-actions/auth fails before it ever reaches GCP.
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -73,9 +80,13 @@ jobs:
           tar -czf design.tar.gz -C "$DIST" .
           ls -l design.tar.gz
 
+      # Keyless: no GCP_SA_KEY exists for this repo any more. The SA trusts ONLY
+      # attribute.repository == cypherpunk-agency/plaza-design, so a token minted by any
+      # other repo cannot impersonate it.
       - uses: google-github-actions/auth@v3
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: projects/422633553646/locations/global/workloadIdentityPools/github/providers/github-oidc
+          service_account: deploy-plaza-design@cyberphunk-agency.iam.gserviceaccount.com
 
       - uses: google-github-actions/setup-gcloud@v3
 
