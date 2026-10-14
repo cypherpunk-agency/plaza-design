@@ -2,7 +2,7 @@
  * ACCESS DENIED, the engine: input, movement, camera and drawing for the
  * side-scrolling street. What things say and unlock lives in level.ts; the
  * fixer's back yard (the new hacking system: schematics of nouns and verbs)
- * lives in yard/.
+ * lives in yard/, on the zone engine in zone/.
  *
  * The canvas fills the landing page's window between its header and footer and
  * is drawn at an integer pixel scale so the sprites stay crisp.
@@ -11,7 +11,8 @@
 import { sound } from './audio';
 import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprites';
 import { Terminal } from './terminal';
-import { Yard, YARD_SPAWN, YARD_W } from './yard';
+import { YARD_SPAWN, YARD_W, YARD_ZONE } from './yard';
+import { type ZoneDef, ZoneHost } from './zone';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import { metroDoorsOpen, metroSync } from './scenes/metro';
@@ -83,7 +84,7 @@ export class Game {
   private drops: [number, number, number, number][] = [];
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   private zone: Zone = 'downtown';
-  private yard: Yard;
+  private yard: ZoneHost;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
   /** The city map overlay, when open: just looking, picking a taxi stand, or picking a metro stop. */
@@ -112,11 +113,7 @@ export class Game {
     });
     this.term.onClose = () => { if (this.machine) this.leaveMachine(); this.canvas.focus(); };
 
-    this.yard = new Yard(host.windowEl, (text, kind) => this.term.print(text, kind), {
-      modules: () => this.save.modules,
-      load: () => this.save.zones.yard,
-      store: (z) => { this.save.zones.yard = z; storeSave(this.save); },
-    });
+    this.yard = this.hostZone(YARD_ZONE);
     this.yard.onClose = () => this.canvas.focus();
     this.canvas.addEventListener('pointerdown', (e) => this.onCanvasPointer(e, true));
     this.canvas.addEventListener('pointermove', (e) => this.onCanvasPointer(e, false));
@@ -133,6 +130,18 @@ export class Game {
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
     this.onResize = this.onResize.bind(this);
+  }
+
+  /** A zone on the hacking system, with its part of the save (`save.zones.<id>`) and the player's modules and keyring. */
+  private hostZone(def: ZoneDef) {
+    const id = def.data.id;
+    return new ZoneHost(this.host.windowEl, (text, kind) => this.term.print(text, kind), {
+      modules: () => this.save.modules,
+      keyring: () => this.save.keyring,
+      give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
+      load: () => this.save.zones[id],
+      store: (z) => { this.save.zones[id] = z; storeSave(this.save); },
+    }, def);
   }
 
   // ---------- lifecycle ----------

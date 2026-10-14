@@ -1,0 +1,57 @@
+{
+  "texts": {
+    "wire.connect": ["on {from} do {to} {verbCmd}", "wired: when {event}, {toNoun} will {verb}.", "ok"],
+    "wire.cut": ["unwire {from} {to}", "cable cut. snip.", "dim"],
+    "timer.wait": ["{via}use timer --wait {sec}s", "timer: waiting {sec} s…", "dim"],
+
+    "ui.close": "CLOSE ×",
+    "board.empty": "nothing on the board yet: open a device first.",
+    "prompt.open": "[E] OPEN",
+    "goals.done": "done.",
+
+    "talk.unplug": "(unplug)",
+    "talk.other": "⌨ say something else…",
+    "talk.placeholder": "type, then Enter",
+    "talk.aria": "Say something to {speaker}",
+
+    "keyring.fragment": ["", "keyring + {label}: \"{text}\"", "ok"],
+    "keyring.key": ["", "keyring + {label}. a key chip.", "ok"],
+    "keyring.rule": ["", "keyring + {label}. a rule: drop a fragment on it.", "ok"],
+    "keyring.nocombine": ["", "{a} and {b} do not combine.", "dim"],
+    "keyring.have": ["", "already on your keyring: {label}.", "dim"],
+    "keyring.title": "KEYRING",
+
+    "guard.type": "type…",
+    "guard.placeholder": "a guess, then Enter",
+    "guard.ok": ["login {noun} ****", "{noun}: accepted. welcome back, whoever you are.", "ok"],
+    "guard.wrong": ["login {noun} {guess}", "{noun}: wrong. {left} more and it locks.", "err"],
+    "guard.wrong.last": ["login {noun} {guess}", "{noun}: wrong.", "err"],
+    "guard.lock": ["login {noun} {guess}", "{noun}: wrong. locked for {sec} s.", "err"],
+    "guard.locked": ["login {noun}", "{noun} is locked. {sec} s.", "err"],
+    "guard.passed": ["login {noun}", "{noun}: you are already in.", "dim"],
+    "guard.empty": ["login {noun}", "nothing on your keyring to try. read things: people leave clues.", "dim"],
+    "guard.signal": ["{via}login {noun}", "{noun} wants a person at the keyboard, not a signal.", "err"],
+    "guard.notfragment": ["login {noun}", "{label} is a key chip, not a password.", "dim"],
+
+    "seal.key": ["open {sector}", "sealed. it wants a key chip.", "dim"],
+    "seal.key.ok": ["open {sector}", "{label} fits. the sector unfolds.", "ok"],
+    "seal.key.wrong": ["open {sector}", "{label} does not fit this seal.", "err"],
+    "seal.guard": ["open {sector}", "sealed. {noun} guards it.", "dim"],
+    "seal.sequence": ["open {sector}", "sealed. the seal listens for signals, in some order.", "dim"],
+    "seal.if": ["open {sector}", "sealed.", "dim"],
+    "seal.open": ["", "sector {sector} unsealed.", "ok"],
+    "seal.step": ["{via}seal {sector} {verb}", "seal: {step} of {of}.", "dim"],
+    "seal.wrong": ["{via}seal {sector} {verb}", "seal: wrong order. it resets.", "err"],
+    "seal.signal": ["seal {sector} {verb}", "the seal ignores fingers. it listens for signals.", "err"],
+    "seal.done": ["seal {sector}", "already open.", "dim"],
+
+    "trace.kick": ["", "TRACE 100%. {device} kicks you out. locked for {sec} s.", "err"],
+    "trace.locked": ["login {device}", "{device} has you locked out. {sec} s.", "err"],
+
+    "net.scan": ["{via}scan", "scan: in reach: {names}.", "ok"],
+    "net.scan.none": ["{via}scan", "scan: nothing new in reach.", "dim"],
+    "net.connect": ["{via}connect {node}", "connected: {name} is on your board.", "ok"],
+    "net.connected": ["{via}connect {node}", "already connected to {name}.", "dim"],
+    "net.ghost": ["", "{name}: seen on a scan. connect to it from {link}.", "dim"]
+  }
+}
