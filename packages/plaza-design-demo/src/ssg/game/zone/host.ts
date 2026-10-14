@@ -23,6 +23,7 @@ import { type Line, type Spot, ZoneModel } from './model';
 import { type PanelFn, Panels } from './panels';
 import type { ZoneRules } from './rules';
 import { type Anchor, Schematic } from './schematic';
+import { ENGINE_PANEL_FNS } from './toys';
 
 /** Something to stand next to and press E on. */
 export interface ZoneTarget { id: string; x: number; label: string; promptH: number }
@@ -53,6 +54,12 @@ export interface ZoneStore {
   keyring: () => string[];
   /** Put an item on the keyring (and write the save). */
   give: (id: string) => void;
+  /** The player now owns this logic module (and write the save). */
+  grant?: (module: string) => void;
+  /** Add noodle tokens, return the new total (and write the save). */
+  tokens?: (add: number) => number;
+  /** A made fragment left the keyring (it is already gone from `keyring()`): write the save. */
+  drop?: (id: string) => void;
   /** This zone's saved progress, if any. */
   load: () => ZoneSave | undefined;
   /** Keep this as the zone's progress (and write the save). */
@@ -63,6 +70,8 @@ export interface ZoneStore {
 const SAVE_AFTER_MS = 800;
 /** How often trace moves. */
 const TICK_MS = 250;
+/** While trace or a lockout moves, the save hears of it this often at most. */
+const HEAT_SAVE_MS = 2000;
 /** World (x along the zone, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
 
@@ -88,11 +97,15 @@ export class ZoneHost {
       modules: store ? () => store.modules() : undefined,
       keyring: store ? () => store.keyring() : undefined,
       give: store ? (id) => store.give(id) : undefined,
+      grant: store?.grant,
+      tokens: store?.tokens,
+      drop: store?.drop,
     }, def.data, def.rules);
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
-    this.panels = new Panels(host, this.model, (l) => this.say(l), def.view.panels);
+    // the engine's own panels (the lock toys) under the zone's
+    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.view.panels });
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
     this.schem.onClose = () => this.onClose();
@@ -118,13 +131,24 @@ export class ZoneHost {
     this.saved = JSON.stringify(this.snapshot());
     this.sync();
     // trace: the meter fills while you look into a logged device, and drains when you leave
-    let last = performance.now();
+    // (the watchdog walks and clocks beat on the same tick)
+    let last = performance.now(), heat = this.heat(), wrote = 0;
     window.setInterval(() => {
       const now = performance.now();
       this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
       if (this.model.tick(now - last)) { this.schem.meters(); this.vision.meters(); }
       last = now;
+      // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
+      const h = this.heat();
+      if (h !== heat && now - wrote > HEAT_SAVE_MS) { heat = h; wrote = now; this.persist(); }
     }, TICK_MS);
+    window.addEventListener('pagehide', () => this.persist());
+  }
+
+  /** Trace (whole %) and running lockouts, as a string: when it changes, the save should hear of it. */
+  private heat() {
+    const m = this.model;
+    return [...m.trace].map(([k, v]) => k + Math.round(v)).join() + '|' + [...m.locks.keys()].filter((k) => m.lockLeft(k) > 0).join();
   }
 
   get id() { return this.def.data.id; }

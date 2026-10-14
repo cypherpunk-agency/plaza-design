@@ -139,6 +139,10 @@ export class Game {
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
+      // zone steps that hand out modules and tokens (GAME-DATA.md, "Giving things")
+      grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); storeSave(this.save); this.syncHud(); },
+      tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
+      drop: () => storeSave(this.save),
       load: () => this.save.zones[id],
       store: (z) => { this.save.zones[id] = z; storeSave(this.save); },
     }, def);

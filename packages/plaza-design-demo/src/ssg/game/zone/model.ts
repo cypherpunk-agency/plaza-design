@@ -17,12 +17,18 @@
 
 import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from '../data';
 import type {
-  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SectorData, StatusPart, Value, ZoneData, ZoneSave,
+  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SectorData, StatusPart, Value, WatchdogData, ZoneData, ZoneSave,
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type ZoneRules } from './rules';
+// [engine features: watchdog, clocks] (zone/watchdog.ts, zone/clock.ts)
+import { Clocks } from './clock';
+import { type DogView, Watchdogs } from './watchdog';
 
-/** Data kinds, plus SEAL: the input of a sector sealed with a sequence (made by the engine). */
-export type NounKind = Kind | 'SEAL';
+/**
+ * Data kinds, plus two the engine makes: SEAL (the input of a sector sealed
+ * with a sequence) and WATCH (the watchdog's noun on each device of its route).
+ */
+export type NounKind = Kind | 'SEAL' | 'WATCH';
 export type Line = [cmd: string, reply: string, tone?: 'ok' | 'err' | 'dim'];
 
 export interface Noun {
@@ -53,8 +59,11 @@ export interface Device {
   nouns: Noun[];
 }
 
-/** A cable: when `from` (device.noun:event) fires, `to` (device.noun) does `verb`. */
-export interface Link { from: string; to: string; verb: string }
+/**
+ * A cable: when `from` (device.noun:event) fires, `to` (device.noun) does `verb`.
+ * A pre-wired one carries its data id (`wired`), and may be `fixed` (uncuttable).
+ */
+export interface Link { from: string; to: string; verb: string; fixed?: boolean; wired?: string }
 
 /** Where a verb is running: which device and noun, and whether a cable sent it. */
 export interface Ctx { dev: string; noun: string; verb: string; bySignal: boolean }
@@ -75,6 +84,12 @@ export interface ZoneHooks {
   keyring?: () => string[];
   /** Put an item on the keyring (and save). */
   give?: (id: string) => void;
+  /** The player now owns this logic module (and save). Default: the model keeps its own list. */
+  grant?: (module: string) => void;
+  /** Add noodle tokens; returns the new total. Default: the model counts its own. */
+  tokens?: (add: number) => number;
+  /** A made fragment was thrown off the keyring (already gone from `keyring()`): write the save. */
+  drop?: (id: string) => void;
 }
 
 const list = <T>(x: T | T[]) => (Array.isArray(x) ? x : [x]);
@@ -110,6 +125,10 @@ const LOG_LOCK_MS = 10000;
 const LOG_LINGER_MS = 3000;
 /** Trace raised on a device without a log (a wrong guess) drains at this rate, %/s. */
 const BARE_FALL = 5;
+/** The noun the engine puts on every device of a watchdog's route. */
+export const WATCH_NOUN = 'watchdog';
+/** A pre-wired cable's id: its own, or `from>to`. */
+export const wiredId = (c: CableData) => c.id ?? c.from + '>' + c.to;
 
 export class ZoneModel {
   /** The zone's state keys. Starting values come from the zone's `state`. */
@@ -135,6 +154,15 @@ export class ZoneModel {
   viewing = new Set<string>();
   /** The clock. A test can swap it. */
   now: () => number = () => performance.now();
+  /** The wall clock, for lockouts that must run on while the game is closed. A test can swap it. */
+  wall: () => number = () => Date.now();
+  // [engine features] the watchdog, clocks, cuts of pre-wired cables, lockout lengths, modules and tokens without a save
+  readonly dogs: Watchdogs;
+  readonly clocks: Clocks;
+  private cuts = new Set<string>();
+  private spans = new Map<string, number>();
+  private ownModules: string[] = [];
+  private ownTokens = 0;
   readonly texts: Record<string, string | LineData>;
   /** Per-device state (a SWITCH's on/off), keyed by device id. */
   private local = new Map<string, Record<string, Value>>();
@@ -157,12 +185,15 @@ export class ZoneModel {
     for (const n of [...net.nodes, ...(zone.nodes ?? [])]) this.nodeData.set(n.id, n);
     this.prewired = [...zone.cables, ...net.cables];
     this.keys = new Map([...KEYRING, ...[...net.keyring, ...(zone.keyring ?? [])].map((k) => [k.id, k] as const)]);
+    this.dogs = new Watchdogs([zone.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
+    this.clocks = new Clocks(() => this.now());
     this.init();
   }
 
   /** Back to how the zone file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
     this.epoch++;
+    this.clocks.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
@@ -177,8 +208,14 @@ export class ZoneModel {
     const here = (key: string) => this.devices.has(split(key.split(':')[0])[0]);
     for (const c of this.prewired) {
       if (!here(c.from) || !here(c.to) || this.links.some((l) => l.from === c.from && l.to === c.to)) continue;
-      this.links.push({ from: c.from, to: c.to, verb: c.verb });
+      if (this.cuts.has(wiredId(c)) && !c.fixed) continue;
+      this.links.push(this.wiredLink(c));
     }
+  }
+  private wiredLink(c: CableData): Link {
+    const l: Link = { from: c.from, to: c.to, verb: c.verb, wired: wiredId(c) };
+    if (c.fixed) l.fixed = true;
+    return l;
   }
 
   /** setTimeout that a reset or restore cancels (a timer counting, a parcel sliding). */
@@ -202,6 +239,8 @@ export class ZoneModel {
 
   act(dev: string, noun: string, verb: string, bySignal = false) {
     const n = this.noun(dev + '.' + noun);
+    // [watchdog] a frozen device refuses every verb, and a signal into it is dropped (its own watchdog noun still answers)
+    if (n && n.kind !== 'WATCH' && this.frozen(dev)) { this.hooks.say(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
     if (!bySignal) {
       const d = this.devices.get(dev), left = this.lockLeft(dev);
       if (d && left) { this.hooks.say(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
@@ -231,6 +270,9 @@ export class ZoneModel {
 
   emit(key: string) {
     const out = this.links.filter((l) => l.from === key);
+    // [watchdog] nothing leaves a frozen device (but the watchdog's own arrives / leaves do)
+    const [dev, ev] = split(key);
+    if (out.length && !ev.startsWith(WATCH_NOUN + ':') && this.frozen(dev)) { this.hooks.say(this.line('watchdog.mute', { device: this.devices.get(dev)?.name ?? dev, event: ev.replace(':', ' ') })); return; }
     out.forEach((l) => this.live.add(l));
     this.hooks.changed();
     this.later(500, () => { out.forEach((l) => this.live.delete(l)); this.hooks.changed(); });
@@ -238,6 +280,9 @@ export class ZoneModel {
   }
 
   connect(from: string, to: string, verb: string): Line {
+    // [fixed cables] a conduit between the same two cannot be replaced
+    const fixed = this.links.find((l) => l.fixed && l.from === from && l.to === to);
+    if (fixed) return this.line('wire.fixed', { from: fixed.from, to: fixed.to, verb: fixed.verb });
     this.links = this.links.filter((l) => !(l.from === from && l.to === to));
     this.links.push({ from, to, verb });
     this.changed();
@@ -249,6 +294,9 @@ export class ZoneModel {
 
   /** Cut a cable, the player's or a pre-wired one. */
   cut(link: Link): Line {
+    // [fixed cables] refuse; a pre-wired cable you cut stays cut in the save (by its id)
+    if (link.fixed) return this.line('wire.fixed', { from: link.from, to: link.to, verb: link.verb });
+    if (link.wired) this.cuts.add(link.wired);
     this.links = this.links.filter((l) => l !== link);
     this.live.delete(link);
     this.changed();
@@ -258,7 +306,7 @@ export class ZoneModel {
   // ---------- logic parts on the board ----------
 
   /** Modules the player owns. */
-  modules(): string[] { return this.hooks.modules?.() ?? START_MODULES; }
+  modules(): string[] { return this.hooks.modules?.() ?? [...START_MODULES, ...this.ownModules]; }
   /** The module that places a part kind (`timer` → timer.so's entry). */
   module(kind: string) { return this.logic.modules.find((m) => m.part.id === kind); }
   /** Does the player own the module for this part kind? */
@@ -288,7 +336,7 @@ export class ZoneModel {
   /** Remove a placed logic part and every cable touching it. The zone's own devices stay. */
   removeDevice(id: string): void {
     if (!this.devices.get(id)?.logic) return;
-    this.devices.delete(id); this.local.delete(id);
+    this.devices.delete(id); this.local.delete(id); this.clocks.remove(id);
     const on = (key: string) => split(key)[0] === id;
     this.links = this.links.filter((l) => { const hit = on(l.from) || on(l.to); if (hit) this.live.delete(l); return !hit; });
     this.changed();
@@ -320,13 +368,33 @@ export class ZoneModel {
     return undefined;
   }
 
-  /** Put an item on the keyring. Returns the line to say, or null if it was there already. */
-  give(id: string): Line | null {
+  /**
+   * Hand the player something: a keyring item, a logic module (`switch.so`
+   * into the save's modules), or `tokens` (`count` of them). Returns the
+   * line to say, or null for a keyring item already held.
+   */
+  give(id: string, count = 1): Line | null {
+    // [give] modules and tokens
+    if (id === 'tokens') {
+      const n = Math.max(0, Math.floor(count));
+      const total = this.hooks.tokens ? this.hooks.tokens(n) : (this.ownTokens += n);
+      return this.line('give.tokens', { n, total });
+    }
+    const mod = this.logic.modules.find((x) => x.id === id);
+    if (mod) {
+      const vars = { module: id, name: mod.part.name };
+      if (this.modules().includes(id)) return this.line('give.module.have', vars);
+      if (this.hooks.grant) this.hooks.grant(id); else this.ownModules.push(id);
+      return this.line('give.module', vars);
+    }
     const k = this.item(id);
     if (!k || this.keyring().includes(id)) return null;
     if (this.hooks.give) this.hooks.give(id); else this.ownKeyring.push(id);
-    return this.line(k.kind === 'key' ? 'keyring.key' : k.kind === 'rule' ? 'keyring.rule' : 'keyring.fragment', { label: k.label, text: k.text ?? '' });
+    return this.line(k.kind === 'fragment' ? 'keyring.fragment' : 'keyring.' + k.kind, { label: k.label, text: k.text ?? '' });
   }
+
+  /** Was this keyring chip made on the keyring (so it may be thrown away)? The data's own are evidence: they stay. */
+  isMade(id: string) { return !this.keys.has(id) && !!this.item(id); }
 
   /**
    * One keyring chip dropped on another: a recipe in the data (a fragment
@@ -354,6 +422,7 @@ export class ZoneModel {
     if (this.keys.has(id) || !this.item(id)) return;
     const ring = this.keyring(), i = ring.indexOf(id);
     if (i >= 0) ring.splice(i, 1);
+    this.hooks.drop?.(id);
     this.changed();
   }
 
@@ -366,9 +435,11 @@ export class ZoneModel {
     if (!n || !k || !this.keyring().includes(id)) return;
     let l: Line | null = null;
     if (n.sector && this.sealed(dev, n.sector)) l = this.trySeal(dev, n.sector, id);
+    else if (this.frozen(dev)) l = this.frozenLine(dev, nid, 'login', false);
     else if (n.kind === 'GUARD') {
       this.touched.set(dev, this.now());
-      if (k.kind === 'fragment') this.check(dev, nid, k.text ?? '');
+      if (this.nounData(dev, nid)?.guard?.toy) l = this.line('toy.hands', { noun: nid, verb: this.toyVerb });
+      else if (k.kind === 'fragment') this.check(dev, nid, k.text ?? '');
       else l = this.line('guard.notfragment', { noun: nid, label: k.label });
     }
     if (l) this.hooks.say(l);
@@ -379,6 +450,7 @@ export class ZoneModel {
 
   /** The keyboard, last resort: type a guess at a GUARD. */
   guess(dev: string, noun: string, text: string) {
+    if (this.frozen(dev)) { this.hooks.say(this.frozenLine(dev, noun, 'login', false)); this.changed(); return; }
     this.touched.set(dev, this.now());
     this.check(dev, noun, text);
     this.changed();
@@ -396,16 +468,25 @@ export class ZoneModel {
     if (bySignal) return say('guard.signal');
     const left = this.lockLeft(key);
     if (left) return say('guard.locked', { sec: secs(left) });
-    if (list(g.password).some((p) => norm(p) === norm(text))) {
-      this.passed.add(key); this.fails.delete(key);
-      say('guard.ok');
-      const c = this.ctx(dev, noun);
-      (g.do ?? []).forEach((a) => { const l = this.doAction(a, c); if (l) this.hooks.say(l); });
-      if (this.nounData(dev, noun)!.events?.includes('opened')) this.emit(key + ':opened');
-      (this.devices.get(dev)?.data.sectors ?? []).filter((s) => 'guard' in s.seal && s.seal.guard === noun)
-        .forEach((s) => { const l = this.unseal(dev, s.id); if (l) this.hooks.say(l); });
-      return;
-    }
+    if (list(g.password ?? []).some((p) => norm(p) === norm(text))) return this.pass(dev, noun);
+    this.fail(dev, noun, text);
+  }
+
+  /** A guard opens: its line, its steps, its `opened` event, the sectors it seals. */
+  private pass(dev: string, noun: string) {
+    const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, c = this.ctx(dev, noun);
+    this.passed.add(key); this.fails.delete(key);
+    this.hooks.say(this.lineIn(g.say ?? 'guard.ok', c, { noun }));
+    (g.do ?? []).forEach((a) => { const l = this.doAction(a, c); if (l) this.hooks.say(l); });
+    if (this.nounData(dev, noun)!.events?.includes('opened')) this.emit(key + ':opened');
+    (this.devices.get(dev)?.data.sectors ?? []).filter((s) => 'guard' in s.seal && s.seal.guard === noun)
+      .forEach((s) => { const l = this.unseal(dev, s.id); if (l) this.hooks.say(l); });
+  }
+
+  /** A wrong guess (or a wrong answer on a toy): a near-miss line, tries, the lock, trace. */
+  private fail(dev: string, noun: string, text: string) {
+    const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, vars: Vars = { noun, guess: text };
+    const say = (k: string, more?: Vars) => this.hooks.say(this.line(k, { ...vars, ...more }));
     const fails = (this.fails.get(key) ?? 0) + 1, tries = g.tries ?? 1, lockMs = g.lockMs ?? GUARD_LOCK_MS;
     this.fails.set(key, fails);
     // a near miss gets its own reply (still a wrong guess)
@@ -413,8 +494,7 @@ export class ZoneModel {
     if (near) this.hooks.say(this.lineIn(near[1], this.ctx(dev, noun), vars));
     if (lockMs > 0 && fails >= tries) {
       this.fails.delete(key);
-      this.locks.set(key, this.now() + lockMs);
-      this.later(lockMs + 50, () => this.changed());
+      this.lock(key, lockMs);
       say('guard.lock', { sec: secs(lockMs) });
     } else if (!near) say(lockMs > 0 ? 'guard.wrong' : 'guard.wrong.last', { left: tries - fails });
     if (g.trace) this.addTrace(dev, g.trace);
@@ -422,6 +502,43 @@ export class ZoneModel {
 
   /** Milliseconds left on a lockout (a device id, or a guard's `dev.noun`); 0 when free. */
   lockLeft(key: string) { const until = this.locks.get(key); return until && until > this.now() ? until - this.now() : 0; }
+  /** How long the running lockout lasts in all, ms (for a countdown bar). */
+  lockSpan(key: string) { return this.spans.get(key) ?? this.lockLeft(key); }
+  private lock(key: string, ms: number) {
+    this.locks.set(key, this.now() + ms); this.spans.set(key, ms);
+    this.later(ms + 50, () => this.changed());
+  }
+
+  // ---------- lock toys (zone/toys/): a GUARD with `toy` opens with hands, not passwords ----------
+
+  /** The verb that opens a toy guard's panel. */
+  get toyVerb() { return this.label('toy.verb'); }
+  /** A GUARD's data by `device.noun` (the toy panel reads its parameters). */
+  guardOf(key: string) { const [d, n] = split(key); return this.nounData(d, n)?.guard; }
+  /** Can the toy be played right now? Null if so, else the line that says why not. */
+  toyBlocked(key: string): Line | null {
+    const [dev, noun] = split(key), vars = { noun };
+    if (this.passed.has(key)) return this.line('guard.passed', vars);
+    if (this.frozen(dev)) return this.frozenLine(dev, noun, this.toyVerb, false);
+    const left = this.lockLeft(key) || this.lockLeft(dev);
+    return left ? this.line('guard.locked', { ...vars, sec: secs(left) }) : null;
+  }
+  /** The toy was solved: the guard opens, exactly as for a right password. */
+  toySolved(key: string) {
+    const [dev, noun] = split(key);
+    if (!this.guardOf(key)?.toy || this.toyBlocked(key)) return;
+    this.touched.set(dev, this.now());
+    this.pass(dev, noun);
+    this.changed();
+  }
+  /** A wrong answer on the toy (a cryptex word, a Morse message, a cipher read out at the wrong shift): a wrong guess. */
+  toyWrong(key: string, answer: string) {
+    const [dev, noun] = split(key);
+    if (!this.guardOf(key)?.toy || this.toyBlocked(key)) return;
+    this.touched.set(dev, this.now());
+    this.fail(dev, noun, answer);
+    this.changed();
+  }
 
   // ---------- sealed sectors ----------
 
@@ -529,8 +646,55 @@ export class ZoneModel {
       if (t !== before) { this.trace.set(d.id, t); moved = true; }
       if (t >= 100) this.kick(d.id);
     }
-    for (const [k, until] of this.locks) if (until <= this.now()) { this.locks.delete(k); moved = true; }
-    return moved;
+    for (const [k, until] of this.locks) if (until <= this.now()) { this.locks.delete(k); this.spans.delete(k); moved = true; }
+    // [watchdog, clocks] they move on the same tick; while a watchdog walks, its sprite and countdown need redrawing
+    if (this.tickEngine()) moved = true;
+    return moved || this.dogs.any;
+  }
+
+  /** The watchdogs step along their routes (raising arrives / leaves), the clocks beat. True when something happened. */
+  private tickEngine(): boolean {
+    const steps = this.dogs.tick(), beats = this.clocks.tick();
+    for (const s of steps) {
+      const dev = s.arrives ?? s.leaves!;
+      if (!this.devices.has(dev)) continue;
+      // a sequence seal on a device the watchdog reaches forgets what it heard
+      if (s.arrives) for (const k of [...this.seq.keys()]) if (k.startsWith(dev + '/')) this.seq.delete(k);
+      this.emit(dev + '.' + WATCH_NOUN + ':' + (s.arrives ? 'arrives' : 'leaves'));
+    }
+    for (const b of beats) {
+      if (b.set) this.write(b.set, b.event, b.dev);
+      this.emit(b.dev + '.' + b.noun + ':' + b.event);
+    }
+    if (steps.length || beats.some((b) => b.set)) this.changed();
+    return steps.length > 0 || beats.length > 0;
+  }
+
+  // ---------- the watchdog (zone/watchdog.ts) ----------
+
+  /** Is the watchdog sitting on this device (so it is frozen)? */
+  frozen(dev: string) { return this.dogs.any && this.dogs.on(dev) !== null; }
+  /** Where every watchdog is, for the board. */
+  watchdogs(): DogView[] { return this.dogs.view((d) => d.name ?? this.label('watchdog.name')); }
+  private frozenLine(dev: string, noun: string, verb: string, bySignal: boolean): Line {
+    return this.line(bySignal ? 'watchdog.drop' : 'watchdog.frozen', { device: this.devices.get(dev)?.name ?? dev, noun, verb, via: bySignal ? 'signal → ' : '' });
+  }
+  private runWatch(c: Ctx): Line | null {
+    const v = this.watchdogs().find((d) => d.at === c.dev || d.from === c.dev || d.to === c.dev);
+    if (!v) return null;
+    const vars = { name: v.name, sec: secs(v.left), at: this.devices.get(v.at ?? '')?.name ?? v.at ?? '', to: this.nodeName(v.to) };
+    return this.line(v.at === c.dev ? 'watchdog.here' : v.at ? 'watchdog.away' : 'watchdog.walking', vars);
+  }
+
+  // ---------- clocks (zone/clock.ts) ----------
+
+  private runClock(n: NounData, c: Ctx): Line | null {
+    const key = c.dev + '.' + n.id, via = c.bySignal ? 'signal → ' : '';
+    if (c.verb === 'start' || c.verb === 'stop') {
+      const changed = this.clocks.run(key, c.verb === 'start');
+      return this.line(changed ? 'clock.' + c.verb : 'clock.already', { via, noun: n.id, verb: c.verb });
+    }
+    return this.perform(n, c);
   }
 
   /** Raise (or lower) a device's trace; a full one kicks. */
@@ -544,12 +708,11 @@ export class ZoneModel {
   private kick(dev: string) {
     const d = this.devices.get(dev)!;
     const ms = Math.max(0, ...this.logsOf(dev).map((n) => n.log!.lockMs ?? LOG_LOCK_MS)) || LOG_LOCK_MS;
-    this.locks.set(dev, this.now() + ms);
+    this.lock(dev, ms);
     this.trace.set(dev, 0);
     this.viewing.delete(dev); this.touched.delete(dev);
     this.hooks.say(this.line('trace.kick', { device: d.name, sec: secs(ms) }));
     this.hooks.kick?.(dev);
-    this.later(ms + 50, () => this.changed());
   }
 
   // ---------- the net ----------
@@ -590,7 +753,7 @@ export class ZoneModel {
 
   // ---------- saving ----------
 
-  /** The zone's progress for the save, settled: nothing in flight, no trace, no lockouts. */
+  /** The zone's progress for the save, settled: nothing in flight. Trace and lockouts stay (reloading is not a way out). */
   snapshot(): ZoneSave {
     const state: Record<string, Value> = {};
     for (const k of Object.keys(this.zone.state)) state[k] = this.state[k];
@@ -609,6 +772,15 @@ export class ZoneModel {
       const ids = (s: string) => [...this.net].filter(([, v]) => v === s).map(([id]) => id);
       z.net = { seen: ids('seen'), connected: ids('connected') };
     }
+    // [save details] cuts of pre-wired cables, trace, lockouts (wall clock), clocks, the watchdog's place
+    if (this.cuts.size) z.cut = [...this.cuts];
+    const trace = [...this.trace].filter(([, v]) => v > 0).map(([k, v]) => [k, Math.round(v * 10) / 10] as const);
+    if (trace.length) z.trace = Object.fromEntries(trace);
+    const locks = [...this.locks].filter(([k]) => this.lockLeft(k) > 0).map(([k, until]) => [k, Math.round(this.wall() + until - this.now())] as const);
+    if (locks.length) z.locks = Object.fromEntries(locks);
+    const clocks = this.clocks.snapshot();
+    if (Object.keys(clocks).length) z.clocks = clocks;
+    if (this.dogs.any) z.watchdog = this.dogs.snapshot();
     return z;
   }
 
@@ -641,7 +813,33 @@ export class ZoneModel {
       const [from, ev] = l.from.split(':'), a = this.noun(from), b = this.noun(l.to);
       return !!a && !!b && !!a.events?.includes(ev) && b.verbs.includes(l.verb);
     }).map((l) => ({ from: l.from, to: l.to, verb: l.verb }));
+    this.restoreEngine(s);
     this.hooks.changed();
+  }
+
+  /**
+   * [save details] Pre-wired cables merge by id: one the save has keeps its
+   * place (and learns whether it is fixed), one the player cut stays cut, a
+   * fixed one always comes back, one new in the data appears. Then trace,
+   * lockouts, clocks and the watchdog come back where they were.
+   */
+  private restoreEngine(s: ZoneSave) {
+    (s.cut ?? []).forEach((id) => { if (typeof id === 'string') this.cuts.add(id); });
+    const here = (key: string) => this.devices.has(split(key.split(':')[0])[0]);
+    for (const c of this.prewired) {
+      if (!here(c.from) || !here(c.to)) continue;
+      const had = this.links.findIndex((l) => l.from === c.from && l.to === c.to);
+      if (had >= 0) { this.links[had] = c.fixed ? this.wiredLink(c) : { ...this.links[had], wired: wiredId(c) }; continue; }
+      if (c.fixed || !this.cuts.has(wiredId(c))) this.links.push(this.wiredLink(c));
+    }
+    for (const [dev, v] of Object.entries(s.trace ?? {})) if (this.devices.has(dev) && typeof v === 'number') this.trace.set(dev, clamp(v));
+    for (const [key, until] of Object.entries(s.locks ?? {})) {
+      const left = typeof until === 'number' ? until - this.wall() : 0;
+      const [dev, noun] = split(key);
+      if (left > 0 && this.devices.has(key.includes('.') ? dev : key) && (!key.includes('.') || this.nounData(dev, noun)?.guard)) this.lock(key, left);
+    }
+    this.clocks.restore(s.clocks);
+    this.dogs.restore(s.watchdog);
   }
 
   /** Start the zone over (the terminal's `reset yard`). The keyring is the player's, so it stays. */
@@ -664,6 +862,12 @@ export class ZoneModel {
       const verbs = s.seal.sequence.filter((v, i, a) => a.indexOf(v) === i);
       dev.nouns.push({ id: s.id, kind: 'SEAL', verbs, run: (verb, bySignal) => this.sealStep(id, s, verb, bySignal) });
     }
+    // [watchdog] a device on a watchdog's route carries its noun: read it, wire from arrives / leaves
+    if (this.dogs.routes().has(id)) {
+      dev.nouns.push({ id: WATCH_NOUN, kind: 'WATCH', verbs: ['read'], events: ['arrives', 'leaves'], run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }) });
+    }
+    // [clocks] its CLOCK nouns start beating
+    this.clocks.add(id, d.nouns);
     if (as === 'logic') { dev.crafted = true; dev.logic = true; }
     if (as === 'node') dev.node = true;
     return dev;
@@ -678,6 +882,7 @@ export class ZoneModel {
         const c: Ctx = { dev, noun: n.id, verb, bySignal };
         if (n.kind === 'GUARD' && n.guard) return this.runGuard(n, c);
         if (n.kind === 'LINK' && n.link) return this.runLink(n, c);
+        if (n.kind === 'CLOCK' && n.clock) return this.runClock(n, c);
         return this.perform(n, c);
       },
     };
@@ -687,9 +892,11 @@ export class ZoneModel {
     return noun;
   }
 
-  /** A GUARD's verbs grow with the keyring; a LINK's with the nodes it has seen. */
+  /** A GUARD's verbs grow with the keyring (a toy guard's are `probe`); a LINK's with the nodes it has seen; a CLOCK starts and stops. */
   private verbsOf(n: NounData): string[] {
     const own = n.verbs ?? [];
+    if (n.kind === 'GUARD' && n.guard?.toy) return [this.toyVerb, ...own.filter((v) => v !== this.toyVerb)];
+    if (n.kind === 'CLOCK' && n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
     if (n.kind === 'GUARD' && n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
     if (n.kind === 'LINK' && n.link) {
       const seen = n.link.reach.filter((id) => this.net.get(id) === 'seen');
@@ -699,6 +906,15 @@ export class ZoneModel {
   }
 
   private runGuard(n: NounData, c: Ctx): Line | null {
+    // [lock toys] probe opens the toy, full screen; signals cannot play it
+    if (n.guard!.toy && c.verb === this.toyVerb) {
+      const key = c.dev + '.' + n.id;
+      if (c.bySignal && !this.passed.has(key)) return this.line('guard.signal', { noun: n.id, via: 'signal → ' });
+      const no = this.toyBlocked(key);
+      if (no) return no;
+      this.hooks.open('toy', key);
+      return this.line('toy.open', { noun: n.id, toy: n.guard!.toy });
+    }
     if (c.verb === this.typeVerb) return null;
     if (c.verb.startsWith('try ')) {
       const f = this.fragments().find((k) => 'try ' + k.label === c.verb);
@@ -730,7 +946,7 @@ export class ZoneModel {
     else if ('emit' in a) this.emit(c.dev + '.' + c.noun + ':' + a.emit);
     else if ('goal' in a) this.goal(a.goal);
     else if ('effect' in a) return (this.rules.effects[a.effect] ?? ENGINE_EFFECTS[a.effect])(this.world(c), c) ?? null;
-    else if ('give' in a) return this.give(a.give);
+    else if ('give' in a) return this.give(a.give, a.count);
     else if ('trace' in a) this.addTrace(c.dev, a.trace);
     else if ('unseal' in a) { const [d, s] = a.unseal.includes('/') ? a.unseal.split('/') : [c.dev, a.unseal]; return this.unseal(d, s); }
     return null;

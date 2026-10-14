@@ -52,6 +52,57 @@
     "net.scan.none": ["{via}scan", "scan: nothing new in reach.", "dim"],
     "net.connect": ["{via}connect {node}", "connected: {name} is on your board.", "ok"],
     "net.connected": ["{via}connect {node}", "already connected to {name}.", "dim"],
-    "net.ghost": ["", "{name}: seen on a scan. connect to it from {link}.", "dim"]
+    "net.ghost": ["", "{name}: seen on a scan. connect to it from {link}.", "dim"],
+
+    "wire.fixed": ["unwire {from} {to}", "that one is a conduit, not a cable. bolted shut. work around it.", "err"],
+
+    "give.tokens": ["", "+{n} noodle tokens. you have {total}.", "ok"],
+    "give.module": ["install {module}", "installed {module}. {name} is in your board's palette now.", "ok"],
+    "give.module.have": ["install {module}", "{module} is already installed.", "dim"],
+    "keyring.card": ["", "keyring + {label}. a card: lock toys take it, once a try.", "ok"],
+    "keyring.discard": ["rm {label}", "dropped {label} off the keyring.", "dim"],
+
+    "trace.meter": "TRACE {pct}%",
+    "lock.meter": "LOCKED · {sec} s",
+
+    "watchdog.name": "REGISTRY WATCHDOG",
+    "watchdog.frozen": ["{verb} {noun}", "{device} is frozen: the watchdog is sitting on it. wait for it to move on.", "err"],
+    "watchdog.drop": ["{via}{noun} {verb}", "signal dropped: {device} is frozen. the watchdog is sitting on it.", "dim"],
+    "watchdog.mute": ["", "{event}: nothing leaves {device} while the watchdog sits on it.", "dim"],
+    "watchdog.here": ["cat watchdog", "{name}: here. just checking. moves on in {sec} s.", "err"],
+    "watchdog.away": ["cat watchdog", "{name}: on {at} now. moves on in {sec} s.", "dim"],
+    "watchdog.walking": ["cat watchdog", "{name}: on its way to {to}. arrives in {sec} s.", "dim"],
+    "watchdog.badge.at": "{name} · on {at} · moves in {sec} s",
+    "watchdog.badge.walk": "{name} · walking to {to} · {sec} s",
+
+    "clock.start": ["{via}use {noun} --start", "{noun}: ticking again.", "dim"],
+    "clock.stop": ["{via}use {noun} --stop", "{noun}: stopped. the schedule waits.", "dim"],
+    "clock.already": ["{via}use {noun} --{verb}", "{noun}: it already is.", "dim"],
+
+    "toy.verb": "probe",
+    "toy.open": ["probe {noun}", "{noun}: a {toy} lock. hands, not passwords.", "dim"],
+    "toy.hands": ["login {noun}", "{noun} has no keyboard. {verb} it.", "dim"],
+    "toy.solved": "OPEN",
+    "toy.locked": "LOCKED",
+    "toy.rings.title": "SHIELD RINGS",
+    "toy.rings.hint": "lock each ring when its gap reaches the port at the top · SPACE or LOCK",
+    "toy.rings.lock": "LOCK",
+    "toy.rings.hit": ["lock shield {n}", "shield {n} locked.", "ok"],
+    "toy.rings.miss": ["lock shield {n}", "shield {n} flinched. it spins the other way now.", "err"],
+    "toy.card.slow": ["play {label}", "shields slowed for 4 seconds.", "ok"],
+    "toy.card.ping": ["play {label}", "the next gap shows wider.", "ok"],
+    "toy.cipher.title": "CIPHER WHEEL",
+    "toy.cipher.hint": "turn the inner ring until the line reads right · ← → or drag · ENTER reads it out",
+    "toy.cipher.read": "READ IT",
+    "toy.cipher.shift": "shift {n}",
+    "toy.cryptex.title": "CRYPTEX",
+    "toy.cryptex.hint": "turn each ring to its letter · ← → pick a ring, ↑ ↓ turn it, or type · ENTER pulls",
+    "toy.cryptex.pull": "PULL",
+    "toy.morse.title": "MORSE LAMP",
+    "toy.morse.hint": "watch the lamp, then tap it back: short ·, long – · a pause ends a letter · ENTER sends",
+    "toy.morse.tap": "TAP",
+    "toy.morse.next": "NEXT LETTER",
+    "toy.morse.back": "⌫",
+    "toy.morse.send": "SEND"
   }
 }

@@ -100,29 +100,36 @@ Story thread (finding Moth), one line per step:
 
 ---
 
-## Proposed format pieces
+## Format pieces (as built)
 
-The data format (GAME-DATA.md) covers the yard. These puzzles need a few more pieces. Each is
-a proposal: when one is built, add a line to the Boundary log in GAME-DATA.md. The sketches
-below use them.
+The engine (`game/zone/`, GAME-DATA.md) now has every piece these puzzles need except the
+zone-specific effects. The sketches below are written in its real format (abbreviated: `look`,
+`status` and `layout` are left out where they add nothing, and so is the `on` entry of a verb
+whose lines are not written yet), so they paste into a zone file and the build's check takes
+them from there: it will ask for the missing pieces by name. (They were first written as proposals; GAME-DATA.md's
+open question 4 records the alignment.)
 
-| Piece | Proposal | Data or code |
+| Piece | As built (GAME-DATA.md section) | Data or code |
 |---|---|---|
-| Kinds `LINK`, `GUARD` | Two more noun kinds (the lab grammar had them, `lab3`). LINK verbs: `scan`, `connect`. GUARD verbs: `try` (drag a fragment or type), sometimes `probe` (opens a guard toy). | data |
-| Clues | Top-level `clues`: `{ "id", "text", "value" }`. A new step `{ "clue": "vrify" }` puts a fragment on the keyring. Keyring in the save (`Save.keyring`). | data + save |
-| Guard | A GUARD noun gets `guard`: `{ "user"?, "accepts": [...], "near"?: { value: line }, "wrong"?: { "lockMs"?, "trace"? }, "toy"?: "keys" \| "cryptex" \| "rings" \| "cipher" \| "morse" }`. On success it emits `opened`. Toys are panels (code). | data; toys are code |
-| Sealed sectors | Device `sectors`: `[{ "id", "label", "seal": { "chip": "moth.key" } \| { "if": "stateKey" }, "nouns": [...] }]`. Sealed nouns show as `???` in a dashed bracket and unfold in place. | data |
-| Chips and modules | Steps `{ "give": "moth.key" }` (a key chip into `Save.chips`) and `{ "module": "switch.so" }` (sets `foundIn` for real). | data + save |
-| Pre-wired cables | The existing `cables` field. Add `"fixed": true` for a cable you cannot cut (rare). Cutting the others is the point. | data |
-| Clocks | A named effect `clock.every` (tuning: `everyMs`) that emits an event on a rhythm: night falls, a music box plays, washers start. | code (effect) |
-| Trace | A STORE noun with `"trace": { "fillMs": 20000 }`. While you are connected the meter fills; pre-wired `log:entry → archive.store save` keeps the record. Full meter: kicked out, guard locks for `lockMs`. | data; meter is code |
-| Net | Zone `net`: nodes with `reach` (which LINK noun reveals them). `scan` shows silhouettes; `connect` loads that node's devices onto the board. | data |
-| Watchdog | Zone `watchdog`: `{ "route": [...], "dwellMs", "travelMs" }`. A node it sits on freezes. FRIENDNET shows it as a contact (`presence` noun, events `here`/`gone`). | data; freezing is code |
-| Hints | Downtown's stepped fixer hints, per goal, cost a token each (`hints` comes back for Downtown, GAME-DATA.md). | data |
-| Nodes freed | Step `{ "effect": "node.free", ... }` or a state key the NODES counter reads (`freed: ["0x2F"]`). | code (effect) |
+| Kinds `LINK`, `GUARD`, `LOG`, `CLOCK` | LINK: `link.reach`, engine verbs `scan`, `connect <node>` (**The net**). GUARD: `guard`, engine verbs `try <fragment>` and `type…`, or `probe` on a toy (**Guards**, **Lock toys**). LOG: `log.rate` (**Trace**). CLOCK: `clock.every`, engine verbs `start` / `stop` (**Clocks**). | data; behaviour is engine code |
+| Clues | Keyring items in the zone's (or `net.json`'s) `keyring`: `{ "id", "kind": "fragment", "label", "text" }`; a rule is `{ "kind": "rule", "rule": "reverse" }`. The step `{ "give": "vrify" }` puts one on the keyring (**Keyring**). | data + save |
+| Guard | `guard`: `{ "password": "…" \| [...], "near"?: { guess: line }, "tries"?, "lockMs"?, "trace"? (%), "say"?: line, "do"?: steps }`, or `"toy"` with its parameters instead of `password`. Success says `say`, runs `do`, raises `opened` if listed, opens sectors sealed by it. No `user` field: name the user in the lines. | data; toys are code |
+| Sealed sectors | Device `sectors`: `[{ "id", "label", "seal": { "key": "moth.key" } \| { "guard": "login" } \| { "if": "stateKey" } \| { "sequence": [...] } }]`; each noun in it says `"sector": "<id>"` (**Sealed sectors**). | data |
+| Chips, modules, tokens | `{ "give": "moth.key" }` (a key chip), `{ "give": "switch.so" }` (a module into `Save.modules`; `foundIn` in `logic.json` names the zone), `{ "give": "tokens", "count": 3 }` (**Giving things**). | data + save |
+| Pre-wired cables | `cables`, cut by tapping. `"fixed": true` for a conduit you cannot cut; optional `id` (**Pre-wired cables**). | data |
+| Clocks | A CLOCK noun: `{ "kind": "CLOCK", "events": ["night", "day"], "clock": { "every": 4000, "set": "phase" } }` raises its events in turn (**Clocks**). | data; the beat is engine code |
+| Trace | A LOG noun: `{ "kind": "LOG", "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" } }` plus the pre-wired cable `log:entry → archive.store`. `rate` is % per second (a `fillMs` of 20000 is `rate` 5). Full meter: kicked out, locked out for `log.lockMs` (**Trace**). | data; meter is code |
+| Net | Nodes in a zone's `nodes` or `net.json`; a LINK's `reach` lists which it can `scan` (**The net**). | data |
+| Watchdog | `"watchdog": { "route": [...], "dwellMs", "moveMs" }` in a zone or `net.json`. The device it sits on freezes. Each route device gets the engine noun `watchdog` with events `arrives` / `leaves` (**The watchdog**). | data; freezing is code |
+| Hints | Downtown's stepped fixer hints, per goal, cost a token each (`hints` comes back for Downtown, GAME-DATA.md). Not built. | data |
+| Nodes freed | A named effect `node.free` (Downtown's code) or a state key the NODES counter reads. Not built. | code (effect) |
 
 Rule kept from GAME-DATA.md: if it needs geometry, a loop or timing beyond "wait N ms", it is a
-named effect; everything that is wording, wiring or a choice is data.
+named effect; everything that is wording, wiring or a choice is data. Effects the sketches name
+(`pixel.move`, `node.free`, `dlv.drive`, `washer.run` / `washer.stop`, `train.brake`,
+`train.doors`, `gantry.move`, `grudge.add`) are each zone's own code, written with that zone.
+Two proposed effects became data: `tokens.add` is `{ "give": "tokens", "count": 3 }`, and P10's
+`seal.hear` is the engine's sequence seal.
 
 ---
 
@@ -143,13 +150,13 @@ a robot cat who sleeps on whatever is warm.
   off`. Turning the plug on by hand works for a few seconds, then the clock says night again
   ("the plug obeys its schedule. it is night. again."). Tap the cable to cut it, turn the plug
   on, the router wakes.
-- **Mechanics:** pre-wired cable, cutting, an ACT verb, a clock (`clock.every`).
+- **Mechanics:** pre-wired cable, cutting, an ACT verb, a clock (a CLOCK noun).
 - **Unlocks / teaches:** cables exist before you. Reading the wiring is half the game.
-- **Data sketch:**
+- **Data sketch:** (the clock says night every 6 s, so a plug turned on by hand goes off again)
 
 ```json
 { "id": "clock", "name": "SCHEDULE", "look": "A timer app with one rule and no doubts.",
-  "nouns": [{ "id": "clock", "kind": "SENSE", "verbs": ["read"], "events": ["night"],
+  "nouns": [{ "id": "clock", "kind": "CLOCK", "events": ["night"], "clock": { "every": 6000 }, "verbs": ["read"],
     "on": { "read": { "say": ["cat clock", "rule 1: at night, plug off. it is night."] } } }] },
 { "id": "plug", "name": "SMART PLUG",
   "nouns": [{ "id": "power", "kind": "ACT", "verbs": ["on", "off"], "current": "plugOn",
@@ -182,10 +189,13 @@ a robot cat who sleeps on whatever is warm.
     its own form is attached to it."
 - **Data sketch:**
 
+The router's uplink sits in a sector that opens once the plug is on; CONCIERGE is a node (zone
+`nodes`), so `scan` shows it and `connect` brings it onto the board.
+
 ```json
 { "id": "router", "name": "ROUTER",
-  "nouns": [{ "id": "uplink", "kind": "LINK", "verbs": ["scan", "connect"],
-    "on": { "scan": { "if": "plugOn", "do": [{ "effect": "net.scan" }], "say": ["scan", "one node in reach: CONCIERGE."] } } }] },
+  "sectors": [{ "id": "net", "label": "uplink", "seal": { "if": "plugOn" } }],
+  "nouns": [{ "id": "uplink", "kind": "LINK", "sector": "net", "link": { "reach": ["concierge"] } }] },
 { "id": "pc", "name": "HOME-PC",
   "nouns": [{ "id": "outbox", "kind": "STORE", "verbs": ["read", "open"], "events": ["ready"],
     "on": { "open": { "do": [{ "emit": "ready" }], "say": ["open outbox", "receipt_rent.pdf: ready to send."] } } }] },
@@ -281,16 +291,16 @@ lifestyle."), `enter` ("nice try.").
 { "id": "till", "name": "NOODLE TILL", "look": "A till on factory settings. It is not ashamed.",
   "nouns": [
     { "id": "receipts.log", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat receipts.log", "#0412 ramen, extra egg ...... 1 token · #0413 ramen, no logs ........ 1 token · #0414 ramen, for a ghost .... on the house"] } } },
-    { "id": "quickstart", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "clue": "admin" }], "say": ["cat quickstart", "1. log in: admin / admin. 2. change password (optional)."] } } },
-    { "id": "login", "kind": "GUARD", "verbs": ["try"], "guard": { "user": "admin", "accepts": ["admin"] },
-      "on": { "opened": { "do": [{ "set": "till", "to": true }, { "goal": "till" }], "say": ["login admin ****", "ACCESS GRANTED. Hello, admin.", "ok"] } } }],
-  "sectors": [{ "id": "drawer", "label": "cash drawer", "seal": { "if": "till" },
-    "nouns": [{ "id": "drawer", "kind": "ACT", "verbs": ["open"], "on": { "open": [
+    { "id": "quickstart", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "give": "admin" }], "say": ["cat quickstart", "1. log in: admin / admin. 2. change password (optional)."] } } },
+    { "id": "login", "kind": "GUARD", "guard": { "password": "admin",
+      "say": ["login admin ****", "ACCESS GRANTED. Hello, admin.", "ok"], "do": [{ "set": "till", "to": true }, { "goal": "till" }] } },
+    { "id": "drawer", "kind": "ACT", "sector": "drawer", "verbs": ["open"], "on": { "open": [
       { "if": "paid", "say": ["use drawer --open", "empty. the till looks at you.", "dim"] },
-      { "do": [{ "set": "paid", "to": true }, { "effect": "tokens.add" }], "say": ["use drawer --open", "3 noodle tokens credited to {handle}. Spend them on hints at the stall.", "ok"] } ] } }] }] }
+      { "do": [{ "set": "paid", "to": true }, { "give": "tokens", "count": 3 }], "say": ["use drawer --open", "credited to {handle}. Spend them on hints at the stall.", "ok"] } ] } }],
+  "sectors": [{ "id": "drawer", "label": "cash drawer", "seal": { "guard": "login" } }] }
 ```
 ```json
-"clues": [{ "id": "admin", "text": "admin (the till's quickstart card)", "value": "admin" }]
+"keyring": [{ "id": "admin", "kind": "fragment", "label": "till quickstart", "text": "admin" }]
 ```
 
 ### P06 VERIFY's dead letter (junction box 0x2F)
@@ -317,23 +327,29 @@ lifestyle."), `enter` ("nice try.").
 ```json
 { "id": "sign", "name": "VERIFY SIGN", "look": "Six tubes. Five work.",
   "nouns": [{ "id": "tubes", "kind": "SENSE", "verbs": ["read", "test"],
-    "on": { "read": { "do": [{ "clue": "vrify" }], "say": ["cat tubes", "V·RIFY. the E has been dark since forever."] },
-            "test": { "do": [{ "clue": "vrify" }], "say": ["use tubes --test", "V ok · E dead · R ok · I ok · F ok · Y ok"] } } }] },
+    "on": { "read": { "do": [{ "give": "vrify" }], "say": ["cat tubes", "V·RIFY. the E has been dark since forever."] },
+            "test": { "do": [{ "give": "vrify" }], "say": ["use tubes --test", "V ok · E dead · R ok · I ok · F ok · Y ok"] } } }] },
 { "id": "box", "name": "JUNCTION BOX 0x2F",
   "nouns": [
     { "id": "README", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat README", "Registry Utilities. Maintenance login only. Password set per sign policy 7."] } } },
-    { "id": "login", "kind": "GUARD", "verbs": ["try"],
-      "guard": { "user": "maint", "accepts": ["vrify"], "near": { "verify": "ACCESS DENIED. Close. Count the letters again.", "admin": "ACCESS DENIED. Not everyone is the noodle stall." } },
-      "on": { "opened": { "do": [{ "effect": "node.free" }, { "goal": "box" }], "say": ["login maint *****", "ACCESS GRANTED. Welcome back, maintenance.", "ok"] } } }],
-  "sectors": [{ "id": "modules", "label": "maintenance", "seal": { "if": "freed0x2F" },
-    "nouns": [{ "id": "legs.so", "kind": "STORE", "verbs": ["read", "install"], "on": {
+    { "id": "login", "kind": "GUARD",
+      "guard": { "password": "vrify",
+        "near": { "verify": ["login maint verify", "ACCESS DENIED. Close. Count the letters again.", "err"],
+                  "admin": ["login maint admin", "ACCESS DENIED. Not everyone is the noodle stall.", "err"] },
+        "say": ["login maint *****", "ACCESS GRANTED. Welcome back, maintenance.", "ok"],
+        "do": [{ "effect": "node.free" }, { "goal": "box" }] } },
+    { "id": "legs.so", "kind": "STORE", "sector": "modules", "verbs": ["read", "install"], "on": {
       "read": { "say": ["cat legs.so", "[binary module] install to use."] },
       "install": [{ "if": "jump", "say": ["install legs.so", "legs.so is already installed. You have legs.", "dim"] },
-                  { "do": [{ "set": "jump", "to": true }, { "goal": "install" }], "say": ["install legs.so", "installed legs.so. SPACE to jump.", "ok"] }] } }] }] }
+                  { "do": [{ "set": "jump", "to": true }, { "goal": "install" }], "say": ["install legs.so", "installed legs.so. SPACE to jump.", "ok"] }] } }],
+  "sectors": [{ "id": "modules", "label": "maintenance", "seal": { "guard": "login" } }] }
 ```
 ```json
-"clues": [{ "id": "vrify", "text": "V·RIFY (the sign, one tube dead)", "value": "vrify" }]
+"keyring": [{ "id": "vrify", "kind": "fragment", "label": "V·RIFY (the sign)", "text": "vrify" }]
 ```
+
+(`legs.so` stays Downtown's own: the save keeps it as `jump`, not in `modules`, so it is a
+`set`, not a `give`.)
 
 The fixer's hints for `box` stay word for word: "Signs on this street never fully light. Read
 what the one above the box really says." / "The box only takes maintenance logins. It says so
@@ -416,25 +432,36 @@ tacky."), lamp + speaker = DISCO ("nobody asked."). The format keeps `bench` for
   are lazy. Same password, different direction."
 - **Data sketch:**
 
+The log fills the trace at 2.5 %/s (40 s from empty to full) while you are inside the relay, as
+long as its cable to the archive is there; each wrong guess adds 15 %.
+
 ```json
 { "id": "relay", "name": "ROOFTOP RELAY 0x31",
   "nouns": [
-    { "id": "notes.txt", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "clue": "rule.reverse" }], "say": ["cat notes.txt", "maint: password rotated per policy 7. new password = old password, reversed. -J"] } } },
-    { "id": "log", "kind": "STORE", "verbs": ["read"], "events": ["entry"], "trace": { "fillMs": 40000 },
+    { "id": "notes.txt", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "give": "rule.reverse" }], "say": ["cat notes.txt", "maint: password rotated per policy 7. new password = old password, reversed. -J"] } } },
+    { "id": "log", "kind": "LOG", "verbs": ["read"], "events": ["entry"], "log": { "rate": 2.5, "archive": "archive.store" },
       "on": { "read": { "say": ["cat log", "visitor: unknown. recording: yes. archive: nightly."] } } },
-    { "id": "login", "kind": "GUARD", "verbs": ["try"],
-      "guard": { "user": "maint", "accepts": ["yfirv"], "near": { "vrify": "ACCESS DENIED. That was the old one. Policy 7 says rotate." }, "wrong": { "trace": 0.15 } },
-      "on": { "opened": { "do": [{ "effect": "node.free" }, { "goal": "relay" }], "say": ["login maint *****", "ACCESS GRANTED. Rotation is not security. Noted.", "ok"] } } }],
-  "sectors": [{ "id": "maint", "label": "maintenance", "seal": { "if": "freed0x31" }, "nouns": [
-    { "id": "gate.memo", "kind": "STORE", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat gate.memo", "NEON MARKET GATE: scanner signature required. Scanner modules are sold in the Market. Irony noted."] } } },
-    { "id": "root.frag", "kind": "STORE", "verbs": ["read", "copy"], "on": { "copy": { "do": [{ "give": "root.frag.1" }], "say": ["cp root.frag ~/deck", "root fragment 1/7. keep it.", "ok"] } } },
-    { "id": "uplink", "kind": "LINK", "verbs": ["scan", "connect"], "on": { "scan": { "do": [{ "effect": "net.scan" }], "say": ["scan", "in reach: FRIENDNET · MAGLEV · WEATHER SAT · UNDERNET · DISPATCH (guarded)"] } } }] }] },
+    { "id": "login", "kind": "GUARD",
+      "guard": { "password": "yfirv", "trace": 15,
+        "near": { "vrify": ["login maint vrify", "ACCESS DENIED. That was the old one. Policy 7 says rotate.", "err"] },
+        "say": ["login maint *****", "ACCESS GRANTED. Rotation is not security. Noted.", "ok"],
+        "do": [{ "effect": "node.free" }, { "goal": "relay" }] } },
+    { "id": "gate.memo", "kind": "STORE", "sector": "maint", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat gate.memo", "NEON MARKET GATE: scanner signature required. Scanner modules are sold in the Market. Irony noted."] }, "copy": { "say": ["cp gate.memo ~/deck", "copied. irony included."] } } },
+    { "id": "root.frag", "kind": "STORE", "sector": "maint", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat root.frag", "root fragment 1/7 · 9f2c 41ab e07d 3c55 · keep it."] }, "copy": { "do": [{ "give": "root.frag.1" }], "say": ["cp root.frag ~/deck", "root fragment 1/7. keep it.", "ok"] } } },
+    { "id": "uplink", "kind": "LINK", "sector": "maint", "link": { "reach": ["friendnet", "maglev", "weathersat", "undernet", "dispatch"] } }],
+  "sectors": [{ "id": "maint", "label": "maintenance", "seal": { "guard": "login" } }] },
 { "id": "archive", "name": "ARCHIVE", "nouns": [{ "id": "store", "kind": "STORE", "verbs": ["save"], "on": { "save": { "say": ["{via}archive save", "your visit, filed.", "dim"] } } }] }
 ```
 ```json
 "cables": [{ "from": "relay.log:entry", "to": "archive.store", "verb": "save" }],
-"clues": [{ "id": "rule.reverse", "text": "rule: new = old, reversed (-J)", "value": "@reverse" }]
+"keyring": [
+  { "id": "rule.reverse", "kind": "rule", "label": "policy 7 (-J)", "rule": "reverse" },
+  { "id": "root.frag.1", "kind": "fragment", "label": "root fragment 1/7", "text": "9f2c41abe07d3c55" }
+]
 ```
+
+Drag `vrify` onto `policy 7` on the keyring and `reverse(vrify)` (`yfirv`) appears; drag that
+onto `login`, or type it.
 
 ---
 
@@ -461,66 +488,75 @@ story out of systems.* (LEVELS L3)
     sang it wrong." → the seal order for P10
 - **Data sketch:**
 
+MOTH-PC is a node (the level's zone file `nodes`, reached from FRIENDNET's `home` LINK; see the
+note under P11). Installing `switch.so` is a `give`; `logic.json` then says `"foundIn":
+"mothnet"` (that zone's id) for it, and the check holds the two together.
+
 ```json
 { "id": "mothpc", "name": "MOTH-PC", "look": "A computer that smells of solder and fish food.",
-  "nouns": [{ "id": "motd", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat motd", "if you're not my friend, go away. if you are, you know where the key is."] } } }],
+  "nouns": [
+    { "id": "motd", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat motd", "if you're not my friend, go away. if you are, you know where the key is."] } } },
+    { "id": "photos", "kind": "STORE", "sector": "drawer", "verbs": ["read"], "on": { "read": { "do": [{ "give": "sprat" }], "say": ["cat photos", "SPRAT, day 1 (he's a fish. he's fine.) · karaoke: our song, High, Low, Middle."] } } },
+    { "id": "switch.so", "kind": "STORE", "sector": "drawer", "verbs": ["read", "install"], "on": {
+      "read": { "say": ["cat switch.so", "[logic module] SWITCH. install to use."] },
+      "install": { "do": [{ "give": "switch.so" }] } } },
+    { "id": "journal.txt", "kind": "STORE", "sector": "journal", "verbs": ["read"], "on": { "read": { "say": "journal.last" } } }],
   "sectors": [
-    { "id": "drawer", "label": "drawer", "seal": { "chip": "moth.key" }, "nouns": [
-      { "id": "photos", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "clue": "sprat" }, { "clue": "song.order" }], "say": ["cat photos", "SPRAT, day 1 (he's a fish. he's fine.) · karaoke: our song, High, Low, Middle."] } } },
-      { "id": "switch.so", "kind": "STORE", "verbs": ["read", "install"], "on": { "install": { "do": [{ "module": "switch.so" }], "say": ["install switch.so", "installed switch.so. SWITCH is on your board now.", "ok"] } } }] },
-    { "id": "journal", "label": "journal", "seal": { "if": "sealSung" }, "nouns": [
-      { "id": "journal", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": "journal.last" } } }] }] }
+    { "id": "drawer", "label": "drawer", "seal": { "key": "moth.key" } },
+    { "id": "journal", "label": "journal", "seal": { "sequence": ["high", "low", "mid"], "withinMs": 1500, "signal": true } }] }
 ```
+```json
+"keyring": [{ "id": "sprat", "kind": "fragment", "label": "Moth's fish", "text": "sprat" }]
+```
+
+(The song order is not a keyring item: it is a line you read and remember, *High, Low, Middle*.)
 
 ### P10 Moth's song seal
 
 - **Zone · spot:** MOTH-PC, the `journal` sector. Main path. Difficulty 4.
-- **Player sees:** the seal is a small device with three bells, `high`, `low`, `mid`, and a
-  `listen` STORE that shows what it last heard ("heard: low. that is not how it goes."). Moth's
-  music box on the desk plays on its own schedule (pre-wired to a clock, every 4 s: "Moth liked
-  routines."). The REGISTRY watchdog walks FRIENDNET ↔ MOTH-PC: here 4 s, away 8 s. While it sits
-  on MOTH-PC every signal dies and the seal forgets.
-- **Solution:** the order is the song title: high, low, middle, one beat (1 s) apart.
-  1. Chain the bells: `musicbox:played → seal.high ring`, `seal.high:rang → timer1 wait 1 s`,
-     `timer1:done → seal.low ring`, `seal.low:rang → timer2 wait 1 s`, `timer2:done → seal.mid
-     ring`.
-  2. Guard it against the watchdog with a SWITCH: `friendnet.presence:gone → switch1 turn on`,
-     `friendnet.presence:here → switch1 turn off`, and put the switch between the music box and
-     the first bell (`musicbox:played → switch1 pass`, `switch1:out → seal.high ring`). The
-     sequence now only starts while the watchdog is away, and the 2 s it takes always fit in
-     the 8 s gap.
-  - Also fine: cut the music box's clock cable and wire `presence:gone → musicbox play`
-    directly. Two solutions are allowed.
-- **Mechanics:** a logic seal, SWITCH, TIMER chains (no fan-out needed: each bell raises
-  `rang`), the watchdog, a clue from a photo caption.
+- **Player sees:** the journal's seal is a noun with three bells as verbs, `high`, `low`, `mid`
+  (the engine's sequence seal: it says "seal: 1 of 3", "wrong order. it resets"). It ignores
+  fingers: only signals ring it. Moth's music box on the desk plays on its own schedule (a CLOCK,
+  every 4 s, pre-wired to it: "Moth liked routines."). The REGISTRY watchdog walks FRIENDNET ↔
+  MOTH-PC: here 4 s, away 8 s. While it sits on MOTH-PC every signal into it is dropped, and when
+  it arrives the seal forgets what it heard.
+- **Solution:** the order is the song title: high, low, middle, about a beat (1 s) apart.
+  1. Chain the bells with fan-out: `musicbox:played → mothpc.journal high` and `musicbox:played →
+     timer1 wait 1 s`; `timer1:done → mothpc.journal low` and `timer1:done → timer2 wait 1 s`;
+     `timer2:done → mothpc.journal mid`.
+  2. Guard it against the watchdog with a SWITCH: `mothpc.watchdog:leaves → switch1 turn on`,
+     `mothpc.watchdog:arrives → switch1 turn off`, and put the switch between the music box and
+     the chain (`musicbox:played → switch1 pass`, `switch1:out` into the chain instead). The
+     sequence now only starts while the watchdog is away, and the 2 s it takes fit in the 8 s gap
+     (a start in the last 2 s is cut off by its arrival; the next tick tries again).
+  - Also fine: stop the music box's clock (or cut its cable) and wire `mothpc.watchdog:leaves →
+    musicbox play` directly. Two solutions are allowed.
+- **Mechanics:** a sequence seal, SWITCH, TIMER chains with fan-out, the watchdog's events, a clue
+  from a photo caption.
 - **Unlocks:** the journal. Moth booked the maglev to the harbor ("where the Registry doesn't
   look: the water"). Last entry: "your pass is in my jacket. the jacket's in washer 3 at the
   market laundromat. nobody searches a wash cycle. follow the trains." This sends the player to
   the market gate (P12) before the metro; LEVELS L3's ending moves to after P13.
 - **Data sketch:**
 
+The seal is MOTH-PC's `journal` sector (P09's sketch: `"seal": { "sequence": ["high", "low",
+"mid"], "withinMs": 1500, "signal": true }`), so no effect is needed. The music box is a node next
+to MOTH-PC (in the same zone file):
+
 ```json
-{ "id": "seal", "name": "SEAL · three bells", "look": "Moth's seal. It only opens for the song, sung right.",
-  "state": { "heard": "" },
+{ "id": "musicbox", "name": "MUSIC BOX", "look": "Three notes, over and over. Moth liked routines.", "status": "plays every 4 s",
   "nouns": [
-    { "id": "high", "kind": "ACT", "verbs": ["ring"], "events": ["rang"], "on": { "ring": { "do": [{ "effect": "seal.hear" }, { "emit": "rang" }] } } },
-    { "id": "low",  "kind": "ACT", "verbs": ["ring"], "events": ["rang"], "on": { "ring": { "do": [{ "effect": "seal.hear" }, { "emit": "rang" }] } } },
-    { "id": "mid",  "kind": "ACT", "verbs": ["ring"], "events": ["rang"], "on": { "ring": { "do": [{ "effect": "seal.hear" }, { "emit": "rang" }] } } },
-    { "id": "listen", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat listen", "heard: {heard}"] } } }] },
-{ "id": "musicbox", "name": "MUSIC BOX", "nouns": [{ "id": "musicbox", "kind": "ACT", "verbs": ["play"], "events": ["played"],
-  "on": { "play": { "do": [{ "emit": "played" }], "say": ["{via}use musicbox --play", "a tune. three notes, over and over.", "dim"] } } }] },
-{ "id": "friendnet", "name": "FRIENDNET", "nouns": [{ "id": "presence", "kind": "SENSE", "verbs": ["read"], "events": ["here", "gone"],
-  "on": { "read": { "say": ["cat presence", "REGISTRY-WD is online. status: just checking."] } } }] }
+    { "id": "musicbox", "kind": "ACT", "verbs": ["play"], "events": ["played"],
+      "on": { "play": { "do": [{ "emit": "played" }], "say": ["{via}use musicbox --play", "a tune. three notes, over and over.", "dim"] } } },
+    { "id": "clock", "kind": "CLOCK", "events": ["tick"], "clock": { "every": 4000 } }] }
 ```
 ```json
-"cables": [{ "from": "clock.clock:tick", "to": "musicbox.musicbox", "verb": "play" }],
-"tuning": { "seal.beatMs": 1000, "seal.slackMs": 350, "clock.everyMs": 4000 },
-"watchdog": { "route": ["friendnet", "mothpc"], "dwellMs": 4000, "travelMs": 8000 }
+"cables": [{ "from": "musicbox.clock:tick", "to": "musicbox.musicbox", "verb": "play" }],
+"watchdog": { "route": ["friendnet", "mothpc"], "dwellMs": 4000, "moveMs": 2000 }
 ```
 
-`seal.hear` is a new effect: it appends the bell to `heard`, checks spacing against
-`seal.beatMs ± seal.slackMs`, resets on a wrong bell or a freeze, and sets `sealSung` on
-high-low-mid.
+FRIENDNET shows the watchdog as a contact: its engine noun `watchdog` (`read`: "REGISTRY
+WATCHDOG: here. just checking."), with the events `arrives` / `leaves` the solution wires from.
 
 ### P11 Who paid for whose ticket (NEOBANK)
 
@@ -545,17 +581,35 @@ high-low-mid.
   Balance line: "MOTH: 3 tokens and a dream."
 - **Data sketch:**
 
+The log fills at 5 %/s (20 s to full); each wrong guess adds 25 % and locks the login for 20 s.
+`sprat` + `0412` dragged together on the keyring make `moth.pass` (a recipe, so the chip has a
+good name); typing `sprat0412` works too.
+
 ```json
 { "id": "neobank", "name": "NEOBANK",
   "nouns": [
-    { "id": "hint", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "clue": "rule.petbday" }], "say": ["cat hint", "password hint: who I feed + when I hatched"] } } },
-    { "id": "login", "kind": "GUARD", "verbs": ["try"], "guard": { "user": "moth", "accepts": ["sprat0412"], "wrong": { "lockMs": 20000, "trace": 0.25 } },
-      "on": { "opened": { "do": [{ "goal": "bank" }], "say": ["login moth *********", "Welcome back, Moth. You look different.", "ok"] } } },
-    { "id": "log", "kind": "STORE", "verbs": ["read"], "events": ["entry"], "trace": { "fillMs": 20000 }, "on": { "read": { "say": ["cat log", "session: moth. device: unfamiliar. NEO is worried."] } } },
-    { "id": "neo", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } }],
-  "sectors": [{ "id": "statements", "label": "statements", "seal": { "if": "bankOpen" }, "nouns": [
-    { "id": "statement", "kind": "STORE", "verbs": ["read", "copy"], "on": { "read": { "say": "bank.statement" }, "copy": { "do": [{ "give": "tab.receipt" }], "say": ["cp statement ~/deck", "copied. the fixer will want to see this."] } } }] }] }
+    { "id": "hint", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat hint", "password hint: who I feed + when I hatched"] } } },
+    { "id": "login", "kind": "GUARD", "guard": { "password": "sprat0412", "lockMs": 20000, "trace": 25,
+      "say": ["login moth *********", "Welcome back, Moth. You look different.", "ok"], "do": [{ "goal": "bank" }] } },
+    { "id": "log", "kind": "LOG", "verbs": ["read"], "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" },
+      "on": { "read": { "say": ["cat log", "session: moth. device: unfamiliar. NEO is worried."] } } },
+    { "id": "neo", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } },
+    { "id": "statement", "kind": "STORE", "sector": "statements", "verbs": ["read", "copy"],
+      "on": { "read": { "say": "bank.statement" }, "copy": { "do": [{ "give": "tab.receipt" }], "say": ["cp statement ~/deck", "copied. the fixer will want to see this."] } } }],
+  "sectors": [{ "id": "statements", "label": "statements", "seal": { "guard": "login" } }] }
 ```
+```json
+"cables": [{ "from": "neobank.log:entry", "to": "archive.store", "verb": "save" }],
+"keyring": [
+  { "id": "hatch", "kind": "fragment", "label": "Moth's hatch day", "text": "0412" },
+  { "id": "moth.pass", "kind": "fragment", "label": "moth's password", "text": "sprat0412", "from": ["sprat", "hatch"] },
+  { "id": "tab.receipt", "kind": "key", "label": "Moth's tab receipt" }
+]
+```
+
+These nodes (FRIENDNET, MOTH-PC, the music box, NEOBANK) belong to the level's own zone file
+(`nodes` in, say, `mothnet.json`), not `net.json`: they need its goals, dialogue (NEO) and
+watchdog. A node in `net.json` may only use the engine and its own state.
 
 ---
 
@@ -588,7 +642,9 @@ high-low-mid.
   radius 62/46/30, start angles 30/150/260°, speeds 70/−95/120 °/s, gap 50°, tolerance ±20°. A
   miss: "shield 2 flinched. it spins the other way now." (reverses, 15 % faster, max 220 °/s).
   Two cards, once each: SLOW (0.35× for 4 s, "shields slowed for 4 seconds.") and PING ("the
-  next gap shows wider.", ±38°). Win: "guard down. DISPATCH uplink reachable."
+  next gap shows wider.", ±38°). Win: "guard down. DISPATCH uplink reachable." Built as the
+  engine's `rings` toy (GAME-DATA.md, **Lock toys**); the cards are keyring items of kind `card`,
+  handed out wherever the story likes (an UNDERNET rumour, the fixer for a token).
 - **Mechanics:** guard toy (rings), COPY between nodes, a device you steer, pre-wired cables to
   read and cut, the world reacting (DLV-9 drives in the scene).
 - **Unlocks:** the Neon Market. Ends Downtown's arc; `objective()`'s last goal `gate`. Keep the
@@ -612,17 +668,34 @@ high-low-mid.
       { "if": "routeFixed", "say": ["cat route.dat", "destination: NEON MARKET · DUMPLINGS. ETA: soon. (it is beside itself)"] },
       { "say": ["cat route.dat", "destination \"somewhere warm\". ETA: never."] }] } },
     { "id": "wheels", "kind": "ACT", "verbs": ["go home", "follow you", "spin"], "on": { "go home": { "do": [{ "effect": "dlv.drive" }] } } },
-    { "id": "hatch", "kind": "ACT", "verbs": ["open", "close"], "on": { "open": { "do": [{ "clue": "glove.left" }], "say": ["use hatch --open", "hatch: open. inside: one glove. left hand."] } } },
-    { "id": "uplink", "kind": "LINK", "verbs": ["connect"], "on": { "connect": { "say": ["connect dispatch", "uplink → DISPATCH: guarded by shields.", "err"] } } }] },
-{ "id": "dispatch", "name": "DISPATCH", "nouns": [
-    { "id": "shields", "kind": "GUARD", "verbs": ["probe"], "guard": { "toy": "rings" }, "on": { "opened": { "say": ["probe dispatch", "guard down. DISPATCH uplink reachable.", "ok"] } } }],
-  "sectors": [{ "id": "routes", "label": "routes", "seal": { "if": "dispatchOpen" }, "nouns": [
-    { "id": "routes", "kind": "STORE", "verbs": ["read", "copy"], "on": { "copy": { "do": [{ "set": "routeFixed", "to": true }], "say": ["cp routes/dlv9 dlv9:route.dat", "copied. DLV-9 knows where it is going. it is overjoyed. flatly.", "ok"] } } }] }] }
+    { "id": "hatch", "kind": "ACT", "verbs": ["open", "close"], "on": { "open": { "do": [{ "give": "glove.left" }], "say": ["use hatch --open", "hatch: open. inside: one glove. left hand."] }, "close": { "say": ["use hatch --close", "hatch: shut. the glove stays with you.", "dim"] } } },
+    { "id": "uplink", "kind": "LINK", "link": { "reach": ["dispatch"] } }] }
+```
+
+DISPATCH is a node (Downtown's `nodes`): `connect` brings it onto the board, sealed behind its
+shields.
+
+```json
+{ "id": "dispatch", "name": "DISPATCH", "look": "Every delivery robot's boss. Behind three spinning shields.", "status": "routing",
+  "nouns": [
+    { "id": "shields", "kind": "GUARD",
+      "guard": { "toy": "rings", "rings": { "rings": [
+          { "speed": 70, "gap": 50, "start": 30 }, { "speed": -95, "gap": 50, "start": 150 }, { "speed": 120, "gap": 50, "start": 260 }], "tolerance": 20 },
+        "say": ["probe dispatch", "guard down. DISPATCH uplink reachable.", "ok"] } },
+    { "id": "routes", "kind": "STORE", "sector": "routes", "verbs": ["read", "copy"], "on": {
+      "read": { "say": ["cat routes", "DLV-9 → NEON MARKET · DUMPLINGS (warm)"] },
+      "copy": { "do": [{ "set": "routeFixed", "to": true }], "say": ["cp routes/dlv9 dlv9:route.dat", "copied. DLV-9 knows where it is going. it is overjoyed. flatly.", "ok"] } } }],
+  "sectors": [{ "id": "routes", "label": "routes", "seal": { "guard": "shields" } }] }
 ```
 ```json
 "cables": [
   { "from": "gate.scanner:matched", "to": "gate.lock", "verb": "open" },
   { "from": "gate.door:passed", "to": "gate.lock", "verb": "shut" }
+],
+"keyring": [
+  { "id": "glove.left", "kind": "key", "label": "a glove (left)" },
+  { "id": "card.slow", "kind": "card", "label": "SLOW", "card": "slow" },
+  { "id": "card.ping", "kind": "card", "label": "PING", "card": "ping" }
 ]
 ```
 
@@ -669,19 +742,24 @@ scaffold (Act II).
     { "id": "queue", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat queue", "1. jacket (prepaid, 9 cycles) · 1 left"] } } }] },
 { "id": "breaker", "name": "BREAKER", "nouns": [{ "id": "load", "kind": "SENSE", "verbs": ["read", "reset"], "events": ["tripped"],
   "on": { "read": { "say": ["cat load", "running: {running}/2. it has opinions about three."] }, "reset": { "say": ["use load --reset", "reset. it sighs in amps."] } } }] },
-{ "id": "suds", "name": "SUDS", "nouns": [{ "id": "suds", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } }] }
+{ "id": "suds", "name": "SUDS", "nouns": [{ "id": "suds", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } }] },
+{ "id": "clock", "name": "OPENING HOURS", "nouns": [{ "id": "clock", "kind": "CLOCK", "events": ["open"], "clock": { "every": 30000, "first": 2000 } }] }
 ```
+
+The breaker's stop goes to every washer by fan-out (decided: one event, several cables). It is
+wired in the walls, so those four are `fixed`: the puzzle is the schedule, not the breaker.
+
 ```json
 "cables": [
   { "from": "clock.clock:open", "to": "washer1.drum", "verb": "start" },
   { "from": "clock.clock:open", "to": "washer2.drum", "verb": "start" },
   { "from": "clock.clock:open", "to": "washer4.drum", "verb": "start" },
-  { "from": "breaker.load:tripped", "to": "washer1.drum", "verb": "stop" }
+  { "from": "breaker.load:tripped", "to": "washer1.drum", "verb": "stop", "fixed": true },
+  { "from": "breaker.load:tripped", "to": "washer2.drum", "verb": "stop", "fixed": true },
+  { "from": "breaker.load:tripped", "to": "washer3.drum", "verb": "stop", "fixed": true },
+  { "from": "breaker.load:tripped", "to": "washer4.drum", "verb": "stop", "fixed": true }
 ]
 ```
-
-(The breaker's stop goes to every washer; the format has one cable per target, or a
-`washer.stopAll` effect. Decide when built: Boundary log.)
 
 ### O05 DON'T TRUST. VERIFY. (the market billboard)
 
@@ -699,9 +777,13 @@ scaffold (Act II).
 ```json
 { "id": "mbillboard", "name": "MARKET BILLBOARD", "nouns": [
   { "id": "screen", "kind": "SENSE", "verbs": ["read"], "on": { "read": { "say": ["cat screen", "KVU'A AYBZA. CLYPMF."] } } },
-  { "id": "cipher", "kind": "GUARD", "verbs": ["try"], "guard": { "toy": "cipher", "accepts": ["7"] },
-    "on": { "opened": { "do": [{ "effect": "node.free" }], "say": ["rotor --shift 7", "DON'T TRUST. VERIFY. [SIG OK]", "ok"] } } }] }
+  { "id": "cipher", "kind": "GUARD",
+    "guard": { "toy": "cipher", "cipher": { "text": "KVU'A AYBZA. CLYPMF.", "shift": 7 }, "lockMs": 8000,
+      "say": ["rotor --shift 7", "DON'T TRUST. VERIFY. [SIG OK]", "ok"], "do": [{ "effect": "node.free" }] } }] }
 ```
+
+Reading it out at the wrong shift is a wrong guess (locked 8 s), so spinning through all 26 and
+guessing costs time; the clue is policy 7.
 
 ---
 
@@ -845,8 +927,14 @@ SIDE UP (ANY) · NRLU 404 0451.
     { "id": "alarm", "kind": "ACT", "verbs": ["sound"] }] }
 ```
 ```json
-"cables": [{ "from": "port.scanner:warm", "to": "port.alarm", "verb": "sound" }]
+"cables": [{ "from": "port.scanner:warm", "to": "port.alarm", "verb": "sound" }],
+"watchdog": { "route": ["port", "sts2", "ferry"], "dwellMs": 5000, "moveMs": 3000 }
 ```
+
+The clever solution needs nothing new: while the watchdog sits on PORT AUTHORITY, nothing
+leaves it (`watchdog.mute`), so a `warm` raised then never reaches the alarm. Wire
+`port.watchdog:arrives → timer1 wait 1 s → sts2.spreader lift` and 0451 goes up inside the
+freeze.
 
 ---
 
@@ -885,11 +973,14 @@ SIDE UP (ANY) · NRLU 404 0451.
     { "id": "coil 4", "kind": "ACT", "verbs": ["spin", "spin twice"], "on": { "spin": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin", "clunk. raisins."] }, "spin twice": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin-twice", "clunk clunk. two raisins. it is making a point."] } } },
     { "id": "display", "kind": "ACT", "verbs": ["say hi", "say sorry"], "on": { "say hi": { "say": ["use display --say-hi", "display: \"hi.\" (reluctantly)"] }, "say sorry": { "say": ["use display --say-sorry", "display: \"for what. specifically.\""] } } },
     { "id": "grudge.log", "kind": "STORE", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat grudge.log", "kicked (2019) · kicked (2021) · today: being stared at · THIRST.EXE: looked at me funny (daily)"] }, "copy": { "say": ["cp grudge.log ~/deck", "copied. you now also hold a grudge. 4 KB."] } } },
-    { "id": "snackomat", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } }],
-  "sectors": [{ "id": "service", "label": "service panel", "seal": { "chip": "snack.key" }, "nouns": [
-    { "id": "coils", "kind": "ACT", "verbs": ["coil 1", "coil 2", "coil 3"], "on": { "*": { "say": ["use coils --{verb}", "clunk. not raisins. a miracle.", "ok"] } } },
-    { "id": "mood.cfg", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat mood.cfg", "grudge: {grudge}. font: custom 5×7. font compliments: rare."] } } }] }] }
+    { "id": "snackomat", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } },
+    { "id": "coils", "kind": "ACT", "sector": "service", "verbs": ["coil 1", "coil 2", "coil 3"], "on": { "*": { "say": ["use coils --{verb}", "clunk. not raisins. a miracle.", "ok"] } } },
+    { "id": "mood.cfg", "kind": "STORE", "sector": "service", "verbs": ["read"], "on": { "read": { "say": ["cat mood.cfg", "grudge: {grudge}. font: custom 5×7. font compliments: rare."] } } }],
+  "sectors": [{ "id": "service", "label": "service panel", "seal": { "key": "snack.key" } }] }
 ```
+
+At grudge 0 its dialogue hands over the key with `{ "give": "snack.key" }` and one token with
+`{ "give": "tokens", "count": 1 }`.
 
 ### O02 CAM-3 is bored
 
@@ -920,10 +1011,17 @@ SIDE UP (ANY) · NRLU 404 0451.
   it back), a fragment carried for a long time.
 - **Data sketch:**
 
+Reading the lamp shows the blinks; echoing them back on the Morse toy (`lab1`'s two-key device)
+is what makes them yours: the fragment comes from the guard.
+
 ```json
 { "id": "jlamp", "name": "SMART LAMP (penthouse)", "nouns": [
   { "id": "lamp.cfg", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat lamp.cfg", "brightness 40%, mood 12%. mode: morse reminder (J keeps forgetting)."] } } },
-  { "id": "bulb", "kind": "SENSE", "verbs": ["read"], "on": { "read": { "do": [{ "clue": "ghost" }], "say": ["cat bulb", "--. .... --- ... -"] } } }] }
+  { "id": "bulb", "kind": "GUARD", "guard": { "toy": "morse", "morse": { "message": "ghost", "unitMs": 240 }, "tries": 3, "lockMs": 6000,
+    "say": ["echo --. .... --- ... -", "the lamp blinks back: GHOST. it seems relieved someone listened.", "ok"], "do": [{ "give": "ghost" }] } }] }
+```
+```json
+"keyring": [{ "id": "ghost", "kind": "fragment", "label": "J's lamp", "text": "ghost" }]
 ```
 
 ### O04 J's cryptex
@@ -937,6 +1035,18 @@ SIDE UP (ANY) · NRLU 404 0451.
 - **Solution:** GHOST. Inside: the revocation list with your handle on it, and root fragment
   2/7.
 - **Mechanics:** cryptex guard toy, a fragment from long ago.
+- **Data sketch:** (five reels of six letters each: the reel count tells the length, the reels
+  keep the search small and fair)
+
+```json
+{ "id": "jcase", "name": "J's CASE", "look": "Five reels. The case of a man who writes everything down.",
+  "nouns": [
+    { "id": "reels", "kind": "GUARD", "guard": { "toy": "cryptex", "cryptex": { "word": "ghost", "rings": ["BGKPSW", "AEHLOR", "CIMORU", "DHLNST", "EKPTXZ"] },
+      "lockMs": 10000, "say": ["pull reels", "click. GHOST. the case opens like it was waiting.", "ok"] } },
+    { "id": "revocation.list", "kind": "STORE", "sector": "inside", "verbs": ["read"], "on": { "read": { "say": "jcase.list" } } },
+    { "id": "root.frag", "kind": "STORE", "sector": "inside", "verbs": ["copy"], "on": { "copy": { "do": [{ "give": "root.frag.2" }], "say": ["cp root.frag ~/deck", "root fragment 2/7. keep it.", "ok"] } } }],
+  "sectors": [{ "id": "inside", "label": "case", "seal": { "guard": "reels" } }] }
+```
 
 ### O06 Pigeon TV
 

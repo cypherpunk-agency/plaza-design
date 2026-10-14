@@ -12,8 +12,8 @@
  * Inside a device, its own `state` keys come before the zone's.
  */
 
-/** Noun kinds. GUARD, LOG and LINK have engine behaviour (see `guard`, `log`, `link`). */
-export type Kind = 'SENSE' | 'ACT' | 'STORE' | 'DAEMON' | 'GUARD' | 'LOG' | 'LINK';
+/** Noun kinds. GUARD, LOG, LINK and CLOCK have engine behaviour (see `guard`, `log`, `link`, `clock`). */
+export type Kind = 'SENSE' | 'ACT' | 'STORE' | 'DAEMON' | 'GUARD' | 'LOG' | 'LINK' | 'CLOCK';
 export type Tone = 'ok' | 'err' | 'dim';
 export type Value = string | number | boolean | null;
 export type Dir = 'up' | 'down' | 'left' | 'right';
@@ -37,7 +37,7 @@ export type Action = { if?: Cond } & (
   | { emit: string }             // raise one of this noun's events
   | { goal: string }             // tick a goal
   | { effect: string }           // run a named effect implemented in code
-  | { give: string }             // put a keyring item (a clue fragment, a key chip) on the player's keyring
+  | { give: string; count?: number } // hand the player a keyring item, a module (`switch.so`), or `tokens` (with `count`)
   | { trace: number }            // raise (or, negative, lower) this device's trace, in %
   | { unseal: string }           // open a sealed sector of this device (or `device/sector`)
 );
@@ -53,8 +53,16 @@ export type StatusPart = string | { if: Cond; then?: string; else?: string };
  * each clue fragment on the keyring, and `type…` (the keyboard, last resort).
  */
 export interface GuardData {
-  /** What opens it (or any of a list). Compared without case, spaces, `-` or `_`. */
-  password: string | string[];
+  /** What opens it (or any of a list). Compared without case, spaces, `-` or `_`. Not on a toy guard (the toy is the lock). */
+  password?: string | string[];
+  /** Said when it opens, instead of the engine's `guard.ok`. */
+  say?: LineRef;
+  /** A lock toy instead of a password: `probe` opens it full screen, solving it opens the guard. Its parameters sit under the same name. */
+  toy?: ToyKind;
+  rings?: RingsToyData;
+  cipher?: CipherToyData;
+  cryptex?: CryptexToyData;
+  morse?: MorseToyData;
   /** Near misses and what the guard says to each, instead of the plain "wrong" (still a wrong guess): `{ "vrify": ["…", "ACCESS DENIED. That was the old one.", "err"] }`. */
   near?: Record<string, LineRef>;
   /** Wrong guesses in a row before it locks (default 1). */
@@ -89,6 +97,74 @@ export interface LogData {
 /** A LINK noun: `scan` shows the nodes in reach on the board; `connect <node>` brings one in. */
 export interface LinkData { reach: string[] }
 
+// ---------- lock toys (zone/toys/): one per lock type ----------
+
+export type ToyKind = 'rings' | 'cipher' | 'cryptex' | 'morse';
+
+/** One shield ring, outermost first: degrees per second (negative: the other way), its gap, where the gap starts (0 = the port, at the top). */
+export interface RingData { speed: number; gap: number; start?: number }
+/** Shield rings: lock each ring while its gap is at the port, outermost first. A miss reverses that ring and speeds it up. */
+export interface RingsToyData {
+  rings: RingData[];
+  /** How far off the port the gap's middle may be, in degrees (default 20). */
+  tolerance?: number;
+}
+/** A cipher wheel (Caesar): turn the inner ring until the text reads right, then read it out. */
+export interface CipherToyData {
+  /** The text as shown, enciphered: `KVU'A AYBZA. CLYPMF.` */
+  text: string;
+  /** The shift that reads it (1–25): each letter goes back this many places. */
+  shift: number;
+}
+/** A cryptex: letter rings, one per letter; it opens on the word. */
+export interface CryptexToyData {
+  word: string;
+  /** Each ring's letters, in order (default A–Z on every ring). One per letter of the word. */
+  rings?: string[];
+}
+/** A Morse lamp: it blinks a message over and over; tap it back. */
+export interface MorseToyData {
+  /** What the lamp spells (letters and digits). Tapping it back opens the guard. */
+  message: string;
+  /** One Morse unit, ms (a dot; a dash is three). Default 220. */
+  unitMs?: number;
+}
+
+/**
+ * A CLOCK noun: an event source on a rhythm. Every `every` ms it raises its
+ * next event (its `events` in turn: `["night", "day"]` alternate; one event
+ * repeats). Engine verbs: `start`, `stop`. Saved: which event is next, how far
+ * into the beat, and whether it is stopped.
+ */
+export interface ClockData {
+  /** The beat, ms. */
+  every: number;
+  /** The first beat comes after this many ms (default `every`). */
+  first?: number;
+  /** A state key that holds the last event raised (`phase`, so a condition can say `phase=night`). */
+  set?: string;
+  /** Running when the zone starts (default true). */
+  start?: boolean;
+}
+
+/**
+ * The Registry's watchdog: a process that walks a route of devices and nodes,
+ * sits on each for `dwellMs`, then takes `moveMs` to the next (looping). The
+ * device it sits on freezes: no verbs, no signals in or out. Each device on the
+ * route gets an engine noun `watchdog` (kind WATCH) with events `arrives` and
+ * `leaves`, so cables can say "while it is away".
+ */
+export interface WatchdogData {
+  /** Saves keep its place by this id (default `watchdog`). */
+  id?: string;
+  /** What the board calls it (default: the text `watchdog.name`). */
+  name?: string;
+  /** Device or node ids, in order; it loops back to the first. */
+  route: string[];
+  dwellMs: number;
+  moveMs: number;
+}
+
 export interface NounData {
   id: string;
   kind: Kind;
@@ -103,6 +179,7 @@ export interface NounData {
   guard?: GuardData;
   log?: LogData;
   link?: LinkData;
+  clock?: ClockData;
   /** Verb → what it does. `*` handles every verb without its own entry. */
   on?: Record<string, Case | Case[]>;
 }
@@ -147,8 +224,13 @@ export interface DeviceData {
   layout?: LayoutData;
 }
 
-/** A cable present when the zone starts: event → noun + verb. Cuttable like any other. */
-export interface CableData { from: string; to: string; verb: string }
+/**
+ * A cable present when the zone starts: event → noun + verb. Cuttable like any
+ * other, unless `fixed` (a solid conduit you have to work around). Saves keep
+ * the player's cuts by `id` (default `from>to`), so a cable added to the data
+ * later still shows up in an older save.
+ */
+export interface CableData { id?: string; from: string; to: string; verb: string; fixed?: boolean }
 
 /** Crafting (not used by any zone right now; kept so the format can say it). */
 export interface RecipeData {
@@ -199,7 +281,8 @@ export type RuleOp = 'reverse' | 'upper' | 'lower';
  */
 export interface KeyItem {
   id: string;
-  kind: 'fragment' | 'key' | 'rule';
+  /** A `card` is a one-shot trick a lock toy accepts (SLOW, PING on shield rings). */
+  kind: 'fragment' | 'key' | 'rule' | 'card';
   /** On its chip: `cat's name`. */
   label: string;
   /** A fragment's text: `pixel`. */
@@ -208,6 +291,8 @@ export interface KeyItem {
   rule?: RuleOp;
   /** A fragment made by combining these two chips (either order), instead of the plain join. */
   from?: [string, string];
+  /** A card's trick: `slow` (shield rings at 0.35× for 4 s) or `ping` (the next gaps count wider). */
+  card?: 'slow' | 'ping';
 }
 
 export interface ZoneData {
@@ -232,6 +317,8 @@ export interface ZoneData {
   goals: GoalData[];
   /** Lines and labels the code asks for by key. The engine's own (engine.json) can be overridden here. */
   texts: Record<string, string | LineData>;
+  /** The Registry's watchdog walking this zone's devices and nodes (net.json may have one too). */
+  watchdog?: WatchdogData;
 }
 
 /**
@@ -262,7 +349,7 @@ export interface LogicData { modules: LogicModule[] }
  * pre-wired between them (they appear when a node they touch is connected),
  * and keyring items found on them.
  */
-export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[] }
+export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[]; watchdog?: WatchdogData }
 
 /** The engine's own wording (engine.json): guard, seal, trace, net and wiring lines. A zone may override any. */
 export interface EngineData { texts: Record<string, string | LineData> }
@@ -273,8 +360,9 @@ export interface Pt { x: number; y: number }
 
 /**
  * A zone's progress inside the game's save (`save.zones.<zone id>`).
- * Transient things (a parcel mid-slide, a timer counting, trace, lockouts) are
- * not stored: they come back in a stable state.
+ * Transient things (a parcel mid-slide, a timer counting) are not stored: they
+ * come back in a stable state. Trace and lockouts are stored, so reloading
+ * does not wipe them; so are clocks and the watchdog's place on its route.
  */
 export interface ZoneSave {
   /** The zone's `state` keys, settled. */
@@ -293,6 +381,16 @@ export interface ZoneSave {
   passed?: string[];
   /** The net: nodes scanned (silhouettes) and connected (full schematics). */
   net?: { seen: string[]; connected: string[] };
+  /** Pre-wired cables the player cut, by id (`from>to` without one). Pre-wired cables neither here nor in `links` are new in the data: they come back. */
+  cut?: string[];
+  /** Trace per device, % (only those above 0). */
+  trace?: Record<string, number>;
+  /** Lockouts still running, by device or guard (`device.noun`): when they end, wall-clock ms (Date.now). */
+  locks?: Record<string, number>;
+  /** CLOCK nouns (`device.noun`): the next event's index, ms into the beat, stopped. */
+  clocks?: Record<string, { next: number; ms: number; off?: boolean }>;
+  /** Watchdogs, by id: ms into their loop. */
+  watchdog?: Record<string, number>;
   /** The board: devices you know, where they sit (fractions of the stage), where their nouns sit (px). */
   board?: { known: string[]; pos: Record<string, Pt>; offsets: Record<string, Pt>; vision?: Record<string, Pt> };
 }
