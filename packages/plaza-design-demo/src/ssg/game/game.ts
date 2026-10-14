@@ -393,15 +393,16 @@ export class Game {
     x.fillRect(0, 0, this.viewW, this.viewH);
     const rain = this.rainLevel();
 
-    this.drawSky();
-    this.drawShips();
-    this.drawSkyline(0.18, 7, 70, 150, 0.18, 0.12);
-    if (this.zone === 'downtown') this.drawAntenna();
-    this.drawSkyline(0.45, 19, 50, 120, 0.3, 0.18);
     if (this.zone === 'yard') {
+      // Boxed in by the backs of houses: no city behind the yard, it draws its own walls.
       this.drawStreet(rain);
-      this.yard.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW });
+      this.yard.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
     } else {
+      this.drawSky();
+      this.drawShips();
+      this.drawSkyline(0.18, 7, 70, 150, 0.18, 0.12);
+      this.drawAntenna();
+      this.drawSkyline(0.45, 19, 50, 120, 0.3, 0.18);
       this.drawFronts();
       this.drawStreet(rain);
       this.drawMachines();
