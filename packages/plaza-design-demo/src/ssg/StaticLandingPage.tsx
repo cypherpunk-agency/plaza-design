@@ -56,7 +56,10 @@ export function StaticLandingPage() {
               </span>
             </p>
             <div className="flex gap-4 justify-center flex-wrap" style={{ marginTop: '46px' }}>
-              <button id="cta" className="plaza-btn plaza-btn--tease" aria-disabled="true">[ACCESS DENIED]</button>
+              <button id="cta" className="plaza-btn" type="button">
+                <span className="cta-label cta-enter">enter</span>
+                <span className="cta-label cta-denied" aria-hidden="true">[access denied]</span>
+              </button>
             </div>
           </div>
 

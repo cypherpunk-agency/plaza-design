@@ -26,7 +26,18 @@ export interface CityScene {
 interface Tower { x: number; w: number; h: number; win: [number, number, number][]; beacon?: string; ant?: boolean }
 interface Packet { r: number; out: boolean; ph: string; k: number; s: number; v: number; c: 'a' | 'p'; sx: number; wait: number; dir: number }
 
-export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; anchor?: string }): CityScene {
+export function initCityScene(
+  canvasId: string,
+  opts: {
+    beacons: Beacon[];
+    /** Element the horizon stays below (the call to action). */
+    anchor?: string;
+    /** Bar the beacon beams run up to; their labels sit just below it. */
+    ceiling?: string;
+    /** UI the sky stays behind: no stars or mesh are drawn under these. */
+    mask?: string;
+  },
+): CityScene {
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
   const ctx = canvas?.getContext('2d');
   const noop = { start: () => {}, stop: () => {}, highlight: () => {} };
@@ -90,15 +101,14 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
       px += w + 3 * U;
     }
     const nearest = (fx: number) => towers.reduce((a, b) => (Math.abs(b.x + b.w / 2 - fx) < Math.abs(a.x + a.w / 2 - fx) ? b : a));
-    // Keep beacons and antenna clear of the side panels (shown above 980px) and the sun.
-    const edge = W > 980 ? 360 : 16 * U, gap = SUN * 1.5;
-    const leftSpan = Math.max(0, cx - gap - edge), rightSpan = Math.max(0, W - edge - cx - gap);
-    const spots = [edge + leftSpan * 0.3, cx + gap + rightSpan * 0.3, cx + gap + rightSpan * 0.78];
+    // Beacons spread over the full width (labels sit above the side panels); the
+    // antenna stands left of the sun.
+    const spots = [W * 0.13, W * 0.64, W * 0.86];
     opts.beacons.slice(0, 3).forEach((b, i) => {
       const tw = nearest(spots[i]);
       tw.h = [200, 185, 210][i] * U; tw.w = Math.max(tw.w, 38 * U); tw.beacon = b.label;
     });
-    ant = nearest(edge + leftSpan * 0.78);
+    ant = nearest(W * 0.31);
     ant.h = 165 * U; ant.w = 46 * U; ant.ant = true; ant.beacon = undefined;
     for (const tw of towers) {
       tw.win = [];
@@ -115,7 +125,7 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
 
   function mk(): Packet {
     const r = Math.floor(rnd() * roofs.length);
-    return { r, out: rnd() < 0.55, ph: 'cable', k: r, s: 0, v: 0.006 + rnd() * 0.006, c: rnd() < 0.75 ? 'a' : 'p', sx: tip()[0] + (rnd() - 0.5) * 260 * U, wait: rnd() * 200, dir: 1 };
+    return { r, out: rnd() < 0.55, ph: 'cable', k: r, s: 0, v: 0.0018 + rnd() * 0.0018, c: rnd() < 0.75 ? 'a' : 'p', sx: tip()[0] + (rnd() - 0.5) * 260 * U, wait: rnd() * 200, dir: 1 };
   }
 
   // ---------- drawing ----------
@@ -167,7 +177,7 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
       x.strokeStyle = rgba(col.d, 0.85); x.lineWidth = 1; x.strokeRect(tw.x + 0.5, tp + 0.5, tw.w - 1, tw.h);
       for (const [wx, wy, ph] of tw.win) {
         const on = ph < 0 ? 1 : Math.sin(t * 0.03 + ph) > 0.2 ? 1 : 0.15;
-        x.fillStyle = rgba(col.p, 0.35 + 0.55 * on); x.fillRect(wx, wy, 3 * U, 3 * U);
+        x.fillStyle = rgba(col.p, 0.22 + 0.4 * on); x.fillRect(wx, wy, 3 * U, 3 * U);
       }
     }
     mast();
@@ -175,7 +185,7 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
   }
 
   function cables() {
-    x.strokeStyle = rgba(col.d, 0.7); x.lineWidth = 1;
+    x.strokeStyle = rgba(col.d, 0.28); x.lineWidth = 1;
     for (let i = 0; i < roofs.length - 1; i++) {
       x.beginPath();
       for (let s = 0; s <= 1.001; s += 0.05) { const p = cablePt(i, i + 1, s); s ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }
@@ -183,23 +193,49 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
     }
   }
 
+  /** Clip drawing to everything outside the UI (`opts.mask`), so it reads as behind it. */
+  function clipOutUI() {
+    x.beginPath(); x.rect(0, 0, W, H);
+    if (opts.mask)
+      document.querySelectorAll(opts.mask).forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width && r.height) x.rect(r.left - 6, r.top - 6, r.width + 12, r.height + 12);
+      });
+    x.clip('evenodd');
+  }
+
+  /** Bottom edge of the bar the beams run up to (the window header). */
+  function ceilingY(): number {
+    const el = opts.ceiling ? document.querySelector(opts.ceiling) : null;
+    return el ? el.getBoundingClientRect().bottom : 0;
+  }
+
   function beacons(labels: boolean) {
-    x.font = `${Math.round(13 * Math.max(U, 0.85))}px 'IBM Plex Mono', monospace`; x.textAlign = 'center';
+    const topY = ceilingY();
+    x.font = `${Math.round(13 * Math.max(U, 0.85))}px 'IBM Plex Mono', monospace`;
+    x.textAlign = 'center'; x.textBaseline = 'top';
     towers.filter((z) => z.beacon).forEach((tw, i) => {
       const cx = tw.x + tw.w / 2, tp = HY - tw.h, on = tw.beacon === lit;
-      const p = on ? 1 : (Math.sin(t * 0.025 + i * 2.1) + 1) / 2, beam = 170 * U * (on ? 1.4 : 1);
+      const p = on ? 1 : (Math.sin(t * 0.025 + i * 2.1) + 1) / 2;
       x.fillStyle = rgba(col.a, 0.9); x.fillRect(cx - 1, tp - 14 * U, 2, 14 * U);
-      const g = x.createLinearGradient(0, tp - 14 * U, 0, tp - beam);
-      g.addColorStop(0, rgba(col.a, 0.3 + 0.35 * p)); g.addColorStop(1, rgba(col.a, 0));
-      x.fillStyle = g; x.fillRect(cx - 3 * U, tp - beam, 6 * U, beam - 14 * U);
+      // The beam shines all the way up to the bar.
+      const g = x.createLinearGradient(0, tp - 14 * U, 0, topY);
+      g.addColorStop(0, rgba(col.a, (on ? 0.55 : 0.28) + 0.3 * p));
+      g.addColorStop(1, rgba(col.a, on ? 0.35 : 0.1));
+      const bw = (on ? 6 : 4) * U;
+      x.save();
+      if (labels) clipOutUI();
+      x.fillStyle = g; x.fillRect(cx - bw / 2, topY, bw, tp - 14 * U - topY);
+      x.restore();
       x.fillStyle = rgba(col.a, p > 0.5 ? 1 : 0.4); x.fillRect(cx - 3 * U, tp - 18 * U, 6 * U, 6 * U);
-      if (labels) { x.fillStyle = rgba(col.a, on ? 1 : 0.8); x.fillText(tw.beacon!, cx, tp - 26 * U); }
+      if (labels) { x.fillStyle = rgba(col.a, on ? 1 : 0.75); x.fillText(tw.beacon!, cx, topY + 10 * U); }
     });
+    x.textBaseline = 'alphabetic';
   }
 
   function dot(p: [number, number], c: string, sz: number) {
     x.fillStyle = rgba(c, 1); x.fillRect(p[0] - sz / 2, p[1] - sz / 2, sz, sz);
-    x.fillStyle = rgba(c, 0.22); x.fillRect(p[0] - sz, p[1] - sz, sz * 2, sz * 2);
+    x.fillStyle = rgba(c, 0.15); x.fillRect(p[0] - sz, p[1] - sz, sz * 2, sz * 2);
   }
 
   function streak(px: number, py: number, c: string, up: boolean) {
@@ -211,7 +247,7 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
   }
 
   function packetsStep(k: number) {
-    const [bx, by] = roofTop(ant), tp = tip(), sz = 4 * U;
+    const [bx, by] = roofTop(ant), tp = tip(), sz = 3 * U;
     for (const p of packets) {
       const c = p.c === 'a' ? col.a : col.p;
       if (p.wait > 0) { p.wait -= k; continue; }
@@ -222,17 +258,17 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
           p.s += p.v * 2 * k; dot(cablePt(p.k, j, Math.min(p.s, 1)), c, sz);
           if (p.s >= 1) { p.k = j; p.s = 0; }
         } else if (p.ph === 'climb') {
-          p.s += 0.02 * k; dot([bx, by - MAST * p.s], c, sz);
+          p.s += 0.007 * k; dot([bx, by - MAST * p.s], c, sz);
           if (p.s >= 1) { p.ph = 'send'; p.s = 0; }
         } else {
-          p.s += 0.012 * k; streak(tp[0] + (p.sx - tp[0]) * p.s, tp[1] - p.s * (tp[1] + 30), c, true);
+          p.s += 0.0045 * k; streak(tp[0] + (p.sx - tp[0]) * p.s, tp[1] - p.s * (tp[1] + 30), c, true);
           if (p.s >= 1) Object.assign(p, mk(), { out: false, ph: 'fall', s: 0, wait: 0 });
         }
       } else if (p.ph === 'fall') {
-        p.s += 0.012 * k; streak(p.sx + (tp[0] - p.sx) * p.s, -30 + p.s * (tp[1] + 30), c, false);
+        p.s += 0.0045 * k; streak(p.sx + (tp[0] - p.sx) * p.s, -30 + p.s * (tp[1] + 30), c, false);
         if (p.s >= 1) { p.ph = 'down'; p.s = 0; p.k = A; }
       } else if (p.ph === 'down') {
-        p.s += 0.02 * k; dot([bx, tp[1] + MAST * p.s], c, sz);
+        p.s += 0.007 * k; dot([bx, tp[1] + MAST * p.s], c, sz);
         if (p.s >= 1) {
           if (p.r === A) Object.assign(p, mk(), { out: true, wait: 0 });
           else { p.ph = 'cable'; p.s = 0; p.dir = p.r < A ? -1 : 1; }
@@ -277,6 +313,9 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
   }
 
   function sky() {
+    // The sky sits behind every piece of UI, the decorative panels included.
+    x.save();
+    clipOutUI();
     for (const s of stars) { x.fillStyle = `rgba(255,217,165,${s.a * (0.7 + 0.3 * Math.sin(t * 0.02 + s.p))})`; x.fillRect(s.x, s.y, 2, 2); }
     const nr = stars.filter((s) => Math.hypot(s.x - mx, s.y - my) < 170);
     for (let i = 0; i < nr.length; i++)
@@ -285,6 +324,7 @@ export function initCityScene(canvasId: string, opts: { beacons: Beacon[]; ancho
         if (d < 120) { x.strokeStyle = rgba(col.a, 0.55 * (1 - d / 120)); x.beginPath(); x.moveTo(nr[i].x + 1, nr[i].y + 1); x.lineTo(nr[j].x + 1, nr[j].y + 1); x.stroke(); }
       }
     for (const s of nr) { x.fillStyle = rgba(col.a, 0.95); x.fillRect(s.x - 1, s.y - 1, 4, 4); }
+    x.restore();
   }
 
   function frame(k: number) {

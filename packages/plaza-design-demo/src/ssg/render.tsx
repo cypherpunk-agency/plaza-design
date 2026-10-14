@@ -65,9 +65,54 @@ export const demoStyles = `
       line-height: 1.05;
     }
 
+    /* The city is decoration: keep it well behind the content */
+    #city-canvas {
+      opacity: 0.6;
+    }
+
     /* Solid fill so the label stays readable where the sun rises behind it */
     .demo-center .plaza-btn {
       background: var(--color-bg-base);
+    }
+
+    .demo-center .plaza-btn:hover {
+      background:
+        linear-gradient(rgba(var(--color-primary-500-rgb), 0.1), rgba(var(--color-primary-500-rgb), 0.1)),
+        var(--color-bg-base);
+    }
+
+    /* ENTER looks live; trying it shows [ACCESS DENIED] for at least 2s and
+       while the pointer rests on it. Both labels share one grid cell so the
+       button keeps its width. */
+    #cta {
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .cta-label {
+      grid-area: 1 / 1;
+    }
+
+    .cta-denied,
+    #cta.is-denied .cta-enter {
+      visibility: hidden;
+    }
+
+    #cta.is-denied .cta-denied {
+      visibility: visible;
+    }
+
+    .demo-center #cta.is-denied {
+      background: var(--color-bg-primary);
+      color: var(--color-text-faint);
+      border-color: var(--color-text-faint);
+      box-shadow: none;
+      text-shadow: none;
+      cursor: not-allowed;
+    }
+
+    #cta.is-denied::before {
+      opacity: 0;
     }
 
     .demo-subtitle {
@@ -134,7 +179,12 @@ export const initScript = `
     startClock('clock', 'full');
 
     // City scene: skyline, antenna, beacons, reflective floor
-    const scene = initCityScene('city-canvas', { beacons: PROJECTS, anchor: '#cta' });
+    const scene = initCityScene('city-canvas', {
+      beacons: PROJECTS,
+      anchor: '#cta',
+      ceiling: '.plaza-window-header',
+      mask: '.plaza-window-header, .plaza-window-footer, .plaza-side-panel__block, .plaza-hex-scroll, #title, .demo-subtitle, #cta',
+    });
     scene.start();
 
     // Create particles (canonical count: 50)
@@ -166,6 +216,24 @@ export const initScript = `
     updateNodeCount('node-count');
     setInterval(() => updateNodeCount('node-count'), 8000);
 
+    // ENTER is a tease: trying it shows [ACCESS DENIED] for at least 2 seconds
+    // and for as long as the pointer rests on the button.
+    const cta = document.getElementById('cta');
+    let deniedAt = 0, ctaHover = false, ctaTimer = 0;
+    function setDenied(on) {
+      cta.classList.toggle('is-denied', on);
+      cta.querySelector('.cta-enter').setAttribute('aria-hidden', String(on));
+      cta.querySelector('.cta-denied').setAttribute('aria-hidden', String(!on));
+    }
+    function releaseLater() {
+      clearTimeout(ctaTimer);
+      ctaTimer = setTimeout(() => { if (!ctaHover) setDenied(false); }, Math.max(0, 2000 - (Date.now() - deniedAt)));
+    }
+    function deny() { deniedAt = Date.now(); setDenied(true); releaseLater(); }
+    cta.addEventListener('click', deny);
+    cta.addEventListener('pointerenter', () => { ctaHover = true; });
+    cta.addEventListener('pointerleave', () => { ctaHover = false; if (cta.classList.contains('is-denied')) releaseLater(); });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -177,6 +245,7 @@ export const initScript = `
 
     // Flash effect on enter
     function handleEnter() {
+      if (document.activeElement !== cta) deny();
       const title = document.getElementById('title');
       title.style.transform = 'scale(1.02)';
       title.style.filter = 'brightness(1.3)';
