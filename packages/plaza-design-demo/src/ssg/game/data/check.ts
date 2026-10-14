@@ -54,7 +54,7 @@ const KEYS: Record<string, string[]> = {
   sector: ['id', 'label', 'seal'],
   seal: [...SEAL_KEYS, 'withinMs', 'signal'],
   layout: ['spot', 'board', 'dir', 'vision', 'row'],
-  spot: ['x', 'w', 'h'],
+  spot: ['x', 'w', 'h', 'y'],
   pt: ['x', 'y'],
   item: ['id', 'kind', 'label', 'text', 'rule', 'from'],
   case: ['if', 'do', 'say'],
@@ -313,7 +313,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     if (d.layout) {
       const wl = `${where} › layout`, l = d.layout;
       keys(l, 'layout', wl);
-      if (l.spot) { keys(l.spot, 'spot', wl + ' › spot'); if (![l.spot.x, l.spot.w, l.spot.h].every(num)) err(wl + ' › spot', 'x, w and h are numbers (world units)'); }
+      if (l.spot) { keys(l.spot, 'spot', wl + ' › spot'); if (![l.spot.x, l.spot.w, l.spot.h].every(num)) err(wl + ' › spot', 'x, w and h are numbers (world units)'); if (l.spot.y !== undefined && !(num(l.spot.y) && l.spot.y >= 0)) err(wl + ' › spot', 'y is a height above the street, 0 or more'); }
       if (l.board) { keys(l.board, 'pt', wl + ' › board'); if (![l.board.x, l.board.y].every((v) => num(v) && v >= 0 && v <= 1)) err(wl + ' › board', 'x and y are fractions of the board, 0 to 1'); }
       const ids = new Set([...d.nouns.map((n) => n.id), ...sectors.filter((s) => 'sequence' in s.seal).map((s) => s.id)]);
       for (const f of ['dir', 'vision'] as const) for (const [nid, dir] of Object.entries(l[f] ?? {})) {

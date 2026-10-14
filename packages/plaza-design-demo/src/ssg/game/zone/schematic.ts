@@ -398,8 +398,14 @@ export class Schematic {
     let o = this.offsets.get(key);
     if (!o) {
       const d = this.m.devices.get(dev)!, l = d.data.layout;
-      const u = UNIT[l?.dir?.[noun] ?? (d.crafted || d.node || !l?.dir ? ['up', 'right', 'down', 'left'][i % 4] : 'up')];
+      const side = (id: string, j: number) => l?.dir?.[id] ?? (d.crafted || d.node || !l?.dir ? ['up', 'right', 'down', 'left'][j % 4] : 'up');
+      const mine = side(noun, i), u = UNIT[mine];
       o = { x: u.x * 104, y: u.y * 70 };
+      // nouns on the same side fan out across it, instead of sitting on top of each other
+      const same = d.nouns.map((n, j) => side(n.id, j) === mine ? n.id : null).filter((id): id is string => !!id);
+      const k = same.indexOf(noun), spread = same.length > 1 ? k - (same.length - 1) / 2 : 0;
+      if (u.x) o.y += spread * 44;
+      else o.x += spread * 96;
       this.offsets.set(key, o);
     }
     return o;

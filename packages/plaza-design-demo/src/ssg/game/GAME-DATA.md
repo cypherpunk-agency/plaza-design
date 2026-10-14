@@ -1,7 +1,7 @@
 # ACCESS DENIED: game data
 
-The back yard runs on it, through the zone engine (`game/zone/`); Downtown and Capsule 7B
-are next. Started as a proposal; what Tommi has settled is under **Decided**, what is still
+The back yard and Downtown run on it, through the zone engine (`game/zone/`); Capsule 7B
+is next. Started as a proposal; what Tommi has settled is under **Decided**, what is still
 open under **Open questions**.
 
 ## Decided
@@ -69,6 +69,32 @@ Append one line per decision: what, which side, why.
 - Pixel, the companion: **code** (`companion.ts`): sprite, moves, warm spots outside (`WARM`). Whether
   Pixel follows you is a save flag (`flags.pixel`); in the flat, where Pixel naps is the zone's
   state (`pixelAt`).
+- How high a device sits in the world (`layout.spot.y`: a sign on a wall, a relay on a roof):
+  **data**, next to `x`, `w`, `h`. Hack vision frames it there, taps find it there, and its E
+  target says how high it is (`ZoneTarget.y`) so the game can tell which ledge you reach it from.
+- A device that moves in the world (DLV-9 driving to the market gate): **code**, `ZoneRules.place`
+  (where it stands now, or null while it is out of the world). Its home stays `layout.spot`.
+- Typing in the deck (the terminal, last resort) on a zone: **engine**, `ZoneHost.typed(fn)` runs
+  what was typed without echoing the shell line a second time; `ZoneHost.viewing` is the device
+  whose schematic is open. What the commands mean (`ls`, `cat`, `login`) is the zone's code.
+- Downtown's progress stays in the save's own fields (`handle`, `tokens`, `jump`, `freed`,
+  `flags.till`, `flags.end`), as before the engine: **code** reads them as derived values
+  (`till`, `freed2F`, `jump`, `end`, `handle`, …) and its effects write them (`node.free`,
+  `legs.install`, `till.pay`, `dlv.drive`), in `downtown/rules.ts`. The zone's own `state` is only
+  what is new on the street (the gate's lock, DLV-9, the billboard's feed). `downtown/save.ts`
+  `reconcile` makes the zone agree with the fields on every load, so old saves keep everything.
+- Which node a Registry box frees and the shell's login users: **data**, as Downtown texts
+  (`node.box: "0x2F"`, `login.user.box: "maint"`), read by the effects and the shell.
+- The deck's commands on a zone (`ls`, `cat`, `login`, `install`, `use <noun> --<verb>`):
+  **code**, `downtown/shell.ts` (nothing Downtown-only in it; the yard's deck uses it too).
+- The fixer's stepped hints: still **code** (`level.ts` `HINTS`), as before; moving them into
+  `downtown.json` would need a `hints` field (open).
+- The market gate (P12): the gate's logic is **data** (pre-wired `scanner:matched → lock open`,
+  `door:passed → lock shut`; the lock opens only on the scanner's word, `scanned`); DLV-9's drive
+  is **code** (`dlv.drive`, `place`). DISPATCH's shield rings are, for now, a `sequence` seal
+  (outer, middle, inner); when the rings toy exists, that sector's seal becomes `{ "guard":
+  "shields" }` on a toy GUARD: a data change. COPY between nodes stands in as a verb on DISPATCH's
+  `routes` (`send to dlv9`). The watchdog is not used yet.
 
 ## The idea in one paragraph
 
@@ -87,7 +113,7 @@ data change. A new kind of behaviour is a code change: one new effect.
   parts, and the hacking layer (guards, sectors, trace, net, keyring). Node can run it; `now`
   is swappable for tests.
 - `rules.ts`: `ZoneRules`, what a zone's code gives the engine (`effects`, `panels`,
-  `derived`, `settle`, `needs`, `check`), the engine's own effects (`timer.wait`), and
+  `derived`, `settle`, `needs`, `check`, `place`), the engine's own effects (`timer.wait`), and
   `contractOf`, which turns rules into the contract the build checks.
 - `schematic.ts`, `panels.ts`: the overlay (device, board, hack vision) and the full-screen
   panels (the engine's `talk`; a zone's own, like the yard's `camera`, via `PanelFn`).
@@ -159,7 +185,7 @@ Each device may carry `layout`:
 
 ```json
 "layout": {
-  "spot": { "x": 350, "w": 186, "h": 130 },          // in the world: tap, E, hack vision
+  "spot": { "x": 350, "w": 186, "h": 130, "y": 0 },  // in the world: tap, E, hack vision (y: its bottom above the street)
   "board": { "x": 0.5, "y": 0.3 },                   // home on the board (fractions)
   "dir": { "arm": "down", "claw": "up" },            // which side each noun sits on (board)
   "row": ["job.log", "arm", "claw"]                  // hack vision: noun order, left to right (optional)
@@ -317,13 +343,13 @@ At runtime a missing text shows as `[missing text key]` in the terminal rather t
 
 ## How authoring can grow
 
-- **One file per zone** (`yard.json`, later `downtown.json`), plus shared files when
+- **One file per zone** (`yard.json`, `downtown.json`), plus shared files when
   something repeats across zones (logic parts, common replies).
 - **Ids are the glue**: `device.noun:event` for cables, node ids for dialogue, goal ids,
   text keys. Keep them short and stable; rename with care since saves will store them.
-- **Downtown** fits the same shape later: machines are devices, its terminal commands
-  become nouns and verbs (`ls`, `cat`, `login` as cases with conditions), NPC lines are
-  dialogue, objectives are `goals` (the fixer's stepped hints would bring `hints` back, for Downtown). Its save (`flags`, `freed`) is `state`.
+- **Downtown** is built (`downtown.json`): machines are devices, its terminal commands are
+  nouns and verbs (and still type, `downtown/shell.ts`), objectives are `goals`. People and the
+  fixer stay speech bubbles in `level.ts` for now; its save stays the save's own fields (above).
 - **Localisation**: all wording is already in data. Next step is moving `texts`,
   dialogue and `look`s into `texts.en.json` keyed by id, with the zone file holding keys only.
 - **Layout**: done: `layout` on each device (see **Layout**).
@@ -375,6 +401,10 @@ yard over and keeps the rest.
   Downtown starts there, a new one after the intro.
 - `game/yard/`: the yard's own code: `effects.ts` (`YARD_RULES`), `camera.ts` (CAM-1),
   `scene.ts` (drawing), `index.ts` (`YARD_ZONE`).
+- `game/data/downtown.json`: Downtown. `game/downtown/`: its code: `rules.ts` (effects, derived
+  values from the save, DLV-9's drive; `downtownRules(player)`), `save.ts` (`reconcile` with old
+  saves), `shell.ts` (typed commands), `camera.ts` (CAM-3), `scene.ts` (drawing, the CITY MAP
+  kiosk), `index.ts` (`downtownZone(player)`).
 
 ## Cutscenes
 
@@ -406,5 +436,6 @@ Boundary: the picture (layout, motion) is **code**; titles, timing, cards and th
 4. **PUZZLES.md's format sketches** differ in places from what the engine built (`clue` step →
    `give`; `accepts` → `password` list; a STORE with `trace.fillMs` → a LOG noun with `rate`;
    sector `nouns` inside the sector → `sector` on each noun). Align the sketches, or the engine?
-5. Not built yet: the watchdog, `{ "module": … }` (granting a module), guard toys, `fixed`
-   cables, `clock.every`.
+5. Not built yet: the watchdog, `{ "module": … }` (granting a module; Downtown's legs.so is an
+   effect, since the save keeps it as `jump`), guard toys, `fixed` cables, `clock.every`.
+6. Should the fixer's hints move into `downtown.json` (a `hints` field per goal)?

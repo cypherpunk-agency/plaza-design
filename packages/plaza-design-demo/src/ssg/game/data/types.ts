@@ -128,8 +128,12 @@ export interface SectorData { id: string; label?: string; seal: SealData }
 
 /** Where a device stands in the world (world units, as the scene draws) and on the board. */
 export interface LayoutData {
-  /** In the world: x of its centre, width, height. Devices without a spot live on the board only (net nodes). */
-  spot?: { x: number; w: number; h: number };
+  /**
+   * In the world: x of its centre, width, height, and `y`, how high its bottom sits above the
+   * street (default 0: it stands on the street; a sign on a wall or a box on a roof sits higher).
+   * Devices without a spot live on the board only (net nodes).
+   */
+  spot?: { x: number; w: number; h: number; y?: number };
   /** Its home on the board, as fractions of the stage. */
   board?: { x: number; y: number };
   /** Which side of the device each noun sits on, on the board / in a device's schematic. */
