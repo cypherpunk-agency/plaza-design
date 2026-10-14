@@ -19,11 +19,12 @@ import { Companion, WARM } from './companion';
 import { type ZoneDef, ZoneHost } from './zone';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
-import { metroDoorsOpen, metroSync } from './scenes/metro';
-import { ride } from './scenes/train';
 import {
-  DOORS, DOORS_CLOSE, drawCityMap, EDGES, drawFlight, drawMetroStairs, drawTaxiPad, DRIVER_BROKE, FARE, FLIGHT, isDoorId, LINE, RIDE,
-  seenFlag, START_ZONE, STAND_IDS, standOf, STANDS, STATIONS, stationOf, type DoorId, type MapState, type Stand, type Station, type Zone,
+  boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
+} from './scenes/line';
+import {
+  DOORS, drawCityMap, EDGES, drawFlight, drawMetroStairs, drawTaxiPad, DRIVER_BROKE, FARE, FLIGHT, isDoorId,
+  seenFlag, START_ZONE, STAND_IDS, standOf, STANDS, STATIONS, stationAt, type DoorId, type MapState, type Stand, type Station, type Zone,
 } from './city';
 import { KeyBar } from './keybar';
 import { levels, SUDO, unlockAll } from './sudo';
@@ -99,13 +100,10 @@ export class Game {
   private started = false;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
-  /** The city map overlay, when open: just looking, picking a taxi stand, or picking a metro stop. */
-  private mapView: { mode: 'view' | 'taxi' | 'metro'; options: string[]; index: number } | null = null;
+  /** The city map overlay, when open: just looking (TAB, the line map in the train), or picking a taxi stand. */
+  private mapView: { mode: 'view' | 'taxi'; options: string[]; index: number } | null = null;
   /** A sky-taxi flight in progress. */
   private flight: { to: Stand; start: number } | null = null;
-  /** The train's stop (or the one it last left), and the ride in progress. */
-  private station: Station = 'downtown';
-  private trip: { to: Station; start: number } | null = null;
 
   constructor(private host: GameHost) {
     this.canvas = document.createElement('canvas');
@@ -298,6 +296,8 @@ export class Game {
     if (zh && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
     if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
     if (k === 'e' || k === 'E' || k === 'Enter') { this.interact(); return; }
+    // walking up into an open train door (or out of one) is the same as E there
+    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.walkThroughDoor()) return;
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }
@@ -1176,7 +1176,9 @@ export class Game {
     x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center';
     x.fillStyle = 'rgba(0,255,255,.95)'; x.shadowColor = 'rgba(0,255,255,.8)'; x.shadowBlur = 6;
     const h = t.promptH ?? (t.kind === 'jack' ? (t.id === 'box' ? 78 : t.id === 'relay' ? t.h + 48 : 96) : t.kind === 'read' ? 160 : t.id === 'fixer' ? 66 : 62);
-    x.fillText(t.label, this.sx(t.x), this.y(h));
+    // kept inside the view, so a way out at a scene's very end still reads in full
+    const half = x.measureText(t.label).width / 2 + 4;
+    x.fillText(t.label, Math.max(half, Math.min(this.viewW - half, this.sx(t.x))), this.y(h));
     x.restore();
   }
 
@@ -1349,9 +1351,15 @@ export class Game {
     const list: Target[] = [];
     for (const e of s.exits) {
       if (e.edge || (e.requires && !this.save.flags[e.requires])) continue;
-      // The platform's BOARD only shows while a train is in with its doors open.
-      if (e.action === 'board' && !metroDoorsOpen(this.t)) continue;
-      const label = e.action === 'out' ? (this.trip ? '[E] DOORS LOCKED' : '[E] STEP OUT · ' + STATIONS[this.station].name) : e.label;
+      // A platform's BOARD: one at each of the train's doors, only while it stands there with them open.
+      if (e.action === 'board') {
+        const st = stationAt(this.zone);
+        if (st) for (const dx of platformDoors(st, this.t, this.cam, STOP)) list.push({ kind: 'scene', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + STATIONS[nextStation(st)].name, promptH: e.promptH ?? 70 });
+        continue;
+      }
+      // The train's door: only while it stands at a stop with the doors open.
+      if (e.action === 'out' && !rideOpen()) continue;
+      const label = e.action === 'out' ? '[E] STEP OUT · ' + STATIONS[rideStop()].name : e.label;
       list.push({ kind: 'scene', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
     for (const r of s.readables ?? []) list.push({ kind: 'scene', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
@@ -1367,12 +1375,10 @@ export class Game {
       return;
     }
     const e = s.exits.find((z) => z.id === id)!;
-    if (e.action === 'board') { if (metroDoorsOpen(this.t)) this.enterTrain('downtown'); return; }
+    if (e.action === 'board') { const st = stationAt(this.zone); if (st && platformOpen(st, this.t)) this.enterTrain(st); return; }
     if (e.action === 'out') { this.stepOut(); return; }
-    if (e.action === 'line') { this.openLineMap(); return; }
     if (e.action === 'taxi') { this.hailTaxi(); return; }
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
-    if (e.to === 'train') { this.enterTrain(stationOf(this.zone)); return; }
     if (e.to === 'downtown' || e.to === 'yard' || e.to === 'capsule' || isSceneId(e.to)) this.travel(e.to, e.at);
   }
 
@@ -1404,6 +1410,18 @@ export class Game {
     this.mapView = null;
     if (zone === 'downtown' || zone === 'yard' || zone === 'capsule') this.goTo(zone, false, at);
     else this.enterScene(zone, false, at);
+    // With reduced motion the platforms' clocks stand still: stand a train there with its doors open.
+    const st = stationAt(zone);
+    if (st && this.reduced && !platformOpen(st, this.t)) platformSync(st, this.t, TIMETABLE.dwell / 2);
+  }
+
+  /** ↑ or W in an open train door, on the platform or in the car: step through it. */
+  private walkThroughDoor() {
+    if (!this.scene) return false;
+    const t = this.nearest();
+    if (!t || (t.id !== 'exit:train' && t.id !== 'exit:out')) return false;
+    this.useScene(t.id);
+    return true;
   }
 
   /** The player walked into a border: leave through that edge's exit, if the zone has one, still walking the same way. */
@@ -1429,32 +1447,21 @@ export class Game {
     if (id === 'taxi') { this.hailTaxi(); return; }
     // your building's lobby: the lift up to your flat
     if (id === 'capsule') { this.travel('capsule', 'downtown'); return; }
-    if (id === 'metro' && this.reduced) metroSync(this.t);
     this.travel(id, 'downtown');
   }
 
-  /** Board the train at a station: in the carriage by the door, stopped, doors open. */
+  /** Board the train standing at a station's platform: in the car by its door, which stays open as long as it would have on the platform. */
   private enterTrain(at: Station) {
-    this.station = at;
-    this.trip = null;
-    Object.assign(ride, { stop: STATIONS[at].name, next: '', moving: false, open: 1 });
+    boardRide(at, platformLeft(at, this.t));
     this.travel('train', 'out');
   }
 
-  /** E at the train's door: out at the current stop, onto that station's platform or door. */
+  /** E (or ↑) at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
   private stepOut() {
-    if (this.trip) { this.flash('doors locked · next stop ' + STATIONS[this.trip.to].name); sound.denied(); return; }
-    const st = STATIONS[this.station];
-    if (this.station === 'downtown') metroSync(this.t);
-    this.travel(st.zone, st.at);
-  }
-
-  /** E at the line map in the train: the city map, to pick the next stop. */
-  private openLineMap() {
-    if (this.trip) { this.flash('next stop ' + STATIONS[this.trip.to].name); return; }
-    const i = LINE.indexOf(this.station);
-    this.mapView = { mode: 'metro', options: [...LINE], index: (i + 1) % LINE.length };
-    sound.open();
+    if (!rideOpen()) return;
+    const st = rideStop(), left = rideLeft();
+    this.travel(STATIONS[st].zone, 'train');
+    platformSync(st, this.t, this.reduced ? TIMETABLE.dwell / 2 : left);
   }
 
   /** E at a taxi stand: the city map to pick a stand, if you can pay. */
@@ -1502,16 +1509,10 @@ export class Game {
       this.syncHud();
       this.flight = { to, start: this.clock };
       sound.open();
-    } else if (m.mode === 'metro') {
-      const to = pick as Station;
-      if (to === this.station) { this.flash('this is ' + STATIONS[to].name); return; }
-      this.trip = { to, start: this.clock };
-      Object.assign(ride, { next: STATIONS[to].name });
-      sound.close();
     }
   }
 
-  /** Flights land; the train closes its doors, rides, and opens them at the stop. */
+  /** Flights land; on board, the train stands, closes its doors, runs to the next stop on the loop and opens them (line.ts). */
   private updateTravel(dt: number) {
     if (this.flight && this.clock - this.flight.start >= FLIGHT) {
       const to = this.flight.to;
@@ -1520,27 +1521,17 @@ export class Game {
       this.flash('-' + FARE + ' token · ' + STANDS[to].name);
     }
     if (this.zone !== 'train') return;
-    const tr = this.trip;
-    if (!tr) { ride.moving = false; ride.open = Math.min(1, ride.open + dt / DOORS_CLOSE); return; }
-    const e = this.clock - tr.start;
-    let speed = 0;
-    if (e < DOORS_CLOSE) ride.open = Math.max(0, 1 - e / DOORS_CLOSE);
-    else if (e < DOORS_CLOSE + RIDE) { ride.open = 0; ride.moving = true; speed = 5 * Math.sin((Math.PI * (e - DOORS_CLOSE)) / RIDE); }
-    else {
-      this.station = tr.to;
-      this.trip = null;
-      Object.assign(ride, { stop: STATIONS[tr.to].name, next: '', moving: false });
-      this.flash(STATIONS[tr.to].name + ' · doors open');
-      sound.open();
-    }
-    ride.dist += speed * dt;
+    const ev = stepRide(dt);
+    if (ev === 'depart') { this.flash('NEXT: ' + STATIONS[rideNext()].name); sound.close(); }
+    else if (ev === 'arrive') { this.flash(STATIONS[rideStop()].name + ' · doors open'); sound.open(); }
   }
 
   private drawMap() {
     const m = this.mapView;
     if (!m) return;
+    const riding = this.zone === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null;
     const st: MapState = {
-      mode: m.mode, options: m.options, index: m.index, zone: this.zone, station: this.station,
+      mode: m.mode, options: m.options, index: m.index, zone: this.zone, ride: riding,
       seen: (z) => !!this.save.flags[seenFlag(z)], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
     };
     drawCityMap(this.x, this.viewW, this.viewH, st);

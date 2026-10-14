@@ -6,7 +6,7 @@
  *   the button says ACCESS GRANTED for once, then the window becomes the game.
  * - `?play` in the URL skips the boot and the Konami code; `?play=yard` starts in the back yard,
  *   `?play=capsule` in your flat (Capsule 7B, where a new game starts),
- *   `?play=<scene id>` in one of the explorable scenes (scenes/: harbor, market, shop, mall, metro, train),
+ *   `?play=<scene id>` in one of the explorable scenes (scenes/: harbor, market, shop, mall, the metro platforms metro, galleriaStation and harborStation, train),
  *   `?play=<cutscene id>` plays a cutscene first (cutscenes/: intro), then its next zone.
  * - Phones (basic support, landscape only): the Konami code as swipes
  *   (up up down down left right left right, tap tap), on-screen buttons, and a

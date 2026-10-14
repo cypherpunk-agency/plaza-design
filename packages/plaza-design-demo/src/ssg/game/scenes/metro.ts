@@ -10,6 +10,7 @@
 
 import { Skyline } from '../skyline';
 import { box, figure, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
+import { drawDepartures, drawPlatformTrain, STOP } from './line';
 
 /** Layout: positions in world units, heights up from the platform. */
 const L = {
@@ -31,11 +32,9 @@ const L = {
   pierStep: 260,
   /** Where you board: in front of the second door of the first car while the train is in (and where you land stepping off). */
   boardAt: 365,
-  /** The train, in the track's parallax: where it stops, its cars, its loop in frames. */
-  train: { stop: 150, cars: 3, car: 290, gap: 8, loop: 1600, arrive: 360, leave: 760, gone: 1100 },
 };
 
-const TRACK = 0.94, RAIL = 0.9;
+const RAIL = 0.9;
 /** The city drifts at this fraction of the camera (its own bands drift slower still), and how much it is dimmed: far band, calm. */
 const SKY_PAR = 0.5, SKY_DIM = 0.55;
 
@@ -58,70 +57,8 @@ function drawCity(x: CanvasRenderingContext2D, v: View) {
   x.fillStyle = 'rgba(2,1,0,.3)'; x.fillRect(0, 0, v.viewW, Math.max(0, v.y(L.canopy.truss)));
 }
 
-/** Who is riding, per window: true = someone in it. */
-const RIDERS = (() => { const r = rng(91); return Array.from({ length: 30 }, () => r() < 0.4); })();
 /** Street lights far below the viaduct, seen between the piers: [x, depth]. */
 const BELOW = (() => { const r = rng(95); return Array.from({ length: 26 }, () => [r() * 2600, r()]); })();
-
-/** Shifts the train's loop, so a train is in when you arrive by train. */
-const clock = { offset: 0 };
-
-/** Puts the train at the platform, doors opening, at frame `t` (you just stepped off it). */
-export function metroSync(t: number) {
-  const T = L.train;
-  clock.offset = (((T.arrive + 30 - t) % T.loop) + T.loop) % T.loop;
-}
-
-/** True while the train is in with its doors open: you can board. */
-export function metroDoorsOpen(t: number) {
-  const at = trainAt(t);
-  return !!at && !at.moving && at.open > 0.6;
-}
-
-/** Where the train's nose is (track coordinates) and whether its doors are open, from the loop's clock. */
-function trainAt(t: number): { x: number; open: number; moving: boolean } | null {
-  const T = L.train, ph = (t + clock.offset) % T.loop;
-  if (ph < T.arrive) { const f = ph / T.arrive; return { x: T.stop + 1900 * (1 - f) * (1 - f), open: 0, moving: true }; }
-  if (ph < T.leave) { const f = (ph - T.arrive) / (T.leave - T.arrive); return { x: T.stop, open: Math.min(1, Math.min(f, 1 - f) * 8), moving: false }; }
-  if (ph < T.gone) { const f = (ph - T.leave) / (T.gone - T.leave); return { x: T.stop - 2300 * f * f, open: 0, moving: true }; }
-  return null;
-}
-
-function drawTrain(x: CanvasRenderingContext2D, v: View) {
-  const at = trainAt(v.t);
-  if (!at) return;
-  const { y } = v, T = L.train, nose = v.sx(at.x, TRACK);
-  // headlight on the railing and the air ahead of it
-  if (at.moving) {
-    const g = x.createRadialGradient(nose, y(40), 2, nose, y(40), 120);
-    g.addColorStop(0, 'rgba(255,230,190,.2)'); g.addColorStop(1, 'rgba(255,230,190,0)');
-    x.fillStyle = g; x.fillRect(nose - 120, y(160), 240, 160);
-  }
-  for (let c = 0; c < T.cars; c++) {
-    const c0 = nose + c * (T.car + T.gap);
-    if (!onScreen(v, c0, T.car)) continue;
-    box(x, c0, y(100), T.car, 86, '#14171a', 'rgba(' + O + ',.6)');
-    x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(c0 + 1, y(44), T.car - 2, 2);
-    for (let i = 0; i < 6; i++) {
-      const wx = c0 + 14 + i * 46;
-      if (i === 1 || i === 4) {
-        // doors: open shows the lit inside
-        const d = Math.round(at.open * 13);
-        box(x, wx, y(74), 32, 58, '#101316', 'rgba(' + O + ',.45)');
-        if (d) { x.fillStyle = 'rgba(255,217,165,.45)'; x.fillRect(wx + 16 - d, y(72), d * 2, 56); }
-        x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(wx + 3 - d, y(66), 9, 14); x.fillRect(wx + 20 + d, y(66), 9, 14);
-        continue;
-      }
-      x.fillStyle = 'rgba(255,217,165,.32)'; x.fillRect(wx, y(84), 32, 24);
-      if (RIDERS[(c * 6 + i) % RIDERS.length]) figure(x, wx + 16, y(60), 22, '#0b0907');
-    }
-    if (c === 0) {
-      x.fillStyle = 'rgba(255,240,215,.95)'; x.fillRect(c0 + 3, y(30), 5, 4);
-      box(x, c0 + 6, y(98), 64, 11, '#050302');
-      text(x, 'LINE 0', c0 + 38, y(92.5), 'rgba(255,136,0,.9)', 7, '600');
-    }
-  }
-}
 
 /** The viaduct's far edge behind the track: a girder lip and a waist-high railing, against the city. */
 function drawFarRail(x: CanvasRenderingContext2D, v: View) {
@@ -290,18 +227,18 @@ function drawDeck(x: CanvasRenderingContext2D, v: View) {
 
 export const metro: Scene = {
   id: 'metro',
-  name: 'Metro',
+  name: 'Downtown Station',
   width: L.width,
   spawn: L.spawn,
-  intro: ['The metro. One line, three stops, and a train that never says which one it means.'],
+  intro: ['The metro. One line, three stops, round and round. Getting off at the right one is my problem.'],
   exits: [
     { id: 'downtown', x: 32, to: 'downtown', at: 'metro', label: '[E] STAIRS DOWN · DOWNTOWN', promptH: 82 },
     { id: 'train', x: L.boardAt, to: '', action: 'board', label: '[E] BOARD', promptH: 84 },
     { id: 'citymap', x: L.cityMap, to: '', action: 'map', label: '[E] CITY MAP', promptH: 90 },
   ],
   readables: [
-    { id: 'board', x: L.board, name: 'DEPARTURES', promptH: 120, pages: ['NEXT TRAIN: NOW.', 'It has said NOW since the day it was installed. It beats the timetable.'] },
-    { id: 'map', x: 730, name: 'LINE MAP', promptH: 92, pages: ['LINE 0: DOWNTOWN · GALLERIA · HARBOR.', 'Pick your stop on the map inside the train. The train pretends it was its idea.'] },
+    { id: 'board', x: L.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0, every 25 seconds, give or take a lifetime.', 'The doors stay open for a few seconds. Miss it and the next one comes.'] },
+    { id: 'map', x: 730, name: 'LINE MAP', promptH: 92, pages: ['LINE 0: DOWNTOWN > GALLERIA > HARBOR > DOWNTOWN. A loop.', 'The train stops everywhere. Getting off is your job.'] },
     { id: 'poster', x: 1130, name: 'POSTER', promptH: 92, pages: ['REGISTRY PREMIUM: your commute, counted.', 'Free for the first lifetime.'] },
   ],
 
@@ -313,8 +250,8 @@ export const metro: Scene = {
     drawFarRail(x, v);
     x.fillStyle = '#020101'; x.fillRect(0, y(L.deck), v.viewW, L.deck - 2);
     x.fillStyle = 'rgba(160,150,140,.35)'; x.fillRect(0, y(8), v.viewW, 1); x.fillRect(0, y(11), v.viewW, 1);
-    for (let wx = 0; wx < 2600; wx += 14) { const s = sx(wx, TRACK); if (s >= -4 && s <= v.viewW) { x.fillStyle = 'rgba(60,40,25,.6)'; x.fillRect(s, y(6), 8, 2); } }
-    drawTrain(x, v);
+    for (let wx = 0; wx < 2600; wx += 14) { const s = sx(wx, 0.94); if (s >= -4 && s <= v.viewW) { x.fillStyle = 'rgba(60,40,25,.6)'; x.fillRect(s, y(6), 8, 2); } }
+    drawPlatformTrain(x, v, 'downtown', STOP);
     x.fillStyle = 'rgba(255,210,58,.7)'; x.fillRect(0, y(2), v.viewW, 2);
 
     // middle band: the canopy and its pillars
@@ -326,14 +263,7 @@ export const metro: Scene = {
     notice(x, t, sx(730), y(78), 44, 30, ['LINE', 'MAP'], 1);
     notice(x, t, sx(1130), y(78), 44, 30, ['ADS'], 2);
     // the departure board on two rods from the roof
-    const bx = sx(L.board);
-    if (onScreen(v, bx - 44, 88)) {
-      x.strokeStyle = 'rgba(' + O + ',.5)'; x.beginPath(); x.moveTo(bx - 30.5, y(L.canopy.under)); x.lineTo(bx - 30.5, y(112)); x.moveTo(bx + 30.5, y(L.canopy.under)); x.lineTo(bx + 30.5, y(112)); x.stroke();
-      box(x, bx - 42, y(112), 84, 26, '#050302', 'rgba(' + O + ',.7)');
-      const at = trainAt(t), msg = at && !at.moving ? 'BOARDING' : 'NEXT: NOW';
-      text(x, msg, bx, y(99), 'rgba(255,136,0,' + (0.75 + 0.2 * Math.sin(t * 0.06)) + ')', 9, '600');
-      tell(x, t, bx + 36, y(90));
-    }
+    drawDepartures(x, v, 'downtown', L.board, 112, L.canopy.under);
     for (const b of L.benches) drawBench(x, v, b);
     drawDeck(x, v);
     drawCityMap(x, v, L.cityMap);

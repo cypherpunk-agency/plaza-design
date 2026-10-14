@@ -10,11 +10,13 @@ import { mall } from './mall';
 import { market } from './market';
 import { metro } from './metro';
 import { shop } from './shop';
+import { galleriaStation, harborStation } from './stations';
 import { train } from './train';
 
 export type { Scene, SceneExit, SceneReadable, View as SceneView } from './kit';
 
-export const SCENES = { harbor, market, shop, mall, metro, train } satisfies Record<string, Scene>;
+/** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
+export const SCENES = { harbor, market, shop, mall, metro, galleriaStation, harborStation, train } satisfies Record<string, Scene>;
 export type SceneId = keyof typeof SCENES;
 
 export const isSceneId = (id: string): id is SceneId => Object.prototype.hasOwnProperty.call(SCENES, id);

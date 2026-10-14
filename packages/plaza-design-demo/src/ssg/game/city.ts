@@ -1,8 +1,9 @@
 /**
  * The city as one place you travel through: Downtown's doors, the metro line
- * (Downtown, Galleria, Harbor), the sky-taxi stands, and the city map. The map
- * is the overlay the taxi and the train use to pick a destination, and a screen
- * of its own (`drawCityMap` in 'view' mode) for a menu to show.
+ * (a loop: Downtown, Galleria, Harbor), the sky-taxi stands, and the city map.
+ * The map is the overlay the taxi uses to pick a destination, and a screen of
+ * its own (`drawCityMap` in 'view' mode: TAB, a menu) that shows the line and,
+ * while you ride, where the train is.
  *
  * Canvas drawing only. Places you have been are remembered in the save as
  * `flags['seen:<zone>']`; the map labels those and shows the rest as `???`.
@@ -48,17 +49,19 @@ export const EDGES: Partial<Record<Zone, Partial<Record<'left' | 'right', { to: 
 // ---------- the metro ----------
 
 export type Station = 'downtown' | 'galleria' | 'harbor';
+/** LINE 0 is a loop, in this order: after HARBOR it runs back to DOWNTOWN. The ride itself is scenes/line.ts. */
 export const LINE: Station[] = ['downtown', 'galleria', 'harbor'];
-/** Each station: its name, the zone you step out into and the door you land at there. */
-export const STATIONS: Record<Station, { name: string; zone: Zone; at: string }> = {
-  downtown: { name: 'DOWNTOWN', zone: 'metro', at: 'train' },
-  galleria: { name: 'GALLERIA', zone: 'mall', at: 'metro' },
-  harbor: { name: 'HARBOR', zone: 'harbor', at: 'metro' },
+/**
+ * Each station: its name, its platform (a scene, where you land stepping off at
+ * its `train` exit) and the district it belongs to (where its stairs lead).
+ */
+export const STATIONS: Record<Station, { name: string; zone: Zone; district: Zone }> = {
+  downtown: { name: 'DOWNTOWN', zone: 'metro', district: 'downtown' },
+  galleria: { name: 'GALLERIA', zone: 'galleriaStation', district: 'mall' },
+  harbor: { name: 'HARBOR', zone: 'harborStation', district: 'harbor' },
 };
-/** The station you board at from a zone (the metro platform is Downtown's). */
-export const stationOf = (zone: Zone): Station => (zone === 'mall' ? 'galleria' : zone === 'harbor' ? 'harbor' : 'downtown');
-/** Frames for the doors to close, and for the ride between two stops. */
-export const DOORS_CLOSE = 30, RIDE = 240;
+/** The station whose platform this zone is, if it is one. */
+export const stationAt = (zone: Zone): Station | null => LINE.find((s) => STATIONS[s].zone === zone) ?? null;
 
 // ---------- sky taxis ----------
 
@@ -105,14 +108,14 @@ const BLOCKS = (() => {
 const RIPPLES = (() => { const r = rng(9); return Array.from({ length: 26 }, () => [152 + r() * 166, 150 + r() * 28, 4 + r() * 8]); })();
 
 export interface MapState {
-  /** 'view': just the map (a menu's screen); 'taxi': pick a stand; 'metro': pick a stop. */
-  mode: 'view' | 'taxi' | 'metro';
-  /** Stand ids (taxi) or station ids (metro). */
+  /** 'view': just the map (TAB, a menu's screen); 'taxi': pick a stand. */
+  mode: 'view' | 'taxi';
+  /** Stand ids (taxi). */
   options: string[];
   index: number;
   zone: Zone;
-  /** The train's current stop, for "you are here" while riding. */
-  station: Station;
+  /** While riding: the stop the train stands at or last left, the next one, and how far along it is (0..1). */
+  ride: { from: Station; to: Station; f: number } | null;
   seen: (zone: Zone) => boolean;
   gateOpen: boolean;
   tokens: number;
@@ -122,8 +125,12 @@ export interface MapState {
 function herePoint(st: MapState): [number, number] {
   const z = st.zone;
   if (st.mode === 'taxi') { const s = standOf(z); if (s) return PAD_AT[s]; }
-  if (z === 'metro') return STATION_AT.downtown;
-  if (z === 'train') return STATION_AT[st.station];
+  const station = stationAt(z);
+  if (station) return STATION_AT[station];
+  if (z === 'train' && st.ride) {
+    const [a, b] = [STATION_AT[st.ride.from], STATION_AT[st.ride.to]], f = st.ride.f;
+    return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+  }
   if (z === 'shop') return [SPOTS.shop[0], SPOTS.shop[1]];
   if (z === 'yard') return [SPOTS.yard[0], SPOTS.yard[1]];
   if (z === 'capsule') return [SPOTS.home[0], SPOTS.home[1]];
@@ -144,7 +151,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   box(x, ox, oy, w, h, '#040201', 'rgba(' + O + ',.9)');
   x.strokeStyle = 'rgba(' + O + ',.3)'; x.lineWidth = 1; x.strokeRect(ox + 3.5, oy + 3.5, w - 7, h - 7);
   text(x, 'CITY MAP', ox + 10, oy + 13, 'rgba(' + O + ',.95)', 9, '600', 'left');
-  const sub = st.mode === 'taxi' ? 'SKY TAXI · ' + FARE + ' TOKEN A RIDE · TOKENS ' + st.tokens : st.mode === 'metro' ? 'LINE 0 · CHOOSE A STOP' : 'PLAZA CENTRAL';
+  const sub = st.mode === 'taxi' ? 'SKY TAXI · ' + FARE + ' TOKEN A RIDE · TOKENS ' + st.tokens : st.ride ? 'LINE 0 · ON BOARD' : 'PLAZA CENTRAL';
   text(x, sub, ox + w - 10, oy + 13, 'rgba(' + PAPER + ',.75)', 7, '', 'right');
 
   // the map itself, scaled to fit between the title and the footer
@@ -184,20 +191,19 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     x.fillStyle = 'rgba(' + PAPER + ',' + (known ? 0.7 : 0.3) + ')'; x.fillRect(px - 1, py - 1, 3, 3);
     text(x, known ? label : '?', px + 4, py, 'rgba(' + PAPER + ',' + (known ? 0.6 : 0.3) + ')', 7, '', 'left');
   }
-  // the metro line, Downtown to Galleria to Harbor
+  // the metro line: a loop, Downtown to Galleria to Harbor and back to Downtown
   x.strokeStyle = 'rgba(' + PAPER + ',.65)'; x.lineWidth = Math.max(1, Math.round(2 * s));
   x.beginPath();
   LINE.forEach((id, i) => { const [px, py] = P(STATION_AT[id][0], STATION_AT[id][1]); if (i) x.lineTo(px, py); else x.moveTo(px, py); });
-  x.stroke(); x.lineWidth = 1;
+  x.closePath(); x.stroke(); x.lineWidth = 1;
   { const [lx, ly] = P(160, 104); text(x, 'LINE 0', lx, ly, 'rgba(' + PAPER + ',.5)', 7, '', 'left'); }
   const pick = st.mode === 'view' ? '' : st.options[st.index];
   for (const id of LINE) {
-    const [px, py] = P(STATION_AT[id][0], STATION_AT[id][1]), sel = st.mode === 'metro' && pick === id;
-    box(x, px - 3, py - 3, 7, 7, '#0a0604', sel ? 'rgba(' + C + ',' + (blink ? 1 : 0.5) + ')' : 'rgba(' + PAPER + ',.85)');
-    if (st.mode === 'metro') {
-      const known = st.seen(STATIONS[id].zone) || (id === 'downtown' && st.seen('metro'));
-      text(x, known ? STATIONS[id].name : '???', px, py + 10, sel ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.7)', 7, '600');
-    }
+    const [px, py] = P(STATION_AT[id][0], STATION_AT[id][1]), next = !!st.ride && st.ride.to === id && st.ride.f > 0;
+    box(x, px - 3, py - 3, 7, 7, '#0a0604', next ? 'rgba(' + O + ',' + (blink ? 1 : 0.5) + ')' : 'rgba(' + PAPER + ',.85)');
+    // a station is named once you have stood on its platform or walked its district
+    const known = st.seen(STATIONS[id].zone) || st.seen(STATIONS[id].district);
+    if (st.mode === 'view') text(x, known ? STATIONS[id].name : '???', px, py + 10, next ? 'rgba(' + O + ',.95)' : 'rgba(' + PAPER + ',.6)', 7, '600');
   }
   // taxi pads: cyan only when you can pick them
   for (const id of STAND_IDS) {
@@ -218,15 +224,15 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   const fy = oy + h - 22;
   x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(ox + 6, fy - 6, w - 12, 1);
   if (st.mode === 'view') {
-    text(x, '— LINE 0   [H] SKY TAXI   ■ YOU   ??? NOT VISITED', ox + 10, fy + 2, 'rgba(' + PAPER + ',.65)', 7, '', 'left');
+    text(x, st.ride
+      ? (st.ride.f > 0 ? 'ON LINE 0 · NEXT: ' + STATIONS[st.ride.to].name : 'ON LINE 0 · AT ' + STATIONS[st.ride.from].name)
+      : '— LINE 0 (A LOOP)   [H] SKY TAXI   ■ YOU   ??? NOT VISITED', ox + 10, fy + 2, 'rgba(' + PAPER + ',.65)', 7, '', 'left');
     text(x, 'TAB · ESC close', ox + w - 10, fy + 12, 'rgba(' + C + ',.9)', 7, '600', 'right');
   } else {
-    const name = st.mode === 'taxi'
-      ? (st.seen(STANDS[pick as Stand].zone) ? STANDS[pick as Stand].name : '???')
-      : (st.seen(STATIONS[pick as Station].zone) || (pick === 'downtown' && st.seen('metro')) ? STATIONS[pick as Station].name : '???');
-    const here = st.mode === 'taxi' ? standOf(st.zone) === pick : st.station === pick;
+    const name = st.seen(STANDS[pick as Stand].zone) ? STANDS[pick as Stand].name : '???';
+    const here = standOf(st.zone) === pick;
     text(x, '> ' + name + (here ? '  (YOU ARE HERE)' : ''), ox + 10, fy + 3, 'rgba(' + C + ',.95)', 9, '600', 'left');
-    text(x, '<- -> choose · E ' + (st.mode === 'taxi' ? 'fly' : 'ride') + ' · ESC cancel', ox + w - 10, fy + 12, 'rgba(' + PAPER + ',.7)', 7, '', 'right');
+    text(x, '<- -> choose · E fly · ESC cancel', ox + w - 10, fy + 12, 'rgba(' + PAPER + ',.7)', 7, '', 'right');
   }
   x.restore();
 }
