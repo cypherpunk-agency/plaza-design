@@ -108,6 +108,8 @@ export class Schematic {
   private allBtn: HTMLButtonElement | null = null;
   /** Hack vision: plates and circuits moved off their default spot, as offsets from it in world units (x right, y down). */
   private moved = new Map<string, P>();
+  /** The zone's own buttons over the canvas (the host's HACK, BOARD, …): circuits keep clear of them. */
+  bar: HTMLElement | null = null;
   /** Hack vision: when each plate was last tapped (a second tap soon after is a double tap). */
   private lastTap = new Map<string, number>();
   /** Hack vision: CSS px per world unit (the host sets it), so a moved piece keeps its place in the world at any zoom. */
@@ -402,13 +404,17 @@ export class Schematic {
     const box = (e: Element): Box => { const q = e.getBoundingClientRect(); return { l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top }; };
     const boxes = rows.map((row) => ({ row, b: box(row) })).sort((p, q) => p.b.l - q.b.l);
     // the zone's buttons over the canvas (HACK, BOARD, …) lie over the stage too
-    const btns = document.getElementById('zone-btns'), bar = btns?.offsetParent ? box(btns) : null;
+    // (the game's key bar adopts them into its row of actions: then the whole row is in the way)
+    const row = this.bar?.parentElement?.classList.contains('kb-actions') ? this.bar.parentElement : this.bar;
+    const bar = row && this.bar && !this.bar.hidden && row.offsetParent ? box(row) : null;
     // a moved circuit is never pushed aside, only kept from growing out of the top of the view
     // or under the buttons (open verbs make it taller)
     const placed: Box[] = all.filter((r) => r.closest('.moved')).map((r) => {
       const b = box(r), top = bar && b.l < bar.r && b.r > bar.l ? Math.max(ROOM, bar.b + ROOM) : ROOM;
       if (b.t >= top) return b;
-      r.style.translate = '0 ' + (top - b.t) + 'px';
+      // the whole piece (plate too) comes down, so the circuit never hides its own plate
+      const piece = r.parentElement!, [px, py] = (piece.style.translate || '0px 0px').split(' ').map((v) => parseFloat(v) || 0);
+      piece.style.translate = px + 'px ' + (py + top - b.t) + 'px';
       return { ...b, t: top, b: b.b + top - b.t };
     });
     if (!this.palette.hidden) placed.push(box(this.palette));

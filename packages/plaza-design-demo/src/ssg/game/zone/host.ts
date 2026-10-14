@@ -152,6 +152,7 @@ export class ZoneHost {
     this.hackBtn.title = 'hack vision: see every device here and wire them in place (H)';
     this.boardBtn = button('BOARD · B', () => this.toggleBoard());
     host.appendChild(this.btns);
+    this.vision.bar = this.btns;
     const saved = store?.load();
     if (saved) this.restore(saved);
     this.saved = JSON.stringify(this.snapshot());
