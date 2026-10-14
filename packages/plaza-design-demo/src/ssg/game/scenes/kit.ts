@@ -23,9 +23,9 @@ export interface View {
 }
 
 /**
- * A way out. `to` is a zone: 'downtown', 'yard' or a scene's id ('train' boards
- * the train at this zone's station). `at` is the door you land at there: one of
- * its exits' ids, or a Downtown door (shop, yard, capsule, metro, taxi, market).
+ * A way out. `to` is a zone: 'downtown', 'yard' or a scene's id (a district's
+ * station exit leads to its platform scene). `at` is the door you land at there:
+ * one of its exits' ids, or a Downtown door (shop, yard, capsule, metro, taxi, market).
  */
 export interface SceneExit {
   id: string;
@@ -34,8 +34,12 @@ export interface SceneExit {
   label: string;
   promptH?: number;
   at?: string;
-  /** Not a walk: 'board' the train in, step 'out' of the train, read the 'line' map, hail a 'taxi', look at the city 'map'. */
-  action?: 'board' | 'out' | 'line' | 'taxi' | 'map';
+  /**
+   * Not a walk: 'board' the train standing at this platform (one prompt per open
+   * door, `x` is only where you land stepping off), step 'out' of the train at
+   * its stop, hail a 'taxi', look at the city 'map'.
+   */
+  action?: 'board' | 'out' | 'taxi' | 'map';
   /** Only there while this save flag is set. */
   requires?: string;
   /**
