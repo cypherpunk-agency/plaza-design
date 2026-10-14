@@ -14,9 +14,10 @@ import { Terminal } from './terminal';
 import { Yard, YARD_SPAWN, YARD_W } from './yard';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
+import { Menu } from './menu';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
-  ownedModules, READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
+  newSave, ownedModules, READABLES, run, SPAWN_X, START_ZONE, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
 type Target = { kind: 'talk' | 'jack' | 'read' | 'door' | 'yard' | 'scene'; id: string; x: number; h: number; label: string; promptH?: number };
@@ -61,7 +62,6 @@ export class Game {
   private showEnd = false;
   private toast: { text: string; until: number } | null = null;
   private seenControls = false;
-  private escUntil = 0;
   private touch = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
   private ships: Ship[] = [];
   private windows = new Map<number, [number, number, number][]>();
@@ -94,6 +94,18 @@ export class Game {
       store: (z) => { this.save.zones.yard = z; storeSave(this.save); },
     });
     this.yard.onClose = () => this.canvas.focus();
+    this.menu = new Menu(host.windowEl, {
+      save: () => this.save,
+      zone: () => ({ id: this.zone, name: this.zoneName() }),
+      newGame: () => this.newGame(),
+      map: () => {
+        // The city map is another module; it adds `openMap()` to the game when it lands.
+        const g = this as unknown as { openMap?: () => void };
+        return typeof g.openMap === 'function' ? () => g.openMap!() : undefined;
+      },
+      quit: () => host.onExit(),
+      onClose: () => this.canvas.focus(),
+    }, this.touch);
     this.canvas.addEventListener('pointerdown', (e) => this.onCanvasPointer(e, true));
     this.canvas.addEventListener('pointermove', (e) => this.onCanvasPointer(e, false));
 
@@ -140,6 +152,7 @@ export class Game {
   }
 
   stop() {
+    this.menu.hide();
     this.endCutscene(false);
     this.running = false;
     cancelAnimationFrame(this.raf);
@@ -175,6 +188,9 @@ export class Game {
     if (!this.running) return;
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
+    // The pause menu: the world holds still under it (the last frame stays on the canvas).
+    if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
+    this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     if (!this.reduced || this.t < 1) this.t += dt;
     this.update(dt);
@@ -187,6 +203,7 @@ export class Game {
 
   private onKeyDown(e: KeyboardEvent) {
     if (this.cut) { e.preventDefault(); if (!e.repeat) this.cut.skip(); return; }
+    if (this.menu.open) { if (!this.term.focused) this.menu.key(e); return; }
     if (this.term.focused) return;
     if (this.zone === 'yard' && this.yard.overlayOpen) {
       if (e.key === 'Escape') { e.preventDefault(); this.yard.closeOverlay(); }
@@ -198,17 +215,15 @@ export class Game {
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(k)) e.preventDefault();
     if (e.repeat && !['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].includes(k)) return;
     if (this.showEnd) {
-      if (k === 'Escape') { this.host.onExit(); }
+      if (k === 'Escape') { this.showEnd = false; this.openMenu(); }
       else if (k === 'Enter' || k === 'e' || k === 'E') this.showEnd = false;
       return;
     }
     if (k === 'Escape') {
       if (this.bubble) { this.bubble = null; return; }
       if (this.zone === 'yard' && this.yard.visionOn) { this.yard.toggleVision(); return; }
-      // Leaving takes a second Esc, so closing one bubble too many never ends a session.
-      if (this.t < this.escUntil) { this.escUntil = 0; this.host.onExit(); return; }
-      this.escUntil = this.t + 120;
-      this.flash('ESC again to leave');
+      // Nothing left to close: the pause menu (QUIT TO HOMEPAGE leaves the game).
+      this.openMenu();
       return;
     }
     if (k === '/') { e.preventDefault(); this.openDeck(); return; }
@@ -240,6 +255,39 @@ export class Game {
     this.p.vy = 4.6;
     this.p.onGround = false;
     sound.jump();
+  }
+
+  // ---------- pause menu (menu.ts) ----------
+
+  private menu: Menu;
+
+  /** Esc with nothing else open: pause and show the menu. Progress is written first. */
+  private openMenu() {
+    this.keys.clear();
+    this.p.moving = false;
+    if (this.zone === 'yard') this.yard.persist();
+    storeSave(this.save);
+    this.menu.show();
+  }
+
+  /** The zone's name as the HUD shows it: DOWNTOWN, BACK YARD, a scene's name. */
+  private zoneName() {
+    return this.scene ? this.scene.name.toUpperCase() : this.zone === 'yard' ? 'BACK YARD' : 'DOWNTOWN';
+  }
+
+  /** NEW GAME (confirmed in the menu): a fresh save, slots untouched, the intro, then the start zone. */
+  private newGame() {
+    this.leaveMachine();
+    this.term.clear();
+    this.bubble = null;
+    this.showEnd = false;
+    this.toast = null;
+    this.seenControls = false;
+    this.save = newSave();
+    this.yard.reset(); // the yard's runtime back to a first visit, written into the new save
+    storeSave(this.save);
+    this.syncHud();
+    this.playCutscene('intro', () => this.handTo(START_ZONE));
   }
 
   private flash(text: string) { this.toast = { text, until: this.t + 110 }; }
@@ -913,15 +961,15 @@ export class Game {
     const x = this.x, s = this.save;
     x.save();
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
-    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.scene ? this.scene.name.toUpperCase() : this.zone === 'yard' ? 'BACK YARD' : 'DOWNTOWN', 8, 12);
+    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.zoneName(), 8, 12);
     x.fillStyle = 'rgba(255,217,165,.7)';
     x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (sound.enabled ? ' · SOUND' : ''), 8, 23);
     if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, 34); }
     if (!this.seenControls || this.t < 600) {
       x.fillStyle = 'rgba(255,217,165,.55)';
-      if (this.zone === 'yard') x.fillText(this.touch ? 'tap things to open them · HACK see everything · BOARD wire, add timers' : 'tap or click things to open them · E near things · H hack vision · B board · / terminal · ESC leave', 8, this.touch ? 45 : this.viewH - 8);
-      else if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC twice to leave', 8, 34);
-      else x.fillText('<- -> walk · SHIFT run · E talk / jack in · / terminal · M sound · ESC leave', 8, this.viewH - 8);
+      if (this.zone === 'yard') x.fillText(this.touch ? 'tap things to open them · HACK see everything · BOARD wire, add timers' : 'tap or click things to open them · E near things · H hack vision · B board · / terminal · ESC menu', 8, this.touch ? 45 : this.viewH - 8);
+      else if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC menu', 8, 34);
+      else x.fillText('<- -> walk · SHIFT run · E talk / jack in · / terminal · M sound · ESC menu', 8, this.viewH - 8);
     }
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
@@ -940,7 +988,7 @@ export class Game {
     x.shadowBlur = 0; x.font = '10px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,.9)';
     x.fillText('Downtown cleared. Nodes freed: ' + this.save.freed.length + '. You are still a ghost, ' + who(this.save) + '.', cx, cy + 26);
     x.fillText('The Neon Market opens in the next update. Your progress is saved in this browser.', cx, cy + 42);
-    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC back to the landing page', cx, cy + 66);
+    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC menu', cx, cy + 66);
     x.restore();
   }
 
