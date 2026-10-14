@@ -1,43 +1,92 @@
 /**
- * A corner shop at night: shelves, a vending machine, a counter with a
- * shopkeeper behind it, a window onto the rain. Small enough to sit in the
- * middle of a wide screen. Bands: far = the street through the window;
- * middle = the back wall and, on tall screens, the building above the shop in
- * cutaway (the stockroom, then flats); play = shelves, machine, counter, people.
+ * A corner shop at night: shelves packed with colour, humming fridges, a vending machine, a
+ * shopkeeper at the till under a camera, a lottery screen, a security mirror, a customer or two,
+ * a cat asleep on the fridge. Small enough to sit in the middle of a wide screen.
+ * Bands: far = the street through the window (people passing in the rain); middle = the back
+ * wall and, on tall screens, the building above the shop in cutaway (the stockroom, then flats);
+ * play = shelves, fridges, machine, counter, people.
+ *
+ * Built from the kits: people (../people.ts), screens (screens.ts), shelves and fridges (build.ts).
  */
 
-import { box, C, exitDoor, figure, O, onScreen, PAPER, rng, sign, tell, text, type Scene, type View } from './kit';
+import { drawPeople, drawPerson, type Person } from '../people';
+import { fridge, shelf, type ShelfSpec } from './build';
+import { box, C, exitDoor, O, onScreen, PAPER, rng, tell, text, type Scene, type SceneUse, type View } from './kit';
+import { adScreen, camera, lotteryScreen, ticker, wallSign } from './screens';
 
 /** Layout: positions in world units, heights up from the floor. */
 const L = {
-  width: 760,
+  width: 900,
   spawn: 84,
-  ceil: 140,
-  window: { x: 70, w: 80, h0: 34, h1: 110 },
-  shelves: [{ x: 180, w: 92 }, { x: 282, w: 92 }, { x: 384, w: 92 }],
-  shelfRows: [4, 32, 60, 88],
+  ceil: 160,
+  window: { x: 70, w: 80, h0: 34, h1: 116 },
+  mirror: { x: 166, h: 140 },
+  shelves: [
+    { x: 182, w: 92, h: 112, rows: 4, seed: 71, stock: 'snacks' },
+    { x: 284, w: 92, h: 112, rows: 4, seed: 72, stock: 'noodles' },
+    { x: 386, w: 92, h: 112, rows: 4, seed: 73, stock: 'mixed' },
+  ] as ShelfSpec[],
   vend: { x: 500, w: 38, h: 78 },
-  counter: { x: 590, w: 150, h: 26 },
-  keeper: 682,
-  tubes: [140, 380, 620],
+  fridge: { x: 556, w: 108, h: 98, seed: 5, doors: 2 },
+  counter: { x: 700, w: 170, h: 26 },
+  till: 730,
+  keeper: 800,
+  tubes: [140, 400, 660],
   /** The building above the shop: a slab, then storeys (the first is the stockroom). */
   slab: 10,
   storey: 76,
   /** Pipes rising through every floor. */
-  risers: [44, 716],
+  risers: [44, 856],
 };
 
-/** Goods on the shelves, laid out once: [dx, row, w, h, tone]. */
-const GOODS = L.shelves.map((s, i) => { const r = rng(70 + i), g: number[][] = []; L.shelfRows.forEach((_, row) => { for (let dx = 4; dx < s.w - 8; dx += 2 + Math.round(r() * 4) + 5) g.push([dx, row, 4 + Math.round(r() * 4), 6 + Math.round(r() * 12), Math.floor(r() * 4)]); }); return g; });
-const TONES = ['rgba(255,217,165,.5)', 'rgba(255,136,0,.5)', 'rgba(200,60,40,.5)', 'rgba(150,140,120,.45)'];
 const RAIN = (() => { const r = rng(73); return Array.from({ length: 24 }, () => [r() * 80, r() * 80, 0.5 + r()]); })();
+
+// ---------- people ----------
+
+const keeper: Person = { id: 'keeper', seed: 5101, look: { body: 'avg', hair: 'short', garb: 'jacket', extras: ['glasses'], top: '#6a2a3e' }, x: L.keeper, act: 'vend', facing: -1, name: 'SHOPKEEPER', talk: [
+  ['We\'re open.', 'We\'re always open. The sticker says 24/7. I wanted 24/7/365.25. The printer said no.'],
+  ['The camera? The Registry insists. It films the till.', 'The till has nothing to hide. The till has nothing at all, most nights.'],
+  ['Buy something or keep the cat company. The cat charges less.'],
+] };
+const PEOPLE: Person[] = [
+  { id: 'browser', seed: 5102, x: 200, act: 'walk', range: [200, 450], speed: 0.18, look: { body: 'tall', extras: ['phone', 'backpack'] }, name: 'CUSTOMER', talk: [
+    ['They moved the cheap noodles to the top shelf.', 'Top shelf is for people with legs.so. I have the free legs.'],
+    ['I come in to read the labels. It is warmer than the library and the library closed.'],
+  ] },
+  { seed: 5103, x: 610, act: 'stand', facing: -1, look: { body: 'short', garb: 'coat', hair: 'beanie', extras: ['bag'] } },
+  { seed: 5104, x: 676, act: 'queue', facing: 1, look: { body: 'avg', garb: 'hivis', hair: 'cap', extras: [] } },
+  { look: 'cat', seed: 4, x: 640, h: 99, act: 'sit', facing: -1 },
+];
+
+/** People passing outside, seen through the window: small, dim, far. */
+const OUTSIDE: Person[] = [
+  { seed: 5201, x: 40, act: 'walk', range: 260, ps: 2, dim: 0.45, parallax: 0.3, h: 36, speed: 0.4, look: { extras: ['umbrella'] } },
+  { seed: 5202, x: 300, act: 'walk', range: -260, ps: 2, dim: 0.5, parallax: 0.3, h: 36, speed: 0.3 },
+];
+
+// ---------- buying ----------
+
+let bought = 0;
+const GOODS = [
+  ['One BLUE. The flavour is blue. Nobody knows more than that.', 'It tastes like the colour. Don\'t think about it.'],
+  ['Crisps, salt and vinegar. The vinegar is synthetic. The salt is from the harbor.', 'Don\'t ask the harbor.'],
+  ['Noodle cup. Three for three tokens, one for one.', 'The maths is the only honest thing in this shop.'],
+  ['Gum. The last pack.', 'It has been the last pack since I opened.'],
+];
+const USES: SceneUse[] = [
+  { id: 'buy', x: L.till, label: '[E] BUY · 1 TOKEN', name: 'SHOPKEEPER', promptH: 62, use: (c) => {
+    if (!c.pay(1)) return ['One token. You have none. I can do nothing for you, at no charge.', 'Credit? This is a corner shop, not a bank. Banks have better locks.'];
+    c.set('shop:bought');
+    return GOODS[bought++ % GOODS.length];
+  } },
+];
 
 /** Per upper room: boxes [x, w, h] on the floor, windows [x, lit], a bulb x. Laid out once, for 8 floors. */
 const ROOMS = Array.from({ length: 8 }, (_, k) => {
   const r = rng(140 + k), boxes: number[][] = [], wins: number[][] = [];
   for (let bx = 70; bx < L.width - 60; bx += 18 + Math.round(r() * 60)) if (k === 0 || r() < 0.25) boxes.push([bx, 16 + Math.round(r() * 18), 10 + Math.round(r() * (k === 0 ? 30 : 14))]);
   for (let wx = 90 + Math.round(r() * 40); wx < L.width - 80; wx += 150 + Math.round(r() * 90)) wins.push([wx, r() < 0.35 ? 1 : 0]);
-  return { boxes, wins, bulb: 160 + Math.round(r() * 440) };
+  return { boxes, wins, bulb: 160 + Math.round(r() * 540) };
 });
 
 /**
@@ -48,14 +97,11 @@ const ROOMS = Array.from({ length: 8 }, (_, k) => {
 function drawUpstairs(x: CanvasRenderingContext2D, v: View, w0: number, w1: number) {
   const { sx, y, t } = v, top = v.gy, width = w1 - w0;
   if (top <= L.ceil) return;
-  // the slab over the shop's ceiling
   box(x, w0, y(L.ceil + L.slab), width, L.slab, '#0d0805');
   for (let k = 0, h0 = L.ceil + L.slab; h0 < top && k < ROOMS.length; k++, h0 += L.storey + L.slab) {
     const R = ROOMS[k], h1 = h0 + L.storey;
-    // the room's back wall, a step darker than the shop's
     x.fillStyle = k === 0 ? '#090604' : '#070403'; x.fillRect(w0, y(h1), width, L.storey);
     x.fillStyle = 'rgba(' + O + ',.05)'; for (let wx = 20; wx < L.width; wx += 60) x.fillRect(sx(wx), y(h1), 1, L.storey);
-    // windows in the back wall: most dark, a few lit from a lamp inside
     for (const [wx, lit] of R.wins) {
       const s = sx(wx);
       if (!onScreen(v, s, 34)) continue;
@@ -63,7 +109,6 @@ function drawUpstairs(x: CanvasRenderingContext2D, v: View, w0: number, w1: numb
       x.fillStyle = 'rgba(194,65,12,.4)'; x.fillRect(s + 15, y(h0 + 56), 1, 34); x.fillRect(s - 2, y(h0 + 22), 34, 2);
       if (lit) { x.fillStyle = 'rgba(255,217,165,.08)'; x.fillRect(s + 2, y(h0 + 54), 6, 30); }
     }
-    // a bare bulb on its cord, lighting a little of the room
     const bx = sx(R.bulb), by = y(h1 - 18), on = k === 0 || k % 3 === 2;
     x.strokeStyle = 'rgba(' + PAPER + ',.25)'; x.beginPath(); x.moveTo(bx + 0.5, y(h1)); x.lineTo(bx + 0.5, by); x.stroke();
     if (on) {
@@ -72,18 +117,15 @@ function drawUpstairs(x: CanvasRenderingContext2D, v: View, w0: number, w1: numb
       x.fillStyle = g; x.fillRect(bx - 60, y(h1), 120, L.storey);
     }
     x.fillStyle = on ? 'rgba(255,217,165,' + (0.55 + 0.05 * Math.sin(t * 0.03 + k)) + ')' : 'rgba(255,217,165,.15)'; x.fillRect(bx - 1, by, 3, 3);
-    // what is kept up here: stacked boxes in the stockroom, odd furniture above
     for (const [wx, w, h] of R.boxes) {
       box(x, sx(wx), y(h0 + h), w, h, k === 0 ? '#150c06' : '#0d0805', 'rgba(194,65,12,' + (k === 0 ? 0.45 : 0.3) + ')');
       if (k === 0 && h > 22) box(x, sx(wx) + 2, y(h0 + h + 14), w - 4, 14, '#120a05', 'rgba(194,65,12,.4)');
     }
     if (k === 0 && R.boxes[2]) { const [wx, w, h] = R.boxes[2]; text(x, 'NOODLES', sx(wx) + w / 2, y(h0 + h / 2), 'rgba(' + PAPER + ',.3)', 7, '600'); }
-    // the next slab
     box(x, w0, y(h1 + L.slab), width, L.slab, '#0d0805');
     x.fillStyle = 'rgba(194,65,12,.35)'; x.fillRect(w0, y(h1 + L.slab), width, 1);
   }
   x.fillStyle = 'rgba(194,65,12,.4)'; for (let h = L.ceil + L.slab; h < top; h += L.storey + L.slab) x.fillRect(w0, y(h), width, 1);
-  // pipes rising through every floor, clamped at each slab
   for (const p of L.risers) {
     const s = sx(p);
     x.fillStyle = 'rgba(201,138,63,.22)'; x.fillRect(s, 0, 3, y(L.ceil));
@@ -91,12 +133,20 @@ function drawUpstairs(x: CanvasRenderingContext2D, v: View, w0: number, w1: numb
   }
 }
 
-function drawShelf(x: CanvasRenderingContext2D, v: View, s: { x: number; w: number }, i: number) {
-  const { sx, y } = v, s0 = sx(s.x);
-  if (!onScreen(v, s0, s.w)) return;
-  box(x, s0, y(116), s.w, 116, '#170d07', 'rgba(' + O + ',.75)');
-  for (const [dx, row, w, h, tone] of GOODS[i]) { x.fillStyle = TONES[tone]; x.fillRect(s0 + dx, y(L.shelfRows[row] + 2 + h), w, h); }
-  for (const h of L.shelfRows) { x.fillStyle = 'rgba(' + O + ',.7)'; x.fillRect(s0 + 1, y(h + 2), s.w - 2, 2); }
+/** The convex security mirror up in the corner: the shop, bent, in silver. */
+function mirror(x: CanvasRenderingContext2D, v: View) {
+  const cx = v.sx(L.mirror.x), cy = v.y(L.mirror.h), r = 11;
+  if (!onScreen(v, cx - r - 10, r * 2 + 20)) return;
+  x.fillStyle = '#2a1d14'; x.fillRect(cx - 14, cy - 1, 4, 2);
+  x.save(); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.clip();
+  x.fillStyle = '#20242a'; x.fillRect(cx - r, cy - r, r * 2, r * 2);
+  const cols = ['#d83a2a', '#e8c83a', '#5aa83a', '#f08a2a', '#c83a8a'];
+  for (let i = 0; i < 9; i++) { x.fillStyle = cols[i % cols.length]; x.globalAlpha = 0.5; x.fillRect(cx - r + i * 2.5, cy + 2 - Math.abs(i - 4) * 0.8, 2, 6); }
+  x.globalAlpha = 1;
+  x.fillStyle = 'rgba(240,245,255,.5)'; x.fillRect(cx + 3, cy - 4, 2, 3); x.fillRect(cx - 4, cy - 2, 3, 6);
+  x.fillStyle = 'rgba(255,255,255,.25)'; x.beginPath(); x.ellipse(cx - 4, cy - 5, 4, 2, -0.6, 0, 7); x.fill();
+  x.restore();
+  x.strokeStyle = 'rgba(210,210,220,.8)'; x.lineWidth = 2; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); x.lineWidth = 1;
 }
 
 export const shop: Scene = {
@@ -107,19 +157,19 @@ export const shop: Scene = {
   intro: ['A corner shop. The kind that never closes and never has change.'],
   exits: [{ id: 'downtown', x: 32, to: 'downtown', at: 'shop', label: '[E] DOWNTOWN', promptH: 82 }],
   readables: [
-    { id: 'shelf', x: 330, name: 'SHELF LABEL', promptH: 132, pages: ['NOODLE CUPS · 3 FOR THE PRICE OF 3.'] },
-    { id: 'vend', x: 519, name: 'THIRST.EXE', promptH: 94, pages: ['Accepts tokens, coins and regrets.', 'The screen says OUT OF ORDER. It is also selling drinks. Both are true.'] },
-    { id: 'keeper', x: L.keeper, name: 'SHOPKEEPER', label: '[E] TALK', h: 40, promptH: 70, pages: ["We're open.", "We're always open. The sticker on the window says so."] },
+    { id: 'shelf', x: 330, name: 'SHELF LABEL', promptH: 150, pages: ['NOODLE CUPS · LIMIT 3 PER CUSTOMER.', 'PURCHASES OVER LIMIT ARE REPORTED.'] },
+    { id: 'vend', x: 519, name: 'THIRST.EXE', promptH: 94, pages: ['ACCEPTS TOKENS. CHANGE NOT GIVEN.', 'SCREEN: OUT OF ORDER. DISPENSING NORMALLY.'] },
   ],
+  people: [keeper, ...PEOPLE],
+  uses: USES,
 
   drawBackdrop(x, v) {
     const { sx, y, t } = v, w0 = sx(0), w1 = sx(L.width);
-    // outside the shop on wide screens: the dark street
     x.fillStyle = '#020101'; x.fillRect(0, 0, v.viewW, v.viewH);
-    // middle band: the back wall, wainscot and the ceiling
-    box(x, w0, y(L.ceil), w1 - w0, L.ceil, '#0b0705');
-    x.fillStyle = 'rgba(' + O + ',.12)'; for (let wx = 0; wx < L.width; wx += 40) x.fillRect(sx(wx), y(L.ceil), 1, L.ceil - 30);
-    box(x, w0, y(30), w1 - w0, 30, '#0e0906'); x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(w0, y(30), w1 - w0, 1);
+    // middle band: the back wall (warmer, painted), wainscot and the ceiling
+    box(x, w0, y(L.ceil), w1 - w0, L.ceil, '#120a07');
+    x.fillStyle = 'rgba(' + O + ',.1)'; for (let wx = 0; wx < L.width; wx += 40) x.fillRect(sx(wx), y(L.ceil), 1, L.ceil - 30);
+    box(x, w0, y(30), w1 - w0, 30, '#160c08'); x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(w0, y(30), w1 - w0, 1);
     drawUpstairs(x, v, w0, w1);
     x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(w0, y(L.ceil), w1 - w0, 1);
     x.fillStyle = 'rgba(' + O + ',.7)'; x.fillRect(w0, 0, 1, v.gy); x.fillRect(w1 - 1, 0, 1, v.gy);
@@ -128,35 +178,38 @@ export const shop: Scene = {
     for (let i = 0; i < L.tubes.length; i++) {
       const lx = sx(L.tubes[i]), dying = i === 1 && (t % 200 > 180 || (t % 200 > 150 && Math.floor(t) % 6 < 3));
       const g = x.createLinearGradient(0, y(L.ceil - 4), 0, y(0));
-      g.addColorStop(0, 'rgba(255,230,190,' + (dying ? 0.03 : 0.1) + ')'); g.addColorStop(1, 'rgba(255,230,190,0)');
-      x.fillStyle = g; x.beginPath(); x.moveTo(lx - 30, y(L.ceil - 4)); x.lineTo(lx - 100, y(0)); x.lineTo(lx + 100, y(0)); x.lineTo(lx + 30, y(L.ceil - 4)); x.closePath(); x.fill();
+      g.addColorStop(0, 'rgba(255,230,190,' + (dying ? 0.04 : 0.12) + ')'); g.addColorStop(1, 'rgba(255,230,190,0)');
+      x.fillStyle = g; x.beginPath(); x.moveTo(lx - 30, y(L.ceil - 4)); x.lineTo(lx - 110, y(0)); x.lineTo(lx + 110, y(0)); x.lineTo(lx + 30, y(L.ceil - 4)); x.closePath(); x.fill();
       box(x, lx - 30, y(L.ceil - 2), 60, 3, dying ? 'rgba(255,230,190,.25)' : 'rgba(255,240,215,.9)');
     }
 
-    // far band: the street through the window, rain on the glass
+    // far band: the street through the window, people passing in the rain
     const W = L.window, wx = sx(W.x), top = y(W.h1), wh = W.h1 - W.h0;
     if (onScreen(v, wx, W.w)) {
       box(x, wx, top, W.w, wh, '#04060a');
       x.save(); x.beginPath(); x.rect(wx, top, W.w, wh); x.clip();
       x.fillStyle = '#080402'; x.fillRect(wx + 6, top + 18, 20, wh); x.fillRect(wx + 34, top + 8, 28, wh); x.fillRect(wx + 66, top + 26, 20, wh);
       x.fillStyle = 'rgba(255,136,0,.25)'; x.fillRect(wx + 40, top + 16, 2, 2); x.fillRect(wx + 50, top + 30, 2, 2); x.fillRect(wx + 12, top + 28, 2, 2);
+      drawPeople(x, v, OUTSIDE);
       x.strokeStyle = 'rgba(170,210,255,.25)';
       for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % wh; x.beginPath(); x.moveTo(wx + rx, top + yy); x.lineTo(wx + rx - 1, top + yy + 4); x.stroke(); }
       x.restore();
       x.strokeStyle = 'rgba(' + O + ',.8)'; x.strokeRect(wx + 0.5, top + 0.5, W.w - 1, wh - 1);
       x.fillStyle = 'rgba(' + O + ',.8)'; x.fillRect(wx + W.w / 2, top, 1, wh);
-      // the shop's own sign, backwards from in here, on the glass
       text(x, 'NEPO', wx + W.w / 2, top + wh - 10, 'rgba(255,136,0,.6)', 8, '600');
-      // and the sticker under it, facing in
-      box(x, wx + 10, top + wh - 30, W.w - 20, 11, 'rgba(255,217,165,.18)', 'rgba(' + PAPER + ',.4)');
-      text(x, '24/7/365.25', wx + W.w / 2, top + wh - 24.5, 'rgba(' + PAPER + ',.85)', 7, '600');
+      box(x, wx + 22, top + wh - 30, W.w - 44, 11, 'rgba(255,217,165,.18)', 'rgba(' + PAPER + ',.4)');
+      text(x, '24/7', wx + W.w / 2, top + wh - 24.5, 'rgba(' + PAPER + ',.85)', 7, '600');
     }
     exitDoor(x, v, 32, '#0a0603');
+    mirror(x, v);
 
-    // play band: shelves, the vending machine, the counter
-    L.shelves.forEach((s, i) => drawShelf(x, v, s, i));
+    // the back wall's top band: the Registry's strip running over the shelves
+    ticker(x, v, { x: 330, h: 136, w: 290, tall: 10, text: 'ID REQUIRED FOR ALL PURCHASES   ·   CASH TRANSACTIONS ARE LOGGED   ·   SHOPLIFTING IS REPORTED TO THE REGISTRY   ·   CURFEW 01:00', col: '255,90,70', speed: 0.4 });
+
+    // play band: shelves, the label, the vending machine, the fridges
+    for (const s of L.shelves) shelf(x, v, s);
     box(x, sx(330) - 26, y(130), 52, 12, '#1a120b', 'rgba(' + O + ',.7)');
-    text(x, '3 FOR 3', sx(330), y(124), 'rgba(' + PAPER + ',.9)', 7, '600');
+    text(x, 'LIMIT 3', sx(330), y(124), 'rgba(' + PAPER + ',.9)', 7, '600');
     tell(x, t, sx(330) + 22, y(126));
 
     const M = L.vend, mx = sx(M.x);
@@ -166,29 +219,36 @@ export const shop: Scene = {
       x.fillStyle = g; x.fillRect(mx - 50, y(110), M.w + 100, 110);
       box(x, mx, y(M.h), M.w, M.h, '#0d1416', 'rgba(' + C + ',.7)');
       box(x, mx + 4, y(M.h - 4), M.w - 8, 42, '#04191b', 'rgba(' + C + ',.35)');
-      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { x.fillStyle = (r + c) % 3 ? 'rgba(255,136,0,.6)' : 'rgba(255,217,165,.6)'; x.fillRect(mx + 7 + c * 7, y(M.h - 8) + r * 10, 4, 7); }
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { x.fillStyle = ['#d83a2a', '#e8c83a', '#5aa83a', '#f08a2a'][(r + c) % 4]; x.globalAlpha = 0.75; x.fillRect(mx + 7 + c * 7, y(M.h - 8) + r * 10, 4, 7); x.globalAlpha = 1; }
       box(x, mx + 4, y(30), M.w - 8, 10, '#020606', 'rgba(' + C + ',.35)');
       text(x, 'THIRST', mx + M.w / 2, y(25), 'rgba(' + C + ',' + (0.6 + 0.3 * Math.sin(t * 0.05)) + ')', 7, '600');
       x.fillStyle = '#020303'; x.fillRect(mx + 8, y(12), M.w - 16, 6);
     }
+    fridge(x, v, L.fridge);
+    adScreen(x, v, { x: L.fridge.x + L.fridge.w / 2, h: 116, w: 96, tall: 26, mount: 'hang', to: L.ceil, ads: [['COLD DRINKS', 'VERIFIED RESIDENTS'], ['OXYGEN SURCHARGE', 'IN EFFECT'], ['WATER 2L', 'PER ID PER DAY']], period: 240 });
 
+    // the counter: lottery behind, the camera over the till, the keeper
     const K = L.counter, kx = sx(K.x);
-    if (onScreen(v, kx - 40, K.w + 80)) {
-      // a little TV behind the counter, flickering on the keeper's face
-      box(x, kx + 120, y(84), 24, 18, '#05090a', 'rgba(' + O + ',.5)');
-      x.fillStyle = 'rgba(170,210,255,' + (0.3 + 0.2 * Math.sin(t * 0.3) * Math.sin(t * 0.07)) + ')'; x.fillRect(kx + 123, y(81), 18, 12);
-      box(x, kx + 128, y(66), 8, 2, '#2a160a');
-      sign(x, t, 'CASH ONLY', kx + 60, y(110), O, { size: 8, phase: 90 });
-      x.strokeStyle = 'rgba(' + O + ',.5)'; x.beginPath(); x.moveTo(kx + 30.5, y(L.ceil)); x.lineTo(kx + 30.5, y(116)); x.moveTo(kx + 89.5, y(L.ceil)); x.lineTo(kx + 89.5, y(116)); x.stroke();
-      figure(x, sx(L.keeper), y(0), 46, '#0a0504', 0, 'rgba(170,210,255,.45)');
+    if (onScreen(v, kx - 60, K.w + 120)) {
+      lotteryScreen(x, v, { x: K.x + 120, h: 76, w: 80, tall: 36, mount: 'wall' });
+      wallSign(x, v, { x: K.x + 60, h: 126, text: 'CASH ONLY', col: O, size: 8, phase: 90 });
+      camera(x, v, { x: K.x + 14, h: 134, facing: 1, phase: 3 });
+      drawPerson(x, v, keeper);
       box(x, kx, y(K.h), K.w, K.h, '#24130a', 'rgba(' + O + ',.85)');
       x.fillStyle = 'rgba(' + O + ',.9)'; x.fillRect(kx, y(K.h), K.w, 2);
-      // the till (nothing to hack here yet, so not cyan) and a plate on the counter
-      box(x, kx + 20, y(K.h + 12), 22, 12, '#1a120b', 'rgba(' + O + ',.6)');
-      x.fillStyle = 'rgba(' + O + ',.7)'; x.fillRect(kx + 23, y(K.h + 9), 14, 2);
-      box(x, kx + 76, y(K.h - 6), 48, 14, '#1a120b', 'rgba(' + O + ',.6)');
-      text(x, 'NO LOGS', kx + 100, y(K.h - 13), 'rgba(' + PAPER + ',.85)', 7, '600');
+      // the till (paying is something you can do: a cyan edge), a jar of sweets, the plate
+      box(x, kx + 18, y(K.h + 14), 26, 14, '#1a120b', 'rgba(' + C + ',.6)');
+      x.fillStyle = 'rgba(' + C + ',.5)'; x.fillRect(kx + 21, y(K.h + 11), 14, 3);
+      tell(x, t, kx + 40, y(K.h + 4), 1);
+      box(x, kx + 56, y(K.h + 12), 10, 12, 'rgba(200,210,220,.15)', 'rgba(220,220,230,.5)');
+      for (let i = 0; i < 6; i++) { x.fillStyle = ['#d83a2a', '#e8c83a', '#5aa83a'][i % 3]; x.fillRect(kx + 58 + (i % 3) * 2, y(K.h + 4 + Math.floor(i / 3) * 3), 2, 2); }
+      box(x, kx + 112, y(K.h - 6), 48, 14, '#1a120b', 'rgba(' + O + ',.6)');
+      text(x, 'NO LOGS', kx + 136, y(K.h - 13), 'rgba(' + PAPER + ',.85)', 7, '600');
+      // stickers on the counter front, faded
+      x.fillStyle = 'rgba(232,200,58,.35)'; x.fillRect(kx + 80, y(K.h - 8), 8, 6);
+      x.fillStyle = 'rgba(216,58,42,.35)'; x.fillRect(kx + 92, y(K.h - 12), 6, 6);
     }
+    drawPeople(x, v, PEOPLE);
 
     // the floor: worn tiles
     x.fillStyle = '#060403'; x.fillRect(w0, v.gy, w1 - w0, v.viewH - v.gy);
@@ -199,13 +259,17 @@ export const shop: Scene = {
       if (tx < w0 || tx > w1 - 20) continue;
       x.fillStyle = 'rgba(255,217,165,.04)'; x.fillRect(tx, v.gy + 3 + r * 12, 20, 10);
     }
+    // the fridges' glow on the floor
+    const fx = sx(L.fridge.x);
+    x.fillStyle = 'rgba(220,235,255,.05)'; x.fillRect(fx, v.gy + 1, L.fridge.w, 10);
   },
 
   drawFront(x, v) {
-    // a near rack of crisps at the bottom of the view
+    // a near rack of crisps at the bottom of the view, every bag a different colour
     const s = v.sx(250, 1.25), base = v.gy + 56;
     if (!onScreen(v, s, 90)) return;
     box(x, s, base - 34, 90, 34, '#020100', 'rgba(' + O + ',.3)');
-    for (let i = 6; i < 84; i += 14) { x.fillStyle = 'rgba(255,136,0,.18)'; x.fillRect(s + i, base - 30, 10, 12); }
+    const cols = ['#d83a2a', '#e8c83a', '#5aa83a', '#f08a2a', '#3a6ad8', '#c83a8a'];
+    for (let i = 6, k = 0; i < 84; i += 14, k++) { x.fillStyle = cols[k % cols.length]; x.globalAlpha = 0.32; x.fillRect(s + i, base - 30, 10, 12); x.globalAlpha = 1; }
   },
 };
