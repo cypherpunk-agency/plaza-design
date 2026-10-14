@@ -1,6 +1,6 @@
 name: Deploy cypherpunk.agency homepage
 
-# Push to main → build the homepage (packages/plaza-design-demo/scripts/generate-demos.tsx
+# Push to production → build the homepage (packages/plaza-design-demo/scripts/generate-demos.tsx
 # → dist-homepage/) → publish to the Caddy VM at /mnt/pd/data/services/static/cypherpunk-agency
 # → live at https://cypherpunk.agency (apex + www).
 #
@@ -24,17 +24,13 @@ name: Deploy cypherpunk.agency homepage
 # PUBLIC REPO: logs and this file are world-readable. Never use pull_request_target, never
 # echo secrets, tokens or VM addresses, never print curl's redirect_url or gcloud debug output.
 
+# Only a push to `production` publishes. `main` runs the build + guards as a check and
+# stops there. The deploy job's `if` is one gate; the WIF provider on the infra side only
+# admits refs/heads/production, so an edited copy of this file on another branch cannot
+# obtain the deploy identity either.
 on:
   push:
-    branches: [main]
-    paths:
-      - packages/plaza-design-demo/src/ssg/**
-      - packages/plaza-design-demo/scripts/generate-demos.tsx
-      - packages/plaza-design-demo/package.json
-      - packages/plaza-design-core/**
-      - og-image.png
-      - pnpm-lock.yaml
-      - .github/workflows/deploy-homepage.yml
+    branches: [main, production]
   workflow_dispatch:
 
 permissions:
@@ -104,10 +100,12 @@ jobs:
 
   deploy:
     needs: build
-    # workflow_dispatch can be started from any branch; only main publishes.
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/production'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment:
+      name: production
+      url: https://cypherpunk.agency/
     # Job-level permissions replace the workflow-level block: only this job can mint
     # the OIDC token for Workload Identity Federation.
     permissions:
