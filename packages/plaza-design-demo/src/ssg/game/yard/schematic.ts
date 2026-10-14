@@ -9,6 +9,13 @@
  * Two modes over the game canvas: one device (what you tapped in the world),
  * or the board with every device you have opened, for wiring across them.
  * Devices drag from anywhere on their box; nouns drag to sit wherever you like.
+ * The board also has the logic parts (+ TIMER, + SWITCH): they live only there,
+ * and × on one takes it off again, cables and all.
+ *
+ * A third mode, hack vision (H), is a separate instance laid into the world:
+ * the yard stays visible under a tint, each device on screen is its own core
+ * (an outline and a dot), and the same nouns, verbs and cables hang around it,
+ * following the camera. What you see there goes on the board.
  *
  * Styles live in render.tsx (`#hack`, `.sch-*`).
  */
@@ -17,12 +24,21 @@ import type { Line, Link, YardModel } from './model';
 
 const NS = 'http://www.w3.org/2000/svg';
 type P = { x: number; y: number };
+/** Where a device stands on screen for hack vision: its box centre and size, in stage px. */
+export interface Anchor { x: number; y: number; w: number; h: number }
 const DEFAULT_DIR: Record<string, Record<string, string>> = {
   cam: { lens: 'up', motor: 'down', footage: 'right' },
   crane: { arm: 'down', claw: 'up', 'job.log': 'left' },
   gate: { lock: 'left', log: 'up', hinge: 'down' },
   bench: { blueprints: 'up', press: 'right' },
 };
+/** In the world the nouns sit closer, and must not run into the neighbours. */
+const VISION_DIR: Record<string, Record<string, string>> = {
+  cam: { lens: 'up', motor: 'left', footage: 'down' },
+  crane: { arm: 'down', claw: 'up', 'job.log': 'left' },
+  gate: { lock: 'left', log: 'up', hinge: 'down' },
+};
+const HINT = 'tap a noun for its verbs · drag an orange dot onto a noun to wire';
 const UNIT: Record<string, P> = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
 const BOARD_HOME: Record<string, P> = { cam: { x: 0.14, y: 0.3 }, crane: { x: 0.5, y: 0.3 }, gate: { x: 0.86, y: 0.3 }, bench: { x: 0.24, y: 0.76 } };
 const BOARD_CRAFT: P[] = [{ x: 0.6, y: 0.78 }, { x: 0.84, y: 0.78 }, { x: 0.42, y: 0.6 }, { x: 0.72, y: 0.58 }];
@@ -38,9 +54,14 @@ export class Schematic {
   private title: HTMLSpanElement;
   private modeBtn: HTMLButtonElement;
   private status: HTMLDivElement;
-  private mode: 'device' | 'board' = 'device';
+  private hint: HTMLDivElement;
+  private palette: HTMLDivElement;
+  private opens = 0;
+  private mode: 'device' | 'board' | 'vision' = 'device';
   private dev = '';
-  readonly known = new Set<string>();
+  /** Devices you have opened or seen; shared between the overlay and hack vision. */
+  readonly known: Set<string>;
+  private anchors = new Map<string, Anchor>();
   private open = new Set<string>();
   private armed: string | null = null;
   private pending: { from: string; to: string } | null = null;
@@ -48,19 +69,30 @@ export class Schematic {
   private boardPos = new Map<string, P>();
   onClose: () => void = () => {};
 
-  constructor(host: HTMLElement, private m: YardModel, private say: (l: Line) => void) {
-    this.root = el('div'); this.root.id = 'hack'; this.root.hidden = true;
+  constructor(host: HTMLElement, private m: YardModel, private say: (l: Line) => void, opts: { vision?: boolean; known?: Set<string> } = {}) {
+    this.known = opts.known ?? new Set();
+    this.root = el('div'); this.root.hidden = true;
     const bar = el('div', 'hack-bar');
     this.title = el('span', 'hack-title');
     this.modeBtn = el('button', 'hack-btn'); this.modeBtn.type = 'button';
     this.modeBtn.addEventListener('click', () => (this.mode === 'board' ? this.openDevice(this.dev || [...this.known][0]) : this.openBoard()));
     const close = el('button', 'hack-btn', 'CLOSE ×'); close.type = 'button'; close.addEventListener('click', () => this.close());
-    bar.append(this.title, this.modeBtn, close);
+    this.hint = el('div', 'hack-hint', HINT);
+    bar.append(this.title, this.modeBtn, close, this.hint);
     this.status = el('div', 'hack-status');
     this.stage = el('div', 'hack-stage');
     this.svg = document.createElementNS(NS, 'svg'); this.svg.setAttribute('class', 'hack-wires');
-    this.stage.appendChild(this.svg);
-    this.root.append(bar, this.status, this.stage);
+    this.palette = el('div', 'sch-palette'); this.palette.hidden = true;
+    this.palette.appendChild(el('span', '', 'LOGIC'));
+    (['timer', 'switch'] as const).forEach((kind) => {
+      const b = el('button', 'hack-btn', '+ ' + kind.toUpperCase()); b.type = 'button';
+      b.addEventListener('click', () => this.addLogic(kind));
+      this.palette.appendChild(b);
+    });
+    this.stage.append(this.svg, this.palette);
+    // hack vision has no header: the HACK button outside says it is on, the status sits at the bottom
+    if (opts.vision) { this.mode = 'vision'; this.root.id = 'vision'; this.root.append(this.stage, this.status); }
+    else { this.root.id = 'hack'; this.root.append(bar, this.status, this.stage); }
     host.appendChild(this.root);
     this.stage.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('.sch-core, .sch-noun, .port')) return;
@@ -71,14 +103,48 @@ export class Schematic {
 
   get isOpen() { return !this.root.hidden; }
 
+  /** The how-to line under the header shows for the first few opens, or until the first cable. */
+  private show() {
+    if (this.root.hidden) { this.opens++; this.hint.hidden = this.opens > 3 || this.m.links.length > 0; }
+    this.root.hidden = false;
+  }
   openDevice(id: string) {
     this.known.add(id); this.mode = 'device'; this.dev = id;
-    this.root.hidden = false; this.pending = null; this.armed = null;
+    this.show(); this.pending = null; this.armed = null;
     this.render();
   }
   openBoard() {
     if (!this.known.size) return;
-    this.mode = 'board'; this.root.hidden = false; this.render();
+    this.mode = 'board'; this.show(); this.render();
+  }
+  /** Hack vision (the vision instance only): every device on screen, wired in place. */
+  openVision() {
+    this.root.hidden = false; this.armed = null; this.pending = null;
+    this.note(['', 'HACK VISION · ' + HINT + ' · H to leave', 'dim']);
+    this.render();
+  }
+  /** Hack vision follows the camera: where each device on screen stands now. */
+  see(next: Map<string, Anchor>) {
+    const prev = this.anchors;
+    const same = next.size === prev.size && [...next.keys()].every((id) => prev.has(id));
+    const moved = [...next].some(([id, a]) => { const b = prev.get(id); return !b || Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.w - b.w) + Math.abs(a.h - b.h) > 0.5; });
+    if (same && !moved) return;
+    this.anchors = next;
+    if (this.root.hidden) return;
+    if (!same) { this.render(); return; }
+    // only the camera moved: shift the groups and keep the DOM, so a gesture in progress survives
+    this.stage.querySelectorAll<HTMLElement>('.sch').forEach((g) => {
+      const a = next.get(g.dataset.dev!); if (!a) return;
+      g.style.left = a.x + 'px'; g.style.top = a.y + 'px';
+      const box = g.querySelector<HTMLElement>('.vis-outline');
+      if (box) { box.style.width = a.w + 'px'; box.style.height = a.h + 'px'; }
+    });
+    this.lines();
+  }
+  /** Hack vision: a tap on a device in the world opens all its verbs; a tap on nothing drops the cable in hand. */
+  poke(id: string | null) {
+    if (this.armed || this.pending || !id) { this.armed = null; this.pending = null; this.render(); return; }
+    this.toggleAll(id);
   }
   toggleBoard() { if (this.mode === 'board' && this.isOpen) this.openDevice(this.dev || [...this.known][0]); else this.openBoard(); }
   close() { if (this.root.hidden) return; this.root.hidden = true; this.armed = null; this.pending = null; this.onClose(); }
@@ -91,14 +157,16 @@ export class Schematic {
     let o = this.offsets.get(key);
     if (!o) {
       const d = this.m.devices.get(dev)!;
-      const dir = (DEFAULT_DIR[dev] ?? {})[noun] ?? (d.crafted ? ['up', 'right', 'down', 'left'][i % 4] : 'up');
-      const u = UNIT[dir];
-      o = { x: u.x * 104, y: u.y * 70 };
+      const u = UNIT[this.mode === 'vision'
+        ? (VISION_DIR[dev] ?? {})[noun] ?? ['up', 'down'][i % 2]
+        : (DEFAULT_DIR[dev] ?? {})[noun] ?? (d.crafted ? ['up', 'right', 'down', 'left'][i % 4] : 'up')];
+      o = this.mode === 'vision' ? { x: u.x * 60, y: u.y * 44 } : { x: u.x * 104, y: u.y * 70 };
       this.offsets.set(key, o);
     }
     return o;
   }
   private centre(dev: string): P {
+    if (this.mode === 'vision') return this.anchors.get(dev) ?? { x: -999, y: -999 };
     const W = this.stage.clientWidth, H = this.stage.clientHeight;
     if (this.mode === 'device') return { x: W / 2, y: H / 2 };
     let p = this.boardPos.get(dev);
@@ -116,11 +184,15 @@ export class Schematic {
     if (this.root.hidden) return;
     const d = this.m.devices.get(this.dev);
     this.title.textContent = this.mode === 'board' ? 'SCHEMATIC · ' + this.known.size + ' devices' : (d?.name ?? '') + ' · schematic';
-    this.modeBtn.textContent = this.mode === 'board' ? 'THIS DEVICE' : 'BOARD (B)';
+    this.modeBtn.textContent = this.mode === 'board' ? 'THIS DEVICE' : 'BOARD · B';
+    this.palette.hidden = this.mode !== 'board';
     this.stage.querySelectorAll('.sch').forEach((g) => g.remove());
     // things you crafted are yours: they are on the board from the start
     [...this.m.devices.values()].filter((x) => x.crafted).forEach((x) => this.known.add(x.id));
-    const ids = this.mode === 'board' ? [...this.known].filter((id) => this.m.devices.has(id)) : [this.dev];
+    const ids = (this.mode === 'board' ? [...this.known] : this.mode === 'vision' ? [...this.anchors.keys()] : [this.dev])
+      .filter((id) => this.m.devices.has(id));
+    // what you have seen in hack vision you can wire from the board
+    if (this.mode === 'vision') ids.forEach((id) => this.known.add(id));
     ids.forEach((id) => this.stage.appendChild(this.group(id)));
     this.lines();
   }
@@ -130,7 +202,21 @@ export class Schematic {
     const g = el('div', 'sch' + (d.crafted ? ' crafted' : '')); g.dataset.dev = id;
     const c = this.centre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
     const core = el('div', 'sch-core');
-    core.append(el('div', 'sch-name', d.name), el('div', 'sch-st', d.status()));
+    if (this.mode === 'vision') {
+      // the device in the world is the core: an outline round it, and a dot to tap
+      const a = this.anchors.get(id)!, box = el('div', 'vis-outline');
+      box.style.width = a.w + 'px'; box.style.height = a.h + 'px';
+      box.appendChild(el('span', 'vis-name', d.name));
+      g.appendChild(box);
+      core.title = d.name + ': ' + d.status();
+    } else core.append(el('div', 'sch-name', d.name), el('div', 'sch-st', d.status()));
+    if (d.logic && this.mode !== 'vision') {
+      const x = el('button', 'sch-x', '×'); x.type = 'button';
+      x.setAttribute('aria-label', 'remove ' + d.name);
+      x.addEventListener('pointerdown', (e) => e.stopPropagation());
+      x.addEventListener('click', (e) => { e.stopPropagation(); this.removeLogic(id); });
+      core.appendChild(x);
+    }
     this.coreGestures(core, g, id);
     g.appendChild(core);
     d.nouns.forEach((n, i) => {
@@ -230,14 +316,18 @@ export class Schematic {
       };
       const up = () => {
         window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
-        if (moved) return;
-        const keys = this.m.devices.get(id)!.nouns.map((n) => id + '.' + n.id);
-        const all = keys.every((k) => this.open.has(k));
-        keys.forEach((k) => (all ? this.open.delete(k) : this.open.add(k)));
-        this.render();
+        if (!moved) this.toggleAll(id);
       };
       window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
     });
+  }
+
+  /** Open every verb of a device, or close them all if they are all open. */
+  private toggleAll(id: string) {
+    const keys = this.m.devices.get(id)!.nouns.map((n) => id + '.' + n.id);
+    const all = keys.every((k) => this.open.has(k));
+    keys.forEach((k) => (all ? this.open.delete(k) : this.open.add(k)));
+    this.render();
   }
 
   /** Noun: drag it to a new spot around its device, or tap it to open its verbs. */
@@ -280,12 +370,39 @@ export class Schematic {
     const up = (ev: PointerEvent) => {
       window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
       temp?.remove();
-      const target = document.elementsFromPoint(ev.clientX, ev.clientY).map((x) => x.closest('[data-target]') as HTMLElement | null).find(Boolean);
+      // only this layer's nouns: hack vision may lie under the board
+      const target = document.elementsFromPoint(ev.clientX, ev.clientY).filter((x) => this.stage.contains(x))
+        .map((x) => x.closest('[data-target]') as HTMLElement | null).find(Boolean);
       if (target) this.propose(key, target.dataset.target!);
       else if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 12) { this.armed = null; this.render(); }
       else this.note(['', this.mode === 'device' ? 'cable in hand. tap a noun, or open the BOARD to reach other devices.' : 'cable in hand. tap the noun it should reach.', 'dim']);
     };
     window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  }
+
+  // ---------- logic parts ----------
+
+  /** + TIMER / + SWITCH: a new part on the board, next to the palette, its verbs open. */
+  private addLogic(kind: 'timer' | 'switch') {
+    const id = this.m.addLogic(kind);
+    const n = [...this.m.devices.values()].filter((d) => d.logic).length - 1;
+    this.known.add(id);
+    this.boardPos.set(id, { x: 0.14 + 0.15 * (n % 5), y: n % 10 < 5 ? 0.72 : 0.56 });
+    this.m.devices.get(id)?.nouns.forEach((x) => this.open.add(id + '.' + x.id));
+    this.say(['add ' + kind, kind + ' on the board. wire an event into it, and it out.', 'ok']);
+    this.render();
+  }
+
+  private removeLogic(id: string) {
+    const name = this.m.devices.get(id)?.name ?? id;
+    this.m.removeDevice(id);
+    this.known.delete(id); this.boardPos.delete(id);
+    this.open.forEach((k) => { if (k.startsWith(id + '.')) this.open.delete(k); });
+    this.armed = null; this.pending = null;
+    if (this.dev === id) this.dev = '';
+    this.say(['rm ' + id, name.toLowerCase() + ' removed, and its cables with it.', 'dim']);
+    if (this.mode === 'device') { if (this.known.size) this.openBoard(); else this.close(); return; }
+    this.render();
   }
 
   private propose(from: string, to: string) {

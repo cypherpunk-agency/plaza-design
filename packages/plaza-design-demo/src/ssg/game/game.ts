@@ -163,6 +163,7 @@ export class Game {
     if (!this.reduced || this.t < 1) this.t += dt;
     this.update(dt);
     this.draw();
+    if (this.zone === 'yard') this.followYard();
     this.raf = requestAnimationFrame((n) => this.loop(n));
   }
 
@@ -173,6 +174,7 @@ export class Game {
     if (this.zone === 'yard' && this.yard.overlayOpen) {
       if (e.key === 'Escape') { e.preventDefault(); this.yard.closeOverlay(); }
       else if (e.key === 'b' || e.key === 'B') this.yard.toggleBoard();
+      else if ((e.key === 'h' || e.key === 'H') && !e.repeat) this.yard.toggleVision();
       return;
     }
     const k = e.key;
@@ -185,6 +187,7 @@ export class Game {
     }
     if (k === 'Escape') {
       if (this.bubble) { this.bubble = null; return; }
+      if (this.zone === 'yard' && this.yard.visionOn) { this.yard.toggleVision(); return; }
       // Leaving takes a second Esc, so closing one bubble too many never ends a session.
       if (this.t < this.escUntil) { this.escUntil = 0; this.host.onExit(); return; }
       this.escUntil = this.t + 120;
@@ -192,7 +195,8 @@ export class Game {
       return;
     }
     if (k === '/') { e.preventDefault(); this.openDeck(); return; }
-    if (this.zone === 'yard' && (k === 'b' || k === 'B')) { this.yard.toggleBoard(); return; }
+    if (this.zone === 'yard' && (k === 'b' || k === 'B')) { this.seenControls = true; this.yard.toggleBoard(); return; }
+    if (this.zone === 'yard' && (k === 'h' || k === 'H')) { this.seenControls = true; this.yard.toggleVision(); return; }
     if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
     if (k === 'e' || k === 'E' || k === 'Enter') { this.interact(); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
@@ -229,6 +233,7 @@ export class Game {
   /** Walk between Downtown and the fixer's back yard. */
   private goTo(zone: 'downtown' | 'yard', quiet = false) {
     this.yard.closeAll();
+    this.yard.show(zone === 'yard');
     this.bubble = null;
     this.zone = zone;
     Object.assign(this.p, { x: zone === 'yard' ? YARD_SPAWN : YARD_DOOR_X, y: 0, vy: 0, onGround: true });
@@ -239,11 +244,17 @@ export class Game {
     if (zone === 'yard' && !this.save.flags.yard) {
       this.save.flags.yard = true;
       storeSave(this.save);
-      this.say('YOU', ["The fixer's back yard. My parcel is in here somewhere.", 'Everything here has a schematic. Tap a thing to open it.'], this.p.x, 46);
+      this.say('YOU', [
+        "The fixer's back yard. My parcel is in here somewhere.",
+        'Everything here has a schematic. Tap a thing to open it.',
+        this.touch
+          ? 'HACK, top right: hack vision, every device and its guts at once. BOARD: wire them up, add timers and switches.'
+          : 'H: hack vision, every device and its guts at once. B: the board, to wire them up and add timers and switches.',
+      ], this.p.x, 46);
     }
   }
 
-  /** In the yard, tap or click a thing to open its schematic; hovering lights it up. */
+  /** In the yard, tap or click a thing to open its schematic (in hack vision: its verbs); hovering lights it up. */
   private onCanvasPointer(e: PointerEvent, press: boolean) {
     if (this.zone !== 'yard' || this.yard.overlayOpen) return;
     const r = this.canvas.getBoundingClientRect();
@@ -252,7 +263,14 @@ export class Game {
     const id = this.yard.spotAt(wx, h);
     this.yard.hover = id;
     this.canvas.style.cursor = id ? 'pointer' : '';
+    if (press && this.yard.visionOn) { this.yard.poke(id); return; }
     if (press && id) { e.preventDefault(); this.seenControls = true; this.yard.openDevice(id); }
+  }
+
+  /** Hack vision hangs in the world: give the yard this frame's world → CSS px mapping (as `sx` and `y` draw it). */
+  private followYard() {
+    const s = (this.k * this.canvas.clientWidth) / this.canvas.width;
+    this.yard.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth);
   }
 
   // ---------- world logic ----------
@@ -718,7 +736,7 @@ export class Game {
     if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, 34); }
     if (!this.seenControls || this.t < 600) {
       x.fillStyle = 'rgba(255,217,165,.55)';
-      if (this.zone === 'yard') x.fillText(this.touch ? 'tap things to open them · ACT near things · B board' : 'tap or click things to open them · E near things · B board · / terminal · ESC leave', 8, this.touch ? 45 : this.viewH - 8);
+      if (this.zone === 'yard') x.fillText(this.touch ? 'tap things to open them · HACK see everything · BOARD wire, add timers' : 'tap or click things to open them · E near things · H hack vision · B board · / terminal · ESC leave', 8, this.touch ? 45 : this.viewH - 8);
       else if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC twice to leave', 8, 34);
       else x.fillText('<- -> walk · SHIFT run · E talk / jack in · / terminal · M sound · ESC leave', 8, this.viewH - 8);
     }
