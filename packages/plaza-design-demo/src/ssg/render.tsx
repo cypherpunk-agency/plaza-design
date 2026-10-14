@@ -107,7 +107,9 @@ export const initScript = `
 
     // Render left side gimmicks
     renderTelemetry('telemetry');
-    renderRoutes('routes');
+    renderRoutes('routes', [
+      { label: '/polkadot-treasury-monitor', href: 'https://polkadot-treasury-monitor.cypherpunk.agency/' },
+    ]);
     renderKeys('keys');
 
     // Render right side gimmicks

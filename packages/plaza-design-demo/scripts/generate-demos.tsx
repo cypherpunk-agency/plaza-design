@@ -1,148 +1,91 @@
 /**
  * generate-demos.tsx
  *
- * Generates demo-modular.html and demo-single.html from React components.
- * Run with: npx tsx scripts/generate-demos.tsx
+ * Builds the cypherpunk.agency homepage from React components into
+ * dist-homepage/ — exactly the tree that .github/workflows/deploy-homepage.yml
+ * publishes:
+ *
+ *   index.html     body rendered by src/ssg/render.tsx, all CSS + JS inlined
+ *   fonts/*.woff2  IBM Plex Mono, served same-origin
+ *   og-image.png   social preview (repo root)
+ *
+ * The page must load nothing cross-origin. The server CSP is default-src 'self'
+ * with no font-src, so fonts can be neither Google Fonts nor data: URIs — they
+ * ship as files next to index.html. Inline <style>/<script> is allowed.
+ *
+ * Run with: pnpm --filter plaza-design-demo generate-demos
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { build } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const ROOT_DIR = path.resolve(__dirname, '../..');
-const DEMO_REACT_DIR = path.resolve(__dirname, '..');
+const DEMO_DIR = path.resolve(__dirname, '..');
+const REPO_ROOT = path.resolve(DEMO_DIR, '../..');
+const CORE_DIR = path.resolve(DEMO_DIR, '../plaza-design-core');
+const OUT_DIR = path.join(DEMO_DIR, 'dist-homepage');
 
 /**
- * CSS files to concatenate for single-file version (in order)
+ * Bundle plaza.css (resolving every @import) and emit the fonts it references
+ * into OUT_DIR/fonts/ under their original names.
  */
-const CSS_FILES = [
-  'plaza-core/tokens.css',
-  'plaza-core/base.css',
-  'plaza-core/utilities.css',
-  'plaza-core/animations.css',
-  'plaza-core/components/button.css',
-  'plaza-core/components/window.css',
-  'plaza-core/components/panel.css',
-  'plaza-core/components/effects.css',
-];
+async function bundleCSS(): Promise<string> {
+  const result = await build({
+    entryPoints: [path.join(CORE_DIR, 'plaza.css')],
+    bundle: true,
+    write: false,
+    outdir: OUT_DIR,
+    loader: { '.woff2': 'file' },
+    assetNames: 'fonts/[name]',
+    logLevel: 'warning',
+  });
 
-/**
- * Read and concatenate all CSS files, removing @import statements
- */
-function readAllCSS(): string {
-  let allCSS = '';
-
-  for (const file of CSS_FILES) {
-    const filePath = path.join(ROOT_DIR, file);
-    if (fs.existsSync(filePath)) {
-      let content = fs.readFileSync(filePath, 'utf-8');
-      // Remove @import statements
-      content = content.replace(/@import\s+['"][^'"]+['"];?\s*/g, '');
-      allCSS += `/* === ${file} === */\n${content}\n\n`;
+  let css = '';
+  for (const file of result.outputFiles) {
+    if (file.path.endsWith('.css')) {
+      css = file.text;
     } else {
-      console.warn(`Warning: CSS file not found: ${filePath}`);
+      fs.mkdirSync(path.dirname(file.path), { recursive: true });
+      fs.writeFileSync(file.path, file.contents);
     }
   }
-
-  // Also include the responsive utilities from plaza.css
-  const plazaMainCSS = fs.readFileSync(path.join(ROOT_DIR, 'plaza-core/plaza.css'), 'utf-8');
-  // Extract only the non-import parts (responsive utilities, etc.)
-  const responsivePart = plazaMainCSS.replace(/@import\s+['"][^'"]+['"];?\s*/g, '');
-  allCSS += `/* === plaza-core/plaza.css (responsive) === */\n${responsivePart}\n`;
-
-  return allCSS;
+  // Asset URLs come out relative to OUT_DIR ("./fonts/..."), i.e. the site
+  // root once the CSS is inlined into index.html.
+  return css;
 }
 
 /**
- * Read plaza.js and convert from ES module to inline script
+ * Bundle plaza.ts plus the page's init code into one classic script.
  */
-function readPlazaJS(): string {
-  const plazaJSPath = path.join(ROOT_DIR, 'plaza.js');
-  let content = fs.readFileSync(plazaJSPath, 'utf-8');
-
-  // Remove export statements
-  content = content
-    // Remove "export function" -> "function"
-    .replace(/^export\s+function\s+/gm, 'function ')
-    // Remove "export const" -> "const"
-    .replace(/^export\s+const\s+/gm, 'const ')
-    // Remove "export let" -> "let"
-    .replace(/^export\s+let\s+/gm, 'let ');
-
-  // Remove multiline "export { ... };" blocks
-  content = content.replace(/export\s*\{[\s\S]*?\};?/g, '');
-
-  // Remove multiline "export default { ... };" blocks
-  content = content.replace(/export\s+default\s*\{[\s\S]*?\};?/g, '');
-
-  return content;
+async function bundleJS(): Promise<string> {
+  const result = await build({
+    stdin: {
+      contents: `import {
+  initPlazaTheme, toggleTheme, startClock, initGridCanvas, createParticles,
+  renderTelemetry, renderRoutes, renderKeys, renderNetLog, renderStatus,
+  startHexScroll, updateNodeCount,
+} from './plaza.ts';
+${initScript}`,
+      resolveDir: CORE_DIR,
+      sourcefile: 'homepage-init.ts',
+      loader: 'ts',
+    },
+    bundle: true,
+    write: false,
+    format: 'iife',
+    target: 'es2020',
+    logLevel: 'warning',
+  });
+  return result.outputFiles[0].text;
 }
 
-/**
- * Generate demo-modular.html with external CSS/JS references
- */
-function generateModularHTML(bodyContent: string): string {
+function generateHTML(bodyContent: string, css: string, js: string): string {
   const meta = getDefaultMeta();
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${meta.title}</title>
-
-  <!-- SEO & Social -->
-  <meta name="description" content="${meta.description}">
-  <meta property="og:title" content="${meta.title}">
-  <meta property="og:description" content="${meta.description}">
-  <meta property="og:image" content="${meta.ogImage}">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="${meta.ogUrl}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${meta.title}">
-  <meta name="twitter:description" content="${meta.description}">
-  <meta name="twitter:image" content="${meta.ogImage}">
-
-  <link rel="stylesheet" href="plaza-core/plaza.css">
-  <style>${demoStyles}
-  </style>
-</head>
-<body class="bg-black overflow-hidden">
-  ${bodyContent}
-
-  <script type="module">
-    import {
-      initPlazaTheme,
-      toggleTheme,
-      startClock,
-      initGridCanvas,
-      createParticles,
-      renderTelemetry,
-      renderRoutes,
-      renderKeys,
-      renderNetLog,
-      renderStatus,
-      startHexScroll,
-      updateNodeCount,
-    } from './plaza.js';
-
-${initScript}
-  </script>
-</body>
-</html>`;
-}
-
-/**
- * Generate demo-single.html with all CSS/JS inlined
- */
-function generateSingleHTML(bodyContent: string): string {
-  const meta = getDefaultMeta();
-  const allCSS = readAllCSS();
-  const plazaJS = readPlazaJS();
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -164,7 +107,7 @@ function generateSingleHTML(bodyContent: string): string {
   <meta name="twitter:image" content="${meta.ogImage}">
 
   <style>
-${allCSS}
+${css}
 ${demoStyles}
   </style>
 </head>
@@ -172,39 +115,32 @@ ${demoStyles}
   ${bodyContent}
 
   <script>
-${plazaJS}
-
-${initScript}
+${js}
   </script>
 </body>
-</html>`;
+</html>
+`;
 }
 
-/**
- * Main entry point
- */
 async function main() {
-  console.log('Generating demo HTML files from React components...\n');
+  console.log('Generating homepage from React components...\n');
 
-  // Render React component to static HTML
-  const bodyContent = renderStaticHTML();
+  fs.rmSync(OUT_DIR, { recursive: true, force: true });
+  fs.mkdirSync(OUT_DIR, { recursive: true });
 
-  // Generate demo-modular.html
-  const modularPath = path.join(ROOT_DIR, 'demo-modular.html');
-  const modularHTML = generateModularHTML(bodyContent);
-  fs.writeFileSync(modularPath, modularHTML, 'utf-8');
-  console.log(`Generated: ${modularPath}`);
+  const [css, js] = await Promise.all([bundleCSS(), bundleJS()]);
+  const html = generateHTML(renderStaticHTML(), css, js);
+  fs.writeFileSync(path.join(OUT_DIR, 'index.html'), html, 'utf-8');
+  fs.copyFileSync(path.join(REPO_ROOT, 'og-image.png'), path.join(OUT_DIR, 'og-image.png'));
 
-  // Generate demo-single.html
-  const singlePath = path.join(ROOT_DIR, 'demo-single.html');
-  const singleHTML = generateSingleHTML(bodyContent);
-  fs.writeFileSync(singlePath, singleHTML, 'utf-8');
-  console.log(`Generated: ${singlePath}`);
-
-  console.log('\nDone!');
+  for (const f of fs.readdirSync(OUT_DIR, { recursive: true }) as string[]) {
+    const p = path.join(OUT_DIR, f);
+    if (fs.statSync(p).isFile()) console.log(`  ${f.replace(/\\/g, '/')}  ${fs.statSync(p).size} B`);
+  }
+  console.log(`\nDone: ${OUT_DIR}`);
 }
 
 main().catch((err) => {
-  console.error('Error generating demos:', err);
+  console.error('Error generating homepage:', err);
   process.exit(1);
 });
