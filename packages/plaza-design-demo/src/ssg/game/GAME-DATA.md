@@ -37,7 +37,10 @@ Append one line per decision: what, which side, why.
   `ZoneRules` (effects, derived values, settle, what it needs) and `ZoneView` (drawing, own
   panels, extra E targets), bundled as a `ZoneDef`. The game hosts one with `new ZoneHost(…, def)`.
 - Where devices stand in the world (`layout.spot`), their board home (`layout.board`) and noun
-  directions (`layout.dir`, `layout.vision`): **data**. Exits and things that come and go (the
+  directions (`layout.dir`, `layout.vision`): **data**.
+- Hack vision's noun order (`layout.row`): **data**, optional; the default order by kind is
+  **code** (`RANK` in `schematic.ts`). Where a logic part floats in the world: the **save**
+  (`logic[].at`), placed beside the player by the host. Exits and things that come and go (the
   pickup tray): **code** (`ZoneView.targets`), since they follow scene art and state.
 - State keys: the data owns them; the code lists only the keys it relies on (`needs.state`),
   and the check requires those. Data may add its own keys freely (before: exactly the code's).
@@ -145,10 +148,14 @@ Each device may carry `layout`:
 "layout": {
   "spot": { "x": 350, "w": 186, "h": 130 },          // in the world: tap, E, hack vision
   "board": { "x": 0.5, "y": 0.3 },                   // home on the board (fractions)
-  "dir": { "arm": "down", "claw": "up" },            // which side each noun sits on
-  "vision": { "arm": "down", "claw": "up" }          // the same in hack vision
+  "dir": { "arm": "down", "claw": "up" },            // which side each noun sits on (board)
+  "row": ["job.log", "arm", "claw"]                  // hack vision: noun order, left to right (optional)
 }
 ```
+
+In hack vision a device's nouns sit in one row above its name plate. Without `row` (or for
+nouns it leaves out) they go by kind: SENSE and STORE, then ACT, then LINK / GUARD / LOG,
+then DAEMON. The old `vision` directions are still accepted but no longer read.
 
 A zone device needs `spot`; a node must not have one. Without `board`, devices and nodes take
 the next free slot under the zone's own; logic parts land by the palette.
@@ -325,7 +332,7 @@ interface ZoneSave {
   state: { found, armAt, held, parcel, parcelAt, gateAllowed, pan }   // the zone's state keys, settled
   goals: string[]                                   // goal ids reached
   links: { from, to, verb }[]                       // every cable (pre-wired ones you cut are missing)
-  logic: { id, kind, state? }[]                     // placed parts: timer1, switch1 (+ its on/off)
+  logic: { id, kind, state?, at? }[]                // placed parts: timer1, switch1 (+ its on/off, + where it floats in hack vision)
   local?: { [device]: state }                       // devices' and nodes' own state
   open?: string[]                                   // sectors opened: "pc/core"
   passed?: string[]                                 // guards passed: "pc.login"

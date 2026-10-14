@@ -5,6 +5,6 @@
  * a `ZoneDef`. The game hosts it with `new ZoneHost(…, def)`. See GAME-DATA.md.
  */
 
-export { ZoneHost, type DrawView, type ZoneDef, type ZoneStore, type ZoneTarget, type ZoneView } from './host';
+export { ZoneHost, type DrawLayer, type DrawView, type ZoneDef, type ZoneStore, type ZoneTarget, type ZoneView } from './host';
 export { ZoneModel, type Device, type Line, type Link, type Noun } from './model';
 export type { Effect, World, ZoneRules } from './rules';

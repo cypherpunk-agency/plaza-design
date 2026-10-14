@@ -541,7 +541,10 @@ export const demoStyles = `
     .sch.node .sch-core { border-color: var(--color-accent-400); box-shadow: 0 0 14px rgba(0, 255, 255, 0.15); }
     .sch.node .sch-name { color: var(--color-accent-400); }
 
-    /* Hack vision (H): the yard tinted, every device on screen wired in place (game/zone/schematic.ts) */
+    /*
+     * Hack vision (H): the game mutes the world on the canvas; over it, each device on screen
+     * is framed, with a name plate mounted above it that unfolds into its circuit (game/zone/schematic.ts)
+     */
     #vision {
       position: absolute;
       left: 0;
@@ -554,51 +557,98 @@ export const demoStyles = `
       font-family: var(--font-mono);
       user-select: none;
       -webkit-user-select: none;
-      background:
-        repeating-linear-gradient(to bottom, rgba(255, 61, 242, 0.09) 0 1px, transparent 1px 3px),
-        rgba(90, 20, 140, 0.26);
+      background: repeating-linear-gradient(to bottom, rgba(255, 61, 242, 0.04) 0 1px, transparent 1px 3px);
     }
 
     #vision[hidden] { display: none; }
     #vision .hack-stage { position: absolute; inset: 0; touch-action: auto; }
-    #vision .sch-core,
     #vision .sch-label,
     #vision .port,
-    #vision .sch-verb { pointer-events: auto; }
+    #vision .sch-verb,
+    #vision .sch-guess,
+    #vision .sch-palette,
+    #vision .vis-plate,
+    #vision .vis-part { pointer-events: auto; }
+    #vision .hack-wires .branch { stroke: rgba(255, 61, 242, 0.55); stroke-width: 1; }
 
-    #vision .sch-core {
-      width: 9px;
-      height: 9px;
-      padding: 0;
-      border-radius: 50%;
-      border-color: rgb(255, 61, 242);
-      background: #000;
-      box-shadow: 0 0 8px rgb(255, 61, 242);
-      cursor: pointer;
-    }
-
-    #vision .sch-core::before { content: ''; position: absolute; inset: -10px; }
-
+    /* the frame round a device: the hacking layer's pink */
     .vis-outline {
       position: absolute;
       transform: translate(-50%, -50%);
-      border: var(--border-thin) dashed rgba(255, 61, 242, 0.8);
-      box-shadow: 0 0 10px rgba(255, 61, 242, 0.3), inset 0 0 10px rgba(255, 61, 242, 0.15);
+      border: var(--border-thin) solid rgba(255, 61, 242, 0.85);
+      box-shadow: 0 0 8px rgba(255, 61, 242, 0.35), inset 0 0 8px rgba(255, 61, 242, 0.12);
     }
 
-    .vis-name { position: absolute; left: -1px; top: 100%; margin-top: 2px; font-size: 8px; letter-spacing: 0.1em; color: rgb(255, 61, 242); white-space: nowrap; }
+    /* a logic part floating in the world: its body is this small module (drag it) */
+    .vis-part {
+      display: grid;
+      place-items: center;
+      background: rgba(22, 4, 22, 0.92);
+      cursor: grab;
+      touch-action: none;
+    }
 
-    #vision .sch-label { padding: 1px 5px; font-size: 9px; background: rgba(13, 6, 3, 0.88); }
-    #vision .sch-label small { font-size: 7px; }
-    #vision .sch-noun .port { top: 12px; font-size: 8px; }
-    #vision .sch-noun .port i { width: 9px; height: 9px; }
-    #vision .sch-verbs.right { left: 34px; }
-    #vision .sch-verbs.left { right: 34px; }
-    #vision .sch-verbs.up { bottom: 14px; }
-    #vision .sch-verbs.down { top: 14px; }
-    #vision .sch-noun .port ~ .sch-verbs.down { top: 26px; }
+    .vis-glyph { font-size: 8px; font-weight: 600; letter-spacing: 0.08em; color: rgb(255, 61, 242); }
+    .vis-part .sch-x { right: -8px; top: -8px; width: 15px; height: 15px; font-size: 10px; }
+
+    /* the name plate, on a short leader from the device's top edge (its height is PLATE_H in schematic.ts) */
+    .vis-plate {
+      position: absolute;
+      left: 0;
+      box-sizing: border-box;
+      height: 18px;
+      transform: translate(-50%, -100%);
+      padding: 0 6px;
+      background: rgba(16, 3, 16, 0.92);
+      border: var(--border-thin) solid rgb(255, 61, 242);
+      color: rgb(255, 61, 242);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 16px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .vis-plate::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: rgba(255, 61, 242, 0.85); }
+    .vis-plate:hover { box-shadow: 0 0 10px rgba(255, 61, 242, 0.5); }
+    .vis-plate[aria-expanded='true'] { background: rgb(255, 61, 242); color: #000; }
+    .sch.locked .vis-plate { border-color: var(--color-error); color: var(--color-error); }
+
+    /* the circuit: the device's nouns in a row, over its plate */
+    .vis-circuit {
+      position: absolute;
+      left: 0;
+      transform: translate(-50%, -100%);
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      padding: 2px 4px 4px;
+      background: rgba(10, 3, 14, 0.6);
+      border: var(--border-thin) dashed rgba(255, 61, 242, 0.5);
+    }
+
+    .vis-st { font-size: 8px; color: var(--color-text-muted); white-space: nowrap; }
+    .sch.locked .vis-st { color: var(--color-error); }
+    .vis-chips { display: flex; gap: 6px; align-items: flex-start; }
+    #vision .vis-chips .sch-noun { position: relative; width: auto; height: auto; display: grid; justify-items: start; gap: 2px; }
+    .vis-head { display: flex; align-items: center; }
+    #vision .vis-chips .sch-label { position: static; transform: none; padding: 1px 5px; font-size: 9px; background: rgba(13, 6, 3, 0.95); }
+    #vision .vis-chips .sch-label small { font-size: 7px; }
+    .vis-ports { display: grid; gap: 2px; margin-left: -5px; }
+    #vision .vis-ports .port { position: static; transform: none; flex-direction: row-reverse; font-size: 8px; }
+    #vision .vis-ports .port i { width: 9px; height: 9px; }
+    /* a chip's verbs drop down under it, inside the circuit (which grows upward, clear of the plate) */
+    #vision .vis-chips .sch-verbs.down { position: static; transform: none; flex-direction: column; align-items: flex-start; gap: 2px; }
+
     #vision .sch-verb { padding: 1px 5px; font-size: 9px; }
-    #vision .hack-wires .branch { stroke: rgba(255, 61, 242, 0.5); }
+
+    /* hack vision's tools: the logic palette and the unfold-all toggle, under HACK and BOARD */
+    #vision .sch-palette { left: auto; bottom: auto; right: var(--spacing-3); top: calc(var(--spacing-2) + 30px); }
+    #vision .vis-all { color: var(--color-text-muted); border-color: var(--color-border-default); }
+    #vision .vis-all.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
 
     #vision .hack-status {
       position: absolute;

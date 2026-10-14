@@ -6,10 +6,12 @@
  *
  * Tap a thing in the world (or stand next to it and press E) and its schematic
  * opens. B opens the board with every device you have opened or seen, for
- * wiring, and the logic parts (timer, switch). H is hack vision: the zone
- * stays in view, every device on screen shows its nouns in place, and you
- * wire them right there. Every action also prints its shell line in the
- * deck's terminal.
+ * wiring, and the logic parts (timer, switch). H is hack vision: the world is
+ * muted (the game draws it dimmed, then the devices and the player on top),
+ * every device on screen gets a frame and a name plate, a plate unfolds into
+ * its circuit, and you wire right there; logic parts float in the world next
+ * to you. It is meant to grow into the board's replacement. Every action also
+ * prints its shell line in the deck's terminal.
  *
  * Progress (state, goals, cables, placed parts, sectors, the net, the board's
  * layout) goes into the game's save as one `ZoneSave` (`save.zones.<id>`), a
@@ -30,12 +32,21 @@ export interface ZoneTarget { id: string; x: number; label: string; promptH: num
 /** How the game's canvas maps world units for a zone's drawing. */
 export interface DrawView { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number; viewH: number }
 
+/**
+ * What to draw: 'all', or for hack vision 'world' (everything but the devices: the game mutes
+ * it) and then 'devices' (only the zone's devices, drawn bright over the muted world).
+ */
+export type DrawLayer = 'all' | 'world' | 'devices';
+
 /** A zone's code on the screen side: its scene, its own panels, its extra targets. */
 export interface ZoneView {
   /** Panels this zone adds to the engine's `talk` (the yard's `camera`). Must match `rules.panels`. */
   panels?: Record<string, PanelFn>;
-  /** Draw the zone (its backdrop and its things) after the ground. `hover`: the device under the pointer. */
-  draw(x: CanvasRenderingContext2D, m: ZoneModel, v: DrawView, hover: string | null): void;
+  /**
+   * Draw the zone (its backdrop and its things) after the ground. `hover`: the device under the pointer.
+   * `layer` (default 'all'): a view that cannot split draws everything for 'world' and nothing for 'devices'.
+   */
+  draw(x: CanvasRenderingContext2D, m: ZoneModel, v: DrawView, hover: string | null, layer?: DrawLayer): void;
   /** Things to press E on besides the devices (an exit, a pickup tray). */
   targets?(m: ZoneModel): ZoneTarget[];
   /** E on one of those. Return 'exit' to walk out of the zone. */
@@ -65,6 +76,10 @@ const SAVE_AFTER_MS = 800;
 const TICK_MS = 250;
 /** World (x along the zone, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
+/** A logic part's body floating in hack vision, in world units. */
+const PART = { w: 26, h: 16 };
+/** Where a new part floats: this high, beside the player, and parts keep this far apart (world units). */
+const PART_H = 64, PART_GAP = 34;
 
 export class ZoneHost {
   readonly model: ZoneModel;
@@ -78,6 +93,10 @@ export class ZoneHost {
   onClose: () => void = () => {};
   private saveTimer = 0;
   private saved = '';
+  /** The last frame's mapping and the player's spot, for placing and dragging logic parts in hack vision. */
+  private project: Project | null = null;
+  private width = 0;
+  private player = { x: 0, h: 0 };
 
   constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: ZoneStore | undefined, readonly def: ZoneDef) {
     this.model = new ZoneModel({
@@ -95,6 +114,8 @@ export class ZoneHost {
     this.panels = new Panels(host, this.model, (l) => this.say(l), def.view.panels);
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
+    this.vision.onPlace = (id) => { this.place(id); this.refollow(); this.dirty(); };
+    this.vision.onMovePart = (id, at) => this.movePart(id, at);
     this.schem.onClose = () => this.onClose();
     this.vision.onClose = () => { this.sync(); this.onClose(); };
     // you keep walking in hack vision: a tapped verb must not keep the keys (Enter would press it again)
@@ -134,7 +155,7 @@ export class ZoneHost {
   /** Everything the save keeps about the zone. */
   snapshot(): ZoneSave {
     const board = this.schem.layout();
-    return { ...this.model.snapshot(), board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets, vision: this.vision.layout().offsets } };
+    return { ...this.model.snapshot(), board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets } };
   }
 
   private restore(z: ZoneSave) {
@@ -142,7 +163,6 @@ export class ZoneHost {
     this.schem.known.clear();
     (z.board?.known ?? []).forEach((id) => { if (this.model.devices.has(id)) this.schem.known.add(id); });
     this.schem.restoreLayout({ pos: z.board?.pos, offsets: z.board?.offsets });
-    this.vision.restoreLayout({ offsets: z.board?.vision });
   }
 
   /** Something changed: write the save once things have been quiet for a moment. */
@@ -205,17 +225,60 @@ export class ZoneHost {
   /** A tap on the canvas in hack vision: on a device, all its verbs; on nothing, drop the cable in hand. */
   poke(id: string | null) { this.vision.poke(id); }
 
-  /** Every frame: where each device stands on screen, so hack vision follows the camera. */
-  follow(project: Project, width: number) {
-    const seen = new Map<string, Anchor>();
-    this.model.spots().forEach((s) => {
-      const c = project(s.x, s.h / 2), e = project(s.x + s.w / 2, s.h);
-      const w = (e.x - c.x) * 2, h = (c.y - e.y) * 2;
-      if (c.x + w / 2 < 0 || c.x - w / 2 > width) return;
-      seen.set(s.id, { x: c.x, y: c.y, w, h });
-    });
+  /**
+   * Every frame: where each device stands on screen, so hack vision follows the camera,
+   * and where the player is (logic parts placed in hack vision float next to them).
+   */
+  follow(project: Project, width: number, player?: { x: number; h: number }) {
+    this.project = project; this.width = width;
+    if (player) this.player = { x: player.x, h: player.h };
+    const m = this.model, seen = new Map<string, Anchor>();
+    const add = (id: string, x: number, base: number, w: number, h: number) => {
+      const c = project(x, base + h / 2), e = project(x + w / 2, base + h);
+      const sw = (e.x - c.x) * 2, sh = (c.y - e.y) * 2;
+      if (c.x + sw / 2 < 0 || c.x - sw / 2 > width) return;
+      seen.set(id, { x: c.x, y: c.y, w: sw, h: sh });
+    };
+    m.spots().forEach((s) => add(s.id, s.x, 0, s.w, s.h));
+    if (this.vision.isOpen) {
+      // a part placed on the board has no spot in the world yet: it turns up next to you
+      [...m.devices.values()].filter((d) => d.logic && !m.logicAt.has(d.id)).forEach((d) => { this.place(d.id); this.dirty(); });
+      m.logicAt.forEach((at, id) => add(id, at.x, at.h, PART.w, PART.h));
+    }
     this.vision.see(seen);
     this.sync();
+  }
+  /** Follow again now (a part was placed or moved), with the last frame's mapping. */
+  private refollow() { if (this.project) this.follow(this.project, this.width); }
+
+  /** A spot in the world for a logic part: beside the player, clear of the devices and the parts already there. */
+  private place(id: string) {
+    const m = this.model, near = (a: number, b: number, d: number) => Math.abs(a - b) < d;
+    const free = (x: number, h: number) =>
+      !m.spots().some((s) => near(x, s.x, s.w / 2 + PART.w / 2 + 6) && h < s.h + 6)
+      && ![...m.logicAt.values()].some((p) => near(p.x, x, PART.w + 8) && near(p.h, h, PART.h + 8));
+    // right of the player first, then left, a little further each time; then a row higher
+    let at = { x: this.player.x + PART_GAP, h: PART_H };
+    search: for (let row = 0; row < 4; row++) {
+      for (let i = 1; i <= 8; i++) {
+        const x = this.player.x + PART_GAP * Math.ceil(i / 2) * (i % 2 ? 1 : -1), h = PART_H + row * (PART.h + 12);
+        if (x > PART.w && free(x, h)) { at = { x, h }; break search; }
+      }
+    }
+    m.logicAt.set(id, at);
+  }
+
+  /** A part dragged in hack vision: its centre to `at` (stage px), back into the world. */
+  private movePart(id: string, at: { x: number; y: number }) {
+    const p = this.project;
+    if (!p) return;
+    // the mapping is linear: two points give it, and its inverse
+    const o = p(0, 0), u = p(100, 100), kx = (u.x - o.x) / 100, ky = (u.y - o.y) / 100;
+    if (!kx || !ky) return;
+    const wx = (at.x - o.x) / kx, h = (at.y - o.y) / ky - PART.h / 2;
+    this.model.logicAt.set(id, { x: Math.round(wx), h: Math.round(Math.max(0, Math.min(220, h))) });
+    this.refollow();
+    this.dirty();
   }
 
   /** Open a device's schematic, unless a full trace has you locked out of it. */
@@ -258,5 +321,6 @@ export class ZoneHost {
     return next ? next.text : this.model.label('goals.done');
   }
 
-  draw(x: CanvasRenderingContext2D, v: DrawView) { this.def.view.draw(x, this.model, v, this.hover); }
+  /** Draw the zone; in hack vision the game draws 'world', mutes it, then 'devices' (see `DrawLayer`). */
+  draw(x: CanvasRenderingContext2D, v: DrawView, layer: DrawLayer = 'all') { this.def.view.draw(x, this.model, v, this.hover, layer); }
 }

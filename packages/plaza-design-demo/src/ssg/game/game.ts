@@ -328,7 +328,7 @@ export class Game {
   /** Hack vision hangs in the world: give the yard this frame's world → CSS px mapping (as `sx` and `y` draw it). */
   private followYard() {
     const s = (this.k * this.canvas.clientWidth) / this.canvas.width;
-    this.yard.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth);
+    this.yard.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
   }
 
   // ---------- world logic ----------
@@ -479,10 +479,14 @@ export class Game {
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
     if (this.scene) { this.drawScene(this.scene, rain); this.drawMap(); return; }
 
+    const vision = this.zone === 'yard' && this.yard.visionOn;
     if (this.zone === 'yard') {
       // Boxed in by the backs of houses: no city behind the yard, it draws its own walls.
       this.drawStreet(rain);
-      this.yard.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
+      const v = { sx: (wx: number) => this.sx(wx), y: (h: number) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH };
+      // Hack vision: the world (rain too) goes muted into the background; the devices and you stay bright on top.
+      if (vision) { this.yard.draw(x, v, 'world'); this.drawRain(rain); this.mute(); this.yard.draw(x, v, 'devices'); }
+      else this.yard.draw(x, v);
     } else {
       this.drawSky();
       this.drawShips();
@@ -495,7 +499,7 @@ export class Game {
       this.drawStands();
     }
     this.drawPeople();
-    this.drawRain(rain);
+    if (!vision) this.drawRain(rain);
     this.drawPrompt();
     this.drawBubble();
     this.drawHud();
@@ -968,6 +972,21 @@ export class Game {
       x.stroke();
     }
     for (const n of NPCS) drawSprite(x, n.sprite, this.sx(n.x), this.gy, { glow: GLOW_THEM, flip: n.flip });
+  }
+
+  /**
+   * Hack vision mutes the world: what is drawn so far loses its colour and sinks into a dark
+   * violet wash, so the devices (drawn next, bright and framed) and the player stand out.
+   * Two full-screen fills: cheap.
+   */
+  private mute() {
+    const x = this.x;
+    x.save();
+    x.globalCompositeOperation = 'saturation'; x.globalAlpha = 0.85;
+    x.fillStyle = '#808080'; x.fillRect(0, 0, this.viewW, this.viewH);
+    x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
+    x.fillStyle = 'rgba(10,3,18,.62)'; x.fillRect(0, 0, this.viewW, this.viewH);
+    x.restore();
   }
 
   private drawRain(level: number) {

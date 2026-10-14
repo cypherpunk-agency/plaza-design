@@ -53,7 +53,7 @@ const KEYS: Record<string, string[]> = {
   link: ['reach'],
   sector: ['id', 'label', 'seal'],
   seal: [...SEAL_KEYS, 'withinMs', 'signal'],
-  layout: ['spot', 'board', 'dir', 'vision'],
+  layout: ['spot', 'board', 'dir', 'vision', 'row'],
   spot: ['x', 'w', 'h'],
   pt: ['x', 'y'],
   item: ['id', 'kind', 'label', 'text', 'rule', 'from'],
@@ -318,6 +318,13 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       for (const f of ['dir', 'vision'] as const) for (const [nid, dir] of Object.entries(l[f] ?? {})) {
         if (!ids.has(nid)) err(`${wl} › ${f}`, `"${nid}" is not one of its nouns`);
         if (!DIRS.includes(dir)) err(`${wl} › ${f}.${nid}`, `"${dir}" is not one of ${DIRS.join(' / ')}`);
+      }
+      if (l.row !== undefined) {
+        if (!Array.isArray(l.row)) err(`${wl} › row`, 'a list of noun ids, left to right');
+        else l.row.forEach((nid, i) => {
+          if (!ids.has(nid)) err(`${wl} › row[${i}]`, `"${nid}" is not one of its nouns`);
+          else if (l.row!.indexOf(nid) !== i) err(`${wl} › row[${i}]`, `"${nid}" is listed twice`);
+        });
       }
     }
   };
