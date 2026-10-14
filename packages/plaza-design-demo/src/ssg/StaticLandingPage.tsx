@@ -9,6 +9,11 @@
 export function StaticLandingPage() {
   return (
     <>
+      {/* CRT boot, the first thing every visitor sees (game/boot.ts) */}
+      <div id="crt-boot" aria-hidden="true">
+        <div className="crt-screen"><pre className="crt-text"></pre></div>
+      </div>
+
       {/* City scene background (cityScene.ts) */}
       <canvas id="city-canvas" className="fixed inset-0 z-0"></canvas>
 
@@ -59,6 +64,7 @@ export function StaticLandingPage() {
               <button id="cta" className="plaza-btn" type="button">
                 <span className="cta-label cta-enter">enter</span>
                 <span className="cta-label cta-denied" aria-hidden="true">[access denied]</span>
+                <span className="cta-label cta-granted" aria-hidden="true">[access granted]</span>
               </button>
             </div>
           </div>

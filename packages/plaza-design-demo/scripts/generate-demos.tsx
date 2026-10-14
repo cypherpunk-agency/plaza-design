@@ -71,6 +71,7 @@ async function bundleJS(): Promise<string> {
   startHexScroll, updateNodeCount,
 } from './plaza.ts';
 import { initCityScene } from ${JSON.stringify(path.join(DEMO_DIR, 'src/ssg/cityScene.ts').split(path.sep).join('/'))};
+import { initAccessDenied, runBoot } from ${JSON.stringify(path.join(DEMO_DIR, 'src/ssg/game/index.ts').split(path.sep).join('/'))};
 ${initScript}`,
       resolveDir: CORE_DIR,
       sourcefile: 'homepage-init.ts',

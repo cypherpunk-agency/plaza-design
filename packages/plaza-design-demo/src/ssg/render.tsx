@@ -115,6 +115,150 @@ export const demoStyles = `
       opacity: 0;
     }
 
+    /* The Konami code: the one time the button lets you in */
+    .cta-granted,
+    #cta.is-granted .cta-enter,
+    #cta.is-granted .cta-denied {
+      visibility: hidden;
+    }
+
+    #cta.is-granted .cta-granted {
+      visibility: visible;
+    }
+
+    .demo-center #cta.is-granted {
+      color: var(--color-success);
+      border-color: var(--color-success);
+      box-shadow: 0 0 20px rgba(var(--color-success-rgb), 0.5);
+      text-shadow: 0 0 10px rgba(var(--color-success-rgb), 0.8);
+    }
+
+    /* CRT boot (game/boot.ts). Fades out on its own after 6s as a failsafe. */
+    #crt-boot {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background: #000;
+      animation: crt-failsafe 0.4s linear 6s forwards;
+    }
+
+    #crt-boot .crt-screen {
+      width: min(720px, 92vw);
+      transform: scale(1, 0.004);
+      opacity: 0.9;
+      box-shadow: 0 0 24px 4px rgba(255, 220, 180, 0.9);
+      transition: transform 0.35s ease-out, box-shadow 0.35s;
+    }
+
+    #crt-boot.crt-on .crt-screen {
+      transform: scale(1, 1);
+      box-shadow: 0 0 40px rgba(var(--color-primary-500-rgb), 0.15);
+    }
+
+    #crt-boot.crt-off {
+      opacity: 0;
+      transition: opacity 0.35s 0.15s;
+    }
+
+    #crt-boot.crt-off .crt-screen {
+      transform: scale(1, 0.004);
+      transition: transform 0.2s ease-in;
+    }
+
+    .crt-text {
+      min-height: 9em;
+      margin: 0;
+      padding: var(--spacing-6);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: var(--color-text-body);
+      text-shadow: 0 0 6px rgba(var(--color-primary-500-rgb), 0.7);
+      background: repeating-linear-gradient(0deg, rgba(var(--color-primary-500-rgb), 0.05) 0 1px, transparent 1px 3px), #000;
+      border: var(--border-thin) solid var(--color-border-muted);
+    }
+
+    @keyframes crt-failsafe {
+      to { opacity: 0; visibility: hidden; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #crt-boot { display: none; }
+    }
+
+    /* ACCESS DENIED, the game (game/*.ts): it takes over the window */
+    html.game-mode .demo-content,
+    html.game-mode #particles,
+    html.game-mode #city-canvas,
+    html.game-mode .footer-not-auth {
+      visibility: hidden;
+    }
+
+    html.game-mode .footer-not-auth {
+      display: none;
+    }
+
+    html.game-mode #cta .cta-label {
+      visibility: hidden;
+    }
+
+    #game-canvas {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--game-top, 40px);
+      width: 100%;
+      height: calc(100% - var(--game-top, 40px) - var(--game-bottom, 40px));
+      z-index: 5;
+      background: #000;
+      image-rendering: pixelated;
+      outline: none;
+    }
+
+    #term {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: var(--game-bottom, 40px);
+      max-height: 42%;
+      overflow-y: auto;
+      z-index: 6;
+      padding: var(--spacing-3) var(--spacing-4);
+      background: rgba(4, 2, 0, 0.94);
+      border-top: var(--border-thin) solid var(--color-border-default);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      line-height: 1.5;
+    }
+
+    .term-line { white-space: pre-wrap; color: var(--color-text-body); }
+    .term-in { color: var(--color-accent-400); }
+    .term-ok { color: var(--color-success); }
+    .term-err { color: var(--color-error); }
+    .term-dim { color: var(--color-text-faint); }
+    .term-head { color: var(--color-primary-400); }
+
+    #term-input {
+      display: none;
+      flex: 1;
+      min-width: 0;
+      padding: 0 var(--spacing-2);
+      background: transparent;
+      border: 0;
+      outline: none;
+      font: inherit;
+      font-size: var(--text-xs);
+      color: var(--color-accent-400);
+      caret-color: var(--color-accent-400);
+    }
+
+    #term-input::placeholder { color: var(--color-text-faint); }
+
+    html.game-mode #term-input { display: block; }
+
     .demo-subtitle {
       font-size: clamp(12px, 1.6vw, 18px);
       color: var(--color-accent-400);
@@ -167,6 +311,9 @@ export const demoStyles = `
  * JavaScript initialization code for the demos
  */
 export const initScript = `
+    // The CRT boot is the first thing every visitor sees.
+    runBoot();
+
     const PROJECTS = [
       { label: '/frontier', href: 'https://frontier.cypherpunk.agency/' },
       { label: '/sol-economy', href: 'https://sol-economy.cypherpunk.agency/' },
@@ -186,6 +333,9 @@ export const initScript = `
       mask: '.plaza-window-header, .plaza-window-footer, .plaza-side-panel__block, .plaza-hex-scroll, #title, .demo-subtitle, #cta',
     });
     scene.start();
+
+    // ACCESS DENIED: the Konami code turns the window into the game.
+    initAccessDenied({ scene });
 
     // Create particles (canonical count: 50)
     createParticles('particles', 50);
@@ -214,7 +364,7 @@ export const initScript = `
 
     // Update node count with drift
     updateNodeCount('node-count');
-    setInterval(() => updateNodeCount('node-count'), 8000);
+    setInterval(() => { if (!document.documentElement.classList.contains('game-mode')) updateNodeCount('node-count'); }, 8000);
 
     // ENTER is a tease: trying it shows [ACCESS DENIED] for at least 2 seconds
     // and for as long as the pointer rests on the button.
@@ -236,6 +386,7 @@ export const initScript = `
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
+      if (document.documentElement.classList.contains('game-mode')) return;
       if (e.key === 'Enter') {
         handleEnter();
       } else if (e.key.toLowerCase() === 't') {
