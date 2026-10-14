@@ -27,7 +27,7 @@ export interface CutsceneData {
   title: string;
   /** Seconds; it hands over when this runs out. */
   duration: number;
-  /** The zone it hands over to by default: 'downtown', 'yard' or a scene id. */
+  /** The zone it hands over to by default: 'downtown', 'yard', 'capsule' or a scene id. */
   next: string;
   cards: TextCard[];
 }

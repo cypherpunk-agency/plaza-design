@@ -2,7 +2,7 @@
   "intro": {
     "title": "ACCESS DENIED",
     "duration": 26,
-    "next": "downtown",
+    "next": "capsule",
     "cards": [
       { "at": 2.5, "until": 9, "text": "The city never logs off. Neither does the rain." },
       { "at": 10, "until": 16.5, "text": "The Registry sees everyone. Every face, every door, every packet." },

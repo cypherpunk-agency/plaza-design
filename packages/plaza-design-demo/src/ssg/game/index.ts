@@ -5,6 +5,7 @@
  * - The Konami code (up up down down left right left right B A) is the only way in:
  *   the button says ACCESS GRANTED for once, then the window becomes the game.
  * - `?play` in the URL skips the boot and the Konami code; `?play=yard` starts in the back yard,
+ *   `?play=capsule` in your flat (Capsule 7B, where a new game starts),
  *   `?play=<scene id>` in one of the explorable scenes (scenes/: harbor, market, shop, mall, metro, train),
  *   `?play=<cutscene id>` plays a cutscene first (cutscenes/: intro), then its next zone.
  * - Phones (basic support, landscape only): the Konami code as swipes
@@ -31,7 +32,7 @@ export const playParam = () => { try { return new URLSearchParams(location.searc
 const playZone = () => {
   try {
     const z = new URLSearchParams(location.search).get('play') ?? '';
-    return z === 'yard' ? 'yard' as const : isSceneId(z) || isCutsceneId(z) ? z : undefined;
+    return z === 'yard' || z === 'capsule' ? z : isSceneId(z) || isCutsceneId(z) ? z : undefined;
   } catch { return undefined; }
 };
 
