@@ -15,7 +15,7 @@ import type { LineKind } from '../terminal';
 import { type Goal, type Line, YardModel } from './model';
 import { Panels } from './panels';
 import { type Anchor, Schematic } from './schematic';
-import { drawYard, spotAt, spots, TRAY_X, YARD_EXIT_X } from './scene';
+import { drawYard, drawYardBackdrop, spotAt, spots, TRAY_X, YARD_EXIT_X } from './scene';
 
 export { YARD_SPAWN, YARD_W } from './scene';
 
@@ -157,7 +157,9 @@ export class Yard {
     return next ? next[1] : 'done. the fixer owes you one.';
   }
 
-  draw(x: CanvasRenderingContext2D, v: { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number }) {
+  /** The yard is walled in, so it draws its own backdrop (after the ground) instead of the open city. */
+  draw(x: CanvasRenderingContext2D, v: { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number; viewH: number }) {
+    drawYardBackdrop(x, v);
     drawYard(x, this.model, v, this.hover);
   }
 }
