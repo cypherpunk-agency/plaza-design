@@ -30,7 +30,8 @@ export function runBoot(): Promise<void> {
   const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   const n = visits();
   if (!el) return Promise.resolve();
-  if (reduced) { el.remove(); return Promise.resolve(); }
+  const play = (() => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } })();
+  if (reduced || play) { el.remove(); return Promise.resolve(); }
 
   // First visit: the whole boot. Next few: a shortened one. After that: a flicker.
   const lines = n === 1 ? LINES : n <= 4 ? LINES.slice(3) : [];

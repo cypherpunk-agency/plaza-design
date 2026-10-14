@@ -4,6 +4,7 @@
  * - The CRT boot runs first, on every visit.
  * - The Konami code (up up down down left right left right B A) is the only way in:
  *   the button says ACCESS GRANTED for once, then the window becomes the game.
+ * - `?play` in the URL skips the boot and the Konami code.
  * - Esc leaves the game; progress stays in the browser.
  * - M toggles sound anywhere.
  *
@@ -16,6 +17,9 @@ import { runBoot } from './boot';
 import { Game } from './game';
 
 export { runBoot };
+
+/** `?play` in the URL skips the boot and the Konami code: straight into the game. */
+export const playParam = () => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } };
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 
@@ -62,6 +66,8 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
     });
     game.start();
   };
+
+  if (playParam()) enter();
 
   window.addEventListener('keydown', (e) => {
     if (html.classList.contains('game-mode')) return;
