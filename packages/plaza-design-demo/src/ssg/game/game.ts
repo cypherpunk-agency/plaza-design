@@ -22,6 +22,7 @@ import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, zoneShell } from './do
 import { type ZoneDef, ZoneHost } from './zone';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
+import { personHeight, personX, talkTo } from './people';
 import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
@@ -479,6 +480,13 @@ export class Game {
     // a click or tap moves a speech bubble on, the same as E
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
     if (this.mapView) { this.mapPointer(e, press); return; }
+    // in a scene, a tap on someone or something within reach is E on it
+    if (press && this.scene) {
+      const r = this.canvas.getBoundingClientRect(), wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
+      const t = this.targets().find((z) => Math.abs(z.x - wx) < 18 && Math.abs(z.x - this.p.x) < 60);
+      if (t && t.kind === 'scene') { e.preventDefault(); this.useScene(t.id); }
+      return;
+    }
     const zh = this.zoneHost;
     if (!zh || zh.overlayOpen || this.mapView || this.flight) return;
     const r = this.canvas.getBoundingClientRect();
@@ -1384,6 +1392,9 @@ export class Game {
       list.push({ kind: 'scene', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
     for (const r of s.readables ?? []) list.push({ kind: 'scene', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
+    for (const u of s.uses ?? []) list.push({ kind: 'scene', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
+    // the scene's people with something to say (people.ts): the target follows a walker
+    for (const p of s.people ?? []) if (p.id && p.talk) list.push({ kind: 'scene', id: 'talk:' + p.id, x: personX(p, this.t), h: 0, label: '[E] TALK', promptH: personHeight(p) + 16 });
     return list;
   }
 
@@ -1393,6 +1404,25 @@ export class Game {
     if (kind === 'read') {
       const r = s.readables!.find((z) => z.id === id)!;
       this.say(r.name, r.pages, r.x, r.h ?? 70);
+      return;
+    }
+    if (kind === 'talk') {
+      const p = s.people!.find((z) => z.id === id)!, said = talkTo(p);
+      this.say(said.name, said.pages, personX(p, this.t), personHeight(p) - 10);
+      return;
+    }
+    if (kind === 'use') {
+      const u = s.uses!.find((z) => z.id === id)!, save = this.save;
+      const out = u.use({
+        tokens: save.tokens,
+        pay: (n) => { if (save.tokens < n) return false; save.tokens -= n; this.flash('-' + n + ' token' + (n === 1 ? '' : 's')); return true; },
+        give: (n) => { save.tokens += n; this.flash('+' + n + ' token' + (n === 1 ? '' : 's')); },
+        flags: save.flags, set: (f) => { save.flags[f] = true; }, t: this.t,
+      });
+      storeSave(save);
+      this.syncHud();
+      const said = Array.isArray(out) ? { name: u.name, pages: out } : out;
+      this.say(said.name, said.pages, u.x, u.h ?? 60);
       return;
     }
     const e = s.exits.find((z) => z.id === id)!;

@@ -13,7 +13,7 @@ import { shop } from './shop';
 import { galleriaStation, harborStation } from './stations';
 import { train } from './train';
 
-export type { Scene, SceneExit, SceneReadable, View as SceneView } from './kit';
+export type { Scene, SceneExit, SceneReadable, SceneUse, UseCtx, View as SceneView } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 export const SCENES = { harbor, market, shop, mall, metro, galleriaStation, harborStation, train } satisfies Record<string, Scene>;
