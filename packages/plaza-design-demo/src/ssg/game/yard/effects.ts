@@ -9,7 +9,7 @@
  */
 
 import type { CodeContract } from '../data/check';
-import type { ZoneData } from '../data/types';
+import type { Value, ZoneData } from '../data/types';
 import type { Ctx, Goal, Line, ParcelAt, YardModel } from './model';
 
 export type Vars = Record<string, string | number>;
@@ -51,13 +51,13 @@ export const YARD_EFFECTS: Record<string, Effect> = {
   'hatch.open': (w) => {
     const ms = w.tune('gateOpenMs');
     w.m.gateOpenUntil = performance.now() + ms;
-    setTimeout(() => w.changed(), ms + 50);
+    w.m.later(ms + 50, () => w.changed());
   },
 
   /** "wait 2 s": wait, then raise `done`. */
   'timer.wait': (w, c) => {
     const sec = parseInt(c.verb.split(' ')[1], 10);
-    setTimeout(() => w.emit('done'), sec * 1000);
+    w.m.later(sec * 1000, () => w.emit('done'));
     return w.line('timer.wait', { sec });
   },
 };
@@ -67,10 +67,10 @@ export const YARD_EFFECTS: Record<string, Effect> = {
 function dropIntoChute(w: World) {
   const m = w.m;
   m.parcelAt = 'chute'; w.goal('chute');
-  setTimeout(() => {
+  m.later(w.tune('chuteDropMs'), () => {
     m.parcelAt = 'sliding'; m.slideStart = performance.now(); w.changed();
-    setTimeout(() => arrive(w), w.tune('slideMs'));
-  }, w.tune('chuteDropMs'));
+    m.later(w.tune('slideMs'), () => arrive(w));
+  });
   w.emit('dropped');
 }
 
@@ -82,9 +82,21 @@ function arrive(w: World) {
   } else {
     m.parcelAt = 'bounced';
     w.say(w.line('parcel.bonk'));
-    setTimeout(() => { m.parcelAt = 'hook'; m.held = 'parcel'; m.armAt = 'chute'; w.changed(); }, w.tune('bounceBackMs'));
+    m.later(w.tune('bounceBackMs'), () => { Object.assign(m, BACK_ON_HOOK); w.changed(); });
   }
   w.changed();
+}
+
+/** Where the crane leaves a parcel that did not make it through: on the hook, over the chute. */
+const BACK_ON_HOOK = { parcelAt: 'hook' as ParcelAt, held: 'parcel', armAt: 'chute' };
+
+/**
+ * For the save: a parcel in the chute, sliding or bouncing becomes what it is
+ * after a bonk (on the hook, at the chute). Timers and the hatch's open second
+ * are not state, so they simply are not there after a load.
+ */
+export function settleYard(state: Record<string, Value>) {
+  if (['chute', 'sliding', 'bounced'].includes(state.parcelAt as string)) Object.assign(state, BACK_ON_HOOK);
 }
 
 // ---------- the contract with yard.json ----------

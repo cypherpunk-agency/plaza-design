@@ -1,12 +1,39 @@
 # ACCESS DENIED: game data
 
-A proposal for discussion. The back yard already runs on it; Downtown does not yet.
+The back yard runs on it; Downtown does not yet. Started as a proposal; what Tommi
+has settled is under **Decided**, what is still open under **Open questions**.
+
+## Decided
+
+- **JSON, written by hand** (by us). No YAML step for now.
+- **Data vs code: learned case by case.** No big rule up front; each time something
+  moves across the line (or stays put on purpose), it goes in the **Boundary log** below.
+- **No editor for now.** JSON plus the build-time check is enough.
+- **Logic modules are shared unlockables.** TIMER and SWITCH live in `data/logic.json`,
+  not in a zone. Each is a module the player owns, like `legs.so`: `timer.so`, `switch.so`.
+  Owned modules are in the save (`Save.modules`; `legs.so` stays `Save.jump`). The board
+  shows owned ones as `+ TIMER`, the rest as a dashed `???` slot ("not found yet").
+  A new game owns `timer.so`; nothing hands out `switch.so` yet (`foundIn: null`, TODO).
+- **Yard progress is saved**, in the same save as Downtown: `save.zones.yard` (see **Saves**).
+- **No hints in the yard for now.** Goals stay (the GOAL line in the HUD); Downtown's fixer
+  hints are untouched.
+
+## Boundary log
+
+Append one line per decision: what, which side, why.
+
+- Logic parts (TIMER, SWITCH): **data**, in a shared file (`logic.json`), because every zone
+  uses them and they are items the player owns.
+- Settling a save (a parcel mid-slide comes back on the hook at the chute): **code**
+  (`settleYard` in `yard/effects.ts`), next to the chute effect it mirrors.
+- Board layout defaults (`DEFAULT_DIR`, `BOARD_HOME` in `schematic.ts`): **code** for now;
+  the player's own layout is saved.
 
 ## The idea in one paragraph
 
 A zone is a data file that says **what** is there: devices, their nouns and verbs,
 which events they raise, which cables exist, what everything says, the dialogue,
-goals and hints. The code says **how** the few fiddly rules work (the claw, a timer,
+goals. The code says **how** the few fiddly rules work (the claw, a timer,
 the hatch opening for one second) as **named effects**, and the data points at them
 by name. Writing a new device, rewording a reply or adding a dialogue branch is a
 data change. A new kind of behaviour is a code change: one new effect.
@@ -20,12 +47,16 @@ One file per zone: `game/data/yard.json`. Top level:
 | `state` | Every state key and its starting value (`armAt: "home"`, `gateAllowed: false`). |
 | `tuning` | Numbers effects read: `gateOpenMs`, `slideMs`, … |
 | `devices` | The zone's devices. Each: `id`, `name`, `look`, `status`, `nouns`. |
-| `catalogue` | Device templates placed at runtime: the board's logic parts (TIMER, SWITCH). A placed copy is `timer1`, `timer2`, … and gets its own `state`. |
 | `cables` | Cables present from the start (`from: "crane.claw:dropped"`, `to`, `verb`). Empty in the yard. |
 | `camera` | The crates CAM-1 sees: position, size, label. |
 | `dialogue` | Conversation trees, one per daemon (`hinge`). |
-| `goals` | In order: `id`, the objective `text`, `hints` (gentlest first). |
+| `goals` | In order: `id` and the objective `text`. |
 | `texts` | Every other line and label the code asks for, by key. |
+
+The logic modules are one shared file, `game/data/logic.json`: `modules`, each with an
+`id` (`timer.so`), `start` (owned in a new game), `foundIn` (where it is found; `null` for
+now) and `part`, a device like a zone's. A placed copy is `timer1`, `timer2`, … and gets
+its own `state`. The check runs it in each zone it is used in, and reports it as `logic.json`.
 
 A **noun** has an `id`, a `kind` (SENSE / ACT / STORE / DAEMON), `verbs`, optional
 `events`, optional `current` (the state key the highlighted verb follows) and `on`:
@@ -110,35 +141,52 @@ At runtime a missing text shows as `[missing text key]` in the terminal rather t
   text keys. Keep them short and stable; rename with care since saves will store them.
 - **Downtown** fits the same shape later: machines are devices, its terminal commands
   become nouns and verbs (`ls`, `cat`, `login` as cases with conditions), NPC lines are
-  dialogue, objectives with stepped hints are `goals`. Its save (`flags`, `freed`) is `state`.
+  dialogue, objectives are `goals` (the fixer's stepped hints would bring `hints` back, for Downtown). Its save (`flags`, `freed`) is `state`.
 - **Localisation**: all wording is already in data. Next step is moving `texts`,
   dialogue and `look`s into `texts.en.json` keyed by id, with the zone file holding keys only.
 - **Layout**: device positions in the scene and default noun directions on the board
   still live in `scene.ts` / `schematic.ts`; they belong in the zone file (`layout`).
   Left for now because other work is in those files.
 - **Crafting**: removed with the workbench. The format keeps an optional
-  `bench: { parts, recipes }` whose recipes make `catalogue` devices, so it can return.
-- **A visual editor**: JSON plus the checker is the foundation. A first editor could be
-  the game's own board in an "author mode" that saves the zone file back.
+  `bench: { parts, recipes }` whose recipes make logic parts, so it can return.
+- **A visual editor** (not now, see Decided): JSON plus the checker is the foundation.
+  A first editor could be the game's own board in an "author mode" that saves the zone file back.
+
+## Saves
+
+One localStorage object (`access-denied-save-v1`). Besides Downtown's fields:
+
+```ts
+modules: string[]            // owned logic modules: ["timer.so"]; legs.so stays `jump`
+zones: { yard?: ZoneSave }   // each zone's progress, by zone id
+
+interface ZoneSave {
+  state: { found, armAt, held, parcel, parcelAt, gateAllowed, pan }   // the zone's state keys, settled
+  goals: string[]                                   // goal ids reached
+  links: { from, to, verb }[]                       // every cable
+  logic: { id, kind, state? }[]                     // placed parts: timer1, switch1 (+ its on/off)
+  board?: { known: string[]; pos; offsets; vision } // board positions, noun offsets, devices known
+}
+```
+
+Older saves get `modules` from the new-game default and an empty `zones`. The yard writes
+its part a moment after things go quiet, when you leave it and when the game stops. Things
+in flight are not stored: a parcel in the chute or sliding comes back on the hook at the
+chute, a timer counting is simply gone. On load, anything that no longer fits the data
+(a removed noun, a renamed part) is dropped. `reset yard --yes` in the terminal starts the
+yard over and keeps the rest.
 
 ## Where things are
 
 - `game/data/types.ts`: the format, as TypeScript types.
-- `game/data/yard.json`: the back yard.
+- `game/data/yard.json`: the back yard. `game/data/logic.json`: the shared logic modules.
 - `game/data/check.ts`: the build-time check. `game/data/index.ts`: bundles the JSON.
 - `game/yard/effects.ts`: named effects and the `YARD_CODE` contract.
 - `game/yard/model.ts`: turns the data into live devices (public API unchanged).
 
-## Open questions for Tommi
+## Open questions
 
-1. **JSON by hand, or YAML that compiles to JSON?** How much will you write directly?
-2. **How much logic in data?** Today: conditions, `set`, `emit`, `goal`, named effects.
-   Should a `wait` step replace the timer effect, or should data stay dumb and code grow?
-3. **Who reads the data?** Just us and Claude, or a future editor or other writers?
-   That decides how soon the visual editor and localisation matter.
-4. **Saves**: should zone state persist like Downtown's save, and is a placed TIMER
-   (and its cables) part of the save?
-5. **Hints in the yard**: the goals now carry hints (the last points at the board's
-   logic parts). Should the yard surface them like Downtown (ask the fixer), or on a timer?
-6. **Shared catalogue**: will TIMER and SWITCH exist in every zone? Then the catalogue
-   moves to a shared file.
+1. **A `wait` step?** Should a `wait` step replace the timer effect? (Decided per case:
+   record the answer in the Boundary log when it comes up.)
+2. **Where is `switch.so` found?** Nothing hands it out yet (`foundIn: null` in `logic.json`).
+3. **Localisation**: when, if ever, do `texts` move to `texts.en.json`?

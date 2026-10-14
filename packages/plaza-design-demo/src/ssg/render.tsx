@@ -448,6 +448,8 @@ export const demoStyles = `
 
     .sch-palette[hidden] { display: none; }
     .sch-palette .hack-btn { color: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
+    /* a module you have not found yet: a dashed, empty slot */
+    .sch-palette .hack-btn.missing { border-style: dashed; opacity: 0.45; cursor: not-allowed; }
 
     .sch-x {
       position: absolute;

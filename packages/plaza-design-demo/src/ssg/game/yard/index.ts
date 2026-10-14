@@ -9,8 +9,13 @@
  * stays in view, every device on screen shows its nouns in place, and you
  * wire them right there. HACK and BOARD buttons over the canvas say so too.
  * Every action also prints its shell line in the deck's terminal.
+ *
+ * Progress (state, goals, cables, placed parts, the board's layout) goes into
+ * the game's save as one `ZoneSave`, a moment after things settle, and on
+ * `persist()` (leaving the yard, stopping the game).
  */
 
+import type { ZoneSave } from '../data/types';
 import type { LineKind } from '../terminal';
 import { type Goal, type Line, YardModel } from './model';
 import { Panels } from './panels';
@@ -20,6 +25,19 @@ import { drawYard, drawYardBackdrop, spotAt, spots, TRAY_X, YARD_EXIT_X } from '
 export { YARD_SPAWN, YARD_W } from './scene';
 
 export interface YardTarget { id: string; x: number; label: string; promptH: number }
+
+/** How the yard reaches the game's save. */
+export interface YardStore {
+  /** Logic modules the player owns. */
+  modules: () => string[];
+  /** The yard's saved progress, if any. */
+  load: () => ZoneSave | undefined;
+  /** Keep this as the yard's progress (and write the save). */
+  store: (z: ZoneSave) => void;
+}
+
+/** How long things must be quiet before the yard writes the save. */
+const SAVE_AFTER_MS = 800;
 /** World (x along the yard, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
 
@@ -33,19 +51,24 @@ export class Yard {
   private boardBtn: HTMLButtonElement;
   hover: string | null = null;
   onClose: () => void = () => {};
+  private saveTimer = 0;
+  private saved = '';
 
-  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void) {
+  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store?: YardStore) {
     this.model = new YardModel({
       say: (l) => this.say(l),
       openCamera: () => this.panels.camera(),
       openTalk: () => this.panels.talk(),
-      changed: () => { this.schem?.render(); this.vision?.render(); },
-      goal: (g) => { this.model.goals.add(g); },
+      changed: () => { this.schem?.render(); this.vision?.render(); this.dirty(); },
+      goal: (g) => { this.model.goals.add(g); this.dirty(); },
+      modules: store ? () => store.modules() : undefined,
     });
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
     this.panels = new Panels(host, this.model, (l) => this.say(l));
+    this.schem.onLayout = () => this.dirty();
+    this.vision.onLayout = () => this.dirty();
     this.schem.onClose = () => this.onClose();
     this.vision.onClose = () => { this.sync(); this.onClose(); };
     // you keep walking in hack vision: a tapped verb must not keep the keys (Enter would press it again)
@@ -64,6 +87,53 @@ export class Yard {
     this.hackBtn.title = 'hack vision: see every device here and wire them in place (H)';
     this.boardBtn = button('BOARD · B', () => this.toggleBoard());
     host.appendChild(this.btns);
+    const saved = store?.load();
+    if (saved) this.restore(saved);
+    this.saved = JSON.stringify(this.snapshot());
+    this.sync();
+  }
+
+  // ---------- the save ----------
+
+  /** Everything the save keeps about the yard. */
+  snapshot(): ZoneSave {
+    const board = this.schem.layout();
+    return { ...this.model.snapshot(), board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets, vision: this.vision.layout().offsets } };
+  }
+
+  private restore(z: ZoneSave) {
+    this.model.restore(z);
+    this.schem.known.clear();
+    (z.board?.known ?? []).forEach((id) => { if (this.model.devices.has(id)) this.schem.known.add(id); });
+    this.schem.restoreLayout({ pos: z.board?.pos, offsets: z.board?.offsets });
+    this.vision.restoreLayout({ offsets: z.board?.vision });
+  }
+
+  /** Something changed: write the save once things have been quiet for a moment. */
+  private dirty() {
+    if (!this.store) return;
+    clearTimeout(this.saveTimer);
+    this.saveTimer = window.setTimeout(() => this.persist(), SAVE_AFTER_MS);
+  }
+
+  /** Write the yard's progress now, if it changed since the last write. */
+  persist() {
+    clearTimeout(this.saveTimer);
+    if (!this.store) return;
+    const z = this.snapshot(), json = JSON.stringify(z);
+    if (json === this.saved) return;
+    this.saved = json;
+    this.store.store(z);
+  }
+
+  /** `reset yard`: the yard as on the first visit; the rest of the save is untouched. */
+  reset() {
+    this.closeAll();
+    this.model.reset();
+    this.schem.known.clear();
+    this.schem.resetLayout(); this.vision.resetLayout();
+    this.saved = '';
+    this.persist();
     this.sync();
   }
 

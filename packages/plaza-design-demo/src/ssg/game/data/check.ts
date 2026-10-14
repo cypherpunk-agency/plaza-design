@@ -10,7 +10,7 @@
  * Pure: no DOM, no timers, so node can run it.
  */
 
-import type { Action, Case, Cond, DeviceData, DialogueNode, LineRef, StatusPart, ZoneData } from './types';
+import type { Action, Case, Cond, DeviceData, DialogueNode, LineRef, LogicData, StatusPart, ZoneData } from './types';
 
 /** What the code side of a zone provides and expects. */
 export interface CodeContract {
@@ -32,14 +32,16 @@ const KINDS = ['SENSE', 'ACT', 'STORE', 'DAEMON'];
 const TONES = ['ok', 'err', 'dim'];
 const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect'];
 const KEYS: Record<string, string[]> = {
-  zone: ['id', 'name', 'state', 'tuning', 'devices', 'catalogue', 'cables', 'bench', 'camera', 'dialogue', 'goals', 'texts'],
+  zone: ['id', 'name', 'state', 'tuning', 'devices', 'cables', 'bench', 'camera', 'dialogue', 'goals', 'texts'],
+  logic: ['modules'],
+  module: ['id', 'start', 'foundIn', 'part'],
   device: ['id', 'name', 'look', 'status', 'state', 'nouns'],
   noun: ['id', 'kind', 'verbs', 'events', 'current', 'on'],
   case: ['if', 'do', 'say'],
   action: ['if', 'to', ...ACTION_KEYS],
   node: ['if', 'text', 'do', 'choices'],
   dialogue: ['speaker', 'start', 'sayCmd', 'nodes', 'free'],
-  goal: ['id', 'text', 'hints'],
+  goal: ['id', 'text'],
   cable: ['from', 'to', 'verb'],
   crate: ['id', 'x', 'y', 'w', 'h', 'label'],
   recipe: ['parts', 'makes', 'say'],
@@ -47,9 +49,15 @@ const KEYS: Record<string, string[]> = {
 
 const list = <T>(x: T | T[]) => (Array.isArray(x) ? x : [x]);
 
-export function checkZone(z: ZoneData, code: CodeContract, file = z.id + '.json'): string[] {
+/**
+ * Check a zone file, and the shared logic modules as they run in that zone
+ * (their effects and conditions must make sense there). Problems in the
+ * modules are reported against `logic.json`.
+ */
+export function checkZone(z: ZoneData, code: CodeContract, logic: LogicData = { modules: [] }, file = z.id + '.json', logicFile = 'logic.json'): string[] {
   const errs: string[] = [];
-  const err = (where: string, msg: string) => errs.push(file + (where ? ' › ' + where : '') + ': ' + msg);
+  let at = file;
+  const err = (where: string, msg: string) => errs.push(at + (where ? ' › ' + where : '') + ': ' + msg);
   const keys = (o: object, kind: string, where: string) => {
     for (const k of Object.keys(o)) if (!KEYS[kind].includes(k)) err(where, `unknown field "${k}" (a typo?)`);
   };
@@ -140,9 +148,26 @@ export function checkZone(z: ZoneData, code: CodeContract, file = z.id + '.json'
     }
     nounsOf.set(d.id, nouns);
   };
-  dupes([...z.devices, ...z.catalogue].map((d) => d.id), 'devices', 'device id');
+  dupes(z.devices.map((d) => d.id), 'devices', 'device id');
   z.devices.forEach((d) => device(d, `devices[${d.id}]`));
-  z.catalogue.forEach((d) => device(d, `catalogue[${d.id}]`));
+
+  // ---------- logic modules (shared; checked as they run in this zone) ----------
+  at = logicFile;
+  keys(logic, 'logic', '');
+  dupes(logic.modules.map((m) => m.id), 'modules', 'module');
+  dupes(logic.modules.map((m) => m.part.id), 'modules', 'part id');
+  logic.modules.forEach((m, i) => {
+    const w = `modules[${m.id ?? i}]`;
+    keys(m, 'module', w);
+    if (!/^[\w-]+\.so$/.test(m.id)) err(w, 'a module id is a file name ending in .so');
+    if (m.id === 'legs.so') err(w, "legs.so is Downtown's own module (the save keeps it as `jump`)");
+    if (m.start !== undefined && typeof m.start !== 'boolean') err(w, 'start is true or false');
+    if (m.foundIn !== undefined && m.foundIn !== null && typeof m.foundIn !== 'string') err(w, 'foundIn is a zone id or null');
+    if (z.devices.some((d) => d.id === m.part.id)) err(w, `part id "${m.part.id}" is also a device in ${file}`);
+    if (/\d$/.test(m.part.id)) err(w, `part id "${m.part.id}" must not end in a digit (placed copies add a counter)`);
+    device(m.part, `${w} › part`);
+  });
+  at = file;
 
   // ---------- cables (only between devices that exist from the start) ----------
   z.cables.forEach((c, i) => {
@@ -166,7 +191,7 @@ export function checkZone(z: ZoneData, code: CodeContract, file = z.id + '.json'
       keys(r, 'recipe', w);
       if (r.parts.length !== 2) err(w, 'a recipe takes exactly two parts');
       r.parts.forEach((p) => { if (!z.bench!.parts.includes(p)) err(w, `part "${p}" is not in bench.parts`); });
-      if (!z.catalogue.some((d) => d.id === r.makes)) err(w, `makes "${r.makes}": not in the catalogue`);
+      if (!logic.modules.some((m) => m.part.id === r.makes)) err(w, `makes "${r.makes}": not a logic part in ${logicFile}`);
       line(r.say, `${w} › say`);
     });
     dupes(z.bench.recipes.map((r) => [...r.parts].sort().join('+')), 'bench.recipes', 'recipe');

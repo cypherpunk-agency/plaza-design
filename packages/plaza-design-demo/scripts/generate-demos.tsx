@@ -21,7 +21,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
-import { YARD } from '../src/ssg/game/data';
+import { LOGIC, YARD } from '../src/ssg/game/data';
 import { checkZone } from '../src/ssg/game/data/check';
 import { YARD_CODE } from '../src/ssg/game/yard/effects';
 
@@ -133,7 +133,7 @@ ${js}
  * somewhere (src/ssg/game/GAME-DATA.md). The type-check covers their shape.
  */
 function checkGameData() {
-  const problems = checkZone(YARD, YARD_CODE);
+  const problems = checkZone(YARD, YARD_CODE, LOGIC);
   if (!problems.length) return;
   console.error(`Game data has ${problems.length} problem${problems.length > 1 ? 's' : ''} (src/ssg/game/data/):\n`);
   problems.forEach((p) => console.error('  ' + p));
