@@ -13,6 +13,9 @@ import { drawYard, drawYardBackdrop, TRAY_X } from './scene';
 
 export { YARD_SPAWN, YARD_W } from './scene';
 
+/** What the fixer's parcel holds: Moth's key chip (flat 4C, MOTH-PC's drawer) and uplink.so (your deck past your building). */
+export const PARCEL = ['moth.key', 'uplink'];
+
 /** The yard, complete: data, rules, view. The game hosts it with `new ZoneHost(…, YARD_ZONE)`. */
 export const YARD_ZONE: ZoneDef = {
   data: YARD,
@@ -27,6 +30,8 @@ export const YARD_ZONE: ZoneDef = {
       if (id === 'tray' && m.get('parcelAt') === 'tray') {
         m.set('parcelAt', 'taken'); m.goal('take');
         say(m.line('parcel.take'));
+        // what was in it (LEVELS L2): Moth's key chip and uplink.so, onto the keyring
+        for (const k of PARCEL) { const l = m.give(k); if (l) say(l); }
       }
     },
   },

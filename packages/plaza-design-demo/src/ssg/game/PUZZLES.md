@@ -476,10 +476,23 @@ onto `login`, or type it.
 
 ## Level 5: Moth's place (the net)
 
+**Built (2026-10-15):** `data/moth.json` + `game/moth/`. Flat 4C, through the residents' door next to
+Downtown's metro stairs (`DOORS.moth`, 1496), with Moth's key chip from the yard's parcel; without
+it the door refuses ("RESIDENTS ONLY. PRESENT KEY CHIP."). In the flat: the hall table (the
+Registry's reallocation notice), the corkboard over the unused fishing rod, the record player, Moth's
+rig, Sprat's tank (Pixel's warm spot: the lid), Fern in a smart pot, and the answering machine with
+Moth's three-part message.
+
 *Teaches: a key chip opening a sealed sector, hops across nodes, the watchdog, SWITCH, reading a
 story out of systems.* (LEVELS L3)
 
 ### P09 Gone fishing (not fishing)
+
+**Built** (`data/moth.json`, zone `moth`, 2026-10-15). Differences from the sketch below: the line
+out is Moth's rig in the flat (`desk.net`, a LINK with `when: uplink`: the `uplink` chip from the
+yard's parcel); the rig's own screen refuses a local login ("friends come in through FRIENDNET").
+FRIENDNET's `home` LINK reaches MOTH-PC. The drawer holds `notes.txt` (Moth's hints for P10),
+`photos` (gives `sprat`) and `switch.so`. No NEOBANK link yet (P11 is not built).
 
 - **Zone · spot:** the net: FRIENDNET, then MOTH-PC. Main path. Difficulty 2.
 - **Player sees:** FRIENDNET, a chat service where every status line is a little too honest.
@@ -521,6 +534,21 @@ note under P11). Installing `switch.so` is a `give`; `logic.json` then says `"fo
 (The song order is not a keyring item: it is a line you read and remember, *High, Low, Middle*.)
 
 ### P10 Moth's song seal
+
+**Built** (`data/moth.json`), tightened so the watchdog and the SWITCH matter. The song source is
+the RECORD PLAYER in the flat: a CLOCK `record` that raises `played` every **2 s** (no pre-wired
+cable). The song takes 2.45 s to ring through two `wait 1 s` timers, longer than the loop, so a
+chain straight from the record always talks over itself (the next `high` lands before `mid`) and
+never opens; so does a switch that is only open while the dog is away. What works:
+- **one song per absence:** `mothpc.watchdog:leaves → switch1 turn on`, `turntable.record:played →
+  switch1 pass`, `switch1:out → mothpc.journal high` and `→ timer1 wait 1 s`, `timer1:done →
+  mothpc.journal low`, `→ timer2 wait 1 s` and `→ switch1 turn off` (a noun cannot wire to itself,
+  so a timer shuts the switch), `timer2:done → mothpc.journal mid`;
+- or, without the music: `mothpc.watchdog:leaves` straight into the same timer chain.
+Watchdog: FRIENDNET ↔ MOTH-PC, `dwellMs` 4000, `moveMs` 2000 (8 s away). Moth's `notes.txt` hints
+the first ("one song at a time", "open it when the dog leaves. shut it behind the first song").
+The journal's last entry gives the keyring fragment `washer3` ("Moth's jacket": "washer 3, market
+laundromat"), which P13's laundromat can read.
 
 - **Zone · spot:** MOTH-PC, the `journal` sector. Main path. Difficulty 4.
 - **Player sees:** the journal's seal is a noun with three bells as verbs, `high`, `low`, `mid`

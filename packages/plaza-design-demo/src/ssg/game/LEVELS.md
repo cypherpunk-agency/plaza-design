@@ -107,6 +107,9 @@ inside too." Moth's key chip is now yours.
 
 ### Level 3: Moth's place
 
+*Built (2026-10-15), as PUZZLES.md P09 and P10 describe; the journal now points to washer 3 at the
+market laundromat (PUZZLES story thread step 5), not straight to the train.*
+
 *Teaches: a key chip opening a sealed sector, hops across nodes, the
 watchdog, a second module (SWITCH), reading a story out of systems.*
 

@@ -27,6 +27,8 @@ export interface Perch { x: number; h: number; rest: 'sleep' | 'sun' | 'sit' }
 export const WARM: Record<string, Perch[]> = {
   downtown: [{ x: 754, h: 30, rest: 'sleep' }, { x: 330, h: 70, rest: 'sleep' }],
   yard: [{ x: 200, h: 14, rest: 'sleep' }, { x: 724, h: 24, rest: 'sleep' }],
+  // Moth's place: the lid of Sprat's tank, warm from the heat lamp (moth/scene.ts)
+  moth: [{ x: 402, h: 50, rest: 'sleep' }],
 };
 
 type Pose = 'sit' | 'walk' | 'sleep' | 'sun' | 'stretch' | 'hop';

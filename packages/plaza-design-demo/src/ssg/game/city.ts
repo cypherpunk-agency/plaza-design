@@ -11,7 +11,7 @@
 import type { SceneId } from './scenes';
 import { box, C, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, type View } from './scenes/kit';
 
-export type Zone = 'downtown' | 'yard' | 'capsule' | SceneId;
+export type Zone = 'downtown' | 'yard' | 'capsule' | 'moth' | SceneId;
 
 /**
  * Where a new game starts: Capsule 7B, the player's flat. The intro cutscene
@@ -30,9 +30,10 @@ export const seenFlag = (zone: Zone) => 'seen:' + zone;
  * - yard: the fixer's back yard, past the noodle stall
  * - capsule: your building's lobby, the narrow tower at 1200: the lift up to your flat (Capsule 7B)
  * - metro: stairs down, in front of the shuttered front at 1420
+ * - moth: the residents' door of that same front (1496): Moth's building, flat 4C (needs Moth's key chip)
  * - taxi: the sky-taxi pad at the east end, past the SPACEPORT sign
  */
-export const DOORS = { market: 70, shop: 242, yard: 972, capsule: 1230, metro: 1440, taxi: 1930 } as const;
+export const DOORS = { market: 70, shop: 242, yard: 972, capsule: 1230, metro: 1440, moth: 1496, taxi: 1930 } as const;
 export type DoorId = keyof typeof DOORS;
 export const isDoorId = (id: string): id is DoorId => Object.prototype.hasOwnProperty.call(DOORS, id);
 
