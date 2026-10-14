@@ -103,41 +103,6 @@
     }
   ],
 
-  "catalogue": [
-    {
-      "id": "timer",
-      "name": "TIMER",
-      "look": "A logic part. Told to wait, it waits. Then it says done. That is the whole personality.",
-      "status": "waits, then says done",
-      "nouns": [
-        {
-          "id": "timer", "kind": "ACT", "verbs": ["wait 1 s", "wait 2 s", "wait 3 s"], "events": ["done"],
-          "on": { "*": { "do": [{ "effect": "timer.wait" }] } }
-        }
-      ]
-    },
-    {
-      "id": "switch",
-      "name": "SWITCH",
-      "look": "A logic part. When it is on, a signal passes through. When it is off, it does not.",
-      "status": [{ "if": "on", "then": "on · passes signals", "else": "off · stops signals" }],
-      "state": { "on": false },
-      "nouns": [
-        {
-          "id": "switch", "kind": "ACT", "verbs": ["pass", "turn on", "turn off"], "events": ["out"], "current": "on",
-          "on": {
-            "pass": [
-              { "if": "on", "do": [{ "emit": "out" }], "say": ["{via}use switch --pass", "switch: on. passed along.", "dim"] },
-              { "say": ["{via}use switch --pass", "switch: off. the signal stops here.", "dim"] }
-            ],
-            "turn on": { "do": [{ "set": "on", "to": true }], "say": ["{via}use switch --on", "switch: on."] },
-            "turn off": { "do": [{ "set": "on", "to": false }], "say": ["{via}use switch --off", "switch: off.", "dim"] }
-          }
-        }
-      ]
-    }
-  ],
-
   "cables": [],
 
   "camera": {
@@ -176,14 +141,11 @@
   },
 
   "goals": [
-    { "id": "find", "text": "find your parcel", "hints": ["CAM-1 sees the whole yard. The labels are small; zoom in."] },
-    { "id": "chute", "text": "get it into the chute", "hints": ["The crane does what it is told, in order. Arm first, then the claw."] },
-    { "id": "talk", "text": "get the hatch to cooperate", "hints": ["HINGE does not open for people. Ask what it does open for."] },
-    { "id": "gate", "text": "get it through the hatch", "hints": [
-      "HINGE opens for one second per ping. The parcel takes longer than that to slide down.",
-      "Open the board (B): it has logic parts. A TIMER waits, then says done."
-    ] },
-    { "id": "take", "text": "pick it up", "hints": ["The pickup tray is just past the hatch."] }
+    { "id": "find", "text": "find your parcel" },
+    { "id": "chute", "text": "get it into the chute" },
+    { "id": "talk", "text": "get the hatch to cooperate" },
+    { "id": "gate", "text": "get it through the hatch" },
+    { "id": "take", "text": "pick it up" }
   ],
 
   "texts": {

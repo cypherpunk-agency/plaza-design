@@ -10,7 +10,10 @@
  * or the board with every device you have opened, for wiring across them.
  * Devices drag from anywhere on their box; nouns drag to sit wherever you like.
  * The board also has the logic parts (+ TIMER, + SWITCH): they live only there,
- * and × on one takes it off again, cables and all.
+ * and × on one takes it off again, cables and all. Each is a module the player
+ * owns (timer.so); one not found yet shows as a dashed ??? slot.
+ *
+ * Where devices and nouns sit is part of the save: `layout()` / `restoreLayout()`.
  *
  * A third mode, hack vision (H), is a separate instance laid into the world:
  * the yard stays visible under a tint, each device on screen is its own core
@@ -20,6 +23,7 @@
  * Styles live in render.tsx (`#hack`, `.sch-*`).
  */
 
+import type { Pt } from '../data/types';
 import type { Line, Link, YardModel } from './model';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -66,7 +70,10 @@ export class Schematic {
   private pending: { from: string; to: string } | null = null;
   private offsets = new Map<string, P>();
   private boardPos = new Map<string, P>();
+  private slots: { kind: string; btn: HTMLButtonElement }[] = [];
   onClose: () => void = () => {};
+  /** A device or noun was moved by hand (for the save). */
+  onLayout: () => void = () => {};
 
   constructor(host: HTMLElement, private m: YardModel, private say: (l: Line) => void, opts: { vision?: boolean; known?: Set<string> } = {}) {
     this.known = opts.known ?? new Set();
@@ -83,10 +90,11 @@ export class Schematic {
     this.svg = document.createElementNS(NS, 'svg'); this.svg.setAttribute('class', 'hack-wires');
     this.palette = el('div', 'sch-palette'); this.palette.hidden = true;
     this.palette.appendChild(el('span', '', 'LOGIC'));
-    (['timer', 'switch'] as const).forEach((kind) => {
-      const b = el('button', 'hack-btn', '+ ' + kind.toUpperCase()); b.type = 'button';
-      b.addEventListener('click', () => this.addLogic(kind));
+    m.logic.modules.forEach((mod) => {
+      const b = el('button', 'hack-btn'); b.type = 'button';
+      b.addEventListener('click', () => this.addLogic(mod.part.id));
       this.palette.appendChild(b);
+      this.slots.push({ kind: mod.part.id, btn: b });
     });
     this.stage.append(this.svg, this.palette);
     // hack vision has no header: the HACK button outside says it is on, the status sits at the bottom
@@ -151,6 +159,25 @@ export class Schematic {
 
   // ---------- layout ----------
 
+  /** Where things sit, for the save: device positions (board) and noun offsets. */
+  layout(): { pos: Record<string, Pt>; offsets: Record<string, Pt> } {
+    const obj = (m: Map<string, P>) => Object.fromEntries([...m].map(([k, p]) => [k, { x: p.x, y: p.y }]));
+    return { pos: obj(this.boardPos), offsets: obj(this.offsets) };
+  }
+  restoreLayout(l: { pos?: Record<string, Pt>; offsets?: Record<string, Pt> }) {
+    const ok = (p: unknown): p is P => !!p && typeof (p as P).x === 'number' && typeof (p as P).y === 'number';
+    this.boardPos.clear(); this.offsets.clear();
+    for (const [k, p] of Object.entries(l.pos ?? {})) if (ok(p)) this.boardPos.set(k, { x: p.x, y: p.y });
+    for (const [k, p] of Object.entries(l.offsets ?? {})) if (ok(p)) this.offsets.set(k, { x: p.x, y: p.y });
+    this.render();
+  }
+  /** Forget where everything sat and which verbs were open (`reset yard`). The shared `known` is the owner's to clear. */
+  resetLayout() {
+    this.boardPos.clear(); this.offsets.clear(); this.open.clear();
+    this.armed = null; this.pending = null; this.dev = '';
+    this.render();
+  }
+
   private offset(dev: string, noun: string, i: number): P {
     const key = dev + '.' + noun;
     let o = this.offsets.get(key);
@@ -185,6 +212,12 @@ export class Schematic {
     this.title.textContent = this.mode === 'board' ? 'SCHEMATIC · ' + this.known.size + ' devices' : (d?.name ?? '') + ' · schematic';
     this.modeBtn.textContent = this.mode === 'board' ? 'THIS DEVICE' : 'BOARD · B';
     this.palette.hidden = this.mode !== 'board';
+    if (!this.palette.hidden) this.slots.forEach(({ kind, btn }) => {
+      const mod = this.m.module(kind)!, owned = this.m.owns(kind);
+      btn.disabled = !owned; btn.classList.toggle('missing', !owned);
+      btn.textContent = owned ? '+ ' + mod.part.name : '???';
+      btn.title = owned ? mod.id + ': ' + mod.part.look : 'a logic module: not found yet';
+    });
     this.stage.querySelectorAll('.sch').forEach((g) => g.remove());
     // things you crafted are yours: they are on the board from the start
     [...this.m.devices.values()].filter((x) => x.crafted).forEach((x) => this.known.add(x.id));
@@ -315,7 +348,7 @@ export class Schematic {
       };
       const up = () => {
         window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
-        if (!moved) this.toggleAll(id);
+        if (!moved) this.toggleAll(id); else this.onLayout();
       };
       window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
     });
@@ -346,7 +379,7 @@ export class Schematic {
       };
       const up = () => {
         window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
-        if (moved) { this.render(); return; }
+        if (moved) { this.render(); this.onLayout(); return; }
         if (this.armed) { this.propose(this.armed, key); return; }
         this.pending = null;
         if (this.open.has(key)) this.open.delete(key); else this.open.add(key);
@@ -382,14 +415,15 @@ export class Schematic {
   // ---------- logic parts ----------
 
   /** + TIMER / + SWITCH: a new part on the board, next to the palette, its verbs open. */
-  private addLogic(kind: 'timer' | 'switch') {
+  private addLogic(kind: string) {
     const id = this.m.addLogic(kind);
+    if (!id) { this.say(['add ' + kind, (this.m.module(kind)?.id ?? kind) + ': module not found. not yet, anyway.', 'err']); this.render(); return; }
     const n = [...this.m.devices.values()].filter((d) => d.logic).length - 1;
     this.known.add(id);
     this.boardPos.set(id, { x: 0.14 + 0.15 * (n % 5), y: n % 10 < 5 ? 0.72 : 0.56 });
     this.m.devices.get(id)?.nouns.forEach((x) => this.open.add(id + '.' + x.id));
     this.say(['add ' + kind, kind + ' on the board. wire an event into it, and it out.', 'ok']);
-    this.render();
+    this.render(); this.onLayout();
   }
 
   private removeLogic(id: string) {

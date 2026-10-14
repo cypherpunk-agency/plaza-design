@@ -6,6 +6,8 @@
  * Rule of the game: hints, never answers.
  */
 
+import { START_MODULES } from './data';
+import type { ZoneSave } from './data/types';
 import { SPR, type Sprite } from './sprites';
 
 // ---------- save state ----------
@@ -13,25 +15,39 @@ import { SPR, type Sprite } from './sprites';
 export interface Save {
   handle: string;
   tokens: number;
+  /** legs.so: installed from the junction box. Stays its own flag (older saves have it). */
   jump: boolean;
+  /** Logic modules owned, shared by every zone: `timer.so`, `switch.so`. Not legs.so (that is `jump`). */
+  modules: string[];
   freed: string[];
   flags: Record<string, boolean>;
   hints: Record<string, number>;
+  /** Each zone's own progress, by zone id: `zones.yard`. Downtown keeps using the fields above. */
+  zones: { yard?: ZoneSave };
 }
 
 export const SAVE_KEY = 'access-denied-save-v1';
 
 export function newSave(): Save {
-  return { handle: '', tokens: 0, jump: false, freed: [], flags: {}, hints: {} };
+  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], freed: [], flags: {}, hints: {}, zones: {} };
 }
 
+/** Saves from before modules and zones get what a new game starts with; nothing else changes. */
 export function loadSave(): Save {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) return { ...newSave(), ...JSON.parse(raw) };
+    if (raw) {
+      const s: Save = { ...newSave(), ...JSON.parse(raw) };
+      if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
+      if (!s.zones || typeof s.zones !== 'object') s.zones = {};
+      return s;
+    }
   } catch { /* private window or blocked storage: start fresh */ }
   return newSave();
 }
+
+/** Every module the player owns, legs.so first. */
+export const ownedModules = (s: Save) => [...(s.jump ? ['legs.so'] : []), ...s.modules];
 
 export function storeSave(s: Save) {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch { /* not persisted */ }
@@ -182,6 +198,8 @@ export interface Ctx {
   leaveMachine: () => void;
   persist: () => void;
   complete: () => void;
+  /** Start the back yard over (its part of the save only). */
+  resetYard: () => void;
 }
 
 const MAN: Record<string, string> = {
@@ -197,7 +215,7 @@ const MAN: Record<string, string> = {
   sound: 'sound: chiptune on or off. M does the same.',
   exit: 'exit: unplug from a machine, or close the terminal.',
   clear: 'clear: wipes the screen.',
-  reset: 'reset --yes: wipes your progress and starts over.',
+  reset: 'reset --yes: wipes your progress and starts over. reset yard: only the back yard.',
 };
 
 const DENIED_JOKES = ['Incident reported to /dev/null.', 'This attempt has been logged. Nobody reads the log.', 'The Registry thanks you for your interest.'];
@@ -261,7 +279,7 @@ export function suggest(c: Ctx, line: string): string[] {
     case 'install': return pick(Object.keys(files(c)).filter((f) => f.endsWith('.so')));
     case 'man': return pick(commands(c));
     case 'set': return pick(['handle']);
-    case 'reset': return pick(['--yes']);
+    case 'reset': return pick(['--yes', 'yard']);
     default: return [];
   }
 }
@@ -338,7 +356,7 @@ export function run(c: Ctx, line: string) {
       return;
     }
     case 'whoami': {
-      const mods = s.jump ? 'legs.so' : 'none';
+      const mods = ownedModules(s).join(', ') || 'none';
       c.print(who(s) + ' (unauthenticated) · tokens: ' + s.tokens + ' · modules: ' + mods);
       return;
     }
@@ -358,6 +376,10 @@ export function run(c: Ctx, line: string) {
     case 'exit': case 'logout': c.leaveMachine(); return;
     case 'reset':
       if (args[0] === '--yes') { localStorage.removeItem(SAVE_KEY); location.reload(); return; }
+      if ((args[0] || '').toLowerCase() === 'yard') {
+        if (args[1] === '--yes') { c.resetYard(); c.print('back yard reset: cables, parts, the parcel, HINGE\'s mood. Everything else is kept.', 'ok'); return; }
+        c.print('this resets the back yard only (cables, parts, the parcel, its goals). Type: reset yard --yes', 'err'); return;
+      }
       c.print('this wipes your progress. Type: reset --yes', 'err'); return;
     case 'login':
       if (!c.machine) { c.print('login: you are not jacked into anything. Walk up to a machine, press E.', 'err'); return; }

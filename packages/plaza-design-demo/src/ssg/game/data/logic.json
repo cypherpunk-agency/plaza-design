@@ -1,0 +1,44 @@
+{
+  "modules": [
+    {
+      "id": "timer.so",
+      "start": true,
+      "part": {
+        "id": "timer",
+        "name": "TIMER",
+        "look": "A logic part. Told to wait, it waits. Then it says done. That is the whole personality.",
+        "status": "waits, then says done",
+        "nouns": [
+          {
+            "id": "timer", "kind": "ACT", "verbs": ["wait 1 s", "wait 2 s", "wait 3 s"], "events": ["done"],
+            "on": { "*": { "do": [{ "effect": "timer.wait" }] } }
+          }
+        ]
+      }
+    },
+    {
+      "id": "switch.so",
+      "foundIn": null,
+      "part": {
+        "id": "switch",
+        "name": "SWITCH",
+        "look": "A logic part. When it is on, a signal passes through. When it is off, it does not.",
+        "status": [{ "if": "on", "then": "on · passes signals", "else": "off · stops signals" }],
+        "state": { "on": false },
+        "nouns": [
+          {
+            "id": "switch", "kind": "ACT", "verbs": ["pass", "turn on", "turn off"], "events": ["out"], "current": "on",
+            "on": {
+              "pass": [
+                { "if": "on", "do": [{ "emit": "out" }], "say": ["{via}use switch --pass", "switch: on. passed along.", "dim"] },
+                { "say": ["{via}use switch --pass", "switch: off. the signal stops here.", "dim"] }
+              ],
+              "turn on": { "do": [{ "set": "on", "to": true }], "say": ["{via}use switch --on", "switch: on."] },
+              "turn off": { "do": [{ "set": "on", "to": false }], "say": ["{via}use switch --off", "switch: off.", "dim"] }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

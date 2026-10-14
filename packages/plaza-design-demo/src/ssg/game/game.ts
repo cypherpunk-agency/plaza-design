@@ -15,7 +15,7 @@ import { Yard, YARD_SPAWN, YARD_W } from './yard';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
-  READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
+  ownedModules, READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
 type Target = { kind: 'talk' | 'jack' | 'read' | 'door' | 'yard' | 'scene'; id: string; x: number; h: number; label: string; promptH?: number };
@@ -87,7 +87,11 @@ export class Game {
     });
     this.term.onClose = () => { if (this.machine) this.leaveMachine(); this.canvas.focus(); };
 
-    this.yard = new Yard(host.windowEl, (text, kind) => this.term.print(text, kind));
+    this.yard = new Yard(host.windowEl, (text, kind) => this.term.print(text, kind), {
+      modules: () => this.save.modules,
+      load: () => this.save.zones.yard,
+      store: (z) => { this.save.zones.yard = z; storeSave(this.save); },
+    });
     this.yard.onClose = () => this.canvas.focus();
     this.canvas.addEventListener('pointerdown', (e) => this.onCanvasPointer(e, true));
     this.canvas.addEventListener('pointermove', (e) => this.onCanvasPointer(e, false));
@@ -136,6 +140,7 @@ export class Game {
     window.removeEventListener('resize', this.onResize);
     this.keys.clear();
     this.yard.closeAll();
+    this.yard.persist();
     this.term.close();
     this.canvas.hidden = true;
     storeSave(this.save);
@@ -234,6 +239,7 @@ export class Game {
 
   /** Walk between Downtown and the fixer's back yard. */
   private goTo(zone: 'downtown' | 'yard', quiet = false) {
+    if (this.zone === 'yard') this.yard.persist();
     this.yard.closeAll();
     this.yard.show(zone === 'yard');
     this.bubble = null;
@@ -289,6 +295,7 @@ export class Game {
       leaveMachine: () => this.leaveMachine(),
       persist: () => { storeSave(this.save); this.syncHud(); },
       complete: () => { this.showEnd = true; },
+      resetYard: () => this.yard.reset(),
     };
   }
 
@@ -897,7 +904,7 @@ export class Game {
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
     x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.scene ? this.scene.name.toUpperCase() : this.zone === 'yard' ? 'BACK YARD' : 'DOWNTOWN', 8, 12);
     x.fillStyle = 'rgba(255,217,165,.7)';
-    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (s.jump ? 'legs.so' : '-') + (sound.enabled ? ' · SOUND' : ''), 8, 23);
+    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (sound.enabled ? ' · SOUND' : ''), 8, 23);
     if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, 34); }
     if (!this.seenControls || this.t < 600) {
       x.fillStyle = 'rgba(255,217,165,.55)';
@@ -935,6 +942,7 @@ export class Game {
   /** Walk into an explorable scene, at its spawn. */
   private enterScene(id: SceneId, quiet = false) {
     const s = SCENES[id];
+    if (this.zone === 'yard') this.yard.persist();
     this.yard.closeAll();
     this.bubble = null;
     this.zone = id;

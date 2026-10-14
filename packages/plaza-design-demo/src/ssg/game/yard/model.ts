@@ -10,9 +10,9 @@
  * read it and call `act`, `connect` and `cut`.
  */
 
-import { YARD } from '../data';
-import type { Action, Case, DeviceData, Kind, LineRef, NounData, StatusPart, Value, ZoneData } from '../data/types';
-import { type Vars, type World, YARD_EFFECTS } from './effects';
+import { LOGIC, START_MODULES, YARD } from '../data';
+import type { Action, Case, DeviceData, Kind, LineRef, LogicData, NounData, StatusPart, Value, ZoneData, ZoneSave } from '../data/types';
+import { settleYard, type Vars, type World, YARD_EFFECTS } from './effects';
 
 export type { Kind };
 export type Line = [cmd: string, reply: string, tone?: 'ok' | 'err' | 'dim'];
@@ -56,6 +56,8 @@ export interface YardHooks {
   openBench?: () => void;
   changed: () => void;
   goal: (g: Goal) => void;
+  /** The logic modules the player owns (`timer.so`, …). Default: what a new game starts with. */
+  modules?: () => string[];
 }
 
 export const SLIDE_MS = YARD.tuning.slideMs;
@@ -86,12 +88,28 @@ export class YardModel {
   /** Per-device state (a SWITCH's on/off), keyed by device id. */
   private local = new Map<string, Record<string, Value>>();
   private placed = new Map<string, number>();
+  /** Bumped by reset and restore: timers started before it never fire. */
+  private epoch = 0;
 
-  constructor(private hooks: YardHooks, zone: ZoneData = YARD) {
+  constructor(private hooks: YardHooks, zone: ZoneData = YARD, readonly logic: LogicData = LOGIC) {
     this.zone = zone;
-    for (const [k, v] of Object.entries(zone.state)) this.write(k, v);
-    zone.devices.forEach((d) => this.devices.set(d.id, this.build(d, d.id)));
-    this.links = zone.cables.map((c) => ({ ...c }));
+    this.init();
+  }
+
+  /** Back to how the zone file starts it: no parts, its own cables, no goals. */
+  private init() {
+    this.epoch++;
+    this.devices.clear(); this.local.clear(); this.placed.clear(); this.live.clear(); this.goals.clear();
+    for (const [k, v] of Object.entries(this.zone.state)) this.write(k, v);
+    this.slideStart = 0; this.gateOpenUntil = 0;
+    this.zone.devices.forEach((d) => this.devices.set(d.id, this.build(d, d.id)));
+    this.links = this.zone.cables.map((c) => ({ ...c }));
+  }
+
+  /** setTimeout that a reset or restore cancels (a timer counting, a parcel sliding). */
+  later(ms: number, fn: () => void) {
+    const e = this.epoch;
+    setTimeout(() => { if (e === this.epoch) fn(); }, ms);
   }
 
   gateOpen() { return performance.now() < this.gateOpenUntil; }
@@ -123,8 +141,8 @@ export class YardModel {
     const out = this.links.filter((l) => l.from === key);
     out.forEach((l) => this.live.add(l));
     this.hooks.changed();
-    setTimeout(() => { out.forEach((l) => this.live.delete(l)); this.hooks.changed(); }, 500);
-    out.forEach((l) => setTimeout(() => { const [d, n] = split(l.to); this.act(d, n, l.verb, true); }, 150));
+    this.later(500, () => { out.forEach((l) => this.live.delete(l)); this.hooks.changed(); });
+    out.forEach((l) => this.later(150, () => { const [d, n] = split(l.to); this.act(d, n, l.verb, true); }));
   }
 
   connect(from: string, to: string, verb: string): Line {
@@ -145,15 +163,31 @@ export class YardModel {
 
   // ---------- logic parts on the board ----------
 
-  /** Place a logic part from the zone's catalogue. Returns its id: 'timer1', 'switch1', … */
-  addLogic(kind: 'timer' | 'switch'): string {
-    const t = this.zone.catalogue.find((d) => d.id === kind);
-    if (!t) throw new Error('no logic part "' + kind + '" in the catalogue');
+  /** Modules the player owns. */
+  modules(): string[] { return this.hooks.modules?.() ?? START_MODULES; }
+  /** The module that places a part kind (`timer` → timer.so's entry). */
+  module(kind: string) { return this.logic.modules.find((m) => m.part.id === kind); }
+  /** Does the player own the module for this part kind? */
+  owns(kind: string) { const m = this.module(kind); return !!m && this.modules().includes(m.id); }
+
+  /**
+   * Place a logic part from a module the player owns. Returns its id
+   * ('timer1', 'switch1', …), or null when the module is unknown or not owned.
+   */
+  addLogic(kind: string): string | null {
+    if (!this.owns(kind)) return null;
+    const id = this.place(kind);
+    this.hooks.changed();
+    return id;
+  }
+
+  private place(kind: string, want?: string): string {
+    const t = this.module(kind)!.part;
     let n = this.placed.get(kind) ?? 0, id: string;
-    do id = kind + ++n; while (this.devices.has(id));
+    if (want) { id = want; n = Math.max(n, parseInt(want.slice(kind.length), 10) || 0); }
+    else do id = kind + ++n; while (this.devices.has(id));
     this.placed.set(kind, n);
     this.devices.set(id, this.build(t, id, true));
-    this.hooks.changed();
     return id;
   }
 
@@ -165,6 +199,54 @@ export class YardModel {
     this.links = this.links.filter((l) => { const hit = on(l.from) || on(l.to); if (hit) this.live.delete(l); return !hit; });
     this.hooks.changed();
   }
+
+  // ---------- saving ----------
+
+  private zoneState() {
+    const st: Record<string, Value> = {};
+    for (const k of Object.keys(this.zone.state)) st[k] = (this as unknown as Record<string, Value>)[k];
+    return st;
+  }
+
+  /** The zone's progress for the save, settled: no parcel mid-slide, no timer counting. */
+  snapshot(): ZoneSave {
+    const state = this.zoneState();
+    settleYard(state);
+    const logic = [...this.devices.values()].filter((d) => d.logic).map((d) => {
+      const kind = d.id.replace(/\d+$/, ''), own = this.local.get(d.id);
+      return own ? { id: d.id, kind, state: { ...own } } : { id: d.id, kind };
+    });
+    return { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
+  }
+
+  /**
+   * Back to a saved point. Anything that no longer fits the data (a state key,
+   * a part kind, a cable to a noun that is gone) is dropped, not trusted.
+   * Placed parts come back even if their module is no longer owned.
+   */
+  restore(s: ZoneSave) {
+    this.init();
+    for (const [k, v] of Object.entries(s.state ?? {})) if (k in this.zone.state) this.write(k, v);
+    const st = this.zoneState();
+    settleYard(st);
+    for (const [k, v] of Object.entries(st)) this.write(k, v);
+    const goalIds = new Set(this.zone.goals.map((g) => g.id));
+    (s.goals ?? []).forEach((g) => { if (goalIds.has(g)) this.goals.add(g as Goal); });
+    for (const p of s.logic ?? []) {
+      if (!this.module(p.kind) || !p.id.startsWith(p.kind) || !/^\d+$/.test(p.id.slice(p.kind.length)) || this.devices.has(p.id)) continue;
+      this.place(p.kind, p.id);
+      const own = this.local.get(p.id);
+      if (own && p.state) for (const [k, v] of Object.entries(p.state)) if (k in own) own[k] = v;
+    }
+    this.links = (s.links ?? []).filter((l) => {
+      const [from, ev] = l.from.split(':'), a = this.noun(from), b = this.noun(l.to);
+      return !!a && !!b && !!a.events?.includes(ev) && b.verbs.includes(l.verb);
+    }).map((l) => ({ from: l.from, to: l.to, verb: l.verb }));
+    this.hooks.changed();
+  }
+
+  /** Start the zone over (the terminal's `reset yard`). */
+  reset() { this.init(); this.hooks.changed(); }
 
   // ---------- the parcel ----------
 
