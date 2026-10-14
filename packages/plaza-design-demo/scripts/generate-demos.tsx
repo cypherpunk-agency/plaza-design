@@ -66,10 +66,11 @@ async function bundleJS(): Promise<string> {
   const result = await build({
     stdin: {
       contents: `import {
-  initPlazaTheme, toggleTheme, startClock, initGridCanvas, createParticles,
+  initPlazaTheme, toggleTheme, startClock, createParticles,
   renderTelemetry, renderRoutes, renderKeys, renderNetLog, renderStatus,
   startHexScroll, updateNodeCount,
 } from './plaza.ts';
+import { initCityScene } from ${JSON.stringify(path.join(DEMO_DIR, 'src/ssg/cityScene.ts').split(path.sep).join('/'))};
 ${initScript}`,
       resolveDir: CORE_DIR,
       sourcefile: 'homepage-init.ts',

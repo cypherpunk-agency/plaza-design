@@ -9,8 +9,8 @@
 export function StaticLandingPage() {
   return (
     <>
-      {/* Grid Canvas Background */}
-      <canvas id="grid-canvas" className="fixed inset-0 z-0"></canvas>
+      {/* City scene background (cityScene.ts) */}
+      <canvas id="city-canvas" className="fixed inset-0 z-0"></canvas>
 
       {/* Floating Particles - plaza.js will populate */}
       <div id="particles" className="fixed inset-0 z-10 pointer-events-none"></div>
@@ -26,8 +26,8 @@ export function StaticLandingPage() {
         {/* Header Bar */}
         <div className="plaza-window-header">
           <span>
-            <span>INITIATING CONNECTION...</span>
-            <span style={{ color: 'rgba(80, 200, 120, 0.7)', marginLeft: '10px' }}>PROTOCOL ONLINE</span>
+            <span className="header-initiating">INITIATING CONNECTION...</span>
+            <span className="header-online" style={{ color: 'rgba(80, 200, 120, 0.7)' }}>PROTOCOL ONLINE</span>
           </span>
           <span style={{ color: 'rgba(255,122,0,0.75)' }}>
             NODES: <span id="node-count">--</span> ACTIVE
@@ -56,7 +56,7 @@ export function StaticLandingPage() {
               </span>
             </p>
             <div className="flex gap-4 justify-center flex-wrap" style={{ marginTop: '46px' }}>
-              <button className="plaza-btn plaza-btn--tease">enter</button>
+              <button id="cta" className="plaza-btn plaza-btn--tease" aria-disabled="true">[ACCESS DENIED]</button>
             </div>
           </div>
 

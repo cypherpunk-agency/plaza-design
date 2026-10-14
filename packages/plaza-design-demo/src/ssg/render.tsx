@@ -65,6 +65,11 @@ export const demoStyles = `
       line-height: 1.05;
     }
 
+    /* Solid fill so the label stays readable where the sun rises behind it */
+    .demo-center .plaza-btn {
+      background: var(--color-bg-base);
+    }
+
     .demo-subtitle {
       font-size: clamp(12px, 1.6vw, 18px);
       color: var(--color-accent-400);
@@ -85,6 +90,31 @@ export const demoStyles = `
       .demo-window {
         inset: 18px;
       }
+
+      /* 19 characters must fit the window on a phone */
+      .demo-title {
+        font-size: calc(8vw - 8px);
+      }
+    }
+
+    .header-online {
+      margin-left: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .header-initiating {
+        display: none;
+      }
+
+      .header-online {
+        margin-left: 0;
+      }
+
+      .demo-center .plaza-btn {
+        padding: var(--spacing-3) var(--spacing-5);
+        letter-spacing: var(--letter-spacing-wider);
+        white-space: nowrap;
+      }
     }
 `;
 
@@ -92,24 +122,32 @@ export const demoStyles = `
  * JavaScript initialization code for the demos
  */
 export const initScript = `
+    const PROJECTS = [
+      { label: '/frontier', href: 'https://frontier.cypherpunk.agency/' },
+      { label: '/sol-economy', href: 'https://sol-economy.cypherpunk.agency/' },
+      { label: '/orbis', href: 'https://orbis.cypherpunk.agency/' },
+    ];
     // Initialize theme
     initPlazaTheme();
 
     // Start clock
     startClock('clock', 'full');
 
-    // Initialize grid canvas
-    const grid = initGridCanvas('grid-canvas');
-    grid.start();
+    // City scene: skyline, antenna, beacons, reflective floor
+    const scene = initCityScene('city-canvas', { beacons: PROJECTS, anchor: '#cta' });
+    scene.start();
 
     // Create particles (canonical count: 50)
     createParticles('particles', 50);
 
     // Render left side gimmicks
     renderTelemetry('telemetry');
-    renderRoutes('routes', [
-      { label: '/polkadot-treasury-monitor', href: 'https://polkadot-treasury-monitor.cypherpunk.agency/' },
-    ]);
+    renderRoutes('routes', PROJECTS);
+    // Hovering a route lights its beacon on the skyline
+    document.querySelectorAll('#routes .route-link').forEach((a) => {
+      a.addEventListener('mouseenter', () => scene.highlight(a.textContent));
+      a.addEventListener('mouseleave', () => scene.highlight(null));
+    });
     renderKeys('keys');
 
     // Render right side gimmicks
