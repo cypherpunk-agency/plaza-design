@@ -134,8 +134,13 @@ export interface LayoutData {
   board?: { x: number; y: number };
   /** Which side of the device each noun sits on, on the board / in a device's schematic. */
   dir?: Record<string, Dir>;
-  /** The same, in hack vision (nouns sit closer there). */
+  /** No longer read: hack vision lays a device's nouns out in one row (see `row`). Accepted so older files still check. */
   vision?: Record<string, Dir>;
+  /**
+   * Hack vision: the order of its nouns in the row over the device, left to right.
+   * Nouns not listed follow, by kind: SENSE and STORE, then ACT, then LINK / GUARD / LOG, then DAEMON.
+   */
+  row?: string[];
 }
 
 export interface DeviceData {
@@ -286,8 +291,11 @@ export interface ZoneSave {
   goals: string[];
   /** Every cable: `from` device.noun:event, `to` device.noun, the verb it carries. Pre-wired ones you cut are missing. */
   links: CableData[];
-  /** Logic parts on the board: id (`timer1`), part kind (`timer`), its own state (a switch's `on`). */
-  logic: { id: string; kind: string; state?: Record<string, Value> }[];
+  /**
+   * Logic parts: id (`timer1`), part kind (`timer`), its own state (a switch's `on`), and where it
+   * floats in the world in hack vision (`at`: x along the zone, h above the ground, world units).
+   */
+  logic: { id: string; kind: string; state?: Record<string, Value>; at?: { x: number; h: number } }[];
   /** Devices' and nodes' own `state`, by device id (logic parts keep theirs in `logic`). */
   local?: Record<string, Record<string, Value>>;
   /** Sectors opened: `device/sector`. */

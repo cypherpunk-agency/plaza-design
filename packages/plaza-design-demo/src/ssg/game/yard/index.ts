@@ -20,7 +20,7 @@ export const YARD_ZONE: ZoneDef = {
   view: {
     panels: { camera: cameraPanel },
     /** The yard is walled in, so it draws its own backdrop (after the ground) instead of the open city. */
-    draw: (x, m, v, hover) => { drawYardBackdrop(x, v); drawYard(x, m, v, hover); },
+    draw: (x, m, v, hover, layer = 'all') => { if (layer !== 'devices') drawYardBackdrop(x, v); drawYard(x, m, v, hover, layer); },
     // the way out is the open passage at the left edge: walk into it (city.ts EDGES), no E
     targets: (m) => (m.get('parcelAt') === 'tray' ? [{ id: 'tray', x: TRAY_X, label: m.label('prompt.take'), promptH: 26 }] : []),
     use: (id, m, say) => {

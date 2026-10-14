@@ -28,8 +28,7 @@
       "layout": {
         "spot": { "x": 90, "w": 26, "h": 86 },
         "board": { "x": 0.14, "y": 0.3 },
-        "dir": { "lens": "up", "motor": "down", "footage": "right" },
-        "vision": { "lens": "up", "motor": "left", "footage": "down" }
+        "dir": { "lens": "up", "motor": "down", "footage": "right" }
       },
       "nouns": [
         {
@@ -61,8 +60,7 @@
       "layout": {
         "spot": { "x": 350, "w": 186, "h": 130 },
         "board": { "x": 0.5, "y": 0.3 },
-        "dir": { "arm": "down", "claw": "up", "job.log": "left" },
-        "vision": { "arm": "down", "claw": "up", "job.log": "left" }
+        "dir": { "arm": "down", "claw": "up", "job.log": "left" }
       },
       "nouns": [
         {
@@ -95,8 +93,7 @@
       "layout": {
         "spot": { "x": 615, "w": 36, "h": 68 },
         "board": { "x": 0.86, "y": 0.3 },
-        "dir": { "lock": "left", "log": "up", "hinge": "down" },
-        "vision": { "lock": "left", "log": "up", "hinge": "down" }
+        "dir": { "lock": "left", "log": "up", "hinge": "down" }
       },
       "nouns": [
         {

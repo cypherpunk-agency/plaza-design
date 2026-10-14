@@ -131,6 +131,8 @@ export class ZoneModel {
   locks = new Map<string, number>();
   /** Net nodes met: seen on a scan (a silhouette on the board), or connected (a device). */
   net = new Map<string, 'seen' | 'connected'>();
+  /** Where each logic part floats in the world in hack vision (x along the zone, h above the ground). */
+  logicAt = new Map<string, { x: number; h: number }>();
   /** Devices the player is looking into right now (the host sets it: a device's schematic). */
   viewing = new Set<string>();
   /** The clock. A test can swap it. */
@@ -163,7 +165,7 @@ export class ZoneModel {
   /** Back to how the zone file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
     this.epoch++;
-    for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net]) m.clear();
+    for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
     this.state = { ...this.zone.state };
@@ -294,7 +296,7 @@ export class ZoneModel {
   /** Remove a placed logic part and every cable touching it. The zone's own devices stay. */
   removeDevice(id: string): void {
     if (!this.devices.get(id)?.logic) return;
-    this.devices.delete(id); this.local.delete(id);
+    this.devices.delete(id); this.local.delete(id); this.logicAt.delete(id);
     const on = (key: string) => split(key)[0] === id;
     this.links = this.links.filter((l) => { const hit = on(l.from) || on(l.to); if (hit) this.live.delete(l); return !hit; });
     this.changed();
@@ -609,8 +611,8 @@ export class ZoneModel {
     this.rules.settle?.(state);
     const devs = [...this.devices.values()];
     const logic = devs.filter((d) => d.logic).map((d) => {
-      const kind = d.id.replace(/\d+$/, ''), own = this.local.get(d.id);
-      return own ? { id: d.id, kind, state: { ...own } } : { id: d.id, kind };
+      const kind = d.id.replace(/\d+$/, ''), own = this.local.get(d.id), at = this.logicAt.get(d.id);
+      return { id: d.id, kind, ...(own ? { state: { ...own } } : {}), ...(at ? { at: { x: at.x, h: at.h } } : {}) };
     });
     const z: ZoneSave = { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
     const local = devs.filter((d) => !d.logic && this.local.has(d.id)).map((d) => [d.id, { ...this.local.get(d.id)! }]);
@@ -646,6 +648,7 @@ export class ZoneModel {
       this.place(p.kind, p.id);
       const own = this.local.get(p.id);
       if (own && p.state) for (const [k, v] of Object.entries(p.state)) if (k in own) own[k] = v;
+      if (p.at && Number.isFinite(p.at.x) && Number.isFinite(p.at.h)) this.logicAt.set(p.id, { x: p.at.x, h: p.at.h });
     }
     (s.open ?? []).forEach((key) => { const [d, sec] = key.split('/'); if (this.sector(d, sec)) this.opened.add(key); });
     (s.passed ?? []).forEach((key) => { const [d, n] = split(key); if (this.nounData(d, n)?.guard) this.passed.add(key); });

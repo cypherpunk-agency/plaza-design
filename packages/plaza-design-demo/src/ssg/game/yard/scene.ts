@@ -227,7 +227,12 @@ export function drawYardBackdrop(x: CanvasRenderingContext2D, v: View & { viewH:
   if (sx(RX) < viewW) side(sx(RX), viewW + 1);
 }
 
-export function drawYard(x: CanvasRenderingContext2D, m: ZoneModel, v: View, highlight: string | null) {
+/**
+ * The yard's things in front of the backdrop. `layer` splits them for hack vision, which mutes
+ * the world and draws the devices (CAM-1, the crane, the hatch) on top: 'world' is everything
+ * but the devices, 'devices' only them, 'all' both (the same picture, in the same order).
+ */
+export function drawYard(x: CanvasRenderingContext2D, m: ZoneModel, v: View, highlight: string | null, layer: 'all' | 'world' | 'devices' = 'all') {
   const { sx, y, t } = v;
   const armAt = m.get('armAt') as string, pan = m.get('pan') as number;
   const mono = (size: number, weight = '') => (weight ? weight + ' ' : '') + size + 'px "IBM Plex Mono", monospace';
@@ -240,84 +245,96 @@ export function drawYard(x: CanvasRenderingContext2D, m: ZoneModel, v: View, hig
     x.strokeRect(x0 - 3.5, top - 3.5, w + 7, h + 7); x.restore();
   };
 
-  // the yard sign, a plate bolted to the wall over the camera, lit by its own lamp
-  const sg = sx(78);
-  x.fillStyle = '#1a0c04'; x.fillRect(sg - 67, y(126), 134, 15);
-  x.strokeStyle = 'rgba(255,136,0,.7)'; x.strokeRect(sg - 66.5, y(126) + 0.5, 133, 14);
-  x.fillStyle = 'rgba(255,217,165,.5)'; [-63, 62].forEach((d) => { x.fillRect(sg + d, y(124), 1, 1); x.fillRect(sg + d, y(114), 1, 1); });
-  x.fillStyle = '#4a2408'; x.fillRect(sg - 1, y(134), 2, 8); x.fillRect(sg - 6, y(134), 12, 2);
-  x.fillStyle = 'rgba(255,217,165,.85)'; x.fillRect(sg - 4, y(132), 8, 1);
-  text("FIXER'S YARD · NO LOGS KEPT", sg, y(115), 'rgba(255,136,0,.9)', 8, '600');
-  // a small street sign over the passage, on a bracket from the lintel (a way, not a machine: no cyan)
-  const ex = sx(EXIT_DOOR) + 6;
-  x.fillStyle = '#4a2408'; x.fillRect(ex - 1, y(78), 2, 8);
-  x.fillStyle = '#140a04'; x.fillRect(ex - 24, y(90), 48, 12); x.strokeStyle = 'rgba(255,217,165,.5)'; x.strokeRect(ex - 23.5, y(90) + 0.5, 47, 11);
-  text('< DOWNTOWN', ex, y(81), 'rgba(255,217,165,.85)', 7, '600');
-
-  // CAM-1 on its pole: a lit pole with a rim so it reads against the brick
-  const cx = sx(90);
-  x.fillStyle = '#000'; x.fillRect(cx - 2, y(72), 5, 72);
-  x.fillStyle = '#4a2408'; x.fillRect(cx - 1, y(72), 3, 72); x.fillStyle = 'rgba(255,136,0,.55)'; x.fillRect(cx - 1, y(72), 1, 72);
-  x.fillStyle = '#2a1405'; x.fillRect(cx - 5, y(2), 11, 2);
-  x.fillStyle = '#1a0c04'; x.fillRect(cx - 12, y(84), 24, 12); x.strokeStyle = 'rgba(255,217,165,.6)'; x.strokeRect(cx - 11.5, y(84) + 0.5, 23, 11);
-  x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(255,42,68,.95)' : 'rgba(255,42,68,.3)'; x.fillRect(cx - 9 + pan * 3, y(80), 3, 3);
-  glow('cam', cx - 12, y(86), 24, 86);
-
-  // crates under the crane
-  (['A-3', 'B-5', 'C-7'] as const).forEach((id) => {
-    const c = sx(SLOT[id]);
-    x.fillStyle = '#5a3410'; x.fillRect(c - 13, y(22), 26, 22); x.strokeStyle = 'rgba(201,138,63,.9)'; x.strokeRect(c - 12.5, y(22) + 0.5, 25, 21);
-    x.beginPath(); x.moveTo(c - 12, y(22)); x.lineTo(c + 12, y(0)); x.moveTo(c + 12, y(22)); x.lineTo(c - 12, y(0)); x.strokeStyle = 'rgba(40,20,5,.8)'; x.stroke();
-    x.fillStyle = '#ffd9a5'; x.fillRect(c - 9, y(19), 18, 7); text(id, c, y(13.5), '#1d0e05', 6, '600');
-  });
-
-  // the crane: gantry, trolley, hook
-  const g0 = sx(262), g1 = sx(438);
-  x.fillStyle = '#000'; x.fillRect(g0 - 1, y(129), 6, 129); x.fillRect(g1 - 5, y(129), 6, 129); x.fillRect(g0 - 1, y(129), g1 - g0 + 2, 7);
-  x.fillStyle = '#4a2408'; x.fillRect(g0, y(128), 4, 128); x.fillRect(g1 - 4, y(128), 4, 128); x.fillRect(g0, y(128), g1 - g0, 5);
-  x.fillStyle = 'rgba(255,136,0,.6)'; x.fillRect(g0, y(128), g1 - g0, 1); x.fillRect(g0, y(127), 1, 127); x.fillRect(g1 - 4, y(127), 1, 127);
-  hookX += (SLOT[armAt] - hookX) * 0.08;
-  const hx = sx(hookX);
-  x.fillStyle = '#ff8800'; x.fillRect(hx - 6, y(124), 12, 4);
-  x.strokeStyle = 'rgba(201,168,127,.9)'; x.beginPath(); x.moveTo(hx + 0.5, y(120)); x.lineTo(hx + 0.5, y(66)); x.stroke();
-  x.beginPath(); x.moveTo(hx - 5, y(66)); x.lineTo(hx - 5, y(62)); x.lineTo(hx + 5, y(62)); x.lineTo(hx + 5, y(66)); x.stroke();
-  glow('crane', g0, y(128), g1 - g0, 128);
-
-  // a stretch of chain-link closes off the pickup corner; the hatch is the way through
-  const f0 = sx(586), f1 = sx(644);
-  x.save(); x.beginPath(); x.rect(f0, y(74), f1 - f0, 74); x.clip();
-  x.strokeStyle = 'rgba(194,65,12,.3)'; x.beginPath();
-  for (let d = -74; d < f1 - f0; d += 6) { x.moveTo(f0 + d, y(0)); x.lineTo(f0 + d + 74, y(74)); x.moveTo(f0 + d + 74, y(0)); x.lineTo(f0 + d, y(74)); }
-  x.stroke(); x.restore();
-  x.fillStyle = '#4a2408'; x.fillRect(f0 - 1, y(76), 3, 76); x.fillRect(f1 - 2, y(76), 3, 76); x.fillRect(f0, y(75), f1 - f0, 2);
-
-  // chute down to the hatch
-  x.strokeStyle = 'rgba(255,136,0,.55)'; x.lineWidth = 3;
-  x.beginPath(); x.moveTo(sx(CHUTE.x0), y(CHUTE.h0 - 4)); x.lineTo(sx(CHUTE.x1), y(CHUTE.h1 - 4)); x.stroke(); x.lineWidth = 1;
-  x.fillStyle = '#2a1405'; x.fillRect(sx(CHUTE.x0) - 2, y(CHUTE.h0 - 4), 3, CHUTE.h0 - 4);
-
-  // the hatch in the fence, HINGE's face on it, with a dark gap around it
-  const gx = sx(615), open = !!m.value('gateOpen');
-  x.fillStyle = '#000'; x.fillRect(gx - 18, y(66), 36, 66);
-  x.fillStyle = open ? '#000' : '#1d0e05'; x.fillRect(gx - 16, y(64), 32, 64);
-  x.strokeStyle = open ? 'rgba(34,197,94,.9)' : 'rgba(255,136,0,.75)'; x.strokeRect(gx - 15.5, y(64) + 0.5, 31, 63);
-  if (!open) { for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,136,0,.18)'; x.fillRect(gx - 14, y(60) + i * 15, 28, 2); } }
-  text(open ? '◕‿◕' : m.get('gateAllowed') ? '◔_◔' : '◔︵◔', gx, y(40), open ? 'rgba(34,197,94,.95)' : 'rgba(255,136,0,.95)', 9);
-  glow('gate', gx - 16, y(64), 32, 64);
-
-  // pickup tray past the hatch
-  const tx = sx(TRAY_X);
-  x.fillStyle = '#1a0c04'; x.fillRect(tx - 14, y(8), 28, 8); x.strokeStyle = 'rgba(34,197,94,.6)'; x.strokeRect(tx - 13.5, y(8) + 0.5, 27, 7);
-  x.fillStyle = '#4a2408'; x.fillRect(tx + 15, y(36), 2, 36);
-  x.fillStyle = '#071209'; x.fillRect(tx + 2, y(46), 28, 10); x.strokeStyle = 'rgba(34,197,94,.6)'; x.strokeRect(tx + 2.5, y(46) + 0.5, 27, 9);
-  text('PICKUP', tx + 16, y(38.5), 'rgba(34,197,94,.85)', 7);
-
-  // the parcel
-  const p = parcelPos(m);
-  if (p) {
+  const world = layer !== 'devices', devices = layer !== 'world';
+  // the parcel; on the hook it belongs to the crane, so hack vision keeps it bright with the devices
+  const held = m.get('parcelAt') === 'hook';
+  const parcel = () => {
+    const p = parcelPos(m);
+    if (!p) return;
     const px = sx(p[0]);
     x.fillStyle = '#c98a3f'; x.fillRect(px - 7, y(p[1] + 10), 14, 10); x.strokeStyle = '#ffd9a5'; x.strokeRect(px - 6.5, y(p[1] + 10) + 0.5, 13, 9);
     x.fillStyle = '#6a3f12'; x.fillRect(px - 7, y(p[1] + 6), 14, 2);
+  };
+
+  if (world) {
+    // the yard sign, a plate bolted to the wall over the camera, lit by its own lamp
+    const sg = sx(78);
+    x.fillStyle = '#1a0c04'; x.fillRect(sg - 67, y(126), 134, 15);
+    x.strokeStyle = 'rgba(255,136,0,.7)'; x.strokeRect(sg - 66.5, y(126) + 0.5, 133, 14);
+    x.fillStyle = 'rgba(255,217,165,.5)'; [-63, 62].forEach((d) => { x.fillRect(sg + d, y(124), 1, 1); x.fillRect(sg + d, y(114), 1, 1); });
+    x.fillStyle = '#4a2408'; x.fillRect(sg - 1, y(134), 2, 8); x.fillRect(sg - 6, y(134), 12, 2);
+    x.fillStyle = 'rgba(255,217,165,.85)'; x.fillRect(sg - 4, y(132), 8, 1);
+    text("FIXER'S YARD · NO LOGS KEPT", sg, y(115), 'rgba(255,136,0,.9)', 8, '600');
+    // a small street sign over the passage, on a bracket from the lintel (a way, not a machine: no cyan)
+    const ex = sx(EXIT_DOOR) + 6;
+    x.fillStyle = '#4a2408'; x.fillRect(ex - 1, y(78), 2, 8);
+    x.fillStyle = '#140a04'; x.fillRect(ex - 24, y(90), 48, 12); x.strokeStyle = 'rgba(255,217,165,.5)'; x.strokeRect(ex - 23.5, y(90) + 0.5, 47, 11);
+    text('< DOWNTOWN', ex, y(81), 'rgba(255,217,165,.85)', 7, '600');
+
+    // crates under the crane
+    (['A-3', 'B-5', 'C-7'] as const).forEach((id) => {
+      const c = sx(SLOT[id]);
+      x.fillStyle = '#5a3410'; x.fillRect(c - 13, y(22), 26, 22); x.strokeStyle = 'rgba(201,138,63,.9)'; x.strokeRect(c - 12.5, y(22) + 0.5, 25, 21);
+      x.beginPath(); x.moveTo(c - 12, y(22)); x.lineTo(c + 12, y(0)); x.moveTo(c + 12, y(22)); x.lineTo(c - 12, y(0)); x.strokeStyle = 'rgba(40,20,5,.8)'; x.stroke();
+      x.fillStyle = '#ffd9a5'; x.fillRect(c - 9, y(19), 18, 7); text(id, c, y(13.5), '#1d0e05', 6, '600');
+    });
+
+    // a stretch of chain-link closes off the pickup corner; the hatch is the way through
+    const f0 = sx(586), f1 = sx(644);
+    x.save(); x.beginPath(); x.rect(f0, y(74), f1 - f0, 74); x.clip();
+    x.strokeStyle = 'rgba(194,65,12,.3)'; x.beginPath();
+    for (let d = -74; d < f1 - f0; d += 6) { x.moveTo(f0 + d, y(0)); x.lineTo(f0 + d + 74, y(74)); x.moveTo(f0 + d + 74, y(0)); x.lineTo(f0 + d, y(74)); }
+    x.stroke(); x.restore();
+    x.fillStyle = '#4a2408'; x.fillRect(f0 - 1, y(76), 3, 76); x.fillRect(f1 - 2, y(76), 3, 76); x.fillRect(f0, y(75), f1 - f0, 2);
+
+    // chute down to the hatch
+    x.strokeStyle = 'rgba(255,136,0,.55)'; x.lineWidth = 3;
+    x.beginPath(); x.moveTo(sx(CHUTE.x0), y(CHUTE.h0 - 4)); x.lineTo(sx(CHUTE.x1), y(CHUTE.h1 - 4)); x.stroke(); x.lineWidth = 1;
+    x.fillStyle = '#2a1405'; x.fillRect(sx(CHUTE.x0) - 2, y(CHUTE.h0 - 4), 3, CHUTE.h0 - 4);
+  }
+
+  if (devices) {
+    // CAM-1 on its pole: a lit pole with a rim so it reads against the brick
+    const cx = sx(90);
+    x.fillStyle = '#000'; x.fillRect(cx - 2, y(72), 5, 72);
+    x.fillStyle = '#4a2408'; x.fillRect(cx - 1, y(72), 3, 72); x.fillStyle = 'rgba(255,136,0,.55)'; x.fillRect(cx - 1, y(72), 1, 72);
+    x.fillStyle = '#2a1405'; x.fillRect(cx - 5, y(2), 11, 2);
+    x.fillStyle = '#1a0c04'; x.fillRect(cx - 12, y(84), 24, 12); x.strokeStyle = 'rgba(255,217,165,.6)'; x.strokeRect(cx - 11.5, y(84) + 0.5, 23, 11);
+    x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(255,42,68,.95)' : 'rgba(255,42,68,.3)'; x.fillRect(cx - 9 + pan * 3, y(80), 3, 3);
+    glow('cam', cx - 12, y(86), 24, 86);
+
+    // the crane: gantry, trolley, hook
+    const g0 = sx(262), g1 = sx(438);
+    x.fillStyle = '#000'; x.fillRect(g0 - 1, y(129), 6, 129); x.fillRect(g1 - 5, y(129), 6, 129); x.fillRect(g0 - 1, y(129), g1 - g0 + 2, 7);
+    x.fillStyle = '#4a2408'; x.fillRect(g0, y(128), 4, 128); x.fillRect(g1 - 4, y(128), 4, 128); x.fillRect(g0, y(128), g1 - g0, 5);
+    x.fillStyle = 'rgba(255,136,0,.6)'; x.fillRect(g0, y(128), g1 - g0, 1); x.fillRect(g0, y(127), 1, 127); x.fillRect(g1 - 4, y(127), 1, 127);
+    hookX += (SLOT[armAt] - hookX) * 0.08;
+    const hx = sx(hookX);
+    x.fillStyle = '#ff8800'; x.fillRect(hx - 6, y(124), 12, 4);
+    x.strokeStyle = 'rgba(201,168,127,.9)'; x.beginPath(); x.moveTo(hx + 0.5, y(120)); x.lineTo(hx + 0.5, y(66)); x.stroke();
+    x.beginPath(); x.moveTo(hx - 5, y(66)); x.lineTo(hx - 5, y(62)); x.lineTo(hx + 5, y(62)); x.lineTo(hx + 5, y(66)); x.stroke();
+    glow('crane', g0, y(128), g1 - g0, 128);
+
+    // the hatch in the fence, HINGE's face on it, with a dark gap around it
+    const gx = sx(615), open = !!m.value('gateOpen');
+    x.fillStyle = '#000'; x.fillRect(gx - 18, y(66), 36, 66);
+    x.fillStyle = open ? '#000' : '#1d0e05'; x.fillRect(gx - 16, y(64), 32, 64);
+    x.strokeStyle = open ? 'rgba(34,197,94,.9)' : 'rgba(255,136,0,.75)'; x.strokeRect(gx - 15.5, y(64) + 0.5, 31, 63);
+    if (!open) { for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,136,0,.18)'; x.fillRect(gx - 14, y(60) + i * 15, 28, 2); } }
+    text(open ? '◕‿◕' : m.get('gateAllowed') ? '◔_◔' : '◔︵◔', gx, y(40), open ? 'rgba(34,197,94,.95)' : 'rgba(255,136,0,.95)', 9);
+    glow('gate', gx - 16, y(64), 32, 64);
+    if (layer === 'devices' && held) parcel();
+  }
+
+  if (world) {
+    // pickup tray past the hatch
+    const tx = sx(TRAY_X);
+    x.fillStyle = '#1a0c04'; x.fillRect(tx - 14, y(8), 28, 8); x.strokeStyle = 'rgba(34,197,94,.6)'; x.strokeRect(tx - 13.5, y(8) + 0.5, 27, 7);
+    x.fillStyle = '#4a2408'; x.fillRect(tx + 15, y(36), 2, 36);
+    x.fillStyle = '#071209'; x.fillRect(tx + 2, y(46), 28, 10); x.strokeStyle = 'rgba(34,197,94,.6)'; x.strokeRect(tx + 2.5, y(46) + 0.5, 27, 9);
+    text('PICKUP', tx + 16, y(38.5), 'rgba(34,197,94,.85)', 7);
+
+    if (layer === 'all' || !held) parcel();
   }
 }
 
