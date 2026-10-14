@@ -1,0 +1,170 @@
+name: Deploy cypherpunk.agency homepage
+
+# Push to production → build the homepage (packages/plaza-design-demo/scripts/generate-demos.tsx
+# → dist-homepage/) → publish to the Caddy VM at /mnt/pd/data/services/static/cypherpunk-agency
+# → live at https://cypherpunk.agency (apex + www).
+#
+# Transport: .github/actions/publish-to-vm — stage the tarball in GCS (create-only, under
+# plaza-design/), then one IAP-tunnelled SSH call as the forced-command, non-root VM user
+# `deploy-plaza`: `publish apex <object>`. The VM pulls, extracts, re-checks (index.html,
+# title, non-empty og-image.png) and copies; CI never extracts or sudos on the VM.
+#
+# `apex` is an OVERLAY on purpose: the served dir also holds /good-friday/, which is not in
+# this repo and must survive. Filenames are stable (no content hashes), so the overlay
+# never accumulates stale builds.
+#
+# The VM's shared CSP is `default-src 'self'` with no font-src: everything the page loads
+# must be same-origin. Fonts ship as files under /fonts/ (data: URIs are blocked too).
+#
+# PUBLIC REPO: logs and this file are world-readable. Never use pull_request_target, never
+# echo secrets, tokens or VM addresses, never print curl's redirect_url or gcloud debug output.
+
+# Only `production` publishes (push, or workflow_dispatch run on the production ref).
+# `main` runs the build + guards as a check and stops there. The deploy job's `if` is one gate; the WIF provider on the infra side only
+# admits refs/heads/production, so an edited copy of this file on another branch cannot
+# obtain the deploy identity either.
+on:
+  push:
+    branches: [main, production]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Two runs overlaying the same directory would race; queue them instead.
+concurrency:
+  group: deploy-homepage
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # No id-token here: `pnpm install` runs third-party code, and it never gets the
+    # ability to mint a GCP identity.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build:homepage
+
+      - name: Guard + package
+        # Fail before anything leaves the runner. A 0-byte og-image.png is exactly the
+        # bug the hand-copied deploy shipped.
+        run: |
+          set -euo pipefail
+          OUT=packages/plaza-design-demo/dist-homepage
+          test -f "$OUT/index.html" || { echo "::error::index.html missing"; exit 1; }
+          grep -qF '<title>[cypherpunk.agency]</title>' "$OUT/index.html" || { echo "::error::index.html lacks the expected title"; exit 1; }
+          test -s "$OUT/og-image.png" || { echo "::error::og-image.png missing or empty"; exit 1; }
+          # Same-origin only: no stylesheet imports, no external src=, url() or <link href>.
+          if grep -Eq '@import|fonts\.(googleapis|gstatic)\.com' "$OUT/index.html"; then
+            echo "::error::index.html imports external CSS/fonts — the VM CSP blocks it"; exit 1
+          fi
+          if grep -Eiq '(src=|url\()["'"'"']?(https?:)?//|<link[^>]*href=["'"'"']?(https?:)?//' "$OUT/index.html"; then
+            echo "::error::index.html loads a cross-origin resource — the VM CSP blocks it"; exit 1
+          fi
+          # Every font the CSS references must be in the payload.
+          for f in $(grep -o 'url("\./fonts/[^"]*")' "$OUT/index.html" | sed 's/url("\.\///; s/")$//' | sort -u); do
+            test -s "$OUT/$f" || { echo "::error::$f referenced but not built"; exit 1; }
+          done
+          if find "$OUT" ! -type f ! -type d | grep -q .; then
+            echo "::error::payload contains non-regular files (symlinks?) — the VM refuses them"; exit 1
+          fi
+          tar -czf homepage.tar.gz -C "$OUT" .
+          tar -tzf homepage.tar.gz
+          ls -l homepage.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: homepage
+          path: |
+            homepage.tar.gz
+            packages/plaza-design-demo/dist-homepage/
+          retention-days: 7
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://cypherpunk.agency/
+    # Job-level permissions replace the workflow-level block: only this job can mint
+    # the OIDC token for Workload Identity Federation.
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SITE_URL: https://cypherpunk.agency
+    steps:
+      # Only for the local publish-to-vm action; nothing is built in this job.
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/actions
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: homepage
+
+      # Keyless: there is no service-account JSON key for this repo. The SA trusts only
+      # attribute.repository == cypherpunk-agency/plaza-design.
+      - name: Authenticate to GCP
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/422633553646/locations/global/workloadIdentityPools/github/providers/github-oidc
+          service_account: deploy-plaza-design@cyberphunk-agency.iam.gserviceaccount.com
+          token_format: access_token
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Stage + publish
+        uses: ./.github/actions/publish-to-vm
+        with:
+          target: apex
+          tarball: homepage.tar.gz
+          access-token: ${{ steps.auth.outputs.access_token }}
+          ssh-key: ${{ secrets.VM_DEPLOY_SSH_KEY }}
+
+      - name: Verify live
+        # A green publish only says bytes moved. Check that apex and www serve exactly this
+        # build, the og-image is a real PNG, the fonts load, and /good-friday/ survived.
+        run: |
+          set -euo pipefail
+          OUT=packages/plaza-design-demo/dist-homepage
+          fetch() { curl -fsS --retry 5 --retry-delay 3 --retry-all-errors -H 'Cache-Control: no-cache' "$@"; }
+
+          for host in "$SITE_URL" https://www.cypherpunk.agency; do
+            fetch "$host/" -o served.html
+            grep -qF '<title>[cypherpunk.agency]</title>' served.html || { echo "::error::$host/ lacks the expected title"; exit 1; }
+            cmp -s served.html "$OUT/index.html" || { echo "::error::$host/ does not serve this build"; exit 1; }
+          done
+
+          read -r code ctype size < <(fetch -o served.png -w '%{http_code} %{content_type} %{size_download}\n' "$SITE_URL/og-image.png" | tr -d '\r')
+          echo "og-image.png: $code $ctype $size B"
+          [ "$code" = 200 ] && [ "$ctype" = image/png ] && [ "$size" -gt 0 ] || { echo "::error::og-image.png check failed"; exit 1; }
+          cmp -s served.png "$OUT/og-image.png" || { echo "::error::served og-image.png differs from this build"; exit 1; }
+
+          for f in "$OUT"/fonts/*.woff2; do
+            fetch -o /dev/null "$SITE_URL/fonts/$(basename "$f")"
+          done
+
+          gf=$(curl -sS -o /dev/null -w '%{http_code}' "$SITE_URL/good-friday/")
+          [ "$gf" = 200 ] || { echo "::error::/good-friday/ returned $gf"; exit 1; }
+
+          echo "live: $SITE_URL at $GITHUB_SHA"

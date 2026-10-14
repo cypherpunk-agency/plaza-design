@@ -750,12 +750,16 @@ export function renderTelemetry(elementId) {
 /**
  * Render routes to an element (canonical format)
  * @param {string} elementId - Target element ID
+ * @param {{label: string, href: string}[]} [links=[]] - Live routes listed after /enter
  */
-export function renderRoutes(elementId) {
+export function renderRoutes(elementId, links = []) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
-  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">routes</div><div class="text-ambient-cyan"><span class="route-disabled">/enter</span></div></div>`;
+  const linkRows = links
+    .map(({ label, href }) => `<div class="text-ambient-cyan"><a href="${href}" target="_blank" rel="noopener" class="route-link">${label}</a></div>`)
+    .join('');
+  el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">routes</div><div class="text-ambient-cyan"><span class="route-disabled">/enter</span></div>${linkRows}</div>`;
 }
 
 /**

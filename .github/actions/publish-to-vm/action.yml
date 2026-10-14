@@ -1,0 +1,74 @@
+name: Publish to web-server
+description: >
+  Stage a site tarball in GCS and have the VM publish it through the forced-command
+  `deploy-plaza` user. Shared by deploy-design.yml and deploy-homepage.yml.
+
+# Contract (server-setup side, 2026-10-14):
+#   - The deploy SA (keyless WIF) may only CREATE objects, and only under `plaza-design/` in
+#     the staging bucket, so names are unique per run and uploaded with a raw media upload
+#     (`gcloud storage cp` would need read/list).
+#   - VM user `deploy-plaza` is not root-capable; its key is forced to
+#     `publish <design|apex> <object>`. The VM pulls the object, extracts it unprivileged,
+#     runs its own guards and does the privileged copy:
+#       design → rsync --delete into static/design
+#       apex   → overlay into static/cypherpunk-agency (/good-friday/ survives)
+#     Exit 0 = published; otherwise one `REFUSED: <reason>` line.
+#   - The IAP tunnel is the transport only. The host key is pinned below (public, by design).
+#
+# PUBLIC REPO: nothing here echoes the token, the key or any address.
+
+inputs:
+  target:
+    description: "`design` or `apex`"
+    required: true
+  tarball:
+    description: Path to a .tar.gz of the site root (regular files and dirs only, <= 100 MB)
+    required: true
+  access-token:
+    description: GCP access token from google-github-actions/auth (token_format access_token)
+    required: true
+  ssh-key:
+    description: Private key for deploy-plaza (secrets.VM_DEPLOY_SSH_KEY)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Stage the tarball in GCS
+      shell: bash
+      env:
+        TOKEN: ${{ inputs.access-token }}
+        TARBALL: ${{ inputs.tarball }}
+        TARGET: ${{ inputs.target }}
+      run: |
+        set -euo pipefail
+        case "$TARGET" in design|apex) ;; *) echo "::error::unknown target"; exit 1 ;; esac
+        size=$(stat -c %s "$TARBALL")
+        [ "$size" -gt 0 ] && [ "$size" -le 104857600 ] || { echo "::error::tarball is $size B (must be 1 B..100 MB)"; exit 1; }
+        object="plaza-design/${TARGET}-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.tar.gz"
+        curl -fsS -X POST \
+          -H "Authorization: Bearer $TOKEN" \
+          -H "Content-Type: application/gzip" \
+          --data-binary @"$TARBALL" \
+          "https://storage.googleapis.com/upload/storage/v1/b/cyberphunk-agency-deploy-staging/o?uploadType=media&name=${object//\//%2F}" \
+          -o /dev/null
+        echo "staged: $object ($size B)"
+        echo "VM_PUBLISH_OBJECT=$object" >> "$GITHUB_ENV"
+
+    - name: Publish on the VM
+      shell: bash
+      env:
+        KEY: ${{ inputs.ssh-key }}
+        TARGET: ${{ inputs.target }}
+      run: |
+        set -euo pipefail
+        dir=$(mktemp -d)
+        trap 'rm -rf "$dir"' EXIT
+        printf '%s\n' "$KEY" > "$dir/key"
+        chmod 600 "$dir/key"
+        echo 'web-server ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHL2UFG8Mk0Nyysj2mQntSvjxNTSdgPvyEDg2JAkmAQh' > "$dir/known_hosts"
+        ssh -i "$dir/key" -o IdentitiesOnly=yes \
+          -o UserKnownHostsFile="$dir/known_hosts" -o StrictHostKeyChecking=yes -o HostKeyAlias=web-server \
+          -o BatchMode=yes -o LogLevel=ERROR \
+          -o ProxyCommand="gcloud compute start-iap-tunnel web-server 22 --listen-on-stdin --zone=europe-west1-b --project=cyberphunk-agency --verbosity=warning" \
+          deploy-plaza@web-server "publish $TARGET $VM_PUBLISH_OBJECT"

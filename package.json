@@ -6,7 +6,8 @@
     "dev:cms": "pnpm --filter plaza-cms-demo dev",
     "build": "pnpm -r build",
     "build:design-demo": "pnpm --filter plaza-design-demo build",
-    "build:cms-demo": "pnpm --filter plaza-cms-demo build"
+    "build:cms-demo": "pnpm --filter plaza-cms-demo build",
+    "build:homepage": "pnpm --filter plaza-design-demo generate-demos"
   },
   "devDependencies": {
     "typescript": "~5.6.0"

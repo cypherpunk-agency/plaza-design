@@ -39,3 +39,6 @@ coverage/
 
 # OS files
 Thumbs.db
+
+# Homepage build (scripts/generate-demos.tsx)
+dist-homepage/

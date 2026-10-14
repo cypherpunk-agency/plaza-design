@@ -23,6 +23,7 @@ pnpm dev:cms            # Start CMS demo
 pnpm build              # Build all packages
 pnpm build:design-demo  # Build design demo only
 pnpm build:cms-demo     # Build CMS demo only
+pnpm build:homepage     # Build the cypherpunk.agency homepage (dist-homepage/)
 ```
 
 ## License
