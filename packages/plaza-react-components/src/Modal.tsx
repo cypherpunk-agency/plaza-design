@@ -74,7 +74,7 @@ export function Modal({
 
   return (
     <div
-      className="plaza-modal-backdrop"
+      className="plaza-modal-overlay"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -84,7 +84,7 @@ export function Modal({
         header={header}
         footer={footer}
       >
-        <div className="plaza-modal__content">
+        <div className="plaza-modal__body">
           {children}
         </div>
       </Window>
