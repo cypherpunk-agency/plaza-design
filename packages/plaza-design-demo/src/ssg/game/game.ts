@@ -26,7 +26,7 @@ import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
 import {
-  DOORS, drawCityMap, EDGES, drawFlight, drawMetroStairs, drawTaxiPad, DRIVER_BROKE, FARE, FLIGHT, isDoorId,
+  DOORS, drawCityMap, HOP, PLACES, placeAt, placeBlocked, type Place, EDGES, drawFlight, drawMetroStairs, drawTaxiPad, DRIVER_BROKE, FARE, FLIGHT, isDoorId,
   seenFlag, START_ZONE, STAND_IDS, standOf, STANDS, STATIONS, stationAt, type DoorId, type MapState, type Stand, type Station, type Zone,
 } from './city';
 import { KeyBar } from './keybar';
@@ -106,7 +106,9 @@ export class Game {
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
   /** The city map overlay, when open: just looking (TAB, the line map in the train), or picking a taxi stand. */
-  private mapView: { mode: 'view' | 'taxi'; options: string[]; index: number } | null = null;
+  private mapView: { mode: 'view' | 'taxi'; options: string[]; index: number; hover: number } | null = null;
+  /** A quick trip from the map in progress: a short fade out, the move, a fade in (HOP frames). */
+  private hop: { place: Place; start: number; done: boolean } | null = null;
   /** A sky-taxi flight in progress. */
   private flight: { to: Stand; start: number } | null = null;
 
@@ -311,7 +313,7 @@ export class Game {
     if (this.cut) { e.preventDefault(); if (!e.repeat) this.cut.skip(); return; }
     if (this.menu.open) { if (!this.term.focused) this.menu.key(e); return; }
     if (this.term.focused) return;
-    if (this.flight) { e.preventDefault(); return; }
+    if (this.flight || this.hop) { e.preventDefault(); return; }
     if (this.mapView) { this.mapKey(e); return; }
     const zh = this.zoneHost;
     if (zh && zh.overlayOpen) {
@@ -473,6 +475,7 @@ export class Game {
     if (this.cut) { if (press) { e.preventDefault(); this.cut.skip(); } return; }
     // a click or tap moves a speech bubble on, the same as E
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
+    if (this.mapView) { this.mapPointer(e, press); return; }
     const zh = this.zoneHost;
     if (!zh || zh.overlayOpen || this.mapView || this.flight) return;
     const r = this.canvas.getBoundingClientRect();
@@ -588,7 +591,7 @@ export class Game {
       if (Math.floor(b.chars) !== before && Math.floor(b.chars) % 2 === 0) sound.blip();
     }
     this.updateTravel(dt);
-    const locked = this.showEnd || this.term.focused || !!this.zoneHost?.overlayOpen || !!this.mapView || !!this.flight;
+    const locked = this.showEnd || this.term.focused || !!this.zoneHost?.overlayOpen || !!this.mapView || !!this.flight || !!this.hop;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
@@ -1433,7 +1436,7 @@ export class Game {
   private walkThroughDoor() {
     if (!this.scene) return false;
     const t = this.nearest();
-    if (!t || (t.id !== 'exit:train' && t.id !== 'exit:out')) return false;
+    if (!t || (t.id !== 'exit:train' && t.id !== 'exit:out' && t.id !== 'exit:out2')) return false;
     this.useScene(t.id);
     return true;
   }
@@ -1486,15 +1489,15 @@ export class Game {
       return;
     }
     const here = standOf(this.zone), i = here ? STAND_IDS.indexOf(here) : -1;
-    this.mapView = { mode: 'taxi', options: [...STAND_IDS], index: (i + 1) % STAND_IDS.length };
+    this.mapView = { mode: 'taxi', options: [...STAND_IDS], index: (i + 1) % STAND_IDS.length, hover: -1 };
     sound.open();
   }
 
   /** The city map on its own, just to look at (for a menu to call). Esc closes it. */
   showMap() {
-    if (!this.running || this.flight) return;
+    if (!this.running || this.flight || this.hop) return;
     this.bubble = null;
-    this.mapView = { mode: 'view', options: [], index: 0 };
+    this.mapView = { mode: 'view', options: [], index: -1, hover: -1 };
   }
 
   /** True while the city map is open. */
@@ -1504,7 +1507,16 @@ export class Game {
     const m = this.mapView!, k = e.key;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(k)) e.preventDefault();
     if (e.repeat) return;
-    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter' || k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.mapView = null; sound.close(); } return; }
+    if (k === 'Escape' || k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.mapView = null; this.canvas.style.cursor = ''; sound.close(); return; }
+    if (m.mode === 'view') {
+      // quick travel: the arrows step through the places, starting from where you are; E, Enter or Space goes
+      const n = PLACES.length, here = PLACES.findIndex((p) => p.zone === this.zone), from = m.index >= 0 ? m.index : Math.max(0, here);
+      const step = m.index < 0 && here < 0 ? 0 : 1;
+      if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (from + n - step) % n; m.hover = -1; sound.blip(); return; }
+      if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (from + step) % n; m.hover = -1; sound.blip(); return; }
+      if (k === 'e' || k === 'E' || k === 'Enter' || k === ' ') { if (m.index >= 0) this.quickTravel(m.index); else { this.mapView = null; sound.close(); } }
+      return;
+    }
     const n = m.options.length;
     if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (m.index + n - 1) % n; sound.blip(); return; }
     if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (m.index + 1) % n; sound.blip(); return; }
@@ -1525,6 +1537,41 @@ export class Game {
     }
   }
 
+  /** The map's state, for drawing it and for deciding where you may go. */
+  private mapState(): MapState {
+    const m = this.mapView ?? { mode: 'view' as const, options: [], index: -1, hover: -1 };
+    return {
+      mode: m.mode, options: m.options, index: m.index, hover: m.hover, touch: this.touch, zone: this.zone,
+      ride: this.zone === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null,
+      seen: (z) => !!this.save.flags[seenFlag(z)], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
+    };
+  }
+
+  /** The pointer on the open map: hovering marks a place; a click goes there (on touch a first tap picks, a second goes); outside the panel closes it. */
+  private mapPointer(e: PointerEvent, press: boolean) {
+    const m = this.mapView!, r = this.canvas.getBoundingClientRect();
+    const px = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k, py = ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
+    const i = placeAt(this.viewW, this.viewH, px, py);
+    if (m.mode === 'view' && e.pointerType === 'mouse') m.hover = Math.max(-1, i);
+    this.canvas.style.cursor = m.mode === 'view' && i >= 0 ? 'pointer' : '';
+    if (!press) return;
+    e.preventDefault();
+    if (i === -2) { this.mapView = null; this.canvas.style.cursor = ''; sound.close(); return; }
+    if (m.mode !== 'view' || i < 0) return;
+    if (e.pointerType === 'mouse' || m.index === i) this.quickTravel(i);
+    else { m.index = i; sound.blip(); }
+  }
+
+  /** Quick travel to a place you know, from the map: no fare, a short fade; or say why not. */
+  private quickTravel(i: number) {
+    const place = PLACES[i], why = placeBlocked(place, this.mapState());
+    if (why) { this.flash(why.toLowerCase()); sound.denied(); if (this.mapView) this.mapView.index = i; return; }
+    this.mapView = null;
+    this.canvas.style.cursor = '';
+    this.hop = { place, start: this.clock, done: false };
+    sound.close();
+  }
+
   /** Flights land; on board, the train stands, closes its doors, runs to the next stop on the loop and opens them (line.ts). */
   private updateTravel(dt: number) {
     if (this.flight && this.clock - this.flight.start >= FLIGHT) {
@@ -1533,21 +1580,26 @@ export class Game {
       this.travel(STANDS[to].zone, 'taxi');
       this.flash('-' + FARE + ' token · ' + STANDS[to].name);
     }
+    // a quick trip moves you while the screen is dark, half way through its fade
+    if (this.hop) {
+      const e = this.clock - this.hop.start;
+      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; this.travel(this.hop.place.zone, this.hop.place.at); this.greet(); }
+      if (e >= HOP) this.hop = null;
+    }
     if (this.zone !== 'train') return;
     const ev = stepRide(dt);
     if (ev === 'depart') { this.flash('NEXT: ' + STATIONS[rideNext()].name); sound.close(); }
     else if (ev === 'arrive') { this.flash(STATIONS[rideStop()].name + ' · doors open'); sound.open(); }
   }
 
+  /** The city map when it is open, and the fade of a quick trip (dark in the middle, with where you are going). */
   private drawMap() {
-    const m = this.mapView;
-    if (!m) return;
-    const riding = this.zone === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null;
-    const st: MapState = {
-      mode: m.mode, options: m.options, index: m.index, zone: this.zone, ride: riding,
-      seen: (z) => !!this.save.flags[seenFlag(z)], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
-    };
-    drawCityMap(this.x, this.viewW, this.viewH, st);
+    if (this.hop) {
+      const x = this.x, f = (this.clock - this.hop.start) / HOP;
+      x.fillStyle = 'rgba(0,0,0,' + Math.min(1, 1.2 - Math.abs(f * 2 - 1) * 1.2) + ')'; x.fillRect(0, 0, this.viewW, this.viewH);
+      if (f > 0.3 && f < 0.7) { x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,.85)'; x.fillText('> ' + this.hop.place.name, this.viewW / 2, this.viewH / 2); x.restore(); }
+    }
+    if (this.mapView) drawCityMap(this.x, this.viewW, this.viewH, this.mapState());
   }
 }
 

@@ -130,7 +130,7 @@ export const harbor: Scene = {
   ambient: { sky: true, rain: true },
   intro: ['The harbor. Everything here is in a box, and nobody asks what.'],
   exits: [
-    { id: 'metro', x: L.metro, to: 'harborStation', at: 'harbor', label: '[E] METRO · HARBOR STATION', promptH: 82 },
+    { id: 'metro', x: L.metro, to: 'harborStation', at: 'harbor', label: '[E] TO THE METRO', promptH: 82 },
     { id: 'taxi', x: L.taxi, to: '', action: 'taxi', label: '[E] HAIL TAXI', promptH: 122 },
   ],
   readables: [

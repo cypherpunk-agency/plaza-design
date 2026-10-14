@@ -13,8 +13,9 @@
  */
 
 import type { Station } from '../city';
-import { box, C, drawTowers, figure, notice, O, onScreen, PAPER, RED, reflect, rng, tell, text, towers, type Scene, type View } from './kit';
-import { drawDepartures, drawPlatformTrain, STOP, TRAIN } from './line';
+import { box, C, drawTowers, notice, O, onScreen, PAPER, RED, reflect, rng, tell, text, towers, type Scene, type View } from './kit';
+import { drawDepartures, drawPlatformTrain, platformQueue, STOP, TRAIN } from './line';
+import { crowd, drawRider, SEAT_H, type RiderKind } from './riders';
 
 // ---------- what both platforms share ----------
 
@@ -54,14 +55,59 @@ function nameplate(x: CanvasRenderingContext2D, v: View, s: number, h: number, n
   text(x, name, s + 10, y(h - 10), 'rgba(' + PAPER + ',' + alpha + ')', 9, '600');
 }
 
-/** A bench, maybe with someone who has given up waiting. */
-function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; who?: boolean }) {
-  const { y } = v, s = v.sx(b.x);
+/** A bench, maybe with someone on it (`who`: what kind of person) who has given up waiting. */
+export function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; who?: RiderKind }) {
+  const { y, t } = v, s = v.sx(b.x);
   if (!onScreen(v, s - 30, 60)) return;
-  if (b.who) figure(x, s + 10, y(10), 30, '#0b0807', 0, 'rgba(255,217,165,.3)');
-  box(x, s - 26, y(24), 52, 3, '#2a160a', 'rgba(' + O + ',.6)');
-  box(x, s - 26, y(14), 52, 4, '#2a160a', 'rgba(' + O + ',.8)');
-  box(x, s - 22, y(10), 3, 10, '#2a160a'); box(x, s + 19, y(10), 3, 10, '#2a160a');
+  box(x, s - 26, y(28), 52, 3, '#2a160a', 'rgba(' + O + ',.6)');
+  box(x, s - 22, y(SEAT_H), 3, SEAT_H, '#2a160a'); box(x, s + 19, y(SEAT_H), 3, SEAT_H, '#2a160a');
+  if (b.who) drawRider(x, b.who, s + 8, y(0), t, { sit: true, phase: b.x });
+  box(x, s - 26, y(SEAT_H + 2), 52, 4, '#2a160a', 'rgba(' + O + ',.8)');
+}
+
+/**
+ * The people waiting for the next metro, standing where `spots` says: a new
+ * crowd for every train, gone once they have got on. Real people (riders.ts),
+ * each doing something, lit so they stand off the wall.
+ */
+export function drawWaiting(x: CanvasRenderingContext2D, v: View, st: Station, spots: number[]) {
+  const q = platformQueue(st, v.t);
+  if (q.boarded) return;
+  const folk = crowd(300 + q.train * 11 + spots.length * 3 + st.length, spots.length);
+  spots.forEach((wx, i) => {
+    const f = folk[i], s = v.sx(wx);
+    if (!f.on || !onScreen(v, s - 16, 32)) return;
+    drawRider(x, f.kind, s, v.y(0), v.t, { flip: f.flip, phase: f.phase });
+  });
+}
+
+/** What the Registry's screens say, a pair of lines at a time. */
+const SLOGANS = [['COMPLIANCE', 'IS COMFORT'], ['REGISTRY ID', 'REQUIRED'], ['ALL JOURNEYS', 'ARE RECORDED'], ['REPORT', 'IRREGULARITIES'], ['STAND BEHIND', 'THE LINE']];
+
+/** A Registry screen hung on two rods from `roof`: its slogans, a scan line, a red REC light. Pages through every three seconds. */
+export function drawScreen(x: CanvasRenderingContext2D, v: View, wx: number, h: number, roof: number, phase = 0) {
+  const { y, t } = v, s = v.sx(wx);
+  if (!onScreen(v, s - 40, 80)) return;
+  x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s - 24, y(roof), 1, roof - h); x.fillRect(s + 23, y(roof), 1, roof - h);
+  const g = x.createRadialGradient(s, y(h - 17), 2, s, y(h - 17), 60);
+  g.addColorStop(0, 'rgba(255,200,170,.08)'); g.addColorStop(1, 'rgba(255,200,170,0)');
+  x.fillStyle = g; x.fillRect(s - 60, y(h + 40), 120, 100);
+  box(x, s - 36, y(h), 72, 34, '#0c0605', 'rgba(' + O + ',.7)');
+  box(x, s - 33, y(h - 3), 66, 28, '#1a0d0a');
+  const lines = SLOGANS[Math.floor((t + phase * 97) / 180) % SLOGANS.length];
+  text(x, lines[0], s, y(h - 11), 'rgba(255,205,175,.9)', 7, '600'); text(x, lines[1], s, y(h - 21), 'rgba(255,205,175,.9)', 7, '600');
+  x.fillStyle = 'rgba(255,205,175,.06)'; x.fillRect(s - 33, Math.round(y(h - 3) + ((t * 0.4) % 28)), 66, 2);
+  x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s + 28, y(h - 5), 2, 2);
+  tell(x, t, s - 30, y(h - 30), phase);
+}
+
+/** A camera on a bracket at height `h`, watching the platform, its red light recording. */
+export function drawCam(x: CanvasRenderingContext2D, v: View, wx: number, h: number, flip = false) {
+  const { y, t } = v, s = v.sx(wx), d = flip ? -1 : 1;
+  if (!onScreen(v, s - 24, 48)) return;
+  box(x, s - 2, y(h + 4), 4, 8, '#100c0a', 'rgba(' + O + ',.5)');
+  box(x, s + (flip ? -18 : 2), y(h + 2), 16, 8, '#100c0a', 'rgba(' + O + ',.7)');
+  x.fillStyle = Math.floor((t + wx) / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s + d * 13 - 1, y(h - 1), 2, 2);
 }
 
 /** The way out: a cyan plate on a post, the LED that says you can use it. */
@@ -86,16 +132,20 @@ const G = {
   beam: { under: 176, top: 194 },
   frieze: { h0: 116, h1: 138, step: 280 },
   posters: [
-    { x: 250, lines: ['NULL & VOID', 'LEVEL 2'] }, { x: 530, lines: ['MEMORY GARDEN', 'FORGET IN STYLE'] },
-    { x: 810, lines: ['TERMS APPLY', 'TO YOU'] }, { x: 1090, lines: ['SECOND SKIN', 'NOW IN BEIGE'] },
-  ],
+    { x: 250, lines: ['NULL & VOID', 'LEVEL 2'] }, { x: 530, lines: ['MEMORY GARDEN', 'LEVEL 1'] },
+    { x: 810, lines: ['REGISTRY NOTICE', 'LOITERING IS LOGGED'], red: true }, { x: 1090, lines: ['SECOND SKIN', 'LEVEL 3'] },
+  ] as { x: number; lines: string[]; red?: boolean }[],
   columns: [300, 700, 1100],
   lamps: [100, 240, 380, 520, 660, 800, 940, 1080],
   board: 520,
-  benches: [{ x: 620, who: true }, { x: 940 }] as { x: number; who?: boolean }[],
+  benches: [{ x: 620, who: 'elder' }, { x: 940 }] as { x: number; who?: RiderKind }[],
   snacks: 820,
   /** The line map on its stand, between the last bench and the end column. */
   lineMap: 1040,
+  /** The Registry's screen, hung from the beam; cameras on the columns; where people wait. */
+  screen: 390,
+  cams: [300, 1100],
+  waiting: [170, 440, 760, 1000, 1150],
 };
 /** The far wall sits in this parallax (with the frieze and the posters on it). */
 const WALL = 0.9;
@@ -114,7 +164,7 @@ function drawGalleriaWall(x: CanvasRenderingContext2D, v: View) {
     box(x, s - 46, y(92), 92, 58, '#1a120b', 'rgba(' + O + ',.5)');
     box(x, s - 42, y(88), 84, 50, '#120c09');
     box(x, s - 40, y(96), 80, 2, 'rgba(255,240,215,.5)');
-    p.lines.forEach((l, i) => text(x, l, s, y(72 - i * 14), 'rgba(' + PAPER + ',' + (i ? 0.45 : 0.65) + ')', 7, i ? '' : '600'));
+    p.lines.forEach((l, i) => text(x, l, s, y(72 - i * 14), i || !p.red ? 'rgba(' + PAPER + ',' + (i ? 0.5 : 0.65) + ')' : 'rgba(' + RED + ',.8)', 7, i ? '' : '600'));
   }
   // the frieze: a band of darker tile along the wall, the station's name on it again and again
   x.fillStyle = '#140d09'; x.fillRect(0, y(G.frieze.h1), v.viewW, G.frieze.h1 - G.frieze.h0);
@@ -202,18 +252,20 @@ function drawSnacks(x: CanvasRenderingContext2D, v: View, wx: number) {
 
 export const galleriaStation: Scene = {
   id: 'galleriaStation',
-  name: 'Galleria Station',
+  name: 'Galleria metro',
   width: G.width,
   spawn: G.spawn,
-  intro: ['Galleria station, under the mall. The ads followed me down.'],
+  intro: ['The Galleria metro, under the mall. The ads followed me down.'],
   exits: [
     { id: 'mall', x: G.exit, to: 'mall', at: 'metro', label: '[E] UP · GALLERIA MALL', promptH: 92 },
     { id: 'train', x: G.boardAt, to: '', action: 'board', label: '[E] BOARD', promptH: 84 },
   ],
   readables: [
-    { id: 'board', x: G.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0 > HARBOR, then DOWNTOWN, then here again.', 'It is a loop. Missing your stop is a scenic route.'] },
-    { id: 'snacks', x: G.snacks, name: 'SNACK MACHINE', promptH: 80, pages: ['CHIPS: SOLD OUT. CHIPS: SOLD OUT. CHIPS: SOLD OUT.', 'One bag left, wedged at an angle that defies physics and refunds.'] },
-    { id: 'linemap', x: G.lineMap, name: 'LINE MAP', promptH: 86, pages: ['LINE 0: DOWNTOWN > GALLERIA > HARBOR > DOWNTOWN.', 'Someone has drawn a little exit on it, in pen, at the bottom. It goes nowhere.'] },
+    { id: 'board', x: G.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0 > HARBOR > DOWNTOWN > GALLERIA.', 'LOOP SERVICE. DELAYS POSSIBLE. NO REASON WILL BE GIVEN.'] },
+    { id: 'snacks', x: G.snacks, name: 'SNACK MACHINE', promptH: 80, pages: ['CHIPS: SOLD OUT.', 'NO REFUNDS AT THIS LOCATION.'] },
+    { id: 'screen', x: G.screen, name: 'REGISTRY SCREEN', promptH: 160, pages: ['THE REGISTRY THANKS YOU FOR YOUR PATIENCE.', 'YOUR PATIENCE HAS BEEN RECORDED.'] },
+    { id: 'linemap', x: G.lineMap, name: 'LINE MAP', promptH: 86, pages: ['LINE 0: DOWNTOWN · GALLERIA · HARBOR.', 'YOU ARE HERE: GALLERIA. THE LINE IS A LOOP.'] },
+    { id: 'regular', x: 628, name: 'OLD WOMAN', label: '[E] TALK', promptH: 54, pages: ['I come down here for the air conditioning.', 'And the trains. I like to watch them leave without me. It feels like winning.'] },
   ],
 
   drawBackdrop(x, v) {
@@ -225,12 +277,15 @@ export const galleriaStation: Scene = {
     // middle band: the ceiling, its lights, the columns
     drawGalleriaCeiling(x, v);
     for (const c of G.columns) drawColumn(x, v, c);
+    G.cams.forEach((c, i) => drawCam(x, v, c + (i ? -12 : 12), 140, !!i));
+    drawScreen(x, v, G.screen, 112, G.beam.under, 1);
     // play band (the name is on the frieze): the board, the line map, benches, the machine, the way up
     drawDepartures(x, v, 'galleria', G.board, 112, G.beam.under);
     const lm = sx(G.lineMap);
     if (onScreen(v, lm - 30, 60)) { box(x, lm - 1, y(44), 3, 44, '#2a160a'); notice(x, t, lm, y(72), 50, 30, ['LINE', 'MAP'], 2); }
     for (const b of G.benches) drawBench(x, v, b);
     drawSnacks(x, v, G.snacks);
+    drawWaiting(x, v, 'galleria', G.waiting);
     drawEscalator(x, v, G.exit);
     drawSlab(x, v, G.width, '#0c0907');
     for (const wx of G.lamps) reflect(x, v, sx(wx), '255,230,190', 0.5, 20);
@@ -254,8 +309,13 @@ const H = {
   /** Crane silhouettes far across the water: [x, height, phase]. */
   cranes: [[240, 150, 0], [620, 180, 1.7], [1180, 160, 3.1]] as [number, number, number][],
   board: 520,
-  benches: [{ x: 760 }, { x: 980, who: true }] as { x: number; who?: boolean }[],
+  benches: [{ x: 760 }, { x: 980, who: 'sleeper' }] as { x: number; who?: RiderKind }[],
   tide: 1120,
+  /** The Registry's screen under the canopy, a camera on the middle post, its checkpoint notice by the gate; where people wait. */
+  screen: 860,
+  cam: 680,
+  checkpoint: 150,
+  waiting: [240, 420, 640, 1040, 1170],
 };
 const H_SKY = towers(141, 1800, [14, 34], [16, 60], 0.07);
 const H_RIPPLES = (() => { const r = rng(143); return Array.from({ length: 60 }, () => [r() * 2000, r(), 4 + r() * 12]); })();
@@ -335,18 +395,21 @@ function drawGate(x: CanvasRenderingContext2D, v: View, wx: number) {
 
 export const harborStation: Scene = {
   id: 'harborStation',
-  name: 'Harbor Station',
+  name: 'Harbor metro',
   width: H.width,
   spawn: H.spawn,
   ambient: { sky: true, rain: true },
-  intro: ['Harbor station. Salt, diesel, and a timetable nobody believes.'],
+  intro: ['The Harbor metro. Salt, diesel, and a timetable nobody believes.'],
   exits: [
     { id: 'harbor', x: H.exit, to: 'harbor', at: 'metro', label: '[E] GATE · HARBOR PIER', promptH: 92 },
     { id: 'train', x: H.boardAt, to: '', action: 'board', label: '[E] BOARD', promptH: 84 },
   ],
   readables: [
-    { id: 'board', x: H.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0 > DOWNTOWN, then GALLERIA, then here again.', 'The last stop before the line remembers where it started.'] },
-    { id: 'tide', x: H.tide, name: 'TIDE TABLE', promptH: 84, pages: ['HIGH TIDE: 03:12. LOW TIDE: 09:40.', 'Platform floods at high tide. Trains run anyway. So do you.'] },
+    { id: 'board', x: H.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0 > DOWNTOWN > GALLERIA > HARBOR.', 'IDENTITY CHECK AT ALL EXITS. HAVE YOUR ID READY.'] },
+    { id: 'screen', x: H.screen, name: 'REGISTRY SCREEN', promptH: 160, pages: ['STAND BEHIND THE YELLOW LINE.', 'PERSONS CROSSING THE LINE WILL BE RECORDED.'] },
+    { id: 'checkpoint', x: H.checkpoint, name: 'REGISTRY CHECKPOINT', promptH: 92, pages: ['REGISTRY CHECKPOINT.', 'RANDOM IDENTITY CHECKS IN PROGRESS. COMPLY WITH ALL REQUESTS.'] },
+    { id: 'tide', x: H.tide, name: 'TIDE TABLE', promptH: 84, pages: ['HIGH TIDE 03:12 · LOW TIDE 09:40.', 'PLATFORM MAY FLOOD AT HIGH TIDE. SERVICE CONTINUES.'] },
+    { id: 'regular', x: 988, name: 'DOCKWORKER', label: '[E] TALK', promptH: 54, pages: ['Mm. Is this Harbor?', 'Then wake me at the next one. The cranes do my shift. I just have to be here when they break.'] },
   ],
 
   drawBackdrop(x, v) {
@@ -355,10 +418,15 @@ export const harborStation: Scene = {
     drawWaterfront(x, v);
     drawTrack(x, v, 'harbor', STOP);
     drawCanopy(x, v);
+    drawCam(x, v, H.cam + 6, 132);
+    drawScreen(x, v, H.screen, 150, H.canopy.under, 2);
     // play band: names on the canopy, the board, benches, the tide table, the gate
     for (const wx of [170, 900]) nameplate(x, v, sx(wx), 140, 'HARBOR', H.canopy.under);
     drawDepartures(x, v, 'harbor', H.board, 112, H.canopy.under);
     for (const b of H.benches) drawBench(x, v, b);
+    drawWaiting(x, v, 'harbor', H.waiting);
+    const cx = sx(H.checkpoint);
+    if (onScreen(v, cx - 30, 60)) { box(x, cx - 1, y(44), 3, 44, '#2a160a'); notice(x, t, cx, y(76), 66, 32, ['REGISTRY', 'CHECKPOINT'], 3); x.fillStyle = 'rgba(' + RED + ',.85)'; x.fillRect(cx - 30, y(73), 6, 3); }
     const tx = sx(H.tide);
     if (onScreen(v, tx - 30, 60)) { box(x, tx - 1, y(44), 3, 44, '#2a160a'); notice(x, t, tx, y(74), 52, 30, ['TIDE', 'TABLE'], 1); }
     drawGate(x, v, H.exit);

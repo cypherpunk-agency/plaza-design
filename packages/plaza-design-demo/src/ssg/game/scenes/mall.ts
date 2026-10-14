@@ -110,7 +110,7 @@ export const mall: Scene = {
   spawn: L.spawn,
   intro: ['The mall. Warm, dry and recording everything I look at.'],
   exits: [
-    { id: 'metro', x: L.metro, to: 'galleriaStation', at: 'mall', label: '[E] METRO · GALLERIA STATION', promptH: 82 },
+    { id: 'metro', x: L.metro, to: 'galleriaStation', at: 'mall', label: '[E] DOWN TO THE METRO', promptH: 82 },
     { id: 'taxi', x: L.roof, to: '', action: 'taxi', label: '[E] ROOF PAD · HAIL TAXI', promptH: 82 },
     { id: 'market', x: L.service, to: 'market', at: 'mall', label: '[E] SERVICE CORRIDOR', promptH: 82 },
   ],

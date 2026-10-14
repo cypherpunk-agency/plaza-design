@@ -75,6 +75,8 @@ export const STANDS: Record<Stand, { name: string; zone: Zone }> = {
 };
 export const standOf = (zone: Zone): Stand | null => (zone === 'downtown' ? 'downtown' : zone === 'mall' ? 'galleria' : zone === 'harbor' ? 'harbor' : null);
 export const FARE = 1;
+/** Frames of a quick trip from the map: a fade out, the move, a fade in. */
+export const HOP = 40;
 /** Frames of flight between two stands. */
 export const FLIGHT = 200;
 export const DRIVER_BROKE = ['One token a ride. You have the look of someone with zero.', 'Walking is free. Very popular with people like you.'];
@@ -107,12 +109,69 @@ const BLOCKS = (() => {
 })();
 const RIPPLES = (() => { const r = rng(9); return Array.from({ length: 26 }, () => [152 + r() * 166, 150 + r() * 28, 4 + r() * 8]); })();
 
+// ---------- quick travel ----------
+
+/**
+ * A place on the map you can quick-travel to once you have been there: its
+ * name, the zone and the door you arrive at (its usual way in), and where it
+ * is on the map: a district's block (`rect`) or a point. Listed in the order
+ * the arrow keys step through them, west to east.
+ */
+export interface Place { id: string; name: string; zone: Zone; at?: string; pt: [number, number]; rect?: [number, number, number, number] }
+const district = (z: Zone) => DISTRICTS.find((d) => d.zone === z)!;
+const block = (z: Zone): Pick<Place, 'pt' | 'rect'> => { const d = district(z); return { pt: [d.x + d.w / 2, d.y + d.h / 2], rect: [d.x, d.y, d.w, d.h] }; };
+export const PLACES: Place[] = [
+  { id: 'market', name: 'NEON MARKET', zone: 'market', at: 'downtown', ...block('market') },
+  { id: 'shop', name: 'CORNER SHOP', zone: 'shop', pt: [SPOTS.shop[0], SPOTS.shop[1]] },
+  { id: 'station-downtown', name: 'DOWNTOWN METRO', zone: 'metro', at: 'downtown', pt: STATION_AT.downtown },
+  { id: 'downtown', name: 'DOWNTOWN', zone: 'downtown', at: 'metro', ...block('downtown') },
+  { id: 'yard', name: 'BACK YARD', zone: 'yard', pt: [SPOTS.yard[0], SPOTS.yard[1]] },
+  { id: 'capsule', name: 'CAPSULE 7B', zone: 'capsule', at: 'downtown', pt: [SPOTS.home[0], SPOTS.home[1]] },
+  { id: 'station-galleria', name: 'GALLERIA METRO', zone: 'galleriaStation', at: 'mall', pt: STATION_AT.galleria },
+  { id: 'mall', name: 'GALLERIA MALL', zone: 'mall', ...block('mall') },
+  { id: 'station-harbor', name: 'HARBOR METRO', zone: 'harborStation', at: 'harbor', pt: STATION_AT.harbor },
+  { id: 'harbor', name: 'HARBOR', zone: 'harbor', ...block('harbor') },
+];
+
+/** Why you cannot quick-travel to a place right now ('' if you can). */
+export function placeBlocked(p: Place, st: Pick<MapState, 'seen' | 'gateOpen' | 'zone' | 'ride'>): string {
+  if (!st.seen(p.zone)) return 'NOT VISITED YET';
+  if (p.zone === st.zone) return 'YOU ARE HERE';
+  if (p.zone === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
+  if (st.ride && st.ride.f > 0) return 'NOT FROM A MOVING METRO · GET OFF FIRST';
+  return '';
+}
+
+/** Where the map panel and the map inside it sit in a view vw × vh: the panel's box, the map's origin and scale. */
+function mapLayout(vw: number, vh: number) {
+  const w = Math.min(vw - 12, 440), h = Math.min(vh - 12, 272), ox = Math.round((vw - w) / 2), oy = Math.round((vh - h) / 2);
+  const mx0 = ox + 8, my0 = oy + 24, mw = w - 16, mh = h - 24 - 32;
+  const s = Math.min(mw / 320, mh / 180), mx = mx0 + (mw - 320 * s) / 2, my = my0 + (mh - 180 * s) / 2;
+  return { w, h, ox, oy, s, mx, my };
+}
+
+/** The place under a point of the view (view units), as an index into PLACES: points first, then districts; -1 for none, -2 outside the panel. */
+export function placeAt(vw: number, vh: number, px: number, py: number): number {
+  const { w, h, ox, oy, s, mx, my } = mapLayout(vw, vh);
+  if (px < ox || px > ox + w || py < oy || py > oy + h) return -2;
+  const X = (px - mx) / s, Y = (py - my) / s;
+  let best = -1, bd = 9 + 4 / s;
+  PLACES.forEach((p, i) => { if (!p.rect) { const d = Math.hypot(p.pt[0] - X, p.pt[1] - Y); if (d < bd) { bd = d; best = i; } } });
+  if (best >= 0) return best;
+  return PLACES.findIndex((p) => !!p.rect && X >= p.rect[0] && X <= p.rect[0] + p.rect[2] && Y >= p.rect[1] && Y <= p.rect[1] + p.rect[3]);
+}
+
 export interface MapState {
-  /** 'view': just the map (TAB, a menu's screen); 'taxi': pick a stand. */
+  /** 'view': the map (TAB or M, a menu's screen), where a place you know is a click away; 'taxi': pick a stand. */
   mode: 'view' | 'taxi';
   /** Stand ids (taxi). */
   options: string[];
+  /** The choice: a stand (taxi), or a place in PLACES (view; -1 = none yet). */
   index: number;
+  /** In 'view': the place under the mouse (-1 none). */
+  hover: number;
+  /** A touch screen: say TAP rather than keys. */
+  touch: boolean;
   zone: Zone;
   /** While riding: the stop the train stands at or last left, the next one, and how far along it is (0..1). */
   ride: { from: Station; to: Station; f: number } | null;
@@ -144,7 +203,7 @@ function herePoint(st: MapState): [number, number] {
  * pads, a blinking you-are-here; places you have not been are `???`.
  */
 export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapState) {
-  const w = Math.min(vw - 12, 440), h = Math.min(vh - 12, 272), ox = Math.round((vw - w) / 2), oy = Math.round((vh - h) / 2);
+  const { w, h, ox, oy, s, mx, my } = mapLayout(vw, vh);
   const blink = Math.floor(st.t / 20) % 2 === 0;
   x.save();
   x.fillStyle = 'rgba(0,0,0,.75)'; x.fillRect(0, 0, vw, vh);
@@ -155,8 +214,6 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   text(x, sub, ox + w - 10, oy + 13, 'rgba(' + PAPER + ',.75)', 7, '', 'right');
 
   // the map itself, scaled to fit between the title and the footer
-  const mx0 = ox + 8, my0 = oy + 24, mw = w - 16, mh = h - 24 - 32;
-  const s = Math.min(mw / 320, mh / 180), mx = mx0 + (mw - 320 * s) / 2, my = my0 + (mh - 180 * s) / 2;
   const P = (X: number, Y: number): [number, number] => [Math.round(mx + X * s), Math.round(my + Y * s)];
   const R = (X: number, Y: number, W: number, H: number, fill: string) => {
     const [a, b] = P(X, Y); x.fillStyle = fill; x.fillRect(a, b, Math.max(1, Math.round(W * s)), Math.max(1, Math.round(H * s)));
@@ -214,6 +271,16 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     if (sel) { x.strokeStyle = 'rgba(' + C + ',.9)'; x.strokeRect(px - 7.5, py - 7.5, 15, 15); }
     if (st.mode === 'taxi') text(x, st.seen(STANDS[id].zone) ? STANDS[id].name : '???', px, py - 10, sel ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.6)', 7, '600');
   }
+  // quick travel: the place you point at or picked, in cyan (you can use it), its name and a dot on it
+  if (st.mode === 'view') {
+    for (const i of [st.hover, st.index]) {
+      if (i < 0) continue;
+      const p = PLACES[i], sel = i === st.index, a = sel ? (blink ? 1 : 0.6) : 0.7;
+      x.strokeStyle = 'rgba(' + C + ',' + a + ')';
+      if (p.rect) { const [a0, b0] = P(p.rect[0], p.rect[1]); x.strokeRect(a0 - 1.5, b0 - 1.5, Math.round(p.rect[2] * s) + 2, Math.round(p.rect[3] * s) + 2); }
+      else { const [px, py] = P(p.pt[0], p.pt[1]); x.strokeRect(px - 6.5, py - 6.5, 13, 13); }
+    }
+  }
   // you are here
   { const [hx, hy] = P(...herePoint(st));
     x.fillStyle = blink ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,.3)'; x.fillRect(hx - 2, hy - 2, 5, 5);
@@ -224,10 +291,18 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   const fy = oy + h - 22;
   x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(ox + 6, fy - 6, w - 12, 1);
   if (st.mode === 'view') {
-    text(x, st.ride
-      ? (st.ride.f > 0 ? 'ON LINE 0 · NEXT: ' + STATIONS[st.ride.to].name : 'ON LINE 0 · AT ' + STATIONS[st.ride.from].name)
-      : '— LINE 0 (A LOOP)   [H] SKY TAXI   ■ YOU   ??? NOT VISITED', ox + 10, fy + 2, 'rgba(' + PAPER + ',.65)', 7, '', 'left');
-    text(x, 'TAB · ESC close', ox + w - 10, fy + 12, 'rgba(' + C + ',.9)', 7, '600', 'right');
+    const i = st.hover >= 0 ? st.hover : st.index;
+    if (i >= 0) {
+      // the place you point at: where it is, and whether you can go
+      const p = PLACES[i], why = placeBlocked(p, st), known = st.seen(p.zone);
+      text(x, '> ' + (known ? p.name : '???'), ox + 10, fy + 3, why ? 'rgba(' + PAPER + ',.8)' : 'rgba(' + C + ',.95)', 9, '600', 'left');
+      text(x, why || (st.touch ? (i === st.index ? 'TAP AGAIN TO GO' : 'TAP TO PICK') : 'E · CLICK  GO THERE'), ox + w - 10, fy + 3, why ? 'rgba(' + RED + ',.9)' : 'rgba(' + C + ',.9)', 7, '600', 'right');
+    } else {
+      text(x, st.ride
+        ? (st.ride.f > 0 ? 'ON LINE 0 · NEXT: ' + STATIONS[st.ride.to].name : 'ON LINE 0 · AT ' + STATIONS[st.ride.from].name)
+        : '— LINE 0 (A LOOP)   [H] SKY TAXI   ■ YOU   ??? NOT VISITED', ox + 10, fy + 2, 'rgba(' + PAPER + ',.65)', 7, '', 'left');
+    }
+    text(x, st.touch ? 'TAP A PLACE YOU KNOW TO GO THERE · TAP OUTSIDE TO CLOSE' : '<- -> PICK A PLACE · E GO · TAB / M / ESC CLOSE', ox + w - 10, fy + 13, 'rgba(' + PAPER + ',.6)', 7, '', 'right');
   } else {
     const name = st.seen(STANDS[pick as Stand].zone) ? STANDS[pick as Stand].name : '???';
     const here = standOf(st.zone) === pick;

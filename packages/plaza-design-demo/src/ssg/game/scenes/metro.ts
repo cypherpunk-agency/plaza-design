@@ -9,8 +9,10 @@
  */
 
 import { Skyline } from '../skyline';
-import { box, figure, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
+import { box, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
 import { drawDepartures, drawPlatformTrain, STOP } from './line';
+import type { RiderKind } from './riders';
+import { drawBench, drawScreen, drawWaiting } from './stations';
 
 /** Layout: positions in world units, heights up from the platform. */
 const L = {
@@ -27,11 +29,14 @@ const L = {
   pillars: [{ x: 330, cam: true }, { x: 730 }, { x: 1130 }] as { x: number; cam?: boolean }[],
   lamps: [100, 300, 500, 700, 900, 1100, 1300],
   board: 540,
-  benches: [{ x: 930, who: true }, { x: 1235 }] as { x: number; who?: boolean }[],
+  benches: [{ x: 930, who: 'paper' }, { x: 1235 }] as { x: number; who?: RiderKind }[],
   /** Piers under the viaduct, in the near floor strip. */
   pierStep: 260,
   /** Where you board: in front of the second door of the first car while the train is in (and where you land stepping off). */
   boardAt: 365,
+  /** The Registry's screen under the canopy, and where people wait. */
+  screen: 850,
+  waiting: [460, 640, 1060, 1180],
 };
 
 const RAIL = 0.9;
@@ -159,16 +164,6 @@ function drawCityMap(x: CanvasRenderingContext2D, v: View, wx: number) {
   tell(x, t, left + w - 6, top + h - 6, 3);
 }
 
-/** A bench, maybe with someone who has given up waiting. */
-function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; who?: boolean }) {
-  const { y } = v, s = v.sx(b.x);
-  if (!onScreen(v, s - 30, 60)) return;
-  if (b.who) figure(x, s + 10, y(10), 30, '#0b0807', 0, 'rgba(255,217,165,.3)');
-  box(x, s - 26, y(24), 52, 3, '#2a160a', 'rgba(' + O + ',.6)');
-  box(x, s - 26, y(14), 52, 4, '#2a160a', 'rgba(' + O + ',.8)');
-  box(x, s - 22, y(10), 3, 10, '#2a160a'); box(x, s + 19, y(10), 3, 10, '#2a160a');
-}
-
 /** The stairs down to the street at the platform's end: a lit stairwell, its railing, a cyan plate on a post. */
 function drawStairs(x: CanvasRenderingContext2D, v: View, wx: number) {
   const { y, t, gy } = v, s = v.sx(wx), d = Math.min(40, v.viewH - gy);
@@ -227,7 +222,7 @@ function drawDeck(x: CanvasRenderingContext2D, v: View) {
 
 export const metro: Scene = {
   id: 'metro',
-  name: 'Downtown Station',
+  name: 'Downtown metro',
   width: L.width,
   spawn: L.spawn,
   intro: ['The metro. One line, three stops, round and round. Getting off at the right one is my problem.'],
@@ -237,9 +232,11 @@ export const metro: Scene = {
     { id: 'citymap', x: L.cityMap, to: '', action: 'map', label: '[E] CITY MAP', promptH: 90 },
   ],
   readables: [
-    { id: 'board', x: L.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0, every 25 seconds, give or take a lifetime.', 'The doors stay open for a few seconds. Miss it and the next one comes.'] },
-    { id: 'map', x: 730, name: 'LINE MAP', promptH: 92, pages: ['LINE 0: DOWNTOWN > GALLERIA > HARBOR > DOWNTOWN. A loop.', 'The train stops everywhere. Getting off is your job.'] },
-    { id: 'poster', x: 1130, name: 'POSTER', promptH: 92, pages: ['REGISTRY PREMIUM: your commute, counted.', 'Free for the first lifetime.'] },
+    { id: 'board', x: L.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0 · A TRAIN EVERY 25 SECONDS.', 'DOORS OPEN FOR A LIMITED TIME. DO NOT HOLD THE DOORS.'] },
+    { id: 'map', x: 730, name: 'LINE MAP', promptH: 92, pages: ['LINE 0: DOWNTOWN · GALLERIA · HARBOR.', 'LOOP SERVICE. TRAINS STOP AT EVERY STATION.'] },
+    { id: 'screen', x: L.screen, name: 'REGISTRY SCREEN', promptH: 170, pages: ['COMPLIANCE IS COMFORT.', 'THIS MESSAGE IS BROUGHT TO YOU BY THE REGISTRY.'] },
+    { id: 'regular', x: 938, name: 'MAN WITH A PAPER', label: '[E] TALK', promptH: 54, pages: ['The paper says the metro runs on time.', "It's yesterday's paper. It ran on time yesterday too. Allegedly."] },
+    { id: 'poster', x: 1130, name: 'POSTER', promptH: 92, pages: ['REGISTRY PREMIUM.', 'PRIORITY IDENTITY CHECKS AT ALL EXITS.'] },
   ],
 
   drawBackdrop(x, v) {
@@ -264,7 +261,9 @@ export const metro: Scene = {
     notice(x, t, sx(1130), y(78), 44, 30, ['ADS'], 2);
     // the departure board on two rods from the roof
     drawDepartures(x, v, 'downtown', L.board, 112, L.canopy.under);
+    drawScreen(x, v, L.screen, 160, L.canopy.under);
     for (const b of L.benches) drawBench(x, v, b);
+    drawWaiting(x, v, 'downtown', L.waiting);
     drawDeck(x, v);
     drawCityMap(x, v, L.cityMap);
     drawStairs(x, v, 32);

@@ -90,6 +90,16 @@ export const nextStation = (st: Station): Station => LINE[(LINE.indexOf(st) + 1)
 /** Which train this is at a platform (one more every loop), so each brings different riders. */
 const trainNo = (st: Station, t: number) => Math.floor((t + OFFSET[st] + shift[st]) / TIMETABLE.loop);
 
+/**
+ * The people waiting on a platform: which train they wait for (a new crowd
+ * gathers after each one leaves), and whether they have got on (from half way
+ * through the doors' open time until the train has gone).
+ */
+export function platformQueue(st: Station, t: number): { train: number; boarded: boolean } {
+  const T = TIMETABLE, ph = phaseOf(st, t), n = trainNo(st, t), gone = T.arrive + T.dwell + T.leave;
+  return { train: ph >= gone ? n + 1 : n, boarded: ph >= T.arrive + T.dwell * 0.5 && ph < gone };
+}
+
 /** The train at a platform: three cars, lit windows with riders, doors that slide open, the headlight while it moves, its destination on the front. */
 export function drawPlatformTrain(x: CanvasRenderingContext2D, v: View, st: Station, stop: number) {
   const at = platformTrain(st, v.t, stop);
@@ -140,14 +150,14 @@ export function drawPlatformTrain(x: CanvasRenderingContext2D, v: View, st: Stat
 /** m:ss for a count of frames. */
 export const clock = (frames: number) => { const s = Math.max(0, Math.ceil(frames / 60)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
-/** What the line's tickers scroll between the times: the operator's apologies and the Registry's reminders. */
+/** What the line's tickers scroll between the times: the operator's notices and the Registry's. Dry: the signs never joke. */
 export const TICKER = [
-  'WE APOLOGISE FOR THE DELAY TO YOUR LIFE',
-  'REGISTRY NOTICE: ALL JOURNEYS ARE LOGGED FOR YOUR SAFETY',
-  'SMILE: YOU ARE BEING COUNTED',
-  'UNATTENDED THOUGHTS WILL BE REMOVED',
-  'COMPLIANCE IS COMFORT',
-  'REPORT ANYONE WHO SEEMS TO BE GOING SOMEWHERE',
+  'LINE 0 · DELAYS POSSIBLE · NO REASON WILL BE GIVEN',
+  'IDENTITY CHECK AT ALL EXITS',
+  'UNREGISTERED PASSENGERS WILL BE REMOVED AT THE NEXT STOP',
+  'ALL JOURNEYS ARE RECORDED',
+  'KEEP YOUR REGISTRY ID VISIBLE',
+  'DO NOT HOLD THE DOORS',
 ];
 
 /**
@@ -181,7 +191,7 @@ export function drawDepartures(x: CanvasRenderingContext2D, v: View, st: Station
   const hot = msg === 'BOARDING' || msg === 'CLOSING';
   text(x, msg, bx, y(h - 20), 'rgba(255,136,0,' + (hot ? 0.75 + 0.25 * Math.sin(t * 0.15) : 0.9) + ')', 9, '600');
   x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(bx - 54, y(h - 28), 108, 1);
-  ticker(x, t, bx - 54, y(h - 35), 108, due > 0 ? 'NEXT TRAIN ' + clock(due) : '', 0.55);
+  ticker(x, t, bx - 54, y(h - 35), 108, due > 0 ? 'NEXT METRO ' + clock(due) : '', 0.55);
   tell(x, t, bx + 52, y(h - 4));
 }
 // ---------- the ride ----------

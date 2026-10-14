@@ -49,6 +49,18 @@ function seated(rows: Sprite): Sprite {
 }
 const SEAT: Record<string, Sprite> = Object.fromEntries(KINDS.map((k) => [k, seated(STAND[k])]));
 
+/** Coats and hair to swap between, so two people of the same kind are not twins. */
+const COATS = ['a', 'b', 'c', 'd', 'f', 'k', 'o', 'j'], HAIR = ['h', 'y', 'g', 'h', 'w', 'h'];
+/** The palette for one person: their coat and hair picked from `phase` (the inspector keeps the uniform). */
+function dressed(kind: RiderKind, phase: number): Record<string, string> {
+  const pal = { ...PAL };
+  if (kind === 'inspector') return pal;
+  const c = Math.floor(phase * 7) % COATS.length, h = Math.floor(phase * 3) % HAIR.length;
+  for (let i = 0; i < COATS.length; i++) pal[COATS[i]] = PAL[COATS[(i + c) % COATS.length]];
+  if (kind !== 'punk' && kind !== 'elder') pal.h = PAL[HAIR[h]];
+  return pal;
+}
+
 /** A seated rider's thighs are this high above the floor (the seat's top). */
 export const SEAT_H = 9;
 const RIM = 'rgba(255,190,110,.35)';
@@ -62,7 +74,8 @@ export function drawRider(x: CanvasRenderingContext2D, kind: RiderKind, cx: numb
   const ps = opt.ps ?? 3, ph = opt.phase ?? 0;
   const nod = kind === 'sleeper' && Math.sin(t * 0.02 + ph) > 0.6 ? 1 : 0;
   const rows = opt.sit ? SEAT[kind] : STAND[kind];
-  const pal = kind === 'phone' && Math.sin(t * 0.07 + ph) < -0.8 ? { ...PAL, z: '#6a8aa8' } : PAL;
+  const pal = dressed(kind, ph);
+  if (kind === 'phone' && Math.sin(t * 0.07 + ph) < -0.8) pal.z = '#6a8aa8';
   const b = drawSprite(x, rows, cx, base + nod * ps, { ps, flip: opt.flip, pal, glow: ps >= 3 ? RIM : undefined });
   if (kind === 'phone' && ps >= 2) {
     // the phone's light on the face and chest
