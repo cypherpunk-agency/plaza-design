@@ -1,6 +1,8 @@
 /**
  * ACCESS DENIED, the engine: input, movement, camera and drawing for the
- * side-scrolling street. What things say and unlock lives in level.ts.
+ * side-scrolling street. What things say and unlock lives in level.ts; the
+ * fixer's back yard (the new hacking system: schematics of nouns and verbs)
+ * lives in yard/.
  *
  * The canvas fills the landing page's window between its header and footer and
  * is drawn at an integer pixel scale so the sprites stay crisp.
@@ -9,16 +11,19 @@
 import { sound } from './audio';
 import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprites';
 import { Terminal } from './terminal';
+import { Yard, YARD_SPAWN, YARD_W } from './yard';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
   READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
-type Target = { kind: 'talk' | 'jack' | 'read'; id: string; x: number; h: number; label: string };
+type Target = { kind: 'talk' | 'jack' | 'read' | 'door' | 'yard'; id: string; x: number; h: number; label: string; promptH?: number };
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number }
 interface Ship { sprite: Sprite; ps: number; y: number; speed: number; offset: number; flip: boolean; depth: number }
 
 const O = '255,136,0', C = '0,255,255';
+/** The door to the fixer's back yard, in the alley past the noodle stall (clear of the till and the man in the hat). */
+const YARD_DOOR_X = 972;
 
 /** Small seeded random, so the city looks the same on every visit. */
 const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
@@ -60,6 +65,8 @@ export class Game {
   private windows = new Map<number, [number, number, number][]>();
   private drops: [number, number, number, number][] = [];
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
+  private zone: 'downtown' | 'yard' = 'downtown';
+  private yard: Yard;
 
   constructor(private host: GameHost) {
     this.canvas = document.createElement('canvas');
@@ -79,6 +86,11 @@ export class Game {
     });
     this.term.onClose = () => { if (this.machine) this.leaveMachine(); this.canvas.focus(); };
 
+    this.yard = new Yard(host.windowEl, (text, kind) => this.term.print(text, kind));
+    this.yard.onClose = () => this.canvas.focus();
+    this.canvas.addEventListener('pointerdown', (e) => this.onCanvasPointer(e, true));
+    this.canvas.addEventListener('pointermove', (e) => this.onCanvasPointer(e, false));
+
     const r = rng(3);
     const hulls = [SPR.spinner, SPR.spinner, SPR.freighter, SPR.drone];
     for (let i = 0; i < 9; i++) {
@@ -95,7 +107,7 @@ export class Game {
 
   // ---------- lifecycle ----------
 
-  start() {
+  start(zone?: 'yard') {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -107,7 +119,8 @@ export class Game {
     this.last = 0;
     this.raf = requestAnimationFrame((n) => this.loop(n));
     this.canvas.focus();
-    if (!this.save.flags.arrived) {
+    if (zone === 'yard' && this.zone !== 'yard') this.goTo('yard', true);
+    if (this.zone === 'downtown' && !this.save.flags.arrived) {
       this.save.flags.arrived = true;
       this.say('YOU', ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.'], this.p.x, 46);
     }
@@ -120,6 +133,7 @@ export class Game {
     window.removeEventListener('keyup', this.onKeyUp);
     window.removeEventListener('resize', this.onResize);
     this.keys.clear();
+    this.yard.closeAll();
     this.term.close();
     this.canvas.hidden = true;
     storeSave(this.save);
@@ -156,6 +170,11 @@ export class Game {
 
   private onKeyDown(e: KeyboardEvent) {
     if (this.term.focused) return;
+    if (this.zone === 'yard' && this.yard.overlayOpen) {
+      if (e.key === 'Escape') { e.preventDefault(); this.yard.closeOverlay(); }
+      else if (e.key === 'b' || e.key === 'B') this.yard.toggleBoard();
+      return;
+    }
     const k = e.key;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(k)) e.preventDefault();
     if (e.repeat && !['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].includes(k)) return;
@@ -173,6 +192,7 @@ export class Game {
       return;
     }
     if (k === '/') { e.preventDefault(); this.openDeck(); return; }
+    if (this.zone === 'yard' && (k === 'b' || k === 'B')) { this.yard.toggleBoard(); return; }
     if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
     if (k === 'e' || k === 'E' || k === 'Enter') { this.interact(); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
@@ -203,6 +223,38 @@ export class Game {
 
   private flash(text: string) { this.toast = { text, until: this.t + 110 }; }
 
+  private get levelW() { return this.zone === 'yard' ? YARD_W : LEVEL_W; }
+  private get platforms() { return this.zone === 'yard' ? [] : PLATFORMS; }
+
+  /** Walk between Downtown and the fixer's back yard. */
+  private goTo(zone: 'downtown' | 'yard', quiet = false) {
+    this.yard.closeAll();
+    this.bubble = null;
+    this.zone = zone;
+    Object.assign(this.p, { x: zone === 'yard' ? YARD_SPAWN : YARD_DOOR_X, y: 0, vy: 0, onGround: true });
+    this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + (zone === 'yard' ? 'the back yard' : 'Downtown'));
+    this.syncHud();
+    if (!quiet) sound.open();
+    if (zone === 'yard' && !this.save.flags.yard) {
+      this.save.flags.yard = true;
+      storeSave(this.save);
+      this.say('YOU', ["The fixer's back yard. My parcel is in here somewhere.", 'Everything here has a schematic. Tap a thing to open it.'], this.p.x, 46);
+    }
+  }
+
+  /** In the yard, tap or click a thing to open its schematic; hovering lights it up. */
+  private onCanvasPointer(e: PointerEvent, press: boolean) {
+    if (this.zone !== 'yard' || this.yard.overlayOpen) return;
+    const r = this.canvas.getBoundingClientRect();
+    const wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
+    const h = this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
+    const id = this.yard.spotAt(wx, h);
+    this.yard.hover = id;
+    this.canvas.style.cursor = id ? 'pointer' : '';
+    if (press && id) { e.preventDefault(); this.seenControls = true; this.yard.openDevice(id); }
+  }
+
   // ---------- world logic ----------
 
   private ctx(): Ctx {
@@ -228,11 +280,13 @@ export class Game {
 
   private syncHud() {
     this.host.setNodes(nodeCount(this.save));
-    this.host.setZone('DOWNTOWN · ' + who(this.save).toUpperCase());
+    this.host.setZone((this.zone === 'yard' ? 'BACK YARD · ' : 'DOWNTOWN · ') + who(this.save).toUpperCase());
   }
 
   private targets(): Target[] {
+    if (this.zone === 'yard') return this.yard.targets().map((t) => ({ kind: 'yard' as const, id: t.id, x: t.x, h: 0, label: t.label, promptH: t.promptH }));
     const list: Target[] = [];
+    list.push({ kind: 'door', id: 'yard', x: YARD_DOOR_X, h: 0, label: '[E] BACK YARD', promptH: 62 });
     NPCS.forEach((n) => list.push({ kind: 'talk', id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
     list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' });
     MACHINES.forEach((m) => list.push({ kind: 'jack', id: m.id, x: m.x, h: m.onRoof ? m.h : 0, label: '[E] JACK IN' }));
@@ -266,6 +320,8 @@ export class Game {
     }
     const target = this.nearest();
     if (!target) return;
+    if (target.kind === 'yard') { if (this.yard.use(target.id) === 'exit') this.goTo('downtown'); return; }
+    if (target.kind === 'door') { this.goTo('yard'); return; }
     if (target.kind === 'talk') {
       if (target.id === 'fixer') {
         const talk = fixerTalk(this.save);
@@ -295,32 +351,32 @@ export class Game {
       b.chars = Math.min(b.pages[b.page].length, b.chars + 1.2 * dt);
       if (Math.floor(b.chars) !== before && Math.floor(b.chars) % 2 === 0) sound.blip();
     }
-    const locked = !!this.machine || this.showEnd || this.term.focused;
+    const locked = !!this.machine || this.showEnd || this.term.focused || this.yard.overlayOpen;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
     const dir = (right ? 1 : 0) - (left ? 1 : 0);
     if (dir) { p.face = dir; this.seenControls = true; if (this.bubble && Math.abs(p.x - this.bubble.x) > 140) this.bubble = null; }
     p.moving = !!dir;
-    p.x = Math.max(12, Math.min(LEVEL_W - 12, p.x + dir * speed * dt));
+    p.x = Math.max(12, Math.min(this.levelW - 12, p.x + dir * speed * dt));
 
     // Vertical: gravity, platforms and the street.
     const prevY = p.y;
     if (!p.onGround) {
       p.y += p.vy * dt;
       p.vy -= 0.22 * dt;
-      for (const pl of PLATFORMS) {
+      for (const pl of this.platforms) {
         if (p.vy <= 0 && prevY >= pl.h && p.y <= pl.h && p.x > pl.x + 2 && p.x < pl.x + pl.w - 2) { p.y = pl.h; p.vy = 0; p.onGround = true; }
       }
       if (p.y <= 0) { p.y = 0; p.vy = 0; p.onGround = true; }
-    } else if (p.y > 0 && !PLATFORMS.some((pl) => pl.h === p.y && p.x > pl.x + 2 && p.x < pl.x + pl.w - 2)) {
+    } else if (p.y > 0 && !this.platforms.some((pl) => pl.h === p.y && p.x > pl.x + 2 && p.x < pl.x + pl.w - 2)) {
       p.onGround = false; p.vy = 0;
     }
 
     // Camera follows, eased, clamped to the level.
-    const goal = Math.max(0, Math.min(LEVEL_W - this.viewW, p.x - this.viewW * 0.45));
+    const goal = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
     this.cam += (goal - this.cam) * Math.min(1, 0.12 * dt);
-    if (LEVEL_W < this.viewW) this.cam = (LEVEL_W - this.viewW) / 2;
+    if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
     this.host.setNodes(nodeCount(this.save));
   }
 
@@ -340,11 +396,16 @@ export class Game {
     this.drawSky();
     this.drawShips();
     this.drawSkyline(0.18, 7, 70, 150, 0.18, 0.12);
-    this.drawAntenna();
+    if (this.zone === 'downtown') this.drawAntenna();
     this.drawSkyline(0.45, 19, 50, 120, 0.3, 0.18);
-    this.drawFronts();
-    this.drawStreet(rain);
-    this.drawMachines();
+    if (this.zone === 'yard') {
+      this.drawStreet(rain);
+      this.yard.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW });
+    } else {
+      this.drawFronts();
+      this.drawStreet(rain);
+      this.drawMachines();
+    }
     this.drawPeople();
     this.drawRain(rain);
     this.drawPrompt();
@@ -489,6 +550,11 @@ export class Game {
     // Dumpster below the low roof.
     const dx = this.sx(1000);
     x.fillStyle = '#10140f'; x.fillRect(dx, this.y(22), 40, 22); x.strokeStyle = 'rgba(120,160,120,.5)'; x.strokeRect(dx + 0.5, this.y(22) + 0.5, 39, 21);
+    // The door to the fixer's back yard, in the alley past the stall.
+    const yx = this.sx(YARD_DOOR_X);
+    x.fillStyle = '#050201'; x.fillRect(yx - 10, this.y(40), 20, 40);
+    x.strokeStyle = 'rgba(255,61,242,.6)'; x.strokeRect(yx - 9.5, this.y(40) + 0.5, 19, 39);
+    this.neon('YARD', yx, this.y(48), '255,61,242', { size: 8, phase: 90 });
   }
 
   private drawStreet(rain: number) {
@@ -498,7 +564,7 @@ export class Game {
     for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(255,100,0,' + (0.16 - i * 0.024) + ')'; x.fillRect(0, gy + 6 + i * i * 2 + i * 4, this.viewW, 1); }
     // Neon smeared into the wet street.
     const smears: [number, string][] = [[372, C], [STALL.x + STALL.w / 2, C], [640, '255,90,110'], [90, C], [1770, O], [920, O]];
-    for (const [wx, col] of smears) {
+    for (const [wx, col] of this.zone === 'yard' ? [] : smears) {
       const sx = this.sx(wx);
       if (sx < -20 || sx > this.viewW + 20) continue;
       for (let i = 0; i < 10; i++) {
@@ -546,6 +612,19 @@ export class Game {
 
   private drawPeople() {
     const x = this.x, p = this.p;
+    if (this.zone === 'downtown') this.drawStallPeople();
+    const sprite = this.machine ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
+    const box = drawSprite(x, sprite, this.sx(p.x), this.y(p.y), { glow: GLOW_YOU, flip: p.face < 0 && !this.machine });
+    if (this.machine) {
+      const m = MACHINES.find((z) => z.id === this.machine)!;
+      const tx = this.sx(m.x), ty = this.y(m.id === 'box' ? 54 : m.id === 'relay' ? m.h + 12 : m.id === 'till' ? 38 : 30);
+      x.strokeStyle = 'rgba(0,255,255,.85)'; x.lineWidth = 1.5;
+      x.beginPath(); x.moveTo(box.x0 + box.w, box.y0 + 16); x.quadraticCurveTo((box.x0 + box.w + tx) / 2, box.y0 + 30, tx - 8, ty); x.stroke(); x.lineWidth = 1;
+    }
+  }
+
+  private drawStallPeople() {
+    const x = this.x;
     // Fixer behind the counter, then the counter in front of him.
     drawSprite(x, SPR.fixer, this.sx(STALL.fixerX), this.y(30) + Math.round(Math.sin(this.t * 0.03)), { glow: 'rgba(255,170,60,.85)' });
     const s0 = this.sx(STALL.x);
@@ -557,15 +636,6 @@ export class Game {
       x.stroke();
     }
     for (const n of NPCS) drawSprite(x, n.sprite, this.sx(n.x), this.gy, { glow: GLOW_THEM, flip: n.flip });
-
-    const sprite = this.machine ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
-    const box = drawSprite(x, sprite, this.sx(p.x), this.y(p.y), { glow: GLOW_YOU, flip: p.face < 0 && !this.machine });
-    if (this.machine) {
-      const m = MACHINES.find((z) => z.id === this.machine)!;
-      const tx = this.sx(m.x), ty = this.y(m.id === 'box' ? 54 : m.id === 'relay' ? m.h + 12 : m.id === 'till' ? 38 : 30);
-      x.strokeStyle = 'rgba(0,255,255,.85)'; x.lineWidth = 1.5;
-      x.beginPath(); x.moveTo(box.x0 + box.w, box.y0 + 16); x.quadraticCurveTo((box.x0 + box.w + tx) / 2, box.y0 + 30, tx - 8, ty); x.stroke(); x.lineWidth = 1;
-    }
   }
 
   private drawRain(level: number) {
@@ -594,13 +664,13 @@ export class Game {
   }
 
   private drawPrompt() {
-    if (this.bubble || this.machine || this.showEnd) return;
+    if (this.bubble || this.machine || this.showEnd || this.yard.overlayOpen) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;
     x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center';
     x.fillStyle = 'rgba(0,255,255,.95)'; x.shadowColor = 'rgba(0,255,255,.8)'; x.shadowBlur = 6;
-    const h = t.kind === 'jack' ? (t.id === 'box' ? 78 : t.id === 'relay' ? t.h + 48 : 96) : t.kind === 'read' ? 160 : t.id === 'fixer' ? 66 : 62;
+    const h = t.promptH ?? (t.kind === 'jack' ? (t.id === 'box' ? 78 : t.id === 'relay' ? t.h + 48 : 96) : t.kind === 'read' ? 160 : t.id === 'fixer' ? 66 : 62);
     x.fillText(t.label, this.sx(t.x), this.y(h));
     x.restore();
   }
@@ -642,12 +712,14 @@ export class Game {
     const x = this.x, s = this.save;
     x.save();
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
-    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText('DOWNTOWN', 8, 12);
+    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.zone === 'yard' ? 'BACK YARD' : 'DOWNTOWN', 8, 12);
     x.fillStyle = 'rgba(255,217,165,.7)';
     x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (s.jump ? 'legs.so' : '-') + (sound.enabled ? ' · SOUND' : ''), 8, 23);
+    if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, 34); }
     if (!this.seenControls || this.t < 600) {
       x.fillStyle = 'rgba(255,217,165,.55)';
-      if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC twice to leave', 8, 34);
+      if (this.zone === 'yard') x.fillText(this.touch ? 'tap things to open them · ACT near things · B board' : 'tap or click things to open them · E near things · B board · / terminal · ESC leave', 8, this.touch ? 45 : this.viewH - 8);
+      else if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC twice to leave', 8, 34);
       else x.fillText('<- -> walk · SHIFT run · E talk / jack in · / terminal · M sound · ESC leave', 8, this.viewH - 8);
     }
     if (this.toast && this.t < this.toast.until) {

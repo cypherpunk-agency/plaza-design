@@ -4,7 +4,7 @@
  * - The CRT boot runs first, on every visit.
  * - The Konami code (up up down down left right left right B A) is the only way in:
  *   the button says ACCESS GRANTED for once, then the window becomes the game.
- * - `?play` in the URL skips the boot and the Konami code.
+ * - `?play` in the URL skips the boot and the Konami code; `?play=yard` starts in the back yard.
  * - Phones (basic support, landscape only): the Konami code as swipes
  *   (up up down down left right left right, tap tap), on-screen buttons, and a
  *   "rotate your phone" screen in portrait.
@@ -23,6 +23,8 @@ export { runBoot };
 
 /** `?play` in the URL skips the boot and the Konami code: straight into the game. */
 export const playParam = () => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } };
+/** `?play=yard` starts in the fixer's back yard, the demo zone for the new hacking system. */
+const playZone = () => { try { return new URLSearchParams(location.search).get('play') === 'yard' ? 'yard' as const : undefined; } catch { return undefined; } };
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
@@ -102,7 +104,7 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
       setZone: (text) => { if (zone) zone.textContent = text; },
     });
     if (isTouch() && !controls) { controls = true; touchControls(windowEl); }
-    game.start();
+    game.start(playZone());
   };
 
   if (playParam()) enter();
