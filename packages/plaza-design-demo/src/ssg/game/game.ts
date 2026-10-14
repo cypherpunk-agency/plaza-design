@@ -478,11 +478,20 @@ export class Game {
     });
   }
 
-  private winsFor(i: number, w: number, h: number) {
+  /**
+   * Windows of front i, one per bay and storey, seeded so the street looks the
+   * same on every visit: [x offset of the centre, storey, light]. light < 0 is a
+   * dark room, 0..1 a lit one, >= 1 a TV flickering (the value is its phase).
+   */
+  private winsFor(i: number, w: number, storeys: number) {
     let list = this.windows.get(i);
     if (!list) {
       const r = rng(100 + i); list = [];
-      for (let yy = 8; yy < h - 6; yy += 9) for (let xx = 6; xx < w - 6; xx += 8) if (r() < 0.32) list.push([xx, yy, r() < 0.05 ? r() * 7 : -1]);
+      const n = Math.max(1, Math.floor((w - 8) / WIN_PITCH)), m = (w - n * WIN_PITCH) / 2;
+      for (let s = 0; s < storeys; s++) for (let c = 0; c < n; c++) {
+        const v = r();
+        list.push([Math.round(m + WIN_PITCH * (c + 0.5)), s, v < 0.45 ? -1 : v < 0.93 ? r() : 1 + r() * 7]);
+      }
       this.windows.set(i, list);
     }
     return list;
@@ -507,41 +516,38 @@ export class Game {
     const x = this.x;
     FRONTS.forEach((f, i) => {
       const sx = this.sx(f.x);
-      if (sx + f.w < 0 || sx > this.viewW) return;
-      const top = this.y(f.h);
-      x.fillStyle = f.roof ? '#0a0503' : '#070301';
-      x.fillRect(sx, top, f.w, f.h);
-      x.strokeStyle = f.roof ? 'rgba(255,136,0,.75)' : 'rgba(194,65,12,.45)';
-      x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, f.w - 1, f.h);
-      if (f.roof) { x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(sx, top, f.w, 2); }
-      for (const [wx, wy, ph] of this.winsFor(i, f.w, f.h)) {
-        const on = ph < 0 ? 1 : Math.sin(this.t * 0.03 + ph) > 0.2 ? 1 : 0.15;
-        x.fillStyle = 'rgba(255,136,0,' + (0.18 + 0.32 * on) + ')';
-        x.fillRect(sx + wx, top + wy, 3, 3);
-      }
+      if (sx + f.w + 4 < 0 || sx - 4 > this.viewW) return;
+      this.drawFront(f, i, sx);
     });
-    // Penthouse window, out of reach until the grapple.
+    // Penthouse window, out of reach until the grapple: the one lit room on the tower's top floor.
     const tx = this.sx(1340);
-    x.fillStyle = 'rgba(0,255,255,' + (0.5 + 0.3 * Math.sin(this.t * 0.02)) + ')'; x.fillRect(tx - 6, this.y(214), 12, 8);
+    x.fillStyle = 'rgba(0,255,255,' + (0.5 + 0.3 * Math.sin(this.t * 0.02)) + ')'; x.fillRect(tx - 6, this.y(251), 12, 26);
+    x.fillStyle = 'rgba(0,60,60,.7)'; x.fillRect(tx - 6, this.y(240), 12, 1);
+    this.plate(tx, this.y(196), 56, 12, O);
     this.neon('PENTHOUSE', tx, this.y(196), O, { size: 8, phase: 40 });
-    // Signs.
+    // Signs, each on a plate bolted to the wall.
+    this.plate(this.sx(372), this.y(114), 20, 90, C);
     this.neon('VERIFY', this.sx(372), this.y(150), C, { vertical: true, dead: 1, size: 12 });
-    x.strokeStyle = 'rgba(0,255,255,.3)'; x.strokeRect(this.sx(372) - 9.5, this.y(158) + 0.5, 19, 88);
+    this.plate(this.sx(90), this.y(100), 96, 15, C);
     this.neon('< NEON MARKET', this.sx(90), this.y(100), C, { size: 10, phase: 120 });
+    this.plate(this.sx(1770), this.y(110), 82, 15, O);
     this.neon('SPACEPORT >', this.sx(1770), this.y(110), O, { size: 10, phase: 70 });
-    this.neon('OPEN 24/7/365.25', this.sx(920), this.y(104), O, { size: 8, phase: 160 });
-    // Billboard.
+    this.plate(this.sx(932), this.y(104), 92, 13, O);
+    this.neon('OPEN 24/7/365.25', this.sx(932), this.y(104), O, { size: 8, phase: 160 });
+    // Billboard, bolted flat to the wall and lit by two lamps on arms above it.
     const bx = this.sx(640);
-    x.fillStyle = 'rgba(4,2,0,.95)'; x.fillRect(bx - 62, this.y(146), 124, 36);
+    this.plate(bx, this.y(128), 124, 36, '255,90,110');
+    const wash = x.createLinearGradient(0, this.y(146), 0, this.y(124));
+    wash.addColorStop(0, 'rgba(255,220,170,.12)'); wash.addColorStop(1, 'rgba(255,220,170,0)');
+    x.fillStyle = wash; x.fillRect(bx - 61, this.y(146) + 1, 122, 22);
     x.strokeStyle = 'rgba(255,90,110,.75)'; x.strokeRect(bx - 61.5, this.y(146) + 0.5, 123, 35);
+    for (const lx of [bx - 36, bx + 36]) {
+      x.fillStyle = 'rgba(194,65,12,.8)'; x.fillRect(lx, this.y(156), 1, 10); x.fillRect(lx - 4, this.y(156), 9, 2);
+      x.fillStyle = 'rgba(255,220,170,.85)'; x.fillRect(lx - 3, this.y(154), 7, 1);
+    }
     this.neon('REGISTRY PREMIUM', bx, this.y(134), '255,90,110', { size: 9, phase: 10 });
     x.save(); x.font = '8px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,.6)'; x.fillText('be seen everywhere', bx, this.y(118)); x.restore();
-    // Noodle stall.
-    const s0 = this.sx(STALL.x);
-    x.fillStyle = '#0a0503'; x.fillRect(s0, this.y(118), STALL.w, 118); x.strokeStyle = 'rgba(194,65,12,.6)'; x.strokeRect(s0 + 0.5, this.y(118) + 0.5, STALL.w - 1, 118);
-    for (let i = 0; i < 9; i++) { x.fillStyle = i % 2 ? 'rgba(255,136,0,.55)' : '#140800'; x.fillRect(s0 - 6 + i * 16.9, this.y(118), 16.9, 14); }
-    this.neon('NOODLES', s0 + STALL.w / 2, this.y(130), C, { size: 13, phase: 0 });
-    x.save(); x.font = '7px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,.55)'; x.fillText('NO LOGS KEPT', s0 + STALL.w / 2, this.y(92)); x.restore();
+    this.drawStall();
     // Fence at the antenna's foot.
     const fx = this.sx(1540);
     x.strokeStyle = 'rgba(255,136,0,.45)';
@@ -550,11 +556,155 @@ export class Game {
     // Dumpster below the low roof.
     const dx = this.sx(1000);
     x.fillStyle = '#10140f'; x.fillRect(dx, this.y(22), 40, 22); x.strokeStyle = 'rgba(120,160,120,.5)'; x.strokeRect(dx + 0.5, this.y(22) + 0.5, 39, 21);
-    // The door to the fixer's back yard, in the alley past the stall.
+    // The door to the fixer's back yard, at the end of the block past the stall; its sign sits on the fascia above.
     const yx = this.sx(YARD_DOOR_X);
-    x.fillStyle = '#050201'; x.fillRect(yx - 10, this.y(40), 20, 40);
-    x.strokeStyle = 'rgba(255,61,242,.6)'; x.strokeRect(yx - 9.5, this.y(40) + 0.5, 19, 39);
-    this.neon('YARD', yx, this.y(48), '255,61,242', { size: 8, phase: 90 });
+    x.fillStyle = '#1a0d05'; x.fillRect(yx - 14, this.y(3), 28, 3);
+    x.fillStyle = '#050201'; x.fillRect(yx - 11, this.y(52), 22, 49);
+    x.strokeStyle = 'rgba(255,61,242,.65)'; x.strokeRect(yx - 10.5, this.y(52) + 0.5, 21, 48);
+    x.fillStyle = 'rgba(255,61,242,.8)'; x.fillRect(yx + 6, this.y(28), 2, 4);
+    this.plate(yx, this.y(70), 28, 11, '255,61,242');
+    this.neon('YARD', yx, this.y(70), '255,61,242', { size: 8, phase: 90 });
+  }
+
+  /**
+   * One street wall (the middle band: calmer than the street in front of it).
+   * A ground floor at the player's scale, storeys of windows above, and a
+   * cornice only where the view reaches the roofline.
+   */
+  private drawFront(f: (typeof FRONTS)[number], i: number, sx: number) {
+    const x = this.x, hv = Math.min(f.h, this.gy + 1), top = this.y(hv);
+    x.fillStyle = '#0a0503'; x.fillRect(sx, top, f.w, hv);
+    if (f.roof) {
+      // The climbable annex: one storey, with a bright roof edge so it reads as somewhere to stand.
+      x.strokeStyle = 'rgba(255,136,0,.75)'; x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, f.w - 1, hv);
+      x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(sx, top, f.w, 2);
+    } else {
+      x.strokeStyle = 'rgba(194,65,12,.45)'; x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, f.w - 1, hv);
+      const storeys = Math.floor((f.h - GROUND) / STOREY);
+      x.fillStyle = 'rgba(194,65,12,.22)';
+      for (let s = 0; s < storeys; s++) { const h = GROUND + s * STOREY; if (h < hv) x.fillRect(sx + 1, this.y(h) - 1, f.w - 2, 2); }
+      for (const [wx, s, light] of this.winsFor(i, f.w, storeys)) {
+        const h0 = GROUND + s * STOREY + 16;
+        if (h0 > this.gy || onSignWall(f.x + wx - 7, f.x + wx + 7, h0, h0 + 28)) continue;
+        this.drawWindow(sx + wx - 7, this.y(h0 + 28), light, (wx + s * 7 + i * 3) % 6 === 0);
+      }
+      if (f.h <= this.gy) {
+        x.fillStyle = '#140a05'; x.fillRect(sx - 2, top, f.w + 4, 4);
+        x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(sx - 2, top, f.w + 4, 1);
+      }
+      // Shop fascia over the ground floor.
+      x.fillStyle = '#100804'; x.fillRect(sx + 1, this.y(GROUND) + 1, f.w - 2, 11);
+      x.fillStyle = 'rgba(194,65,12,.35)'; x.fillRect(sx + 1, this.y(GROUND - 12), f.w - 2, 1);
+    }
+    for (const [dx, w, kind] of f.bays ?? []) this.drawBay(sx + dx, w, kind);
+  }
+
+  /** A storey window (14×28, a bit shorter than the player): a dark room, a warm lit one (some behind blinds) or a TV's cold flicker. */
+  private drawWindow(wx: number, wy: number, light: number, ac: boolean) {
+    const x = this.x;
+    x.fillStyle = '#040201'; x.fillRect(wx, wy, 14, 28);
+    if (light >= 1) {
+      x.fillStyle = 'rgba(150,170,220,' + (0.1 + 0.06 * Math.sin(this.t * 0.05 + light * 3)) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
+    } else if (light >= 0) {
+      x.fillStyle = 'rgba(255,136,0,' + (0.1 + 0.18 * light) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
+      if (light < 0.35) { x.fillStyle = 'rgba(0,0,0,.4)'; for (let b = 3; b < 27; b += 3) x.fillRect(wx + 1, wy + b, 12, 1); }
+    }
+    x.fillStyle = '#0a0503'; x.fillRect(wx, wy + 11, 14, 1); x.fillRect(wx + 7, wy, 1, 28);
+    x.strokeStyle = 'rgba(194,65,12,.35)'; x.strokeRect(wx + 0.5, wy + 0.5, 13, 27);
+    x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(wx - 1, wy + 28, 16, 2);
+    if (ac) { x.fillStyle = '#16110d'; x.fillRect(wx + 2, wy + 31, 10, 6); x.strokeStyle = 'rgba(194,65,12,.4)'; x.strokeRect(wx + 2.5, wy + 31.5, 9, 5); }
+  }
+
+  /** A ground-floor opening, sized against the 42-unit player: doors 52 tall on a step, shopfronts to 54 under an awning, shutters 48. */
+  private drawBay(bx: number, w: number, kind: 'door' | 'glass' | 'shutter' | 'sealed') {
+    const x = this.x;
+    if (kind === 'glass') {
+      // A lit shop interior behind glass: shelves, goods, a reflection; an awning above.
+      x.fillStyle = '#120904'; x.fillRect(bx, this.y(6), w, 6);
+      x.fillStyle = 'rgba(255,136,0,.1)'; x.fillRect(bx, this.y(54), w, 48);
+      x.fillStyle = 'rgba(255,170,60,.18)'; x.fillRect(bx + 3, this.y(20), w - 6, 1); x.fillRect(bx + 3, this.y(36), w - 6, 1);
+      for (let gx = bx + 4, j = 0; gx < bx + w - 6; gx += 7, j++) {
+        x.fillStyle = j % 3 ? 'rgba(255,170,60,.22)' : 'rgba(255,217,165,.3)';
+        x.fillRect(gx, this.y(26 + (j % 2) * 2), 4, 6 + (j % 2) * 2); x.fillRect(gx + 1, this.y(43), 3, 7);
+      }
+      x.strokeStyle = 'rgba(255,255,255,.07)'; x.beginPath(); x.moveTo(bx + 6, this.y(50)); x.lineTo(bx + 20, this.y(10)); x.stroke();
+      x.fillStyle = 'rgba(255,136,0,.45)';
+      for (let m = bx + 28; m < bx + w - 10; m += 28) x.fillRect(m, this.y(54), 1, 48);
+      x.strokeStyle = 'rgba(255,136,0,.45)'; x.strokeRect(bx + 0.5, this.y(54) + 0.5, w - 1, 47);
+      for (let ax = bx - 3, j = 0; ax < bx + w + 3; ax += 6, j++) {
+        x.fillStyle = j % 2 ? 'rgba(255,136,0,.3)' : '#120800'; x.fillRect(ax, this.y(62), Math.min(6, bx + w + 3 - ax), 5);
+      }
+    } else if (kind === 'shutter') {
+      // A rolled-down shutter under its housing.
+      x.fillStyle = '#100a06'; x.fillRect(bx, this.y(48), w, 48);
+      x.fillStyle = 'rgba(255,136,0,.1)'; for (let h = 3; h < 48; h += 3) x.fillRect(bx, this.y(h), w, 1);
+      x.fillStyle = 'rgba(255,136,0,.35)'; x.fillRect(bx, this.y(2), w, 2);
+      x.fillStyle = '#1a0f08'; x.fillRect(bx - 2, this.y(54), w + 4, 6);
+      x.strokeStyle = 'rgba(194,65,12,.5)'; x.strokeRect(bx - 1.5, this.y(54) + 0.5, w + 3, 5);
+    } else {
+      // A door on a step. The sealed one (the penthouse) has no handle and no glass.
+      x.fillStyle = '#1a0d05'; x.fillRect(bx - 3, this.y(3), w + 6, 3);
+      x.fillStyle = 'rgba(255,136,0,.35)'; x.fillRect(bx - 3, this.y(3), w + 6, 1);
+      x.fillStyle = '#050201'; x.fillRect(bx, this.y(52), w, 49);
+      x.strokeStyle = 'rgba(255,136,0,.5)'; x.strokeRect(bx + 0.5, this.y(52) + 0.5, w - 1, 48);
+      if (kind === 'door') {
+        x.fillStyle = 'rgba(255,136,0,.22)'; x.fillRect(bx + 6, this.y(46), w - 12, 12);
+        x.fillStyle = 'rgba(255,217,165,.7)'; x.fillRect(bx + w - 6, this.y(28), 2, 4);
+        x.fillStyle = 'rgba(255,200,120,.85)'; x.fillRect(bx + Math.floor(w / 2) - 1, this.y(57), 3, 2);
+      } else {
+        x.fillStyle = 'rgba(194,65,12,.45)'; x.fillRect(bx + Math.floor(w / 2), this.y(50), 1, 46);
+        x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(bx + w + 3, this.y(36), 8, 6);
+      }
+    }
+  }
+
+  /** A backing plate bolted to the wall, so a sign hangs on something; its light washes the wall around it. */
+  private plate(cx: number, cy: number, w: number, h: number, col: string) {
+    const x = this.x, x0 = Math.round(cx - w / 2), y0 = Math.round(cy - h / 2), r = Math.max(w, h) * 0.75;
+    const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, 'rgba(' + col + ',.1)'); g.addColorStop(1, 'rgba(' + col + ',0)');
+    x.fillStyle = g; x.fillRect(cx - r, cy - r, r * 2, r * 2);
+    x.fillStyle = '#080403'; x.fillRect(x0, y0, w, h);
+    x.strokeStyle = 'rgba(' + col + ',.4)'; x.lineWidth = 1; x.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
+    x.fillStyle = 'rgba(255,217,165,.45)';
+    for (const [px, py] of [[x0 + 2, y0 + 2], [x0 + w - 3, y0 + 2], [x0 + 2, y0 + h - 3], [x0 + w - 3, y0 + h - 3]]) x.fillRect(px, py, 1, 1);
+  }
+
+  /**
+   * The noodle stall, the brightest thing on the block: a shadow gap and a warm
+   * rim lift it off the wall behind, its body is lit, and its own lamps light the
+   * counter (and, in drawStreet, the street in front).
+   */
+  private drawStall() {
+    const x = this.x, s0 = this.sx(STALL.x), sw = STALL.w, cx = s0 + sw / 2;
+    if (s0 + sw + 20 < 0 || s0 - 20 > this.viewW) return;
+    x.fillStyle = '#000'; x.fillRect(s0 - 3, this.y(121), sw + 6, 121);
+    x.fillStyle = '#1c0e06'; x.fillRect(s0, this.y(104), sw, 104);
+    const lamps = [s0 + 26, s0 + sw - 26];
+    for (const lx of lamps) {
+      const g = x.createRadialGradient(lx, this.y(95), 0, lx, this.y(95), 80);
+      g.addColorStop(0, 'rgba(255,170,80,.22)'); g.addColorStop(1, 'rgba(255,170,80,0)');
+      x.fillStyle = g; x.fillRect(s0 + 2, this.y(104), sw - 4, 104);
+    }
+    x.fillStyle = 'rgba(255,170,80,.8)'; x.fillRect(s0, this.y(104), 2, 104); x.fillRect(s0 + sw - 2, this.y(104), 2, 104);
+    for (let i = 0; i < 9; i++) { x.fillStyle = i % 2 ? 'rgba(255,136,0,.8)' : '#2a1200'; x.fillRect(s0 - 6 + i * 16.9, this.y(118), 16.9, 14); }
+    x.strokeStyle = 'rgba(255,190,110,.9)'; x.lineWidth = 1;
+    x.strokeRect(s0 - 5.5, this.y(118) + 0.5, sw + 11, 13);
+    x.strokeRect(s0 + 0.5, this.y(104) + 0.5, sw - 1, 104);
+    for (const lx of lamps) {
+      x.fillStyle = 'rgba(255,170,80,.7)'; x.fillRect(lx, this.y(104), 1, 5);
+      x.fillStyle = 'rgba(255,136,0,.95)'; x.fillRect(lx - 4, this.y(99), 9, 3);
+      x.save(); x.shadowColor = 'rgba(255,200,120,.9)'; x.shadowBlur = 6;
+      x.fillStyle = '#ffe0b0'; x.fillRect(lx - 2, this.y(96), 5, 1); x.restore();
+    }
+    // A paper notice on the back wall.
+    x.fillStyle = 'rgba(255,217,165,.14)'; x.fillRect(cx - 29, this.y(96), 58, 12);
+    x.strokeStyle = 'rgba(255,217,165,.45)'; x.strokeRect(cx - 28.5, this.y(96) + 0.5, 57, 11);
+    x.save(); x.font = '7px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,.8)'; x.fillText('NO LOGS KEPT', cx, this.y(87)); x.restore();
+    // NOODLES on a plate standing on the awning, on two legs.
+    x.fillStyle = 'rgba(255,170,80,.7)'; x.fillRect(cx - 26, this.y(122), 2, 4); x.fillRect(cx + 24, this.y(122), 2, 4);
+    this.plate(cx, this.y(130), 72, 16, C);
+    this.neon('NOODLES', cx, this.y(130), C, { size: 13, phase: 0 });
   }
 
   private drawStreet(rain: number) {
@@ -562,8 +712,15 @@ export class Game {
     x.fillStyle = '#030201'; x.fillRect(0, gy, this.viewW, this.viewH - gy);
     x.fillStyle = 'rgba(255,136,0,.55)'; x.fillRect(0, gy, this.viewW, 1);
     for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(255,100,0,' + (0.16 - i * 0.024) + ')'; x.fillRect(0, gy + 6 + i * i * 2 + i * 4, this.viewW, 1); }
+    // The noodle stall's lamps pool warm light on the wet street in front of it.
+    const s0 = this.sx(STALL.x);
+    if (this.zone !== 'yard' && s0 + STALL.w + 20 > 0 && s0 - 20 < this.viewW) {
+      const pool = x.createLinearGradient(0, gy, 0, gy + 34);
+      pool.addColorStop(0, 'rgba(255,160,70,' + (0.18 + rain * 0.06) + ')'); pool.addColorStop(1, 'rgba(255,160,70,0)');
+      x.fillStyle = pool; x.fillRect(s0 - 10, gy + 1, STALL.w + 20, 34);
+    }
     // Neon smeared into the wet street.
-    const smears: [number, string][] = [[372, C], [STALL.x + STALL.w / 2, C], [640, '255,90,110'], [90, C], [1770, O], [920, O]];
+    const smears: [number, string][] = [[372, C], [STALL.x + STALL.w / 2, C], [640, '255,90,110'], [90, C], [1770, O], [932, O]];
     for (const [wx, col] of this.zone === 'yard' ? [] : smears) {
       const sx = this.sx(wx);
       if (sx < -20 || sx > this.viewW + 20) continue;
@@ -628,7 +785,9 @@ export class Game {
     // Fixer behind the counter, then the counter in front of him.
     drawSprite(x, SPR.fixer, this.sx(STALL.fixerX), this.y(30) + Math.round(Math.sin(this.t * 0.03)), { glow: 'rgba(255,170,60,.85)' });
     const s0 = this.sx(STALL.x);
-    x.fillStyle = '#120700'; x.fillRect(s0, this.y(30), STALL.w, 30); x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(s0, this.y(30), STALL.w, 2);
+    // Waist-high counter, lit by the stall's lamps, with a warm rim so it reads against the street.
+    x.fillStyle = '#241208'; x.fillRect(s0, this.y(30), STALL.w, 30); x.fillStyle = 'rgba(255,170,60,.95)'; x.fillRect(s0, this.y(30), STALL.w, 2);
+    x.strokeStyle = 'rgba(255,170,80,.7)'; x.lineWidth = 1; x.strokeRect(s0 + 0.5, this.y(30) + 0.5, STALL.w - 1, 30);
     for (let i = 0; i < 3; i++) {
       const stx = s0 + 50 + i * 12, ph = this.t * 0.04 + i;
       x.strokeStyle = 'rgba(255,255,255,' + (0.1 + 0.05 * Math.sin(ph)) + ')'; x.beginPath();
@@ -743,3 +902,18 @@ export class Game {
     x.restore();
   }
 }
+
+/** Street walls measured against the player (42 units tall): a 76-unit ground floor with 52-unit doors, then 66-unit storeys of 14x28 windows. */
+const GROUND = 76, STOREY = 66, WIN_PITCH = 30;
+
+/** Wall covered by the signs, the billboard and the noodle stall, kept free of windows so they sit on plain wall: [x0, x1, h0, h1]. */
+const SIGN_WALLS: [number, number, number, number][] = [
+  [358, 386, 64, 164], // VERIFY
+  [40, 140, 90, 110], // < NEON MARKET
+  [882, 982, 94, 114], // OPEN 24/7/365.25
+  [1727, 1813, 100, 120], // SPACEPORT >
+  [574, 706, 106, 160], // billboard and its lamps
+  [720, 880, 60, 142], // noodle stall and its NOODLES plate
+];
+const onSignWall = (x0: number, x1: number, h0: number, h1: number) =>
+  SIGN_WALLS.some(([a, b, c, d]) => x0 < b && x1 > a && h0 < d && h1 > c);
