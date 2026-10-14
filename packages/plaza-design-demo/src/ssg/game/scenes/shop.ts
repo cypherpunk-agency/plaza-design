@@ -40,7 +40,7 @@ export const shop: Scene = {
   width: L.width,
   spawn: L.spawn,
   intro: ['A corner shop. The kind that never closes and never has change.'],
-  exits: [{ id: 'downtown', x: 32, to: 'downtown', label: '[E] DOWNTOWN', promptH: 82 }],
+  exits: [{ id: 'downtown', x: 32, to: 'downtown', at: 'shop', label: '[E] DOWNTOWN', promptH: 82 }],
   readables: [
     { id: 'shelf', x: 330, name: 'SHELF LABEL', promptH: 132, pages: ['NOODLE CUPS · 3 FOR THE PRICE OF 3.'] },
     { id: 'vend', x: 519, name: 'THIRST.EXE', promptH: 94, pages: ['Accepts tokens, coins and regrets.', 'The screen says OUT OF ORDER. It is also selling drinks. Both are true.'] },

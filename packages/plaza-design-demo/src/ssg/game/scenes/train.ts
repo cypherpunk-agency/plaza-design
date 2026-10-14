@@ -5,7 +5,7 @@
  * riders, poles and straps.
  */
 
-import { box, ceiling, exitDoor, O, onScreen, PAPER, RED, rng, tell, text, towers, type Scene, type View } from './kit';
+import { box, ceiling, O, onScreen, PAPER, RED, rng, tell, text, towers, type Scene, type View } from './kit';
 
 /** Layout: positions in world units, heights up from the carriage floor. */
 const L = {
@@ -17,6 +17,9 @@ const L = {
   winW: 100,
   win: { h0: 58, h1: 112 },
   doors: [380, 780],
+  /** The door that opens at a stop (the other one carries the line map and stays shut). */
+  outDoor: 780,
+  lineMap: 380,
   /** Ad cards over the windows. */
   ads: [{ x: 250, text: 'LOSE WEIGHT: DELETE PROFILE' }, { x: 640, text: 'AD SPACE · YOU ARE READING IT' }, { x: 1040, text: 'SMILE · YOU ARE ON CAMERA' }],
   poles: [180, 330, 560, 720, 950],
@@ -28,6 +31,13 @@ const L = {
   gangDoor: 56,
   brake: 1145,
 };
+
+/**
+ * The ride, driven by the engine: the stop the train is at (or last left), the
+ * next one while moving, how far the doors are open (0..1), and the distance
+ * travelled, which slides the city past the windows.
+ */
+export const ride = { stop: 'DOWNTOWN', next: '', moving: false, open: 1, dist: 0 };
 
 const SKY = towers(97, 2400, [24, 70], [40, 130], 0.12);
 const MID = (() => { const r = rng(99); return Array.from({ length: 14 }, (_, i) => [i * 170 + r() * 80, 20 + r() * 40, 30 + r() * 30]); })();
@@ -41,7 +51,7 @@ function drawOutside(x: CanvasRenderingContext2D, v: View) {
   x.clip();
   x.fillStyle = '#04030a'; x.fillRect(0, top, v.viewW, bottom - top);
   // far: the skyline, sliding slowly
-  const span = 2400, off = t * 0.6 + v.cam * 0.2;
+  const span = 2400, off = ride.dist * 0.12 + v.cam * 0.2;
   for (const b of SKY) {
     const s = ((b.x - off) % span + span) % span - 100;
     if (s > v.viewW || s + b.w < 0) continue;
@@ -50,13 +60,25 @@ function drawOutside(x: CanvasRenderingContext2D, v: View) {
     for (let i = 0; i < b.lit.length; i += 4) x.fillRect(s + b.lit[i], bottom - b.h * 0.45 + b.lit[i + 1] * 0.45, 2, 1);
   }
   // nearer: blocks and pylons racing past
-  const off2 = t * 5 + v.cam;
+  const off2 = ride.dist + v.cam;
   for (const [mx, h, w] of MID) {
     const s = ((mx - off2) % span + span) % span - 100;
     if (s > v.viewW || s + w < 0) continue;
     x.fillStyle = '#020101'; x.fillRect(s, bottom - h, w, h);
     x.fillStyle = 'rgba(255,190,110,.2)'; x.fillRect(s + 4, bottom - h + 6, 3, 2);
     x.fillStyle = '#020101'; x.fillRect(s + w + 30, top, 4, bottom - top);
+  }
+  // at a stop: the station's tiled wall and its name, close behind the glass
+  if (!ride.moving) {
+    x.fillStyle = '#0b0a09'; x.fillRect(0, top, v.viewW, bottom - top);
+    x.fillStyle = 'rgba(255,217,165,.07)';
+    for (let yy = top + 4; yy < bottom; yy += 6) x.fillRect(0, yy, v.viewW, 1);
+    for (const wx of L.windows) {
+      const s = v.sx(wx) + L.winW / 2;
+      if (!onScreen(v, s - 40, 80)) continue;
+      box(x, s - 38, top + 14, 76, 14, '#14100c', 'rgba(' + O + ',.4)');
+      text(x, ride.stop, s, top + 21, 'rgba(' + PAPER + ',.7)', 8, '600');
+    }
   }
   // rain on the glass, blown sideways
   x.strokeStyle = 'rgba(170,210,255,.18)';
@@ -73,9 +95,11 @@ export const train: Scene = {
   width: L.width,
   spawn: L.spawn,
   intro: ['On the train. Nobody checked a ticket, which means somebody checked everything else.'],
-  exits: [{ id: 'downtown', x: 32, to: 'downtown', label: '[E] DOWNTOWN', promptH: 82 }],
+  exits: [
+    { id: 'line', x: L.lineMap, to: '', action: 'line', label: '[E] LINE MAP', promptH: 96 },
+    { id: 'out', x: L.outDoor, to: '', action: 'out', label: '[E] STEP OUT', promptH: 98 },
+  ],
   readables: [
-    { id: 'map', x: 380, name: 'LINE MAP', promptH: 96, pages: ['LINE 0: PLAZA CENTRAL → PLAZA CENTRAL.', 'Journey time varies. The destination does not.'] },
     { id: 'ad', x: 640, name: 'AD CARD', promptH: 156, pages: ['ADVERTISING SPACE AVAILABLE.', 'You are reading this, so it works.'] },
     { id: 'brake', x: L.brake, name: 'EMERGENCY BRAKE', promptH: 86, pages: ['Pull only in an emergency.', 'Emergencies must be registered at least 48 hours in advance.'] },
   ],
@@ -105,8 +129,14 @@ export const train: Scene = {
     }
     tell(x, t, sx(640) + 65, y(136));
 
-    // the end door you came in by, and the gangway at the far end
-    exitDoor(x, v, 32, '#0a0603');
+    // the end door (staff only), and the gangway at the far end
+    const ed = sx(32);
+    if (onScreen(v, ed - 16, 32)) {
+      box(x, ed - 14, y(56), 28, 56, '#020100', 'rgba(' + O + ',.6)');
+      box(x, ed - 11, y(52), 22, 52, '#0a0603', 'rgba(' + O + ',.35)');
+      box(x, ed - 12, y(70), 24, 10, '#1a120b', 'rgba(' + O + ',.5)');
+      text(x, 'STAFF', ed, y(65), 'rgba(' + PAPER + ',.7)', 7, '600');
+    }
     const gw = sx(L.gangway);
     if (onScreen(v, gw, 80)) {
       box(x, gw, y(L.ceil), L.width - L.gangway, L.ceil, '#16100c', 'rgba(' + O + ',.8)');
@@ -121,19 +151,32 @@ export const train: Scene = {
       tell(x, t, bk + 4, y(34), 2);
     }
 
-    // doors, with the line map over the first
+    // doors, with the line map over the first; the second slides open at a stop
     for (const d of L.doors) {
       const s = sx(d);
       if (!onScreen(v, s - 26, 52)) continue;
+      const g = d === L.outDoor ? Math.round(ride.open * 22) : 0;
       box(x, s - 24, y(66), 48, 66, '#100c0a', 'rgba(' + O + ',.8)');
-      x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s, y(66), 1, 66);
-      x.strokeStyle = 'rgba(' + O + ',.6)'; x.strokeRect(s - 18.5, y(56) + 0.5, 12, 22); x.strokeRect(s + 6.5, y(56) + 0.5, 12, 22);
+      if (g) {
+        // the platform through the open doors, lit
+        box(x, s - g, y(64), g * 2, 64, 'rgba(255,217,165,.3)');
+        x.fillStyle = 'rgba(255,210,58,.6)'; x.fillRect(s - g, y(2), g * 2, 2);
+        x.fillStyle = '#100c0a'; x.fillRect(s - 24, y(64), 24 - g, 64); x.fillRect(s + g, y(64), 24 - g, 64);
+      } else { x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s, y(66), 1, 66); }
+      x.strokeStyle = 'rgba(' + O + ',.6)'; x.strokeRect(s - 18.5 - g, y(56) + 0.5, 12, 22); x.strokeRect(s + 6.5 + g, y(56) + 0.5, 12, 22);
+      if (d === L.outDoor) {
+        // the stop display over the door
+        box(x, s - 32, y(84), 64, 12, '#050302', 'rgba(' + O + ',.6)');
+        text(x, ride.moving ? '> ' + ride.next : ride.stop, s, y(78), 'rgba(255,136,0,' + (0.75 + 0.2 * Math.sin(t * 0.06)) + ')', 7, '600');
+      }
     }
-    const mp = sx(380);
+    const mp = sx(L.lineMap);
     if (onScreen(v, mp - 44, 88)) {
+      // LINE 0: three stops, the one you are at (or heading to) blinking
+      const stops = ['DOWNTOWN', 'GALLERIA', 'HARBOR'], cur = stops.indexOf(ride.moving ? ride.next : ride.stop);
       box(x, mp - 40, y(86), 80, 16, '#1a120b', 'rgba(' + O + ',.6)');
-      x.fillStyle = 'rgba(' + PAPER + ',.5)'; x.fillRect(mp - 32, y(78), 64, 1);
-      for (let i = 0; i < 5; i++) { x.fillStyle = i === 2 && Math.floor(t / 25) % 2 ? 'rgba(255,136,0,1)' : 'rgba(' + PAPER + ',.6)'; x.fillRect(mp - 33 + i * 16, y(80), 3, 4); }
+      x.fillStyle = 'rgba(' + PAPER + ',.5)'; x.fillRect(mp - 28, y(78), 56, 1);
+      for (let i = 0; i < 3; i++) { x.fillStyle = i === cur && Math.floor(t / 25) % 2 ? 'rgba(255,136,0,1)' : 'rgba(' + PAPER + ',.6)'; x.fillRect(mp - 29 + i * 28, y(80), 3, 4); }
       tell(x, t, mp + 36, y(74), 1);
     }
 

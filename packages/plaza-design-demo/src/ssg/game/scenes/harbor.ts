@@ -4,6 +4,7 @@
  * Bands: far = skyline and water; middle = the ferry; play = pier, containers, cranes.
  */
 
+import { drawTaxiPad } from '../city';
 import { box, drawTowers, exitDoor, figure, notice, O, onScreen, PAPER, RED, rng, sign, text, towers, type Scene, type View } from './kit';
 
 /** The horizon: water from the pier's back edge up to here. */
@@ -20,9 +21,12 @@ const L = {
     { x: 780, tiers: [2, 3] }, { x: 914, tiers: [0, 1] }, { x: 1048, tiers: [3] },
   ],
   cranes: [{ x: 640, name: 'STS-2', phase: 0 }, { x: 1206, name: 'STS-3', phase: 2.1 }],
-  bollards: [140, 560, 740, 1010, 1330],
+  bollards: [140, 560, 740, 1010, 1250],
   stencils: ['NULLROUTE LOGISTICS', 'CONTENTS: UNDECLARED', 'THIS SIDE UP (ANY)', 'NRLU 404 0451'],
   beacon: 1484,
+  /** Play-level ways out: the metro station door in the guard hut, the sky-taxi pad on the pier. */
+  metro: 26,
+  taxi: 1335,
 };
 
 const CW = 128, CH = 58;
@@ -82,7 +86,10 @@ export const harbor: Scene = {
   spawn: L.spawn,
   ambient: { sky: true, rain: true },
   intro: ['The harbor. Everything here is in a box, and nobody asks what.'],
-  exits: [{ id: 'downtown', x: 26, to: 'downtown', label: '[E] DOWNTOWN', promptH: 82 }],
+  exits: [
+    { id: 'metro', x: L.metro, to: 'train', label: '[E] METRO · HARBOR', promptH: 82 },
+    { id: 'taxi', x: L.taxi, to: '', action: 'taxi', label: '[E] HAIL TAXI', promptH: 122 },
+  ],
   readables: [
     { id: 'notice', x: 118, name: 'PORT AUTHORITY', promptH: 78, pages: ['All cargo is inspected.', 'Inspected: someone looked at the outside of it.'] },
     { id: 'manifest', x: 470, name: 'MANIFEST', promptH: 74, pages: ['1 container. Contents: yes.', 'Origin: redacted. Destination: redacted. Insurance: void.'] },
@@ -133,7 +140,7 @@ export const harbor: Scene = {
       figure(x, hx + 56, y(38), 17, '#140b06');
       box(x, hx - 4, y(L.hut.h + 4), L.hut.w + 8, 5, '#1c0f07', 'rgba(' + O + ',.8)');
     }
-    exitDoor(x, v, 26, '#0a0603');
+    exitDoor(x, v, L.metro, '#0a0603', '< METRO');
 
     // crane legs stand behind the stacks
     for (const c of L.cranes) drawCrane(x, v, c.x, c.name, c.phase);
@@ -166,6 +173,7 @@ export const harbor: Scene = {
       box(x, ex - 1, y(110), 3, 110, '#2a160a', 'rgba(' + O + ',.6)');
       x.fillStyle = Math.sin(t * 0.03) > 0.6 ? 'rgba(255,217,165,.2)' : 'rgba(255,217,165,.9)'; x.fillRect(ex - 3, y(116), 7, 6);
     }
+    drawTaxiPad(x, v, L.taxi);
     sign(x, t, 'BERTH 9', sx(1210), y(96), O, { size: 8, phase: 30 });
     box(x, sx(1210) - 1, y(88), 3, 88, '#2a160a');
 

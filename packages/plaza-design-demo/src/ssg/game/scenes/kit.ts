@@ -18,10 +18,34 @@ export interface View {
   cam: number;
   /** Screen y of the ground; the strip below it (about 54 units) is the near floor. */
   gy: number;
+  /** The save's flags (read only), for doors that open later (e.g. `end`: Downtown cleared, the market gate is open). */
+  flags: Readonly<Record<string, boolean>>;
 }
 
-/** A way out. `to` is a zone: 'downtown' or another scene's id. */
-export interface SceneExit { id: string; x: number; to: string; label: string; promptH?: number }
+/**
+ * A way out. `to` is a zone: 'downtown', 'yard' or a scene's id ('train' boards
+ * the train at this zone's station). `at` is the door you land at there: one of
+ * its exits' ids, or a Downtown door (shop, yard, capsule, metro, taxi, market).
+ */
+export interface SceneExit {
+  id: string;
+  x: number;
+  to: string;
+  label: string;
+  promptH?: number;
+  at?: string;
+  /** Not a walk: 'board' the train in, step 'out' of the train, read the 'line' map, hail a 'taxi'. */
+  action?: 'board' | 'out' | 'line' | 'taxi';
+  /** Only there while this save flag is set. */
+  requires?: string;
+  /**
+   * An open way out (a street, an alley, a pier): no E, you leave by walking
+   * into this border of the scene. `x` is then where you land arriving through
+   * it (keep it a little inside the border). For outdoor connections only;
+   * doors, stairs and pads keep E.
+   */
+  edge?: 'left' | 'right';
+}
 
 /** Something to read (or a person who says a line) with E. */
 export interface SceneReadable { id: string; x: number; name: string; pages: string[]; label?: string; h?: number; promptH?: number }

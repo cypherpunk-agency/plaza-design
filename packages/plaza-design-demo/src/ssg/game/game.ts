@@ -13,18 +13,33 @@ import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprit
 import { Terminal } from './terminal';
 import { Yard, YARD_SPAWN, YARD_W } from './yard';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
+import { metroDoorsOpen, metroSync } from './scenes/metro';
+import { ride } from './scenes/train';
+import {
+  DOORS, DOORS_CLOSE, drawCityMap, EDGES, drawFlight, drawMetroStairs, drawTaxiPad, DRIVER_BROKE, FARE, FLIGHT, isDoorId, LINE, RIDE,
+  seenFlag, STAND_IDS, standOf, STANDS, STATIONS, stationOf, type DoorId, type MapState, type Stand, type Station, type Zone,
+} from './city';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
   READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
 type Target = { kind: 'talk' | 'jack' | 'read' | 'door' | 'yard' | 'scene'; id: string; x: number; h: number; label: string; promptH?: number };
+/** Downtown's doors, stairs and pad as targets (the market gate's door only once the gate is open). */
+const DOOR_TARGETS: { id: DoorId; label: string; promptH: number }[] = [
+  { id: 'market', label: '[E] NEON MARKET', promptH: 120 },
+  { id: 'shop', label: '[E] CORNER SHOP', promptH: 84 },
+  { id: 'yard', label: '[E] BACK YARD', promptH: 86 },
+  { id: 'capsule', label: '[E] CAPSULE TOWER', promptH: 84 },
+  { id: 'metro', label: '[E] METRO', promptH: 106 },
+  { id: 'taxi', label: '[E] HAIL TAXI', promptH: 122 },
+];
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number }
 interface Ship { sprite: Sprite; ps: number; y: number; speed: number; offset: number; flip: boolean; depth: number }
 
 const O = '255,136,0', C = '0,255,255';
 /** The door to the fixer's back yard, in the alley past the noodle stall (clear of the till and the man in the hat). */
-const YARD_DOOR_X = 972;
+const YARD_DOOR_X = DOORS.yard;
 
 /** Small seeded random, so the city looks the same on every visit. */
 const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
@@ -66,8 +81,17 @@ export class Game {
   private windows = new Map<number, [number, number, number][]>();
   private drops: [number, number, number, number][] = [];
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
-  private zone: 'downtown' | 'yard' | SceneId = 'downtown';
+  private zone: Zone = 'downtown';
   private yard: Yard;
+  /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
+  private clock = 0;
+  /** The city map overlay, when open: just looking, picking a taxi stand, or picking a metro stop. */
+  private mapView: { mode: 'view' | 'taxi' | 'metro'; options: string[]; index: number } | null = null;
+  /** A sky-taxi flight in progress. */
+  private flight: { to: Stand; start: number } | null = null;
+  /** The train's stop (or the one it last left), and the ride in progress. */
+  private station: Station = 'downtown';
+  private trip: { to: Station; start: number } | null = null;
 
   constructor(private host: GameHost) {
     this.canvas = document.createElement('canvas');
@@ -122,6 +146,7 @@ export class Game {
     this.canvas.focus();
     if (zone === 'yard' && this.zone !== 'yard') this.goTo('yard', true);
     else if (zone && isSceneId(zone) && this.zone !== zone) this.enterScene(zone, true);
+    this.markSeen(this.zone);
     if (this.zone === 'downtown' && !this.save.flags.arrived) {
       this.save.flags.arrived = true;
       this.say('YOU', ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.'], this.p.x, 46);
@@ -135,6 +160,7 @@ export class Game {
     window.removeEventListener('keyup', this.onKeyUp);
     window.removeEventListener('resize', this.onResize);
     this.keys.clear();
+    this.mapView = null;
     this.yard.closeAll();
     this.term.close();
     this.canvas.hidden = true;
@@ -163,6 +189,7 @@ export class Game {
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
     if (!this.reduced || this.t < 1) this.t += dt;
+    this.clock += dt;
     this.update(dt);
     this.draw();
     if (this.zone === 'yard') this.followYard();
@@ -173,6 +200,8 @@ export class Game {
 
   private onKeyDown(e: KeyboardEvent) {
     if (this.term.focused) return;
+    if (this.flight) { if (e.key !== 'm' && e.key !== 'M') e.preventDefault(); return; }
+    if (this.mapView) { this.mapKey(e); return; }
     if (this.zone === 'yard' && this.yard.overlayOpen) {
       if (e.key === 'Escape') { e.preventDefault(); this.yard.closeOverlay(); }
       else if (e.key === 'b' || e.key === 'B') this.yard.toggleBoard();
@@ -232,13 +261,14 @@ export class Game {
   private get levelW() { return this.scene?.width ?? (this.zone === 'yard' ? YARD_W : LEVEL_W); }
   private get platforms() { return this.zone === 'downtown' ? PLATFORMS : []; }
 
-  /** Walk between Downtown and the fixer's back yard. */
-  private goTo(zone: 'downtown' | 'yard', quiet = false) {
+  /** Go to Downtown or the fixer's back yard. In Downtown you land in front of door `at` (default: the yard's). */
+  private goTo(zone: 'downtown' | 'yard', quiet = false, at?: string) {
     this.yard.closeAll();
     this.yard.show(zone === 'yard');
     this.bubble = null;
     this.zone = zone;
-    Object.assign(this.p, { x: zone === 'yard' ? YARD_SPAWN : YARD_DOOR_X, y: 0, vy: 0, onGround: true });
+    this.markSeen(zone);
+    Object.assign(this.p, { x: zone === 'yard' ? YARD_SPAWN : at && isDoorId(at) ? DOORS[at] : YARD_DOOR_X, y: 0, vy: 0, onGround: true });
     this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + (zone === 'yard' ? 'the back yard' : 'Downtown'));
     this.syncHud();
@@ -306,11 +336,12 @@ export class Game {
   private targets(): Target[] {
     if (this.scene) return this.sceneTargets(this.scene);
     if (this.zone === 'yard') return this.yard.targets().map((t) => ({ kind: 'yard' as const, id: t.id, x: t.x, h: 0, label: t.label, promptH: t.promptH }));
-    const list: Target[] = [];
-    list.push({ kind: 'door', id: 'yard', x: YARD_DOOR_X, h: 0, label: '[E] BACK YARD', promptH: 62 });
+    const list: Target[] = [], gateOpen = !!this.save.flags.end;
+    for (const d of DOOR_TARGETS) if (d.id !== 'market' || gateOpen) list.push({ kind: 'door', id: d.id, x: DOORS[d.id], h: 0, label: d.label, promptH: d.promptH });
     NPCS.forEach((n) => list.push({ kind: 'talk', id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
     list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' });
-    MACHINES.forEach((m) => list.push({ kind: 'jack', id: m.id, x: m.x, h: m.onRoof ? m.h : 0, label: '[E] JACK IN' }));
+    // Once Downtown is cleared the gate stands open: the market's door takes the gate's place.
+    MACHINES.forEach((m) => { if (m.id !== 'gate' || !gateOpen) list.push({ kind: 'jack', id: m.id, x: m.x, h: m.onRoof ? m.h : 0, label: '[E] JACK IN' }); });
     READABLES.forEach((r) => list.push({ kind: 'read', id: r.id, x: r.x, h: r.h, label: '[E] READ' }));
     return list;
   }
@@ -343,7 +374,7 @@ export class Game {
     if (!target) return;
     if (target.kind === 'scene') { this.useScene(target.id); return; }
     if (target.kind === 'yard') { if (this.yard.use(target.id) === 'exit') this.goTo('downtown'); return; }
-    if (target.kind === 'door') { this.goTo('yard'); return; }
+    if (target.kind === 'door') { this.useDoor(target.id as DoorId); return; }
     if (target.kind === 'talk') {
       if (target.id === 'fixer') {
         const talk = fixerTalk(this.save);
@@ -373,7 +404,8 @@ export class Game {
       b.chars = Math.min(b.pages[b.page].length, b.chars + 1.2 * dt);
       if (Math.floor(b.chars) !== before && Math.floor(b.chars) % 2 === 0) sound.blip();
     }
-    const locked = !!this.machine || this.showEnd || this.term.focused || this.yard.overlayOpen;
+    this.updateTravel(dt);
+    const locked = !!this.machine || this.showEnd || this.term.focused || this.yard.overlayOpen || !!this.mapView || !!this.flight;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
@@ -381,6 +413,9 @@ export class Game {
     if (dir) { p.face = dir; this.seenControls = true; if (this.bubble && Math.abs(p.x - this.bubble.x) > 140) this.bubble = null; }
     p.moving = !!dir;
     p.x = Math.max(12, Math.min(this.levelW - 12, p.x + dir * speed * dt));
+    // Walking into an open border (the yard's passage, a street's end) leaves without E.
+    if (dir < 0 && p.x <= 12) this.walkOff('left');
+    else if (dir > 0 && p.x >= this.levelW - 12) this.walkOff('right');
 
     // Vertical: gravity, platforms and the street.
     const prevY = p.y;
@@ -414,7 +449,8 @@ export class Game {
     x.fillStyle = '#000';
     x.fillRect(0, 0, this.viewW, this.viewH);
     const rain = this.rainLevel();
-    if (this.scene) { this.drawScene(this.scene, rain); return; }
+    if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
+    if (this.scene) { this.drawScene(this.scene, rain); this.drawMap(); return; }
 
     if (this.zone === 'yard') {
       // Boxed in by the backs of houses: no city behind the yard, it draws its own walls.
@@ -429,6 +465,7 @@ export class Game {
       this.drawFronts();
       this.drawStreet(rain);
       this.drawMachines();
+      this.drawStands();
     }
     this.drawPeople();
     this.drawRain(rain);
@@ -436,6 +473,7 @@ export class Game {
     this.drawBubble();
     this.drawHud();
     if (this.showEnd) this.drawEnd();
+    this.drawMap();
   }
 
   private rainLevel() {
@@ -556,8 +594,8 @@ export class Game {
     this.neon('< NEON MARKET', this.sx(90), this.y(100), C, { size: 10, phase: 120 });
     this.plate(this.sx(1770), this.y(110), 82, 15, O);
     this.neon('SPACEPORT >', this.sx(1770), this.y(110), O, { size: 10, phase: 70 });
-    this.plate(this.sx(932), this.y(104), 92, 13, O);
-    this.neon('OPEN 24/7/365.25', this.sx(932), this.y(104), O, { size: 8, phase: 160 });
+    this.plate(this.sx(905), this.y(104), 88, 13, O);
+    this.neon('OPEN 24/7/365.25', this.sx(905), this.y(104), O, { size: 8, phase: 160 });
     // Billboard, bolted flat to the wall and lit by two lamps on arms above it.
     const bx = this.sx(640);
     this.plate(bx, this.y(128), 124, 36, '255,90,110');
@@ -577,17 +615,87 @@ export class Game {
     x.strokeStyle = 'rgba(255,136,0,.45)';
     for (let i = 0; i <= 12; i++) { x.beginPath(); x.moveTo(fx + i * 10 + 0.5, this.gy); x.lineTo(fx + i * 10 + 0.5, this.y(44)); x.stroke(); }
     x.beginPath(); x.moveTo(fx, this.y(44) + 0.5); x.lineTo(fx + 120, this.y(44) + 0.5); x.stroke();
-    // Dumpster below the low roof.
+    this.drawAlley();
+    // Dumpster below the low roof, in the alley's mouth.
     const dx = this.sx(1000);
     x.fillStyle = '#10140f'; x.fillRect(dx, this.y(22), 40, 22); x.strokeStyle = 'rgba(120,160,120,.5)'; x.strokeRect(dx + 0.5, this.y(22) + 0.5, 39, 21);
-    // The door to the fixer's back yard, at the end of the block past the stall; its sign sits on the fascia above.
-    const yx = this.sx(YARD_DOOR_X);
-    x.fillStyle = '#1a0d05'; x.fillRect(yx - 14, this.y(3), 28, 3);
-    x.fillStyle = '#050201'; x.fillRect(yx - 11, this.y(52), 22, 49);
-    x.strokeStyle = 'rgba(255,61,242,.65)'; x.strokeRect(yx - 10.5, this.y(52) + 0.5, 21, 48);
-    x.fillStyle = 'rgba(255,61,242,.8)'; x.fillRect(yx + 6, this.y(28), 2, 4);
-    this.plate(yx, this.y(70), 28, 11, '255,61,242');
-    this.neon('YARD', yx, this.y(70), '255,61,242', { size: 8, phase: 90 });
+    this.drawDoors();
+  }
+
+  /**
+   * The alley to the fixer's back yard (950–994, past the stall): a gap in the
+   * street wall with an open gate under a bar carrying the YARD plate, and a
+   * slice of the yard behind it: the backs of the houses across it, the crane's
+   * top over them, crates under the yard's lamp. Walk in front of it for E.
+   */
+  private drawAlley() {
+    const x = this.x, a0 = this.sx(950), a1 = this.sx(994), b1 = this.sx(1040), c = this.sx(YARD_DOOR_X), P = '255,61,242';
+    if (b1 + 10 < 0 || a0 - 10 > this.viewW) return;
+    // the backs of the houses across the yard (middle band: dim), over the stub wall and through the gap
+    x.fillStyle = '#0a0503'; x.fillRect(a0, this.y(150), b1 - a0, 74); x.fillRect(a0, this.y(76), a1 - a0, 12);
+    x.strokeStyle = 'rgba(194,65,12,.25)'; x.lineWidth = 1; x.strokeRect(a0 + 0.5, this.y(150) + 0.5, b1 - a0 - 1, 74);
+    x.fillStyle = 'rgba(255,136,0,.2)'; x.fillRect(this.sx(1012), this.y(132), 8, 12);
+    x.fillStyle = '#030100'; x.fillRect(this.sx(964), this.y(132), 8, 12);
+    // the yard itself, below the gate's bar: dark, lit by its lamp
+    const top = this.y(64);
+    x.fillStyle = '#080402'; x.fillRect(a0, top, a1 - a0, 64);
+    const g = x.createRadialGradient(c + 8, this.y(46), 2, c + 8, this.y(30), 46);
+    g.addColorStop(0, 'rgba(255,170,90,.28)'); g.addColorStop(1, 'rgba(255,170,90,0)');
+    x.fillStyle = g; x.fillRect(a0, top, a1 - a0, 64);
+    x.fillStyle = 'rgba(255,217,165,.85)'; x.fillRect(c + 6, this.y(50), 4, 2);
+    // the crane: its beam over the houses' backs, a leg coming down into the yard, the hook on its cable
+    const k0 = this.sx(958), k1 = this.sx(1034);
+    x.fillStyle = '#2a1407'; x.fillRect(k0, this.y(118), k1 - k0, 4); x.fillRect(k0 + 3, this.y(114), 3, 106); x.fillRect(k1 - 6, this.y(114), 3, 38);
+    x.fillStyle = 'rgba(255,136,0,.55)'; x.fillRect(k0, this.y(118), k1 - k0, 1); x.fillRect(k0 + 3, this.y(114), 1, 106);
+    x.fillStyle = '#ff8800'; x.fillRect(this.sx(1002), this.y(114), 8, 3);
+    x.fillStyle = 'rgba(201,168,127,.7)'; x.fillRect(this.sx(1005), this.y(111), 1, 30);
+    // the yard's ground and two crates in it, smaller for being further away
+    x.fillStyle = '#120804'; x.fillRect(a0, this.y(8), a1 - a0, 8); x.fillStyle = 'rgba(255,170,90,.25)'; x.fillRect(a0, this.y(8), a1 - a0, 1);
+    for (const [ox, w, h] of [[10, 12, 11], [23, 10, 8]]) {
+      x.fillStyle = '#3a210b'; x.fillRect(a0 + ox, this.y(8 + h), w, h);
+      x.strokeStyle = 'rgba(201,138,63,.75)'; x.strokeRect(a0 + ox + 0.5, this.y(8 + h) + 0.5, w - 1, h - 1);
+    }
+    // the gate: two posts and a bar across, rimmed so they read against the dark; one leaf swung open against the left post
+    x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(a0 + 4, top, 3, 64); x.fillRect(a1 - 7, top, 3, 64);
+    x.fillStyle = '#1a0d05'; x.fillRect(a0 - 2, this.y(2), a1 - a0 + 4, 2);
+    x.fillStyle = '#2a160a'; x.fillRect(a0, this.y(74), 4, 74); x.fillRect(a1 - 4, this.y(74), 4, 74); x.fillRect(a0 - 2, this.y(74), a1 - a0 + 4, 8);
+    x.fillStyle = 'rgba(255,136,0,.75)'; x.fillRect(a0, this.y(74), 1, 74); x.fillRect(a1 - 4, this.y(74), 1, 74); x.fillRect(a0 - 2, this.y(74), a1 - a0 + 4, 1);
+    x.fillStyle = 'rgba(255,136,0,.5)';
+    for (let i = 0; i < 4; i++) x.fillRect(a0 + 5 + i * 2, this.y(58 - i * 2), 1, 54 - i * 3);
+    x.fillRect(a0 + 5, this.y(58), 7, 1); x.fillRect(a0 + 5, this.y(6), 7, 1);
+    this.plate(c, this.y(70), 28, 11, P);
+    this.neon('YARD', c, this.y(70), P, { size: 8, phase: 90 });
+  }
+
+  /**
+   * Downtown's other doors, on fronts already drawn: the corner shop's door gets
+   * its plate (cyan: you can go in), your building's lobby its name and an LED
+   * (red while the capsule zone does not exist yet: locked).
+   */
+  private drawDoors() {
+    const x = this.x, sh = this.sx(DOORS.shop), cp = this.sx(DOORS.capsule), t = this.t;
+    if (sh > -40 && sh < this.viewW + 40) {
+      this.plate(sh, this.y(70), 34, 11, C);
+      this.neon('SHOP', sh, this.y(70), C, { size: 8, phase: 30 });
+      // a paper sticker on the door's glass, and the cyan handle
+      x.fillStyle = 'rgba(255,217,165,.5)'; x.fillRect(sh - 6, this.y(40), 12, 5);
+      x.fillStyle = Math.sin(t * 0.05) > -0.3 ? 'rgba(0,255,255,.95)' : 'rgba(0,255,255,.3)'; x.fillRect(sh + 7, this.y(30), 2, 4);
+    }
+    if (cp > -40 && cp < this.viewW + 40) {
+      this.plate(cp, this.y(70), 48, 11, O);
+      x.save(); x.font = '600 7px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillStyle = 'rgba(255,217,165,.85)'; x.fillText('CAPSULES', cp, this.y(70) + 0.5); x.restore();
+      const open = isSceneId('capsule');
+      x.fillStyle = open ? 'rgba(34,197,94,.95)' : Math.floor(t / 40) % 2 ? 'rgba(255,42,68,.95)' : 'rgba(255,42,68,.4)';
+      x.fillRect(cp + 14, this.y(34), 3, 3);
+    }
+  }
+
+  /** On the street, in front of the fronts: the metro stairs and the sky-taxi pad. */
+  private drawStands() {
+    const v = this.view();
+    drawMetroStairs(this.x, v, DOORS.metro);
+    drawTaxiPad(this.x, v, DOORS.taxi);
   }
 
   /**
@@ -744,7 +852,7 @@ export class Game {
       x.fillStyle = pool; x.fillRect(s0 - 10, gy + 1, STALL.w + 20, 34);
     }
     // Neon smeared into the wet street.
-    const smears: [number, string][] = [[372, C], [STALL.x + STALL.w / 2, C], [640, '255,90,110'], [90, C], [1770, O], [932, O]];
+    const smears: [number, string][] = [[372, C], [STALL.x + STALL.w / 2, C], [640, '255,90,110'], [90, C], [1770, O], [905, O], [DOORS.metro + 31, C], [DOORS.taxi - 18, C], [DOORS.shop, C]];
     for (const [wx, col] of this.zone === 'yard' ? [] : smears) {
       const sx = this.sx(wx);
       if (sx < -20 || sx > this.viewW + 20) continue;
@@ -777,6 +885,20 @@ export class Game {
         leds(sx - 8, this.y(m.h + 14), 3, s.freed.includes('0x31'));
       } else if (m.id === 'gate') {
         x.fillStyle = '#0c0907'; x.fillRect(sx - 40, this.y(80), 80, 80);
+        if (s.flags.end) {
+          // Open: the shutter rolled up under the lintel, the market's bulbs and stalls lit behind it.
+          x.fillStyle = 'rgba(255,170,80,.14)'; x.fillRect(sx - 38, this.y(66), 76, 66);
+          for (let k = 0; k < 9; k++) { x.fillStyle = k % 2 ? 'rgba(255,190,110,.75)' : 'rgba(255,136,0,.6)'; x.fillRect(sx - 34 + k * 8, this.y(58) + Math.round(Math.abs(k - 4) * 0.8), 2, 3); }
+          for (const [ax, aw] of [[-34, 30], [4, 30]]) {
+            for (let k = 0; k < aw; k += 6) { x.fillStyle = (k / 6) % 2 ? '#1a0a03' : 'rgba(255,136,0,.55)'; x.fillRect(sx + ax + k, this.y(34), Math.min(6, aw - k), 6); }
+            x.fillStyle = '#22120a'; x.fillRect(sx + ax, this.y(16), aw, 16); x.fillStyle = 'rgba(255,136,0,.6)'; x.fillRect(sx + ax, this.y(16), aw, 1);
+          }
+          x.fillStyle = '#1a1008'; x.fillRect(sx - 38, this.y(80), 76, 12);
+          for (let yy = 2; yy < 12; yy += 3) { x.fillStyle = 'rgba(255,136,0,.2)'; x.fillRect(sx - 38, this.y(80) + yy, 76, 1); }
+          x.strokeStyle = 'rgba(255,136,0,.6)'; x.strokeRect(sx - 39.5, this.y(80) + 0.5, 79, 79);
+          x.fillStyle = 'rgba(34,197,94,.95)'; x.fillRect(sx + 32, this.y(44), 5, 5);
+          continue;
+        }
         x.strokeStyle = 'rgba(255,136,0,.6)'; x.strokeRect(sx - 39.5, this.y(80) + 0.5, 79, 79);
         for (let yy = 4; yy < 80; yy += 6) { x.fillStyle = 'rgba(255,136,0,.12)'; x.fillRect(sx - 38, this.y(80) + yy, 76, 2); }
         x.fillStyle = 'rgba(255,42,68,.9)'; x.fillRect(sx + 26, this.y(44), 6, 6);
@@ -847,7 +969,7 @@ export class Game {
   }
 
   private drawPrompt() {
-    if (this.bubble || this.machine || this.showEnd || this.yard.overlayOpen) return;
+    if (this.bubble || this.machine || this.showEnd || this.yard.overlayOpen || this.mapView) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;
@@ -921,7 +1043,7 @@ export class Game {
     x.fillText('END OF TRANSMISSION', cx, cy);
     x.shadowBlur = 0; x.font = '10px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,.9)';
     x.fillText('Downtown cleared. Nodes freed: ' + this.save.freed.length + '. You are still a ghost, ' + who(this.save) + '.', cx, cy + 26);
-    x.fillText('The Neon Market opens in the next update. Your progress is saved in this browser.', cx, cy + 42);
+    x.fillText('The Neon Market gate stands open at the west end. Your progress is saved in this browser.', cx, cy + 42);
     x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC back to the landing page', cx, cy + 66);
     x.restore();
   }
@@ -932,13 +1054,15 @@ export class Game {
   private get scene(): Scene | undefined { return sceneById(this.zone); }
   private sceneView: SceneView | null = null;
 
-  /** Walk into an explorable scene, at its spawn. */
-  private enterScene(id: SceneId, quiet = false) {
+  /** Walk into an explorable scene: at the exit `at` (the door you came through, seen from inside), else at its spawn. */
+  private enterScene(id: SceneId, quiet = false, at?: string) {
     const s = SCENES[id];
     this.yard.closeAll();
     this.bubble = null;
     this.zone = id;
-    Object.assign(this.p, { x: s.spawn, y: 0, vy: 0, onGround: true, face: 1 });
+    this.markSeen(id);
+    const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
+    Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: x > s.width / 2 ? -1 : 1 });
     this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
     this.syncHud();
@@ -952,12 +1076,19 @@ export class Game {
   }
 
   private sceneTargets(s: Scene): Target[] {
-    const list: Target[] = s.exits.map((e) => ({ kind: 'scene' as const, id: 'exit:' + e.id, x: e.x, h: 0, label: e.label, promptH: e.promptH ?? 70 }));
+    const list: Target[] = [];
+    for (const e of s.exits) {
+      if (e.edge || (e.requires && !this.save.flags[e.requires])) continue;
+      // The platform's BOARD only shows while a train is in with its doors open.
+      if (e.action === 'board' && !metroDoorsOpen(this.t)) continue;
+      const label = e.action === 'out' ? (this.trip ? '[E] DOORS LOCKED' : '[E] STEP OUT · ' + STATIONS[this.station].name) : e.label;
+      list.push({ kind: 'scene', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
+    }
     for (const r of s.readables ?? []) list.push({ kind: 'scene', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
     return list;
   }
 
-  /** E next to a scene's exit or readable. Exits to Downtown land at Downtown's spawn. */
+  /** E next to a scene's exit or readable. An exit lands you at its matching door in the destination. */
   private useScene(target: string) {
     const s = this.scene!, [kind, id] = target.split(':');
     if (kind === 'read') {
@@ -965,17 +1096,25 @@ export class Game {
       this.say(r.name, r.pages, r.x, r.h ?? 70);
       return;
     }
-    const to = s.exits.find((e) => e.id === id)!.to;
-    if (isSceneId(to)) { this.enterScene(to); return; }
-    this.goTo('downtown');
-    this.p.x = SPAWN_X;
-    this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
+    const e = s.exits.find((z) => z.id === id)!;
+    if (e.action === 'board') { if (metroDoorsOpen(this.t)) this.enterTrain('downtown'); return; }
+    if (e.action === 'out') { this.stepOut(); return; }
+    if (e.action === 'line') { this.openLineMap(); return; }
+    if (e.action === 'taxi') { this.hailTaxi(); return; }
+    if (e.to === 'train') { this.enterTrain(stationOf(this.zone)); return; }
+    if (e.to === 'downtown' || e.to === 'yard' || isSceneId(e.to)) this.travel(e.to, e.at);
+  }
+
+  /** The scene view, refreshed for this frame (Downtown's stands draw with it too). */
+  private view(): SceneView {
+    const v = (this.sceneView ??= { sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), t: 0, viewW: 0, viewH: 0, cam: 0, gy: 0, flags: this.save.flags });
+    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags;
+    return v;
   }
 
   /** A scene draws its own backdrop and foreground; the engine adds sky, the player, rain and the HUD. */
   private drawScene(s: Scene, rain: number) {
-    const v = (this.sceneView ??= { sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), t: 0, viewW: 0, viewH: 0, cam: 0, gy: 0 });
-    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy;
+    const v = this.view();
     if (s.ambient?.sky) { this.drawSky(); this.drawShips(); }
     s.drawBackdrop(this.x, v);
     this.drawPeople();
@@ -986,6 +1125,161 @@ export class Game {
     this.drawHud();
     if (this.showEnd) this.drawEnd();
   }
+
+  // ---------- travel: doors, the metro, sky taxis, the city map (city.ts) ----------
+
+  /** Go to a zone, landing at door `at` there (a scene's exit id, or a Downtown door). */
+  private travel(zone: Zone, at?: string) {
+    this.mapView = null;
+    if (zone === 'downtown' || zone === 'yard') this.goTo(zone, false, at);
+    else this.enterScene(zone, false, at);
+  }
+
+  /** The player walked into a border: leave through that edge's exit, if the zone has one, still walking the same way. */
+  private walkOff(edge: 'left' | 'right') {
+    const s = this.scene;
+    const e = s ? s.exits.find((z) => z.edge === edge && (!z.requires || this.save.flags[z.requires])) : EDGES[this.zone]?.[edge];
+    if (!e || !(e.to === 'downtown' || e.to === 'yard' || isSceneId(e.to))) return;
+    this.travel(e.to, e.at);
+    this.p.face = edge === 'left' ? -1 : 1;
+  }
+
+  /** Remember a place for the city map: `flags['seen:<zone>']`. */
+  private markSeen(zone: Zone) {
+    const f = seenFlag(zone);
+    if (this.save.flags[f]) return;
+    this.save.flags[f] = true;
+    storeSave(this.save);
+  }
+
+  /** E at one of Downtown's doors, stairs or pad. */
+  private useDoor(id: DoorId) {
+    if (id === 'yard') { this.goTo('yard'); return; }
+    if (id === 'taxi') { this.hailTaxi(); return; }
+    if (id === 'capsule') {
+      // Your building's lobby: the capsule zone does not exist yet, so the lift is out.
+      const home = 'capsule';
+      if (isSceneId(home)) { this.travel(home, 'downtown'); return; }
+      sound.denied();
+      this.say('LOBBY PANEL', ['CAPSULE 7B · LIFT OUT OF ORDER.', 'The stairs are closed for your safety. Your safety is closed for maintenance.'], DOORS.capsule, 56);
+      return;
+    }
+    if (id === 'metro' && this.reduced) metroSync(this.t);
+    this.travel(id, 'downtown');
+  }
+
+  /** Board the train at a station: in the carriage by the door, stopped, doors open. */
+  private enterTrain(at: Station) {
+    this.station = at;
+    this.trip = null;
+    Object.assign(ride, { stop: STATIONS[at].name, next: '', moving: false, open: 1 });
+    this.travel('train', 'out');
+  }
+
+  /** E at the train's door: out at the current stop, onto that station's platform or door. */
+  private stepOut() {
+    if (this.trip) { this.flash('doors locked · next stop ' + STATIONS[this.trip.to].name); sound.denied(); return; }
+    const st = STATIONS[this.station];
+    if (this.station === 'downtown') metroSync(this.t);
+    this.travel(st.zone, st.at);
+  }
+
+  /** E at the line map in the train: the city map, to pick the next stop. */
+  private openLineMap() {
+    if (this.trip) { this.flash('next stop ' + STATIONS[this.trip.to].name); return; }
+    const i = LINE.indexOf(this.station);
+    this.mapView = { mode: 'metro', options: [...LINE], index: (i + 1) % LINE.length };
+    sound.open();
+  }
+
+  /** E at a taxi stand: the city map to pick a stand, if you can pay. */
+  private hailTaxi() {
+    if (this.save.tokens < FARE) {
+      sound.denied();
+      this.say('DRIVER', DRIVER_BROKE, this.p.x + 20, 40);
+      return;
+    }
+    const here = standOf(this.zone), i = here ? STAND_IDS.indexOf(here) : -1;
+    this.mapView = { mode: 'taxi', options: [...STAND_IDS], index: (i + 1) % STAND_IDS.length };
+    sound.open();
+  }
+
+  /** The city map on its own, just to look at (for a menu to call). Esc closes it. */
+  showMap() {
+    if (!this.running || this.flight) return;
+    this.bubble = null;
+    this.mapView = { mode: 'view', options: [], index: 0 };
+  }
+
+  /** True while the city map is open. */
+  get mapOpen() { return !!this.mapView; }
+
+  private mapKey(e: KeyboardEvent) {
+    const m = this.mapView!, k = e.key;
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(k)) e.preventDefault();
+    if (e.repeat) return;
+    if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
+    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter') { this.mapView = null; sound.close(); } return; }
+    const n = m.options.length;
+    if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (m.index + n - 1) % n; sound.blip(); return; }
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (m.index + 1) % n; sound.blip(); return; }
+    if (k === 'e' || k === 'E' || k === 'Enter' || k === ' ') this.mapConfirm();
+  }
+
+  private mapConfirm() {
+    const m = this.mapView!, pick = m.options[m.index];
+    this.mapView = null;
+    if (m.mode === 'taxi') {
+      const to = pick as Stand;
+      if (to === standOf(this.zone)) { this.flash('you are already here'); return; }
+      this.save.tokens -= FARE;
+      storeSave(this.save);
+      this.syncHud();
+      this.flight = { to, start: this.clock };
+      sound.open();
+    } else if (m.mode === 'metro') {
+      const to = pick as Station;
+      if (to === this.station) { this.flash('this is ' + STATIONS[to].name); return; }
+      this.trip = { to, start: this.clock };
+      Object.assign(ride, { next: STATIONS[to].name });
+      sound.close();
+    }
+  }
+
+  /** Flights land; the train closes its doors, rides, and opens them at the stop. */
+  private updateTravel(dt: number) {
+    if (this.flight && this.clock - this.flight.start >= FLIGHT) {
+      const to = this.flight.to;
+      this.flight = null;
+      this.travel(STANDS[to].zone, 'taxi');
+      this.flash('-' + FARE + ' token · ' + STANDS[to].name);
+    }
+    if (this.zone !== 'train') return;
+    const tr = this.trip;
+    if (!tr) { ride.moving = false; ride.open = Math.min(1, ride.open + dt / DOORS_CLOSE); return; }
+    const e = this.clock - tr.start;
+    let speed = 0;
+    if (e < DOORS_CLOSE) ride.open = Math.max(0, 1 - e / DOORS_CLOSE);
+    else if (e < DOORS_CLOSE + RIDE) { ride.open = 0; ride.moving = true; speed = 5 * Math.sin((Math.PI * (e - DOORS_CLOSE)) / RIDE); }
+    else {
+      this.station = tr.to;
+      this.trip = null;
+      Object.assign(ride, { stop: STATIONS[tr.to].name, next: '', moving: false });
+      this.flash(STATIONS[tr.to].name + ' · doors open');
+      sound.open();
+    }
+    ride.dist += speed * dt;
+  }
+
+  private drawMap() {
+    const m = this.mapView;
+    if (!m) return;
+    const st: MapState = {
+      mode: m.mode, options: m.options, index: m.index, zone: this.zone, station: this.station,
+      seen: (z) => !!this.save.flags[seenFlag(z)], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
+    };
+    drawCityMap(this.x, this.viewW, this.viewH, st);
+  }
 }
 
 /** Street walls measured against the player (42 units tall): a 76-unit ground floor with 52-unit doors, then 66-unit storeys of 14x28 windows. */
@@ -995,10 +1289,12 @@ const GROUND = 76, STOREY = 66, WIN_PITCH = 30;
 const SIGN_WALLS: [number, number, number, number][] = [
   [358, 386, 64, 164], // VERIFY
   [40, 140, 90, 110], // < NEON MARKET
-  [882, 982, 94, 114], // OPEN 24/7/365.25
+  [858, 952, 94, 114], // OPEN 24/7/365.25
   [1727, 1813, 100, 120], // SPACEPORT >
   [574, 706, 106, 160], // billboard and its lamps
   [720, 880, 60, 142], // noodle stall and its NOODLES plate
+  [1448, 1496, 70, 100], // METRO plate on its post
+  [1880, 1946, 88, 114], // SKY TAXI plate on its pole
 ];
 const onSignWall = (x0: number, x1: number, h0: number, h1: number) =>
   SIGN_WALLS.some(([a, b, c, d]) => x0 < b && x1 > a && h0 < d && h1 > c);
