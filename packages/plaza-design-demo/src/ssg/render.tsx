@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
+import { ZONE_STYLES } from './game/zone/styles';
 
 export interface MetaConfig {
   title: string;
@@ -750,6 +751,9 @@ export const demoStyles = `
     .dlg-choice::before { content: '> '; color: var(--color-text-faint); }
     .dlg-kb { color: var(--color-text-faint); }
     .dlg-input { width: 100%; padding: 3px 6px; background: #000; color: var(--color-text-body); border: var(--border-thin) solid var(--color-border-default); font-family: var(--font-mono); font-size: var(--text-xs); }
+
+    /* The zone engine's newer pieces: watchdog, conduits, meters, keyring, lock toys (game/zone/styles.ts) */
+${ZONE_STYLES}
 
 
     /* ACCESS DENIED pause menu (game/menu.ts): a black CRT panel over the paused game */

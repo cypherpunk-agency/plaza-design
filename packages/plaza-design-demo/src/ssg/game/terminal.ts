@@ -91,6 +91,13 @@ export class Terminal {
     this.onClose();
   }
   focus() { this.open(); if (!this.touch) this.input.focus(); }
+  /** Open with `text` already typed, the cursor after it (someone asked you something). */
+  prefill(text: string) {
+    if (this.touch) { this.line = text; this.focus(); this.refresh(); return; }
+    this.input.value = text;
+    this.focus();
+    this.input.setSelectionRange(text.length, text.length);
+  }
 
   print(text: string, kind: LineKind = 'out') {
     for (const line of text.split('\n')) {

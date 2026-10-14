@@ -21,10 +21,11 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
-import { CAPSULE, ENGINE, LOGIC, NET, YARD } from '../src/ssg/game/data';
+import { CAPSULE, DOWNTOWN, ENGINE, LOGIC, NET, YARD } from '../src/ssg/game/data';
 import { CAPSULE_RULES } from '../src/ssg/game/capsule/rules';
 import { checkGame } from '../src/ssg/game/data/check';
 import { YARD_RULES } from '../src/ssg/game/yard/effects';
+import { DOWNTOWN_RULES_SHAPE } from '../src/ssg/game/downtown/rules';
 import { contractOf } from '../src/ssg/game/zone/rules';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -139,6 +140,7 @@ function checkGameData() {
   const problems = checkGame([
     { data: YARD, code: contractOf(YARD_RULES), extra: YARD_RULES.check },
     { data: CAPSULE, code: contractOf(CAPSULE_RULES), extra: CAPSULE_RULES.check },
+    { data: DOWNTOWN, code: contractOf(DOWNTOWN_RULES_SHAPE), extra: DOWNTOWN_RULES_SHAPE.check },
   ], LOGIC, NET, ENGINE);
   if (!problems.length) return;
   console.error(`Game data has ${problems.length} problem${problems.length > 1 ? 's' : ''} (src/ssg/game/data/):\n`);

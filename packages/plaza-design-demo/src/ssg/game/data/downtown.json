@@ -1,0 +1,551 @@
+{
+  "id": "downtown",
+  "name": "Downtown",
+
+  "state": {
+    "lock": "shut",
+    "scanned": false,
+    "dlvAt": "home",
+    "dlvFrom": "home",
+    "routeFixed": false,
+    "feed": "ads"
+  },
+
+  "tuning": {
+    "drawerTokens": 3,
+    "dlvSpeed": 160,
+    "adBackMs": 1200,
+    "trendMs": 2600,
+    "signTestMs": 3000
+  },
+
+  "devices": [
+    {
+      "id": "gate",
+      "name": "NEON MARKET GATE",
+      "look": "A shutter across the market's mouth. It wants a scanner signature. Passwords are so last decade.",
+      "status": [{ "if": "lock=open", "then": "OPEN", "else": "shut" }, { "if": "end", "then": " · stays open", "else": " · scanner signature required" }],
+      "layout": {
+        "spot": { "x": 70, "w": 80, "h": 80 },
+        "board": { "x": 0.14, "y": 0.28 },
+        "dir": { "scanner": "up", "lock": "right", "door": "down", "deliveries.log": "left" },
+        "vision": { "scanner": "up", "lock": "right", "door": "down", "deliveries.log": "left" }
+      },
+      "nouns": [
+        {
+          "id": "scanner", "kind": "SENSE", "verbs": ["read"], "events": ["matched"],
+          "on": { "read": { "say": ["cat scanner", "signatures on file: delivery robots, staff. you: no."] } }
+        },
+        {
+          "id": "lock", "kind": "ACT", "verbs": ["open", "shut"], "current": "lock",
+          "on": {
+            "open": [
+              { "if": "end", "say": ["{via}use lock --open", "already open. the market likes it that way.", "dim"] },
+              { "if": "!signal", "say": ["use lock --open", "ACCESS DENIED. Scanner signature required. Passwords are so last decade.", "err"] },
+              { "if": "!scanned", "say": ["signal → lock --open", "the lock wants the scanner's word. that signal is not the scanner.", "err"] },
+              { "do": [{ "set": "lock", "to": "open" }], "say": ["signal → lock --open", "signature matched. the shutter rolls up.", "ok"] }
+            ],
+            "shut": [
+              { "if": "end", "say": ["{via}use lock --shut", "the gate stays open. the market likes it that way.", "dim"] },
+              { "if": "lock=shut", "say": ["{via}use lock --shut", "already shut. it is good at that.", "dim"] },
+              { "do": [{ "set": "lock", "to": "shut" }], "say": ["{via}use lock --shut", "clunk. the shutter drops. shut.", "err"] }
+            ]
+          }
+        },
+        {
+          "id": "door", "kind": "SENSE", "verbs": ["read"], "events": ["passed"],
+          "on": { "read": { "say": ["cat door", "counts what goes through. today: nothing. this month: nothing."] } }
+        },
+        {
+          "id": "deliveries.log", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat deliveries.log", "expected: DLV-9 (dumplings), overdue 41 days. registered robots need no scanner module."] } }
+        }
+      ]
+    },
+    {
+      "id": "box",
+      "name": "JUNCTION BOX 0x2F",
+      "look": "REGISTRY UTILITIES · AUTHORISED STAFF ONLY. Older than you.",
+      "status": [{ "if": "freed2F", "then": "session: maint · node 0x2F free", "else": "REGISTRY UTILITIES · maintenance login only" }],
+      "layout": {
+        "spot": { "x": 330, "y": 34, "w": 30, "h": 38 },
+        "board": { "x": 0.38, "y": 0.28 },
+        "dir": { "README": "up", "login": "left", "legs.so": "down" },
+        "vision": { "README": "up", "login": "left", "legs.so": "down" }
+      },
+      "nouns": [
+        {
+          "id": "README", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat README", "Registry Utilities. Maintenance login only. Password set per sign policy 7."] } }
+        },
+        {
+          "id": "login", "kind": "GUARD",
+          "guard": {
+            "password": "vrify", "lockMs": 0,
+            "near": {
+              "verify": ["login maint verify", "ACCESS DENIED. Close. Count the letters again.", "err"],
+              "admin": ["login maint admin", "ACCESS DENIED. Not everyone is the noodle stall.", "err"]
+            },
+            "do": [{ "effect": "node.free" }, { "goal": "box" }]
+          }
+        },
+        {
+          "id": "legs.so", "kind": "STORE", "verbs": ["read", "install"], "sector": "maint",
+          "on": {
+            "read": { "say": ["cat legs.so", "[binary module] install to use."] },
+            "install": [
+              { "if": "jump", "say": ["install legs.so", "legs.so is already installed. You have legs.", "dim"] },
+              { "do": [{ "effect": "legs.install" }, { "goal": "install" }] }
+            ]
+          }
+        }
+      ],
+      "sectors": [{ "id": "maint", "label": "maintenance", "seal": { "guard": "login" } }]
+    },
+    {
+      "id": "sign",
+      "name": "VERIFY SIGN",
+      "look": "Six neon tubes on a plate, policy 7 in light. Five work.",
+      "status": "V·RIFY · tube 2 of 6 dark",
+      "layout": {
+        "spot": { "x": 372, "y": 66, "w": 22, "h": 96 },
+        "board": { "x": 0.38, "y": 0.72 },
+        "dir": { "tubes": "up" },
+        "vision": { "tubes": "right" }
+      },
+      "nouns": [
+        {
+          "id": "tubes", "kind": "SENSE", "verbs": ["read", "test"],
+          "on": {
+            "read": { "do": [{ "give": "vrify" }], "say": ["cat tubes", "V·RIFY. the E has been dark since forever."] },
+            "test": { "do": [{ "effect": "sign.test" }, { "give": "vrify" }], "say": ["use tubes --test", "V ok · E dead · R ok · I ok · F ok · Y ok. tube 2 of 6: dead since forever."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "cam3",
+      "name": "CAM-3",
+      "look": "A camera on a pole across from the billboard. ● REC. It is bored.",
+      "status": "● REC · watching the street",
+      "layout": {
+        "spot": { "x": 520, "w": 18, "h": 86 },
+        "board": { "x": 0.62, "y": 0.72 },
+        "dir": { "lens": "up", "footage": "left" },
+        "vision": { "lens": "up", "footage": "left" }
+      },
+      "nouns": [
+        {
+          "id": "lens", "kind": "SENSE", "verbs": ["view", "loop"], "events": ["frame"],
+          "on": {
+            "view": { "do": [{ "open": "cam3" }], "say": ["cat lens", "feed open."] },
+            "loop": { "do": [{ "emit": "frame" }], "say": ["{via}use lens --loop", "8 hours of the same pigeon. you watch 4 seconds."] }
+          }
+        },
+        {
+          "id": "footage", "kind": "STORE", "verbs": ["read", "copy"],
+          "on": {
+            "read": { "say": ["cat footage", "8 hours of street. one pigeon, many angles."] },
+            "copy": { "say": ["cp footage ~/deck", "copied 8 hours of pigeon."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "billboard",
+      "name": "BILLBOARD",
+      "look": "REGISTRY PREMIUM, four metres wide, bolted to the wall and wired to the Registry's ad feed.",
+      "status": [{ "if": "feed=cam3", "then": "showing: CAM-3 (a pigeon)", "else": "showing: REGISTRY PREMIUM" }, { "if": "freedTV", "then": " · node 0x3C free" }],
+      "layout": {
+        "spot": { "x": 640, "y": 108, "w": 124, "h": 42 },
+        "board": { "x": 0.86, "y": 0.72 },
+        "dir": { "screen": "left", "ads": "up", "terms": "right" },
+        "vision": { "screen": "left", "ads": "up", "terms": "right" }
+      },
+      "nouns": [
+        {
+          "id": "screen", "kind": "ACT", "verbs": ["show ad", "show feed"], "current": "feed",
+          "on": {
+            "show ad": { "do": [{ "set": "feed", "to": "ads" }], "say": ["{via}use screen --show-ad", "REGISTRY PREMIUM. Be seen everywhere.", "dim"] },
+            "show feed": [
+              { "if": "!signal", "say": ["use screen --show-feed", "the screen wants a feed, not a finger. wire one in.", "err"] },
+              { "do": [{ "effect": "billboard.feed" }] }
+            ]
+          }
+        },
+        {
+          "id": "ads", "kind": "SENSE", "verbs": ["read"], "events": ["next"],
+          "on": { "read": { "say": ["cat ads", "REGISTRY PREMIUM. Be seen everywhere. next ad: the same one."] } }
+        },
+        {
+          "id": "terms", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat terms", "Terms: forever. Cancellation: see Terms. (small print: the password is NOT pigeon.)"] } }
+        }
+      ]
+    },
+    {
+      "id": "till",
+      "name": "NOODLE TILL",
+      "look": "NOODLE TILL v1.0. Firmware: factory. It is not ashamed.",
+      "status": [{ "if": "till", "then": "firmware: factory · drawer: empty", "else": "firmware: factory · login required" }],
+      "layout": {
+        "spot": { "x": 860, "y": 28, "w": 22, "h": 20 },
+        "board": { "x": 0.62, "y": 0.28 },
+        "dir": { "receipts.log": "up", "quickstart": "left", "login": "right", "drawer": "down" },
+        "vision": { "receipts.log": "up", "quickstart": "left", "login": "right", "drawer": "down" }
+      },
+      "nouns": [
+        {
+          "id": "receipts.log", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat receipts.log", "#0412 ramen, extra egg ...... 1 token · #0413 ramen, no logs ........ 1 token · #0414 ramen, for a ghost .... on the house"] } }
+        },
+        {
+          "id": "quickstart", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "do": [{ "give": "admin" }], "say": ["cat quickstart", "a laminated card, taped under the counter: \"QUICKSTART. 1. log in: admin / admin. 2. change password (optional).\""] } }
+        },
+        {
+          "id": "login", "kind": "GUARD",
+          "guard": { "password": "admin", "lockMs": 0 }
+        },
+        {
+          "id": "drawer", "kind": "ACT", "verbs": ["open"], "sector": "drawer",
+          "on": {
+            "open": [
+              { "if": "till", "say": ["use drawer --open", "empty. the till looks at you.", "dim"] },
+              { "do": [{ "effect": "till.pay" }] }
+            ]
+          }
+        }
+      ],
+      "sectors": [{ "id": "drawer", "label": "cash drawer", "seal": { "guard": "login" } }]
+    },
+    {
+      "id": "dlv9",
+      "name": "DLV-9",
+      "look": "A delivery robot by the dumpster. Lost. Says it isn't.",
+      "status": [
+        { "if": "routeFixed", "then": "route: NEON MARKET · DUMPLINGS", "else": "status: lost (it says it isn't)" },
+        { "if": "dlvAt=market", "then": " · inside the market" },
+        { "if": "dlvAt=driving", "then": " · rolling" }
+      ],
+      "layout": {
+        "spot": { "x": 1062, "w": 26, "h": 28 },
+        "board": { "x": 0.14, "y": 0.72 },
+        "dir": { "eyes": "up", "route.dat": "left", "wheels": "down", "hatch": "right", "speaker": "right", "uplink": "up" },
+        "vision": { "eyes": "left", "route.dat": "left", "wheels": "down", "hatch": "down", "speaker": "down", "uplink": "left" }
+      },
+      "nouns": [
+        {
+          "id": "eyes", "kind": "SENSE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat eyes", "you. a pigeon. you again."] } }
+        },
+        {
+          "id": "route.dat", "kind": "STORE", "verbs": ["read", "copy"],
+          "on": {
+            "read": [
+              { "if": "routeFixed", "say": ["cat route.dat", "destination: NEON MARKET · DUMPLINGS. ETA: soon. (it is beside itself.)"] },
+              { "say": ["cat route.dat", "destination \"somewhere warm\". ETA: never."] }
+            ],
+            "copy": { "say": ["cp route.dat ~/deck", "copied route.dat. now you are also lost."] }
+          }
+        },
+        {
+          "id": "wheels", "kind": "ACT", "verbs": ["go home", "follow you", "spin"],
+          "on": {
+            "go home": { "do": [{ "effect": "dlv.drive" }] },
+            "follow you": { "do": [{ "effect": "dlv.drive" }] },
+            "spin": { "say": ["{via}use wheels --spin", "wheee. (flatly)"] }
+          }
+        },
+        {
+          "id": "hatch", "kind": "ACT", "verbs": ["open", "close"],
+          "on": {
+            "open": { "do": [{ "give": "glove.left" }], "say": ["use hatch --open", "hatch: open. inside: one glove. left hand."] },
+            "close": { "say": ["use hatch --close", "hatch: closed. DLV-9 pretends nothing happened.", "dim"] }
+          }
+        },
+        {
+          "id": "speaker", "kind": "ACT", "verbs": ["say hi"],
+          "on": { "say hi": { "say": ["use speaker --say-hi", "DLV-9: \"I AM NOT LOST.\" (it is.)"] } }
+        },
+        {
+          "id": "uplink", "kind": "LINK", "link": { "reach": ["dispatch"] }
+        }
+      ]
+    },
+    {
+      "id": "relay",
+      "name": "ROOFTOP RELAY 0x31",
+      "look": "ROOFTOP RELAY 0x31 · REGISTRY UTILITIES. It keeps a log of visitors.",
+      "status": [{ "if": "freed31", "then": "session: maint · node 0x31 free", "else": "REGISTRY UTILITIES · maintenance login only" }],
+      "layout": {
+        "spot": { "x": 1150, "y": 62, "w": 26, "h": 40 },
+        "board": { "x": 0.86, "y": 0.28 },
+        "dir": { "notes.txt": "up", "log": "left", "archive": "left", "login": "right", "gate.memo": "down", "root.frag": "down", "uplink": "right" },
+        "vision": { "notes.txt": "up", "log": "up", "archive": "up", "login": "right", "gate.memo": "right", "root.frag": "up", "uplink": "right" }
+      },
+      "nouns": [
+        {
+          "id": "notes.txt", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "do": [{ "give": "rule.reverse" }], "say": ["cat notes.txt", "maint: password rotated per policy 7. new password = old password, reversed. -J"] } }
+        },
+        {
+          "id": "log", "kind": "LOG", "verbs": ["read"], "events": ["entry"],
+          "log": { "rate": 4, "fall": 6, "archive": "relay.archive", "linger": 4000, "lockMs": 8000 },
+          "on": { "read": { "say": ["cat log", "visitor: unknown. recording: yes. archive: nightly."] } }
+        },
+        {
+          "id": "archive", "kind": "STORE", "verbs": ["save", "read"],
+          "on": {
+            "save": { "say": ["{via}archive save", "your visit, filed.", "dim"] },
+            "read": { "say": ["cat archive", "visits filed: many. visits read: none."] }
+          }
+        },
+        {
+          "id": "login", "kind": "GUARD",
+          "guard": {
+            "password": "yfirv", "lockMs": 0, "trace": 15,
+            "near": {
+              "vrify": ["login maint vrify", "ACCESS DENIED. That was the old one. Policy 7 says rotate.", "err"],
+              "verify": ["login maint verify", "ACCESS DENIED. That was never the one. Policy 7 says rotate.", "err"]
+            },
+            "do": [{ "effect": "node.free" }, { "goal": "relay" }]
+          }
+        },
+        {
+          "id": "gate.memo", "kind": "STORE", "verbs": ["read"], "sector": "maint",
+          "on": { "read": { "say": ["cat gate.memo", "NEON MARKET GATE: scanner signature required. Scanner modules are sold in the Market. Irony noted."] } }
+        },
+        {
+          "id": "root.frag", "kind": "STORE", "verbs": ["read", "copy"], "sector": "maint",
+          "on": {
+            "read": { "say": ["cat root.frag", "root fragment 1/7 · 9f2c 41ab e07d 3c55 · keep it."] },
+            "copy": { "do": [{ "give": "root.frag.1" }], "say": ["cp root.frag ~/deck", "root fragment 1/7. kept.", "ok"] }
+          }
+        },
+        {
+          "id": "uplink", "kind": "LINK", "sector": "maint",
+          "link": { "reach": ["friendnet", "maglev", "weathersat", "undernet", "dispatch"] }
+        }
+      ],
+      "sectors": [{ "id": "maint", "label": "maintenance", "seal": { "guard": "login" } }]
+    },
+    {
+      "id": "fence",
+      "name": "REGISTRY PROPERTY",
+      "look": "A fence round the antenna's foot. A yellow plate: NO ENTRY.",
+      "status": "antenna access: root only",
+      "layout": {
+        "spot": { "x": 1590, "w": 40, "h": 50 },
+        "dir": { "plate": "up", "gate": "right" },
+        "vision": { "plate": "up", "gate": "right" }
+      },
+      "nouns": [
+        {
+          "id": "plate", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat plate", "REGISTRY PROPERTY · antenna access: root only."] } }
+        },
+        {
+          "id": "gate", "kind": "ACT", "verbs": ["open"],
+          "on": { "open": { "say": ["use gate --open", "ACCESS DENIED. root only. you are not root. you are barely you.", "err"] } }
+        }
+      ]
+    },
+    {
+      "id": "scan",
+      "name": "IDENTITY SCAN",
+      "look": "An arch that reads faces. It reads yours and finds nothing.",
+      "status": "subject: {handle} · signatures: 0/3",
+      "layout": {
+        "spot": { "x": 1790, "w": 44, "h": 84 },
+        "dir": { "scanner": "up", "door": "right" },
+        "vision": { "scanner": "up", "door": "right" }
+      },
+      "nouns": [
+        {
+          "id": "scanner", "kind": "SENSE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat scanner", "subject: {handle} · identity: not found · signatures: 0/3."] } }
+        },
+        {
+          "id": "door", "kind": "ACT", "verbs": ["enter"],
+          "on": { "enter": { "say": ["enter", "nice try.", "err"] } }
+        }
+      ]
+    }
+  ],
+
+  "nodes": [
+    {
+      "id": "dispatch",
+      "name": "DISPATCH",
+      "look": "The delivery robots' head office. Routes, behind shield rings.",
+      "status": [{ "if": "routeFixed", "then": "DLV-9: routed", "else": "DLV-9: status lost" }],
+      "layout": { "board": { "x": 0.14, "y": 0.5 }, "dir": { "fleet": "up", "manual": "left", "routes": "down" } },
+      "nouns": [
+        {
+          "id": "fleet", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat fleet", "DLV-9: status lost. last ping: by a dumpster, downtown. 41 days."] } }
+        },
+        {
+          "id": "manual", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat manual", "shield rings: lock them from the outside in. they do not wait."] } }
+        },
+        {
+          "id": "routes", "kind": "STORE", "verbs": ["read", "send to dlv9"], "sector": "shields",
+          "on": {
+            "read": { "say": ["cat routes", "DLV-9 → NEON MARKET · DUMPLINGS (warm)."] },
+            "send to dlv9": [
+              { "if": "routeFixed", "say": ["cp routes/dlv9 dlv9:route.dat", "DLV-9 already knows. it keeps checking anyway.", "dim"] },
+              { "do": [{ "set": "routeFixed", "to": true }], "say": ["cp routes/dlv9 dlv9:route.dat", "copied. DLV-9 knows where it is going. it is overjoyed. flatly.", "ok"] }
+            ]
+          }
+        }
+      ],
+      "sectors": [{ "id": "shields", "label": "shield rings", "seal": { "sequence": ["outer", "middle", "inner"], "withinMs": 2500 } }]
+    },
+    {
+      "id": "friendnet",
+      "name": "FRIENDNET",
+      "look": "A chat service. Everyone's status line is a little too honest.",
+      "status": "trending: a pigeon",
+      "nouns": [
+        {
+          "id": "feed", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat feed", "moth: gone fishing (not fishing). last seen: 6 days ago. 3 friends reacted: worried."] } }
+        }
+      ]
+    },
+    {
+      "id": "maglev",
+      "name": "MAGLEV",
+      "look": "The train line's public board. Departures, delays, apologies.",
+      "status": "delays: yes",
+      "nouns": [
+        {
+          "id": "board", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat board", "LINE 0: PLAZA CENTRAL only. all other lines: sorry."] } }
+        }
+      ]
+    },
+    {
+      "id": "weathersat",
+      "name": "WEATHER SAT",
+      "look": "A satellite that always says rain. It is always right.",
+      "status": "forecast: rain",
+      "nouns": [
+        {
+          "id": "forecast", "kind": "SENSE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat forecast", "rain. tomorrow: rain. confidence: smug."] } }
+        }
+      ]
+    },
+    {
+      "id": "undernet",
+      "name": "UNDERNET",
+      "look": "A forum of rumours. Reading it is free, believing it costs extra.",
+      "status": "rumours: 9,412",
+      "nouns": [
+        {
+          "id": "rumours", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat rumours", "#1: the noodle fixer talks to ghosts. #2: the Registry deletes people on purpose. #3: pigeons are drones. (one of these is false.)"] } }
+        }
+      ]
+    }
+  ],
+
+  "cables": [
+    { "from": "relay.log:entry", "to": "relay.archive", "verb": "save" },
+    { "from": "gate.scanner:matched", "to": "gate.lock", "verb": "open" },
+    { "from": "gate.door:passed", "to": "gate.lock", "verb": "shut" },
+    { "from": "billboard.ads:next", "to": "billboard.screen", "verb": "show ad" }
+  ],
+
+  "keyring": [
+    { "id": "admin", "kind": "fragment", "label": "till quickstart", "text": "admin" },
+    { "id": "vrify", "kind": "fragment", "label": "V·RIFY sign", "text": "vrify" },
+    { "id": "rule.reverse", "kind": "rule", "label": "policy 7", "rule": "reverse" },
+    { "id": "root.frag.1", "kind": "fragment", "label": "root 1/7", "text": "9f2c41abe07d3c55" },
+    { "id": "glove.left", "kind": "key", "label": "left glove" }
+  ],
+
+  "camera": {
+    "crates": [
+      { "id": "billboard", "x": 18, "y": 24, "w": 104, "h": 40, "label": "REGISTRY PREMIUM" },
+      { "id": "window", "x": 176, "y": 14, "w": 16, "h": 24, "label": "PENTHOUSE" },
+      { "id": "pigeon", "x": 136, "y": 96, "w": 16, "h": 12, "label": "PIGEON" },
+      { "id": "yard", "x": 250, "y": 86, "w": 36, "h": 42, "label": "YARD" }
+    ]
+  },
+
+  "dialogue": {},
+
+  "goals": [
+    { "id": "handle", "text": "tell the fixer your name" },
+    { "id": "till", "text": "crack the noodle till" },
+    { "id": "box", "text": "get into junction box 0x2F" },
+    { "id": "install", "text": "install what the box gave you" },
+    { "id": "relay", "text": "get into the rooftop relay 0x31" },
+    { "id": "gate", "text": "open the Neon Market gate" }
+  ],
+
+  "texts": {
+    "goals.done": "Downtown cleared. the market is open.",
+    "prompt.open": "[E] JACK IN",
+
+    "guard.ok": ["login ****", "ACCESS GRANTED.", "ok"],
+    "guard.wrong.last": ["login {guess}", "ACCESS DENIED. {joke}", "err"],
+    "guard.empty": ["login", "nothing on your keyring to try. read things: admins leave clues.", "dim"],
+    "seal.sequence": ["open {sector}", "sealed. three shield rings spin round it. lock them, in the right order, before they slip.", "dim"],
+
+    "joke.0": "Incident reported to /dev/null.",
+    "joke.1": "This attempt has been logged. Nobody reads the log.",
+    "joke.2": "The Registry thanks you for your interest.",
+
+    "node.box": "0x2F",
+    "node.relay": "0x31",
+    "node.billboard": "0x3C",
+    "free.box": ["", "Welcome back, maintenance. node {node} released from REGISTRY · NODES: {nodes} ACTIVE", "ok"],
+    "free.relay": ["", "Rotation is not security. Noted. node {node} released from REGISTRY · NODES: {nodes} ACTIVE", "ok"],
+    "free.billboard": ["", "the billboard leaves the Registry. node {node} released · NODES: {nodes} ACTIVE", "ok"],
+
+    "till.pay": ["use drawer --open", "the drawer slides out. {tokens} noodle tokens credited to {handle}. Spend them on hints at the stall.", "ok"],
+    "legs.install": ["install legs.so", "installed legs.so. SPACE to jump.", "ok"],
+
+    "dlv.busy": ["{via}use wheels --{verb}", "DLV-9 is busy rolling. it does not multitask.", "dim"],
+    "dlv.lost": ["{via}use wheels --go-home", "DLV-9 does not know where home is. it spins hopefully.", "err"],
+    "dlv.home": ["{via}use wheels --go-home", "DLV-9 is home. it is happy. flatly.", "dim"],
+    "dlv.go": ["{via}use wheels --go-home", "DLV-9 rolls west, to the market. it is overjoyed. flatly.", "ok"],
+    "dlv.out": ["{via}use wheels --follow-you", "DLV-9 rolls back out to you. you have a friend now.", "ok"],
+    "dlv.follow": ["{via}use wheels --follow-you", "DLV-9 follows you with its eyes. it will not leave its spot. you have a friend now, sort of.", "dim"],
+    "dlv.bonk": ["", "DLV-9 bumps the shutter. politely. twice. it backs off.", "err"],
+    "dlv.passed": ["", "DLV-9 rolls through the gate.", "dim"],
+    "gate.end": ["", "DLV-9 is through, and the gate stays open. A delivery robot. Of course. Nobody checks the help.", "ok"],
+
+    "tv.on": ["{via}use screen --show-feed", "the billboard shows CAM-3. a pigeon, four metres wide.", "ok"],
+    "tv.trend": ["", "forty people watch a pigeon. it trends.", "ok"],
+
+    "login.none": ["login", "nothing here asks for a password.", "dim"],
+    "login.none.gate": ["login", "ACCESS DENIED. Scanner signature required. Passwords are so last decade.", "err"],
+    "login.user.box": "maint",
+    "login.user.relay": "maint",
+    "login.user.till": "admin",
+    "login.baduser": ["login {user}", "ACCESS DENIED. Maintenance login only.", "err"],
+    "login.baduser.till": ["login {user}", "ACCESS DENIED. {joke}", "err"],
+
+    "cam.zoom": "ZOOM",
+    "cam.tag": "TAG",
+    "cam.loop": "LOOP",
+    "cam.zoom.wall": ["cam3 zoom", "zoomed into: wall. it is a good wall."],
+    "cam.zoom.billboard": ["cam3 zoom billboard", "REGISTRY PREMIUM. Be seen everywhere. small print: Terms: forever. Cancellation: see Terms. the password is NOT pigeon."],
+    "cam.zoom.window": ["cam3 zoom window", "someone blinks a lamp. long, short, long… on purpose?"],
+    "cam.zoom.pigeon": ["cam3 zoom pigeon", "a pigeon. it looks into the lens. it has seen worse."],
+    "cam.zoom.yard": ["cam3 zoom yard", "it says YARD. it is looking back at the camera."],
+    "cam.zoom.out": ["cam3 zoom --out", "the whole street again.", "dim"],
+    "cam.tag.none": ["cam3 tag", "nothing to tag. the wall declines.", "dim"],
+    "cam.tag.ok": ["cam3 tag {id}", "tagged: {id}."],
+    "cam.tag.pigeon": ["cam3 tag pigeon", "tagged: pigeon #1. it noticed."],
+    "cam.hud": "● CAM-3 · DOWNTOWN",
+    "cam.on": "ON: {id}",
+    "cam.aim": "tap the feed to aim"
+  }
+}

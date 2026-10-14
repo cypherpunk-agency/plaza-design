@@ -12,7 +12,7 @@
  */
 
 import type {
-  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, KeyItem, LineData, LineRef, LogicData, NetData, NounData, SealData, StatusPart, ZoneData,
+  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SealData, StatusPart, ToyKind, WatchdogData, ZoneData,
 } from './types';
 
 /** What the code side of a zone provides and expects (see zone/rules.ts `contractOf`). */
@@ -34,35 +34,46 @@ export interface CodeContract {
 /** One zone to check: its file, what its code provides, and checks only its code knows. */
 export interface ZoneCheck { data: ZoneData; code: CodeContract; extra?: (z: ZoneData) => string[] }
 
-const KINDS = ['SENSE', 'ACT', 'STORE', 'DAEMON', 'GUARD', 'LOG', 'LINK'];
+const KINDS = ['SENSE', 'ACT', 'STORE', 'DAEMON', 'GUARD', 'LOG', 'LINK', 'CLOCK'];
 /** Kinds whose verbs the engine supplies, so they may list none. */
-const ENGINE_VERBS = ['GUARD', 'LINK'];
+const ENGINE_VERBS = ['GUARD', 'LINK', 'CLOCK'];
+const TOYS = ['rings', 'cipher', 'cryptex', 'morse'] as const;
+/** The noun the engine puts on each device of a watchdog's route (zone/model.ts WATCH_NOUN). */
+const WATCH_NOUN = 'watchdog';
+const WATCH_EVENTS = ['arrives', 'leaves'];
 const TONES = ['ok', 'err', 'dim'];
 const DIRS = ['up', 'down', 'left', 'right'];
 const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect', 'give', 'trace', 'unseal'];
 const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
 const KEYS: Record<string, string[]> = {
-  zone: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts'],
+  zone: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog'],
   logic: ['modules'],
-  net: ['nodes', 'cables', 'keyring'],
+  net: ['nodes', 'cables', 'keyring', 'watchdog'],
   module: ['id', 'start', 'foundIn', 'part'],
   device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout'],
-  noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'on'],
-  guard: ['password', 'near', 'tries', 'lockMs', 'trace', 'do'],
+  noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
+  guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
+  rings: ['rings', 'tolerance'],
+  ring: ['speed', 'gap', 'start'],
+  cipher: ['text', 'shift'],
+  cryptex: ['word', 'rings'],
+  morse: ['message', 'unitMs'],
+  clock: ['every', 'first', 'set', 'start'],
+  watchdog: ['id', 'name', 'route', 'dwellMs', 'moveMs'],
   log: ['rate', 'fall', 'when', 'archive', 'linger', 'lockMs'],
   link: ['reach', 'when'],
   sector: ['id', 'label', 'seal'],
   seal: [...SEAL_KEYS, 'withinMs', 'signal'],
   layout: ['spot', 'board', 'dir', 'vision', 'row'],
-  spot: ['x', 'w', 'h'],
+  spot: ['x', 'w', 'h', 'y'],
   pt: ['x', 'y'],
-  item: ['id', 'kind', 'label', 'text', 'rule', 'from'],
+  item: ['id', 'kind', 'label', 'text', 'rule', 'from', 'card'],
   case: ['if', 'do', 'say'],
-  action: ['if', 'to', 'with', ...ACTION_KEYS],
+  action: ['if', 'to', 'with', 'count', ...ACTION_KEYS],
   node: ['if', 'text', 'do', 'choices'],
   dialogue: ['speaker', 'start', 'sayCmd', 'nodes', 'free'],
   goal: ['id', 'text'],
-  cable: ['from', 'to', 'verb'],
+  cable: ['id', 'from', 'to', 'verb', 'fixed'],
   crate: ['id', 'x', 'y', 'w', 'h', 'label'],
   recipe: ['parts', 'makes', 'say'],
 };
@@ -81,6 +92,8 @@ interface Env {
   goals: Set<string>;
   dialogues: string[];
   texts: Record<string, string | LineData>;
+  /** Devices and nodes on a watchdog's route here: they carry the engine's `watchdog` noun. */
+  routes: Set<string>;
 }
 
 /** Everything the checks look things up in: every keyring item, every device and node, by id. */
@@ -88,6 +101,8 @@ interface World {
   keyring: Map<string, { item: KeyItem; file: string }>;
   netNodes: Map<string, DeviceData>;
   logic: LogicData;
+  /** Modules handed out by a `give` step: module id → files that do. */
+  gives: Map<string, Set<string>>;
 }
 
 /**
@@ -105,7 +120,10 @@ export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, en
     const had = keyring.get(k.id);
     if (had) e(`id "${k.id}" is also in ${had.file} (keyring ids are global: the keyring travels between zones)`);
     if (!/^[\w.-]+$/.test(k.id)) e('an id is letters, digits, ".", "-" or "_" (made fragments are stored as join(a,b))');
-    if (!['fragment', 'key', 'rule'].includes(k.kind)) e(`kind "${k.kind}" is not fragment / key / rule`);
+    if (!['fragment', 'key', 'rule', 'card'].includes(k.kind)) e(`kind "${k.kind}" is not fragment / key / rule / card`);
+    if (k.kind === 'card' && !['slow', 'ping'].includes(k.card as string)) e('a card needs "card": slow / ping (what it does in the shield rings)');
+    if (k.kind !== 'card' && k.card !== undefined) e('"card" only goes on a card');
+    if (k.id === 'tokens' || /\.so$/.test(k.id)) e(`id "${k.id}" would be read as ${k.id === 'tokens' ? 'tokens' : 'a module'} by a give step: pick another`);
     if (k.kind === 'rule' && !['reverse', 'upper', 'lower'].includes(k.rule as string)) e('a rule needs "rule": reverse / upper / lower');
     if (k.kind !== 'rule' && k.rule !== undefined) e('"rule" only goes on a rule');
     if (k.from !== undefined && (k.kind !== 'fragment' || !Array.isArray(k.from) || k.from.length !== 2)) e('"from" is two keyring ids, on a fragment (the recipe that makes it)');
@@ -123,13 +141,15 @@ export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, en
   });
 
   const netNodes = new Map(net.nodes.map((n) => [n.id, n]));
-  const world: World = { keyring, netNodes, logic };
+  const world: World = { keyring, netNodes, logic, gives: new Map() };
 
   // the shared net: nodes any zone may reach, so they may use only the engine and their own state
   for (const k of Object.keys(net)) if (!KEYS.net.includes(k)) errs.push(`net.json: unknown field "${k}" (a typo?)`);
   const bare: CodeContract = { effects: [], panels: [], state: [], derived: [], goals: [], texts: {} };
-  const netEnv: Env = { known: new Set(['signal']), writable: new Set(), code: bare, goals: new Set(), dialogues: [], texts: engine.texts };
+  const netRoute = new Set(Array.isArray(net.watchdog?.route) ? net.watchdog!.route : []);
+  const netEnv: Env = { known: new Set(['signal']), writable: new Set(), code: bare, goals: new Set(), dialogues: [], texts: engine.texts, routes: netRoute };
   const nc = checker('net.json', errs, netEnv, world, netNodes);
+  if (net.watchdog) nc.watchdog(net.watchdog, 'watchdog', netNodes);
   net.nodes.forEach((n) => nc.nodeIds.add(n.id));
   nc.dupes(net.nodes.map((d) => d.id), 'nodes', 'id');
   net.nodes.forEach((d) => {
@@ -139,9 +159,19 @@ export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, en
   nc.cables(net.cables, 'cables', net.nodes);
 
   for (const z of zones) {
-    errs.push(...checkZone(z.data, z.code, world, engine));
+    errs.push(...checkZone(z.data, z.code, world, engine, net));
     if (z.extra) errs.push(...z.extra(z.data).map((m) => z.data.id + '.json › ' + m));
   }
+
+  // modules: where each is found (foundIn) must be a file that hands it out, and one handed out must say where
+  const files = new Set(['net', ...zones.map((z) => z.data.id)]);
+  logic.modules.forEach((m) => {
+    const w = `logic.json › modules[${m.id}]`, by = [...(world.gives.get(m.id) ?? [])];
+    if (typeof m.foundIn === 'string') {
+      if (!files.has(m.foundIn)) errs.push(`${w} › foundIn: "${m.foundIn}" is not a zone id (or "net")`);
+      else if (!by.includes(m.foundIn)) errs.push(`${w} › foundIn: ${m.foundIn === 'net' ? 'net.json' : m.foundIn + '.json'} has no { "give": "${m.id}" } step`);
+    } else if (by.length && !m.start) errs.push(`${w}: ${by.map((f) => (f === 'net' ? 'net.json' : f + '.json')).join(', ')} hands it out; say so in "foundIn"`);
+  });
   return errs;
 }
 
@@ -195,7 +225,16 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       if (!noun) err(where, 'emit only works on a noun');
       else if (!(noun.events ?? []).includes(a.emit)) err(where, `this noun has no event "${a.emit}" (add it to "events")`);
     }
-    if ('give' in a && !world.keyring.has(a.give)) err(where, `give "${a.give}": no keyring item with that id (zone or net.json "keyring")`);
+    if ('give' in a) {
+      // a keyring item, a module from logic.json, or tokens (with a count)
+      const mod = world.logic.modules.some((m) => m.id === a.give);
+      if (a.give === 'tokens') { if (!(Number.isInteger(a.count) && a.count! >= 1)) err(where, 'give "tokens" needs "count": how many, a whole number from 1'); }
+      else if (a.count !== undefined) err(where, '"count" only goes with give "tokens"');
+      if (mod) { const f = file === 'net.json' ? 'net' : file.replace(/\.json$/, ''); world.gives.set(a.give, new Set([...(world.gives.get(a.give) ?? []), f])); }
+      else if (a.give !== 'tokens' && !world.keyring.has(a.give)) {
+        err(where, /\.so$/.test(a.give) ? `give "${a.give}": no module with that id in logic.json` : `give "${a.give}": no keyring item with that id (zone or net.json "keyring")`);
+      }
+    } else if ('count' in a) err(where, '"count" only goes with give "tokens"');
     if ('trace' in a) {
       if (!noun) err(where, 'trace only works on a noun (it is the device you are in)');
       if (!num(a.trace)) err(where, 'trace is a number (%; negative lowers it)');
@@ -243,6 +282,64 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     if ('if' in s) cond(s.if, known, w);
   };
 
+  /** A lock toy on a guard: one of four, with its parameters under the same name, and no password. */
+  const toy = (g: GuardData, wg: string, n: NounData) => {
+    const t = g.toy as string;
+    if (!(TOYS as readonly string[]).includes(t)) { err(wg, `toy "${t}" is not one of ${TOYS.join(' / ')}`); return; }
+    if (g.password !== undefined) err(wg, 'a toy guard has no password: the toy is the lock');
+    if ((n.verbs ?? []).includes('probe')) err(`${wg.replace(/ › guard$/, '')}`, '"probe" is the engine\'s verb on a toy guard: leave it out of verbs');
+    const w = `${wg} › ${t}`, p = g[t as ToyKind] as Record<string, unknown> | undefined;
+    if (!p || typeof p !== 'object') { err(wg, `a ${t} toy needs "${t}": its parameters`); return; }
+    keys(p, t, w);
+    if (t === 'rings') {
+      const r = g.rings!, rings = Array.isArray(r.rings) ? r.rings : [];
+      if (!rings.length || rings.length > 5) err(w, 'rings is a list of 1 to 5 rings, outermost first');
+      rings.forEach((x, i) => {
+        const wr = `${w} › rings[${i}]`;
+        keys(x, 'ring', wr);
+        if (!num(x.speed) || x.speed === 0 || Math.abs(x.speed) > 360) err(wr, 'speed is degrees per second, not 0, at most 360 either way');
+        if (!num(x.gap) || x.gap < 10 || x.gap > 180) err(wr, 'gap is degrees, 10 to 180');
+        if (x.start !== undefined && !num(x.start)) err(wr, 'start is degrees (0 = the gap starts at the port)');
+      });
+      if (r.tolerance !== undefined && !(num(r.tolerance) && r.tolerance > 0 && r.tolerance <= 90)) err(w, 'tolerance is degrees, above 0, at most 90');
+    }
+    if (t === 'cipher') {
+      const c = g.cipher!;
+      if (typeof c.text !== 'string' || !/[a-z]/i.test(c.text)) err(w, 'text is the line as shown, enciphered (it needs letters)');
+      if (!(Number.isInteger(c.shift) && c.shift >= 1 && c.shift <= 25)) err(w, 'shift is a whole number, 1 to 25');
+    }
+    if (t === 'cryptex') {
+      const c = g.cryptex!, word = typeof c.word === 'string' ? c.word.toUpperCase() : '';
+      if (!/^[A-Z0-9]{2,8}$/.test(word)) err(w, 'word is 2 to 8 letters or digits');
+      if (c.rings !== undefined) {
+        if (!Array.isArray(c.rings) || c.rings.length !== word.length) err(w, `rings: one string of letters per letter of the word (${word.length})`);
+        else c.rings.forEach((r, i) => {
+          if (typeof r !== 'string' || r.length < 2 || new Set(r.toUpperCase()).size !== r.length) err(`${w} › rings[${i}]`, 'a ring is 2 or more different letters');
+          else if (!r.toUpperCase().includes(word[i])) err(`${w} › rings[${i}]`, `has no "${word[i]}": the word could never be set`);
+        });
+      }
+    }
+    if (t === 'morse') {
+      const mo = g.morse!;
+      if (typeof mo.message !== 'string' || !/^[A-Za-z0-9 ]+$/.test(mo.message) || !mo.message.trim()) err(w, 'message is letters, digits and spaces (what the lamp blinks)');
+      if (mo.unitMs !== undefined && !(num(mo.unitMs) && mo.unitMs >= 80 && mo.unitMs <= 1000)) err(w, 'unitMs is one Morse unit in ms, 80 to 1000');
+    }
+  };
+
+  /** A watchdog: a route of devices and nodes that exist (in `here`), and its rhythm. */
+  const watchdog = (wd: WatchdogData, where: string, here: Map<string, DeviceData>) => {
+    keys(wd, 'watchdog', where);
+    if (wd.id !== undefined && (typeof wd.id !== 'string' || !/^[\w-]+$/.test(wd.id))) err(where, 'id is letters, digits, "-" or "_"');
+    if (wd.name !== undefined && (typeof wd.name !== 'string' || !wd.name)) err(where, 'name is text (what the board calls it)');
+    if (!Array.isArray(wd.route) || !wd.route.length) err(where, 'route lists the device and node ids it walks, in order');
+    else {
+      wd.route.forEach((id, i) => { if (!here.has(id)) err(`${where} › route[${i}]`, `"${id}" is no device or node here`); });
+      dupes(wd.route, where + ' › route', 'stop');
+    }
+    if (!(num(wd.dwellMs) && wd.dwellMs > 0)) err(where, 'dwellMs is how long it sits on each, ms (above 0)');
+    if (!(num(wd.moveMs) && wd.moveMs >= 0)) err(where, 'moveMs is how long it walks to the next, ms (0 or more)');
+  };
+
   const device = (d: DeviceData, where: string) => {
     keys(d, 'device', where);
     const local = Object.keys(d.state ?? {});
@@ -271,14 +368,18 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       for (const v of Object.keys(n.on ?? {})) if (v !== '*' && !verbs.includes(v)) err(`${w} › on`, `"${v}" is not one of its verbs`);
       for (const v of verbs) if (!(v in (n.on ?? {})) && !('*' in (n.on ?? {}))) err(`${w} › on`, `verb "${v}" does nothing (add it, or a "*" entry)`);
       if (n.sector !== undefined && !sectors.some((s) => s.id === n.sector)) err(w, `sector "${n.sector}" is not one of this device's sectors`);
-      for (const [f, kind] of [['guard', 'GUARD'], ['log', 'LOG'], ['link', 'LINK']] as const) {
+      if (n.id === WATCH_NOUN && env.routes.has(d.id)) err(w, `"${WATCH_NOUN}" is the engine's noun on a device the watchdog visits: rename this one`);
+      for (const [f, kind] of [['guard', 'GUARD'], ['log', 'LOG'], ['link', 'LINK'], ['clock', 'CLOCK']] as const) {
         if (n.kind === kind && !n[f]) err(w, `a ${kind} noun needs "${f}"`);
         if (n[f] && n.kind !== kind) err(w, `"${f}" only goes on a ${kind} noun`);
       }
       if (n.guard) {
         const g = n.guard, wg = `${w} › guard`;
         keys(g, 'guard', wg);
-        if (!list(g.password).length || list(g.password).some((p) => typeof p !== 'string' || !p.trim())) err(wg, 'needs a password (or a list of them)');
+        if (g.toy !== undefined) toy(g, wg, n);
+        else if (g.password === undefined || !list(g.password).length || list(g.password).some((p) => typeof p !== 'string' || !p.trim())) err(wg, 'needs a password (or a list of them), or a "toy"');
+        for (const t of TOYS) if (g[t] !== undefined && g.toy !== t) err(wg, `"${t}" holds a ${t} toy's parameters: it needs "toy": "${t}"`);
+        if (g.say !== undefined) line(g.say, `${wg} › say`);
         for (const [k, v] of Object.entries(g.near ?? {})) line(v, `${wg} › near.${k}`);
         if (g.tries !== undefined && !(Number.isInteger(g.tries) && g.tries >= 1)) err(wg, 'tries is a whole number, 1 or more');
         if (g.lockMs !== undefined && !(num(g.lockMs) && g.lockMs >= 0)) err(wg, 'lockMs is a time in ms (0: never locks)');
@@ -308,12 +409,22 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         });
         cond(n.link.when, known, wl + ' › when');
       }
+      if (n.clock) {
+        const c = n.clock, wc = `${w} › clock`;
+        keys(c, 'clock', wc);
+        if (!(num(c.every) && c.every >= 100)) err(wc, 'every is the beat in ms, 100 or more');
+        if (c.first !== undefined && !(num(c.first) && c.first >= 0)) err(wc, 'first is ms before the first beat, 0 or more');
+        if (c.start !== undefined && typeof c.start !== 'boolean') err(wc, 'start is true or false (running when the zone starts)');
+        if (c.set !== undefined && !writable.has(c.set)) err(wc, `set "${c.set}": not a state key (it holds the last event)`);
+        if (!(n.events ?? []).length) err(w, 'a CLOCK needs events: what it raises, in turn (["tick"], or ["night", "day"])');
+        for (const v of ['start', 'stop']) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a CLOCK: leave it out of verbs`);
+      }
       cases(n, w, known, writable, d);
     }
     if (d.layout) {
       const wl = `${where} › layout`, l = d.layout;
       keys(l, 'layout', wl);
-      if (l.spot) { keys(l.spot, 'spot', wl + ' › spot'); if (![l.spot.x, l.spot.w, l.spot.h].every(num)) err(wl + ' › spot', 'x, w and h are numbers (world units)'); }
+      if (l.spot) { keys(l.spot, 'spot', wl + ' › spot'); if (![l.spot.x, l.spot.w, l.spot.h].every(num)) err(wl + ' › spot', 'x, w and h are numbers (world units)'); if (l.spot.y !== undefined && !(num(l.spot.y) && l.spot.y >= 0)) err(wl + ' › spot', 'y is a height above the street, 0 or more'); }
       if (l.board) { keys(l.board, 'pt', wl + ' › board'); if (![l.board.x, l.board.y].every((v) => num(v) && v >= 0 && v <= 1)) err(wl + ' › board', 'x and y are fractions of the board, 0 to 1'); }
       const ids = new Set([...d.nouns.map((n) => n.id), ...sectors.filter((s) => 'sequence' in s.seal).map((s) => s.id)]);
       for (const f of ['dir', 'vision'] as const) for (const [nid, dir] of Object.entries(l[f] ?? {})) {
@@ -338,11 +449,18 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
    * the devices whose logs must find their archive cable in this list.
    */
   const cables = (cbs: CableData[], field: string, owners: DeviceData[]) => {
-    const nounAt = (key: string) => { const [d, n] = split(key); return all.get(d)?.nouns.find((x) => x.id === n); };
+    const nounAt = (key: string): NounData | undefined => {
+      const [d, n] = split(key);
+      // the engine's watchdog noun, on a device the watchdog visits: it raises arrives / leaves and takes no orders
+      if (n === WATCH_NOUN && env.routes.has(d) && all.has(d)) return { id: WATCH_NOUN, kind: 'WATCH' as Kind, events: WATCH_EVENTS, verbs: [] };
+      return all.get(d)?.nouns.find((x) => x.id === n);
+    };
     const sealAt = (key: string) => { const [d, n] = split(key); const s = all.get(d)?.sectors?.find((x) => x.id === n); return s && 'sequence' in s.seal ? s.seal : undefined; };
     cbs.forEach((cb, i) => {
-      const w = `${field}[${i}]`;
+      const w = `${field}[${cb.id ?? i}]`;
       keys(cb, 'cable', w);
+      if (cb.id !== undefined && (typeof cb.id !== 'string' || !/^[\w.-]+$/.test(cb.id))) err(w, 'id is letters, digits, ".", "-" or "_" (saves keep cuts by it)');
+      if (cb.fixed !== undefined && typeof cb.fixed !== 'boolean') err(w, 'fixed is true or false (true: it cannot be cut)');
       const [fromKey, ev] = cb.from.split(':');
       const from = nounAt(fromKey);
       if (!from) err(w, `from "${cb.from}": no such device.noun`);
@@ -351,10 +469,12 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       if (sq) { if (!sq.sequence.includes(cb.verb)) err(w, `verb "${cb.verb}" is not in the seal's sequence`); return; }
       if (!to) { err(w, `to "${cb.to}": no such device.noun`); return; }
       if (to.kind === 'GUARD') { err(w, `to "${cb.to}": a GUARD wants a person at the keyboard, not a cable`); return; }
-      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...to.link.reach.map((id) => 'connect ' + id)] : [])];
+      if ((to.kind as string) === 'WATCH') { err(w, `to "${cb.to}": the watchdog takes no orders (wire from its arrives / leaves)`); return; }
+      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...to.link.reach.map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : [])];
       if (!verbs.includes(cb.verb)) err(w, `verb "${cb.verb}" is not one of ${cb.to}'s verbs`);
     });
     dupes(cbs.map((cb) => cb.from + ' → ' + cb.to), field, 'cable');
+    dupes(cbs.map((cb) => cb.id ?? cb.from + '>' + cb.to), field, 'cable id');
     // a log only records while its cable to the archive is there: one must exist at the start
     for (const d of owners) for (const n of d.nouns) {
       if (n.log?.archive && !cbs.some((cb) => cb.from.startsWith(d.id + '.' + n.id + ':') && cb.to === n.log!.archive)) {
@@ -363,7 +483,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     }
   };
 
-  return { err, keys, dupes, line, cond, action, device, cables, nodeIds };
+  return { err, keys, dupes, line, cond, action, device, cables, nodeIds, watchdog };
 }
 
 /**
@@ -371,7 +491,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
  * that zone (their effects and conditions must make sense there). Problems in
  * the modules are reported against `logic.json`.
  */
-export function checkZone(z: ZoneData, code: CodeContract, world: World, engine: EngineData): string[] {
+export function checkZone(z: ZoneData, code: CodeContract, world: World, engine: EngineData, net?: NetData): string[] {
   const errs: string[] = [];
   const file = z.id + '.json';
   const texts = { ...engine.texts, ...z.texts };
@@ -379,12 +499,21 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
     known: new Set([...Object.keys(z.state), ...code.derived, 'signal']),
     writable: new Set(Object.keys(z.state)),
     code, goals: new Set(z.goals.map((g) => g.id)), dialogues: Object.keys(z.dialogue), texts,
+    routes: new Set([...(Array.isArray(z.watchdog?.route) ? z.watchdog!.route : []), ...(Array.isArray(net?.watchdog?.route) ? net!.watchdog!.route : [])]),
   };
   const nodes = z.nodes ?? [];
   const all = new Map<string, DeviceData>([...world.netNodes, ...nodes.map((n) => [n.id, n] as const), ...z.devices.map((d) => [d.id, d] as const)]);
   const c = checker(file, errs, env, world, all);
   nodes.forEach((n) => c.nodeIds.add(n.id));
   const { err, keys, dupes, line } = c;
+
+  // ---------- the watchdog ----------
+  if (z.watchdog) {
+    c.watchdog(z.watchdog, 'watchdog', all);
+    const id = z.watchdog.id ?? 'watchdog', other = net?.watchdog;
+    if (other && (other.id ?? 'watchdog') === id) err('watchdog', `net.json's watchdog has the id "${id}" too: give one of them another id`);
+    (z.watchdog.route ?? []).forEach((d) => { if (other?.route?.includes(d)) err('watchdog › route', `"${d}" is on net.json's watchdog route too: one watchdog per device`); });
+  }
 
   keys(z, 'zone', '');
 
