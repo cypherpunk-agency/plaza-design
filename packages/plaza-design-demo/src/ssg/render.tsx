@@ -613,6 +613,36 @@ export const demoStyles = `
     html.touch #vision .hack-status { bottom: 56px; max-width: 70%; }
 
     /* HACK and BOARD over the canvas, in a zone on the hacking system (game/zone/host.ts) */
+    /* The key bar: every key and what it does (game/keybar.ts); the zone's HACK/BOARD join it */
+    #key-bar {
+      position: absolute;
+      top: calc(var(--game-top, 40px) + var(--spacing-2));
+      left: var(--spacing-3);
+      right: var(--spacing-3);
+      z-index: 6;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--spacing-2);
+      pointer-events: none;
+      font-family: var(--font-mono);
+    }
+
+    html.game-mode #key-bar { display: flex; }
+    html.game-mode.cutscene #key-bar,
+    html.game-mode.game-menu #key-bar { display: none; }
+    #key-bar .kb-moves,
+    #key-bar .kb-actions { display: flex; flex-wrap: wrap; gap: var(--spacing-2); align-items: center; }
+    #key-bar .kb-actions { justify-content: flex-end; pointer-events: auto; }
+    #key-bar .kb-hint { font-size: 10px; color: rgba(255, 217, 165, 0.75); background: rgba(0, 0, 0, 0.55); padding: 1px 5px; }
+    #key-bar .kb-hint[hidden] { display: none; }
+    #key-bar kbd { font: inherit; color: var(--color-accent-400); border: var(--border-thin) solid #0d4a52; padding: 0 3px; margin-right: 2px; }
+    #key-bar .hack-btn { background: rgba(0, 0, 0, 0.65); }
+    #key-bar .hack-btn.on { color: var(--color-success); border-color: var(--color-success); }
+    #key-bar #zone-btns { position: static; }
+    #key-bar #zone-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
+    html.touch #key-bar .kb-moves { display: none; }
+
     #zone-btns {
       position: absolute;
       top: calc(var(--game-top, 40px) + var(--spacing-2));

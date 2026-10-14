@@ -21,6 +21,7 @@ import {
   DOORS, DOORS_CLOSE, drawCityMap, EDGES, drawFlight, drawMetroStairs, drawTaxiPad, DRIVER_BROKE, FARE, FLIGHT, isDoorId, LINE, RIDE,
   seenFlag, STAND_IDS, standOf, STANDS, STATIONS, stationOf, type DoorId, type MapState, type Stand, type Station, type Zone,
 } from './city';
+import { KeyBar } from './keybar';
 import { Menu } from './menu';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
@@ -77,13 +78,14 @@ export class Game {
   private machine: string | null = null;
   private showEnd = false;
   private toast: { text: string; until: number } | null = null;
-  private seenControls = false;
   private touch = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
   private ships: Ship[] = [];
   private windows = new Map<number, [number, number, number][]>();
   private drops: [number, number, number, number][] = [];
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   private zone: Zone = 'downtown';
+  /** Every key and what it does, along the top. */
+  private keyBar: KeyBar;
   private yard: ZoneHost;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
@@ -115,6 +117,8 @@ export class Game {
 
     this.yard = this.hostZone(YARD_ZONE);
     this.yard.onClose = () => this.canvas.focus();
+    this.keyBar = new KeyBar(host.windowEl, () => this.canvas.focus());
+    this.keyBar.adopt(document.getElementById('zone-btns'));
     this.menu = new Menu(host.windowEl, {
       save: () => this.save,
       zone: () => ({ id: this.zone, name: this.zoneName() }),
@@ -221,6 +225,7 @@ export class Game {
     // The pause menu: the world holds still under it (the last frame stays on the canvas).
     if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
+    this.keyBar.sync(this.save.jump);
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     if (!this.reduced || this.t < 1) this.t += dt;
     this.clock += dt;
@@ -261,9 +266,9 @@ export class Game {
     }
     if (k === '/') { e.preventDefault(); this.openDeck(); return; }
     // the deck's map app: the city as far as you know it
-    if (k === 'Tab') { e.preventDefault(); this.seenControls = true; this.showMap(); return; }
-    if (this.zone === 'yard' && (k === 'b' || k === 'B')) { this.seenControls = true; this.yard.toggleBoard(); return; }
-    if (this.zone === 'yard' && (k === 'h' || k === 'H')) { this.seenControls = true; this.yard.toggleVision(); return; }
+    if (k === 'Tab') { e.preventDefault(); this.showMap(); return; }
+    if (this.zone === 'yard' && (k === 'b' || k === 'B')) { this.yard.toggleBoard(); return; }
+    if (this.zone === 'yard' && (k === 'h' || k === 'H')) { this.yard.toggleVision(); return; }
     if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
     if (k === 'e' || k === 'E' || k === 'Enter') { this.interact(); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
@@ -280,7 +285,6 @@ export class Game {
     if (!this.machine) {
       if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
     }
-    this.seenControls = true;
     this.term.focus();
   }
 
@@ -317,7 +321,6 @@ export class Game {
     this.bubble = null;
     this.showEnd = false;
     this.toast = null;
-    this.seenControls = false;
     this.save = newSave();
     this.yard.reset(); // the yard's runtime back to a first visit, written into the new save
     storeSave(this.save);
@@ -369,7 +372,7 @@ export class Game {
     this.yard.hover = id;
     this.canvas.style.cursor = id ? 'pointer' : '';
     if (press && this.yard.visionOn) { this.yard.poke(id); return; }
-    if (press && id) { e.preventDefault(); this.seenControls = true; this.yard.openDevice(id); }
+    if (press && id) { e.preventDefault(); this.yard.openDevice(id); }
   }
 
   /** Hack vision hangs in the world: give the yard this frame's world → CSS px mapping (as `sx` and `y` draw it). */
@@ -435,7 +438,6 @@ export class Game {
   }
 
   private interact() {
-    this.seenControls = true;
     const b = this.bubble;
     if (b) {
       const full = b.pages[b.page].length;
@@ -484,7 +486,7 @@ export class Game {
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
     const dir = (right ? 1 : 0) - (left ? 1 : 0);
-    if (dir) { p.face = dir; this.seenControls = true; if (this.bubble && Math.abs(p.x - this.bubble.x) > 140) this.bubble = null; }
+    if (dir) { p.face = dir; if (this.bubble && Math.abs(p.x - this.bubble.x) > 140) this.bubble = null; }
     p.moving = !!dir;
     p.x = Math.max(12, Math.min(this.levelW - 12, p.x + dir * speed * dt));
     // Walking into an open border (the yard's passage, a street's end) leaves without E.
@@ -1123,16 +1125,13 @@ export class Game {
     const x = this.x, s = this.save;
     x.save();
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
-    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.zoneName(), 8, 12);
+    // below the key bar along the top (its height in world units)
+    const top = (this.keyBar.root.offsetHeight + 8) * (this.canvas.width / (this.canvas.clientWidth || 1)) / this.k;
+    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.zoneName(), 8, top + 10);
     x.fillStyle = 'rgba(255,217,165,.7)';
-    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (sound.enabled ? ' · SOUND' : ''), 8, 23);
-    if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, 34); }
-    if (!this.seenControls || this.t < 600) {
-      x.fillStyle = 'rgba(255,217,165,.55)';
-      if (this.zone === 'yard') x.fillText(this.touch ? 'tap things to open them · HACK see everything · BOARD wire, add timers' : 'tap or click things to open them · E near things · H hack vision · B board · / terminal · ESC menu', 8, this.touch ? 45 : this.viewH - 8);
-      else if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC menu', 8, 34);
-      else x.fillText('<- -> walk · SHIFT run · E talk / jack in · TAB map · / terminal · M sound · ESC menu', 8, this.viewH - 8);
-    }
+    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-'), 8, top + 21);
+    if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, top + 32); }
+    // the keys and what they do: the key bar along the top (keybar.ts)
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
       x.fillText(this.toast.text, this.sx(this.p.x), this.y(this.p.y + 56));
