@@ -4,8 +4,8 @@
  * A node skyline in front of a banded sun, standing on a reflective floor that a
  * pulse rolls across every few seconds. Rooftop cables carry packets to one big
  * antenna, which transmits them into the sky and receives others. Three towers
- * carry beacons for the live projects; hovering a route lights its beacon. Stars
- * near the cursor link into a mesh.
+ * carry beacons for the live projects (beams up to the header bar); hovering a
+ * route lights its beacon. Stars near the cursor link into a mesh.
  *
  * Colours come from the theme tokens and follow `plaza-theme-change`. The canvas
  * is drawn at device-pixel resolution, the horizon sits below the call to action,
@@ -210,27 +210,20 @@ export function initCityScene(
     return el ? el.getBoundingClientRect().bottom : 0;
   }
 
-  function beacons(labels: boolean) {
+  function beacons() {
     const topY = ceilingY();
-    x.font = `${Math.round(13 * Math.max(U, 0.85))}px 'IBM Plex Mono', monospace`;
-    x.textAlign = 'center'; x.textBaseline = 'top';
     towers.filter((z) => z.beacon).forEach((tw, i) => {
       const cx = tw.x + tw.w / 2, tp = HY - tw.h, on = tw.beacon === lit;
       const p = on ? 1 : (Math.sin(t * 0.025 + i * 2.1) + 1) / 2;
       x.fillStyle = rgba(col.a, 0.9); x.fillRect(cx - 1, tp - 14 * U, 2, 14 * U);
-      // The beam shines all the way up to the bar.
+      // One unbroken beam from the rooftop light up to the bar.
       const g = x.createLinearGradient(0, tp - 14 * U, 0, topY);
       g.addColorStop(0, rgba(col.a, (on ? 0.55 : 0.28) + 0.3 * p));
       g.addColorStop(1, rgba(col.a, on ? 0.35 : 0.1));
       const bw = (on ? 6 : 4) * U;
-      x.save();
-      if (labels) clipOutUI();
       x.fillStyle = g; x.fillRect(cx - bw / 2, topY, bw, tp - 14 * U - topY);
-      x.restore();
       x.fillStyle = rgba(col.a, p > 0.5 ? 1 : 0.4); x.fillRect(cx - 3 * U, tp - 18 * U, 6 * U, 6 * U);
-      if (labels) { x.fillStyle = rgba(col.a, on ? 1 : 0.75); x.fillText(tw.beacon!, cx, topY + 10 * U); }
     });
-    x.textBaseline = 'alphabetic';
   }
 
   function dot(p: [number, number], c: string, sz: number) {
@@ -300,7 +293,7 @@ export function initCityScene(
     x.save();
     x.beginPath(); x.rect(0, HY, W, H - HY); x.clip();
     x.translate(0, HY); x.scale(1, -0.55); x.translate(0, -HY);
-    sun(); city(0.4); beacons(false);
+    sun(); city(0.4); beacons();
     x.restore();
     x.fillStyle = col.bg;
     for (let y = HY + 3, i = 0; y < H; y += 5 + i * 0.35, i++) x.fillRect(0, y, W, 1 + i * 0.12);
@@ -335,7 +328,7 @@ export function initCityScene(
     const hg = x.createLinearGradient(0, HY - 18, 0, HY + 18);
     hg.addColorStop(0, rgba(col.p, 0)); hg.addColorStop(0.5, rgba(col.p, 0.5)); hg.addColorStop(1, rgba(col.p, 0));
     x.fillStyle = hg; x.fillRect(0, HY - 18, W, 36);
-    sun(); city(1); cables(); beacons(W >= 640);
+    sun(); city(1); cables(); beacons();
     if (!reduced) packetsStep(k);
   }
 
