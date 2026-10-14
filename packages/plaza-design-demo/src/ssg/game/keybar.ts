@@ -63,7 +63,7 @@ export class KeyBar {
   }
 
   /** The zone's own buttons (HACK, BOARD) sit in the same strip, first. */
-  adopt(el: HTMLElement | null) { if (el && el.parentElement !== this.actions) this.actions.prepend(el); }
+  adopt(el: HTMLElement | null) { if (el && el.parentElement !== this.actions) this.actions.insertBefore(el, this.actions.querySelector('.hack-btn:not(#zone-btns *)')); }
 
   /** Jump only shows once you have legs.so; SOUND shows whether it's on. */
   sync(canJump: boolean) {

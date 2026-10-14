@@ -42,6 +42,13 @@ export interface ZoneRules {
   needs?: { state?: string[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
   /** Extra checks only this zone's code knows (a crate the parcel sits in). One message per problem. */
   check?: (z: ZoneData) => string[];
+  /**
+   * The zone's own clock, every few hundred ms while the zone is on screen
+   * (`dt` in ms): a schedule that fires on a rhythm, a router warming up. Keep
+   * what changes every tick in `m.scratch` (not saved) and call `w.changed()`
+   * only when something visible changed.
+   */
+  tick?: (w: World, dt: number) => void;
 }
 
 /** The engine's own texts, by kind: every zone has them (engine.json), and may override them with the same kind. */

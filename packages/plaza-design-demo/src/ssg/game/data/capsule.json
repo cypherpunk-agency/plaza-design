@@ -1,0 +1,324 @@
+{
+  "id": "capsule",
+  "name": "Capsule 7B",
+
+  "state": {
+    "plugOn": false,
+    "sun": false,
+    "pixelAt": "bed",
+    "doorOpen": false,
+    "rent": "pending"
+  },
+
+  "tuning": {
+    "nightEveryMs": 4000,
+    "bootMs": 1500,
+    "rebootMs": 4000,
+    "pixelMoveMs": 2500,
+    "roomTemp": 22,
+    "idleTemp": 45,
+    "hotTemp": 60,
+    "rebootTemp": 75,
+    "heatPerS": 2,
+    "coolPerS": 4,
+    "steamMs": 2500
+  },
+
+  "devices": [
+    {
+      "id": "lock",
+      "name": "DOOR LOCK",
+      "look": "The lock panel by your door. It answers to CONCIERGE, not to you.",
+      "status": [{ "if": "doorOpen", "then": "unlocked", "else": "locked · rent: {rent}" }],
+      "layout": {
+        "spot": { "x": 76, "w": 18, "h": 62 },
+        "board": { "x": 0.12, "y": 0.28 },
+        "dir": { "bolt": "down", "plate": "up" },
+        "vision": { "bolt": "right", "plate": "up" }
+      },
+      "nouns": [
+        {
+          "id": "bolt", "kind": "ACT", "verbs": ["open"],
+          "on": {
+            "open": [
+              { "if": "doorOpen", "say": ["{via}use bolt --open", "already open. it is just a door now. it always was.", "dim"] },
+              { "say": ["{via}use bolt --open", "LOCK: managed by CONCIERGE. please contact CONCIERGE. CONCIERGE is not reachable by door.", "err"] }
+            ]
+          }
+        },
+        {
+          "id": "plate", "kind": "STORE", "verbs": ["read"],
+          "on": {
+            "read": [
+              { "if": "doorOpen", "say": ["cat plate", "RENT: PAID. HAVE A COMPLIANT DAY."] },
+              { "say": ["cat plate", "RENT: PENDING. DOOR LOCKED FOR YOUR CONVENIENCE."] }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "fridge",
+      "name": "FRIDGE",
+      "look": "A fridge with a note on it, in your handwriting, in a bad mood.",
+      "status": "cold · 1 note",
+      "layout": {
+        "spot": { "x": 122, "w": 30, "h": 68 },
+        "board": { "x": 0.12, "y": 0.72 },
+        "dir": { "note": "up", "inside": "right" },
+        "vision": { "note": "up", "inside": "right" }
+      },
+      "nouns": [
+        {
+          "id": "note", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat note", "\"who set the router to sleep at night? it's a capsule. it is always night in here. —past you\""] } }
+        },
+        {
+          "id": "inside", "kind": "STORE", "verbs": ["open"],
+          "on": { "open": { "say": ["open fridge", "one lemon, a battery, hope. the battery is for Pixel. the lemon is for no one.", "dim"] } }
+        }
+      ]
+    },
+    {
+      "id": "kettle",
+      "name": "KETTLE",
+      "look": "A smart kettle. According to the blinds, it is your morning routine.",
+      "status": "ready",
+      "layout": {
+        "spot": { "x": 186, "w": 22, "h": 50 },
+        "board": { "x": 0.3, "y": 0.72 },
+        "dir": { "kettle": "up" },
+        "vision": { "kettle": "up" }
+      },
+      "nouns": [
+        {
+          "id": "kettle", "kind": "ACT", "verbs": ["boil"], "events": ["boiled"],
+          "on": { "boil": { "do": [{ "effect": "kettle.boil" }, { "emit": "boiled" }], "say": ["{via}use kettle --boil", "it boils. it says so."] } }
+        }
+      ]
+    },
+    {
+      "id": "blinds",
+      "name": "BLINDS",
+      "look": "Motorised blinds. Privacy mode since the rent went pending.",
+      "status": [{ "if": "sun", "then": "open", "else": "closed" }, { "if": "doorOpen", "then": "", "else": " · privacy mode" }],
+      "layout": {
+        "spot": { "x": 262, "w": 64, "h": 96 },
+        "board": { "x": 0.46, "y": 0.28 },
+        "dir": { "motor": "down" },
+        "vision": { "motor": "down" }
+      },
+      "nouns": [
+        {
+          "id": "motor", "kind": "ACT", "verbs": ["open", "close"],
+          "on": {
+            "open": [
+              { "if": "sun", "say": ["{via}use motor --open", "already open. the sun is doing its best.", "dim"] },
+              { "if": "doorOpen", "do": [{ "set": "sun", "to": true }], "say": ["{via}use motor --open", "the blinds roll up. privacy mode is off: you exist on paper again."] },
+              { "if": "!signal", "say": ["use motor --open", "BLINDS: privacy mode (rent: pending). they only open for your morning routine.", "err"] },
+              { "do": [{ "set": "sun", "to": true }], "say": ["signal → motor --open", "morning routine detected. the blinds roll up. sun. it lands on the floor.", "ok"] }
+            ],
+            "close": { "do": [{ "set": "sun", "to": false }], "say": ["{via}use motor --close", "the blinds roll down. night again, as the plug likes it.", "dim"] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pc",
+      "name": "HOME-PC",
+      "look": "Your computer. Its fan has been sighing since Tuesday.",
+      "status": [{ "if": "doorOpen", "then": "outbox: empty", "else": "outbox: 1 waiting" }],
+      "layout": {
+        "spot": { "x": 352, "w": 36, "h": 64 },
+        "board": { "x": 0.66, "y": 0.72 },
+        "dir": { "outbox": "right", "inbox": "up", "notes": "left" },
+        "vision": { "outbox": "right", "inbox": "up", "notes": "left" }
+      },
+      "nouns": [
+        {
+          "id": "outbox", "kind": "STORE", "verbs": ["read", "open"], "events": ["ready"],
+          "on": {
+            "read": [
+              { "if": "doorOpen", "say": ["ls outbox", "outbox: empty. receipt_rent.pdf was delivered and filed, twice.", "dim"] },
+              { "say": ["ls outbox", "receipt_rent.pdf · rent, capsule 7B · waiting for a network since Tuesday."] }
+            ],
+            "open": { "do": [{ "emit": "ready" }], "say": ["{via}open outbox", "receipt_rent.pdf: ready to send. somebody has to be listening."] }
+          }
+        },
+        {
+          "id": "inbox", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat inbox", "1 message, from Moth, 3 days ago: \"if I go dark, my place is yours. my key is with the noodle fixer. follow the trains.\""] } }
+        },
+        {
+          "id": "notes", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat notes", "\"Pixel naps on whatever is warmest. last winter: the router. the router did not survive the winter.\""] } }
+        }
+      ]
+    },
+    {
+      "id": "plug",
+      "name": "SMART PLUG",
+      "look": "A smart plug with a schedule. The schedule has one rule and no doubts.",
+      "status": [{ "if": "plugOn", "then": "on", "else": "off" }, " · schedule: night"],
+      "layout": {
+        "spot": { "x": 396, "w": 18, "h": 26 },
+        "board": { "x": 0.5, "y": 0.72 },
+        "dir": { "power": "up", "schedule": "down" },
+        "vision": { "power": "up", "schedule": "left" }
+      },
+      "nouns": [
+        {
+          "id": "power", "kind": "ACT", "verbs": ["on", "off"], "current": "plugOn",
+          "on": {
+            "on": [
+              { "if": "plugOn", "say": ["{via}use power --on", "already on.", "dim"] },
+              { "do": [{ "set": "plugOn", "to": true }, { "effect": "router.boot" }], "say": ["{via}use power --on", "click. the router blinks awake. probably."] }
+            ],
+            "off": { "do": [{ "effect": "plug.off" }] }
+          }
+        },
+        {
+          "id": "schedule", "kind": "SENSE", "verbs": ["read"], "events": ["night"],
+          "on": { "read": { "say": ["cat schedule", "rule 1: at night, plug off. it is night. it is always night in here."] } }
+        }
+      ]
+    },
+    {
+      "id": "router",
+      "name": "ROUTER",
+      "look": "Your router. Small, warm, and the only way out of here that doesn't need a door.",
+      "status": [
+        { "if": "routerUp", "then": "online" },
+        { "if": "booting", "then": "booting…" },
+        { "if": "plugOn", "else": "no power" },
+        { "if": "plugOn", "then": " · {temp}°C" },
+        { "if": "pixelOnRouter", "then": " · Pixel asleep on top" }
+      ],
+      "layout": {
+        "spot": { "x": 438, "w": 24, "h": 44 },
+        "board": { "x": 0.84, "y": 0.72 },
+        "dir": { "uplink": "up", "temp": "right" },
+        "vision": { "uplink": "up", "temp": "right" }
+      },
+      "nouns": [
+        { "id": "uplink", "kind": "LINK", "link": { "reach": ["concierge"], "when": "routerUp" } },
+        {
+          "id": "temp", "kind": "SENSE", "verbs": ["read"],
+          "on": {
+            "read": [
+              { "if": "!plugOn", "say": ["cat temp", "{temp}°C. no power, no opinions.", "dim"] },
+              { "if": "pixelOnRouter", "say": ["cat temp", "{temp}°C and rising. Pixel is asleep on top. Pixel ignores you, flawlessly.", "err"] },
+              { "say": ["cat temp", "{temp}°C. comfortable."] }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+
+  "nodes": [
+    {
+      "id": "concierge",
+      "name": "CONCIERGE",
+      "look": "Your building's door daemon. Polite, petty, fond of forms.",
+      "status": [{ "if": "doorOpen", "then": "7B: paid · door unlocked", "else": "7B: rent pending · door locked" }],
+      "layout": {
+        "board": { "x": 0.84, "y": 0.28 },
+        "dir": { "desk": "left", "ledger": "up", "concierge": "down" },
+        "vision": { "desk": "left", "ledger": "up", "concierge": "down" }
+      },
+      "nouns": [
+        {
+          "id": "desk", "kind": "ACT", "verbs": ["verify"],
+          "on": {
+            "verify": [
+              { "if": "!signal", "say": ["use desk --verify", "CONCIERGE: \"verification requires a document. you are not a document.\"", "err"] },
+              { "if": "doorOpen", "say": ["signal → desk --verify", "CONCIERGE: \"verified. again. I have filed the second one under 'enthusiasm'.\"", "dim"] },
+              { "if": "!routerUp", "say": ["signal → desk --verify", "the receipt goes nowhere. the router is down.", "err"] },
+              { "if": "hot", "say": ["signal → desk --verify", "receipt_rent.pdf: 40% sent… packet loss. the router is at {temp}°C. something warm is lying on it.", "err"] },
+              {
+                "do": [{ "set": "doorOpen", "to": true }, { "set": "rent", "to": "paid" }, { "goal": "door" }],
+                "say": ["signal → desk --verify", "CONCIERGE: \"payment verified. how unexpected. your door is unlocked. form 7B-12 is attached, and its own form is attached to it.\"", "ok"]
+              }
+            ]
+          }
+        },
+        {
+          "id": "ledger", "kind": "STORE", "verbs": ["read"],
+          "on": {
+            "read": [
+              { "if": "doorOpen", "say": ["cat ledger", "7B: paid. late, but in triplicate."] },
+              { "say": ["cat ledger", "7B: rent pending. reason: no receipt. reason for the reason: see form 7B-12."] }
+            ]
+          }
+        },
+        {
+          "id": "concierge", "kind": "DAEMON", "verbs": ["talk"],
+          "on": { "talk": { "do": [{ "open": "talk" }] } }
+        }
+      ]
+    }
+  ],
+
+  "cables": [
+    { "from": "plug.schedule:night", "to": "plug.power", "verb": "off" }
+  ],
+
+  "dialogue": {
+    "concierge": {
+      "speaker": "CONCIERGE · door daemon",
+      "start": "start",
+      "sayCmd": "say \"{line}\" > concierge",
+      "nodes": {
+        "start": [
+          { "if": "doorOpen", "text": "Ah. The tenant of 7B, paid and present. I have prepared a form congratulating you.", "choices": [["Thanks, I think.", "bye"], ["When's maintenance?", "tuesday"]] },
+          { "text": "CONCIERGE, at your service, within reason. Your rent is pending.", "choices": [["I paid.", "paid"], ["Open the door.", "door"], ["Nice door frame.", "oak"], ["When's maintenance?", "tuesday"]] }
+        ],
+        "paid": { "text": "Then there is a receipt. Receipts are sent, not described. I do not accept verbal receipts.", "choices": [["It's stuck in my outbox.", "outbox"], ["Let me start over.", "start"]] },
+        "outbox": { "text": "Then it is your outbox's problem, and I wish it well. When a document reaches my desk, I verify. I live to verify.", "choices": [["Noted.", "bye"]] },
+        "door": { "text": "The door opens for paid tenants. You are a tenant. The rest is paperwork, and the paperwork has paperwork.", "choices": [["Let me start over.", "start"]] },
+        "oak": { "text": "It is original oak-effect. Nobody ever notices.", "choices": [["I noticed.", "noticed"]] },
+        "noticed": { "text": "…You may pass. The conversation, not the door. Wipe your feet. Metaphorically.", "choices": [["Let me start over.", "start"]] },
+        "tuesday": { "text": "Maintenance comes on Tuesdays. It is not Tuesday. It is never Tuesday when it matters.", "choices": [["It's Tuesday somewhere.", "somewhere"]] },
+        "somewhere": { "text": "…That is technically true. I respect technically true. It changes nothing.", "choices": [["Fair.", "start"]] },
+        "manners": { "text": "Manners. In this economy. Fine. Still no.", "choices": [["Let me start over.", "start"]] },
+        "bye": { "text": "Do have a compliant day." }
+      },
+      "free": {
+        "match": "please|thank",
+        "goto": "manners",
+        "miss": "CONCIERGE files that under 'unclear'.",
+        "retry": "Try again. In triplicate.",
+        "retryGoto": "start"
+      }
+    }
+  },
+
+  "goals": [
+    { "id": "router", "text": "get the router online, and keep it on" },
+    { "id": "concierge", "text": "find out who locked your door" },
+    { "id": "pixel", "text": "get the cat off the router" },
+    { "id": "door", "text": "get your rent receipt to CONCIERGE" },
+    { "id": "out", "text": "go outside. it's allowed now." }
+  ],
+
+  "texts": {
+    "goals.done": "done. Downtown is through the door.",
+    "prompt.door": "[E] DOOR",
+    "prompt.out": "[E] DOWNTOWN",
+    "door.locked": ["open door", "locked. the panel next to it has opinions.", "err"],
+
+    "plug.off": ["{via}use power --off", "click. dark again.", "dim"],
+    "plug.night": ["signal → power --off", "SCHEDULE: it is night. the plug obeys. dark again.", "err"],
+    "plug.off.already": ["use power --off", "already off. the schedule approves.", "dim"],
+
+    "router.online": ["", "ROUTER: online. its lights blink like it has news.", "ok"],
+    "router.reboot": ["", "ROUTER: {temp}°C. thermal reboot. the cat on top does not move.", "err"],
+
+    "pixel.router": ["", "Pixel has found something warmer than the bed: the router.", "dim"],
+    "pixel.sun": ["", "Pixel follows the sun to the floor and lies down in it. the router cools off.", "ok"],
+    "pixel.bed": ["", "Pixel goes back to the bed. it is still a little warm.", "dim"],
+
+    "talk.aria": "Say something to CONCIERGE"
+  }
+}

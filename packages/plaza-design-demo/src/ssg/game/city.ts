@@ -11,7 +11,14 @@
 import type { SceneId } from './scenes';
 import { box, C, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, type View } from './scenes/kit';
 
-export type Zone = 'downtown' | 'yard' | SceneId;
+export type Zone = 'downtown' | 'yard' | 'capsule' | SceneId;
+
+/**
+ * Where a new game starts: Capsule 7B, the player's flat. The intro cutscene
+ * hands over to it (cutscenes.json `next`), and a save that has never been
+ * Downtown starts there too.
+ */
+export const START_ZONE = 'capsule' satisfies Zone;
 
 export const seenFlag = (zone: Zone) => 'seen:' + zone;
 
@@ -21,7 +28,7 @@ export const seenFlag = (zone: Zone) => 'seen:' + zone;
  * - market: the NEON MARKET gate at the west end (opens once Downtown is cleared)
  * - shop: the corner shop's door (the front at 150)
  * - yard: the fixer's back yard, past the noodle stall
- * - capsule: your building's lobby, the narrow tower at 1200 (CAPSULE 7B)
+ * - capsule: your building's lobby, the narrow tower at 1200: the lift up to your flat (Capsule 7B)
  * - metro: stairs down, in front of the shuttered front at 1420
  * - taxi: the sky-taxi pad at the east end, past the SPACEPORT sign
  */
@@ -119,6 +126,7 @@ function herePoint(st: MapState): [number, number] {
   if (z === 'train') return STATION_AT[st.station];
   if (z === 'shop') return [SPOTS.shop[0], SPOTS.shop[1]];
   if (z === 'yard') return [SPOTS.yard[0], SPOTS.yard[1]];
+  if (z === 'capsule') return [SPOTS.home[0], SPOTS.home[1]];
   const d = DISTRICTS.find((q) => q.zone === z);
   return d ? [d.x + d.w / 2, d.y + d.h / 2 + 6] : [137, 95];
 }

@@ -53,6 +53,19 @@ Append one line per decision: what, which side, why.
   set); which rules exist and what recipes make (`from`): **data**.
 - Settling (`settleYard`) and the yard's own check (crates, the parcel's crate): **code**, in
   `YARD_RULES` (`settle`, `check`), next to the effects they mirror.
+- A zone's own clock (`ZoneRules.tick(w, dt)`): **engine code** hook, run by `ZoneModel.tick` while
+  the zone is on screen. Capsule 7B uses it for the plug's schedule (`night` every `nightEveryMs`),
+  the router's temperature and thermal reboots, and Pixel moving to the warmest spot. What it does is
+  **code** (`capsule/rules.ts`); its numbers are **data** (`tuning`). Stands in for `clock.every`.
+- A LINK that can be down (`link.when`, a condition): **data** switch on an **engine** rule: while
+  it does not hold, `scan` and `connect` say `net.down` (the router is off, it scans nothing).
+- Pre-wired cables when a node connects: the engine now lays only the cables touching that node
+  (before: every missing pre-wired cable came back, so a cut one reappeared). **Engine code** fix.
+- The plug's `off` (silent when the schedule's signal hits a plug that is already off): **code**
+  (`plug.off` effect), since data cases cannot test `signal` and a state key together.
+- Pixel, the companion: **code** (`companion.ts`): sprite, moves, warm spots outside (`WARM`). Whether
+  Pixel follows you is a save flag (`flags.pixel`); in the flat, where Pixel naps is the zone's
+  state (`pixelAt`).
 
 ## The idea in one paragraph
 
@@ -86,7 +99,7 @@ goes to `save.zones.<id>`.
 
 ## What the data describes
 
-One file per zone: `game/data/yard.json`. Top level:
+One file per zone: `game/data/yard.json`, `game/data/capsule.json`. Top level:
 
 | Field | What it holds |
 |---|---|
@@ -349,6 +362,10 @@ yard over and keeps the rest.
   `game/data/net.json`: the shared net (empty for now). `game/data/engine.json`: engine wording.
 - `game/data/check.ts`: the build-time check (`checkGame`). `game/data/index.ts`: bundles the JSON.
 - `game/zone/`: the engine (see **The zone engine**).
+- `game/capsule/`: Capsule 7B, the start zone: `rules.ts` (`CAPSULE_RULES`: the clock, the router,
+  Pixel), `scene.ts` (drawing, Pixel's perches), `index.ts` (`CAPSULE_ZONE`, the door).
+  `game/companion.ts`: Pixel. `START_ZONE` (city.ts) is `capsule`: a save that has never been
+  Downtown starts there, a new one after the intro.
 - `game/yard/`: the yard's own code: `effects.ts` (`YARD_RULES`), `camera.ts` (CAM-1),
   `scene.ts` (drawing), `index.ts` (`YARD_ZONE`).
 
@@ -361,7 +378,7 @@ is code (`game/cutscenes/`, one draw function per id); everything said and timed
 "intro": {
   "title": "ACCESS DENIED",          // shown in the window header while it plays
   "duration": 26,                    // seconds; then it hands over
-  "next": "downtown",                // the zone it hands over to: "downtown", "yard" or a scene id
+  "next": "capsule",                 // the zone it hands over to: "downtown", "yard", "capsule" or a scene id
   "cards": [ { "at": 2.5, "until": 9, "text": "The city never logs off. …" } ]
 }
 ```

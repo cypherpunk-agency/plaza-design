@@ -86,8 +86,11 @@ export interface LogData {
   lockMs?: number;
 }
 
-/** A LINK noun: `scan` shows the nodes in reach on the board; `connect <node>` brings one in. */
-export interface LinkData { reach: string[] }
+/**
+ * A LINK noun: `scan` shows the nodes in reach on the board; `connect <node>` brings one in.
+ * `when`: the link works only while this holds (a router that is off scans nothing).
+ */
+export interface LinkData { reach: string[]; when?: Cond }
 
 export interface NounData {
   id: string;

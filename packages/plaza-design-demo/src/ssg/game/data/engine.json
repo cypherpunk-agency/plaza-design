@@ -52,6 +52,7 @@
     "net.scan.none": ["{via}scan", "scan: nothing new in reach.", "dim"],
     "net.connect": ["{via}connect {node}", "connected: {name} is on your board.", "ok"],
     "net.connected": ["{via}connect {node}", "already connected to {name}.", "dim"],
-    "net.ghost": ["", "{name}: seen on a scan. connect to it from {link}.", "dim"]
+    "net.ghost": ["", "{name}: seen on a scan. connect to it from {link}.", "dim"],
+    "net.down": ["{via}{verb}", "no link: {name} is down.", "err"]
   }
 }

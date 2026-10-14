@@ -11,8 +11,10 @@ import engineJson from './engine.json';
 import logicJson from './logic.json';
 import netJson from './net.json';
 import yardJson from './yard.json';
+import capsuleJson from './capsule.json';
 
 const yard: Loose<ZoneData> = yardJson;
+const capsule: Loose<ZoneData> = capsuleJson;
 const logic: Loose<LogicData> = logicJson;
 const net: Loose<NetData> = netJson;
 const engine: Loose<EngineData> = engineJson;
@@ -20,8 +22,11 @@ const engine: Loose<EngineData> = engineJson;
 /** The back yard. Checked by check.ts at build time, so the cast is safe. */
 export const YARD = yard as ZoneData;
 
+/** Capsule 7B, the player's flat: where the game starts. */
+export const CAPSULE = capsule as ZoneData;
+
 /** Every zone file, by zone id. A new zone is one import and one line here. */
-export const ZONE_FILES: Record<string, ZoneData> = { yard: YARD };
+export const ZONE_FILES: Record<string, ZoneData> = { yard: YARD, capsule: CAPSULE };
 
 /** The logic modules (TIMER, SWITCH), shared by every zone. Checked like a zone. */
 export const LOGIC = logic as LogicData;
