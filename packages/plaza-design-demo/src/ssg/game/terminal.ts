@@ -53,7 +53,7 @@ export class Terminal {
     this.input.autocomplete = 'off';
     this.input.spellcheck = false;
     this.input.setAttribute('aria-label', 'Terminal');
-    this.input.placeholder = touch ? 'tap >_ to open the deck' : 'press / to type';
+    this.input.placeholder = touch ? 'tap >_ to open the deck' : 'press ENTER to type';
     inputHost.appendChild(this.input);
 
     if (touch) {

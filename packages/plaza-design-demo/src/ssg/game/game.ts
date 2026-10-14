@@ -313,7 +313,7 @@ export class Game {
     if (this.cut) { e.preventDefault(); if (!e.repeat) this.cut.skip(); return; }
     if (this.menu.open) { if (!this.term.focused) this.menu.key(e); return; }
     if (this.term.focused) return;
-    if (this.flight) { if (e.key !== 'm' && e.key !== 'M') e.preventDefault(); return; }
+    if (this.flight) { e.preventDefault(); return; }
     if (this.mapView) { this.mapKey(e); return; }
     const zh = this.zoneHost;
     if (zh && zh.overlayOpen) {
@@ -337,13 +337,13 @@ export class Game {
       this.openMenu();
       return;
     }
-    if (k === '/') { e.preventDefault(); this.openDeck(); return; }
+    // Enter opens the deck (the terminal)
+    if (k === 'Enter') { e.preventDefault(); this.openDeck(); return; }
     // the deck's map app: the city as far as you know it
-    if (k === 'Tab') { e.preventDefault(); this.showMap(); return; }
+    if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.showMap(); return; }
     if (zh && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
     if (zh && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
-    if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
-    if (k === 'e' || k === 'E' || k === 'Enter') { this.interact(); return; }
+    if (k === 'e' || k === 'E') { this.interact(); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }
@@ -1497,8 +1497,7 @@ export class Game {
     const m = this.mapView!, k = e.key;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(k)) e.preventDefault();
     if (e.repeat) return;
-    if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
-    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter' || k === 'Tab') { e.preventDefault(); this.mapView = null; sound.close(); } return; }
+    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter' || k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.mapView = null; sound.close(); } return; }
     const n = m.options.length;
     if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (m.index + n - 1) % n; sound.blip(); return; }
     if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (m.index + 1) % n; sound.blip(); return; }

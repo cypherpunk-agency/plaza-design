@@ -46,16 +46,18 @@ export class KeyBar {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'hack-btn';
-      b.textContent = what + ' · ' + keyLabel;
-      b.title = what.toLowerCase() + ' (' + keyLabel + ')';
+      b.textContent = keyLabel ? what + ' · ' + keyLabel : what;
+      b.title = what.toLowerCase() + (keyLabel ? ' (' + keyLabel + ')' : '');
       // hand the keys back to the canvas, or Space and Enter would press the button again
-      b.addEventListener('click', () => { send(key); this.refocus(); });
+      if (key) b.addEventListener('click', () => { send(key); this.refocus(); });
       this.actions.appendChild(b);
       return b;
     };
     button('Tab', 'TAB', 'MAP');
-    button('/', '/', 'TERMINAL');
-    this.soundBtn = button('m', 'M', 'SOUND');
+    button('Enter', 'ENTER', 'TERMINAL');
+    // sound has no key: this button and the pause menu
+    this.soundBtn = button('', '', 'SOUND');
+    this.soundBtn.onclick = () => { sound.toggle(); this.refocus(); };
     button('Escape', 'ESC', 'MENU');
     this.root.append(this.moves, this.actions);
     host.appendChild(this.root);
@@ -71,7 +73,7 @@ export class KeyBar {
     const on = sound.enabled;
     if (this.soundBtn.classList.contains('on') !== on) {
       this.soundBtn.classList.toggle('on', on);
-      this.soundBtn.textContent = 'SOUND ' + (on ? 'ON' : 'OFF') + ' · M';
+      this.soundBtn.textContent = 'SOUND ' + (on ? 'ON' : 'OFF');
     }
   }
 }
