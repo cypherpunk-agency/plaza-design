@@ -314,6 +314,8 @@ export class Game {
   /** In the yard, tap or click a thing to open its schematic (in hack vision: its verbs); hovering lights it up. */
   private onCanvasPointer(e: PointerEvent, press: boolean) {
     if (this.cut) { if (press) { e.preventDefault(); this.cut.skip(); } return; }
+    // a click or tap moves a speech bubble on, the same as E
+    if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
     if (this.zone !== 'yard' || this.yard.overlayOpen) return;
     const r = this.canvas.getBoundingClientRect();
     const wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
@@ -655,44 +657,78 @@ export class Game {
    * slice of the yard behind it: the backs of the houses across it, the crane's
    * top over them, crates under the yard's lamp. Walk in front of it for E.
    */
+  /**
+   * The alley to the fixer's back yard: a passage between the noodle stall's
+   * building and a one-storey wall. It recedes to the yard's open gate, the
+   * yard's lamp lights it from behind, and the crane rises over the low wall,
+   * so it reads as a way through, not a door.
+   */
   private drawAlley() {
-    const x = this.x, a0 = this.sx(950), a1 = this.sx(994), b1 = this.sx(1040), c = this.sx(YARD_DOOR_X), P = '255,61,242';
-    if (b1 + 10 < 0 || a0 - 10 > this.viewW) return;
-    // the backs of the houses across the yard (middle band: dim), over the stub wall and through the gap
-    x.fillStyle = '#0a0503'; x.fillRect(a0, this.y(150), b1 - a0, 74); x.fillRect(a0, this.y(76), a1 - a0, 12);
-    x.strokeStyle = 'rgba(194,65,12,.25)'; x.lineWidth = 1; x.strokeRect(a0 + 0.5, this.y(150) + 0.5, b1 - a0 - 1, 74);
-    x.fillStyle = 'rgba(255,136,0,.2)'; x.fillRect(this.sx(1012), this.y(132), 8, 12);
-    x.fillStyle = '#030100'; x.fillRect(this.sx(964), this.y(132), 8, 12);
-    // the yard itself, below the gate's bar: dark, lit by its lamp
-    const top = this.y(64);
-    x.fillStyle = '#080402'; x.fillRect(a0, top, a1 - a0, 64);
-    const g = x.createRadialGradient(c + 8, this.y(46), 2, c + 8, this.y(30), 46);
-    g.addColorStop(0, 'rgba(255,170,90,.28)'); g.addColorStop(1, 'rgba(255,170,90,0)');
-    x.fillStyle = g; x.fillRect(a0, top, a1 - a0, 64);
-    x.fillStyle = 'rgba(255,217,165,.85)'; x.fillRect(c + 6, this.y(50), 4, 2);
-    // the crane: its beam over the houses' backs, a leg coming down into the yard, the hook on its cable
-    const k0 = this.sx(958), k1 = this.sx(1034);
-    x.fillStyle = '#2a1407'; x.fillRect(k0, this.y(118), k1 - k0, 4); x.fillRect(k0 + 3, this.y(114), 3, 106); x.fillRect(k1 - 6, this.y(114), 3, 38);
-    x.fillStyle = 'rgba(255,136,0,.55)'; x.fillRect(k0, this.y(118), k1 - k0, 1); x.fillRect(k0 + 3, this.y(114), 1, 106);
-    x.fillStyle = '#ff8800'; x.fillRect(this.sx(1002), this.y(114), 8, 3);
-    x.fillStyle = 'rgba(201,168,127,.7)'; x.fillRect(this.sx(1005), this.y(111), 1, 30);
-    // the yard's ground and two crates in it, smaller for being further away
-    x.fillStyle = '#120804'; x.fillRect(a0, this.y(8), a1 - a0, 8); x.fillStyle = 'rgba(255,170,90,.25)'; x.fillRect(a0, this.y(8), a1 - a0, 1);
-    for (const [ox, w, h] of [[10, 12, 11], [23, 10, 8]]) {
-      x.fillStyle = '#3a210b'; x.fillRect(a0 + ox, this.y(8 + h), w, h);
-      x.strokeStyle = 'rgba(201,138,63,.75)'; x.strokeRect(a0 + ox + 0.5, this.y(8 + h) + 0.5, w - 1, h - 1);
+    const x = this.x, a0 = this.sx(950), a1 = this.sx(994), c = this.sx(YARD_DOOR_X), P = '255,61,242';
+    if (this.sx(1040) + 10 < 0 || a0 - 40 > this.viewW) return;
+    const b0 = a0 + 11, b1 = a1 - 11, far = this.y(10), farTop = this.y(84);
+    const poly = (pts: [number, number][], fill: string) => {
+      x.beginPath(); pts.forEach(([px, py], i) => (i ? x.lineTo(px, py) : x.moveTo(px, py))); x.closePath(); x.fillStyle = fill; x.fill();
+    };
+
+    // over the low wall and above the far end: the backs of the houses across the yard (middle band, dim)
+    x.fillStyle = '#0a0503'; x.fillRect(a0, this.y(150), this.sx(1040) - a0, this.y(76) - this.y(150));
+    x.strokeStyle = 'rgba(194,65,12,.25)'; x.lineWidth = 1; x.strokeRect(a0 + 0.5, this.y(150) + 0.5, this.sx(1040) - a0 - 1, this.y(76) - this.y(150));
+    for (const [wx, wh, lit] of [[1004, 132, 1], [1022, 132, 0], [1004, 108, 0], [1022, 108, 1]] as const) {
+      x.fillStyle = lit ? 'rgba(255,136,0,.22)' : '#030100'; x.fillRect(this.sx(wx), this.y(wh), 7, 11);
     }
-    // the gate: two posts and a bar across, rimmed so they read against the dark; one leaf swung open against the left post
-    x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(a0 + 4, top, 3, 64); x.fillRect(a1 - 7, top, 3, 64);
-    x.fillStyle = '#1a0d05'; x.fillRect(a0 - 2, this.y(2), a1 - a0 + 4, 2);
-    x.fillStyle = '#2a160a'; x.fillRect(a0, this.y(74), 4, 74); x.fillRect(a1 - 4, this.y(74), 4, 74); x.fillRect(a0 - 2, this.y(74), a1 - a0 + 4, 8);
-    x.fillStyle = 'rgba(255,136,0,.75)'; x.fillRect(a0, this.y(74), 1, 74); x.fillRect(a1 - 4, this.y(74), 1, 74); x.fillRect(a0 - 2, this.y(74), a1 - a0 + 4, 1);
-    x.fillStyle = 'rgba(255,136,0,.5)';
-    for (let i = 0; i < 4; i++) x.fillRect(a0 + 5 + i * 2, this.y(58 - i * 2), 1, 54 - i * 3);
-    x.fillRect(a0 + 5, this.y(58), 7, 1); x.fillRect(a0 + 5, this.y(6), 7, 1);
-    this.plate(c, this.y(70), 28, 11, P);
-    this.neon('YARD', c, this.y(70), P, { size: 8, phase: 90 });
+
+    // the yard beyond the far opening, lit by its lamp
+    x.fillStyle = '#0e0603'; x.fillRect(b0, farTop, b1 - b0, far - farTop);
+    const g = x.createRadialGradient(c, this.y(40), 2, c, this.y(30), 40);
+    g.addColorStop(0, 'rgba(255,170,90,.42)'); g.addColorStop(1, 'rgba(255,170,90,0)');
+    x.fillStyle = g; x.fillRect(b0, farTop, b1 - b0, far - farTop);
+    // crates in the light, small for being further away
+    for (const [ox, w, h] of [[2, 9, 8], [11, 7, 6]] as const) {
+      x.fillStyle = '#4a2a0c'; x.fillRect(b0 + ox, far - h, w, h);
+      x.strokeStyle = 'rgba(201,138,63,.85)'; x.strokeRect(b0 + ox + 0.5, far - h + 0.5, w - 1, h - 1);
+    }
+
+    // the crane: its gantry beam over the far end and the low wall, a leg down into the yard, the hook on its cable
+    const k0 = b0 + 2, k1 = this.sx(1036);
+    x.fillStyle = '#3a1c08'; x.fillRect(k0, this.y(112), k1 - k0, 4); x.fillRect(k0, this.y(108), 3, 98); x.fillRect(k1 - 4, this.y(108), 3, 32);
+    x.fillStyle = 'rgba(255,136,0,.7)'; x.fillRect(k0, this.y(112), k1 - k0, 1); x.fillRect(k0, this.y(108), 1, 98); x.fillRect(k1 - 4, this.y(108), 1, 32);
+    x.fillStyle = '#ff8800'; x.fillRect(this.sx(1010), this.y(108), 8, 3);
+    x.fillStyle = 'rgba(201,168,127,.8)'; x.fillRect(this.sx(1013), this.y(105), 1, 22);
+
+    // the yard's fence across the far opening: chain-link, one gate leaf swung open towards you
+    x.strokeStyle = 'rgba(255,170,90,.35)';
+    for (let yy = farTop + 2; yy < far; yy += 3) { x.beginPath(); x.moveTo(b0, yy + 0.5); x.lineTo(b0 + 5, yy + 0.5); x.stroke(); }
+    x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(b0, farTop, 1, far - farTop); x.fillRect(b1 - 1, farTop, 1, far - farTop); x.fillRect(b0, farTop, 6, 1);
+    poly([[b1 - 1, farTop + 4], [b1 + 6, farTop - 2], [b1 + 6, far + 4], [b1 - 1, far]], 'rgba(255,136,0,.18)');
+    x.strokeStyle = 'rgba(255,136,0,.75)'; x.beginPath(); x.moveTo(b1 - 1, farTop + 4); x.lineTo(b1 + 6, farTop - 2); x.lineTo(b1 + 6, far + 4); x.stroke();
+
+    // the passage's walls, receding to the far end: dark, with a drainpipe and a rimmed front edge
+    poly([[a0, this.y(160)], [b0, this.y(160)], [b0, far], [a0, this.y(0)]], '#070302');
+    poly([[a1, this.y(76)], [b1, this.y(74)], [b1, far], [a1, this.y(0)]], '#090402');
+    x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(a0 + 4, this.y(150), 1, 146);
+    x.strokeStyle = 'rgba(255,136,0,.55)';
+    x.beginPath(); x.moveTo(a0 + 0.5, this.y(0)); x.lineTo(b0 + 0.5, far); x.moveTo(a1 - 0.5, this.y(0)); x.lineTo(b1 - 0.5, far); x.moveTo(a1 - 0.5, this.y(76)); x.lineTo(b1 - 0.5, this.y(74)); x.stroke();
+
+    // the floor: wet, the yard's light running down it and spilling onto the street
+    poly([[a0, this.y(0)], [a1, this.y(0)], [b1, far], [b0, far]], '#0b0503');
+    const spill = x.createLinearGradient(0, far, 0, this.y(-10));
+    spill.addColorStop(0, 'rgba(255,170,90,.32)'); spill.addColorStop(1, 'rgba(255,170,90,0)');
+    poly([[b0 + 3, far], [b1 - 3, far], [a1 - 6, this.y(-10)], [a0 + 6, this.y(-10)]], spill as unknown as string);
+    x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(c - 6, this.y(3), 10, 1); x.fillRect(c - 2, this.y(6), 6, 1);
+
+    // a lamp on a bracket over the mouth, and the yard's sign on a bar across it
+    x.fillStyle = '#2a160a'; x.fillRect(a0 - 2, this.y(96), a1 - a0 + 4, 3);
+    x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(a0 - 2, this.y(96), a1 - a0 + 4, 1);
+    x.fillStyle = '#2a160a'; x.fillRect(a0 + 2, this.y(93), 1, 6);
+    x.fillStyle = 'rgba(255,230,170,.95)'; x.fillRect(a0 + 1, this.y(87), 3, 2);
+    const lamp = x.createRadialGradient(a0 + 2, this.y(86), 1, a0 + 2, this.y(70), 26);
+    lamp.addColorStop(0, 'rgba(255,220,150,.22)'); lamp.addColorStop(1, 'rgba(255,220,150,0)');
+    x.fillStyle = lamp; x.fillRect(a0 - 20, this.y(96), 50, 60);
+    this.plate(c, this.y(103), 34, 11, P);
+    this.neon('YARD →', c, this.y(103), P, { size: 8, phase: 90 });
   }
+
 
   /**
    * Downtown's other doors, on fronts already drawn: the corner shop's door gets
