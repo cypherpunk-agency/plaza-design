@@ -26,6 +26,8 @@ export interface Device {
   name: string;
   look: string;
   crafted?: boolean;
+  /** Logic parts (timer, switch) live on the board only, never in the world. */
+  logic?: boolean;
   status: () => string;
   nouns: Noun[];
 }
@@ -225,5 +227,51 @@ export class YardModel {
     });
     this.hooks.changed();
     return ['craft ' + key.replace('+', ' '), 'crafted: ' + kind + '. ' + quip];
+  }
+
+  // ---------- logic parts: MINIMAL STAND-IN so the board's palette type-checks ----------
+  // ---------- (the data-file version of addLogic / removeDevice replaces this block) ----------
+
+  private logicMade = 0;
+  private switchOn = new Map<string, boolean>();
+
+  /** A logic part for the board: TIMER waits then says done; SWITCH passes a signal on while on. Returns its id. */
+  addLogic(kind: 'timer' | 'switch'): string {
+    const id = kind + ++this.logicMade;
+    const sig = (by: boolean) => (by ? 'signal → ' : '');
+    if (kind === 'timer') {
+      this.devices.set(id, {
+        id, name: 'TIMER', logic: true, crafted: true, look: 'A timer. Told to wait, it waits, then says done.',
+        status: () => 'waits, then says done',
+        nouns: [{ id: 'timer', kind: 'ACT', verbs: ['wait 1 s', 'wait 2 s', 'wait 3 s'], events: ['done'], run: (v, by) => {
+          const sec = parseInt(v.split(' ')[1], 10);
+          setTimeout(() => this.emit(id + '.timer:done'), sec * 1000);
+          return [sig(by) + 'use timer --wait ' + sec + 's', 'timer: waiting ' + sec + ' s…', 'dim'];
+        } }],
+      });
+    } else {
+      this.switchOn.set(id, false);
+      this.devices.set(id, {
+        id, name: 'SWITCH', logic: true, crafted: true, look: 'A switch. On, it passes signals on. Off, it does not.',
+        status: () => (this.switchOn.get(id) ? 'on · passes signals' : 'off · blocks signals'),
+        nouns: [{ id: 'switch', kind: 'ACT', verbs: ['pass', 'turn on', 'turn off'], events: ['out'],
+          current: () => (this.switchOn.get(id) ? 'turn on' : 'turn off'),
+          run: (v, by) => {
+            if (v !== 'pass') { this.switchOn.set(id, v === 'turn on'); return [sig(by) + 'use switch --' + v.split(' ')[1], 'switch ' + v.split(' ')[1] + '.']; }
+            if (!this.switchOn.get(id)) return [sig(by) + 'use switch --pass', 'switch is off. the signal stops here.', 'dim'];
+            this.emit(id + '.switch:out');
+            return [sig(by) + 'use switch --pass', 'switch: passed on.'];
+          } }],
+      });
+    }
+    this.hooks.changed();
+    return id;
+  }
+
+  /** Takes a device off the board, and every cable on it. */
+  removeDevice(id: string): void {
+    this.devices.delete(id); this.switchOn.delete(id);
+    this.links = this.links.filter((l) => l.from.split('.')[0] !== id && l.to.split('.')[0] !== id);
+    this.hooks.changed();
   }
 }
