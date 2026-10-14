@@ -574,16 +574,6 @@ export const demoStyles = `
     .dlg-kb { color: var(--color-text-faint); }
     .dlg-input { width: 100%; padding: 3px 6px; background: #000; color: var(--color-text-body); border: var(--border-thin) solid var(--color-border-default); font-family: var(--font-mono); font-size: var(--text-xs); }
 
-    .hack-panel-body.bench { align-content: center; gap: var(--spacing-4); }
-    .bench-row { display: flex; flex-wrap: wrap; gap: var(--spacing-2); align-items: center; }
-    .bench-h { width: 100%; font-size: 10px; letter-spacing: 0.14em; color: var(--color-text-faint); }
-    .bench-item { padding: var(--spacing-1) var(--spacing-3); background: #0d0603; border: var(--border-thin) solid #5a2a0a; color: var(--color-text-body); font-family: var(--font-mono); font-size: var(--text-xs); cursor: pointer; }
-    .bench-item.sel { border-color: var(--color-accent-400); color: var(--color-accent-400); }
-    .bench-print { display: flex; gap: var(--spacing-3); align-items: center; justify-content: center; padding: var(--spacing-3); border: var(--border-thin) dashed rgb(255, 61, 242); }
-    .bench-sock { display: grid; place-items: center; width: 110px; height: 44px; border: var(--border-thin) dashed #5a2a0a; font-size: var(--text-xs); color: var(--color-text-faint); }
-    .bench-sock.full { border-style: solid; border-color: var(--color-accent-400); color: var(--color-accent-400); }
-    .bench-go { padding: var(--spacing-1) var(--spacing-4); background: #160416; border: var(--border-thin) solid rgb(255, 61, 242); color: rgb(255, 61, 242); font-family: var(--font-mono); font-size: var(--text-xs); cursor: pointer; }
-    .bench-go:disabled { opacity: 0.35; cursor: default; }
 
     /* Phones: basic support, landscape only (game/index.ts) */
     #touch {

@@ -19,14 +19,6 @@ import { drawYard, drawYardBackdrop, spotAt, spots, TRAY_X, YARD_EXIT_X } from '
 
 export { YARD_SPAWN, YARD_W } from './scene';
 
-const GOALS: [Goal, string][] = [
-  ['find', 'find your parcel'],
-  ['chute', 'get it into the chute'],
-  ['talk', 'get the hatch to cooperate'],
-  ['gate', 'get it through the hatch'],
-  ['take', 'pick it up'],
-];
-
 export interface YardTarget { id: string; x: number; label: string; promptH: number }
 /** World (x along the yard, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
@@ -47,7 +39,6 @@ export class Yard {
       say: (l) => this.say(l),
       openCamera: () => this.panels.camera(),
       openTalk: () => this.panels.talk(),
-      openBench: () => this.panels.bench(),
       changed: () => { this.schem?.render(); this.vision?.render(); },
       goal: (g) => { this.model.goals.add(g); },
     });
@@ -122,7 +113,7 @@ export class Yard {
   }
 
   /** Things standing in the world; logic parts live on the board only. */
-  private spots() { return spots(this.model).filter((s) => !this.model.devices.get(s.id)?.logic); }
+  private spots() { return spots(this.model).filter((s) => { const d = this.model.devices.get(s.id); return !!d && !d.logic; }); }
 
   openDevice(id: string) {
     const d = this.model.devices.get(id);
@@ -131,15 +122,16 @@ export class Yard {
     this.schem.openDevice(id);
   }
   toggleBoard() {
-    if (!this.schem.known.size) { this.print('nothing on the board yet: open a device first.', 'dim'); return; }
+    if (!this.schem.known.size) { this.print(this.model.label('board.empty'), 'dim'); return; }
     this.schem.toggleBoard();
   }
 
   /** Things you can stand next to and press E on. */
   targets(): YardTarget[] {
-    const list: YardTarget[] = [{ id: 'exit', x: YARD_EXIT_X, label: '[E] DOWNTOWN', promptH: 44 }];
-    this.spots().forEach((s) => list.push({ id: s.id, x: s.x, label: '[E] OPEN', promptH: Math.min(s.h + 12, 100) }));
-    if (this.model.parcelAt === 'tray') list.push({ id: 'tray', x: TRAY_X, label: '[E] TAKE PARCEL', promptH: 26 });
+    const m = this.model;
+    const list: YardTarget[] = [{ id: 'exit', x: YARD_EXIT_X, label: m.label('prompt.exit'), promptH: 44 }];
+    this.spots().forEach((s) => list.push({ id: s.id, x: s.x, label: m.label('prompt.open'), promptH: Math.min(s.h + 12, 100) }));
+    if (m.parcelAt === 'tray') list.push({ id: 'tray', x: TRAY_X, label: m.label('prompt.take'), promptH: 26 });
     return list;
   }
 
@@ -150,11 +142,11 @@ export class Yard {
     this.openDevice(id);
   }
 
-  spotAt(wx: number, h: number) { const id = spotAt(this.model, wx, h); return id && !this.model.devices.get(id)?.logic ? id : null; }
+  spotAt(wx: number, h: number) { const id = spotAt(this.model, wx, h); const d = id ? this.model.devices.get(id) : null; return d && !d.logic ? id : null; }
 
   objective() {
-    const next = GOALS.find(([g]) => !this.model.goals.has(g));
-    return next ? next[1] : 'done. the fixer owes you one.';
+    const next = this.model.zone.goals.find((g) => !this.model.goals.has(g.id as Goal));
+    return next ? next.text : this.model.label('goals.done');
   }
 
   /** The yard is walled in, so it draws its own backdrop (after the ground) instead of the open city. */

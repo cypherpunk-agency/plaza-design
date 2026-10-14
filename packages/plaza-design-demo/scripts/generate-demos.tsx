@@ -21,6 +21,9 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
+import { YARD } from '../src/ssg/game/data';
+import { checkZone } from '../src/ssg/game/data/check';
+import { YARD_CODE } from '../src/ssg/game/yard/effects';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -124,8 +127,23 @@ ${js}
 `;
 }
 
+/**
+ * The game's zone files must make sense before they ship: every cable reaches
+ * a real noun, every effect exists in code, every dialogue choice leads
+ * somewhere (src/ssg/game/GAME-DATA.md). The type-check covers their shape.
+ */
+function checkGameData() {
+  const problems = checkZone(YARD, YARD_CODE);
+  if (!problems.length) return;
+  console.error(`Game data has ${problems.length} problem${problems.length > 1 ? 's' : ''} (src/ssg/game/data/):\n`);
+  problems.forEach((p) => console.error('  ' + p));
+  console.error('');
+  process.exit(1);
+}
+
 async function main() {
   console.log('Generating homepage from React components...\n');
+  checkGameData();
 
   fs.rmSync(OUT_DIR, { recursive: true, force: true });
   fs.mkdirSync(OUT_DIR, { recursive: true });

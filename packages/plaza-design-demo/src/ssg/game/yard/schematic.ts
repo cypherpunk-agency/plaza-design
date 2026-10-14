@@ -30,7 +30,6 @@ const DEFAULT_DIR: Record<string, Record<string, string>> = {
   cam: { lens: 'up', motor: 'down', footage: 'right' },
   crane: { arm: 'down', claw: 'up', 'job.log': 'left' },
   gate: { lock: 'left', log: 'up', hinge: 'down' },
-  bench: { blueprints: 'up', press: 'right' },
 };
 /** In the world the nouns sit closer, and must not run into the neighbours. */
 const VISION_DIR: Record<string, Record<string, string>> = {
@@ -40,7 +39,7 @@ const VISION_DIR: Record<string, Record<string, string>> = {
 };
 const HINT = 'tap a noun for its verbs · drag an orange dot onto a noun to wire';
 const UNIT: Record<string, P> = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
-const BOARD_HOME: Record<string, P> = { cam: { x: 0.14, y: 0.3 }, crane: { x: 0.5, y: 0.3 }, gate: { x: 0.86, y: 0.3 }, bench: { x: 0.24, y: 0.76 } };
+const BOARD_HOME: Record<string, P> = { cam: { x: 0.14, y: 0.3 }, crane: { x: 0.5, y: 0.3 }, gate: { x: 0.86, y: 0.3 } };
 const BOARD_CRAFT: P[] = [{ x: 0.6, y: 0.78 }, { x: 0.84, y: 0.78 }, { x: 0.42, y: 0.6 }, { x: 0.72, y: 0.58 }];
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
