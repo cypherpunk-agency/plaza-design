@@ -4,8 +4,26 @@ A draft for discussion. It builds on the system we have: devices made of nouns,
 verbs on nouns, events on nouns, cables that carry a verb, logic modules on the
 board, daemons you talk to, the keyboard as the last resort.
 
-Hacking here is a puzzle game about systems, not a manual: locks are logic
-puzzles, keys are story items, and the drama comes from characters.
+This is a hacking game. Getting into systems you shouldn't be in is the point;
+it is told as fiction and played as puzzles, never as a manual for real
+systems.
+
+## The hacking layer
+
+**Passwords are clue puzzles.** A login is a GUARD noun. Its password hides in
+the world as clues: a pet's name on a food bowl, a birthday in a message, a
+pattern people reuse. Clues you read become fragments on your keyring; drag
+fragments onto a login to try them, or type a guess at the keyboard. Wrong
+guesses cost: the guard locks for a while, or raises the trace.
+
+**Trace.** Being where you shouldn't leaves tracks. A system's `log` noun
+records your visit and a trace meter fills while you stay. Ways out: leave in
+time, cut the log's cable to its archive, switch it off for a moment, or reach
+root and clean it. If the trace fills, the system kicks you and locks you out
+until you find another way in.
+
+**NEOBANK** is a node: balances, statements, a chatbot with feelings, and
+records that tell stories (who paid for whose ticket).
 
 ## New mechanics
 
@@ -40,7 +58,8 @@ Nodes you can meet on the board, each with a joke or two:
 | HOME-PC | your own computer: messages, notes, your deck's settings |
 | CONCIERGE | your building's door daemon; polite, petty, loves paperwork |
 | FRIENDNET | a chat service; everyone's status line is a little too honest |
-| MOTH-PC | your friend's computer, once Moth's key is yours |
+| MOTH-PC | your friend's computer |
+| NEOBANK | balances, statements, a chatbot with feelings |
 | MAGLEV | the train line's public board: departures, delays, apologies |
 | LOST+FOUND | the city's lost-property office; it has found everything except love |
 | UNDERNET | a forum of rumours; reading it is free, believing it costs extra |
