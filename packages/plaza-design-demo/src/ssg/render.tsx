@@ -544,8 +544,9 @@ export const demoStyles = `
     .sch.node .sch-name { color: var(--color-accent-400); }
 
     /*
-     * Hack vision (H): the game mutes the world on the canvas; over it, each device on screen
-     * is framed, with a name plate mounted above it that unfolds into its circuit (game/zone/schematic.ts)
+     * Hack vision (H): the board, living in the world. The game mutes the world on the canvas;
+     * over it each device on screen gets a pink frame, and its schematic (the board's own core,
+     * nouns, branches, dots and cables) stands over it, tied to the frame by a leader (game/zone/schematic.ts)
      */
     #vision {
       position: absolute;
@@ -564,17 +565,14 @@ export const demoStyles = `
 
     #vision[hidden] { display: none; }
     #vision .hack-stage { position: absolute; inset: 0; touch-action: auto; }
+    #vision .sch-core,
     #vision .sch-label,
     #vision .port,
     #vision .sch-verb,
     #vision .sch-guess,
     #vision .sch-palette,
-    #vision .vis-plate,
-    #vision .vis-home,
-    #vision .vis-circuit,
     #vision .vis-part { pointer-events: auto; }
     #vision .hack-wires .leader { stroke: rgba(255, 61, 242, 0.85); stroke-width: 1; stroke-dasharray: 3 3; }
-    #vision .hack-wires .branch { stroke: rgba(255, 61, 242, 0.55); stroke-width: 1; }
 
     /* the frame round a device: the hacking layer's pink */
     .vis-outline {
@@ -596,84 +594,20 @@ export const demoStyles = `
     .vis-glyph { font-size: 8px; font-weight: 600; letter-spacing: 0.08em; color: rgb(255, 61, 242); }
     .vis-part .sch-x { right: -8px; top: -8px; width: 15px; height: 15px; font-size: 10px; }
 
-    /*
-     * The piece: the plate and the circuit over it. By default it sits on a short leader over the
-     * device; dragged, it goes anywhere, and a dashed leader ties it back to the device's frame.
-     */
-    .vis-piece { position: absolute; left: 0; width: 0; height: 0; }
-    .vis-tag { position: absolute; left: 0; top: 0; display: flex; gap: 2px; transform: translate(-50%, -100%); }
-
-    /* the name plate (its height is PLATE_H in schematic.ts) */
-    .vis-plate {
-      position: relative;
-      box-sizing: border-box;
-      height: 18px;
-      padding: 0 6px;
-      background: rgba(16, 3, 16, 0.92);
-      border: var(--border-thin) solid rgb(255, 61, 242);
-      color: rgb(255, 61, 242);
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 600;
-      line-height: 16px;
-      letter-spacing: 0.08em;
-      white-space: nowrap;
-      cursor: grab;
-      touch-action: none;
-    }
-
-    .sch.vis.moved .vis-plate::after { display: none; }
-    .vis-home {
-      box-sizing: border-box;
-      height: 18px;
-      padding: 0 4px;
-      background: rgba(16, 3, 16, 0.92);
-      border: var(--border-thin) solid rgba(255, 61, 242, 0.6);
-      color: rgb(255, 61, 242);
-      font: 11px/1 var(--font-mono);
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-
-    .vis-home:hover { border-color: rgb(255, 61, 242); }
-
-    .vis-plate::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: rgba(255, 61, 242, 0.85); }
-    .vis-plate:hover { box-shadow: 0 0 10px rgba(255, 61, 242, 0.5); }
-    .vis-plate[aria-expanded='true'] { background: rgb(255, 61, 242); color: #000; }
-    .sch.locked .vis-plate { border-color: var(--color-error); color: var(--color-error); }
-    /* hack it, from a thing's popup: its plate flashes once so the eye finds it */
-    .sch.vis.focus .vis-plate { animation: vis-focus 0.45s ease-in-out 3; }
-    @keyframes vis-focus { 50% { box-shadow: 0 0 16px rgb(255, 61, 242), 0 0 4px #fff; } }
-
-    /* the circuit: the device's nouns in a row, over its plate */
-    .vis-circuit {
-      position: absolute;
-      left: 0;
-      transform: translate(-50%, -100%);
-      display: grid;
-      justify-items: center;
-      gap: 2px;
-      padding: 2px 4px 4px;
-      background: rgba(10, 3, 14, 0.6);
-      border: var(--border-thin) dashed rgba(255, 61, 242, 0.5);
-      cursor: grab;
-      touch-action: none;
-    }
-
-    .vis-st { font-size: 8px; color: var(--color-text-muted); white-space: nowrap; }
-    .sch.locked .vis-st { color: var(--color-error); }
-    .vis-chips { display: flex; gap: 6px; align-items: flex-start; }
-    #vision .vis-chips .sch-noun { position: relative; width: auto; height: auto; display: grid; justify-items: start; gap: 2px; }
-    .vis-head { display: flex; align-items: center; }
-    #vision .vis-chips .sch-label { position: static; transform: none; padding: 1px 5px; font-size: 9px; background: rgba(13, 6, 3, 0.95); }
-    #vision .vis-chips .sch-label small { font-size: 7px; }
-    .vis-ports { display: grid; gap: 2px; margin-left: -5px; }
-    #vision .vis-ports .port { position: static; transform: none; flex-direction: row-reverse; font-size: 8px; }
-    #vision .vis-ports .port i { width: 9px; height: 9px; }
-    /* a chip's verbs drop down under it, inside the circuit (which grows upward, clear of the plate) */
-    #vision .vis-chips .sch-verbs.down { position: static; transform: none; flex-direction: column; align-items: flex-start; gap: 2px; }
-
+    /* the board's look, a size smaller: it stands in the world, next to the things it belongs to */
+    #vision .sch-core { padding: 2px var(--spacing-2); }
+    #vision .sch-name { font-size: 10px; }
+    #vision .sch-st { font-size: 8px; }
+    #vision .sch-label { padding: 2px 6px; font-size: 10px; }
+    #vision .sch-label small { font-size: 7px; }
     #vision .sch-verb { padding: 1px 5px; font-size: 9px; }
+    /* nouns stand close in the world: the one whose verbs are open sits over its neighbours */
+    #vision .sch-noun.open { z-index: 5; }
+    /* a folded device: just its core (tap it for its nouns) */
+    .sch.vis.folded .sch-core { border-style: dashed; }
+    /* hack it, from a thing's popup: its core flashes so the eye finds it */
+    #vision .sch-core.focus { animation: vis-focus 0.45s ease-in-out 3; }
+    @keyframes vis-focus { 50% { box-shadow: 0 0 16px rgb(255, 61, 242), 0 0 4px #fff; } }
 
     /* hack vision's tools: the logic palette and the unfold-all toggle, under HACK and BOARD */
     #vision .sch-palette { left: auto; bottom: auto; right: var(--spacing-3); top: calc(var(--spacing-2) + 30px); }

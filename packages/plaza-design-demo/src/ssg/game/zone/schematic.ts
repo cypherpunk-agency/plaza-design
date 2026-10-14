@@ -23,21 +23,19 @@
  * Where devices and nouns sit is part of the save: `layout()` / `restoreLayout()`.
  * Their defaults come from the zone data (`layout.board`, `layout.dir`).
  *
- * A third mode, hack vision (H), is a separate instance laid into the world
- * (the game mutes the world and keeps the devices bright): each device on
- * screen is framed, with its name on a plate mounted above it. Tap the plate
- * (or the device) and its circuit unfolds above it: its nouns in one row, left
- * to right (`layout.row`, else SENSE/STORE, ACT, LINK/GUARD/LOG, DAEMON), each a
- * chip with its event dots on its right edge; tap a chip and its verbs drop
- * down. Cables run between chips (or to a folded device's plate). Circuits
- * that would overlap are raised or pushed aside. Above the device is only the
- * default spot: drag the plate or the circuit (or a chip) and the two move as
- * one piece, anywhere, tied to the device's frame by a leader line; the spot is
- * saved (`pieces()`), and a double tap on the plate or its ⟲ puts it back.
- * Overlap handling only places pieces still at their default. The logic parts float in the
- * world here, where the host anchors them; the palette places one next to you.
- * A toggle unfolds every circuit at once (remembered in localStorage).
- * What you see there goes on the board.
+ * A third mode, hack vision (H), is the board living in the world (a separate
+ * instance; the game mutes the world and keeps the devices bright): each device
+ * on screen gets a pink frame, and its schematic (the same core box, noun chips,
+ * branch lines, event dots and cables as the board) stands over it, tied to the
+ * frame by a leader. Tap a core (or the device) to fold or unfold its nouns. Over
+ * the device is only where things start: drag a core and its nouns come along;
+ * drag a noun and only it moves, still branching from its core. By default the
+ * nouns stand in a row over the core (`layout.row`, else SENSE/STORE, ACT,
+ * LINK/GUARD/LOG, DAEMON). Where the player put things is saved (`pieces()`),
+ * in world units so it holds at any zoom. Overlap handling only nudges devices
+ * the player never moved. The logic parts float in the world here, where the
+ * host anchors them; the palette places one next to you. A toggle unfolds every
+ * device at once (remembered in localStorage). What you see there goes on the board.
  *
  * Styles live in render.tsx (`#hack`, `.sch-*`).
  */
@@ -51,13 +49,14 @@ type P = { x: number; y: number };
 /** Where a device stands on screen for hack vision: its box centre and size, in stage px. */
 export interface Anchor { x: number; y: number; w: number; h: number }
 const HINT = 'tap a noun for its verbs · drag an orange dot onto a noun to wire';
-const VISION_HINT = 'tap a name plate to unfold its circuit · drag an orange dot onto a noun to wire';
-/** Hack vision: the leader from a device up to its name plate, the plate's height, the gap up to its circuit (px; the plate's height is also in render.tsx). */
-const LEAD = 8, PLATE_H = 18, RISE = 8;
+const VISION_HINT = 'tap a device for its nouns · drag cores and nouns anywhere · drag an orange dot onto a noun to wire';
+/**
+ * Hack vision, in px: the gap between a device's frame and its core over it, half a core's
+ * height, how far over the core the default row of nouns stands, the gap between them.
+ */
+const LEAD = 12, CORE_HALF = 17, ROW_UP = 64, NOUN_GAP = 16;
 /** Hack vision: circuits keep this far from each other and from the edges (px). */
 const ROOM = 6;
-/** Two taps on a plate this close together put its piece back over the device. */
-const DOUBLE_TAP_MS = 350;
 /** Where the "unfold every circuit" setting is remembered. */
 const UNFOLD_KEY = 'access-denied-vision-unfold';
 /** Hack vision's row order by kind, left to right; ties keep the data's order. */
@@ -106,12 +105,12 @@ export class Schematic {
   private folded = new Set<string>();
   private unfoldAll = false;
   private allBtn: HTMLButtonElement | null = null;
-  /** Hack vision: plates and circuits moved off their default spot, as offsets from it in world units (x right, y down). */
+  /** Hack vision: cores moved off their default spot over the device, as offsets from it in world units (x right, y down). */
   private moved = new Map<string, P>();
+  /** Hack vision: nouns the player dragged, `device.noun` → offset from their core in world units. */
+  private voff = new Map<string, P>();
   /** The zone's own buttons over the canvas (the host's HACK, BOARD, …): circuits keep clear of them. */
   bar: HTMLElement | null = null;
-  /** Hack vision: when each plate was last tapped (a second tap soon after is a double tap). */
-  private lastTap = new Map<string, number>();
   /** Hack vision: CSS px per world unit (the host sets it), so a moved piece keeps its place in the world at any zoom. */
   unit = 1;
   onClose: () => void = () => {};
@@ -157,7 +156,7 @@ export class Schematic {
     else { this.root.id = 'hack'; this.root.append(bar, this.status, this.stage); }
     host.appendChild(this.root);
     this.stage.addEventListener('pointerdown', (e) => {
-      if ((e.target as HTMLElement).closest('.sch-core, .sch-noun, .port, .sch-chip, .sch-guess, .vis-plate, .vis-part, .vis-circuit, .vis-home')) return;
+      if ((e.target as HTMLElement).closest('.sch-core, .sch-noun, .port, .sch-chip, .sch-guess, .vis-part')) return;
       if (this.armed || this.pending || this.chip) { this.armed = null; this.pending = null; this.chip = null; this.render(); }
     });
     new ResizeObserver(() => { if (!this.root.hidden) this.render(); }).observe(this.stage);
@@ -196,11 +195,13 @@ export class Schematic {
     this.anchors = next;
     if (this.root.hidden) return;
     if (!same) { this.render(); return; }
-    // only the camera moved: shift the groups and keep the DOM, so a gesture in progress survives
-    this.stage.querySelectorAll<HTMLElement>('.sch').forEach((g) => {
-      const a = next.get(g.dataset.dev!); if (!a) return;
-      g.style.left = a.x + 'px'; g.style.top = a.y + 'px';
-      this.size(g, a);
+    // only the camera moved: shift the frames and the schematics and keep the DOM, so a gesture in progress survives
+    this.stage.querySelectorAll<HTMLElement>('.vis-outline').forEach((f) => {
+      const a = next.get(f.dataset.frame!); if (!a) return;
+      f.style.left = a.x + 'px'; f.style.top = a.y + 'px'; f.style.width = a.w + 'px'; f.style.height = a.h + 'px';
+    });
+    this.stage.querySelectorAll<HTMLElement>('.sch.vis').forEach((g) => {
+      const c = this.visionCentre(g.dataset.dev!); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
     });
     this.arrange();
     this.lines();
@@ -215,108 +216,73 @@ export class Schematic {
     this.fold(id);
   }
 
-  // ---------- hack vision: name plates and circuits ----------
+  // ---------- hack vision: the board, living in the world ----------
 
-  /** `⌁ hack it` from a thing's popup: its circuit unfolded, and a short flash on its plate so the eye finds it. */
+  /** `⌁ hack it` from a thing's popup: its nouns out, and a short flash on its core so the eye finds it. */
   focus(id: string) {
-    if (!this.isUnfolded(id)) { const set = this.unfoldAll ? this.folded : this.unfolded; if (set.has(id)) set.delete(id); else set.add(id); }
-    this.render();
-    const g = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`);
-    if (!g) return;
-    g.classList.add('focus');
-    window.setTimeout(() => this.stage.querySelector(`.sch.vis[data-dev="${id}"]`)?.classList.remove('focus'), 1400);
+    if (!this.isUnfolded(id)) this.fold(id); else this.render();
+    const core = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"] .sch-core`);
+    if (!core) return;
+    core.classList.add('focus');
+    window.setTimeout(() => this.stage.querySelector(`.sch.vis[data-dev="${id}"] .sch-core`)?.classList.remove('focus'), 1400);
   }
 
   private isUnfolded(id: string) { return this.unfoldAll ? !this.folded.has(id) : this.unfolded.has(id); }
-  /** Unfold a folded circuit, fold an unfolded one. */
+  /** Show a device's nouns, or fold them back into its core. */
   private fold(id: string) {
     const set = this.unfoldAll ? this.folded : this.unfolded;
     if (set.has(id)) set.delete(id); else set.add(id);
     this.render();
   }
-  /** The setting: every circuit unfolded at once (for comparing them), or each by hand (as you left them). */
+  /** The setting: every device's nouns out at once (for comparing them), or each by hand (as you left them). */
   private setUnfoldAll(on: boolean) {
     this.unfoldAll = on; this.folded.clear();
     writeUnfold(on);
     this.render();
   }
 
-  /** A device's nouns in hack vision's row, left to right: the data's `layout.row` first, then by kind. */
+  /** A device's nouns in hack vision's default row, left to right: the data's `layout.row` first, then by kind. */
   private row(d: Device) {
     const order = d.data.layout?.row ?? [];
     const rank = (n: Noun) => { const i = order.indexOf(n.id); return i >= 0 ? i - order.length - 10 : RANK[n.kind] ?? 2; };
     return d.nouns.map((n, i) => ({ n, i })).sort((a, b) => rank(a.n) - rank(b.n) || a.i - b.i).map((x) => x.n);
   }
 
-  /** The frame round the device, and the piece (plate and circuit) at its default spot over it, or where it was moved. */
-  private size(g: HTMLElement, a: Anchor) {
-    const box = g.querySelector<HTMLElement>('.vis-outline');
-    if (box) { box.style.width = a.w + 'px'; box.style.height = a.h + 'px'; }
-    const piece = g.querySelector<HTMLElement>('.vis-piece'), o = this.moved.get(g.dataset.dev!);
-    if (!piece) return;
-    piece.style.top = -a.h / 2 - LEAD + 'px';
-    piece.style.translate = o ? o.x * this.unit + 'px ' + o.y * this.unit + 'px' : '';
-  }
-
-  // ---------- hack vision: moving a piece ----------
-
-  /** Moved pieces, for the save (world units from the default spot). */
-  pieces(): Record<string, Pt> { return Object.fromEntries([...this.moved].map(([k, p]) => [k, { x: Math.round(p.x), y: Math.round(p.y) }])); }
-  restorePieces(rec: Record<string, Pt> | undefined, keep: (id: string) => boolean) {
-    this.moved.clear();
-    for (const [k, p] of Object.entries(rec ?? {})) if (keep(k) && p && Number.isFinite(p.x) && Number.isFinite(p.y)) this.moved.set(k, { x: p.x, y: p.y });
-    this.render();
-  }
-  /** Back to the default spot over the device. */
-  private toDefault(id: string) {
-    if (!this.moved.delete(id)) return;
-    this.render(); this.onLayout();
-  }
+  /** Did the player move this device's core or any of its nouns? Then overlap handling leaves it alone. */
+  private placedByHand(id: string) { return this.moved.has(id) || [...this.voff.keys()].some((k) => k.startsWith(id + '.')); }
 
   /**
-   * Drag a device's piece (plate and circuit) in hack vision. A press that does not
-   * travel past a few px is a tap (`tap`); past that, the piece follows the pointer.
-   * The group is looked up fresh on every move, so a redraw mid-drag (a timer firing)
-   * does not drop it.
+   * Where a noun sits around its core in hack vision, in px. By default the nouns
+   * stand in a row over the core (`row()`), spaced by their names; once dragged,
+   * where the player put it (kept in world units, so it holds at any zoom).
    */
-  private dragPiece(e: PointerEvent, id: string, tap: () => void) {
-    const sx = e.clientX, sy = e.clientY, u = this.unit || 1;
-    const group = () => this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`);
-    let base = this.moved.get(id) ?? { x: 0, y: 0 }, moving = false;
-    const mv = (ev: PointerEvent) => {
-      if (!moving) {
-        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) <= 5) return;
-        moving = true;
-        // a circuit the overlap handling had nudged: keep it under the pointer, nudge and all
-        const row = group()?.querySelector<HTMLElement>('.vis-circuit');
-        if (row?.style.translate && !this.moved.has(id) && (e.target as HTMLElement).closest('.vis-circuit')) {
-          const [dx, dy] = row.style.translate.split(' ').map((v) => parseFloat(v) || 0);
-          base = { x: base.x + dx / u, y: base.y + (dy ?? 0) / u };
-        }
-      }
-      this.moved.set(id, { x: base.x + (ev.clientX - sx) / u, y: base.y + (ev.clientY - sy) / u });
-      const g = group();
-      if (g) {
-        g.classList.add('moved');
-        const row = g.querySelector<HTMLElement>('.vis-circuit'); if (row) row.style.translate = '';
-        const a = this.anchors.get(id); if (a) this.size(g, a);
-      }
-      this.lines();
-    };
-    const up = () => {
-      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
-      if (!moving) { tap(); return; }
-      this.render(); this.onLayout();
-    };
-    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  private visionOffset(dev: string, noun: string): P {
+    const u = this.unit || 1, own = this.voff.get(dev + '.' + noun);
+    if (own) return { x: own.x * u, y: own.y * u };
+    const d = this.m.devices.get(dev)!, row = this.row(d);
+    const w = (n: Noun) => Math.max(46, 7 * Math.max(n.id.length, (n.events?.[0]?.length ?? 0) + 2) + 18);
+    const widths = row.map(w), total = widths.reduce((s, x) => s + x, 0) + NOUN_GAP * (row.length - 1);
+    let x = -total / 2;
+    for (let i = 0; i < row.length; i++) {
+      if (row[i].id === noun) return { x: x + widths[i] / 2, y: -ROW_UP };
+      x += widths[i] + NOUN_GAP;
+    }
+    return { x: 0, y: -ROW_UP };
   }
 
-  /** A device (or a logic part) in hack vision: framed, its name on a plate above it, its circuit above that when unfolded. */
-  private visionGroup(id: string) {
-    const d = this.m.devices.get(id)!, a = this.anchors.get(id)!, locked = this.m.lockLeft(id) > 0, open = this.isUnfolded(id);
-    const g = el('div', 'sch vis' + (d.logic ? ' crafted' : '') + (locked ? ' locked' : '') + (open ? ' unfolded' : '') + (this.moved.has(id) ? ' moved' : '')); g.dataset.dev = id;
-    g.style.left = a.x + 'px'; g.style.top = a.y + 'px';
-    const box = el('div', 'vis-outline' + (d.logic ? ' vis-part' : ''));
+  /** Where a device's core stands: over the device by default, or where the player dragged it (world units from there). */
+  private visionCentre(id: string): P {
+    const a = this.anchors.get(id);
+    if (!a) return { x: -999, y: -999 };
+    const o = this.moved.get(id), u = this.unit || 1;
+    return { x: a.x + (o ? o.x * u : 0), y: a.y - a.h / 2 - LEAD - CORE_HALF + (o ? o.y * u : 0) };
+  }
+
+  /** The device's pink frame in the world, apart from its core (the core moves; the frame stays on the thing). */
+  private frame(id: string) {
+    const d = this.m.devices.get(id)!, a = this.anchors.get(id)!;
+    const box = el('div', 'vis-outline' + (d.logic ? ' vis-part' : '')); box.dataset.frame = id;
+    box.style.left = a.x + 'px'; box.style.top = a.y + 'px'; box.style.width = a.w + 'px'; box.style.height = a.h + 'px';
     if (d.logic) {
       // a logic part has no body in the world: this is it, a small module you can drag about
       box.appendChild(el('span', 'vis-glyph', d.name[0] + id.replace(/^\D+/, '')));
@@ -328,129 +294,116 @@ export class Schematic {
       box.appendChild(x);
       this.partGestures(box, id);
     }
-    if (this.metered(id)) { const t = el('div', 'sch-trace'); t.dataset.dev = id; t.appendChild(el('i')); box.appendChild(t); }
-    g.appendChild(box);
-    const num = d.logic ? ' ' + id.replace(/^\D+/, '') : '';
-    // the piece: the plate (and the circuit over it), over the device by default, dragged anywhere by hand
-    const piece = el('div', 'vis-piece'), tag = el('div', 'vis-tag');
-    const plate = el('button', 'vis-plate', d.name + num); plate.type = 'button'; plate.dataset.plate = id;
-    plate.title = d.name + ': ' + (locked ? this.lockText(id) : d.status()) + (open ? ' · tap to fold' : ' · tap to unfold') + ' · drag to move';
-    plate.setAttribute('aria-expanded', String(open));
-    // a tap folds or unfolds; a second tap right after (a double tap) undoes that and puts the piece back over the device
-    const tapPlate = () => {
-      if (this.armed && open) return;
-      const now = performance.now(), again = now - (this.lastTap.get(id) ?? -1e9) < DOUBLE_TAP_MS;
-      this.lastTap.set(id, again ? -1e9 : now);
-      this.fold(id);
-      if (again) this.toDefault(id);
-    };
-    plate.addEventListener('pointerdown', (e) => { if (e.button > 0) return; e.preventDefault(); e.stopPropagation(); this.dragPiece(e, id, tapPlate); });
-    // the keyboard (Enter, Space) still clicks it; a pointer tap is handled on pointerup
-    plate.addEventListener('click', (e) => { e.stopPropagation(); if (e.detail === 0) tapPlate(); });
-    tag.appendChild(plate);
-    if (this.moved.has(id)) {
-      const back = el('button', 'vis-home', '⟲'); back.type = 'button';
-      back.title = 'back over ' + d.name; back.setAttribute('aria-label', 'move ' + d.name + "'s circuit back over it");
-      back.addEventListener('pointerdown', (e) => e.stopPropagation());
-      back.addEventListener('click', (e) => { e.stopPropagation(); this.toDefault(id); });
-      tag.appendChild(back);
-    }
-    piece.appendChild(tag);
-    if (open) {
-      const circuit = el('div', 'vis-circuit');
-      circuit.style.top = -PLATE_H - RISE + 'px';
-      const st = el('div', 'vis-st', locked ? this.lockText(id) : d.status());
-      if (locked) st.dataset.lock = id;
-      const chips = el('div', 'vis-chips');
-      this.row(d).forEach((n) => chips.appendChild(this.chipOf(id, n)));
-      circuit.append(st, chips);
-      // its background (and the status line) drags the piece too; chips, dots and verbs keep their own gestures
-      circuit.addEventListener('pointerdown', (e) => { if (e.button > 0) return; e.preventDefault(); e.stopPropagation(); this.dragPiece(e, id, () => {}); });
-      piece.appendChild(circuit);
-    }
-    g.appendChild(piece);
-    this.size(g, a);
-    return g;
-  }
-
-  /** One noun in a circuit: name and kind, its event dots on the right, its verbs dropping down when open. */
-  private chipOf(id: string, n: Noun) {
-    const key = id + '.' + n.id;
-    if (n.sector && this.m.sealed(id, n.sector)) return this.sealedNoun(id, n.sector, key, null);
-    const choosing = this.pending?.to === key, open = this.open.has(key) || choosing;
-    const target = !!this.armed || (!!this.chip && n.kind === 'GUARD');
-    const node = el('div', 'sch-noun' + (open ? ' open' : '') + (choosing ? ' choosing' : '') + (target ? ' target' : '') + (n.kind === 'SEAL' ? ' seal' : ''));
-    node.dataset.target = key;
-    // the chip (name, kind, event dots) on top; open verbs hang under it, and the circuit grows upward
-    const head = el('div', 'vis-head'), label = el('div', 'sch-label');
-    label.append(el('span', '', n.id), el('small', '', n.kind));
-    head.appendChild(label);
-    if (n.events?.length) {
-      const ports = el('div', 'vis-ports');
-      n.events.forEach((ev) => ports.appendChild(this.eventDot(key + ':' + ev, ev)));
-      head.appendChild(ports);
-    }
-    node.appendChild(head);
-    if (open) node.appendChild(this.verbs(id, n.id, key, { x: 0, y: 1 }, choosing));
-    this.nounGestures(node, key);
-    return node;
+    return box;
   }
 
   /**
-   * Circuits must not overlap each other or the tools: from left to right, one that
-   * runs into something tries the spots just above, below, left and right of each
-   * obstacle and takes the nearest that is free and inside the view (with none
-   * free, it stays put). Cheap: a handful of boxes, measured once.
+   * Move a whole device in hack vision (its core, its nouns with it), as on the board.
+   * A press that does not travel past a few px is a tap (`tap`). The group is looked
+   * up fresh on every move, so a redraw mid-drag (a timer firing) does not drop it.
+   */
+  private dragPiece(e: PointerEvent, id: string, tap: () => void) {
+    const sx = e.clientX, sy = e.clientY, u = this.unit || 1;
+    const group = () => this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`);
+    let base = this.moved.get(id) ?? { x: 0, y: 0 }, moving = false;
+    const mv = (ev: PointerEvent) => {
+      if (!moving) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) <= 5) return;
+        moving = true; base = this.pin(id);
+      }
+      this.moved.set(id, { x: base.x + (ev.clientX - sx) / u, y: base.y + (ev.clientY - sy) / u });
+      const g = group();
+      if (g) { const c = this.visionCentre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px'; }
+      this.lines();
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+      if (!moving) { tap(); return; }
+      this.render(); this.onLayout();
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  }
+
+  /**
+   * About to be moved by hand: a group the overlap handling had nudged keeps that
+   * nudge as its own position (so nothing jumps). Returns its offset (world units).
+   */
+  private pin(id: string): P {
+    const g = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`), u = this.unit || 1;
+    const base = this.moved.get(id) ?? { x: 0, y: 0 };
+    if (!g?.style.translate) return base;
+    const [dx, dy] = g.style.translate.split(' ').map((v) => parseFloat(v) || 0);
+    g.style.translate = '';
+    const p = { x: base.x + dx / u, y: base.y + (dy || 0) / u };
+    this.moved.set(id, p);
+    const c = this.visionCentre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
+    return p;
+  }
+
+  /**
+   * Devices must not overlap each other or the tools: from left to right, one the
+   * player never moved that runs into something tries the spots just above, below,
+   * left and right of each obstacle and takes the nearest that is free and inside the
+   * view (with none free, it stays put). Moved ones are never pushed, only kept from
+   * growing off the top or under the buttons. Cheap: a handful of boxes.
    */
   private arrange() {
     if (this.mode !== 'vision') return;
-    const all = [...this.stage.querySelectorAll<HTMLElement>('.vis-circuit')];
-    if (!all.length) return;
-    // pieces the player moved stay exactly where they were put: they are obstacles, not placed
-    const rows = all.filter((r) => !r.closest('.moved'));
-    all.forEach((r) => { r.style.translate = ''; });
+    const groups = [...this.stage.querySelectorAll<HTMLElement>('.sch.vis')];
+    if (!groups.length) return;
+    groups.forEach((g) => { g.style.translate = ''; });
     const s = this.stage.getBoundingClientRect(), W = s.width, H = s.height;
     type Box = { l: number; t: number; r: number; b: number };
     const box = (e: Element): Box => { const q = e.getBoundingClientRect(); return { l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top }; };
-    const boxes = rows.map((row) => ({ row, b: box(row) })).sort((p, q) => p.b.l - q.b.l);
+    /** A device's whole schematic: its core, its nouns, their dots and open verbs. */
+    const extent = (g: HTMLElement): Box => {
+      const b: Box = { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity };
+      g.querySelectorAll('.sch-core, .sch-label, .port, .sch-verbs').forEach((e) => {
+        const q = box(e); b.l = Math.min(b.l, q.l); b.t = Math.min(b.t, q.t); b.r = Math.max(b.r, q.r); b.b = Math.max(b.b, q.b);
+      });
+      return b;
+    };
     // the zone's buttons over the canvas (HACK, BOARD, …) lie over the stage too
     // (the game's key bar adopts them into its row of actions: then the whole row is in the way)
     const row = this.bar?.parentElement?.classList.contains('kb-actions') ? this.bar.parentElement : this.bar;
     const bar = row && this.bar && !this.bar.hidden && row.offsetParent ? box(row) : null;
-    // a moved circuit is never pushed aside, only kept from growing out of the top of the view
-    // or under the buttons (open verbs make it taller)
-    const placed: Box[] = all.filter((r) => r.closest('.moved')).map((r) => {
-      const b = box(r), top = bar && b.l < bar.r && b.r > bar.l ? Math.max(ROOM, bar.b + ROOM) : ROOM;
+    const mine = (g: HTMLElement) => this.placedByHand(g.dataset.dev!);
+    const placed: Box[] = groups.filter(mine).map((g) => {
+      const b = extent(g), top = bar && b.l < bar.r && b.r > bar.l ? Math.max(ROOM, bar.b + ROOM) : ROOM;
       if (b.t >= top) return b;
-      // the whole piece (plate too) comes down, so the circuit never hides its own plate
-      const piece = r.parentElement!, [px, py] = (piece.style.translate || '0px 0px').split(' ').map((v) => parseFloat(v) || 0);
-      piece.style.translate = px + 'px ' + (py + top - b.t) + 'px';
+      g.style.translate = '0px ' + (top - b.t) + 'px';
       return { ...b, t: top, b: b.b + top - b.t };
     });
     if (!this.palette.hidden) placed.push(box(this.palette));
     if (bar) placed.push(bar);
     const at = (b: Box, dx: number, dy: number): Box => ({ l: b.l + dx, t: b.t + dy, r: b.r + dx, b: b.b + dy });
     const hit = (q: Box) => placed.find((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM);
-    for (const { row, b } of boxes) {
+    const inside = (q: Box) => q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= ROOM - 0.5 && q.b <= H - ROOM + 0.5;
+    const free = groups.filter((g) => !mine(g)).map((g) => ({ g, b: extent(g) })).sort((p, q) => p.b.l - q.b.l);
+    for (const { g, b } of free) {
       let dx = 0, dy = 0;
       if (b.r > W - ROOM) dx = W - ROOM - b.r;
       if (b.l + dx < ROOM) dx = ROOM - b.l;
       if (b.t < ROOM) dy = ROOM - b.t;
       const q0 = at(b, dx, dy);
       if (hit(q0)) {
-        const inside = (q: Box) => q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= ROOM - 0.5 && q.b <= H - ROOM + 0.5;
         const tries = placed.flatMap((p) => [
           [0, p.t - ROOM - q0.b], [0, p.b + ROOM - q0.t], [p.l - ROOM - q0.r, 0], [p.r + ROOM - q0.l, 0],
-        ]).filter(([x, y]) => { const q = at(q0, x, y); return inside(q) && !hit(q); });
-        tries.sort((u, v) => Math.hypot(u[0], u[1]) - Math.hypot(v[0], v[1]));
-        if (tries.length) { dx += tries[0][0]; dy += tries[0][1]; }
+        ]).filter(([x, y]) => inside(at(q0, x, y)));
+        // the nearest free spot; on a crowded (phone) view, the one that overlaps least, but clear of the buttons
+        const hits = (q: Box) => placed.filter((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM).length;
+        const clearOfBar = (q: Box) => !bar || !(q.l < bar.r && q.r > bar.l && q.t < bar.b + ROOM && q.b > bar.t);
+        const best = tries.filter(([x, y]) => clearOfBar(at(q0, x, y)))
+          .map(([x, y]) => ({ x, y, n: hits(at(q0, x, y)), d: Math.hypot(x, y) }))
+          .sort((u, v) => u.n - v.n || u.d - v.d)[0];
+        if (best) { dx += best.x; dy += best.y; }
       }
       placed.push(at(b, dx, dy));
-      if (dx || dy) row.style.translate = dx + 'px ' + dy + 'px';
+      if (dx || dy) g.style.translate = dx + 'px ' + dy + 'px';
     }
   }
 
-  /** A logic part floating in hack vision: drag it to move it in the world, tap it to fold or unfold its circuit. */
+  /** A logic part floating in hack vision: drag it to move it in the world, tap it to fold or unfold its nouns. */
   private partGestures(box: HTMLElement, id: string) {
     box.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('.sch-x')) return;
@@ -467,6 +420,23 @@ export class Schematic {
       };
       window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
     });
+  }
+
+  /** Where the player put things in hack vision, for the save: cores by device id, nouns by `device.noun` (world units). */
+  pieces(): Record<string, Pt> {
+    const r = (p: P) => ({ x: Math.round(p.x), y: Math.round(p.y) });
+    return Object.fromEntries([...[...this.moved].map(([k, p]) => [k, r(p)]), ...[...this.voff].map(([k, p]) => [k, r(p)])]);
+  }
+  restorePieces(rec: Record<string, Pt> | undefined, keep: (id: string) => boolean) {
+    this.moved.clear(); this.voff.clear();
+    for (const [k, p] of Object.entries(rec ?? {})) {
+      if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
+      const dot = k.indexOf('.'), dev = dot < 0 ? k : k.slice(0, dot);
+      if (!keep(dev)) continue;
+      if (dot < 0) this.moved.set(k, { x: p.x, y: p.y });
+      else if (this.m.noun(k)) this.voff.set(k, { x: p.x, y: p.y });
+    }
+    this.render();
   }
   toggleBoard() { if (this.mode === 'board' && this.isOpen) this.openDevice(this.dev || [...this.known][0]); else this.openBoard(); }
   close() { if (this.root.hidden) return; this.root.hidden = true; this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.onClose(); }
@@ -512,12 +482,13 @@ export class Schematic {
   }
   /** Forget where everything sat and which verbs were open (a zone reset). The shared `known` is the owner's to clear. */
   resetLayout() {
-    this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear(); this.moved.clear();
+    this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear(); this.moved.clear(); this.voff.clear();
     this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.dev = '';
     this.render();
   }
 
   private offset(dev: string, noun: string, i: number): P {
+    if (this.mode === 'vision') return this.visionOffset(dev, noun);
     const key = dev + '.' + noun;
     let o = this.offsets.get(key);
     if (!o) {
@@ -546,7 +517,7 @@ export class Schematic {
     return { ...BOARD_NET[Math.max(0, others.indexOf(id)) % BOARD_NET.length] };
   }
   private centre(dev: string): P {
-    if (this.mode === 'vision') return this.anchors.get(dev) ?? { x: -999, y: -999 };
+    if (this.mode === 'vision') return this.visionCentre(dev);
     const W = this.stage.clientWidth, H = this.stage.clientHeight;
     if (this.mode === 'device') return { x: W / 2, y: H / 2 };
     let p = this.boardPos.get(dev);
@@ -587,7 +558,9 @@ export class Schematic {
     const ids = this.ids();
     // what you have seen in hack vision you can wire from the board
     if (this.mode === 'vision') ids.forEach((id) => this.known.add(id));
-    ids.forEach((id) => this.stage.appendChild(this.mode === 'vision' ? this.visionGroup(id) : this.group(id)));
+    this.stage.querySelectorAll('.vis-outline').forEach((f) => f.remove());
+    if (this.mode === 'vision') ids.forEach((id) => this.stage.appendChild(this.frame(id)));
+    ids.forEach((id) => this.stage.appendChild(this.group(id)));
     if (this.mode === 'board') this.m.ghosts().forEach((n) => this.stage.appendChild(this.ghost(n)));
     this.arrange();
     this.lines();
@@ -621,7 +594,9 @@ export class Schematic {
 
   private group(id: string) {
     const d = this.m.devices.get(id)!, locked = this.m.lockLeft(id) > 0, frozen = this.m.frozen(id);
-    const g = el('div', 'sch' + (d.crafted ? ' crafted' : '') + (d.node ? ' node' : '') + (locked ? ' locked' : '') + (frozen ? ' frozen' : '')); g.dataset.dev = id;
+    const vision = this.mode === 'vision', out = !vision || this.isUnfolded(id);
+    const g = el('div', 'sch' + (d.crafted ? ' crafted' : '') + (d.node ? ' node' : '') + (locked ? ' locked' : '') + (frozen ? ' frozen' : '')
+      + (vision ? ' vis' + (this.placedByHand(id) ? ' moved' : '') + (out ? '' : ' folded') : '')); g.dataset.dev = id;
     const c = this.centre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
     const core = el('div', 'sch-core');
     // [ui] the meter: a bar and its words (TRACE 42% / LOCKED · 7 s), kept current by meters()
@@ -636,16 +611,26 @@ export class Schematic {
     if (locked) st.dataset.lock = id;
     core.append(el('div', 'sch-name', d.name), st);
     if (this.metered(id)) core.appendChild(meter());
-    if (d.logic) {
+    // (in hack vision the part's body in the world carries the ×)
+    if (d.logic && !vision) {
       const x = el('button', 'sch-x', '×'); x.type = 'button';
       x.setAttribute('aria-label', 'remove ' + d.name);
       x.addEventListener('pointerdown', (e) => e.stopPropagation());
       x.addEventListener('click', (e) => { e.stopPropagation(); this.removeLogic(id); });
       core.appendChild(x);
     }
-    this.coreGestures(core, g, id, () => this.toggleAll(id));
+    if (vision) {
+      // the core is the device's handle: tap folds or unfolds its nouns, a drag moves it, nouns and all
+      core.dataset.plate = id;
+      core.title = d.name + ' · tap: ' + (out ? 'fold' : 'unfold') + ' · drag: move';
+      core.addEventListener('pointerdown', (e) => {
+        if (e.button > 0) return;
+        e.preventDefault(); e.stopPropagation();
+        this.dragPiece(e, id, () => { if (!(this.armed && out)) this.fold(id); });
+      });
+    } else this.coreGestures(core, g, id, () => this.toggleAll(id));
     g.appendChild(core);
-    d.nouns.forEach((n, i) => {
+    if (out) d.nouns.forEach((n, i) => {
       const key = id + '.' + n.id, o = this.offset(id, n.id, i);
       if (n.sector && this.m.sealed(id, n.sector)) { g.appendChild(this.sealedNoun(id, n.sector, key, o)); return; }
       const choosing = this.pending?.to === key;
@@ -692,7 +677,8 @@ export class Schematic {
   }
 
   private verbs(dev: string, noun: string, key: string, o: P, choosing: boolean) {
-    const side = Math.abs(o.x) >= Math.abs(o.y) ? (o.x >= 0 ? 'right' : 'left') : (o.y >= 0 ? 'down' : 'up');
+    // (in hack vision the nouns stand over or under their core: verbs open away from it, up or down)
+    const side = this.mode === 'vision' ? (o.y < 0 ? 'up' : 'down') : Math.abs(o.x) >= Math.abs(o.y) ? (o.x >= 0 ? 'right' : 'left') : (o.y >= 0 ? 'down' : 'up');
     const box = el('div', 'sch-verbs ' + side + (choosing ? ' choosing' : ''));
     if (choosing) box.appendChild(el('span', 'sch-when', 'when ' + this.pending!.from.split('.')[1].replace(':', ' ') + ' →'));
     const n = this.m.noun(key)!;
@@ -755,29 +741,20 @@ export class Schematic {
     p.setAttribute('class', cls); this.svg.appendChild(p); return p;
   }
 
-  /** The middle of an element's top or bottom edge, in stage px. */
-  private edge(e: Element, side: 'top' | 'bottom'): P {
-    const r = e.getBoundingClientRect(), s = this.stage.getBoundingClientRect();
-    return { x: r.left - s.left + r.width / 2, y: (side === 'top' ? r.top : r.bottom) - s.top };
-  }
-
   private lines() {
     this.svg.querySelectorAll('path:not(.temp), text').forEach((p) => p.remove());
     if (this.mode === 'vision') {
-      // a plate holds its circuit up: one line from the plate to the circuit's foot
-      this.stage.querySelectorAll('.sch.vis').forEach((g) => {
-        const plate = g.querySelector('.vis-plate'), circuit = g.querySelector('.vis-chips'), frame = g.querySelector('.vis-outline');
-        if (plate && circuit) this.path(this.edge(plate, 'top'), this.edge(circuit, 'bottom'), 'branch');
-        // a moved piece stays tied to its device: a leader from the plate to the nearest point of the frame
-        if (plate && frame && g.classList.contains('moved')) {
-          const a = this.edge(plate, 'bottom'), st = this.stage.getBoundingClientRect(), f = frame.getBoundingClientRect();
-          const l = f.left - st.left, t = f.top - st.top;
-          const b = { x: Math.max(l, Math.min(l + f.width, a.x)), y: Math.max(t, Math.min(t + f.height, a.y)) };
-          if (Math.hypot(a.x - b.x, a.y - b.y) > 2) this.path(a, b, 'leader');
-        }
+      // each core stays tied to its device: a leader from the core to the nearest point of the frame
+      const st = this.stage.getBoundingClientRect();
+      this.stage.querySelectorAll<HTMLElement>('.sch.vis').forEach((g) => {
+        const core = g.querySelector('.sch-core'), frame = this.stage.querySelector(`[data-frame="${g.dataset.dev}"]`);
+        if (!core || !frame) return;
+        const c = core.getBoundingClientRect(), f = frame.getBoundingClientRect();
+        const a = { x: c.left - st.left + c.width / 2, y: c.top - st.top + c.height / 2 };
+        const l = f.left - st.left, t = f.top - st.top;
+        const p = { x: Math.max(l, Math.min(l + f.width, a.x)), y: Math.max(t, Math.min(t + f.height, a.y)) };
+        if (Math.hypot(a.x - p.x, a.y - p.y) > 2) this.path(a, p, 'leader');
       });
-      this.m.links.forEach((l) => this.cable(l));
-      return;
     }
     this.stage.querySelectorAll('.sch').forEach((g) => {
       const c = this.pt(g.querySelector('.sch-core')!);
@@ -833,6 +810,15 @@ export class Schematic {
     });
   }
 
+  /**
+   * Open one noun's verbs. In hack vision a device's nouns stand close together in the
+   * world, so its other nouns' verbs fold away (they would cover each other).
+   */
+  private only(key: string) {
+    if (this.mode === 'vision') { const dev = key.split('.')[0] + '.'; [...this.open].forEach((k) => { if (k.startsWith(dev)) this.open.delete(k); }); }
+    this.open.add(key);
+  }
+
   /** Open every verb of a device, or close them all if they are all open. */
   private toggleAll(id: string) {
     const d = this.m.devices.get(id)!;
@@ -851,18 +837,23 @@ export class Schematic {
         if (this.armed) { this.propose(this.armed, key); return; }
         if (this.chip) { const c = this.chip; this.chip = null; this.m.useItem(c, key); return; }
         this.pending = null;
-        if (this.open.has(key)) this.open.delete(key); else this.open.add(key);
+        if (this.open.has(key)) this.open.delete(key); else this.only(key);
         this.render();
       };
-      // in hack vision the row decides where nouns sit: dragging a chip moves its whole piece
-      if (this.mode === 'vision') { this.dragPiece(e, key.split('.')[0], tap); return; }
-      const sx = e.clientX, sy = e.clientY, o0 = { ...(this.offsets.get(key) ?? { x: 0, y: 0 }) };
+      const vision = this.mode === 'vision', dev = key.split('.')[0], noun = key.slice(dev.length + 1);
+      const sx = e.clientX, sy = e.clientY;
+      let o0 = vision ? this.visionOffset(dev, noun) : { ...(this.offsets.get(key) ?? { x: 0, y: 0 }) };
       let moved = false;
       const mv = (ev: PointerEvent) => {
-        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 5) moved = true;
+        if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 5) {
+          moved = true;
+          // hack vision: the device keeps the nudge the overlap handling gave it, so nothing jumps
+          if (vision) { this.pin(dev); o0 = this.visionOffset(dev, noun); }
+        }
         if (!moved) return;
         const o = { x: o0.x + ev.clientX - sx, y: o0.y + ev.clientY - sy };
-        this.offsets.set(key, o);
+        if (vision) { const u = this.unit || 1; this.voff.set(key, { x: o.x / u, y: o.y / u }); this.stage.querySelector(`.sch.vis[data-dev="${dev}"]`)?.classList.add('moved'); }
+        else this.offsets.set(key, o);
         node.style.left = o.x + 'px'; node.style.top = o.y + 'px';
         this.lines();
       };
@@ -976,7 +967,7 @@ export class Schematic {
     this.armed = null;
     if (from.split(':')[0] === to) { this.note(['', 'a noun cannot wire to itself. it tried.', 'dim']); this.render(); return; }
     if (this.m.noun(to)?.kind === 'GUARD') { this.note(['', 'a login wants a person at the keyboard, not a cable.', 'err']); this.render(); return; }
-    this.pending = { from, to }; this.open.add(to);
+    this.pending = { from, to }; this.only(to);
     this.note(['wire ' + from + ' → ' + to, 'pick what ' + to.split('.')[1] + ' should do when that happens.', 'dim']);
     this.render();
   }

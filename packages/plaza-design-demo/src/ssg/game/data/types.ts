@@ -419,8 +419,8 @@ export interface ZoneSave {
   watchdog?: Record<string, number>;
   /**
    * The board: devices you know, where they sit (fractions of the stage), where their nouns sit (px).
-   * `vision`: hack vision's plates and circuits the player moved, by device id, as an offset from
-   * their default spot over the device in world units (x right, y down).
+   * `vision`: where the player put things in hack vision, in world units: by device id, its core's
+   * offset from its default spot over the device; by `device.noun`, the noun's offset from its core.
    */
   board?: { known: string[]; pos: Record<string, Pt>; offsets: Record<string, Pt>; vision?: Record<string, Pt> };
 }
