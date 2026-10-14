@@ -2,10 +2,11 @@
  * A corner shop at night: shelves, a vending machine, a counter with a
  * shopkeeper behind it, a window onto the rain. Small enough to sit in the
  * middle of a wide screen. Bands: far = the street through the window;
- * middle = the back wall; play = shelves, machine, counter, people.
+ * middle = the back wall and, on tall screens, the building above the shop in
+ * cutaway (the stockroom, then flats); play = shelves, machine, counter, people.
  */
 
-import { box, C, ceiling, exitDoor, figure, O, onScreen, PAPER, rng, sign, tell, text, type Scene, type View } from './kit';
+import { box, C, exitDoor, figure, O, onScreen, PAPER, rng, sign, tell, text, type Scene, type View } from './kit';
 
 /** Layout: positions in world units, heights up from the floor. */
 const L = {
@@ -19,12 +20,76 @@ const L = {
   counter: { x: 590, w: 150, h: 26 },
   keeper: 682,
   tubes: [140, 380, 620],
+  /** The building above the shop: a slab, then storeys (the first is the stockroom). */
+  slab: 10,
+  storey: 76,
+  /** Pipes rising through every floor. */
+  risers: [44, 716],
 };
 
 /** Goods on the shelves, laid out once: [dx, row, w, h, tone]. */
 const GOODS = L.shelves.map((s, i) => { const r = rng(70 + i), g: number[][] = []; L.shelfRows.forEach((_, row) => { for (let dx = 4; dx < s.w - 8; dx += 2 + Math.round(r() * 4) + 5) g.push([dx, row, 4 + Math.round(r() * 4), 6 + Math.round(r() * 12), Math.floor(r() * 4)]); }); return g; });
 const TONES = ['rgba(255,217,165,.5)', 'rgba(255,136,0,.5)', 'rgba(200,60,40,.5)', 'rgba(150,140,120,.45)'];
 const RAIN = (() => { const r = rng(73); return Array.from({ length: 24 }, () => [r() * 80, r() * 80, 0.5 + r()]); })();
+
+/** Per upper room: boxes [x, w, h] on the floor, windows [x, lit], a bulb x. Laid out once, for 8 floors. */
+const ROOMS = Array.from({ length: 8 }, (_, k) => {
+  const r = rng(140 + k), boxes: number[][] = [], wins: number[][] = [];
+  for (let bx = 70; bx < L.width - 60; bx += 18 + Math.round(r() * 60)) if (k === 0 || r() < 0.25) boxes.push([bx, 16 + Math.round(r() * 18), 10 + Math.round(r() * (k === 0 ? 30 : 14))]);
+  for (let wx = 90 + Math.round(r() * 40); wx < L.width - 80; wx += 150 + Math.round(r() * 90)) wins.push([wx, r() < 0.35 ? 1 : 0]);
+  return { boxes, wins, bulb: 160 + Math.round(r() * 440) };
+});
+
+/**
+ * The building above the shop, in cutaway, for screens taller than the shop: a
+ * stockroom, then flats, storey after storey up out of the view. Middle band:
+ * dim walls, dim boxes, a few warm windows and bulbs, nothing cyan.
+ */
+function drawUpstairs(x: CanvasRenderingContext2D, v: View, w0: number, w1: number) {
+  const { sx, y, t } = v, top = v.gy, width = w1 - w0;
+  if (top <= L.ceil) return;
+  // the slab over the shop's ceiling
+  box(x, w0, y(L.ceil + L.slab), width, L.slab, '#0d0805');
+  for (let k = 0, h0 = L.ceil + L.slab; h0 < top && k < ROOMS.length; k++, h0 += L.storey + L.slab) {
+    const R = ROOMS[k], h1 = h0 + L.storey;
+    // the room's back wall, a step darker than the shop's
+    x.fillStyle = k === 0 ? '#090604' : '#070403'; x.fillRect(w0, y(h1), width, L.storey);
+    x.fillStyle = 'rgba(' + O + ',.05)'; for (let wx = 20; wx < L.width; wx += 60) x.fillRect(sx(wx), y(h1), 1, L.storey);
+    // windows in the back wall: most dark, a few lit from a lamp inside
+    for (const [wx, lit] of R.wins) {
+      const s = sx(wx);
+      if (!onScreen(v, s, 34)) continue;
+      box(x, s, y(h0 + 56), 30, 34, lit ? 'rgba(255,170,90,.12)' : '#030201', 'rgba(194,65,12,.4)');
+      x.fillStyle = 'rgba(194,65,12,.4)'; x.fillRect(s + 15, y(h0 + 56), 1, 34); x.fillRect(s - 2, y(h0 + 22), 34, 2);
+      if (lit) { x.fillStyle = 'rgba(255,217,165,.08)'; x.fillRect(s + 2, y(h0 + 54), 6, 30); }
+    }
+    // a bare bulb on its cord, lighting a little of the room
+    const bx = sx(R.bulb), by = y(h1 - 18), on = k === 0 || k % 3 === 2;
+    x.strokeStyle = 'rgba(' + PAPER + ',.25)'; x.beginPath(); x.moveTo(bx + 0.5, y(h1)); x.lineTo(bx + 0.5, by); x.stroke();
+    if (on) {
+      const g = x.createRadialGradient(bx, by, 1, bx, by, 60);
+      g.addColorStop(0, 'rgba(255,190,110,.1)'); g.addColorStop(1, 'rgba(255,190,110,0)');
+      x.fillStyle = g; x.fillRect(bx - 60, y(h1), 120, L.storey);
+    }
+    x.fillStyle = on ? 'rgba(255,217,165,' + (0.55 + 0.05 * Math.sin(t * 0.03 + k)) + ')' : 'rgba(255,217,165,.15)'; x.fillRect(bx - 1, by, 3, 3);
+    // what is kept up here: stacked boxes in the stockroom, odd furniture above
+    for (const [wx, w, h] of R.boxes) {
+      box(x, sx(wx), y(h0 + h), w, h, k === 0 ? '#150c06' : '#0d0805', 'rgba(194,65,12,' + (k === 0 ? 0.45 : 0.3) + ')');
+      if (k === 0 && h > 22) box(x, sx(wx) + 2, y(h0 + h + 14), w - 4, 14, '#120a05', 'rgba(194,65,12,.4)');
+    }
+    if (k === 0 && R.boxes[2]) { const [wx, w, h] = R.boxes[2]; text(x, 'NOODLES', sx(wx) + w / 2, y(h0 + h / 2), 'rgba(' + PAPER + ',.3)', 7, '600'); }
+    // the next slab
+    box(x, w0, y(h1 + L.slab), width, L.slab, '#0d0805');
+    x.fillStyle = 'rgba(194,65,12,.35)'; x.fillRect(w0, y(h1 + L.slab), width, 1);
+  }
+  x.fillStyle = 'rgba(194,65,12,.4)'; for (let h = L.ceil + L.slab; h < top; h += L.storey + L.slab) x.fillRect(w0, y(h), width, 1);
+  // pipes rising through every floor, clamped at each slab
+  for (const p of L.risers) {
+    const s = sx(p);
+    x.fillStyle = 'rgba(201,138,63,.22)'; x.fillRect(s, 0, 3, y(L.ceil));
+    x.fillStyle = 'rgba(201,138,63,.35)'; for (let h = L.ceil + L.slab + 20; h < top; h += L.storey + L.slab) x.fillRect(s - 1, y(h), 5, 2);
+  }
+}
 
 function drawShelf(x: CanvasRenderingContext2D, v: View, s: { x: number; w: number }, i: number) {
   const { sx, y } = v, s0 = sx(s.x);
@@ -55,7 +120,8 @@ export const shop: Scene = {
     box(x, w0, y(L.ceil), w1 - w0, L.ceil, '#0b0705');
     x.fillStyle = 'rgba(' + O + ',.12)'; for (let wx = 0; wx < L.width; wx += 40) x.fillRect(sx(wx), y(L.ceil), 1, L.ceil - 30);
     box(x, w0, y(30), w1 - w0, 30, '#0e0906'); x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(w0, y(30), w1 - w0, 1);
-    ceiling(x, v, L.ceil);
+    drawUpstairs(x, v, w0, w1);
+    x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(w0, y(L.ceil), w1 - w0, 1);
     x.fillStyle = 'rgba(' + O + ',.7)'; x.fillRect(w0, 0, 1, v.gy); x.fillRect(w1 - 1, 0, 1, v.gy);
 
     // tube lights; one of them is on its way out

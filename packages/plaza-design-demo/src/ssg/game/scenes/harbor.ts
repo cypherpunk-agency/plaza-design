@@ -30,6 +30,41 @@ const FILL = ['#1c0e06', '#0c1313', '#170b12', '#15110a'];
 const EDGE = ['rgba(255,136,0,.75)', 'rgba(150,170,160,.6)', 'rgba(200,120,150,.55)', 'rgba(220,180,90,.6)'];
 
 const SKYLINE = towers(41, 1700, [16, 40], [18, 70], 0.08);
+/** The tall towers of the far city, further off still, behind the low skyline. */
+const SPIRES = towers(45, 2200, [12, 30], [60, 190], 0.05);
+/** Cloud banks lit from below by the city: [x, width, height offset, thickness], laid out once. */
+const CLOUDS = (() => { const r = rng(47); return Array.from({ length: 40 }, () => [r() * 2400, 120 + r() * 260, r() * 30, 6 + r() * 10]); })();
+/** Crane apex: height of the A-frame's top. */
+const APEX = 320;
+
+/**
+ * The sky over the water, so a tall screen sees more night rather than a dead band:
+ * the far city's spires with their warning lights, and banks of cloud lit orange
+ * from below by the city, dimmer the higher they are. Far band only.
+ */
+function drawSkyDepth(x: CanvasRenderingContext2D, v: View) {
+  const { y, t } = v, top = v.gy;
+  drawTowers(x, v, SPIRES, 0.06, y(HZ), 0.06, '#020100', 1);
+  for (const b of SPIRES) {
+    if (b.h < 150) continue;
+    const s = v.sx(b.x, 0.06) + Math.floor(b.w / 2);
+    if (s < 0 || s > v.viewW) continue;
+    x.fillStyle = 'rgba(' + RED + ',' + (Math.sin(t * 0.03 + b.x) > 0.3 ? 0.55 : 0.12) + ')'; x.fillRect(s - 1, y(HZ + b.h) - 2, 2, 2);
+  }
+  // cloud banks, one layer every 70 units up to the top of the view
+  const span = 2400;
+  for (let k = 0, h = HZ + 120; h < top - 6; k++, h += 70) {
+    const a = 0.07 * Math.max(0.35, 1 - k * 0.2);
+    for (let i = k % 2; i < CLOUDS.length; i += 2) {
+      const [cx, w, dh, th] = CLOUDS[i];
+      const s = (((cx + k * 530 - t * 0.03 * (1 + k * 0.3) - v.cam * (0.04 + k * 0.01)) % span) + span) % span - 300;
+      if (s > v.viewW || s + w < 0) continue;
+      const cy = y(h + dh);
+      x.fillStyle = 'rgba(194,65,12,' + a * 0.6 + ')'; x.beginPath(); x.ellipse(s + w / 2, cy, w / 2, th, 0, 0, Math.PI * 2); x.fill();
+      x.fillStyle = 'rgba(255,136,0,' + a * 0.5 + ')'; x.fillRect(Math.round(s + w * 0.2), Math.round(cy + th * 0.6), Math.round(w * 0.6), 1);
+    }
+  }
+}
 const ripples: [number, number, number][] = (() => { const r = rng(43); return Array.from({ length: 90 }, () => [r() * 2000, 4 + r() * (HZ - 8), 4 + r() * 14]); })();
 
 function drawContainer(x: CanvasRenderingContext2D, sx: number, top: number, kind: number, label: string) {
@@ -44,6 +79,15 @@ function drawCrane(x: CanvasRenderingContext2D, v: View, cx: number, name: strin
   const { sx, y, t } = v, l0 = sx(cx - 80), l1 = sx(cx + 74);
   if (!onScreen(v, sx(cx - 230), 460)) return;
   const steel = '#21110a', edge = 'rgba(' + O + ',.8)';
+  // the A-frame over the legs and its stays out to both ends of the boom; it leaves the top of a short view
+  const ap = sx(cx - 20), b0 = sx(cx - 230), b1 = sx(cx + 150);
+  x.strokeStyle = 'rgba(' + O + ',.5)'; x.lineWidth = 3; x.beginPath();
+  x.moveTo(l0 + 3, y(232)); x.lineTo(ap, y(APEX)); x.lineTo(l1 + 3, y(232)); x.stroke(); x.lineWidth = 1;
+  x.strokeStyle = 'rgba(' + O + ',.3)'; x.beginPath();
+  x.moveTo(ap, y(APEX)); x.lineTo(b0 + 4, y(206)); x.moveTo(ap, y(APEX - 4)); x.lineTo(sx(cx - 130), y(206));
+  x.moveTo(ap, y(APEX)); x.lineTo(b1 - 4, y(206)); x.stroke();
+  box(x, ap - 6, y(APEX + 6), 12, 6, steel, edge);
+  x.fillStyle = Math.sin(t * 0.04 + phase + 1) > 0 ? 'rgba(' + RED + ',.9)' : 'rgba(' + RED + ',.2)'; x.fillRect(ap - 1, y(APEX + 9), 3, 3);
   // legs, sill and portal beam
   for (const lx of [l0, l1]) box(x, lx, y(232), 6, 232, steel, edge);
   box(x, l0, y(48), l1 - l0 + 6, 6, steel, edge);
@@ -51,7 +95,6 @@ function drawCrane(x: CanvasRenderingContext2D, v: View, cx: number, name: strin
   x.strokeStyle = 'rgba(' + O + ',.35)'; x.beginPath();
   x.moveTo(l0 + 6, y(54)); x.lineTo(l1, y(162)); x.moveTo(l1, y(54)); x.lineTo(l0 + 6, y(162)); x.stroke();
   // the boom out over the water, a lattice
-  const b0 = sx(cx - 230), b1 = sx(cx + 150);
   box(x, b0, y(206), b1 - b0, 4, steel, edge); box(x, b0, y(194), b1 - b0, 3, steel, edge);
   x.strokeStyle = 'rgba(' + O + ',.4)'; x.beginPath();
   for (let i = b0; i < b1 - 10; i += 12) { x.moveTo(i, y(191)); x.lineTo(i + 12, y(203)); }
@@ -95,6 +138,7 @@ export const harbor: Scene = {
     const glow = x.createLinearGradient(0, y(HZ + 70), 0, y(HZ));
     glow.addColorStop(0, 'rgba(194,65,12,0)'); glow.addColorStop(1, 'rgba(194,65,12,.12)');
     x.fillStyle = glow; x.fillRect(0, y(HZ + 70), v.viewW, 70);
+    drawSkyDepth(x, v);
     drawTowers(x, v, SKYLINE, 0.12, y(HZ), 0.12, '#030100', 1);
     x.fillStyle = '#01040a'; x.fillRect(0, y(HZ), v.viewW, gy - y(HZ));
     x.fillStyle = 'rgba(' + O + ',.12)'; x.fillRect(0, y(HZ), v.viewW, 1);
