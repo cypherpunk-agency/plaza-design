@@ -53,6 +53,14 @@ Append one line per decision: what, which side, why.
   set); which rules exist and what recipes make (`from`): **data**.
 - Settling (`settleYard`) and the yard's own check (crates, the parcel's crate): **code**, in
   `YARD_RULES` (`settle`, `check`), next to the effects they mirror.
+- How high a device sits in the world (`layout.spot.y`: a sign on a wall, a relay on a roof):
+  **data**, next to `x`, `w`, `h`. Hack vision frames it there, taps find it there, and its E
+  target says how high it is (`ZoneTarget.y`) so the game can tell which ledge you reach it from.
+- A device that moves in the world (DLV-9 driving to the market gate): **code**, `ZoneRules.place`
+  (where it stands now, or null while it is out of the world). Its home stays `layout.spot`.
+- Typing in the deck (the terminal, last resort) on a zone: **engine**, `ZoneHost.typed(fn)` runs
+  what was typed without echoing the shell line a second time; `ZoneHost.viewing` is the device
+  whose schematic is open. What the commands mean (`ls`, `cat`, `login`) is the zone's code.
 
 ## The idea in one paragraph
 
@@ -71,7 +79,7 @@ data change. A new kind of behaviour is a code change: one new effect.
   parts, and the hacking layer (guards, sectors, trace, net, keyring). Node can run it; `now`
   is swappable for tests.
 - `rules.ts`: `ZoneRules`, what a zone's code gives the engine (`effects`, `panels`,
-  `derived`, `settle`, `needs`, `check`), the engine's own effects (`timer.wait`), and
+  `derived`, `settle`, `needs`, `check`, `place`), the engine's own effects (`timer.wait`), and
   `contractOf`, which turns rules into the contract the build checks.
 - `schematic.ts`, `panels.ts`: the overlay (device, board, hack vision) and the full-screen
   panels (the engine's `talk`; a zone's own, like the yard's `camera`, via `PanelFn`).
@@ -143,7 +151,7 @@ Each device may carry `layout`:
 
 ```json
 "layout": {
-  "spot": { "x": 350, "w": 186, "h": 130 },          // in the world: tap, E, hack vision
+  "spot": { "x": 350, "w": 186, "h": 130, "y": 0 },  // in the world: tap, E, hack vision (y: its bottom above the street)
   "board": { "x": 0.5, "y": 0.3 },                   // home on the board (fractions)
   "dir": { "arm": "down", "claw": "up" },            // which side each noun sits on
   "vision": { "arm": "down", "claw": "up" }          // the same in hack vision

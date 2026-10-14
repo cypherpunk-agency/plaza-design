@@ -59,8 +59,8 @@ export interface Link { from: string; to: string; verb: string }
 /** Where a verb is running: which device and noun, and whether a cable sent it. */
 export interface Ctx { dev: string; noun: string; verb: string; bySignal: boolean }
 
-/** A device standing in the world, from its `layout.spot`. */
-export interface Spot { id: string; x: number; w: number; h: number }
+/** A device standing in the world, from its `layout.spot`: centre x, size, and how high its bottom sits (0: on the street). */
+export interface Spot { id: string; x: number; w: number; h: number; y: number }
 
 export interface ZoneHooks {
   say: (line: Line) => void;
@@ -193,9 +193,19 @@ export class ZoneModel {
   /** A state key, a derived value (`gateOpen`) or `signal`, as conditions read them. */
   value(key: string): Value | undefined { return this.read(key, this.ctx('')); }
   noun(key: string) { const [d, n] = split(key); return this.devices.get(d)?.nouns.find((x) => x.id === n); }
-  /** Devices standing in the world (their `layout.spot`); logic parts and net nodes live on the board only. */
+  /**
+   * Devices standing in the world (their `layout.spot`); logic parts and net nodes live on the board only.
+   * A device that moves (the zone's `rules.place`) stands where its code says, or is gone for now (null).
+   */
   spots(): Spot[] {
-    return [...this.devices.values()].filter((d) => !d.logic && !d.node && d.data.layout?.spot).map((d) => ({ id: d.id, ...d.data.layout!.spot! }));
+    const out: Spot[] = [];
+    for (const d of this.devices.values()) {
+      if (d.logic || d.node || !d.data.layout?.spot) continue;
+      const home: Spot = { id: d.id, ...d.data.layout.spot, y: d.data.layout.spot.y ?? 0 };
+      const s = this.rules.place ? this.rules.place(this, home) : home;
+      if (s) out.push(s);
+    }
+    return out;
   }
 
   // ---------- doing things ----------

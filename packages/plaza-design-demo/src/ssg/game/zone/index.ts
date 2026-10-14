@@ -6,5 +6,5 @@
  */
 
 export { ZoneHost, type DrawView, type ZoneDef, type ZoneStore, type ZoneTarget, type ZoneView } from './host';
-export { ZoneModel, type Device, type Line, type Link, type Noun } from './model';
+export { ZoneModel, type Device, type Line, type Link, type Noun, type Spot } from './model';
 export type { Effect, World, ZoneRules } from './rules';

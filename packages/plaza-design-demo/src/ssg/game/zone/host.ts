@@ -24,8 +24,11 @@ import { type PanelFn, Panels } from './panels';
 import type { ZoneRules } from './rules';
 import { type Anchor, Schematic } from './schematic';
 
-/** Something to stand next to and press E on. */
-export interface ZoneTarget { id: string; x: number; label: string; promptH: number }
+/**
+ * Something to stand next to and press E on. `promptH`: how high its prompt hangs above the street;
+ * `y`: how high the thing itself sits (a box on a roof), so the game can tell where you stand to reach it.
+ */
+export interface ZoneTarget { id: string; x: number; label: string; promptH: number; y?: number }
 
 /** How the game's canvas maps world units for a zone's drawing. */
 export interface DrawView { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number; viewH: number }
@@ -78,6 +81,8 @@ export class ZoneHost {
   onClose: () => void = () => {};
   private saveTimer = 0;
   private saved = '';
+  /** While a typed command runs (`typed`), the deck already shows it: don't print the shell line again. */
+  private echo = true;
 
   constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: ZoneStore | undefined, readonly def: ZoneDef) {
     this.model = new ZoneModel({
@@ -174,7 +179,7 @@ export class ZoneHost {
   }
 
   private say(l: Line) {
-    if (l[0]) this.print('> ' + l[0], 'in');
+    if (l[0] && this.echo) this.print('> ' + l[0], 'in');
     if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out');
     this.schem.note(l); this.vision.note(l);
   }
@@ -188,6 +193,18 @@ export class ZoneHost {
     }
     if (this.hackBtn.classList.contains('on') !== on) { this.hackBtn.classList.toggle('on', on); this.hackBtn.setAttribute('aria-pressed', String(on)); }
   }
+
+  /**
+   * Run something the player typed in the deck (the terminal, last resort): the engine's lines
+   * print as usual, minus the shell command the player just typed themselves.
+   */
+  typed(fn: () => void) {
+    this.echo = false;
+    try { fn(); } finally { this.echo = true; }
+  }
+
+  /** The device whose schematic is open (not the board, not hack vision), if any. */
+  get viewing() { return this.schem.viewing; }
 
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
@@ -209,7 +226,7 @@ export class ZoneHost {
   follow(project: Project, width: number) {
     const seen = new Map<string, Anchor>();
     this.model.spots().forEach((s) => {
-      const c = project(s.x, s.h / 2), e = project(s.x + s.w / 2, s.h);
+      const c = project(s.x, s.y + s.h / 2), e = project(s.x + s.w / 2, s.y + s.h);
       const w = (e.x - c.x) * 2, h = (c.y - e.y) * 2;
       if (c.x + w / 2 < 0 || c.x - w / 2 > width) return;
       seen.set(s.id, { x: c.x, y: c.y, w, h });
@@ -235,7 +252,7 @@ export class ZoneHost {
   /** Things you can stand next to and press E on: the zone's own (an exit), then every device in the world. */
   targets(): ZoneTarget[] {
     const m = this.model, own = this.def.view.targets?.(m) ?? [];
-    const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, label: m.label('prompt.open'), promptH: Math.min(s.h + 12, 100) }));
+    const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, y: s.y, label: m.label('prompt.open'), promptH: s.y + Math.min(s.h + 12, 100) }));
     return [...own, ...devs];
   }
 
@@ -247,7 +264,7 @@ export class ZoneHost {
 
   /** The device in the world under a point (world x, height), smaller things first. */
   spotAt(wx: number, h: number) {
-    const hit = this.model.spots().filter((s) => Math.abs(wx - s.x) <= s.w / 2 + 3 && h >= -4 && h <= s.h + 4);
+    const hit = this.model.spots().filter((s) => Math.abs(wx - s.x) <= s.w / 2 + 3 && h >= s.y - 4 && h <= s.y + s.h + 4);
     // a big frame (the crane) must not hide the smaller things standing in front of it
     hit.sort((a, b) => a.w - b.w);
     return hit[0]?.id ?? null;

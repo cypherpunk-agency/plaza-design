@@ -9,7 +9,7 @@
 import { ENGINE } from '../data';
 import type { CodeContract } from '../data/check';
 import type { Value, ZoneData } from '../data/types';
-import type { Ctx, Line, ZoneModel } from './model';
+import type { Ctx, Line, Spot, ZoneModel } from './model';
 
 export type Vars = Record<string, string | number>;
 
@@ -42,6 +42,11 @@ export interface ZoneRules {
   needs?: { state?: string[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
   /** Extra checks only this zone's code knows (a crate the parcel sits in). One message per problem. */
   check?: (z: ZoneData) => string[];
+  /**
+   * Devices that move in the world (a delivery robot driving off): where one stands now, given
+   * its home from `layout.spot`; null while it is out of the world. Read every frame, so keep it cheap.
+   */
+  place?: (m: ZoneModel, home: Spot) => Spot | null;
 }
 
 /** The engine's own texts, by kind: every zone has them (engine.json), and may override them with the same kind. */
