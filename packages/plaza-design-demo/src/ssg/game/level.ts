@@ -30,7 +30,10 @@ export interface Save {
   playMs?: number;
 }
 
-export const SAVE_KEY = 'access-denied-save-v1';
+/** `?sudo` in the URL: everything unlocked, a LEVELS menu, and its own save (sudo.ts). */
+export const SUDO = (() => { try { return new URLSearchParams(location.search).has('sudo'); } catch { return false; } })();
+
+export const SAVE_KEY = SUDO ? 'access-denied-save-sudo' : 'access-denied-save-v1';
 
 /** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` zone replaces it later. */
 export const START_ZONE = 'downtown';

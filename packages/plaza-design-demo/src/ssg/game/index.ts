@@ -27,8 +27,8 @@ import { takeResume } from './slots';
 
 export { runBoot };
 
-/** `?play` in the URL skips the boot and the Konami code: straight into the game. */
-export const playParam = () => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } };
+/** `?play` (or `?sudo`, sudo.ts) in the URL skips the boot and the Konami code: straight into the game. */
+export const playParam = () => { try { const q = new URLSearchParams(location.search); return q.has('play') || q.has('sudo'); } catch { return false; } };
 /** `?play=yard` starts in the fixer's back yard (the demo zone for the new hacking system); `?play=harbor` etc. in a scene. */
 const playZone = () => {
   try { return zoneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }

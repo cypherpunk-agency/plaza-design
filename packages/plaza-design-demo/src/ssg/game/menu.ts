@@ -3,6 +3,7 @@
  *
  * Esc opens it (game.ts decides when: overlays, bubbles and schematics close
  * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
+ * In sudo mode (`?sudo`) LEVELS comes second: every zone, scene and cutscene.
  * The city map is not here: it lives in the world (TAB on your deck, map boards).
  * Arrows or W/S move, Enter/E/Space select, Esc goes back a screen or resumes;
  * mouse and touch pick items directly. Styles: #game-menu in render.tsx.
@@ -26,6 +27,9 @@ export interface MenuHooks {
   quit(): void;
   /** The menu closed (resume): give the game its focus back. */
   onClose(): void;
+  /** Sudo mode only (sudo.ts): every level, and going to one. Without it there is no LEVELS item. */
+  levels?: () => { id: string; name: string; note: string }[];
+  enter?: (id: string) => void;
 }
 
 type Tone = 'go' | 'ok' | 'bad' | 'dim';
@@ -111,15 +115,29 @@ export class Menu {
   // ---------- screens ----------
 
   private main(sel: number) {
-    const tag = this.hooks.zone().name + ' · PAUSED';
+    const o = this.hooks.levels ? 1 : 0; // LEVELS shifts everything below it
+    const tag = this.hooks.zone().name + ' · PAUSED' + (o ? ' · SUDO' : '');
     this.show_(tag, [
       { label: 'RESUME', run: () => this.hide() },
+      ...(o ? [{ label: 'LEVELS', tone: 'go' as const, run: () => this.levels(0) }] : []),
       { label: 'SAVE GAME', run: () => this.slots('save', 0) },
       { label: 'LOAD GAME', run: () => this.slots('load', 0) },
-      { label: 'NEW GAME', tone: 'bad', run: () => this.confirm('START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', () => { this.hide(); this.hooks.newGame(); }, () => this.main(3)) },
+      { label: 'NEW GAME', tone: 'bad', run: () => this.confirm('START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', () => { this.hide(); this.hooks.newGame(); }, () => this.main(3 + o)) },
       { label: 'SOUND: ' + (sound.enabled ? 'ON' : 'OFF'), run: () => this.toggleSound() },
       { label: 'QUIT TO HOMEPAGE', run: () => { this.hide(); this.hooks.quit(); } },
     ], sel, null);
+  }
+
+  /** Sudo: every level; picking one goes straight there. */
+  private levels(sel: number) {
+    const here = this.hooks.zone().id;
+    const items: Item[] = this.hooks.levels!().map((l) => ({
+      label: l.name,
+      meta: l.id === here ? 'HERE' : l.note,
+      run: () => { this.hide(); this.hooks.enter?.(l.id); },
+    }));
+    items.push({ label: 'BACK', run: () => this.main(1) });
+    this.show_('LEVELS · SUDO', items, sel, () => this.main(1));
   }
 
   private slots(mode: 'save' | 'load', sel: number, note?: [string, Tone]) {
@@ -150,8 +168,9 @@ export class Menu {
         },
       });
     }
-    items.push({ label: 'BACK', run: () => this.main(mode === 'save' ? 1 : 2) });
-    this.show_(mode === 'save' ? 'SAVE GAME' : 'LOAD GAME', items, sel, () => this.main(mode === 'save' ? 1 : 2));
+    const o = this.hooks.levels ? 1 : 0, at = (mode === 'save' ? 1 : 2) + o;
+    items.push({ label: 'BACK', run: () => this.main(at) });
+    this.show_(mode === 'save' ? 'SAVE GAME' : 'LOAD GAME', items, sel, () => this.main(at));
     if (note) this.say(...note);
   }
 

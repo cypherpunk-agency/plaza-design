@@ -11,10 +11,11 @@
  * way every zone's runtime starts clean from the loaded save.
  */
 
-import { SAVE_KEY, type Save } from './level';
+import { SAVE_KEY, SUDO, type Save } from './level';
 
 export const SLOT_COUNT = 3;
-export const slotKey = (n: number) => `access-denied-slot-${n}`;
+/** Sudo mode keeps its own slots, like its own save. */
+export const slotKey = (n: number) => `access-denied-${SUDO ? 'sudo-' : ''}slot-${n}`;
 /** sessionStorage: a save to land in after the reload (LOAD GAME). */
 export const RESUME_KEY = 'access-denied-resume';
 
@@ -70,7 +71,7 @@ export function resumeInto(slot: Slot) {
   } catch {
     // No sessionStorage: write the save now and come back through ?play.
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(slot.save)); } catch { /* nothing to do */ }
-    location.search = '?play' + (slot.zone && slot.zone !== 'downtown' ? '=' + encodeURIComponent(slot.zone) : '');
+    location.search = '?play' + (slot.zone && slot.zone !== 'downtown' ? '=' + encodeURIComponent(slot.zone) : '') + (SUDO ? '&sudo' : '');
   }
 }
 

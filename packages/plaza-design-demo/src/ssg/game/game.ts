@@ -22,6 +22,7 @@ import {
   seenFlag, STAND_IDS, standOf, STANDS, STATIONS, stationOf, type DoorId, type MapState, type Stand, type Station, type Zone,
 } from './city';
 import { KeyBar } from './keybar';
+import { levels, SUDO, unlockAll } from './sudo';
 import { Menu } from './menu';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
@@ -62,7 +63,7 @@ export class Game {
   private canvas: HTMLCanvasElement;
   private x: CanvasRenderingContext2D;
   private term: Terminal;
-  private save: Save = loadSave();
+  private save: Save = SUDO ? unlockAll(loadSave()) : loadSave();
   private k = 2;
   private viewW = 640;
   private viewH = 320;
@@ -125,6 +126,7 @@ export class Game {
       newGame: () => this.newGame(),
       quit: () => host.onExit(),
       onClose: () => this.canvas.focus(),
+      ...(SUDO ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
     }, this.touch);
     this.canvas.addEventListener('pointerdown', (e) => this.onCanvasPointer(e, true));
     this.canvas.addEventListener('pointermove', (e) => this.onCanvasPointer(e, false));
@@ -321,7 +323,7 @@ export class Game {
     this.bubble = null;
     this.showEnd = false;
     this.toast = null;
-    this.save = newSave();
+    this.save = SUDO ? unlockAll(newSave()) : newSave();
     this.yard.reset(); // the yard's runtime back to a first visit, written into the new save
     storeSave(this.save);
     this.syncHud();
@@ -1129,7 +1131,7 @@ export class Game {
     const top = (this.keyBar.root.offsetHeight + 8) * (this.canvas.width / (this.canvas.clientWidth || 1)) / this.k;
     x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.zoneName(), 8, top + 10);
     x.fillStyle = 'rgba(255,217,165,.7)';
-    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-'), 8, top + 21);
+    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : ''), 8, top + 21);
     if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, top + 32); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     if (this.toast && this.t < this.toast.until) {
@@ -1200,6 +1202,16 @@ export class Game {
     this.syncHud();
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + (this.scene?.name ?? (this.zone === 'yard' ? 'the back yard' : 'Downtown')));
     if (andThen) then?.();
+  }
+
+  /** Sudo's LEVELS: play a cutscene (then its next zone), or arrive in a zone at its spawn. */
+  private enterLevel(id: string) {
+    this.leaveMachine();
+    this.bubble = null;
+    if (isCutsceneId(id)) { this.playCutscene(id); return; }
+    this.handTo(id);
+    this.markSeen(this.zone);
+    storeSave(this.save);
   }
 
   /** Arrive in a zone by id ('downtown', 'yard' or a scene id; anything else is Downtown), at its spawn. */
