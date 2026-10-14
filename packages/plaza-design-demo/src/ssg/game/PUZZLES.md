@@ -1096,13 +1096,16 @@ loot (start with Morse, find the cryptex, earn the patch bay), glyph combos as h
 - **The Registry's watchdog**: first seen on FRIENDNET (P10), then NEOBANK (P11), the harbor
   (P15), where its freeze becomes a tool.
 
-## Open questions
+## Decided (Tommi, 2026-10-14)
 
-1. LEVELS L3 currently ends on the metro platform; this catalogue sends the journal to the
-   laundromat first (P10 → P12 → P13 → P14). Keep, or put the market after the harbor?
-2. Fan-out: can one event feed several nouns? P10 avoids it; P13's breaker wants it (stop every
-   washer). Decide in the format.
-3. Fragment tools (`reverse`, combining `sprat` + `0412`): drag-to-combine on the keyring, or
-   type at the keyboard? The keyboard is the last resort; combining by drag keeps it optional.
-4. Guard toys (rings, cipher, cryptex, Morse): one each, or reuse rings for every "probe"?
-5. P15 and Act II: what does Moth know, and is the harbor the end of Act I?
+1. **Order:** keep the catalogue's order: Moth's journal → market gate → laundromat → metro and
+   train → harbor.
+2. **Fan-out:** yes, one event can feed several cables (P13's breaker stops every washer).
+3. **Combining clues:** both: drag fragments together on the keyring, or type the result.
+4. **Lock toys:** one toy per lock type (shield rings, cipher wheel, cryptex, Morse).
+5. **The harbor ends Act I, and Moth knows this:** you weren't lost, you were *deleted*. The
+   Registry revoked you on purpose, with a list of others; Moth went dark after finding the
+   list. The proof is split into seven root fragments along the ship lanes and the antenna
+   (Act II). The finale is the server room where you were revoked ("Identity not found. You do
+   not exist. Please hold.") with the choice `> free` (everyone on the list) or `> take` (only
+   your own identity back).
