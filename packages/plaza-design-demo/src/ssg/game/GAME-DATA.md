@@ -15,8 +15,8 @@ open under **Open questions**.
   Owned modules are in the save (`Save.modules`; `legs.so` stays `Save.jump`). The board
   shows owned ones as `+ TIMER`, the rest as a dashed `???` slot ("not found yet").
   A new game owns `timer.so`. A zone hands a module out with a `give` step (see **Giving
-  things**); `foundIn` names that zone, and the check holds the two together. Nothing hands out
-  `switch.so` yet (`foundIn: null`): P09's drawer on MOTH-PC is where it goes.
+  things**); `foundIn` names that zone, and the check holds the two together. `switch.so` is
+  found in MOTH-PC's drawer in Moth's place (`foundIn: "moth"`, P09).
 - **Yard progress is saved**, in the same save as Downtown: `save.zones.yard` (see **Saves**).
 - **No hints in the yard for now.** Goals stay (the GOAL line in the HUD); Downtown's fixer
   hints are untouched.
@@ -122,6 +122,21 @@ Append one line per decision: what, which side, why.
   ran verbs for events, so the line moved onto the guard.)
 - What the save keeps (trace, lockouts, clocks, the watchdog's place, cut cables by id):
   **engine code** (`ZoneModel.snapshot` / `restore`), decided below under **Saves**.
+- Moth's place (`moth.json`, story Level 3, P09 and P10): all **data** on the engine as it was; no
+  engine change. FRIENDNET and MOTH-PC are the zone's own `nodes` (PUZZLES had said `mothnet.json`;
+  the zone id is `moth`). The rig's LINK `when: uplink` and MOTH-PC's status read two **code**
+  derived values (`moth/rules.ts`: `uplink` = the `uplink` chip is on the keyring, `journalOpen`);
+  the goals a node or a sector ticks are code there too, as in the capsule.
+- `uplink.so` is a keyring chip (`uplink`, label "uplink.so", from the yard's parcel), not a module:
+  modules are logic parts you place on the board, and keyring ids may not end in `.so`. The parcel
+  hands out it and `moth.key` in **code** (`yard/index.ts` `PARCEL`, the tray's `use`); a save that
+  took the parcel earlier gets both when the game loads (`game.ts`).
+- Hooks outside zone/ for a new zone (Moth's place): `game.ts` hosts it like the capsule (zoneHost,
+  levelW, placeName, goTo, the door's key check, its first-visit lines, drawing it indoors);
+  `city.ts` adds `moth` to `Zone` and `DOORS.moth` (1496, the residents' door of the shuttered
+  front at 1420, next to the metro stairs); `companion.ts` `WARM.moth` (the tank lid); `sudo.ts`
+  `levels()`; `index.ts` accepts `?play=moth`. The door's refusal (no key chip) is **code** in
+  `game.ts` `useDoor`, like the other Downtown doors.
 
 ## The idea in one paragraph
 
@@ -605,7 +620,10 @@ Decided (save details):
   `game/companion.ts`: Pixel. `START_ZONE` (city.ts) is `capsule`: a save that has never been
   Downtown starts there, a new one after the intro.
 - `game/yard/`: the yard's own code: `effects.ts` (`YARD_RULES`), `camera.ts` (CAM-1),
-  `scene.ts` (drawing), `index.ts` (`YARD_ZONE`).
+  `scene.ts` (drawing), `index.ts` (`YARD_ZONE`, the parcel: `PARCEL`).
+- `game/data/moth.json`: Moth's place, flat 4C (story Level 3): the flat's things, FRIENDNET,
+  MOTH-PC, the watchdog. `game/moth/`: `rules.ts` (`MOTH_RULES`: `uplink`, `journalOpen`, goals),
+  `scene.ts` (drawing), `index.ts` (`MOTH_ZONE`, the door out).
 - `game/data/downtown.json`: Downtown. `game/downtown/`: its code: `rules.ts` (effects, derived
   values from the save, DLV-9's drive; `downtownRules(player)`), `save.ts` (`reconcile` with old
   saves), `shell.ts` (typed commands), `camera.ts` (CAM-3), `scene.ts` (drawing, the CITY MAP
@@ -636,9 +654,8 @@ Boundary: the picture (layout, motion) is **code**; titles, timing, cards and th
 
 1. **A `wait` step?** Should a `wait` step replace the timer effect? (Decided per case:
    record the answer in the Boundary log when it comes up.)
-2. **Where is `switch.so` found?** The step exists now (`{ "give": "switch.so" }`, see **Giving
-   things**); PUZZLES P09 puts it in MOTH-PC's drawer. It stays `foundIn: null` until that zone is
-   built (the check then requires `foundIn` to name it).
+2. ~~Where is `switch.so` found?~~ **Closed (2026-10-15):** MOTH-PC's drawer in Moth's place
+   (`foundIn: "moth"`).
 3. **Localisation**: when, if ever, do `texts` move to `texts.en.json`?
 4. ~~PUZZLES.md's format sketches~~ **Closed (2026-10-14):** the sketches now use the engine's
    format (`give`, `password`, LOG with `rate`, `sector` on each noun, `seal.key`, `link.reach`,
