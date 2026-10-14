@@ -209,11 +209,17 @@ export class Schematic {
     const key = dev + '.' + noun;
     let o = this.offsets.get(key);
     if (!o) {
-      const d = this.m.devices.get(dev)!, l = d.data.layout;
-      const u = UNIT[this.mode === 'vision'
-        ? l?.vision?.[noun] ?? ['up', 'down'][i % 2]
-        : l?.dir?.[noun] ?? (d.crafted || d.node || !l?.dir ? ['up', 'right', 'down', 'left'][i % 4] : 'up')];
-      o = this.mode === 'vision' ? { x: u.x * 60, y: u.y * 44 } : { x: u.x * 104, y: u.y * 70 };
+      const d = this.m.devices.get(dev)!, l = d.data.layout, vision = this.mode === 'vision';
+      const side = (id: string, j: number) => vision
+        ? l?.vision?.[id] ?? ['up', 'down'][j % 2]
+        : l?.dir?.[id] ?? (d.crafted || d.node || !l?.dir ? ['up', 'right', 'down', 'left'][j % 4] : 'up');
+      const mine = side(noun, i), u = UNIT[mine];
+      o = vision ? { x: u.x * 60, y: u.y * 44 } : { x: u.x * 104, y: u.y * 70 };
+      // nouns on the same side fan out across it, instead of sitting on top of each other
+      const same = d.nouns.map((n, j) => side(n.id, j) === mine ? n.id : null).filter((id): id is string => !!id);
+      const k = same.indexOf(noun), spread = same.length > 1 ? k - (same.length - 1) / 2 : 0;
+      if (u.x) o.y += spread * (vision ? 34 : 44);
+      else o.x += spread * (vision ? 74 : 96);
       this.offsets.set(key, o);
     }
     return o;
