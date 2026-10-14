@@ -79,6 +79,27 @@ with an ID scanner, people fishing off the rail, a busker, the metro crossing ov
 - **Sewer market.** The market below the market: things the street market won't sell, lit by
   bioluminescent algae, a toll troll who wants a riddle.
 
+## More places (Tommi, 2026-10-15)
+
+- **A club (VOID).** Bass you see in the rain outside, a bouncer with a face scanner, a queue
+  that never moves, a dance floor, a DJ booth, VIP behind glass, a bathroom where deals happen.
+  The Ghosts meet here (STORY.md). *To do:* get in, dance, find the person who sells passes.
+  *Hack:* the face scanner, the light rig on a CLOCK, the DJ's set as a Morse lamp.
+- **Different kinds of shops,** each with a keeper, customers and a thing to buy: an implant
+  boutique, a pawn shop that buys your memories by the megabyte, a ramen vending wall, a
+  repair stall for decks, a florist selling real plants at luxury prices, a key-chip cutter.
+- **The office of someone important.** A top-floor office: a desk the size of a car, an
+  aquarium, a city view, a secretary bot that guards the door. *Hack:* the calendar, the
+  aquarium's feeder, the secretary's patience.
+- **Corporate headquarters (PLAZA HOLDINGS, Plaza Central tower).** Lobby with a waterfall
+  wall, security gates, elevators by clearance, open-plan floors of people watching screens
+  watching them. Late-game, floor by floor.
+- **The canals.** Under the city: old flood canals, boats, walkways, lanterns, graffiti, the
+  Ghosts' homes built into the arches. Where people go when the Registry drops them.
+  *To do:* take a boat taxi, trade, find Moth's contacts.
+- **Other places worth having:** a police checkpoint, a capsule hotel, a food court, a hospital
+  ward, a data cemetery (memorial servers of the dead), a recycling plant, a rooftop helipad.
+
 ## Order (proposal)
 
 1. Bring the existing scenes up to section 10 first, starting from a shared people kit (sprites
