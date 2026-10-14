@@ -50,7 +50,8 @@ const KEYS: Record<string, string[]> = {
   logic: ['modules'],
   net: ['nodes', 'cables', 'keyring', 'watchdog'],
   module: ['id', 'start', 'foundIn', 'part'],
-  device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout'],
+  device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'deck'],
+  everyday: ['noun', 'verb', 'label'],
   noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
   guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
   rings: ['rings', 'tolerance'],
@@ -530,15 +531,39 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
   }
   for (const [k, v] of Object.entries(z.texts)) if (Array.isArray(v) && !isLine(v)) err(`texts.${k}`, 'not a valid line: ["command", "reply", "ok"|"err"|"dim"?]');
 
+  /**
+   * A device's everyday actions (its popup in the world): each a noun's own verb. Hacking verbs
+   * are not everyday: no GUARD, LINK, LOG, SEAL or CLOCK nouns, nothing in a sealed sector.
+   */
+  const HACKING = ['GUARD', 'LINK', 'LOG', 'SEAL', 'CLOCK'];
+  const everyday = (d: DeviceData, where: string) => {
+    if (d.deck !== undefined && typeof d.deck !== 'boolean') err(where + ' › deck', 'true or false: a computer you can jack into');
+    if (d.everyday === undefined) return;
+    if (!Array.isArray(d.everyday)) { err(where + ' › everyday', 'a list of { noun, verb, label? }'); return; }
+    d.everyday.forEach((e, i) => {
+      const w = `${where} › everyday[${i}]`;
+      c.keys(e, 'everyday', w);
+      const n = d.nouns.find((x) => x.id === e.noun);
+      if (!n) { err(w, `"${e.noun}" is not one of its nouns`); return; }
+      if (HACKING.includes(n.kind)) err(w, `${n.id} is a ${n.kind}: hacking, not everyday (it stays in hack view)`);
+      if (n.sector) err(w, `${n.id} sits in sector "${n.sector}": sealed things are not everyday`);
+      if (!(n.verbs ?? []).includes(e.verb)) err(w, `"${e.verb}" is not one of ${n.id}'s verbs (${(n.verbs ?? []).join(', ') || 'none'})`);
+      if (e.label !== undefined && (typeof e.label !== 'string' || !e.label.trim())) err(w, 'label is the words on the popup (a string)');
+    });
+    dupes(d.everyday.map((e) => e.noun + ' ' + e.verb), where + ' › everyday', 'action');
+  };
+
   // ---------- devices and nodes ----------
   dupes([...z.devices, ...nodes].map((d) => d.id), 'devices', 'device or node id');
   nodes.forEach((n) => { if (world.netNodes.has(n.id)) err(`nodes[${n.id}]`, 'net.json has a node with this id too'); });
   z.devices.forEach((d) => {
     c.device(d, `devices[${d.id}]`);
     if (!d.layout?.spot) err(`devices[${d.id}]`, 'needs layout.spot: where it stands in the world (computers on the net go in "nodes")');
+    everyday(d, `devices[${d.id}]`);
   });
   nodes.forEach((d) => {
     c.device(d, `nodes[${d.id}]`);
+    if (d.everyday || d.deck !== undefined) err(`nodes[${d.id}]`, 'a node is not in the world: no everyday actions or deck (you reach it through a LINK)');
     if (d.layout?.spot) err(`nodes[${d.id}] › layout`, 'a node is not in the world: no spot (it lives on the board)');
   });
 

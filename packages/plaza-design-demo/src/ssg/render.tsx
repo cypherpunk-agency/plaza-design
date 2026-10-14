@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
 import { ZONE_STYLES } from './game/zone/styles';
+import { POPUP_STYLES } from './game/zone/popup';
 
 export interface MetaConfig {
   title: string;
@@ -640,6 +641,9 @@ export const demoStyles = `
     .vis-plate:hover { box-shadow: 0 0 10px rgba(255, 61, 242, 0.5); }
     .vis-plate[aria-expanded='true'] { background: rgb(255, 61, 242); color: #000; }
     .sch.locked .vis-plate { border-color: var(--color-error); color: var(--color-error); }
+    /* hack it, from a thing's popup: its plate flashes once so the eye finds it */
+    .sch.vis.focus .vis-plate { animation: vis-focus 0.45s ease-in-out 3; }
+    @keyframes vis-focus { 50% { box-shadow: 0 0 16px rgb(255, 61, 242), 0 0 4px #fff; } }
 
     /* the circuit: the device's nouns in a row, over its plate */
     .vis-circuit {
@@ -754,6 +758,7 @@ export const demoStyles = `
 
     /* The zone engine's newer pieces: watchdog, conduits, meters, keyring, lock toys (game/zone/styles.ts) */
 ${ZONE_STYLES}
+${POPUP_STYLES}
 
 
     /* ACCESS DENIED pause menu (game/menu.ts): a black CRT panel over the paused game */

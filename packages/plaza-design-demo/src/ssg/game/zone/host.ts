@@ -24,6 +24,7 @@ import type { LineKind } from '../terminal';
 import { type Line, type Spot, ZoneModel } from './model';
 import { type PanelFn, Panels } from './panels';
 import type { ZoneRules } from './rules';
+import { Popup, type PopupItem } from './popup';
 import { type Anchor, Schematic } from './schematic';
 import { ENGINE_PANEL_FNS } from './toys';
 
@@ -74,6 +75,8 @@ export interface ZoneStore {
   tokens?: (add: number) => number;
   /** A made fragment left the keyring (it is already gone from `keyring()`): write the save. */
   drop?: (id: string) => void;
+  /** Sudo mode: every LINK reaches every node. */
+  sudo?: boolean;
   /** This zone's saved progress, if any. */
   load: () => ZoneSave | undefined;
   /** Keep this as the zone's progress (and write the save). */
@@ -88,6 +91,8 @@ const TICK_MS = 250;
 const HEAT_SAVE_MS = 2000;
 /** World (x along the zone, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
+/** Walk this far (world units) from where a thing's popup opened, and it closes. */
+const POPUP_WALK = 36;
 /** A logic part's body floating in hack vision, in world units. */
 const PART = { w: 26, h: 16 };
 /** Where a new part floats: this high, beside the player, and parts keep this far apart (world units). */
@@ -98,6 +103,12 @@ export class ZoneHost {
   private schem: Schematic;
   private vision: Schematic;
   private panels: Panels;
+  /** A thing's popup in the world: its everyday actions, jack in, hack it. */
+  private popup: Popup;
+  /** Where the player stood when the popup opened: walking off closes it. */
+  private popupAt = 0;
+  /** Where each device stood on screen in the last frame (for the popup). */
+  private seen = new Map<string, Anchor>();
   private btns: HTMLDivElement;
   private hackBtn: HTMLButtonElement;
   private boardBtn: HTMLButtonElement;
@@ -124,11 +135,14 @@ export class ZoneHost {
       grant: store?.grant,
       tokens: store?.tokens,
       drop: store?.drop,
+      sudo: store?.sudo ? () => true : undefined,
     }, def.data, def.rules);
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
     // the engine's own panels (the lock toys) under the zone's
+    this.popup = new Popup(host);
+    this.popup.onClose = () => this.onClose();
     this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.view.panels });
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
@@ -229,7 +243,7 @@ export class ZoneHost {
   private say(l: Line) {
     if (l[0] && this.echo) this.print('> ' + l[0], 'in');
     if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out');
-    this.schem.note(l); this.vision.note(l);
+    this.schem.note(l); this.vision.note(l); this.popup.note(l);
   }
 
   /** BOARD is off until something is on it; HACK lights up while hack vision is on. */
@@ -256,13 +270,14 @@ export class ZoneHost {
 
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
-  closeAll() { this.panels.close(); this.schem.close(); this.vision.close(); }
+  closeAll() { this.popup.close(); this.panels.close(); this.schem.close(); this.vision.close(); }
   /** The HACK and BOARD buttons show in this zone only. */
   show(on: boolean) { this.btns.hidden = !on; }
 
   get visionOn() { return this.vision.isOpen; }
   /** H: hack vision on or off. From an open schematic or panel it goes straight to the world, in vision. */
   toggleVision() {
+    this.popup.close();
     if (this.vision.isOpen && !this.overlayOpen) this.vision.close();
     else { this.panels.close(); this.schem.close(); this.vision.openVision(); }
     this.sync();
@@ -286,6 +301,12 @@ export class ZoneHost {
       seen.set(id, { x: c.x, y: c.y, w: sw, h: sh });
     };
     m.spots().forEach((s) => add(s.id, s.x, s.y, s.w, s.h));
+    this.seen = new Map(seen);
+    if (this.popup.isOpen) {
+      const at = this.popup.dev ? seen.get(this.popup.dev) : undefined;
+      // walked off, or the thing left the view: the popup goes
+      if (!at || Math.abs(this.player.x - this.popupAt) > POPUP_WALK) this.popup.close(); else this.popup.place(at);
+    }
     if (this.vision.isOpen) {
       // a part placed on the board has no spot in the world yet: it turns up next to you
       [...m.devices.values()].filter((d) => d.logic && !m.logicAt.has(d.id)).forEach((d) => { this.place(d.id); this.dirty(); });
@@ -327,6 +348,50 @@ export class ZoneHost {
     this.dirty();
   }
 
+  // ---------- a thing's popup: everyday actions, jack in, hack it ----------
+
+  get popupOpen() { return this.popup.isOpen; }
+  /** A key while the popup is open: true when it used the key. */
+  popupKey(e: KeyboardEvent) { return this.popup.key(e); }
+
+  /**
+   * A click or E on a device in the world: its popup, right next to it. Its everyday
+   * actions (data: `everyday`), `⌁ jack in` for a computer (`deck`), then `⌁ hack it`.
+   */
+  pick(id: string) {
+    const d = this.model.devices.get(id);
+    if (!d) return;
+    this.popupAt = this.player.x;
+    this.popup.open(id, d.name, this.model.label('menu.aria', { device: d.name }), this.popupItems(id), this.seen.get(id));
+  }
+
+  private popupItems(id: string): PopupItem[] {
+    const m = this.model, d = m.devices.get(id)!;
+    const items: PopupItem[] = (d.data.everyday ?? []).flatMap((e) => {
+      const n = d.nouns.find((x) => x.id === e.noun);
+      // a noun sealed away (or gone) is not everyday any more
+      if (!n || (n.sector && m.sealed(id, n.sector))) return [];
+      return [{ label: e.label ?? e.verb, cur: n.current?.() === e.verb, run: () => this.everyday(id, e.noun, e.verb) }];
+    });
+    if (d.data.deck) items.push({ label: m.label('menu.jack'), hack: true, run: () => { this.popup.close(); this.openDevice(id); } });
+    items.push({ label: m.label('menu.hack'), hack: true, run: () => this.hackIt(id) });
+    return items;
+  }
+
+  /** An everyday action: the noun's verb, exactly as a tap on it would run it. The popup stays, with the reply. */
+  private everyday(dev: string, noun: string, verb: string) {
+    this.model.act(dev, noun, verb);
+    if (this.popup.dev === dev) this.popup.fill(this.popupItems(dev));
+  }
+
+  /** `⌁ hack it`: hack view, this device's circuit unfolded and in view. */
+  hackIt(id: string) {
+    this.popup.close(); this.panels.close(); this.schem.close();
+    if (!this.vision.isOpen) this.vision.openVision();
+    this.vision.focus(id);
+    this.sync();
+  }
+
   /** Open a device's schematic, unless a full trace has you locked out of it. */
   openDevice(id: string) {
     const d = this.model.devices.get(id);
@@ -350,7 +415,7 @@ export class ZoneHost {
 
   /** E next to a target. Returns 'exit' when the player walks out of the zone. */
   use(id: string): 'exit' | void {
-    if (this.model.devices.has(id) && this.model.spots().some((s) => s.id === id)) { this.openDevice(id); return; }
+    if (this.model.devices.has(id) && this.model.spots().some((s) => s.id === id)) { this.pick(id); return; }
     return this.def.view.use?.(id, this.model, (l) => this.say(l));
   }
 

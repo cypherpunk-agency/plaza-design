@@ -217,6 +217,16 @@ export class Schematic {
 
   // ---------- hack vision: name plates and circuits ----------
 
+  /** `⌁ hack it` from a thing's popup: its circuit unfolded, and a short flash on its plate so the eye finds it. */
+  focus(id: string) {
+    if (!this.isUnfolded(id)) { const set = this.unfoldAll ? this.folded : this.unfolded; if (set.has(id)) set.delete(id); else set.add(id); }
+    this.render();
+    const g = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`);
+    if (!g) return;
+    g.classList.add('focus');
+    window.setTimeout(() => this.stage.querySelector(`.sch.vis[data-dev="${id}"]`)?.classList.remove('focus'), 1400);
+  }
+
   private isUnfolded(id: string) { return this.unfoldAll ? !this.folded.has(id) : this.unfolded.has(id); }
   /** Unfold a folded circuit, fold an unfolded one. */
   private fold(id: string) {
@@ -388,9 +398,9 @@ export class Schematic {
 
   /**
    * Circuits must not overlap each other or the tools: from left to right, one that
-   * runs into another is raised above it (with no room above, pushed beside it, to
-   * the left if that fits, else to the right), and every one stays inside the view.
-   * Cheap: a handful of boxes, measured once.
+   * runs into something tries the spots just above, below, left and right of each
+   * obstacle and takes the nearest that is free and inside the view (with none
+   * free, it stays put). Cheap: a handful of boxes, measured once.
    */
   private arrange() {
     if (this.mode !== 'vision') return;
@@ -399,7 +409,7 @@ export class Schematic {
     // pieces the player moved stay exactly where they were put: they are obstacles, not placed
     const rows = all.filter((r) => !r.closest('.moved'));
     all.forEach((r) => { r.style.translate = ''; });
-    const s = this.stage.getBoundingClientRect(), W = s.width;
+    const s = this.stage.getBoundingClientRect(), W = s.width, H = s.height;
     type Box = { l: number; t: number; r: number; b: number };
     const box = (e: Element): Box => { const q = e.getBoundingClientRect(); return { l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top }; };
     const boxes = rows.map((row) => ({ row, b: box(row) })).sort((p, q) => p.b.l - q.b.l);
@@ -426,11 +436,14 @@ export class Schematic {
       if (b.r > W - ROOM) dx = W - ROOM - b.r;
       if (b.l + dx < ROOM) dx = ROOM - b.l;
       if (b.t < ROOM) dy = ROOM - b.t;
-      for (let i = 0, p = hit(at(b, dx, dy)); p && i <= placed.length; i++, p = hit(at(b, dx, dy))) {
-        const q = at(b, dx, dy), up = p.t - ROOM - q.b, left = p.l - ROOM - q.r;
-        if (q.t + up >= ROOM) dy += up;
-        else if (q.l + left >= ROOM) dx += left;
-        else dx += p.r + ROOM - q.l;
+      const q0 = at(b, dx, dy);
+      if (hit(q0)) {
+        const inside = (q: Box) => q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= ROOM - 0.5 && q.b <= H - ROOM + 0.5;
+        const tries = placed.flatMap((p) => [
+          [0, p.t - ROOM - q0.b], [0, p.b + ROOM - q0.t], [p.l - ROOM - q0.r, 0], [p.r + ROOM - q0.l, 0],
+        ]).filter(([x, y]) => { const q = at(q0, x, y); return inside(q) && !hit(q); });
+        tries.sort((u, v) => Math.hypot(u[0], u[1]) - Math.hypot(v[0], v[1]));
+        if (tries.length) { dx += tries[0][0]; dy += tries[0][1]; }
       }
       placed.push(at(b, dx, dy));
       if (dx || dy) row.style.translate = dx + 'px ' + dy + 'px';

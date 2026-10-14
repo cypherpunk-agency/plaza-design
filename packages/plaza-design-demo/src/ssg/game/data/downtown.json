@@ -24,6 +24,7 @@
       "id": "gate",
       "name": "NEON MARKET GATE",
       "look": "A shutter across the market's mouth. It wants a scanner signature. Passwords are so last decade.",
+      "everyday": [{ "noun": "lock", "verb": "open", "label": "push the gate" }, { "noun": "door", "verb": "read", "label": "read the counter" }],
       "status": [{ "if": "lock=open", "then": "OPEN", "else": "shut" }, { "if": "end", "then": " · stays open", "else": " · scanner signature required" }],
       "layout": {
         "spot": { "x": 70, "w": 80, "h": 80 },
@@ -66,6 +67,8 @@
       "id": "box",
       "name": "JUNCTION BOX 0x2F",
       "look": "REGISTRY UTILITIES · AUTHORISED STAFF ONLY. Older than you.",
+      "deck": true,
+      "everyday": [{ "noun": "README", "verb": "read", "label": "read the sticker" }],
       "status": [{ "if": "freed2F", "then": "session: maint · node 0x2F free", "else": "REGISTRY UTILITIES · maintenance login only" }],
       "layout": {
         "spot": { "x": 330, "y": 34, "w": 30, "h": 38 },
@@ -106,6 +109,7 @@
       "id": "sign",
       "name": "VERIFY SIGN",
       "look": "Six neon tubes on a plate, policy 7 in light. Five work.",
+      "everyday": [{ "noun": "tubes", "verb": "read", "label": "look at the tubes" }],
       "status": "V·RIFY · tube 2 of 6 dark",
       "layout": {
         "spot": { "x": 372, "y": 66, "w": 22, "h": 96 },
@@ -155,6 +159,7 @@
       "id": "billboard",
       "name": "BILLBOARD",
       "look": "REGISTRY PREMIUM, four metres wide, bolted to the wall and wired to the Registry's ad feed.",
+      "everyday": [{ "noun": "ads", "verb": "read", "label": "watch the ad" }],
       "status": [{ "if": "feed=cam3", "then": "showing: CAM-3 (a pigeon)", "else": "showing: REGISTRY PREMIUM" }, { "if": "freedTV", "then": " · node 0x3C free" }],
       "layout": {
         "spot": { "x": 640, "y": 108, "w": 124, "h": 42 },
@@ -187,6 +192,8 @@
       "id": "till",
       "name": "NOODLE TILL",
       "look": "NOODLE TILL v1.0. Firmware: factory. It is not ashamed.",
+      "deck": true,
+      "everyday": [{ "noun": "quickstart", "verb": "read", "label": "look under the counter" }],
       "status": [{ "if": "till", "then": "firmware: factory · drawer: empty", "else": "firmware: factory · login required" }],
       "layout": {
         "spot": { "x": 860, "y": 28, "w": 22, "h": 20 },
@@ -223,6 +230,7 @@
       "id": "dlv9",
       "name": "DLV-9",
       "look": "A delivery robot by the dumpster. Lost. Says it isn't.",
+      "everyday": [{ "noun": "speaker", "verb": "say hi", "label": "say hi" }],
       "status": [
         { "if": "routeFixed", "then": "route: NEON MARKET · DUMPLINGS", "else": "status: lost (it says it isn't)" },
         { "if": "dlvAt=market", "then": " · inside the market" },
@@ -277,6 +285,7 @@
       "id": "relay",
       "name": "ROOFTOP RELAY 0x31",
       "look": "ROOFTOP RELAY 0x31 · REGISTRY UTILITIES. It keeps a log of visitors.",
+      "deck": true,
       "status": [{ "if": "freed31", "then": "session: maint · node 0x31 free", "else": "REGISTRY UTILITIES · maintenance login only" }],
       "layout": {
         "spot": { "x": 1150, "y": 62, "w": 26, "h": 40 },
@@ -334,6 +343,7 @@
       "id": "fence",
       "name": "REGISTRY PROPERTY",
       "look": "A fence round the antenna's foot. A yellow plate: NO ENTRY.",
+      "everyday": [{ "noun": "plate", "verb": "read", "label": "read the plate" }, { "noun": "gate", "verb": "open", "label": "open the gate" }],
       "status": "antenna access: root only",
       "layout": {
         "spot": { "x": 1590, "w": 40, "h": 50 },
@@ -355,6 +365,7 @@
       "id": "scan",
       "name": "IDENTITY SCAN",
       "look": "An arch that reads faces. It reads yours and finds nothing.",
+      "everyday": [{ "noun": "door", "verb": "enter", "label": "walk in" }, { "noun": "scanner", "verb": "read", "label": "look at the screen" }],
       "status": "subject: {handle} · signatures: 0/3",
       "layout": {
         "spot": { "x": 1790, "w": 44, "h": 84 },
@@ -490,7 +501,6 @@
 
   "texts": {
     "goals.done": "Downtown cleared. the market is open.",
-    "prompt.open": "[E] JACK IN",
 
     "guard.ok": ["login ****", "ACCESS GRANTED.", "ok"],
     "guard.wrong.last": ["login {guess}", "ACCESS DENIED. {joke}", "err"],

@@ -90,6 +90,8 @@ export interface ZoneHooks {
   tokens?: (add: number) => number;
   /** A made fragment was thrown off the keyring (already gone from `keyring()`): write the save. */
   drop?: (id: string) => void;
+  /** Sudo mode (`?sudo`): every LINK reaches every node there is (the zone's and net.json's). */
+  sudo?: () => boolean;
 }
 
 const list = <T>(x: T | T[]) => (Array.isArray(x) ? x : [x]);
@@ -741,13 +743,19 @@ export class ZoneModel {
   /** Nodes seen on a scan but not connected: silhouettes on the board, with the LINK device that reaches them. */
   ghosts(): { id: string; name: string; link: string }[] {
     return [...this.net].filter(([, s]) => s === 'seen').map(([id]) => {
-      const link = [...this.devices.values()].find((d) => d.data.nouns.some((n) => n.link?.reach.includes(id)));
+      const link = [...this.devices.values()].find((d) => d.data.nouns.some((n) => n.link && this.reachOf(n).includes(id)));
       return { id, name: this.nodeName(id), link: link?.name ?? '?' };
     });
   }
 
+  /** The nodes a LINK reaches: its `reach`, or in sudo mode every node there is (but itself). */
+  private reachOf(n: NounData): string[] {
+    if (this.hooks.sudo?.()) return [...this.nodeData.keys()].filter((id) => !this.nodeData.get(id)!.nouns.includes(n));
+    return n.link!.reach;
+  }
+
   private runLink(n: NounData, c: Ctx): Line | null {
-    const reach = n.link!.reach.filter((id) => this.nodeData.has(id)), via = c.bySignal ? 'signal → ' : '';
+    const reach = this.reachOf(n).filter((id) => this.nodeData.has(id)), via = c.bySignal ? 'signal → ' : '';
     // a link that is down (its `when` does not hold) neither scans nor connects
     if ((c.verb === 'scan' || c.verb.startsWith('connect ')) && n.link!.when && !this.test(n.link!.when, c)) {
       return this.line('net.down', { via, verb: c.verb, name: this.devices.get(c.dev)?.name ?? c.dev });
@@ -924,7 +932,7 @@ export class ZoneModel {
     if (n.kind === 'CLOCK' && n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
     if (n.kind === 'GUARD' && n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
     if (n.kind === 'LINK' && n.link) {
-      const seen = n.link.reach.filter((id) => this.net.get(id) === 'seen');
+      const seen = this.reachOf(n).filter((id) => this.net.get(id) === 'seen');
       return ['scan', ...seen.map((id) => 'connect ' + id), ...own.filter((v) => v !== 'scan')];
     }
     return own;

@@ -183,6 +183,7 @@ export class Game {
       grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); storeSave(this.save); this.syncHud(); },
       tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
       drop: () => storeSave(this.save),
+      sudo: SUDO,
       load: () => this.save.zones[id],
       store: (z) => { this.save.zones[id] = z; storeSave(this.save); },
     }, def);
@@ -322,6 +323,8 @@ export class Game {
       else if ((e.key === 'h' || e.key === 'H') && !e.repeat) zh.toggleVision();
       return;
     }
+    // a thing's popup takes arrows, Enter / E and Esc; any other key closes it and goes on as usual
+    if (zh && zh.popupOpen && zh.popupKey(e)) return;
     const k = e.key;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(k)) e.preventDefault();
     if (e.repeat && !['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].includes(k)) return;
@@ -482,7 +485,8 @@ export class Game {
     zh.hover = id;
     this.canvas.style.cursor = id ? 'pointer' : '';
     if (press && zh.visionOn) { zh.poke(id); return; }
-    if (press && id) { e.preventDefault(); zh.openDevice(id); }
+    // a thing's popup: its everyday actions, then jack in (computers) and hack it
+    if (press && id) { e.preventDefault(); zh.pick(id); }
   }
 
   /** Hack vision hangs in the world: give the zone this frame's world → CSS px mapping (as `sx` and `y` draw it). */
@@ -1183,7 +1187,7 @@ export class Game {
   }
 
   private drawPrompt() {
-    if (this.bubble || this.showEnd || this.zoneHost?.overlayOpen || this.mapView) return;
+    if (this.bubble || this.showEnd || this.zoneHost?.overlayOpen || this.zoneHost?.popupOpen || this.mapView) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;

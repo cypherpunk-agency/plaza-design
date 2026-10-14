@@ -29,6 +29,7 @@
       "id": "lock",
       "name": "DOOR LOCK",
       "look": "The lock panel by your door. It answers to CONCIERGE, not to you.",
+      "everyday": [{ "noun": "bolt", "verb": "open", "label": "try the door" }, { "noun": "plate", "verb": "read", "label": "read the plate" }],
       "status": [{ "if": "doorOpen", "then": "unlocked", "else": "locked · rent: {rent}" }],
       "layout": {
         "spot": { "x": 76, "w": 18, "h": 62 },
@@ -61,6 +62,7 @@
       "id": "fridge",
       "name": "FRIDGE",
       "look": "A fridge with a note on it, in your handwriting, in a bad mood.",
+      "everyday": [{ "noun": "inside", "verb": "open", "label": "open the fridge" }, { "noun": "note", "verb": "read", "label": "read the note" }],
       "status": "cold · 1 note",
       "layout": {
         "spot": { "x": 122, "w": 30, "h": 68 },
@@ -83,6 +85,7 @@
       "id": "kettle",
       "name": "KETTLE",
       "look": "A smart kettle. According to the blinds, it is your morning routine.",
+      "everyday": [{ "noun": "kettle", "verb": "boil", "label": "boil" }],
       "status": "ready",
       "layout": {
         "spot": { "x": 186, "w": 22, "h": 50 },
@@ -101,6 +104,7 @@
       "id": "blinds",
       "name": "BLINDS",
       "look": "Motorised blinds. Privacy mode since the rent went pending.",
+      "everyday": [{ "noun": "motor", "verb": "open", "label": "open" }, { "noun": "motor", "verb": "close", "label": "close" }],
       "status": [{ "if": "sun", "then": "open", "else": "closed" }, { "if": "doorOpen", "then": "", "else": " · privacy mode" }],
       "layout": {
         "spot": { "x": 262, "w": 64, "h": 96 },
@@ -127,11 +131,13 @@
       "id": "pc",
       "name": "HOME-PC",
       "look": "Your computer. Its fan has been sighing since Tuesday.",
+      "deck": true,
+      "everyday": [{ "noun": "inbox", "verb": "read", "label": "check mail" }],
       "status": [{ "if": "doorOpen", "then": "outbox: empty", "else": "outbox: 1 waiting" }],
       "layout": {
         "spot": { "x": 352, "w": 36, "h": 64 },
         "board": { "x": 0.66, "y": 0.72 },
-        "dir": { "outbox": "right", "inbox": "up", "notes": "left" },
+        "dir": { "outbox": "right", "inbox": "up", "notes": "left", "net": "down" },
         "vision": { "outbox": "right", "inbox": "up", "notes": "left" }
       },
       "nouns": [
@@ -152,13 +158,15 @@
         {
           "id": "notes", "kind": "STORE", "verbs": ["read"],
           "on": { "read": { "say": ["cat notes", "\"Pixel naps on whatever is warmest. last winter: the router. the router did not survive the winter.\""] } }
-        }
+        },
+        { "id": "net", "kind": "LINK", "link": { "reach": ["concierge"], "when": "routerUp" } }
       ]
     },
     {
       "id": "plug",
       "name": "SMART PLUG",
       "look": "A smart plug with a schedule. The schedule has one rule and no doubts.",
+      "everyday": [{ "noun": "power", "verb": "on", "label": "switch on" }, { "noun": "power", "verb": "off", "label": "switch off" }],
       "status": [{ "if": "plugOn", "then": "on", "else": "off" }, " · schedule: night"],
       "layout": {
         "spot": { "x": 396, "w": 18, "h": 26 },
@@ -187,6 +195,7 @@
       "id": "router",
       "name": "ROUTER",
       "look": "Your router. Small, warm, and the only way out of here that doesn't need a door.",
+      "everyday": [{ "noun": "temp", "verb": "read", "label": "feel how warm it is" }],
       "status": [
         { "if": "routerUp", "then": "online" },
         { "if": "booting", "then": "booting…" },
