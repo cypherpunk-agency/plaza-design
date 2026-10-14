@@ -1,8 +1,8 @@
 # ACCESS DENIED: puzzle catalogue
 
 Every puzzle, device, character and good line we have so far, put in story order so the
-next agents can build from it. The back yard is built; Downtown runs on the old terminal;
-everything else is a design. Read with `LEVELS.md` (the story and level plan),
+next agents can build from it. The back yard and Downtown are built (Downtown on the zone
+engine since 2026-10-14: `data/downtown.json`); everything else is a design. Read with `LEVELS.md` (the story and level plan),
 `GAME-DATA.md` (the data format) and `ART-GUIDE.md` (how things look).
 
 This is a hacking game told as fiction and played as puzzles. Nothing here is a manual for
@@ -231,6 +231,15 @@ Open question kept from LEVELS: does Pixel come along as a companion (warm laps,
 module, freed nodes, the fixer's hints.*
 
 ### Downtown rebuilt on the new system
+
+**Built** (`data/downtown.json`, `game/downtown/`). Where it differs from the sketches below:
+the till's login opens the `drawer` sector and the drawer pays the tokens (that sets `flags.till`,
+as before); the sketches' `clue` steps are `give`, `accepts` is `password`, the relay's trace is a
+LOG noun (`rate` 4 %/s, wrong guess +15 %) with its archive as a noun on the relay; the login
+users (`admin`, `maint`) are checked by the deck's `login <user> <pass>` only (dragging a clue
+needs no user). P12 is playable with a stand-in for the rings toy (see P12). O02 and O06 are in.
+The fixer keeps his bubbles and his hints (`level.ts`); his first question opens the deck with
+`set handle ` already typed.
 
 Today Downtown is a terminal (`level.ts`): `ls`, `cat`, `login`, `install`. In the rebuild every
 machine is a device on the board with nouns; every old command becomes a verb; clues, progression
@@ -563,6 +572,15 @@ high-low-mid.
 
 ### P12 The Neon Market gate
 
+**Built, with stand-ins** (`downtown.json`): DISPATCH's shields are a `sequence` seal (lock the
+rings outer, middle, inner, each within 2.5 s; its `manual` says "from the outside in") until the
+rings toy exists, then the `shields` sector's seal becomes a toy GUARD (data only). COPY is the
+verb `send to dlv9` on DISPATCH's `routes`. DLV-9 drives (`dlv.drive`): the scanner reads it on the
+way, the pre-wired cables open the lock and shut it behind it; cut `door:passed → lock shut`,
+send it out again (`follow you`), the gate stays open: Downtown's end screen, and the gate is the
+market's door from then on. The lock only opens on the scanner's word (a TIMER wired to it is told
+off). DLV-9's `hatch` gives the left glove (a key chip). Not used yet: the watchdog.
+
 - **Zone · spot:** Downtown, the west end: the NEON MARKET GATE, and DLV-9, a lost delivery
   robot by the dumpster. Main path. Difficulty 4.
 - **Player sees:** the gate wants a scanner signature ("ACCESS DENIED. Scanner signature
@@ -893,6 +911,9 @@ SIDE UP (ANY) · NRLU 404 0451.
 
 ### O02 CAM-3 is bored
 
+**Built**: CAM-3 on a pole at x 520, its `lens` opens the `cam3` panel (ZOOM, TAG, LOOP); the
+penthouse window blinks GHOST in Morse in the feed.
+
 - **Zone · spot:** Downtown, a camera on a pole across from the billboard. Optional; the first
   camera most players meet. Difficulty 1. (`lab3` §04)
 - **Player sees:** ● REC CAM-3. READ the lens: the scope. Things under the crosshair: the
@@ -939,6 +960,11 @@ SIDE UP (ANY) · NRLU 404 0451.
 - **Mechanics:** cryptex guard toy, a fragment from long ago.
 
 ### O06 Pigeon TV
+
+**Built**: the billboard's `screen` (`show ad`, `show feed`), pre-wired `ads:next → screen show
+ad`. Wire `cam3.lens:frame → billboard.screen show feed`, LOOP: the ad comes back a moment later
+unless its cable is cut; if the pigeon is still up when it trends, node 0x3C is free. The funny
+wrong pairs are not built.
 
 - **Zone · spot:** Downtown, the REGISTRY PREMIUM billboard. Optional. Difficulty 2. ("wiring a
   feed to a billboard", `lab3` §05)
