@@ -1,48 +1,34 @@
 /**
- * The back yard's named effects: the rules too fiddly to be data. The zone
- * file refers to them by name (`{ "effect": "crane.claw" }`); everything they
+ * The back yard's code side: the rules too fiddly to be data, as named
+ * effects the zone file refers to (`{ "effect": "crane.claw" }`), plus what
+ * the yard computes (`gateOpen`) and how it settles a save. Everything they
  * say comes from the zone's `texts`, so wording never needs a code change.
  *
- * `YARD_CODE` at the bottom is the contract the build checks the data
- * against (data/check.ts): which effects exist, which state keys and texts
- * the code relies on. Keep it next to the code that relies on them.
+ * `YARD_RULES.needs` is the contract the build checks yard.json against
+ * (data/check.ts): which state keys, goals and texts this code relies on.
+ * Keep it next to the code that relies on them.
  */
 
-import type { CodeContract } from '../data/check';
 import type { Value, ZoneData } from '../data/types';
-import type { Ctx, Goal, Line, ParcelAt, YardModel } from './model';
+import type { Effect, World, ZoneRules } from '../zone/rules';
 
-export type Vars = Record<string, string | number>;
+/** Where the parcel can be. The crates are its starting slots. */
+export type ParcelAt = 'A-3' | 'B-5' | 'C-7' | 'hook' | 'chute' | 'sliding' | 'bounced' | 'tray' | 'taken';
 
-/** What an effect may touch. `emit` raises an event on the noun it runs for. */
-export interface World {
-  m: YardModel;
-  zone: ZoneData;
-  line(key: string, vars?: Vars): Line;
-  has(key: string): boolean;
-  say(l: Line): void;
-  changed(): void;
-  goal(g: Goal): void;
-  tune(key: string): number;
-  emit(event: string): void;
-}
-
-export type Effect = (w: World, c: Ctx) => Line | null | void;
-
-export const YARD_EFFECTS: Record<string, Effect> = {
+const YARD_EFFECTS: Record<string, Effect> = {
   /** Grab only what is under the claw; drop into the chute and the parcel slides. */
   'crane.claw': (w, c) => {
-    const m = w.m;
+    const m = w.m, armAt = m.get('armAt') as string;
     if (c.verb === 'grab') {
-      if (m.held) return w.line('claw.grab.holding');
-      if (!w.zone.camera.crates.some((k) => k.id === m.armAt)) return w.line('claw.grab.air');
-      if (m.armAt !== m.parcelAt) return w.line(w.has('claw.grab.wrong.' + m.armAt) ? 'claw.grab.wrong.' + m.armAt : 'claw.grab.wrong');
-      m.held = 'parcel'; m.parcelAt = 'hook';
+      if (m.get('held')) return w.line('claw.grab.holding');
+      if (!w.zone.camera?.crates.some((k) => k.id === armAt)) return w.line('claw.grab.air');
+      if (armAt !== m.get('parcelAt')) return w.line(w.has('claw.grab.wrong.' + armAt) ? 'claw.grab.wrong.' + armAt : 'claw.grab.wrong');
+      m.set('held', 'parcel'); m.set('parcelAt', 'hook');
       return w.line('claw.grab.ok');
     }
-    if (!m.held) return w.line('claw.drop.empty');
-    m.held = null;
-    if (m.armAt !== 'chute') { m.parcelAt = m.armAt as ParcelAt; return w.line('claw.drop.at'); }
+    if (!m.get('held')) return w.line('claw.drop.empty');
+    m.set('held', null);
+    if (armAt !== 'chute') { m.set('parcelAt', armAt); return w.line('claw.drop.at'); }
     dropIntoChute(w);
     return w.line('claw.drop.chute');
   },
@@ -50,25 +36,20 @@ export const YARD_EFFECTS: Record<string, Effect> = {
   /** HINGE opens for `gateOpenMs`, then shuts on its own. */
   'hatch.open': (w) => {
     const ms = w.tune('gateOpenMs');
-    w.m.gateOpenUntil = performance.now() + ms;
+    w.m.scratch.gateOpenUntil = w.m.now() + ms;
     w.m.later(ms + 50, () => w.changed());
-  },
-
-  /** "wait 2 s": wait, then raise `done`. */
-  'timer.wait': (w, c) => {
-    const sec = parseInt(c.verb.split(' ')[1], 10);
-    w.m.later(sec * 1000, () => w.emit('done'));
-    return w.line('timer.wait', { sec });
   },
 };
 
 // ---------- the parcel's trip down the chute ----------
 
+const gateOpen = (w: World) => w.m.now() < (w.m.scratch.gateOpenUntil ?? 0);
+
 function dropIntoChute(w: World) {
   const m = w.m;
-  m.parcelAt = 'chute'; w.goal('chute');
+  m.set('parcelAt', 'chute'); w.goal('chute');
   m.later(w.tune('chuteDropMs'), () => {
-    m.parcelAt = 'sliding'; m.slideStart = performance.now(); w.changed();
+    m.set('parcelAt', 'sliding'); m.scratch.slideStart = m.now(); w.changed();
     m.later(w.tune('slideMs'), () => arrive(w));
   });
   w.emit('dropped');
@@ -76,19 +57,19 @@ function dropIntoChute(w: World) {
 
 function arrive(w: World) {
   const m = w.m;
-  if (m.gateOpen()) {
-    m.parcelAt = 'tray'; w.goal('gate');
+  if (gateOpen(w)) {
+    m.set('parcelAt', 'tray'); w.goal('gate');
     w.say(w.line('parcel.tray'));
   } else {
-    m.parcelAt = 'bounced';
+    m.set('parcelAt', 'bounced');
     w.say(w.line('parcel.bonk'));
-    m.later(w.tune('bounceBackMs'), () => { Object.assign(m, BACK_ON_HOOK); w.changed(); });
+    m.later(w.tune('bounceBackMs'), () => { Object.assign(m.state, BACK_ON_HOOK); w.changed(); });
   }
   w.changed();
 }
 
 /** Where the crane leaves a parcel that did not make it through: on the hook, over the chute. */
-const BACK_ON_HOOK = { parcelAt: 'hook' as ParcelAt, held: 'parcel', armAt: 'chute' };
+const BACK_ON_HOOK = { parcelAt: 'hook', held: 'parcel', armAt: 'chute' };
 
 /**
  * For the save: a parcel in the chute, sliding or bouncing becomes what it is
@@ -101,24 +82,32 @@ export function settleYard(state: Record<string, Value>) {
 
 // ---------- the contract with yard.json ----------
 
-export const YARD_CODE: CodeContract = {
-  effects: Object.keys(YARD_EFFECTS),
-  panels: ['camera', 'talk'],
-  state: ['found', 'armAt', 'held', 'parcel', 'parcelAt', 'gateAllowed', 'pan'],
-  derived: ['gateOpen'],
-  goals: ['find', 'chute', 'talk', 'gate', 'take'],
-  texts: {
-    // effects and model
-    'claw.grab.holding': 'line', 'claw.grab.air': 'line', 'claw.grab.wrong': 'line', 'claw.grab.ok': 'line',
-    'claw.drop.empty': 'line', 'claw.drop.at': 'line', 'claw.drop.chute': 'line',
-    'timer.wait': 'line', 'parcel.tray': 'line', 'parcel.bonk': 'line', 'parcel.take': 'line',
-    'wire.connect': 'line', 'wire.cut': 'line',
-    // index.ts
-    'goals.done': 'label', 'board.empty': 'label', 'prompt.exit': 'label', 'prompt.open': 'label', 'prompt.take': 'label',
-    // panels.ts
-    'ui.close': 'label', 'cam.zoom': 'label', 'cam.tag': 'label',
-    'cam.zoom.gravel': 'line', 'cam.zoom.crate': 'line', 'cam.zoom.parcel': 'line', 'cam.zoom.out': 'line',
-    'cam.tag.none': 'line', 'cam.tag.ok': 'line', 'cam.hud': 'label', 'cam.on': 'label', 'cam.aim': 'label',
-    'talk.unplug': 'label', 'talk.other': 'label', 'talk.placeholder': 'label', 'talk.aria': 'label',
+export const YARD_RULES: ZoneRules = {
+  effects: YARD_EFFECTS,
+  panels: ['camera'],
+  derived: { gateOpen: (m) => m.now() < (m.scratch.gateOpenUntil ?? 0) },
+  settle: settleYard,
+  needs: {
+    state: ['found', 'armAt', 'held', 'parcel', 'parcelAt', 'gateAllowed', 'pan'],
+    goals: ['find', 'chute', 'talk', 'gate', 'take'],
+    texts: {
+      // effects
+      'claw.grab.holding': 'line', 'claw.grab.air': 'line', 'claw.grab.wrong': 'line', 'claw.grab.ok': 'line',
+      'claw.drop.empty': 'line', 'claw.drop.at': 'line', 'claw.drop.chute': 'line',
+      'parcel.tray': 'line', 'parcel.bonk': 'line', 'parcel.take': 'line',
+      // index.ts
+      'prompt.exit': 'label', 'prompt.take': 'label',
+      // camera.ts
+      'cam.zoom': 'label', 'cam.tag': 'label',
+      'cam.zoom.gravel': 'line', 'cam.zoom.crate': 'line', 'cam.zoom.parcel': 'line', 'cam.zoom.out': 'line',
+      'cam.tag.none': 'line', 'cam.tag.ok': 'line', 'cam.hud': 'label', 'cam.on': 'label', 'cam.aim': 'label',
+    },
+  },
+  /** The yard's own: the camera sees crates, and the parcel starts in one of them. */
+  check: (z: ZoneData) => {
+    const errs: string[] = [];
+    if (!z.camera) errs.push('camera: the yard needs its crates (CAM-1 and the claw use them)');
+    else if (!z.camera.crates.some((c) => c.id === z.state.parcel)) errs.push(`state.parcel: "${z.state.parcel}" is not a crate`);
+    return errs;
   },
 };

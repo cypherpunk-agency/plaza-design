@@ -259,7 +259,7 @@ export const demoStyles = `
 
     html.game-mode #term-input { display: block; }
 
-    /* The back yard's schematic overlay and panels (game/yard/) */
+    /* A zone's schematic overlay and panels (game/zone/) */
     #hack,
     .hack-panel {
       position: absolute;
@@ -471,7 +471,77 @@ export const demoStyles = `
 
     .sch-x:hover { background: rgb(255, 61, 242); color: #000; }
 
-    /* Hack vision (H): the yard tinted, every device on screen wired in place (game/yard/schematic.ts) */
+    /* The hacking layer (game/zone/schematic.ts): sealed ??? nouns, the keyring, a login's keyboard, trace, net silhouettes */
+    .sch-noun.sealed .sch-label { border-style: dashed; border-color: rgba(255, 136, 0, 0.5); color: var(--color-text-faint); background: rgba(13, 6, 3, 0.6); }
+    .sch-noun.sealed .sch-label:hover { border-color: rgb(255, 136, 0); color: rgb(255, 136, 0); box-shadow: none; }
+    .sch-noun.sealed.target .sch-label { border-color: rgb(255, 210, 63); }
+    .hack-wires .branch.sealed { stroke-dasharray: 3 4; }
+    .sch-noun.seal .sch-label { border-color: rgb(255, 210, 63); }
+
+    .sch-keyring {
+      position: absolute;
+      left: var(--spacing-2);
+      top: var(--spacing-2);
+      z-index: 4;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-1);
+      align-items: center;
+      max-width: 70%;
+      padding: var(--spacing-1) var(--spacing-2);
+      background: #0d0603;
+      border: var(--border-thin) dashed rgb(255, 210, 63);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      color: var(--color-text-faint);
+    }
+
+    .sch-keyring[hidden] { display: none; }
+
+    .sch-chip {
+      position: relative;
+      z-index: 1;
+      padding: 1px 6px;
+      background: #141003;
+      border: var(--border-thin) solid rgb(255, 210, 63);
+      border-radius: 8px;
+      color: rgb(255, 210, 63);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0;
+      white-space: nowrap;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .sch-chip.key { border-radius: 2px; color: var(--color-accent-400); border-color: var(--color-accent-400); background: #031416; }
+    .sch-chip.armed,
+    .sch-chip.dragging { z-index: 6; box-shadow: 0 0 10px rgba(255, 210, 63, 0.6); }
+    .sch-verb.try { color: rgb(255, 210, 63); border-color: #5a4a0a; background: #141003; }
+
+    .sch-guess input {
+      width: 13em;
+      padding: 2px 6px;
+      background: #000;
+      color: var(--color-text-body);
+      border: var(--border-thin) solid rgb(255, 210, 63);
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .sch-trace { width: 100%; min-width: 56px; height: 4px; border: var(--border-thin) solid #5a0a14; background: #000; }
+    .sch-trace i { display: block; width: 0; height: 100%; background: rgb(255, 136, 0); transition: width 0.25s linear; }
+    .sch-trace.hot i { background: var(--color-error); box-shadow: 0 0 6px var(--color-error); }
+    .vis-outline .sch-trace { position: absolute; left: 0; bottom: -7px; min-width: 0; }
+    .sch.locked .sch-core { border-color: var(--color-error); }
+    .sch.locked .sch-st { color: var(--color-error); }
+
+    .sch.ghost .sch-core { border-style: dashed; border-color: rgba(255, 136, 0, 0.45); background: rgba(13, 6, 3, 0.5); box-shadow: none; }
+    .sch.ghost .sch-name { color: rgba(255, 136, 0, 0.6); }
+    .sch.node .sch-core { border-color: var(--color-accent-400); box-shadow: 0 0 14px rgba(0, 255, 255, 0.15); }
+    .sch.node .sch-name { color: var(--color-accent-400); }
+
+    /* Hack vision (H): the yard tinted, every device on screen wired in place (game/zone/schematic.ts) */
     #vision {
       position: absolute;
       left: 0;
@@ -542,8 +612,8 @@ export const demoStyles = `
 
     html.touch #vision .hack-status { bottom: 56px; max-width: 70%; }
 
-    /* HACK and BOARD over the canvas, in the yard */
-    #yard-btns {
+    /* HACK and BOARD over the canvas, in a zone on the hacking system (game/zone/host.ts) */
+    #zone-btns {
       position: absolute;
       top: calc(var(--game-top, 40px) + var(--spacing-2));
       right: var(--spacing-3);
@@ -552,12 +622,12 @@ export const demoStyles = `
       gap: var(--spacing-2);
     }
 
-    #yard-btns[hidden],
-    html:not(.game-mode) #yard-btns { display: none; }
-    #yard-btns .hack-btn { background: rgba(0, 0, 0, 0.65); }
-    #yard-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
-    #yard-btns .hack-btn:disabled { opacity: 0.4; cursor: default; color: var(--color-text-muted); border-color: var(--color-border-default); }
-    html.touch #yard-btns .hack-btn { padding: var(--spacing-1) var(--spacing-3); }
+    #zone-btns[hidden],
+    html:not(.game-mode) #zone-btns { display: none; }
+    #zone-btns .hack-btn { background: rgba(0, 0, 0, 0.65); }
+    #zone-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
+    #zone-btns .hack-btn:disabled { opacity: 0.4; cursor: default; color: var(--color-text-muted); border-color: var(--color-border-default); }
+    html.touch #zone-btns .hack-btn { padding: var(--spacing-1) var(--spacing-3); }
 
     .hack-panel-body { position: relative; min-height: 0; padding: var(--spacing-3); display: grid; }
     .hack-panel-close { position: absolute; right: var(--spacing-2); top: var(--spacing-2); z-index: 2; }

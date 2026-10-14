@@ -22,17 +22,19 @@ export interface Save {
   freed: string[];
   flags: Record<string, boolean>;
   hints: Record<string, number>;
+  /** The keyring: clue fragments and key chips (ids in the game data's `keyring`), carried across zones. */
+  keyring: string[];
   /** Each zone's own progress, by zone id: `zones.yard`. Downtown keeps using the fields above. */
-  zones: { yard?: ZoneSave };
+  zones: Record<string, ZoneSave | undefined>;
 }
 
 export const SAVE_KEY = 'access-denied-save-v1';
 
 export function newSave(): Save {
-  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], freed: [], flags: {}, hints: {}, zones: {} };
+  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], freed: [], flags: {}, hints: {}, zones: {} };
 }
 
-/** Saves from before modules and zones get what a new game starts with; nothing else changes. */
+/** Saves from before modules, zones and the keyring get what a new game starts with; nothing else changes. */
 export function loadSave(): Save {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
@@ -40,6 +42,7 @@ export function loadSave(): Save {
       const s: Save = { ...newSave(), ...JSON.parse(raw) };
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
       if (!s.zones || typeof s.zones !== 'object') s.zones = {};
+      if (!Array.isArray(s.keyring)) s.keyring = [];
       return s;
     }
   } catch { /* private window or blocked storage: start fresh */ }

@@ -1,10 +1,12 @@
 /**
  * The back yard on the canvas: the fixer's yard behind the noodle stall,
  * boxed in by the backs of houses. World units match the street: x along the
- * yard, h above the ground.
+ * yard, h above the ground. Where the devices stand (for tapping, E and hack
+ * vision) is in yard.json (`layout.spot`); this draws them there.
  */
 
-import { SLIDE_MS, type YardModel } from './model';
+import type { ZoneModel } from '../zone/model';
+import type { ParcelAt } from './effects';
 
 export const YARD_W = 760;
 export const YARD_SPAWN = 48;
@@ -13,28 +15,6 @@ export const TRAY_X = 668;
 
 const SLOT: Record<string, number> = { home: 350, 'A-3': 290, 'B-5': 350, 'C-7': 410, chute: 452 };
 const CHUTE = { x0: 452, h0: 40, x1: 604, h1: 14 };
-
-/** Where each device stands, for tapping and for the E prompt. */
-export interface Spot { id: string; x: number; w: number; h: number }
-export function spots(m: YardModel): Spot[] {
-  const list: Spot[] = [
-    { id: 'cam', x: 90, w: 26, h: 86 },
-    { id: 'crane', x: 350, w: 186, h: 130 },
-    { id: 'gate', x: 615, w: 36, h: 68 },
-  ];
-  craftedIds(m).forEach((id, i) => list.push({ id, x: craftedX(i), w: 20, h: 18 }));
-  return list;
-}
-/** Crafted devices that stand in the yard; logic parts only live on the board. */
-export const craftedIds = (m: YardModel) => [...m.devices.values()].filter((d) => d.crafted && !d.logic).map((d) => d.id);
-const craftedX = (i: number) => 482 + i * 28;
-
-export function spotAt(m: YardModel, wx: number, h: number): string | null {
-  const hit = spots(m).filter((s) => Math.abs(wx - s.x) <= s.w / 2 + 3 && h >= -4 && h <= s.h + 4);
-  // the crane's frame is big; prefer smaller things standing in front of it
-  hit.sort((a, b) => a.w - b.w);
-  return hit[0]?.id ?? null;
-}
 
 interface View { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number }
 let hookX = SLOT.home;
@@ -246,8 +226,9 @@ export function drawYardBackdrop(x: CanvasRenderingContext2D, v: View & { viewH:
   if (sx(RX) < viewW) side(sx(RX), viewW + 1);
 }
 
-export function drawYard(x: CanvasRenderingContext2D, m: YardModel, v: View, highlight: string | null) {
+export function drawYard(x: CanvasRenderingContext2D, m: ZoneModel, v: View, highlight: string | null) {
   const { sx, y, t } = v;
+  const armAt = m.get('armAt') as string, pan = m.get('pan') as number;
   const mono = (size: number, weight = '') => (weight ? weight + ' ' : '') + size + 'px "IBM Plex Mono", monospace';
   const text = (s: string, cx: number, cy: number, col: string, size = 7, weight = '') => {
     x.save(); x.font = mono(size, weight); x.textAlign = 'center'; x.fillStyle = col; x.fillText(s, cx, cy); x.restore();
@@ -278,7 +259,7 @@ export function drawYard(x: CanvasRenderingContext2D, m: YardModel, v: View, hig
   x.fillStyle = '#4a2408'; x.fillRect(cx - 1, y(72), 3, 72); x.fillStyle = 'rgba(255,136,0,.55)'; x.fillRect(cx - 1, y(72), 1, 72);
   x.fillStyle = '#2a1405'; x.fillRect(cx - 5, y(2), 11, 2);
   x.fillStyle = '#1a0c04'; x.fillRect(cx - 12, y(84), 24, 12); x.strokeStyle = 'rgba(255,217,165,.6)'; x.strokeRect(cx - 11.5, y(84) + 0.5, 23, 11);
-  x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(255,42,68,.95)' : 'rgba(255,42,68,.3)'; x.fillRect(cx - 9 + m.pan * 3, y(80), 3, 3);
+  x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(255,42,68,.95)' : 'rgba(255,42,68,.3)'; x.fillRect(cx - 9 + pan * 3, y(80), 3, 3);
   glow('cam', cx - 12, y(86), 24, 86);
 
   // crates under the crane
@@ -294,7 +275,7 @@ export function drawYard(x: CanvasRenderingContext2D, m: YardModel, v: View, hig
   x.fillStyle = '#000'; x.fillRect(g0 - 1, y(129), 6, 129); x.fillRect(g1 - 5, y(129), 6, 129); x.fillRect(g0 - 1, y(129), g1 - g0 + 2, 7);
   x.fillStyle = '#4a2408'; x.fillRect(g0, y(128), 4, 128); x.fillRect(g1 - 4, y(128), 4, 128); x.fillRect(g0, y(128), g1 - g0, 5);
   x.fillStyle = 'rgba(255,136,0,.6)'; x.fillRect(g0, y(128), g1 - g0, 1); x.fillRect(g0, y(127), 1, 127); x.fillRect(g1 - 4, y(127), 1, 127);
-  hookX += (SLOT[m.armAt] - hookX) * 0.08;
+  hookX += (SLOT[armAt] - hookX) * 0.08;
   const hx = sx(hookX);
   x.fillStyle = '#ff8800'; x.fillRect(hx - 6, y(124), 12, 4);
   x.strokeStyle = 'rgba(201,168,127,.9)'; x.beginPath(); x.moveTo(hx + 0.5, y(120)); x.lineTo(hx + 0.5, y(66)); x.stroke();
@@ -315,12 +296,12 @@ export function drawYard(x: CanvasRenderingContext2D, m: YardModel, v: View, hig
   x.fillStyle = '#2a1405'; x.fillRect(sx(CHUTE.x0) - 2, y(CHUTE.h0 - 4), 3, CHUTE.h0 - 4);
 
   // the hatch in the fence, HINGE's face on it, with a dark gap around it
-  const gx = sx(615), open = m.gateOpen();
+  const gx = sx(615), open = !!m.value('gateOpen');
   x.fillStyle = '#000'; x.fillRect(gx - 18, y(66), 36, 66);
   x.fillStyle = open ? '#000' : '#1d0e05'; x.fillRect(gx - 16, y(64), 32, 64);
   x.strokeStyle = open ? 'rgba(34,197,94,.9)' : 'rgba(255,136,0,.75)'; x.strokeRect(gx - 15.5, y(64) + 0.5, 31, 63);
   if (!open) { for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,136,0,.18)'; x.fillRect(gx - 14, y(60) + i * 15, 28, 2); } }
-  text(open ? '◕‿◕' : m.gateAllowed ? '◔_◔' : '◔︵◔', gx, y(40), open ? 'rgba(34,197,94,.95)' : 'rgba(255,136,0,.95)', 9);
+  text(open ? '◕‿◕' : m.get('gateAllowed') ? '◔_◔' : '◔︵◔', gx, y(40), open ? 'rgba(34,197,94,.95)' : 'rgba(255,136,0,.95)', 9);
   glow('gate', gx - 16, y(64), 32, 64);
 
   // pickup tray past the hatch
@@ -329,14 +310,6 @@ export function drawYard(x: CanvasRenderingContext2D, m: YardModel, v: View, hig
   x.fillStyle = '#4a2408'; x.fillRect(tx + 15, y(36), 2, 36);
   x.fillStyle = '#071209'; x.fillRect(tx + 2, y(46), 28, 10); x.strokeStyle = 'rgba(34,197,94,.6)'; x.strokeRect(tx + 2.5, y(46) + 0.5, 27, 9);
   text('PICKUP', tx + 16, y(38.5), 'rgba(34,197,94,.85)', 7);
-
-  // things you crafted
-  craftedIds(m).forEach((id, i) => {
-    const c = sx(craftedX(i)), delay = id.startsWith('delay');
-    x.fillStyle = '#160416'; x.fillRect(c - 8, y(14), 16, 14); x.strokeStyle = 'rgba(255,61,242,.85)'; x.strokeRect(c - 7.5, y(14) + 0.5, 15, 13);
-    x.fillStyle = delay ? 'rgba(0,255,255,.9)' : 'rgba(255,210,63,.9)'; x.fillRect(c - 3, y(10), 6, 3 + (Math.floor(t / 20) % 2));
-    glow(id, c - 8, y(14), 16, 14);
-  });
 
   // the parcel
   const p = parcelPos(m);
@@ -347,13 +320,13 @@ export function drawYard(x: CanvasRenderingContext2D, m: YardModel, v: View, hig
   }
 }
 
-function parcelPos(m: YardModel): [number, number] | null {
-  const a = m.parcelAt;
+function parcelPos(m: ZoneModel): [number, number] | null {
+  const a = m.get('parcelAt') as ParcelAt;
   if (a === 'A-3' || a === 'B-5' || a === 'C-7') return [SLOT[a], 22];
   if (a === 'hook') return [hookX, 51];
   if (a === 'chute') return [CHUTE.x0, CHUTE.h0];
   if (a === 'sliding') {
-    const f = Math.min(1, (performance.now() - m.slideStart) / SLIDE_MS);
+    const f = Math.min(1, (m.now() - (m.scratch.slideStart ?? 0)) / m.zone.tuning.slideMs);
     return [CHUTE.x0 + (CHUTE.x1 - CHUTE.x0) * f, CHUTE.h0 + (CHUTE.h1 - CHUTE.h0) * f];
   }
   if (a === 'bounced') return [CHUTE.x1 - 4, CHUTE.h1];

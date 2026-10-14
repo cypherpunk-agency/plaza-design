@@ -25,6 +25,12 @@
       "name": "CAM-1",
       "look": "A camera on a pole. It has seen things. Mostly crates.",
       "status": [{ "if": "found", "then": "tagged: {parcel}", "else": "watching the yard" }],
+      "layout": {
+        "spot": { "x": 90, "w": 26, "h": 86 },
+        "board": { "x": 0.14, "y": 0.3 },
+        "dir": { "lens": "up", "motor": "down", "footage": "right" },
+        "vision": { "lens": "up", "motor": "left", "footage": "down" }
+      },
       "nouns": [
         {
           "id": "lens", "kind": "SENSE", "verbs": ["view"],
@@ -52,6 +58,12 @@
       "name": "CRANE",
       "look": "A yard crane. Does exactly what it is told, in order, with a sigh.",
       "status": ["arm: {armAt}", { "if": "held", "then": " · holding {held}" }],
+      "layout": {
+        "spot": { "x": 350, "w": 186, "h": 130 },
+        "board": { "x": 0.5, "y": 0.3 },
+        "dir": { "arm": "down", "claw": "up", "job.log": "left" },
+        "vision": { "arm": "down", "claw": "up", "job.log": "left" }
+      },
       "nouns": [
         {
           "id": "arm", "kind": "ACT", "verbs": ["A-3", "B-5", "C-7", "chute"], "current": "armAt",
@@ -80,6 +92,12 @@
         { "if": "gateOpen", "then": "OPEN", "else": "closed" },
         { "if": "gateAllowed", "then": " · takes signals", "else": " · ignores signals" }
       ],
+      "layout": {
+        "spot": { "x": 615, "w": 36, "h": 68 },
+        "board": { "x": 0.86, "y": 0.3 },
+        "dir": { "lock": "left", "log": "up", "hinge": "down" },
+        "vision": { "lock": "left", "log": "up", "hinge": "down" }
+      },
       "nouns": [
         {
           "id": "lock", "kind": "ACT", "verbs": ["open"],
@@ -150,9 +168,7 @@
 
   "texts": {
     "goals.done": "done. the fixer owes you one.",
-    "board.empty": "nothing on the board yet: open a device first.",
     "prompt.exit": "[E] DOWNTOWN",
-    "prompt.open": "[E] OPEN",
     "prompt.take": "[E] TAKE PARCEL",
 
     "motor.turn": ["use motor --{verb}", "motor whirrs. pointed {verb}."],
@@ -166,16 +182,9 @@
     "claw.drop.at": ["use claw --drop", "dropped at {armAt}. thud."],
     "claw.drop.chute": ["use claw --drop", "into the chute. the claw says: dropped."],
 
-    "timer.wait": ["{via}use timer --wait {sec}s", "timer: waiting {sec} s…", "dim"],
-
     "parcel.tray": ["", "the parcel slides through the hatch and into the pickup tray.", "ok"],
     "parcel.bonk": ["", "bonk. the parcel hits a closed hatch. the crane fishes it back, sighing.", "err"],
     "parcel.take": ["take parcel", "a parcel, slightly squashed. inside: a note. \"nice wiring. —the fixer\"", "ok"],
-
-    "wire.connect": ["on {from} do {to} {verbCmd}", "wired: when {event}, {toNoun} will {verb}.", "ok"],
-    "wire.cut": ["unwire {from} {to}", "cable cut. snip.", "dim"],
-
-    "ui.close": "CLOSE ×",
 
     "cam.zoom": "ZOOM",
     "cam.tag": "TAG",
@@ -189,9 +198,6 @@
     "cam.on": "ON: crate {id}",
     "cam.aim": "tap the feed to aim",
 
-    "talk.unplug": "(unplug)",
-    "talk.other": "⌨ say something else…",
-    "talk.placeholder": "type, then Enter",
     "talk.aria": "Say something to HINGE"
   }
 }
