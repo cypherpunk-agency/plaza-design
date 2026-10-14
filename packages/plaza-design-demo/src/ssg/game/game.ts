@@ -179,6 +179,10 @@ export class Game {
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
+      // zone steps that hand out modules and tokens (GAME-DATA.md, "Giving things")
+      grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); storeSave(this.save); this.syncHud(); },
+      tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
+      drop: () => storeSave(this.save),
       load: () => this.save.zones[id],
       store: (z) => { this.save.zones[id] = z; storeSave(this.save); },
     }, def);
@@ -647,7 +651,8 @@ export class Game {
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
     if (this.scene) { this.drawScene(this.scene, rain); this.drawMap(); return; }
 
-    const vision = this.zone === 'yard' && this.yard.visionOn;
+    // hack vision, on any zone: the world goes muted, what you can use (and you) stays bright
+    const vision = !!this.zoneHost?.visionOn;
     if (this.zone === 'yard') {
       // Boxed in by the backs of houses: no city behind the yard, it draws its own walls.
       this.drawStreet(rain);
@@ -656,7 +661,7 @@ export class Game {
       if (vision) { this.yard.draw(x, v, 'world'); this.drawRain(rain); this.mute(); this.yard.draw(x, v, 'devices'); }
       else this.yard.draw(x, v);
     } else if (this.zone === 'capsule') {
-      // Indoors: the flat draws everything, the tower around it included (no muted hack-vision layers yet).
+      // Indoors: the flat draws everything, the tower around it included.
       this.capsule.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
     } else {
       this.drawSky();
@@ -669,6 +674,8 @@ export class Game {
       this.downtown.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
       this.drawStands();
     }
+    // zones that draw in one pass (the flat, Downtown): mute round their devices' frames
+    if (vision && this.zone !== 'yard') { if (this.zone !== 'capsule') this.drawRain(rain); this.mute(this.zoneHost!.model.spots()); }
     this.drawPeople();
     if (this.zone !== 'capsule' && !vision) this.drawRain(rain);
     this.drawPrompt();
@@ -1134,9 +1141,15 @@ export class Game {
    * violet wash, so the devices (drawn next, bright and framed) and the player stand out.
    * Two full-screen fills: cheap.
    */
-  private mute() {
+  /** Hack vision's muting: grey and dark over the view, with holes left bright at `keep` (device spots, world units). */
+  private mute(keep: { x: number; y: number; w: number; h: number }[] = []) {
     const x = this.x;
     x.save();
+    if (keep.length) {
+      x.beginPath(); x.rect(0, 0, this.viewW, this.viewH);
+      for (const s of keep) x.rect(this.sx(s.x - s.w / 2) - 4, this.y(s.y + s.h) - 4, s.w + 8, s.h + 8);
+      x.clip('evenodd');
+    }
     x.globalCompositeOperation = 'saturation'; x.globalAlpha = 0.85;
     x.fillStyle = '#808080'; x.fillRect(0, 0, this.viewW, this.viewH);
     x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;

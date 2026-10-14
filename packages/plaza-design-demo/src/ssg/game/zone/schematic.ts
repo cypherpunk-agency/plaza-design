@@ -40,6 +40,7 @@
 
 import type { Pt } from '../data/types';
 import type { Device, Line, Link, Noun, ZoneModel } from './model';
+import { drawWatchdogs } from './watchdog-view';
 
 const NS = 'http://www.w3.org/2000/svg';
 type P = { x: number; y: number };
@@ -363,11 +364,16 @@ export class Schematic {
     this.stage.querySelectorAll<HTMLElement>('.sch-trace').forEach((e) => {
       const id = e.dataset.dev!, v = this.m.traceOf(id);
       shown.add(id);
-      e.querySelector('i')!.style.width = v + '%';
-      e.classList.toggle('hot', v >= 70);
+      // [ui] trace says its number; a lockout turns the meter into its countdown
+      const lock = this.m.lockLeft(id), span = this.m.lockSpan(id);
+      e.querySelector('i')!.style.width = (lock ? (lock / Math.max(1, span)) * 100 : v) + '%';
+      e.querySelector('b')!.textContent = lock ? this.m.label('lock.meter', { sec: Math.ceil(lock / 1000) }) : this.m.label('trace.meter', { pct: Math.round(v) });
+      e.classList.toggle('hot', !lock && v >= 70);
+      e.classList.toggle('lock', !!lock);
       e.title = 'trace ' + Math.round(v) + '%';
     });
     this.stage.querySelectorAll<HTMLElement>('[data-lock]').forEach((e) => { e.textContent = this.lockText(e.dataset.lock!); });
+    drawWatchdogs(this.stage, this.m, this.mode);
     const want = this.ids().filter((id) => this.metered(id));
     if (want.some((id) => !shown.has(id))) this.render();
   }
@@ -467,6 +473,7 @@ export class Schematic {
     if (this.mode === 'board') this.m.ghosts().forEach((n) => this.stage.appendChild(this.ghost(n)));
     this.arrange();
     this.lines();
+    drawWatchdogs(this.stage, this.m, this.mode);
     const inp = this.stage.querySelector<HTMLInputElement>('.sch-guess input');
     if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
   }
@@ -480,20 +487,34 @@ export class Schematic {
     this.ring.appendChild(el('span', '', this.m.label('keyring.title')));
     items.forEach((k) => {
       const b = el('button', 'sch-chip ' + k.kind + (this.chip === k.id ? ' armed' : ''), k.label); b.type = 'button'; b.dataset.chip = k.id;
-      b.title = k.kind === 'fragment' ? k.label + ': "' + k.text + '"' : k.label + ' (a key chip)';
+      b.title = k.kind === 'fragment' ? k.label + ': "' + k.text + '"' : k.label + (k.kind === 'card' ? ' (a card: lock toys take it)' : ' (a key chip)');
       b.addEventListener('pointerdown', (e) => this.startChip(e, k.id));
       b.addEventListener('click', (e) => e.stopPropagation());
       this.ring.appendChild(b);
+      // [ui] a fragment you made can be thrown away (the data's own are evidence: they stay)
+      if (this.m.isMade(k.id)) {
+        const x = el('button', 'sch-chip-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'drop ' + k.label);
+        x.addEventListener('pointerdown', (e) => e.stopPropagation());
+        x.addEventListener('click', (e) => { e.stopPropagation(); if (this.chip === k.id) this.chip = null; this.m.discard(k.id); this.say(this.m.line('keyring.discard', { label: k.label })); });
+        this.ring.appendChild(x);
+      }
     });
   }
 
   private group(id: string) {
-    const d = this.m.devices.get(id)!, locked = this.m.lockLeft(id) > 0;
-    const g = el('div', 'sch' + (d.crafted ? ' crafted' : '') + (d.node ? ' node' : '') + (locked ? ' locked' : '')); g.dataset.dev = id;
+    const d = this.m.devices.get(id)!, locked = this.m.lockLeft(id) > 0, frozen = this.m.frozen(id);
+    const g = el('div', 'sch' + (d.crafted ? ' crafted' : '') + (d.node ? ' node' : '') + (locked ? ' locked' : '') + (frozen ? ' frozen' : '')); g.dataset.dev = id;
     const c = this.centre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
     const core = el('div', 'sch-core');
-    const meter = () => { const t = el('div', 'sch-trace'); t.dataset.dev = id; t.appendChild(el('i')); return t; };
-    const st = el('div', 'sch-st', locked ? this.lockText(id) : d.status());
+    // [ui] the meter: a bar and its words (TRACE 42% / LOCKED · 7 s), kept current by meters()
+    const meter = () => {
+      const t = el('div', 'sch-trace'), left = this.m.lockLeft(id); t.dataset.dev = id;
+      const bar = el('i'); bar.style.width = (left ? (left / Math.max(1, this.m.lockSpan(id))) * 100 : this.m.traceOf(id)) + '%';
+      t.classList.toggle('lock', left > 0);
+      t.append(bar, el('b', '', left ? this.m.label('lock.meter', { sec: Math.ceil(left / 1000) }) : this.m.label('trace.meter', { pct: Math.round(this.m.traceOf(id)) })));
+      return t;
+    };
+    const st = el('div', 'sch-st', locked ? this.lockText(id) : frozen ? this.m.label('watchdog.name') + ' · FROZEN' : d.status());
     if (locked) st.dataset.lock = id;
     core.append(el('div', 'sch-name', d.name), st);
     if (this.metered(id)) core.appendChild(meter());
@@ -650,9 +671,11 @@ export class Schematic {
     const a = this.stage.querySelector(`[data-port="${l.from}"] i`) ?? plate(l.from), b = this.stage.querySelector(`[data-target="${l.to}"] .sch-label`) ?? plate(l.to);
     if (!a || !b || a === b) return;
     const P1 = this.pt(a), P2 = this.pt(b);
+    // [fixed cables] a conduit: a wide solid casing under the line, and a tap only says it cannot be cut
+    if (l.fixed) this.path(P1, P2, 'conduit', true);
     const hit = this.path(P1, P2, 'hit', true);
     hit.addEventListener('click', (e) => { e.stopPropagation(); this.say(this.m.cut(l)); });
-    this.path(P1, P2, 'cable' + (this.m.live.has(l) ? ' live' : ''), true);
+    this.path(P1, P2, 'cable' + (this.m.live.has(l) ? ' live' : '') + (l.fixed ? ' fixed' : ''), true);
     const t = document.createElementNS(NS, 'text');
     t.setAttribute('x', String((P1.x + P2.x) / 2)); t.setAttribute('y', String((P1.y + P2.y) / 2 - 6));
     t.setAttribute('text-anchor', 'middle'); t.setAttribute('class', 'verb'); t.textContent = l.verb;
