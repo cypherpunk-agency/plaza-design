@@ -16,14 +16,6 @@ import { drawYard, spotAt, spots, TRAY_X, YARD_EXIT_X } from './scene';
 
 export { YARD_SPAWN, YARD_W } from './scene';
 
-const GOALS: [Goal, string][] = [
-  ['find', 'find your parcel'],
-  ['chute', 'get it into the chute'],
-  ['talk', 'get the hatch to cooperate'],
-  ['gate', 'get it through the hatch'],
-  ['take', 'pick it up'],
-];
-
 export interface YardTarget { id: string; x: number; label: string; promptH: number }
 
 export class Yard {
@@ -38,7 +30,6 @@ export class Yard {
       say: (l) => this.say(l),
       openCamera: () => this.panels.camera(),
       openTalk: () => this.panels.talk(),
-      openBench: () => this.panels.bench(),
       changed: () => this.schem?.render(),
       goal: (g) => { this.model.goals.add(g); },
     });
@@ -65,15 +56,17 @@ export class Yard {
     this.schem.openDevice(id);
   }
   toggleBoard() {
-    if (!this.schem.known.size) { this.print('nothing on the board yet: open a device first.', 'dim'); return; }
+    if (!this.schem.known.size) { this.print(this.model.label('board.empty'), 'dim'); return; }
     this.schem.toggleBoard();
   }
 
   /** Things you can stand next to and press E on. */
   targets(): YardTarget[] {
-    const list: YardTarget[] = [{ id: 'exit', x: YARD_EXIT_X, label: '[E] DOWNTOWN', promptH: 44 }];
-    spots(this.model).forEach((s) => list.push({ id: s.id, x: s.x, label: '[E] OPEN', promptH: Math.min(s.h + 12, 100) }));
-    if (this.model.parcelAt === 'tray') list.push({ id: 'tray', x: TRAY_X, label: '[E] TAKE PARCEL', promptH: 26 });
+    const m = this.model;
+    const list: YardTarget[] = [{ id: 'exit', x: YARD_EXIT_X, label: m.label('prompt.exit'), promptH: 44 }];
+    // the scene may still draw things that are no longer devices (the old workbench)
+    spots(m).filter((s) => m.devices.has(s.id)).forEach((s) => list.push({ id: s.id, x: s.x, label: m.label('prompt.open'), promptH: Math.min(s.h + 12, 100) }));
+    if (m.parcelAt === 'tray') list.push({ id: 'tray', x: TRAY_X, label: m.label('prompt.take'), promptH: 26 });
     return list;
   }
 
@@ -84,11 +77,11 @@ export class Yard {
     this.openDevice(id);
   }
 
-  spotAt(wx: number, h: number) { return spotAt(this.model, wx, h); }
+  spotAt(wx: number, h: number) { const id = spotAt(this.model, wx, h); return id && this.model.devices.has(id) ? id : null; }
 
   objective() {
-    const next = GOALS.find(([g]) => !this.model.goals.has(g));
-    return next ? next[1] : 'done. the fixer owes you one.';
+    const next = this.model.zone.goals.find((g) => !this.model.goals.has(g.id as Goal));
+    return next ? next.text : this.model.label('goals.done');
   }
 
   draw(x: CanvasRenderingContext2D, v: { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number }) {

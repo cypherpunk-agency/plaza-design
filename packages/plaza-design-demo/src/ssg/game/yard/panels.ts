@@ -1,9 +1,11 @@
 /**
- * The yard's three full-screen moments: looking through CAM-1, talking HINGE
- * round, and the workbench. Each covers the game window until closed.
- * Styles live in render.tsx (`.hack-panel`, `.cam-*`, `.dlg-*`, `.bench-*`).
+ * The yard's full-screen moments: looking through CAM-1 and talking HINGE
+ * round. Each covers the game window until closed. What they show and say
+ * comes from the zone data (crates, the dialogue tree, texts).
+ * Styles live in render.tsx (`.hack-panel`, `.cam-*`, `.dlg-*`).
  */
 
+import type { DialogueNode } from '../data/types';
 import type { Line, YardModel } from './model';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
@@ -24,7 +26,7 @@ export class Panels {
   constructor(host: HTMLElement, private m: YardModel, private say: (l: Line) => void) {
     this.root = el('div', 'hack-panel'); this.root.hidden = true;
     this.body = el('div', 'hack-panel-body');
-    this.root.append(button('CLOSE ×', 'hack-btn hack-panel-close', () => this.close()), this.body);
+    this.root.append(button(m.label('ui.close'), 'hack-btn hack-panel-close', () => this.close()), this.body);
     host.appendChild(this.root);
   }
 
@@ -40,13 +42,10 @@ export class Panels {
     const btns = el('div', 'cam-btns');
     this.body.append(c, btns);
     const W = 320, H = 150;
-    const crates = [
-      { id: 'A-3', x: 60, y: 92, w: 44, h: 34, tiny: 'RAISINS (BULK)' },
-      { id: 'B-5', x: 140, y: 88, w: 40, h: 38, tiny: 'NOT YOURS. REALLY.' },
-      { id: 'C-7', x: 222, y: 96, w: 36, h: 30, tiny: 'TO: YOU. FRAGILE-ISH.' },
-    ];
+    const crates = this.m.zone.camera.crates;
     let s = 1, ox = 0, oy = 0, zoom = 1, focus = { x: 160, y: 75 }, cross = { x: 160, y: 80 }, aim = { x: 160, y: 80 };
     const tags = new Set<string>();
+    const hud = this.m.label('cam.hud'), aimText = this.m.label('cam.aim');
     const pan = () => this.m.pan * 40;
     const under = (p: { x: number; y: number }) => crates.find((k) => p.x >= k.x - pan() - 3 && p.x <= k.x - pan() + k.w + 3 && p.y >= k.y - 3 && p.y <= k.y + k.h + 3);
     const fit = () => {
@@ -60,19 +59,20 @@ export class Panels {
       aim = { x: (vx - 160) / zoom + focus.x, y: (vy - 75) / zoom + focus.y };
     });
     btns.append(
-      button('ZOOM', 'hack-btn', () => {
+      button(this.m.label('cam.zoom'), 'hack-btn', () => {
         const k = under(cross);
         if (zoom === 1) {
           zoom = 3; focus = { ...cross };
-          if (!k) return this.say(['cam1 zoom', 'zoomed into: gravel. high quality gravel.']);
-          this.say(['cam1 zoom ' + k.id, 'crate ' + k.id + ' label: "' + k.tiny.toLowerCase() + '"', k.id === this.m.parcel ? 'ok' : undefined]);
-          if (k.id === this.m.parcel) this.m.markFound();
-        } else { zoom = 1; focus = { x: 160, y: 75 }; this.say(['cam1 zoom --out', 'whole yard again.', 'dim']); }
+          if (!k) return this.say(this.m.line('cam.zoom.gravel'));
+          const mine = k.id === this.m.parcel;
+          this.say(this.m.line(mine ? 'cam.zoom.parcel' : 'cam.zoom.crate', { id: k.id, label: k.label.toLowerCase() }));
+          if (mine) this.m.markFound();
+        } else { zoom = 1; focus = { x: 160, y: 75 }; this.say(this.m.line('cam.zoom.out')); }
       }),
-      button('TAG', 'hack-btn', () => {
+      button(this.m.label('cam.tag'), 'hack-btn', () => {
         const k = under(cross);
-        if (!k) return this.say(['cam1 tag', 'nothing to tag there.', 'dim']);
-        tags.add(k.id); this.say(['cam1 tag ' + k.id, 'tagged ' + k.id + '.']);
+        if (!k) return this.say(this.m.line('cam.tag.none'));
+        tags.add(k.id); this.say(this.m.line('cam.tag.ok', { id: k.id }));
       }),
     );
     const frame = (t: number) => {
@@ -91,7 +91,7 @@ export class Panels {
         g.fillStyle = '#6a3f12'; g.fillRect(x, k.y, k.w, k.h); g.strokeStyle = '#c98a3f'; g.lineWidth = 1; g.strokeRect(x + 0.5, k.y + 0.5, k.w - 1, k.h - 1);
         g.fillStyle = '#ffd9a5'; g.fillRect(x + 4, k.y + 4, 22, 9);
         g.fillStyle = '#1d0e05'; g.font = '600 7px "IBM Plex Mono", monospace'; g.fillText(k.id, x + 6, k.y + 11);
-        g.font = '2.6px "IBM Plex Mono", monospace'; g.fillStyle = '#ffd9a5'; g.fillText(k.tiny, x + 3, k.y + k.h - 4);
+        g.font = '2.6px "IBM Plex Mono", monospace'; g.fillStyle = '#ffd9a5'; g.fillText(k.label, x + 3, k.y + k.h - 4);
         if (tags.has(k.id)) { g.strokeStyle = '#ff3df2'; g.setLineDash([2, 2]); g.strokeRect(x - 2, k.y - 2, k.w + 4, k.h + 4); g.setLineDash([]); }
       }
       g.fillStyle = 'rgba(0,255,255,0.04)'; for (let y = 0; y < H; y += 2) g.fillRect(0, y, W, 1);
@@ -104,8 +104,8 @@ export class Panels {
       g.setTransform(1, 0, 0, 1, 0, 0);
       const fs = Math.round(11 * (window.devicePixelRatio || 1));
       g.font = fs + 'px "IBM Plex Mono", monospace';
-      g.fillStyle = Math.floor(t / 600) % 2 ? '#ff2a44' : '#5a0a14'; g.fillText('● CAM-1 · YARD' + (zoom > 1 ? ' ×3' : ''), ox + fs * 0.6, oy + fs * 1.4);
-      g.fillStyle = '#00ffff'; g.fillText(k ? 'ON: crate ' + k.id : 'tap the feed to aim', ox + fs * 0.6, oy + fs * 2.8);
+      g.fillStyle = Math.floor(t / 600) % 2 ? '#ff2a44' : '#5a0a14'; g.fillText(hud + (zoom > 1 ? ' ×3' : ''), ox + fs * 0.6, oy + fs * 1.4);
+      g.fillStyle = '#00ffff'; g.fillText(k ? this.m.label('cam.on', { id: k.id }) : aimText, ox + fs * 0.6, oy + fs * 2.8);
       this.raf = requestAnimationFrame(frame);
     };
     requestAnimationFrame(() => { fit(); this.raf = requestAnimationFrame(frame); });
@@ -113,65 +113,40 @@ export class Panels {
 
   // ---------- HINGE: permission, not answers ----------
 
-  talk() {
+  talk(who = 'hinge') {
     this.show('dlg');
     const box = el('div', 'dlg-box');
     this.body.appendChild(box);
-    const T: Record<string, () => [string, [string, string][] | null]> = {
-      start: () => this.m.gateAllowed
-        ? ['Signals: allowed. One second per ping. Do not make me regret this.', [['Thanks, HINGE.', 'bye']]]
-        : ['State your business. Briefly. I have been a hatch for eleven years.', [['I have a parcel coming.', 'parcel'], ['Can you open, please?', 'please'], ['Open.', 'blunt']]],
-      parcel: () => ['Parcels. Always parcels. I do not watch chutes. I have standards.', [['What if something pinged you?', 'ping'], ['Never mind.', 'start']]],
-      ping: () => ['A signal? Hm. Automation. Very modern. Fine: one ping, I open for one second. I will not wait.', [['Deal.', 'deal']]],
-      please: () => ['Manners. Rare. But I do not open for people. I open for reasons.', [['The reason is a parcel.', 'parcel']]],
-      blunt: () => ['Bold. No.', [['Let me start over.', 'start']]],
-      deal: () => { this.m.allowSignals(); return ['Noted. Signals allowed. Timing is your problem.', null]; },
-      bye: () => ['Hmph.', null],
+    const D = this.m.zone.dialogue[who];
+    const sayLine = (line: string) => this.say([D.sayCmd.replace('{line}', line), '', 'dim']);
+    /** A node's first variant whose `if` holds; its steps run as it is shown. */
+    const pick = (id: string): DialogueNode => {
+      const n = [D.nodes[id]].flat().find((v) => !v.if || this.m.cond(v.if))!;
+      if (n.do) this.m.apply(n.do);
+      return n;
     };
     const show = (id: string) => {
-      const [text, opts] = T[id]();
+      const { text, choices } = pick(id);
       box.textContent = '';
-      box.append(el('b', 'dlg-name', 'HINGE · hatch daemon'), el('p', 'dlg-text', text));
+      box.append(el('b', 'dlg-name', D.speaker), el('p', 'dlg-text', text));
       const ch = el('div', 'dlg-choices'); box.appendChild(ch);
-      if (!opts) { ch.appendChild(button('(unplug)', 'dlg-choice', () => this.close())); return; }
-      opts.forEach(([line, next]) => ch.appendChild(button(line, 'dlg-choice', () => { this.say(['say "' + line + '" > hinge', '', 'dim']); show(next); })));
-      ch.appendChild(button('⌨ say something else…', 'dlg-choice dlg-kb', () => {
+      if (!choices) { ch.appendChild(button(this.m.label('talk.unplug'), 'dlg-choice', () => this.close())); return; }
+      choices.forEach(([line, next]) => ch.appendChild(button(line, 'dlg-choice', () => { sayLine(line); show(next); })));
+      const free = D.free;
+      if (!free) return;
+      ch.appendChild(button(this.m.label('talk.other'), 'dlg-choice dlg-kb', () => {
         ch.textContent = '';
-        const inp = el('input', 'dlg-input'); inp.placeholder = 'type, then Enter'; inp.setAttribute('aria-label', 'Say something to HINGE');
+        const inp = el('input', 'dlg-input'); inp.placeholder = this.m.label('talk.placeholder'); inp.setAttribute('aria-label', this.m.label('talk.aria'));
         ch.appendChild(inp); inp.focus();
         inp.addEventListener('keydown', (e) => {
           e.stopPropagation();
           if (e.key !== 'Enter' || !inp.value.trim()) return;
-          const line = inp.value.trim(); this.say(['say "' + line + '" > hinge', '', 'dim']);
-          if (/wire|ping|signal|automat/i.test(line)) show('ping');
-          else { box.querySelector('.dlg-text')!.textContent = 'HINGE does not parse that. HINGE does not want to.'; ch.textContent = ''; ch.appendChild(button('Try again.', 'dlg-choice', () => show('start'))); }
+          const line = inp.value.trim(); sayLine(line);
+          if (new RegExp(free.match, 'i').test(line)) show(free.goto);
+          else { box.querySelector('.dlg-text')!.textContent = free.miss; ch.textContent = ''; ch.appendChild(button(free.retry, 'dlg-choice', () => show(free.retryGoto))); }
         });
       }));
     };
-    show('start');
-  }
-
-  // ---------- the workbench: two parts in, one device out ----------
-
-  bench() {
-    this.show('bench');
-    const INV = ['timer', 'relay', 'lamp', 'speaker'];
-    let pick: string[] = [];
-    const paint = () => {
-      this.body.textContent = '';
-      const inv = el('div', 'bench-row'); inv.appendChild(el('span', 'bench-h', 'PARTS IN YOUR POCKET'));
-      INV.forEach((p) => inv.appendChild(button(p, 'bench-item' + (pick.includes(p) ? ' sel' : ''), () => {
-        pick = pick.includes(p) ? pick.filter((x) => x !== p) : pick.length < 2 ? [...pick, p] : pick; paint();
-      })));
-      const bp = el('div', 'bench-print');
-      [0, 1].forEach((i) => bp.appendChild(el('div', 'bench-sock' + (pick[i] ? ' full' : ''), pick[i] ?? 'socket ' + (i + 1))));
-      const go = button('PRESS', 'bench-go', () => { const [a, b] = pick; pick = []; this.say(this.m.craft(a, b)); paint(); });
-      go.disabled = pick.length < 2; bp.appendChild(go);
-      const made = [...this.m.devices.values()].filter((d) => d.crafted).map((d) => d.name);
-      const out = el('div', 'bench-row'); out.appendChild(el('span', 'bench-h', 'CRAFTED · they stand in the yard and show up on the board'));
-      made.forEach((n) => out.appendChild(el('span', 'bench-item', n)));
-      this.body.append(inv, bp, out);
-    };
-    paint();
+    show(D.start);
   }
 }
