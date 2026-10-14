@@ -591,6 +591,7 @@ export const demoStyles = `
     }
 
     html.game-mode.touch #touch { display: flex; }
+    html.game-mode.cutscene #touch { display: none; }
 
     /* On a phone the game gets the whole screen: no window inset, slim header and footer */
     html.game-mode.touch .demo-window { inset: 0; }

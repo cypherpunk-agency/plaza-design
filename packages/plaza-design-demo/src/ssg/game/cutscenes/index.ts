@@ -1,0 +1,154 @@
+/**
+ * Cutscenes: the registry and the player.
+ *
+ * A cutscene is a picture drawn by code (`draw(ctx, view, t)`) plus editable data
+ * (data/cutscenes.json: title, duration, the zone it hands over to, text cards).
+ * The player adds what every cutscene shares: letterbox bars, the cards typed out
+ * in the bottom bar, a fade in and out, and a small "any key to skip" hint.
+ *
+ * The game plays one with `game.playCutscene(id, then?)`; `?play=<id>` starts
+ * the game with one (see index.ts). Adding a cutscene: an entry in
+ * cutscenes.json and a draw function in DRAW below.
+ */
+
+import data from '../data/cutscenes.json';
+import { drawSkyline } from './skyline';
+import type { Cutscene, CutsceneData, CutView } from './types';
+
+export type { Cutscene, CutsceneData, CutView, TextCard } from './types';
+
+const DATA: Record<string, CutsceneData> = data;
+
+const DRAW = {
+  /** The opening: the city with nobody in it. */
+  intro: (x: CanvasRenderingContext2D, v: CutView, t: number) => drawSkyline(x, v, t, DATA.intro.duration),
+} satisfies Record<string, Cutscene['draw']>;
+
+export type CutsceneId = keyof typeof DRAW;
+
+export const CUTSCENES = Object.fromEntries(
+  (Object.keys(DRAW) as CutsceneId[]).map((id) => [id, { id, ...DATA[id], draw: DRAW[id] } satisfies Cutscene]),
+) as Record<CutsceneId, Cutscene>;
+
+export const isCutsceneId = (id: string): id is CutsceneId => Object.prototype.hasOwnProperty.call(CUTSCENES, id);
+export const cutsceneById = (id: string): Cutscene | undefined => (isCutsceneId(id) ? CUTSCENES[id] : undefined);
+
+/** Inputs in the first moments don't skip: the key that started the scene is still being pressed. */
+const GRACE = 0.8;
+const FADE_IN = 1.4, FADE_OUT = 0.9;
+/** Characters typed per second. */
+const TYPE = 32;
+
+const PAPER = '255,233,208', RUST = '194,65,12', ORANGE = '255,136,0';
+
+/** One playing cutscene. The game steps and draws it instead of the zone while it runs. */
+export class CutscenePlay {
+  t = 0;
+  done = false;
+  private wrapped: { size: number; maxW: number; lines: string[][]; widths: number[] } | null = null;
+
+  constructor(readonly scene: Cutscene, private opts: { reduced: boolean; touch: boolean }) {}
+
+  /** Advance by `dt` seconds. */
+  step(dt: number) {
+    this.t += dt;
+    if (this.t >= this.scene.duration) this.done = true;
+  }
+
+  /** Any key or tap: jump to the fade out. Returns false while the grace period lasts. */
+  skip() {
+    if (this.t < GRACE || this.done) return false;
+    this.t = Math.max(this.t, this.scene.duration - FADE_OUT * 0.6);
+    return true;
+  }
+
+  /** Draw a frame into a context already scaled to world units. */
+  draw(x: CanvasRenderingContext2D, viewW: number, viewH: number) {
+    const size = Math.max(10, Math.min(18, Math.round(viewH / 26)));
+    const barTop = Math.round(Math.max(16, viewH * 0.09));
+    const barBottom = Math.round(Math.max(size * 3.6, viewH * 0.16));
+    const view: CutView = { viewW, viewH, barTop, barBottom, reduced: this.opts.reduced };
+    const t = this.t, d = this.scene.duration;
+
+    x.save();
+    this.scene.draw(x, view, t);
+    x.restore();
+
+    // Fade from black at the start and back to black at the end.
+    const fade = Math.max(0, 1 - t / FADE_IN, 1 - (d - t) / FADE_OUT);
+    if (fade > 0) { x.fillStyle = 'rgba(0,0,0,' + Math.min(1, fade) + ')'; x.fillRect(0, 0, viewW, viewH); }
+
+    this.bars(x, viewW, viewH, barTop, barBottom);
+    this.card(x, viewW, viewH, barBottom, size);
+    if (t > GRACE) {
+      x.save();
+      x.font = '600 ' + Math.max(7, Math.round(size * 0.62)) + 'px "IBM Plex Mono", monospace';
+      x.textAlign = 'right'; x.textBaseline = 'middle';
+      x.fillStyle = 'rgba(' + PAPER + ',' + 0.4 * Math.min(1, (t - GRACE) * 2) + ')';
+      x.fillText(this.opts.touch ? 'TAP TO SKIP' : 'ANY KEY TO SKIP', viewW - 10, Math.round(barTop / 2));
+      x.restore();
+    }
+  }
+
+  /** Letterbox bars, each with a thin rust edge so the picture reads as framed. */
+  private bars(x: CanvasRenderingContext2D, W: number, H: number, top: number, bottom: number) {
+    x.fillStyle = '#000';
+    x.fillRect(0, 0, W, top);
+    x.fillRect(0, H - bottom, W, bottom);
+    x.fillStyle = 'rgba(' + RUST + ',.55)';
+    x.fillRect(0, top - 1, W, 1);
+    x.fillRect(0, H - bottom, W, 1);
+  }
+
+  /** The current card, typed out on the bottom bar behind a prompt mark, with a block cursor. */
+  private card(x: CanvasRenderingContext2D, W: number, H: number, bottom: number, size: number) {
+    const cards = this.scene.cards, t = this.t;
+    let i = -1;
+    for (let j = 0; j < cards.length; j++) if (t >= cards[j].at && t < cards[j].until) i = j;
+    if (i < 0) return;
+    const c = cards[i];
+    x.save();
+    x.font = '500 ' + size + 'px "IBM Plex Mono", monospace';
+    x.textBaseline = 'middle'; x.textAlign = 'left';
+    const lineH = Math.round(size * 1.45), mark = Math.round(size * 1.4);
+    const maxW = Math.min(W - 32 - mark, size * 44);
+    const { lines: all, widths } = this.lines(x, size, maxW), lines = all[i];
+    const left = Math.round((W - widths[i] - mark) / 2), top = Math.round(H - bottom / 2 - ((lines.length - 1) * lineH) / 2);
+    const total = c.text.length;
+    let n = this.opts.reduced ? total : Math.floor((t - c.at) * TYPE);
+    const typing = n < total;
+    x.globalAlpha = Math.min(1, (c.until - t) / 0.5);
+    x.fillStyle = 'rgba(' + ORANGE + ',.9)';
+    x.fillText('>', left, top);
+    x.fillStyle = 'rgba(' + PAPER + ',.96)';
+    let cx = left + mark, cy = top;
+    for (let j = 0; j < lines.length && n > 0; j++) {
+      const shown = n >= lines[j].length ? lines[j] : lines[j].slice(0, n);
+      n -= lines[j].length + 1;
+      x.fillText(shown, left + mark, top + j * lineH);
+      cx = left + mark + x.measureText(shown).width; cy = top + j * lineH;
+    }
+    if (typing || Math.floor(t * 2.2) % 2 === 0) {
+      x.fillStyle = 'rgba(' + PAPER + ',.8)';
+      x.fillRect(Math.round(cx + 2), Math.round(cy - size * 0.45), Math.max(2, Math.round(size * 0.5)), Math.round(size * 0.9));
+    }
+    x.restore();
+  }
+
+  /** Every card wrapped to the bar's width; redone only when the size changes. */
+  private lines(x: CanvasRenderingContext2D, size: number, maxW: number) {
+    if (this.wrapped && this.wrapped.size === size && this.wrapped.maxW === maxW) return this.wrapped;
+    const lines = this.scene.cards.map((c) => {
+      const out: string[] = [];
+      let cur = '';
+      for (const w of c.text.split(' ')) {
+        const next = cur ? cur + ' ' + w : w;
+        if (x.measureText(next).width > maxW && cur) { out.push(cur); cur = w; } else cur = next;
+      }
+      if (cur) out.push(cur);
+      return out;
+    });
+    const widths = lines.map((ls) => Math.max(...ls.map((l) => x.measureText(l).width)));
+    return (this.wrapped = { size, maxW, lines, widths });
+  }
+}

@@ -13,6 +13,7 @@ import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprit
 import { Terminal } from './terminal';
 import { Yard, YARD_SPAWN, YARD_W } from './yard';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
+import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
   ownedModules, READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
@@ -112,7 +113,7 @@ export class Game {
 
   // ---------- lifecycle ----------
 
-  start(zone?: 'yard' | SceneId) {
+  start(zone?: 'yard' | SceneId | CutsceneId) {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -124,8 +125,14 @@ export class Game {
     this.last = 0;
     this.raf = requestAnimationFrame((n) => this.loop(n));
     this.canvas.focus();
+    if (zone && isCutsceneId(zone)) { this.playCutscene(zone); return; }
     if (zone === 'yard' && this.zone !== 'yard') this.goTo('yard', true);
     else if (zone && isSceneId(zone) && this.zone !== zone) this.enterScene(zone, true);
+    this.greet();
+  }
+
+  /** First time in Downtown: the player says where they are. */
+  private greet() {
     if (this.zone === 'downtown' && !this.save.flags.arrived) {
       this.save.flags.arrived = true;
       this.say('YOU', ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.'], this.p.x, 46);
@@ -133,6 +140,7 @@ export class Game {
   }
 
   stop() {
+    this.endCutscene(false);
     this.running = false;
     cancelAnimationFrame(this.raf);
     window.removeEventListener('keydown', this.onKeyDown);
@@ -167,6 +175,7 @@ export class Game {
     if (!this.running) return;
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
+    if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     if (!this.reduced || this.t < 1) this.t += dt;
     this.update(dt);
     this.draw();
@@ -177,6 +186,7 @@ export class Game {
   // ---------- input ----------
 
   private onKeyDown(e: KeyboardEvent) {
+    if (this.cut) { e.preventDefault(); if (!e.repeat) this.cut.skip(); return; }
     if (this.term.focused) return;
     if (this.zone === 'yard' && this.yard.overlayOpen) {
       if (e.key === 'Escape') { e.preventDefault(); this.yard.closeOverlay(); }
@@ -264,6 +274,7 @@ export class Game {
 
   /** In the yard, tap or click a thing to open its schematic (in hack vision: its verbs); hovering lights it up. */
   private onCanvasPointer(e: PointerEvent, press: boolean) {
+    if (this.cut) { if (press) { e.preventDefault(); this.cut.skip(); } return; }
     if (this.zone !== 'yard' || this.yard.overlayOpen) return;
     const r = this.canvas.getBoundingClientRect();
     const wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
@@ -931,6 +942,67 @@ export class Game {
     x.fillText('The Neon Market opens in the next update. Your progress is saved in this browser.', cx, cy + 42);
     x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC back to the landing page', cx, cy + 66);
     x.restore();
+  }
+
+  // ---------- cutscenes (cutscenes/) ----------
+  // While one plays, the zone's update and draw are skipped entirely; any key or tap skips it.
+
+  private cut: CutscenePlay | null = null;
+  private cutThen: (() => void) | null = null;
+
+  /**
+   * Play a cutscene, then continue: `then` runs when it ends or is skipped. Without
+   * `then`, the game hands over to the cutscene's `next` zone (from its data).
+   * For a menu's NEW GAME or a story beat: `game.playCutscene('intro', () => …)`.
+   */
+  playCutscene(id: CutsceneId | string, then?: () => void) {
+    const scene = cutsceneById(id);
+    const after = then ?? (() => scene && this.handTo(scene.next));
+    if (!scene) { after(); return; }
+    this.endCutscene(false);
+    this.bubble = null;
+    this.keys.clear();
+    this.yard.closeAll();
+    this.term.close();
+    this.cut = new CutscenePlay(scene, { reduced: this.reduced, touch: this.touch });
+    this.cutThen = after;
+    document.documentElement.classList.add('cutscene');
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + scene.cards.map((c) => c.text).join(' '));
+    this.host.setZone(scene.title);
+  }
+
+  private stepCutscene(dt: number) {
+    const c = this.cut!;
+    c.step(dt / 60);
+    const x = this.x;
+    x.setTransform(this.k, 0, 0, this.k, 0, 0);
+    x.imageSmoothingEnabled = false;
+    c.draw(x, this.viewW, this.viewH);
+    if (c.done) this.endCutscene(true);
+  }
+
+  /** Stop the cutscene; `andThen` runs what comes after it (false when the game stops mid-scene). */
+  private endCutscene(andThen: boolean) {
+    if (!this.cut) return;
+    const then = this.cutThen;
+    this.cut = null;
+    this.cutThen = null;
+    document.documentElement.classList.remove('cutscene');
+    this.syncHud();
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + (this.scene?.name ?? (this.zone === 'yard' ? 'the back yard' : 'Downtown')));
+    if (andThen) then?.();
+  }
+
+  /** Arrive in a zone by id ('downtown', 'yard' or a scene id; anything else is Downtown), at its spawn. */
+  handTo(zone: string) {
+    if (zone === 'yard') this.goTo('yard', true);
+    else if (isSceneId(zone)) this.enterScene(zone, true);
+    else {
+      this.goTo('downtown', true);
+      this.p.x = SPAWN_X;
+      this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
+    }
+    this.greet();
   }
 
   // ---------- explorable scenes (scenes/) ----------

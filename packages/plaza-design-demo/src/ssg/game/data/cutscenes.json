@@ -1,0 +1,12 @@
+{
+  "intro": {
+    "title": "ACCESS DENIED",
+    "duration": 26,
+    "next": "downtown",
+    "cards": [
+      { "at": 2.5, "until": 9, "text": "The city never logs off. Neither does the rain." },
+      { "at": 10, "until": 16.5, "text": "The Registry sees everyone. Every face, every door, every packet." },
+      { "at": 17.5, "until": 24.5, "text": "Almost everyone. No record, no face, one deck: you're a ghost." }
+    ]
+  }
+}

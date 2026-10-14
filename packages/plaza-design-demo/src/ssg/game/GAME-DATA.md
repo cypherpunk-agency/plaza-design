@@ -184,6 +184,27 @@ yard over and keeps the rest.
 - `game/yard/effects.ts`: named effects and the `YARD_CODE` contract.
 - `game/yard/model.ts`: turns the data into live devices (public API unchanged).
 
+## Cutscenes
+
+`game/data/cutscenes.json`: one entry per cutscene, keyed by its id (`intro`). The picture
+is code (`game/cutscenes/`, one draw function per id); everything said and timed is here:
+
+```json
+"intro": {
+  "title": "ACCESS DENIED",          // shown in the window header while it plays
+  "duration": 26,                    // seconds; then it hands over
+  "next": "downtown",                // the zone it hands over to: "downtown", "yard" or a scene id
+  "cards": [ { "at": 2.5, "until": 9, "text": "The city never logs off. …" } ]
+}
+```
+
+Cards are typed out in the bottom letterbox bar from `at` to `until` (seconds), one at a time;
+keep them to one or two short lines. A new cutscene needs an entry here and a draw function in
+`cutscenes/index.ts` (`DRAW`). Code plays one with `game.playCutscene(id, then?)`; without `then`
+it hands over to `next`. `?play=<id>` plays it on start.
+
+Boundary: the picture (layout, motion) is **code**; titles, timing, cards and the next zone are **data**.
+
 ## Open questions
 
 1. **A `wait` step?** Should a `wait` step replace the timer effect? (Decided per case:
