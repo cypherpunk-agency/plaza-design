@@ -1,94 +1,67 @@
 /**
- * A metro platform: tiled walls, the track behind the platform edge and a train
- * that pulls in, opens its doors and leaves, on a loop. Bands: far = the tiled
- * wall across the track (and, on tall screens, the gallery along it); middle =
- * track, train and the vault overhead; play = the platform, pillars, the
- * departure board, a bench.
+ * Downtown station: an elevated platform on a viaduct, open to the city. A
+ * train pulls in, opens its doors and leaves, on a loop. Bands: far = the
+ * skyline at night (../skyline.ts, the intro's city, dimmed: the banded sun low
+ * between the towers, the antenna, rooftop cables with packets, beacons, the
+ * star mesh, ships); middle = the viaduct's far railing, the canopy roof on its
+ * pillars, the girder and piers under the deck; play = the track and the train,
+ * the platform, the departure board, signs, benches, the stairs.
  */
 
-import { box, exitDoor, figure, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
+import { Skyline } from '../skyline';
+import { box, figure, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
 
 /** Layout: positions in world units, heights up from the platform. */
 const L = {
   width: 1300,
   spawn: 86,
-  ceil: 156,
-  names: [120, 480, 840, 1200, 1560],
-  posters: [300, 660, 1020, 1380],
+  /** The canopy: its underside, the fascia's top, the truss's top chord. */
+  canopy: { under: 168, fascia: 178, truss: 196 },
+  /** The viaduct's deck (the track bed's top) and the horizon just over it. */
+  deck: 14,
+  horizon: 16,
+  signs: [118, 990],
+  /** The city map: a lit board on legs, between the stairs and where you board. */
+  cityMap: 210,
   pillars: [{ x: 330, cam: true }, { x: 730 }, { x: 1130 }] as { x: number; cam?: boolean }[],
+  lamps: [100, 300, 500, 700, 900, 1100, 1300],
   board: 540,
-  bench: 930,
+  benches: [{ x: 930, who: true }, { x: 1235 }] as { x: number; who?: boolean }[],
+  /** Piers under the viaduct, in the near floor strip. */
+  pierStep: 260,
   /** Where you board: in front of the second door of the first car while the train is in (and where you land stepping off). */
   boardAt: 365,
   /** The train, in the track's parallax: where it stops, its cars, its loop in frames. */
   train: { stop: 150, cars: 3, car: 290, gap: 8, loop: 1600, arrive: 360, leave: 760, gone: 1100 },
 };
 
-const WALL = 0.86, TRACK = 0.94;
-/** Above the platform, for tall screens (heights): the lamp rail, the gallery on the far wall, the vault's rise. */
-const HALL = { rail: 6, gallery: 210, rise: 70, bay: 400, crown: 20 };
-/** People on the far gallery: [x, speed, phase]. */
-const GALLERY = (() => { const r = rng(93); return Array.from({ length: 7 }, () => [r() * 2600, (r() < 0.5 ? -1 : 1) * (0.1 + r() * 0.15), r() * 10]); })();
+const TRACK = 0.94, RAIL = 0.9;
+/** The city drifts at this fraction of the camera (its own bands drift slower still), and how much it is dimmed: far band, calm. */
+const SKY_PAR = 0.5, SKY_DIM = 0.55;
 
-/** Where the vault springs from the pillars: higher on taller screens, never below the lamp rail. */
-const springOf = (v: View) => Math.max(L.ceil + 40, v.gy - HALL.rise - HALL.crown);
+const city = new Skyline();
+/** The frame the city was last drawn at, to step its packets by real frames (slower than the cutscene's). */
+let cityT = -1;
 
-/**
- * The hall over the platform for tall screens: the tiled far wall goes on up,
- * with a gallery along it where people cross; overhead, the vault in bays that
- * spring from the pillars. Far and middle band: dim tiles, dim people, a rust
- * outline on the arches, nothing that competes with the platform.
- */
-function drawHall(x: CanvasRenderingContext2D, v: View) {
-  const { sx, y, t } = v, spring = springOf(v);
-  // the gallery on the far wall, when there is room under the vault
-  const g = HALL.gallery;
-  if (spring - g > 54) {
-    x.fillStyle = 'rgba(255,217,165,.04)'; x.fillRect(0, y(g + 26), v.viewW, 26);
-    for (const [px, sp, ph] of GALLERY) {
-      const s = sx((((px + t * sp) % 2600) + 2600) % 2600 - 200, WALL);
-      if (!onScreen(v, s - 8, 16)) continue;
-      figure(x, s, y(g + 6), 28, '#070504', Math.sin(t * 0.1 + ph) > 0 ? 1 : 0, 'rgba(255,217,165,.12)');
-    }
-    box(x, 0, y(g + 6), v.viewW, 8, '#0e0b09');
-    x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(0, y(g + 6), v.viewW, 1);
-    x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(0, y(g + 22), v.viewW, 1);
-    for (let wx = 0; wx < 2600; wx += 10) { const s = sx(wx, WALL); if (s >= 0 && s <= v.viewW) x.fillRect(s, y(g + 22), 1, 16); }
-    // the station's name again, along the gallery's face
-    for (const n of L.names) {
-      const s = sx(n + 180, WALL);
-      if (!onScreen(v, s - 50, 100)) continue;
-      text(x, 'PLAZA CENTRAL', s, y(g + 2), 'rgba(' + PAPER + ',.3)', 7, '600');
-    }
-  }
-  // the vault: one arch per bay, springing from the pillars
-  x.fillStyle = '#070504';
-  for (let a = L.pillars[0].x - HALL.bay * Math.ceil((L.pillars[0].x + 200) / HALL.bay); a < L.width + 400; a += HALL.bay) {
-    const s0 = sx(a), s1 = sx(a + HALL.bay);
-    if (s1 < 0 || s0 > v.viewW) continue;
-    const cx = (s0 + s1) / 2, rx = (s1 - s0) / 2;
-    x.fillStyle = '#070504';
-    x.beginPath(); x.moveTo(s0, y(spring)); x.ellipse(cx, y(spring), rx, HALL.rise, 0, Math.PI, Math.PI * 2); x.lineTo(s1, -1); x.lineTo(s0, -1); x.closePath(); x.fill();
-    // coffers: a second arch inside the first, ribs between them
-    x.strokeStyle = 'rgba(' + O + ',.35)'; x.beginPath(); x.ellipse(cx, y(spring), rx, HALL.rise, 0, Math.PI, Math.PI * 2); x.stroke();
-    x.strokeStyle = 'rgba(' + O + ',.12)'; x.beginPath(); x.ellipse(cx, y(spring), rx + 10, HALL.rise + 12, 0, Math.PI, Math.PI * 2); x.stroke();
-    x.beginPath();
-    for (let k = 1; k < 10; k++) { const an = Math.PI + (k / 10) * Math.PI, c = Math.cos(an), d = Math.sin(an); x.moveTo(cx + c * rx, y(spring) + d * HALL.rise); x.lineTo(cx + c * (rx + 10), y(spring) + d * (HALL.rise + 12)); }
-    x.stroke();
-    // a dim lamp hanging at the crown
-    if (y(spring + HALL.rise) > 8) {
-      x.strokeStyle = 'rgba(' + O + ',.25)'; x.beginPath(); x.moveTo(cx + 0.5, y(spring + HALL.rise)); x.lineTo(cx + 0.5, y(spring + HALL.rise - 14)); x.stroke();
-      x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(cx - 3, y(spring + HALL.rise - 14), 6, 2);
-    }
-  }
-  // the crown band over every bay
-  x.fillStyle = 'rgba(' + O + ',.1)'; for (let wx = 0; wx < L.width + 400; wx += 40) { const s = sx(wx); if (s >= 0 && s <= v.viewW) x.fillRect(s, 0, 1, Math.max(0, y(spring + HALL.rise + 4))); }
-  // the lamp rail along the platform, carried by the pillars
-  box(x, 0, y(L.ceil + HALL.rail), v.viewW, HALL.rail, '#0d0907');
-  x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(0, y(L.ceil), v.viewW, 1);
+/** The city behind the station: the shared skyline, its horizon just over the deck, dimmed under a wash. */
+function drawCity(x: CanvasRenderingContext2D, v: View) {
+  const W = Math.ceil(v.viewW), H = Math.ceil(v.viewH), horizon = v.y(L.horizon);
+  const k = cityT < 0 ? 0 : Math.min(3, Math.max(0, v.t - cityT)) * 0.6;
+  cityT = v.t;
+  city.draw(
+    x,
+    { W, H, top: 0, horizon, sky: Math.min(horizon, 400), sunX: W * 0.58, camMax: Math.round(L.width * SKY_PAR) },
+    { cam: Math.max(0, Math.round(v.cam * SKY_PAR)), a: v.t, k, still: false, floor: false, rain: 0 },
+  );
+  x.fillStyle = 'rgba(2,1,0,' + SKY_DIM + ')'; x.fillRect(0, 0, v.viewW, v.viewH);
+  // over the roof, calmer still: the star mesh and the beams must not pull the eye off the platform
+  x.fillStyle = 'rgba(2,1,0,.3)'; x.fillRect(0, 0, v.viewW, Math.max(0, v.y(L.canopy.truss)));
 }
+
 /** Who is riding, per window: true = someone in it. */
 const RIDERS = (() => { const r = rng(91); return Array.from({ length: 30 }, () => r() < 0.4); })();
+/** Street lights far below the viaduct, seen between the piers: [x, depth]. */
+const BELOW = (() => { const r = rng(95); return Array.from({ length: 26 }, () => [r() * 2600, r()]); })();
 
 /** Shifts the train's loop, so a train is in when you arrive by train. */
 const clock = { offset: 0 };
@@ -118,7 +91,7 @@ function drawTrain(x: CanvasRenderingContext2D, v: View) {
   const at = trainAt(v.t);
   if (!at) return;
   const { y } = v, T = L.train, nose = v.sx(at.x, TRACK);
-  // headlight on the wall ahead of it
+  // headlight on the railing and the air ahead of it
   if (at.moving) {
     const g = x.createRadialGradient(nose, y(40), 2, nose, y(40), 120);
     g.addColorStop(0, 'rgba(255,230,190,.2)'); g.addColorStop(1, 'rgba(255,230,190,0)');
@@ -150,6 +123,171 @@ function drawTrain(x: CanvasRenderingContext2D, v: View) {
   }
 }
 
+/** The viaduct's far edge behind the track: a girder lip and a waist-high railing, against the city. */
+function drawFarRail(x: CanvasRenderingContext2D, v: View) {
+  const { y } = v;
+  x.fillStyle = 'rgba(' + O + ',.32)';
+  x.fillRect(0, y(L.deck + 18), v.viewW, 1); x.fillRect(0, y(L.deck + 10), v.viewW, 1);
+  for (let wx = -40; wx < 2600; wx += 18) { const s = v.sx(wx, RAIL); if (s >= -1 && s <= v.viewW) x.fillRect(s, y(L.deck + 18), 1, 18); }
+  box(x, 0, y(L.deck + 2), v.viewW, 3, '#0d0907');
+  x.fillStyle = 'rgba(' + O + ',.4)'; x.fillRect(0, y(L.deck + 2), v.viewW, 1);
+}
+
+/** The canopy over the platform: a truss on top, the fascia with the line's stripe, lamps underneath. */
+function drawCanopy(x: CanvasRenderingContext2D, v: View) {
+  const { y } = v, C = L.canopy, s0 = v.sx(-60), s1 = v.sx(L.width + 60);
+  const a = Math.max(0, s0), b = Math.min(v.viewW, s1);
+  if (b <= a) return;
+  // the truss: top chord, diagonals, in the middle band's dim rust
+  if (y(C.truss) > -2) {
+    x.fillStyle = '#060403'; x.fillRect(a, y(C.truss), b - a, C.truss - C.fascia);
+    x.strokeStyle = 'rgba(' + O + ',.28)'; x.lineWidth = 1;
+    x.beginPath();
+    x.moveTo(a, y(C.truss) + 0.5); x.lineTo(b, y(C.truss) + 0.5);
+    for (let wx = -60; wx < L.width + 60; wx += 40) {
+      const p = v.sx(wx), q = v.sx(wx + 20), r = v.sx(wx + 40);
+      if (r < 0 || p > v.viewW) continue;
+      x.moveTo(p + 0.5, y(C.fascia)); x.lineTo(q + 0.5, y(C.truss)); x.lineTo(r + 0.5, y(C.fascia));
+    }
+    x.stroke();
+  }
+  // the fascia: the roof's edge, with LINE 0's orange stripe along it
+  box(x, a, y(C.fascia), b - a, C.fascia - C.under, '#120d0a', 'rgba(' + O + ',.55)');
+  x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(a, y(C.fascia - 4), b - a, 2);
+  // lamps under the roof, and the light they drop on the platform
+  for (const wx of L.lamps) {
+    const s = v.sx(wx);
+    if (!onScreen(v, s - 40, 80)) continue;
+    const g = x.createLinearGradient(0, y(C.under), 0, v.gy);
+    g.addColorStop(0, 'rgba(255,230,190,.07)'); g.addColorStop(1, 'rgba(255,230,190,0)');
+    x.fillStyle = g;
+    x.beginPath(); x.moveTo(s - 14, y(C.under - 3)); x.lineTo(s + 14, y(C.under - 3)); x.lineTo(s + 40, v.gy); x.lineTo(s - 40, v.gy); x.closePath(); x.fill();
+    box(x, s - 16, y(C.under), 32, 3, 'rgba(255,240,215,.85)');
+  }
+}
+
+/** A pillar holding the roof, with its braces; the first carries a camera. */
+function drawPillar(x: CanvasRenderingContext2D, v: View, p: { x: number; cam?: boolean }) {
+  const { y, t } = v, s = v.sx(p.x), C = L.canopy;
+  if (!onScreen(v, s - 44, 88)) return;
+  x.strokeStyle = 'rgba(' + O + ',.45)'; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(s - 8, y(C.under - 34)); x.lineTo(s - 40, y(C.under)); x.moveTo(s + 8, y(C.under - 34)); x.lineTo(s + 40, y(C.under)); x.stroke();
+  x.lineWidth = 1;
+  box(x, s - 10, y(C.under), 20, C.under, '#16110d', 'rgba(' + O + ',.6)');
+  box(x, s - 14, y(8), 28, 8, '#1c1510', 'rgba(' + O + ',.5)');
+  if (p.cam) {
+    // CCTV, recording
+    box(x, s + 8, y(140), 4, 6, '#100c0a');
+    box(x, s + 10, y(146), 16, 8, '#100c0a', 'rgba(' + O + ',.7)');
+    x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s + 21, y(143), 2, 2);
+  }
+}
+
+/** The station's name on a plate hung from the roof. */
+function drawSign(x: CanvasRenderingContext2D, v: View, wx: number) {
+  const { y } = v, s = v.sx(wx), C = L.canopy;
+  if (!onScreen(v, s - 60, 120)) return;
+  x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s - 40, y(C.under), 1, C.under - 152); x.fillRect(s + 39, y(C.under), 1, C.under - 152);
+  box(x, s - 52, y(152), 104, 20, '#0e0a08', 'rgba(' + O + ',.75)');
+  box(x, s - 49, y(149), 16, 14, 'rgba(' + O + ',.85)');
+  text(x, '0', s - 41, y(142), '#0e0a08', 9, '700');
+  text(x, 'DOWNTOWN', s + 8, y(142), 'rgba(' + PAPER + ',.92)', 9, '600');
+}
+
+/**
+ * The city map: a backlit board on two legs, lit from inside and throwing its
+ * light on the slab. The districts as dim blocks, LINE 0 across them with its
+ * three stops, YOU ARE HERE blinking at Downtown; a cyan edge and LED: usable.
+ */
+function drawCityMap(x: CanvasRenderingContext2D, v: View, wx: number) {
+  const { y, t, gy } = v, s = v.sx(wx);
+  if (!onScreen(v, s - 50, 100)) return;
+  const w = 64, h = 40, top = y(66), left = s - w / 2;
+  // its glow on the platform
+  const g = x.createRadialGradient(s, gy, 2, s, gy, 46);
+  g.addColorStop(0, 'rgba(0,255,255,.1)'); g.addColorStop(1, 'rgba(0,255,255,0)');
+  x.fillStyle = g; x.fillRect(s - 46, gy - 30, 92, 40);
+  // legs and the frame
+  box(x, left + 6, y(26), 3, 26, '#2a160a', 'rgba(' + O + ',.6)'); box(x, left + w - 9, y(26), 3, 26, '#2a160a', 'rgba(' + O + ',.6)');
+  box(x, left - 2, top - 12, w + 4, h + 14, '#120d0a', 'rgba(' + O + ',.8)');
+  text(x, 'CITY MAP', s, top - 6, 'rgba(' + PAPER + ',.9)', 7, '600');
+  // the lit face
+  box(x, left + 2, top, w - 4, h - 2, '#0b1a1a', 'rgba(0,255,255,.55)');
+  x.fillStyle = 'rgba(' + PAPER + ',.12)';
+  for (const [bx, by, bw, bh] of [[6, 5, 12, 9], [21, 4, 10, 12], [36, 6, 16, 8], [8, 22, 14, 10], [27, 21, 8, 12], [40, 20, 14, 12]]) x.fillRect(left + bx, top + by, bw, bh);
+  // LINE 0: Downtown, Galleria, Harbor
+  x.fillStyle = 'rgba(' + O + ',.9)'; x.fillRect(left + 10, top + 17, 44, 2);
+  for (const sx of [10, 32, 54]) x.fillRect(left + sx - 2, top + 16, 4, 4);
+  if (Math.sin(t * 0.08) > -0.2) { x.fillStyle = 'rgba(' + RED + ',.95)'; x.fillRect(left + 9, top + 23, 3, 3); }
+  tell(x, t, left + w - 6, top + h - 6, 3);
+}
+
+/** A bench, maybe with someone who has given up waiting. */
+function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; who?: boolean }) {
+  const { y } = v, s = v.sx(b.x);
+  if (!onScreen(v, s - 30, 60)) return;
+  if (b.who) figure(x, s + 10, y(10), 30, '#0b0807', 0, 'rgba(255,217,165,.3)');
+  box(x, s - 26, y(24), 52, 3, '#2a160a', 'rgba(' + O + ',.6)');
+  box(x, s - 26, y(14), 52, 4, '#2a160a', 'rgba(' + O + ',.8)');
+  box(x, s - 22, y(10), 3, 10, '#2a160a'); box(x, s + 19, y(10), 3, 10, '#2a160a');
+}
+
+/** The stairs down to the street at the platform's end: a lit stairwell, its railing, a cyan plate on a post. */
+function drawStairs(x: CanvasRenderingContext2D, v: View, wx: number) {
+  const { y, t, gy } = v, s = v.sx(wx), d = Math.min(40, v.viewH - gy);
+  if (!onScreen(v, s - 40, 110)) return;
+  x.fillStyle = '#000'; x.fillRect(s - 30, gy, 60, d);
+  const g = x.createLinearGradient(0, gy + d, 0, gy);
+  g.addColorStop(0, 'rgba(255,230,190,.26)'); g.addColorStop(1, 'rgba(255,230,190,0)');
+  x.fillStyle = g; x.fillRect(s - 30, gy, 60, d);
+  for (let i = 0; i < 7; i++) {
+    x.fillStyle = 'rgba(' + PAPER + ',' + (0.2 + i * 0.05) + ')'; x.fillRect(s - 30 + i * 8, gy + 3 + i * 5, 9, 1);
+    x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(s - 30 + i * 8, gy + 3 + i * 5, 1, 5);
+  }
+  x.fillStyle = 'rgba(' + O + ',.8)'; x.fillRect(s - 31, gy, 2, d); x.fillRect(s + 29, gy, 2, d);
+  // the railing round the opening, waist high
+  x.fillStyle = 'rgba(' + O + ',.85)';
+  x.fillRect(s - 31, y(24), 62, 2);
+  for (const px of [s - 31, s - 1, s + 29]) x.fillRect(px, y(24), 2, 24);
+  x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(s - 31, y(12), 62, 1);
+  // the post with its plate: the way out, so cyan
+  box(x, s + 30, y(64), 3, 64, '#2a160a', 'rgba(' + O + ',.6)');
+  box(x, s + 2, y(76), 62, 13, '#04100f', 'rgba(0,255,255,.6)');
+  text(x, '< DOWNTOWN', s + 33, y(69.5), 'rgba(0,255,255,.95)', 7, '600');
+  tell(x, t, s + 31, y(34), 2);
+}
+
+/** The near floor strip: the platform's slab, then the viaduct's girder and piers with the street glowing far below. */
+function drawDeck(x: CanvasRenderingContext2D, v: View) {
+  const { gy, t } = v, bottom = v.viewH;
+  // far below: the street's glow and its lights, between the piers
+  x.fillStyle = '#020101'; x.fillRect(0, gy, v.viewW, bottom - gy);
+  const g = x.createLinearGradient(0, gy + 24, 0, bottom);
+  g.addColorStop(0, 'rgba(' + O + ',0)'); g.addColorStop(1, 'rgba(' + O + ',.1)');
+  x.fillStyle = g; x.fillRect(0, gy + 24, v.viewW, bottom - gy - 24);
+  for (const [bx, dp] of BELOW) {
+    const s = Math.round(((bx - v.cam * (0.4 + dp * 0.3)) % 2600 + 2600) % 2600 - 200);
+    if (s < 0 || s > v.viewW) continue;
+    x.fillStyle = 'rgba(255,190,110,' + (0.25 + 0.15 * Math.sin(t * 0.02 + bx)) + ')'; x.fillRect(s, bottom - 4 - Math.round(dp * 10), 2, 1);
+  }
+  // piers
+  for (let wx = -100; wx < L.width + 300; wx += L.pierStep) {
+    const s = v.sx(wx);
+    if (!onScreen(v, s - 18, 36)) continue;
+    box(x, s - 16, gy + 24, 32, bottom - gy - 24, '#0b0807', 'rgba(' + O + ',.3)');
+  }
+  // the girder under the slab, riveted
+  box(x, 0, gy + 14, v.viewW, 12, '#110c09');
+  x.fillStyle = 'rgba(' + O + ',.4)'; x.fillRect(0, gy + 25, v.viewW, 1);
+  x.fillStyle = 'rgba(' + O + ',.3)';
+  for (let wx = 0; wx < L.width + 300; wx += 16) { const s = v.sx(wx); if (s >= 0 && s <= v.viewW) { x.fillRect(s, gy + 17, 1, 1); x.fillRect(s, gy + 22, 1, 1); } }
+  // the slab you stand on, the warning painted on it
+  x.fillStyle = '#0a0806'; x.fillRect(0, gy, v.viewW, 14);
+  x.fillStyle = 'rgba(' + O + ',.55)'; x.fillRect(0, gy, v.viewW, 1);
+  x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(0, gy + 13, v.viewW, 1);
+  for (let wx = 0; wx < L.width; wx += 260) { const s = v.sx(wx + 140); if (onScreen(v, s - 40, 80)) text(x, 'MIND THE GAP', s, gy + 7, 'rgba(255,210,58,.6)', 7, '600'); }
+}
+
 export const metro: Scene = {
   id: 'metro',
   name: 'Metro',
@@ -157,8 +295,9 @@ export const metro: Scene = {
   spawn: L.spawn,
   intro: ['The metro. One line, three stops, and a train that never says which one it means.'],
   exits: [
-    { id: 'downtown', x: 32, to: 'downtown', at: 'metro', label: '[E] STAIRS UP · DOWNTOWN', promptH: 82 },
+    { id: 'downtown', x: 32, to: 'downtown', at: 'metro', label: '[E] STAIRS DOWN · DOWNTOWN', promptH: 82 },
     { id: 'train', x: L.boardAt, to: '', action: 'board', label: '[E] BOARD', promptH: 84 },
+    { id: 'citymap', x: L.cityMap, to: '', action: 'map', label: '[E] CITY MAP', promptH: 90 },
   ],
   readables: [
     { id: 'board', x: L.board, name: 'DEPARTURES', promptH: 120, pages: ['NEXT TRAIN: NOW.', 'It has said NOW since the day it was installed. It beats the timetable.'] },
@@ -167,85 +306,37 @@ export const metro: Scene = {
   ],
 
   drawBackdrop(x, v) {
-    const { sx, y, t, gy } = v;
-    // far band: the tiled wall across the track
-    x.fillStyle = '#0b0a09'; x.fillRect(0, 0, v.viewW, y(14));
-    x.fillStyle = 'rgba(255,217,165,.05)';
-    for (let h = 22; h < gy; h += 8) x.fillRect(0, y(h), v.viewW, 1);
-    for (let wx = 0; wx < 2600; wx += 12) { const s = sx(wx, WALL); if (s >= 0 && s <= v.viewW) x.fillRect(s, 0, 1, y(16)); }
-    x.fillStyle = 'rgba(' + O + ',.22)'; x.fillRect(0, y(70), v.viewW, 6);
-    x.fillStyle = 'rgba(' + O + ',.12)'; x.fillRect(0, y(L.ceil + 26), v.viewW, 4);
-    for (const n of L.names) {
-      const s = sx(n, WALL);
-      if (!onScreen(v, s - 50, 100)) continue;
-      box(x, s - 48, y(104), 96, 16, '#14100c', 'rgba(' + O + ',.3)');
-      text(x, 'PLAZA CENTRAL', s, y(96), 'rgba(' + PAPER + ',.5)', 8, '600');
-    }
-    for (const p of L.posters) {
-      const s = sx(p, WALL);
-      if (!onScreen(v, s - 30, 60)) continue;
-      box(x, s - 28, y(130), 56, 44, '#120c08', 'rgba(' + O + ',.3)');
-      x.fillStyle = 'rgba(255,190,110,.08)'; x.fillRect(s - 25, y(127), 50, 38);
-      text(x, 'BE SEEN', s, y(110), 'rgba(' + PAPER + ',.35)', 7, '600');
-    }
-    // middle band: the track pit, rails and the train
-    x.fillStyle = '#020101'; x.fillRect(0, y(14), v.viewW, 12);
+    const { sx, y, t } = v;
+    // far band: the city at night
+    drawCity(x, v);
+    // middle band: the viaduct's far railing; play band: the track bed, rails and the train
+    drawFarRail(x, v);
+    x.fillStyle = '#020101'; x.fillRect(0, y(L.deck), v.viewW, L.deck - 2);
     x.fillStyle = 'rgba(160,150,140,.35)'; x.fillRect(0, y(8), v.viewW, 1); x.fillRect(0, y(11), v.viewW, 1);
     for (let wx = 0; wx < 2600; wx += 14) { const s = sx(wx, TRACK); if (s >= -4 && s <= v.viewW) { x.fillStyle = 'rgba(60,40,25,.6)'; x.fillRect(s, y(6), 8, 2); } }
     drawTrain(x, v);
-
-    // play band: the platform edge, the vault overhead, pillars and lamps
     x.fillStyle = 'rgba(255,210,58,.7)'; x.fillRect(0, y(2), v.viewW, 2);
-    drawHall(x, v);
-    const spring = springOf(v);
-    for (let wx = 100; wx < L.width; wx += 200) {
-      const s = sx(wx);
-      if (!onScreen(v, s - 20, 40)) continue;
-      box(x, s - 16, y(L.ceil - 2), 32, 3, 'rgba(255,240,215,.85)');
-    }
-    exitDoor(x, v, 32, '#0a0603');
-    for (const p of L.pillars) {
-      const s = sx(p.x);
-      if (!onScreen(v, s - 20, 40)) continue;
-      box(x, s - 12, y(spring), 24, spring, '#181210', 'rgba(' + O + ',.8)');
-      box(x, s - 16, y(spring), 32, 6, '#1e1612', 'rgba(' + O + ',.6)');
-      if (p.cam) {
-        box(x, s + 10, y(134), 14, 8, '#100c0a', 'rgba(' + O + ',.6)');
-        x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s + 19, y(131), 2, 2);
-      }
-    }
-    // a line map and a poster on the pillars, both readable
+
+    // middle band: the canopy and its pillars
+    drawCanopy(x, v);
+    for (const p of L.pillars) drawPillar(x, v, p);
+
+    // play band: signs, the board, notices, benches, the stairs, the floor
+    for (const s of L.signs) drawSign(x, v, s);
     notice(x, t, sx(730), y(78), 44, 30, ['LINE', 'MAP'], 1);
     notice(x, t, sx(1130), y(78), 44, 30, ['ADS'], 2);
-
-    // the departure board on two rods from the vault
+    // the departure board on two rods from the roof
     const bx = sx(L.board);
     if (onScreen(v, bx - 44, 88)) {
-      x.strokeStyle = 'rgba(' + O + ',.5)'; x.beginPath(); x.moveTo(bx - 30.5, y(L.ceil)); x.lineTo(bx - 30.5, y(112)); x.moveTo(bx + 30.5, y(L.ceil)); x.lineTo(bx + 30.5, y(112)); x.stroke();
+      x.strokeStyle = 'rgba(' + O + ',.5)'; x.beginPath(); x.moveTo(bx - 30.5, y(L.canopy.under)); x.lineTo(bx - 30.5, y(112)); x.moveTo(bx + 30.5, y(L.canopy.under)); x.lineTo(bx + 30.5, y(112)); x.stroke();
       box(x, bx - 42, y(112), 84, 26, '#050302', 'rgba(' + O + ',.7)');
       const at = trainAt(t), msg = at && !at.moving ? 'BOARDING' : 'NEXT: NOW';
       text(x, msg, bx, y(99), 'rgba(255,136,0,' + (0.75 + 0.2 * Math.sin(t * 0.06)) + ')', 9, '600');
       tell(x, t, bx + 36, y(90));
     }
-    // a bench with someone who has given up waiting
-    const bn = sx(L.bench);
-    if (onScreen(v, bn - 30, 60)) {
-      figure(x, bn + 10, y(10), 30, '#0b0807', 0, 'rgba(255,217,165,.3)');
-      box(x, bn - 26, y(14), 52, 4, '#2a160a', 'rgba(' + O + ',.8)');
-      box(x, bn - 22, y(10), 3, 10, '#2a160a'); box(x, bn + 19, y(10), 3, 10, '#2a160a');
-    }
-
-    // the platform floor, with the warning painted on it
-    x.fillStyle = '#080605'; x.fillRect(0, gy, v.viewW, v.viewH - gy);
-    x.fillStyle = 'rgba(' + O + ',.55)'; x.fillRect(0, gy, v.viewW, 1);
-    for (let wx = 0; wx < L.width; wx += 260) { const s = sx(wx + 140); if (onScreen(v, s - 40, 80)) text(x, 'MIND THE GAP', s, gy + 10, 'rgba(255,210,58,.45)', 7, '600'); }
-    for (let r = 0; r < 3; r++) { x.fillStyle = 'rgba(255,217,165,.03)'; x.fillRect(0, gy + 18 + r * 12, v.viewW, 1); }
-  },
-
-  drawFront(x, v) {
-    // a near pillar sliding past
-    const s = v.sx(900, 1.3);
-    if (!onScreen(v, s - 24, 48)) return;
-    box(x, s - 20, 0, 40, v.viewH, '#020100', 'rgba(' + O + ',.25)');
+    for (const b of L.benches) drawBench(x, v, b);
+    drawDeck(x, v);
+    drawCityMap(x, v, L.cityMap);
+    drawStairs(x, v, 32);
   },
 };

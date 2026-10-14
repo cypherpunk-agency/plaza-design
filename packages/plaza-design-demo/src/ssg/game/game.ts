@@ -1190,6 +1190,7 @@ export class Game {
     if (e.action === 'out') { this.stepOut(); return; }
     if (e.action === 'line') { this.openLineMap(); return; }
     if (e.action === 'taxi') { this.hailTaxi(); return; }
+    if (e.action === 'map') { this.showMap(); sound.open(); return; }
     if (e.to === 'train') { this.enterTrain(stationOf(this.zone)); return; }
     if (e.to === 'downtown' || e.to === 'yard' || isSceneId(e.to)) this.travel(e.to, e.at);
   }

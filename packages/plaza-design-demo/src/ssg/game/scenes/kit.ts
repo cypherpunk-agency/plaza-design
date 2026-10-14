@@ -34,8 +34,8 @@ export interface SceneExit {
   label: string;
   promptH?: number;
   at?: string;
-  /** Not a walk: 'board' the train in, step 'out' of the train, read the 'line' map, hail a 'taxi'. */
-  action?: 'board' | 'out' | 'line' | 'taxi';
+  /** Not a walk: 'board' the train in, step 'out' of the train, read the 'line' map, hail a 'taxi', look at the city 'map'. */
+  action?: 'board' | 'out' | 'line' | 'taxi' | 'map';
   /** Only there while this save flag is set. */
   requires?: string;
   /**
