@@ -119,7 +119,6 @@ export class Game {
       save: () => this.save,
       zone: () => ({ id: this.zone, name: this.zoneName() }),
       newGame: () => this.newGame(),
-      map: () => () => this.showMap(),
       quit: () => host.onExit(),
       onClose: () => this.canvas.focus(),
     }, this.touch);
@@ -261,6 +260,8 @@ export class Game {
       return;
     }
     if (k === '/') { e.preventDefault(); this.openDeck(); return; }
+    // the deck's map app: the city as far as you know it
+    if (k === 'Tab') { e.preventDefault(); this.seenControls = true; this.showMap(); return; }
     if (this.zone === 'yard' && (k === 'b' || k === 'B')) { this.seenControls = true; this.yard.toggleBoard(); return; }
     if (this.zone === 'yard' && (k === 'h' || k === 'H')) { this.seenControls = true; this.yard.toggleVision(); return; }
     if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
@@ -696,82 +697,80 @@ export class Game {
   }
 
   /**
-   * The alley to the fixer's back yard (950–994, past the stall): a gap in the
-   * street wall with an open gate under a bar carrying the YARD plate, and a
-   * slice of the yard behind it: the backs of the houses across it, the crane's
-   * top over them, crates under the yard's lamp. Walk in front of it for E.
-   */
-  /**
-   * The alley to the fixer's back yard: a passage between the noodle stall's
-   * building and a one-storey wall. It recedes to the yard's open gate, the
-   * yard's lamp lights it from behind, and the crane rises over the low wall,
-   * so it reads as a way through, not a door.
+   * The alley to the fixer's back yard (950–1040): a passage between the stall's
+   * building and the annex, running back to the yard's open gate. It is the
+   * brightest thing in this stretch of street on purpose: the yard's lamp lights
+   * it from behind, the light spills onto the pavement, bulbs hang across it and
+   * a blade sign sticks out from the corner, so the eye finds the way in.
    */
   private drawAlley() {
-    const x = this.x, a0 = this.sx(950), a1 = this.sx(994), c = this.sx(YARD_DOOR_X), P = '255,61,242';
-    if (this.sx(1040) + 10 < 0 || a0 - 40 > this.viewW) return;
-    const b0 = a0 + 11, b1 = a1 - 11, far = this.y(10), farTop = this.y(84);
-    const poly = (pts: [number, number][], fill: string) => {
+    const x = this.x, a0 = this.sx(950), a1 = this.sx(1040), c = this.sx(YARD_DOOR_X), P = '255,61,242';
+    if (a1 + 20 < 0 || a0 - 40 > this.viewW) return;
+    const b0 = a0 + 18, b1 = a1 - 18, far = this.y(12), farTop = this.y(96);
+    const poly = (pts: [number, number][], fill: string | CanvasGradient) => {
       x.beginPath(); pts.forEach(([px, py], i) => (i ? x.lineTo(px, py) : x.moveTo(px, py))); x.closePath(); x.fillStyle = fill; x.fill();
     };
 
-    // over the low wall and above the far end: the backs of the houses across the yard (middle band, dim)
-    x.fillStyle = '#0a0503'; x.fillRect(a0, this.y(150), this.sx(1040) - a0, this.y(76) - this.y(150));
-    x.strokeStyle = 'rgba(194,65,12,.25)'; x.lineWidth = 1; x.strokeRect(a0 + 0.5, this.y(150) + 0.5, this.sx(1040) - a0 - 1, this.y(76) - this.y(150));
-    for (const [wx, wh, lit] of [[1004, 132, 1], [1022, 132, 0], [1004, 108, 0], [1022, 108, 1]] as const) {
-      x.fillStyle = lit ? 'rgba(255,136,0,.22)' : '#030100'; x.fillRect(this.sx(wx), this.y(wh), 7, 11);
+    // over the annex and above the far end: the backs of the houses across the yard (middle band, dim)
+    x.fillStyle = '#0a0503'; x.fillRect(a0, this.y(170), a1 - a0, this.y(62) - this.y(170));
+    x.strokeStyle = 'rgba(194,65,12,.22)'; x.lineWidth = 1; x.strokeRect(a0 + 0.5, this.y(170) + 0.5, a1 - a0 - 1, this.y(62) - this.y(170));
+    for (const [wx, wh, lit] of [[982, 150, 1], [1004, 150, 0], [1024, 150, 1], [982, 124, 0], [1004, 124, 1], [1024, 124, 0]] as const) {
+      x.fillStyle = lit ? 'rgba(255,136,0,.2)' : '#030100'; x.fillRect(this.sx(wx), this.y(wh), 8, 12);
     }
 
-    // the yard beyond the far opening, lit by its lamp
-    x.fillStyle = '#0e0603'; x.fillRect(b0, farTop, b1 - b0, far - farTop);
-    const g = x.createRadialGradient(c, this.y(40), 2, c, this.y(30), 40);
-    g.addColorStop(0, 'rgba(255,170,90,.42)'); g.addColorStop(1, 'rgba(255,170,90,0)');
-    x.fillStyle = g; x.fillRect(b0, farTop, b1 - b0, far - farTop);
-    // crates in the light, small for being further away
-    for (const [ox, w, h] of [[2, 9, 8], [11, 7, 6]] as const) {
+    // the yard beyond the far opening, bright under its lamp
+    x.fillStyle = '#140904'; x.fillRect(b0, farTop, b1 - b0, far - farTop);
+    const glow = x.createRadialGradient((b0 + b1) / 2, this.y(54), 3, (b0 + b1) / 2, this.y(40), 60);
+    glow.addColorStop(0, 'rgba(255,180,100,.6)'); glow.addColorStop(1, 'rgba(255,180,100,0)');
+    x.fillStyle = glow; x.fillRect(b0, farTop, b1 - b0, far - farTop);
+    x.fillStyle = 'rgba(255,230,170,1)'; x.fillRect((b0 + b1) / 2 - 2, this.y(80), 4, 2);
+    for (const [ox, w, h] of [[3, 12, 10], [16, 9, 7], [36, 11, 9]] as const) {
       x.fillStyle = '#4a2a0c'; x.fillRect(b0 + ox, far - h, w, h);
-      x.strokeStyle = 'rgba(201,138,63,.85)'; x.strokeRect(b0 + ox + 0.5, far - h + 0.5, w - 1, h - 1);
+      x.strokeStyle = 'rgba(232,160,80,.95)'; x.strokeRect(b0 + ox + 0.5, far - h + 0.5, w - 1, h - 1);
     }
 
-    // the crane: its gantry beam over the far end and the low wall, a leg down into the yard, the hook on its cable
-    const k0 = b0 + 2, k1 = this.sx(1036);
-    x.fillStyle = '#3a1c08'; x.fillRect(k0, this.y(112), k1 - k0, 4); x.fillRect(k0, this.y(108), 3, 98); x.fillRect(k1 - 4, this.y(108), 3, 32);
-    x.fillStyle = 'rgba(255,136,0,.7)'; x.fillRect(k0, this.y(112), k1 - k0, 1); x.fillRect(k0, this.y(108), 1, 98); x.fillRect(k1 - 4, this.y(108), 1, 32);
-    x.fillStyle = '#ff8800'; x.fillRect(this.sx(1010), this.y(108), 8, 3);
-    x.fillStyle = 'rgba(201,168,127,.8)'; x.fillRect(this.sx(1013), this.y(105), 1, 22);
+    // the crane: its gantry over the far end and the annex, a leg into the yard, the hook on its cable
+    const k0 = b0 + 3, k1 = this.sx(1034);
+    x.fillStyle = '#3a1c08'; x.fillRect(k0, this.y(118), k1 - k0, 4); x.fillRect(k0, this.y(114), 3, 102); x.fillRect(k1 - 4, this.y(114), 3, 52);
+    x.fillStyle = 'rgba(255,136,0,.75)'; x.fillRect(k0, this.y(118), k1 - k0, 1); x.fillRect(k0, this.y(114), 1, 102); x.fillRect(k1 - 4, this.y(114), 1, 52);
+    x.fillStyle = '#ff8800'; x.fillRect(this.sx(1006), this.y(114), 9, 3);
+    x.fillStyle = 'rgba(201,168,127,.85)'; x.fillRect(this.sx(1010), this.y(111), 1, 26);
 
-    // the yard's fence across the far opening: chain-link, one gate leaf swung open towards you
-    x.strokeStyle = 'rgba(255,170,90,.35)';
-    for (let yy = farTop + 2; yy < far; yy += 3) { x.beginPath(); x.moveTo(b0, yy + 0.5); x.lineTo(b0 + 5, yy + 0.5); x.stroke(); }
-    x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(b0, farTop, 1, far - farTop); x.fillRect(b1 - 1, farTop, 1, far - farTop); x.fillRect(b0, farTop, 6, 1);
-    poly([[b1 - 1, farTop + 4], [b1 + 6, farTop - 2], [b1 + 6, far + 4], [b1 - 1, far]], 'rgba(255,136,0,.18)');
-    x.strokeStyle = 'rgba(255,136,0,.75)'; x.beginPath(); x.moveTo(b1 - 1, farTop + 4); x.lineTo(b1 + 6, farTop - 2); x.lineTo(b1 + 6, far + 4); x.stroke();
+    // the yard's fence across the far opening, the gate swung wide open towards you
+    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillRect(b0, farTop + 30, 1, far - farTop - 30); x.fillRect(b1 - 1, farTop + 30, 1, far - farTop - 30);
+    poly([[b1 - 1, farTop + 34], [b1 + 9, farTop + 26], [b1 + 9, far + 5], [b1 - 1, far]], 'rgba(255,136,0,.16)');
+    x.strokeStyle = 'rgba(255,136,0,.8)'; x.beginPath(); x.moveTo(b1 - 1, farTop + 34); x.lineTo(b1 + 9, farTop + 26); x.lineTo(b1 + 9, far + 5); x.stroke();
 
-    // the passage's walls, receding to the far end: dark, with a drainpipe and a rimmed front edge
-    poly([[a0, this.y(160)], [b0, this.y(160)], [b0, far], [a0, this.y(0)]], '#070302');
-    poly([[a1, this.y(76)], [b1, this.y(74)], [b1, far], [a1, this.y(0)]], '#090402');
-    x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(a0 + 4, this.y(150), 1, 146);
-    x.strokeStyle = 'rgba(255,136,0,.55)';
-    x.beginPath(); x.moveTo(a0 + 0.5, this.y(0)); x.lineTo(b0 + 0.5, far); x.moveTo(a1 - 0.5, this.y(0)); x.lineTo(b1 - 0.5, far); x.moveTo(a1 - 0.5, this.y(76)); x.lineTo(b1 - 0.5, this.y(74)); x.stroke();
+    // the passage's walls, receding: the stall building's side (tall) and the annex's side (low)
+    poly([[a0, this.y(190)], [b0, this.y(190)], [b0, far], [a0, this.y(0)]], '#070302');
+    poly([[a1, this.y(62)], [b1, this.y(58)], [b1, far], [a1, this.y(0)]], '#0a0402');
+    x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(a0 + 6, this.y(180), 2, 176);
+    x.strokeStyle = 'rgba(255,136,0,.6)';
+    x.beginPath(); x.moveTo(a0 + 0.5, this.y(0)); x.lineTo(b0 + 0.5, far); x.moveTo(a1 - 0.5, this.y(0)); x.lineTo(b1 - 0.5, far); x.moveTo(a1 - 0.5, this.y(62)); x.lineTo(b1 - 0.5, this.y(58)); x.stroke();
 
-    // the floor: wet, the yard's light running down it and spilling onto the street
-    poly([[a0, this.y(0)], [a1, this.y(0)], [b1, far], [b0, far]], '#0b0503');
-    const spill = x.createLinearGradient(0, far, 0, this.y(-10));
-    spill.addColorStop(0, 'rgba(255,170,90,.32)'); spill.addColorStop(1, 'rgba(255,170,90,0)');
-    poly([[b0 + 3, far], [b1 - 3, far], [a1 - 6, this.y(-10)], [a0 + 6, this.y(-10)]], spill as unknown as string);
-    x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(c - 6, this.y(3), 10, 1); x.fillRect(c - 2, this.y(6), 6, 1);
+    // the floor: wet, the yard's light running down it and out across the pavement
+    poly([[a0, this.y(0)], [a1, this.y(0)], [b1, far], [b0, far]], '#0c0603');
+    const spill = x.createLinearGradient(0, far, 0, this.y(-16));
+    spill.addColorStop(0, 'rgba(255,180,100,.45)'); spill.addColorStop(1, 'rgba(255,180,100,0)');
+    poly([[b0 + 2, far], [b1 - 2, far], [a1 + 10, this.y(-16)], [a0 - 10, this.y(-16)]], spill);
+    x.fillStyle = 'rgba(255,217,165,.4)'; x.fillRect(c - 8, this.y(3), 14, 1); x.fillRect(c + 10, this.y(6), 8, 1);
 
-    // a lamp on a bracket over the mouth, and the yard's sign on a bar across it
-    x.fillStyle = '#2a160a'; x.fillRect(a0 - 2, this.y(96), a1 - a0 + 4, 3);
-    x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(a0 - 2, this.y(96), a1 - a0 + 4, 1);
-    x.fillStyle = '#2a160a'; x.fillRect(a0 + 2, this.y(93), 1, 6);
-    x.fillStyle = 'rgba(255,230,170,.95)'; x.fillRect(a0 + 1, this.y(87), 3, 2);
-    const lamp = x.createRadialGradient(a0 + 2, this.y(86), 1, a0 + 2, this.y(70), 26);
-    lamp.addColorStop(0, 'rgba(255,220,150,.22)'); lamp.addColorStop(1, 'rgba(255,220,150,0)');
-    x.fillStyle = lamp; x.fillRect(a0 - 20, this.y(96), 50, 60);
-    this.plate(c, this.y(103), 34, 11, P);
-    this.neon('YARD →', c, this.y(103), P, { size: 8, phase: 90 });
+    // a string of bulbs across the passage, sagging between the two walls
+    x.strokeStyle = 'rgba(120,70,30,.9)'; x.beginPath(); x.moveTo(a0, this.y(92));
+    x.quadraticCurveTo((a0 + a1) / 2, this.y(78), a1, this.y(64)); x.stroke();
+    for (let i = 1; i < 7; i++) {
+      const t = i / 7, bx = a0 + (a1 - a0) * t, by = (1 - t) * (1 - t) * this.y(92) + 2 * (1 - t) * t * this.y(78) + t * t * this.y(64);
+      x.fillStyle = (Math.floor(this.t / 40) + i) % 9 ? 'rgba(255,214,140,.95)' : 'rgba(255,214,140,.3)';
+      x.fillRect(bx - 1, by + 1, 2, 2);
+    }
+
+    // the blade sign: sticks out from the corner on a bracket, readable from down the street
+    const sx0 = a0 - 1;
+    x.fillStyle = '#2a160a'; x.fillRect(sx0, this.y(148), 14, 2); x.fillRect(sx0, this.y(110), 14, 2);
+    this.plate(sx0 + 14, this.y(129), 13, 42, P);
+    this.neon('YARD', sx0 + 14, this.y(141), P, { size: 8, phase: 90, vertical: true });
   }
+
 
 
   /**
@@ -1132,7 +1131,7 @@ export class Game {
       x.fillStyle = 'rgba(255,217,165,.55)';
       if (this.zone === 'yard') x.fillText(this.touch ? 'tap things to open them · HACK see everything · BOARD wire, add timers' : 'tap or click things to open them · E near things · H hack vision · B board · / terminal · ESC menu', 8, this.touch ? 45 : this.viewH - 8);
       else if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC menu', 8, 34);
-      else x.fillText('<- -> walk · SHIFT run · E talk / jack in · / terminal · M sound · ESC menu', 8, this.viewH - 8);
+      else x.fillText('<- -> walk · SHIFT run · E talk / jack in · TAB map · / terminal · M sound · ESC menu', 8, this.viewH - 8);
     }
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
@@ -1388,7 +1387,7 @@ export class Game {
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(k)) e.preventDefault();
     if (e.repeat) return;
     if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
-    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter') { this.mapView = null; sound.close(); } return; }
+    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter' || k === 'Tab') { e.preventDefault(); this.mapView = null; sound.close(); } return; }
     const n = m.options.length;
     if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (m.index + n - 1) % n; sound.blip(); return; }
     if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (m.index + 1) % n; sound.blip(); return; }

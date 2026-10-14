@@ -2,7 +2,8 @@
  * The pause menu: a black CRT panel over the paused game.
  *
  * Esc opens it (game.ts decides when: overlays, bubbles and schematics close
- * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, MAP, SOUND, QUIT TO HOMEPAGE.
+ * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
+ * The city map is not here: it lives in the world (TAB on your deck, map boards).
  * Arrows or W/S move, Enter/E/Space select, Esc goes back a screen or resumes;
  * mouse and touch pick items directly. Styles: #game-menu in render.tsx.
  *
@@ -21,8 +22,6 @@ export interface MenuHooks {
   zone(): { id: string; name: string };
   /** NEW GAME, confirmed: reset the save, play the intro, hand over to the start zone. */
   newGame(): void;
-  /** The city map, when one is installed. */
-  map(): (() => void) | undefined;
   /** QUIT TO HOMEPAGE. */
   quit(): void;
   /** The menu closed (resume): give the game its focus back. */
@@ -118,7 +117,6 @@ export class Menu {
       { label: 'SAVE GAME', run: () => this.slots('save', 0) },
       { label: 'LOAD GAME', run: () => this.slots('load', 0) },
       { label: 'NEW GAME', tone: 'bad', run: () => this.confirm('START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', () => { this.hide(); this.hooks.newGame(); }, () => this.main(3)) },
-      { label: 'MAP', run: () => this.map() },
       { label: 'SOUND: ' + (sound.enabled ? 'ON' : 'OFF'), run: () => this.toggleSound() },
       { label: 'QUIT TO HOMEPAGE', run: () => { this.hide(); this.hooks.quit(); } },
     ], sel, null);
@@ -171,13 +169,6 @@ export class Menu {
       { label: yes, tone, run },
     ], 0, back);
     this.sub.className = 'gm-sub gm-ask gm-' + (tone === 'bad' ? 'bad' : 'go');
-  }
-
-  private map() {
-    const open = this.hooks.map();
-    if (!open) { sound.denied(); this.say('MAP NOT INSTALLED YET.', 'dim'); return; }
-    this.hide();
-    open();
   }
 
   private toggleSound() {

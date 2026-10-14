@@ -211,7 +211,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(ox + 6, fy - 6, w - 12, 1);
   if (st.mode === 'view') {
     text(x, '— LINE 0   [H] SKY TAXI   ■ YOU   ??? NOT VISITED', ox + 10, fy + 2, 'rgba(' + PAPER + ',.65)', 7, '', 'left');
-    text(x, 'ESC close', ox + w - 10, fy + 12, 'rgba(' + C + ',.9)', 7, '600', 'right');
+    text(x, 'TAB · ESC close', ox + w - 10, fy + 12, 'rgba(' + C + ',.9)', 7, '600', 'right');
   } else {
     const name = st.mode === 'taxi'
       ? (st.seen(STANDS[pick as Stand].zone) ? STANDS[pick as Stand].name : '???')

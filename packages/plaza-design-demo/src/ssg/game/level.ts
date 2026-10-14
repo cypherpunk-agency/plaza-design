@@ -101,8 +101,8 @@ export const FRONTS: Front[] = [
   { x: 550, w: 170, h: 274, bays: [[8, 54, 'glass'], [70, 26, 'door'], [104, 58, 'glass']] },
   { x: 720, w: 140, h: 340 }, // behind the noodle stall
   { x: 860, w: 90, h: 340, bays: [[24, 50, 'glass']] },
-  // 950–994: the alley to the fixer's back yard, an open gate with the yard behind it (drawn by the engine)
-  { x: 994, w: 46, h: 76 }, // a one-storey wall between the alley and the annex; the dumpster stands in front of it
+  // 950–1040: the alley to the fixer's back yard, lit from the yard behind it (drawn by the engine);
+  // the dumpster stands in its mouth, under the annex's low roof
   { x: 1040, w: 160, h: 62, roof: true, bays: [[16, 52, 'shutter'], [124, 24, 'door']] },
   { x: 1200, w: 60, h: 406, bays: [[18, 24, 'door']] },
   { x: 1260, w: 160, h: 274, bays: [[10, 46, 'glass'], [68, 24, 'sealed'], [104, 46, 'glass']] }, // the penthouse tower
