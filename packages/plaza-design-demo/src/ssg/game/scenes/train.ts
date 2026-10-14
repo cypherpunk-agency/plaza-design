@@ -1,11 +1,12 @@
 /**
  * Inside a train carriage: bench seats under the windows, the city sliding past
  * outside, handrails and swaying straps, a few riders. Bands: far = the city
- * through the windows; middle = the carriage wall and ad cards; play = seats,
- * riders, poles and straps.
+ * through the windows and, on tall screens, over the roof; middle = the
+ * carriage wall, ad cards, the roof in cutaway and the wires above it;
+ * play = seats, riders, poles and straps.
  */
 
-import { box, ceiling, exitDoor, O, onScreen, PAPER, RED, rng, tell, text, towers, type Scene, type View } from './kit';
+import { box, exitDoor, O, onScreen, PAPER, RED, rng, tell, text, towers, type Scene, type View } from './kit';
 
 /** Layout: positions in world units, heights up from the carriage floor. */
 const L = {
@@ -29,7 +30,12 @@ const L = {
   brake: 1145,
 };
 
+/** Above the carriage, for tall screens (heights): the roof shell, the contact wire, the wire over it. */
+const ROOF = { cove: 14, shell: 12, ac: [300, 900], panto: 610, wire: 232, messenger: 254, mast: 340 };
+
 const SKY = towers(97, 2400, [24, 70], [40, 130], 0.12);
+/** The far city over the roof: taller than what the windows show, and dimmer. */
+const SKY_HIGH = towers(103, 2400, [20, 60], [60, 220], 0.08);
 const MID = (() => { const r = rng(99); return Array.from({ length: 14 }, (_, i) => [i * 170 + r() * 80, 20 + r() * 40, 30 + r() * 30]); })();
 const STREAKS = (() => { const r = rng(101); return Array.from({ length: 18 }, () => [r() * 1200, r() * 54]); })();
 
@@ -67,6 +73,77 @@ function drawOutside(x: CanvasRenderingContext2D, v: View) {
   x.restore();
 }
 
+/**
+ * Everything over the carriage's ceiling, so a tall screen sees the train in
+ * cutaway rather than a void: the ceiling cove with its vents and destination
+ * display, the roof shell with its air-con boxes and pantograph, and outside,
+ * the contact wire on masts racing past and the far city under a glowing sky.
+ */
+function drawRoof(x: CanvasRenderingContext2D, v: View, w0: number, w1: number) {
+  const { sx, y, t } = v, top = v.gy;
+  if (top <= L.ceil) return;
+  const c0 = L.ceil, s0 = c0 + ROOF.cove, s1 = s0 + ROOF.shell;
+  // far band: night sky with the city's glow low down, the city sliding past slowly
+  const glow = x.createLinearGradient(0, y(s1 + 140), 0, y(s1));
+  glow.addColorStop(0, 'rgba(194,65,12,0)'); glow.addColorStop(1, 'rgba(194,65,12,.1)');
+  x.fillStyle = '#03020a'; x.fillRect(0, 0, v.viewW, y(s1));
+  x.fillStyle = glow; x.fillRect(0, y(s1 + 140), v.viewW, 140);
+  const span = 2400, off = t * 0.6 + v.cam * 0.2;
+  for (const b of SKY_HIGH) {
+    const s = ((b.x - off * 0.8) % span + span) % span - 100;
+    if (s > v.viewW || s + b.w < 0) continue;
+    x.fillStyle = '#060302'; x.fillRect(s, y(s1 + b.h * 0.7), b.w, b.h * 0.7);
+    x.strokeStyle = 'rgba(194,65,12,.08)'; x.strokeRect(s + 0.5, y(s1 + b.h * 0.7) + 0.5, b.w - 1, b.h * 0.7);
+    x.fillStyle = 'rgba(255,136,0,.22)';
+    for (let i = 0; i < b.lit.length; i += 4) if (b.lit[i + 1] < b.h * 0.7) x.fillRect(s + b.lit[i], y(s1 + b.h * 0.7) + b.lit[i + 1], 2, 1);
+  }
+  // middle band: masts and the overhead wires, racing past as fast as the pylons in the windows
+  const off2 = t * 5 + v.cam;
+  for (let m = 0; m < span; m += ROOF.mast) {
+    const s = ((m - off2) % span + span) % span - 100;
+    if (s < -60 || s > v.viewW + 10) continue;
+    x.fillStyle = '#0a0605'; x.fillRect(s, 0, 5, y(s1));
+    x.strokeStyle = 'rgba(194,65,12,.25)'; x.strokeRect(s + 0.5, -1, 4, y(s1) + 1);
+    x.fillStyle = '#0a0605'; x.fillRect(s - 50, y(ROOF.messenger + 8), 55, 3);
+    x.strokeStyle = 'rgba(194,65,12,.25)'; x.beginPath(); x.moveTo(s, y(ROOF.messenger + 28)); x.lineTo(s - 46, y(ROOF.messenger + 8)); x.stroke();
+  }
+  x.fillStyle = 'rgba(160,150,140,.3)'; x.fillRect(0, y(ROOF.wire), v.viewW, 1); x.fillRect(0, y(ROOF.messenger), v.viewW, 1);
+  x.fillStyle = 'rgba(160,150,140,.15)';
+  for (let d = 0; d < span; d += 34) { const s = ((d - off2) % span + span) % span - 100; if (s >= 0 && s <= v.viewW) x.fillRect(s, y(ROOF.messenger), 1, ROOF.messenger - ROOF.wire); }
+
+  // the carriage: ceiling cove, then the roof shell
+  box(x, w0, y(s0), w1 - w0, ROOF.cove, '#0c0907');
+  for (let wx = 60; wx < L.width - 80; wx += 120) { const s = sx(wx); if (!onScreen(v, s, 40)) continue; x.fillStyle = 'rgba(' + O + ',.14)'; for (let k = 0; k < 4; k++) x.fillRect(s + k * 9, y(c0 + 9), 6, 1); }
+  // destination display over each door: amber dots, nothing to use
+  for (const d of L.doors) {
+    const s = sx(d);
+    if (!onScreen(v, s - 40, 80)) continue;
+    box(x, s - 38, y(c0 + 12), 76, 10, '#050302', 'rgba(' + O + ',.4)');
+    text(x, 'PLAZA CENTRAL', s, y(c0 + 7), 'rgba(255,136,0,' + (0.55 + 0.1 * Math.sin(t * 0.04)) + ')', 7, '600');
+  }
+  box(x, w0, y(s1), w1 - w0, ROOF.shell, '#16100c');
+  x.fillStyle = 'rgba(' + O + ',.6)'; x.fillRect(w0, y(s1), w1 - w0, 1);
+  x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(w0, y(s0), w1 - w0, 1);
+  // on the roof: air-con boxes and the pantograph up to the wire
+  for (const a of ROOF.ac) {
+    const s = sx(a);
+    if (!onScreen(v, s, 90)) continue;
+    box(x, s, y(s1 + 14), 90, 14, '#120c09', 'rgba(' + O + ',.45)');
+    x.fillStyle = 'rgba(' + O + ',.15)'; for (let k = 8; k < 84; k += 6) x.fillRect(s + k, y(s1 + 11), 2, 8);
+  }
+  const p = sx(ROOF.panto);
+  if (onScreen(v, p - 40, 80)) {
+    box(x, p - 24, y(s1 + 5), 48, 5, '#120c09', 'rgba(' + O + ',.45)');
+    const sway = Math.round(Math.sin(t * 0.07) * 2);
+    x.strokeStyle = 'rgba(160,150,140,.45)'; x.beginPath();
+    x.moveTo(p - 18, y(s1 + 5)); x.lineTo(p + 12, y((s1 + ROOF.wire) / 2)); x.lineTo(p - 6 + sway, y(ROOF.wire - 2));
+    x.moveTo(p + 18, y(s1 + 5)); x.lineTo(p + 12, y((s1 + ROOF.wire) / 2)); x.stroke();
+    x.fillStyle = 'rgba(160,150,140,.6)'; x.fillRect(p - 22 + sway, y(ROOF.wire - 1), 32, 2);
+    // a spark now and then where it touches the wire
+    if (Math.floor(t) % 173 < 3) { x.fillStyle = 'rgba(170,210,255,.8)'; x.fillRect(p - 8 + sway, y(ROOF.wire + 2), 3, 3); }
+  }
+}
+
 export const train: Scene = {
   id: 'train',
   name: 'Train',
@@ -92,7 +169,7 @@ export const train: Scene = {
       if (!onScreen(v, s, L.winW)) continue;
       x.strokeStyle = 'rgba(' + O + ',.75)'; x.lineWidth = 3; x.strokeRect(s + 1.5, y(L.win.h1) + 1.5, L.winW - 3, L.win.h1 - L.win.h0 - 3); x.lineWidth = 1;
     }
-    ceiling(x, v, L.ceil);
+    drawRoof(x, v, w0, w1);
     box(x, w0, y(L.ceil - 2), w1 - w0, 3, 'rgba(255,240,215,.75)');
     const g = x.createLinearGradient(0, y(L.ceil), 0, y(L.ceil - 40));
     g.addColorStop(0, 'rgba(255,240,215,.08)'); g.addColorStop(1, 'rgba(255,240,215,0)');

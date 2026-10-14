@@ -1,6 +1,6 @@
 /**
  * The shopping mall: an atrium floor with a fountain, benches and pillars; across
- * the atrium three levels of storefronts joined by escalators, banners hanging
+ * the atrium levels of storefronts (three, more on tall screens) joined by escalators, banners hanging
  * from the skylight. Bands: far = the far side of the atrium and the skylight;
  * middle = escalators and banners; play = the atrium floor and its furniture.
  */
@@ -15,7 +15,8 @@ const L = {
   levels: [14, 100, 186],
   storey: 66,
   shops: ['MEMORY GARDEN', 'NULL & VOID', 'SECOND SKIN', 'GHOST SUPPLY', 'TERMS APPLY', 'CLOUD PHARMACY', 'LAST SEASON', 'IDENTITY OUTLET', 'ALMOST NEW', 'OPT-OUT'],
-  escalators: [{ x: 280, from: 14, to: 100 }, { x: 760, from: 100, to: 186 }, { x: 1160, from: 14, to: 100 }],
+  /** Escalators between levels; the upper ones only show on screens tall enough for those levels. */
+  escalators: [{ x: 280, from: 14, to: 100 }, { x: 760, from: 100, to: 186 }, { x: 1160, from: 14, to: 100 }, { x: 420, from: 186, to: 272 }, { x: 1020, from: 272, to: 358 }, { x: 600, from: 358, to: 444 }],
   banners: [{ x: 420, text: 'SALE' }, { x: 900, text: 'NEW YOU' }, { x: 1380, text: 'FOREVER' }],
   pillars: [430, 1290],
   benches: [{ x: 570, sitter: true }, { x: 1110, sitter: false }],
@@ -32,18 +33,31 @@ const SHOPPERS = (() => { const r = rng(81); return Array.from({ length: 14 }, (
 /** Water drops in the fountain's arcs: [side, phase]. */
 const DROPS = (() => { const r = rng(83); return Array.from({ length: 40 }, (_, i) => [i % 2 ? 1 : -1, r()]); })();
 
+/** The level floors for this view: at least the three of the layout; taller screens see more storeys, the skylight always just over the top one. */
+function levelsFor(v: View): number[] {
+  const step = L.levels[1] - L.levels[0], n = Math.max(L.levels.length, Math.floor((v.gy - L.levels[0] - 40) / step));
+  return Array.from({ length: n }, (_, i) => L.levels[0] + i * step);
+}
+
 function drawFarSide(x: CanvasRenderingContext2D, v: View) {
-  const { y } = v;
-  // the skylight, high above
-  const sky = y(270);
+  const { y } = v, levels = levelsFor(v), roofH = levels[levels.length - 1] + L.storey + 18;
+  // the skylight, high above: glass in a steel truss, the city's glow on the clouds through it
+  const sky = y(roofH);
   if (sky > 0) {
     x.fillStyle = '#03050a'; x.fillRect(0, 0, v.viewW, sky);
+    const glow = x.createLinearGradient(0, 0, 0, sky);
+    glow.addColorStop(0, 'rgba(194,65,12,.03)'); glow.addColorStop(1, 'rgba(194,65,12,.09)');
+    x.fillStyle = glow; x.fillRect(0, 0, v.viewW, sky);
     x.strokeStyle = 'rgba(' + O + ',.15)';
     for (let wx = 0; wx < 2600; wx += 40) { const s = v.sx(wx, 0.4); if (s < -2 || s > v.viewW + 2) continue; x.beginPath(); x.moveTo(s + 0.5, 0); x.lineTo(s + 0.5, sky); x.stroke(); }
+    // the truss along the skylight's foot, a lattice like the cranes'
+    x.fillStyle = '#0d0907'; x.fillRect(0, sky - 14, v.viewW, 14);
+    x.strokeStyle = 'rgba(' + O + ',.22)'; x.strokeRect(-1, sky - 13.5, v.viewW + 2, 13);
+    x.beginPath(); for (let wx = 0; wx < 2600; wx += 20) { const s = v.sx(wx, 0.4); if (s < -20 || s > v.viewW) continue; x.moveTo(s, sky - 1); x.lineTo(s + 10, sky - 13); x.lineTo(s + 20, sky - 1); } x.stroke();
   }
-  // three levels of storefronts, lit behind glass
+  // levels of storefronts, lit behind glass
   x.fillStyle = '#0a0706'; x.fillRect(0, Math.max(0, sky), v.viewW, y(14) - Math.max(0, sky));
-  L.levels.forEach((lv, li) => {
+  levels.forEach((lv, li) => {
     for (let i = 0; i < 22; i++) {
       const s = v.sx(i * (SHOP_W + 6) - 40, FAR);
       if (!onScreen(v, s, SHOP_W)) continue;
@@ -62,12 +76,12 @@ function drawFarSide(x: CanvasRenderingContext2D, v: View) {
       x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(0, y(lv + 12), v.viewW, 1);
     }
   });
-  // shoppers on the far levels
-  for (const [sx0, sp, lv, ph] of SHOPPERS) {
-    const px = v.sx((((sx0 + v.t * sp) % 2400) + 2400) % 2400 - 100, FAR);
-    if (!onScreen(v, px - 6, 12)) continue;
-    figure(x, px, y(L.levels[lv] + (lv ? 8 : 0)), 26, '#060403', Math.sin(v.t * 0.1 + ph) > 0 ? 1 : 0, 'rgba(255,190,110,.18)');
-  }
+  // shoppers on the far levels; on tall screens every other one is three levels up
+  SHOPPERS.forEach(([sx0, sp, lv0, ph], i) => {
+    const px = v.sx((((sx0 + v.t * sp) % 2400) + 2400) % 2400 - 100, FAR), lv = (lv0 + (i % 2 ? 3 : 0)) % levels.length;
+    if (!onScreen(v, px - 6, 12)) return;
+    figure(x, px, y(levels[lv] + (lv ? 8 : 0)), 26, '#060403', Math.sin(v.t * 0.1 + ph) > 0 ? 1 : 0, 'rgba(255,190,110,.18)');
+  });
 }
 
 function drawEscalator(x: CanvasRenderingContext2D, v: View, e: { x: number; from: number; to: number }) {
@@ -102,7 +116,8 @@ export const mall: Scene = {
     const { sx, y, t, gy } = v;
     drawFarSide(x, v);
     // middle band: escalators and banners on cables from the skylight
-    for (const e of L.escalators) drawEscalator(x, v, e);
+    const lvs = levelsFor(v), top = lvs[lvs.length - 1];
+    for (const e of L.escalators) if (e.to <= top) drawEscalator(x, v, e);
     for (const b of L.banners) {
       const bx = sx(b.x, 0.8);
       if (!onScreen(v, bx - 16, 32)) continue;

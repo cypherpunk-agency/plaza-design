@@ -5,7 +5,7 @@
  * strings and the back crowd; play = stalls, vendors, the wet street.
  */
 
-import { box, drawTowers, exitDoor, figure, notice, O, onScreen, PAPER, RED, reflect, rng, sign, tell, towers, wetFloor, type Scene, type View } from './kit';
+import { box, DESIGN_TOP, drawTowers, exitDoor, figure, notice, O, onScreen, PAPER, RED, reflect, rng, sign, tell, towers, wetFloor, type Scene, type View } from './kit';
 
 interface Stall { x: number; w: number; awning: number; sign: string; col: string; readable?: boolean }
 
@@ -91,9 +91,11 @@ export const market: Scene = {
   drawBackdrop(x, v) {
     const { sx, y, t } = v;
     // far band: towers seen through the gaps, barely there
-    drawTowers(x, v, FAR, 0.25, y(0), 0.08, '#030100', 1);
+    // both rows grow with the view, so a tall screen sees more storeys and the same strip of sky
+    const grow = Math.max(0, v.gy - DESIGN_TOP);
+    drawTowers(x, v, FAR, 0.25, y(0), 0.08, '#030100', 1, Math.round(grow * 0.8));
     // middle band: tenements leaving the top of the view, their blade signs and the light strings
-    drawTowers(x, v, TENEMENTS, 0.7, y(0), 0.22, '#070302');
+    drawTowers(x, v, TENEMENTS, 0.7, y(0), 0.22, '#070302', 2, grow);
     for (const b of L.blades) {
       const bx = sx(b.x, 0.7);
       if (!onScreen(v, bx - 12, 24)) continue;

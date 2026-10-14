@@ -1,11 +1,12 @@
 /**
  * A metro platform: tiled walls, the track behind the platform edge and a train
  * that pulls in, opens its doors and leaves, on a loop. Bands: far = the tiled
- * wall across the track; middle = track and train; play = the platform,
- * pillars, the departure board, a bench.
+ * wall across the track (and, on tall screens, the gallery along it); middle =
+ * track, train and the vault overhead; play = the platform, pillars, the
+ * departure board, a bench.
  */
 
-import { box, ceiling, exitDoor, figure, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
+import { box, exitDoor, figure, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
 
 /** Layout: positions in world units, heights up from the platform. */
 const L = {
@@ -22,6 +23,68 @@ const L = {
 };
 
 const WALL = 0.86, TRACK = 0.94;
+/** Above the platform, for tall screens (heights): the lamp rail, the gallery on the far wall, the vault's rise. */
+const HALL = { rail: 6, gallery: 210, rise: 70, bay: 400, crown: 20 };
+/** People on the far gallery: [x, speed, phase]. */
+const GALLERY = (() => { const r = rng(93); return Array.from({ length: 7 }, () => [r() * 2600, (r() < 0.5 ? -1 : 1) * (0.1 + r() * 0.15), r() * 10]); })();
+
+/** Where the vault springs from the pillars: higher on taller screens, never below the lamp rail. */
+const springOf = (v: View) => Math.max(L.ceil + 40, v.gy - HALL.rise - HALL.crown);
+
+/**
+ * The hall over the platform for tall screens: the tiled far wall goes on up,
+ * with a gallery along it where people cross; overhead, the vault in bays that
+ * spring from the pillars. Far and middle band: dim tiles, dim people, a rust
+ * outline on the arches, nothing that competes with the platform.
+ */
+function drawHall(x: CanvasRenderingContext2D, v: View) {
+  const { sx, y, t } = v, spring = springOf(v);
+  // the gallery on the far wall, when there is room under the vault
+  const g = HALL.gallery;
+  if (spring - g > 54) {
+    x.fillStyle = 'rgba(255,217,165,.04)'; x.fillRect(0, y(g + 26), v.viewW, 26);
+    for (const [px, sp, ph] of GALLERY) {
+      const s = sx((((px + t * sp) % 2600) + 2600) % 2600 - 200, WALL);
+      if (!onScreen(v, s - 8, 16)) continue;
+      figure(x, s, y(g + 6), 28, '#070504', Math.sin(t * 0.1 + ph) > 0 ? 1 : 0, 'rgba(255,217,165,.12)');
+    }
+    box(x, 0, y(g + 6), v.viewW, 8, '#0e0b09');
+    x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(0, y(g + 6), v.viewW, 1);
+    x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(0, y(g + 22), v.viewW, 1);
+    for (let wx = 0; wx < 2600; wx += 10) { const s = sx(wx, WALL); if (s >= 0 && s <= v.viewW) x.fillRect(s, y(g + 22), 1, 16); }
+    // the station's name again, along the gallery's face
+    for (const n of L.names) {
+      const s = sx(n + 180, WALL);
+      if (!onScreen(v, s - 50, 100)) continue;
+      text(x, 'PLAZA CENTRAL', s, y(g + 2), 'rgba(' + PAPER + ',.3)', 7, '600');
+    }
+  }
+  // the vault: one arch per bay, springing from the pillars
+  x.fillStyle = '#070504';
+  for (let a = L.pillars[0].x - HALL.bay * Math.ceil((L.pillars[0].x + 200) / HALL.bay); a < L.width + 400; a += HALL.bay) {
+    const s0 = sx(a), s1 = sx(a + HALL.bay);
+    if (s1 < 0 || s0 > v.viewW) continue;
+    const cx = (s0 + s1) / 2, rx = (s1 - s0) / 2;
+    x.fillStyle = '#070504';
+    x.beginPath(); x.moveTo(s0, y(spring)); x.ellipse(cx, y(spring), rx, HALL.rise, 0, Math.PI, Math.PI * 2); x.lineTo(s1, -1); x.lineTo(s0, -1); x.closePath(); x.fill();
+    // coffers: a second arch inside the first, ribs between them
+    x.strokeStyle = 'rgba(' + O + ',.35)'; x.beginPath(); x.ellipse(cx, y(spring), rx, HALL.rise, 0, Math.PI, Math.PI * 2); x.stroke();
+    x.strokeStyle = 'rgba(' + O + ',.12)'; x.beginPath(); x.ellipse(cx, y(spring), rx + 10, HALL.rise + 12, 0, Math.PI, Math.PI * 2); x.stroke();
+    x.beginPath();
+    for (let k = 1; k < 10; k++) { const an = Math.PI + (k / 10) * Math.PI, c = Math.cos(an), d = Math.sin(an); x.moveTo(cx + c * rx, y(spring) + d * HALL.rise); x.lineTo(cx + c * (rx + 10), y(spring) + d * (HALL.rise + 12)); }
+    x.stroke();
+    // a dim lamp hanging at the crown
+    if (y(spring + HALL.rise) > 8) {
+      x.strokeStyle = 'rgba(' + O + ',.25)'; x.beginPath(); x.moveTo(cx + 0.5, y(spring + HALL.rise)); x.lineTo(cx + 0.5, y(spring + HALL.rise - 14)); x.stroke();
+      x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(cx - 3, y(spring + HALL.rise - 14), 6, 2);
+    }
+  }
+  // the crown band over every bay
+  x.fillStyle = 'rgba(' + O + ',.1)'; for (let wx = 0; wx < L.width + 400; wx += 40) { const s = sx(wx); if (s >= 0 && s <= v.viewW) x.fillRect(s, 0, 1, Math.max(0, y(spring + HALL.rise + 4))); }
+  // the lamp rail along the platform, carried by the pillars
+  box(x, 0, y(L.ceil + HALL.rail), v.viewW, HALL.rail, '#0d0907');
+  x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(0, y(L.ceil), v.viewW, 1);
+}
 /** Who is riding, per window: true = someone in it. */
 const RIDERS = (() => { const r = rng(91); return Array.from({ length: 30 }, () => r() < 0.4); })();
 
@@ -88,9 +151,10 @@ export const metro: Scene = {
     // far band: the tiled wall across the track
     x.fillStyle = '#0b0a09'; x.fillRect(0, 0, v.viewW, y(14));
     x.fillStyle = 'rgba(255,217,165,.05)';
-    for (let h = 22; h < L.ceil; h += 8) x.fillRect(0, y(h), v.viewW, 1);
-    for (let wx = 0; wx < 2600; wx += 12) { const s = sx(wx, WALL); if (s >= 0 && s <= v.viewW) x.fillRect(s, y(L.ceil), 1, L.ceil - 16); }
+    for (let h = 22; h < gy; h += 8) x.fillRect(0, y(h), v.viewW, 1);
+    for (let wx = 0; wx < 2600; wx += 12) { const s = sx(wx, WALL); if (s >= 0 && s <= v.viewW) x.fillRect(s, 0, 1, y(16)); }
     x.fillStyle = 'rgba(' + O + ',.22)'; x.fillRect(0, y(70), v.viewW, 6);
+    x.fillStyle = 'rgba(' + O + ',.12)'; x.fillRect(0, y(L.ceil + 26), v.viewW, 4);
     for (const n of L.names) {
       const s = sx(n, WALL);
       if (!onScreen(v, s - 50, 100)) continue;
@@ -112,7 +176,8 @@ export const metro: Scene = {
 
     // play band: the platform edge, the vault overhead, pillars and lamps
     x.fillStyle = 'rgba(255,210,58,.7)'; x.fillRect(0, y(2), v.viewW, 2);
-    ceiling(x, v, L.ceil, '#060403');
+    drawHall(x, v);
+    const spring = springOf(v);
     for (let wx = 100; wx < L.width; wx += 200) {
       const s = sx(wx);
       if (!onScreen(v, s - 20, 40)) continue;
@@ -122,7 +187,8 @@ export const metro: Scene = {
     for (const p of L.pillars) {
       const s = sx(p.x);
       if (!onScreen(v, s - 20, 40)) continue;
-      box(x, s - 12, y(L.ceil), 24, L.ceil, '#181210', 'rgba(' + O + ',.8)');
+      box(x, s - 12, y(spring), 24, spring, '#181210', 'rgba(' + O + ',.8)');
+      box(x, s - 16, y(spring), 32, 6, '#1e1612', 'rgba(' + O + ',.6)');
       if (p.cam) {
         box(x, s + 10, y(134), 14, 8, '#100c0a', 'rgba(' + O + ',.6)');
         x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s + 19, y(131), 2, 2);

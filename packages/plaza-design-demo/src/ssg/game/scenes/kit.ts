@@ -157,15 +157,23 @@ export function towers(seed: number, span: number, w: [number, number], h: [numb
   return list;
 }
 
-/** Draws a tower row standing on screen y `base`. Far rows: low `alpha`; middle rows: higher. */
-export function drawTowers(x: CanvasRenderingContext2D, v: View, list: Tower[], parallax: number, base: number, alpha: number, fill = '#040200', win = 2) {
+/**
+ * Draws a tower row standing on screen y `base`. Far rows: low `alpha`; middle rows: higher.
+ * `grow` adds height to every tower (for taller views), repeating its windows downward, so a
+ * tall screen sees more storeys rather than a stretched row.
+ */
+export function drawTowers(x: CanvasRenderingContext2D, v: View, list: Tower[], parallax: number, base: number, alpha: number, fill = '#040200', win = 2, grow = 0) {
   for (const b of list) {
-    const sx = v.sx(b.x, parallax);
-    if (!onScreen(v, sx, b.w)) continue;
-    x.fillStyle = fill; x.fillRect(sx, base - b.h, b.w, b.h);
-    x.strokeStyle = 'rgba(' + RUST + ',' + alpha + ')'; x.lineWidth = 1; x.strokeRect(sx + 0.5, base - b.h + 0.5, b.w - 1, b.h);
+    const sx = v.sx(b.x, parallax), h = b.h + grow, top = base - h;
+    if (!onScreen(v, sx, b.w) || base < 0) continue;
+    x.fillStyle = fill; x.fillRect(sx, top, b.w, h);
+    x.strokeStyle = 'rgba(' + RUST + ',' + alpha + ')'; x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, b.w - 1, h);
     x.fillStyle = 'rgba(' + O + ',' + (alpha * 0.9 + 0.05) + ')';
-    for (let i = 0; i < b.lit.length; i += 2) x.fillRect(sx + b.lit[i], base - b.h + b.lit[i + 1], win, win);
+    for (let k = 0; k * b.h < h; k++) {
+      const off = top + k * b.h;
+      if (off > v.viewH || off + b.h < 0) continue;
+      for (let i = 0; i < b.lit.length; i += 2) if (b.lit[i + 1] + k * b.h < h - 4) x.fillRect(sx + b.lit[i], off + b.lit[i + 1], win, win);
+    }
   }
 }
 
@@ -186,14 +194,10 @@ export function reflect(x: CanvasRenderingContext2D, v: View, sx: number, col: s
   }
 }
 
-/** Covers everything above an interior's ceiling, so tall screens never see past it. */
-export function ceiling(x: CanvasRenderingContext2D, v: View, h: number, fill = '#050302') {
-  const top = v.y(h);
-  if (top <= 0) return;
-  x.fillStyle = fill; x.fillRect(0, 0, v.viewW, top);
-  // dim beams and a duct, so a tall screen sees a ceiling, not a void
-  x.fillStyle = 'rgba(' + O + ',.07)';
-  for (let wx = Math.floor(v.cam / 64) * 64; wx < v.cam + v.viewW + 64; wx += 64) x.fillRect(v.sx(wx), 0, 2, top);
-  if (top > 24) { x.fillStyle = '#0b0705'; x.fillRect(0, top - 18, v.viewW, 8); x.fillStyle = 'rgba(' + O + ',.18)'; x.fillRect(0, top - 18, v.viewW, 1); }
-  x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(0, top, v.viewW, 1);
-}
+/**
+ * Scenes were laid out for a view about 320 tall (the ground 266 below its top).
+ * Taller views must not show a void over them: every scene draws more structure
+ * up to `v.gy` (the height of the view's top edge above the ground): storeys,
+ * a vault, a skylight, a roof, more sky. Calmer and dimmer than the play band.
+ */
+export const DESIGN_TOP = 266;
