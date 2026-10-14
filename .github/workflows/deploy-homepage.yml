@@ -7,16 +7,14 @@ name: Deploy cypherpunk.agency homepage
 # Transport follows the current static-deploy standard (same as orbis):
 #   1. the runner uploads the tarball to the GCS staging bucket with a raw media upload
 #      (the deploy SA may create objects there but not list, read or overwrite them);
-#   2. one IAP-tunnelled SSH call — control path only, no payload — has the VM pull the
-#      object with its own identity, extract it into /tmp unprivileged, re-check it, and
-#      run exactly ONE pinned sudo command.
+#   2. one IAP-tunnelled SSH call as the dedicated, non-root VM user `deploy-plaza`, whose
+#      key is forced to a single `publish` command. The VM pulls the object, extracts it,
+#      re-runs the guards and does the privileged copy itself; CI never extracts or sudos.
 #
-# The privileged step is an OVERLAY, on purpose:
+# The VM-side copy is an OVERLAY, on purpose:
 #   sudo /bin/cp -rT /tmp/cypherpunk-agency-deploy /mnt/pd/data/services/static/cypherpunk-agency
 # The served dir also holds /good-friday/, which is not in this repo and must survive.
-# Never rsync --delete or rm inside it. The command must stay byte-for-byte identical to
-# the sudoers pin or sudo refuses it. Filenames are stable (no content hashes), so the
-# overlay never accumulates stale builds.
+# Filenames are stable (no content hashes), so the overlay never accumulates stale builds.
 #
 # The VM's shared CSP is `default-src 'self'` with no font-src: everything the page loads
 # must be same-origin. Fonts ship as files under /fonts/ (data: URIs are blocked too).
@@ -148,36 +146,13 @@ jobs:
             -o /dev/null
           echo "OBJECT=$object" >> "$GITHUB_ENV"
 
-      # Persistent deploy SSH key. Without --ssh-key-file, gcloud mints a fresh key every
-      # run into project ssh-keys metadata (hard-capped at 256 KiB).
-      - name: Materialize deploy SSH key
-        env:
-          KEY: ${{ secrets.GCP_DEPLOY_SSH_KEY }}
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$KEY" > ~/.ssh/gcp_deploy
-          chmod 600 ~/.ssh/gcp_deploy
-          ssh-keygen -y -f ~/.ssh/gcp_deploy > ~/.ssh/gcp_deploy.pub
-
       - name: Publish on the VM
-        # Fetch and extract unprivileged, guard again, then exactly one privileged command,
-        # pinned byte for byte in sudoers.
+        # PENDING: the deploy-plaza forced-command contract (secret name, `publish apex
+        # <object>` interface) is being finalised on the infra side. Until it is wired in,
+        # this step fails so nothing can half-deploy.
         run: |
-          set -euo pipefail
-          gcloud compute ssh web-server --quiet \
-            --zone=europe-west1-b --project=cyberphunk-agency \
-            --tunnel-through-iap --ssh-key-file="$HOME/.ssh/gcp_deploy" \
-            --command "set -eu
-              rm -rf /tmp/cypherpunk-agency-deploy /tmp/cypherpunk-agency-deploy.tgz
-              /snap/bin/gcloud storage cp 'gs://${BUCKET}/${OBJECT}' /tmp/cypherpunk-agency-deploy.tgz
-              mkdir -p /tmp/cypherpunk-agency-deploy
-              tar -xzf /tmp/cypherpunk-agency-deploy.tgz -C /tmp/cypherpunk-agency-deploy
-              test -f /tmp/cypherpunk-agency-deploy/index.html
-              grep -qF '<title>[cypherpunk.agency]</title>' /tmp/cypherpunk-agency-deploy/index.html
-              test -s /tmp/cypherpunk-agency-deploy/og-image.png
-              sudo /bin/cp -rT /tmp/cypherpunk-agency-deploy /mnt/pd/data/services/static/cypherpunk-agency
-              rm -rf /tmp/cypherpunk-agency-deploy /tmp/cypherpunk-agency-deploy.tgz"
+          echo "::error::VM publish step not wired yet (awaiting deploy-plaza contract)"
+          exit 1
 
       - name: Verify live
         # A green publish only says bytes moved. Check that apex and www serve exactly this

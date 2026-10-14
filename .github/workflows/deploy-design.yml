@@ -1,6 +1,6 @@
 name: Deploy design.cypherpunk.agency
 
-# Push to main → build packages/plaza-design-demo → publish to the Caddy VM at
+# Push to production → build packages/plaza-design-demo → publish to the Caddy VM at
 # /mnt/pd/data/services/static/design → live at https://design.cypherpunk.agency.
 #
 # Mirrors the Escape-Velocity static-deploy convention (business/deploy-sites.yml):
@@ -35,9 +35,10 @@ name: Deploy design.cypherpunk.agency
 # `document.fonts.size` (must be 4), never by looking at the page — IBM Plex Mono is
 # installed locally on the author's machine and masks the bug.
 
+# Only a push to `production` publishes; GCP WIF will be pinned to refs/heads/production.
 on:
   push:
-    branches: [main]
+    branches: [production]
   workflow_dispatch:
 
 # Keyless auth via Workload Identity Federation (migrated 2026-09-19, deploy-standards SS2).
@@ -49,6 +50,7 @@ permissions:
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/production'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
