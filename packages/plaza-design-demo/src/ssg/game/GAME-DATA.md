@@ -43,7 +43,8 @@ Append one line per decision: what, which side, why.
 - Hack vision's noun order (`layout.row`): **data**, optional; the default order by kind is
   **code** (`RANK` in `schematic.ts`). Where a logic part floats in the world: the **save**
   (`logic[].at`), placed beside the player by the host. Where the player dragged a device's
-  plate and circuit in hack vision: the **save** (`board.vision`, offsets from the default spot).
+  core or a noun in hack vision: the **save** (`board.vision`: `device` → the core's offset from
+  its spot over the device, `device.noun` → the noun's offset from its core; world units).
 - What a click or E does to a thing: a popup beside it. Its everyday actions (`everyday`) and
   whether it is a computer you jack into (`deck`): **data**. The popup and `⌁ hack it`: **code**
   (`zone/popup.ts`, `ZoneHost.pick`); its words (`menu.*`): **data** in `engine.json`. Exits and things that come and go (the
