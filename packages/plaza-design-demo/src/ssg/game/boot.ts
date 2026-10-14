@@ -9,6 +9,8 @@
  * seconds, so a visitor without JavaScript is never stuck behind it.
  */
 
+import { resumePending } from './slots';
+
 const LINES = [
   'REGISTRY BIOS v4.2 · (c) THE REGISTRY',
   'MEMORY CHECK .......... 640K OK',
@@ -30,7 +32,8 @@ export function runBoot(): Promise<void> {
   const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   const n = visits();
   if (!el) return Promise.resolve();
-  const play = (() => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } })();
+  // `?play`, or back from a LOAD GAME reload (slots.ts): straight into the game.
+  const play = (() => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } })() || resumePending();
   if (reduced || play) { el.remove(); return Promise.resolve(); }
 
   // First visit: the whole boot. Next few: a shortened one. After that: a flicker.

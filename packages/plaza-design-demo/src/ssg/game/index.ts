@@ -10,7 +10,8 @@
  * - Phones (basic support, landscape only): the Konami code as swipes
  *   (up up down down left right left right, tap tap), on-screen buttons, and a
  *   "rotate your phone" screen in portrait.
- * - Esc leaves the game; progress stays in the browser.
+ * - Esc opens the pause menu (menu.ts): save slots, load, new game, sound, quit to the homepage.
+ *   Progress stays in the browser. LOAD GAME reloads the page and lands back in the game (slots.ts).
  * - M toggles sound anywhere.
  *
  * While the game runs, `html.game-mode` is set; the landing page's own key
@@ -22,6 +23,7 @@ import { runBoot } from './boot';
 import { Game } from './game';
 import { isSceneId } from './scenes';
 import { isCutsceneId } from './cutscenes';
+import { takeResume } from './slots';
 
 export { runBoot };
 
@@ -29,11 +31,10 @@ export { runBoot };
 export const playParam = () => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } };
 /** `?play=yard` starts in the fixer's back yard (the demo zone for the new hacking system); `?play=harbor` etc. in a scene. */
 const playZone = () => {
-  try {
-    const z = new URLSearchParams(location.search).get('play') ?? '';
-    return z === 'yard' ? 'yard' as const : isSceneId(z) || isCutsceneId(z) ? z : undefined;
-  } catch { return undefined; }
+  try { return zoneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
 };
+/** A zone id the game can start in; Downtown (and anything unknown) is undefined. */
+const zoneParam = (z: string) => (z === 'yard' ? 'yard' as const : isSceneId(z) || isCutsceneId(z) ? z : undefined);
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
@@ -49,7 +50,7 @@ function touchControls(host: HTMLElement) {
   bar.id = 'touch';
   bar.innerHTML =
     '<div class="pad"><button data-key="ArrowLeft" aria-label="Walk left">&#9664;</button><button data-key="ArrowRight" aria-label="Walk right">&#9654;</button></div>' +
-    '<div class="pad"><button data-key="Escape" aria-label="Leave" class="small">ESC</button><button data-key="/" aria-label="Terminal" class="small">&gt;_</button>' +
+    '<div class="pad"><button data-key="Escape" aria-label="Menu" class="small">ESC</button><button data-key="/" aria-label="Terminal" class="small">&gt;_</button>' +
     '<button data-key=" " aria-label="Jump">JMP</button><button data-key="e" aria-label="Talk or jack in">ACT</button></div>';
   bar.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     const key = b.dataset.key!;
@@ -101,7 +102,7 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
     opts.scene.start();
   };
 
-  const enter = () => {
+  const enter = (resumeZone?: string) => {
     entering = false;
     cta.classList.remove('is-granted');
     html.classList.add('game-mode');
@@ -113,10 +114,13 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
       setZone: (text) => { if (zone) zone.textContent = text; },
     });
     if (isTouch() && !controls) { controls = true; touchControls(windowEl); }
-    game.start(playZone());
+    game.start(resumeZone !== undefined ? zoneParam(resumeZone) : playZone());
   };
 
-  if (playParam()) enter();
+  // Back from a LOAD GAME reload: the slot's save is in place, straight into its zone.
+  const resume = takeResume();
+  if (resume !== null) enter(resume);
+  else if (playParam()) enter();
 
   const grant = () => {
     progress = 0;

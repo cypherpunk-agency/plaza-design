@@ -26,9 +26,14 @@ export interface Save {
   keyring: string[];
   /** Each zone's own progress, by zone id: `zones.yard`. Downtown keeps using the fields above. */
   zones: Record<string, ZoneSave | undefined>;
+  /** Time played in ms (the pause menu's save slots show it). Older saves: missing, counts from 0. */
+  playMs?: number;
 }
 
 export const SAVE_KEY = 'access-denied-save-v1';
+
+/** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` zone replaces it later. */
+export const START_ZONE = 'downtown';
 
 export function newSave(): Save {
   return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], freed: [], flags: {}, hints: {}, zones: {} };

@@ -36,5 +36,7 @@ export const sound = {
   granted() { [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.12, 'square', 0.04), i * 90)); },
   jump() { tone(300, 0.12, 'square', 0.03, 260); },
   open() { tone(880, 0.05, 'triangle', 0.04); },
+  /** The pause menu: the selection moves. */
+  tick() { tone(1320, 0.025, 'square', 0.02); },
   close() { tone(440, 0.05, 'triangle', 0.03); },
 };
