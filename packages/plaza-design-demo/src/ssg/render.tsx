@@ -341,23 +341,118 @@ export const demoStyles = `
       html.game-mode.touch #rotate { display: grid; }
     }
 
-    .term-chips {
-      display: none;
-      flex-wrap: wrap;
+    /* The handheld deck: the terminal on touch screens (game/terminal.ts) */
+    #term[hidden],
+    .deck-keys[hidden] { display: none; }
+
+    #term.deck {
+      top: var(--game-top, 40px);
+      max-height: none;
+      display: flex;
+      flex-direction: column;
       gap: var(--spacing-2);
-      padding-bottom: var(--spacing-2);
+      overflow: hidden;
+      padding: var(--spacing-2) var(--spacing-3);
+      border-top: 0;
     }
 
-    html.touch .term-chips { display: flex; }
+    #term.deck .term-out {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
 
-    .term-chips button {
-      padding: var(--spacing-1) var(--spacing-3);
-      border: var(--border-thin) solid var(--color-border-default);
-      background: transparent;
+    #term.deck.deck-typing .term-out { min-height: 2.6em; }
+    #term.deck.deck-typing { gap: var(--spacing-1); }
+
+    .deck-line {
+      min-height: 1.6em;
+      padding-top: var(--spacing-1);
+      border-top: var(--border-thin) solid var(--color-border-muted);
+      white-space: pre;
+      overflow-x: auto;
+      font-size: var(--text-sm);
       color: var(--color-accent-400);
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
     }
+
+    .deck-line::after {
+      content: '\\2588';
+      animation: deck-blink 1s steps(1) infinite;
+    }
+
+    @keyframes deck-blink { 50% { opacity: 0; } }
+
+    /* One row: suggestions scroll sideways, the tools stay pinned on the right */
+    .deck-chips {
+      flex-shrink: 0;
+      display: flex;
+      gap: var(--spacing-2);
+      align-items: center;
+    }
+
+    .deck-suggest {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      gap: var(--spacing-2);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .deck-tools {
+      flex-shrink: 0;
+      display: flex;
+      gap: var(--spacing-2);
+    }
+
+    .deck-line { flex-shrink: 0; }
+
+    .deck-chip,
+    .deck-key {
+      font-family: var(--font-mono);
+      background: transparent;
+      border: var(--border-thin) solid var(--color-border-default);
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .deck-chip {
+      flex-shrink: 0;
+      padding: var(--spacing-1) var(--spacing-3);
+      min-height: 28px;
+      font-size: var(--text-xs);
+      color: var(--color-accent-400);
+    }
+
+    .deck-run { color: var(--color-success); border-color: var(--color-success); }
+    .deck-close { color: var(--color-text-muted); }
+
+    .deck-keys {
+      flex-shrink: 0;
+      display: grid;
+      gap: var(--spacing-1);
+    }
+
+    .deck-row {
+      display: flex;
+      gap: var(--spacing-1);
+    }
+
+    .deck-key {
+      flex: 1;
+      min-width: 0;
+      height: clamp(22px, 6.5vh, 40px);
+      padding: 0;
+      font-size: var(--text-sm);
+      color: var(--color-text-body);
+      background: rgba(var(--color-bg-overlay-rgb), 0.6);
+    }
+
+    .deck-wide { flex: 1.6; font-size: var(--text-xs); }
+    .deck-space { flex: 4; font-size: var(--text-xs); }
+    .deck-shift.on { color: var(--color-accent-400); border-color: var(--color-accent-400); }
+    .deck-key.deck-run { color: var(--color-success); border-color: var(--color-success); }
 
     .demo-subtitle {
       font-size: clamp(12px, 1.6vw, 18px);

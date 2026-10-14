@@ -10,8 +10,8 @@ import { sound } from './audio';
 import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprites';
 import { Terminal } from './terminal';
 import {
-  banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NPCS, npcTalk, nodeCount, PLATFORMS,
-  READABLES, run, SPAWN_X, STALL, storeSave, who, type Ctx, type Save,
+  banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
+  READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
 type Target = { kind: 'talk' | 'jack' | 'read'; id: string; x: number; h: number; label: string };
@@ -69,8 +69,9 @@ export class Game {
     host.windowEl.appendChild(this.canvas);
     this.x = this.canvas.getContext('2d')!;
 
-    this.term = new Terminal(host.windowEl, host.inputHost);
+    this.term = new Terminal(host.windowEl, host.inputHost, this.touch);
     this.term.onSubmit((line) => run(this.ctx(), line));
+    this.term.onSuggest((line) => suggest(this.ctx(), line), NO_ARGS);
     this.term.onComplete((prefix) => {
       const [first, ...rest] = prefix.split(/\s+/);
       if (!rest.length) return commands(this.ctx()).filter((c) => c.startsWith(first.toLowerCase()));

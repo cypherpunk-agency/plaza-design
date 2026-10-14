@@ -196,7 +196,7 @@ export function banner(id: string, s: Save): string {
   }
 }
 
-function files(c: Ctx): Record<string, string> {
+export function files(c: Ctx): Record<string, string> {
   const s = c.save;
   switch (c.machine) {
     case null: return { 'inbox.txt': 'From: the Registry\nSubject: your identity\nBody: revoked. Have a nice day.' };
@@ -216,6 +216,34 @@ export function commands(c: Ctx): string[] {
   if (c.machine && ['till', 'box', 'relay', 'gate'].includes(c.machine)) base.push('login');
   if (c.machine === 'box' && c.save.freed.includes('0x2F') && !c.save.jump) base.push('install');
   return base;
+}
+
+/** Commands that need nothing after them: on the touch deck, one tap runs them. */
+export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'sound', 'clear', 'exit'];
+
+/**
+ * What the touch deck offers as the next word of `line`. Only what you could
+ * already know: commands you have, files a machine lists, modules you found.
+ * Users and passwords are never suggested, and neither are the hidden commands.
+ */
+export function suggest(c: Ctx, line: string): string[] {
+  const parts = line.trim() ? line.trim().split(/\s+/) : [];
+  const fresh = !line.trim() || /\s$/.test(line);
+  if (!parts.length) return commands(c);
+  const cmd = parts[0].toLowerCase();
+  if (parts.length === 1 && !fresh) return commands(c).filter((x) => x.startsWith(cmd) && x !== cmd);
+  const arg = fresh ? parts.length - 1 : parts.length - 2;
+  const partial = fresh ? '' : parts[parts.length - 1].toLowerCase();
+  const pick = (list: string[]) => list.filter((x) => x.toLowerCase().startsWith(partial) && x.toLowerCase() !== partial);
+  if (arg !== 0) return [];
+  switch (cmd) {
+    case 'cat': return pick(Object.keys(files(c)));
+    case 'install': return pick(Object.keys(files(c)).filter((f) => f.endsWith('.so')));
+    case 'man': return pick(commands(c));
+    case 'set': return pick(['handle']);
+    case 'reset': return pick(['--yes']);
+    default: return [];
+  }
 }
 
 function login(c: Ctx, user: string, pass: string) {
