@@ -3,55 +3,52 @@ name: Deploy design.cypherpunk.agency
 # Push to production → build packages/plaza-design-demo → publish to the Caddy VM at
 # /mnt/pd/data/services/static/design → live at https://design.cypherpunk.agency.
 #
-# Mirrors the Escape-Velocity static-deploy convention (business/deploy-sites.yml):
-# scp a tarball into the SA's own /tmp, extract there (no sudo), then ONE pinned
-# sudo command lands it in the served tree. The deploy user may run exactly that
-# command and nothing else.
+# Transport: .github/actions/publish-to-vm — stage the tarball in GCS (create-only, under
+# plaza-design/), then one IAP-tunnelled SSH call as the forced-command, non-root VM user
+# `deploy-plaza`: `publish design <object>`. The VM pulls, extracts, re-checks and copies;
+# CI never extracts or sudos on the VM.
 #
-# ONE DEVIATION from the EV workflows, deliberate: the privileged step is
-#   sudo /usr/bin/rsync -a --delete /tmp/plaza-design-deploy/ /mnt/pd/data/services/static/design/
-# not `cp -rT`. Vite content-hashes every asset filename, so an overlay copy would
-# leave every previous build's JS/CSS/woff2 in place forever (~1.4 MB per deploy,
-# never reclaimed). rsync --delete keeps the served tree an exact mirror of dist/.
-# The sudoers pin is glob-free with both paths fixed, so it can only ever write or
-# delete inside /mnt/pd/data/services/static/design.
+# `design` is an exact mirror (rsync --delete into static/design), not an overlay: Vite
+# content-hashes every asset filename, so an overlay would keep every previous build's
+# JS/CSS/woff2 forever. Because --delete is destructive if handed an empty tree, the
+# build is guarded in CI (dist/index.html must exist) and again on the VM.
 #
-# Because --delete is destructive if handed an empty tree, the build is guarded
-# twice: once in CI (dist/index.html must exist) and once on the VM after extract
-# (same check) — the deploy aborts before the rsync rather than emptying the site.
-#
-# OPS PREREQS (already done on the server-setup side, 2026-08-05):
+# OPS PREREQS (server-setup side):
 #   - Caddy block `design.cypherpunk.agency` → root /static/design, try_files SPA
 #     fallback, @assets immutable / @nonassets no-cache. Explicit block required:
 #     cypherpunk.agency has NO wildcard, so without it the host gets no cert.
-#   - DNS: existing wildcard *.cypherpunk.agency A → 34.156.178.10 (easyname).
-#   - Root-precreated /mnt/pd/data/services/static/design/.
-#   - sudoers pin above in /etc/sudoers.d/deploy-escapevelocity.
-#   - Repo secrets GCP_SA_KEY + GCP_DEPLOY_SSH_KEY.
+#   - DNS: existing wildcard *.cypherpunk.agency A record (easyname).
+#   - VM user deploy-plaza + forced command; repo secret VM_DEPLOY_SSH_KEY.
 #
 # NOTE: fonts must stay self-hosted. The VM's shared CSP has no font-src (falls back
 # to default-src 'self'), so any @import from fonts.googleapis.com silently drops the
 # site to fallback monospace while still returning 200 everywhere. Verify with
 # `document.fonts.size` (must be 4), never by looking at the page — IBM Plex Mono is
 # installed locally on the author's machine and masks the bug.
+#
+# PUBLIC REPO: logs and this file are world-readable. Never use pull_request_target, never
+# echo secrets, tokens or VM addresses, never print curl's redirect_url or gcloud debug output.
 
-# Only a push to `production` publishes; GCP WIF will be pinned to refs/heads/production.
+# Only `production` publishes (push, or workflow_dispatch run on the production ref);
+# GCP WIF is pinned to refs/heads/production.
 on:
   push:
     branches: [production]
   workflow_dispatch:
 
-# Keyless auth via Workload Identity Federation (migrated 2026-09-19, deploy-standards SS2).
-# id-token: write is REQUIRED - without it the runner cannot mint the OIDC token and
-# google-github-actions/auth fails before it ever reaches GCP.
 permissions:
   contents: read
-  id-token: write
+
+concurrency:
+  group: deploy-design
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    if: github.ref == 'refs/heads/production'
+  build:
+    # No id-token here: `pnpm install` runs third-party code, and it never gets the
+    # ability to mint a GCP identity.
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
 
@@ -79,48 +76,68 @@ jobs:
           test -f "$DIST/index.html" || { echo "::error::$DIST/index.html missing — refusing to deploy"; exit 1; }
           grep -q 'src="/assets/' "$DIST/index.html" || { echo "::error::index.html does not reference /assets/ absolutely — Vite base must be '/' or deep links white-page"; exit 1; }
           ! grep -rq 'fonts.googleapis.com' "$DIST"/assets/*.css || { echo "::error::built CSS imports Google Fonts — the VM CSP blocks it; self-host the font"; exit 1; }
+          if find "$DIST" ! -type f ! -type d | grep -q .; then
+            echo "::error::dist contains non-regular files (symlinks?) — the VM refuses them"; exit 1
+          fi
           tar -czf design.tar.gz -C "$DIST" .
           ls -l design.tar.gz
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: design
+          path: |
+            design.tar.gz
+            packages/plaza-design-demo/dist/index.html
+          retention-days: 7
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://design.cypherpunk.agency/
+    # Job-level permissions replace the workflow-level block: only this job can mint
+    # the OIDC token for Workload Identity Federation.
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # Only for the local publish-to-vm action; nothing is built in this job.
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/actions
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: design
+
       # Keyless: no GCP_SA_KEY exists for this repo any more. The SA trusts ONLY
-      # attribute.repository == cypherpunk-agency/plaza-design, so a token minted by any
-      # other repo cannot impersonate it.
-      - uses: google-github-actions/auth@v3
+      # attribute.repository == cypherpunk-agency/plaza-design on refs/heads/production.
+      - name: Authenticate to GCP
+        id: auth
+        uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: projects/422633553646/locations/global/workloadIdentityPools/github/providers/github-oidc
           service_account: deploy-plaza-design@cyberphunk-agency.iam.gserviceaccount.com
+          token_format: access_token
 
       - uses: google-github-actions/setup-gcloud@v3
 
-      # Persistent deploy SSH key. Without it, `gcloud compute scp/ssh` mints a fresh
-      # ephemeral key every run and appends it to project `ssh-keys` metadata, which is
-      # hard-capped at 262144 bytes — once full, gcloud evicts keys and blocks ~4 min on
-      # propagation, so the scp silently never lands. The public half is pre-registered
-      # in project metadata; --ssh-key-file makes gcloud reuse it and never write metadata.
-      - name: Materialize deploy SSH key
-        run: |
-          mkdir -p "$HOME/.ssh"
-          printf '%s\n' "${{ secrets.GCP_DEPLOY_SSH_KEY }}" > "$HOME/.ssh/gcp_deploy"
-          chmod 600 "$HOME/.ssh/gcp_deploy"
-          ssh-keygen -y -f "$HOME/.ssh/gcp_deploy" > "$HOME/.ssh/gcp_deploy.pub"
-
-      - name: Deploy
-        run: |
-          set -euo pipefail
-          gcloud compute scp design.tar.gz \
-            web-server:/tmp/plaza-design-deploy.tar.gz \
-            --zone=europe-west1-b --tunnel-through-iap \
-            --ssh-key-file="$HOME/.ssh/gcp_deploy"
-
-          gcloud compute ssh web-server \
-            --zone=europe-west1-b --tunnel-through-iap \
-            --ssh-key-file="$HOME/.ssh/gcp_deploy" \
-            --command="set -e; rm -rf /tmp/plaza-design-deploy && mkdir -p /tmp/plaza-design-deploy && tar -xzf /tmp/plaza-design-deploy.tar.gz -C /tmp/plaza-design-deploy && test -f /tmp/plaza-design-deploy/index.html && sudo /usr/bin/rsync -a --delete /tmp/plaza-design-deploy/ /mnt/pd/data/services/static/design/ && rm -rf /tmp/plaza-design-deploy /tmp/plaza-design-deploy.tar.gz"
+      - name: Stage + publish
+        uses: ./.github/actions/publish-to-vm
+        with:
+          target: design
+          tarball: design.tar.gz
+          access-token: ${{ steps.auth.outputs.access_token }}
+          ssh-key: ${{ secrets.VM_DEPLOY_SSH_KEY }}
 
       - name: Verify live
         # A green deploy is not proof the site serves. Check the deep route (a broken
         # SPA still 200s on /), that the served shell references the hash we just built,
-        # and that the font files are reachable.
+        # and that the asset is reachable.
         run: |
           set -euo pipefail
           sleep 5

@@ -4,17 +4,14 @@ name: Deploy cypherpunk.agency homepage
 # → dist-homepage/) → publish to the Caddy VM at /mnt/pd/data/services/static/cypherpunk-agency
 # → live at https://cypherpunk.agency (apex + www).
 #
-# Transport follows the current static-deploy standard (same as orbis):
-#   1. the runner uploads the tarball to the GCS staging bucket with a raw media upload
-#      (the deploy SA may create objects there but not list, read or overwrite them);
-#   2. one IAP-tunnelled SSH call as the dedicated, non-root VM user `deploy-plaza`, whose
-#      key is forced to a single `publish` command. The VM pulls the object, extracts it,
-#      re-runs the guards and does the privileged copy itself; CI never extracts or sudos.
+# Transport: .github/actions/publish-to-vm — stage the tarball in GCS (create-only, under
+# plaza-design/), then one IAP-tunnelled SSH call as the forced-command, non-root VM user
+# `deploy-plaza`: `publish apex <object>`. The VM pulls, extracts, re-checks (index.html,
+# title, non-empty og-image.png) and copies; CI never extracts or sudos on the VM.
 #
-# The VM-side copy is an OVERLAY, on purpose:
-#   sudo /bin/cp -rT /tmp/cypherpunk-agency-deploy /mnt/pd/data/services/static/cypherpunk-agency
-# The served dir also holds /good-friday/, which is not in this repo and must survive.
-# Filenames are stable (no content hashes), so the overlay never accumulates stale builds.
+# `apex` is an OVERLAY on purpose: the served dir also holds /good-friday/, which is not in
+# this repo and must survive. Filenames are stable (no content hashes), so the overlay
+# never accumulates stale builds.
 #
 # The VM's shared CSP is `default-src 'self'` with no font-src: everything the page loads
 # must be same-origin. Fonts ship as files under /fonts/ (data: URIs are blocked too).
@@ -22,8 +19,8 @@ name: Deploy cypherpunk.agency homepage
 # PUBLIC REPO: logs and this file are world-readable. Never use pull_request_target, never
 # echo secrets, tokens or VM addresses, never print curl's redirect_url or gcloud debug output.
 
-# Only a push to `production` publishes. `main` runs the build + guards as a check and
-# stops there. The deploy job's `if` is one gate; the WIF provider on the infra side only
+# Only `production` publishes (push, or workflow_dispatch run on the production ref).
+# `main` runs the build + guards as a check and stops there. The deploy job's `if` is one gate; the WIF provider on the infra side only
 # admits refs/heads/production, so an edited copy of this file on another branch cannot
 # obtain the deploy identity either.
 on:
@@ -83,15 +80,18 @@ jobs:
           for f in $(grep -o 'url("\./fonts/[^"]*")' "$OUT/index.html" | sed 's/url("\.\///; s/")$//' | sort -u); do
             test -s "$OUT/$f" || { echo "::error::$f referenced but not built"; exit 1; }
           done
-          tar -czf homepage.tgz -C "$OUT" .
-          tar -tzf homepage.tgz
-          ls -l homepage.tgz
+          if find "$OUT" ! -type f ! -type d | grep -q .; then
+            echo "::error::payload contains non-regular files (symlinks?) — the VM refuses them"; exit 1
+          fi
+          tar -czf homepage.tar.gz -C "$OUT" .
+          tar -tzf homepage.tar.gz
+          ls -l homepage.tar.gz
 
       - uses: actions/upload-artifact@v4
         with:
           name: homepage
           path: |
-            homepage.tgz
+            homepage.tar.gz
             packages/plaza-design-demo/dist-homepage/
           retention-days: 7
           if-no-files-found: error
@@ -110,9 +110,13 @@ jobs:
       contents: read
       id-token: write
     env:
-      BUCKET: cyberphunk-agency-deploy-staging
       SITE_URL: https://cypherpunk.agency
     steps:
+      # Only for the local publish-to-vm action; nothing is built in this job.
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/actions
+
       - uses: actions/download-artifact@v4
         with:
           name: homepage
@@ -129,30 +133,13 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v3
 
-      - name: Stage the tarball in GCS
-        # Raw media upload: the deploy SA can create objects but not list, read or
-        # overwrite them, which rules out `gcloud storage cp`. A re-run cannot overwrite
-        # either, hence the run attempt in the object name.
-        env:
-          TOKEN: ${{ steps.auth.outputs.access_token }}
-        run: |
-          set -euo pipefail
-          object="cypherpunk-agency/${GITHUB_SHA}-${GITHUB_RUN_ATTEMPT}.tgz"
-          curl -fsS -X POST \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/gzip" \
-            --data-binary @homepage.tgz \
-            "https://storage.googleapis.com/upload/storage/v1/b/${BUCKET}/o?uploadType=media&name=${object//\//%2F}" \
-            -o /dev/null
-          echo "OBJECT=$object" >> "$GITHUB_ENV"
-
-      - name: Publish on the VM
-        # PENDING: the deploy-plaza forced-command contract (secret name, `publish apex
-        # <object>` interface) is being finalised on the infra side. Until it is wired in,
-        # this step fails so nothing can half-deploy.
-        run: |
-          echo "::error::VM publish step not wired yet (awaiting deploy-plaza contract)"
-          exit 1
+      - name: Stage + publish
+        uses: ./.github/actions/publish-to-vm
+        with:
+          target: apex
+          tarball: homepage.tar.gz
+          access-token: ${{ steps.auth.outputs.access_token }}
+          ssh-key: ${{ secrets.VM_DEPLOY_SSH_KEY }}
 
       - name: Verify live
         # A green publish only says bytes moved. Check that apex and www serve exactly this
