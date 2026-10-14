@@ -97,10 +97,35 @@ those colours mean "this is for you".
 - At least 7 px at scale 1, short, uppercase for signs, IBM Plex Mono.
 - One message per sign. Puns and jokes are welcome, but on real surfaces.
 
-## 10. Before you call a scene done
+## 10. A place is alive (Tommi, 2026-10-15)
+
+Empty scenes read as unfinished. "A bunch of boxes and text labels" is the failure mode.
+
+- **People, real ones.** Every public place has people who belong there, each a distinct
+  character: a different sprite, colour, pose and job (vendor, guard, kid, courier, drunk,
+  tourist, maintenance drone). No identical silhouettes, no faceless ghosts, no person
+  pasted into every window. At least a few move or do something (haggle, sweep, smoke, argue).
+- **Some of them talk.** Several people per scene have a line or two, and one has something
+  that matters (a rumour, a clue, a favour).
+- **The place behaves like what it is.** A mall sells things and has shops you can enter or
+  use; a market haggles; a shop has a shopkeeper and a till; a bar serves drinks. Give each
+  place at least one thing to *do* that fits it, not only things to read.
+- **Variety over repetition.** No row of identical stalls or boxes. Every repeated element gets
+  variants (size, colour, damage, what is on it, who stands at it).
+- **Screens and signs build the world.** Displays everywhere: ads, Registry notices, credit
+  scores, surveillance feeds, departure boards, propaganda, tickers, "SMILE, YOU ARE VERIFIED".
+  Let them move (scroll, flicker, cycle). Signs say something about how the city works.
+- **Dystopia in the details.** Cameras on poles, ID scanners at doors, a drone checking
+  someone's papers, a queue for water, ads that address you by name, a broken thing nobody fixes.
+- **The city is always there.** Wherever a window or opening exists, the skyline shows
+  through it. Places connect: you should see where you are in the city.
+- **One surprising detail per scene**, something you smile at when you notice it.
+
+## 11. Before you call a scene done
 
 - [ ] Squint, silhouette and phone tests pass.
 - [ ] Every sign and text is mounted on something visible.
 - [ ] The player knows where the exits are and what can be used.
 - [ ] Colours follow their jobs.
 - [ ] Back bands are calmer than the play band.
+- [ ] Section 10: people with variety, something to do that fits the place, live screens, a dystopian detail, a surprise.

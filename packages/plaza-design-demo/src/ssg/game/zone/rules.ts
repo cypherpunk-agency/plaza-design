@@ -9,7 +9,7 @@
 import { ENGINE } from '../data';
 import type { CodeContract } from '../data/check';
 import type { Value, ZoneData } from '../data/types';
-import type { Ctx, Line, ZoneModel } from './model';
+import type { Ctx, Line, Spot, ZoneModel } from './model';
 
 export type Vars = Record<string, string | number>;
 
@@ -49,6 +49,11 @@ export interface ZoneRules {
    * only when something visible changed.
    */
   tick?: (w: World, dt: number) => void;
+  /**
+   * Devices that move in the world (a delivery robot driving off): where one stands now, given
+   * its home from `layout.spot`; null while it is out of the world. Read every frame, so keep it cheap.
+   */
+  place?: (m: ZoneModel, home: Spot) => Spot | null;
 }
 
 /** The engine's own texts, by kind: every zone has them (engine.json), and may override them with the same kind. */

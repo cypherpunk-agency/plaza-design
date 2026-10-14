@@ -109,7 +109,6 @@ export class Menu {
     else if (e.repeat) return;
     else if (k === 'Enter' || k === ' ' || k === 'e' || k === 'E') this.activate();
     else if (k === 'Escape') this.escape();
-    else if (k === 'm' || k === 'M') this.toggleSound();
   }
 
   // ---------- screens ----------

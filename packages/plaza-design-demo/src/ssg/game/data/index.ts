@@ -10,11 +10,13 @@ import type { EngineData, KeyItem, LogicData, Loose, NetData, ZoneData } from '.
 import engineJson from './engine.json';
 import logicJson from './logic.json';
 import netJson from './net.json';
+import downtownJson from './downtown.json';
 import yardJson from './yard.json';
 import capsuleJson from './capsule.json';
 
 const yard: Loose<ZoneData> = yardJson;
 const capsule: Loose<ZoneData> = capsuleJson;
+const downtown: Loose<ZoneData> = downtownJson;
 const logic: Loose<LogicData> = logicJson;
 const net: Loose<NetData> = netJson;
 const engine: Loose<EngineData> = engineJson;
@@ -25,8 +27,11 @@ export const YARD = yard as ZoneData;
 /** Capsule 7B, the player's flat: where the game starts. */
 export const CAPSULE = capsule as ZoneData;
 
+/** Downtown, the first street (and the zone the old terminal saves belong to). */
+export const DOWNTOWN = downtown as ZoneData;
+
 /** Every zone file, by zone id. A new zone is one import and one line here. */
-export const ZONE_FILES: Record<string, ZoneData> = { yard: YARD, capsule: CAPSULE };
+export const ZONE_FILES: Record<string, ZoneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN };
 
 /** The logic modules (TIMER, SWITCH), shared by every zone. Checked like a zone. */
 export const LOGIC = logic as LogicData;

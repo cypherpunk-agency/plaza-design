@@ -13,7 +13,7 @@
  *   "rotate your phone" screen in portrait.
  * - Esc opens the pause menu (menu.ts): save slots, load, new game, sound, quit to the homepage.
  *   Progress stays in the browser. LOAD GAME reloads the page and lands back in the game (slots.ts).
- * - M toggles sound anywhere.
+ * - In the game: ENTER opens the terminal, TAB or M the city map; sound is in the key bar and the menu.
  *
  * While the game runs, `html.game-mode` is set; the landing page's own key
  * shortcuts check it and stay quiet.
@@ -51,7 +51,7 @@ function touchControls(host: HTMLElement) {
   bar.id = 'touch';
   bar.innerHTML =
     '<div class="pad"><button data-key="ArrowLeft" aria-label="Walk left">&#9664;</button><button data-key="ArrowRight" aria-label="Walk right">&#9654;</button></div>' +
-    '<div class="pad"><button data-key="Escape" aria-label="Menu" class="small">ESC</button><button data-key="/" aria-label="Terminal" class="small">&gt;_</button><button data-key="Tab" aria-label="City map" class="small">MAP</button>' +
+    '<div class="pad"><button data-key="Escape" aria-label="Menu" class="small">ESC</button><button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Tab" aria-label="City map" class="small">MAP</button>' +
     '<button data-key=" " aria-label="Jump">JMP</button><button data-key="e" aria-label="Talk or jack in">ACT</button></div>';
   bar.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     const key = b.dataset.key!;

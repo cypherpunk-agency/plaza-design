@@ -25,9 +25,13 @@ import { type Line, type Spot, ZoneModel } from './model';
 import { type PanelFn, Panels } from './panels';
 import type { ZoneRules } from './rules';
 import { type Anchor, Schematic } from './schematic';
+import { ENGINE_PANEL_FNS } from './toys';
 
-/** Something to stand next to and press E on. */
-export interface ZoneTarget { id: string; x: number; label: string; promptH: number }
+/**
+ * Something to stand next to and press E on. `promptH`: how high its prompt hangs above the street;
+ * `y`: how high the thing itself sits (a box on a roof), so the game can tell where you stand to reach it.
+ */
+export interface ZoneTarget { id: string; x: number; label: string; promptH: number; y?: number }
 
 /** How the game's canvas maps world units for a zone's drawing. */
 export interface DrawView { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number; viewH: number }
@@ -64,6 +68,12 @@ export interface ZoneStore {
   keyring: () => string[];
   /** Put an item on the keyring (and write the save). */
   give: (id: string) => void;
+  /** The player now owns this logic module (and write the save). */
+  grant?: (module: string) => void;
+  /** Add noodle tokens, return the new total (and write the save). */
+  tokens?: (add: number) => number;
+  /** A made fragment left the keyring (it is already gone from `keyring()`): write the save. */
+  drop?: (id: string) => void;
   /** This zone's saved progress, if any. */
   load: () => ZoneSave | undefined;
   /** Keep this as the zone's progress (and write the save). */
@@ -74,6 +84,8 @@ export interface ZoneStore {
 const SAVE_AFTER_MS = 800;
 /** How often trace moves. */
 const TICK_MS = 250;
+/** While trace or a lockout moves, the save hears of it this often at most. */
+const HEAT_SAVE_MS = 2000;
 /** World (x along the zone, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
 /** A logic part's body floating in hack vision, in world units. */
@@ -97,6 +109,8 @@ export class ZoneHost {
   private project: Project | null = null;
   private width = 0;
   private player = { x: 0, h: 0 };
+  /** While a typed command runs (`typed`), the deck already shows it: don't print the shell line again. */
+  private echo = true;
 
   constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: ZoneStore | undefined, readonly def: ZoneDef) {
     this.model = new ZoneModel({
@@ -107,11 +121,15 @@ export class ZoneHost {
       modules: store ? () => store.modules() : undefined,
       keyring: store ? () => store.keyring() : undefined,
       give: store ? (id) => store.give(id) : undefined,
+      grant: store?.grant,
+      tokens: store?.tokens,
+      drop: store?.drop,
     }, def.data, def.rules);
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
-    this.panels = new Panels(host, this.model, (l) => this.say(l), def.view.panels);
+    // the engine's own panels (the lock toys) under the zone's
+    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.view.panels });
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
     this.vision.onPlace = (id) => { this.place(id); this.refollow(); this.dirty(); };
@@ -139,13 +157,24 @@ export class ZoneHost {
     this.saved = JSON.stringify(this.snapshot());
     this.sync();
     // trace: the meter fills while you look into a logged device, and drains when you leave
-    let last = performance.now();
+    // (the watchdog walks and clocks beat on the same tick)
+    let last = performance.now(), heat = this.heat(), wrote = 0;
     window.setInterval(() => {
       const now = performance.now();
       this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
       if (this.model.tick(now - last, !this.btns.hidden)) { this.schem.meters(); this.vision.meters(); }
       last = now;
+      // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
+      const h = this.heat();
+      if (h !== heat && now - wrote > HEAT_SAVE_MS) { heat = h; wrote = now; this.persist(); }
     }, TICK_MS);
+    window.addEventListener('pagehide', () => this.persist());
+  }
+
+  /** Trace (whole %) and running lockouts, as a string: when it changes, the save should hear of it. */
+  private heat() {
+    const m = this.model;
+    return [...m.trace].map(([k, v]) => k + Math.round(v)).join() + '|' + [...m.locks.keys()].filter((k) => m.lockLeft(k) > 0).join();
   }
 
   get id() { return this.def.data.id; }
@@ -194,7 +223,7 @@ export class ZoneHost {
   }
 
   private say(l: Line) {
-    if (l[0]) this.print('> ' + l[0], 'in');
+    if (l[0] && this.echo) this.print('> ' + l[0], 'in');
     if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out');
     this.schem.note(l); this.vision.note(l);
   }
@@ -208,6 +237,18 @@ export class ZoneHost {
     }
     if (this.hackBtn.classList.contains('on') !== on) { this.hackBtn.classList.toggle('on', on); this.hackBtn.setAttribute('aria-pressed', String(on)); }
   }
+
+  /**
+   * Run something the player typed in the deck (the terminal, last resort): the engine's lines
+   * print as usual, minus the shell command the player just typed themselves.
+   */
+  typed(fn: () => void) {
+    this.echo = false;
+    try { fn(); } finally { this.echo = true; }
+  }
+
+  /** The device whose schematic is open (not the board, not hack vision), if any. */
+  get viewing() { return this.schem.viewing; }
 
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
@@ -239,7 +280,7 @@ export class ZoneHost {
       if (c.x + sw / 2 < 0 || c.x - sw / 2 > width) return;
       seen.set(id, { x: c.x, y: c.y, w: sw, h: sh });
     };
-    m.spots().forEach((s) => add(s.id, s.x, 0, s.w, s.h));
+    m.spots().forEach((s) => add(s.id, s.x, s.y, s.w, s.h));
     if (this.vision.isOpen) {
       // a part placed on the board has no spot in the world yet: it turns up next to you
       [...m.devices.values()].filter((d) => d.logic && !m.logicAt.has(d.id)).forEach((d) => { this.place(d.id); this.dirty(); });
@@ -298,7 +339,7 @@ export class ZoneHost {
   /** Things you can stand next to and press E on: the zone's own (an exit), then every device in the world. */
   targets(): ZoneTarget[] {
     const m = this.model, own = this.def.view.targets?.(m) ?? [];
-    const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, label: m.label('prompt.open'), promptH: Math.min(s.h + 12, 100) }));
+    const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, y: s.y, label: m.label('prompt.open'), promptH: s.y + Math.min(s.h + 12, 100) }));
     return [...own, ...devs];
   }
 
@@ -310,7 +351,7 @@ export class ZoneHost {
 
   /** The device in the world under a point (world x, height), smaller things first. */
   spotAt(wx: number, h: number) {
-    const hit = this.model.spots().filter((s) => Math.abs(wx - s.x) <= s.w / 2 + 3 && h >= -4 && h <= s.h + 4);
+    const hit = this.model.spots().filter((s) => Math.abs(wx - s.x) <= s.w / 2 + 3 && h >= s.y - 4 && h <= s.y + s.h + 4);
     // a big frame (the crane) must not hide the smaller things standing in front of it
     hit.sort((a, b) => a.w - b.w);
     return hit[0]?.id ?? null;

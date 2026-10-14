@@ -1,10 +1,12 @@
 /**
  * ACCESS DENIED, the engine: input, movement, camera and drawing for the
- * side-scrolling street. What things say and unlock lives in level.ts; the
- * fixer's back yard (the new hacking system: schematics of nouns and verbs)
- * lives in yard/, the player's flat (Capsule 7B, where a new game starts) in
- * capsule/, both on the zone engine in zone/. Pixel the robot cat, who
- * follows you around once you leave the flat, is companion.ts.
+ * side-scrolling street. What people say, the fixer and the terminal live in
+ * level.ts. Downtown's machines (downtown/) and the fixer's back yard (yard/)
+ * and the player's flat (capsule/, where a new game starts)
+ * are zones on the hacking system (schematics of nouns and verbs, the zone
+ * engine in zone/): this file hosts them, draws the street around them and
+ * hands them taps, E, H (hack vision) and B (the board).
+ * Pixel the robot cat, who follows you once you leave the flat, is companion.ts.
  *
  * The canvas fills the landing page's window between its header and footer and
  * is drawn at an integer pixel scale so the sprites stay crisp.
@@ -12,10 +14,11 @@
 
 import { sound } from './audio';
 import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprites';
-import { Terminal } from './terminal';
+import { type LineKind, Terminal } from './terminal';
 import { YARD_SPAWN, YARD_W, YARD_ZONE } from './yard';
 import { CAPSULE_SPAWN, CAPSULE_W, CAPSULE_ZONE, capsulePerch, DOOR_X as CAPSULE_DOOR_X } from './capsule';
 import { Companion, WARM } from './companion';
+import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, zoneShell } from './downtown';
 import { type ZoneDef, ZoneHost } from './zone';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
@@ -30,11 +33,11 @@ import { KeyBar } from './keybar';
 import { levels, SUDO, unlockAll } from './sudo';
 import { Menu } from './menu';
 import {
-  banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
+  commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
   newSave, ownedModules, READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
-type Target = { kind: 'talk' | 'jack' | 'read' | 'door' | 'zone' | 'scene'; id: string; x: number; h: number; label: string; promptH?: number };
+type Target = { kind: 'talk' | 'zone' | 'read' | 'door' | 'map' | 'scene'; id: string; x: number; h: number; label: string; promptH?: number };
 /** Downtown's doors, stairs and pad as targets (the market gate's door only once the gate is open). */
 const DOOR_TARGETS: { id: DoorId; label: string; promptH: number }[] = [
   { id: 'market', label: '[E] NEON MARKET', promptH: 120 },
@@ -44,7 +47,8 @@ const DOOR_TARGETS: { id: DoorId; label: string; promptH: number }[] = [
   { id: 'metro', label: '[E] METRO', promptH: 106 },
   { id: 'taxi', label: '[E] HAIL TAXI', promptH: 122 },
 ];
-interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number }
+/** A speech bubble; `then` runs once its last page is read (the fixer's question opens the deck). */
+interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number; then?: () => void }
 interface Ship { sprite: Sprite; ps: number; y: number; speed: number; offset: number; flip: boolean; depth: number }
 
 const O = '255,136,0', C = '0,255,255';
@@ -81,7 +85,6 @@ export class Game {
   private keys = new Set<string>();
   private p = { x: SPAWN_X, y: 0, vy: 0, face: 1, onGround: true, moving: false };
   private bubble: Bubble | null = null;
-  private machine: string | null = null;
   private showEnd = false;
   private toast: { text: string; until: number } | null = null;
   private touch = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
@@ -98,6 +101,8 @@ export class Game {
   /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
   private pixel = new Companion();
   private started = false;
+  /** Downtown's machines, on the zone engine (downtown/). Its progress is mostly the save's own fields. */
+  private downtown: ZoneHost;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
   /** The city map overlay, when open: just looking (TAB, the line map in the train), or picking a taxi stand. */
@@ -121,12 +126,22 @@ export class Game {
       if (!rest.length) return commands(this.ctx()).filter((c) => c.startsWith(first.toLowerCase()));
       return [];
     });
-    this.term.onClose = () => { if (this.machine) this.leaveMachine(); this.canvas.focus(); };
+    this.term.onClose = () => this.canvas.focus();
 
     this.yard = this.hostZone(YARD_ZONE);
     this.yard.onClose = () => this.canvas.focus();
     this.capsule = this.hostZone(CAPSULE_ZONE);
     this.capsule.onClose = () => this.canvas.focus();
+    this.downtown = this.hostZone(downtownZone({
+      save: () => this.save,
+      persist: () => this.persist(),
+      nodes: () => nodeCount(this.save),
+      granted: () => sound.granted(),
+      end: () => { this.showEnd = true; },
+    }), (text, kind) => this.zonePrint(text, kind));
+    this.downtown.onClose = () => this.canvas.focus();
+    // older saves kept Downtown in their own fields: the zone agrees with them (nothing is lost)
+    reconcile(this.downtown.model, this.save);
     this.keyBar = new KeyBar(host.windowEl, () => this.canvas.focus());
     // each zone host has its own HACK/BOARD strip; only the current zone's shows
     host.windowEl.querySelectorAll<HTMLElement>('#zone-btns').forEach((el) => this.keyBar.adopt(el));
@@ -156,20 +171,37 @@ export class Game {
   }
 
   /** A zone on the hacking system, with its part of the save (`save.zones.<id>`) and the player's modules and keyring. */
-  private hostZone(def: ZoneDef) {
+  private hostZone(def: ZoneDef, print: (text: string, kind?: LineKind) => void = (text, kind) => this.term.print(text, kind)) {
     const id = def.data.id;
-    return new ZoneHost(this.host.windowEl, (text, kind) => this.term.print(text, kind), {
+    return new ZoneHost(this.host.windowEl, print, {
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
+      // zone steps that hand out modules and tokens (GAME-DATA.md, "Giving things")
+      grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); storeSave(this.save); this.syncHud(); },
+      tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
+      drop: () => storeSave(this.save),
       load: () => this.save.zones[id],
       store: (z) => { this.save.zones[id] = z; storeSave(this.save); },
     }, def);
   }
 
-  /** The zone on the hacking system the player is in (the yard, the flat), if any. */
-  private get zoneHost(): ZoneHost | null { return this.zone === 'yard' ? this.yard : this.zone === 'capsule' ? this.capsule : null; }
-  private get zoneHosts() { return [this.yard, this.capsule]; }
+  /** Downtown's lines in the deck: ACCESS DENIED and friends buzz, as the old terminal did. */
+  private zonePrint(text: string, kind?: LineKind) {
+    this.term.print(text, kind);
+    if (kind === 'err') sound.denied();
+  }
+
+  /** The zone on the hacking system the player is in (Downtown, the yard, the flat), if any. */
+  private get zoneHost(): ZoneHost | null { return this.zone === 'yard' ? this.yard : this.zone === 'capsule' ? this.capsule : this.zone === 'downtown' && !this.scene ? this.downtown : null; }
+  private get zoneHosts() { return [this.yard, this.capsule, this.downtown]; }
+
+  /** Write the save, refresh the HUD and Downtown's goals (they follow the save's fields). */
+  private persist() {
+    storeSave(this.save);
+    this.syncHud();
+    syncGoals(this.downtown.model, this.save);
+  }
 
   // ---------- lifecycle ----------
 
@@ -195,18 +227,32 @@ export class Game {
     }
     if ((zone === 'yard' || zone === 'capsule') && this.zone !== zone) this.goTo(zone, true);
     else if (zone && isSceneId(zone) && this.zone !== zone) this.enterScene(zone, true);
+    this.showZones();
     this.markSeen(this.zone);
     this.greet();
   }
 
-  /** First time in Downtown: the player says where they are. */
+  /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
   private greet() {
-    if (this.zone === 'downtown' && !this.save.flags.arrived) {
-      this.save.flags.arrived = true;
-      const pages = ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.'];
+    if (this.zone !== 'downtown') return;
+    const how = this.touch
+      ? 'Every machine here has a schematic: tap it. HACK, top right, shows them all.'
+      : 'Every machine here has a schematic: E or a tap opens it. H shows them all, B is the board.';
+    if (!this.save.flags.arrived) {
+      this.save.flags.arrived = true; this.save.flags.schematics = true;
+      const pages = ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.', how];
       if (this.save.flags.pixel) pages.splice(1, 0, 'Pixel came along. Nobody asked Pixel. Nobody ever does.');
       this.say('YOU', pages, this.p.x, 46);
+    } else if (!this.save.flags.schematics) {
+      this.save.flags.schematics = true;
+      this.say('YOU', ['My deck sees this street differently now.', how], this.p.x, 46);
     }
+  }
+
+  /** The HACK and BOARD buttons belong to the zone you are in. */
+  private showZones() {
+    const here = this.zoneHost;
+    this.zoneHosts.forEach((h) => h.show(h === here));
   }
 
   stop() {
@@ -265,7 +311,7 @@ export class Game {
     if (this.cut) { e.preventDefault(); if (!e.repeat) this.cut.skip(); return; }
     if (this.menu.open) { if (!this.term.focused) this.menu.key(e); return; }
     if (this.term.focused) return;
-    if (this.flight) { if (e.key !== 'm' && e.key !== 'M') e.preventDefault(); return; }
+    if (this.flight) { e.preventDefault(); return; }
     if (this.mapView) { this.mapKey(e); return; }
     const zh = this.zoneHost;
     if (zh && zh.overlayOpen) {
@@ -289,13 +335,13 @@ export class Game {
       this.openMenu();
       return;
     }
-    if (k === '/') { e.preventDefault(); this.openDeck(); return; }
+    // Enter opens the deck (the terminal)
+    if (k === 'Enter') { e.preventDefault(); this.openDeck(); return; }
     // the deck's map app: the city as far as you know it
-    if (k === 'Tab') { e.preventDefault(); this.showMap(); return; }
+    if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.showMap(); return; }
     if (zh && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
     if (zh && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
-    if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
-    if (k === 'e' || k === 'E' || k === 'Enter') { this.interact(); return; }
+    if (k === 'e' || k === 'E') { this.interact(); return; }
     // walking up into an open train door (or out of one) is the same as E there
     if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.walkThroughDoor()) return;
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
@@ -309,10 +355,19 @@ export class Game {
   }
 
   private openDeck() {
-    if (!this.machine) {
-      if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
-    }
+    if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
+    const at = this.termMachine();
+    if (at) this.term.print('[' + (this.zoneHost?.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
     this.term.focus();
+  }
+
+  /** The machine the deck talks to: the zone device whose schematic is open, else the one you stand at. */
+  private termMachine(): string | null {
+    const zh = this.zoneHost;
+    if (!zh || this.scene) return null;
+    if (zh.viewing) return zh.viewing;
+    const t = this.nearest();
+    return t?.kind === 'zone' && zh.model.devices.has(t.id) ? t.id : null;
   }
 
   private jump() {
@@ -343,13 +398,15 @@ export class Game {
 
   /** NEW GAME (confirmed in the menu): a fresh save, slots untouched, the intro, then the start zone. */
   private newGame() {
-    this.leaveMachine();
+    this.term.close();
     this.term.clear();
     this.bubble = null;
     this.showEnd = false;
     this.toast = null;
     this.save = SUDO ? unlockAll(newSave()) : newSave();
-    this.yard.reset(); // the yard's runtime back to a first visit, written into the new save
+    // every zone's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
+    this.zoneHosts.forEach((h) => h.reset());
+    reconcile(this.downtown.model, this.save);
     storeSave(this.save);
     this.syncHud();
     this.playCutscene('intro', () => this.handTo(START_ZONE));
@@ -369,10 +426,10 @@ export class Game {
    */
   private goTo(zone: 'downtown' | 'yard' | 'capsule', quiet = false, at?: string) {
     this.zoneHost?.persist();
-    this.zoneHosts.forEach((h) => { h.closeAll(); h.show(false); });
+    this.zoneHosts.forEach((h) => h.closeAll());
     this.bubble = null;
     this.zone = zone;
-    this.zoneHost?.show(true);
+    this.showZones();
     this.markSeen(zone);
     const x = zone === 'yard' ? YARD_SPAWN : zone === 'capsule' ? (at === 'downtown' ? CAPSULE_DOOR_X + 20 : CAPSULE_SPAWN) : at && isDoorId(at) ? DOORS[at] : YARD_DOOR_X;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: zone === 'capsule' ? (at === 'downtown' ? 1 : -1) : this.p.face });
@@ -411,13 +468,13 @@ export class Game {
     }
   }
 
-  /** In a zone (the yard, the flat), tap or click a thing to open its schematic (in hack vision: its verbs); hovering lights it up. */
+  /** In a zone (Downtown, the yard, the flat), tap or click a thing to open its schematic (in hack vision: its verbs); hovering lights it up. */
   private onCanvasPointer(e: PointerEvent, press: boolean) {
     if (this.cut) { if (press) { e.preventDefault(); this.cut.skip(); } return; }
     // a click or tap moves a speech bubble on, the same as E
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
     const zh = this.zoneHost;
-    if (!zh || zh.overlayOpen) return;
+    if (!zh || zh.overlayOpen || this.mapView || this.flight) return;
     const r = this.canvas.getBoundingClientRect();
     const wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
     const h = this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
@@ -437,25 +494,20 @@ export class Game {
   // ---------- world logic ----------
 
   private ctx(): Ctx {
+    const zh = this.zoneHost;
     return {
       save: this.save,
-      machine: this.machine,
+      machine: this.termMachine(),
+      shell: zh ? zoneShell(zh, zh === this.downtown ? (text, kind) => this.zonePrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
       print: (text, kind) => this.term.print(text, kind),
       denied: () => sound.denied(),
       granted: () => sound.granted(),
       toggleSound: () => sound.toggle(),
       clear: () => this.term.clear(),
-      leaveMachine: () => this.leaveMachine(),
-      persist: () => { storeSave(this.save); this.syncHud(); },
-      complete: () => { this.showEnd = true; },
+      leaveMachine: () => this.term.close(),
+      persist: () => this.persist(),
       resetYard: () => this.yard.reset(),
     };
-  }
-
-  private leaveMachine() {
-    if (this.machine) { this.term.print('[unplugged]', 'dim'); sound.close(); }
-    this.machine = null;
-    this.term.close();
   }
 
   private syncHud() {
@@ -465,14 +517,18 @@ export class Game {
 
   private targets(): Target[] {
     if (this.scene) return this.sceneTargets(this.scene);
-    const zh = this.zoneHost;
-    if (zh) return zh.targets().map((t) => ({ kind: 'zone' as const, id: t.id, x: t.x, h: 0, label: t.label, promptH: t.promptH }));
+    // a zone's things: you reach each from the street, or from the ledge under it (the relay, from the low roof)
+    const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
+    const zoneTargets = (zh: ZoneHost) => zh.targets().map((t) => ({ kind: 'zone' as const, id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH }));
+    if (this.zone === 'yard') return zoneTargets(this.yard);
+    if (this.zone === 'capsule') return zoneTargets(this.capsule);
     const list: Target[] = [], gateOpen = !!this.save.flags.end;
     for (const d of DOOR_TARGETS) if (d.id !== 'market' || gateOpen) list.push({ kind: 'door', id: d.id, x: DOORS[d.id], h: 0, label: d.label, promptH: d.promptH });
     NPCS.forEach((n) => list.push({ kind: 'talk', id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
     list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' });
+    list.push({ kind: 'map', id: 'map', x: MAP_KIOSK_X, h: 0, label: '[E] CITY MAP', promptH: 92 });
     // Once Downtown is cleared the gate stands open: the market's door takes the gate's place.
-    MACHINES.forEach((m) => { if (m.id !== 'gate' || !gateOpen) list.push({ kind: 'jack', id: m.id, x: m.x, h: m.onRoof ? m.h : 0, label: '[E] JACK IN' }); });
+    list.push(...zoneTargets(this.downtown).filter((t) => t.id !== 'gate' || !gateOpen));
     READABLES.forEach((r) => list.push({ kind: 'read', id: r.id, x: r.x, h: r.h, label: '[E] READ' }));
     return list;
   }
@@ -498,6 +554,7 @@ export class Game {
       if (b.chars < full) { b.chars = full; return; }
       if (b.page < b.pages.length - 1) { b.page++; b.chars = 0; return; }
       this.bubble = null;
+      b.then?.();
       return;
     }
     const target = this.nearest();
@@ -505,11 +562,14 @@ export class Game {
     if (target.kind === 'scene') { this.useScene(target.id); return; }
     if (target.kind === 'zone') { if (this.zoneHost?.use(target.id) === 'exit') this.leaveZone(); return; }
     if (target.kind === 'door') { this.useDoor(target.id as DoorId); return; }
+    if (target.kind === 'map') { sound.open(); this.showMap(); return; }
     if (target.kind === 'talk') {
       if (target.id === 'fixer') {
         const talk = fixerTalk(this.save);
-        storeSave(this.save);
+        this.persist();
         this.say('FIXER', talk.pages, STALL.fixerX, 30);
+        // "Got a name, ghost?": the deck opens with the question half typed (the keyboard is right here)
+        if (talk.ask && this.bubble) { const ask = talk.ask; this.bubble.then = () => this.term.prefill(ask); }
       } else {
         const npc = NPCS.find((n) => n.id === target.id)!;
         this.say(npc.id === 'hood' ? 'HOODED STRANGER' : npc.id === 'umbrella' ? 'UMBRELLA' : 'MAN IN A HAT', npcTalk(npc.id, this.save), npc.x, 48);
@@ -517,13 +577,6 @@ export class Game {
     } else if (target.kind === 'read') {
       const r = READABLES.find((z) => z.id === target.id)!;
       this.say('SIGN', r.pages, r.x, 70);
-    } else {
-      this.machine = target.id;
-      this.p.face = 1;
-      sound.open();
-      this.term.print(banner(target.id, this.save), 'head');
-      this.term.print('type help · exit to unplug', 'dim');
-      this.term.focus();
     }
   }
 
@@ -535,7 +588,7 @@ export class Game {
       if (Math.floor(b.chars) !== before && Math.floor(b.chars) % 2 === 0) sound.blip();
     }
     this.updateTravel(dt);
-    const locked = !!this.machine || this.showEnd || this.term.focused || !!this.zoneHost?.overlayOpen || !!this.mapView || !!this.flight;
+    const locked = this.showEnd || this.term.focused || !!this.zoneHost?.overlayOpen || !!this.mapView || !!this.flight;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
@@ -598,7 +651,8 @@ export class Game {
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
     if (this.scene) { this.drawScene(this.scene, rain); this.drawMap(); return; }
 
-    const vision = this.zone === 'yard' && this.yard.visionOn;
+    // hack vision, on any zone: the world goes muted, what you can use (and you) stays bright
+    const vision = !!this.zoneHost?.visionOn;
     if (this.zone === 'yard') {
       // Boxed in by the backs of houses: no city behind the yard, it draws its own walls.
       this.drawStreet(rain);
@@ -607,7 +661,7 @@ export class Game {
       if (vision) { this.yard.draw(x, v, 'world'); this.drawRain(rain); this.mute(); this.yard.draw(x, v, 'devices'); }
       else this.yard.draw(x, v);
     } else if (this.zone === 'capsule') {
-      // Indoors: the flat draws everything, the tower around it included (no muted hack-vision layers yet).
+      // Indoors: the flat draws everything, the tower around it included.
       this.capsule.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
     } else {
       this.drawSky();
@@ -617,9 +671,11 @@ export class Game {
       this.drawSkyline(0.45, 19, 50, 120, 0.3, 0.18);
       this.drawFronts();
       this.drawStreet(rain);
-      this.drawMachines();
+      this.downtown.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
       this.drawStands();
     }
+    // zones that draw in one pass (the flat, Downtown): mute round their devices' frames
+    if (vision && this.zone !== 'yard') { if (this.zone !== 'capsule') this.drawRain(rain); this.mute(this.zoneHost!.model.spots()); }
     this.drawPeople();
     if (this.zone !== 'capsule' && !vision) this.drawRain(rain);
     this.drawPrompt();
@@ -740,9 +796,7 @@ export class Game {
     x.fillStyle = 'rgba(0,60,60,.7)'; x.fillRect(tx - 6, this.y(240), 12, 1);
     this.plate(tx, this.y(196), 56, 12, O);
     this.neon('PENTHOUSE', tx, this.y(196), O, { size: 8, phase: 40 });
-    // Signs, each on a plate bolted to the wall.
-    this.plate(this.sx(372), this.y(114), 20, 90, C);
-    this.neon('VERIFY', this.sx(372), this.y(150), C, { vertical: true, dead: 1, size: 12 });
+    // Signs, each on a plate bolted to the wall. (The VERIFY sign over the junction box is a device: downtown/scene.ts.)
     this.plate(this.sx(90), this.y(100), 96, 15, C);
     this.neon('< NEON MARKET', this.sx(90), this.y(100), C, { size: 10, phase: 120 });
     this.plate(this.sx(1770), this.y(110), 82, 15, O);
@@ -1048,66 +1102,20 @@ export class Game {
     }
   }
 
-  private drawMachines() {
-    const x = this.x, t = this.t, s = this.save;
-    const leds = (sx: number, sy: number, n: number, ok: boolean) => {
-      for (let i = 0; i < n; i++) { x.fillStyle = (t + i * 13) % 50 < 25 ? (ok ? 'rgba(34,197,94,.95)' : 'rgba(255,42,68,.95)') : 'rgba(34,197,94,.18)'; x.fillRect(sx + i * 6, sy, 3, 2); }
-    };
-    for (const m of MACHINES) {
-      const sx = this.sx(m.x);
-      if (sx < -40 || sx > this.viewW + 40) continue;
-      if (m.id === 'box') {
-        x.fillStyle = '#1a1410'; x.fillRect(sx - 14, this.y(70), 28, 34); x.strokeStyle = 'rgba(255,136,0,.7)'; x.strokeRect(sx - 13.5, this.y(70) + 0.5, 27, 33);
-        leds(sx - 9, this.y(58), 4, s.freed.includes('0x2F'));
-        x.save(); x.font = '6px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,.6)'; x.fillText('0x2F', sx, this.y(62)); x.restore();
-      } else if (m.id === 'till') {
-        x.fillStyle = '#0d1a1a'; x.fillRect(sx - 9, this.y(44), 18, 12); x.strokeStyle = 'rgba(0,255,255,.6)'; x.strokeRect(sx - 8.5, this.y(44) + 0.5, 17, 11);
-        x.fillStyle = s.flags.till ? 'rgba(34,197,94,.9)' : 'rgba(0,255,255,.7)'; x.fillRect(sx - 6, this.y(41), 12, 2);
-      } else if (m.id === 'relay') {
-        x.fillStyle = '#1a1410'; x.fillRect(sx - 12, this.y(m.h + 22), 24, 22); x.strokeStyle = 'rgba(255,136,0,.7)'; x.strokeRect(sx - 11.5, this.y(m.h + 22) + 0.5, 23, 21);
-        x.beginPath(); x.moveTo(sx + 6, this.y(m.h + 22)); x.lineTo(sx + 6, this.y(m.h + 40)); x.stroke();
-        leds(sx - 8, this.y(m.h + 14), 3, s.freed.includes('0x31'));
-      } else if (m.id === 'gate') {
-        x.fillStyle = '#0c0907'; x.fillRect(sx - 40, this.y(80), 80, 80);
-        if (s.flags.end) {
-          // Open: the shutter rolled up under the lintel, the market's bulbs and stalls lit behind it.
-          x.fillStyle = 'rgba(255,170,80,.14)'; x.fillRect(sx - 38, this.y(66), 76, 66);
-          for (let k = 0; k < 9; k++) { x.fillStyle = k % 2 ? 'rgba(255,190,110,.75)' : 'rgba(255,136,0,.6)'; x.fillRect(sx - 34 + k * 8, this.y(58) + Math.round(Math.abs(k - 4) * 0.8), 2, 3); }
-          for (const [ax, aw] of [[-34, 30], [4, 30]]) {
-            for (let k = 0; k < aw; k += 6) { x.fillStyle = (k / 6) % 2 ? '#1a0a03' : 'rgba(255,136,0,.55)'; x.fillRect(sx + ax + k, this.y(34), Math.min(6, aw - k), 6); }
-            x.fillStyle = '#22120a'; x.fillRect(sx + ax, this.y(16), aw, 16); x.fillStyle = 'rgba(255,136,0,.6)'; x.fillRect(sx + ax, this.y(16), aw, 1);
-          }
-          x.fillStyle = '#1a1008'; x.fillRect(sx - 38, this.y(80), 76, 12);
-          for (let yy = 2; yy < 12; yy += 3) { x.fillStyle = 'rgba(255,136,0,.2)'; x.fillRect(sx - 38, this.y(80) + yy, 76, 1); }
-          x.strokeStyle = 'rgba(255,136,0,.6)'; x.strokeRect(sx - 39.5, this.y(80) + 0.5, 79, 79);
-          x.fillStyle = 'rgba(34,197,94,.95)'; x.fillRect(sx + 32, this.y(44), 5, 5);
-          continue;
-        }
-        x.strokeStyle = 'rgba(255,136,0,.6)'; x.strokeRect(sx - 39.5, this.y(80) + 0.5, 79, 79);
-        for (let yy = 4; yy < 80; yy += 6) { x.fillStyle = 'rgba(255,136,0,.12)'; x.fillRect(sx - 38, this.y(80) + yy, 76, 2); }
-        x.fillStyle = 'rgba(255,42,68,.9)'; x.fillRect(sx + 26, this.y(44), 6, 6);
-      } else if (m.id === 'scan') {
-        x.strokeStyle = 'rgba(255,42,68,.7)'; x.lineWidth = 2; x.strokeRect(sx - 22, this.y(84), 44, 84); x.lineWidth = 1;
-        const sy = this.y(84) + ((t * 0.8) % 80);
-        x.fillStyle = 'rgba(255,42,68,.5)'; x.fillRect(sx - 20, sy, 40, 2);
-      } else if (m.id === 'fence') {
-        x.fillStyle = 'rgba(255,210,58,.9)'; x.fillRect(sx - 18, this.y(36), 36, 14);
-        x.save(); x.font = '600 6px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = '#000'; x.fillText('NO ENTRY', sx, this.y(27)); x.restore();
-      }
-    }
-  }
-
   private drawPeople() {
     const x = this.x, p = this.p;
     if (this.zone === 'downtown') this.drawStallPeople();
     if (this.pixelHere) this.pixel.draw(x, (wx) => this.sx(wx), (h) => this.y(h), this.t);
-    const sprite = this.machine ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
-    const box = drawSprite(x, sprite, this.sx(p.x), this.y(p.y), { glow: GLOW_YOU, flip: p.face < 0 && !this.machine });
-    if (this.machine) {
-      const m = MACHINES.find((z) => z.id === this.machine)!;
-      const tx = this.sx(m.x), ty = this.y(m.id === 'box' ? 54 : m.id === 'relay' ? m.h + 12 : m.id === 'till' ? 38 : 30);
+    // jacked in: a Downtown machine's schematic is open and you stand at it, so the deck's cable runs to it
+    const open = this.zone === 'downtown' ? this.downtown.viewing : null;
+    const jack = open ? this.downtown.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
+    if (jack) p.face = jack.x >= p.x ? 1 : -1;
+    const sprite = jack ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
+    const box = drawSprite(x, sprite, this.sx(p.x), this.y(p.y), { glow: GLOW_YOU, flip: p.face < 0 });
+    if (jack) {
+      const tx = this.sx(jack.x), ty = this.y(jack.y + jack.h / 2), from = p.face > 0 ? box.x0 + box.w : box.x0;
       x.strokeStyle = 'rgba(0,255,255,.85)'; x.lineWidth = 1.5;
-      x.beginPath(); x.moveTo(box.x0 + box.w, box.y0 + 16); x.quadraticCurveTo((box.x0 + box.w + tx) / 2, box.y0 + 30, tx - 8, ty); x.stroke(); x.lineWidth = 1;
+      x.beginPath(); x.moveTo(from, box.y0 + 16); x.quadraticCurveTo((from + tx) / 2, box.y0 + 30, tx - 8 * p.face, ty); x.stroke(); x.lineWidth = 1;
     }
   }
 
@@ -1133,9 +1141,15 @@ export class Game {
    * violet wash, so the devices (drawn next, bright and framed) and the player stand out.
    * Two full-screen fills: cheap.
    */
-  private mute() {
+  /** Hack vision's muting: grey and dark over the view, with holes left bright at `keep` (device spots, world units). */
+  private mute(keep: { x: number; y: number; w: number; h: number }[] = []) {
     const x = this.x;
     x.save();
+    if (keep.length) {
+      x.beginPath(); x.rect(0, 0, this.viewW, this.viewH);
+      for (const s of keep) x.rect(this.sx(s.x - s.w / 2) - 4, this.y(s.y + s.h) - 4, s.w + 8, s.h + 8);
+      x.clip('evenodd');
+    }
     x.globalCompositeOperation = 'saturation'; x.globalAlpha = 0.85;
     x.fillStyle = '#808080'; x.fillRect(0, 0, this.viewW, this.viewH);
     x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
@@ -1169,13 +1183,13 @@ export class Game {
   }
 
   private drawPrompt() {
-    if (this.bubble || this.machine || this.showEnd || this.zoneHost?.overlayOpen || this.mapView) return;
+    if (this.bubble || this.showEnd || this.zoneHost?.overlayOpen || this.mapView) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;
     x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center';
     x.fillStyle = 'rgba(0,255,255,.95)'; x.shadowColor = 'rgba(0,255,255,.8)'; x.shadowBlur = 6;
-    const h = t.promptH ?? (t.kind === 'jack' ? (t.id === 'box' ? 78 : t.id === 'relay' ? t.h + 48 : 96) : t.kind === 'read' ? 160 : t.id === 'fixer' ? 66 : 62);
+    const h = t.promptH ?? (t.kind === 'read' ? 160 : t.id === 'fixer' ? 66 : 62);
     // kept inside the view, so a way out at a scene's very end still reads in full
     const half = x.measureText(t.label).width / 2 + 4;
     x.fillText(t.label, Math.max(half, Math.min(this.viewW - half, this.sx(t.x))), this.y(h));
@@ -1224,7 +1238,7 @@ export class Game {
     x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.placeName.replace(/^the /, '').toUpperCase(), 8, top + 10);
     x.fillStyle = 'rgba(255,217,165,.7)';
     x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : ''), 8, top + 21);
-    const zh = this.zoneHost;
+    const zh = this.scene ? null : this.zoneHost;
     if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, top + 32); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     if (this.toast && this.t < this.toast.until) {
@@ -1299,7 +1313,6 @@ export class Game {
 
   /** Sudo's LEVELS: play a cutscene (then its next zone), or arrive in a zone at its spawn. */
   private enterLevel(id: string) {
-    this.leaveMachine();
     this.bubble = null;
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
     this.handTo(id);
@@ -1332,6 +1345,7 @@ export class Game {
     this.zoneHosts.forEach((h) => { h.closeAll(); h.show(false); });
     this.bubble = null;
     this.zone = id;
+    this.showZones();
     this.markSeen(id);
     const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: x > s.width / 2 ? -1 : 1 });
@@ -1490,8 +1504,7 @@ export class Game {
     const m = this.mapView!, k = e.key;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(k)) e.preventDefault();
     if (e.repeat) return;
-    if (k === 'm' || k === 'M') { const on = sound.toggle(); this.flash('sound ' + (on ? 'on' : 'off')); return; }
-    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter' || k === 'Tab') { e.preventDefault(); this.mapView = null; sound.close(); } return; }
+    if (k === 'Escape' || m.mode === 'view') { if (k === 'Escape' || k === 'e' || k === 'E' || k === 'Enter' || k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.mapView = null; sound.close(); } return; }
     const n = m.options.length;
     if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (m.index + n - 1) % n; sound.blip(); return; }
     if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (m.index + 1) % n; sound.blip(); return; }
