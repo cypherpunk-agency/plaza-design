@@ -1022,6 +1022,8 @@ ${POPUP_STYLES}
 
     #term.deck.deck-typing .term-out { min-height: 2.6em; }
     #term.deck.deck-typing { gap: var(--spacing-1); }
+    /* the deck sets display: flex, which would beat [hidden] and cover the game */
+    #term.deck[hidden] { display: none; }
 
     .deck-line {
       min-height: 1.6em;
