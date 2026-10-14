@@ -19,14 +19,18 @@ rows of identical things, text labels instead of world, not dystopian enough.
 
 ## New scenes: Tommi's ideas
 
-**Beach and beach bar (SALT).** An artificial beach under a sun-lamp rig, behind a UV-warning
-fence; the real sea is grey and fenced off. Sunbeds rented by the minute, a robot bartender,
-a lifeguard drone, tourists, a sandcastle contest judged by an AI, a jukebox.
-*To do:* buy a drink, rent a sunbed, win the sandcastle contest.
-*Hack:* the sun is a lamp on a CLOCK; the jukebox talks to the cocktail mixer; the lifeguard
-drone's "danger" verb clears the beach.
-*Story:* Moth's status said "gone fishing (not fishing)"; Moth's boat is moored past the bar.
-*Surprise:* a sign that reads "SEA VIEW (VIEW ONLY)".
+**Beach and beach bar (SALT).** A real beach (Tommi: "an actual beach"): sand, the open sea
+with waves rolling in, a wide sky, sunset light, the city's towers far off along the shore.
+The beach bar is a shack on stilts with string lights. Around it: sunbathers, swimmers, kids,
+surfers, a volleyball game, a lifeguard tower, a robot bartender, a jukebox, gulls, a pier.
+The city's touch is in the details, not in faking the beach: a Registry drone checking
+towels, a rental kiosk that bills by the minute, ads on the lifeguard tower.
+*To do:* buy a drink, rent a sunbed, join the volleyball, swim out to the buoy.
+*Hack:* the jukebox talks to the bar's mixer; the lifeguard drone's "danger" verb clears the
+water; the pier's lights run on a CLOCK.
+*Story:* Moth's status said "gone fishing (not fishing)"; Moth's boat is moored at the end of
+the pier.
+*Surprise:* the bar's sign reads "SALT · NO LOGS, ONLY DRINKS".
 
 **Inside a dropship.** A corporate dropship in flight: jump seats, cargo nets, a red drop light,
 a hatch with a pressure interlock, the pilot behind glass. The city passes under the open hatch,
