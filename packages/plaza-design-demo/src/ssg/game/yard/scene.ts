@@ -25,7 +25,7 @@ export function spots(m: YardModel): Spot[] {
   craftedIds(m).forEach((id, i) => list.push({ id, x: craftedX(i), w: 20, h: 18 }));
   return list;
 }
-export const craftedIds = (m: YardModel) => [...m.devices.values()].filter((d) => d.crafted).map((d) => d.id);
+export const craftedIds = (m: YardModel) => [...m.devices.values()].filter((d) => d.crafted && !d.logic).map((d) => d.id);
 const craftedX = (i: number) => 482 + i * 28;
 
 export function spotAt(m: YardModel, wx: number, h: number): string | null {
