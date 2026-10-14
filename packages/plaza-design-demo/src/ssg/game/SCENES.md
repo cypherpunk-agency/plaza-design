@@ -5,6 +5,9 @@ are ART-GUIDE.md section 10, "A place is alive".
 
 ## What's wrong with the scenes we have
 
+Tone for every scene (Tommi): the world is dry, the characters have the humour. Signs and
+screens are deadpan and bureaucratic; jokes come from what people say.
+
 The same faults everywhere: no people (or faceless ghosts), nothing to do that fits the place,
 rows of identical things, text labels instead of world, not dystopian enough.
 
@@ -30,7 +33,7 @@ towels, a rental kiosk that bills by the minute, ads on the lifeguard tower.
 water; the pier's lights run on a CLOCK.
 *Story:* Moth's status said "gone fishing (not fishing)"; Moth's boat is moored at the end of
 the pier.
-*Surprise:* the bar's sign reads "SALT · NO LOGS, ONLY DRINKS".
+*Surprise:* the bartender keeps a photo of Moth behind the bottles, and has opinions about it.
 
 **Inside a dropship.** A corporate dropship in flight: jump seats, cargo nets, a red drop light,
 a hatch with a pressure interlock, the pilot behind glass. The city passes under the open hatch,
@@ -38,7 +41,7 @@ like the metro ride but from the air.
 *To do:* ride it between districts (a third way to travel, after the metro and sky taxis).
 *Hack:* stow away as cargo; the hatch interlock is a lock toy; reroute the autopilot's drop
 zone; the pilot's daemon is bored and chatty.
-*Surprise:* the in-flight safety card has a section on what to do if you're the cargo.
+*Surprise:* the pilot sings along to the autopilot's warnings.
 
 **Warehouse.** An automated fulfilment hall: shelves on rails, conveyor belts, sorting arms,
 one tired night-shift human, robot pickers with names.
@@ -46,7 +49,7 @@ one tired night-shift human, robot pickers with names.
 *Hack:* route a parcel through conveyor switches (SWITCH module); a cryptex cage; a picker robot
 you can borrow.
 *Story:* the Registry keeps confiscated evidence here: a root fragment in a locker.
-*Surprise:* a robot's employee-of-the-month photo.
+*Surprise:* the night-shift worker has named every picker robot and talks to them.
 
 **A bridge.** A long suspension bridge between districts, in rain: hover traffic, a toll gate
 with an ID scanner, people fishing off the rail, a busker, the metro crossing overhead.
@@ -61,7 +64,7 @@ with an ID scanner, people fishing off the rail, a busker, the metro crossing ov
   daemon has bedside manners. *Story:* how Moth got a deck implant, and who paid.
 - **Registry office.** Bureaucracy as a dungeon: queue machines, form-stamping arms, a Kafka
   loop of windows that send you to each other. It's the watchdog's home. Act II infiltration.
-  *Surprise:* form 7B-12's own form, on display as a work of art.
+  *Surprise:* a clerk who has worked window 9 for 31 years and has never seen window 10 open.
 - **Arcade and karaoke.** Retro cabinets that are devices, a karaoke machine that is a Morse
   lamp toy, kids gambling tokens, a high-score board you can hack (or beat honestly).
 - **Flooded server basement.** The UNDERNET's physical home: cold aisles half under water,
@@ -77,7 +80,7 @@ with an ID scanner, people fishing off the rail, a busker, the metro crossing ov
 - **Billboard catwalk.** Walking on the back of a giant ad, high above the street, the ad's
   light pouring through the gaps. *Hack:* change what the city reads.
 - **Sewer market.** The market below the market: things the street market won't sell, lit by
-  bioluminescent algae, a toll troll who wants a riddle.
+  bioluminescent algae, a toll keeper who wants a story instead of money.
 
 ## More places (Tommi, 2026-10-15)
 

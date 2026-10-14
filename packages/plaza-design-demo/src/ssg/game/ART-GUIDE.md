@@ -95,7 +95,7 @@ those colours mean "this is for you".
 ## 9. Text in the world
 
 - At least 7 px at scale 1, short, uppercase for signs, IBM Plex Mono.
-- One message per sign. Puns and jokes are welcome, but on real surfaces.
+- One message per sign. Dry and plain: no puns or jokes in the world's own text (section 10).
 
 ## 10. A place is alive (Tommi, 2026-10-15)
 
@@ -113,13 +113,17 @@ Empty scenes read as unfinished. "A bunch of boxes and text labels" is the failu
 - **Variety over repetition.** No row of identical stalls or boxes. Every repeated element gets
   variants (size, colour, damage, what is on it, who stands at it).
 - **Screens and signs build the world.** Displays everywhere: ads, Registry notices, credit
-  scores, surveillance feeds, departure boards, propaganda, tickers, "SMILE, YOU ARE VERIFIED".
-  Let them move (scroll, flicker, cycle). Signs say something about how the city works.
+  scores, surveillance feeds, departure boards, propaganda, tickers. Let them move (scroll,
+  flicker, cycle). Signs say something about how the city works.
+- **The world is dry; the people are funny** (Tommi). Signs, ads, notices and labels are
+  deadpan and bureaucratic, never punny: "IDENTITY CHECK AHEAD", "QUEUE 4: UNREGISTERED
+  PERSONS", "SERVICE DENIED · SCORE BELOW THRESHOLD". The dystopia is in what they plainly say.
+  Humour belongs to characters: what people say, their attitude, how they react.
 - **Dystopia in the details.** Cameras on poles, ID scanners at doors, a drone checking
   someone's papers, a queue for water, ads that address you by name, a broken thing nobody fixes.
 - **The city is always there.** Wherever a window or opening exists, the skyline shows
   through it. Places connect: you should see where you are in the city.
-- **One surprising detail per scene**, something you smile at when you notice it.
+- **One surprising detail per scene**, something you notice late: a human touch, not a sign gag.
 
 ## 11. Before you call a scene done
 

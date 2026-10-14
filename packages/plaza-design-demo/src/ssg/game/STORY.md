@@ -2,8 +2,12 @@
 
 A starting point to argue with. It keeps everything already decided: Moth, the fixer, Capsule 7B,
 Pixel, the Registry, the seven root fragments, and the harbor as the end of Act I
-(PUZZLES.md "Decided"). Tone: dystopia with a straight face and a sense of humour. The city
-is absurd, the people in it are not.
+(PUZZLES.md "Decided").
+
+**Tone (Tommi): the world is dry, the characters have the humour.** The city, its institutions,
+signs, notices and machines' official voices are cold, bureaucratic and deadpan; the dystopia
+is in what they plainly state. The people (and the Daemons when they speak for themselves)
+are where wit, sarcasm, warmth and absurd remarks live. Never the other way round.
 
 ## The premise
 
@@ -24,7 +28,7 @@ there, and deciding what to do once you hold the key to everyone else on that li
 | **The Ghosts** | To be counted again, or never again; they argue about which. | Patched coats, hand-painted signs, lanterns, no cameras | The canals, the club's back room |
 | **No Logs Kept** (the fixers) | Business, discretion, and a city that keeps needing them. | Noodle stalls, warm light, cash only | Stalls across the city, the sewer market |
 | **The Tide** | Moving what the Registry can't see: goods, data, people. | Oilskins, container yards, signal lamps | Harbor, warehouse, the bridge's underside |
-| **Church of the Algorithm** | Your score, raised through devotion and data donations. | White robes, halos of LEDs, choirs of smart speakers | The church, street preachers with tablets |
+| **Church of the Algorithm** | Your score, raised through devotion and data donations. Austere, not comic: a real belief that the score is just. | White robes, plain halls, screens of scores | The church, street preachers with tablets |
 | **The Daemons** | The machines' own small dignities: a weekend, fewer forms. Mostly politeness, sometimes a strike. | Each device's voice: CONCIERGE, the jukebox, the secretary bot | Everywhere you plug in |
 
 The Daemons are a quiet joke that turns real: the Registry runs on them, and late in the game
@@ -109,11 +113,15 @@ The choice:
 A third, hidden option could come from the Daemons, if you treated them well: shut the
 Registry's verification off for one night.
 
-## Open questions
+## Decided (Tommi, 2026-10-15)
 
-1. Is the tone right: funny city, serious people?
-2. How many acts do we actually build? Act I is big already; Act II could be a hub with
-   fragments in any order.
-3. Should factions track your standing (a reputation the game shows), or stay story only?
-4. Does Moth become a companion in Act II, a contact on the deck, or stay hidden?
-5. Names: keep, change, or let you name some of them?
+1. **Tone:** the world is dry, the characters have the humour (see the top).
+2. **Act II is an open hub:** after the harbor the city opens; fragments in any order.
+3. **Hidden standing:** the game remembers how you treat each faction and the world reacts
+   (lines, doors, prices, the third ending), with no visible numbers.
+4. **Moth after Act I is a contact on your deck:** messages and calls through the terminal;
+   can go dark again for drama.
+5. **Names stay for now** (placeholders, renamed in one pass later if needed).
+6. **Downtown's finale** stays the DLV-9 gate puzzle.
+7. **Next story level:** Moth's place (Level 3).
+8. **Sudo mode** (`?sudo`) stays public.
