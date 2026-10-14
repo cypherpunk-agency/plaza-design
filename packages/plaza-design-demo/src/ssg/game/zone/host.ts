@@ -122,7 +122,7 @@ export class ZoneHost {
     window.setInterval(() => {
       const now = performance.now();
       this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
-      if (this.model.tick(now - last)) { this.schem.meters(); this.vision.meters(); }
+      if (this.model.tick(now - last, !this.btns.hidden)) { this.schem.meters(); this.vision.meters(); }
       last = now;
     }, TICK_MS);
   }

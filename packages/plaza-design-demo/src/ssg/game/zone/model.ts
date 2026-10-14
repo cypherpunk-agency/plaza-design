@@ -172,10 +172,16 @@ export class ZoneModel {
     this.wire();
   }
 
-  /** Lay the pre-wired cables whose both ends exist now (at the start, and as nodes connect). */
-  private wire() {
-    const here = (key: string) => this.devices.has(split(key.split(':')[0])[0]);
+  /**
+   * Lay the pre-wired cables whose both ends exist now: all of them at the
+   * start; when a node connects (`node`), only those touching it, so a cable
+   * the player has cut elsewhere stays cut.
+   */
+  private wire(node?: string) {
+    const dev = (key: string) => split(key.split(':')[0])[0];
+    const here = (key: string) => this.devices.has(dev(key));
     for (const c of this.prewired) {
+      if (node && dev(c.from) !== node && dev(c.to) !== node) continue;
       if (!here(c.from) || !here(c.to) || this.links.some((l) => l.from === c.from && l.to === c.to)) continue;
       this.links.push({ from: c.from, to: c.to, verb: c.verb });
     }
@@ -512,10 +518,12 @@ export class ZoneModel {
 
   /**
    * Advance trace by `dt` ms: logs that record you while you are inside fill
-   * the meter; otherwise it drains. Returns true when a meter or a lock changed
+   * the meter; otherwise it drains. `live` (the zone is on screen) also runs
+   * the zone's own clock (`ZoneRules.tick`). Returns true when a meter or a lock changed
    * (the host redraws the meters, or everything when a lock ended).
    */
-  tick(dt: number): boolean {
+  tick(dt: number, live = true): boolean {
+    if (live) this.rules.tick?.(this.world(this.ctx('')), dt);
     let moved = false;
     for (const d of this.devices.values()) {
       const logs = this.logsOf(d.id), before = this.traceOf(d.id);
@@ -565,6 +573,10 @@ export class ZoneModel {
 
   private runLink(n: NounData, c: Ctx): Line | null {
     const reach = n.link!.reach.filter((id) => this.nodeData.has(id)), via = c.bySignal ? 'signal → ' : '';
+    // a link that is down (its `when` does not hold) neither scans nor connects
+    if ((c.verb === 'scan' || c.verb.startsWith('connect ')) && n.link!.when && !this.test(n.link!.when, c)) {
+      return this.line('net.down', { via, verb: c.verb, name: this.devices.get(c.dev)?.name ?? c.dev });
+    }
     if (c.verb === 'scan') {
       const fresh = reach.filter((id) => !this.net.has(id));
       fresh.forEach((id) => this.net.set(id, 'seen'));
@@ -585,7 +597,7 @@ export class ZoneModel {
     this.net.set(id, 'connected');
     if (this.devices.has(id)) return;
     this.devices.set(id, this.build(this.nodeData.get(id)!, id, 'node'));
-    this.wire();
+    this.wire(id);
   }
 
   // ---------- saving ----------

@@ -50,7 +50,7 @@ const KEYS: Record<string, string[]> = {
   noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'on'],
   guard: ['password', 'near', 'tries', 'lockMs', 'trace', 'do'],
   log: ['rate', 'fall', 'when', 'archive', 'linger', 'lockMs'],
-  link: ['reach'],
+  link: ['reach', 'when'],
   sector: ['id', 'label', 'seal'],
   seal: [...SEAL_KEYS, 'withinMs', 'signal'],
   layout: ['spot', 'board', 'dir', 'vision'],
@@ -306,6 +306,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
           if (!all.has(id) || !(world.netNodes.has(id) || isNode(id))) err(wl, `reach "${id}": no node with that id (zone "nodes" or net.json)`);
           if (id === d.id) err(wl, 'a node cannot reach itself');
         });
+        cond(n.link.when, known, wl + ' › when');
       }
       cases(n, w, known, writable, d);
     }
