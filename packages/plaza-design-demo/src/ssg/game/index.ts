@@ -4,7 +4,8 @@
  * - The CRT boot runs first, on every visit.
  * - The Konami code (up up down down left right left right B A) is the only way in:
  *   the button says ACCESS GRANTED for once, then the window becomes the game.
- * - `?play` in the URL skips the boot and the Konami code; `?play=yard` starts in the back yard.
+ * - `?play` in the URL skips the boot and the Konami code; `?play=yard` starts in the back yard,
+ *   `?play=<scene id>` in one of the explorable scenes (scenes/: harbor, market, shop, mall, metro, train).
  * - Phones (basic support, landscape only): the Konami code as swipes
  *   (up up down down left right left right, tap tap), on-screen buttons, and a
  *   "rotate your phone" screen in portrait.
@@ -18,13 +19,19 @@
 import { sound } from './audio';
 import { runBoot } from './boot';
 import { Game } from './game';
+import { isSceneId } from './scenes';
 
 export { runBoot };
 
 /** `?play` in the URL skips the boot and the Konami code: straight into the game. */
 export const playParam = () => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } };
-/** `?play=yard` starts in the fixer's back yard, the demo zone for the new hacking system. */
-const playZone = () => { try { return new URLSearchParams(location.search).get('play') === 'yard' ? 'yard' as const : undefined; } catch { return undefined; } };
+/** `?play=yard` starts in the fixer's back yard (the demo zone for the new hacking system); `?play=harbor` etc. in a scene. */
+const playZone = () => {
+  try {
+    const z = new URLSearchParams(location.search).get('play') ?? '';
+    return z === 'yard' ? 'yard' as const : isSceneId(z) ? z : undefined;
+  } catch { return undefined; }
+};
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];

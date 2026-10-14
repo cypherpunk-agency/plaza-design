@@ -12,12 +12,13 @@ import { sound } from './audio';
 import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprites';
 import { Terminal } from './terminal';
 import { Yard, YARD_SPAWN, YARD_W } from './yard';
+import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import {
   banner, commands, FRONTS, fixerTalk, LEVEL_W, loadSave, MACHINES, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
   READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
-type Target = { kind: 'talk' | 'jack' | 'read' | 'door' | 'yard'; id: string; x: number; h: number; label: string; promptH?: number };
+type Target = { kind: 'talk' | 'jack' | 'read' | 'door' | 'yard' | 'scene'; id: string; x: number; h: number; label: string; promptH?: number };
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number }
 interface Ship { sprite: Sprite; ps: number; y: number; speed: number; offset: number; flip: boolean; depth: number }
 
@@ -65,7 +66,7 @@ export class Game {
   private windows = new Map<number, [number, number, number][]>();
   private drops: [number, number, number, number][] = [];
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
-  private zone: 'downtown' | 'yard' = 'downtown';
+  private zone: 'downtown' | 'yard' | SceneId = 'downtown';
   private yard: Yard;
 
   constructor(private host: GameHost) {
@@ -107,7 +108,7 @@ export class Game {
 
   // ---------- lifecycle ----------
 
-  start(zone?: 'yard') {
+  start(zone?: 'yard' | SceneId) {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -120,6 +121,7 @@ export class Game {
     this.raf = requestAnimationFrame((n) => this.loop(n));
     this.canvas.focus();
     if (zone === 'yard' && this.zone !== 'yard') this.goTo('yard', true);
+    else if (zone && isSceneId(zone) && this.zone !== zone) this.enterScene(zone, true);
     if (this.zone === 'downtown' && !this.save.flags.arrived) {
       this.save.flags.arrived = true;
       this.say('YOU', ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.'], this.p.x, 46);
@@ -223,8 +225,8 @@ export class Game {
 
   private flash(text: string) { this.toast = { text, until: this.t + 110 }; }
 
-  private get levelW() { return this.zone === 'yard' ? YARD_W : LEVEL_W; }
-  private get platforms() { return this.zone === 'yard' ? [] : PLATFORMS; }
+  private get levelW() { return this.scene?.width ?? (this.zone === 'yard' ? YARD_W : LEVEL_W); }
+  private get platforms() { return this.zone === 'downtown' ? PLATFORMS : []; }
 
   /** Walk between Downtown and the fixer's back yard. */
   private goTo(zone: 'downtown' | 'yard', quiet = false) {
@@ -280,10 +282,11 @@ export class Game {
 
   private syncHud() {
     this.host.setNodes(nodeCount(this.save));
-    this.host.setZone((this.zone === 'yard' ? 'BACK YARD · ' : 'DOWNTOWN · ') + who(this.save).toUpperCase());
+    this.host.setZone((this.scene ? this.scene.name.toUpperCase() + ' · ' : this.zone === 'yard' ? 'BACK YARD · ' : 'DOWNTOWN · ') + who(this.save).toUpperCase());
   }
 
   private targets(): Target[] {
+    if (this.scene) return this.sceneTargets(this.scene);
     if (this.zone === 'yard') return this.yard.targets().map((t) => ({ kind: 'yard' as const, id: t.id, x: t.x, h: 0, label: t.label, promptH: t.promptH }));
     const list: Target[] = [];
     list.push({ kind: 'door', id: 'yard', x: YARD_DOOR_X, h: 0, label: '[E] BACK YARD', promptH: 62 });
@@ -320,6 +323,7 @@ export class Game {
     }
     const target = this.nearest();
     if (!target) return;
+    if (target.kind === 'scene') { this.useScene(target.id); return; }
     if (target.kind === 'yard') { if (this.yard.use(target.id) === 'exit') this.goTo('downtown'); return; }
     if (target.kind === 'door') { this.goTo('yard'); return; }
     if (target.kind === 'talk') {
@@ -392,6 +396,7 @@ export class Game {
     x.fillStyle = '#000';
     x.fillRect(0, 0, this.viewW, this.viewH);
     const rain = this.rainLevel();
+    if (this.scene) { this.drawScene(this.scene, rain); return; }
 
     this.drawSky();
     this.drawShips();
@@ -712,7 +717,7 @@ export class Game {
     const x = this.x, s = this.save;
     x.save();
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
-    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.zone === 'yard' ? 'BACK YARD' : 'DOWNTOWN', 8, 12);
+    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.scene ? this.scene.name.toUpperCase() : this.zone === 'yard' ? 'BACK YARD' : 'DOWNTOWN', 8, 12);
     x.fillStyle = 'rgba(255,217,165,.7)';
     x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (s.jump ? 'legs.so' : '-') + (sound.enabled ? ' · SOUND' : ''), 8, 23);
     if (this.zone === 'yard') { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + this.yard.objective(), 8, 34); }
@@ -741,5 +746,66 @@ export class Game {
     x.fillText('The Neon Market opens in the next update. Your progress is saved in this browser.', cx, cy + 42);
     x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC back to the landing page', cx, cy + 66);
     x.restore();
+  }
+
+  // ---------- explorable scenes (scenes/) ----------
+
+  /** The scene the player is in, when the zone is one of the explorable scenes. */
+  private get scene(): Scene | undefined { return sceneById(this.zone); }
+  private sceneView: SceneView | null = null;
+
+  /** Walk into an explorable scene, at its spawn. */
+  private enterScene(id: SceneId, quiet = false) {
+    const s = SCENES[id];
+    this.yard.closeAll();
+    this.bubble = null;
+    this.zone = id;
+    Object.assign(this.p, { x: s.spawn, y: 0, vy: 0, onGround: true, face: 1 });
+    this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
+    this.syncHud();
+    if (!quiet) sound.open();
+    const flag = 'scene:' + id;
+    if (s.intro && !this.save.flags[flag]) {
+      this.save.flags[flag] = true;
+      storeSave(this.save);
+      this.say('YOU', s.intro, this.p.x, 46);
+    }
+  }
+
+  private sceneTargets(s: Scene): Target[] {
+    const list: Target[] = s.exits.map((e) => ({ kind: 'scene' as const, id: 'exit:' + e.id, x: e.x, h: 0, label: e.label, promptH: e.promptH ?? 70 }));
+    for (const r of s.readables ?? []) list.push({ kind: 'scene', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
+    return list;
+  }
+
+  /** E next to a scene's exit or readable. Exits to Downtown land at Downtown's spawn. */
+  private useScene(target: string) {
+    const s = this.scene!, [kind, id] = target.split(':');
+    if (kind === 'read') {
+      const r = s.readables!.find((z) => z.id === id)!;
+      this.say(r.name, r.pages, r.x, r.h ?? 70);
+      return;
+    }
+    const to = s.exits.find((e) => e.id === id)!.to;
+    if (isSceneId(to)) { this.enterScene(to); return; }
+    this.goTo('downtown');
+    this.p.x = SPAWN_X;
+    this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
+  }
+
+  /** A scene draws its own backdrop and foreground; the engine adds sky, the player, rain and the HUD. */
+  private drawScene(s: Scene, rain: number) {
+    const v = (this.sceneView ??= { sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), t: 0, viewW: 0, viewH: 0, cam: 0, gy: 0 });
+    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy;
+    if (s.ambient?.sky) { this.drawSky(); this.drawShips(); }
+    s.drawBackdrop(this.x, v);
+    this.drawPeople();
+    s.drawFront?.(this.x, v);
+    if (s.ambient?.rain) this.drawRain(rain);
+    this.drawPrompt();
+    this.drawBubble();
+    this.drawHud();
+    if (this.showEnd) this.drawEnd();
   }
 }
