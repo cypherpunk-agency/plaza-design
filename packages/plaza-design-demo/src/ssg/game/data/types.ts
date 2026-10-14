@@ -234,7 +234,18 @@ export interface DeviceData {
   nouns: NounData[];
   sectors?: SectorData[];
   layout?: LayoutData;
+  /**
+   * What you do with it without hacking anything (the kettle: boil), in the popup a click or E
+   * opens next to it in the world. Each runs that noun's verb, exactly as a tap on it would.
+   * Hacking verbs (logins, links, logs, wiring) are not everyday: they live in hack view.
+   */
+  everyday?: EverydayData[];
+  /** A computer or terminal: its popup offers `⌁ jack in`, the full device screen (the schematic). */
+  deck?: boolean;
 }
+
+/** One everyday action: a noun's verb, with the popup's label (default: the verb). */
+export interface EverydayData { noun: string; verb: string; label?: string }
 
 /**
  * A cable present when the zone starts: event → noun + verb. Cuttable like any
@@ -406,7 +417,11 @@ export interface ZoneSave {
   clocks?: Record<string, { next: number; ms: number; off?: boolean }>;
   /** Watchdogs, by id: ms into their loop. */
   watchdog?: Record<string, number>;
-  /** The board: devices you know, where they sit (fractions of the stage), where their nouns sit (px). */
+  /**
+   * The board: devices you know, where they sit (fractions of the stage), where their nouns sit (px).
+   * `vision`: hack vision's plates and circuits the player moved, by device id, as an offset from
+   * their default spot over the device in world units (x right, y down).
+   */
   board?: { known: string[]; pos: Record<string, Pt>; offsets: Record<string, Pt>; vision?: Record<string, Pt> };
 }
 

@@ -86,6 +86,7 @@
       "id": "gate",
       "name": "HATCH · HINGE",
       "look": "A hatch in the fence, with a face. It is judging you.",
+      "everyday": [{ "noun": "hinge", "verb": "talk", "label": "talk to HINGE" }],
       "status": [
         { "if": "gateOpen", "then": "OPEN", "else": "closed" },
         { "if": "gateAllowed", "then": " · takes signals", "else": " · ignores signals" }

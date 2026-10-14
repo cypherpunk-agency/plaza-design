@@ -42,7 +42,11 @@ Append one line per decision: what, which side, why.
   directions (`layout.dir`, `layout.vision`): **data**.
 - Hack vision's noun order (`layout.row`): **data**, optional; the default order by kind is
   **code** (`RANK` in `schematic.ts`). Where a logic part floats in the world: the **save**
-  (`logic[].at`), placed beside the player by the host. Exits and things that come and go (the
+  (`logic[].at`), placed beside the player by the host. Where the player dragged a device's
+  plate and circuit in hack vision: the **save** (`board.vision`, offsets from the default spot).
+- What a click or E does to a thing: a popup beside it. Its everyday actions (`everyday`) and
+  whether it is a computer you jack into (`deck`): **data**. The popup and `⌁ hack it`: **code**
+  (`zone/popup.ts`, `ZoneHost.pick`); its words (`menu.*`): **data** in `engine.json`. Exits and things that come and go (the
   pickup tray): **code** (`ZoneView.targets`), since they follow scene art and state.
 - State keys: the data owns them; the code lists only the keys it relies on (`needs.state`),
   and the check requires those. Data may add its own keys freely (before: exactly the code's).
@@ -229,6 +233,26 @@ then DAEMON. The old `vision` directions are still accepted but no longer read.
 A zone device needs `spot`; a node must not have one. Without `board`, devices and nodes take
 the next free slot under the zone's own; logic parts land by the palette.
 
+## Everyday actions and the popup
+
+A click or E on a device opens a small popup right next to it in the world. It lists what you
+do with the thing without hacking anything, then `⌁ jack in` for a computer, then `⌁ hack it`
+(hack view, this device's circuit unfolded):
+
+```json
+{ "id": "kettle", "everyday": [{ "noun": "kettle", "verb": "boil" }] }
+{ "id": "blinds", "everyday": [{ "noun": "motor", "verb": "open" }, { "noun": "motor", "verb": "close" }] }
+{ "id": "pc", "deck": true, "everyday": [{ "noun": "inbox", "verb": "read", "label": "check mail" }] }
+```
+
+- An everyday action runs the noun's verb exactly as a tap on its schematic would (same cases,
+  same effects, `signal` false). `label` is the popup's wording (default: the verb).
+- Hacking is not everyday: the check refuses GUARD, LINK, LOG, SEAL and CLOCK nouns and nouns in
+  a sector. A device with no everyday action shows only `⌁ hack it`. Talking to a daemon is
+  everyday (`hinge: talk`).
+- `deck: true`: a computer or terminal; `⌁ jack in` opens the full device screen (the
+  schematic), where its LINK reaches the net. Nodes have neither (they are not in the world).
+
 ## Pre-wired cables
 
 `cables` (zone and `net.json`) are laid at the start, look like the player's and cut the same
@@ -384,6 +408,9 @@ A LINK noun (`"link": { "reach": ["concierge"] }`) has the engine's verbs `scan`
 appear on the board as dashed silhouettes) and `connect <node>` (the node comes in as a full
 schematic, on the board only, with its pre-wired cables). A node may have its own LINK: that is
 a hop. Nodes are in a zone's `nodes` or in `net.json`. Seen and connected nodes are saved.
+A link may have a `when` (the router's and the home PC's: `routerUp`): while it does not hold,
+it neither scans nor connects. In sudo mode (`?sudo`) every LINK reaches every node there is
+(the zone's and `net.json`'s), its `when` still applies.
 
 ## The watchdog
 

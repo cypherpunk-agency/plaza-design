@@ -6,7 +6,10 @@
 
     "ui.close": "CLOSE ×",
     "board.empty": "nothing on the board yet: open a device first.",
-    "prompt.open": "[E] OPEN",
+    "prompt.open": "[E] USE",
+    "menu.hack": "⌁ hack it",
+    "menu.jack": "⌁ jack in",
+    "menu.aria": "{device}: what to do",
     "goals.done": "done.",
 
     "talk.unplug": "(unplug)",

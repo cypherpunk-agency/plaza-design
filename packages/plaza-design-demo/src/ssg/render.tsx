@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
 import { ZONE_STYLES } from './game/zone/styles';
+import { POPUP_STYLES } from './game/zone/popup';
 
 export interface MetaConfig {
   title: string;
@@ -569,7 +570,10 @@ export const demoStyles = `
     #vision .sch-guess,
     #vision .sch-palette,
     #vision .vis-plate,
+    #vision .vis-home,
+    #vision .vis-circuit,
     #vision .vis-part { pointer-events: auto; }
+    #vision .hack-wires .leader { stroke: rgba(255, 61, 242, 0.85); stroke-width: 1; stroke-dasharray: 3 3; }
     #vision .hack-wires .branch { stroke: rgba(255, 61, 242, 0.55); stroke-width: 1; }
 
     /* the frame round a device: the hacking layer's pink */
@@ -592,13 +596,18 @@ export const demoStyles = `
     .vis-glyph { font-size: 8px; font-weight: 600; letter-spacing: 0.08em; color: rgb(255, 61, 242); }
     .vis-part .sch-x { right: -8px; top: -8px; width: 15px; height: 15px; font-size: 10px; }
 
-    /* the name plate, on a short leader from the device's top edge (its height is PLATE_H in schematic.ts) */
+    /*
+     * The piece: the plate and the circuit over it. By default it sits on a short leader over the
+     * device; dragged, it goes anywhere, and a dashed leader ties it back to the device's frame.
+     */
+    .vis-piece { position: absolute; left: 0; width: 0; height: 0; }
+    .vis-tag { position: absolute; left: 0; top: 0; display: flex; gap: 2px; transform: translate(-50%, -100%); }
+
+    /* the name plate (its height is PLATE_H in schematic.ts) */
     .vis-plate {
-      position: absolute;
-      left: 0;
+      position: relative;
       box-sizing: border-box;
       height: 18px;
-      transform: translate(-50%, -100%);
       padding: 0 6px;
       background: rgba(16, 3, 16, 0.92);
       border: var(--border-thin) solid rgb(255, 61, 242);
@@ -609,14 +618,32 @@ export const demoStyles = `
       line-height: 16px;
       letter-spacing: 0.08em;
       white-space: nowrap;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .sch.vis.moved .vis-plate::after { display: none; }
+    .vis-home {
+      box-sizing: border-box;
+      height: 18px;
+      padding: 0 4px;
+      background: rgba(16, 3, 16, 0.92);
+      border: var(--border-thin) solid rgba(255, 61, 242, 0.6);
+      color: rgb(255, 61, 242);
+      font: 11px/1 var(--font-mono);
       cursor: pointer;
       touch-action: manipulation;
     }
+
+    .vis-home:hover { border-color: rgb(255, 61, 242); }
 
     .vis-plate::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1px; height: 8px; background: rgba(255, 61, 242, 0.85); }
     .vis-plate:hover { box-shadow: 0 0 10px rgba(255, 61, 242, 0.5); }
     .vis-plate[aria-expanded='true'] { background: rgb(255, 61, 242); color: #000; }
     .sch.locked .vis-plate { border-color: var(--color-error); color: var(--color-error); }
+    /* hack it, from a thing's popup: its plate flashes once so the eye finds it */
+    .sch.vis.focus .vis-plate { animation: vis-focus 0.45s ease-in-out 3; }
+    @keyframes vis-focus { 50% { box-shadow: 0 0 16px rgb(255, 61, 242), 0 0 4px #fff; } }
 
     /* the circuit: the device's nouns in a row, over its plate */
     .vis-circuit {
@@ -629,6 +656,8 @@ export const demoStyles = `
       padding: 2px 4px 4px;
       background: rgba(10, 3, 14, 0.6);
       border: var(--border-thin) dashed rgba(255, 61, 242, 0.5);
+      cursor: grab;
+      touch-action: none;
     }
 
     .vis-st { font-size: 8px; color: var(--color-text-muted); white-space: nowrap; }
@@ -729,6 +758,7 @@ export const demoStyles = `
 
     /* The zone engine's newer pieces: watchdog, conduits, meters, keyring, lock toys (game/zone/styles.ts) */
 ${ZONE_STYLES}
+${POPUP_STYLES}
 
 
     /* ACCESS DENIED pause menu (game/menu.ts): a black CRT panel over the paused game */
