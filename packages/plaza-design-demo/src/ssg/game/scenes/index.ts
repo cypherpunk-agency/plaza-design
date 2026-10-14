@@ -12,7 +12,7 @@ import { metro } from './metro';
 import { shop } from './shop';
 import { train } from './train';
 
-export type { Scene, SceneExit, SceneReadable, View as SceneView } from './kit';
+export type { Scene, SceneExit, SceneReadable, SceneUse, UseCtx, View as SceneView } from './kit';
 
 export const SCENES = { harbor, market, shop, mall, metro, train } satisfies Record<string, Scene>;
 export type SceneId = keyof typeof SCENES;

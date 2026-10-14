@@ -4,7 +4,15 @@
  * holds what every scene draws the same way, so they all follow ART-GUIDE.md:
  * dim far band, medium middle band, the play band brightest; signs on plates;
  * cyan only on things you can use.
+ *
+ * The kits to build a living place from (ART-GUIDE §10):
+ *   ../people.ts  people, cats, pigeons and robots from a seed, with idle behaviours and talk
+ *   screens.ts    mounted signs and live screens (tickers, ads, cameras, Registry notices) and dry copy
+ *   build.ts      stalls, booths, facades, shelves, fridges, clutter, benches, lamps
+ * market.ts and shop.ts are the reference scenes that use all three.
  */
+
+import type { Person } from '../people';
 
 /** What a scene's draw functions get from the engine, refreshed every frame. */
 export interface View {
@@ -50,6 +58,33 @@ export interface SceneExit {
 /** Something to read (or a person who says a line) with E. */
 export interface SceneReadable { id: string; x: number; name: string; pages: string[]; label?: string; h?: number; promptH?: number }
 
+/**
+ * Something to DO in a place with E (buy, haggle, pay for a fortune): `use` runs when the player
+ * presses E there and returns what is said (a bubble). It can spend tokens and set save flags.
+ */
+export interface SceneUse {
+  id: string;
+  x: number;
+  label: string;
+  /** Who speaks the answer (the bubble's name), unless `use` returns its own. */
+  name: string;
+  promptH?: number;
+  h?: number;
+  use: (c: UseCtx) => string[] | { name: string; pages: string[] };
+}
+
+/** What a scene's `use` gets: the player's tokens and flags, and a way to pay. */
+export interface UseCtx {
+  tokens: number;
+  /** Takes n tokens if the player has them (true), else nothing (false). */
+  pay: (n: number) => boolean;
+  /** Gives the player n tokens. */
+  give: (n: number) => void;
+  flags: Readonly<Record<string, boolean>>;
+  set: (flag: string) => void;
+  t: number;
+}
+
 export interface Scene {
   id: string;
   /** Shown in the HUD. */
@@ -58,6 +93,10 @@ export interface Scene {
   spawn: number;
   exits: SceneExit[];
   readables?: SceneReadable[];
+  /** The people who live here (people.ts). The scene draws them; the engine makes [E] TALK targets for those with `id` and `talk`. */
+  people?: Person[];
+  /** Things to do here with E (buy, haggle). */
+  uses?: SceneUse[];
   /** `sky`: the engine's stars and ships behind everything; `rain`: the engine's rain in front. */
   ambient?: { sky?: boolean; rain?: boolean };
   /** What the player says on the first visit. */
