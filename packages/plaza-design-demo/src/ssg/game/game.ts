@@ -55,6 +55,7 @@ export class Game {
   private toast: { text: string; until: number } | null = null;
   private seenControls = false;
   private escUntil = 0;
+  private touch = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
   private ships: Ship[] = [];
   private windows = new Map<number, [number, number, number][]>();
   private drops: [number, number, number, number][] = [];
@@ -133,7 +134,8 @@ export class Game {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.canvas.width = Math.round(cssW * dpr);
     this.canvas.height = Math.round(cssH * dpr);
-    this.k = Math.max(1, Math.floor((cssH * dpr) / 320));
+    // Small screens (phones in landscape) show a shorter slice of the street at a larger scale.
+    this.k = Math.max(1, Math.floor((cssH * dpr) / (cssH < 420 ? 230 : 320)));
     this.viewW = this.canvas.width / this.k;
     this.viewH = this.canvas.height / this.k;
     this.gy = Math.round(this.viewH - 54);
@@ -644,7 +646,8 @@ export class Game {
     x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (s.jump ? 'legs.so' : '-') + (sound.enabled ? ' · SOUND' : ''), 8, 23);
     if (!this.seenControls || this.t < 600) {
       x.fillStyle = 'rgba(255,217,165,.55)';
-      x.fillText('<- -> walk · SHIFT run · E talk / jack in · / terminal · M sound · ESC leave', 8, this.viewH - 8);
+      if (this.touch) x.fillText('JMP jump · ACT talk / jack in · >_ terminal · ESC twice to leave', 8, 34);
+      else x.fillText('<- -> walk · SHIFT run · E talk / jack in · / terminal · M sound · ESC leave', 8, this.viewH - 8);
     }
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';

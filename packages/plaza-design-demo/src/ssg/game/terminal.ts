@@ -22,6 +22,21 @@ export class Terminal {
     this.panel.setAttribute('role', 'log');
     this.panel.setAttribute('aria-live', 'polite');
     this.panel.hidden = true;
+    const chips = document.createElement('div');
+    chips.className = 'term-chips';
+    for (const cmd of ['help', 'ls', 'cat', 'login', 'install', 'exit']) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = cmd;
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.input.value = cmd === 'help' || cmd === 'ls' || cmd === 'exit' ? cmd : cmd + ' ';
+        if (cmd === 'help' || cmd === 'ls' || cmd === 'exit') this.key(new KeyboardEvent('keydown', { key: 'Enter' }));
+        else this.input.focus();
+      });
+      chips.appendChild(b);
+    }
+    this.panel.appendChild(chips);
     this.out = document.createElement('div');
     this.out.className = 'term-out';
     this.panel.appendChild(this.out);

@@ -259,6 +259,106 @@ export const demoStyles = `
 
     html.game-mode #term-input { display: block; }
 
+    /* Phones: basic support, landscape only (game/index.ts) */
+    #touch {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(var(--game-bottom, 40px) + var(--spacing-1));
+      z-index: 7;
+      justify-content: space-between;
+      padding: 0 var(--spacing-3);
+      pointer-events: none;
+    }
+
+    html.game-mode.touch #touch { display: flex; }
+
+    /* On a phone the game gets the whole screen: no window inset, slim header and footer */
+    html.game-mode.touch .demo-window { inset: 0; }
+    html.game-mode.touch .plaza-corner-bracket { display: none; }
+    html.game-mode.touch .plaza-window-header,
+    html.game-mode.touch .plaza-window-footer { padding: var(--spacing-1) var(--spacing-3); min-height: 0; }
+    html.game-mode.touch .plaza-window-header *,
+    html.game-mode.touch .plaza-window-footer * { font-size: var(--text-xs); }
+    html.game-mode.touch .footer-send-btn { padding: 2px var(--spacing-2); }
+    html.game-mode.touch #term:not([hidden]) ~ #touch { display: none; }
+
+    #touch .pad {
+      display: flex;
+      gap: var(--spacing-2);
+      pointer-events: auto;
+    }
+
+    #touch button {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: var(--border-medium) solid var(--color-border-strong);
+      background: rgba(var(--color-bg-overlay-rgb), 0.35);
+      color: var(--color-primary-400);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #touch button.small {
+      width: 38px;
+      border-width: var(--border-thin);
+      color: var(--color-text-muted);
+    }
+
+    #touch button.down { background: rgba(var(--color-primary-500-rgb), 0.3); }
+
+    #rotate {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      place-items: center;
+      padding: var(--spacing-6);
+      background: #000;
+      text-align: center;
+      font-family: var(--font-mono);
+    }
+
+    .rotate-title {
+      font-size: var(--text-lg);
+      letter-spacing: var(--letter-spacing-widest);
+      color: var(--color-primary-400);
+    }
+
+    .rotate-note {
+      margin-top: var(--spacing-2);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    @media (orientation: portrait) {
+      html.game-mode.touch #rotate { display: grid; }
+    }
+
+    .term-chips {
+      display: none;
+      flex-wrap: wrap;
+      gap: var(--spacing-2);
+      padding-bottom: var(--spacing-2);
+    }
+
+    html.touch .term-chips { display: flex; }
+
+    .term-chips button {
+      padding: var(--spacing-1) var(--spacing-3);
+      border: var(--border-thin) solid var(--color-border-default);
+      background: transparent;
+      color: var(--color-accent-400);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+    }
+
     .demo-subtitle {
       font-size: clamp(12px, 1.6vw, 18px);
       color: var(--color-accent-400);
