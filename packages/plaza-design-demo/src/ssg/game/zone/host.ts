@@ -154,8 +154,10 @@ export class ZoneHost {
 
   /** Everything the save keeps about the zone. */
   snapshot(): ZoneSave {
-    const board = this.schem.layout();
-    return { ...this.model.snapshot(), board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets } };
+    const board = this.schem.layout(), pieces = this.vision.pieces();
+    // hack vision: plates and circuits moved off their default spot (world units from it)
+    const vision = Object.keys(pieces).length ? { vision: pieces } : {};
+    return { ...this.model.snapshot(), board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets, ...vision } };
   }
 
   private restore(z: ZoneSave) {
@@ -163,6 +165,7 @@ export class ZoneHost {
     this.schem.known.clear();
     (z.board?.known ?? []).forEach((id) => { if (this.model.devices.has(id)) this.schem.known.add(id); });
     this.schem.restoreLayout({ pos: z.board?.pos, offsets: z.board?.offsets });
+    this.vision.restorePieces(z.board?.vision, (id) => this.model.devices.has(id));
   }
 
   /** Something changed: write the save once things have been quiet for a moment. */
@@ -231,6 +234,7 @@ export class ZoneHost {
    */
   follow(project: Project, width: number, player?: { x: number; h: number }) {
     this.project = project; this.width = width;
+    this.vision.unit = (project(100, 0).x - project(0, 0).x) / 100 || 1;
     if (player) this.player = { x: player.x, h: player.h };
     const m = this.model, seen = new Map<string, Anchor>();
     const add = (id: string, x: number, base: number, w: number, h: number) => {

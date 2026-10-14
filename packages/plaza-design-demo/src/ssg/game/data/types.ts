@@ -304,7 +304,11 @@ export interface ZoneSave {
   passed?: string[];
   /** The net: nodes scanned (silhouettes) and connected (full schematics). */
   net?: { seen: string[]; connected: string[] };
-  /** The board: devices you know, where they sit (fractions of the stage), where their nouns sit (px). */
+  /**
+   * The board: devices you know, where they sit (fractions of the stage), where their nouns sit (px).
+   * `vision`: hack vision's plates and circuits the player moved, by device id, as an offset from
+   * their default spot over the device in world units (x right, y down).
+   */
   board?: { known: string[]; pos: Record<string, Pt>; offsets: Record<string, Pt>; vision?: Record<string, Pt> };
 }
 

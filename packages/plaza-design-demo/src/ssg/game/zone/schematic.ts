@@ -30,7 +30,11 @@
  * to right (`layout.row`, else SENSE/STORE, ACT, LINK/GUARD/LOG, DAEMON), each a
  * chip with its event dots on its right edge; tap a chip and its verbs drop
  * down. Cables run between chips (or to a folded device's plate). Circuits
- * that would overlap are raised or pushed aside. The logic parts float in the
+ * that would overlap are raised or pushed aside. Above the device is only the
+ * default spot: drag the plate or the circuit (or a chip) and the two move as
+ * one piece, anywhere, tied to the device's frame by a leader line; the spot is
+ * saved (`pieces()`), and a double tap on the plate or its ⟲ puts it back.
+ * Overlap handling only places pieces still at their default. The logic parts float in the
  * world here, where the host anchors them; the palette places one next to you.
  * A toggle unfolds every circuit at once (remembered in localStorage).
  * What you see there goes on the board.
@@ -51,6 +55,8 @@ const VISION_HINT = 'tap a name plate to unfold its circuit · drag an orange do
 const LEAD = 8, PLATE_H = 18, RISE = 8;
 /** Hack vision: circuits keep this far from each other and from the edges (px). */
 const ROOM = 6;
+/** Two taps on a plate this close together put its piece back over the device. */
+const DOUBLE_TAP_MS = 350;
 /** Where the "unfold every circuit" setting is remembered. */
 const UNFOLD_KEY = 'access-denied-vision-unfold';
 /** Hack vision's row order by kind, left to right; ties keep the data's order. */
@@ -99,6 +105,12 @@ export class Schematic {
   private folded = new Set<string>();
   private unfoldAll = false;
   private allBtn: HTMLButtonElement | null = null;
+  /** Hack vision: plates and circuits moved off their default spot, as offsets from it in world units (x right, y down). */
+  private moved = new Map<string, P>();
+  /** Hack vision: when each plate was last tapped (a second tap soon after is a double tap). */
+  private lastTap = new Map<string, number>();
+  /** Hack vision: CSS px per world unit (the host sets it), so a moved piece keeps its place in the world at any zoom. */
+  unit = 1;
   onClose: () => void = () => {};
   /** A device or noun was moved by hand (for the save). */
   onLayout: () => void = () => {};
@@ -142,7 +154,7 @@ export class Schematic {
     else { this.root.id = 'hack'; this.root.append(bar, this.status, this.stage); }
     host.appendChild(this.root);
     this.stage.addEventListener('pointerdown', (e) => {
-      if ((e.target as HTMLElement).closest('.sch-core, .sch-noun, .port, .sch-chip, .sch-guess, .vis-plate, .vis-part')) return;
+      if ((e.target as HTMLElement).closest('.sch-core, .sch-noun, .port, .sch-chip, .sch-guess, .vis-plate, .vis-part, .vis-circuit, .vis-home')) return;
       if (this.armed || this.pending || this.chip) { this.armed = null; this.pending = null; this.chip = null; this.render(); }
     });
     new ResizeObserver(() => { if (!this.root.hidden) this.render(); }).observe(this.stage);
@@ -223,19 +235,73 @@ export class Schematic {
     return d.nouns.map((n, i) => ({ n, i })).sort((a, b) => rank(a.n) - rank(b.n) || a.i - b.i).map((x) => x.n);
   }
 
-  /** The frame round the device, the plate over it and its circuit follow the device's size on screen. */
+  /** The frame round the device, and the piece (plate and circuit) at its default spot over it, or where it was moved. */
   private size(g: HTMLElement, a: Anchor) {
     const box = g.querySelector<HTMLElement>('.vis-outline');
     if (box) { box.style.width = a.w + 'px'; box.style.height = a.h + 'px'; }
-    const plate = g.querySelector<HTMLElement>('.vis-plate'), row = g.querySelector<HTMLElement>('.vis-circuit');
-    if (plate) plate.style.top = -a.h / 2 - LEAD + 'px';
-    if (row) row.style.top = -a.h / 2 - LEAD - PLATE_H - RISE + 'px';
+    const piece = g.querySelector<HTMLElement>('.vis-piece'), o = this.moved.get(g.dataset.dev!);
+    if (!piece) return;
+    piece.style.top = -a.h / 2 - LEAD + 'px';
+    piece.style.translate = o ? o.x * this.unit + 'px ' + o.y * this.unit + 'px' : '';
+  }
+
+  // ---------- hack vision: moving a piece ----------
+
+  /** Moved pieces, for the save (world units from the default spot). */
+  pieces(): Record<string, Pt> { return Object.fromEntries([...this.moved].map(([k, p]) => [k, { x: Math.round(p.x), y: Math.round(p.y) }])); }
+  restorePieces(rec: Record<string, Pt> | undefined, keep: (id: string) => boolean) {
+    this.moved.clear();
+    for (const [k, p] of Object.entries(rec ?? {})) if (keep(k) && p && Number.isFinite(p.x) && Number.isFinite(p.y)) this.moved.set(k, { x: p.x, y: p.y });
+    this.render();
+  }
+  /** Back to the default spot over the device. */
+  private toDefault(id: string) {
+    if (!this.moved.delete(id)) return;
+    this.render(); this.onLayout();
+  }
+
+  /**
+   * Drag a device's piece (plate and circuit) in hack vision. A press that does not
+   * travel past a few px is a tap (`tap`); past that, the piece follows the pointer.
+   * The group is looked up fresh on every move, so a redraw mid-drag (a timer firing)
+   * does not drop it.
+   */
+  private dragPiece(e: PointerEvent, id: string, tap: () => void) {
+    const sx = e.clientX, sy = e.clientY, u = this.unit || 1;
+    const group = () => this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`);
+    let base = this.moved.get(id) ?? { x: 0, y: 0 }, moving = false;
+    const mv = (ev: PointerEvent) => {
+      if (!moving) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) <= 5) return;
+        moving = true;
+        // a circuit the overlap handling had nudged: keep it under the pointer, nudge and all
+        const row = group()?.querySelector<HTMLElement>('.vis-circuit');
+        if (row?.style.translate && !this.moved.has(id) && (e.target as HTMLElement).closest('.vis-circuit')) {
+          const [dx, dy] = row.style.translate.split(' ').map((v) => parseFloat(v) || 0);
+          base = { x: base.x + dx / u, y: base.y + (dy ?? 0) / u };
+        }
+      }
+      this.moved.set(id, { x: base.x + (ev.clientX - sx) / u, y: base.y + (ev.clientY - sy) / u });
+      const g = group();
+      if (g) {
+        g.classList.add('moved');
+        const row = g.querySelector<HTMLElement>('.vis-circuit'); if (row) row.style.translate = '';
+        const a = this.anchors.get(id); if (a) this.size(g, a);
+      }
+      this.lines();
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+      if (!moving) { tap(); return; }
+      this.render(); this.onLayout();
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
   }
 
   /** A device (or a logic part) in hack vision: framed, its name on a plate above it, its circuit above that when unfolded. */
   private visionGroup(id: string) {
     const d = this.m.devices.get(id)!, a = this.anchors.get(id)!, locked = this.m.lockLeft(id) > 0, open = this.isUnfolded(id);
-    const g = el('div', 'sch vis' + (d.logic ? ' crafted' : '') + (locked ? ' locked' : '') + (open ? ' unfolded' : '')); g.dataset.dev = id;
+    const g = el('div', 'sch vis' + (d.logic ? ' crafted' : '') + (locked ? ' locked' : '') + (open ? ' unfolded' : '') + (this.moved.has(id) ? ' moved' : '')); g.dataset.dev = id;
     g.style.left = a.x + 'px'; g.style.top = a.y + 'px';
     const box = el('div', 'vis-outline' + (d.logic ? ' vis-part' : ''));
     if (d.logic) {
@@ -252,21 +318,44 @@ export class Schematic {
     if (this.metered(id)) { const t = el('div', 'sch-trace'); t.dataset.dev = id; t.appendChild(el('i')); box.appendChild(t); }
     g.appendChild(box);
     const num = d.logic ? ' ' + id.replace(/^\D+/, '') : '';
+    // the piece: the plate (and the circuit over it), over the device by default, dragged anywhere by hand
+    const piece = el('div', 'vis-piece'), tag = el('div', 'vis-tag');
     const plate = el('button', 'vis-plate', d.name + num); plate.type = 'button'; plate.dataset.plate = id;
-    plate.title = d.name + ': ' + (locked ? this.lockText(id) : d.status()) + (open ? ' (tap to fold)' : ' (tap to unfold)');
+    plate.title = d.name + ': ' + (locked ? this.lockText(id) : d.status()) + (open ? ' · tap to fold' : ' · tap to unfold') + ' · drag to move';
     plate.setAttribute('aria-expanded', String(open));
-    plate.addEventListener('pointerdown', (e) => e.stopPropagation());
-    plate.addEventListener('click', (e) => { e.stopPropagation(); if (this.armed && open) return; this.fold(id); });
-    g.appendChild(plate);
+    // a tap folds or unfolds; a second tap right after (a double tap) undoes that and puts the piece back over the device
+    const tapPlate = () => {
+      if (this.armed && open) return;
+      const now = performance.now(), again = now - (this.lastTap.get(id) ?? -1e9) < DOUBLE_TAP_MS;
+      this.lastTap.set(id, again ? -1e9 : now);
+      this.fold(id);
+      if (again) this.toDefault(id);
+    };
+    plate.addEventListener('pointerdown', (e) => { if (e.button > 0) return; e.preventDefault(); e.stopPropagation(); this.dragPiece(e, id, tapPlate); });
+    // the keyboard (Enter, Space) still clicks it; a pointer tap is handled on pointerup
+    plate.addEventListener('click', (e) => { e.stopPropagation(); if (e.detail === 0) tapPlate(); });
+    tag.appendChild(plate);
+    if (this.moved.has(id)) {
+      const back = el('button', 'vis-home', '⟲'); back.type = 'button';
+      back.title = 'back over ' + d.name; back.setAttribute('aria-label', 'move ' + d.name + "'s circuit back over it");
+      back.addEventListener('pointerdown', (e) => e.stopPropagation());
+      back.addEventListener('click', (e) => { e.stopPropagation(); this.toDefault(id); });
+      tag.appendChild(back);
+    }
+    piece.appendChild(tag);
     if (open) {
       const circuit = el('div', 'vis-circuit');
+      circuit.style.top = -PLATE_H - RISE + 'px';
       const st = el('div', 'vis-st', locked ? this.lockText(id) : d.status());
       if (locked) st.dataset.lock = id;
       const chips = el('div', 'vis-chips');
       this.row(d).forEach((n) => chips.appendChild(this.chipOf(id, n)));
       circuit.append(st, chips);
-      g.appendChild(circuit);
+      // its background (and the status line) drags the piece too; chips, dots and verbs keep their own gestures
+      circuit.addEventListener('pointerdown', (e) => { if (e.button > 0) return; e.preventDefault(); e.stopPropagation(); this.dragPiece(e, id, () => {}); });
+      piece.appendChild(circuit);
     }
+    g.appendChild(piece);
     this.size(g, a);
     return g;
   }
@@ -302,17 +391,27 @@ export class Schematic {
    */
   private arrange() {
     if (this.mode !== 'vision') return;
-    const rows = [...this.stage.querySelectorAll<HTMLElement>('.vis-circuit')];
-    if (!rows.length) return;
-    rows.forEach((r) => { r.style.translate = ''; });
+    const all = [...this.stage.querySelectorAll<HTMLElement>('.vis-circuit')];
+    if (!all.length) return;
+    // pieces the player moved stay exactly where they were put: they are obstacles, not placed
+    const rows = all.filter((r) => !r.closest('.moved'));
+    all.forEach((r) => { r.style.translate = ''; });
     const s = this.stage.getBoundingClientRect(), W = s.width;
     type Box = { l: number; t: number; r: number; b: number };
-    const boxes = rows.map((row) => {
-      const q = row.getBoundingClientRect();
-      return { row, b: { l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top } };
-    }).sort((p, q) => p.b.l - q.b.l);
-    const placed: Box[] = [];
-    if (!this.palette.hidden) { const q = this.palette.getBoundingClientRect(); placed.push({ l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top }); }
+    const box = (e: Element): Box => { const q = e.getBoundingClientRect(); return { l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top }; };
+    const boxes = rows.map((row) => ({ row, b: box(row) })).sort((p, q) => p.b.l - q.b.l);
+    // the zone's buttons over the canvas (HACK, BOARD, …) lie over the stage too
+    const btns = document.getElementById('zone-btns'), bar = btns?.offsetParent ? box(btns) : null;
+    // a moved circuit is never pushed aside, only kept from growing out of the top of the view
+    // or under the buttons (open verbs make it taller)
+    const placed: Box[] = all.filter((r) => r.closest('.moved')).map((r) => {
+      const b = box(r), top = bar && b.l < bar.r && b.r > bar.l ? Math.max(ROOM, bar.b + ROOM) : ROOM;
+      if (b.t >= top) return b;
+      r.style.translate = '0 ' + (top - b.t) + 'px';
+      return { ...b, t: top, b: b.b + top - b.t };
+    });
+    if (!this.palette.hidden) placed.push(box(this.palette));
+    if (bar) placed.push(bar);
     const at = (b: Box, dx: number, dy: number): Box => ({ l: b.l + dx, t: b.t + dy, r: b.r + dx, b: b.b + dy });
     const hit = (q: Box) => placed.find((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM);
     for (const { row, b } of boxes) {
@@ -388,7 +487,7 @@ export class Schematic {
   }
   /** Forget where everything sat and which verbs were open (a zone reset). The shared `known` is the owner's to clear. */
   resetLayout() {
-    this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear();
+    this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear(); this.moved.clear();
     this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.dev = '';
     this.render();
   }
@@ -621,8 +720,15 @@ export class Schematic {
     if (this.mode === 'vision') {
       // a plate holds its circuit up: one line from the plate to the circuit's foot
       this.stage.querySelectorAll('.sch.vis').forEach((g) => {
-        const plate = g.querySelector('.vis-plate'), circuit = g.querySelector('.vis-chips');
+        const plate = g.querySelector('.vis-plate'), circuit = g.querySelector('.vis-chips'), frame = g.querySelector('.vis-outline');
         if (plate && circuit) this.path(this.edge(plate, 'top'), this.edge(circuit, 'bottom'), 'branch');
+        // a moved piece stays tied to its device: a leader from the plate to the nearest point of the frame
+        if (plate && frame && g.classList.contains('moved')) {
+          const a = this.edge(plate, 'bottom'), st = this.stage.getBoundingClientRect(), f = frame.getBoundingClientRect();
+          const l = f.left - st.left, t = f.top - st.top;
+          const b = { x: Math.max(l, Math.min(l + f.width, a.x)), y: Math.max(t, Math.min(t + f.height, a.y)) };
+          if (Math.hypot(a.x - b.x, a.y - b.y) > 2) this.path(a, b, 'leader');
+        }
       });
       this.m.links.forEach((l) => this.cable(l));
       return;
@@ -693,11 +799,18 @@ export class Schematic {
     node.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('.port, .sch-verb, .sch-guess')) return;
       e.preventDefault(); e.stopPropagation();
+      const tap = () => {
+        if (this.armed) { this.propose(this.armed, key); return; }
+        if (this.chip) { const c = this.chip; this.chip = null; this.m.useItem(c, key); return; }
+        this.pending = null;
+        if (this.open.has(key)) this.open.delete(key); else this.open.add(key);
+        this.render();
+      };
+      // in hack vision the row decides where nouns sit: dragging a chip moves its whole piece
+      if (this.mode === 'vision') { this.dragPiece(e, key.split('.')[0], tap); return; }
       const sx = e.clientX, sy = e.clientY, o0 = { ...(this.offsets.get(key) ?? { x: 0, y: 0 }) };
       let moved = false;
       const mv = (ev: PointerEvent) => {
-        // in hack vision the row decides where nouns sit
-        if (this.mode === 'vision') return;
         if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 5) moved = true;
         if (!moved) return;
         const o = { x: o0.x + ev.clientX - sx, y: o0.y + ev.clientY - sy };
@@ -708,11 +821,7 @@ export class Schematic {
       const up = () => {
         window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
         if (moved) { this.render(); this.onLayout(); return; }
-        if (this.armed) { this.propose(this.armed, key); return; }
-        if (this.chip) { const c = this.chip; this.chip = null; this.m.useItem(c, key); return; }
-        this.pending = null;
-        if (this.open.has(key)) this.open.delete(key); else this.open.add(key);
-        this.render();
+        tap();
       };
       window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
     });
@@ -806,7 +915,7 @@ export class Schematic {
   private removeLogic(id: string) {
     const name = this.m.devices.get(id)?.name ?? id;
     this.m.removeDevice(id);
-    this.known.delete(id); this.boardPos.delete(id); this.unfolded.delete(id); this.folded.delete(id);
+    this.known.delete(id); this.boardPos.delete(id); this.unfolded.delete(id); this.folded.delete(id); this.moved.delete(id);
     this.open.forEach((k) => { if (k.startsWith(id + '.')) this.open.delete(k); });
     this.armed = null; this.pending = null;
     if (this.dev === id) this.dev = '';
