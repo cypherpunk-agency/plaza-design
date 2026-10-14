@@ -20,7 +20,7 @@ import type { LineKind } from '../terminal';
 import { type Goal, type Line, YardModel } from './model';
 import { Panels } from './panels';
 import { type Anchor, Schematic } from './schematic';
-import { drawYard, drawYardBackdrop, spotAt, spots, TRAY_X, YARD_EXIT_X } from './scene';
+import { drawYard, drawYardBackdrop, spotAt, spots, TRAY_X } from './scene';
 
 export { YARD_SPAWN, YARD_W } from './scene';
 
@@ -199,7 +199,8 @@ export class Yard {
   /** Things you can stand next to and press E on. */
   targets(): YardTarget[] {
     const m = this.model;
-    const list: YardTarget[] = [{ id: 'exit', x: YARD_EXIT_X, label: m.label('prompt.exit'), promptH: 44 }];
+    // No exit here: the passage at the left edge is walked through (the engine's edge exits, city.ts EDGES).
+    const list: YardTarget[] = [];
     this.spots().forEach((s) => list.push({ id: s.id, x: s.x, label: m.label('prompt.open'), promptH: Math.min(s.h + 12, 100) }));
     if (m.parcelAt === 'tray') list.push({ id: 'tray', x: TRAY_X, label: m.label('prompt.take'), promptH: 26 });
     return list;

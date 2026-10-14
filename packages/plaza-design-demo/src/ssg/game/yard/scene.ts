@@ -8,7 +8,8 @@ import { SLIDE_MS, type YardModel } from './model';
 
 export const YARD_W = 760;
 export const YARD_SPAWN = 48;
-export const YARD_EXIT_X = 18;
+/** The open passage to Downtown's alley at the yard's left edge: walk into the edge to leave (no E). */
+export const YARD_EXIT_X = 26;
 export const TRAY_X = 668;
 
 const SLOT: Record<string, number> = { home: 350, 'A-3': 290, 'B-5': 350, 'C-7': 410, chute: 452 };
@@ -41,8 +42,8 @@ let hookX = SLOT.home;
 
 /** The yard's back corners, where the backs of the houses meet the buildings on either side. */
 const LX = 8, RX = YARD_W - 8;
-/** The back door to the alley, under the DOWNTOWN sign. */
-const EXIT_DOOR = 34;
+/** The open passage to the alley, at the left edge, under its small DOWNTOWN sign. */
+const EXIT_DOOR = YARD_EXIT_X;
 /** A storey is about 1.6× the player. */
 const STOREY = 70;
 
@@ -138,16 +139,16 @@ export function drawYardBackdrop(x: CanvasRenderingContext2D, v: View & { viewH:
     x.fillStyle = 'rgba(201,138,63,.4)'; for (let yy = gy - 30; yy > 24; yy -= 40) x.fillRect(px - 1, yy, 4, 1);
   });
 
-  // the back door to the alley: open, with street light falling in from Downtown
-  const d = sx(EXIT_DOOR);
-  x.fillStyle = '#000'; x.fillRect(d - 14, y(52), 28, 52);
-  const spill = x.createLinearGradient(0, y(52), 0, gy);
-  spill.addColorStop(0, 'rgba(255,136,0,0)'); spill.addColorStop(1, 'rgba(255,136,0,.18)');
-  x.fillStyle = spill; x.fillRect(d - 13, y(51), 26, 51);
-  x.fillStyle = 'rgba(194,65,12,.3)'; x.fillRect(d - 13, y(30), 26, 1);
-  x.strokeStyle = 'rgba(255,136,0,.6)'; x.strokeRect(d - 13.5, y(52) + 0.5, 27, 52);
-  x.fillStyle = '#1a0c04'; x.fillRect(d + 14, y(52), 5, 52); x.strokeStyle = 'rgba(194,65,12,.6)'; x.strokeRect(d + 14.5, y(52) + 0.5, 4, 51);
-  for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,136,0,' + (0.12 - i * 0.025) + ')'; x.fillRect(d - 12 + i * 3, gy + 1 + i * 3, 24 - i * 6, 2); }
+  // the passage to the alley at the left edge: no door, just a gap in the wall
+  // under a lintel, with Downtown's street light falling in. Walk into it to leave.
+  const d = sx(EXIT_DOOR), pl = sx(LX), pw = d + 16 - pl;
+  x.fillStyle = '#000'; x.fillRect(pl, y(64), pw, 64);
+  const spill = x.createLinearGradient(pl, 0, pl + pw, 0);
+  spill.addColorStop(0, 'rgba(255,136,0,.22)'); spill.addColorStop(1, 'rgba(255,136,0,.04)');
+  x.fillStyle = spill; x.fillRect(pl, y(63), pw, 63);
+  x.fillStyle = '#1a0c04'; x.fillRect(pl, y(70), pw + 4, 6); x.strokeStyle = 'rgba(194,65,12,.6)'; x.strokeRect(pl + 0.5, y(70) + 0.5, pw + 3, 5);
+  x.fillStyle = '#1a0c04'; x.fillRect(d + 16, y(64), 4, 64); x.fillStyle = 'rgba(255,136,0,.5)'; x.fillRect(d + 16, y(64), 1, 64);
+  for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,136,0,' + (0.14 - i * 0.03) + ')'; x.fillRect(pl, gy + 1 + i * 3, pw - i * 8, 2); }
 
   // the lamp over the yard sign lights the brick around it
   wash(sx(78), y(126), 70, 0.07);
@@ -266,11 +267,11 @@ export function drawYard(x: CanvasRenderingContext2D, m: YardModel, v: View, hig
   x.fillStyle = '#4a2408'; x.fillRect(sg - 1, y(134), 2, 8); x.fillRect(sg - 6, y(134), 12, 2);
   x.fillStyle = 'rgba(255,217,165,.85)'; x.fillRect(sg - 4, y(132), 8, 1);
   text("FIXER'S YARD · NO LOGS KEPT", sg, y(115), 'rgba(255,136,0,.9)', 8, '600');
-  // the exit sign over the back door to the alley
-  const ex = sx(EXIT_DOOR);
-  x.fillStyle = '#4a2408'; x.fillRect(ex - 18, y(56), 1, 3); x.fillRect(ex + 17, y(56), 1, 3);
-  x.fillStyle = '#04100f'; x.fillRect(ex - 26, y(68), 52, 12); x.strokeStyle = 'rgba(0,255,255,.55)'; x.strokeRect(ex - 25.5, y(68) + 0.5, 51, 11);
-  text('< DOWNTOWN', ex, y(59), 'rgba(0,255,255,.9)', 8, '600');
+  // a small street sign over the passage, on a bracket from the lintel (a way, not a machine: no cyan)
+  const ex = sx(EXIT_DOOR) + 6;
+  x.fillStyle = '#4a2408'; x.fillRect(ex - 1, y(78), 2, 8);
+  x.fillStyle = '#140a04'; x.fillRect(ex - 24, y(90), 48, 12); x.strokeStyle = 'rgba(255,217,165,.5)'; x.strokeRect(ex - 23.5, y(90) + 0.5, 47, 11);
+  text('< DOWNTOWN', ex, y(81), 'rgba(255,217,165,.85)', 7, '600');
 
   // CAM-1 on its pole: a lit pole with a rim so it reads against the brick
   const cx = sx(90);

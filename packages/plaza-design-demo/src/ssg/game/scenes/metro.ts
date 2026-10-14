@@ -18,6 +18,8 @@ const L = {
   pillars: [{ x: 330, cam: true }, { x: 730 }, { x: 1130 }] as { x: number; cam?: boolean }[],
   board: 540,
   bench: 930,
+  /** Where you board: in front of the second door of the first car while the train is in (and where you land stepping off). */
+  boardAt: 365,
   /** The train, in the track's parallax: where it stops, its cars, its loop in frames. */
   train: { stop: 150, cars: 3, car: 290, gap: 8, loop: 1600, arrive: 360, leave: 760, gone: 1100 },
 };
@@ -88,9 +90,24 @@ function drawHall(x: CanvasRenderingContext2D, v: View) {
 /** Who is riding, per window: true = someone in it. */
 const RIDERS = (() => { const r = rng(91); return Array.from({ length: 30 }, () => r() < 0.4); })();
 
+/** Shifts the train's loop, so a train is in when you arrive by train. */
+const clock = { offset: 0 };
+
+/** Puts the train at the platform, doors opening, at frame `t` (you just stepped off it). */
+export function metroSync(t: number) {
+  const T = L.train;
+  clock.offset = (((T.arrive + 30 - t) % T.loop) + T.loop) % T.loop;
+}
+
+/** True while the train is in with its doors open: you can board. */
+export function metroDoorsOpen(t: number) {
+  const at = trainAt(t);
+  return !!at && !at.moving && at.open > 0.6;
+}
+
 /** Where the train's nose is (track coordinates) and whether its doors are open, from the loop's clock. */
 function trainAt(t: number): { x: number; open: number; moving: boolean } | null {
-  const T = L.train, ph = t % T.loop;
+  const T = L.train, ph = (t + clock.offset) % T.loop;
   if (ph < T.arrive) { const f = ph / T.arrive; return { x: T.stop + 1900 * (1 - f) * (1 - f), open: 0, moving: true }; }
   if (ph < T.leave) { const f = (ph - T.arrive) / (T.leave - T.arrive); return { x: T.stop, open: Math.min(1, Math.min(f, 1 - f) * 8), moving: false }; }
   if (ph < T.gone) { const f = (ph - T.leave) / (T.gone - T.leave); return { x: T.stop - 2300 * f * f, open: 0, moving: true }; }
@@ -138,11 +155,14 @@ export const metro: Scene = {
   name: 'Metro',
   width: L.width,
   spawn: L.spawn,
-  intro: ['The metro. One line, one station, and a train that never says where it goes.'],
-  exits: [{ id: 'downtown', x: 32, to: 'downtown', label: '[E] DOWNTOWN', promptH: 82 }],
+  intro: ['The metro. One line, three stops, and a train that never says which one it means.'],
+  exits: [
+    { id: 'downtown', x: 32, to: 'downtown', at: 'metro', label: '[E] STAIRS UP · DOWNTOWN', promptH: 82 },
+    { id: 'train', x: L.boardAt, to: '', action: 'board', label: '[E] BOARD', promptH: 84 },
+  ],
   readables: [
     { id: 'board', x: L.board, name: 'DEPARTURES', promptH: 120, pages: ['NEXT TRAIN: NOW.', 'It has said NOW since the day it was installed. It beats the timetable.'] },
-    { id: 'map', x: 730, name: 'LINE MAP', promptH: 92, pages: ['LINE 0. All stops: PLAZA CENTRAL.', 'A loop of one. Trains arrive, trains leave, nobody asks where.'] },
+    { id: 'map', x: 730, name: 'LINE MAP', promptH: 92, pages: ['LINE 0: DOWNTOWN · GALLERIA · HARBOR.', 'Pick your stop on the map inside the train. The train pretends it was its idea.'] },
     { id: 'poster', x: 1130, name: 'POSTER', promptH: 92, pages: ['REGISTRY PREMIUM: your commute, counted.', 'Free for the first lifetime.'] },
   ],
 

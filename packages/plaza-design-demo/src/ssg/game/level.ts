@@ -70,7 +70,7 @@ export function objective(s: Save): Objective {
 
 // ---------- layout (world units; heights measured up from the street) ----------
 
-export const LEVEL_W = 1840;
+export const LEVEL_W = 2000;
 export const SPAWN_X = 720;
 
 /** A ground-floor opening on a front: offset from the front's left edge, width, and what it is. */
@@ -92,12 +92,15 @@ export const FRONTS: Front[] = [
   { x: 420, w: 130, h: 208, bays: [[14, 24, 'door'], [50, 64, 'glass']] },
   { x: 550, w: 170, h: 274, bays: [[8, 54, 'glass'], [70, 26, 'door'], [104, 58, 'glass']] },
   { x: 720, w: 140, h: 340 }, // behind the noodle stall
-  { x: 860, w: 126, h: 340, bays: [[24, 50, 'glass']] }, // the YARD door sits at its right end
+  { x: 860, w: 90, h: 340, bays: [[24, 50, 'glass']] },
+  // 950–994: the alley to the fixer's back yard, an open gate with the yard behind it (drawn by the engine)
+  { x: 994, w: 46, h: 76 }, // a one-storey wall between the alley and the annex; the dumpster stands in front of it
   { x: 1040, w: 160, h: 62, roof: true, bays: [[16, 52, 'shutter'], [124, 24, 'door']] },
   { x: 1200, w: 60, h: 406, bays: [[18, 24, 'door']] },
   { x: 1260, w: 160, h: 274, bays: [[10, 46, 'glass'], [68, 24, 'sealed'], [104, 46, 'glass']] }, // the penthouse tower
   { x: 1420, w: 100, h: 208, bays: [[10, 44, 'shutter'], [64, 24, 'door']] },
   { x: 1680, w: 160, h: 340, bays: [[8, 64, 'glass']] }, // the identity scan is its entrance
+  { x: 1840, w: 160, h: 208, bays: [[104, 44, 'shutter']] }, // past the SPACEPORT sign: the sky-taxi stand in front of it
 ];
 
 /** Surfaces the player can land on (besides the street). */

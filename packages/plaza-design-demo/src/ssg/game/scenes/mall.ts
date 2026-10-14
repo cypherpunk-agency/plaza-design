@@ -24,6 +24,10 @@ const L = {
   fountain: { x: 850, w: 150 },
   kiosk: 300,
   escSign: 1440,
+  /** Doors at play level: the Galleria metro station, the stairs to the roof's taxi pad, the service corridor to the market. */
+  metro: 32,
+  roof: 1220,
+  service: 1630,
 };
 
 const SHOP_W = 118;
@@ -105,7 +109,11 @@ export const mall: Scene = {
   width: L.width,
   spawn: L.spawn,
   intro: ['The mall. Warm, dry and recording everything I look at.'],
-  exits: [{ id: 'downtown', x: 32, to: 'downtown', label: '[E] DOWNTOWN', promptH: 82 }],
+  exits: [
+    { id: 'metro', x: L.metro, to: 'train', label: '[E] METRO · GALLERIA', promptH: 82 },
+    { id: 'taxi', x: L.roof, to: '', action: 'taxi', label: '[E] ROOF PAD · HAIL TAXI', promptH: 82 },
+    { id: 'market', x: L.service, to: 'market', at: 'mall', label: '[E] SERVICE CORRIDOR', promptH: 82 },
+  ],
   readables: [
     { id: 'kiosk', x: L.kiosk, name: 'DIRECTORY', promptH: 70, pages: ['YOU ARE HERE.', '"Here" is defined loosely. Exits are not listed, for your comfort.'] },
     { id: 'fountain', x: L.fountain.x, name: 'WISHING FOUNTAIN', promptH: 66, pages: ['Wishes are processed in the order received.', 'Current queue: 1,204,577. Estimated wait: yes.'] },
@@ -131,7 +139,9 @@ export const mall: Scene = {
     // play band: the atrium floor's back edge
     x.fillStyle = '#0d0907'; x.fillRect(0, y(14), v.viewW, 14);
     x.fillStyle = 'rgba(' + O + ',.4)'; x.fillRect(0, y(14), v.viewW, 1);
-    exitDoor(x, v, 32, '#0a0603');
+    exitDoor(x, v, L.metro, '#0a0603', '< METRO');
+    exitDoor(x, v, L.roof, '#0a0603', 'SKY TAXI ^');
+    exitDoor(x, v, L.service, '#0a0603', 'SERVICE >');
 
     // pillars running up out of the view
     for (const px of L.pillars) {

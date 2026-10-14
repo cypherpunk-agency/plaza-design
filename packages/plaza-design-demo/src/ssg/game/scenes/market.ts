@@ -25,6 +25,9 @@ const L = {
     { x: 1452, w: 128, awning: 2, sign: 'CLOSING DOWN', col: RED },
   ] as Stall[],
   board: 575,
+  /** Doors at play level: the service door to the mall, and the gate to Downtown in the end wall (open once Downtown is cleared). */
+  service: 32,
+  gate: 1660,
   /** Vertical signs on the tenements, in the middle band's coordinates. */
   blades: [{ x: 150, h: 210, text: 'HOTEL' }, { x: 520, h: 200, text: 'PAWN' }, { x: 860, h: 220, text: 'CLINIC' }, { x: 1180, h: 230, text: 'KARAOKE' }],
 };
@@ -80,7 +83,10 @@ export const market: Scene = {
   spawn: L.spawn,
   ambient: { sky: true, rain: true },
   intro: ['The night market. Cash, noise and nobody looking up.'],
-  exits: [{ id: 'downtown', x: 32, to: 'downtown', label: '[E] DOWNTOWN', promptH: 82 }],
+  exits: [
+    { id: 'mall', x: L.service, to: 'mall', at: 'market', label: '[E] SERVICE DOOR · MALL', promptH: 82 },
+    { id: 'downtown', x: L.gate, to: 'downtown', at: 'market', label: '[E] GATE · DOWNTOWN', promptH: 82, requires: 'end' },
+  ],
   readables: [
     { id: 'sims', x: 326, name: 'SIM CARDS', promptH: 128, pages: ['Prepaid. Registered to nobody.', 'Nobody is the most popular name in the city.'] },
     { id: 'rules', x: L.board, name: 'MARKET RULES', promptH: 84, pages: ['1. No cameras. 2. See rule 1.', '3. Haggling is mandatory. 4. Prices are not.'] },
@@ -126,7 +132,7 @@ export const market: Scene = {
 
     // play band
     wetFloor(x, v);
-    exitDoor(x, v, 32, '#0a0603');
+    exitDoor(x, v, L.service, '#0a0603', '< MALL');
     L.stalls.forEach((s, i) => drawStall(x, v, s, i));
     const nb = sx(L.board);
     if (onScreen(v, nb - 30, 60)) { box(x, nb - 1, y(48), 3, 48, '#2a160a'); notice(x, t, nb, y(78), 56, 30, ['MARKET', 'RULES']); }
@@ -135,7 +141,8 @@ export const market: Scene = {
     if (onScreen(v, ew, 120)) {
       box(x, ew, y(130), 120, 130, '#140a06', 'rgba(' + O + ',.6)');
       for (let r = 6; r < 130; r += 8) { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(ew + 1, y(130) + r, 118, 1); }
-      sign(x, t, 'NO EXIT', ew + 50, y(70), RED, { size: 8, phase: 200 });
+      if (v.flags.end) exitDoor(x, v, L.gate, '#0a0603', 'DOWNTOWN >');
+      else sign(x, t, 'NO EXIT', ew + 50, y(70), RED, { size: 8, phase: 200 });
     }
   },
 
