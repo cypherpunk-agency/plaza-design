@@ -70,6 +70,7 @@ const PLACE_DATA = [
   { id: 'mall', name: 'GALLERIA MALL', district: 'galleria', entrance: 'mall' },
   { id: 'station-harbor', name: 'HARBOR METRO', district: 'harbor', entrance: 'harborStation', at: 'harbor' },
   { id: 'harbor', name: 'HARBOR', district: 'harbor', entrance: 'harbor' },
+  { id: 'warehouse', name: 'WAREHOUSE 4', district: 'harbor', entrance: 'warehouse', at: 'stacks' },
   { id: 'beach', name: 'BEACH', district: 'harbor', entrance: 'beach', at: 'harbor' },
   { id: 'line0', name: 'LINE 0', district: null, entrance: 'train' },
 ] as const satisfies readonly PlaceData[];
@@ -88,6 +89,9 @@ export const SCENE_PLACE = {
   mall: 'mall',
   galleriaStation: 'station-galleria',
   harbor: 'harbor',
+  // the stacks (terminal 2, P15) are a second scene of the harbor's place: a door from the pier, no map pin of their own
+  stacks: 'harbor',
+  warehouse: 'warehouse',
   harborStation: 'station-harbor',
   beach: 'beach',
   train: 'line0',
@@ -237,6 +241,7 @@ export const PLACE_MAP: Partial<Record<PlaceId, [number, number]>> = {
   mall: [258, 104],
   'station-galleria': [252, 137],
   harbor: [320, 122],
+  warehouse: [307, 112],
   'station-harbor': [306, 137],
   beach: [389, 123],
 };
@@ -350,6 +355,7 @@ export const PLACE_IN_VIEW: Partial<Record<PlaceId, SceneId[]>> = {
   mall: ['galleriaStation'],
   'station-harbor': ['harbor', 'beach', 'train'],
   harbor: ['harborStation', 'beach'],
+  warehouse: ['stacks'],
   beach: ['harbor'],
 };
 /** A place is on the map once you have been in it or seen its way in. */

@@ -60,7 +60,7 @@ ping** on the next goal target after ~20 s standing still, in the opening scenes
 | 4 | Moth's place | P09, P10 | flat 4C (Downtown) | ✓ |
 | 5 | Washer 3 | P13 | the laundromat (Neon Market) | ✓ |
 | 6 | The stop that isn't on the map | P14 | the metro line (TRAIN-0, the old siding) | ✓ |
-| 7 | **NRLU 404 0451** (Act I finale) | P15 | the harbor stacks, STS-2, and the **warehouse** (Harbor & Shore) | next |
+| 7 | **NRLU 404 0451** (Act I finale) | P15 | the harbor stacks, STS-2, and the **warehouse** (Harbor & Shore) | ✓ |
 
 **Decided for the rest of Act I (Tommi, 2026-10-15):**
 - **The harbor is locked until P14.** LINE 0 passes the harbor station (STATION CLOSED) and the
@@ -75,6 +75,10 @@ ping** on the next goal target after ~20 s standing still, in the opening scenes
 - **The ending:** a short talk with Moth at the container (deleted on purpose; the list is split
   into seven root fragments; the Registry knows Moth has it), an ACT II card, Moth joins your
   deck as a contact, and the Spire gets its name on the map (`heard:spire`).
+
+Built (2026-10-15): the stacks are a second scene of the harbor's place (terminal 2, a gate from the pier);
+warehouse 4 is its own place with a locked door; the ending plays the ACT II card, puts Moth on your deck
+(`contacts`, `msg moth`) and sets `act1:done`, `heard:spire`, `contact:moth`. See PUZZLES.md, P15 "As built".
 
 Optional puzzles that sit on Act I's way: O05 the market billboard cipher, O07 the metro
 junction cabinet, O08/O09 the mall lift and the **rooftop garden**, O10 the music box (metro

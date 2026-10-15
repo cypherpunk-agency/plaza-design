@@ -30,6 +30,8 @@ const LOCKED = (() => { try { return new URLSearchParams(location.search).has('l
  */
 const STORY: Record<string, { name: string; start: () => SceneId }> = {
   p14: { name: "P14 · THE STOP THAT ISN'T ON THE MAP", start: () => { boardRide('galleria', 240); return 'train'; } },
+  // P15, the end of Act I: the stacks at the gate booth (the scene keeps its progress; its watchdog starts on PORT AUTHORITY)
+  p15: { name: 'P15 · NRLU 404 0451 (ACT I FINALE)', start: () => 'stacks' },
 };
 /** A story level's start (null: not one, `id` is a scene or cutscene). */
 export const startLevel = (id: string): SceneId | null => STORY[id]?.start() ?? null;

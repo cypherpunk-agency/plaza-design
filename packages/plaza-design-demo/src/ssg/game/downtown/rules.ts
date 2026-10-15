@@ -38,6 +38,13 @@ export interface Player {
   granted: () => void;
   /** Downtown is cleared: the end screen. */
   end: () => void;
+  /**
+   * A story beat asks for a cutscene (the stacks' ACT II card): the game plays it once the screen
+   * is free (no talk, panel or bubble open), then the player is back where they were.
+   */
+  cutscene?: (id: string) => void;
+  /** Another scene's state key, as its save has it (the stacks ask Moth's place whether Sprat was fed). */
+  sceneState?: (scene: string, key: string) => unknown;
 }
 
 /** Where DLV-9 rests: by the dumpster (its `layout.spot`), outside the market gate, or inside the market (out of the world). */

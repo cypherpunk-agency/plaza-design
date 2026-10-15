@@ -194,6 +194,17 @@ Append one line per decision: what, which side, why.
   cycle's timing, the trip and the jacket are **code** (`laundromat/rules.ts`, `washer.run` /
   `washer.stop` / `washer.take`, the breaker's self-reset in `tick`, `door3` derived). A running
   cycle is not saved: it comes back stopped, its load still in (`settle`).
+- **The stacks (P15) and the end of Act I** (2026-10-15): STS-2, the thermal gate, the ferry, the
+  reefer and the watchdog are **data** (`stacks.json`; the scope's boxes reuse the yard's `camera`
+  field); the lift's timeline, the gate's moment, the watchdog's wiring check and the ending are
+  **code** (`stacks/rules.ts`; the trolley is a pure function of the clock, `trolley`, read by the
+  drawing). The rules are made for the player (`rules(player)`, like Downtown's): two new optional
+  `Player` hooks, **engine-side code** in game.ts: `cutscene(id)` (a story beat asks for a cutscene;
+  the game plays it once nothing is open: `pendingCut`) and `sceneState(scene, key)` (another
+  scene's state: Moth asks whether Sprat was fed). **Contacts on the deck** (`contacts.ts`): who and
+  which messages, released by save flags, are **code-side data** for now (move to
+  `data/contacts.json` when they grow); the deck commands `contacts` / `msg <id>` are **code**
+  (level.ts), reading flags `read:<message>`.
 - **The city as data** (2026-10-15, CITY.md): city → district → place → scene. `city.ts`
   `DISTRICTS` (seven, each with its stratum), `PLACES` (every existing place: id, name, district,
   entrance scene and the exit quick travel lands at) and `SCENE_PLACE` (each scene's place; a place

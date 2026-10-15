@@ -36,7 +36,7 @@ The city is a cross-section with three strata.
 | **Downtown** | street | working class, mixed, rain and neon | the street ✓ (noodle stall, kiosk); Capsule 7B tower ✓ (your flat; later the lobby and roof); the fixer's back yard ✓; Moth's building ✓ (flat 4C; later the stairwell); the corner shop ✓; J's penthouse; the billboard catwalk |
 | **Neon Market / Old Quarter** | street | low life, packed, low-tech | the market ✓; the laundromat ✓; the ripperdoc clinic; the arcade and karaoke; the pawn shop; club VOID |
 | **Galleria** | street (and up) | middle and upper-middle class, consumer, shiny | the mall ✓; the rooftop garden; gated condos; the Church of the Algorithm |
-| **Harbor & Shore** | street (and water) | industrial and leisure, busy against calm | the harbor pier ✓; the warehouse; the beach ✓ (SALT, the pier, Moth's boat); the bridge |
+| **Harbor & Shore** | street (and water) | industrial and leisure, busy against calm | the harbor pier ✓ (and the stacks ✓, terminal 2, a second scene of it); warehouse 4 ✓ (outside only; its evidence locker is Act II); the beach ✓ (SALT, the pier, Moth's boat); the bridge |
 | **The Spire / Plaza Central** | overworld | elite, cold, almost lifeless | Plaza Holdings HQ (lobby, floors, Sorel's office, the penthouse); the Registry office; the antenna; the sky-taxi depot |
 | **Undercity** | underworld | the Ghosts, lantern-lit, low-tech | the canals; the sewer market; the flooded server basement; Ghost homes in the arches |
 | **The Fringe** | street, edge | devoid of life, robots only | a dead automated factory; the data cemetery; the recycling plant |

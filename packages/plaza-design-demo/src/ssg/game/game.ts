@@ -32,6 +32,7 @@ import {
 } from './city';
 import { drawCityMap, mapKey, mapPointer, openMap, type MapAct, type MapState, type MapView } from './citymap';
 import { KeyBar } from './keybar';
+import { messagesOf, unread } from './contacts';
 import { levels, startLevel, SUDO, unlockAll } from './sudo';
 import { Menu } from './menu';
 import {
@@ -185,6 +186,10 @@ export class Game {
       nodes: () => nodeCount(this.save),
       granted: () => sound.granted(),
       end: () => { this.showEnd = true; },
+      // a story beat's cutscene (the stacks' ACT II card) waits for the screen to be free (`loop`)
+      cutscene: (cut) => { this.pendingCut = cut; },
+      // another scene's state: its live model if it is hosted, else its save
+      sceneState: (scene, key) => this.hosts.get(scene as SceneId)?.model.get(key) ?? this.save.scenes[scene]?.state?.[key],
     }) : def.rules ?? NO_RULES;
     const zh = new SceneHost(this.host.windowEl, print, {
       modules: () => this.save.modules,
@@ -357,6 +362,12 @@ export class Game {
     document.documentElement.classList.toggle('game-map', !!this.mapView || !!this.flight);
     this.keyBar.sync(this.save.jump);
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
+    // a story beat asked for a cutscene: it plays once nothing is open (the talk that asked for it has closed)
+    if (this.pendingCut && !this.zh.overlayOpen && !this.zh.popupOpen && !this.bubble && !this.mapView && !this.term.focused) {
+      const id = this.pendingCut;
+      this.pendingCut = null;
+      this.playCutscene(id, () => this.inbox());
+    }
     if (!this.reduced || this.t < 1) this.t += dt;
     this.clock += dt;
     this.update(dt);
@@ -1401,6 +1412,20 @@ export class Game {
 
   private cut: CutscenePlay | null = null;
   private cutThen: (() => void) | null = null;
+  /** A cutscene a story beat asked for, waiting for the screen to be free. */
+  private pendingCut: string | null = null;
+
+  /**
+   * Contacts on your deck (contacts.ts): after a story beat, say what came in. The messages stay
+   * unread until `msg <contact>` in the deck.
+   */
+  private inbox() {
+    const news = unread(this.save.flags);
+    if (!news.length) return;
+    const who = [...new Set(news.map((n) => n.contact))];
+    who.forEach((c) => this.term.print('[deck] ' + c.name + ' · ' + c.status + ' · ' + messagesOf(c, this.save.flags).length + ' message(s) · type: msg ' + c.id, 'ok'));
+    if (who.some((c) => c.id === 'moth')) this.say('YOU', ['Moth is on my deck now. One bar of signal, out on the water.', this.touch ? 'TERMINAL, then: msg moth.' : 'ENTER for the terminal, then: msg moth.'], this.p.x, 46);
+  }
 
   /**
    * Play a cutscene, then continue: `then` runs when it ends or is skipped. Without

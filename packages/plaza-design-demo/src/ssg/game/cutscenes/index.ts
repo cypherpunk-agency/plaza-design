@@ -12,6 +12,7 @@
  */
 
 import data from '../data/cutscenes.json';
+import { drawAct2 } from './act2';
 import { drawSkyline } from './skyline';
 import type { Cutscene, CutsceneData, CutView } from './types';
 
@@ -22,6 +23,8 @@ const DATA: Record<string, CutsceneData> = data;
 const DRAW = {
   /** The opening: the city with nobody in it. */
   intro: (x: CanvasRenderingContext2D, v: CutView, t: number) => drawSkyline(x, v, t, DATA.intro.duration),
+  /** The end of Act I: the ferry leaves with Moth, the Spire across the bay, ACT II. */
+  act2: (x: CanvasRenderingContext2D, v: CutView, t: number) => drawAct2(x, v, t, DATA.act2.duration),
 } satisfies Record<string, Cutscene['draw']>;
 
 export type CutsceneId = keyof typeof DRAW;

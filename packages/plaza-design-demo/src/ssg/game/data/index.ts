@@ -17,6 +17,7 @@ import mothJson from './moth.json';
 import beachJson from './beach.json';
 import trainJson from './train.json';
 import laundromatJson from './laundromat.json';
+import stacksJson from './stacks.json';
 
 const yard: Loose<SceneData> = yardJson;
 const capsule: Loose<SceneData> = capsuleJson;
@@ -50,9 +51,13 @@ export const DOWNTOWN = downtown as SceneData;
 const train: Loose<SceneData> = trainJson;
 export const TRAIN = train as SceneData;
 
+/** The stacks at the harbor (P15 NRLU 404 0451, the end of Act I): STS-2, the thermal gate, the night ferry, the reefer, the watchdog. */
+const stacks: Loose<SceneData> = stacksJson;
+export const STACKS = stacks as SceneData;
+
 /** Every scene file, by scene id. A new scene is one import and one line here. */
 export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH, laundromat: LAUNDROMAT,
-  train: TRAIN };
+  train: TRAIN, stacks: STACKS };
 
 /** The logic modules (TIMER, SWITCH), shared by every scene. Checked like a scene. */
 export const LOGIC = logic as LogicData;

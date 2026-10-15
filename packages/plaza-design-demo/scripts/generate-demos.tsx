@@ -33,6 +33,8 @@ import { contractOf } from '../src/ssg/game/engine/rules';
 import { cityProblems } from '../src/ssg/game/city';
 import { TRAIN } from '../src/ssg/game/data';
 import { TRAIN_RULES_SHAPE } from '../src/ssg/game/scenes/train0';
+import { STACKS } from '../src/ssg/game/data';
+import { STACKS_RULES_SHAPE } from '../src/ssg/game/stacks/rules';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -151,6 +153,7 @@ function checkGameData() {
     { data: BEACH, code: contractOf(BEACH_RULES), extra: BEACH_RULES.check },
     { data: TRAIN, code: contractOf(TRAIN_RULES_SHAPE), extra: TRAIN_RULES_SHAPE.check },
     { data: LAUNDROMAT, code: contractOf(LAUNDROMAT_RULES), extra: LAUNDROMAT_RULES.check },
+    { data: STACKS, code: contractOf(STACKS_RULES_SHAPE), extra: STACKS_RULES_SHAPE.check },
   ], LOGIC, NET, ENGINE);
   // the city's districts and places (city.ts): every place has its scenes, its entrance among them
   problems.push(...cityProblems().map((p) => 'city.ts › ' + p));

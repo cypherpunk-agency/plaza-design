@@ -982,7 +982,7 @@ Contents: yes." / "Origin: redacted. Destination: redacted. Insurance: void."), 
 STS-2 and STS-3, BERTH 9, container stencils NULLROUTE LOGISTICS · CONTENTS: UNDECLARED · THIS
 SIDE UP (ANY) · NRLU 404 0451.
 
-### P15 NRLU 404 0451 (draft)
+### P15 NRLU 404 0451 (built)
 
 - **Scene · spot:** the harbor pier, container stacks, crane STS-2. Main path, end of Act I.
   Difficulty 5. Draft: the reunion and what Moth knows need Tommi's call.
@@ -1023,6 +1023,65 @@ The clever solution needs nothing new: while the watchdog sits on PORT AUTHORITY
 leaves it (`watchdog.mute`), so a `warm` raised then never reaches the alarm. Wire
 `port.watchdog:arrives → timer1 wait 1 s → sts2.spreader lift` and 0451 goes up inside the
 freeze.
+
+**As built (2026-10-15):** `data/stacks.json`, `stacks/` (`rules.ts`, `scope.ts`, `scene.ts`,
+`index.ts`), `scenes/warehouse.ts`, `cutscenes/act2.ts`, `contacts.ts`. Differences from the draft
+and the choices made:
+
+- **Where:** the harbor pier was full, so the stacks are their own scene, `stacks` (terminal 2,
+  berth 4), a second scene of the harbor's place (city.ts `SCENE_PLACE`), through a gate on the pier
+  at x 2092 (`[E] TERMINAL 2 · STACKS`). The pier's cranes are now STS-1 (the tea call box) and
+  STS-3; STS-2 is the stacks' crane, and the pier's stencilled 0451 became the decoy 0415.
+  The left of the scene: the gate booth back to the pier, the Port Authority's board, the lane to
+  **warehouse 4**; then blocks A, B, C; STS-2 straddling the quay; the thermal gate; NIGHT FERRY 7
+  tied up (you walk onto its deck).
+- **Devices:** STS-2 (`camera` → the scope, `schedule`, `spreader` lift / `lifted`), PORT
+  AUTHORITY (the thermal gate: `scanner` / `warm`, `log`, `alarm` sound), NIGHT FERRY (`manifest`,
+  `horn`), and the reefer NRLU 404 0451 (`panel`, `intercom` → Moth's talk), which is in the world
+  only once it stands on the ferry's deck (`rules.place`). Pre-wired: `alarm` (`port.scanner:warm →
+  port.alarm sound`) and `clearance` (`ferry.watchdog:leaves → sts2.spreader lift`: the crane lifts
+  when the Registry has cleared the ferry). Watchdog: port → sts2 → ferry, 4 s on each, 3.5 s
+  walking (a 22.5 s round).
+- **Finding it:** STS-2's camera looks down on the roofs of 24 boxes. At ×1 the stencils are
+  smudges; ZOOM (×3) reads them; TAG FOR LIFT gives the crane the slot (only B-6, 0451's, is
+  accepted: "not on tonight's schedule"). Decoys: NRLU 404 0415, NRLU 044 0451, KSNU 404 1145,
+  MRDU 451 0404, HLXU 451 0404. Reefers wear frost on their roofs; 0451 does not (a second clue).
+- **Untagged**, each clearance lifts a regular box from the quay chassis into the ferry's hold (the
+  gate flashes CLEAR): the crane is always working. **Tagged**, the next clearance lifts 0451 out of
+  block B's back row; 2.3 s later it crosses the gate, which says `warm` and (wired) sounds the
+  alarm: the lift is aborted and the box goes back (fail, repeatable, no other cost). By hand the
+  spreader refuses ("not before, not by hand").
+- **Solution 1, cut while it's away:** cut `warm → alarm`. Whenever the watchdog sits on PORT
+  AUTHORITY it puts a cut alarm cable back and logs the tamper (+30 % trace on the gate; three
+  tampers lock you out of it for 10 s). The lift starts as the dog leaves the ferry and the box
+  crosses the gate about 0.8 s before the dog is back on the gate, so a cut made any time after the
+  dog has left the gate holds. (It restores the cable again when it arrives: harmless by then.)
+- **Solution 2, the clever one:** cut `clearance`, wire `port.watchdog:arrives → sts2.spreader
+  lift`: the box crosses the gate inside the dog's 4 s on it; the warm is lost ("scanner warm:
+  nothing leaves PORT AUTHORITY while the watchdog sits on it."). A TIMER in between works too.
+- **Then:** 0451 is set down on the deck, plugged in; its door is unlatched from inside and Moth
+  sits in it. The reefer's `talk` is Moth's dialogue. **Sprat** is Moth's fish (moth.json): "Did you
+  feed Sprat?" reads Moth's place's `fed` (derived `spratFed`, through the new `Player.sceneState`)
+  and offers "I fed Sprat." or "Sprat is... fine.". An alarm earlier gets its own line ("I bit my own
+  sleeve"). The talk: deleted on purpose (Tuesday 03:12, 407 people), Moth took the list, it split
+  into seven root fragments (the relay roof had one), the Registry knows Moth has it, the lock is on
+  the Spire's antenna, Moth will be on your deck.
+- **The ending** (`moth.end`): flags `act1:done`, `heard:spire`, `contact:moth`; the ACT II card
+  (`act2` cutscene: the ferry leaving, the Spire across the bay, ACT I · WHERE IS MOTH? FOUND. →
+  ACT II · SEVEN FRAGMENTS) plays once the talk is closed (`Player.cutscene`, the game's
+  `pendingCut`); NIGHT FERRY 7 leaves (`departed`) and NIGHT FERRY 8 takes the berth. Back in the
+  scene: "[deck] MOTH · … · type: msg moth", and the deck's new commands `contacts` / `msg moth`.
+- **Life:** gatekeeper, the port inspector (the key person: she explains the gate, the freeze and
+  the dog's walk), the signaller, the lasher on the ferry, TALLY-4 the counting drone, a docker on
+  his break, a sweeper, a loader robot, the straddle carrier SC-11, two gulls that answer E, a
+  pigeon, the night shift's tea urn (`[E] TEA URN`: a cup of tea, the same item STS-1's operator
+  likes), the Registry's watchdog flying its round as a drone, tomatoes in paint tins on top of
+  block A (the surprise).
+- **Warehouse 4** (`warehouse`, place `warehouse`, Harbor & Shore): the forecourt down the lane;
+  sealed loading docks, the evidence-custody door (`[E] THE DOOR`: "A PERSON WHO IS NOT FOUND
+  CANNOT HOLD A WARRANT."), the plaque, the Registry's notice (backlog: 4 years), the evidence van,
+  a Tide hand mending nets (key: "If the Registry ever took something of yours, it's behind that
+  door."), a patrol mech, a gull, a pigeon, one shoe with an evidence tag.
 
 ---
 

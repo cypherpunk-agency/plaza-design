@@ -8,6 +8,7 @@
  * Rule of the game: hints, never answers.
  */
 
+import { contactsOf, messagesOf, readFlag } from './contacts';
 import { START_MODULES } from './data';
 import type { SceneSave } from './data/types';
 import { SPR, type Sprite } from './sprites';
@@ -263,6 +264,8 @@ const MAN: Record<string, string> = {
   exit: 'exit: closes the terminal.',
   clear: 'clear: wipes the screen.',
   reset: 'reset --yes: wipes your progress and starts over. reset yard: only the back yard.',
+  contacts: 'contacts: who is on your deck, and whether they have signal.',
+  msg: 'msg <contact>: reads what they sent you.',
 };
 
 /** Your own deck's files, when the terminal talks to no machine. */
@@ -270,6 +273,8 @@ const DECK: Record<string, string> = { 'inbox.txt': 'From: the Registry\nSubject
 
 export function commands(c: Ctx): string[] {
   const base = ['help', 'man', 'ls', 'cat', 'whoami', 'set', 'nodes', 'map', 'sound', 'clear', 'exit', 'reset'];
+  // contacts on your deck (contacts.ts): Moth, after Act I
+  if (contactsOf(c.save.flags).length) base.push('contacts', 'msg');
   if (c.machine && c.shell) {
     base.push('use');
     if (c.shell.hasGuard(c.machine)) base.push('login');
@@ -279,7 +284,7 @@ export function commands(c: Ctx): string[] {
 }
 
 /** Commands that need nothing after them: on the touch deck, one tap runs them. */
-export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'sound', 'clear', 'exit'];
+export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'sound', 'clear', 'exit', 'contacts'];
 
 /** What the deck can read right now: the machine's readable nouns, or your own files. */
 const readable = (c: Ctx) => (c.machine && c.shell ? c.shell.readable(c.machine) : Object.keys(DECK));
@@ -305,6 +310,7 @@ export function suggest(c: Ctx, line: string): string[] {
     case 'man': return pick(commands(c));
     case 'set': return pick(['handle']);
     case 'reset': return pick(['--yes', 'yard']);
+    case 'msg': return pick(contactsOf(c.save.flags).map((k) => k.id));
     default: return [];
   }
 }
@@ -371,6 +377,21 @@ export function run(c: Ctx, line: string) {
       if (!at) { c.print('install: no such module here.', 'err'); return; }
       at.sh.install(at.dev, args[0] || '');
       return;
+    case 'contacts': {
+      const list = contactsOf(s.flags);
+      if (!list.length) { c.print('contacts: nobody. it is that kind of week.', 'dim'); return; }
+      list.forEach((k) => c.print(k.name + ' · ' + (k.dark && s.flags[k.dark] ? 'no signal' : k.status) + ' · msg ' + k.id));
+      return;
+    }
+    case 'msg': {
+      const k = contactsOf(s.flags).find((x) => x.id === (args[0] || '').toLowerCase());
+      if (!k) { c.print('usage: msg <contact>. type contacts to see who.', 'dim'); return; }
+      const msgs = messagesOf(k, s.flags);
+      if (!msgs.length) { c.print(k.name + ': no messages. ' + (k.dark && s.flags[k.dark] ? 'no signal.' : ''), 'dim'); return; }
+      msgs.forEach((m) => { m.text.forEach((l) => c.print(l)); s.flags[readFlag(m)] = true; });
+      c.persist();
+      return;
+    }
     case 'sudo': c.denied(); c.print(who(s) + ' is not in the sudoers file. This incident will be reported.', 'err'); return;
     case 'rm': c.print('rm: permission denied.', 'err'); return;
     case 'enter': c.denied(); c.print('enter: ACCESS DENIED. identity: not found.', 'err'); return;

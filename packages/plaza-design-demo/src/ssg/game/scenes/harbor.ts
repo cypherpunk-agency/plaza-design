@@ -32,7 +32,7 @@ const L = {
   podium: 352,
   manifest: 600,
   callBox: 688,
-  cranes: [{ x: 780, name: 'STS-2', phase: 0 }, { x: 1880, name: 'STS-3', phase: 2.1 }],
+  cranes: [{ x: 780, name: 'STS-1', phase: 0 }, { x: 1880, name: 'STS-3', phase: 2.1 }],
   fish: { x: 900, w: 112, use: 940 },
   drinks: { x: 1032, w: 96, use: 1082 },
   den: 1200,
@@ -44,13 +44,15 @@ const L = {
   berth: 1975,
   rails: 2396,
   beacon: 2466,
-  /** Play-level ways out: the metro station door in the guard hut, the sky-taxi pad on the pier. */
+  /** Play-level ways out: the metro station door in the guard hut, the sky-taxi pad on the pier, the gate to terminal 2 (the stacks, P15). */
   metro: 26,
+  terminal: 2092,
   taxi: 2280,
   ferry: 2370,
 };
 
-const CH = 58;
+/** A container's height (world units). */
+export const CH = 58;
 /** Container paints: fill, outline, rib highlight. Earthy and faded; no cyan (that is for things you can use). */
 const PAL: [string, string, string][] = [
   ['#3a1608', 'rgba(255,136,0,.8)', 'rgba(255,150,60,.12)'], // orange
@@ -63,7 +65,7 @@ const PAL: [string, string, string][] = [
   ['#2c2824', 'rgba(225,215,200,.6)', 'rgba(235,225,210,.1)'], // dirty white
 ];
 
-interface Crate { w: number; p: number; seed: number; code?: string; label?: string; dx?: number }
+export interface Crate { w: number; p: number; seed: number; code?: string; label?: string; dx?: number }
 /** Container stacks: `x` the left edge, boxes bottom to top, `dx` how crooked each sits. */
 const STACKS: { x: number; boxes: Crate[] }[] = [
   { x: 390, boxes: [
@@ -76,7 +78,7 @@ const STACKS: { x: number; boxes: Crate[] }[] = [
     { w: 128, p: 1, seed: 5, code: 'NRLU 220 3310', label: 'NULLROUTE LOGISTICS', dx: 5 },
   ] },
   { x: 1660, boxes: [
-    { w: 128, p: 6, seed: 6, code: 'NRLU 404 0451', label: 'NULLROUTE LOGISTICS' },
+    { w: 128, p: 6, seed: 6, code: 'NRLU 404 0415', label: 'NULLROUTE LOGISTICS' },
     { w: 128, p: 4, seed: 7, code: 'HLXU 090 6620', label: 'THIS SIDE UP', dx: -4 },
     { w: 128, p: 7, seed: 8, code: 'CSQU 314 1592', label: 'HOLD FOR CUSTOMS', dx: 7 },
   ] },
@@ -204,12 +206,12 @@ const USES: SceneUse[] = [
     c.add('tea'); c.set('harbor:tea');
     return TEA_LINES[teaSold++ % TEA_LINES.length];
   } },
-  { id: 'crane', x: L.callBox, label: '[E] CRANE CALL BOX', name: 'STS-2 CAB', promptH: 78, use: (c) => {
-    if (!c.take('tea')) return ['(The intercom crackles.) STS-2. Unless you\'re a container, I can\'t help you.', 'Unless you\'ve got tea. The cart down the pier does tea. I can\'t come down: if I come down they make me fill in a form about why.'];
+  { id: 'crane', x: L.callBox, label: '[E] CRANE CALL BOX', name: 'STS-1 CAB', promptH: 78, use: (c) => {
+    if (!c.take('tea')) return ['(The intercom crackles.) STS-1. Unless you\'re a container, I can\'t help you.', 'Unless you\'ve got tea. The cart down the pier does tea. I can\'t come down: if I come down they make me fill in a form about why.'];
     craneCall = c.t;
     if (craneTeas++ === 0) {
       c.give(1); c.set('harbor:crane');
-      return ['Is that tea? Hold it up. Higher. Right, stand clear.', '(Sixty tonnes of spreader come down, very gently, for one paper cup.)', 'Bless you. Fourteen hours up here. Have a token, don\'t tell the union.', 'From up here I see every box on the pier. Tonight the schedule has one nobody can find in the manifest. I lift what the schedule says.'];
+      return ['Is that tea? Hold it up. Higher. Right, stand clear.', '(Sixty tonnes of spreader come down, very gently, for one paper cup.)', 'Bless you. Fourteen hours up here. Have a token, don\'t tell the union.', 'From up here I see every box on the pier. My mate on STS-2, round at berth 4 in terminal 2, has one on tonight\'s schedule the yard system can\'t find. Lifts what the schedule says, that one. Never asks what.'];
     }
     return ['Another one? You\'re spoiling me. (Up goes the cup.)', 'The patrol boat never looks up, you know. Nobody looks up.'];
   } },
@@ -364,7 +366,7 @@ function drawFerry(x: CanvasRenderingContext2D, v: View) {
 }
 
 /** A gull in flight, wings beating: white body, grey wings, 2 px a cell. */
-function gullFlying(x: CanvasRenderingContext2D, sx: number, sy: number, t: number, dir: number, robot = false) {
+export function gullFlying(x: CanvasRenderingContext2D, sx: number, sy: number, t: number, dir: number, robot = false) {
   const up = Math.floor(t / 7) % 2 === 0, c = Math.round(sx), r = Math.round(sy);
   x.fillStyle = robot ? '#6a6e78' : '#8a8e96';
   if (up) { x.fillRect(c - 7, r - 4, 2, 2); x.fillRect(c - 5, r - 2, 3, 2); x.fillRect(c + 2, r - 2, 3, 2); x.fillRect(c + 5, r - 4, 2, 2); }
@@ -375,7 +377,7 @@ function gullFlying(x: CanvasRenderingContext2D, sx: number, sy: number, t: numb
 }
 
 /** A container: corrugated side, door bars at one end, rust, a dent, codes, a placard. Seeded. */
-function container(x: CanvasRenderingContext2D, v: View, wx: number, h: number, b: Crate) {
+export function container(x: CanvasRenderingContext2D, v: View, wx: number, h: number, b: Crate) {
   const s0 = Math.round(v.sx(wx + (b.dx ?? 0))), top = Math.round(v.y(h + CH)), w = b.w;
   if (!onScreen(v, s0, w)) return;
   const [fill, edge, hi] = PAL[b.p], r = rng(b.seed * 31 + 7);
@@ -607,6 +609,19 @@ function drawForklift(x: CanvasRenderingContext2D, v: View) {
   x.fillStyle = Math.floor(v.t / 10) % 2 ? 'rgba(255,170,40,.95)' : 'rgba(255,170,40,.3)'; x.fillRect(s - 2, y(60), 4, 3);
 }
 
+/** The gate to terminal 2 between the stacks: a gap in the fence, a lane going back between containers, its plate. */
+function drawTerminalGate(x: CanvasRenderingContext2D, v: View) {
+  const { sx, y, t } = v, g = sx(L.terminal);
+  if (!onScreen(v, g - 30, 60)) return;
+  x.fillStyle = '#050302'; x.fillRect(g - 16, y(74), 32, 74);
+  x.fillStyle = 'rgba(255,217,165,' + (0.2 + 0.08 * Math.sin(t * 0.03)) + ')'; x.fillRect(g - 1, y(60), 3, 3);
+  x.fillStyle = 'rgba(' + O + ',.12)'; for (let k = 0; k < 4; k++) x.fillRect(g - 12 + k * 2, y(40 - k * 8), 24 - k * 4, 1);
+  box(x, g - 19, y(82), 3, 82, '#2a2622', 'rgba(220,200,160,.5)'); box(x, g + 16, y(82), 3, 82, '#2a2622', 'rgba(220,200,160,.5)');
+  box(x, g - 30, y(100), 60, 16, '#e0d4b8', 'rgba(40,30,20,.9)');
+  text(x, 'TERMINAL 2', g, y(95), 'rgba(30,18,8,.95)', 7, '700');
+  text(x, 'BERTH 4 · STACKS', g, y(88), 'rgba(110,20,20,.95)', 7, '700');
+}
+
 /** The guard hut by the metro, its watchman in the window. */
 function drawHut(x: CanvasRenderingContext2D, v: View) {
   const { sx, y, t } = v, hx = sx(L.hut.x);
@@ -633,6 +648,8 @@ export const harbor: SceneDef = {
   exits: [
     { id: 'metro', x: L.metro, to: 'harborStation', at: 'harbor', label: '[E] TO THE METRO', promptH: 82 },
     { id: 'taxi', x: L.taxi, to: '', action: 'taxi', label: '[E] HAIL TAXI', promptH: 122 },
+    // the gate to terminal 2 behind the pier: the stacks, berth 4, STS-2 (P15)
+    { id: 'stacks', x: L.terminal, to: 'stacks', at: 'harbor', label: '[E] TERMINAL 2 · STACKS', promptH: 96 },
     // the pier runs on east along the shore to the beach (beach/: its left edge leads back here)
     { id: 'beach', x: 2450, to: 'beach', at: 'harbor', label: 'BEACH >', edge: 'right' },
   ],
@@ -701,7 +718,7 @@ export const harbor: SceneDef = {
       box(x, cb - 8, y(52), 16, 18, '#0d1416', 'rgba(' + C + ',.7)');
       x.fillStyle = 'rgba(' + C + ',.4)'; for (let r = 0; r < 3; r++) x.fillRect(cb - 5, y(48) + r * 3, 10, 1);
       tell(x, t, cb + 4, y(38), 2);
-      text(x, 'STS-2', cb, y(58), 'rgba(' + PAPER + ',.7)', 7, '600');
+      text(x, 'STS-1', cb, y(58), 'rgba(' + PAPER + ',.7)', 7, '600');
     }
 
     // the fish stand and the tea cart, for the night shift
@@ -729,6 +746,7 @@ export const harbor: SceneDef = {
     }
     box(x, sx(2112), y(8), 12, 8, '#3a3a2a', 'rgba(220,200,160,.4)');
 
+    drawTerminalGate(x, v);
     // BERTH 9 on its post, the taxi pad, the ferry timetable
     box(x, sx(L.berth) - 1, y(88), 3, 88, '#2a160a');
     sign(x, t, 'BERTH 9', sx(L.berth), y(96), O, { size: 8, phase: 30 });

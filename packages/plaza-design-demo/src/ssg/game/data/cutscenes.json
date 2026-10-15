@@ -4,9 +4,43 @@
     "duration": 26,
     "next": "capsule",
     "cards": [
-      { "at": 2.5, "until": 9, "text": "The city never logs off. Neither does the rain." },
-      { "at": 10, "until": 16.5, "text": "The Registry sees everyone. Every face, every door, every packet." },
-      { "at": 17.5, "until": 24.5, "text": "Almost everyone. No record, no face, one deck: you're a ghost." }
+      {
+        "at": 2.5,
+        "until": 9,
+        "text": "The city never logs off. Neither does the rain."
+      },
+      {
+        "at": 10,
+        "until": 16.5,
+        "text": "The Registry sees everyone. Every face, every door, every packet."
+      },
+      {
+        "at": 17.5,
+        "until": 24.5,
+        "text": "Almost everyone. No record, no face, one deck: you're a ghost."
+      }
+    ]
+  },
+  "act2": {
+    "title": "ACCESS DENIED · ACT II",
+    "duration": 16,
+    "next": "stacks",
+    "cards": [
+      {
+        "at": 1.2,
+        "until": 5.6,
+        "text": "Night ferry 7 leaves berth 4 with twelve boxes. The Port Authority cleared eleven."
+      },
+      {
+        "at": 6.2,
+        "until": 10.6,
+        "text": "The list is in seven pieces. The Registry knows who has it."
+      },
+      {
+        "at": 11.2,
+        "until": 15.4,
+        "text": "Plaza Central. The Spire. The list's lock is on its antenna."
+      }
     ]
   }
 }
