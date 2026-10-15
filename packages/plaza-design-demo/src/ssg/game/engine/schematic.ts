@@ -77,6 +77,8 @@ export class Schematic {
   readonly root: HTMLDivElement;
   private stage: HTMLDivElement;
   private svg: SVGSVGElement;
+  /** The cables' verb labels ("wait 2 s"), in a layer over the circuits so none hides behind a core; taps go through it. */
+  private tags: SVGSVGElement;
   private title: HTMLSpanElement;
   private modeBtn: HTMLButtonElement;
   private status: HTMLDivElement;
@@ -134,6 +136,7 @@ export class Schematic {
     this.status = el('div', 'hack-status');
     this.stage = el('div', 'hack-stage');
     this.svg = document.createElementNS(NS, 'svg'); this.svg.setAttribute('class', 'hack-wires');
+    this.tags = document.createElementNS(NS, 'svg'); this.tags.setAttribute('class', 'hack-wires hack-tags');
     this.palette = el('div', 'sch-palette'); this.palette.hidden = true;
     this.palette.appendChild(el('span', '', 'LOGIC'));
     m.logic.modules.forEach((mod) => {
@@ -748,6 +751,9 @@ export class Schematic {
 
   private lines() {
     this.svg.querySelectorAll('path:not(.temp), text').forEach((p) => p.remove());
+    this.tags.textContent = '';
+    // the labels' layer stays the stage's last child: over every circuit
+    if (this.stage.lastChild !== this.tags) this.stage.appendChild(this.tags);
     if (this.mode === 'vision') {
       // each core stays tied to its device: a leader from the core to the nearest point of the frame
       const st = this.stage.getBoundingClientRect();
@@ -786,7 +792,18 @@ export class Schematic {
     const t = document.createElementNS(NS, 'text');
     t.setAttribute('x', String((P1.x + P2.x) / 2)); t.setAttribute('y', String((P1.y + P2.y) / 2 - 6));
     t.setAttribute('text-anchor', 'middle'); t.setAttribute('class', 'verb'); t.textContent = l.verb;
-    this.svg.appendChild(t);
+    this.tags.appendChild(t);
+    // clear of the names and cores it would sit on: a little higher, or under the cable, whichever is free
+    const st = this.stage.getBoundingClientRect();
+    const boxes = [...this.stage.querySelectorAll('.sch-label, .sch-core, .sch-verbs')].map((e) => e.getBoundingClientRect());
+    const mx = (P1.x + P2.x) / 2, my = (P1.y + P2.y) / 2;
+    for (const dy of [-6, -16, 14, -26, 24]) {
+      t.setAttribute('y', String(my + dy));
+      const r = t.getBoundingClientRect(), l0 = r.left - st.left, t0 = r.top - st.top;
+      if (!boxes.some((b) => l0 < b.right - st.left && l0 + r.width > b.left - st.left && t0 < b.bottom - st.top && t0 + r.height > b.top - st.top)) break;
+      if (dy === 24) t.setAttribute('y', String(my - 6));
+    }
+    t.setAttribute('x', String(mx));
   }
 
   // ---------- gestures ----------
