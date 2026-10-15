@@ -1,9 +1,19 @@
 /**
- * The city as one place you travel through: Downtown's doors, the metro line
- * (a loop: Downtown, Galleria, Harbor), the sky-taxi stands, and the city map.
- * The map is the overlay the taxi uses to pick a destination, and a screen of
- * its own (`drawCityMap` in 'view' mode: TAB, a menu) that shows the line and,
- * while you ride, where the train is.
+ * The city (CITY.md, the source of truth): city → district → place → scene.
+ *
+ * - `DISTRICTS`: the seven districts, each on its stratum (the Spire over the
+ *   street, the Undercity under it).
+ * - `PLACES`: every place that exists now, in its district, with its entrance
+ *   scene (where quick travel lands, at its exit `at`). A place has one scene or
+ *   several; inside a place scenes connect by doors, with no map.
+ * - `SCENE_PLACE`: every scene's place (each scene knows its place; a place's
+ *   `scenes` are read from it). Planned places are not here until they exist.
+ *
+ * Then how you travel through it: Downtown's doors, the metro line (a loop:
+ * Downtown, Galleria, Harbor), the sky-taxi stands, and the city map. The map is
+ * the overlay the taxi uses to pick a destination, and a screen of its own
+ * (`drawCityMap` in 'view' mode: TAB, a menu) that shows the line and, while you
+ * ride, where the train is; quick travel on it goes to places.
  *
  * Canvas drawing only. Scenes you have been in are remembered in the save as
  * `flags['seen:<scene>']`; the map labels those and shows the rest as `???`.
@@ -11,6 +21,95 @@
 
 import type { SceneId } from './scenes';
 import { box, C, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, type View } from './scenes/kit';
+
+// ---------- the city: districts and places ----------
+
+/** The city is a cross-section: the Spire on top, the street in the middle, the Undercity below. */
+export type Stratum = 'overworld' | 'street' | 'underworld';
+
+export interface District {
+  id: string;
+  name: string;
+  /** What the city map writes on its block (where it has one). */
+  short: string;
+  stratum: Stratum;
+}
+
+/** The seven districts, as CITY.md has them. */
+export const DISTRICTS = [
+  { id: 'downtown', name: 'Downtown', short: 'DOWNTOWN', stratum: 'street' },
+  { id: 'market', name: 'Neon Market / Old Quarter', short: 'NEON MARKET', stratum: 'street' },
+  { id: 'galleria', name: 'Galleria', short: 'GALLERIA', stratum: 'street' },
+  { id: 'harbor', name: 'Harbor & Shore', short: 'HARBOR', stratum: 'street' },
+  { id: 'spire', name: 'The Spire / Plaza Central', short: 'THE SPIRE', stratum: 'overworld' },
+  { id: 'undercity', name: 'Undercity', short: 'UNDERCITY', stratum: 'underworld' },
+  { id: 'fringe', name: 'The Fringe', short: 'THE FRINGE', stratum: 'street' },
+] as const satisfies readonly District[];
+export type DistrictId = (typeof DISTRICTS)[number]['id'];
+
+/**
+ * A place: a location with one scene or several. `district` is null only for
+ * LINE 0's car, which runs between the street districts. `entrance` is the scene
+ * quick travel lands in, at its exit `at` (none: its spawn).
+ */
+export interface PlaceData { id: string; name: string; district: DistrictId | null; entrance: SceneId; at?: string }
+
+/** Every place that exists now, in the order quick travel steps through them (west to east). */
+const PLACE_DATA = [
+  { id: 'market', name: 'NEON MARKET', district: 'market', entrance: 'market', at: 'downtown' },
+  { id: 'shop', name: 'CORNER SHOP', district: 'downtown', entrance: 'shop' },
+  { id: 'station-downtown', name: 'DOWNTOWN METRO', district: 'downtown', entrance: 'metro', at: 'downtown' },
+  { id: 'downtown', name: 'DOWNTOWN', district: 'downtown', entrance: 'downtown', at: 'metro' },
+  { id: 'yard', name: 'BACK YARD', district: 'downtown', entrance: 'yard' },
+  { id: 'capsule', name: 'CAPSULE 7B', district: 'downtown', entrance: 'capsule', at: 'door' },
+  { id: 'moth', name: "MOTH'S PLACE", district: 'downtown', entrance: 'moth', at: 'door' },
+  { id: 'station-galleria', name: 'GALLERIA METRO', district: 'galleria', entrance: 'galleriaStation', at: 'mall' },
+  { id: 'mall', name: 'GALLERIA MALL', district: 'galleria', entrance: 'mall' },
+  { id: 'station-harbor', name: 'HARBOR METRO', district: 'harbor', entrance: 'harborStation', at: 'harbor' },
+  { id: 'harbor', name: 'HARBOR', district: 'harbor', entrance: 'harbor' },
+  { id: 'beach', name: 'BEACH', district: 'harbor', entrance: 'beach', at: 'harbor' },
+  { id: 'line0', name: 'LINE 0', district: null, entrance: 'train' },
+] as const satisfies readonly PlaceData[];
+export type PlaceId = (typeof PLACE_DATA)[number]['id'];
+
+/** Every scene's place. Every scene is in exactly one (the type-check holds every scene to it). */
+export const SCENE_PLACE = {
+  downtown: 'downtown',
+  capsule: 'capsule',
+  yard: 'yard',
+  moth: 'moth',
+  shop: 'shop',
+  metro: 'station-downtown',
+  market: 'market',
+  mall: 'mall',
+  galleriaStation: 'station-galleria',
+  harbor: 'harbor',
+  harborStation: 'station-harbor',
+  beach: 'beach',
+  train: 'line0',
+} as const satisfies Record<SceneId, PlaceId>;
+
+/** A place, with its scenes. */
+export interface Place extends PlaceData { id: PlaceId; scenes: SceneId[] }
+export const PLACES: Place[] = PLACE_DATA.map((p) => ({
+  ...p, scenes: (Object.keys(SCENE_PLACE) as SceneId[]).filter((s) => SCENE_PLACE[s] === p.id),
+}));
+/** The place a scene belongs to. */
+export const placeOf = (id: SceneId): Place => PLACES.find((p) => p.id === SCENE_PLACE[id])!;
+export const districtOf = (p: Place) => DISTRICTS.find((d) => d.id === p.district) ?? null;
+
+/** What the build checks of the city (generate-demos): every place has a scene, its entrance among them; districts exist. */
+export function cityProblems(): string[] {
+  const out: string[] = [], ids = new Set<string>();
+  for (const p of PLACES) {
+    if (ids.has(p.id)) out.push(`place "${p.id}" is listed twice`);
+    ids.add(p.id);
+    if (!p.scenes.length) out.push(`place "${p.id}" has no scene (SCENE_PLACE)`);
+    if (!p.scenes.includes(p.entrance)) out.push(`place "${p.id}": its entrance "${p.entrance}" is not one of its scenes`);
+    if (p.district !== null && !DISTRICTS.some((d) => d.id === p.district)) out.push(`place "${p.id}": no district "${p.district}"`);
+  }
+  return out;
+}
 
 /**
  * Where a new game starts: Capsule 7B, the player's flat. The intro cutscene
@@ -20,6 +119,8 @@ import { box, C, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, type Vie
 export const START_SCENE = 'capsule' satisfies SceneId;
 
 export const seenFlag = (id: SceneId) => 'seen:' + id;
+/** A place counts as visited once you have been in any of its scenes. */
+const seenPlace = (p: Place, seen: (id: SceneId) => boolean) => p.scenes.some(seen);
 
 /**
  * Downtown's ways out, by where they sit on the street (world x): its exits
@@ -33,8 +134,6 @@ export const seenFlag = (id: SceneId) => 'seen:' + id;
  * - taxi: the sky-taxi pad at the east end, past the SPACEPORT sign
  */
 export const DOORS = { market: 70, shop: 242, yard: 972, capsule: 1230, metro: 1440, moth: 1496, taxi: 1930 } as const;
-export type DoorId = keyof typeof DOORS;
-export const isDoorId = (id: string): id is DoorId => Object.prototype.hasOwnProperty.call(DOORS, id);
 
 // ---------- the metro ----------
 
@@ -43,12 +142,12 @@ export type Station = 'downtown' | 'galleria' | 'harbor';
 export const LINE: Station[] = ['downtown', 'galleria', 'harbor'];
 /**
  * Each station: its name, its platform (a scene, where you land stepping off at
- * its `train` exit) and the district it belongs to (where its stairs lead).
+ * its `train` exit) and the scene its stairs lead up to.
  */
-export const STATIONS: Record<Station, { name: string; scene: SceneId; district: SceneId }> = {
-  downtown: { name: 'DOWNTOWN', scene: 'metro', district: 'downtown' },
-  galleria: { name: 'GALLERIA', scene: 'galleriaStation', district: 'mall' },
-  harbor: { name: 'HARBOR', scene: 'harborStation', district: 'harbor' },
+export const STATIONS: Record<Station, { name: string; scene: SceneId; up: SceneId }> = {
+  downtown: { name: 'DOWNTOWN', scene: 'metro', up: 'downtown' },
+  galleria: { name: 'GALLERIA', scene: 'galleriaStation', up: 'mall' },
+  harbor: { name: 'HARBOR', scene: 'harborStation', up: 'harbor' },
 };
 /** The station whose platform this scene is, if it is one. */
 export const stationAt = (id: SceneId): Station | null => LINE.find((s) => STATIONS[s].scene === id) ?? null;
@@ -73,13 +172,17 @@ export const DRIVER_BROKE = ['One token a ride. You have the look of someone wit
 
 // ---------- the map ----------
 
-/** Map units: the city is 320 × 180. */
-const DISTRICTS: { scene: SceneId; name: string; x: number; y: number; w: number; h: number }[] = [
-  { scene: 'market', name: 'NEON MARKET', x: 10, y: 60, w: 66, h: 54 },
-  { scene: 'downtown', name: 'DOWNTOWN', x: 84, y: 50, w: 106, h: 78 },
-  { scene: 'mall', name: 'GALLERIA', x: 198, y: 10, w: 78, h: 58 },
-  { scene: 'harbor', name: 'HARBOR', x: 204, y: 108, w: 100, h: 40 },
+/**
+ * Map units: the city is 320 × 180. The street districts' blocks (in this order: the blocks'
+ * seeded windows follow it), each lit once you have been in its `known` scene.
+ */
+const BLOCKS_AT: { district: DistrictId; known: SceneId; x: number; y: number; w: number; h: number }[] = [
+  { district: 'market', known: 'market', x: 10, y: 60, w: 66, h: 54 },
+  { district: 'downtown', known: 'downtown', x: 84, y: 50, w: 106, h: 78 },
+  { district: 'galleria', known: 'mall', x: 198, y: 10, w: 78, h: 58 },
+  { district: 'harbor', known: 'harbor', x: 204, y: 108, w: 100, h: 40 },
 ];
+const blockName = (id: DistrictId) => DISTRICTS.find((d) => d.id === id)!.short;
 /** Smaller places inside Downtown: [x, y, label, scene that must be seen to label it ('' = always)]. */
 const SPOTS: Record<string, [number, number, string, SceneId | '']> = {
   shop: [98, 112, 'SHOP', 'shop'],
@@ -92,7 +195,7 @@ const GATE_AT: [number, number] = [80, 90];
 
 const BLOCKS = (() => {
   const r = rng(7), out: [number, number, number, number, number][] = [];
-  DISTRICTS.forEach((d, di) => {
+  BLOCKS_AT.forEach((d, di) => {
     for (let yy = d.y + 13; yy < d.y + d.h - 5; yy += 7) for (let xx = d.x + 4; xx < d.x + d.w - 6; xx += 8) if (r() < 0.55) out.push([di, xx, yy, 4 + Math.floor(r() * 3), 4]);
   });
   return out;
@@ -101,34 +204,35 @@ const RIPPLES = (() => { const r = rng(9); return Array.from({ length: 26 }, () 
 
 // ---------- quick travel ----------
 
+/** Where a place is on the map: a district's block (`rect`, the place fills it) or a point. */
+type MapAt = { pt: [number, number]; rect?: [number, number, number, number] };
+const block = (id: DistrictId): MapAt => { const d = BLOCKS_AT.find((b) => b.district === id)!; return { pt: [d.x + d.w / 2, d.y + d.h / 2], rect: [d.x, d.y, d.w, d.h] }; };
+const MAP_AT: Partial<Record<PlaceId, MapAt>> = {
+  market: block('market'),
+  shop: { pt: [SPOTS.shop[0], SPOTS.shop[1]] },
+  'station-downtown': { pt: STATION_AT.downtown },
+  downtown: block('downtown'),
+  yard: { pt: [SPOTS.yard[0], SPOTS.yard[1]] },
+  capsule: { pt: [SPOTS.home[0], SPOTS.home[1]] },
+  'station-galleria': { pt: STATION_AT.galleria },
+  mall: block('galleria'),
+  'station-harbor': { pt: STATION_AT.harbor },
+  harbor: block('harbor'),
+  beach: { pt: [292, 160] },
+};
+
 /**
- * A place on the map you can quick-travel to once you have been there: its
- * name, the scene and the exit you arrive at (its usual way in), and where it
- * is on the map: a district's block (`rect`) or a point. Listed in the order
- * the arrow keys step through them, west to east.
+ * A place on the map you can quick-travel to once you have been there, with where it is
+ * on the map. Listed in the order the arrow keys step through them, west to east.
  */
-export interface Place { id: string; name: string; scene: SceneId; at?: string; pt: [number, number]; rect?: [number, number, number, number] }
-const district = (z: SceneId) => DISTRICTS.find((d) => d.scene === z)!;
-const block = (z: SceneId): Pick<Place, 'pt' | 'rect'> => { const d = district(z); return { pt: [d.x + d.w / 2, d.y + d.h / 2], rect: [d.x, d.y, d.w, d.h] }; };
-export const PLACES: Place[] = [
-  { id: 'market', name: 'NEON MARKET', scene: 'market', at: 'downtown', ...block('market') },
-  { id: 'shop', name: 'CORNER SHOP', scene: 'shop', pt: [SPOTS.shop[0], SPOTS.shop[1]] },
-  { id: 'station-downtown', name: 'DOWNTOWN METRO', scene: 'metro', at: 'downtown', pt: STATION_AT.downtown },
-  { id: 'downtown', name: 'DOWNTOWN', scene: 'downtown', at: 'metro', ...block('downtown') },
-  { id: 'yard', name: 'BACK YARD', scene: 'yard', pt: [SPOTS.yard[0], SPOTS.yard[1]] },
-  { id: 'capsule', name: 'CAPSULE 7B', scene: 'capsule', at: 'door', pt: [SPOTS.home[0], SPOTS.home[1]] },
-  { id: 'station-galleria', name: 'GALLERIA METRO', scene: 'galleriaStation', at: 'mall', pt: STATION_AT.galleria },
-  { id: 'mall', name: 'GALLERIA MALL', scene: 'mall', ...block('mall') },
-  { id: 'station-harbor', name: 'HARBOR METRO', scene: 'harborStation', at: 'harbor', pt: STATION_AT.harbor },
-  { id: 'harbor', name: 'HARBOR', scene: 'harbor', ...block('harbor') },
-  { id: 'beach', name: 'BEACH', scene: 'beach', at: 'harbor', pt: [292, 160] },
-];
+export type MapPlace = Place & MapAt;
+export const MAP_PLACES: MapPlace[] = PLACES.flatMap((p) => { const at = MAP_AT[p.id]; return at ? [{ ...p, ...at }] : []; });
 
 /** Why you cannot quick-travel to a place right now ('' if you can). */
 export function placeBlocked(p: Place, st: Pick<MapState, 'seen' | 'gateOpen' | 'scene' | 'ride'>): string {
-  if (!st.seen(p.scene)) return 'NOT VISITED YET';
-  if (p.scene === st.scene) return 'YOU ARE HERE';
-  if (p.scene === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
+  if (!seenPlace(p, st.seen)) return 'NOT VISITED YET';
+  if (p.scenes.includes(st.scene)) return 'YOU ARE HERE';
+  if (p.id === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
   if (st.ride && st.ride.f > 0) return 'NOT FROM A MOVING METRO · GET OFF FIRST';
   return '';
 }
@@ -141,15 +245,15 @@ function mapLayout(vw: number, vh: number) {
   return { w, h, ox, oy, s, mx, my };
 }
 
-/** The place under a point of the view (view units), as an index into PLACES: points first, then districts; -1 for none, -2 outside the panel. */
+/** The place under a point of the view (view units), as an index into MAP_PLACES: points first, then districts; -1 for none, -2 outside the panel. */
 export function placeAt(vw: number, vh: number, px: number, py: number): number {
   const { w, h, ox, oy, s, mx, my } = mapLayout(vw, vh);
   if (px < ox || px > ox + w || py < oy || py > oy + h) return -2;
   const X = (px - mx) / s, Y = (py - my) / s;
   let best = -1, bd = 9 + 4 / s;
-  PLACES.forEach((p, i) => { if (!p.rect) { const d = Math.hypot(p.pt[0] - X, p.pt[1] - Y); if (d < bd) { bd = d; best = i; } } });
+  MAP_PLACES.forEach((p, i) => { if (!p.rect) { const d = Math.hypot(p.pt[0] - X, p.pt[1] - Y); if (d < bd) { bd = d; best = i; } } });
   if (best >= 0) return best;
-  return PLACES.findIndex((p) => !!p.rect && X >= p.rect[0] && X <= p.rect[0] + p.rect[2] && Y >= p.rect[1] && Y <= p.rect[1] + p.rect[3]);
+  return MAP_PLACES.findIndex((p) => !!p.rect && X >= p.rect[0] && X <= p.rect[0] + p.rect[2] && Y >= p.rect[1] && Y <= p.rect[1] + p.rect[3]);
 }
 
 export interface MapState {
@@ -157,7 +261,7 @@ export interface MapState {
   mode: 'view' | 'taxi';
   /** Stand ids (taxi). */
   options: string[];
-  /** The choice: a stand (taxi), or a place in PLACES (view; -1 = none yet). */
+  /** The choice: a stand (taxi), or a place in MAP_PLACES (view; -1 = none yet). */
   index: number;
   /** In 'view': the place under the mouse (-1 none). */
   hover: number;
@@ -173,21 +277,17 @@ export interface MapState {
   t: number;
 }
 
+/** You on the map: at the taxi pad you hail from, on the line while you ride, else where your place is. */
 function herePoint(st: MapState): [number, number] {
   const z = st.scene;
   if (st.mode === 'taxi') { const s = standOf(z); if (s) return PAD_AT[s]; }
-  const station = stationAt(z);
-  if (station) return STATION_AT[station];
   if (z === 'train' && st.ride) {
     const [a, b] = [STATION_AT[st.ride.from], STATION_AT[st.ride.to]], f = st.ride.f;
     return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
   }
-  if (z === 'shop') return [SPOTS.shop[0], SPOTS.shop[1]];
-  if (z === 'yard') return [SPOTS.yard[0], SPOTS.yard[1]];
-  if (z === 'capsule') return [SPOTS.home[0], SPOTS.home[1]];
-  if (z === 'beach') return [292, 160];
-  const d = DISTRICTS.find((q) => q.scene === z);
-  return d ? [d.x + d.w / 2, d.y + d.h / 2 + 6] : [137, 95];
+  const at = MAP_AT[placeOf(z).id];
+  if (!at) return [137, 95];
+  return at.rect ? [at.pt[0], at.pt[1] + 6] : at.pt;
 }
 
 /**
@@ -225,13 +325,13 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   }
   x.stroke(); x.lineWidth = 1;
   // districts: lit blocks where you have been, dark where you have not
-  DISTRICTS.forEach((d, di) => {
-    const known = st.seen(d.scene);
+  BLOCKS_AT.forEach((d, di) => {
+    const known = st.seen(d.known);
     R(d.x, d.y, d.w, d.h, known ? '#170b05' : '#070403');
     for (const [bi, bx, by, bw, bh] of BLOCKS) if (bi === di) R(bx, by, bw, bh, known ? 'rgba(' + O + ',.28)' : 'rgba(' + O + ',.07)');
     frame(d.x, d.y, d.w, d.h, 'rgba(' + O + ',' + (known ? 0.75 : 0.3) + ')');
     const [lx, ly] = P(d.x + d.w / 2, d.y + 6);
-    text(x, known ? d.name : '???', lx, ly, known ? 'rgba(' + PAPER + ',.9)' : 'rgba(' + PAPER + ',.35)', 7, '600');
+    text(x, known ? blockName(d.district) : '???', lx, ly, known ? 'rgba(' + PAPER + ',.9)' : 'rgba(' + PAPER + ',.35)', 7, '600');
   });
   // the market gate between Downtown and the market
   { const [gx, gy] = P(GATE_AT[0], GATE_AT[1]); x.fillStyle = st.gateOpen ? 'rgba(' + GREEN + ',.9)' : 'rgba(' + RED + ',.85)'; x.fillRect(gx - 2, gy - 4, 4, 8); }
@@ -252,7 +352,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     const [px, py] = P(STATION_AT[id][0], STATION_AT[id][1]), next = !!st.ride && st.ride.to === id && st.ride.f > 0;
     box(x, px - 3, py - 3, 7, 7, '#0a0604', next ? 'rgba(' + O + ',' + (blink ? 1 : 0.5) + ')' : 'rgba(' + PAPER + ',.85)');
     // a station is named once you have stood on its platform or walked its district
-    const known = st.seen(STATIONS[id].scene) || st.seen(STATIONS[id].district);
+    const known = st.seen(STATIONS[id].scene) || st.seen(STATIONS[id].up);
     if (st.mode === 'view') text(x, known ? STATIONS[id].name : '???', px, py + 10, next ? 'rgba(' + O + ',.95)' : 'rgba(' + PAPER + ',.6)', 7, '600');
   }
   // taxi pads: cyan only when you can pick them
@@ -268,7 +368,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   if (st.mode === 'view') {
     for (const i of [st.hover, st.index]) {
       if (i < 0) continue;
-      const p = PLACES[i], sel = i === st.index, a = sel ? (blink ? 1 : 0.6) : 0.7;
+      const p = MAP_PLACES[i], sel = i === st.index, a = sel ? (blink ? 1 : 0.6) : 0.7;
       x.strokeStyle = 'rgba(' + C + ',' + a + ')';
       if (p.rect) { const [a0, b0] = P(p.rect[0], p.rect[1]); x.strokeRect(a0 - 1.5, b0 - 1.5, Math.round(p.rect[2] * s) + 2, Math.round(p.rect[3] * s) + 2); }
       else { const [px, py] = P(p.pt[0], p.pt[1]); x.strokeRect(px - 6.5, py - 6.5, 13, 13); }
@@ -287,7 +387,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     const i = st.hover >= 0 ? st.hover : st.index;
     if (i >= 0) {
       // the place you point at: where it is, and whether you can go
-      const p = PLACES[i], why = placeBlocked(p, st), known = st.seen(p.scene);
+      const p = MAP_PLACES[i], why = placeBlocked(p, st), known = seenPlace(p, st.seen);
       text(x, '> ' + (known ? p.name : '???'), ox + 10, fy + 3, why ? 'rgba(' + PAPER + ',.8)' : 'rgba(' + C + ',.95)', 9, '600', 'left');
       text(x, why || (st.touch ? (i === st.index ? 'TAP AGAIN TO GO' : 'TAP TO PICK') : 'E · CLICK  GO THERE'), ox + w - 10, fy + 3, why ? 'rgba(' + RED + ',.9)' : 'rgba(' + C + ',.9)', 7, '600', 'right');
     } else {

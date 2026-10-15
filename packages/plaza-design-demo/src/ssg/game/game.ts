@@ -26,7 +26,7 @@ import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
 import {
-  DOORS, drawCityMap, HOP, PLACES, placeAt, placeBlocked, type Place, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
+  DOORS, drawCityMap, HOP, MAP_PLACES, placeAt, placeBlocked, type MapPlace, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
   seenFlag, START_SCENE, STAND_IDS, standOf, STANDS, STATIONS, stationAt, type MapState, type Stand, type Station,
 } from './city';
 import { KeyBar } from './keybar';
@@ -115,7 +115,7 @@ export class Game {
   /** The city map overlay, when open: just looking (TAB, the line map in the train), or picking a taxi stand. */
   private mapView: { mode: 'view' | 'taxi'; options: string[]; index: number; hover: number } | null = null;
   /** A quick trip from the map in progress: a short fade out, the move, a fade in (HOP frames). */
-  private hop: { place: Place; start: number; done: boolean } | null = null;
+  private hop: { place: MapPlace; start: number; done: boolean } | null = null;
   /** A sky-taxi flight in progress. */
   private flight: { to: Stand; start: number } | null = null;
 
@@ -1557,7 +1557,7 @@ export class Game {
     if (k === 'Escape' || k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.mapView = null; this.canvas.style.cursor = ''; sound.close(); return; }
     if (m.mode === 'view') {
       // quick travel: the arrows step through the places, starting from where you are; E, Enter or Space goes
-      const n = PLACES.length, here = PLACES.findIndex((p) => p.scene === this.here), from = m.index >= 0 ? m.index : Math.max(0, here);
+      const n = MAP_PLACES.length, here = MAP_PLACES.findIndex((p) => p.scenes.includes(this.here)), from = m.index >= 0 ? m.index : Math.max(0, here);
       const step = m.index < 0 && here < 0 ? 0 : 1;
       if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (from + n - step) % n; m.hover = -1; sound.blip(); return; }
       if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (from + step) % n; m.hover = -1; sound.blip(); return; }
@@ -1611,7 +1611,7 @@ export class Game {
 
   /** Quick travel to a place you know, from the map: no fare, a short fade; or say why not. */
   private quickTravel(i: number) {
-    const place = PLACES[i], why = placeBlocked(place, this.mapState());
+    const place = MAP_PLACES[i], why = placeBlocked(place, this.mapState());
     if (why) { this.flash(why.toLowerCase()); sound.denied(); if (this.mapView) this.mapView.index = i; return; }
     this.mapView = null;
     this.canvas.style.cursor = '';
@@ -1630,7 +1630,7 @@ export class Game {
     // a quick trip moves you while the screen is dark, half way through its fade
     if (this.hop) {
       const e = this.clock - this.hop.start;
-      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; this.travel(this.hop.place.scene, this.hop.place.at); }
+      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; this.travel(this.hop.place.entrance, this.hop.place.at); }
       if (e >= HOP) this.hop = null;
     }
     if (this.here !== 'train') return;

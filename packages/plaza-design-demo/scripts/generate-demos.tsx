@@ -29,6 +29,7 @@ import { checkGame } from '../src/ssg/game/data/check';
 import { YARD_RULES } from '../src/ssg/game/yard/effects';
 import { DOWNTOWN_RULES_SHAPE } from '../src/ssg/game/downtown/rules';
 import { contractOf } from '../src/ssg/game/engine/rules';
+import { cityProblems } from '../src/ssg/game/city';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -133,12 +134,12 @@ ${js}
 }
 
 /**
- * The game's scene files must make sense before they ship: every cable reaches
+ * The game's scene data files and the city (city.ts) must make sense before they ship: every cable reaches
  * a real noun, every effect exists in code, every dialogue choice leads
  * somewhere (src/ssg/game/GAME-DATA.md). The type-check covers their shape.
  */
 function checkGameData() {
-  // one entry per scene: its file and its code (scene/rules.ts); net.json, logic.json and the keyring come along
+  // one entry per scene with a data file: the file and its code (engine/rules.ts); net.json, logic.json and the keyring come along
   const problems = checkGame([
     { data: YARD, code: contractOf(YARD_RULES), extra: YARD_RULES.check },
     { data: CAPSULE, code: contractOf(CAPSULE_RULES), extra: CAPSULE_RULES.check },
@@ -146,6 +147,8 @@ function checkGameData() {
     { data: MOTH, code: contractOf(MOTH_RULES), extra: MOTH_RULES.check },
     { data: BEACH, code: contractOf(BEACH_RULES), extra: BEACH_RULES.check },
   ], LOGIC, NET, ENGINE);
+  // the city's districts and places (city.ts): every place has its scenes, its entrance among them
+  problems.push(...cityProblems().map((p) => 'city.ts › ' + p));
   if (!problems.length) return;
   console.error(`Game data has ${problems.length} problem${problems.length > 1 ? 's' : ''} (src/ssg/game/data/):\n`);
   problems.forEach((p) => console.error('  ' + p));
