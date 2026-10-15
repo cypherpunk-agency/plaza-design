@@ -124,3 +124,14 @@ hour in any weather.
   slider, speed (■, 1×, 10×, 60×), weather override per climate or the whole city.
 - **Not yet:** the sky, grade and light (step 2: the sun still sits where each scene drew it);
   the CITY CLOCK noun and schedules; sound.
+
+## Sun, moon, shadows (decided, Tommi 2026-10-15)
+
+- **Every scene faces a real compass direction** (`facing`, degrees: the sea is east). The sun's
+  and moon's place on screen comes from where they really are; a sun behind you is not drawn,
+  but its light still is. Sunrise ~06:00 over the sea, sunset ~19:30 behind the city. The fixed
+  suns painted into scenes (the beach's sunset, the metro skyline's) are replaced.
+- **The moon has phases** by the day count.
+- **Interiors get the sun through their windows** (shafts whose colour and angle follow the clock).
+- **The slatted sun** and **shadows**: options in https://claude.ai/artifact/ (Sun and Shadow
+  Drafts); waiting on Tommi's pick.
