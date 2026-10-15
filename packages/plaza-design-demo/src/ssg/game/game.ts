@@ -297,11 +297,23 @@ export class Game {
     this.canvas.width = Math.round(cssW * dpr);
     this.canvas.height = Math.round(cssH * dpr);
     // Small screens (phones in landscape) show a shorter slice of the street at a larger scale.
-    this.k = Math.max(1, Math.floor((cssH * dpr) / (cssH < 420 ? 230 : 320)));
+    let k = Math.max(1, Math.floor((cssH * dpr) / (cssH < 420 ? 230 : 320)));
+    // A place narrower than the view (a flat, the yard) is shown closer, so it fills the width,
+    // as long as enough height stays in view for its rooms and signs.
+    const fit = Math.floor(this.canvas.width / (this.levelW + 24));
+    if (fit > k) k = Math.max(k, Math.min(fit, Math.floor(this.canvas.height / 170)));
+    this.k = k;
+    this.fitW = this.levelW;
     this.viewW = this.canvas.width / this.k;
     this.viewH = this.canvas.height / this.k;
-    this.gy = Math.round(this.viewH - 54);
+    // On phones the ground sits above the touch buttons, so the floor and what stands on it stay in view.
+    const pad = document.getElementById('touch');
+    const padTop = this.touch && pad ? Math.max(0, this.canvas.getBoundingClientRect().bottom - pad.getBoundingClientRect().top) : 0;
+    this.gy = Math.round(this.viewH - Math.max(54, (padTop * dpr) / this.k + 8));
   }
+
+  /** The level width the view was fitted to; a new place refits (see onResize). */
+  private fitW = 0;
 
   private loop(now: number) {
     if (!this.running) return;
@@ -310,6 +322,7 @@ export class Game {
     // The pause menu: the world holds still under it (the last frame stays on the canvas).
     if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
+    if (this.levelW !== this.fitW) this.onResize(); // a new place: fit the view to it
     this.keyBar.sync(this.save.jump);
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     if (!this.reduced || this.t < 1) this.t += dt;
