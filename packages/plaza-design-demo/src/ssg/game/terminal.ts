@@ -33,6 +33,8 @@ export class Terminal {
   private keysEl?: HTMLDivElement;
   private shift = false;
   onClose: () => void = () => {};
+  /** Every printed line, for screens without the terminal (phones show the latest in the game). */
+  onLine: ((text: string, kind: LineKind) => void) | null = null;
 
   constructor(host: HTMLElement, inputHost: HTMLElement, touch = false) {
     this.touch = touch;
@@ -107,6 +109,7 @@ export class Terminal {
       this.out.appendChild(div);
     }
     while (this.out.childElementCount > 200) this.out.firstElementChild?.remove();
+    this.onLine?.(text, kind);
     if (this.touch) this.refresh();
     this.scroll();
   }

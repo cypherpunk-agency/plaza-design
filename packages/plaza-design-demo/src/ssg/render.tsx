@@ -866,14 +866,17 @@ ${POPUP_STYLES}
     html.game-mode.touch #touch { display: flex; }
     html.game-mode.cutscene #touch { display: none; }
 
-    /* On a phone the game gets the whole screen: no window inset, slim header and footer */
-    html.game-mode.touch .demo-window { inset: 0; }
-    html.game-mode.touch .plaza-corner-bracket { display: none; }
+    /* On a phone the game gets the whole screen: no inset, no border, no header or terminal footer.
+       Controls stay clear of the notch (viewport-fit=cover, safe-area insets). */
+    html.game-mode.touch .demo-window { inset: 0; border: 0; box-shadow: none; }
+    html.game-mode.touch .plaza-corner-bracket,
     html.game-mode.touch .plaza-window-header,
-    html.game-mode.touch .plaza-window-footer { padding: var(--spacing-1) var(--spacing-3); min-height: 0; }
-    html.game-mode.touch .plaza-window-header *,
-    html.game-mode.touch .plaza-window-footer * { font-size: var(--text-xs); }
-    html.game-mode.touch .footer-send-btn { padding: 2px var(--spacing-2); }
+    html.game-mode.touch .plaza-window-footer { display: none; }
+    html.game-mode.touch #touch button[data-key="Enter"] { display: none; }
+    html.game-mode.touch #key-bar { left: max(var(--spacing-3), env(safe-area-inset-left)); right: max(var(--spacing-3), env(safe-area-inset-right)); }
+    html.game-mode.touch #touch { padding: 0 max(var(--spacing-3), env(safe-area-inset-right)) env(safe-area-inset-bottom) max(var(--spacing-3), env(safe-area-inset-left)); }
+    /* the touch pad already has ESC and MAP; sound lives in the menu: the key bar keeps only HACK and BOARD */
+    html.game-mode.touch #key-bar .kb-actions > .hack-btn { display: none; }
     html.game-mode.touch #term:not([hidden]) ~ #touch { display: none; }
 
     #touch .pad {

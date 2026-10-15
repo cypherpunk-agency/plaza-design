@@ -126,6 +126,7 @@ export class Game {
     this.x = this.canvas.getContext('2d')!;
 
     this.term = new Terminal(host.windowEl, host.inputHost, this.touch);
+    if (this.touch) this.term.onLine = (text, kind) => { if (kind !== 'head') this.termLine = { text: text.split('\n').pop() ?? text, kind, until: this.t + 300 }; };
     this.term.onSubmit((line) => run(this.ctx(), line));
     this.term.onSuggest((line) => suggest(this.ctx(), line), NO_ARGS);
     this.term.onComplete((prefix) => {
@@ -285,8 +286,10 @@ export class Game {
 
   private onResize() {
     const win = this.host.windowEl.getBoundingClientRect();
-    const top = this.host.header.getBoundingClientRect().bottom - win.top;
-    const bottom = win.bottom - this.host.footer.getBoundingClientRect().top;
+    // a hidden header or footer (phones) takes no room
+    const shown = (el: HTMLElement) => el.getClientRects().length > 0;
+    const top = shown(this.host.header) ? this.host.header.getBoundingClientRect().bottom - win.top : 0;
+    const bottom = shown(this.host.footer) ? win.bottom - this.host.footer.getBoundingClientRect().top : 0;
     this.host.windowEl.style.setProperty('--game-top', top + 'px');
     this.host.windowEl.style.setProperty('--game-bottom', bottom + 'px');
     const cssW = win.width, cssH = Math.max(120, win.height - top - bottom);
@@ -427,6 +430,8 @@ export class Game {
   }
 
   private flash(text: string) { this.toast = { text, until: this.t + 110 }; }
+  /** Phones have no terminal: its latest line shows in the game for a few seconds. */
+  private termLine: { text: string; kind: LineKind; until: number } | null = null;
 
   private get levelW() { return this.scene?.width ?? (this.zone === 'yard' ? YARD_W : this.zone === 'capsule' ? CAPSULE_W : this.zone === 'moth' ? MOTH_W : LEVEL_W); }
   /** The place's name, for the HUD and the canvas label. */
@@ -1286,6 +1291,11 @@ export class Game {
     const zh = this.scene ? null : this.zoneHost;
     if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, top + 32); }
     // the keys and what they do: the key bar along the top (keybar.ts)
+    const tl = this.termLine;
+    if (tl && this.t < tl.until && !this.term.focused) {
+      x.fillStyle = tl.kind === 'err' ? 'rgba(255,90,110,.95)' : tl.kind === 'ok' ? 'rgba(34,197,94,.95)' : 'rgba(255,217,165,.85)';
+      x.fillText(tl.text.length > 90 ? tl.text.slice(0, 89) + '…' : tl.text, 8, top + (zh ? 43 : 32));
+    }
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
       x.fillText(this.toast.text, this.sx(this.p.x), this.y(this.p.y + 56));
