@@ -140,6 +140,13 @@ export class SceneHost {
   private btns: HTMLDivElement;
   private hackBtn: HTMLButtonElement;
   private boardBtn: HTMLButtonElement;
+  /** Hack vision's own buttons (desktop key bar): the LOGIC drawer, and every circuit unfolded at once. */
+  private logicBtn: HTMLButtonElement;
+  private unfoldBtn: HTMLButtonElement;
+  /** Hack vision: the reset button (⊙) or a double-tap asked for the normal view. The game sets it. */
+  onResetView: () => void = () => {};
+  /** Hack vision's LOGIC drawer or UNFOLD changed: the game updates its bars. */
+  onVisionUi: () => void = () => {};
   hover: string | null = null;
   onClose: () => void = () => {};
   private saveTimer = 0;
@@ -196,6 +203,14 @@ export class SceneHost {
     this.hackBtn = button('HACK · H', () => this.toggleVision());
     this.hackBtn.title = 'hack vision: see every device here and wire them in place (H)';
     this.boardBtn = button('BOARD · B', () => this.toggleBoard());
+    this.logicBtn = button('LOGIC · L', () => this.toggleLogic());
+    this.logicBtn.dataset.logic = '';
+    this.logicBtn.title = 'the logic drawer: timers and switches to drag into the scene (L)';
+    this.unfoldBtn = button('UNFOLD · U', () => this.toggleUnfold());
+    this.unfoldBtn.title = 'unfold every circuit at once, to compare them (U)';
+    this.logicBtn.hidden = this.unfoldBtn.hidden = true;
+    this.vision.onReset = () => this.onResetView();
+    this.vision.onDrawer = () => { this.sync(); this.onVisionUi(); };
     host.appendChild(this.btns);
     this.vision.bar = this.btns;
     const saved = store?.load();
@@ -342,8 +357,27 @@ export class SceneHost {
       this.boardBtn.disabled = none;
       this.boardBtn.title = none ? 'nothing on the board yet' : 'the board: everything you have opened or seen, plus timers and switches (B)';
     }
-    if (this.hackBtn.classList.contains('on') !== on) { this.hackBtn.classList.toggle('on', on); this.hackBtn.setAttribute('aria-pressed', String(on)); }
+    if (this.hackBtn.classList.contains('on') !== on) {
+      this.hackBtn.classList.toggle('on', on); this.hackBtn.setAttribute('aria-pressed', String(on));
+      // in hack vision the bar is hack vision's: EXIT, BOARD, LOGIC, UNFOLD
+      this.hackBtn.textContent = on ? 'EXIT · H' : 'HACK · H';
+      this.logicBtn.hidden = this.unfoldBtn.hidden = !on;
+    }
+    const lo = on && this.vision.drawerOpen, un = this.vision.allUnfolded;
+    if (this.logicBtn.classList.contains('on') !== lo) this.logicBtn.classList.toggle('on', lo);
+    if (this.unfoldBtn.classList.contains('on') !== un) { this.unfoldBtn.classList.toggle('on', un); this.unfoldBtn.textContent = un ? 'FOLD · U' : 'UNFOLD · U'; }
   }
+
+  /** L in hack vision: the LOGIC drawer open or shut. */
+  toggleLogic() { if (this.vision.isOpen) this.vision.setDrawer(!this.vision.drawerOpen); }
+  /** U in hack vision: every circuit unfolded at once, or back to each by hand. */
+  toggleUnfold() { if (this.vision.isOpen) { this.vision.toggleUnfoldAll(); this.sync(); this.onVisionUi(); } }
+  get logicOpen() { return this.vision.isOpen && this.vision.drawerOpen; }
+  get unfoldAll() { return this.vision.allUnfolded; }
+  /** Hack vision: what you own, for the LOGIC drawer (the HUD keeps only the goal there). The game sets it. */
+  set drawerInfo(fn: () => string) { this.vision.drawerInfo = fn; }
+  /** Hack vision: the view is panned or zoomed (the reset button shows). */
+  viewMoved(on: boolean) { this.vision.showReset(on); }
 
   /**
    * Run something the player typed in the deck (the terminal, last resort): the engine's lines
@@ -375,7 +409,7 @@ export class SceneHost {
   toggleVision() {
     this.popup.close();
     if (this.hackLock()) return;
-    if (this.vision.isOpen && !this.overlayOpen) this.vision.close();
+    if (this.vision.isOpen && !this.overlayOpen) { this.vision.setDrawer(false); this.vision.close(); }
     else { this.panels.close(); this.schem.close(); this.vision.openVision(); }
     this.sync();
   }
@@ -405,6 +439,7 @@ export class SceneHost {
       if (!at || Math.abs(this.player.x - this.popupAt) > POPUP_WALK) this.popup.close(); else this.popup.place(at);
     }
     this.fx.top = this.uiTop;
+    this.vision.top = this.uiTop;
     // captions keep off the player and what the game shields (a speech bubble), and keep their lane over
     // the devices and the people
     const me = project(this.player.x, this.player.h + 23), head = project(this.player.x + 10, this.player.h + 48);

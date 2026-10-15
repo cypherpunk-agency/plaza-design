@@ -6,7 +6,7 @@
  * Esc opens it (game.ts decides when: overlays, bubbles and schematics close
  * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
  * In sudo mode (`?sudo`) LEVELS comes second: every scene and cutscene.
- * The city map is not here: it lives in the world (TAB on your deck, map boards).
+ * MAP opens the city map (it also lives in the world: TAB or M on your deck, map boards).
  * Arrows or W/S move, Enter/E/Space select, Esc goes back a screen or resumes;
  * mouse and touch pick items directly. Styles: #game-menu in render.tsx.
  *
@@ -31,6 +31,8 @@ export interface MenuHooks {
   hasSave(): boolean;
   /** QUIT TO HOMEPAGE. */
   quit(): void;
+  /** MAP: the city map (the touch bar has no MAP button of its own). Without it there is no MAP item. */
+  map?: () => void;
   /** The menu closed (resume): give the game its focus back. */
   onClose(): void;
   /** Sudo mode only (sudo.ts): every level, and going to one. Without it there is no LEVELS item. */
@@ -172,6 +174,7 @@ export class Menu {
     }
     return [
       { label: 'RESUME', run: () => this.hide() },
+      ...(this.hooks.map ? [{ label: 'MAP', run: () => { this.hide(); this.hooks.map!(); } }] : []),
       ...levels,
       { label: 'SAVE GAME', run: () => this.slots('save', 0) },
       { label: 'LOAD GAME', run: () => this.slots('load', 0) },

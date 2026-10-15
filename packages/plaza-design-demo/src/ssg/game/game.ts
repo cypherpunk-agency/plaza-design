@@ -161,11 +161,18 @@ export class Game {
       continueGame: () => this.continueGame(undefined, true),
       hasSave: () => this.hasSave(),
       quit: () => host.onExit(),
+      // the city map lives in the menu too (TAB and M still open it on a keyboard)
+      map: () => this.showMap(),
       onClose: () => this.canvas.focus(),
       ...(SUDO ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
     }, this.touch);
     this.canvas.addEventListener('pointerdown', (e) => this.onCanvasPointer(e, true));
     this.canvas.addEventListener('pointermove', (e) => this.onCanvasPointer(e, false));
+    // hack vision: drag pans, pinch and the wheel zoom (visionPointer)
+    const lift = (e: PointerEvent) => this.visionLift(e);
+    this.canvas.addEventListener('pointerup', lift);
+    this.canvas.addEventListener('pointercancel', lift);
+    this.canvas.addEventListener('wheel', (e) => this.visionWheel(e), { passive: false });
 
     const r = rng(3);
     const hulls = [SPR.spinner, SPR.spinner, SPR.freighter, SPR.drone];
@@ -233,6 +240,10 @@ export class Game {
     // something reacted where you cannot see it: the camera may lean that way for a moment
     zh.onReact = (from, text, tone) => { if (this.here === id) this.nudgeTo(from, text, tone); };
     zh.onClose = () => this.canvas.focus();
+    // hack vision: the reset button and what the LOGIC drawer says you own (the HUD keeps only the goal there)
+    zh.onResetView = () => this.resetVision();
+    zh.onVisionUi = () => this.syncModeUi();
+    zh.drawerInfo = () => this.ownLine();
     this.hosts.set(id, zh);
     // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
     this.host.windowEl.querySelectorAll<HTMLElement>('#scene-btns').forEach((el) => this.keyBar.adopt(el));
@@ -377,7 +388,7 @@ export class Game {
     // (before you are deleted, the street is not yet the one you have to fight)
     if (this.here !== 'downtown' || hackLocked(this.save.flags)) return;
     const how = this.touch
-      ? 'Every machine here does something: tap it. HACK, top right, shows how they all work.'
+      ? 'Every machine here does something: tap it. HACK, bottom right, shows how they all work.'
       : 'Every machine here does something: E or a tap. H shows how they all work, B is the board.';
     if (!this.save.flags.arrived) {
       this.save.flags.arrived = true; this.save.flags.schematics = true;
@@ -398,7 +409,8 @@ export class Game {
 
   stop() {
     this.endTitle();
-    document.documentElement.classList.remove('game-map');
+    document.documentElement.classList.remove('game-map', 'hack-ok', 'hack-on', 'logic-open', 'unfold-on');
+    this.modeKey = '';
     this.menu.hide();
     this.endCutscene(false);
     this.running = false;
@@ -463,7 +475,8 @@ export class Game {
     if (this.levelW !== this.fitW) this.onResize(); // a new place: fit the view to it
     // the city map (and a taxi flight) owns the screen: the key bar and touch buttons step aside (render.tsx)
     document.documentElement.classList.toggle('game-map', !!this.mapView || !!this.flight);
-    this.keyBar.sync(this.save.jump);
+    this.visionCamera();
+    this.syncModeUi();
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     // a story beat asked for a cutscene: it plays once nothing is open (the talk that asked for it has closed)
     if (this.pendingCut && !this.zh.overlayOpen && !this.zh.popupOpen && !this.bubble && !this.mapView && !this.term.focused) {
@@ -520,6 +533,10 @@ export class Game {
     // B and H mean something only where there is something to hack (a scene with devices)
     if (zh.hackable && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
     if (zh.hackable && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
+    // hack vision's own keys: L the logic drawer, U every circuit unfolded, 0 the normal view
+    if (zh.visionOn && (k === 'l' || k === 'L')) { zh.toggleLogic(); return; }
+    if (zh.visionOn && (k === 'u' || k === 'U')) { zh.toggleUnfold(); return; }
+    if (zh.visionOn && k === '0') { this.resetVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
@@ -638,9 +655,12 @@ export class Game {
     if (this.mapView) { this.mapPointer(e, press); return; }
     const zh = this.zh;
     if (zh.overlayOpen || this.flight) return;
+    if (zh.visionOn && this.visionPointer(e, press)) return;
     const r = this.canvas.getBoundingClientRect();
-    const wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
-    const h = this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
+    const { wx, h } = this.zoomed(() => ({
+      wx: ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam,
+      h: this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k,
+    }));
     const id = zh.spotAt(wx, h);
     // (pink is the hacking layer's colour: no pink bracket on hover until hacking is yours)
     zh.hover = hackLocked(this.save.flags) ? null : id;
@@ -677,11 +697,14 @@ export class Game {
 
   /** Hack vision hangs in the world: give the scene this frame's world → CSS px mapping (as `sx` and `y` draw it). */
   private followHost() {
-    const s = this.cssScale;
     const zh = this.zh;
     // captions and the popup keep under the key bar and the HUD's lines (drawHud: ~46 world units under the bar)
-    zh.uiTop = this.keyBar.root.offsetHeight + 8 + this.hudH * s;
-    zh.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
+    zh.uiTop = this.keyBar.root.offsetHeight + 8 + this.hudH * this.cssScale;
+    // (in hack vision the view may be panned and zoomed: the same mapping the world was drawn with)
+    this.zoomed(() => {
+      const s = this.cssScale;
+      zh.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
+    });
   }
 
   // ---------- world logic ----------
@@ -827,6 +850,7 @@ export class Game {
 
     // Camera follows, eased, clamped to the level. A nudge leans it towards something that reacted
     // off the view for a moment (walking, talking or the deck cancel it), then it eases back.
+    if (this.zh.visionOn) this.nudge = null;
     const n = this.nudge;
     if (n && (p.moving || !p.onGround || this.bubble || this.term.focused || this.zh.overlayOpen || Math.abs(p.x - n.px) > 2)) { this.nudge = null; this.easeBack = !p.moving; }
     const follow = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
@@ -861,13 +885,28 @@ export class Game {
    * other keeps holes round its devices' frames (none: everything is muted). The player stays bright.
    */
   private draw() {
-    const x = this.x, k = this.k, s = this.def, zh = this.zh, amb = s.ambient ?? {};
+    const x = this.x, k = this.k;
     x.setTransform(k, 0, 0, k, 0, 0);
     x.imageSmoothingEnabled = false;
     x.fillStyle = '#000';
     x.fillRect(0, 0, this.viewW, this.viewH);
-    const rain = this.rainLevel();
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
+    // the world, at hack vision's pan and zoom; the HUD and the overlays over it at the usual scale
+    this.zoomed(() => this.drawWorld());
+    x.setTransform(k, 0, 0, k, 0, 0);
+    this.drawHud();
+    if (this.showEnd) this.drawEnd();
+    this.drawBeat();
+    this.drawSleep();
+    this.drawMap();
+  }
+
+  private drawWorld() {
+    const x = this.x, k = this.k, s = this.def, zh = this.zh, amb = s.ambient ?? {};
+    x.setTransform(k, 0, 0, k, 0, 0);
+    x.fillStyle = '#000';
+    x.fillRect(0, 0, this.viewW, this.viewH);
+    const rain = this.rainLevel();
     const vision = zh.visionOn, v = this.view();
     if (amb.sky) { this.drawSky(); if (isBefore(this.save.flags)) this.drawDawn(); this.drawShips(); }
     if (amb.city) {
@@ -893,11 +932,6 @@ export class Game {
     if (amb.rain && !vision) this.drawRain(rain);
     this.drawPrompt();
     this.drawBubble();
-    this.drawHud();
-    if (this.showEnd) this.drawEnd();
-    this.drawBeat();
-    this.drawSleep();
-    this.drawMap();
   }
 
   private rainLevel() {
@@ -1428,6 +1462,160 @@ export class Game {
     return lines;
   }
 
+  // ---------- hack vision's pan and zoom ----------
+
+  /**
+   * Hack vision's own view of the world: its zoom (1 as usual, less is further out, down to the
+   * whole scene in view) and its left edge (world x). Until you pan or zoom it follows you like the
+   * usual camera (`panned`); leaving hack vision hands back to the usual camera, which eases to you.
+   */
+  private vz = 1;
+  private vcam = 0;
+  private panned = false;
+  /** Hack vision's view is in use this frame (set at the start of each frame, `visionCamera`). */
+  private wasVision = false;
+  /** Pointers down on the canvas in hack vision (CSS px), and the gesture they make. */
+  private vptr = new Map<number, { x: number; y: number }>();
+  private vgest: { kind: 'tap' | 'pan' | 'pinch'; sx: number; sy: number; cam: number; z: number; d: number; mid: number } | null = null;
+  /** When the last tap on nothing landed (ms), for the double tap that resets the view. */
+  private lastTap = 0;
+  /** The mode the bars were last set up for (`syncModeUi`). */
+  private modeKey = '';
+
+  /** Run `fn` with the world's view at hack vision's pan and zoom (outside hack vision, as it is). */
+  private zoomed<T>(fn: () => T): T {
+    if (!this.wasVision) return fn();
+    const k = this.k, vw = this.viewW, vh = this.viewH, gy = this.gy, cam = this.cam, z = this.vz;
+    // scaled about the top left: the ground stays where it was on screen, the view grows up and sideways
+    this.k = k * z; this.viewW = vw / z; this.viewH = vh / z; this.gy = gy / z; this.cam = this.vcam;
+    try { return fn(); } finally { this.k = k; this.viewW = vw; this.viewH = vh; this.gy = gy; this.cam = cam; }
+  }
+
+  /** How far out hack vision zooms: the whole scene in view (a scene that already fits still gets some room over it). */
+  private clampZ(z: number) {
+    const fit = this.viewW / (this.levelW + 24);
+    return Math.max(Math.max(0.1, Math.min(fit, VISION_ZOOM_MIN)), Math.min(1, z));
+  }
+
+  /** Keep hack vision's view on the scene (a scene narrower than the view sits in the middle). */
+  private clampV() {
+    const w = this.viewW / this.vz;
+    this.vcam = this.levelW <= w ? (this.levelW - w) / 2 : Math.max(0, Math.min(this.levelW - w, this.vcam));
+  }
+
+  /** Every frame: hack vision's view starts where the camera is, follows you until you move it, and hands back on leaving. */
+  private visionCamera() {
+    const on = this.zh.visionOn && !this.mapView && !this.cut;
+    if (on && !this.wasVision) { this.vz = 1; this.vcam = this.cam; this.panned = false; this.vptr.clear(); this.vgest = null; }
+    if (!on && this.wasVision) {
+      // back to you: the usual camera eases there from the middle of what you were looking at
+      const w = this.viewW / this.vz;
+      this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.vcam + (w - this.viewW) / 2));
+      this.vz = 1; this.panned = false; this.vptr.clear(); this.vgest = null;
+      this.zh.viewMoved(false);
+    }
+    this.wasVision = on;
+    if (!on) return;
+    // walking (on a keyboard) brings the view back onto you
+    if (this.p.moving && !this.vgest) this.panned = false;
+    if (!this.panned) {
+      const w = this.viewW / this.vz;
+      this.vcam += (this.p.x - w * 0.45 - this.vcam) * 0.12;
+    }
+    this.clampV();
+    this.zh.viewMoved(this.panned || this.vz < 0.999);
+  }
+
+  /** The reset button, a double tap on nothing, or 0: hack vision's view as usual again, on you. */
+  private resetVision() {
+    this.vz = 1; this.panned = false;
+    this.zh.viewMoved(false);
+  }
+
+  /**
+   * Hack vision, a pointer on the canvas (empty space: nouns, cores, cable ends and cards are over
+   * it and take their own drags first). One finger or the mouse drags the view, two pinch it; a
+   * press that does not travel is a tap, handled when it lifts (`visionLift`). True: used.
+   */
+  private visionPointer(e: PointerEvent, press: boolean): boolean {
+    if (press) {
+      if (e.button > 0) return true;
+      e.preventDefault();
+      try { this.canvas.setPointerCapture(e.pointerId); } catch { /* a synthetic pointer */ }
+      this.vptr.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const pts = [...this.vptr.values()];
+      if (pts.length === 1) this.vgest = { kind: 'tap', sx: e.clientX, sy: e.clientY, cam: this.vcam, z: this.vz, d: 0, mid: e.clientX };
+      else if (pts.length === 2) this.vgest = { kind: 'pinch', sx: 0, sy: 0, cam: this.vcam, z: this.vz, d: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, mid: (pts[0].x + pts[1].x) / 2 };
+      return true;
+    }
+    // (the mouse just moving over the canvas: hover, as usual)
+    if (!this.vptr.has(e.pointerId)) return false;
+    this.vptr.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const g = this.vgest;
+    if (!g) return true;
+    const r = this.canvas.getBoundingClientRect(), px = this.canvas.width / (r.width || 1);
+    if (g.kind === 'pinch') {
+      const pts = [...this.vptr.values()];
+      if (pts.length < 2) return true;
+      const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, mid = (pts[0].x + pts[1].x) / 2;
+      // the world under the fingers stays under them
+      const wx = g.cam + ((g.mid - r.left) * px) / (this.k * g.z);
+      this.vz = this.clampZ((g.z * d) / g.d);
+      this.vcam = wx - ((mid - r.left) * px) / (this.k * this.vz);
+      this.panned = true; this.clampV();
+      return true;
+    }
+    if (g.kind === 'tap' && Math.hypot(e.clientX - g.sx, e.clientY - g.sy) > 8) g.kind = 'pan';
+    if (g.kind === 'pan') { this.vcam = g.cam - ((e.clientX - g.sx) * px) / (this.k * this.vz); this.panned = true; this.clampV(); }
+    return true;
+  }
+
+  /** Hack vision, a pointer lifted: a tap on a device folds or unfolds its circuit, on nothing drops what is in hand; twice on nothing resets the view. */
+  private visionLift(e: PointerEvent) {
+    if (!this.vptr.delete(e.pointerId)) return;
+    const g = this.vgest;
+    // one finger of a pinch still down: it pans on from here
+    if (this.vptr.size === 1 && g?.kind === 'pinch') { const [q] = [...this.vptr.values()]; this.vgest = { kind: 'pan', sx: q.x, sy: q.y, cam: this.vcam, z: this.vz, d: 0, mid: q.x }; return; }
+    if (this.vptr.size) return;
+    this.vgest = null;
+    if (g?.kind !== 'tap' || e.type === 'pointercancel' || !this.zh.visionOn) return;
+    const r = this.canvas.getBoundingClientRect();
+    const { wx, h } = this.zoomed(() => ({
+      wx: ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam,
+      h: this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k,
+    }));
+    const zh = this.zh, id = zh.spotAt(wx, h), now = performance.now();
+    if (!id && now - this.lastTap < 320) { this.lastTap = 0; this.resetVision(); return; }
+    this.lastTap = id ? 0 : now;
+    zh.poke(id);
+  }
+
+  /** Hack vision, the mouse wheel: zoom out (to the whole scene) and back in, about the pointer. */
+  private visionWheel(e: WheelEvent) {
+    if (!this.wasVision || this.menu.open) return;
+    e.preventDefault();
+    const r = this.canvas.getBoundingClientRect(), px = this.canvas.width / (r.width || 1);
+    const wx = this.vcam + ((e.clientX - r.left) * px) / (this.k * this.vz);
+    this.vz = this.clampZ(this.vz * Math.exp(-e.deltaY * 0.0015));
+    this.vcam = wx - ((e.clientX - r.left) * px) / (this.k * this.vz);
+    this.panned = true; this.clampV();
+  }
+
+  /**
+   * The bars follow the mode (render.tsx): walking (arrows; HACK, JMP, ACT, MENU) or hack vision
+   * (EXIT, BOARD, LOGIC, UNFOLD), as classes on the page; HACK only once hacking is yours here.
+   */
+  private syncModeUi() {
+    const zh = this.zh, on = zh.visionOn;
+    this.keyBar.sync(this.save.jump, on);
+    const key = [on, zh.hackable, zh.logicOpen, zh.unfoldAll].join();
+    if (key === this.modeKey) return;
+    this.modeKey = key;
+    const html = document.documentElement.classList;
+    html.toggle('hack-ok', zh.hackable); html.toggle('hack-on', on);
+    html.toggle('logic-open', zh.logicOpen); html.toggle('unfold-on', zh.unfoldAll);
+  }
+
   // ---------- the camera nudge ----------
 
   /** The camera leaning towards something that reacted off the view: where it leans to, until when (clock frames), where you stood. */
@@ -1447,7 +1635,7 @@ export class Game {
    */
   private nudgeTo(from: string, text: string, tone?: string) {
     if (tone !== 'ok' && tone !== 'err') return;
-    if (this.reduced || this.bubble || this.term.focused || this.zh.overlayOpen || this.mapView || this.flight || this.hop || this.cut || this.p.moving) return;
+    if (this.reduced || this.bubble || this.term.focused || this.zh.overlayOpen || this.zh.visionOn || this.mapView || this.flight || this.hop || this.cut || this.p.moving) return;
     const at = this.zh.worldOf(from);
     if (!at || this.levelW <= this.viewW) return;
     const key = from + '|' + text, p = this.p, m = NUDGE_MARGIN;
@@ -1493,21 +1681,22 @@ export class Game {
   }
 
   private drawHud() {
-    const x = this.x, s = this.save;
+    const x = this.x, vision = this.zh.visionOn;
     x.save();
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
     // below the key bar along the top (its height in world units)
     const top = (this.keyBar.root.offsetHeight + 8) * (this.canvas.width / (this.canvas.clientWidth || 1)) / this.k;
-    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);
-    x.fillStyle = 'rgba(255,217,165,.7)';
-    // what you have: tokens, modules, the key chips that do something (uplink.so), what you carry; one line, or two when it is long
-    const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : '');
-    const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
-    const held = Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]) => (ITEMS[id as ItemId] ?? id) + (n > 1 ? '×' + n : ''));
-    const more = [keys.length ? 'KEYS ' + keys.join(' ') : '', held.length ? 'HELD ' + held.join(' ') : ''].filter(Boolean).join(' · ');
-    let y = top + 21;
-    if (more && x.measureText(own + ' · ' + more).width <= this.viewW - 16) x.fillText(own + ' · ' + more, 8, y);
-    else { x.fillText(own, 8, y); if (more) x.fillText(more, 8, (y += 11)); }
+    let y = top - 1;
+    // hack vision keeps only the goal: what you own is in the LOGIC drawer there
+    if (!vision) {
+      x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);
+      x.fillStyle = 'rgba(255,217,165,.7)';
+      // what you have: tokens, modules, the key chips that do something (uplink.so), what you carry; one line, or two when it is long
+      const [own, more] = this.owned();
+      y = top + 21;
+      if (more && x.measureText(own + ' · ' + more).width <= this.viewW - 16) x.fillText(own + ' · ' + more, 8, y);
+      else { x.fillText(own, 8, y); if (more) x.fillText(more, 8, (y += 11)); }
+    }
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
     const zh = this.zh.model.data.goals.length ? this.zh : null, story = pick(OPENING_GOAL, this.story, this.here);
@@ -1519,13 +1708,23 @@ export class Game {
       x.fillText(tl.text.length > 90 ? tl.text.slice(0, 89) + '…' : tl.text, 8, y + 11);
     }
     // how far down the HUD's lines reach (world units under the key bar): captions and popups keep below
-    this.hudH = Math.max(46, y + 11 + 4 - top);
+    this.hudH = vision ? y + 4 - top : Math.max(46, y + 11 + 4 - top);
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
       x.fillText(this.toast.text, this.sx(this.p.x), this.y(this.p.y + 56));
     }
     x.restore();
   }
+
+  /** What you own, for the HUD (and hack vision's LOGIC drawer): tokens and modules; the key chips that do something and what you carry. */
+  private owned(): [string, string] {
+    const s = this.save;
+    const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : '');
+    const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
+    const held = Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]) => (ITEMS[id as ItemId] ?? id) + (n > 1 ? '×' + n : ''));
+    return [own, [keys.length ? 'KEYS ' + keys.join(' ') : '', held.length ? 'HELD ' + held.join(' ') : ''].filter(Boolean).join(' · ')];
+  }
+  private ownLine() { const [own, more] = this.owned(); return more ? own + ' · ' + more : own; }
 
   private drawEnd() {
     const x = this.x, cx = this.viewW / 2, cy = this.viewH / 2 - 30;
@@ -2014,6 +2213,8 @@ export class Game {
   showMap() {
     if (!this.running || this.flight || this.hop) return;
     this.bubble = null;
+    // the map takes the screen: hack vision closes first
+    if (this.zh.visionOn) this.zh.toggleVision();
     this.mapView = openMap('view', this.here, this.here === 'train' ? rideStop() : null);
   }
 
@@ -2139,6 +2340,9 @@ export class Game {
  * units), and the least time between two nudges (frames, ~5 s).
  */
 const NUDGE_HOLD = 96, NUDGE_EASE = 0.045, NUDGE_MARGIN = 36, NUDGE_GAP = 300;
+
+/** Hack vision zooms out at least this far, even where the scene already fits the view (room over its devices for the circuits). */
+const VISION_ZOOM_MIN = 0.7;
 
 /** Street walls measured against the player (42 units tall): a 76-unit ground floor with 52-unit doors, then 66-unit storeys of 14x28 windows. */
 const GROUND = 76, STOREY = 66, WIN_PITCH = 30;

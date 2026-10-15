@@ -46,14 +46,22 @@ const isTouch = () => { try { return matchMedia('(pointer: coarse)').matches; } 
 /** Sends a key to the game, the same way a keyboard would. */
 const sendKey = (key: string, type: 'keydown' | 'keyup') => window.dispatchEvent(new KeyboardEvent(type, { key }));
 
-/** On-screen controls for touch screens: they press the same keys a keyboard does. */
+/**
+ * On-screen controls for touch screens: they press the same keys a keyboard does. One bar along the
+ * bottom, by mode (the game sets `html.hack-on`, `html.hack-ok`; render.tsx shows what fits):
+ * walking, the arrows left and HACK, JMP, ACT, MENU right (the map is in the menu); hack vision,
+ * no arrows and EXIT, BOARD, LOGIC, UNFOLD. HACK only once hacking is yours here.
+ */
 function touchControls(host: HTMLElement) {
   const bar = document.createElement('div');
   bar.id = 'touch';
   bar.innerHTML =
     '<div class="pad"><button data-key="ArrowLeft" aria-label="Walk left">&#9664;</button><button data-key="ArrowRight" aria-label="Walk right">&#9654;</button></div>' +
-    '<div class="pad"><button data-key="Escape" aria-label="Menu" class="small">ESC</button><button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Tab" aria-label="City map" class="small">MAP</button>' +
-    '<button data-key=" " aria-label="Jump">JMP</button><button data-key="e" aria-label="Talk or jack in">ACT</button></div>';
+    '<div class="pad"><button data-key="h" aria-label="Hack vision" class="walk-only hack">HACK</button>' +
+    '<button data-key=" " aria-label="Jump" class="walk-only">JMP</button><button data-key="e" aria-label="Talk or jack in" class="walk-only">ACT</button>' +
+    '<button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Escape" aria-label="Menu" class="small walk-only">MENU</button>' +
+    '<button data-key="h" aria-label="Leave hack vision" class="vis-only">EXIT</button><button data-key="b" aria-label="The board" class="vis-only">BOARD</button>' +
+    '<button data-key="l" aria-label="Logic parts" class="vis-only logic" data-logic>LOGIC</button><button data-key="u" aria-label="Unfold every circuit" class="vis-only unfold">UNFOLD</button></div>';
   bar.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     const key = b.dataset.key!;
     const down = (e: Event) => { e.preventDefault(); b.classList.add('down'); sendKey(key, 'keydown'); };
