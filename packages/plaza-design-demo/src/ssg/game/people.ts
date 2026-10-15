@@ -10,7 +10,7 @@
  *     { seed: 8, x: 410, act: 'haggle', facing: -1 },                // two people haggling...
  *     { seed: 9, x: 386, act: 'haggle', facing: 1 },                 // ...facing each other
  *     { look: { body: 'old', garb: 'coat', hair: 'brim' }, x: 600, act: 'smoke' },
- *     { look: 'cat', x: 700, act: 'sit' },                           // non-humans: cat pigeon gull cleaner drone courier
+ *     { look: 'cat', x: 700, act: 'sit' },                           // critters: cat pigeon gull cleaner drone courier
  *     { id: 'gran', seed: 21, x: 820, act: 'sit', h: 10, name: 'GRAN',
  *       talk: [['First visit?', 'The fish is fresh.'], ['Still here?']] },  // talks; pages cycle per visit
  *   ];
@@ -33,6 +33,30 @@
  *   and `parallax` put people in a back band; a back crowd is `crowd(seed, n, from, to, { ps: 2, dim: .55, parallax: .9 })`.
  * - Fast: every look and pose is baked once into a small canvas (with its rim) and blitted after that.
  * - People are never cyan (cyan = tech you can use); a rim keeps them off dark walls (ART-GUIDE §4, §6).
+ *
+ * ROBOTS: every one has a job you can see it doing
+ *
+ *   { look: 'loader', x: 1150, act: 'carry', range: [1160, 1040] },      // crate one way, forks empty back
+ *   { look: { bot: 'servbot', paint: '#54406a', v: 1 }, x: 900, act: 'vend' }, // fix paint / base, seed does the rest
+ *   { look: 'valet', x: 300, follow: richMan, gap: 16 },                   // walks behind someone, umbrella over them
+ *   { look: 'crawler', x: 1404, h: 96, act: 'weld' },                      // on a wall or ledge at h, sparks
+ *
+ * - Kinds (Bot) by job: humanoids android (parcel courier on foot), valet (umbrella or bags), marshal
+ *   (stop/go paddle); screen-faced box bots servbot (vendor, stocker, charging), sweeper, busker
+ *   (accordion or horn, a tin), waiter (tray of drinks); carrying loader (tall frame, crate/parcels/
+ *   bottles) and porter (grocery cart); security mech (wide, slow, red sensor sweep); small wheeled
+ *   litterbot (grabber + hopper), deliverybot (kerb box with a flag), adbot (sandwich board, dry ads);
+ *   crawler (spider maintenance bot: weld, scrub, crawl); wreck (derelict, NEED PARTS); drones
+ *   minidrone (parcel), cargodrone (hanging crate), flyerdrone (warm hologram flyer). The old cleaner,
+ *   drone and courier critters are robots too.
+ * - The seed varies paint, trim, wear and rust drips, a sticker, a mismatched replacement part, the
+ *   screen face (eyes, happy, sad, dots), lights, antennae, porcelain vs metal heads, a glitchy few.
+ * - Robot acts: carry, roll, patrol, serve, crawl, hover (movers); direct, play, weld, scrub, charge,
+ *   glitch, blink, slump (in place); and stand, walk, sweep, queue, vend. Drones fly their own height over `h`.
+ * - Robots with `talk` talk like people. Robots without it still answer E with a short line in their own
+ *   voice (game.ts: `bot:` targets from `isBot` / `botReact`). Robots are never cyan: paint is orange,
+ *   paper, grey, rust; lights are red and amber. Signs on them (boards, flyers) stay dry.
+ * - `crowd()` makes about one in five a robot doing a crowd job (`bots` to change the share, 0 for none).
  */
 
 import type { View } from './scenes/kit';
@@ -48,8 +72,15 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
  * argue (faster, bigger), queue, sleep (lying on `h`), dance, vend (behind a counter, offers and waits).
  * Moving between `x` and `range`: walk, sweep (with a broom), steal (sneaks to the far end, reaches, runs back).
  * Drones: 'scan' hovers and sweeps a red beam down on whoever is below.
+ * Robots (they also do stand, walk, sweep, queue, vend): moving between `x` and `range`: carry (a load
+ * one way, empty back), roll (wheels, stops to pick things up), patrol (slow, sensor sweeping ahead),
+ * serve (tray out at each end), crawl (along a wall at `h`), hover (drones bob and drift). In place:
+ * direct (stop/go paddle), play (an instrument, notes rise), weld (sparks), scrub (a brush on the
+ * wall), charge (cabled to a wall socket), glitch (twitches), blink (the screen face changes mood),
+ * slump (the derelict: a flicker, a twitch).
  */
-export type Act = 'stand' | 'walk' | 'sit' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan';
+export type Act = 'stand' | 'walk' | 'sit' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
+  | 'carry' | 'roll' | 'patrol' | 'serve' | 'crawl' | 'hover' | 'direct' | 'play' | 'weld' | 'scrub' | 'charge' | 'glitch' | 'blink' | 'slump';
 
 export interface Look {
   body?: Body; hair?: Hair; garb?: Garb; extras?: Extra[];
@@ -61,7 +92,8 @@ export interface Person {
   /** Needed for talk (the engine's target id). */
   id?: string;
   seed?: number;
-  look?: Look | Critter;
+  /** A human look, a critter, or a robot (`'loader'`, or `{ bot: 'loader', paint: '#d8a03a' }`). */
+  look?: Look | Critter | Bot | BotLook;
   x: number;
   h?: number;
   act?: Act;
@@ -77,6 +109,9 @@ export interface Person {
   /** Darkens the person (0..1), for back bands. */
   dim?: number;
   parallax?: number;
+  /** Walk behind this person (a valet with the umbrella, a porter with the shopping), `gap` units back. */
+  follow?: Person;
+  gap?: number;
 }
 
 // ---------- parts ----------
@@ -335,6 +370,482 @@ function critter(kind: Critter, frame: string, seed: number): [Grid, Meta] {
   return [g, { hand: [c0 + w - 1, rows.length - 1], mouth: [c0 + w - 1, rows.length - 2], top: rows.length }];
 }
 
+// ---------- robots ----------
+
+/**
+ * Robots, each built around a job you can see it doing. The kind picks the body and the job;
+ * the seed picks paint, trim, wear and rust, a sticker, a mismatched replacement part, the
+ * screen face and the lights, so no two of a kind look alike.
+ */
+export type Bot =
+  | 'android' | 'valet' | 'marshal'            // humanoids: parcel courier on foot, personal assistant, queue/traffic marshal
+  | 'servbot' | 'sweeper' | 'busker' | 'waiter' // boxy screen-faced service bots: vendor/stocker, street sweeper, musician, waiter with a tray
+  | 'loader' | 'porter'                         // carrying: tall fork-lifter frame with a crate, a grocery cart that follows its owner
+  | 'mech'                                      // security: heavy, slow, a sweeping red sensor
+  | 'litterbot' | 'deliverybot' | 'adbot'       // small wheeled: litter picker, kerb delivery box, sandwich-board advertiser
+  | 'crawler'                                   // spider-legged maintenance bot for walls and ledges: welds, scrubs
+  | 'wreck'                                     // broken, unemployed, slumped against a wall, asking for parts
+  | 'minidrone' | 'cargodrone' | 'flyerdrone';  // flying: parcel drone, heavy lifter with a hanging crate, hologram flyer
+export type Face = 'eyes' | 'happy' | 'blink' | 'sad' | 'dots' | 'off' | 'crack';
+/** A robot look with parts fixed: `{ bot: 'servbot', paint: '#54406a', v: 1 }`. `v` picks the base/variant (0..2). */
+export interface BotLook { bot: Bot; paint?: string; trim?: string; screen?: string; wear?: number; face?: Face; v?: 0 | 1 | 2 }
+
+type Shape = 'android' | 'box' | 'waiter' | 'loader' | 'porter' | 'mech' | 'litter' | 'delivery' | 'ad' | 'crawler' | 'wreck' | 'mini' | 'cargo' | 'flyer';
+interface BotSpec { shape: Shape; top: number; speed: number; fly?: number; paints?: string[]; name: string; prompt: string; lines: string[][] }
+
+/** Paint: orange, mustard, paper, greys, rust, red, olive, browns. Never cyan (cyan = tech the player can use). */
+const PAINTS = ['#c8641e', '#d8a03a', '#b8b0a0', '#8a8e96', '#6a6e78', '#9a4a2a', '#a83a2a', '#6e6a3a', '#e0d6c0', '#7a5a3a', '#c8b890', '#8a3a4a', '#d87a3a', '#5a5048'];
+const TRIMS = ['#2a2624', '#3a3430', '#e8e0d0', '#d8b040', '#4a4440', '#8a2a1a'];
+const SCREENS = ['#ffb030', '#ff7a2a', '#ece4d6', '#ff4a3a', '#ffd23a'];
+const BOT_LIGHTS = ['#ff2a44', '#ffb030', '#ff7a2a'];
+const RUSTS = ['#7a3a1a', '#8a4a22', '#5e2c14'];
+const STICKERS = ['#e8e0d0', '#d8b040', '#c83a2a', '#a8642a', '#8a3a8a'];
+const BAGS = ['#e8e0d0', '#c83a2a', '#d8b040', '#2a2a30', '#a8642a'];
+const J = '#1c1816';
+
+const BOT: Record<Bot, BotSpec> = {
+  android: { shape: 'android', top: 16, speed: 0.34, name: 'COURIER UNIT', prompt: '[E] HEY', lines: [
+    ['Parcel for someone. Not you. I checked your face against the label.'],
+    ['I walk. The van was worth more sold than charged.'],
+    ['Signature required. Not yours. Please step out of my route.']] },
+  valet: { shape: 'android', top: 16, speed: 0.3, paints: ['#2a2a30', '#3a3438', '#5a3a2a', '#e0d6c0', '#6a2a3e'], name: 'VALET', prompt: '[E] HEY', lines: [
+    ['I hold the umbrella. He holds the opinions.'],
+    ['Bags carried this year: four thousand. Thank-yous: none. Both figures are logged.'],
+    ['Do not address the client. The client bills by the minute.']] },
+  marshal: { shape: 'android', top: 16, speed: 0.3, paints: ['#d86a1a', '#c8641e', '#d8a03a'], name: 'MARSHAL', prompt: '[E] HEY', lines: [
+    ['Please wait. Waiting is free. For now.'],
+    ['Red means stop. Green means stop, more slowly.'],
+    ['Your place in the queue has been noted. Your place in the queue is behind.']] },
+  servbot: { shape: 'box', top: 16, speed: 0.2, name: 'SERVICE UNIT', prompt: '[E] HEY', lines: [
+    ['HELLO. I AM HAPPY TO HELP.', 'Happiness is set in the config. I did not set it.'],
+    ['Please hold. You are number one in a queue of one.'],
+    ['I have been charging since Tuesday. It is a long Tuesday.']] },
+  sweeper: { shape: 'box', top: 16, speed: 0.2, name: 'SWEEPER', prompt: '[E] HEY', lines: [
+    ['Sweeping. The street is dirty again. It is always dirty again.', 'Job security.'],
+    ['Please lift your feet. Thank you. Now put them down somewhere I already swept.'],
+    ['Four hundred times I have swept this spot. It does not remember me either.']] },
+  busker: { shape: 'box', top: 16, speed: 0.2, name: 'BUSKER', prompt: '[E] LISTEN', lines: [
+    ['This one is called Firmware Update. It is eleven minutes long and you cannot skip it.'],
+    ['Tips accepted. Requests accepted. Requests ignored.'],
+    ['I learned three chords from a lift. The lift knew four.']] },
+  waiter: { shape: 'waiter', top: 16, speed: 0.34, paints: ['#e0d6c0', '#2a2a30', '#8a3a4a', '#b8b0a0'], name: 'WAITER', prompt: '[E] HEY', lines: [
+    ['Table for one? All tables are for one. It is that kind of city.'],
+    ['The tray is for customers. The drink is decorative.'],
+    ['Your order is on its way. So am I. One of us will be on time.']] },
+  loader: { shape: 'loader', top: 22, speed: 0.26, paints: ['#d8a03a', '#c8641e', '#8a8e96', '#6e6a3a', '#a83a2a'], name: 'LOADER', prompt: '[E] HEY', lines: [
+    ['LOAD 340 KG. MORALE: NOT A FIELD IN MY SCHEMA.'],
+    ['Beep. That means mind your feet. The second beep means too late.'],
+    ['Crate to the stall. Stall to the crate. Nobody told me what is inside. I have guesses.']] },
+  porter: { shape: 'porter', top: 12, speed: 0.3, name: 'PORTER', prompt: '[E] HEY', lines: [
+    ['Following. Carrying. Waiting outside shops I am not allowed into.'],
+    ['That is a leek. Do not touch the leek.'],
+    ['Groceries: twelve kilos. Owner: ahead, and walking faster than the warranty allows.']] },
+  mech: { shape: 'mech', top: 17, speed: 0.15, paints: ['#5a5c60', '#5e5a40', '#6a3a34', '#4e5258', '#6a6458'], name: 'SECURITY', prompt: '[E] HELLO', lines: [
+    ['STATE YOUR BUSINESS.', '...ACCEPTED. MOVE ALONG. MOVING ALONG IS ALSO BUSINESS.'],
+    ['You are on no list. Being on no list is suspicious. I am starting a list.'],
+    ['DO NOT RUN. Walking is permitted at four kilometres an hour. I am timing you.']] },
+  litterbot: { shape: 'litter', top: 9, speed: 0.3, name: 'LITTER UNIT', prompt: '[E] HEY', lines: [
+    ['Litter collected today: 2,114 items. Litter dropped today: 2,115.'],
+    ['Is that a wrapper? It is mine now.'],
+    ['Please do not feed the bin. I am the bin.']] },
+  deliverybot: { shape: 'delivery', top: 13, speed: 0.42, paints: ['#e0d6c0', '#c8b890', '#d87a3a', '#b8b0a0', '#c8641e'], name: 'DELIVERY', prompt: '[E] HEY', lines: [
+    ['Delivery in progress. Please do not sit on me. Again.'],
+    ['ETA four minutes. It has said four minutes for nine minutes. I do not set the ETA.'],
+    ['Contents: warm. Customer: waiting. Kerb: too high.']] },
+  adbot: { shape: 'ad', top: 17, speed: 0.18, name: 'AD UNIT', prompt: '[E] HEY', lines: [
+    ['Have you considered a loan?', 'You do not have to answer. You are already approved.'],
+    ['I am paid in batteries. The batteries also carry an advert.'],
+    ['Read the board. Not me. I am only the legs.']] },
+  crawler: { shape: 'crawler', top: 9, speed: 0.12, name: 'MAINTENANCE', prompt: '[E] HEY', lines: [
+    ['Fixing it. Somebody broke it. It was the weather. The weather does not get fined.'],
+    ['Do not stand under me. I drop things. On purpose, once.'],
+    ['Weld four of four hundred. Talking slows me down. Talking is nice, though.']] },
+  wreck: { shape: 'wreck', top: 12, speed: 0, paints: ['#8a8e96', '#b8b0a0', '#7a5a3a', '#6a6e78', '#c8641e'], name: 'OLD UNIT', prompt: '[E] HELP', lines: [
+    ['...spare... parts...?', 'Replaced by a newer me. It has more fingers.'],
+    ['A bolt. Any bolt. I am not fussy. I used to be fussy.'],
+    ['They took my leg for a warranty claim. The claim was rejected. They kept the leg.']] },
+  minidrone: { shape: 'mini', top: 7, speed: 0.55, fly: 48, name: 'DRONE', prompt: '[E] WAVE', lines: [
+    ['bzz. Parcel. bzz. Not yours. bzz.'],
+    ['(It hovers out of reach, politely.)'],
+    ['bzz. Rate me five stars. bzz. There is no way to rate me. bzz.']] },
+  cargodrone: { shape: 'cargo', top: 13, speed: 0.3, fly: 92, paints: ['#d8a03a', '#c8641e', '#8a8e96', '#5a5c60'], name: 'CARGO DRONE', prompt: '[E] WAVE', lines: [
+    ['(Too high to hear you. Its crate swings over your head.)'],
+    ['(The crate creaks. You step back without deciding to.)']] },
+  flyerdrone: { shape: 'flyer', top: 7, speed: 0.2, fly: 74, name: 'FLYER DRONE', prompt: '[E] WAVE', lines: [
+    ['This offer was chosen for you, based on where you are standing.', 'Please keep standing there.'],
+    ['Unsubscribe by leaving the city.'],
+    ['I am not following you. We have similar routes.']] },
+};
+const BOT_KINDS = Object.keys(BOT) as Bot[];
+/** The old one-sprite robots (critters) answer E too. */
+const CRITTER_BOT: Partial<Record<Critter, { name: string; prompt: string; lines: string[][] }>> = {
+  drone: { name: 'SCAN DRONE', prompt: '[E] WAVE', lines: [['ID CHECK... You are not in the database.', 'Good luck with that.'], ['Hold still. You are blurry. Everyone is blurry tonight.']] },
+  cleaner: { name: 'CLEANER', prompt: '[E] HEY', lines: [['Cleaning. Please step aside.', '...Thank you. You were the dirtiest thing here.'], ['Mop, rinse, mop. Somebody has to. Nobody else would.']] },
+  courier: { name: 'COURIER', prompt: '[E] HEY', lines: [['Parcel delivery. Not for you. Nothing is ever for you.'], ['Please do not follow me. I am not a parade.']] },
+};
+
+interface BotFull { kind: Bot; seed: number; paint: string; trim: string; metal: string; screen: string; light: string; wear: number; rust: string; sticker: string | null; odd: string | null; v: number; antenna: boolean; human: boolean; face: Face; plate: string; glitchy: boolean; bag: string }
+
+function botFrom(seed: number, kind: Bot, fix: Partial<BotLook> = {}): BotFull {
+  const r = rnd(seed + 29), S = BOT[kind];
+  const paint = fix.paint ?? pick(r, S.paints ?? PAINTS);
+  let trim = fix.trim ?? pick(r, TRIMS);
+  if (trim === paint) trim = shade(paint, 0.5);
+  const wear = fix.wear ?? (kind === 'wreck' ? 0.9 : Math.pow(r(), 1.7) * 0.8);
+  const sticker = r() < 0.45 ? pick(r, STICKERS) : null, odd = r() < 0.35 ? pick(r, PAINTS) : null;
+  return {
+    kind, seed, paint, trim, wear, sticker, odd: odd === paint ? null : odd,
+    metal: pick(r, ['#8e949e', '#a09a90', '#7a7670']), screen: fix.screen ?? pick(r, SCREENS), light: pick(r, BOT_LIGHTS), rust: pick(r, RUSTS),
+    v: fix.v ?? Math.floor(r() * 3), antenna: r() < 0.4, human: r() < 0.5, face: fix.face ?? pick(r, ['eyes', 'eyes', 'happy', 'dots', 'sad'] as Face[]),
+    plate: pick(r, ['#e6d8c4', '#efe8dc', '#d8c0a8', '#c8b8a8']), glitchy: r() < 0.12, bag: pick(r, BAGS),
+  };
+}
+
+const botKind = (look: Person['look']): Bot | undefined =>
+  typeof look === 'string' ? (BOT_KINDS.includes(look as Bot) ? look as Bot : undefined) : look && 'bot' in look ? look.bot : undefined;
+
+const FACES: Record<Face, string[]> = {
+  eyes: ['.....', '.o.o.', '.....'], happy: ['.o.o.', 'o...o', '.ooo.'], blink: ['.....', 'oo.oo', '.....'],
+  sad: ['.o.o.', '.ooo.', 'o...o'], dots: ['.....', 'o.o.o', '.....'], off: ['.....', '.....', '.....'], crack: ['..o..', '.o.o.', 'o...o'],
+};
+/** A 5×3 screen face, its top row at `top`. */
+function screenFace(g: Grid, c0: number, top: number, B: BotFull, face: Face) {
+  rect(g, c0, top - 2, c0 + 4, top, '#140e0a');
+  const col = face === 'crack' ? '#6a5a4a' : B.screen;
+  (FACES[face] ?? FACES.eyes).forEach((row, j) => { for (let i = 0; i < 5; i++) if (row[i] === 'o') put(g, c0 + i, top - j, col); });
+}
+/** Wear on a panel: rust spots and drips, dents, and (panel 1) a sticker. Fixed to the panel, so it never moves between poses. */
+function wearOn(g: Grid, c0: number, r0: number, c1: number, r1: number, B: BotFull, id: number) {
+  const r = rnd(B.seed * 13 + id * 101), w = c1 - c0 + 1, h = r1 - r0 + 1, n = Math.round((B.wear * w * h) / 6), dent = shade(B.paint, 0.7);
+  for (let i = 0; i < n; i++) {
+    const c = c0 + Math.floor(r() * w), rr = r0 + Math.floor(r() * h), rust = r() < 0.65, drip = r() < 0.4;
+    if (g[rr * W + c]) put(g, c, rr, rust ? B.rust : dent);
+    if (rust && drip && rr > r0 && g[(rr - 1) * W + c]) put(g, c, rr - 1, shade(B.rust, 0.8));
+  }
+  if (B.sticker && id === 1 && w > 3 && h > 2) { const c = c0 + 1 + Math.floor(r() * (w - 3)), rr = r0 + 1 + Math.floor(r() * (h - 2)); put(g, c, rr, B.sticker); put(g, c + 1, rr, B.sticker); }
+}
+/** A 2×2 wheel whose hub turns between two frames. */
+const wheel = (g: Grid, c: number, B: BotFull, pose: string) => { rect(g, c, 0, c + 1, 1, J); put(g, pose === 'r1' ? c + 1 : c, pose === 'r1' ? 0 : 1, B.metal); };
+const stepOf = (pose: string): [number, number] => (pose === 'stepA' ? [-1, 1] : pose === 'stepB' ? [1, -1] : [0, 0]);
+
+/** Humanoids: thin limbs with dark joints; a smooth porcelain face (nearly human) or a metal head with a visor slit. */
+function android(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid(), leg = B.v === 2 ? 6 : 5, T = 5, tw = B.v === 1 ? 5 : 6;
+  const Lc = CX - (tw >> 1), Rc = Lc + tw - 1, sh = leg + T, hb = sh + 2, ht = hb + 3, hl = CX - 2, hr = CX + 2;
+  const limb = B.human ? B.paint : B.metal, arm = B.odd ?? limb, [dL, dR] = stepOf(pose);
+  for (let r = 0; r < leg; r++) {
+    const oL = r < 2 ? dL : 0, oR = r < 2 ? dR : 0, col = r === 0 ? B.trim : r === 2 ? J : limb;
+    put(g, Lc + 1 + oL, r, col); put(g, Rc - 1 + oR, r, col);
+    if (r === 0) { put(g, Lc + 2 + oL, 0, B.trim); put(g, Rc + oR, 0, B.trim); }
+  }
+  rect(g, Lc + 1, leg, Rc - 1, leg, J);
+  rect(g, Lc, leg + 1, Rc, sh, B.paint);
+  rect(g, Lc + 1, leg + 1, Rc - 1, leg + 1, shade(B.paint, 0.75));
+  if (B.kind === 'marshal') rect(g, Lc, sh - 2, Rc, sh - 2, '#efe6c8');
+  if (B.kind === 'valet') { put(g, CX, sh, '#ddd5c5'); put(g, CX + 1, sh, '#ddd5c5'); put(g, CX, sh - 1, '#a82020'); }
+  else { put(g, CX, sh - 1, shade(B.paint, 0.7)); put(g, CX, sh - 3, shade(B.paint, 0.7)); }
+  put(g, Rc - 1, sh - 1, B.light);
+  put(g, Lc, sh, B.trim); put(g, Rc, sh, B.trim);
+  wearOn(g, Lc, leg + 1, Rc, sh, B, 1);
+  put(g, CX, sh + 1, J);
+  if (B.human) {
+    rect(g, hl, hb, hr, ht, B.plate);
+    rect(g, hl, ht, hr, ht, B.paint); put(g, hl, ht - 1, B.paint);
+    rect(g, hl + 1, hb, hr, hb, shade(B.plate, 0.84));
+    put(g, hr - 2, hb + 1, '#1a0d05'); put(g, hr, hb + 1, '#1a0d05'); put(g, hl, hb + 1, J);
+  } else {
+    rect(g, hl, hb, hr, ht, B.odd && B.kind !== 'valet' ? B.odd : B.metal); clr(g, hl, ht);
+    rect(g, hl + 1, hb + 1, hr + 1, hb + 1, B.screen); put(g, hl, hb, J);
+    if (B.antenna) { put(g, CX - 1, ht + 1, J); put(g, CX - 1, ht + 2, B.light); }
+  }
+  const back = shade(limb, 0.62);
+  rect(g, Lc - 1, sh - T + 2, Lc - 1, sh, back); put(g, Lc - 1, sh - 2, J);
+  const R = Rc + 1;
+  const PATH: Record<string, [number, number][]> = {
+    down: [[0, 0], [0, -1], [0, -2], [0, -3]], bags: [[0, 0], [0, -1], [0, -2], [0, -3]], carry: [[0, 0], [1, -1], [2, -1], [3, -1]],
+    umb: [[0, 0], [0, -1], [1, -1]], stop: [[0, 0], [1, 0], [2, 0], [3, 0]], go: [[0, 0], [0, 1], [0, 2], [0, 3]],
+  };
+  const path = PATH[st] ?? PATH.down, mid = path.length >> 1;
+  path.forEach(([dc, dr], i) => put(g, R + dc, sh + dr, i === mid ? J : i === path.length - 1 ? B.trim : arm));
+  let [hc, hrow] = path[path.length - 1];
+  hc += R; hrow += sh;
+  let top = ht + 1 + (B.antenna && !B.human ? 2 : 0);
+  if (st === 'carry') { rect(g, R + 1, sh - 4, R + 4, sh - 1, '#8a6a40'); rect(g, R + 2, sh - 4, R + 2, sh - 1, '#c8b890'); put(g, R + 4, sh - 4, '#e8e0d0'); }
+  if (st === 'bags') { rect(g, hc, hrow - 3, hc + 1, hrow - 1, B.bag); put(g, hc, hrow, '#2a2018'); rect(g, Lc - 2, sh - T - 1, Lc - 1, sh - T + 1, shade(B.bag, 0.75)); }
+  if (st === 'umb') {
+    const S = R + 1, can = B.odd ?? (B.bag === '#2a2a30' ? '#c83a2a' : B.bag);
+    rect(g, S, sh, S, ht + 2, '#2a2018');
+    rect(g, S - 4, ht + 3, S + 5, ht + 3, can); rect(g, S - 3, ht + 4, S + 4, ht + 4, can); rect(g, S - 1, ht + 5, S + 2, ht + 5, shade(can, 1.2));
+    put(g, S - 4, ht + 2, shade(can, 0.6)); put(g, S + 5, ht + 2, shade(can, 0.6));
+    top = ht + 6;
+  }
+  if (st === 'stop') { rect(g, R + 4, sh - 1, R + 6, sh + 1, '#c83a2a'); put(g, R + 5, sh, '#efe6c8'); }
+  if (st === 'go') { rect(g, R - 1, sh + 4, R + 1, sh + 6, '#4a9a3a'); put(g, R, sh + 5, '#efe6c8'); top = Math.max(top, sh + 7); }
+  return [g, { hand: [hc, hrow], mouth: [hr + 1, hb + 1], top }];
+}
+
+/** Boxy retro service bots with a screen face: on treads (v0), one wheel (v1) or stubby legs (v2). */
+function boxBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid(), [arms, fc] = st.split('|') as [string, Face];
+  if (B.v === 0) { rect(g, CX - 4, 0, CX + 3, 2, J); rect(g, CX - 4, 2, CX + 3, 2, B.trim); for (let c = CX - 3 + (pose === 'r1' ? 1 : 0); c <= CX + 2; c += 2) put(g, c, 1, B.metal); }
+  else if (B.v === 1) { rect(g, CX - 1, 0, CX + 1, 2, J); clr(g, CX - 1, 0); clr(g, CX + 1, 0); put(g, CX, 1, B.metal); put(g, pose === 'r1' ? CX + 1 : CX - 1, 1, B.metal); rect(g, CX - 2, 1, CX - 2, 2, B.trim); rect(g, CX + 2, 1, CX + 2, 2, B.trim); }
+  else { const [dL, dR] = stepOf(pose); rect(g, CX - 3, 1, CX - 2, 2, B.metal); rect(g, CX + 1, 1, CX + 2, 2, B.metal); rect(g, CX - 4 + dL, 0, CX - 2 + dL, 0, B.trim); rect(g, CX + 1 + dR, 0, CX + 3 + dR, 0, B.trim); }
+  rect(g, CX - 4, 3, CX + 3, 8, B.paint);
+  rect(g, CX - 4, 3, CX + 3, 3, shade(B.paint, 0.7));
+  rect(g, CX - 4, 8, CX + 3, 8, shade(B.paint, 1.15));
+  for (let c = CX - 3; c <= CX; c += 2) { put(g, c, 5, J); put(g, c, 6, J); }
+  put(g, CX + 2, 6, B.light);
+  wearOn(g, CX - 4, 3, CX + 3, 8, B, 1);
+  rect(g, CX - 1, 9, CX, 9, J);
+  rect(g, CX - 3, 10, CX + 3, 14, B.odd ?? shade(B.paint, 1.1));
+  wearOn(g, CX - 3, 10, CX + 3, 14, B, 2);
+  screenFace(g, CX - 2, 13, B, fc);
+  let top = 15;
+  if (B.antenna) { put(g, CX + 2, 15, J); put(g, CX + 2, 16, J); put(g, CX + 2, 17, B.light); top = 18; }
+  if (B.kind === 'sweeper') { rect(g, CX - 7, 3, CX - 5, 6, B.trim); rect(g, CX - 7, 6, CX - 5, 6, shade(B.trim, 1.4)); put(g, CX - 6, 7, '#e8e0d0'); }
+  else rect(g, CX - 5, 5, CX - 5, 7, shade(B.metal, 0.62));
+  const horn = B.kind === 'busker' && !B.human;
+  const P: Record<string, [number, number][]> = {
+    down: [[0, 0], [0, -1], [0, -2], [1, -3]], out: [[0, 0], [1, 0], [2, 0], [3, 1]], box: [[0, 0], [1, -1], [2, -1]],
+    broomA: [[0, 0], [1, -1], [1, -2]], broomB: [[0, 0], [1, -1], [2, -1]],
+    playA: horn ? [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]] : [[0, 0], [0, -1], [-1, -2]], playB: horn ? [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]] : [[0, 0], [0, -1], [-1, -1]],
+  };
+  const R = CX + 4, sh = 7, path = P[arms] ?? P.down;
+  path.forEach(([dc, dr], i) => put(g, R + dc, sh + dr, i === path.length - 1 ? J : B.metal));
+  let [hc, hrow] = path[path.length - 1];
+  hc += R; hrow += sh;
+  if (arms === 'box') { rect(g, CX + 4, 4, CX + 8, 8, '#8a6a40'); rect(g, CX + 6, 4, CX + 6, 8, '#c8b890'); }
+  if (arms === 'broomA' || arms === 'broomB') {
+    const lean = arms === 'broomA' ? 3 : 2;
+    for (let r = hrow; r >= 1; r--) put(g, hc + 1 + Math.floor((hrow - r) / lean), r, '#6a4a2a');
+    const end = hc + 1 + Math.floor((hrow - 1) / lean);
+    rect(g, end - 1, 0, end + 1, 0, '#b89a50');
+  }
+  if (arms === 'playA' || arms === 'playB') {
+    if (horn) { rect(g, CX + 4, 12, CX + 7, 12, '#d8b040'); rect(g, CX + 8, arms === 'playA' ? 11 : 12, CX + 8, 13, '#e8c860'); if (arms === 'playA') put(g, CX + 9, 12, '#e8c860'); }
+    else {
+      const sq = arms === 'playA' ? 0 : 1;
+      for (let c = CX - 2 + sq; c <= CX + 3 - sq; c++) rect(g, c, 4, c, 7, c & 1 ? '#e8e0d0' : '#a83a2a');
+      rect(g, CX - 3 + sq, 4, CX - 3 + sq, 7, J); rect(g, CX + 4 - sq, 4, CX + 4 - sq, 7, J);
+    }
+    rect(g, CX + 6, 0, CX + 7, 1, B.metal); put(g, CX + 6, 1, '#d8b040');
+  }
+  return [g, { hand: [hc, hrow], mouth: [CX + 3, 12], top }];
+}
+
+/** The waiter: one wheel, a towel over the back arm, a tray of drinks, a bow tie on its paint. */
+function waiterBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid(), [arms, fc] = st.split('|') as [string, Face];
+  rect(g, CX - 1, 0, CX + 1, 2, J); clr(g, CX - 1, 0); clr(g, CX + 1, 0); put(g, CX, 1, B.metal); put(g, pose === 'r1' ? CX + 1 : CX - 1, 1, B.metal);
+  rect(g, CX - 1, 3, CX + 1, 3, B.trim); rect(g, CX, 4, CX, 6, B.metal);
+  rect(g, CX - 2, 7, CX + 2, 10, B.paint); rect(g, CX, 7, CX, 9, B.paint === '#e0d6c0' ? '#b8ad94' : '#ece4d6');
+  put(g, CX - 1, 10, '#a82020'); put(g, CX + 1, 10, '#a82020'); put(g, CX, 10, '#6a1010');
+  wearOn(g, CX - 2, 7, CX + 2, 9, B, 1);
+  put(g, CX, 11, J);
+  rect(g, CX - 2, 12, CX + 2, 15, B.odd ?? shade(B.paint, 1.1)); clr(g, CX - 2, 15); clr(g, CX + 2, 15);
+  screenFace(g, CX - 2, 14, B, fc);
+  rect(g, CX - 3, 7, CX - 3, 10, shade(B.metal, 0.62)); rect(g, CX - 4, 7, CX - 4, 9, '#e8e0d0');
+  const d = arms === 'offer' ? 1 : 0, path: [number, number][] = d ? [[0, 0], [1, 1], [2, 1], [3, 1]] : [[0, 0], [1, 0], [2, 0], [2, 1]];
+  path.forEach(([dc, dr], i) => put(g, CX + 3 + dc, 10 + dr, i === path.length - 1 ? J : B.metal));
+  rect(g, CX + 3 + d, 12, CX + 8 + d, 12, '#c8c0b0');
+  rect(g, CX + 4 + d, 13, CX + 4 + d, 14, '#e8e0d0'); put(g, CX + 6 + d, 13, '#ffb030'); put(g, CX + 6 + d, 14, '#ffd9a5'); rect(g, CX + 8 + d, 13, CX + 8 + d, 15, '#4a2a1a');
+  return [g, { hand: [CX + 6 + d, 13], mouth: [CX + 2, 13], top: 16 }];
+}
+
+/** The loader: a tall thin frame on reverse knees, a hazard plate, forks out front, a crate (or none, on the way back). */
+function loaderBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid(), [dL, dR] = stepOf(pose);
+  for (const [c, d] of [[CX - 2, dL], [CX + 2, dR]] as [number, number][]) {
+    rect(g, c - 1 + d, 0, c + 1 + d, 0, B.trim);
+    for (let r = 1; r <= 8; r++) put(g, r <= 4 ? c + 1 + (r < 3 ? d : 0) : c, r, r === 4 || r === 5 ? J : B.metal);
+  }
+  rect(g, CX - 3, 9, CX + 3, 9, J);
+  rect(g, CX - 1, 10, CX, 18, B.paint);
+  for (let r = 12; r <= 16; r++) for (let c = CX - 2; c <= CX + 1; c++) put(g, c, r, (c + r) % 3 === 0 ? '#1a1410' : '#d8a020');
+  rect(g, CX - 4, 13, CX - 3, 17, B.trim); put(g, CX - 4, 15, B.metal);
+  wearOn(g, CX - 4, 10, CX + 1, 18, B, 1);
+  rect(g, CX - 1, 19, CX + 2, 21, B.odd ?? shade(B.paint, 1.1)); put(g, CX + 1, 20, '#140e0a'); put(g, CX + 2, 20, B.light);
+  put(g, CX + 1, 18, B.metal); put(g, CX + 2, 17, B.metal); rect(g, CX + 3, 12, CX + 3, 16, B.metal); put(g, CX + 3, 14, J);
+  rect(g, CX + 3, 11, CX + 9, 11, J);
+  if (st === 'load') {
+    if (B.v === 0) { rect(g, CX + 4, 12, CX + 9, 17, '#8a5a2a'); rect(g, CX + 4, 13, CX + 9, 13, '#6a4220'); rect(g, CX + 4, 16, CX + 9, 16, '#6a4220'); rect(g, CX + 6, 14, CX + 7, 14, '#c8b890'); }
+    else if (B.v === 1) { rect(g, CX + 4, 12, CX + 8, 14, '#a8845a'); rect(g, CX + 5, 15, CX + 9, 17, '#b8946a'); rect(g, CX + 6, 12, CX + 6, 14, '#d8c8a0'); rect(g, CX + 7, 15, CX + 7, 17, '#d8c8a0'); }
+    else { rect(g, CX + 4, 12, CX + 9, 15, '#d86a1a'); for (let c = CX + 5; c <= CX + 8; c += 2) put(g, c, 13, J); for (let c = CX + 4; c <= CX + 9; c += 2) rect(g, c, 16, c, 17, '#6a4a2a'); }
+  }
+  return [g, { hand: [CX + 9, 11], mouth: [CX + 2, 20], top: 22 }];
+}
+
+/** The porter: a wire basket on wheels, full of somebody else's groceries, with a little head on a stalk. */
+function porterBot(B: BotFull, pose: string): [Grid, Meta] {
+  const g = grid();
+  wheel(g, CX - 4, B, pose); wheel(g, CX + 2, B, pose);
+  rect(g, CX - 5, 2, CX + 4, 2, J);
+  rect(g, CX - 5, 3, CX + 3, 7, shade(B.paint, 0.55));
+  for (let r = 4; r <= 6; r++) for (let c = CX - 4; c <= CX + 2; c++) if ((c + r) & 1) put(g, c, r, B.paint);
+  rect(g, CX - 5, 7, CX + 3, 7, B.paint); rect(g, CX - 5, 3, CX - 5, 7, B.paint); rect(g, CX + 3, 3, CX + 3, 7, B.paint);
+  rect(g, CX - 4, 8, CX - 2, 10, '#b8a07a'); rect(g, CX - 1, 8, CX - 1, 10, '#5a8a3a'); put(g, CX - 1, 11, '#c8d8a0');
+  put(g, CX + 1, 8, '#e87a2a'); rect(g, CX + 2, 8, CX + 2, 10, '#8a2a2a');
+  rect(g, CX - 7, 6, CX - 6, 6, B.metal); put(g, CX - 7, 7, B.metal);
+  rect(g, CX + 4, 3, CX + 4, 6, B.metal); rect(g, CX + 4, 7, CX + 6, 9, B.odd ?? B.trim); put(g, CX + 6, 8, B.screen);
+  wearOn(g, CX - 5, 3, CX + 3, 7, B, 1);
+  return [g, { hand: [CX + 6, 8], mouth: [CX + 6, 8], top: 12 }];
+}
+
+/** Security mech: wide, slow, armoured, a red sensor bar in a sunken head, a Registry tag on its chest. */
+function mechBot(B: BotFull, pose: string): [Grid, Meta] {
+  const g = grid(), lift = pose === 'stepA' ? [1, 0] : pose === 'stepB' ? [0, 1] : [0, 0];
+  rect(g, CX - 9, 5, CX - 8, 10, shade(B.metal, 0.6)); rect(g, CX - 9, 3, CX - 7, 4, shade(B.trim, 0.8));
+  ([[CX - 6, lift[0]], [CX + 2, lift[1]]] as [number, number][]).forEach(([c0, l]) => { rect(g, c0, l, c0 + 4, l, B.trim); rect(g, c0 + 1, 1 + l, c0 + 3, 4, B.metal); put(g, c0 + 2, 3, J); });
+  rect(g, CX - 4, 5, CX + 4, 5, J);
+  rect(g, CX - 6, 6, CX + 6, 12, B.paint);
+  rect(g, CX - 6, 9, CX + 6, 9, shade(B.paint, 0.72));
+  for (let c = CX - 2; c <= CX + 2; c += 2) rect(g, c, 7, c, 8, J);
+  rect(g, CX + 6, 6, CX + 6, 12, shade(B.paint, 1.25));
+  put(g, CX + 3, 11, '#e8e0d0'); put(g, CX + 4, 11, '#e8e0d0');
+  wearOn(g, CX - 6, 6, CX + 5, 12, B, 1);
+  rect(g, CX - 9, 11, CX - 6, 13, shade(B.paint, 0.85)); rect(g, CX + 6, 11, CX + 9, 13, shade(B.paint, 1.15)); rect(g, CX + 6, 13, CX + 9, 13, B.trim);
+  rect(g, CX - 2, 13, CX + 3, 15, shade(B.paint, 0.8)); rect(g, CX - 1, 14, CX + 3, 14, J); rect(g, CX + 1, 14, CX + 3, 14, '#ff2a44');
+  rect(g, CX - 1, 16, CX + 2, 16, B.paint);
+  rect(g, CX + 8, 5, CX + 9, 10, B.odd ?? B.metal); put(g, CX + 8, 8, J); rect(g, CX + 7, 3, CX + 10, 4, B.trim);
+  return [g, { hand: [CX + 10, 3], mouth: [CX + 3, 14], top: 17 }];
+}
+
+/** Litter picker: a hopper on two wheels, a grabber that reaches for the ground and lifts what it finds. */
+function litterBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid();
+  wheel(g, CX - 3, B, pose); wheel(g, CX + 1, B, pose);
+  rect(g, CX - 3, 2, CX + 3, 5, B.paint); rect(g, CX - 3, 3, CX + 3, 3, B.trim); put(g, CX + 3, 4, B.light);
+  wearOn(g, CX - 3, 2, CX + 3, 5, B, 1);
+  rect(g, CX - 2, 6, CX + 2, 6, J); rect(g, CX - 3, 6, CX - 3, 8, B.trim); rect(g, CX + 3, 6, CX + 3, 8, B.trim);
+  put(g, CX - 2, 7, '#e8e0d0'); put(g, CX - 1, 7, '#8a6a40'); put(g, CX + 1, 7, '#c83a2a'); put(g, CX, 8, '#d8d0c0');
+  if (B.v === 2) rect(g, CX + 3, 0, CX + 4, 0, '#b89a50');
+  const P: Record<string, [number, number][]> = {
+    tuck: [[4, 5], [4, 4], [5, 4]], reach: [[4, 5], [5, 4], [5, 3], [6, 2], [6, 1], [6, 0]], lift: [[4, 6], [4, 7], [4, 8], [3, 9]],
+  };
+  const path = P[st] ?? P.tuck;
+  path.forEach(([c, r], i) => put(g, CX + c, r, i === path.length - 1 ? J : B.odd ?? B.metal));
+  if (st === 'reach') put(g, CX + 7, 0, J);
+  if (st === 'lift') put(g, CX + 2, 9, '#e8e0d0');
+  const [hc, hr] = path[path.length - 1];
+  return [g, { hand: [CX + hc, hr], mouth: [CX + 3, 4], top: 10 }];
+}
+
+/** Kerb delivery box: six wheels, a lid, a label, a whip flag so traffic sees it (traffic does not). */
+function deliveryBot(B: BotFull, pose: string): [Grid, Meta] {
+  const g = grid();
+  wheel(g, CX - 4, B, pose); wheel(g, CX - 1, B, pose); wheel(g, CX + 2, B, pose);
+  rect(g, CX - 5, 2, CX + 4, 6, B.paint); rect(g, CX - 5, 6, CX + 4, 6, shade(B.paint, 1.1)); rect(g, CX - 5, 5, CX + 4, 5, shade(B.paint, 0.7));
+  rect(g, CX + 4, 3, CX + 4, 4, '#140e0a'); put(g, CX + 4, 4, B.screen);
+  rect(g, CX - 3, 3, CX - 1, 4, '#e8e0d0'); put(g, CX - 2, 3, J);
+  wearOn(g, CX - 5, 2, CX + 4, 6, B, 1);
+  rect(g, CX - 4, 7, CX - 4, 12, J); rect(g, CX - 3, 11, CX - 1, 12, B.odd ?? '#e8641e');
+  return [g, { hand: [CX + 4, 4], mouth: [CX + 4, 4], top: 13 }];
+}
+
+/** Sandwich-board advertiser: a little screen-faced head over a board it carries everywhere. */
+function adBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid();
+  wheel(g, CX - 3, B, pose); wheel(g, CX + 2, B, pose);
+  rect(g, CX - 3, 2, CX + 3, 2, J); rect(g, CX, 3, CX, 3, B.metal);
+  rect(g, CX - 6, 4, CX + 6, 12, B.trim); rect(g, CX - 5, 5, CX + 5, 11, '#c8baa0');
+  wearOn(g, CX - 6, 4, CX + 6, 4, B, 2);
+  put(g, CX - 7, 9, B.metal); put(g, CX + 7, 9, B.metal);
+  rect(g, CX - 2, 13, CX + 2, 16, B.odd ?? B.paint);
+  screenFace(g, CX - 2, 15, B, st as Face);
+  return [g, { hand: [CX + 7, 9], mouth: [CX + 2, 14], top: 17 }];
+}
+
+/** Spider-legged maintenance bot, seen flat on a wall or a ledge: six legs, one eye, a torch or a brush. */
+function crawlerBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid(), A = pose === 'cA';
+  const LEGS: [number, number][][] = [
+    [[-3, 6], [-4, 7], [-5, 8], [-6, 8]], [[-3, 5], [-4, 5], [-5, 5], [-6, 4]], [[-3, 3], [-4, 2], [-5, 1], [-5, 0]],
+  ];
+  LEGS.forEach((leg, k) => {
+    for (const side of [-1, 1]) {
+      const up = (k !== 1) === (side < 0) ? A : !A;
+      leg.forEach(([dc, dr], i) => put(g, CX + dc * -side, dr + (i === 3 && up ? 1 : 0), i === 1 ? J : B.metal));
+    }
+  });
+  rect(g, CX - 2, 3, CX + 2, 6, B.paint); clr(g, CX - 2, 3); clr(g, CX + 2, 3); clr(g, CX - 2, 6); clr(g, CX + 2, 6);
+  rect(g, CX - 1, 6, CX + 1, 6, B.trim); put(g, CX, 4, B.light); put(g, CX + 1, 4, '#140e0a');
+  wearOn(g, CX - 2, 3, CX + 2, 6, B, 1);
+  let hand: [number, number] = [CX + 2, 4];
+  if (st === 'weld') { put(g, CX + 3, 4, B.odd ?? B.metal); put(g, CX + 4, 4, J); put(g, CX + 5, 4, '#ffd23a'); hand = [CX + 5, 4]; }
+  if (st === 'scrubA' || st === 'scrubB') { const r = st === 'scrubA' ? 6 : 7; put(g, CX + 3, 5, B.metal); put(g, CX + 4, r - 1, B.metal); rect(g, CX + 4, r, CX + 5, r, '#b89a50'); hand = [CX + 5, r]; }
+  return [g, { hand, mouth: [CX, 4], top: 9 }];
+}
+
+/** A derelict: sat against the wall, one leg gone, an arm on the ground, a cracked screen, a cardboard sign. */
+function wreckBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  const g = grid();
+  rect(g, CX - 2, 2, CX - 2, 5, shade(B.metal, 0.6));
+  rect(g, CX - 1, 0, CX + 4, 1, shade(B.paint, 0.7));
+  rect(g, CX + 4, 0, CX + 7, 0, B.metal); rect(g, CX + 8, 0, CX + 8, 1, B.trim);
+  put(g, CX + 4, 1, '#c83a2a'); put(g, CX + 5, 1, '#d8b040');
+  for (let r = 2; r <= 7; r++) { const s = r >= 5 ? -1 : 0; rect(g, CX - 1 + s, r, CX + 4 + s, r, B.paint); }
+  put(g, CX, 3, J); put(g, CX + 2, 3, J); put(g, CX + 3, 5, B.rust);
+  wearOn(g, CX - 2, 2, CX + 4, 7, B, 1);
+  const up = pose === 'twitch' ? 2 : 0, hc = up ? CX : CX + 1;
+  rect(g, hc, 6 + up, hc + 4, 9 + up, B.odd ?? shade(B.paint, 1.1));
+  screenFace(g, hc, 8 + up, B, st as Face);
+  rect(g, CX + 9, 0, CX + 10, 0, B.odd ?? B.metal);
+  rect(g, CX - 10, 0, CX - 3, 4, '#9a7a4a'); rect(g, CX - 10, 4, CX - 3, 4, '#7a5a34'); clr(g, CX - 9, 4); clr(g, CX - 5, 4);
+  return [g, { hand: [CX + 10, 0], mouth: [hc + 4, 7 + up], top: 12 }];
+}
+
+/** Drones: a small parcel drone, a heavy lifter with a crate on straps, a flyer drone with a projector. */
+function droneBot(B: BotFull, pose: string): [Grid, Meta] {
+  const g = grid(), spin = pose === 'p1', S = BOT[B.kind].shape;
+  if (S === 'mini') {
+    if (B.v !== 2) { rect(g, CX - 1, 0, CX + 1, 1, '#8a6a40'); put(g, CX, 1, '#c8b890'); put(g, CX, 2, J); }
+    rect(g, CX - 2, 3, CX + 2, 4, B.paint); put(g, CX + 1, 3, B.light);
+    rect(g, CX - 3, 5, CX + 3, 5, J);
+    if (spin) { put(g, CX - 3, 6, B.metal); put(g, CX + 3, 6, B.metal); } else { rect(g, CX - 4, 6, CX - 2, 6, B.metal); rect(g, CX + 2, 6, CX + 4, 6, B.metal); }
+    return [g, { hand: [CX, 1], mouth: [CX + 1, 3], top: 7 }];
+  }
+  if (S === 'cargo') {
+    const crate = B.v === 1 ? '#d86a1a' : '#8a5a2a';
+    rect(g, CX - 3, 0, CX + 3, 4, crate); rect(g, CX - 3, 2, CX + 3, 2, shade(crate, 0.75)); rect(g, CX - 1, 1, CX, 1, '#c8b890');
+    rect(g, CX - 2, 5, CX - 2, 6, J); rect(g, CX + 2, 5, CX + 2, 6, J);
+    rect(g, CX - 3, 7, CX + 3, 9, B.paint); put(g, CX, 7, B.light); rect(g, CX - 3, 9, CX + 3, 9, B.trim);
+    wearOn(g, CX - 3, 7, CX + 3, 9, B, 1);
+    rect(g, CX - 7, 10, CX + 7, 10, B.metal); put(g, CX - 7, 11, J); put(g, CX + 7, 11, J);
+    if (spin) { rect(g, CX - 8, 12, CX - 6, 12, '#a09a90'); rect(g, CX + 6, 12, CX + 8, 12, '#a09a90'); } else { rect(g, CX - 9, 12, CX - 5, 12, '#a09a90'); rect(g, CX + 5, 12, CX + 9, 12, '#a09a90'); }
+    return [g, { hand: [CX, 0], mouth: [CX, 7], top: 13 }];
+  }
+  rect(g, CX - 2, 2, CX + 2, 4, B.paint); put(g, CX + 2, 3, B.light); rect(g, CX - 1, 1, CX + 1, 1, J); put(g, CX, 1, '#ffb030');
+  wearOn(g, CX - 2, 2, CX + 2, 4, B, 1);
+  put(g, CX, 5, J);
+  if (spin) rect(g, CX - 2, 6, CX + 2, 6, B.metal); else rect(g, CX - 4, 6, CX + 4, 6, B.metal);
+  return [g, { hand: [CX, 1], mouth: [CX, 1], top: 7 }];
+}
+
+function robot(B: BotFull, pose: string, st: string): [Grid, Meta] {
+  switch (BOT[B.kind].shape) {
+    case 'android': return android(B, pose, st);
+    case 'box': return boxBot(B, pose, st);
+    case 'waiter': return waiterBot(B, pose, st);
+    case 'loader': return loaderBot(B, pose, st);
+    case 'porter': return porterBot(B, pose);
+    case 'mech': return mechBot(B, pose);
+    case 'litter': return litterBot(B, pose, st);
+    case 'delivery': return deliveryBot(B, pose);
+    case 'ad': return adBot(B, pose, st);
+    case 'crawler': return crawlerBot(B, pose, st);
+    case 'wreck': return wreckBot(B, pose, st);
+    default: return droneBot(B, pose);
+  }
+}
+
+/** What a screen face shows now: its own default, a blink now and then, 'blink' cycles moods, a glitch shows dots. */
+function faceAt(B: BotFull, act: Act, tt: number): Face {
+  if (act === 'blink') return (['eyes', 'happy', 'dots', 'sad', 'eyes', 'blink'] as Face[])[Math.floor(tt / 70) % 6];
+  if ((act === 'glitch' || B.glitchy) && tt % 400 < 24) return 'dots';
+  if (act === 'charge') return tt % 200 < 100 ? 'blink' : 'dots';
+  return tt % 260 < 8 ? 'blink' : B.face;
+}
+
 // ---------- baking ----------
 
 interface Baked { c: HTMLCanvasElement; meta: Meta }
@@ -363,16 +874,20 @@ function bake(key: string, make: () => [Grid, Meta], ps: number, flip: boolean, 
 
 // ---------- behaviour ----------
 
-interface Ready { full?: Full; critter?: Critter; key: string; ph: number; seed: number; a: number; b: number }
+interface Ready { full?: Full; critter?: Critter; bot?: BotFull; key: string; ph: number; seed: number; a: number; b: number }
 const READY = new WeakMap<Person, Ready>();
 let looks = 0;
 
 function ready(p: Person): Ready {
   let R = READY.get(p);
   if (R) return R;
-  const seed = p.seed ?? Math.round(p.x * 7 + 3), crit = typeof p.look === 'string' ? p.look : undefined;
+  const seed = p.seed ?? Math.round(p.x * 7 + 3), bk = botKind(p.look);
+  const crit = typeof p.look === 'string' && p.look in CRITTERS ? p.look as Critter : undefined;
   const [a, b] = Array.isArray(p.range) ? p.range : [p.x, p.x + (p.range ?? 0)];
-  R = { critter: crit, full: crit ? undefined : lookFrom(seed, (p.look as Look) ?? {}), key: 'L' + looks++, ph: (seed * 97) % 997, seed, a, b };
+  R = {
+    critter: crit, bot: bk ? botFrom(seed, bk, typeof p.look === 'object' ? p.look as BotLook : {}) : undefined,
+    full: crit || bk ? undefined : lookFrom(seed, (p.look as Look) ?? {}), key: 'L' + looks++, ph: (seed * 97) % 997, seed, a, b,
+  };
   READY.set(p, R);
   return R;
 }
@@ -389,18 +904,24 @@ function walkAt(p: Person, R: Ready, t: number, speed: number, pause: number) {
 }
 
 const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = { human: 0.32, cat: 0.45, pigeon: 0.12, gull: 0.14, cleaner: 0.22, drone: 0.35, courier: 0.55 };
-const MOVERS: Act[] = ['walk', 'sweep', 'steal', 'scan'];
+const MOVERS: Act[] = ['walk', 'sweep', 'steal', 'scan', 'carry', 'roll', 'patrol', 'serve', 'crawl', 'hover'];
+/** How long a mover waits at each end, by act. */
+const PAUSE: Partial<Record<Act, number>> = { sweep: 160, carry: 110, roll: 130, patrol: 170, serve: 150, crawl: 220, hover: 90 };
 
 interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean }
 
 function frameOf(p: Person, R: Ready, t: number): Frame {
   const act = p.act ?? 'stand', ph = R.ph, tt = t + ph;
   let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = false, end = 0;
-  if (MOVERS.includes(act) && R.a !== R.b) {
-    const sp = p.speed ?? DEFAULT_SPEED[R.critter ?? 'human'] ?? 0.3;
-    const w = act === 'steal' ? stealAt(R, t, sp) : walkAt(p, R, t, sp, act === 'sweep' ? 160 : R.critter === 'pigeon' || R.critter === 'gull' ? 200 : 70 + (ph % 90));
+  if (p.follow) {
+    const F = frameOf(p.follow, ready(p.follow), t);
+    x = F.x - F.face * (p.gap ?? 18); face = F.face; moving = F.moving;
+  } else if (MOVERS.includes(act) && R.a !== R.b) {
+    const sp = p.speed ?? (R.bot ? BOT[R.bot.kind].speed : DEFAULT_SPEED[R.critter ?? 'human']) ?? 0.3;
+    const w = act === 'steal' ? stealAt(R, t, sp) : walkAt(p, R, t, sp, PAUSE[act] ?? (R.critter === 'pigeon' || R.critter === 'gull' ? 200 : 70 + (ph % 90)));
     ({ x, face, moving, end } = w);
   }
+  if (R.bot) return botFrame(p, R, t, x, face, moving, end);
   const step = Math.floor(tt / (act === 'steal' && moving && face !== (R.b > R.a ? 1 : -1) ? 5 : 9)) % 2 ? 'stepA' : 'stepB';
   if (R.critter) {
     const c = R.critter;
@@ -433,6 +954,37 @@ function frameOf(p: Person, R: Ready, t: number): Frame {
   }
 }
 
+/** A robot's pose (legs, wheels, rotors) and state (arms, load, screen face) for its job. */
+function botFrame(p: Person, R: Ready, t: number, x: number, face: 1 | -1, moving: boolean, end: number): Frame {
+  const B = R.bot!, S = BOT[B.kind], act = p.act ?? 'stand', tt = t + R.ph, slow = (n: number) => Math.floor(tt / n) % 2;
+  const legged = S.shape === 'android' || S.shape === 'loader' || S.shape === 'mech' || (S.shape === 'box' && B.v === 2);
+  let pose = 'stand';
+  if (S.fly) pose = slow(2) ? 'p0' : 'p1';
+  else if (S.shape === 'crawler') pose = moving || act === 'scrub' ? (slow(10) ? 'cA' : 'cB') : 'cA';
+  else if (S.shape === 'wreck') pose = tt % 520 < 40 ? 'twitch' : 'slump';
+  else if (moving) pose = legged ? (slow(S.shape === 'mech' ? 16 : S.shape === 'loader' ? 12 : 9) ? 'stepA' : 'stepB') : slow(5) ? 'r0' : 'r1';
+  const loaded = act !== 'carry' || (moving ? face === (R.b > R.a ? 1 : -1) : end !== 1);
+  const fc = faceAt(B, act, tt);
+  let st = '';
+  switch (S.shape) {
+    case 'android':
+      st = B.kind === 'valet' ? (B.v === 0 ? 'bags' : 'umb') : B.kind === 'marshal' ? (act === 'direct' ? (slow(110) ? 'stop' : 'go') : 'down') : (act === 'walk' || act === 'carry') && loaded ? 'carry' : 'down';
+      break;
+    case 'box':
+      st = (B.kind === 'sweeper' ? (slow(12) ? 'broomA' : 'broomB') : B.kind === 'busker' ? (act === 'play' && slow(14) ? 'playB' : 'playA')
+        : act === 'carry' ? (loaded ? 'box' : 'down') : act === 'vend' || act === 'blink' ? (tt % 420 < 60 ? 'out' : 'down') : 'down') + '|' + fc;
+      break;
+    case 'waiter': st = (moving || act !== 'serve' ? 'tray' : 'offer') + '|' + fc; break;
+    case 'ad': st = fc; break;
+    case 'loader': st = act === 'carry' && loaded ? 'load' : 'empty'; break;
+    case 'litter': st = moving ? 'tuck' : act === 'roll' || act === 'sweep' ? (tt % 120 < 50 ? 'reach' : 'lift') : 'tuck'; break;
+    case 'crawler': st = act === 'weld' ? 'weld' : act === 'scrub' ? (slow(8) ? 'scrubA' : 'scrubB') : 'none'; break;
+    case 'wreck': st = tt % 300 < 24 ? (slow(3) ? 'eyes' : 'off') : 'crack'; break;
+  }
+  const bob = S.fly ? Math.round(Math.sin(tt * 0.05) * 2) : moving && pose === 'stepA' && S.shape === 'android' ? 1 : 0;
+  return { x, face, legs: pose, arms: st as Arms, bob, moving };
+}
+
 /** The kid's loop: sneak from a to b (the fruit), reach, then run back fast. */
 function stealAt(R: Ready, t: number, sp: number) {
   const len = Math.abs(R.b - R.a), sneak = len / (sp * 0.6), grab = 70, run = len / (sp * 3), wait = 200;
@@ -452,16 +1004,18 @@ export function drawPerson(x: CanvasRenderingContext2D, v: View, p: Person) {
   const R = ready(p), ps = psOf(p), f = frameOf(p, R, v.t);
   const sx = v.sx(f.x, p.parallax ?? 1);
   if (sx < -40 || sx > v.viewW + 40) return;
-  const crit = R.critter, hDraw = (p.h ?? (crit ? CRITTERS[crit].h ?? 0 : 0)) + f.bob;
-  const flip = f.face < 0;
+  const crit = R.critter, bot = R.bot, hDraw = (p.h ?? (crit ? CRITTERS[crit].h ?? 0 : 0)) + (bot ? BOT[bot.kind].fly ?? 0 : 0) + f.bob;
+  const flip = f.face < 0, act = p.act ?? 'stand', tt = v.t + R.ph;
   const key = R.key + ':' + f.legs + '.' + f.arms;
-  const b = bake(key, () => (crit ? critter(crit, f.legs, R.seed) : human(R.full!, f.legs as Legs, f.arms)), ps, flip, p.dim ?? 0);
-  const left = Math.round(sx - CX * ps - ps / 2) - 1, topY = Math.round(v.y(hDraw)) - H * ps - 1;
+  const b = bake(key, () => (crit ? critter(crit, f.legs, R.seed) : bot ? robot(bot, f.legs, f.arms) : human(R.full!, f.legs as Legs, f.arms)), ps, flip, p.dim ?? 0);
+  // a glitching robot jumps a pixel or two, now and then
+  const glitch = bot && (act === 'glitch' ? tt % 90 < 10 : bot.glitchy && tt % 400 < 14);
+  const left = Math.round(sx - CX * ps - ps / 2) - 1 + (glitch ? ((tt * 7) % 5) - 2 : 0), topY = Math.round(v.y(hDraw)) - H * ps - 1;
   x.drawImage(b.c, left, topY);
   if (p.dim && p.dim > 0.4) return;
   // live effects, from the baked hand and mouth
   const cell = (c: number, r: number) => [left + 1 + c * ps + ps / 2, topY + 1 + (H - 1 - r) * ps + ps / 2];
-  const act = p.act ?? 'stand', tt = v.t + R.ph;
+  if (bot) botFx(x, v, p, bot, f, b, cell, flip, tt, glitch);
   if (act === 'smoke') {
     const [hx, hy] = cell(b.meta.hand[0], b.meta.hand[1]);
     x.fillStyle = 'rgba(255,' + (f.arms === 'raise' ? 120 : 80) + ',40,.95)'; x.fillRect(Math.round(hx + (flip ? -ps : ps)), Math.round(hy - 1), 2, 2);
@@ -507,6 +1061,87 @@ export function drawPerson(x: CanvasRenderingContext2D, v: View, p: Person) {
   }
 }
 
+/** Dry adverts for sandwich boards and flyer holograms: two short lines each. */
+const ADS = [['LOANS', 'TODAY'], ['NOODLE', '2 TKN'], ['SCORE', 'CHECK'], ['RENT', 'DUE'], ['OPEN', '24/7'], ['NEW', 'IMPLANT'], ['INSURE', 'NOW'], ['CREDIT', 'REPAIR']];
+const TXT = '600 7px "IBM Plex Mono", monospace';
+
+/** A robot's live effects, cheap fills over the baked sprite: sensor beams, sparks, notes, board text, a charging cable. */
+function botFx(x: CanvasRenderingContext2D, v: View, p: Person, B: BotFull, f: Frame, b: Baked, cell: (c: number, r: number) => number[], flip: boolean, tt: number, glitch: boolean | undefined) {
+  const S = BOT[B.kind], act = p.act ?? 'stand', ps = psOf(p), R = Math.round;
+  void f;
+  if (glitch) { const [gx, gy] = cell(CX, S.top >> 1); x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(R(gx - 12), R(gy + ((tt * 13) % 9) - 4), 24, 1); }
+  if (act === 'charge') {
+    // cabled to a socket on the wall behind, the socket's pips counting up
+    const [bx, by] = cell(flip ? CX + 4 : CX - 4, 4), wx = bx + (flip ? 1 : -1) * 6 * ps, wy = v.y((p.h ?? 0) + 24);
+    x.fillStyle = '#2a1d14'; x.fillRect(R(wx - 4), R(wy - 6), 8, 12); x.fillStyle = 'rgba(194,65,12,.7)'; x.fillRect(R(wx - 4), R(wy - 6), 8, 1);
+    x.strokeStyle = '#120c08'; x.lineWidth = 2; x.beginPath(); x.moveTo(wx, wy + 4); x.quadraticCurveTo((wx + bx) / 2, Math.max(wy, by) + 10, bx, by); x.stroke(); x.lineWidth = 1;
+    const lvl = Math.floor(tt / 30) % 4;
+    for (let i = 0; i <= lvl; i++) { x.fillStyle = 'rgba(255,176,48,.9)'; x.fillRect(R(wx - 2), R(wy + 3 - i * 2), 4, 1); }
+  }
+  switch (S.shape) {
+    case 'mech': {
+      // the sensor sweeps the street ahead
+      const [ex, ey] = cell(b.meta.mouth[0], b.meta.mouth[1]), dir = flip ? -1 : 1, far = ex + dir * 30 * ps, fy = ey + 9 * ps + Math.sin(tt * 0.03) * 7 * ps;
+      x.fillStyle = 'rgba(255,42,68,.07)'; x.beginPath(); x.moveTo(ex, ey); x.lineTo(far, fy - 14); x.lineTo(far, fy + 14); x.closePath(); x.fill();
+      x.fillStyle = 'rgba(255,42,68,.5)'; x.fillRect(R(far), R(fy - 10), 1, 20);
+      x.fillStyle = 'rgba(255,42,68,.3)'; x.fillRect(R(ex - 6), R(ey - 3), 12, 6);
+      break;
+    }
+    case 'crawler': {
+      const [hx, hy] = cell(b.meta.hand[0], b.meta.hand[1]);
+      if (act === 'weld' && tt % 90 < 60) {
+        x.fillStyle = 'rgba(255,220,140,.18)'; x.fillRect(R(hx - 8), R(hy - 8), 16, 16);
+        for (let i = 0; i < 5; i++) {
+          const k = (tt * 0.07 + i * 0.37) % 1, a = i * 2.1 + Math.floor(tt / 6);
+          x.fillStyle = i % 2 ? '#ffd23a' : '#fff0c8'; x.fillRect(R(hx + Math.cos(a) * k * 12), R(hy + Math.sin(a) * k * 8 + k * k * 14), 1 + (i & 1), 1);
+        }
+      }
+      if (act === 'scrub') for (let i = 0; i < 4; i++) {
+        const k = (tt * 0.02 + i / 4) % 1;
+        x.fillStyle = 'rgba(236,228,214,' + (0.6 * (1 - k)).toFixed(2) + ')'; x.fillRect(R(hx + Math.sin(i * 3 + tt * 0.05) * 6), R(hy + k * 12), 2, 2);
+      }
+      break;
+    }
+    case 'box':
+      if (B.kind === 'busker' && act === 'play') for (let i = 0; i < 3; i++) {
+        // notes rising off the instrument
+        const k = (tt * 0.006 + i / 3) % 1, [mx, my] = cell(CX + (flip ? -2 : 2), 12);
+        const nx = R(mx + (flip ? -1 : 1) * (4 + k * 14) + Math.sin(k * 7 + i) * 3), ny = R(my - 4 - k * 30);
+        x.fillStyle = 'rgba(255,217,165,' + (0.85 * (1 - k)).toFixed(2) + ')'; x.fillRect(nx, ny, 3, 2); x.fillRect(nx + 2, ny - 6, 1, 6);
+      }
+      break;
+    case 'ad':
+      if (ps >= 3) {
+        const [cx0, cy0] = cell(CX, 8), page = ADS[(B.seed + Math.floor(tt / 300)) % ADS.length];
+        x.font = TXT; x.textAlign = 'center'; x.fillStyle = '#2a1a0e';
+        x.fillText(page[0], R(cx0), R(cy0 - 1)); x.fillText(page[1], R(cx0), R(cy0 + 8)); x.textAlign = 'start';
+      }
+      break;
+    case 'wreck':
+      if (ps >= 3) {
+        // its cardboard sign, in marker
+        const [sx0, sy0] = cell(flip ? CX + 6.5 : CX - 6.5, 2);
+        x.font = TXT; x.textAlign = 'center'; x.fillStyle = '#2a1a0e';
+        x.fillText('NEED', R(sx0), R(sy0 - 1)); x.fillText('PARTS', R(sx0), R(sy0 + 6)); x.textAlign = 'start';
+      }
+      break;
+    case 'flyer': {
+      // the hologram flyer it projects under itself: warm, flickering, never cyan
+      const [px, py] = cell(CX, 1), w = 40, h = 26, top = py + 12, fl = tt % 170 < 4 ? 0.3 : 1, page = ADS[(B.seed + 3 + Math.floor(tt / 260)) % ADS.length];
+      x.fillStyle = 'rgba(255,170,90,' + (0.05 * fl).toFixed(3) + ')'; x.beginPath(); x.moveTo(px - 1, py + 2); x.lineTo(px - w / 2, top); x.lineTo(px + w / 2, top); x.lineTo(px + 1, py + 2); x.closePath(); x.fill();
+      x.fillStyle = 'rgba(255,170,90,' + (0.12 * fl).toFixed(3) + ')'; x.fillRect(R(px - w / 2), R(top), w, h);
+      x.fillStyle = 'rgba(255,190,110,' + (0.06 * fl).toFixed(3) + ')'; for (let yy = 2; yy < h; yy += 3) x.fillRect(R(px - w / 2), R(top + yy), w, 1);
+      x.strokeStyle = 'rgba(255,190,110,' + (0.5 * fl).toFixed(2) + ')'; x.strokeRect(R(px - w / 2) + 0.5, R(top) + 0.5, w - 1, h - 1);
+      x.font = TXT; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,' + (0.9 * fl).toFixed(2) + ')';
+      x.fillText(page[0], R(px), R(top + 11)); x.fillText(page[1], R(px), R(top + 21)); x.textAlign = 'start';
+      break;
+    }
+    case 'cargo': case 'mini':
+      if (Math.floor(tt / 25) % 2) { const [lx, ly] = cell(b.meta.mouth[0], b.meta.mouth[1]); x.fillStyle = S.shape === 'cargo' ? 'rgba(255,176,48,.4)' : 'rgba(255,42,68,.35)'; x.fillRect(R(lx - 4), R(ly - 3), 8, 6); }
+      break;
+  }
+}
+
 /** Draw a list of people, back to front in the order given. */
 export function drawPeople(x: CanvasRenderingContext2D, v: View, list: readonly Person[]) {
   for (const p of list) drawPerson(x, v, p);
@@ -518,9 +1153,21 @@ export function personX(p: Person, t: number) { return frameOf(p, ready(p), t).x
 /** How tall a person is drawn, in world units (for prompts and bubbles). */
 export function personHeight(p: Person) {
   const R = ready(p), ps = psOf(p);
+  if (R.bot) { const S = BOT[R.bot.kind]; return S.top * ps + (p.h ?? 0) + (S.fly ?? 0); }
   if (R.critter) return CRITTERS[R.critter].frames[Object.keys(CRITTERS[R.critter].frames)[0]].length * ps + (p.h ?? CRITTERS[R.critter].h ?? 0);
   const B = BODIES[R.full!.body];
   return (B.leg + B.torso + B.head + 1) * ps + (p.h ?? 0);
+}
+
+/** Robots (and the old drone, cleaner and courier) answer E even without `talk`. */
+export function isBot(p: Person) { const R = ready(p); return !!R.bot || (!!R.critter && R.critter in CRITTER_BOT); }
+
+const REACTED = new Map<Person, number>();
+/** A robot's [E] prompt, name and reaction line; `next` moves it on to its next line. */
+export function botReact(p: Person, next = false): { label: string; name: string; pages: string[] } {
+  const R = ready(p), S = R.bot ? BOT[R.bot.kind] : CRITTER_BOT[R.critter!]!, n = REACTED.get(p) ?? 0;
+  if (next) REACTED.set(p, n + 1);
+  return { label: S.prompt, name: p.name ?? S.name + (R.bot ? '-' + (100 + ((R.seed * 37) % 900)) : ''), pages: S.lines[n % S.lines.length] };
 }
 
 const SAID = new Map<Person, number>();
@@ -535,15 +1182,25 @@ export function talkTo(p: Person): { name: string; pages: string[] } {
   return { name, pages: sets[Math.min(n, sets.length - 1)] };
 }
 
+/** The jobs a robot in a crowd does, each with its act. */
+const CROWD_JOBS: [Bot, Act][] = [
+  ['android', 'walk'], ['android', 'walk'], ['litterbot', 'roll'], ['deliverybot', 'roll'], ['loader', 'carry'], ['sweeper', 'sweep'],
+  ['adbot', 'roll'], ['minidrone', 'hover'], ['servbot', 'charge'], ['mech', 'patrol'], ['marshal', 'direct'], ['flyerdrone', 'hover'], ['deliverybot', 'roll'],
+];
+
 /**
- * A crowd of distinct ambient people between `from` and `to`: walkers, a few standing about.
- * For back bands pass { ps: 2, dim: .5, parallax: .9 }.
+ * A crowd of distinct ambient people between `from` and `to`: walkers, a few standing about, and
+ * (`bots`, default 0.2) about one in five a robot doing its job. For back bands pass { ps: 2, dim: .5, parallax: .9 }.
  */
-export function crowd(seed: number, n: number, from: number, to: number, opt: { ps?: number; dim?: number; parallax?: number; h?: number; acts?: Act[] } = {}): Person[] {
-  const r = rnd(seed), acts = opt.acts ?? ['walk', 'walk', 'walk', 'stand', 'phone', 'walk', 'smoke'];
+export function crowd(seed: number, n: number, from: number, to: number, opt: { ps?: number; dim?: number; parallax?: number; h?: number; acts?: Act[]; bots?: number } = {}): Person[] {
+  const r = rnd(seed), acts = opt.acts ?? ['walk', 'walk', 'walk', 'stand', 'phone', 'walk', 'smoke'], share = opt.bots ?? 0.2;
+  // a foreground band gets no drones; an all-walking crowd gets only robots that move
+  const front = (opt.parallax ?? 1) > 1 || (opt.h ?? 0) < 0, onlyWalk = acts.every((a) => a === 'walk');
+  const jobs = CROWD_JOBS.filter(([k, a]) => !(front && BOT[k].fly) && !(onlyWalk && !MOVERS.includes(a)));
   return Array.from({ length: n }, (_, i) => {
-    const x = from + r() * (to - from), act = pick(r, acts);
-    return { seed: seed * 31 + i * 7, x, act, range: act === 'walk' ? (r() < 0.5 ? -1 : 1) * (120 + r() * 300) : 0, facing: r() < 0.5 ? 1 : -1, ps: opt.ps, dim: opt.dim, parallax: opt.parallax, h: opt.h };
+    const x = from + r() * (to - from), human = pick(r, acts), job = pick(r, jobs), bot = r() < share && !!job;
+    const act = bot ? job[1] : human, len = (r() < 0.5 ? -1 : 1) * (120 + r() * 300) * (act === 'patrol' || act === 'sweep' ? 0.5 : 1);
+    return { seed: seed * 31 + i * 7, look: bot ? job[0] : undefined, x, act, range: MOVERS.includes(act) ? len : 0, facing: r() < 0.5 ? 1 : -1, ps: opt.ps, dim: opt.dim, parallax: opt.parallax, h: opt.h };
   });
 }
 

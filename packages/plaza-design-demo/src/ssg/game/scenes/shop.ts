@@ -54,8 +54,14 @@ const PEOPLE: Person[] = [
     ['I come in to read the labels. It is warmer than the library and the library closed.'],
   ] },
   { seed: 5103, x: 610, act: 'stand', facing: -1, look: { body: 'short', garb: 'coat', hair: 'beanie', extras: ['bag'] } },
-  { seed: 5104, x: 676, act: 'queue', facing: 1, look: { body: 'avg', garb: 'hivis', hair: 'cap', extras: [] } },
   { look: 'cat', seed: 4, x: 640, h: 99, act: 'sit', facing: -1 },
+  // the robots: a stock unit restocking the shelves, an android buying batteries, a crawler on the ceiling fixing the light by the window
+  { look: { bot: 'servbot', v: 0 }, seed: 5105, x: 470, act: 'carry', range: [470, 300], speed: 0.16 },
+  { id: 'android', seed: 5106, look: 'android', x: 688, act: 'queue', facing: 1, name: 'CUSTOMER', talk: [
+    ['Batteries. Two packs. Do not make it weird.'],
+    ['People ask what I do for fun. I queue. I am very good at it. I have never once been served first.'],
+  ] },
+  { look: 'crawler', seed: 5107, x: 124, h: 133, act: 'weld', facing: 1 },
 ];
 
 /** People passing outside, seen through the window: small, dim, far. */
