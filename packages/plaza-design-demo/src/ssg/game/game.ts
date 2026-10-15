@@ -291,6 +291,7 @@ export class Game {
   }
 
   stop() {
+    document.documentElement.classList.remove('game-map');
     this.menu.hide();
     this.endCutscene(false);
     this.running = false;
@@ -347,6 +348,8 @@ export class Game {
     if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
     if (this.levelW !== this.fitW) this.onResize(); // a new place: fit the view to it
+    // the city map (and a taxi flight) owns the screen: the key bar and touch buttons step aside (render.tsx)
+    document.documentElement.classList.toggle('game-map', !!this.mapView || !!this.flight);
     this.keyBar.sync(this.save.jump);
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     if (!this.reduced || this.t < 1) this.t += dt;
