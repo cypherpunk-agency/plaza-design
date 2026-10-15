@@ -9,21 +9,23 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
 
 ## Now: the engine and the screen
 
-1. Popup feedback: everyday actions close the popup; device captions with a leader line; pings;
-   the popup beside the device, away from what it affects; max 3 everyday actions. (running)
+1. Popup feedback: everyday actions close the popup; captions in a lane with a leader line and a
+   paced queue; pings; max 3 everyday actions; the popup as a plate on a line up from the thing
+   (5B, engine/popup.ts). ✓
 2. One kind of place, called **scene**: every place is a scene (`SceneDef`, scenes/index.ts),
    hosted one way on the engine (engine/). ✓ (The people kit is now the **character kit**,
    characters.ts: done.)
 3. The camera nudge (test): when something reacts off-screen, the view leans toward it, or an
-   edge ping points there.
+   edge ping points there. ✓
 4. A tone pass over older content (the world is dry, the characters have the humour), and the
-   small known issues.
+   small known issues. ✓
 
 ## Then: the city
 
 5. The city in code (districts → places → scenes, CITY.md: city.ts `DISTRICTS`, `PLACES`,
    `SCENE_PLACE`) ✓, then the map redesign as a vertical cross-section with two zoom levels ✓
-   (citymap.ts; a test, to be adjusted).
+   (citymap.ts), revealed as you travel (the Spire a mystery at first) ✓. Open: the district
+   crop on a landscape phone, whether TAB opens your own district.
 
 ## Act I: where is Moth?
 
