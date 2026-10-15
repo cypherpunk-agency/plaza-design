@@ -308,8 +308,12 @@ export class Game {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.canvas.width = Math.round(cssW * dpr);
     this.canvas.height = Math.round(cssH * dpr);
-    // Small screens (phones in landscape) show a shorter slice of the street at a larger scale.
-    let k = Math.max(1, Math.floor((cssH * dpr) / (cssH < 420 ? 230 : 320)));
+    // Small screens (phones in landscape) show a shorter slice of the street at a larger scale (tuned: leave as is).
+    // Larger screens take the integer scale nearest to a view about 300 units tall (so 1280×720 draws at 2,
+    // not 1, and people read), but never under 240 units, so wide places still show enough.
+    const px = cssH * dpr, phone = cssH < 420;
+    let k = phone ? Math.max(1, Math.floor(px / 230)) : Math.max(1, Math.round(px / 300));
+    if (!phone && k > 1 && px / k < 240) k--;
     // A place narrower than the view (a flat, the yard) is shown closer, so it fills the width,
     // as long as enough height stays in view for its rooms and signs.
     const fit = Math.floor(this.canvas.width / (this.levelW + 24));
