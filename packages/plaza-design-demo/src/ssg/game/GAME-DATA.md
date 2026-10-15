@@ -219,6 +219,14 @@ Append one line per decision: what, which side, why.
   place; the build checks the rest (`cityProblems`). The map and quick travel read places
   (`MAP_PLACES`: those with a spot on today's map). LINE 0's car is a place with no district.
 
+- **The sandbox** (2026-10-15, sudo only; see **Sandbox**): every bench is **data**
+  (`sandbox.json`); the few effects with a counter, an item, a token or a flash are **code**
+  (`sandbox/rules.ts`), and so is what acts by the clock and the weather on its own (the night light
+  going off at daybreak, the vent shutting in rain: its `tick`). Sudo-only is **code** in three
+  small places: `index.ts` refuses `?play=sandbox` without `?sudo`, sudo's LEVELS lists it first,
+  the deck's `reset sandbox --yes` exists only in sudo. Its place (`city.ts` `sandbox`) has no
+  district and no map pin, so it is never on the map or in quick travel.
+
 ## The idea in one paragraph
 
 A scene is a data file that says **what** is there: devices, their nouns and verbs,
@@ -839,9 +847,45 @@ Decided (save details):
   saves), `shell.ts` (typed commands), `camera.ts` (CAM-3), `scene.ts` (drawing, the CITY MAP
   kiosk), `index.ts` (`downtown`, its `SceneDef`: the doors as exits; its rules are made for the
   player's save, `rules(player)`).
+- `game/data/sandbox.json` and `game/sandbox/`: the sandbox, REGISTRY QA BAY 3 (sudo only; see **Sandbox**).
 - `game/scenes/`: `kit.ts` (`SceneDef`, exits, uses, readables, the shared drawing kit),
   `index.ts` (`SCENES`, every scene), and the scenes without devices (market, shop, mall, harbor,
   the platforms, the car). `game/city.ts`: districts, places, each scene's place, the map.
+
+## Sandbox
+
+REGISTRY QA BAY 3: a test hall for the engine, outside the story (the yard stays a story level).
+**Sudo only**: LEVELS › `SANDBOX · QA BAY 3 (ENGINE TEST)`, or `?sudo&play=sandbox` (without
+`?sudo` the parameter is ignored). Not on the city map, no story flags, no goals; its progress is
+its own scene save (`save.scenes.sandbox`, in sudo's save). **Reset**: E at the RESET BAY 3
+console by the door (the model back to the data file: devices, cables, parts, sectors, trace,
+lockouts, the net, the watchdog), or `reset sandbox --yes` in the deck (that also forgets the
+board layout). The keyring, tokens and what you carry are the player's and stay.
+
+Files: `data/sandbox.json` (every device, the nodes, cables, keyring chips `sbx.*`, the
+watchdog, UNIT 7's dialogue), `sandbox/rules.ts` (`SANDBOX_RULES`: effects, the tick, `night`, and a
+check that every station keeps what it tests), `sandbox/scene.ts` (drawing, the people, `STATIONS`),
+`sandbox/index.ts` (the `SceneDef`: test cards, the chip dispenser, the bench, the reset console),
+the networks `sandbox` and `sandbox-back` in `net.json` (reached only from the bay's ports).
+
+Left to right, one bench per feature, each under a plate (`BAY 3·0N` and what it tests) with a
+test card at its foot (E: how to test it):
+
+| Bay | Tests | What is there |
+| --- | --- | --- |
+| 01 NOUN KINDS | SENSE, ACT, STORE, LINK, DAEMON, CLOCK, LOG | motion sensor (pre-wired to the lamp), test lamp, memo screen (write cycles 3 memos), wall port (LINK, `known` QA-SRV 01), UNIT 7 (talk; a dialogue step switches the lamp; free text "hello"), metronome (CLOCK tick/tock 1.5 s, `set: phase`), tape recorder (LOG 6 %/s, archive on its own reel) |
+| 02 CABLES | pre-wired, fixed, fan-out, a chain through logic parts | test button → beacon, horn and press counter (one event, three cables; the counter's is `fixed`, a conduit drawn in the wall); pressure plate and test hatch for the chain plate → TIMER → SWITCH → hatch (wire it; both modules are in sudo's drawer); hatch `opened` → fan (pre-wired) |
+| 03 GUARDS | password guard, the four lock toys | QA LOGIN (`bay3-qa`, 2 tries, locks 5 s, trace 10, near `bay3`; its sticky note gives both fragments; opens a `guard` sector), shield locker (rings), cipher box (shift 3), cryptex case (`test`), Morse lamp (`ok`); each tag says its answer |
+| 04 SEALED SECTORS | key, sequence (signal), `if` | key cutter (gives `sbx.key`), secure cabinet (drawer A key, B sequence red-green-blue by cable within 3 s, C `if: mains`), RGB panel (pre-wired into B), mains lever |
+| 05 TRACE | LOG, meter, lockout | audit desk (LOG 20 %/s to the archive spool, guard `auditor` adding 30 % a miss, root sector with a `trace: -100` wipe), archive spool (cut its cable and the log records nothing), a big meter on the wall |
+| 06 THE NET | known, scan, hop, node → world cables | net jack (port of `sandbox`: knows QA-SRV 01, a scan finds QA-PRN 2), QA-SRV 01's own LINK is the port of `sandbox-back` (QA-VAULT, one hop; its readme gives `sbx.vault`); ping on QA-SRV 01 rings the net bell, a job on QA-PRN 2 prints on the label printer (cables from nodes into world devices) |
+| 07 WATCHDOG | route, freeze, its events | QA-WD walks stamp press → conveyor → siren (3.5 s each, 1.5 s between); a red lamp over the frozen one, the belt stops while it is checked |
+| 08 EVERYDAY USE | the full popup, an item used on a thing, a till | coffee machine (3 everyday actions + jack in + hack it), chip reader (eats one carried `blankchip`; the dispenser beside it is a `use` that hands them out), test till (one token a payment, `SceneModel.pay`) |
+| 09 LIFE | talk, pet, a robot with a job | QA lead, night tech (lines by weather and by night), TEST UNIT 0 carrying a device between benches, the cat on the radiator |
+| 10 TIME AND WEATHER | `when`, `weather`, waiting | a big window (the city clock's sky, the district's weather, a clock and the forecast ticker); night light (`when` 18:00–06:00, off by itself at daybreak), weather sensor (cases by `weather`), window vent (refuses rain, storm, smog, shuts itself), a bench to wait |
+
+Notes: items use the code API of today (`SceneModel.carry`, `UseCtx.add`); when items get a data
+step or everyday action of their own, the chip reader and the till are the benches to move onto it.
 
 ## Cutscenes
 

@@ -74,6 +74,28 @@
       "machines": [
         { "id": "mothpc", "in": ["moth"] }
       ]
+    },
+    {
+      "id": "sandbox",
+      "name": "QA BAY 3 · TEST LAN",
+      "note": "the test bay's own network. it reaches nothing outside the bay, by design and by audit.",
+      "from": [{ "port": "sandbox:netjack.lan" }],
+      "need": "the net jack in QA bay 3 (sudo: the sandbox)",
+      "machines": [
+        { "id": "netjack", "in": ["sandbox"] },
+        { "id": "qasrv", "in": ["sandbox"] },
+        { "id": "qaprn", "in": ["sandbox"] }
+      ]
+    },
+    {
+      "id": "sandbox-back",
+      "name": "QA BAY 3 · BACK ROOM",
+      "note": "one machine behind the test server. a hop, kept for testing hops.",
+      "from": [{ "port": "sandbox:qasrv.hop" }],
+      "need": "QA-SRV 01's own link, from the test LAN",
+      "machines": [
+        { "id": "qavault", "in": ["sandbox"] }
+      ]
     }
   ],
   "programs": [

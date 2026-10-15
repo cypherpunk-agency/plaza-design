@@ -809,6 +809,7 @@ export class Game {
       leaveMachine: () => this.term.close(),
       persist: () => this.persist(),
       resetYard: () => this.hostOf('yard').reset(),
+      resetSandbox: SUDO ? () => this.hostOf('sandbox').reset() : undefined,
       // your own deck, while you still exist
       deck: isBefore(this.save.flags) ? DECK_BEFORE : undefined,
       // the Registry's forecast, where you are

@@ -15,6 +15,7 @@ import { library } from '../library';
 import { moth } from '../moth';
 import { stacks } from '../stacks';
 import { yard } from '../yard';
+import { sandbox } from '../sandbox';
 import { harbor } from './harbor';
 import type { SceneDef } from './kit';
 import { mall } from './mall';
@@ -31,6 +32,8 @@ export { ITEMS, priceTag } from './kit';
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 export const SCENES = {
   capsule, downtown, library, yard, moth, beach, harbor, stacks, warehouse, market, laundromat, shop, mall, metro, galleriaStation, harborStation, train,
+  // sudo only (index.ts refuses `?play=sandbox` without `?sudo`): the engine's test bay, outside the story
+  sandbox,
 } satisfies Record<string, SceneDef>;
 export type SceneId = keyof typeof SCENES;
 

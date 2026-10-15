@@ -26,6 +26,7 @@ import { Game } from './game';
 import { isSceneId } from './scenes';
 import { isCutsceneId } from './cutscenes';
 import { takeResume } from './slots';
+import { SUDO } from './level';
 
 export { runBoot };
 
@@ -35,8 +36,8 @@ export const playParam = () => { try { const q = new URLSearchParams(location.se
 const playScene = () => {
   try { return sceneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
 };
-/** A scene (or cutscene) id the game can start in; Downtown (and anything unknown) is undefined: the game decides. */
-const sceneParam = (z: string) => ((isSceneId(z) && z !== 'downtown') || isCutsceneId(z) ? z : undefined);
+/** A scene (or cutscene) id the game can start in; Downtown (and anything unknown) is undefined: the game decides. The sandbox only with `?sudo`. */
+const sceneParam = (z: string) => ((isSceneId(z) && z !== 'downtown' && (z !== 'sandbox' || SUDO)) || isCutsceneId(z) ? z : undefined);
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
