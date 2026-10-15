@@ -4,7 +4,7 @@
  * Esc opens it (game.ts decides when: overlays, bubbles and schematics close
  * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
  * In sudo mode (`?sudo`) LEVELS comes second: every scene and cutscene.
- * The city map is not here: it lives in the world (TAB on your deck, map boards).
+ * MAP opens the city map (it also lives in the world: TAB or M on your deck, map boards).
  * Arrows or W/S move, Enter/E/Space select, Esc goes back a screen or resumes;
  * mouse and touch pick items directly. Styles: #game-menu in render.tsx.
  *
@@ -25,6 +25,8 @@ export interface MenuHooks {
   newGame(): void;
   /** QUIT TO HOMEPAGE. */
   quit(): void;
+  /** MAP: the city map (the touch bar has no MAP button of its own). Without it there is no MAP item. */
+  map?: () => void;
   /** The menu closed (resume): give the game its focus back. */
   onClose(): void;
   /** Sudo mode only (sudo.ts): every level, and going to one. Without it there is no LEVELS item. */
@@ -114,11 +116,13 @@ export class Menu {
   // ---------- screens ----------
 
   private main(sel: number) {
-    const o = this.hooks.levels ? 1 : 0; // LEVELS shifts everything below it
-    const tag = this.hooks.scene().name + ' · PAUSED' + (o ? ' · SUDO' : '');
+    const map = this.hooks.map;
+    const o = (this.hooks.levels ? 1 : 0) + (map ? 1 : 0); // MAP and LEVELS shift everything below them
+    const tag = this.hooks.scene().name + ' · PAUSED' + (this.hooks.levels ? ' · SUDO' : '');
     this.show_(tag, [
       { label: 'RESUME', run: () => this.hide() },
-      ...(o ? [{ label: 'LEVELS', tone: 'go' as const, run: () => this.levels(0) }] : []),
+      ...(map ? [{ label: 'MAP', run: () => { this.hide(); map(); } }] : []),
+      ...(this.hooks.levels ? [{ label: 'LEVELS', tone: 'go' as const, run: () => this.levels(0) }] : []),
       { label: 'SAVE GAME', run: () => this.slots('save', 0) },
       { label: 'LOAD GAME', run: () => this.slots('load', 0) },
       { label: 'NEW GAME', tone: 'bad', run: () => this.confirm('START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', () => { this.hide(); this.hooks.newGame(); }, () => this.main(3 + o)) },
@@ -135,8 +139,9 @@ export class Menu {
       meta: l.id === here ? 'HERE' : l.note,
       run: () => { this.hide(); this.hooks.enter?.(l.id); },
     }));
-    items.push({ label: 'BACK', run: () => this.main(1) });
-    this.show_('LEVELS · SUDO', items, sel, () => this.main(1));
+    const at = this.hooks.map ? 2 : 1;
+    items.push({ label: 'BACK', run: () => this.main(at) });
+    this.show_('LEVELS · SUDO', items, sel, () => this.main(at));
   }
 
   private slots(mode: 'save' | 'load', sel: number, note?: [string, Tone]) {
@@ -167,7 +172,7 @@ export class Menu {
         },
       });
     }
-    const o = this.hooks.levels ? 1 : 0, at = (mode === 'save' ? 1 : 2) + o;
+    const o = (this.hooks.levels ? 1 : 0) + (this.hooks.map ? 1 : 0), at = (mode === 'save' ? 1 : 2) + o;
     items.push({ label: 'BACK', run: () => this.main(at) });
     this.show_(mode === 'save' ? 'SAVE GAME' : 'LOAD GAME', items, sel, () => this.main(at));
     if (note) this.say(...note);

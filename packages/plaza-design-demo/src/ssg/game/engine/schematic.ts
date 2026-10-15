@@ -33,9 +33,13 @@
  * nouns stand in a row over the core (`layout.row`, else SENSE/STORE, ACT,
  * LINK/GUARD/LOG, DAEMON). Where the player put things is saved (`pieces()`),
  * in world units so it holds at any zoom. Overlap handling only nudges devices
- * the player never moved. The logic parts float in the world here, where the
- * host anchors them; the palette places one next to you. A toggle unfolds every
- * device at once (remembered in localStorage). What you see there goes on the board.
+ * the player never moved, and only up or sideways (a full row stacks upwards,
+ * never down into the scene or over the buttons). A device's card is its name;
+ * its status shows under it while its circuit is open. The logic parts float in
+ * the world here, where the host anchors them; the LOGIC drawer (along the bottom,
+ * with what you own) hands them out: drag one out into the scene, or tap it to
+ * have it next to you. UNFOLD unfolds every device at once (remembered in
+ * localStorage). Pan and zoom are the game's (game.ts). What you see there goes on the board.
  *
  * Styles live in render.tsx (`#hack`, `.sch-*`).
  */
@@ -54,7 +58,7 @@ const VISION_HINT = 'tap a device for its nouns · drag cores and nouns anywhere
  * Hack vision, in px: the gap between a device's frame and its core over it, half a core's
  * height, how far over the core the default row of nouns stands, the gap between them.
  */
-const LEAD = 12, CORE_HALF = 17, ROW_UP = 64, NOUN_GAP = 16;
+const LEAD = 10, CORE_HALF = 10, ROW_UP = 56, NOUN_GAP = 16;
 /** Hack vision: circuits keep this far from each other and from the edges (px). */
 const ROOM = 6;
 /** Where the "unfold every circuit" setting is remembered. */
@@ -106,7 +110,12 @@ export class Schematic {
   private unfolded = new Set<string>();
   private folded = new Set<string>();
   private unfoldAll = false;
-  private allBtn: HTMLButtonElement | null = null;
+  /** Hack vision: the LOGIC drawer along the bottom (the parts to drag into the scene), and what you own. */
+  private drawer = false;
+  private info: HTMLDivElement | null = null;
+  /** Hack vision: the bottom dock over the bar (the help line, the drawer) and the view's reset button. */
+  private dock: HTMLDivElement | null = null;
+  private resetBtn: HTMLButtonElement | null = null;
   /** Hack vision: cores moved off their default spot over the device, as offsets from it in world units (x right, y down). */
   private moved = new Map<string, P>();
   /** Hack vision: nouns the player dragged, `device.noun` → offset from their core in world units. */
@@ -115,6 +124,15 @@ export class Schematic {
   bar: HTMLElement | null = null;
   /** Hack vision: CSS px per world unit (the host sets it), so a moved piece keeps its place in the world at any zoom. */
   unit = 1;
+  /** Hack vision: the top of the free view, under the HUD (stage px; the host sets it): name cards keep below it. */
+  top = 0;
+  private drawnUnit = 1;
+  /** Hack vision: what you own (tokens, modules, keys), shown in the LOGIC drawer. The host sets it. */
+  drawerInfo: () => string = () => '';
+  /** Hack vision: the drawer opened or closed (the bars light their LOGIC button). */
+  onDrawer: () => void = () => {};
+  /** Hack vision: the view's reset button (⊙) was pressed. */
+  onReset: () => void = () => {};
   onClose: () => void = () => {};
   /** A device or noun was moved by hand (for the save). */
   onLayout: () => void = () => {};
@@ -141,7 +159,8 @@ export class Schematic {
     this.palette.appendChild(el('span', '', 'LOGIC'));
     m.logic.modules.forEach((mod) => {
       const b = el('button', 'hack-btn'); b.type = 'button';
-      b.addEventListener('click', () => this.addLogic(mod.part.id));
+      b.addEventListener('click', () => { if (this.mode !== 'vision') this.addLogic(mod.part.id); });
+      b.addEventListener('pointerdown', (e) => { if (this.mode === 'vision' && !b.disabled) this.dragOut(e, mod.part.id); });
       this.palette.appendChild(b);
       this.slots.push({ kind: mod.part.id, btn: b });
     });
@@ -149,12 +168,25 @@ export class Schematic {
     this.stage.append(this.svg, this.palette, this.ring);
     // hack vision has no header: the HACK button outside says it is on, the status sits at the bottom
     if (opts.vision) {
-      this.mode = 'vision'; this.root.id = 'vision'; this.root.append(this.stage, this.status);
+      // the bottom dock, over the buttons: the help line, and the LOGIC drawer under it when open
+      this.mode = 'vision'; this.root.id = 'vision';
       this.unfoldAll = readUnfold();
-      const all = this.allBtn = el('button', 'hack-btn vis-all'); all.type = 'button';
-      all.title = 'unfold every circuit at once, to compare them';
-      all.addEventListener('click', () => this.setUnfoldAll(!this.unfoldAll));
-      this.palette.appendChild(all);
+      this.palette.firstElementChild!.textContent = 'DRAG OUT ·';
+      this.info = el('div', 'vis-info');
+      this.palette.prepend(this.info);
+      const dock = this.dock = el('div', 'vis-dock');
+      dock.append(this.status, this.palette);
+      const reset = this.resetBtn = el('button', 'hack-btn vis-reset', '⊙'); reset.type = 'button'; reset.hidden = true;
+      reset.title = 'back to the normal view (or double-tap empty space)'; reset.setAttribute('aria-label', 'reset the view');
+      reset.addEventListener('click', () => this.onReset());
+      this.root.append(this.stage, dock, reset);
+      // a tap anywhere but the drawer (and the LOGIC buttons, which toggle it) closes it
+      window.addEventListener('pointerdown', (e) => {
+        if (!this.drawer || this.root.hidden) return;
+        const t = e.target as HTMLElement | null;
+        if (t?.closest?.('.sch-palette, [data-logic]')) return;
+        this.setDrawer(false);
+      }, true);
     }
     else { this.root.id = 'hack'; this.root.append(bar, this.status, this.stage); }
     host.appendChild(this.root);
@@ -185,7 +217,7 @@ export class Schematic {
   }
   /** Hack vision (the vision instance only): every device on screen, wired in place. */
   openVision() {
-    this.root.hidden = false; this.armed = null; this.pending = null; this.chip = null;
+    this.root.hidden = false; this.armed = null; this.pending = null; this.chip = null; this.drawer = false;
     this.note(['', 'HACK VISION · ' + VISION_HINT + ' · H to leave', 'dim']);
     this.render();
   }
@@ -197,7 +229,9 @@ export class Schematic {
     if (same && !moved) return;
     this.anchors = next;
     if (this.root.hidden) return;
-    if (!same) { this.render(); return; }
+    // a new zoom: what the player moved (kept in world units) stands somewhere else in px, so draw it again
+    const zoom = Math.abs(this.unit - this.drawnUnit) > 1e-3;
+    if (!same || zoom) { this.drawnUnit = this.unit; this.render(); return; }
     // only the camera moved: shift the frames and the schematics and keep the DOM, so a gesture in progress survives
     this.stage.querySelectorAll<HTMLElement>('.vis-outline').forEach((f) => {
       const a = next.get(f.dataset.frame!); if (!a) return;
@@ -229,6 +263,18 @@ export class Schematic {
     core.classList.add('focus');
     window.setTimeout(() => this.stage.querySelector(`.sch.vis[data-dev="${id}"] .sch-core`)?.classList.remove('focus'), 1400);
   }
+
+  /** Hack vision: the LOGIC drawer open or shut (LOGIC, L). */
+  get drawerOpen() { return this.drawer; }
+  setDrawer(on: boolean) {
+    if (this.drawer === on) return;
+    this.drawer = on; this.render(); this.onDrawer();
+  }
+  /** Hack vision: every circuit unfolded at once (UNFOLD, U), or each by hand. */
+  get allUnfolded() { return this.unfoldAll; }
+  toggleUnfoldAll() { this.setUnfoldAll(!this.unfoldAll); }
+  /** Hack vision: the view is panned or zoomed, so the reset button (⊙) shows. */
+  showReset(on: boolean) { if (this.resetBtn && this.resetBtn.hidden === on) { this.resetBtn.hidden = !on; if (!this.root.hidden) this.arrange(); } }
 
   private isUnfolded(id: string) { return this.unfoldAll ? !this.folded.has(id) : this.unfolded.has(id); }
   /** Show a device's nouns, or fold them back into its core. */
@@ -361,7 +407,7 @@ export class Schematic {
     /** A device's whole schematic: its core, its nouns, their dots and open verbs. */
     const extent = (g: HTMLElement): Box => {
       const b: Box = { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity };
-      g.querySelectorAll('.sch-core, .sch-label, .port, .sch-verbs').forEach((e) => {
+      g.querySelectorAll('.sch-core, .sch-label, .port, .sch-verbs, .vis-st').forEach((e) => {
         const q = box(e); b.l = Math.min(b.l, q.l); b.t = Math.min(b.t, q.t); b.r = Math.max(b.r, q.r); b.b = Math.max(b.b, q.b);
       });
       return b;
@@ -370,6 +416,12 @@ export class Schematic {
     // (the game's key bar adopts them into its row of actions: then the whole row is in the way)
     const row = this.bar?.parentElement?.classList.contains('kb-actions') ? this.bar.parentElement : this.bar;
     const bar = row && this.bar && !this.bar.hidden && row.offsetParent ? box(row) : null;
+    // the top of the free view: under the HUD's GOAL line (and the key bar's buttons, where they lie over the stage)
+    const top0 = Math.max(ROOM, Math.min(H * 0.3, this.top));
+    // the bottom of the free view: over the dock (the help line, the drawer), the reset button and the touch buttons
+    const lows: Box[] = [];
+    const shown = (e: Element | null): e is HTMLElement => !!e && (e as HTMLElement).offsetParent !== null && !(e as HTMLElement).hidden;
+    [...(this.dock?.children ?? []), this.resetBtn, ...document.querySelectorAll('#touch .pad')].forEach((e) => { if (shown(e) && e.getBoundingClientRect().width) lows.push(box(e)); });
     const mine = (g: HTMLElement) => this.placedByHand(g.dataset.dev!);
     const placed: Box[] = groups.filter(mine).map((g) => {
       const b = extent(g), top = bar && b.l < bar.r && b.r > bar.l ? Math.max(ROOM, bar.b + ROOM) : ROOM;
@@ -377,11 +429,11 @@ export class Schematic {
       g.style.translate = '0px ' + (top - b.t) + 'px';
       return { ...b, t: top, b: b.b + top - b.t };
     });
-    if (!this.palette.hidden) placed.push(box(this.palette));
+    placed.push(...lows);
     if (bar) placed.push(bar);
     const at = (b: Box, dx: number, dy: number): Box => ({ l: b.l + dx, t: b.t + dy, r: b.r + dx, b: b.b + dy });
     const hit = (q: Box) => placed.find((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM);
-    const inside = (q: Box) => q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= ROOM - 0.5 && q.b <= H - ROOM + 0.5;
+    const inside = (q: Box) => q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= top0 - 0.5 && q.b <= H - ROOM + 0.5;
     // the other devices' frames: a plate standing on one hides it, so that is worth moving for too
     const frames = [...this.stage.querySelectorAll<HTMLElement>('.vis-outline')].map((f) => ({ id: f.dataset.frame, b: box(f) }));
     const free = groups.filter((g) => !mine(g)).map((g) => ({ g, b: extent(g) })).sort((p, q) => p.b.l - q.b.l);
@@ -391,18 +443,22 @@ export class Schematic {
       let dx = 0, dy = 0;
       if (b.r > W - ROOM) dx = W - ROOM - b.r;
       if (b.l + dx < ROOM) dx = ROOM - b.l;
-      if (b.t < ROOM) dy = ROOM - b.t;
+      // (only the top edge may push a card down, and never further than its own device)
+      if (b.t < top0) dy = top0 - b.t;
       const q0 = at(b, dx, dy), own = g.dataset.dev;
       const others = frames.filter((f) => f.id !== own);
       const cover = (q: Box) => others.reduce((s, f) => s + Math.max(0, Math.min(q.r, f.b.r) - Math.max(q.l, f.b.l) - 2) * Math.max(0, Math.min(q.b, f.b.b) - Math.max(q.t, f.b.t) - 2), 0);
       if (hit(q0) || cover(q0) > 0) {
-        // beside or above whatever is in the way (another plate, another device's frame), or where it is
-        const tries = [[0, 0], ...[...placed, ...others.map((f) => f.b)].flatMap((p) => [
-          [0, p.t - ROOM - q0.b], [0, p.b + ROOM - q0.t], [p.l - ROOM - q0.r, 0], [p.r + ROOM - q0.l, 0],
-        ])].filter(([x, y]) => inside(at(q0, x, y)) && clearOfBar(at(q0, x, y)));
-        // no other plate first; then covering as few devices as it can; then the nearest, up before down
+        // beside or above whatever is in the way (another card, another device's frame), never down into the scene:
+        // a full upper row overflows upwards, into a second row over it
+        const obstacles = [...placed, ...others.map((f) => f.b)];
+        const ups = obstacles.map((p) => p.t - ROOM - q0.b).filter((y) => y < 0);
+        const tries = [[0, 0], ...ups.map((y) => [0, y]), ...obstacles.flatMap((p) => [[p.l - ROOM - q0.r, 0], [p.r + ROOM - q0.l, 0]]),
+          ...obstacles.flatMap((p) => ups.flatMap((y) => [[p.l - ROOM - q0.r, y], [p.r + ROOM - q0.l, y]]))]
+          .filter(([x, y]) => y <= 0 && inside(at(q0, x, y)) && clearOfBar(at(q0, x, y)));
+        // no other card first; then covering as few devices as it can; then the nearest, sideways a little dearer than up
         const best = tries
-          .map(([x, y]) => ({ x, y, n: hits(at(q0, x, y)), d: Math.hypot(x, y) * (y > 0 ? 2 : 1) + cover(at(q0, x, y)) * 0.5 }))
+          .map(([x, y]) => ({ x, y, n: hits(at(q0, x, y)), d: Math.hypot(x * 1.4, y) + cover(at(q0, x, y)) * 0.5 }))
           .sort((u, v) => u.n - v.n || u.d - v.d)[0];
         if (best) { dx += best.x; dy += best.y; }
       }
@@ -548,14 +604,15 @@ export class Schematic {
     const d = this.m.devices.get(this.dev);
     this.title.textContent = this.mode === 'board' ? 'SCHEMATIC · ' + this.known.size + ' devices' : (d?.name ?? '') + ' · schematic';
     this.modeBtn.textContent = this.mode === 'board' ? 'THIS DEVICE' : 'BOARD · B';
-    this.palette.hidden = this.mode !== 'board' && this.mode !== 'vision';
-    if (this.allBtn) {
-      this.allBtn.textContent = this.unfoldAll ? '▣ ALL UNFOLDED' : '▢ UNFOLD ALL';
-      this.allBtn.classList.toggle('on', this.unfoldAll); this.allBtn.setAttribute('aria-pressed', String(this.unfoldAll));
-    }
+    this.palette.hidden = this.mode === 'vision' ? !this.drawer : this.mode !== 'board';
+    if (this.info) this.info.textContent = this.drawerInfo();
+    // (the help line steps aside while the drawer is open: the two would stack over the scene)
+    this.dock?.classList.toggle('drawer', this.drawer);
     if (!this.palette.hidden) this.slots.forEach(({ kind, btn }) => {
       const mod = this.m.module(kind)!, owned = this.m.owns(kind);
       btn.disabled = !owned; btn.classList.toggle('missing', !owned);
+      // hack vision's drawer keeps the slots you have not found yet out of sight
+      btn.hidden = this.mode === 'vision' && !owned;
       btn.textContent = owned ? '+ ' + mod.part.name : '???';
       btn.title = owned ? mod.id + ': ' + mod.part.look : 'a logic module: not found yet';
     });
@@ -617,7 +674,11 @@ export class Schematic {
     };
     const st = el('div', 'sch-st', locked ? this.lockText(id) : frozen ? this.m.label('watchdog.name') + ' · FROZEN' : d.status());
     if (locked) st.dataset.lock = id;
-    core.append(el('div', 'sch-name', d.name), st);
+    // hack vision: the card is the name, one line; its status shows under it only while the device is open
+    if (vision) {
+      core.appendChild(el('div', 'sch-name', d.name));
+      if (out) { st.classList.add('vis-st'); g.appendChild(st); }
+    } else core.append(el('div', 'sch-name', d.name), st);
     if (this.metered(id)) core.appendChild(meter());
     // (in hack vision the part's body in the world carries the ×)
     if (d.logic && !vision) {
@@ -954,10 +1015,38 @@ export class Schematic {
 
   // ---------- logic parts ----------
 
+  /**
+   * Hack vision's drawer: drag a part (+ TIMER) out into the scene and it lands where you let go;
+   * a tap puts it next to you. Either way the drawer shuts.
+   */
+  private dragOut(e: PointerEvent, kind: string) {
+    if (e.button > 0) return;
+    e.preventDefault(); e.stopPropagation();
+    const sx = e.clientX, sy = e.clientY;
+    let id: string | null = null;
+    const at = (ev: PointerEvent) => { const s = this.stage.getBoundingClientRect(); return { x: ev.clientX - s.left, y: ev.clientY - s.top }; };
+    const mv = (ev: PointerEvent) => {
+      if (!id) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) <= 6) return;
+        this.drawer = false; this.onDrawer();
+        id = this.addLogic(kind);
+        if (!id) { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); return; }
+      }
+      this.onMovePart(id, at(ev));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+      if (id) { this.onLayout(); return; }
+      this.drawer = false; this.onDrawer();
+      this.addLogic(kind);
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  }
+
   /** + TIMER / + SWITCH: a new part on the board, next to the palette, its verbs open. */
-  private addLogic(kind: string) {
+  private addLogic(kind: string): string | null {
     const id = this.m.addLogic(kind);
-    if (!id) { this.say(['add ' + kind, (this.m.module(kind)?.id ?? kind) + ': module not found. not yet, anyway.', 'err']); this.render(); return; }
+    if (!id) { this.say(['add ' + kind, (this.m.module(kind)?.id ?? kind) + ': module not found. not yet, anyway.', 'err']); this.render(); return null; }
     const n = [...this.m.devices.values()].filter((d) => d.logic).length - 1;
     this.known.add(id);
     this.boardPos.set(id, { x: 0.14 + 0.15 * (n % 5), y: n % 10 < 5 ? 0.72 : 0.56 });
@@ -965,12 +1054,13 @@ export class Schematic {
       // in hack vision it floats next to you, its circuit unfolded
       if (this.unfoldAll) this.folded.delete(id); else this.unfolded.add(id);
       this.onPlace(id);
-      this.say(['add ' + kind, kind + ' placed next to you. wire an event into it, and it out.', 'ok']);
+      this.say(['add ' + kind, kind + ' placed. wire an event into it, and it out.', 'ok']);
     } else {
       this.m.devices.get(id)?.nouns.forEach((x) => this.open.add(id + '.' + x.id));
       this.say(['add ' + kind, kind + ' on the board. wire an event into it, and it out.', 'ok']);
     }
     this.render(); this.onLayout();
+    return id;
   }
 
   private removeLogic(id: string) {

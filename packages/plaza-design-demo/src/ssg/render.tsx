@@ -342,7 +342,7 @@ export const demoStyles = `
     .hack-wires .hit { stroke: transparent; stroke-width: 16; pointer-events: stroke; cursor: pointer; }
     .hack-wires .hit:hover + .cable { stroke: var(--color-error); filter: drop-shadow(0 0 4px var(--color-error)); }
     .hack-wires .temp { stroke: var(--color-text-body); stroke-width: 2; stroke-dasharray: 4 4; }
-    .hack-wires .verb { fill: var(--color-success); font: 10px var(--font-mono); paint-order: stroke; stroke: #000; stroke-width: 3px; }
+    .hack-wires .verb { fill: var(--color-success); font-size: 10px; paint-order: stroke; stroke: #000; stroke-width: 3px; }
     /* the cables' labels sit over the circuits (taps go through to the verbs underneath) */
     .hack-tags { z-index: 7; }
     .hack-tags .verb { stroke-width: 4px; stroke-linejoin: round; }
@@ -578,7 +578,10 @@ export const demoStyles = `
     #vision .sch-verb,
     #vision .sch-guess,
     #vision .sch-palette,
+    #vision .vis-reset,
     #vision .vis-part { pointer-events: auto; }
+    /* hack vision: a drag on empty space pans the world, two fingers zoom it (game.ts) */
+    html.hack-on #game-canvas { touch-action: none; }
     #vision .hack-wires .leader { stroke: rgba(255, 61, 242, 0.85); stroke-width: 1; stroke-dasharray: 3 3; }
 
     /* the frame round a device: the hacking layer's pink */
@@ -601,10 +604,22 @@ export const demoStyles = `
     .vis-glyph { font-size: 8px; font-weight: 600; letter-spacing: 0.08em; color: rgb(255, 61, 242); }
     .vis-part .sch-x { right: -8px; top: -8px; width: 15px; height: 15px; font-size: 10px; }
 
-    /* the board's look, a size smaller: it stands in the world, next to the things it belongs to */
-    #vision .sch-core { padding: 2px var(--spacing-2); }
-    #vision .sch-name { font-size: 10px; }
-    #vision .sch-st { font-size: 8px; }
+    /* the board's look, a size smaller: it stands in the world, next to the things it belongs to.
+       A device's card is its name tag: one line, a thin border; its status shows under it while it is open */
+    #vision .sch-core { padding: 1px 6px; border-width: var(--border-thin); box-shadow: none; gap: 1px; }
+    #vision .sch-name { font-size: 10px; line-height: 14px; }
+    #vision .vis-st {
+      position: absolute;
+      left: 0;
+      top: 10px;
+      transform: translateX(-50%);
+      padding: 0 4px;
+      font-size: 8px;
+      line-height: 11px;
+      background: rgba(13, 6, 3, 0.85);
+      pointer-events: none;
+      z-index: 2;
+    }
     #vision .sch-label { padding: 2px 6px; font-size: 10px; }
     #vision .sch-label small { font-size: 7px; }
     #vision .sch-verb { padding: 1px 5px; font-size: 9px; }
@@ -616,22 +631,50 @@ export const demoStyles = `
     #vision .sch-core.focus { animation: vis-focus 0.45s ease-in-out 3; }
     @keyframes vis-focus { 50% { box-shadow: 0 0 16px rgb(255, 61, 242), 0 0 4px #fff; } }
 
-    /* hack vision's tools: the logic palette and the unfold-all toggle, under HACK and BOARD */
-    #vision .sch-palette { left: auto; bottom: auto; right: var(--spacing-3); top: calc(var(--spacing-2) + 30px); }
-    #vision .vis-all { color: var(--color-text-muted); border-color: var(--color-border-default); }
-    #vision .vis-all.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
-
-    #vision .hack-status {
+    /* hack vision's dock, over the bottom bar: the help line, and the LOGIC drawer under it while open */
+    #vision .vis-dock {
       position: absolute;
       left: 50%;
       bottom: var(--spacing-2);
       transform: translateX(-50%);
-      max-width: 92%;
+      width: max-content;
+      /* clear of the reset button in the corner */
+      max-width: calc(100% - 2 * (32px + var(--spacing-3) + var(--spacing-2)));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-1);
+      pointer-events: none;
+      z-index: 6;
+    }
+    html.touch #vision .vis-dock { bottom: calc(var(--spacing-1) + 44px + var(--spacing-2) + env(safe-area-inset-bottom)); max-width: calc(100% - 2 * (40px + var(--spacing-3) + var(--spacing-2))); }
+    #vision .hack-status {
+      max-width: 100%;
       background: rgba(0, 0, 0, 0.78);
       border: var(--border-thin) solid rgba(255, 61, 242, 0.5);
     }
-
-    html.touch #vision .hack-status { bottom: 56px; max-width: 70%; }
+    #vision .vis-dock.drawer .hack-status { display: none; }
+    /* the LOGIC drawer: what you own, and the parts to drag out into the scene */
+    #vision .sch-palette { position: static; flex-wrap: wrap; justify-content: center; max-width: 100%; }
+    #vision .sch-palette .hack-btn { padding: var(--spacing-1) var(--spacing-3); font-size: 12px; cursor: grab; touch-action: none; }
+    #vision .sch-palette .hack-btn[hidden] { display: none; }
+    #vision .vis-info { flex-basis: 100%; text-align: center; font-size: 9px; letter-spacing: 0.04em; color: rgba(255, 217, 165, 0.75); }
+    /* the view panned or zoomed: back to normal */
+    #vision .vis-reset {
+      position: absolute;
+      right: var(--spacing-3);
+      bottom: var(--spacing-2);
+      z-index: 6;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 16px;
+      background: rgba(0, 0, 0, 0.75);
+      color: rgb(255, 61, 242);
+      border-color: rgb(255, 61, 242);
+    }
+    #vision .vis-reset[hidden] { display: none; }
+    html.touch #vision .vis-reset { bottom: calc(var(--spacing-1) + 44px + var(--spacing-2) + env(safe-area-inset-bottom)); width: 40px; height: 40px; }
 
     /* HACK and BOARD over the canvas, in a scene on the hacking system (game/engine/host.ts) */
     /* The key bar: every key and what it does (game/keybar.ts); the scene's HACK/BOARD join it */
@@ -678,6 +721,9 @@ export const demoStyles = `
     #scene-btns .hack-btn { background: rgba(0, 0, 0, 0.65); }
     #scene-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
     #scene-btns .hack-btn:disabled { opacity: 0.4; cursor: default; color: var(--color-text-muted); border-color: var(--color-border-default); }
+    #scene-btns .hack-btn[hidden] { display: none; }
+    /* on touch every button is in the bottom bar (#touch): no HACK/BOARD along the top */
+    html.touch #scene-btns { display: none; }
     html.touch #scene-btns .hack-btn { padding: var(--spacing-1) var(--spacing-3); }
 
     .hack-panel-body { position: relative; min-height: 0; padding: var(--spacing-3); display: grid; }
@@ -887,7 +933,7 @@ ${FEEDBACK_STYLES}
     html.game-mode.touch #touch button[data-key="Enter"] { display: none; }
     html.game-mode.touch #key-bar { left: max(var(--spacing-3), env(safe-area-inset-left)); right: max(var(--spacing-3), env(safe-area-inset-right)); }
     html.game-mode.touch #touch { padding: 0 max(var(--spacing-3), env(safe-area-inset-right)) env(safe-area-inset-bottom) max(var(--spacing-3), env(safe-area-inset-left)); }
-    /* the touch pad already has ESC and MAP; sound lives in the menu: the key bar keeps only HACK and BOARD */
+    /* the touch bar has everything; sound and the map live in the menu: no buttons along the top */
     html.game-mode.touch #key-bar .kb-actions > .hack-btn { display: none; }
     html.game-mode.touch #term:not([hidden]) ~ #touch { display: none; }
 
@@ -919,6 +965,17 @@ ${FEEDBACK_STYLES}
     }
 
     #touch button.down { background: rgba(var(--color-primary-500-rgb), 0.3); }
+    /* the bar by mode (game/index.ts): walking or hack vision; HACK once hacking is yours here */
+    #touch .pad:last-child button { width: auto; min-width: 44px; padding: 0 var(--spacing-2); }
+    #touch .vis-only,
+    html.hack-on #touch .walk-only,
+    html:not(.hack-ok) #touch .hack { display: none; }
+    html.hack-on #touch .vis-only { display: inline-block; }
+    html.hack-on #touch .pad:first-child { visibility: hidden; }
+    #touch .hack,
+    #touch .vis-only { color: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
+    html.logic-open #touch .logic,
+    html.unfold-on #touch .unfold { color: #000; background: rgb(255, 61, 242); }
 
     #rotate {
       display: none;

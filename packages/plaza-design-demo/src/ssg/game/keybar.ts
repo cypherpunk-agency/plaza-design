@@ -21,6 +21,10 @@ export class KeyBar {
   private actions: HTMLDivElement;
   private soundBtn: HTMLButtonElement;
   private jump: HTMLSpanElement;
+  /** What each mode shows: walking (walk, run, jump, use; MAP, TERMINAL, SOUND, MENU) or hack vision (pan, zoom, reset). */
+  private walking: HTMLElement[] = [];
+  private visionHints: HTMLElement[] = [];
+  private vision: boolean | null = null;
 
   constructor(host: HTMLElement, private refocus: () => void) {
     this.root = document.createElement('div');
@@ -38,10 +42,11 @@ export class KeyBar {
       this.moves.appendChild(s);
       return s;
     };
-    label('← →', 'walk');
-    label('SHIFT', 'run');
+    this.walking.push(label('← →', 'walk'), label('SHIFT', 'run'));
     this.jump = label('SPACE', 'jump');
-    label('E', 'use');
+    this.walking.push(label('E', 'use'));
+    // hack vision: the view moves (render.tsx hides these on touch, where the fingers know)
+    this.visionHints.push(label('DRAG', 'pan'), label('WHEEL', 'zoom'), label('0', 'reset view'), label('ESC', 'leave'));
     const button = (key: string, keyLabel: string, what: string) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -53,23 +58,27 @@ export class KeyBar {
       this.actions.appendChild(b);
       return b;
     };
-    button('Tab', 'TAB', 'MAP');
-    button('Enter', 'ENTER', 'TERMINAL');
+    this.walking.push(button('Tab', 'TAB', 'MAP'), button('Enter', 'ENTER', 'TERMINAL'));
     // sound has no key: this button and the pause menu
     this.soundBtn = button('', '', 'SOUND');
     this.soundBtn.onclick = () => { sound.toggle(); this.refocus(); };
-    button('Escape', 'ESC', 'MENU');
+    this.walking.push(this.soundBtn, button('Escape', 'ESC', 'MENU'));
     this.root.append(this.moves, this.actions);
     host.appendChild(this.root);
-    this.sync(false);
+    this.sync(false, false);
   }
 
-  /** The scene's own buttons (HACK, BOARD) sit in the same strip, first. */
+  /** The scene's own buttons (HACK, BOARD; in hack vision EXIT, BOARD, LOGIC, UNFOLD) sit in the same strip, first. */
   adopt(el: HTMLElement | null) { if (el && el.parentElement !== this.actions) this.actions.insertBefore(el, this.actions.querySelector('.hack-btn:not(#scene-btns *)')); }
 
-  /** Jump only shows once you have legs.so; SOUND shows whether it's on. */
-  sync(canJump: boolean) {
-    this.jump.hidden = !canJump;
+  /** The hints follow the mode (walking or hack vision); jump only shows once you have legs.so; SOUND shows whether it's on. */
+  sync(canJump: boolean, vision: boolean) {
+    if (this.vision !== vision) {
+      this.vision = vision;
+      this.walking.forEach((e) => { e.hidden = vision; });
+      this.visionHints.forEach((e) => { e.hidden = !vision; });
+    }
+    this.jump.hidden = !canJump || vision;
     const on = sound.enabled;
     if (this.soundBtn.classList.contains('on') !== on) {
       this.soundBtn.classList.toggle('on', on);
