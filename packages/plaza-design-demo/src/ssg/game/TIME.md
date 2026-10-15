@@ -133,5 +133,8 @@ hour in any weather.
   suns painted into scenes (the beach's sunset, the metro skyline's) are replaced.
 - **The moon has phases** by the day count.
 - **Interiors get the sun through their windows** (shafts whose colour and angle follow the clock).
-- **The slatted sun** and **shadows**: options in https://claude.ai/artifact/RFj9FzGtGvsq9yfVRXVqSx (Sun and Shadow
-  Drafts); waiting on Tommi's pick.
+- **The slatted sun: A, slats when low** (drafts: https://claude.ai/artifact/RFj9FzGtGvsq9yfVRXVqSx): a big slatted
+  retrowave sun near the horizon; as it climbs the slats close up and it becomes a small pale disc in haze.
+- **Shadows: A + C**: long hard cast shadows along the ground (very long at dawn and dusk, short at
+  noon; at night short ones away from street lamps), plus building shade: buildings throw bands of
+  shade across the street and whoever walks into it goes darker; contact shadows under everything.
