@@ -123,6 +123,9 @@ Empty scenes read as unfinished. "A bunch of boxes and text labels" is the failu
   someone's papers, a queue for water, ads that address you by name, a broken thing nobody fixes.
 - **The city is always there.** Wherever a window or opening exists, the skyline shows
   through it. Places connect: you should see where you are in the city.
+- **Robots of all shapes and sizes live here, and each has a job you can see** (Tommi):
+  cleaning, carrying, delivery, security, repair, serving, advertising, assisting. A robot is
+  placed where its job makes sense and is mostly busy doing it.
 - **Animals can always be interacted with** (Tommi: "people will always want to interact with
   it"). Every cat, dog, bird or pet in a scene answers E: petting, shooing, a reaction line.
 - **One surprising detail per scene**, something you notice late: a human touch, not a sign gag.
