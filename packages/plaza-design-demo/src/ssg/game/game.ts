@@ -385,8 +385,9 @@ export class Game {
     if (k === 'Enter') { e.preventDefault(); this.openDeck(); return; }
     // the deck's map app: the city as far as you know it
     if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.showMap(); return; }
-    if (zh && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
-    if (zh && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
+    // B and H mean something only where there is something to hack (a scene with devices)
+    if (zh.hackable && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
+    if (zh.hackable && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
     // walking up into an open train door (or out of one) is the same as E there
     if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.walkThroughDoor()) return;

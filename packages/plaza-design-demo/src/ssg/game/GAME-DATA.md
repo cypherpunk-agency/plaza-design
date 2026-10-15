@@ -169,8 +169,9 @@ Append one line per decision: what, which side, why.
   `hostOf`, `enter`, `targets`, `useLife` / `useExit`, `draw`, `travel`), no zone-or-scene
   branches. Decisions on the way:
   - Every scene is hosted on the engine (`SceneHost`, made the first time the scene is needed); a
-    scene without a data file gets an empty one (`emptyData`): zero devices, no goals. So HACK and
-    BOARD are in every scene, and hack vision there mutes the world with nothing to hack. **Code**.
+    scene without a data file gets an empty one (`emptyData`): zero devices, no goals. HACK and
+    BOARD show only in a scene with devices; with zero devices they are hidden and H and B do
+    nothing (2026-10-15: muting the market with nothing to hack read as a bug). **Code**.
   - Ways out are all `exits`: doors with E, open borders (`edge`), actions (`board`, `out`, `taxi`,
     `map`), and **engine exits** (`engine: true`): a door whose prompt and lock are the scene's
     own code (the flat's door until CONCIERGE opens it) returns the exit's id from `use`. An exit
