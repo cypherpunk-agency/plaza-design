@@ -19,11 +19,12 @@ import { PARCEL, YARD_SPAWN, YARD_W, YARD_ZONE } from './yard';
 import { CAPSULE_SPAWN, CAPSULE_W, CAPSULE_ZONE, capsulePerch, DOOR_X as CAPSULE_DOOR_X } from './capsule';
 import { Companion, WARM } from './companion';
 import { MOTH_KEY, MOTH_SPAWN, MOTH_W, MOTH_ZONE } from './moth';
+import { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W, BEACH_ZONE } from './beach';
 import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, zoneShell } from './downtown';
 import { type ZoneDef, ZoneHost } from './zone';
-import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
+import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneReadable, type SceneUse, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
-import { personHeight, personX, talkTo } from './people';
+import { personHeight, personX, talkTo, type Person } from './people';
 import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
@@ -49,6 +50,12 @@ const PET_PIGEON = [
   ['The pigeon takes one step to the side. Exactly one.'],
   ['The pigeon flaps, lands a metre away, and looks at you like you started it.'],
 ];
+
+/** A place's life (scenes and zones alike, scenes/kit.ts): its people, things to do and things to read. */
+type Life = { people?: Person[]; uses?: SceneUse[]; readables?: SceneReadable[] };
+/** The zones hosted on the hacking engine besides Downtown. */
+type Hosted = 'yard' | 'capsule' | 'moth' | 'beach';
+const isHosted = (z: string): z is Hosted => z === 'yard' || z === 'capsule' || z === 'moth' || z === 'beach';
 
 type Target = { kind: 'talk' | 'zone' | 'read' | 'door' | 'map' | 'scene' | 'pet'; id: string; x: number; h: number; label: string; promptH?: number };
 /** Downtown's doors, stairs and pad as targets (the market gate's door only once the gate is open). */
@@ -114,6 +121,8 @@ export class Game {
   private capsule: ZoneHost;
   /** Moth's place, flat 4C (story Level 3): FRIENDNET, MOTH-PC, the song seal. */
   private moth: ZoneHost;
+  /** The beach and SALT, its bar: devices on the engine, people and things to do from the place kit. */
+  private beach: ZoneHost;
   /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
   private pixel = new Companion();
   private started = false;
@@ -153,6 +162,8 @@ export class Game {
     this.capsule.onClose = () => this.canvas.focus();
     this.moth = this.hostZone(MOTH_ZONE);
     this.moth.onClose = () => this.canvas.focus();
+    this.beach = this.hostZone(BEACH_ZONE);
+    this.beach.onClose = () => this.canvas.focus();
     // the fixer's parcel holds Moth's key chip and uplink.so: a save that took it before they were in it gets them now
     if (this.yard.model.get('parcelAt') === 'taken') PARCEL.forEach((k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); });
     this.downtown = this.hostZone(downtownZone({
@@ -217,8 +228,8 @@ export class Game {
   }
 
   /** The zone on the hacking system the player is in (Downtown, the yard, the flat), if any. */
-  private get zoneHost(): ZoneHost | null { return this.zone === 'yard' ? this.yard : this.zone === 'capsule' ? this.capsule : this.zone === 'moth' ? this.moth : this.zone === 'downtown' && !this.scene ? this.downtown : null; }
-  private get zoneHosts() { return [this.yard, this.capsule, this.moth, this.downtown]; }
+  private get zoneHost(): ZoneHost | null { return this.zone === 'yard' ? this.yard : this.zone === 'capsule' ? this.capsule : this.zone === 'moth' ? this.moth : this.zone === 'beach' ? this.beach : this.zone === 'downtown' && !this.scene ? this.downtown : null; }
+  private get zoneHosts() { return [this.yard, this.capsule, this.moth, this.beach, this.downtown]; }
 
   /** Write the save, refresh the HUD and Downtown's goals (they follow the save's fields). */
   private persist() {
@@ -229,7 +240,7 @@ export class Game {
 
   // ---------- lifecycle ----------
 
-  start(zone?: 'yard' | 'capsule' | 'moth' | SceneId | CutsceneId) {
+  start(zone?: Hosted | SceneId | CutsceneId) {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -249,7 +260,7 @@ export class Game {
       if (!this.save.flags[seenFlag(START_ZONE)]) { this.playCutscene('intro'); return; }
       zone = START_ZONE;
     }
-    if ((zone === 'yard' || zone === 'capsule' || zone === 'moth') && this.zone !== zone) this.goTo(zone, true);
+    if (zone && isHosted(zone) && this.zone !== zone) this.goTo(zone, true);
     else if (zone && isSceneId(zone) && this.zone !== zone) this.enterScene(zone, true);
     this.showZones();
     this.markSeen(this.zone);
@@ -436,7 +447,7 @@ export class Game {
 
   /** The zone's name as the HUD shows it: DOWNTOWN, BACK YARD, a scene's name. */
   private zoneName() {
-    return this.scene ? this.scene.name.toUpperCase() : this.zone === 'yard' ? 'BACK YARD' : this.zone === 'moth' ? "MOTH'S PLACE" : 'DOWNTOWN';
+    return this.scene ? this.scene.name.toUpperCase() : this.zone === 'yard' ? 'BACK YARD' : this.zone === 'moth' ? "MOTH'S PLACE" : this.zone === 'beach' ? 'THE BEACH' : 'DOWNTOWN';
   }
 
   /** NEW GAME (confirmed in the menu): a fresh save, slots untouched, the intro, then the start zone. */
@@ -459,9 +470,9 @@ export class Game {
   /** Phones have no terminal: its latest line shows in the game for a few seconds. */
   private termLine: { text: string; kind: LineKind; until: number } | null = null;
 
-  private get levelW() { return this.scene?.width ?? (this.zone === 'yard' ? YARD_W : this.zone === 'capsule' ? CAPSULE_W : this.zone === 'moth' ? MOTH_W : LEVEL_W); }
+  private get levelW() { return this.scene?.width ?? (this.zone === 'yard' ? YARD_W : this.zone === 'capsule' ? CAPSULE_W : this.zone === 'moth' ? MOTH_W : this.zone === 'beach' ? BEACH_W : LEVEL_W); }
   /** The place's name, for the HUD and the canvas label. */
-  private get placeName() { return this.scene?.name ?? (this.zone === 'yard' ? 'the back yard' : this.zone === 'capsule' ? 'Capsule 7B' : this.zone === 'moth' ? "Moth's place" : 'Downtown'); }
+  private get placeName() { return this.scene?.name ?? (this.zone === 'yard' ? 'the back yard' : this.zone === 'capsule' ? 'Capsule 7B' : this.zone === 'moth' ? "Moth's place" : this.zone === 'beach' ? 'the beach' : 'Downtown'); }
   private get platforms() { return this.zone === 'downtown' ? PLATFORMS : []; }
 
   /**
@@ -469,14 +480,14 @@ export class Game {
    * front of door `at` (default: the yard's); in the flat at its door when you
    * come from Downtown (`at` 'downtown'), else by the bed.
    */
-  private goTo(zone: 'downtown' | 'yard' | 'capsule' | 'moth', quiet = false, at?: string) {
+  private goTo(zone: 'downtown' | Hosted, quiet = false, at?: string) {
     this.zoneHost?.persist();
     this.zoneHosts.forEach((h) => h.closeAll());
     this.bubble = null;
     this.zone = zone;
     this.showZones();
     this.markSeen(zone);
-    const x = zone === 'yard' ? YARD_SPAWN : zone === 'capsule' ? (at === 'downtown' ? CAPSULE_DOOR_X + 20 : CAPSULE_SPAWN) : zone === 'moth' ? MOTH_SPAWN : at && isDoorId(at) ? DOORS[at] : YARD_DOOR_X;
+    const x = zone === 'yard' ? YARD_SPAWN : zone === 'capsule' ? (at === 'downtown' ? CAPSULE_DOOR_X + 20 : CAPSULE_SPAWN) : zone === 'moth' ? MOTH_SPAWN : zone === 'beach' ? (at === 'harbor' ? BEACH_EDGE_X : BEACH_SPAWN) : at && isDoorId(at) ? DOORS[at] : YARD_DOOR_X;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: zone === 'capsule' ? (at === 'downtown' ? 1 : -1) : zone === 'moth' ? 1 : this.p.face });
     this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
@@ -509,6 +520,14 @@ export class Game {
         "Moth's computer is the way in. It always is.",
       ], this.p.x, 46);
     }
+    if (zone === 'beach' && !this.save.flags.beach) {
+      this.save.flags.beach = true;
+      storeSave(this.save);
+      this.say('YOU', [
+        'A beach. A real one: sand, sea, a sunset nobody is charging for. Yet.',
+        "SALT, the bar on stilts, is open. And at the end of the pier there's a boat. Moth's status said \"gone fishing\".",
+      ], this.p.x, 46);
+    }
     if (zone === 'yard' && !this.save.flags.yard) {
       this.save.flags.yard = true;
       storeSave(this.save);
@@ -529,12 +548,7 @@ export class Game {
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
     if (this.mapView) { this.mapPointer(e, press); return; }
     // in a scene, a tap on someone or something within reach is E on it
-    if (press && this.scene) {
-      const r = this.canvas.getBoundingClientRect(), wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
-      const t = this.targets().find((z) => Math.abs(z.x - wx) < 18 && Math.abs(z.x - this.p.x) < 60);
-      if (t && t.kind === 'scene') { e.preventDefault(); this.useScene(t.id); }
-      return;
-    }
+    if (press && this.scene) { this.tapLife(e); return; }
     const zh = this.zoneHost;
     if (!zh || zh.overlayOpen || this.mapView || this.flight) return;
     const r = this.canvas.getBoundingClientRect();
@@ -545,8 +559,20 @@ export class Game {
     this.canvas.style.cursor = id ? 'pointer' : '';
     if (press && zh.visionOn) { zh.poke(id); return; }
     // a thing's popup: its everyday actions, then jack in (computers) and hack it
-    if (press && id) { e.preventDefault(); zh.pick(id); }
+    if (press && id) { e.preventDefault(); zh.pick(id); return; }
+    // a zone with a place's life (the beach): a tap on someone within reach is E on them
+    if (press) this.tapLife(e);
   }
+
+  /** A tap on someone or something of the place's life (a person, a use, a readable) within reach: E on it. */
+  private tapLife(e: PointerEvent) {
+    const r = this.canvas.getBoundingClientRect(), wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
+    const t = this.targets().find((z) => z.kind === 'scene' && Math.abs(z.x - wx) < 18 && Math.abs(z.x - this.p.x) < 60);
+    if (t) { e.preventDefault(); this.useScene(t.id); }
+  }
+
+  /** The life of the place you are in: a scene's, or a zone's own (ZoneView `people`, `uses`, `readables`). */
+  private get life(): Life | undefined { return this.scene ?? this.zoneHost?.def.view; }
 
   /** Hack vision hangs in the world: give the zone this frame's world → CSS px mapping (as `sx` and `y` draw it). */
   private followZone() {
@@ -588,6 +614,8 @@ export class Game {
     if (this.zone === 'yard') return [...zoneTargets(this.yard), ...pet];
     if (this.zone === 'capsule') return [...zoneTargets(this.capsule), ...pet];
     if (this.zone === 'moth') return [...zoneTargets(this.moth), ...pet];
+    // a zone with a place's life (people, things to do): the same targets a scene's would have
+    if (this.zone === 'beach') return [...zoneTargets(this.beach), ...this.lifeTargets(this.beach.def.view), ...pet];
     const list: Target[] = [...pet], gateOpen = !!this.save.flags.end;
     for (const d of DOOR_TARGETS) if (d.id !== 'market' || gateOpen) list.push({ kind: 'door', id: d.id, x: DOORS[d.id], h: 0, label: d.label, promptH: d.promptH });
     NPCS.forEach((n) => list.push({ kind: 'talk', id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
@@ -689,7 +717,7 @@ export class Game {
   }
 
   /** Pixel is drawn in the flat, and in Downtown and the yard once it follows you. */
-  private get pixelHere() { return this.zone === 'capsule' || (!!this.save.flags.pixel && (this.zone === 'downtown' || this.zone === 'yard' || this.zone === 'moth')); }
+  private get pixelHere() { return this.zone === 'capsule' || (!!this.save.flags.pixel && (this.zone === 'downtown' || this.zone === 'yard' || this.zone === 'moth' || this.zone === 'beach')); }
 
   /** E on a zone's way out: the yard's back to its alley; the flat's door down to your building's lobby, with Pixel. */
   private leaveZone() {
@@ -702,6 +730,8 @@ export class Game {
     }
     // Moth's flat: back out onto the street, in front of the building's door
     if (this.zone === 'moth') { this.goTo('downtown', false, 'moth'); return; }
+    // the beach: the stairs up to the promenade, and the harbor
+    if (this.zone === 'beach') { this.travel('harbor'); return; }
     this.goTo('downtown');
   }
 
@@ -729,7 +759,7 @@ export class Game {
       // Hack vision: the world (rain too) goes muted into the background; the devices and you stay bright on top.
       if (vision) { this.yard.draw(x, v, 'world'); this.drawRain(rain); this.mute(); this.yard.draw(x, v, 'devices'); }
       else this.yard.draw(x, v);
-    } else if (this.zone === 'capsule' || this.zone === 'moth') {
+    } else if (this.zone === 'capsule' || this.zone === 'moth' || this.zone === 'beach') {
       // Indoors: the flat draws everything, the building around it included.
       this.zoneHost!.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
     } else {
@@ -744,9 +774,9 @@ export class Game {
       this.drawStands();
     }
     // zones that draw in one pass (the flat, Downtown): mute round their devices' frames
-    if (vision && this.zone !== 'yard') { if (this.zone !== 'capsule' && this.zone !== 'moth') this.drawRain(rain); this.mute(this.zoneHost!.model.spots()); }
+    if (vision && this.zone !== 'yard') { if (this.zone !== 'capsule' && this.zone !== 'moth' && this.zone !== 'beach') this.drawRain(rain); this.mute(this.zoneHost!.model.spots()); }
     this.drawPeople();
-    if (this.zone !== 'capsule' && this.zone !== 'moth' && !vision) this.drawRain(rain);
+    if (this.zone !== 'capsule' && this.zone !== 'moth' && this.zone !== 'beach' && !vision) this.drawRain(rain);
     this.drawPrompt();
     this.drawBubble();
     this.drawHud();
@@ -1406,7 +1436,7 @@ export class Game {
 
   /** Arrive in a zone by id ('downtown', 'yard', 'capsule' or a scene id; anything else is Downtown), at its spawn. */
   handTo(zone: string) {
-    if (zone === 'yard' || zone === 'capsule' || zone === 'moth') this.goTo(zone, true);
+    if (isHosted(zone)) this.goTo(zone, true);
     else if (isSceneId(zone)) this.enterScene(zone, true);
     else {
       this.goTo('downtown', true);
@@ -1460,6 +1490,15 @@ export class Game {
       const label = e.action === 'out' ? '[E] STEP OUT · ' + STATIONS[rideStop()].name : e.label;
       list.push({ kind: 'scene', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
+    return [...list, ...this.lifeTargets(s)];
+  }
+
+  /**
+   * A place's life as E targets (scenes and zones alike): readables, uses, the people who talk,
+   * and the animals (cats to pet, pigeons to shoo). E on one runs `useScene`.
+   */
+  private lifeTargets(s: Life): Target[] {
+    const list: Target[] = [];
     for (const r of s.readables ?? []) list.push({ kind: 'scene', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
     for (const u of s.uses ?? []) list.push({ kind: 'scene', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
     // the scene's people with something to say (people.ts): the target follows a walker
@@ -1473,7 +1512,7 @@ export class Game {
 
   /** E next to a scene's exit or readable. An exit lands you at its matching door in the destination. */
   private useScene(target: string) {
-    const s = this.scene!, [kind, id] = target.split(':');
+    const s = this.life!, [kind, id] = target.split(':');
     if (kind === 'read') {
       const r = s.readables!.find((z) => z.id === id)!;
       this.say(r.name, r.pages, r.x, r.h ?? 70);
@@ -1505,12 +1544,13 @@ export class Game {
       this.say(said.name, said.pages, u.x, u.h ?? 60);
       return;
     }
-    const e = s.exits.find((z) => z.id === id)!;
+    const e = this.scene?.exits.find((z) => z.id === id);
+    if (!e) return;
     if (e.action === 'board') { const st = stationAt(this.zone); if (st && platformOpen(st, this.t)) this.enterTrain(st); return; }
     if (e.action === 'out') { this.stepOut(); return; }
     if (e.action === 'taxi') { this.hailTaxi(); return; }
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
-    if (e.to === 'downtown' || e.to === 'yard' || e.to === 'capsule' || isSceneId(e.to)) this.travel(e.to, e.at);
+    if (e.to === 'downtown' || isHosted(e.to) || isSceneId(e.to)) this.travel(e.to, e.at);
   }
 
   /** The scene view, refreshed for this frame (Downtown's stands draw with it too). */
@@ -1539,7 +1579,7 @@ export class Game {
   /** Go to a zone, landing at door `at` there (a scene's exit id, or a Downtown door). */
   private travel(zone: Zone, at?: string) {
     this.mapView = null;
-    if (zone === 'downtown' || zone === 'yard' || zone === 'capsule' || zone === 'moth') this.goTo(zone, false, at);
+    if (zone === 'downtown' || isHosted(zone)) this.goTo(zone, false, at);
     else this.enterScene(zone, false, at);
     // With reduced motion the platforms' clocks stand still: stand a train there with its doors open.
     const st = stationAt(zone);
@@ -1559,7 +1599,7 @@ export class Game {
   private walkOff(edge: 'left' | 'right') {
     const s = this.scene;
     const e = s ? s.exits.find((z) => z.edge === edge && (!z.requires || this.save.flags[z.requires])) : EDGES[this.zone]?.[edge];
-    if (!e || !(e.to === 'downtown' || e.to === 'yard' || e.to === 'capsule' || isSceneId(e.to))) return;
+    if (!e || !(e.to === 'downtown' || isHosted(e.to) || isSceneId(e.to))) return;
     this.travel(e.to, e.at);
     this.p.face = edge === 'left' ? -1 : 1;
   }

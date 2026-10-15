@@ -34,6 +34,8 @@ water; the pier's lights run on a CLOCK.
 *Story:* Moth's status said "gone fishing (not fishing)"; Moth's boat is moored at the end of
 the pier.
 *Surprise:* the bartender keeps a photo of Moth behind the bottles, and has opinions about it.
+*Built (2026-10-15):* zone `beach` (`?play=beach`): data/beach.json + beach/. Optional puzzle: rewire the
+jukebox's `played` from the mixer's lights to its pump for a drink on the house. The boat stays locked for now.
 
 **Inside a dropship.** A corporate dropship in flight: jump seats, cargo nets, a red drop light,
 a hatch with a pressure interlock, the pilot behind glass. The city passes under the open hatch,

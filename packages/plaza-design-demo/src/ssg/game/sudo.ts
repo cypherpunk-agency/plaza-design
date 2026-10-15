@@ -26,6 +26,7 @@ export function levels(): Level[] {
     { id: 'downtown', name: 'DOWNTOWN', note: 'ZONE' },
     { id: 'yard', name: 'BACK YARD', note: 'ZONE' },
     { id: 'moth', name: "MOTH'S PLACE", note: 'ZONE' },
+    { id: 'beach', name: 'THE BEACH', note: 'ZONE' },
     ...Object.entries(SCENES).map(([id, s]) => ({ id, name: s.name.toUpperCase(), note: 'SCENE' })),
   ];
 }
@@ -37,7 +38,7 @@ export function unlockAll(s: Save) {
   for (const m of LOGIC.modules) if (!s.modules.includes(m.id)) s.modules.push(m.id);
   for (const k of KEYRING.keys()) if (!s.keyring.includes(k)) s.keyring.push(k);
   s.tokens = Math.max(s.tokens, 99);
-  for (const z of ['capsule', 'downtown', 'yard', 'moth', ...Object.keys(SCENES)]) s.flags['seen:' + z] = true;
+  for (const z of ['capsule', 'downtown', 'yard', 'moth', 'beach', ...Object.keys(SCENES)]) s.flags['seen:' + z] = true;
   s.flags.end = true; // the market gate stands open
   return s;
 }
