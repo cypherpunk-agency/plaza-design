@@ -199,6 +199,9 @@ export class Game {
     // Pixel is the game's, not the scene's: lines about Pixel stand over Pixel, and popups keep clear of the cat
     zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : null);
     zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
+    // captions never cover the player's speech bubble, and keep their lane over people's heads
+    zh.shield = () => { const b = this.bubbleBox, s = this.cssScale; return b ? [{ l: b.x * s, t: b.y * s, r: (b.x + b.w) * s, b: (b.y + b.h) * s }] : []; };
+    zh.crowd = () => this.heads();
     zh.onClose = () => this.canvas.focus();
     this.hosts.set(id, zh);
     // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
@@ -525,9 +528,21 @@ export class Game {
     if (t) { e.preventDefault(); this.useLife(t.id); }
   }
 
+  /** Canvas world units (the view, after the pixel scale) → CSS px of the game view. */
+  private get cssScale() { return (this.k * this.canvas.clientWidth) / (this.canvas.width || 1); }
+
+  /** The heads of the people on screen (the scene's, Downtown's street people and the fixer), CSS px. */
+  private heads() {
+    const s = this.cssScale, list: { x: number; h: number }[] = [];
+    for (const p of this.def.people ?? []) list.push({ x: characterX(p, this.t), h: characterHeight(p) });
+    if (this.here === 'downtown') { NPCS.forEach((n) => list.push({ x: n.x, h: 46 })); list.push({ x: STALL.fixerX, h: 74 }); }
+    return list.map(({ x, h }) => ({ l: (this.sx(x) - 9) * s, t: this.y(h) * s, r: (this.sx(x) + 9) * s, b: this.y(h - 14) * s }))
+      .filter((b) => b.r > 0 && b.l < this.canvas.clientWidth);
+  }
+
   /** Hack vision hangs in the world: give the scene this frame's world → CSS px mapping (as `sx` and `y` draw it). */
   private followHost() {
-    const s = (this.k * this.canvas.clientWidth) / this.canvas.width;
+    const s = this.cssScale;
     const zh = this.zh;
     // captions and the popup keep under the key bar and the HUD's lines (drawHud: ~46 world units under the bar)
     zh.uiTop = this.keyBar.root.offsetHeight + 8 + 46 * s;
@@ -1245,8 +1260,12 @@ export class Game {
     return lines;
   }
 
+  /** Where the speech bubble was drawn last (view units), so captions keep off it; null without one. */
+  private bubbleBox: { x: number; y: number; w: number; h: number } | null = null;
+
   private drawBubble() {
     const b = this.bubble;
+    this.bubbleBox = null;
     if (!b) return;
     const x = this.x;
     x.save();
@@ -1257,6 +1276,7 @@ export class Game {
     const h = lines.length * 13 + 32;
     const bx = Math.max(6, Math.min(this.viewW - w - 6, this.sx(b.x) - w / 2));
     const by = Math.max(6, this.y(b.h) - h - 50);
+    this.bubbleBox = { x: bx, y: by, w, h };
     x.fillStyle = '#000'; x.fillRect(bx, by, w, h);
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.strokeRect(bx + 1, by + 1, w - 2, h - 2); x.lineWidth = 1;
     x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name === 'YOU' ? who(this.save).toUpperCase() : b.name, bx + 10, by + 15);
