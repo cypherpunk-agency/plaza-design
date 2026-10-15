@@ -8,11 +8,25 @@
  * would, and the popup closes at once: the scene is free when the reaction
  * plays (the reply is a caption in the caption lane, engine/feedback.ts).
  * Where it opens is a placement (POPUP_PLACEMENT, POPUP_LAYOUTS: one pure
- * function each, from the thing's anchor and the popup's size to the box, a
- * ring round the thing and the connector's points): by default a row along the
- * bottom (on a phone, in the action buttons' place), or a row along the top, or
- * beside the thing. Arrow keys move, Enter or E picks, Esc, ✕ or a click
- * elsewhere closes; walking away closes it too (the host decides).
+ * function each, from the thing's anchor and the popup's measured parts to the
+ * box, a ring round the thing, the connector's points and, for the plate, where
+ * each part goes). By default the plate ("5B", Tommi 2026-10-15): a thin cyan
+ * stalk grows straight up from the thing to a small name plate in the caption
+ * lane, the everyday actions branch off the plate's sides as chips on the same
+ * row, and `⌁ jack in` / `⌁ hack it` sit above it in pink. Kept to compare: a row
+ * along the bottom (on a phone, in the action buttons' place), a row along the
+ * top, and beside the thing. Arrow keys move (on the plate: left and right along
+ * the row, up to the hacking entries, down back), Enter or E picks, Esc, ✕ (the
+ * rows) or a click elsewhere closes; walking away closes it too (the host decides).
+ *
+ * The plate and the captions share the lane (engine/feedback.ts): the plate sits
+ * where a caption would, its row's bottom on the lane's bottom (a gap over the
+ * tallest thing on screen). The rule: the popup wins and the lane yields. While
+ * the popup is open its parts are boxes the captions keep off (`Popup.boxes`,
+ * handed to `Feedback.update` as `yieldTo`): a caption showing there steps aside,
+ * or a row up or down, and its leader bends round the plate; the lane itself does
+ * not move for it. An everyday action closes the popup at once, so its reply
+ * takes the lane where the plate was.
  *
  * Colours per ART-GUIDE.md §6: cyan for what you can use, pink for the
  * hacking entries. Styles: POPUP_STYLES, inlined by render.tsx.
@@ -30,18 +44,22 @@ export interface PopupRoom {
   keepClear: PopupAnchor[];
   /** The top of the free view (under the HUD and the buttons). */
   top: number;
+  /** The caption lane's bottom (engine/feedback.ts: a gap over the tallest thing on screen), if the host knows it. */
+  lane?: number;
 }
 
 /**
- * Where a thing's popup opens (an experiment, Tommi 2026-10-15; keep all three to compare):
+ * Where a thing's popup opens (Tommi 2026-10-15 chose the plate; the others stay to compare):
+ * - 'plate': a stalk up from the thing to its name plate in the caption lane, everyday actions
+ *   branching left and right of the plate, the hacking entries above it in pink (plateLayout).
  * - 'bottom': a row of actions along the bottom, where the thumbs are. On a touch screen it takes
  *   the place of the action buttons (ESC, MAP, JMP, ACT) while it is open; the walk arrows stay.
  * - 'top': the same row along the top of the free view, under the HUD (HACK and BOARD step aside).
  * - 'beside': next to the thing, on the side away from what it affects.
  * The rows mark the thing with a ring and a thin connector down (or up) to it.
  */
-export type PopupPlacement = 'bottom' | 'top' | 'beside';
-export const POPUP_PLACEMENT: PopupPlacement = 'bottom';
+export type PopupPlacement = 'plate' | 'bottom' | 'top' | 'beside';
+export const POPUP_PLACEMENT: PopupPlacement = 'plate';
 
 /** Space between the thing's frame and the popup, and from the edges of the view (px). */
 const GAP = 14, EDGE = 4;
@@ -58,16 +76,24 @@ export interface PopupLayoutIn {
   room: PopupRoom;
   /** On a touch screen: the walk arrows' and the action buttons' boxes. */
   pads: { walk: Box; act: Box } | null;
-  /** Where the popup stood last frame for this thing (a row stays put while open), or null on opening. */
-  prev: { l: number; t: number } | null;
+  /** The popup's parts, measured: its title and each entry (a placement that spreads them out places each). */
+  parts: { title: { w: number; h: number }; items: { w: number; h: number; hack: boolean }[] };
+  /** What it returned last frame for this thing (it stays put while open), or null on opening. */
+  prev: PopupLayout | null;
 }
-/** What a placement returns: where the popup box goes, the ring round the thing (or none), the connector's points. */
-export interface PopupLayout { box: Box; ring: Box | null; wire: [number, number][] }
+/** A line drawn between the popup's parts: cyan, or pink for the hacking entries'. */
+export interface PopupArm { pts: [number, number][]; hack?: boolean }
+/**
+ * What a placement returns: where the popup box goes, the ring round the thing (or none), the
+ * connector's points; a placement that spreads the popup out (the plate) also says where the title
+ * and each entry go (in the order of `parts.items`) and the arms joining them.
+ */
+export interface PopupLayout { box: Box; ring: Box | null; wire: [number, number][]; parts?: { title: Box; items: Box[]; arms: PopupArm[] } }
 export type PopupLayoutFn = (p: PopupLayoutIn) => PopupLayout;
 
 /** A row along the bottom or the top; on a touch screen the bottom row stands in the action buttons' place. */
 const rowLayout = (where: 'bottom' | 'top'): PopupLayoutFn => ({ anchor: a, size: { w, h }, view: { W, H, top }, pads, prev }) => {
-  let at = prev;
+  let at = prev ? { l: prev.box.l, t: prev.box.t } : null;
   if (!at) {
     let l = Math.max(EDGE, Math.min(W - w - EDGE, a.x - w / 2)), t = where === 'top' ? top + EDGE : H - h - EDGE;
     if (where === 'bottom' && pads) { t = pads.act.b - h; l = Math.max(pads.walk.r + 12, pads.act.r - w); }
@@ -104,8 +130,82 @@ const besideLayout: PopupLayoutFn = ({ anchor: a, size: { w, h }, view: { W, H }
   return { box: b, ring: null, wire: [[px, py], [Math.max(thing.l, Math.min(thing.r, px)), Math.max(thing.t, Math.min(thing.b, py))]] };
 };
 
-/** Every placement, by name: a new one (a stalk up into the caption lane, say) is one more entry here. */
-export const POPUP_LAYOUTS: Record<PopupPlacement, PopupLayoutFn> = { bottom: rowLayout('bottom'), top: rowLayout('top'), beside: besideLayout };
+/** The plate: the gap between chips, the cyan arm from the plate to its nearest chip, the pink arm up to the hacking row (px). */
+const CHIP_GAP = 6, ARM = 16, RISE = 16;
+const union = (bs: Box[]): Box => ({ l: Math.min(...bs.map((b) => b.l)), t: Math.min(...bs.map((b) => b.t)), r: Math.max(...bs.map((b) => b.r)), b: Math.max(...bs.map((b) => b.b)) });
+
+/**
+ * The stalk from the plate down to its thing: straight, from the thing's top, while the plate is
+ * over it; when clamping moved the plate off it, down from the plate's nearer end to the thing's
+ * middle, then across to its side (it bends once).
+ */
+function stalk(plate: Box, thing: Box, ax: number): [number, number][] {
+  const l = Math.max(plate.l + 4, thing.l + 2), r = Math.min(plate.r - 4, thing.r - 2);
+  if (l <= r) { const x = Math.max(l, Math.min(r, ax)); return [[x, plate.b], [x, thing.t]]; }
+  const right = ax > plate.r, sx = right ? plate.r - 4 : plate.l + 4, my = (thing.t + thing.b) / 2;
+  if (plate.b >= my) return [[sx, plate.b], [right ? thing.l : thing.r, Math.max(thing.t, Math.min(thing.b, plate.b))]];
+  return [[sx, plate.b], [sx, my], [right ? thing.l : thing.r, my]];
+}
+
+/**
+ * The plate ("5B", Tommi 2026-10-15). A thin cyan stalk grows straight up from the thing to a small
+ * plate with its name, high up: the plate's row sits with its bottom on the caption lane's bottom
+ * (so clear of the player and of every thing on screen), never under the HUD. The everyday actions
+ * are chips on the plate's row, joined to it by short cyan arms, split left and right: balanced,
+ * unless one side would leave the view (then they go to the other side rather than the plate
+ * leaving its thing); they read left to right in their order. The hacking entries (`⌁ jack in`,
+ * `⌁ hack it`) sit in a row above the plate, joined to it by a short pink arm. It stays put while
+ * open (only the stalk follows the thing) and clamps to the view; a plate clamped off its thing
+ * bends its stalk once.
+ */
+const plateLayout: PopupLayoutFn = ({ anchor: a, view: { W, H, top }, room, parts, prev }) => {
+  const thing = boxOf(a), pad = 3, ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
+  const n = parts.items.length;
+  // open already: everything stays where it is, only the stalk follows the thing (the camera moves)
+  if (prev?.parts && prev.parts.items.length === n) {
+    const { title, items, arms } = prev.parts;
+    return { box: prev.box, ring, wire: stalk(title, ring, a.x), parts: { title, items, arms } };
+  }
+  const { w: pw, h: ph } = parts.title;
+  const all = parts.items.map((s, i) => ({ ...s, i })), every = all.filter((s) => !s.hack), hacks = all.filter((s) => s.hack);
+  const rowH = Math.max(ph, ...every.map((s) => s.h)), hackH = Math.max(0, ...hacks.map((s) => s.h));
+  const above = hacks.length ? RISE + hackH : 0;
+  // the row's middle: its bottom on the lane (and over the thing), its hacking row under the HUD, in the view
+  let cy = Math.min(room.lane ?? Infinity, thing.t - GAP) - rowH / 2;
+  cy = Math.max(cy, top + EDGE + Math.max(rowH / 2, ph / 2 + above));
+  cy = Math.min(cy, H - EDGE - rowH / 2);
+  const span = (xs: { w: number }[]) => (xs.length ? ARM + xs.reduce((t, s) => t + s.w, 0) + CHIP_GAP * (xs.length - 1) : 0);
+  // every split of the row (k chips left, the rest right), the plate over the thing, slid only as far as the view makes it
+  const clear = room.keepClear.map(boxOf), pref = Math.ceil(every.length / 2), want = a.x - pw / 2;
+  const best = Array.from({ length: every.length + 1 }, (_, k) => {
+    const lw = span(every.slice(0, k)), rw = span(every.slice(k));
+    const pl = Math.max(EDGE + lw, Math.min(W - EDGE - rw - pw, want));
+    const row: Box = { l: pl - lw, t: cy - rowH / 2, r: pl + pw + rw, b: cy + rowH / 2 };
+    const out = Math.max(0, EDGE - row.l) + Math.max(0, row.r - (W - EDGE));
+    return { k, pl, score: (clear.some((c) => meets(row, c)) ? 1e6 : 0) + out * 1e3 + Math.abs(pl - want) * 2 + Math.abs(lw - rw) * 0.5 + (k === pref ? 0 : 1) };
+  }).sort((p, q) => p.score - q.score)[0];
+  const pl = Math.max(EDGE, best.pl), title: Box = { l: pl, t: cy - ph / 2, r: pl + pw, b: cy + ph / 2 };
+  const items: Box[] = new Array(n), arms: PopupArm[] = [];
+  // the left chips outward from the plate (so the first one is furthest out and reads first), then the right ones
+  let x = title.l - ARM;
+  every.slice(0, best.k).reverse().forEach((s) => { items[s.i] = { l: x - s.w, t: cy - s.h / 2, r: x, b: cy + s.h / 2 }; x -= s.w + CHIP_GAP; });
+  if (best.k) arms.push({ pts: [[title.l, cy], [x + CHIP_GAP + 2, cy]] });
+  x = title.r + ARM;
+  every.slice(best.k).forEach((s) => { items[s.i] = { l: x, t: cy - s.h / 2, r: x + s.w, b: cy + s.h / 2 }; x += s.w + CHIP_GAP; });
+  if (every.length > best.k) arms.push({ pts: [[title.r, cy], [x - CHIP_GAP - 2, cy]] });
+  // the hacking row: centred over the plate, in the view; a pink arm up from the plate's middle
+  if (hacks.length) {
+    const hw = hacks.reduce((t, s) => t + s.w, 0) + CHIP_GAP * (hacks.length - 1), mid = Math.round((title.l + title.r) / 2);
+    let hx = Math.max(EDGE, Math.min(W - EDGE - hw, mid - hw / 2));
+    const hb = title.t - RISE;
+    hacks.forEach((s) => { items[s.i] = { l: hx, t: hb - s.h, r: hx + s.w, b: hb }; hx += s.w + CHIP_GAP; });
+    arms.push({ pts: [[mid, title.t], [mid, hb]], hack: true });
+  }
+  return { box: union([title, ...items]), ring, wire: stalk(title, ring, a.x), parts: { title, items, arms } };
+};
+
+/** Every placement, by name: a new one is one more entry here. */
+export const POPUP_LAYOUTS: Record<PopupPlacement, PopupLayoutFn> = { plate: plateLayout, bottom: rowLayout('bottom'), top: rowLayout('top'), beside: besideLayout };
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
   const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e;
@@ -121,21 +221,24 @@ export class Popup {
   private items: PopupItem[] = [];
   private sel = 0;
   private outside = (e: PointerEvent) => { if (!this.box.contains(e.target as Node)) this.close(); };
-  /** The ring round the thing (the rows), and where a row stands once opened (it stays put while open). */
+  /** The ring round the thing (the rows, the plate), and the last layout (it stays put while open). */
   private ring: HTMLDivElement;
-  private rowAt: { l: number; t: number } | null = null;
+  private last: PopupLayout | null = null;
+  /** The arms between the plate's parts (cyan; pink to the hacking entries). */
+  private arms: SVGGElement;
   /** The device it is open for. */
   dev: string | null = null;
   onClose: () => void = () => {};
 
   constructor(host: HTMLElement, readonly placement: PopupPlacement = POPUP_PLACEMENT) {
-    this.layer = el('div', 'thing-layer'); this.layer.hidden = true;
-    this.box = el('div', 'thing-pop' + (placement === 'beside' ? '' : ' row ' + placement)); this.box.setAttribute('role', 'menu');
+    this.layer = el('div', 'thing-layer' + (placement === 'plate' ? ' plate' : '')); this.layer.hidden = true;
+    const row = placement === 'bottom' || placement === 'top';
+    this.box = el('div', 'thing-pop' + (row ? ' row ' + placement : placement === 'plate' ? ' plate' : '')); this.box.setAttribute('role', 'menu');
     this.title = el('div', 'thing-title');
     this.list = el('div', 'thing-list');
     this.box.append(this.title, this.list);
     // the rows close with ✕ as well as Esc or a tap elsewhere
-    if (placement !== 'beside') {
+    if (row) {
       const x = el('button', 'thing-item thing-x', '✕'); x.type = 'button'; x.tabIndex = -1; x.setAttribute('aria-label', 'close');
       x.addEventListener('click', (e) => { e.stopPropagation(); this.close(); });
       this.box.appendChild(x);
@@ -143,17 +246,26 @@ export class Popup {
     this.ring = el('div', 'thing-ring'); this.ring.hidden = placement === 'beside';
     // the connector: a short line from the popup to its thing
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'thing-wire');
-    this.wire = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); svg.appendChild(this.wire);
+    this.wire = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); this.wire.setAttribute('class', 'thing-stalk');
+    this.arms = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    svg.append(this.wire, this.arms);
     this.layer.append(svg, this.ring, this.box);
     host.appendChild(this.layer);
   }
 
   get isOpen() { return !this.layer.hidden; }
 
+  /** While open, the boxes it takes (the plate and each chip, or the whole popup), CSS px of the game view: captions keep off them. */
+  get boxes(): Box[] {
+    if (!this.isOpen || !this.last) return [];
+    const p = this.last.parts;
+    return p ? [p.title, ...p.items] : [this.last.box];
+  }
+
   /** Open for a device: its name, its entries, next to where it stands. */
   open(dev: string, name: string, aria: string, items: PopupItem[], at: PopupAnchor | undefined, room?: PopupRoom) {
     const again = this.dev === dev && this.isOpen;
-    if (!again) this.rowAt = null;
+    if (!again) this.last = null;
     this.dev = dev;
     if (room) this.room = room;
     this.title.textContent = name;
@@ -163,7 +275,7 @@ export class Popup {
     if (this.layer.hidden) {
       this.layer.hidden = false;
       // a row takes the place of the touch actions (bottom) or of HACK/BOARD (top) while it is open
-      if (this.placement !== 'beside') document.documentElement.classList.add('thing-' + this.placement);
+      if (this.placement === 'bottom' || this.placement === 'top') document.documentElement.classList.add('thing-' + this.placement);
       // a click anywhere else closes it (capture: before the canvas opens another thing's popup)
       window.addEventListener('pointerdown', this.outside, true);
     }
@@ -204,23 +316,42 @@ export class Popup {
     return { walk: rel(pads[0]), act: rel(pads[1]) };
   }
 
-  /** Every frame while open: the placement (POPUP_LAYOUTS) says where the box, the ring and the connector go. */
+  /** Every frame while open: the placement (POPUP_LAYOUTS) says where the box (or each part), the ring, the connector and the arms go. */
   place(a: PopupAnchor) {
+    const chips = [...this.list.children] as HTMLElement[];
     const lay = POPUP_LAYOUTS[this.placement]({
       anchor: a, size: { w: this.box.offsetWidth, h: this.box.offsetHeight },
       view: { W: this.layer.clientWidth, H: this.freeHeight(), top: this.room.top },
-      room: this.room, pads: this.pads(), prev: this.rowAt,
+      room: this.room, pads: this.pads(), prev: this.last,
+      parts: {
+        title: { w: this.title.offsetWidth, h: this.title.offsetHeight },
+        items: chips.map((c, i) => ({ w: c.offsetWidth, h: c.offsetHeight, hack: !!this.items[i]?.hack })),
+      },
     });
-    this.rowAt = { l: lay.box.l, t: lay.box.t };
-    this.box.style.left = Math.round(lay.box.l) + 'px'; this.box.style.top = Math.round(lay.box.t) + 'px';
+    this.last = lay;
+    // the plate's lines are 2 px (on whole pixels), the others 1 px (on half pixels)
+    const half = lay.parts ? 0 : 0.5;
+    const px = (v: number) => Math.round(v) + 'px', pt = (pts: [number, number][]) => pts.map(([x, y]) => Math.round(x) + half + ',' + (Math.round(y) + half)).join(' ');
+    this.box.style.left = px(lay.box.l); this.box.style.top = px(lay.box.t);
+    if (lay.parts) {
+      // spread out: each part where the placement says, inside the box
+      const at = (e: HTMLElement, b: Box) => { e.style.left = px(b.l - lay.box.l); e.style.top = px(b.t - lay.box.t); };
+      this.box.style.width = px(lay.box.r - lay.box.l); this.box.style.height = px(lay.box.b - lay.box.t);
+      at(this.title, lay.parts.title);
+      lay.parts.items.forEach((b, i) => chips[i] && at(chips[i], b));
+    }
+    const arms = lay.parts?.arms ?? [];
+    while (this.arms.childElementCount > arms.length) this.arms.lastElementChild!.remove();
+    while (this.arms.childElementCount < arms.length) this.arms.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'polyline'));
+    arms.forEach((arm, i) => { const l = this.arms.children[i]; l.setAttribute('points', pt(arm.pts)); l.setAttribute('class', arm.hack ? 'hack' : ''); });
     this.ring.hidden = !lay.ring;
     if (lay.ring) Object.assign(this.ring.style, { left: lay.ring.l + 'px', top: lay.ring.t + 'px', width: lay.ring.r - lay.ring.l + 'px', height: lay.ring.b - lay.ring.t + 'px' });
-    this.wire.setAttribute('points', lay.wire.map(([x, y]) => Math.round(x) + 0.5 + ',' + Math.round(y)).join(' '));
+    this.wire.setAttribute('points', pt(lay.wire));
   }
 
   close() {
     if (this.layer.hidden) return;
-    this.layer.hidden = true; this.dev = null; this.items = []; this.rowAt = null;
+    this.layer.hidden = true; this.dev = null; this.items = []; this.last = null;
     document.documentElement.classList.remove('thing-bottom', 'thing-top');
     window.removeEventListener('pointerdown', this.outside, true);
     this.onClose();
@@ -231,10 +362,30 @@ export class Popup {
     [...this.list.children].forEach((b, j) => b.classList.toggle('sel', j === i));
   }
 
+  /**
+   * Arrows on a spread-out popup (the plate) move where they point: left and right along a row, up
+   * to the hacking entries, down back to the everyday ones; the nearest entry that way, or stay.
+   */
+  private toward(k: string): number {
+    const bs = this.last?.parts?.items, me = bs?.[this.sel];
+    if (!bs || !me) return this.sel;
+    const mid = (b: Box) => ({ x: (b.l + b.r) / 2, y: (b.t + b.b) / 2 }), m = mid(me);
+    let best = this.sel, far = Infinity;
+    bs.forEach((b, i) => {
+      if (i === this.sel || !b) return;
+      const p = mid(b), dx = p.x - m.x, dy = p.y - m.y, row = Math.abs(dy) < 8;
+      const ok = k === 'ArrowLeft' ? row && dx < 0 : k === 'ArrowRight' ? row && dx > 0 : k === 'ArrowUp' ? dy < -8 : dy > 8;
+      const d = row ? Math.abs(dx) : Math.abs(dx) + Math.abs(dy) * 0.25;
+      if (ok && d < far) { far = d; best = i; }
+    });
+    return best;
+  }
+
   /** A key while it is open. True when the popup used it; false lets the game have it (walking away closes it). */
   key(e: KeyboardEvent): boolean {
     const n = this.items.length, k = e.key;
     if (k === 'Escape') { e.preventDefault(); this.close(); return true; }
+    if (this.last?.parts && k.startsWith('Arrow')) { e.preventDefault(); if (n) this.select(this.toward(k)); return true; }
     if (k === 'ArrowDown' || k === 'ArrowUp') { e.preventDefault(); if (n) this.select((this.sel + (k === 'ArrowDown' ? 1 : n - 1)) % n); return true; }
     if (k === 'Enter' || k === 'e' || k === 'E' || k === ' ') { e.preventDefault(); if (!e.repeat) this.items[this.sel]?.run(); return true; }
     this.close();
@@ -335,6 +486,59 @@ export const POPUP_STYLES = `
     .thing-ring[hidden] { display: none; }
     @keyframes thing-ring { 50% { border-color: rgba(0, 255, 255, 0.4); } }
     @media (prefers-reduced-motion: reduce) { .thing-ring { animation: none; } }
+    /* the plate (POPUP_PLACEMENT 'plate', "5B"): a stalk up from the thing to its name plate, the
+       everyday actions as cyan chips branching off its sides, the hacking ones above it in pink */
+    .thing-pop.plate { display: block; min-width: 0; max-width: none; padding: 0; background: none; border: 0; box-shadow: none; pointer-events: none; }
+    .thing-pop.plate .thing-list { display: contents; }
+    .thing-pop.plate .thing-title {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      height: 22px;
+      min-width: 72px;
+      padding: 0 10px;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: rgb(255, 136, 0);
+      background: #120a05;
+      border: 2px solid rgb(255, 136, 0);
+      overflow: visible;
+      pointer-events: auto;
+      animation: thing-in 0.15s ease 0.1s both;
+    }
+
+    .thing-pop.plate .thing-item {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      width: auto;
+      height: 28px;
+      min-height: 0;
+      padding: 0 10px;
+      box-sizing: border-box;
+      color: rgb(0, 255, 255);
+      background: rgba(2, 14, 16, 0.95);
+      border: 2px solid #00e5e5;
+      pointer-events: auto;
+      animation: thing-in 0.15s ease 0.16s both;
+    }
+
+    .thing-pop.plate .thing-item.hack { color: rgb(255, 61, 242); background: #1a0418; border-color: rgb(255, 61, 242); }
+    .thing-pop.plate .thing-item.cur { color: var(--color-success); border-color: var(--color-success); background: #04140a; }
+    .thing-pop.plate .thing-item.sel,
+    .thing-pop.plate .thing-item:hover { box-shadow: 0 0 0 1px currentColor, 0 0 10px rgba(0, 255, 255, 0.45); }
+    .thing-pop.plate .thing-item.hack.sel,
+    .thing-pop.plate .thing-item.hack:hover { box-shadow: 0 0 0 1px currentColor, 0 0 10px rgba(255, 61, 242, 0.5); }
+    html.touch .thing-pop.plate .thing-title { height: 28px; }
+    html.touch .thing-pop.plate .thing-item { height: 44px; min-height: 44px; min-width: 44px; padding: 0 12px; font-size: 13px; }
+    .thing-layer.plate .thing-wire polyline { stroke: #00e5e5; stroke-width: 2; animation: thing-in 0.15s ease both; }
+    .thing-layer.plate .thing-wire polyline.hack { stroke: rgb(255, 61, 242); }
+    .thing-layer.plate .thing-wire g polyline { animation-delay: 0.16s; }
+    @keyframes thing-in { from { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .thing-pop.plate .thing-title, .thing-pop.plate .thing-item, .thing-layer .thing-wire polyline { animation: none; } }
+
     /* while a row is open it takes the place of the touch actions (bottom) or of HACK/BOARD (top) */
     html.thing-bottom #touch .pad:last-child,
     html.thing-top #scene-btns { visibility: hidden; }

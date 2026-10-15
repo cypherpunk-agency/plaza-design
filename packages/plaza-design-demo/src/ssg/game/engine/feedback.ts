@@ -25,7 +25,9 @@
  * Everything follows its anchor every frame (the camera moves, Pixel walks): the
  * host hands `update` a `locate` that says where a speaker is on screen now, plus
  * the boxes captions keep off (`hard`: the player, a speech bubble) and would
- * rather not cover (`soft`: devices, people).
+ * rather not cover (`soft`: devices, people). An open popup's plate sits in the
+ * same lane (engine/popup.ts, `laneBottom`); while it is open the captions yield
+ * to it (`yieldTo`: kept off like `hard`, without moving the lane).
  * Styles: FEEDBACK_STYLES, inlined by render.tsx.
  */
 
@@ -142,11 +144,33 @@ export class Feedback {
   private lane = NaN;
   private hard: Box[] = [];
   private soft: Box[] = [];
+  /** Boxes the captions yield to (an open popup, engine/popup.ts): kept off, but the lane does not move for them. */
+  private yieldTo: Box[] = [];
   /** The top of the free view (under the buttons and the HUD), px. */
   top = 0;
 
   /** The game view's top-left corner on the page: every layer over it (captions, the popup) starts there. */
   origin() { const r = this.layer.getBoundingClientRect(); return { left: r.left, top: r.top }; }
+
+  /** The view's width and free height (on a phone the touch buttons lie over the bottom of it), px. */
+  private view() {
+    const pad = document.getElementById('touch'), padTop = pad?.offsetParent ? pad.getBoundingClientRect().top - this.origin().top : 0;
+    return { W: this.layer.clientWidth, H: padTop > 0 ? Math.min(padTop, this.layer.clientHeight) : this.layer.clientHeight };
+  }
+
+  /** Where the lane's bottom wants to be: a gap over the tallest of the devices, the people, the player and `things`; room for `h0` under the HUD. */
+  private laneOver(things: Box[], h0: number, W: number, H: number) {
+    const lo = this.top + EDGE, hi = H - EDGE;
+    const tops = [...this.soft, ...this.hard, ...things].filter((b) => b.r > 0 && b.l < W && b.b > lo).map((b) => b.t);
+    return Math.max(lo + h0, Math.min(hi, ...tops) - GAP);
+  }
+
+  /** The lane's bottom now (px), for a thing's popup (its plate sits in the lane): eased while captions show, else where it would be. */
+  laneBottom() {
+    if (!Number.isNaN(this.lane)) return this.lane;
+    const { W, H } = this.view();
+    return this.laneOver([], 18, W, H);
+  }
 
   constructor(host: HTMLElement) {
     this.layer = el('fx-layer');
@@ -223,13 +247,13 @@ export class Feedback {
    * what is done. `hard`: boxes a caption never covers (the player, a speech bubble); `soft`: boxes
    * it would rather not cover and keeps the lane above (devices, people), CSS px.
    */
-  update(locate: Locate, hard?: Box[], soft?: Box[]) {
+  update(locate: Locate, hard?: Box[], soft?: Box[], yieldTo?: Box[]) {
     if (hard) this.hard = hard;
     if (soft) this.soft = soft;
+    if (yieldTo) this.yieldTo = yieldTo;
     if (!this.caps.length && !this.pings.length && !this.queue.length) { this.lane = NaN; return; }
     // on a phone the touch buttons lie over the bottom of the view: arrows stay above them
-    const pad = document.getElementById('touch'), padTop = pad?.offsetParent ? pad.getBoundingClientRect().top - this.origin().top : 0;
-    const now = performance.now(), W = this.layer.clientWidth, H = padTop > 0 ? Math.min(padTop, this.layer.clientHeight) : this.layer.clientHeight;
+    const now = performance.now(), { W, H } = this.view();
     for (const p of [...this.pings]) {
       const at = locate(p.from);
       if (!at || now - p.born > p.life) { p.el.remove(); this.pings = this.pings.filter((x) => x !== p); continue; }
@@ -262,10 +286,11 @@ export class Feedback {
     // player, the things the captions talk about), never under the HUD; eased, so it does not jump
     const lo = this.top + EDGE, hi = H - EDGE;
     const things = this.caps.map((c) => locate(c.from)).filter((a): a is Spot2D => !!a && !a.off).map(boxOf);
-    const tops = [...this.soft, ...this.hard, ...things].filter((b) => b.r > 0 && b.l < W && b.b > lo).map((b) => b.t);
     const h0 = Math.max(...this.caps.map((c) => c.el!.offsetHeight), 18);
-    const want = Math.max(lo + h0, Math.min(hi, ...tops) - GAP);
+    const want = this.laneOver(things, h0, W, H);
     this.lane = Number.isNaN(this.lane) ? want : this.lane + (want - this.lane) * 0.2;
+    // an open popup wins: captions keep off it (a box they never cover), but the lane does not move for it
+    const hardAll = [...this.hard, ...this.yieldTo];
     // oldest first, so a caption that is there stays put and the newcomer finds room beside it
     const placed: Box[] = [], leads: { c: Caption; q: Box; thing: Box }[] = [];
     for (const c of [...this.caps]) {
@@ -273,7 +298,7 @@ export class Feedback {
       const off = at.off !== 0, thing = off ? null : boxOf(at);
       const cx = off ? (at.off < 0 ? EDGE + 28 + w / 2 : W - EDGE - 28 - w / 2) : at.x;
       const soft = this.soft.filter((s) => !thing || area(s, thing) < (thing.r - thing.l) * (thing.b - thing.t) * 0.8);
-      const { box: q, free } = placeInLane(w, h, cx, thing, this.lane, placed, this.hard, soft, W, lo, hi);
+      const { box: q, free } = placeInLane(w, h, cx, thing, this.lane, placed, hardAll, soft, W, lo, hi);
       // a newcomer with no free spot waits (at the front of the queue): nothing ever lands on another box
       if (!free && fresh.has(c)) { this.drop(c); c.el = undefined; c.lead = undefined; this.queue.unshift(c); this.lastShown = -Infinity; continue; }
       placed.push(q); c.box = q;
@@ -285,7 +310,7 @@ export class Feedback {
     }
     // the leaders, once every box has its place: each keeps clear of the other boxes
     for (const { c, q, thing } of leads) {
-      const pts = leaderPath(q, thing, placed.filter((p) => p !== q));
+      const pts = leaderPath(q, thing, [...placed.filter((p) => p !== q), ...this.yieldTo]);
       c.lead!.firstElementChild!.setAttribute('points', pts.map(([x, y]) => Math.round(x) + 0.5 + ',' + Math.round(y)).join(' '));
     }
   }

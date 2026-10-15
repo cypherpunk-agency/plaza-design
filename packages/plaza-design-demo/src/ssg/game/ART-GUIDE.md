@@ -161,12 +161,16 @@ character speaks only for itself.
   1.6 s, gently, then eases back to the player. Walking, a conversation, the deck or a panel cancel
   it; reduced motion has none; each thing's line draws the eye once a visit, and not more often
   than every 5 s. Anything further only gets the edge arrow. (`game.ts`: `nudgeTo`, `NUDGE_*`.)
-- **Popups** (`engine/popup.ts`, `POPUP_PLACEMENT`): a tapped device's actions open as a row along
-  the bottom, where the thumbs are; on a phone the row takes the action buttons' place (the walk
-  arrows stay). The device gets a ring and a thin connector to the row:
-  `[NAME] [action] … [⌁ jack in] [⌁ hack it] [✕]`, at most three everyday actions, touch targets
-  at least 44 px. Kept for comparison: a row along the top, and beside the device. Each placement
-  is one function in `POPUP_LAYOUTS`, so a new one drops in.
+- **Popups** (`engine/popup.ts`, `POPUP_PLACEMENT`): the plate ("5B", Tommi 2026-10-15). A thin
+  cyan stalk grows straight up from the tapped device (which gets a ring) to a small plate with its
+  name (orange on dark) in the caption lane, clear above the player and the scene. Its everyday
+  actions (at most three) are cyan chips on the plate's row, joined by short arms, split left and
+  right (balanced; all to one side when the other would leave the view); `⌁ jack in` and
+  `⌁ hack it` sit above the plate in pink, on a short pink arm. Touch targets at least 44 px. It
+  stays put while open; arrows move spatially (left/right along a row, up to hacking, down back).
+  An open popup wins the lane: captions step aside for it. Kept for comparison: a row along the
+  bottom, a row along the top, and beside the device. Each placement is one function in
+  `POPUP_LAYOUTS`, so a new one drops in.
 - **The player's character speaks only for itself** (arriving somewhere, a thought), never to
   narrate what a device did.
 

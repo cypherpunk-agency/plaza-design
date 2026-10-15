@@ -313,7 +313,7 @@ export class SceneHost {
       const r = row.getBoundingClientRect();
       keepClear.push({ x: r.left - top.left + r.width / 2, y: r.top - top.top + r.height / 2, w: r.width, h: r.height });
     }
-    return { avoid, keepClear, top: this.uiTop };
+    return { avoid, keepClear, top: this.uiTop, lane: this.fx.laneBottom() };
   }
 
   /** BOARD is off until something is on it; HACK lights up while hack vision is on. */
@@ -392,7 +392,8 @@ export class SceneHost {
     const soft: Box[] = [...seen.values()].map((a) => ({ l: a.x - a.w / 2, t: a.y - a.h / 2, r: a.x + a.w / 2, b: a.y + a.h / 2 }));
     this.extras().forEach((q) => { const c = project(q.x, q.h + 8), e = project(q.x + 9, q.h + 16); soft.push({ l: c.x - (e.x - c.x), t: e.y, r: e.x, b: c.y + (c.y - e.y) }); });
     soft.push(...this.crowd());
-    this.fx.update(this.locate, hard, soft);
+    // an open popup wins the caption lane: captions step aside for it (engine/popup.ts)
+    this.fx.update(this.locate, hard, soft, this.popup.boxes);
     if (this.vision.isOpen) {
       // a part placed on the board has no spot in the world yet: it turns up next to you
       [...m.devices.values()].filter((d) => d.logic && !m.logicAt.has(d.id)).forEach((d) => { this.place(d.id); this.dirty(); });
