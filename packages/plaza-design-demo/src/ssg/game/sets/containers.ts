@@ -11,6 +11,7 @@ import { box, onScreen, PAPER, rng, text, type View } from '../scenes/kit';
 
 /** A container's height (world units). */
 export const CH = 58;
+const CH0 = CH;
 /** Container paints: fill, outline, rib highlight. Earthy and faded; no cyan (that is for things you can use). */
 export const PAL: [string, string, string][] = [
   ['#3a1608', 'rgba(255,136,0,.8)', 'rgba(255,150,60,.12)'], // orange
@@ -23,12 +24,19 @@ export const PAL: [string, string, string][] = [
   ['#2c2824', 'rgba(225,215,200,.6)', 'rgba(235,225,210,.1)'], // dirty white
 ];
 
-/** One box: width (128 or 66), paint (`PAL` index), seed, its code and the line's name, how crooked it sits on the one below. */
-export interface Crate { w: number; p: number; seed: number; code?: string; label?: string; dx?: number }
+/**
+ * One box: width (the scenes: 128 or 66), paint (`PAL` index), seed, its code and the line's name, how
+ * crooked it sits on the one below. `h`: its height when it is not the scenes' `CH` (the glide draws boxes
+ * true to the player's scale: a 40 ft box 320 x 69, a 20 ft one 160 x 69; see `BOX40`).
+ */
+export interface Crate { w: number; p: number; seed: number; code?: string; label?: string; dx?: number; h?: number }
+
+/** A box true to the player's scale (48 units = 1.8 m): 40 ft (12.2 m) and 20 ft long, 2.6 m tall. */
+export const BOX40 = { w: 320, h: 69 }, BOX20 = { w: 160, h: 69 };
 
 /** A container: corrugated side, door bars at one end, rust, a dent, codes, a placard. Seeded. */
 export function container(x: CanvasRenderingContext2D, v: View, wx: number, h: number, b: Crate) {
-  const s0 = Math.round(v.sx(wx + (b.dx ?? 0))), top = Math.round(v.y(h + CH)), w = b.w;
+  const CH = b.h ?? CH0, s0 = Math.round(v.sx(wx + (b.dx ?? 0))), top = Math.round(v.y(h + CH)), w = b.w;
   if (!onScreen(v, s0, w)) return;
   const [fill, edge, hi] = PAL[b.p], r = rng(b.seed * 31 + 7);
   box(x, s0, top, w, CH, fill, edge);
@@ -61,6 +69,6 @@ export function container(x: CanvasRenderingContext2D, v: View, wx: number, h: n
 
 /** A stack: boxes bottom to top from `wx` (the bottom box's left edge), each sitting a little crooked (`dx`) on the one below. */
 export function stack(x: CanvasRenderingContext2D, v: View, wx: number, boxes: Crate[], h0 = 0) {
-  let dx = 0;
-  boxes.forEach((b, i) => { dx += b.dx ?? 0; container(x, v, wx + dx - (b.dx ?? 0), h0 + i * CH, b); });
+  let dx = 0, h = h0;
+  boxes.forEach((b) => { dx += b.dx ?? 0; container(x, v, wx + dx - (b.dx ?? 0), h, b); h += b.h ?? CH; });
 }

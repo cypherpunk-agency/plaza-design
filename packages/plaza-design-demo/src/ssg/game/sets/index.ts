@@ -9,18 +9,21 @@
  * the caller's `y` instead, and the containers draw on a scene `View` (`frameView` for a frame).
  */
 
-export { CH, container, PAL, stack, type Crate } from './containers';
+export { BOX20, BOX40, CH, container, PAL, stack, type Crate } from './containers';
 export { boomHinge, drawGantry, GANTRIES, STS2, type Gantry, type GantryLook } from './crane';
 export { drawSpire, SPIRE_LIGHT } from './spire';
-export { CAR, drawTrainCar } from './train-car';
+export { CAR, drawMetroCar, drawTrainCar, METRO } from './train-car';
 export { drawStringLights, SALT, saltBack, saltCounter, saltLights, saltLime, saltShell, saltUnder } from './beach-bar';
 export { drawBonfire, drawDjBooth, drawLounger } from './beach-party';
 export { drawSea, type SeaLook } from './sea';
-export { drawCar, drawForklift, drawReachStacker, drawStraddle, drawTruck } from './vehicles';
-export { drawAirTaxi, drawBlimp, drawDrone } from './air-traffic';
+export { drawCar, drawForklift, drawReachStacker, drawStraddle, drawTruck, M, SIZE } from './vehicles';
+export { BLIMP_SCALE, CRAFT_LEN, drawBlimp, drawCraft, drawDrone, type CraftKind } from './air-traffic';
 export { drawPalm } from './palm';
 export { drawGalleriaDome } from './galleria-dome';
-export { drawTower, towerRow } from './downtown-towers';
+export { drawTower, NEON, SIGN_COPY, signGlows, towerRow, type Tower, type TowerSign } from './downtown-towers';
+export { drawRing, RING, ringTraffic } from './ring-highway';
+export { drawBore, drawTunnelPortal, drawViaduct, drawWallPortal, LINE0 } from './line0';
+export { drawCanalGlimpse, drawGroundSection } from './cutaway';
 export { frameView, placed } from './view';
 export { puddles, weatherFront, weatherMid, weatherSky, type PuddleSpec, type WeatherLook } from './weather';
 export { drawPane, drawSky, glass, moonDisc, seaCols, skyCols, skyPos, sunPath, windowShaft, type PaneOpts, type SkyOpts } from './sky';
@@ -38,23 +41,23 @@ export interface SetEntry {
 export const SETS: SetEntry[] = [
   {
     id: 'spire', file: 'sets/spire.ts',
-    what: 'The Spire from far off, the monolith: a black slab on its plinth in the bay, thin seams of cold light, a pointed top with the Registry antenna and its red light, a halo ring of air traffic.',
-    users: ['stacks/scene.ts: the bay in the far band', 'cutscenes/act2.ts: across the water at the end of Act I', 'title/glide.ts: in the bay, nameless, from the harbor to the Galleria'],
+    what: 'The Spire from far off, the monolith: a black slab on its plinth in the bay, thin seams of cold light, three docking decks with their lights, a pointed top with the Registry antenna and its red light, a halo ring of air traffic; with `traffic`, corporate shuttles docking and leaving and a Registry patrol on its loop.',
+    users: ['stacks/scene.ts: the bay in the far band (decks, no traffic)', 'cutscenes/act2.ts: across the water at the end of Act I (decks, no traffic)', 'title/glide.ts: in the bay, nameless, bigger, with its traffic; the camera eases off for it over the bay bridge'],
   },
   {
     id: 'crane', file: 'sets/crane.ts',
     what: 'The ship-to-shore gantry crane frame (STS-1, STS-2, STS-3) in painted steel: legs, beams, A-frame, Warren-truss boom (down and working, or raised about its hinge when idle), machinery house, warning lights.',
-    users: ['scenes/harbor.ts: STS-1 and STS-3 on the pier (booms down)', 'stacks/scene.ts: STS-2 over the blocks (back and front parts, boom down)', 'title/coast.ts: STS-1 and STS-3 booms up, STS-2 working, one boom apart'],
+    users: ['scenes/harbor.ts: STS-1 and STS-3 on the pier (booms down)', 'stacks/scene.ts: STS-2 over the blocks (back and front parts, boom down)', 'title/coast.ts: STS-1 and STS-3 booms up, STS-2 working, well apart; drawn at 1.7x the scenes\' scale (`CRANE`) so they stand over 12 m boxes'],
   },
   {
     id: 'containers', file: 'sets/containers.ts',
-    what: 'The shipping container (seeded paint, rust, codes, placards) and a crooked stack of them.',
-    users: ['scenes/harbor.ts: the pier stacks, the arch, the crane loads, the bonded store', 'stacks/scene.ts: blocks A, B, C and the crane loads', 'title/coast.ts: the stacks along the quay (NRLU 404 0451 under STS-2), STS-2\'s load', 'sets/vehicles.ts: the boxes on trucks, the straddle carrier, the reach stacker'],
+    what: 'The shipping container (seeded paint, rust, codes, placards) and a crooked stack of them. A box can carry its own height (`h`); `BOX40`/`BOX20` are true to the player\'s scale (12.2 m and 6 m long, 2.6 m tall). The scenes keep their own boxes (128 x 58).',
+    users: ['scenes/harbor.ts: the pier stacks, the arch, the crane loads, the bonded store', 'stacks/scene.ts: blocks A, B, C and the crane loads', 'title/coast.ts: the stacks along the quay (NRLU 404 0451), the ship\'s deck, STS-2\'s load (true scale)', 'title/traffic.ts, sets/vehicles.ts, sets/ring-highway.ts, sets/air-traffic.ts: the boxes on trucks, the straddle carrier, the reach stacker, the hauler'],
   },
   {
     id: 'train-car', file: 'sets/train-car.ts',
-    what: 'A LINE 0 car from outside: body, waist stripe, doors that slide open, lit windows with riders, headlight and destination on the lead car.',
-    users: ['scenes/line.ts drawPlatformTrain: the platforms (metro, galleriaStation, harborStation)', 'title/glide.ts: the train diving into its tunnel (line0)'],
+    what: 'A LINE 0 car from outside: body, waist stripe, doors that slide open, lit windows with riders, headlight and destination on the lead car (`drawTrainCar`, the platforms\' own scale). `drawMetroCar`: the same car true to the player\'s scale (20 m), four doors, long windows onto a warm inside with seated and standing riders at their real size, empty seats, reflections sliding on the glass.',
+    users: ['scenes/line.ts drawPlatformTrain: the platforms (metro, galleriaStation, harborStation): drawTrainCar, unchanged', 'title/finale.ts: the glide\'s train out of its tower, down the ramp, in the bore: drawMetroCar'],
   },
   {
     id: 'beach-bar', file: 'sets/beach-bar.ts',
@@ -64,7 +67,7 @@ export const SETS: SetEntry[] = [
   {
     id: 'palm', file: 'sets/palm.ts',
     what: 'A palm silhouette: ringed trunk tapering up a curve, nine drooping fronds with leaflets, coconuts, sway, a rim of the sun on one side. Seeded; vary height and lean.',
-    users: ['title/coast.ts: the title\'s frame, the beach, the foreground wipe at the port gate'],
+    users: ['title/coast.ts: the title\'s frame, the beach, the foreground wipe where the sand ends'],
   },
   {
     id: 'galleria-dome', file: 'sets/galleria-dome.ts',
@@ -73,8 +76,8 @@ export const SETS: SetEntry[] = [
   },
   {
     id: 'downtown-towers', file: 'sets/downtown-towers.ts',
-    what: 'Downtown as a skyline: tower slabs with seeded lit windows, rooftop masts and tanks, signs on plates.',
-    users: ['title/coast.ts: Downtown\'s street towers and the far row across the water, hiding the sun', 'library/scene.ts: through the reading room\'s tall windows'],
+    what: 'Downtown\'s towers, every one seeded and different: skins (punched concrete, glass curtain wall, stacked capsules, panel blocks with balconies, brick walk-ups with fire escapes), setbacks, crowns (needle, stepped, slant, lattice antenna, halo, pyramid), roof gear (tanks, antennas, dishes, AC, gardens, taxi pads), grime; signs of six kinds (plate, neon blade, stacked letters, scrolling ticker, holo ad over its emitter, rooftop billboard on a truss), flickering, a dead letter now and then, dry copy; `signGlows` for wet-street reflections. `storey` sizes the details: 9 for small skylines, 85 true to the player\'s scale.',
+    users: ['title/town.ts: Downtown\'s street row (true scale, shopfronts, signs), the portal tower, four skyline rows behind it thickening toward the tunnel', 'library/scene.ts: through the reading room\'s tall windows (varied massing now, no signs, on the city clock)'],
   },
   {
     id: 'weather', file: 'sets/weather.ts',
@@ -120,12 +123,27 @@ export const SETS: SetEntry[] = [
   },
   {
     id: 'vehicles', file: 'sets/vehicles.ts',
-    what: 'Ground vehicles side on, with their lights: cars (sedan, hatch, van, cab), a truck (with a container or empty), and the port\'s straddle carrier, reach stacker and forklift with beacons.',
-    users: ['title/coast.ts: the road\'s traffic, the port office\'s cars, the truck under STS-2, the port\'s machines'],
+    what: 'Ground vehicles side on, true to the player\'s scale (a sedan 4.5 x 1.5 m, the bus 12 m, a road truck with its 40 ft box 17.5 m), with their lights: cars (sedan, hatch, van, cab), bus 7, a truck (with a container or empty, or the port\'s yard tractor), and the port\'s straddle carrier, reach stacker and forklift with beacons.',
+    users: ['title/traffic.ts: the road\'s traffic (trucks out of the port gate, cars and bus 7 from the side streets)', 'title/coast.ts: the port office\'s cars, the car shell in the buffer, the yard tractors, the port\'s machines', 'sets/ring-highway.ts: the Ring\'s traffic'],
   },
   {
     id: 'air-traffic', file: 'sets/air-traffic.ts',
-    what: 'The sky\'s traffic: air taxis on their lanes, drones (survey or cargo), the ad blimp cycling the Registry\'s dry adverts.',
-    users: ['title/glide.ts: sky lanes and the blimp over the bay', 'title/coast.ts: drones over the harbor, the bridge, the plaza and Downtown'],
+    what: 'The sky\'s traffic, true to scale, each kind with its look: private pods, yellow sky taxis, Registry patrols (red and blue strobes, a searchlight), corporate shuttles, slow cargo haulers with a box slung under, the medevac, a military dropship and its escort drones; delivery drones; the ad blimp cycling the Registry\'s dry adverts.',
+    users: ['title/air.ts: the glide\'s lanes, patrol loops, the drone stream from the logistics hub, the hauler, the medevac, the dropship, the blimp', 'title/coast.ts: the taxi landing on the public pad by the Galleria', 'sets/spire.ts: the shuttles docking at the Spire and its patrol'],
+  },
+  {
+    id: 'ring-highway', file: 'sets/ring-highway.ts',
+    what: 'THE RING, the elevated highway: box girder on columns with cap beams, barrier and railing, sodium lamps, light strips under the deck, sign gantries (RING · EXIT 4), and its two-way traffic (ringTraffic), true to scale (deck 10.7 m up).',
+    users: ['title/town.ts: over Downtown\'s street, its east end curving away inland behind the Galleria'],
+  },
+  {
+    id: 'line0', file: 'sets/line0.ts',
+    what: 'LINE 0\'s own way: the viaduct (columns, girder, rails, walkway railing, signals; its height can ramp), a lit portal in a building\'s wall where the line runs out of it, the tunnel headwall with its arch and plate, and the bore in section (lit, lamps, cable trays, the track).',
+    users: ['title/finale.ts: the viaduct from the Galleria\'s station, the portal tower, the ramp and headwall, the bore in the cutaway'],
+  },
+  {
+    id: 'cutaway', file: 'sets/cutaway.ts',
+    what: 'The city cut open: the ground in section (asphalt, fill, old rubble, water main and ducts, a steam pipe, the sewer\'s egg, foundation piles), and a glimpse of the Undercity: a flooded canal under a brick vault, a boat with a lantern, someone in it.',
+    users: ['title/finale.ts: the glide\'s end, the camera following LINE 0 down under the street'],
   },
 ];
