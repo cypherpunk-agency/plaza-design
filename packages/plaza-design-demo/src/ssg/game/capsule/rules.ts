@@ -39,7 +39,8 @@ const EFFECTS: Record<string, Effect> = {
     m.scratch.bootUntil = m.now() + ms;
     m.later(ms + 20, () => {
       if (!routerUp(m)) return;
-      w.say(w.line('router.online'));
+      // the router reacted, not the plug: its caption goes over the router
+      w.say(w.line('router.online'), 'router');
       w.changed();
     });
   },
@@ -80,8 +81,8 @@ function tick(w: World, dt: number) {
   s.temp = t;
   if (up && t >= tune(m, 'rebootTemp')) {
     s.bootUntil = m.now() + tune(m, 'rebootMs');
-    w.say(w.line('router.reboot', { temp: Math.round(t) }));
-    m.later(tune(m, 'rebootMs') + 20, () => { if (routerUp(m)) { w.say(w.line('router.online')); w.changed(); } });
+    w.say(w.line('router.reboot', { temp: Math.round(t) }), 'router');
+    m.later(tune(m, 'rebootMs') + 20, () => { if (routerUp(m)) { w.say(w.line('router.online'), 'router'); w.changed(); } });
     w.changed();
   } else if (Math.floor(Math.round(t) / 5) !== Math.floor(before / 5)) w.changed();
 
@@ -92,7 +93,7 @@ function tick(w: World, dt: number) {
     if (s.pixelWait >= tune(m, 'pixelMoveMs')) {
       s.pixelWait = 0;
       m.set('pixelAt', want);
-      w.say(w.line('pixel.' + want));
+      w.say(w.line('pixel.' + want), 'pixel');
       w.changed();
     }
   } else s.pixelWait = 0;

@@ -72,7 +72,12 @@ export interface Ctx { dev: string; noun: string; verb: string; bySignal: boolea
 export interface Spot { id: string; x: number; w: number; h: number; y: number }
 
 export interface ZoneHooks {
-  say: (line: Line) => void;
+  /**
+   * A line to show. `from`: who said it, when the model knows: the device whose verb ran
+   * (or whose effect names itself), or another speaker an effect names ('pixel'). The host
+   * puts it as a caption over that thing; without `from` it goes to the terminal only.
+   */
+  say: (line: Line, from?: string) => void;
   /** Open a panel: `talk` (arg: the dialogue), or one of the zone's own (`camera`). */
   open: (panel: string, arg?: string) => void;
   changed: () => void;
@@ -257,18 +262,31 @@ export class ZoneModel {
 
   // ---------- doing things ----------
 
-  act(dev: string, noun: string, verb: string, bySignal = false) {
+  /** Who is speaking right now: the device whose verb (or guess, or item) is running. */
+  private speaker: string | null = null;
+  /** Say a line, as the speaker (or as `from`, when an effect names who reacted). */
+  private sayLine(l: Line, from: string | null = this.speaker) { this.hooks.say(l, from ?? undefined); }
+  /** Run `fn` with `dev` as the speaker: what it says comes from that device. */
+  private as<T>(dev: string, fn: () => T): T {
+    const before = this.speaker;
+    this.speaker = dev;
+    try { return fn(); } finally { this.speaker = before; }
+  }
+
+  act(dev: string, noun: string, verb: string, bySignal = false) { this.as(dev, () => this.actAs(dev, noun, verb, bySignal)); }
+
+  private actAs(dev: string, noun: string, verb: string, bySignal: boolean) {
     const n = this.noun(dev + '.' + noun);
     // [watchdog] a frozen device refuses every verb, and a signal into it is dropped (its own watchdog noun still answers)
-    if (n && n.kind !== 'WATCH' && this.frozen(dev)) { this.hooks.say(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
+    if (n && n.kind !== 'WATCH' && this.frozen(dev)) { this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
     if (!bySignal) {
       const d = this.devices.get(dev), left = this.lockLeft(dev);
-      if (d && left) { this.hooks.say(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
+      if (d && left) { this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
       this.touched.set(dev, this.now());
-      if (n?.sector && this.sealed(dev, n.sector)) { this.hooks.say(this.trySeal(dev, n.sector)); this.changed(); return; }
+      if (n?.sector && this.sealed(dev, n.sector)) { this.sayLine(this.trySeal(dev, n.sector)); this.changed(); return; }
     }
     const line = n?.run(verb, bySignal);
-    if (line) this.hooks.say(line);
+    if (line) this.sayLine(line);
     this.changed();
   }
 
@@ -280,7 +298,7 @@ export class ZoneModel {
   /** Does a data condition hold right now (zone state only)? For panels. */
   cond(c: string) { return this.test(c, this.ctx('')); }
   /** Run data actions outside any noun (dialogue choices). */
-  apply(actions: Action[]) { actions.forEach((a) => { const l = this.doAction(a, this.ctx('')); if (l) this.hooks.say(l); }); this.changed(); }
+  apply(actions: Action[]) { actions.forEach((a) => { const l = this.doAction(a, this.ctx('')); if (l) this.sayLine(l); }); this.changed(); }
   /** A label from the texts, with `{vars}` filled in. */
   label(key: string, vars?: Vars) { const t = this.texts[key]; return typeof t === 'string' ? this.fmt(t, this.ctx(''), vars) : '[' + key + ']'; }
   /** A terminal line from the texts. */
@@ -292,7 +310,7 @@ export class ZoneModel {
     const out = this.links.filter((l) => l.from === key);
     // [watchdog] nothing leaves a frozen device (but the watchdog's own arrives / leaves do)
     const [dev, ev] = split(key);
-    if (out.length && !ev.startsWith(WATCH_NOUN + ':') && this.frozen(dev)) { this.hooks.say(this.line('watchdog.mute', { device: this.devices.get(dev)?.name ?? dev, event: ev.replace(':', ' ') })); return; }
+    if (out.length && !ev.startsWith(WATCH_NOUN + ':') && this.frozen(dev)) { this.sayLine(this.line('watchdog.mute', { device: this.devices.get(dev)?.name ?? dev, event: ev.replace(':', ' ') }), dev); return; }
     out.forEach((l) => this.live.add(l));
     this.hooks.changed();
     this.later(500, () => { out.forEach((l) => this.live.delete(l)); this.hooks.changed(); });
@@ -442,9 +460,9 @@ export class ZoneModel {
     else if (A.kind === 'rule' && B.kind === 'fragment') made = A.rule + '(' + b + ')';
     else if (A.kind === 'fragment' && B.kind === 'fragment') made = 'join(' + a + ',' + b + ')';
     const k = made ? this.item(made) : undefined;
-    if (!made || !k || (k.text ?? '').length > MAX_FRAGMENT) this.hooks.say(this.line('keyring.nocombine', { a: A.label, b: B.label }));
-    else if (ring.includes(made)) this.hooks.say(this.line('keyring.have', { label: k.label }));
-    else this.hooks.say(this.give(made)!);
+    if (!made || !k || (k.text ?? '').length > MAX_FRAGMENT) this.sayLine(this.line('keyring.nocombine', { a: A.label, b: B.label }));
+    else if (ring.includes(made)) this.sayLine(this.line('keyring.have', { label: k.label }));
+    else this.sayLine(this.give(made)!);
     this.changed();
   }
 
@@ -461,7 +479,8 @@ export class ZoneModel {
    * A keyring chip dropped on a noun: on a GUARD, try it as the password;
    * on a sealed noun, try it as the sector's key. Says what happened.
    */
-  useItem(id: string, key: string) {
+  useItem(id: string, key: string) { this.as(split(key)[0], () => this.useItemAs(id, key)); }
+  private useItemAs(id: string, key: string) {
     const [dev, nid] = split(key), n = this.noun(key), k = this.item(id);
     if (!n || !k || !this.keyring().includes(id)) return;
     let l: Line | null = null;
@@ -473,15 +492,16 @@ export class ZoneModel {
       else if (k.kind === 'fragment') this.check(dev, nid, k.text ?? '');
       else l = this.line('guard.notfragment', { noun: nid, label: k.label });
     }
-    if (l) this.hooks.say(l);
+    if (l) this.sayLine(l);
     this.changed();
   }
 
   // ---------- guards ----------
 
   /** The keyboard, last resort: type a guess at a GUARD. */
-  guess(dev: string, noun: string, text: string) {
-    if (this.frozen(dev)) { this.hooks.say(this.frozenLine(dev, noun, 'login', false)); this.changed(); return; }
+  guess(dev: string, noun: string, text: string) { this.as(dev, () => this.guessAs(dev, noun, text)); }
+  private guessAs(dev: string, noun: string, text: string) {
+    if (this.frozen(dev)) { this.sayLine(this.frozenLine(dev, noun, 'login', false)); this.changed(); return; }
     this.touched.set(dev, this.now());
     this.check(dev, noun, text);
     this.changed();
@@ -493,7 +513,7 @@ export class ZoneModel {
   /** Try a password on a guard, and say how it went (then any sector it opens, then any kick its trace causes). */
   private check(dev: string, noun: string, text: string, bySignal = false) {
     const key = dev + '.' + noun, g = this.nounData(dev, noun)?.guard, vars: Vars = { noun, guess: text };
-    const say = (k: string, more?: Vars) => this.hooks.say(this.line(k, { ...vars, ...more }));
+    const say = (k: string, more?: Vars) => this.sayLine(this.line(k, { ...vars, ...more }));
     if (!g) return;
     if (this.passed.has(key)) return say('guard.passed');
     if (bySignal) return say('guard.signal');
@@ -507,22 +527,22 @@ export class ZoneModel {
   private pass(dev: string, noun: string) {
     const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, c = this.ctx(dev, noun);
     this.passed.add(key); this.fails.delete(key);
-    this.hooks.say(this.lineIn(g.say ?? 'guard.ok', c, { noun }));
-    (g.do ?? []).forEach((a) => { const l = this.doAction(a, c); if (l) this.hooks.say(l); });
+    this.sayLine(this.lineIn(g.say ?? 'guard.ok', c, { noun }));
+    (g.do ?? []).forEach((a) => { const l = this.doAction(a, c); if (l) this.sayLine(l); });
     if (this.nounData(dev, noun)!.events?.includes('opened')) this.emit(key + ':opened');
     (this.devices.get(dev)?.data.sectors ?? []).filter((s) => 'guard' in s.seal && s.seal.guard === noun)
-      .forEach((s) => { const l = this.unseal(dev, s.id); if (l) this.hooks.say(l); });
+      .forEach((s) => { const l = this.unseal(dev, s.id); if (l) this.sayLine(l); });
   }
 
   /** A wrong guess (or a wrong answer on a toy): a near-miss line, tries, the lock, trace. */
   private fail(dev: string, noun: string, text: string) {
     const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, vars: Vars = { noun, guess: text };
-    const say = (k: string, more?: Vars) => this.hooks.say(this.line(k, { ...vars, ...more }));
+    const say = (k: string, more?: Vars) => this.sayLine(this.line(k, { ...vars, ...more }));
     const fails = (this.fails.get(key) ?? 0) + 1, tries = g.tries ?? 1, lockMs = g.lockMs ?? GUARD_LOCK_MS;
     this.fails.set(key, fails);
     // a near miss gets its own reply (still a wrong guess)
     const near = Object.entries(g.near ?? {}).find(([k]) => norm(k) === norm(text));
-    if (near) this.hooks.say(this.lineIn(near[1], this.ctx(dev, noun), vars));
+    if (near) this.sayLine(this.lineIn(near[1], this.ctx(dev, noun), vars));
     if (lockMs > 0 && fails >= tries) {
       this.fails.delete(key);
       this.lock(key, lockMs);
@@ -630,7 +650,7 @@ export class ZoneModel {
       for (const s of d.data.sectors ?? []) {
         if (!('if' in s.seal) || this.opened.has(d.id + '/' + s.id) || !this.test(s.seal.if, this.ctx(d.id))) continue;
         const l = this.unseal(d.id, s.id);
-        if (l) this.hooks.say(l);
+        if (l) this.sayLine(l);
       }
     }
     this.sealing = false;
@@ -744,7 +764,7 @@ export class ZoneModel {
     this.lock(dev, ms);
     this.trace.set(dev, 0);
     this.viewing.delete(dev); this.touched.delete(dev);
-    this.hooks.say(this.line('trace.kick', { device: d.name, sec: secs(ms) }));
+    this.sayLine(this.line('trace.kick', { device: d.name, sec: secs(ms) }), dev);
     this.hooks.kick?.(dev);
   }
 
@@ -975,7 +995,7 @@ export class ZoneModel {
     for (const k of list<Case>(cases)) {
       if (k.if && !this.test(k.if, c)) continue;
       let out: Line | null = null;
-      const keep = (l: Line | null) => { if (!l) return; if (out) this.hooks.say(out); out = l; };
+      const keep = (l: Line | null) => { if (!l) return; if (out) this.sayLine(out); out = l; };
       (k.do ?? []).forEach((a) => keep(this.doAction(a, c)));
       if (k.say !== undefined) keep(this.lineIn(k.say, c));
       return out;
@@ -1004,7 +1024,8 @@ export class ZoneModel {
       m: this, zone: this.zone,
       line: (key, vars) => this.lineIn(key, c, vars),
       has: (key) => key in this.texts,
-      say: (l) => this.hooks.say(l),
+      // an effect speaks for its own device, unless it names who reacted (`w.say(line, 'router')`)
+      say: (l, from) => this.sayLine(l, from ?? (c.dev || this.speaker)),
       changed: () => this.changed(),
       goal: (g) => this.goal(g),
       tune: (key) => this.zone.tuning[key],

@@ -19,7 +19,8 @@ export interface World {
   zone: ZoneData;
   line(key: string, vars?: Vars): Line;
   has(key: string): boolean;
-  say(l: Line): void;
+  /** Say a line; `from` names who reacted when it is not this effect's own device (`'router'`, `'pixel'`). */
+  say(l: Line, from?: string): void;
   changed(): void;
   goal(g: string): void;
   tune(key: string): number;

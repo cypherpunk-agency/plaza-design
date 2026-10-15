@@ -59,10 +59,10 @@ function arrive(w: World) {
   const m = w.m;
   if (gateOpen(w)) {
     m.set('parcelAt', 'tray'); w.goal('gate');
-    w.say(w.line('parcel.tray'));
+    w.say(w.line('parcel.tray'), 'gate');
   } else {
     m.set('parcelAt', 'bounced');
-    w.say(w.line('parcel.bonk'));
+    w.say(w.line('parcel.bonk'), 'gate');
     m.later(w.tune('bounceBackMs'), () => { Object.assign(m.state, BACK_ON_HOOK); w.changed(); });
   }
   w.changed();

@@ -130,11 +130,32 @@ Empty scenes read as unfinished. "A bunch of boxes and text labels" is the failu
   it"). Every cat, dog, bird or pet in a scene answers E: petting, shooing, a reaction line.
 - **One surprising detail per scene**, something you notice late: a human touch, not a sign gag.
 
-## 11. Before you call a scene done
+## 11. UI never covers a consequence (Tommi, 2026-10-15)
+
+UI never covers a consequence: captions at the reacting thing, pings for attention, popups
+beside the device away from what it affects, the character speaks only for itself.
+
+- **Everyday actions close their popup at once.** The scene is free when the reaction plays.
+- **Captions** (`zone/feedback.ts`): a device's reply stands over the thing that *reacted*, not
+  over the thing you tapped (the plug's "switch on" makes the router answer over the router), on
+  a thin leader down to it, in the device's dry voice: green worked, red denied, paper otherwise.
+  They fade after a few seconds and stack without covering each other. The terminal (the phone's
+  HUD line) keeps the history. Effects name who reacted: `w.say(line, 'router')`.
+- **Pings**: an expanding ring where something happened (green, red, cyan); an arrow at the edge
+  when it happened off the view.
+- **Popups** open beside the device, on the side away from what it affects (its cables, `affects`,
+  the player, Pixel), never over the device or the player, with a short connector line; nowhere
+  free, they go to the top of the view, under the HUD. At most three everyday rows, then
+  `⌁ jack in` and `⌁ hack it`; touch targets at least 44 px.
+- **The player's character speaks only for itself** (arriving somewhere, a thought), never to
+  narrate what a device did.
+
+## 12. Before you call a scene done
 
 - [ ] Squint, silhouette and phone tests pass.
 - [ ] Every sign and text is mounted on something visible.
 - [ ] The player knows where the exits are and what can be used.
 - [ ] Colours follow their jobs.
 - [ ] Back bands are calmer than the play band.
+- [ ] Section 11: nothing you trigger plays under a popup, a caption or the HUD.
 - [ ] Section 10: people with variety, something to do that fits the place, live screens, a dystopian detail, a surprise.

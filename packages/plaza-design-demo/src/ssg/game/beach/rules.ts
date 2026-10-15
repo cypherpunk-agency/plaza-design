@@ -41,15 +41,15 @@ function tick(w: World, dt: number) {
     s.minute = (s.minute ?? 0) + dt;
     if (s.minute >= w.tune('minuteMs')) {
       s.minute = 0;
-      if (m.pay(1)) { m.set('billed', Number(m.get('billed') ?? 0) + 1); w.say(w.line('sunbed.minute')); }
-      else { m.set('rented', false); w.say(w.line('sunbed.cut')); }
+      if (m.pay(1)) { m.set('billed', Number(m.get('billed') ?? 0) + 1); w.say(w.line('sunbed.minute'), 'kiosk'); }
+      else { m.set('rented', false); w.say(w.line('sunbed.cut'), 'kiosk'); }
       w.changed();
     }
   }
   // the drone's red flag: no threat confirmed, after a while
   if (m.get('flag') === 'danger') {
     s.danger = (s.danger ?? 0) + dt;
-    if (s.danger >= w.tune('dangerMs')) { s.danger = 0; m.set('flag', 'clear'); w.say(w.line('drone.calm')); w.changed(); }
+    if (s.danger >= w.tune('dangerMs')) { s.danger = 0; m.set('flag', 'clear'); w.say(w.line('drone.calm'), 'drone'); w.changed(); }
   } else s.danger = 0;
 }
 

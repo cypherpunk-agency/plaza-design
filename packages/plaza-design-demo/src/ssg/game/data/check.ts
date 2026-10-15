@@ -50,7 +50,7 @@ const KEYS: Record<string, string[]> = {
   logic: ['modules'],
   net: ['nodes', 'cables', 'keyring', 'watchdog'],
   module: ['id', 'start', 'foundIn', 'part'],
-  device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'deck'],
+  device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
   noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
   guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
@@ -536,10 +536,17 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
    * are not everyday: no GUARD, LINK, LOG, SEAL or CLOCK nouns, nothing in a sealed sector.
    */
   const HACKING = ['GUARD', 'LINK', 'LOG', 'SEAL', 'CLOCK'];
+  const MAX_EVERYDAY = 3;
   const everyday = (d: DeviceData, where: string) => {
     if (d.deck !== undefined && typeof d.deck !== 'boolean') err(where + ' › deck', 'true or false: a computer you can jack into');
+    if (d.affects !== undefined) {
+      if (!Array.isArray(d.affects)) err(where + ' › affects', 'a list of device ids (what it changes that no cable shows)');
+      else d.affects.forEach((id, i) => { if (!z.devices.some((x) => x.id === id) || id === d.id) err(`${where} › affects[${i}]`, `"${id}" is not another device in this zone`); });
+    }
     if (d.everyday === undefined) return;
     if (!Array.isArray(d.everyday)) { err(where + ' › everyday', 'a list of { noun, verb, label? }'); return; }
+    // the popup: at most three everyday rows, then jack in and hack it (five rows, phone-sized)
+    if (d.everyday.length > MAX_EVERYDAY) err(where + ' › everyday', `${d.everyday.length} actions: at most ${MAX_EVERYDAY} fit the popup (keep the everyday ones; the rest live in hack view)`);
     d.everyday.forEach((e, i) => {
       const w = `${where} › everyday[${i}]`;
       c.keys(e, 'everyday', w);
@@ -563,7 +570,7 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
   });
   nodes.forEach((d) => {
     c.device(d, `nodes[${d.id}]`);
-    if (d.everyday || d.deck !== undefined) err(`nodes[${d.id}]`, 'a node is not in the world: no everyday actions or deck (you reach it through a LINK)');
+    if (d.everyday || d.deck !== undefined || d.affects) err(`nodes[${d.id}]`, 'a node is not in the world: no everyday actions, deck or affects (you reach it through a LINK)');
     if (d.layout?.spot) err(`nodes[${d.id}] › layout`, 'a node is not in the world: no spot (it lives on the board)');
   });
 

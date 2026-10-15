@@ -236,12 +236,17 @@ export interface DeviceData {
   layout?: LayoutData;
   /**
    * What you do with it without hacking anything (the kettle: boil), in the popup a click or E
-   * opens next to it in the world. Each runs that noun's verb, exactly as a tap on it would.
+   * opens next to it in the world, at most three. Each runs that noun's verb, exactly as a tap on it would.
    * Hacking verbs (logins, links, logs, wiring) are not everyday: they live in hack view.
    */
   everyday?: EverydayData[];
   /** A computer or terminal: its popup offers `⌁ jack in`, the full device screen (the schematic). */
   deck?: boolean;
+  /**
+   * Devices it changes that no cable shows (the plug powers the router): its popup opens on the
+   * side away from them, so it never covers the reaction.
+   */
+  affects?: string[];
 }
 
 /** One everyday action: a noun's verb, with the popup's label (default: the verb). */

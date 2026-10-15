@@ -26,7 +26,8 @@ import type { LineKind } from '../terminal';
 import { type Line, type Spot, ZoneModel } from './model';
 import { type PanelFn, Panels } from './panels';
 import type { ZoneRules } from './rules';
-import { Popup, type PopupItem } from './popup';
+import { Feedback, type Spot2D } from './feedback';
+import { Popup, type PopupAnchor, type PopupItem, type PopupRoom } from './popup';
 import { type Anchor, Schematic } from './schematic';
 import { ENGINE_PANEL_FNS } from './toys';
 
@@ -120,6 +121,14 @@ export class ZoneHost {
   private popupAt = 0;
   /** Where each device stood on screen in the last frame (for the popup). */
   private seen = new Map<string, Anchor>();
+  /** Captions over the thing that reacted, and pings (zone/feedback.ts). */
+  private fx: Feedback;
+  /** Speakers that are not devices or targets (the game's: 'pixel'), as world points; null when not here. */
+  where: (from: string) => { x: number; h: number } | null = () => null;
+  /** Things the game keeps the popup away from besides the player (Pixel), as world points. */
+  extras: () => { x: number; h: number }[] = () => [];
+  /** The top of the free view, under the HUD and the buttons (CSS px of the game view). The game sets it. */
+  uiTop = 0;
   private btns: HTMLDivElement;
   private hackBtn: HTMLButtonElement;
   private boardBtn: HTMLButtonElement;
@@ -136,7 +145,7 @@ export class ZoneHost {
 
   constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: ZoneStore | undefined, readonly def: ZoneDef) {
     this.model = new ZoneModel({
-      say: (l) => this.say(l),
+      say: (l, from) => this.say(l, from),
       open: (panel, arg) => this.panels.open(panel, arg),
       changed: () => { this.schem?.render(); this.vision?.render(); this.dirty(); },
       kick: (dev) => { if (this.schem.viewing === dev) this.schem.close(); },
@@ -153,6 +162,7 @@ export class ZoneHost {
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
     // the engine's own panels (the lock toys) under the zone's
     this.popup = new Popup(host);
+    this.fx = new Feedback(host);
     this.popup.onClose = () => this.onClose();
     this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.view.panels });
     this.schem.onLayout = () => this.dirty();
@@ -251,10 +261,59 @@ export class ZoneHost {
     this.sync();
   }
 
-  private say(l: Line) {
+  /**
+   * A line: to the terminal (the history), the open schematic's status, and, when it is known
+   * who said it, as a caption over that thing in the world (with a ping).
+   */
+  private say(l: Line, from?: string) {
     if (l[0] && this.echo) this.print('> ' + l[0], 'in');
     if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out');
-    this.schem.note(l); this.vision.note(l); this.popup.note(l);
+    this.schem.note(l); this.vision.note(l);
+    if (from && l[1] && this.btns.hidden === false) this.fx.caption(from, l[1], l[2], this.locate);
+  }
+
+  /**
+   * Where a speaker is on screen now: a device (its spot), one of the zone's own targets
+   * (the pickup tray), or what the game knows (Pixel). `off`: it is off to that side of the view.
+   */
+  private locate = (from: string): Spot2D | null => {
+    const p = this.project;
+    if (!p) return null;
+    const s = this.model.spots().find((x) => x.id === from);
+    let x: number, base: number, w: number, h: number;
+    if (s) { x = s.x; base = s.y; w = s.w; h = s.h; }
+    else {
+      const t = this.def.view.targets?.(this.model).find((z) => z.id === from), q = t ? { x: t.x, h: 0 } : this.where(from);
+      if (!q) return null;
+      x = q.x; base = q.h; w = t ? 24 : 18; h = t ? Math.max(16, t.promptH - 14) : 16;
+    }
+    const c = p(x, base + h / 2), e = p(x + w / 2, base + h), sw = (e.x - c.x) * 2, sh = (c.y - e.y) * 2;
+    const off = c.x + sw / 2 < 0 ? -1 : c.x - sw / 2 > this.width ? 1 : 0;
+    return { x: c.x, y: c.y, w: sw, h: sh, off };
+  };
+
+  /** What the popup keeps clear of and away from: the player, the buttons, what the device is cabled to or affects, Pixel. */
+  private room(id: string): PopupRoom {
+    const p = this.project!, m = this.model, d = m.devices.get(id);
+    const me = p(this.player.x, this.player.h + 21), head = p(this.player.x + 9, this.player.h + 44);
+    const player: PopupAnchor = { x: me.x, y: me.y, w: (head.x - me.x) * 2, h: (me.y - head.y) * 2 };
+    const partners = new Set<string>(d?.data.affects ?? []);
+    m.links.forEach((l) => {
+      const a = l.from.split('.')[0], b = l.to.split('.')[0];
+      if (a === id && b !== id) partners.add(b);
+      if (b === id && a !== id) partners.add(a);
+    });
+    const avoid = [...partners].map((x) => this.locate(x)).filter((q): q is Spot2D => !!q && !q.off).map((q) => ({ x: q.x, y: q.y }));
+    avoid.push({ x: player.x, y: player.y });
+    this.extras().forEach((q) => { const c = p(q.x, q.h + 8); avoid.push(c); });
+    const keepClear = [player];
+    const row = this.btns.parentElement?.classList.contains('kb-actions') ? this.btns.parentElement : this.btns;
+    const top = this.fx.origin();
+    if (row && !this.btns.hidden && row.offsetParent) {
+      const r = row.getBoundingClientRect();
+      keepClear.push({ x: r.left - top.left + r.width / 2, y: r.top - top.top + r.height / 2, w: r.width, h: r.height });
+    }
+    return { avoid, keepClear, top: this.uiTop };
   }
 
   /** BOARD is off until something is on it; HACK lights up while hack vision is on. */
@@ -281,7 +340,7 @@ export class ZoneHost {
 
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
-  closeAll() { this.popup.close(); this.panels.close(); this.schem.close(); this.vision.close(); }
+  closeAll() { this.popup.close(); this.fx.clear(); this.panels.close(); this.schem.close(); this.vision.close(); }
   /** The HACK and BOARD buttons show in this zone only. */
   show(on: boolean) { this.btns.hidden = !on; }
 
@@ -318,6 +377,8 @@ export class ZoneHost {
       // walked off, or the thing left the view: the popup goes
       if (!at || Math.abs(this.player.x - this.popupAt) > POPUP_WALK) this.popup.close(); else this.popup.place(at);
     }
+    this.fx.top = this.uiTop;
+    this.fx.update(this.locate);
     if (this.vision.isOpen) {
       // a part placed on the board has no spot in the world yet: it turns up next to you
       [...m.devices.values()].filter((d) => d.logic && !m.logicAt.has(d.id)).forEach((d) => { this.place(d.id); this.dirty(); });
@@ -373,7 +434,7 @@ export class ZoneHost {
     const d = this.model.devices.get(id);
     if (!d) return;
     this.popupAt = this.player.x;
-    this.popup.open(id, d.name, this.model.label('menu.aria', { device: d.name }), this.popupItems(id), this.seen.get(id));
+    this.popup.open(id, d.name, this.model.label('menu.aria', { device: d.name }), this.popupItems(id), this.seen.get(id), this.project ? this.room(id) : undefined);
   }
 
   private popupItems(id: string): PopupItem[] {
@@ -389,10 +450,13 @@ export class ZoneHost {
     return items;
   }
 
-  /** An everyday action: the noun's verb, exactly as a tap on it would run it. The popup stays, with the reply. */
+  /**
+   * An everyday action: the noun's verb, exactly as a tap on it would run it. The popup
+   * closes first, so the scene is free when the reaction plays (its caption, its ping).
+   */
   private everyday(dev: string, noun: string, verb: string) {
+    this.popup.close();
     this.model.act(dev, noun, verb);
-    if (this.popup.dev === dev) this.popup.fill(this.popupItems(dev));
   }
 
   /** `⌁ hack it`: hack view, this device's circuit unfolded and in view. */
@@ -427,7 +491,8 @@ export class ZoneHost {
   /** E next to a target. Returns 'exit' when the player walks out of the zone. */
   use(id: string): 'exit' | void {
     if (this.model.devices.has(id) && this.model.spots().some((s) => s.id === id)) { this.pick(id); return; }
-    return this.def.view.use?.(id, this.model, (l) => this.say(l));
+    // what the zone's own targets say (the pickup tray) stands over them
+    return this.def.view.use?.(id, this.model, (l) => this.say(l, id));
   }
 
   /** The device in the world under a point (world x, height), smaller things first. */

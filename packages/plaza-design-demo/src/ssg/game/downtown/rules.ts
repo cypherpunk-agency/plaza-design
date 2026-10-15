@@ -90,8 +90,8 @@ function drive(w: World, p: Player, inward: boolean) {
   m.later(scanMs, () => { m.set('scanned', true); m.emit('gate.scanner:matched'); w.changed(); });
   m.later(doorMs, () => {
     const through = m.get('lock') === 'open';
-    if (through) { m.emit('gate.door:passed'); w.say(w.line('dlv.passed')); }
-    else w.say(w.line('dlv.bonk'));
+    if (through) { m.emit('gate.door:passed'); w.say(w.line('dlv.passed'), 'gate'); }
+    else w.say(w.line('dlv.bonk'), 'gate');
     // through: on to the other side; bonked: back to where it came from (outside, or inside the market)
     const back = inward ? g.right + OUTSIDE : g.left - INSIDE;
     const ms = Math.max(leg(w, g.door, through ? rest : back), SIGNAL_MS);
@@ -101,7 +101,7 @@ function drive(w: World, p: Player, inward: boolean) {
       m.set('dlvAt', through === inward ? 'market' : 'gate');
       if (through && m.get('lock') === 'open' && !p.save().flags.end) {
         p.save().flags.end = true; p.persist(); p.granted();
-        w.goal('gate'); w.say(w.line('gate.end')); p.end();
+        w.goal('gate'); w.say(w.line('gate.end'), 'gate'); p.end();
       }
       w.changed();
     });

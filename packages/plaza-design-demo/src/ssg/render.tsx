@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
 import { ZONE_STYLES } from './game/zone/styles';
+import { FEEDBACK_STYLES } from './game/zone/feedback';
 import { POPUP_STYLES } from './game/zone/popup';
 
 export interface MetaConfig {
@@ -235,6 +236,9 @@ export const demoStyles = `
       font-size: var(--text-xs);
       line-height: 1.5;
     }
+
+    /* playing, not typing: the history keeps to its last three lines, so it never covers the room (ART-GUIDE §11) */
+    html.game-mode:not(:has(#term-input:focus)) #term:not(.deck) { max-height: calc(3 * 1.5em + 2 * var(--spacing-3)); }
 
     .term-line { white-space: pre-wrap; color: var(--color-text-body); }
     .term-in { color: var(--color-accent-400); }
@@ -693,6 +697,7 @@ export const demoStyles = `
     /* The zone engine's newer pieces: watchdog, conduits, meters, keyring, lock toys (game/zone/styles.ts) */
 ${ZONE_STYLES}
 ${POPUP_STYLES}
+${FEEDBACK_STYLES}
 
 
     /* ACCESS DENIED pause menu (game/menu.ts): a black CRT panel over the paused game */

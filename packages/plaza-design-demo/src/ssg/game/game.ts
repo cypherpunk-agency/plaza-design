@@ -207,7 +207,7 @@ export class Game {
   /** A zone on the hacking system, with its part of the save (`save.zones.<id>`) and the player's modules and keyring. */
   private hostZone(def: ZoneDef, print: (text: string, kind?: LineKind) => void = (text, kind) => this.term.print(text, kind)) {
     const id = def.data.id;
-    return new ZoneHost(this.host.windowEl, print, {
+    const zh = new ZoneHost(this.host.windowEl, print, {
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
@@ -219,6 +219,10 @@ export class Game {
       load: () => this.save.zones[id],
       store: (z) => { this.save.zones[id] = z; storeSave(this.save); },
     }, def);
+    // Pixel is the game's, not the zone's: lines about Pixel stand over Pixel, and popups keep clear of the cat
+    zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : null);
+    zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
+    return zh;
   }
 
   /** Downtown's lines in the deck: ACCESS DENIED and friends buzz, as the old terminal did. */
@@ -271,8 +275,8 @@ export class Game {
   private greet() {
     if (this.zone !== 'downtown') return;
     const how = this.touch
-      ? 'Every machine here has a schematic: tap it. HACK, top right, shows them all.'
-      : 'Every machine here has a schematic: E or a tap opens it. H shows them all, B is the board.';
+      ? 'Every machine here does something: tap it. HACK, top right, shows how they all work.'
+      : 'Every machine here does something: E or a tap. H shows how they all work, B is the board.';
     if (!this.save.flags.arrived) {
       this.save.flags.arrived = true; this.save.flags.schematics = true;
       const pages = ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.', how];
@@ -507,8 +511,8 @@ export class Game {
         'Capsule 7B. Home: four walls, one window, rent "pending".',
         "Door's locked, the router's dark, and Pixel is asleep on the bed, as is tradition.",
         this.touch
-          ? 'Everything here has a schematic: tap a thing to open it. HACK, top right: hack vision. BOARD: wire things up.'
-          : 'Everything here has a schematic: tap a thing to open it. H: hack vision. B: the board, to wire things up.',
+          ? 'Tap a thing to use it. HACK, top right: hack vision. BOARD: wire things up.'
+          : 'Tap a thing to use it. H: hack vision. B: the board, to wire things up.',
       ], this.p.x, 46);
     }
     if (zone === 'moth' && !this.save.flags.moth) {
@@ -533,7 +537,7 @@ export class Game {
       storeSave(this.save);
       this.say('YOU', [
         "The fixer's back yard. My parcel is in here somewhere.",
-        'Everything here has a schematic. Tap a thing to open it.',
+        'Tap a thing to use it.',
         this.touch
           ? 'HACK, top right: hack vision, every device and its guts at once. BOARD: wire them up, add timers and switches.'
           : 'H: hack vision, every device and its guts at once. B: the board, to wire them up and add timers and switches.',
@@ -577,7 +581,10 @@ export class Game {
   /** Hack vision hangs in the world: give the zone this frame's world → CSS px mapping (as `sx` and `y` draw it). */
   private followZone() {
     const s = (this.k * this.canvas.clientWidth) / this.canvas.width;
-    this.zoneHost!.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
+    const zh = this.zoneHost!;
+    // captions and the popup keep under the key bar and the HUD's lines (drawHud: ~46 world units under the bar)
+    zh.uiTop = this.keyBar.root.offsetHeight + 8 + 46 * s;
+    zh.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
   }
 
   // ---------- world logic ----------

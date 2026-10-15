@@ -167,6 +167,7 @@
       "name": "SMART PLUG",
       "look": "A smart plug with a schedule. The schedule has one rule and no doubts.",
       "everyday": [{ "noun": "power", "verb": "on", "label": "switch on" }, { "noun": "power", "verb": "off", "label": "switch off" }],
+      "affects": ["router"],
       "status": [{ "if": "plugOn", "then": "on", "else": "off" }, " · schedule: night"],
       "layout": {
         "spot": { "x": 396, "w": 18, "h": 26 },
