@@ -702,7 +702,12 @@ function placeLook(p: MapPlace, st: MapState): { col: string; name: string; note
 
 /** The city map over the whole view (vw × vh, the game's view units). */
 export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapState) {
-  const u = mapUnit(vh);
+  const u = mapUnit(vh), m = st.view;
+  // on the train, a district you don't know yet is no place to open on: pick the next stop's
+  if (st.ride && m.mode === 'view' && m.district !== UNDER && districtStage(DIDS[m.district], st) !== 'known') {
+    const d = placeOf(STATIONS[st.ride.to].scene).district ?? 'downtown', i = DIDS.indexOf(d);
+    m.district = i >= 0 && districtStage(DIDS[i], st) === 'known' ? i : DIDS.indexOf('downtown');
+  }
   x.save(); x.scale(u, u);
   // device pixels per map unit, for the cached ground
   const dpr = Math.abs(x.getTransform().a) || u;
@@ -1009,8 +1014,10 @@ function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
     if (!still) { const rr = 6 + ((st.t * 0.08) % 6); x.strokeStyle = 'rgba(255,255,255,' + (0.8 - (rr - 6) / 8).toFixed(2) + ')'; x.lineWidth = 1; x.beginPath(); x.arc(hx, hy, rr, 0, 7); x.stroke(); }
     x.fillStyle = blink ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,.4)'; x.fillRect(hx - 2, hy - 2, 5, 5);
     // (left of you where the layer labels its stops on the right)
+    // on STREET to the right; on the other layers, whose stops carry labels and chips on the right, under the dot (left of it while riding, under NEXT:)
     if (layer === 'street') plate(x, 'YOU', hx + 9, hy - 6, 'rgba(255,255,255,.95)', 7, null, 'left');
-    else plate(x, 'YOU', hx - 9, hy - 6, 'rgba(255,255,255,.95)', 7, null, 'right');
+    else if (st.ride) plate(x, 'YOU', hx - 9, hy - 6, 'rgba(255,255,255,.95)', 7, null, 'right');
+    else plate(x, 'YOU', hx, hy + 12, 'rgba(255,255,255,.95)', 7, null, 'center');
   }
 
   // the legend of the layer (city view), bottom right
