@@ -27,6 +27,29 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
    (citymap.ts), revealed as you travel (the Spire a mystery at first) ✓. Open: the district
    crop on a landscape phone, whether TAB opens your own district.
 
+## The opening: intro and tutorial (decided, Tommi 2026-10-15)
+
+The game opens on the night you are deleted. Exposition by showing: the city works for you
+once, then stops.
+
+1. **The glide (title + intro).** Launching the game shows a sunrise over the sea (retrowave
+   palms, water, parallax); the main menu appears over it. NEW GAME: the menu fades and the same
+   shot starts moving, no cut, no flicker, not skippable. The camera glides west: beach → harbor
+   (STS-2, the stacks) → the Spire's foot as a nameless silhouette → the Galleria → Downtown's
+   towers swallowing the sun → it catches LINE 0 diving into its tunnel. CONTINUE / LOAD: a cut
+   straight into the save.
+2. **The train home (teach walking, talking).** Dawn, the end of your night shift as a courier.
+   Passengers, news, ads. Nothing else to do. Get off at Downtown.
+3. **Downtown, before (the full working street).** The turnstile hesitates ("verifying… ok"),
+   the till takes your key, doors open, CONCIERGE greets you by name. Scenes take a `before`
+   state from a save flag.
+4. **The flat, the breather (teach everyday actions).** Kettle, blinds, Pixel. You sleep.
+5. **Morning: deleted.** The door says "rent: pending"; everyday actions don't help. Moth's
+   message brings `uplink.so`: hacking unlocks as the first quest. Then Capsule 7B's puzzles.
+
+Guidance: the scene leads (one way on, people facing it, signs), the GOAL line, and an **idle
+ping** on the next goal target after ~20 s standing still, in the opening scenes only for now.
+
 ## Act I: where is Moth?
 
 | # | Level | Puzzle | Place (district) | Status |
