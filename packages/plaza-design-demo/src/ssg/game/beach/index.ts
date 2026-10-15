@@ -1,5 +1,5 @@
 /**
- * The beach and SALT, its bar: a real beach at sunset, west of the harbor,
+ * The beach and SALT, its bar: a real beach along the shore from the harbor, looking east over the sea,
  * with Moth's boat moored at the end of the pier.
  *
  * Its devices (the sunbed kiosk, the jukebox, SALT's mixer, the lifeguard
@@ -40,6 +40,22 @@ export const beach: SceneDef = {
   keepFace: true,
   // a real beach, under the harbor's sky: its weather (heat by day; weather.ts climate 'beach')
   ambient: { weather: true },
+  // the beach looks east over the open sea: the sun rises out of it; at dusk it sets behind you, over the city
+  facing: 90,
+  lights: [
+    { x: 550, h: 92, kind: 'window', w: 90, hh: 24, r: 40, a: 0.8 },
+    { x: 560, h: 116, kind: 'neon', r: 50, col: '255,90,110' },
+    { x: 470, h: 64, kind: 'lamp', r: 46, col: '255,214,140' }, { x: 640, h: 64, kind: 'lamp', r: 46, col: '255,214,140' },
+    { x: L.pierLights, h: 52, kind: 'lamp', r: 52 },
+    { x: L.boat, h: 30, kind: 'neon', r: 26, col: '255,170,90', a: 0.6 },
+  ],
+  casters: [
+    { x: L.kiosk, h: 76, w: 30 },
+    { x: L.tower, h: 110, w: 34 },
+    { x: L.net, h: 46, w: 4 },
+    { x: L.castle, h: 14, w: 26 },
+    { x: L.board, h: 60, w: 6 },
+  ],
   pixel: 'along',
   data: BEACH,
   rules: BEACH_RULES,

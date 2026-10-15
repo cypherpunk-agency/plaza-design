@@ -228,9 +228,14 @@ const USES: SceneUse[] = [
 export const market: SceneDef = {
   id: 'market',
   name: 'Street Market',
+  // facing (light.ts): you look north up the market lane: the sun is always behind you; the buildings behind throw their shade
+  facing: 0,
   width: L.width,
   spawn: L.spawn,
   ambient: { sky: true, weather: true },
+  // the buildings behind you (the market looks north) throw their shade over the lane all day
+  shade: { back: { h: 170, gaps: [[560, 610], [1440, 1490]] } },
+  lights: STALLS.filter((p) => p.light && p.light !== 'none').map((p) => ({ x: p.x + p.w / 2, h: 64, kind: 'lamp' as const, r: 54, col: p.light === 'tube' ? '235,240,255' : '255,200,120' })),
   // the stool by the stalls: sit, watch the market, let time pass (TIME.md, waiting)
   rests: [{ id: 'stool', x: 250, kind: 'stool', promptH: 50 }],
   intro: ['The night market. Cash, noise and nobody looking up.'],

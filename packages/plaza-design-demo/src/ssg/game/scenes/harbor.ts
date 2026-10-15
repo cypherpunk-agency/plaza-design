@@ -22,6 +22,8 @@ import { CH, container, PAL, stack, type Crate } from '../sets/containers';
 import { drawGantry, GANTRIES } from '../sets/crane';
 import { placed } from '../sets/view';
 import { screenLine } from '../weather';
+import { light } from '../light';
+import { seaCols, sunPath } from '../sets/sky';
 
 export { CH, container, type Crate };
 
@@ -301,7 +303,11 @@ function drawHorizon(x: CanvasRenderingContext2D, v: View) {
 /** The water: dark, with slow ripples further off and a swell that runs under the lights. */
 function drawWater(x: CanvasRenderingContext2D, v: View) {
   const { y, t, gy } = v;
-  x.fillStyle = '#01040a'; x.fillRect(0, y(HZ), v.viewW, gy - y(HZ));
+  // the water takes the sky of the moment (black at night, as it always was), and the sun's path lies on it
+  const L = light(), [c0, c1, c2] = seaCols(L), wg = x.createLinearGradient(0, y(HZ), 0, gy);
+  wg.addColorStop(0, c0); wg.addColorStop(0.35, c1); wg.addColorStop(1, c2);
+  x.fillStyle = wg; x.fillRect(0, y(HZ), v.viewW, gy - y(HZ));
+  sunPath(x, v, L, y(HZ), gy);
   x.fillStyle = 'rgba(' + O + ',.12)'; x.fillRect(0, y(HZ), v.viewW, 1);
   const span = v.viewW + 40;
   for (const [rx, rh, len] of ripples) {
@@ -597,6 +603,24 @@ export const harbor: SceneDef = {
   width: L.width,
   spawn: L.spawn,
   ambient: { sky: true, weather: true },
+  // the pier runs along the shore; you look east over the water: the sun comes up out of the sea,
+  // and in the evening the sheds behind you throw their shade across the pier
+  facing: 90,
+  horizon: HZ,
+  shade: { back: { h: 150, gaps: [[640, 720], [1300, 1380], [2100, 2200]] } },
+  lights: [
+    ...L.cranes.map((c) => ({ x: c.x, h: 150, kind: 'lamp' as const, r: 80, col: '255,217,165' })),
+    { x: L.fish.x + L.fish.w / 2, h: 60, kind: 'lamp', r: 50, col: '255,200,130' },
+    { x: L.drinks.x + L.drinks.w / 2, h: 60, kind: 'lamp', r: 50 },
+    { x: L.den + 40, h: 30, kind: 'neon', r: 60, col: '255,180,100' },
+    { x: L.hut.x + 37, h: 50, kind: 'window', w: 30, hh: 20, r: 26 },
+    { x: L.beacon, h: 40, kind: 'neon', r: 30, col: '255,42,68' },
+  ],
+  casters: [
+    ...STACKS.map((st) => ({ x: st.x + 64, h: st.boxes.length * CH * 0.8, w: 128 })),
+    { x: (L.arch.x0 + L.arch.x1) / 2, h: L.arch.h, w: 16 },
+    { x: L.hut.x + L.hut.w / 2, h: L.hut.h, w: L.hut.w },
+  ],
   intro: ['The harbor. Everything here is in a box, and nobody asks what.'],
   exits: [
     { id: 'metro', x: L.metro, to: 'harborStation', at: 'harbor', label: '[E] TO THE METRO', promptH: 82 },

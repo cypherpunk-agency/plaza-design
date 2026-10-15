@@ -9,6 +9,12 @@
  * Built from the kits: people (../characters.ts), screens (screens.ts), shelves and fridges (build.ts).
  */
 
+import { light } from '../light';
+import { drawPane, windowShaft } from '../sets/sky';
+import { drawGrade } from '../sets/lighting';
+
+/** The shop is on the street's east side: its window looks west (light.ts facing). */
+const SHOP_FACING = 270;
 import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { fridge, shelf, type ShelfSpec } from './build';
 import { box, C, exitDoor, O, onScreen, PAPER, rng, tell, text, type SceneDef, type ItemId, type SceneUse, type View } from './kit';
@@ -160,6 +166,8 @@ function mirror(x: CanvasRenderingContext2D, v: View) {
 export const shop: SceneDef = {
   id: 'shop',
   name: 'Corner Shop',
+  // facing (light.ts): on the street's east side: its window looks west across Downtown's street
+  facing: 270,
   width: L.width,
   spawn: L.spawn,
   intro: ['A corner shop. The kind that never closes and never has change.'],
@@ -194,19 +202,21 @@ export const shop: SceneDef = {
     // far band: the street through the window, people passing in the rain
     const W = L.window, wx = sx(W.x), top = y(W.h1), wh = W.h1 - W.h0;
     if (onScreen(v, wx, W.w)) {
-      box(x, wx, top, W.w, wh, '#04060a');
+      // the street outside at this hour (sets/sky.ts: the window looks west across Downtown's street)
+      const lt = light();
       x.save(); x.beginPath(); x.rect(wx, top, W.w, wh); x.clip();
-      x.fillStyle = '#080402'; x.fillRect(wx + 6, top + 18, 20, wh); x.fillRect(wx + 34, top + 8, 28, wh); x.fillRect(wx + 66, top + 26, 20, wh);
-      x.fillStyle = 'rgba(255,136,0,.25)'; x.fillRect(wx + 40, top + 16, 2, 2); x.fillRect(wx + 50, top + 30, 2, 2); x.fillRect(wx + 12, top + 28, 2, 2);
+      drawPane(x, wx, top, W.w, wh, lt, { facing: SHOP_FACING, seed: 51, towers: [[0.07, 0.25, 0.22], [0.42, 0.35, 0.1], [0.82, 0.25, 0.32]], horizon: 0.5 });
       drawCharacters(x, v, OUTSIDE);
+      drawGrade(x, v, lt, true);
       x.strokeStyle = 'rgba(170,210,255,.25)';
-      for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % wh; x.beginPath(); x.moveTo(wx + rx, top + yy); x.lineTo(wx + rx - 1, top + yy + 4); x.stroke(); }
+      if ((lt.w?.rain ?? 0) > 0.05) for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % wh; x.beginPath(); x.moveTo(wx + rx, top + yy); x.lineTo(wx + rx - 1, top + yy + 4); x.stroke(); }
       x.restore();
       x.strokeStyle = 'rgba(' + O + ',.8)'; x.strokeRect(wx + 0.5, top + 0.5, W.w - 1, wh - 1);
       x.fillStyle = 'rgba(' + O + ',.8)'; x.fillRect(wx + W.w / 2, top, 1, wh);
       text(x, 'NEPO', wx + W.w / 2, top + wh - 10, 'rgba(255,136,0,.6)', 8, '600');
       box(x, wx + 22, top + wh - 30, W.w - 44, 11, 'rgba(255,217,165,.18)', 'rgba(' + PAPER + ',.4)');
       text(x, '24/7', wx + W.w / 2, top + wh - 24.5, 'rgba(' + PAPER + ',.85)', 7, '600');
+      windowShaft(x, { l: wx, r: wx + W.w, t: top, b: y(W.h0) }, y(0), Math.min(v.viewH, y(0) + 16), lt, SHOP_FACING);
     }
     exitDoor(x, v, 32, '#0a0603');
     mirror(x, v);

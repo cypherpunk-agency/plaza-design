@@ -1,5 +1,6 @@
 /**
- * The beach on the canvas: a real beach at sunset, west of the harbor. Sand
+ * The beach on the canvas: a real beach looking east over the sea (the sun rises out of it;
+ * the sky and the light are the city clock's: sets/sky.ts, sets/lighting.ts), along the shore from the harbor. Sand
  * down to the waterline, the open sea with waves rolling in, a wide sky, and
  * the city's towers small and far off along the shore. The city is in the
  * details: a rental kiosk that bills by the minute, a Registry drone checking
@@ -24,10 +25,12 @@
 import type { DrawView } from '../engine/host';
 import type { SceneModel } from '../engine/model';
 import { drawCharacters, drawCharacter, type Character } from '../characters';
-import { box, C, drawTowers, GREEN, O, onScreen, PAPER, RED, rng, tell, text, towers, type View } from '../scenes/kit';
+import { box, C, drawTowers, GREEN, O, onScreen, PAPER, RED, tell, text, towers, type View } from '../scenes/kit';
 import { adScreen, menuBoard, registryBoard, YELLOW } from '../scenes/screens';
 import { SALT, saltLights, saltShell, saltUnder } from '../sets/beach-bar';
 import { placed } from '../sets/view';
+import { drawSky, seaCols, sunPath } from '../sets/sky';
+import { light } from '../light';
 
 /** The beach: the promenade, the sand, then the pier out to Moth's boat. */
 export const BEACH_W = 1530;
@@ -144,42 +147,16 @@ export const CRAB = { n: 0 };
 
 const CITY = towers(41, 300, [4, 10], [8, 26], 0.3);
 
+/** The sky of the moment (sets/sky.ts: the sun and the moon where they really are; the beach looks east over the sea), and long thin clouds lit from below. */
 function sky(x: CanvasRenderingContext2D, V: View, p: number) {
-  const hy = V.y(HORIZON);
-  const g = x.createLinearGradient(0, 0, 0, hy);
-  g.addColorStop(0, mix([58, 34, 92], [14, 10, 36], p));
-  g.addColorStop(0.55, mix([200, 92, 70], [92, 36, 78], p));
-  g.addColorStop(1, mix([255, 184, 104], [228, 98, 62], p));
-  x.fillStyle = g; x.fillRect(0, 0, V.viewW, hy + 1);
-  // stars as the light goes
-  if (p > 0.3) {
-    const r = rng(17);
-    for (let i = 0; i < 50; i++) {
-      const sx = ((r() * 2400 - V.cam * 0.04) % 2400 + 2400) % 2400, sy = r() * (hy * 0.55);
-      if (sx > V.viewW) continue;
-      x.fillStyle = 'rgba(255,230,200,' + ((p - 0.3) * (0.3 + r() * 0.5)).toFixed(2) + ')'; x.fillRect(sx, sy, 1, 1);
-    }
-  }
-  // long thin clouds, lit from below
+  const hy = V.y(HORIZON), L = light();
+  drawSky(x, V, L, { horizon: hy, fillTo: hy + 1 });
+  const k = 1 - L.cover * 0.6;
   for (let i = 0; i < 5; i++) {
     const cw = 80 + hash(i) * 120, cx = ((hash(i + 3) * 1400 - V.cam * 0.08 + V.t * 0.01 * (1 + i * 0.2)) % 1600 + 1600) % 1600 - 200, cy = hy * (0.25 + hash(i + 7) * 0.5);
-    x.fillStyle = mix([255, 170, 120], [150, 70, 100], p, 0.22); x.fillRect(Math.round(cx), Math.round(cy), Math.round(cw), 2);
-    x.fillStyle = mix([255, 210, 160], [200, 90, 90], p, 0.18); x.fillRect(Math.round(cx + cw * 0.2), Math.round(cy + 2), Math.round(cw * 0.5), 1);
+    x.fillStyle = mix([255, 170, 120], [150, 70, 100], p, 0.22 * k); x.fillRect(Math.round(cx), Math.round(cy), Math.round(cw), 2);
+    x.fillStyle = mix([255, 210, 160], [200, 90, 90], p, 0.18 * k); x.fillRect(Math.round(cx + cw * 0.2), Math.round(cy + 2), Math.round(cw * 0.5), 1);
   }
-}
-
-/** The sun, sinking: `p` 0 (low and gold) → 1 (gone under the horizon). */
-function sun(x: CanvasRenderingContext2D, V: View, p: number) {
-  const cx = V.sx(980, 0.05), sy = V.y(HORIZON + 40 - 58 * p), hy = V.y(HORIZON);
-  const g = x.createRadialGradient(cx, sy, 4, cx, sy, 120);
-  g.addColorStop(0, 'rgba(255,200,120,' + (0.4 * (1 - p * 0.6)) + ')'); g.addColorStop(1, 'rgba(255,140,80,0)');
-  x.fillStyle = g; x.fillRect(cx - 130, sy - 130, 260, Math.max(0, hy - (sy - 130)));
-  x.save(); x.beginPath(); x.rect(0, 0, V.viewW, hy); x.clip();
-  x.fillStyle = mix([255, 224, 150], [255, 120, 70], p); x.beginPath(); x.arc(cx, sy, 15, 0, 7); x.fill();
-  // heat bands across the low sun
-  x.fillStyle = mix([255, 170, 110], [210, 70, 70], p, 0.6);
-  for (let k = 0; k < 3; k++) x.fillRect(cx - 16, sy + 4 + k * 4, 32, 1);
-  x.restore();
 }
 
 /** The city, far off along the shore to the west: thin towers, a few windows, the antenna. */
@@ -199,18 +176,15 @@ function city(x: CanvasRenderingContext2D, V: View, p: number) {
 /** The sea: bands of colour, the sun's glitter, swell lines rolling in, swimmers, a surfer, the buoy. */
 function sea(x: CanvasRenderingContext2D, V: View, p: number, red: boolean) {
   const top = V.y(HORIZON), bot = V.y(WATERLINE), h = bot - top;
+  // the water takes the sky's colours (sets/sky.ts seaCols), a little warmer near the shore
+  const L = light(), [c0, c1, c2] = seaCols(L);
   const g = x.createLinearGradient(0, top, 0, bot);
-  g.addColorStop(0, mix([150, 84, 92], [70, 32, 70], p)); g.addColorStop(0.4, mix([60, 48, 84], [28, 18, 46], p)); g.addColorStop(1, mix([34, 52, 72], [16, 22, 40], p));
+  g.addColorStop(0, c0); g.addColorStop(0.4, c1); g.addColorStop(1, c2);
   x.fillStyle = g; x.fillRect(0, top, V.viewW, h + 1);
+  x.fillStyle = mix([150, 84, 92], [70, 32, 70], p, 0.25); x.fillRect(0, top, V.viewW, h + 1);
   x.fillStyle = mix([255, 210, 150], [255, 140, 90], p, 0.5); x.fillRect(0, top, V.viewW, 1);
-  // the sun's path on the water
-  const cx = V.sx(980, 0.05), glit = 0.55 * (1 - p * 0.7);
-  for (let yy = top + 2; yy < bot; yy += 2) {
-    const f = (yy - top) / h, w = 6 + f * 50, k = hash(yy * 3 + Math.floor(V.t / 9));
-    if (k < 0.45) continue;
-    x.fillStyle = 'rgba(255,214,150,' + (glit * (1 - f * 0.7) * k).toFixed(2) + ')';
-    x.fillRect(Math.round(cx - w / 2 + (k - 0.7) * w), yy, Math.round(w * (0.2 + k * 0.3)), 1);
-  }
+  // the sun's path on the water, under the sun (or the moon's at night)
+  sunPath(x, V, L, top, bot);
   // swell lines, rolling in: further rows are slower and fainter
   const N = 9;
   for (let i = 0; i < N; i++) {
@@ -667,22 +641,16 @@ function glow(x: CanvasRenderingContext2D, l: number, t: number, w: number, h: n
 
 // ---------- the whole place ----------
 
-/** When the sun started setting on this visit (frames), so every visit has its sunset. */
-let since = { at: 0, last: -10 };
-
 /** Draw the beach. `hover`: the device under the pointer. */
 export function drawBeach(x: CanvasRenderingContext2D, m: SceneModel, d: DrawView, hover: string | null) {
   // the character kit and the sign kit want a scene view: the same camera, with parallax
   const cam = -d.sx(0);
   const V: View = { sx: (wx, par = 1) => Math.round(wx - cam * par), y: d.y, t: d.t, viewW: d.viewW, viewH: d.viewH, cam, gy: d.y(0), flags: {} };
-  if (d.t < since.last || d.t - since.last > 30) since.at = d.t;
-  since.last = d.t;
-  // the sun sets over twelve minutes, from a low gold sun to dusk
-  const p = Math.min(1, 0.12 + (d.t - since.at) / (60 * 60 * 12));
+  // how far the light has gone (0 day … 1 night), from the city clock (light.ts): the sand, the boards and the wash follow it
+  const p = Math.min(1, light().night * 0.9 + (1 - light().daylight) * 0.1);
   const red = m.get('flag') === 'danger';
 
   sky(x, V, p);
-  sun(x, V, p);
   city(x, V, p);
   sea(x, V, p, red);
   shore(x, V, p);
@@ -712,6 +680,5 @@ export function drawBeach(x: CanvasRenderingContext2D, m: SceneModel, d: DrawVie
   drawCharacter(x, V, PEOPLE[PEOPLE.length - 1]);
   postGull(x, V);
   foreground(x, V, m, p);
-  // the light goes: a dusk wash over everything but the lamps, deeper as the sun goes down
-  if (p > 0.4) { x.fillStyle = 'rgba(20,8,40,' + ((p - 0.4) * 0.25).toFixed(2) + ')'; x.fillRect(0, 0, V.viewW, V.viewH); }
+  // the rest of the light (the grade by the hour, the lamps' glow) is the engine's: sets/lighting.ts
 }

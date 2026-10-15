@@ -23,6 +23,8 @@ export { LAUNDROMAT_RULES, MAGLEV_PASS, P13_FLAG, RIGHT_GLOVE } from './rules';
 export const laundromat: SceneDef = {
   id: 'laundromat',
   name: 'the laundromat',
+  // facing (light.ts): the front window looks south onto the market: sun most of the day
+  facing: 180,
   width: LAUNDROMAT_W,
   spawn: L.spawn,
   exits: [{ id: 'market', x: L.door, to: 'market', at: 'laundromat', label: '[E] MARKET', promptH: 82 }],

@@ -12,6 +12,8 @@
  *   canopy on steel posts; play = platform, board, benches, the gate to the pier.
  */
 
+import { light } from '../light';
+import { seaCols, sunPath } from '../sets/sky';
 import { harborOpen, type Station } from '../city';
 import { box, C, drawTowers, notice, O, onScreen, PAPER, RED, reflect, rng, tell, text, towers, type SceneDef, type View } from './kit';
 import { drawDepartures, drawPlatformTrain, platformQueue, STOP, TRAIN } from './line';
@@ -253,6 +255,8 @@ function drawSnacks(x: CanvasRenderingContext2D, v: View, wx: number) {
 export const galleriaStation: SceneDef = {
   id: 'galleriaStation',
   name: 'Galleria metro',
+  // facing (light.ts): under the Galleria
+  facing: 180,
   width: G.width,
   spawn: G.spawn,
   rests: G.benches.map((b, i) => ({ id: 'bench' + i, x: b.x - (b.who ? 12 : 0), kind: 'bench' as const })),
@@ -337,7 +341,10 @@ function drawWaterfront(x: CanvasRenderingContext2D, v: View) {
     x.stroke(); x.lineWidth = 1;
     x.fillStyle = 'rgba(' + RED + ',' + (Math.sin(t * 0.04 + ph) > 0 ? 0.7 : 0.15) + ')'; x.fillRect(s - 7, hz - ch - 3, 3, 3);
   }
-  x.fillStyle = '#01040a'; x.fillRect(0, hz, v.viewW, y(H.wall) - hz);
+  const lt = light(), [c0, c1, c2] = seaCols(lt), wg = x.createLinearGradient(0, hz, 0, y(H.wall));
+  wg.addColorStop(0, c0); wg.addColorStop(0.4, c1); wg.addColorStop(1, c2);
+  x.fillStyle = wg; x.fillRect(0, hz, v.viewW, y(H.wall) - hz);
+  sunPath(x, v, lt, hz, y(H.wall));
   x.fillStyle = 'rgba(' + O + ',.12)'; x.fillRect(0, hz, v.viewW, 1);
   const span = v.viewW + 40;
   for (const [rx, d, len] of H_RIPPLES) {
@@ -397,10 +404,13 @@ function drawGate(x: CanvasRenderingContext2D, v: View, wx: number) {
 export const harborStation: SceneDef = {
   id: 'harborStation',
   name: 'Harbor metro',
+  // facing (light.ts): open air on the waterfront, looking east over the water
+  facing: 90,
   width: H.width,
   spawn: H.spawn,
   rests: H.benches.map((b, i) => ({ id: 'bench' + i, x: b.x - (b.who ? 12 : 0), kind: 'bench' as const })),
   ambient: { sky: true, weather: true, covers: [{ from: -60, to: H.width + 60, under: H.canopy.under }] },
+  horizon: H.horizon,
   intro: ['The Harbor metro. Salt, diesel, and a timetable nobody believes.'],
   exits: [
     { id: 'harbor', x: H.exit, to: 'harbor', at: 'metro', label: '[E] GATE · HARBOR PIER', promptH: 92 },

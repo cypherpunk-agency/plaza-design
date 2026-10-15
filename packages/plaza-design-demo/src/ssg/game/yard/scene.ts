@@ -5,6 +5,7 @@
  * vision) is in yard.json (`layout.spot`); this draws them there.
  */
 
+import { light } from '../light';
 import type { SceneModel } from '../engine/model';
 import type { ParcelAt } from './effects';
 
@@ -60,9 +61,10 @@ export function drawYardBackdrop(x: CanvasRenderingContext2D, v: View & { viewH:
   const sky = x.createLinearGradient(0, 0, 0, 34);
   sky.addColorStop(0, 'rgba(255,100,0,0)'); sky.addColorStop(1, 'rgba(255,100,0,.08)');
   x.fillStyle = sky; x.fillRect(0, 0, viewW, 34);
-  for (let i = 0; i < 18; i++) {
+  const night = light().night * (1 - light().cover);
+  for (let i = 0; i < 18 && night > 0.05; i++) {
     const px = ((hash(i * 3 + 1) * viewW + sx(0) * 0.05) % viewW + viewW) % viewW;
-    x.fillStyle = 'rgba(255,217,165,' + (0.15 + hash(i * 3 + 3) * 0.3) + ')';
+    x.fillStyle = 'rgba(255,217,165,' + ((0.15 + hash(i * 3 + 3) * 0.3) * night).toFixed(3) + ')';
     x.fillRect(Math.round(px), 1 + Math.floor(hash(i * 3 + 2) * 12), 1, 1);
   }
 

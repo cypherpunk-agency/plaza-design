@@ -21,6 +21,8 @@ import type { Player } from '../downtown/rules';
 import type { EngineDraw, Line, SceneModel, SceneRules, SceneTarget } from '../engine';
 import type { PanelFn } from '../engine/panels';
 import type { WeatherKind } from '../weather';
+import type { Caster, SceneLight, Shade } from '../sets/lighting';
+import { windowLit } from '../light';
 
 /** What a scene's draw functions get from the engine, refreshed every frame. */
 export interface View {
@@ -188,6 +190,29 @@ export interface SceneDef {
    * `covers`, roofs it doesn't rain under (a platform's canopy): world x from/to and the underside's height.
    */
   ambient?: { sky?: boolean; city?: boolean; street?: boolean; weather?: boolean; covers?: { from: number; to: number; under: number }[] };
+
+  // ---------- light (TIME.md "Light"; ART-GUIDE §8; light.ts, sets/sky.ts, sets/lighting.ts) ----------
+
+  /**
+   * The compass direction the view looks toward (degrees: 0 north, 90 east, the sea). Sets where the
+   * sun and the moon stand in this scene's sky and which way shadows fall. Interiors: where their
+   * windows look out. Default 180.
+   */
+  facing?: number;
+  /**
+   * Outdoors (default: when `ambient.weather` or `ambient.sky`): the sky, the grade and cast shadows
+   * apply. `false` for an interior, which gets the outside light through its windows (`drawPane`,
+   * `windowShaft`).
+   */
+  outdoor?: boolean;
+  /** The horizon's height over the ground (world units) for the engine's sky (`ambient.sky`); default 0. */
+  horizon?: number;
+  /** Light sources on the light layer (sets/lighting.ts `SceneLight`): lamps, windows, neon, screens. */
+  lights?: SceneLight[];
+  /** Key props that cast a shadow (people, robots and animals cast theirs anyway). */
+  casters?: Caster[];
+  /** The buildings that shade the street (shadows C): behind you, in front, with gaps. */
+  shade?: Shade;
   /**
    * Places to sit or lie down and let time pass (TIME.md "Waiting"): E offers "wait until…" (the
    * next hour, dusk, night, morning). `bed` sleeps.
@@ -362,7 +387,8 @@ export function drawTowers(x: CanvasRenderingContext2D, v: View, list: Tower[], 
     for (let k = 0; k * b.h < h; k++) {
       const off = top + k * b.h;
       if (off > v.viewH || off + b.h < 0) continue;
-      for (let i = 0; i < b.lit.length; i += 2) if (b.lit[i + 1] + k * b.h < h - 4) x.fillRect(sx + b.lit[i], off + b.lit[i + 1], win, win);
+      // the windows follow the city's clock (light.ts windowLit): on one by one at dusk, some off after midnight
+      for (let i = 0; i < b.lit.length; i += 2) if (b.lit[i + 1] + k * b.h < h - 4 && windowLit(b.x * 31 + i + k * 7)) x.fillRect(sx + b.lit[i], off + b.lit[i + 1], win, win);
     }
   }
 }

@@ -1,14 +1,15 @@
 /**
  * Downtown station: an elevated platform on a viaduct, open to the city. A
  * train pulls in, opens its doors and leaves, on a loop. Bands: far = the
- * skyline at night (../skyline.ts, the intro's city, dimmed: the banded sun low
- * between the towers, the antenna, rooftop cables with packets, beacons, the
+ * city clock's sky (sets/sky.ts: the platform looks west, so the slatted sun sets
+ * here) behind the skyline (../skyline.ts, the intro's city, dimmed: the antenna, rooftop cables with packets, beacons, the
  * star mesh, ships); middle = the viaduct's far railing, the canopy roof on its
  * pillars, the girder and piers under the deck; play = the track and the train,
  * the platform, the departure board, signs, benches, the stairs.
  */
 
 import { Skyline } from '../skyline';
+import { light } from '../light';
 import { box, notice, O, onScreen, PAPER, RED, rng, tell, text, type SceneDef, type View } from './kit';
 import { drawDepartures, drawPlatformTrain, STOP } from './line';
 import type { RiderKind } from './riders';
@@ -56,11 +57,14 @@ function drawCity(x: CanvasRenderingContext2D, v: View) {
   city.draw(
     x,
     { W, H, top: 0, horizon, sky: Math.min(horizon, 400), sunX: W * 0.58, camMax: Math.round(L.width * SKY_PAR) },
-    { cam: Math.max(0, Math.round(v.cam * SKY_PAR)), a: v.t, k, still: false, floor: false, rain: 0 },
+    // over the city clock's sky (the engine draws it: ambient.sky; no banded sun of its own any more)
+    { cam: Math.max(0, Math.round(v.cam * SKY_PAR)), a: v.t, k, still: false, floor: false, rain: 0, over: { stars: light().night } },
   );
-  x.fillStyle = 'rgba(2,1,0,' + SKY_DIM + ')'; x.fillRect(0, 0, v.viewW, v.viewH);
+  // dimmed so the platform reads first: at night as before, by day much less (the day's sky stays a sky)
+  const dim = SKY_DIM * (1 - 0.75 * light().daylight);
+  x.fillStyle = 'rgba(2,1,0,' + dim.toFixed(3) + ')'; x.fillRect(0, 0, v.viewW, v.viewH);
   // over the roof, calmer still: the star mesh and the beams must not pull the eye off the platform
-  x.fillStyle = 'rgba(2,1,0,.3)'; x.fillRect(0, 0, v.viewW, Math.max(0, v.y(L.canopy.truss)));
+  x.fillStyle = 'rgba(2,1,0,' + (0.3 * (1 - 0.7 * light().daylight)).toFixed(3) + ')'; x.fillRect(0, 0, v.viewW, Math.max(0, v.y(L.canopy.truss)));
 }
 
 /** Street lights far below the viaduct, seen between the piers: [x, depth]. */
@@ -240,9 +244,13 @@ function drawDeck(x: CanvasRenderingContext2D, v: View) {
 export const metro: SceneDef = {
   id: 'metro',
   name: 'Downtown metro',
+  // facing (light.ts): the elevated platform looks west over the city: the sunset
+  facing: 270,
   width: L.width,
   spawn: L.spawn,
-  ambient: { weather: true, covers: [{ from: -60, to: L.width + 60, under: L.canopy.under }] },
+  ambient: { sky: true, weather: true, covers: [{ from: -60, to: L.width + 60, under: L.canopy.under }] },
+  horizon: L.horizon,
+  lights: L.lamps.map((wx) => ({ x: wx, h: L.canopy.under - 4, kind: 'lamp' as const, r: 60, col: '255,230,190' })),
   // the benches: sit and let the trains go by (TIME.md, waiting)
   rests: L.benches.map((b, i) => ({ id: 'bench' + i, x: b.x - (b.who ? 12 : 0), kind: 'bench' as const })),
   intro: ['The metro. One line, three stops, round and round. Getting off at the right one is my problem.'],

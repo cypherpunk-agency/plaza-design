@@ -20,6 +20,8 @@ export const PARCEL = ['moth.key', 'uplink'];
 export const yard: SceneDef = {
   id: 'yard',
   name: 'the back yard',
+  // facing (light.ts): through the alley, east of the street: the strip of sky over the roofs sees the dawn
+  facing: 90,
   width: YARD_W,
   spawn: YARD_SPAWN,
   // the way out is the open passage at the left edge: walk into it, no E
@@ -32,7 +34,7 @@ export const yard: SceneDef = {
       : 'H: hack vision, every device and its guts at once. B: the board, to wire them up and add timers and switches.',
   ],
   // boxed in by the backs of houses: no city behind the yard, the street's floor and the rain
-  ambient: { street: true, weather: true },
+  ambient: { sky: true, street: true, weather: true },
   keepFace: true,
   pixel: 'along',
   data: YARD,

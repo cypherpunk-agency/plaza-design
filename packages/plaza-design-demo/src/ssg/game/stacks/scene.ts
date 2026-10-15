@@ -19,6 +19,8 @@
  * carries is rules.ts (`trolley`), so the gate's timing and the picture agree.
  */
 
+import { light } from '../light';
+import { seaCols, sunPath } from '../sets/sky';
 import { drawCharacter, drawCharacters, type Character } from '../characters';
 import type { EngineDraw } from '../engine/host';
 import type { SceneModel } from '../engine/model';
@@ -101,7 +103,9 @@ export const PEOPLE: Character[] = [gatekeeper, inspector, signaller, lasher, ta
 
 const SKYLINE = towers(57, 1700, [16, 40], [18, 66], 0.08);
 const ripples: [number, number, number][] = (() => { const r = rng(61); return Array.from({ length: 90 }, () => [r() * 2000, 4 + r() * 70, 4 + r() * 14]); })();
-const HZ = 76;
+/** The bay horizon (the engine sky sets the sun on it). */
+export const STACKS_HZ = 76;
+const HZ = STACKS_HZ;
 
 /** The bay: water to the horizon, the far city, the Spire standing in the water with its antenna, ships. */
 function farBand(x: CanvasRenderingContext2D, v: View, m: SceneModel) {
@@ -111,7 +115,11 @@ function farBand(x: CanvasRenderingContext2D, v: View, m: SceneModel) {
   const sp = v.sx(1500, 0.1);
   if (onScreen(v, sp - 80, 200)) placed(x, sp, y(HZ), 1, () => drawSpire(x, { t }));
   // the water
-  x.fillStyle = '#01040a'; x.fillRect(0, y(HZ), v.viewW, v.gy - y(HZ));
+  // the water takes the sky of the moment (black at night), the sun's or the moon's path on it (sets/sky.ts)
+  const lt = light(), [c0, c1, c2] = seaCols(lt), wg = x.createLinearGradient(0, y(HZ), 0, v.gy);
+  wg.addColorStop(0, c0); wg.addColorStop(0.35, c1); wg.addColorStop(1, c2);
+  x.fillStyle = wg; x.fillRect(0, y(HZ), v.viewW, v.gy - y(HZ));
+  sunPath(x, v, lt, y(HZ), v.gy);
   x.fillStyle = 'rgba(' + O + ',.1)'; x.fillRect(0, y(HZ), v.viewW, 1);
   const span = v.viewW + 40;
   for (const [rx, rh, len] of ripples) {

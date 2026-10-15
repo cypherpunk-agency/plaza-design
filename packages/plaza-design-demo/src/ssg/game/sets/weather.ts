@@ -26,6 +26,8 @@ export interface WeatherLook {
   still?: boolean;
   /** Roofs it doesn't rain under, in screen units: x from, x to, the underside's y. */
   covers?: [number, number, number][];
+  /** Daylight (0 night … 1 day, light.ts): the cloud deck goes from city-lit dark to grey. */
+  day?: number;
 }
 
 const rnd = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -46,11 +48,13 @@ function lightning(o: WeatherLook): { age: number; at: number; seed: number } {
 export function weatherSky(x: CanvasRenderingContext2D, v: View, o: WeatherLook) {
   const w = o.w, top = v.gy;
   if (w.cloud > 0.02) {
+    const d = o.day ?? 0, mc = (n: number[], dd: number[]) => n.map((c, i) => Math.round(c + (dd[i] - c) * d)).join(',');
     const g = x.createLinearGradient(0, 0, 0, top);
-    g.addColorStop(0, 'rgba(14,12,20,' + 0.75 * w.cloud + ')');
-    g.addColorStop(0.7, 'rgba(26,18,26,' + 0.45 * w.cloud + ')');
-    g.addColorStop(1, 'rgba(60,34,30,' + 0.2 * w.cloud + ')');
+    g.addColorStop(0, 'rgba(' + mc([14, 12, 20], [96, 98, 108]) + ',' + 0.75 * w.cloud + ')');
+    g.addColorStop(0.7, 'rgba(' + mc([26, 18, 26], [128, 128, 136]) + ',' + 0.45 * w.cloud + ')');
+    g.addColorStop(1, 'rgba(' + mc([60, 34, 30], [150, 146, 146]) + ',' + 0.2 * w.cloud + ')');
     x.fillStyle = g; x.fillRect(0, 0, v.viewW, top);
+    const puff = mc([70, 46, 52], [170, 170, 178]);
     // the deck's underside, lit orange by the city below, drifting with the wind
     const drift = o.t * (0.04 + 0.25 * w.wind);
     for (let i = 0; i < 9; i++) {
@@ -58,7 +62,7 @@ export function weatherSky(x: CanvasRenderingContext2D, v: View, o: WeatherLook)
       const cy = top * (0.1 + rnd(i + 3) * 0.45), rx = 90 + rnd(i + 5) * 120, ry = 14 + rnd(i + 7) * 16;
       x.save(); x.translate(cx, cy); x.scale(1, ry / rx);
       const b = x.createRadialGradient(0, 0, 0, 0, 0, rx);
-      b.addColorStop(0, 'rgba(70,46,52,' + 0.3 * w.cloud + ')'); b.addColorStop(1, 'rgba(70,46,52,0)');
+      b.addColorStop(0, 'rgba(' + puff + ',' + 0.3 * w.cloud + ')'); b.addColorStop(1, 'rgba(' + puff + ',0)');
       x.fillStyle = b; x.fillRect(-rx, -rx, rx * 2, rx * 2);
       x.restore();
     }

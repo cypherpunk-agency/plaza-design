@@ -63,6 +63,7 @@ import type { View } from './scenes/kit';
 import { city } from './clock';
 import type { TimeWindow } from './data/types';
 import { hereClimate, weatherNow, type WeatherKind } from './weather';
+import { castShadow } from './sets/lighting';
 
 export type Body = 'avg' | 'tall' | 'short' | 'wide' | 'slim' | 'kid' | 'old';
 export type Hair = 'bald' | 'short' | 'long' | 'bun' | 'mohawk' | 'cap' | 'beanie' | 'hood' | 'brim' | 'helmet' | 'scarf';
@@ -1025,6 +1026,10 @@ export function drawCharacter(x: CanvasRenderingContext2D, v: View, p: Character
   // a glitching robot jumps a pixel or two, now and then
   const glitch = bot && (act === 'glitch' ? tt % 90 < 10 : bot.glitchy && tt % 400 < 14);
   const left = Math.round(sx - CX * ps - ps / 2) - 1 + (glitch ? ((tt * 7) % 5) - 2 : 0), topY = Math.round(v.y(hDraw)) - H * ps - 1;
+  // the shadow first (sets/lighting.ts): cast along the ground by the sun (or away from a lamp at night), a contact patch always
+  const fly = bot ? BOT[bot.kind].fly ?? 0 : 0, sw = ps * (bot ? 6 : crit ? 3 : 4);
+  if (fly) castShadow(x, v, f.x, 6, sw * 0.6, p.h ?? 0, p.parallax ?? 1, 0.6);
+  else castShadow(x, v, f.x, p.act === 'sleep' ? ps * 3 : characterHeight(p) - (p.h ?? 0), sw, hDraw - f.bob, p.parallax ?? 1, p.dim ?? 0);
   x.drawImage(b.c, left, topY);
   if (p.dim && p.dim > 0.4) return;
   // live effects, from the baked hand and mouth

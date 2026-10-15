@@ -16,6 +16,8 @@
  * draws them there.
  */
 
+import { light, windowLit } from '../light';
+import { drawPane, glass, windowShaft } from '../sets/sky';
 import type { DrawView } from '../engine/host';
 import type { SceneModel } from '../engine/model';
 import { box, C, GREEN, O, PAPER, RED, RUST, text, tell } from '../scenes/kit';
@@ -82,19 +84,24 @@ function drawBuilding(x: CanvasRenderingContext2D, v: DrawView) {
   }
 }
 
+/** Moth's window looks west over the street (light.ts facing). */
+export const MOTH_FACING = 270;
+
 /** The street through the window: rain, the block across the road, a sign, and now and then a Registry drone looking in. */
 function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: number, h: number, t: number) {
   x.save();
   x.beginPath(); x.rect(l, top, w, h); x.clip();
-  const sky = x.createLinearGradient(0, top, 0, top + h);
-  sky.addColorStop(0, '#07060f'); sky.addColorStop(1, '#1a0d12');
-  x.fillStyle = sky; x.fillRect(l, top, w, h);
-  // the block across the road: a wall of windows, some lit
+  // the sky of the moment over the block (sets/sky.ts; the window looks west: the evening sun)
+  const lt = light();
+  drawPane(x, l, top, w, h, lt, { facing: MOTH_FACING, seed: 41, towers: false, horizon: 0.3 });
+  // the block across the road: a wall of windows, lit by the clock; by day the wall takes the light
   x.fillStyle = '#0d0709'; x.fillRect(l, top + 8, w, h - 8);
+  const [gc, ga] = glass(lt);
+  if (lt.daylight > 0.05) { x.fillStyle = 'rgba(120,96,88,' + (0.35 * lt.daylight).toFixed(3) + ')'; x.fillRect(l, top + 8, w, h - 8); }
   for (let yy = top + 12; yy < top + h - 4; yy += 9) for (let xx = l + 3; xx < l + w - 4; xx += 8) {
-    const n = hash(xx * 7 + yy * 3);
-    if (n < 0.3) { x.fillStyle = n < 0.08 ? 'rgba(150,170,220,.35)' : 'rgba(255,170,90,.4)'; x.fillRect(xx, yy, 4, 5); }
-    else { x.fillStyle = 'rgba(' + RUST + ',.12)'; x.fillRect(xx, yy, 4, 5); }
+    const n = hash(xx * 7 + yy * 3), seed = Math.round((xx - l) * 7 + (yy - top) * 3);
+    if (n < 0.45 && windowLit(seed)) { x.fillStyle = n < 0.08 ? 'rgba(150,170,220,.35)' : 'rgba(255,170,90,.4)'; x.fillRect(xx, yy, 4, 5); }
+    else { x.fillStyle = ga > 0.05 ? 'rgba(' + gc + ',' + (ga * 0.8).toFixed(3) + ')' : 'rgba(' + RUST + ',.12)'; x.fillRect(xx, yy, 4, 5); }
   }
   // a pharmacy cross on the block's corner, on its bracket
   const px = l + w - 14, py = top + 20;
@@ -111,9 +118,10 @@ function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: num
     g.addColorStop(0, 'rgba(255,42,68,.22)'); g.addColorStop(1, 'rgba(255,42,68,0)');
     x.fillStyle = g; x.beginPath(); x.moveTo(dx - 1, dy + 4); x.lineTo(dx + 1, dy + 4); x.lineTo(dx + 12, dy + 40); x.lineTo(dx - 12, dy + 40); x.closePath(); x.fill();
   }
-  // rain on the glass
+  // rain on the glass, when it rains (or has: drops stay on the glass a while)
   x.strokeStyle = 'rgba(170,200,255,.22)';
-  for (let i = 0; i < 14; i++) {
+  const drops = Math.round(14 * Math.min(1, (lt.w?.rain ?? 0) * 1.5 + (lt.w?.wet ?? 0) * 0.3));
+  for (let i = 0; i < drops; i++) {
     const rx = l + ((hash(i) * w + t * 0.4 * (0.6 + hash(i + 9))) % w), ry = top + ((hash(i + 3) * h + t * 1.6) % h);
     x.beginPath(); x.moveTo(rx, ry); x.lineTo(rx - 1, ry + 5); x.stroke();
   }
@@ -169,8 +177,10 @@ export function drawMoth(x: CanvasRenderingContext2D, m: SceneModel, v: DrawView
   x.fillStyle = 'rgba(' + O + ',.7)'; x.fillRect(wl - 5, y(W0.h0) , ww + 10, 2);
   box(x, wl + 6, y(W0.h0 + 7), 8, 7, '#3a2216', 'rgba(' + O + ',.5)');
   x.strokeStyle = 'rgba(150,110,60,.6)'; x.beginPath(); x.moveTo(wl + 10, y(W0.h0 + 7)); x.lineTo(wl + 8, y(W0.h0 + 15)); x.lineTo(wl + 4, y(W0.h0 + 13)); x.stroke();
-  // the street's light on the floor under the window
-  x.fillStyle = 'rgba(150,160,220,.05)'; x.fillRect(wl - 6, gy - 1, ww + 12, 2);
+  // the light through the window: the evening sun's shaft (sets/sky.ts), else the street's light on the floor
+  if (!windowShaft(x, { l: wl, r: wl + ww, t: wt, b: wt + wh }, gy, Math.min(v.viewH, gy + 16), light(), MOTH_FACING)) {
+    x.fillStyle = 'rgba(150,160,220,.05)'; x.fillRect(wl - 6, gy - 1, ww + 12, 2);
+  }
   // while the drone goes past, its red scan comes in through the glass and crosses the floor
   const cyc = (t % 900) / 900;
   if (cyc < 0.3) {
