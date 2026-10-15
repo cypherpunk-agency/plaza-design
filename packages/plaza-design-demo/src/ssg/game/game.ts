@@ -24,7 +24,7 @@ import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, zoneShell } from './do
 import { type ZoneDef, ZoneHost } from './zone';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneReadable, type SceneUse, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
-import { botReact, isBot, personHeight, personX, talkTo, type Person } from './people';
+import { botReact, isBot, characterHeight, characterX, talkTo, type Character } from './characters';
 import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
@@ -52,7 +52,7 @@ const PET_PIGEON = [
 ];
 
 /** A place's life (scenes and zones alike, scenes/kit.ts): its people, things to do and things to read. */
-type Life = { people?: Person[]; uses?: SceneUse[]; readables?: SceneReadable[] };
+type Life = { people?: Character[]; uses?: SceneUse[]; readables?: SceneReadable[] };
 /** The zones hosted on the hacking engine besides Downtown. */
 type Hosted = 'yard' | 'capsule' | 'moth' | 'beach';
 const isHosted = (z: string): z is Hosted => z === 'yard' || z === 'capsule' || z === 'moth' || z === 'beach';
@@ -778,7 +778,7 @@ export class Game {
     }
     // zones that draw in one pass (the flat, Downtown): mute round their devices' frames
     if (vision && this.zone !== 'yard') { if (this.zone !== 'capsule' && this.zone !== 'moth' && this.zone !== 'beach') this.drawRain(rain); this.mute(this.zoneHost!.model.spots()); }
-    this.drawPeople();
+    this.drawCharacters();
     if (this.zone !== 'capsule' && this.zone !== 'moth' && this.zone !== 'beach' && !vision) this.drawRain(rain);
     this.drawPrompt();
     this.drawBubble();
@@ -1214,7 +1214,7 @@ export class Game {
     }
   }
 
-  private drawPeople() {
+  private drawCharacters() {
     const x = this.x, p = this.p;
     if (this.zone === 'downtown') this.drawStallPeople();
     if (this.pixelHere) this.pixel.draw(x, (wx) => this.sx(wx), (h) => this.y(h), this.t);
@@ -1504,13 +1504,13 @@ export class Game {
     const list: Target[] = [];
     for (const r of s.readables ?? []) list.push({ kind: 'scene', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
     for (const u of s.uses ?? []) list.push({ kind: 'scene', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
-    // the scene's people with something to say (people.ts): the target follows a walker
-    for (const p of s.people ?? []) if (p.id && p.talk) list.push({ kind: 'scene', id: 'talk:' + p.id, x: personX(p, this.t), h: 0, label: '[E] TALK', promptH: personHeight(p) + 16 });
+    // the scene's people with something to say (characters.ts): the target follows a walker
+    for (const p of s.people ?? []) if (p.id && p.talk) list.push({ kind: 'scene', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: characterHeight(p) + 16 });
     // animals: people always want to pet the cat (and the pigeon gets shooed)
     (s.people ?? []).forEach((p, i) => {
-      if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'scene', id: 'pet:' + i, x: personX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: personHeight(p) + 14 });
+      if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'scene', id: 'pet:' + i, x: characterX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: characterHeight(p) + 14 });
       // robots without talk still answer: a beep, a status, a polite refusal
-      else if (!p.talk && isBot(p)) list.push({ kind: 'scene', id: 'bot:' + i, x: personX(p, this.t), h: 0, label: botReact(p).label, promptH: personHeight(p) + 14 });
+      else if (!p.talk && isBot(p)) list.push({ kind: 'scene', id: 'bot:' + i, x: characterX(p, this.t), h: 0, label: botReact(p).label, promptH: characterHeight(p) + 14 });
     });
     return list;
   }
@@ -1527,18 +1527,18 @@ export class Game {
       const p = s.people![Number(id)], n = this.petCount++;
       const lines = p.look === 'cat' ? PET_CAT : PET_PIGEON;
       sound.blip();
-      this.say(p.look === 'cat' ? 'CAT' : 'PIGEON', lines[n % lines.length], personX(p, this.t), personHeight(p) + 4);
+      this.say(p.look === 'cat' ? 'CAT' : 'PIGEON', lines[n % lines.length], characterX(p, this.t), characterHeight(p) + 4);
       return;
     }
     if (kind === 'bot') {
       const p = s.people![Number(id)], said = botReact(p, true);
       sound.blip();
-      this.say(said.name, said.pages, personX(p, this.t), personHeight(p) + 4);
+      this.say(said.name, said.pages, characterX(p, this.t), characterHeight(p) + 4);
       return;
     }
     if (kind === 'talk') {
       const p = s.people!.find((z) => z.id === id)!, said = talkTo(p);
-      this.say(said.name, said.pages, personX(p, this.t), personHeight(p) - 10);
+      this.say(said.name, said.pages, characterX(p, this.t), characterHeight(p) - 10);
       return;
     }
     if (kind === 'use') {
@@ -1576,7 +1576,7 @@ export class Game {
     const v = this.view();
     if (s.ambient?.sky) { this.drawSky(); this.drawShips(); }
     s.drawBackdrop(this.x, v);
-    this.drawPeople();
+    this.drawCharacters();
     s.drawFront?.(this.x, v);
     if (s.ambient?.rain) this.drawRain(rain);
     this.drawPrompt();

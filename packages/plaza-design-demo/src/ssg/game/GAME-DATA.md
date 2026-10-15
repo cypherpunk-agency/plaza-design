@@ -140,7 +140,7 @@ Append one line per decision: what, which side, why.
   `game.ts` `useDoor`, like the other Downtown doors.
 
 - **A place's life on any zone** (the beach, 2026-10-15): `ZoneView` takes the explorable scenes'
-  shape, `people` (people.ts), `uses` and `readables` (scenes/kit.ts `SceneUse`, `SceneReadable`),
+  shape, `people` (characters.ts), `uses` and `readables` (scenes/kit.ts `SceneUse`, `SceneReadable`),
   and the game hosts them exactly as a scene's: [E] TALK on people with `id` + `talk`, [E] PET /
   SHOO on people-kit cats and pigeons, uses that pay or give tokens (`UseCtx`), readables in a
   bubble; a tap within reach is E. **Code** (`game.ts`: `lifeTargets`, `useScene`, `tapLife`, the

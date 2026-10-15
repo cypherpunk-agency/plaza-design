@@ -6,13 +6,13 @@
  * cyan only on things you can use.
  *
  * The kits to build a living place from (ART-GUIDE §10):
- *   ../people.ts  people, cats, pigeons and robots from a seed, with idle behaviours and talk
+ *   ../characters.ts  people, cats, pigeons and robots from a seed, with idle behaviours and talk
  *   screens.ts    mounted signs and live screens (tickers, ads, cameras, Registry notices) and dry copy
  *   build.ts      stalls, booths, facades, shelves, fridges, clutter, benches, lamps
  * market.ts and shop.ts are the reference scenes that use all three.
  */
 
-import type { Person } from '../people';
+import type { Character } from '../characters';
 
 /** What a scene's draw functions get from the engine, refreshed every frame. */
 export interface View {
@@ -97,8 +97,8 @@ export interface Scene {
   spawn: number;
   exits: SceneExit[];
   readables?: SceneReadable[];
-  /** The people who live here (people.ts). The scene draws them; the engine makes [E] TALK targets for those with `id` and `talk`. */
-  people?: Person[];
+  /** The people who live here (characters.ts). The scene draws them; the engine makes [E] TALK targets for those with `id` and `talk`. */
+  people?: Character[];
   /** Things to do here with E (buy, haggle). */
   uses?: SceneUse[];
   /** `sky`: the engine's stars and ships behind everything; `rain`: the engine's rain in front. */

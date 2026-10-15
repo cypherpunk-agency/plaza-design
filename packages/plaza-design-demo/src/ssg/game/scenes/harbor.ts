@@ -9,12 +9,12 @@
  * middle = the ferry, the patrol boat, a dark boat with a lamp; play = the pier and everything
  * on it, the people, and the near water under the pier's edge.
  *
- * Built from the kits (ART-GUIDE §10): people (../people.ts), screens (screens.ts), stalls and
+ * Built from the kits (ART-GUIDE §10): people (../characters.ts), screens (screens.ts), stalls and
  * clutter (build.ts). Signs are dry; the people have the jokes.
  */
 
 import { drawTaxiPad } from '../city';
-import { drawPeople, drawPerson, type Person } from '../people';
+import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { clutter, stall, type StallSpec } from './build';
 import { box, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, C, type Scene, type SceneUse, type View } from './kit';
 import { camera, menuBoard, ticker, YELLOW } from './screens';
@@ -109,44 +109,44 @@ const APEX = 320;
 const UNIFORM = { garb: 'jacket' as const, top: '#2e3a4a', bottom: '#1e2430', hair: 'cap' as const, acc: '#1a1a22' };
 const OILSKIN = { garb: 'coat' as const, top: '#8a7a2a', hair: 'brim' as const, acc: '#8a7a2a' };
 
-const watchman: Person = { seed: 6101, look: { body: 'avg', garb: 'jacket', hair: 'cap', extras: ['phone'], top: '#46506e' }, x: 56, h: 30, act: 'phone', facing: -1, ps: 2 };
-const customs: Person = { id: 'customs', seed: 6102, look: { body: 'wide', ...UNIFORM, extras: ['visor'] }, x: 336, act: 'stand', facing: -1, name: 'CUSTOMS', talk: [
+const watchman: Character = { seed: 6101, look: { body: 'avg', garb: 'jacket', hair: 'cap', extras: ['phone'], top: '#46506e' }, x: 56, h: 30, act: 'phone', facing: -1, ps: 2 };
+const customs: Character = { id: 'customs', seed: 6102, look: { body: 'wide', ...UNIFORM, extras: ['visor'] }, x: 336, act: 'stand', facing: -1, name: 'CUSTOMS', talk: [
   ['Every container goes through the arch. The arch scans the outside.', 'What is inside is declared by the shipper. The shipper is very honest. It says so on the form.'],
   ['You are not a container. Keep it that way and we\'ll get on fine.'],
 ] };
-const fishSeller: Person = { seed: 6103, look: { body: 'old', garb: 'apron', hair: 'scarf', acc: '#5a8a3a', extras: [] }, x: 958, h: 2, act: 'vend', facing: -1 };
-const teaMan: Person = { seed: 6104, look: { body: 'wide', garb: 'apron', hair: 'beanie', acc: '#c83a2a', extras: [] }, x: 1080, act: 'vend', facing: -1 };
-const docker: Person = { id: 'docker', seed: 6105, look: { body: 'tall', garb: 'hivis', hair: 'helmet', acc: '#d8b040', extras: [] }, x: 1150, act: 'smoke', facing: -1, name: 'DOCKER', talk: [
+const fishSeller: Character = { seed: 6103, look: { body: 'old', garb: 'apron', hair: 'scarf', acc: '#5a8a3a', extras: [] }, x: 958, h: 2, act: 'vend', facing: -1 };
+const teaMan: Character = { seed: 6104, look: { body: 'wide', garb: 'apron', hair: 'beanie', acc: '#c83a2a', extras: [] }, x: 1080, act: 'vend', facing: -1 };
+const docker: Character = { id: 'docker', seed: 6105, look: { body: 'tall', garb: 'hivis', hair: 'helmet', acc: '#d8b040', extras: [] }, x: 1150, act: 'smoke', facing: -1, name: 'DOCKER', talk: [
   ['Twelve hours lifting boxes I\'m not allowed to open.', 'Some of them are cold. Some of them hum. One of them knocked once. I lifted that one gently.'],
   ['Union rule: one break per shift. Management rule: the shift doesn\'t end.'],
 ] };
-const tide: Person = { id: 'tide', key: true, seed: 6106, look: { body: 'slim', ...OILSKIN, extras: ['cyberarm'] }, x: 1374, act: 'lean', facing: -1, name: 'TIDE RUNNER', talk: [
+const tide: Character = { id: 'tide', key: true, seed: 6106, look: { body: 'slim', ...OILSKIN, extras: ['cyberarm'] }, x: 1374, act: 'lean', facing: -1, name: 'TIDE RUNNER', talk: [
   ['Don\'t stare at the den. Stare at the water, like a normal person.', 'You\'re the deleted one. Moth\'s friend. The scanners slide right off you. I like that in a customer.'],
   ['We\'re the Tide. We move what the Registry can\'t count: goods, data, the odd person in a crate marked FROZEN FISH.', 'Your friend came through here like that once. Captain Brine carried the crate personally.', 'The Captain doesn\'t do favours. The Captain does invoices.'],
   ['Moth still owes the Captain. Moth knows it.', 'There\'s a little boat at the end of the beach pier, paid up by the month in Moth\'s name. The Captain\'s idea of a reminder.'],
   ['Want to meet Brine? Nobody wants to. The boat\'s never in the same berth twice.', 'If the Captain wants you, you\'ll see a lamp out on the water. Three long. Don\'t wave back, it\'s rude.'],
 ] };
-const guard: Person = { seed: 6107, look: { body: 'tall', ...UNIFORM, hair: 'short', hairCol: '#2e1d12', extras: [] }, x: 1452, act: 'stand', facing: -1 };
-const fisher: Person = { id: 'fisher', seed: 6108, look: { body: 'avg', garb: 'coat', hair: 'beanie', top: '#4e5e3a', acc: '#c83a2a', extras: [] }, x: 2160, act: 'stand', facing: 1, name: 'FISHERMAN', talk: [
+const guard: Character = { seed: 6107, look: { body: 'tall', ...UNIFORM, hair: 'short', hairCol: '#2e1d12', extras: [] }, x: 1452, act: 'stand', facing: -1 };
+const fisher: Character = { id: 'fisher', seed: 6108, look: { body: 'avg', garb: 'coat', hair: 'beanie', top: '#4e5e3a', acc: '#c83a2a', extras: [] }, x: 2160, act: 'stand', facing: 1, name: 'FISHERMAN', talk: [
   ['Fish don\'t need ID. Best neighbours I\'ve had.', 'Caught a drone gull once. Threw it back. It filed a complaint.'],
   ['The patrol boat comes round every few minutes. The fish know the schedule better than the Registry does.'],
 ] };
 /** The crane operators, in their cabs (they move with the trolley). */
-const operators: Person[] = [
+const operators: Character[] = [
   { seed: 6109, look: { body: 'avg', garb: 'hivis', hair: 'short', extras: ['headphones'] }, x: 0, h: 158, act: 'sit', facing: -1, ps: 2 },
   { seed: 6110, look: { body: 'wide', garb: 'hivis', hair: 'cap', extras: [] }, x: 0, h: 158, act: 'sit', facing: -1, ps: 2 },
 ];
 /** The forklift's driver (moves with the forklift). */
-const driver: Person = { seed: 6111, look: { body: 'avg', garb: 'hivis', hair: 'helmet', acc: '#d86a2a', extras: [] }, x: 0, h: 12, act: 'sit', facing: 1 };
+const driver: Character = { seed: 6111, look: { body: 'avg', garb: 'hivis', hair: 'helmet', acc: '#d86a2a', extras: [] }, x: 0, h: 12, act: 'sit', facing: 1 };
 /** The Tide's card game inside the open container. */
-const DEN: Person[] = [
+const DEN: Character[] = [
   { seed: 6112, look: { body: 'wide', ...OILSKIN, top: '#6e6a2a', extras: [] }, x: L.den + 34, h: 14, act: 'sit', facing: 1 },
   { seed: 6113, look: { body: 'old', ...OILSKIN, hair: 'beanie', acc: '#2a2a30', extras: ['glasses'] }, x: L.den + 96, h: 14, act: 'sit', facing: -1 },
 ];
-const CAT: Person = { look: 'cat', seed: 3, x: 2212, h: 12, act: 'sit', facing: -1 };
+const CAT: Character = { look: 'cat', seed: 3, x: 2212, h: 12, act: 'sit', facing: -1 };
 
 /** Everyone else on the pier, drawn in front of the stacks. Plain data. */
-const PIER: Person[] = [
+const PIER: Character[] = [
   { seed: 6201, look: { body: 'tall', garb: 'hivis', hair: 'helmet', acc: '#e8e0d0', extras: [] }, x: 806, act: 'argue', facing: 1 },
   { seed: 6202, look: { body: 'avg', garb: 'hivis', hair: 'helmet', acc: '#d8b040', extras: ['backpack'] }, x: 420, act: 'walk', range: [420, 640], speed: 0.28 },
   { seed: 6203, look: { body: 'short', garb: 'hivis', hair: 'hood', extras: ['phone'] }, x: 1128, h: 18, act: 'sit', facing: 1 },
@@ -157,7 +157,7 @@ const PIER: Person[] = [
   { look: 'courier', x: 1180, act: 'walk', range: [1180, 2100], speed: 0.45 },
   { seed: 6207, x: 2040, act: 'walk', range: [2040, 2300], speed: 0.3, look: { body: 'avg', garb: 'jacket', hair: 'hood', extras: ['umbrella'], acc: '#2a2a30' } },
 ];
-const TALKERS: Person[] = [customs, docker, tide, fisher];
+const TALKERS: Character[] = [customs, docker, tide, fisher];
 /** The pier's birds: every one answers E (ART-GUIDE §10). The gulls react; the pigeon gets shooed. */
 const GULL_TALK = [
   ['(The gull looks at you, then at your pockets, then screams.)'],
@@ -165,7 +165,7 @@ const GULL_TALK = [
   ['(It stares at you with one eye, then the other, and finds you lacking from both sides.)'],
 ];
 const gullTalk = (k: number) => [GULL_TALK[k % 3], GULL_TALK[(k + 1) % 3], GULL_TALK[(k + 2) % 3]];
-const BIRDS: Person[] = [
+const BIRDS: Character[] = [
   { id: 'gull1', look: 'gull', x: 430, h: 3 * CH, act: 'stand', name: 'GULL', talk: gullTalk(0) },
   { id: 'gull2', look: 'gull', seed: 2, x: 1730, h: 3 * CH, act: 'walk', range: 50, name: 'GULL', talk: gullTalk(1) },
   { id: 'gull3', look: 'gull', seed: 3, x: 1660, h: 12, act: 'stand', facing: -1, name: 'GULL', talk: gullTalk(2) },
@@ -454,7 +454,7 @@ function drawCrane(x: CanvasRenderingContext2D, v: View, ci: number) {
   x.fillStyle = 'rgba(255,200,130,.28)'; x.fillRect(cabL + 3, cabT + 4, 20, 16);
   const op = operators[ci];
   op.x = twx - 31;
-  x.save(); x.beginPath(); x.rect(cabL + 3, cabT + 4, 20, 22); x.clip(); drawPerson(x, v, op); x.restore();
+  x.save(); x.beginPath(); x.rect(cabL + 3, cabT + 4, 20, 22); x.clip(); drawCharacter(x, v, op); x.restore();
   x.fillStyle = 'rgba(255,240,215,.12)'; x.fillRect(cabL + 3, cabT + 4, 7, 16);
   x.fillStyle = 'rgba(' + O + ',.8)'; x.fillRect(cabL + 3, cabT + 20, 20, 1);
   const glow = x.createRadialGradient(cabL + 13, cabT + 14, 2, cabL + 13, cabT + 14, 34);
@@ -532,7 +532,7 @@ function drawDen(x: CanvasRenderingContext2D, v: View) {
   x.strokeStyle = 'rgba(' + PAPER + ',.4)'; x.beginPath(); x.moveTo(s0 + w / 2, top + 4); x.lineTo(s0 + w / 2 + sway, top + 16); x.stroke();
   x.fillStyle = 'rgba(255,230,180,.95)'; x.fillRect(s0 + w / 2 - 2 + sway, top + 16, 4, 4);
   // the card table: a crate, cards, a pot of tokens
-  drawPeople(x, v, DEN);
+  drawCharacters(x, v, DEN);
   box(x, s0 + 52, y(20), 26, 20, '#5a3a1e', 'rgba(255,190,110,.5)');
   x.fillStyle = '#e8e0d0'; x.fillRect(s0 + 55, y(21), 4, 2); x.fillRect(s0 + 62, y(21), 4, 2); x.fillStyle = '#c83a2a'; x.fillRect(s0 + 70, y(21), 3, 2);
   x.fillStyle = 'rgba(' + YELLOW + ',.8)'; x.fillRect(s0 + 64, y(23), 3, 2);
@@ -601,7 +601,7 @@ function drawForklift(x: CanvasRenderingContext2D, v: View) {
   box(x, s - dir * 18 - (dir > 0 ? 6 : 0), y(22), 6, 16, '#3a2a0a', 'rgba(' + YELLOW + ',.5)');
   for (const wx of [-11, 11]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(s + wx, y(5), 5, 0, 7); x.fill(); x.strokeStyle = 'rgba(220,200,160,.4)'; x.stroke(); }
   driver.x = fwx - dir * 4; driver.facing = dir;
-  drawPerson(x, v, driver);
+  drawCharacter(x, v, driver);
   // the roof cage over the driver, a beacon on it
   x.strokeStyle = 'rgba(220,200,160,.6)'; x.beginPath(); x.moveTo(s - 14.5, y(18)); x.lineTo(s - 14.5, y(56)); x.lineTo(s + 12.5, y(56)); x.lineTo(s + 12.5, y(18)); x.stroke();
   x.fillStyle = Math.floor(v.t / 10) % 2 ? 'rgba(255,170,40,.95)' : 'rgba(255,170,40,.3)'; x.fillRect(s - 2, y(60), 4, 3);
@@ -615,7 +615,7 @@ function drawHut(x: CanvasRenderingContext2D, v: View) {
   box(x, hx + 40, y(60), 28, 24, '#2a1a0c', 'rgba(' + O + ',.6)');
   x.save(); x.beginPath(); x.rect(hx + 41, y(60) + 1, 26, 22); x.clip();
   x.fillStyle = 'rgba(255,217,165,.18)'; x.fillRect(hx + 41, y(60), 26, 24);
-  drawPerson(x, v, watchman);
+  drawCharacter(x, v, watchman);
   x.restore();
   x.fillStyle = 'rgba(255,255,255,.06)'; x.fillRect(hx + 42, y(59), 6, 20);
   box(x, hx - 4, y(L.hut.h + 4), L.hut.w + 8, 5, '#1c0f07', 'rgba(' + O + ',.8)');
@@ -751,13 +751,13 @@ export const harbor: Scene = {
     }
 
     // the people of the pier, and the stray drone gull doing its rounds
-    drawPeople(x, v, PIER);
+    drawCharacters(x, v, PIER);
     guard.facing = v.flags['harbor:bribed'] ? 1 : -1;
     guard.act = v.flags['harbor:bribed'] ? 'smoke' : 'stand';
-    drawPerson(x, v, guard);
-    drawPeople(x, v, TALKERS);
-    drawPeople(x, v, BIRDS);
-    drawPerson(x, v, CAT);
+    drawCharacter(x, v, guard);
+    drawCharacters(x, v, TALKERS);
+    drawCharacters(x, v, BIRDS);
+    drawCharacter(x, v, CAT);
     camera(x, v, { x: 156, h: 136, facing: 1, phase: 11 });
     const du = t * 0.006, dwx = 1460 + Math.sin(du) * 240, dh = 128 + Math.sin(du * 2) * 22, ds = sx(dwx, 0.95), dy = y(dh);
     if (onScreen(v, ds - 30, 60)) {
