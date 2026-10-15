@@ -149,7 +149,25 @@ export class Companion {
   /** Outside: a warm machine Pixel picked for this rest (once per stop). */
   private napAt: Perch | null = null;
   private decided = false;
-  private zs: { x: number; h: number; age: number }[] = [];
+  private zs: { x: number; h: number; age: number; ch?: string }[] = [];
+  private petted = 0;
+
+  /** Petted (E next to Pixel): a visible purr, and what you notice, in turn. */
+  pet(): string[] {
+    for (let i = 0; i < 3; i++) this.zs.push({ x: this.x + (i - 1) * 5, h: this.h + 12, age: -i * 14, ch: 'prr' });
+    const n = this.petted++;
+    if (this.pose === 'sleep') return n % 2
+      ? ['Pixel stretches one paw at you without waking up. That counts as a hug.']
+      : ['Pixel opens one eye, checks that you are not food, and closes it again.', 'The purr starts anyway.'];
+    if (this.pose === 'sun') return ['Pixel is in the sun. You are in the way of the sun.', 'Pixel lets you stay. Briefly.'];
+    if (this.pose === 'walk' || this.pose === 'hop') return ['Pixel takes exactly one stroke and keeps walking. Places to be.'];
+    return [
+      ['Pixel leans into your hand. It is warm from the router. It is always warm from something.'],
+      ['Pixel headbutts your knuckles until you do it properly.'],
+      ['You scratch behind the ear sensor. The tail light goes steady. That means yes.'],
+      ['Pixel looks at you for a long time. Then at the fridge. Subtle.'],
+    ][n % 4];
+  }
 
   /** Put Pixel down right here (on arriving somewhere). */
   place(x: number, h = 0, pose: Pose = 'sit', face = 1) {
@@ -244,8 +262,9 @@ export class Companion {
     for (const z of this.zs) {
       const a = Math.max(0, 0.7 - z.age / 110);
       x.save(); x.font = '600 7px "IBM Plex Mono", monospace'; x.textAlign = 'center';
-      x.fillStyle = 'rgba(255,217,165,' + a + ')';
-      x.fillText('z', Math.round(sx(z.x + Math.sin(z.age * 0.08) * 3)), Math.round(y(z.h + z.age * 0.18)));
+      if (z.age < 0) { x.restore(); continue; }
+      x.fillStyle = z.ch ? 'rgba(255,210,58,' + a + ')' : 'rgba(255,217,165,' + a + ')';
+      x.fillText(z.ch ?? 'z', Math.round(sx(z.x + Math.sin(z.age * 0.08) * 3)), Math.round(y(z.h + z.age * 0.18)));
       x.restore();
     }
   }

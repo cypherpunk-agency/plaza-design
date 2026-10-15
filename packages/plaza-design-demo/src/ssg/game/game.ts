@@ -39,7 +39,18 @@ import {
   newSave, ownedModules, READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
-type Target = { kind: 'talk' | 'zone' | 'read' | 'door' | 'map' | 'scene'; id: string; x: number; h: number; label: string; promptH?: number };
+/** What petting a scene's cat, or shooing its pigeon, gets you. */
+const PET_CAT = [
+  ['The cat allows it. Then it decides it did not, and leaves.'],
+  ['The cat purrs, which is a lot of commitment from a street cat.'],
+  ['The cat sniffs your hand, finds no fish, and looks betrayed.'],
+];
+const PET_PIGEON = [
+  ['The pigeon takes one step to the side. Exactly one.'],
+  ['The pigeon flaps, lands a metre away, and looks at you like you started it.'],
+];
+
+type Target = { kind: 'talk' | 'zone' | 'read' | 'door' | 'map' | 'scene' | 'pet'; id: string; x: number; h: number; label: string; promptH?: number };
 /** Downtown's doors, stairs and pad as targets (the market gate's door only once the gate is open). */
 const DOOR_TARGETS: { id: DoorId; label: string; promptH: number }[] = [
   { id: 'market', label: '[E] NEON MARKET', promptH: 120 },
@@ -314,6 +325,8 @@ export class Game {
 
   /** The level width the view was fitted to; a new place refits (see onResize). */
   private fitW = 0;
+  /** How often the player has petted a scene's animals (which line comes next). */
+  private petCount = 0;
 
   private loop(now: number) {
     if (!this.running) return;
@@ -570,10 +583,12 @@ export class Game {
     // a zone's things: you reach each from the street, or from the ledge under it (the relay, from the low roof)
     const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
     const zoneTargets = (zh: ZoneHost) => zh.targets().map((t) => ({ kind: 'zone' as const, id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH }));
-    if (this.zone === 'yard') return zoneTargets(this.yard);
-    if (this.zone === 'capsule') return zoneTargets(this.capsule);
-    if (this.zone === 'moth') return zoneTargets(this.moth);
-    const list: Target[] = [], gateOpen = !!this.save.flags.end;
+    // Pixel can always be petted, wherever it is with you
+    const pet: Target[] = this.pixelHere ? [{ kind: 'pet', id: 'pixel', x: this.pixel.x, h: 0, label: '[E] PET PIXEL', promptH: this.pixel.h + 24 }] : [];
+    if (this.zone === 'yard') return [...zoneTargets(this.yard), ...pet];
+    if (this.zone === 'capsule') return [...zoneTargets(this.capsule), ...pet];
+    if (this.zone === 'moth') return [...zoneTargets(this.moth), ...pet];
+    const list: Target[] = [...pet], gateOpen = !!this.save.flags.end;
     for (const d of DOOR_TARGETS) if (d.id !== 'market' || gateOpen) list.push({ kind: 'door', id: d.id, x: DOORS[d.id], h: 0, label: d.label, promptH: d.promptH });
     NPCS.forEach((n) => list.push({ kind: 'talk', id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
     list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' });
@@ -614,6 +629,7 @@ export class Game {
     if (target.kind === 'zone') { if (this.zoneHost?.use(target.id) === 'exit') this.leaveZone(); return; }
     if (target.kind === 'door') { this.useDoor(target.id as DoorId); return; }
     if (target.kind === 'map') { sound.open(); this.showMap(); return; }
+    if (target.kind === 'pet') { sound.blip(); this.say('PIXEL', this.pixel.pet(), this.pixel.x, this.pixel.h + 14); return; }
     if (target.kind === 'talk') {
       if (target.id === 'fixer') {
         const talk = fixerTalk(this.save);
@@ -1448,6 +1464,10 @@ export class Game {
     for (const u of s.uses ?? []) list.push({ kind: 'scene', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
     // the scene's people with something to say (people.ts): the target follows a walker
     for (const p of s.people ?? []) if (p.id && p.talk) list.push({ kind: 'scene', id: 'talk:' + p.id, x: personX(p, this.t), h: 0, label: '[E] TALK', promptH: personHeight(p) + 16 });
+    // animals: people always want to pet the cat (and the pigeon gets shooed)
+    (s.people ?? []).forEach((p, i) => {
+      if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'scene', id: 'pet:' + i, x: personX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: personHeight(p) + 14 });
+    });
     return list;
   }
 
@@ -1457,6 +1477,13 @@ export class Game {
     if (kind === 'read') {
       const r = s.readables!.find((z) => z.id === id)!;
       this.say(r.name, r.pages, r.x, r.h ?? 70);
+      return;
+    }
+    if (kind === 'pet') {
+      const p = s.people![Number(id)], n = this.petCount++;
+      const lines = p.look === 'cat' ? PET_CAT : PET_PIGEON;
+      sound.blip();
+      this.say(p.look === 'cat' ? 'CAT' : 'PIGEON', lines[n % lines.length], personX(p, this.t), personHeight(p) + 4);
       return;
     }
     if (kind === 'talk') {
