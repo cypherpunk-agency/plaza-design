@@ -39,6 +39,20 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
 | 6 | **The stop that isn't on the map** | P14 | the metro line | next |
 | 7 | **NRLU 404 0451** (Act I finale) | P15 | the harbor stacks, STS-2, and the **warehouse** (Harbor & Shore) | next |
 
+**Decided for the rest of Act I (Tommi, 2026-10-15):**
+- **The harbor is locked until P14.** LINE 0 passes the harbor station (STATION CLOSED) and the
+  sky taxi won't fly there; the only way in is pulling the brake at the siding. After that the
+  harbor station (and the taxi) open for good. Downtown ↔ Galleria runs as now.
+- **Moth's jacket (P13)** holds the maglev pass (`maglev.pass`) and the right glove. The pass is
+  what makes the brake accept your pull: the emergency is registered in Moth's name, the pass
+  says you're the friend. Without it: "emergency registered to another passenger."
+- **The finale is the stacks:** find NRLU 404 0451 with STS-2's camera, get it lifted past the
+  scanner, Moth answers from the reefer. The **warehouse** is built now as a locked place by the
+  stacks; its evidence locker is Act II (fragment 3).
+- **The ending:** a short talk with Moth at the container (deleted on purpose; the list is split
+  into seven root fragments; the Registry knows Moth has it), an ACT II card, Moth joins your
+  deck as a contact, and the Spire gets its name on the map (`heard:spire`).
+
 Optional puzzles that sit on Act I's way: O05 the market billboard cipher, O07 the metro
 junction cabinet, O08/O09 the mall lift and the **rooftop garden**, O10 the music box (metro
 LOST+FOUND), O11 the wishing fountain. The beach (✓) and its locked boat lead into Act II.
