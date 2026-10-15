@@ -400,7 +400,7 @@ export const harborStation: SceneDef = {
   width: H.width,
   spawn: H.spawn,
   rests: H.benches.map((b, i) => ({ id: 'bench' + i, x: b.x - (b.who ? 12 : 0), kind: 'bench' as const })),
-  ambient: { sky: true, weather: true },
+  ambient: { sky: true, weather: true, covers: [{ from: -60, to: H.width + 60, under: H.canopy.under }] },
   intro: ['The Harbor metro. Salt, diesel, and a timetable nobody believes.'],
   exits: [
     { id: 'harbor', x: H.exit, to: 'harbor', at: 'metro', label: '[E] GATE · HARBOR PIER', promptH: 92 },

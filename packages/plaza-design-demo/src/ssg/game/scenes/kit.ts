@@ -161,9 +161,10 @@ export interface SceneDef {
   /**
    * What the engine draws around the scene: `sky`, its stars and ships behind everything; `city`,
    * Downtown's skyline and street walls (game.ts); `street`, the wet street floor; `weather`, the
-   * district's weather (weather.ts, sets/weather.ts): it is outdoors (rain, fog, smog, heat, puddles).
+   * district's weather (weather.ts, sets/weather.ts): it is outdoors (rain, fog, smog, heat, puddles);
+   * `covers`, roofs it doesn't rain under (a platform's canopy): world x from/to and the underside's height.
    */
-  ambient?: { sky?: boolean; city?: boolean; street?: boolean; weather?: boolean };
+  ambient?: { sky?: boolean; city?: boolean; street?: boolean; weather?: boolean; covers?: { from: number; to: number; under: number }[] };
   /**
    * Places to sit or lie down and let time pass (TIME.md "Waiting"): E offers "wait until…" (the
    * next hour, dusk, night, morning). `bed` sleeps.

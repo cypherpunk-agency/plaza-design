@@ -5,7 +5,8 @@
  *   Old saves have none: day 1, 09:40 (`CLOCK_START`).
  * - **Speed:** `CLOCK_RATE` game minutes per real second (1 game hour = 2 real minutes; a day is 48).
  * - **It runs** in a scene, hack vision and the board included. **It stops** in the menu, the map,
- *   talk (a speech bubble, the engine's talk panel), toys, cutscenes, the title and the glide; the
+ *   the engine's talk panel, toys, cutscenes, the title and the glide (speech bubbles don't stop it,
+ *   Tommi 2026-10-15); the
  *   game decides that each frame (game.ts `clockRuns`) and calls `tick`.
  * - **Travel:** a metro ride is the ride (the car is a scene: the clock runs on board); quick
  *   travel adds `TRAVEL.quick`, the sky taxi `TRAVEL.taxi` (the clock stands still while either plays).

@@ -997,7 +997,8 @@ export class Game {
     x.fillRect(0, 0, this.viewW, this.viewH);
     const vision = zh.visionOn, v = this.view();
     // the district's weather, where the scene is outdoors (weather.ts; drawn by sets/weather.ts)
-    const W = amb.weather ? this.weatherHere() : null, look = W ? { w: W, t: this.reduced ? this.clock * 0.35 : this.t, still: this.reduced } : null;
+    const W = amb.weather ? this.weatherHere() : null, covers = amb.covers?.map((c) => [v.sx(c.from), v.sx(c.to), v.y(c.under)] as [number, number, number]);
+    const look = W ? { w: W, t: this.reduced ? this.clock * 0.35 : this.t, still: this.reduced, covers } : null;
     const rain = W?.wet ?? 0;
     if (amb.sky) { this.drawSky(); if (isBefore(this.save.flags)) this.drawDawn(); if (look) weatherSky(x, v, look); this.drawShips(); }
     if (amb.city) {
@@ -1959,7 +1960,7 @@ export class Game {
    * the title stop the whole loop before this.)
    */
   private clockRuns() {
-    return !this.mapView && !this.flight && !this.hop && !this.bubble && !this.zh.panelOpen && !this.sleep && !this.showEnd && !this.beat;
+    return !this.mapView && !this.flight && !this.hop && !this.zh.panelOpen && !this.sleep && !this.showEnd && !this.beat;
   }
 
   /**

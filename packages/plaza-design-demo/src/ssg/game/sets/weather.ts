@@ -24,6 +24,8 @@ export interface WeatherLook {
   t: number;
   /** Reduced motion: calm rain, no flashes, no shimmer. */
   still?: boolean;
+  /** Roofs it doesn't rain under, in screen units: x from, x to, the underside's y. */
+  covers?: [number, number, number][];
 }
 
 const rnd = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -205,6 +207,7 @@ function rain(x: CanvasRenderingContext2D, v: View, o: WeatherLook) {
     const fall = (2.5 + depth * 4.5) * (1 + 0.4 * w.storm), len = (4 + depth * 8) * (still ? 0.7 : 1);
     const yy = ((dy + t * fall) % H + H) % H - 20;
     const xx = ((dx - t * fall * wind - v.cam * depth * 0.6) % W + W) % W;
+    if (o.covers && yy > -20 && o.covers.some(([a, b, under]) => xx >= a && xx <= b && yy + len > under)) continue;
     x.strokeStyle = 'rgba(170,210,255,' + (0.08 + depth * 0.22) + ')';
     x.beginPath(); x.moveTo(xx, yy); x.lineTo(xx - len * wind, yy + len); x.stroke();
     // a splash where a near drop meets the street
