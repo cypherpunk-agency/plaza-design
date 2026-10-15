@@ -21,9 +21,10 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
-import { CAPSULE, DOWNTOWN, ENGINE, LOGIC, MOTH, NET, YARD } from '../src/ssg/game/data';
+import { BEACH, CAPSULE, DOWNTOWN, ENGINE, LOGIC, MOTH, NET, YARD } from '../src/ssg/game/data';
 import { CAPSULE_RULES } from '../src/ssg/game/capsule/rules';
 import { MOTH_RULES } from '../src/ssg/game/moth/rules';
+import { BEACH_RULES } from '../src/ssg/game/beach/rules';
 import { checkGame } from '../src/ssg/game/data/check';
 import { YARD_RULES } from '../src/ssg/game/yard/effects';
 import { DOWNTOWN_RULES_SHAPE } from '../src/ssg/game/downtown/rules';
@@ -143,6 +144,7 @@ function checkGameData() {
     { data: CAPSULE, code: contractOf(CAPSULE_RULES), extra: CAPSULE_RULES.check },
     { data: DOWNTOWN, code: contractOf(DOWNTOWN_RULES_SHAPE), extra: DOWNTOWN_RULES_SHAPE.check },
     { data: MOTH, code: contractOf(MOTH_RULES), extra: MOTH_RULES.check },
+    { data: BEACH, code: contractOf(BEACH_RULES), extra: BEACH_RULES.check },
   ], LOGIC, NET, ENGINE);
   if (!problems.length) return;
   console.error(`Game data has ${problems.length} problem${problems.length > 1 ? 's' : ''} (src/ssg/game/data/):\n`);

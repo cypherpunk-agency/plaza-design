@@ -12,7 +12,7 @@
 import type { SceneId } from './scenes';
 import { box, C, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, type View } from './scenes/kit';
 
-export type Zone = 'downtown' | 'yard' | 'capsule' | 'moth' | SceneId;
+export type Zone = 'downtown' | 'yard' | 'capsule' | 'moth' | 'beach' | SceneId;
 
 /**
  * Where a new game starts: Capsule 7B, the player's flat. The intro cutscene
@@ -45,6 +45,8 @@ export const isDoorId = (id: string): id is DoorId => Object.prototype.hasOwnPro
  */
 export const EDGES: Partial<Record<Zone, Partial<Record<'left' | 'right', { to: Zone; at: string }>>>> = {
   yard: { left: { to: 'downtown', at: 'yard' } },
+  // the beach's promenade runs on, west, into the harbor (the harbor lands you at its exit 'beach' once it has one)
+  beach: { left: { to: 'harbor', at: 'beach' } },
 };
 
 // ---------- the metro ----------
@@ -132,6 +134,7 @@ export const PLACES: Place[] = [
   { id: 'mall', name: 'GALLERIA MALL', zone: 'mall', ...block('mall') },
   { id: 'station-harbor', name: 'HARBOR METRO', zone: 'harborStation', at: 'harbor', pt: STATION_AT.harbor },
   { id: 'harbor', name: 'HARBOR', zone: 'harbor', ...block('harbor') },
+  { id: 'beach', name: 'BEACH', zone: 'beach', at: 'harbor', pt: [292, 160] },
 ];
 
 /** Why you cannot quick-travel to a place right now ('' if you can). */
@@ -194,6 +197,7 @@ function herePoint(st: MapState): [number, number] {
   if (z === 'shop') return [SPOTS.shop[0], SPOTS.shop[1]];
   if (z === 'yard') return [SPOTS.yard[0], SPOTS.yard[1]];
   if (z === 'capsule') return [SPOTS.home[0], SPOTS.home[1]];
+  if (z === 'beach') return [292, 160];
   const d = DISTRICTS.find((q) => q.zone === z);
   return d ? [d.x + d.w / 2, d.y + d.h / 2 + 6] : [137, 95];
 }

@@ -139,6 +139,27 @@ Append one line per decision: what, which side, why.
   `levels()`; `index.ts` accepts `?play=moth`. The door's refusal (no key chip) is **code** in
   `game.ts` `useDoor`, like the other Downtown doors.
 
+- **A place's life on any zone** (the beach, 2026-10-15): `ZoneView` takes the explorable scenes'
+  shape, `people` (people.ts), `uses` and `readables` (scenes/kit.ts `SceneUse`, `SceneReadable`),
+  and the game hosts them exactly as a scene's: [E] TALK on people with `id` + `talk`, [E] PET /
+  SHOO on people-kit cats and pigeons, uses that pay or give tokens (`UseCtx`), readables in a
+  bubble; a tap within reach is E. **Code** (`game.ts`: `lifeTargets`, `useScene`, `tapLife`, the
+  `life` getter is the scene or the zone's view; exits stay a scene's). Generic on purpose: a
+  scene is meant to become a zone with no devices later, and this is the same shape for both.
+  Who stands where and what they say is still code-side data (the view's lists), like a scene's.
+- `ZoneModel.pay(n)`: **engine code**, the counterpart of `give tokens`: a zone effect spends
+  tokens (true and taken, or false and nothing). The beach's sunbed kiosk bills with it
+  (`sunbed.rent`, then one a minute from `BEACH_RULES.tick`); the price and the minute are data
+  (`tuning.minuteMs`), the billing rule is code. A one-off purchase with E (SALT's drink) is a
+  `use` instead, which already pays through `UseCtx.pay`.
+- Hooks outside zone/ for the beach: `game.ts` hosts it (`Hosted`/`isHosted` now lists the zones on
+  the engine besides Downtown, so zoneHost, goTo, travel, handTo and scene exits take any of them);
+  levelW, placeName, the first-visit lines, drawing it like the flats (it draws its own sky, no rain);
+  its stairs (`view.use` → 'exit') travel to the harbor. `city.ts`: `beach` in `Zone`, `EDGES.beach`
+  (the left edge walks into the harbor, landing at its exit `beach` once it has one), a map place
+  `BEACH`. `companion.ts` `WARM.beach` (the jukebox's top). `sudo.ts` `levels()` and unlockAll;
+  `index.ts` `?play=beach`.
+
 ## The idea in one paragraph
 
 A zone is a data file that says **what** is there: devices, their nouns and verbs,
@@ -625,6 +646,10 @@ Decided (save details):
 - `game/data/moth.json`: Moth's place, flat 4C (story Level 3): the flat's things, FRIENDNET,
   MOTH-PC, the watchdog. `game/moth/`: `rules.ts` (`MOTH_RULES`: `uplink`, `journalOpen`, goals),
   `scene.ts` (drawing), `index.ts` (`MOTH_ZONE`, the door out).
+- `game/data/beach.json`: the beach and SALT (the sunbed kiosk, the jukebox, the mixer, the
+  lifeguard drone, the pier lights' CLOCK, Moth's boat). `game/beach/`: `rules.ts` (`BEACH_RULES`:
+  minute billing, the drone's flag running out), `scene.ts` (drawing, the people), `index.ts`
+  (`BEACH_ZONE`: the view with `people`, `uses`, `readables`, the stairs out).
 - `game/data/downtown.json`: Downtown. `game/downtown/`: its code: `rules.ts` (effects, derived
   values from the save, DLV-9's drive; `downtownRules(player)`), `save.ts` (`reconcile` with old
   saves), `shell.ts` (typed commands), `camera.ts` (CAM-3), `scene.ts` (drawing, the CITY MAP

@@ -413,6 +413,17 @@ export class ZoneModel {
     return this.line(k.kind === 'fragment' ? 'keyring.fragment' : 'keyring.' + k.kind, { label: k.label, text: k.text ?? '' });
   }
 
+  /**
+   * Spend `n` noodle tokens (a zone effect that sells something: the beach's sunbed meter).
+   * True, and taken, if the player has them; false, and nothing taken, if not.
+   */
+  pay(n: number): boolean {
+    const have = this.hooks.tokens ? this.hooks.tokens(0) : this.ownTokens;
+    if (have < n) return false;
+    if (this.hooks.tokens) this.hooks.tokens(-n); else this.ownTokens -= n;
+    return true;
+  }
+
   /** Was this keyring chip made on the keyring (so it may be thrown away)? The data's own are evidence: they stay. */
   isMade(id: string) { return !this.keys.has(id) && !!this.item(id); }
 
