@@ -74,6 +74,8 @@ const PLACE_DATA = [
   { id: 'warehouse', name: 'WAREHOUSE 4', district: 'harbor', entrance: 'warehouse', at: 'stacks' },
   { id: 'beach', name: 'BEACH', district: 'harbor', entrance: 'beach', at: 'harbor' },
   { id: 'line0', name: 'LINE 0', district: null, entrance: 'train' },
+  // sudo only: the engine's test bay (sandbox/), in no district and not on the map
+  { id: 'sandbox', name: 'QA BAY 3', district: null, entrance: 'sandbox' },
 ] as const satisfies readonly PlaceData[];
 export type PlaceId = (typeof PLACE_DATA)[number]['id'];
 
@@ -97,6 +99,7 @@ export const SCENE_PLACE = {
   harborStation: 'station-harbor',
   beach: 'beach',
   train: 'line0',
+  sandbox: 'sandbox',
 } as const satisfies Record<SceneId, PlaceId>;
 
 /** A place, with its scenes. */

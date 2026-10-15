@@ -261,6 +261,8 @@ export interface Ctx {
   persist: () => void;
   /** Start the back yard over (its part of the save only). */
   resetYard: () => void;
+  /** Sudo: start the sandbox (QA bay 3) over (its part of the save only). */
+  resetSandbox?: () => void;
   /** Your own deck while you still exist (the opening, opening.ts): its files and what `whoami` says. */
   deck?: { files: Record<string, string>; whoami: string };
   /** The Registry's weather report for where you are (weather.ts `reportLines`). */
@@ -405,6 +407,10 @@ export function run(c: Ctx, line: string) {
       if ((args[0] || '').toLowerCase() === 'yard') {
         if (args[1] === '--yes') { c.resetYard(); c.print('back yard reset: cables, parts, the parcel, HINGE\'s mood. Everything else is kept.', 'ok'); return; }
         c.print('this resets the back yard only (cables, parts, the parcel, its goals). Type: reset yard --yes', 'err'); return;
+      }
+      if ((args[0] || '').toLowerCase() === 'sandbox' && c.resetSandbox) {
+        if (args[1] === '--yes') { c.resetSandbox(); c.print('sandbox reset: QA bay 3 as on the first visit. Everything else is kept.', 'ok'); return; }
+        c.print('this resets the sandbox only (QA bay 3: devices, cables, parts, trace). Type: reset sandbox --yes', 'err'); return;
       }
       c.print('this wipes your progress. Type: reset --yes', 'err'); return;
     case 'login':

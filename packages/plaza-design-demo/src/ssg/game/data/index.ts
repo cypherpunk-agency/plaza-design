@@ -19,6 +19,7 @@ import trainJson from './train.json';
 import laundromatJson from './laundromat.json';
 import stacksJson from './stacks.json';
 import libraryJson from './library.json';
+import sandboxJson from './sandbox.json';
 
 const yard: Loose<SceneData> = yardJson;
 const capsule: Loose<SceneData> = capsuleJson;
@@ -60,9 +61,13 @@ export const STACKS = stacks as SceneData;
 const library: Loose<SceneData> = libraryJson;
 export const LIBRARY = library as SceneData;
 
+/** The sandbox (sudo only): REGISTRY QA BAY 3, one bench per engine feature. */
+const sandbox: Loose<SceneData> = sandboxJson;
+export const SANDBOX = sandbox as SceneData;
+
 /** Every scene file, by scene id. A new scene is one import and one line here. */
 export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH, laundromat: LAUNDROMAT,
-  train: TRAIN, stacks: STACKS, library: LIBRARY };
+  train: TRAIN, stacks: STACKS, library: LIBRARY, sandbox: SANDBOX };
 
 /** The logic modules (TIMER, SWITCH), shared by every scene. Checked like a scene. */
 export const LOGIC = logic as LogicData;

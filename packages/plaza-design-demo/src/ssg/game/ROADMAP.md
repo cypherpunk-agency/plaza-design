@@ -19,6 +19,9 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
    edge ping points there. ✓
 4. A tone pass over older content (the world is dry, the characters have the humour), and the
    small known issues. ✓
+- The **sandbox** (sudo only): REGISTRY QA BAY 3, one bench per engine feature, for testing
+   and showing the engine off outside the story (GAME-DATA.md, **Sandbox**). ✓ Open: add a bench
+   when the engine learns something new (the items agent's data format, the lighting pass).
 
 ## Then: the city
 

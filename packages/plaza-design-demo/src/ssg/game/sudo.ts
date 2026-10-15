@@ -1,7 +1,9 @@
 /**
  * Sudo mode: `?sudo` in the URL, for building and testing the game.
  *
- * - The pause menu gets LEVELS: every scene and cutscene; pick one to go there. OPENING · TRAIN
+ * - The pause menu gets LEVELS: every scene and cutscene; pick one to go there. SANDBOX first: the
+ *   engine's test bay (sandbox/), one bench per feature, reachable only here and by `?sudo&play=sandbox`.
+ *   OPENING · TRAIN
  *   HOME (and · MORNING, DELETED) play the opening; it locks hacking until uplink.so, even here.
  * - Everything is unlocked: every logic module, every program (scan.so; `&noscan` leaves it out), legs.so, every keyring item,
  *   the items a later level asks for (the maglev pass), tokens to spare, every place on the city map, the market gate open.
@@ -48,12 +50,14 @@ export const startLevel = (id: string): SceneId | null => STORY[id]?.start() ?? 
 export function levels(): Level[] {
   return [
     // the opening: the title screen over the sunrise; its NEW GAME plays the glide into the train home (title/)
+    // the engine's test bay (sandbox/): sudo only, its own scene save (RESET BAY 3 inside, or `reset sandbox --yes`)
+    { id: 'sandbox', name: 'SANDBOX · QA BAY 3 (ENGINE TEST)', note: 'LEVEL' },
     { id: 'title', name: 'OPENING · TITLE AND GLIDE', note: 'LEVEL' },
     // the opening (opening.ts): hacking stays locked while you play it, sudo or not, until Moth's uplink.so
     ...OPENING_LEVELS.map((l) => ({ id: l.id, name: l.name, note: 'LEVEL' })),
     ...Object.entries(STORY).map(([id, l]) => ({ id, name: l.name, note: 'LEVEL' })),
     ...Object.values(CUTSCENES).map((c) => ({ id: c.id, name: c.id.toUpperCase(), note: 'CUTSCENE' })),
-    ...Object.entries(SCENES).map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),
+    ...Object.entries(SCENES).filter(([id]) => id !== 'sandbox').map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),
   ];
 }
 
