@@ -4,9 +4,8 @@ One list for the story levels (LEVELS.md, PUZZLES.md, STORY.md) and the new plac
 (SCENES.md). Story first: Act I has priority, and the places come in when the story or the
 city needs them. Built places are marked ✓.
 
-The city layout (districts, places with several scenes, the map) is being decided now (Tommi,
-2026-10-15). New places wait for it, so each lands in its district. The district column is the
-current proposal.
+The city's structure (city → district → place → scene, the vertical cross-section, the map) is
+decided: see CITY.md. New places wait for the map redesign, so each lands in its district.
 
 ## Now: the engine and the screen
 
@@ -21,8 +20,8 @@ current proposal.
 
 ## Then: the city
 
-5. City layout and the map redesign: districts, places with several scenes, how they connect
-   (on foot, metro, taxi, elevators, canals, the overworld and the undercity).
+5. The city in code (districts → places → scenes, CITY.md), then the map redesign as a vertical
+   cross-section with two zoom levels (to be tested and adjusted).
 
 ## Act I: where is Moth?
 
