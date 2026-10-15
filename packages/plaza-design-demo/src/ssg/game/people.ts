@@ -10,7 +10,7 @@
  *     { seed: 8, x: 410, act: 'haggle', facing: -1 },                // two people haggling...
  *     { seed: 9, x: 386, act: 'haggle', facing: 1 },                 // ...facing each other
  *     { look: { body: 'old', garb: 'coat', hair: 'brim' }, x: 600, act: 'smoke' },
- *     { look: 'cat', x: 700, act: 'sit' },                           // non-humans: cat pigeon cleaner drone courier
+ *     { look: 'cat', x: 700, act: 'sit' },                           // non-humans: cat pigeon gull cleaner drone courier
  *     { id: 'gran', seed: 21, x: 820, act: 'sit', h: 10, name: 'GRAN',
  *       talk: [['First visit?', 'The fish is fresh.'], ['Still here?']] },  // talks; pages cycle per visit
  *   ];
@@ -41,7 +41,7 @@ export type Body = 'avg' | 'tall' | 'short' | 'wide' | 'slim' | 'kid' | 'old';
 export type Hair = 'bald' | 'short' | 'long' | 'bun' | 'mohawk' | 'cap' | 'beanie' | 'hood' | 'brim' | 'helmet' | 'scarf';
 export type Garb = 'tee' | 'jacket' | 'coat' | 'dress' | 'apron' | 'hivis' | 'suit' | 'robe';
 export type Extra = 'umbrella' | 'bag' | 'backpack' | 'cyberarm' | 'visor' | 'mask' | 'phone' | 'headphones' | 'glasses' | 'cane';
-export type Critter = 'cat' | 'pigeon' | 'cleaner' | 'drone' | 'courier';
+export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier';
 /**
  * What a person does. In place: stand (shifts weight, looks around), sit (on whatever is at `h`),
  * lean (legs crossed, arms folded), smoke, phone, haggle (gestures; pair two facing each other),
@@ -293,6 +293,15 @@ const CRITTERS: Record<Critter, { frames: Record<string, string[]>; pal: Record<
     },
     pal: { g: '#7a7a88', h: '#4a7a6a', e: '#ff7a2a', b: '#c8a890', p: '#c86a5a' },
   },
+  gull: {
+    frames: {
+      standA: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '..p.p..'],
+      standB: ['.......', '.......', 'ggwwwww', '.gggwwk', '..p.p.y'],
+      walkA: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '..p.p..'],
+      walkB: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '...pp..'],
+    },
+    pal: { w: '#e8e4dc', g: '#8a8e96', k: '#141414', y: '#e8b030', p: '#d08a3a' },
+  },
   cleaner: {
     frames: {
       walkA: ['....ww....', '...wwww...', '.wwwwwwww.', '.wkkkkkkw.', '.wkeekkkw.', '.wwwwwwww.', '.wyyyyyyw.', 'bb.k..k.bb'],
@@ -379,7 +388,7 @@ function walkAt(p: Person, R: Ready, t: number, speed: number, pause: number) {
   return { x: R.b - dir * (u - 2 * pause - run) * speed, face: -dir as 1 | -1, moving: true, end: 0 };
 }
 
-const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = { human: 0.32, cat: 0.45, pigeon: 0.12, cleaner: 0.22, drone: 0.35, courier: 0.55 };
+const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = { human: 0.32, cat: 0.45, pigeon: 0.12, gull: 0.14, cleaner: 0.22, drone: 0.35, courier: 0.55 };
 const MOVERS: Act[] = ['walk', 'sweep', 'steal', 'scan'];
 
 interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean }
@@ -389,14 +398,14 @@ function frameOf(p: Person, R: Ready, t: number): Frame {
   let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = false, end = 0;
   if (MOVERS.includes(act) && R.a !== R.b) {
     const sp = p.speed ?? DEFAULT_SPEED[R.critter ?? 'human'] ?? 0.3;
-    const w = act === 'steal' ? stealAt(R, t, sp) : walkAt(p, R, t, sp, act === 'sweep' ? 160 : R.critter === 'pigeon' ? 200 : 70 + (ph % 90));
+    const w = act === 'steal' ? stealAt(R, t, sp) : walkAt(p, R, t, sp, act === 'sweep' ? 160 : R.critter === 'pigeon' || R.critter === 'gull' ? 200 : 70 + (ph % 90));
     ({ x, face, moving, end } = w);
   }
   const step = Math.floor(tt / (act === 'steal' && moving && face !== (R.b > R.a ? 1 : -1) ? 5 : 9)) % 2 ? 'stepA' : 'stepB';
   if (R.critter) {
     const c = R.critter;
     if (c === 'cat') return { x, face, legs: moving ? (Math.floor(tt / 8) % 2 ? 'walkA' : 'walkB') : tt % 500 < 60 ? 'sitB' : 'sitA', arms: 'down', bob: 0, moving };
-    if (c === 'pigeon') return { x, face: moving ? face : (Math.floor(tt / 170) % 2 ? 1 : -1), legs: moving ? (Math.floor(tt / 6) % 2 ? 'walkA' : 'walkB') : tt % 90 < 25 ? 'standB' : 'standA', arms: 'down', bob: 0, moving };
+    if (c === 'pigeon' || c === 'gull') return { x, face: moving ? face : (Math.floor(tt / 170) % 2 ? 1 : -1), legs: moving ? (Math.floor(tt / 6) % 2 ? 'walkA' : 'walkB') : tt % 90 < 25 ? 'standB' : 'standA', arms: 'down', bob: 0, moving };
     const spin = Math.floor(tt / (c === 'drone' ? 3 : 8)) % 2 ? 'walkA' : 'walkB';
     return { x, face, legs: c === 'courier' && !moving ? 'walkA' : spin, arms: 'down', bob: c === 'drone' ? Math.round(Math.sin(tt * 0.06) * 2) : 0, moving };
   }
