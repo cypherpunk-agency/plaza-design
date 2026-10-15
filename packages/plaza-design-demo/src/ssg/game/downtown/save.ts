@@ -1,9 +1,9 @@
 /**
  * Downtown and the save it had before the engine. Its progress lives in
- * the save's own fields (`handle`, `tokens`, `jump`, `freed`, `flags.till`,
+ * the save's own fields (`handle`, `tokens`, `jump`, `controlled`, `flags.till`,
  * `flags.end`), and the scene's save (`save.scenes.downtown`) only adds what is
  * new on the street. `reconcile` makes the scene agree with those fields every
- * time it loads: a player who freed 0x2F on the old terminal finds the box
+ * time it loads: a player who took 0x2F on the old terminal finds the box
  * logged in, its sector open and `vrify` on the keyring; one who cleared
  * Downtown finds the gate open. Nothing is ever taken away.
  */
@@ -16,9 +16,9 @@ export function reached(s: DowntownSave): Record<string, boolean> {
   return {
     handle: !!s.handle,
     till: !!s.flags.till,
-    box: s.freed.includes('0x2F'),
+    box: s.controlled.includes('0x2F'),
     install: !!s.jump,
-    relay: s.freed.includes('0x31'),
+    relay: s.controlled.includes('0x31'),
     gate: !!s.flags.end,
   };
 }
@@ -37,8 +37,8 @@ export function reconcile(m: SceneModel, s: DowntownSave) {
   };
   if (s.flags.till) login('till', 'drawer');
   // the clues those logins took: on the keyring, as if read (the relay's password is built from `vrify`)
-  if (s.freed.includes('0x2F')) { login('box', 'maint'); m.give('vrify'); }
-  if (s.freed.includes('0x31')) { login('relay', 'maint'); m.give('rule.reverse'); }
+  if (s.controlled.includes('0x2F')) { login('box', 'maint'); m.give('vrify'); }
+  if (s.controlled.includes('0x31')) { login('relay', 'maint'); m.give('rule.reverse'); }
   if (s.flags.end) {
     m.set('lock', 'open');
     m.set('routeFixed', true);

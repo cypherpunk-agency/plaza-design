@@ -1,4 +1,84 @@
 {
+  "networks": [
+    {
+      "id": "home",
+      "name": "HOME · CAPSULE 7B",
+      "note": "your flat's line. since the Registry pulled your key it reaches the building and nothing else.",
+      "from": [{ "port": "capsule:pc.net" }, { "port": "capsule:router.uplink" }],
+      "need": "your own PC, in Capsule 7B",
+      "machines": [
+        { "id": "concierge", "in": ["capsule"] },
+        { "id": "pc", "in": ["capsule"] },
+        { "id": "router", "in": ["capsule"] },
+        { "id": "plug", "in": ["capsule"] }
+      ]
+    },
+    {
+      "id": "library",
+      "name": "LIBRARY LAN",
+      "note": "the public library's own network. no line out: the books were the last thing it sent anywhere.",
+      "from": [{ "port": "library:reader.lan" }, { "port": "library:printer.spool" }],
+      "need": "inside the public library: its card reader, its printer",
+      "machines": [
+        { "id": "catalog", "in": ["library"] },
+        { "id": "lending", "in": ["library"] },
+        { "id": "heating", "in": ["library"] },
+        { "id": "reader", "in": ["library"] },
+        { "id": "session", "in": ["library"] },
+        { "id": "printer", "in": ["library"] }
+      ]
+    },
+    {
+      "id": "public",
+      "name": "THE PUBLIC NET",
+      "note": "street boxes, ads, timetables, the weather. everybody's, so nobody's.",
+      "from": [{ "port": "downtown:relay.uplink" }, { "controlled": "0x2F" }, { "controlled": "0x31" }, { "controlled": "0x3C" }],
+      "need": "a public port on the street: a Registry box you control, the rooftop relay",
+      "machines": [
+        { "id": "box", "in": ["downtown"], "node": "0x2F" },
+        { "id": "relay", "in": ["downtown"], "node": "0x31" },
+        { "id": "billboard", "in": ["downtown"], "node": "0x3C" },
+        { "id": "cam3", "in": ["downtown"] },
+        { "id": "maglev", "in": ["downtown"] },
+        { "id": "weathersat", "in": ["downtown"] },
+        { "id": "undernet", "in": ["downtown"] }
+      ]
+    },
+    {
+      "id": "fleet",
+      "name": "DELIVERY FLEET",
+      "note": "DISPATCH and the robots it routes. shields up, outside in.",
+      "from": [{ "port": "downtown:dlv9.uplink" }, { "net": "public" }],
+      "need": "a delivery robot's uplink, or the public net",
+      "machines": [
+        { "id": "dispatch", "in": ["downtown"] },
+        { "id": "dlv9", "in": ["downtown"] }
+      ]
+    },
+    {
+      "id": "friendnet",
+      "name": "FRIENDNET",
+      "note": "where friends post. the Registry reads it too; it says so in the terms.",
+      "from": [{ "net": "public" }, { "port": "moth:desk.net" }],
+      "need": "the public net, or a friend's own rig",
+      "machines": [
+        { "id": "friendnet", "in": ["downtown", "moth"] }
+      ]
+    },
+    {
+      "id": "mothnet",
+      "name": "FLAT 4C",
+      "note": "Moth's own network. one way in, and it is not the door.",
+      "from": [{ "port": "moth:friendnet.home" }],
+      "need": "FRIENDNET's link home, from Moth's own rig",
+      "machines": [
+        { "id": "mothpc", "in": ["moth"] }
+      ]
+    }
+  ],
+  "programs": [
+    { "id": "scan.so", "name": "SCAN", "look": "finds the machines a port can reach, and connects to them.", "foundIn": "library" }
+  ],
   "nodes": [],
   "cables": [],
   "keyring": []

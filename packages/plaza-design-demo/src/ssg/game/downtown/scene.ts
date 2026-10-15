@@ -65,7 +65,7 @@ export function drawDowntown(x: CanvasRenderingContext2D, m: SceneModel, v: Draw
   if (seen(330)) {
     const s = sx(330);
     box(x, s - 14, y(70), 28, 34, '#1a1410', 'rgba(255,136,0,.7)');
-    leds(s - 9, y(58), 4, flag('freed2F'));
+    leds(s - 9, y(58), 4, flag('controlled2F'));
     text(x, '0x2F', s, y(64), 'rgba(255,217,165,.6)', 6);
     tell(x, t, s + 9, y(42), 1);
   }
@@ -83,7 +83,7 @@ export function drawDowntown(x: CanvasRenderingContext2D, m: SceneModel, v: Draw
     box(x, s - 12, y(h + 22), 24, 22, '#1a1410', 'rgba(255,136,0,.7)');
     x.strokeStyle = 'rgba(255,136,0,.7)'; x.beginPath(); x.moveTo(s + 6.5, y(h + 22)); x.lineTo(s + 6.5, y(h + 40)); x.stroke();
     x.fillStyle = 'rgba(255,42,68,' + (Math.floor(t / 30) % 2 ? 0.9 : 0.3) + ')'; x.fillRect(s + 5, y(h + 42), 3, 2);
-    leds(s - 8, y(h + 14), 3, flag('freed31') && tr <= 0);
+    leds(s - 8, y(h + 14), 3, flag('controlled31') && tr <= 0);
     if (tr > 0) { x.fillStyle = 'rgba(255,42,68,.85)'; x.fillRect(s - 10, y(h + 4), Math.round((20 * tr) / 100), 2); }
     tell(x, t, s - 8, y(h + 6), 2);
   }

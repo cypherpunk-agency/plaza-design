@@ -723,6 +723,10 @@ export const demoStyles = `
     #scene-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
     #scene-btns .hack-btn:disabled { opacity: 0.4; cursor: default; color: var(--color-text-muted); border-color: var(--color-border-default); }
     #scene-btns .hack-btn[hidden] { display: none; }
+    /* NET (the net map): it pings until the map has been opened once (game.ts, NET.md) */
+    #scene-btns .hack-btn.ping, html.net-new #touch .net { animation: net-ping 1.1s ease-in-out infinite; }
+    @keyframes net-ping { 50% { box-shadow: 0 0 0 3px rgba(255, 61, 242, 0.55), 0 0 14px rgba(255, 61, 242, 0.8); } }
+    @media (prefers-reduced-motion: reduce) { #scene-btns .hack-btn.ping, html.net-new #touch .net { animation: none; box-shadow: 0 0 0 2px rgba(255, 61, 242, 0.7); } }
     /* on touch every button is in the bottom bar (#touch): no HACK/BOARD along the top */
     html.touch #scene-btns { display: none; }
     html.touch #scene-btns .hack-btn { padding: var(--spacing-1) var(--spacing-3); }
@@ -1075,6 +1079,7 @@ ${FEEDBACK_STYLES}
     html.hack-on #touch .pad:first-child { visibility: hidden; }
     #touch .hack,
     #touch .vis-only { color: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
+    html:not(.net-ok) #touch .net { display: none; }
     html.logic-open #touch .logic,
     html.unfold-on #touch .unfold { color: #000; background: rgb(255, 61, 242); }
 

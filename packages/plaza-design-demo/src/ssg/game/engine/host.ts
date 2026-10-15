@@ -20,7 +20,7 @@
  * The keyring and the modules are the player's, across scenes.
  */
 
-import type { SceneData, SceneSave } from '../data/types';
+import type { MachineData, SceneData, SceneSave } from '../data/types';
 import type { SceneDef, View } from '../scenes/kit';
 import type { LineKind } from '../terminal';
 import { type Line, type Spot, SceneModel } from './model';
@@ -77,6 +77,11 @@ export interface SceneStore {
   drop?: (id: string) => void;
   /** Sudo mode: every LINK reaches every node. */
   sudo?: boolean;
+  /** The programs the player owns (scan.so), and one more (and write the save). */
+  programs?: () => string[];
+  program?: (id: string) => void;
+  /** The nodes the player controls, by Registry label (0x2F). */
+  controlled?: () => string[];
   /** This scene's saved progress, if any. */
   load: () => SceneSave | undefined;
   /** Keep this as the scene's progress (and write the save). */
@@ -143,6 +148,12 @@ export class SceneHost {
   /** Hack vision's own buttons (desktop key bar): the LOGIC drawer, and every circuit unfolded at once. */
   private logicBtn: HTMLButtonElement;
   private unfoldBtn: HTMLButtonElement;
+  /** NET (N): the net map. Only once you own scan.so (`netOk`); it pings the first time it shows (`netNew`). The game sets them. */
+  private netBtn: HTMLButtonElement;
+  netOk: () => boolean = () => false;
+  netNew: () => boolean = () => false;
+  /** NET was pressed: the game opens the net map. */
+  onNet: () => void = () => {};
   /** Hack vision: the reset button (⊙) or a double-tap asked for the normal view. The game sets it. */
   onResetView: () => void = () => {};
   /** Hack vision's LOGIC drawer or UNFOLD changed: the game updates its bars. */
@@ -173,6 +184,9 @@ export class SceneHost {
       flag: store?.flag,
       drop: store?.drop,
       sudo: store?.sudo ? () => true : undefined,
+      programs: store?.programs,
+      program: store?.program,
+      controlled: store?.controlled,
     }, def.data ?? emptyData(def.id, def.name), rules);
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
@@ -206,9 +220,11 @@ export class SceneHost {
     this.logicBtn = button('LOGIC · L', () => this.toggleLogic());
     this.logicBtn.dataset.logic = '';
     this.logicBtn.title = 'the logic drawer: timers and switches to drag into the scene (L)';
+    this.netBtn = button('NET · N', () => this.onNet());
+    this.netBtn.title = 'the net map: the networks you have found, and what you reach from here (N)';
     this.unfoldBtn = button('UNFOLD · U', () => this.toggleUnfold());
     this.unfoldBtn.title = 'unfold every circuit at once, to compare them (U)';
-    this.logicBtn.hidden = this.unfoldBtn.hidden = true;
+    this.logicBtn.hidden = this.unfoldBtn.hidden = this.netBtn.hidden = true;
     this.vision.onReset = () => this.onResetView();
     this.vision.onDrawer = () => { this.sync(); this.onVisionUi(); };
     host.appendChild(this.btns);
@@ -359,14 +375,39 @@ export class SceneHost {
     }
     if (this.hackBtn.classList.contains('on') !== on) {
       this.hackBtn.classList.toggle('on', on); this.hackBtn.setAttribute('aria-pressed', String(on));
-      // in hack vision the bar is hack vision's: EXIT, BOARD, LOGIC, UNFOLD
+      // in hack vision the bar is hack vision's: EXIT, BOARD, LOGIC, NET, UNFOLD
       this.hackBtn.textContent = on ? 'EXIT · H' : 'HACK · H';
       this.logicBtn.hidden = this.unfoldBtn.hidden = !on;
     }
+    // NET once you own scan.so; it pings until the net map has been opened once
+    const net = !on || !this.netOk();
+    if (this.netBtn.hidden !== net) this.netBtn.hidden = net;
+    const ping = !net && this.netNew();
+    if (this.netBtn.classList.contains('ping') !== ping) this.netBtn.classList.toggle('ping', ping);
     const lo = on && this.vision.drawerOpen, un = this.vision.allUnfolded;
     if (this.logicBtn.classList.contains('on') !== lo) this.logicBtn.classList.toggle('on', lo);
     if (this.unfoldBtn.classList.contains('on') !== un) { this.unfoldBtn.classList.toggle('on', un); this.unfoldBtn.textContent = un ? 'FOLD · U' : 'UNFOLD · U'; }
   }
+
+  /**
+   * A machine picked on the net map (or the deck's `connect`): onto the board, as a LINK's connect
+   * would bring it, and the board opens on it. `place`: where a machine of another scene lives.
+   * False when it could not come (out of reach, no scan.so).
+   */
+  plugIn(id: string, place?: (m: MachineData) => string): boolean {
+    const l = this.model.plugIn(id, place), d = this.model.devices.get(id);
+    this.say(l, d && !d.node ? id : undefined);
+    if (d && l[2] !== 'err' && !this.hackLock()) {
+      this.schem.known.add(id);
+      this.popup.close(); this.panels.close(); this.vision.close();
+      this.schem.openDevice(id);
+      this.sync();
+    }
+    return l[2] !== 'err';
+  }
+
+  /** The deck's `scan` (and opening the net map): every node in reach from here shows on the board. */
+  scanHere() { const l = this.model.scanHere(); this.say(l); return l; }
 
   /** L in hack vision: the LOGIC drawer open or shut. */
   toggleLogic() { if (this.vision.isOpen) this.vision.setDrawer(!this.vision.drawerOpen); }

@@ -95,10 +95,14 @@ export interface LogData {
 }
 
 /**
- * A LINK noun: `scan` shows the nodes in reach on the board; `connect <node>` brings one in.
+ * A LINK noun: a port onto the net (NET.md). It reaches the networks whose access rule names this
+ * port (net.json `networks`: `{ "port": "scene:device.noun" }`) and what those lead to; `reach`
+ * adds nodes it reaches directly. `scan` (needs the program `scan.so`) shows them on the board;
+ * `connect <node>` brings one in. `known`: nodes it connects to without a scan, and without
+ * `scan.so` (an address book: the home PC knows CONCIERGE, the card reader the catalog).
  * `when`: the link works only while this holds (a router that is off scans nothing).
  */
-export interface LinkData { reach: string[]; when?: Cond }
+export interface LinkData { reach?: string[]; known?: string[]; when?: Cond }
 
 // ---------- lock toys (scene/toys/): one per lock type ----------
 
@@ -377,7 +381,33 @@ export interface LogicData { modules: LogicModule[] }
  * pre-wired between them (they appear when a node they touch is connected),
  * and keyring items found on them.
  */
-export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[]; watchdog?: WatchdogData }
+export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[]; watchdog?: WatchdogData; networks: NetworkData[]; programs: ProgramData[] }
+
+/**
+ * A network (NET.md): a group of machines with its own access rule. Any one rule in `from` is
+ * enough: a `port` (a LINK noun, `scene:device.noun`, that is up), another `net` you reach, or a
+ * node you `controlled` (its Registry label, `0x2F`) that you reach: standing in the scene you
+ * are in, or a machine of a network you reach. A controlled node is an access point.
+ */
+export interface NetworkData {
+  id: string;
+  name: string;
+  /** One dry line about it, for the net map. */
+  note: string;
+  from: AccessRule[];
+  /** What kind of place you would have to plug in from (the net map says it when you can't). */
+  need: string;
+  machines: MachineData[];
+}
+export type AccessRule = { port: string } | { net: string } | { controlled: string };
+/**
+ * A machine on a network: a device or node of a scene file (`in`: the scenes whose file has it,
+ * `net` for net.json). `node`: its Registry label (`0x2F`), when it is a node you can take control of.
+ */
+export interface MachineData { id: string; in: string[]; node?: string }
+
+/** A program (NET.md): a `.so` you earn and keep (`save.programs`), handed out by a `give` step. */
+export interface ProgramData { id: string; name: string; look: string; foundIn: string }
 
 /** The engine's own wording (engine.json): guard, seal, trace, net and wiring lines. A scene may override any. */
 export interface EngineData { texts: Record<string, string | LineData> }

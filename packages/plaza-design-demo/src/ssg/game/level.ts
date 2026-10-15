@@ -22,7 +22,12 @@ export interface Save {
   jump: boolean;
   /** Logic modules owned, shared by every scene: `timer.so`, `switch.so`. Not legs.so (that is `jump`). */
   modules: string[];
-  freed: string[];
+  /** Registry nodes you have taken control of, by label (`0x2F`): access points onto their networks (NET.md). */
+  controlled: string[];
+  /** Programs you own (NET.md): `scan.so` from the library. uplink.so stays a keyring chip. */
+  programs: string[];
+  /** Networks you have found (net.json ids): the net map draws them. */
+  nets: string[];
   flags: Record<string, boolean>;
   hints: Record<string, number>;
   /** The keyring: clue fragments and key chips (ids in the game data's `keyring`), carried across scenes. */
@@ -38,13 +43,16 @@ export interface Save {
 /** `?sudo` in the URL: everything unlocked, a LEVELS menu, and its own save (sudo.ts). */
 export const SUDO = (() => { try { return new URLSearchParams(location.search).has('sudo'); } catch { return false; } })();
 
-/** v2: one kind of place (scenes, `scenes.<id>`); saves from before (v1, with `zones`) are not read, everyone starts fresh. */
-export const SAVE_KEY = SUDO ? 'access-denied-save-sudo-v2' : 'access-denied-save-v2';
+/**
+ * v3: the net (NET.md): `controlled` nodes (was `freed`), `programs`, `nets`. Saves from before
+ * (v2, v1) are not read: everyone starts fresh (Tommi: no migration).
+ */
+export const SAVE_KEY = SUDO ? 'access-denied-save-sudo-v3' : 'access-denied-save-v3';
 
 /** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` scene replaces it later. */
 
 export function newSave(): Save {
-  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], items: {}, freed: [], flags: {}, hints: {}, scenes: {} };
+  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: {}, hints: {}, scenes: {} };
 }
 
 /** A stored save, with anything missing filled in from a new game. */
@@ -56,6 +64,7 @@ export function loadSave(): Save {
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
       if (!s.scenes || typeof s.scenes !== 'object') s.scenes = {};
       if (!Array.isArray(s.keyring)) s.keyring = [];
+      for (const k of ['controlled', 'programs', 'nets'] as const) if (!Array.isArray(s[k])) s[k] = [];
       if (!s.items || typeof s.items !== 'object' || Array.isArray(s.items)) s.items = {};
       s.items = Object.fromEntries(Object.entries(s.items).filter(([, n]) => Number.isInteger(n) && n > 0));
       return s;
@@ -72,7 +81,7 @@ export function storeSave(s: Save) {
 }
 
 export const BASE_NODES = 42;
-export const nodeCount = (s: Save) => BASE_NODES + s.freed.length;
+export const nodeCount = (s: Save) => BASE_NODES + s.controlled.length;
 export const who = (s: Save) => s.handle || 'ghost';
 
 export type Objective = 'handle' | 'till' | 'box' | 'install' | 'relay' | 'gate' | 'done';
@@ -81,9 +90,9 @@ export type Objective = 'handle' | 'till' | 'box' | 'install' | 'relay' | 'gate'
 export function objective(s: Save): Objective {
   if (!s.handle) return 'handle';
   if (!s.flags.till) return 'till';
-  if (!s.freed.includes('0x2F')) return 'box';
+  if (!s.controlled.includes('0x2F')) return 'box';
   if (!s.jump) return 'install';
-  if (!s.freed.includes('0x31')) return 'relay';
+  if (!s.controlled.includes('0x31')) return 'relay';
   if (!s.flags.end) return 'gate';
   return 'done';
 }
@@ -156,9 +165,9 @@ const NPC_LINES: Record<string, [string[], string[]]> = {
 };
 
 export function npcTalk(id: string, s: Save): string[] {
-  if (id === 'hood' && s.freed.includes('0x3C')) return ['Billboard\'s showing a pigeon.', 'Best thing it ever ran.'];
+  if (id === 'hood' && s.controlled.includes('0x3C')) return ['Billboard\'s showing a pigeon.', 'Best thing it ever ran.'];
   const [before, after] = NPC_LINES[id] ?? [['...'], ['...']];
-  return s.freed.length ? after : before;
+  return s.controlled.length ? after : before;
 }
 
 const HINTS: Record<Objective, string[]> = {
@@ -249,6 +258,11 @@ export interface Ctx {
   resetYard: () => void;
   /** Your own deck while you still exist (the opening, opening.ts): its files and what `whoami` says. */
   deck?: { files: Record<string, string>; whoami: string };
+  /**
+   * The net from where you stand (NET.md), once hacking is yours: `scan` (needs scan.so), `connect
+   * <machine>` (scan.so, or a machine a port here knows); `names`: machines worth suggesting.
+   */
+  net?: { scan: () => void; connect: (name: string) => void; names: () => string[] };
 }
 
 const MAN: Record<string, string> = {
@@ -260,7 +274,9 @@ const MAN: Record<string, string> = {
   use: 'use <noun> --<verb>: any verb on the machine, as the schematic prints it. "<verb> <noun>" works too.',
   whoami: 'whoami: who the city thinks you are.',
   set: 'set handle <name>: picks your name. 2 to 16 letters, digits, _ or -.',
-  nodes: 'nodes: how many nodes run free of the Registry.',
+  nodes: 'nodes: how many nodes run outside the Registry, and which of them answer to you.',
+  scan: 'scan: lists the machines you reach from where you are plugged in. needs scan.so.',
+  connect: 'connect <machine>: brings a machine you reach onto your board. the deck talks to it after.',
   map: 'map: what you know of Downtown.',
   sound: 'sound: chiptune on or off. M does the same.',
   exit: 'exit: closes the terminal.',
@@ -277,6 +293,8 @@ export function commands(c: Ctx): string[] {
   const base = ['help', 'man', 'ls', 'cat', 'whoami', 'set', 'nodes', 'map', 'sound', 'clear', 'exit', 'reset'];
   // contacts on your deck (contacts.ts): Moth, after Act I
   if (contactsOf(c.save.flags).length) base.push('contacts', 'msg');
+  // the net (NET.md): scan and connect, from where you are plugged in
+  if (c.net) base.push('scan', 'connect');
   if (c.machine && c.shell) {
     base.push('use');
     if (c.shell.hasGuard(c.machine)) base.push('login');
@@ -286,7 +304,7 @@ export function commands(c: Ctx): string[] {
 }
 
 /** Commands that need nothing after them: on the touch deck, one tap runs them. */
-export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'sound', 'clear', 'exit', 'contacts'];
+export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'sound', 'clear', 'exit', 'contacts', 'scan'];
 
 /** What the deck can read right now: the machine's readable nouns, or your own files. */
 const readable = (c: Ctx) => (c.machine && c.shell ? c.shell.readable(c.machine) : Object.keys(c.deck?.files ?? DECK));
@@ -313,6 +331,7 @@ export function suggest(c: Ctx, line: string): string[] {
     case 'set': return pick(['handle']);
     case 'reset': return pick(['--yes', 'yard']);
     case 'msg': return pick(contactsOf(c.save.flags).map((k) => k.id));
+    case 'connect': return pick(c.net?.names() ?? []);
     default: return [];
   }
 }
@@ -322,7 +341,7 @@ function map(c: Ctx): string {
   return [
     'DOWNTOWN',
     ' west                                                   east',
-    ' [MARKET GATE] ' + (s.flags.end ? 'open   ' : s.freed.includes('0x31') ? 'scanner' : '???????') + ' · [BOX 0x2F] ' + done(s.freed.includes('0x2F')) + ' · [STALL] · [ROOF 0x31] ' + done(s.freed.includes('0x31')) + ' · [ANTENNA] root · [SCAN] 0/3',
+    ' [MARKET GATE] ' + (s.flags.end ? 'open   ' : s.controlled.includes('0x31') ? 'scanner' : '???????') + ' · [BOX 0x2F] ' + done(s.controlled.includes('0x2F')) + ' · [STALL] · [ROOF 0x31] ' + done(s.controlled.includes('0x31')) + ' · [ANTENNA] root · [SCAN] 0/3',
   ].join('\n');
 }
 
@@ -360,7 +379,7 @@ export function run(c: Ctx, line: string) {
       c.print('handle set: ' + name + (first ? '. Go tell the fixer.' : '.'), 'ok');
       return;
     }
-    case 'nodes': c.print('NODES: ' + nodeCount(s) + ' ACTIVE · freed by you: ' + (s.freed.join(', ') || 'none yet')); return;
+    case 'nodes': c.print('NODES: ' + nodeCount(s) + ' ACTIVE · yours: ' + (s.controlled.join(', ') || 'none yet')); return;
     case 'map': c.print(map(c)); return;
     case 'sound': c.print('sound ' + (c.toggleSound() ? 'on' : 'off') + '.', 'dim'); return;
     case 'clear': c.clear(); return;
@@ -379,6 +398,15 @@ export function run(c: Ctx, line: string) {
     case 'install':
       if (!at) { c.print('install: no such module here.', 'err'); return; }
       at.sh.install(at.dev, args[0] || '');
+      return;
+    case 'scan':
+      if (!c.net) { c.print('scan: command not found.', 'dim'); return; }
+      c.net.scan();
+      return;
+    case 'connect':
+      if (!c.net) { c.print('connect: command not found.', 'dim'); return; }
+      if (!args[0]) { c.print('usage: connect <machine>. scan first to see what is in reach.', 'dim'); return; }
+      c.net.connect(args.join(' '));
       return;
     case 'contacts': {
       const list = contactsOf(s.flags);

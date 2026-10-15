@@ -67,6 +67,6 @@ export const SETS: SetEntry[] = [
   {
     id: 'downtown-towers', file: 'sets/downtown-towers.ts',
     what: 'Downtown as a skyline: tower slabs with seeded lit windows, rooftop masts and tanks, signs on plates.',
-    users: ['title/glide.ts: three rows deep, closing in on the sun'],
+    users: ['title/glide.ts: three rows deep, closing in on the sun', 'library/scene.ts: through the reading room\'s tall windows'],
   },
 ];

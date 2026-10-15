@@ -88,9 +88,9 @@ Append one line per decision: what, which side, why.
 - Typing in the deck (the terminal, last resort) on a scene: **engine**, `SceneHost.typed(fn)` runs
   what was typed without echoing the shell line a second time; `SceneHost.viewing` is the device
   whose schematic is open. What the commands mean (`ls`, `cat`, `login`) is the scene's code.
-- Downtown's progress stays in the save's own fields (`handle`, `tokens`, `jump`, `freed`,
+- Downtown's progress stays in the save's own fields (`handle`, `tokens`, `jump`, `controlled`,
   `flags.till`, `flags.end`), as before the engine: **code** reads them as derived values
-  (`till`, `freed2F`, `jump`, `end`, `handle`, …) and its effects write them (`node.free`,
+  (`till`, `controlled2F`, `jump`, `end`, `handle`, …) and its effects write them (`node.control`,
   `legs.install`, `till.pay`, `dlv.drive`), in `downtown/rules.ts`. The scene's own `state` is only
   what is new on the street (the gate's lock, DLV-9, the billboard's feed). `downtown/save.ts`
   `reconcile` makes the scene agree with the fields on every load, so old saves keep everything.
@@ -495,13 +495,48 @@ of its verbs on the board in the last `linger` ms.
 
 ## The net
 
-A LINK noun (`"link": { "reach": ["concierge"] }`) has the engine's verbs `scan` (nodes in reach
-appear on the board as dashed silhouettes) and `connect <node>` (the node comes in as a full
-schematic, on the board only, with its pre-wired cables). A node may have its own LINK: that is
-a hop. Nodes are in a scene's `nodes` or in `net.json`. Seen and connected nodes are saved.
-A link may have a `when` (the router's and the home PC's: `routerUp`): while it does not hold,
-it neither scans nor connects. In sudo mode (`?sudo`) every LINK reaches every node there is
-(the scene's and `net.json`'s), its `when` still applies.
+The design is NET.md. Where you plug in decides what you reach.
+
+**Networks** (`net.json` `networks`): a group of machines and its access rule. Any one rule in
+`from` is enough: `{ "port": "scene:device.noun" }` (a LINK you are plugged in at, up: its
+`when` holds, its sector open), `{ "net": "public" }` (another network you reach), or
+`{ "controlled": "0x2F" }` (a node you control that you reach: it stands in the scene you are in,
+or it is a machine of a network you reach; a controlled node is an access point). `machines`:
+`{ id, in: [scene ids or "net"], node?: "0x2F" }`, a device or node of those files. `need`: what
+kind of place you would plug in from (the net map says it when you can't reach the network).
+`note`: one dry line. Pure logic: `engine/net.ts` (`reachNets`, `machinesOf`, `nextTo`).
+
+| Network | Machines | Reached from |
+| --- | --- | --- |
+| `home` HOME · CAPSULE 7B | CONCIERGE, HOME-PC, ROUTER, SMART PLUG | `capsule:pc.net`, `capsule:router.uplink` |
+| `library` LIBRARY LAN | CATALOG, SOFTWARE LENDING, HEATING, the reader, the timer, the printer | `library:reader.lan`, `library:printer.spool` (inside only) |
+| `public` THE PUBLIC NET | box 0x2F, relay 0x31, billboard 0x3C, CAM-3, MAGLEV, WEATHER SAT, UNDERNET | `downtown:relay.uplink`; controlled 0x2F, 0x31, 0x3C |
+| `fleet` DELIVERY FLEET | DISPATCH, DLV-9 | `downtown:dlv9.uplink`; the public net |
+| `friendnet` FRIENDNET | FRIENDNET (Downtown's view and Moth's) | the public net; `moth:desk.net` |
+| `mothnet` FLAT 4C | MOTH-PC | `moth:friendnet.home` (a hop) |
+
+**A LINK noun** (`"link": {}`, optional `reach`, `known`, `when`) has the engine's verbs
+`scan` (nodes in reach appear on the board as dashed silhouettes) and `connect <node>` (the node
+comes in as a full schematic, on the board only, with its pre-wired cables). What it reaches: the
+nodes of the networks its own port leads to (and theirs, by `net` and `controlled` rules), plus
+its own `reach` and `known`. A node may have its own LINK: that is a hop. Nodes are in a scene's
+`nodes` or in `net.json`. Seen and connected nodes are saved (per scene). A link's `when` (the
+router's and the home PC's: `routerUp`): while it does not hold, it neither scans nor connects.
+
+**Programs** (`net.json` `programs`, `save.programs`): `scan.so` (from the library, P16). Without
+it a LINK does not scan, and connects only to what it `known`s (the home PC's CONCIERGE, the
+library's reader and printer): `net.noscan`. A `{ "give": "scan.so" }` step hands one out; the
+check holds `foundIn` to that, as for modules. uplink.so stays a keyring chip.
+
+**From the scene** (the net map and the deck): you are plugged in at every LINK on the board that is
+up; the networks you reach are those, plus your controlled nodes standing here (Downtown's street
+with 0x2F yours reaches the public net). The deck's `scan` and `connect <machine>` and the net map
+(N, NET in hack vision) use it (`SceneModel.ports`, `netsHere`, `nodesHere`, `scanHere`, `plugIn`).
+A machine whose data lives in another scene's file is shown, but its board is there.
+
+In sudo mode (`?sudo`) every LINK reaches every node there is (the scene's and `net.json`'s), its
+`when` and scan.so still apply; the net map and the deck use the true reach. `?sudo&noscan`: no
+scan.so (the state before the library).
 
 ## The watchdog
 
@@ -640,12 +675,16 @@ At runtime a missing text shows as `[missing text key]` in the terminal rather t
 
 ## Saves
 
-One localStorage object (`access-denied-save-v2`; sudo's is `access-denied-save-sudo-v2`, slots
-`access-denied-v2-slot-<n>`). v2 came with the merge of zones into scenes: saves from before
-(v1, with `zones`) are not read, and everyone starts fresh. Besides Downtown's fields:
+One localStorage object (`access-denied-save-v3`; sudo's is `access-denied-save-sudo-v3`, slots
+`access-denied-v3-slot-<n>`). v3 came with the net (NET.md: `freed` became `controlled`), v2 with
+the merge of zones into scenes: older saves are not read, and everyone starts fresh. Besides
+Downtown's fields:
 
 ```ts
 modules: string[]            // owned logic modules: ["timer.so"]; legs.so stays `jump`
+controlled: string[]         // Registry nodes that answer to you, by label: ["0x2F"] (NET.md: access points)
+programs: string[]           // programs owned: ["scan.so"]
+nets: string[]               // networks found (net.json ids): the net map draws them
 keyring: string[]            // keyring item ids, and made fragments as `join(a,b)`
 items: { [id]: number }      // what you carry, bought or given: { fish: 2, tea: 1 } (ids: scenes/kit.ts ITEMS)
 scenes: { [id]: SceneSave }    // each scene's progress, by scene id
@@ -698,7 +737,8 @@ Decided (save details):
 
 - `game/data/types.ts`: the format, as TypeScript types.
 - `game/data/yard.json`: the back yard. `game/data/logic.json`: the shared logic modules.
-  `game/data/net.json`: the shared net (empty for now). `game/data/engine.json`: engine wording.
+  `game/data/net.json`: the networks, the programs, and shared nodes (none yet).
+  `game/data/library.json`: the public library (P16): reader, timer, printer, CATALOG, LENDING, HEATING. `game/data/engine.json`: engine wording.
 - `game/data/check.ts`: the build-time check (`checkGame`). `game/data/index.ts`: bundles the JSON.
 - `game/engine/`: the engine (see **The engine**).
 - `game/capsule/`: Capsule 7B, the start scene: `rules.ts` (`CAPSULE_RULES`: the clock, the router,
@@ -756,7 +796,7 @@ Boundary: the picture (layout, motion) is **code**; titles, timing, cards and th
    CLOCK nouns, the engine's `watchdog` noun, `guard.toy`). Where a sketch was clearly better the
    engine took it: a guard's own success line (`guard.say`, from the sketches' `on.opened` lines).
 5. Built since: the watchdog, `give` for modules and tokens, the lock toys, `fixed` cables, CLOCK
-   nouns. Not built: the `effect`s the sketches name (`node.free`, `pixel.move`,
+   nouns. Not built: the `effect`s the sketches name (`node.control`, `pixel.move`,
    `dlv.drive`, `washer.run`, `train.brake`, …): scene code, written with each scene.
 6. **Toys and trace:** playing a toy does not count as being inside the device (only `probe` and
    answers touch it). Should a LOG fill while a toy panel is open?

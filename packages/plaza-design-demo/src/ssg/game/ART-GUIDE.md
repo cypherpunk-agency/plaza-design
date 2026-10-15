@@ -69,7 +69,7 @@ or a plate under the shop sign, not text in the air).
 | Orange | the world's structure: walls, frames, outlines |
 | Cyan | technology you can use: machines, screens, prompts |
 | Pink | the hacking layer: schematics, hack vision, things you crafted |
-| Green | success, freed, open |
+| Green | success, yours (a controlled node), open |
 | Red | denied, danger, recording |
 | Warm white / paper | text you read, people's faces, paper |
 

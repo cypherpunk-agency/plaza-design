@@ -69,7 +69,7 @@
       "look": "REGISTRY UTILITIES · AUTHORISED STAFF ONLY. Older than you.",
       "deck": true,
       "everyday": [{ "noun": "README", "verb": "read", "label": "read the sticker" }],
-      "status": [{ "if": "freed2F", "then": "session: maint · node 0x2F free", "else": "REGISTRY UTILITIES · maintenance login only" }],
+      "status": [{ "if": "controlled2F", "then": "session: maint · node 0x2F yours", "else": "REGISTRY UTILITIES · maintenance login only" }],
       "layout": {
         "spot": { "x": 330, "y": 34, "w": 30, "h": 38 },
         "board": { "x": 0.38, "y": 0.28 },
@@ -89,7 +89,7 @@
               "verify": ["login maint verify", "ACCESS DENIED. 6 characters entered. Policy 7 password: 5 characters.", "err"],
               "admin": ["login maint admin", "ACCESS DENIED. Factory default passwords are disabled on Registry hardware.", "err"]
             },
-            "do": [{ "effect": "node.free" }, { "goal": "box" }]
+            "do": [{ "effect": "node.control" }, { "goal": "box" }]
           }
         },
         {
@@ -160,7 +160,7 @@
       "name": "BILLBOARD",
       "look": "REGISTRY PREMIUM, four metres wide, bolted to the wall and wired to the Registry's ad feed.",
       "everyday": [{ "noun": "ads", "verb": "read", "label": "watch the ad" }],
-      "status": [{ "if": "feed=cam3", "then": "showing: CAM-3 (a pigeon)", "else": "showing: REGISTRY PREMIUM" }, { "if": "freedTV", "then": " · node 0x3C free" }],
+      "status": [{ "if": "feed=cam3", "then": "showing: CAM-3 (a pigeon)", "else": "showing: REGISTRY PREMIUM" }, { "if": "controlledTV", "then": " · node 0x3C yours" }],
       "layout": {
         "spot": { "x": 640, "y": 108, "w": 124, "h": 42 },
         "board": { "x": 0.86, "y": 0.72 },
@@ -277,7 +277,7 @@
           "on": { "say hi": { "say": ["use speaker --say-hi", "DLV-9: \"I AM NOT LOST. I AM GOING SOMEWHERE WARM.\""] } }
         },
         {
-          "id": "uplink", "kind": "LINK", "link": { "reach": ["dispatch"] }
+          "id": "uplink", "kind": "LINK", "link": {}
         }
       ]
     },
@@ -286,7 +286,7 @@
       "name": "ROOFTOP RELAY 0x31",
       "look": "ROOFTOP RELAY 0x31 · REGISTRY UTILITIES. It keeps a log of visitors.",
       "deck": true,
-      "status": [{ "if": "freed31", "then": "session: maint · node 0x31 free", "else": "REGISTRY UTILITIES · maintenance login only" }],
+      "status": [{ "if": "controlled31", "then": "session: maint · node 0x31 yours", "else": "REGISTRY UTILITIES · maintenance login only" }],
       "layout": {
         "spot": { "x": 1150, "y": 62, "w": 26, "h": 40 },
         "board": { "x": 0.86, "y": 0.28 },
@@ -318,7 +318,7 @@
               "vrify": ["login maint vrify", "ACCESS DENIED. That was the old one. Policy 7 says rotate.", "err"],
               "verify": ["login maint verify", "ACCESS DENIED. That was never the one. Policy 7 says rotate.", "err"]
             },
-            "do": [{ "effect": "node.free" }, { "goal": "relay" }]
+            "do": [{ "effect": "node.control" }, { "goal": "relay" }]
           }
         },
         {
@@ -334,7 +334,7 @@
         },
         {
           "id": "uplink", "kind": "LINK", "sector": "maint",
-          "link": { "reach": ["friendnet", "maglev", "weathersat", "undernet", "dispatch"] }
+          "link": {}
         }
       ],
       "sectors": [{ "id": "maint", "label": "maintenance", "seal": { "guard": "login" } }]
@@ -514,11 +514,11 @@
     "node.box": "0x2F",
     "node.relay": "0x31",
     "node.billboard": "0x3C",
-    "free.box": ["", "Welcome back, maintenance. node {node} released from REGISTRY · NODES: {nodes} ACTIVE", "ok"],
+    "control.box": ["", "Welcome back, maintenance. node {node} answers to you now · NODES: {nodes} ACTIVE", "ok"],
     "peer.box": ["", "TILL: unregistered peer {node} on the street. handshake accepted. nobody was asked.", "ok"],
     "peer.box.who": "till",
-    "free.relay": ["", "Session opened: maint. node {node} released from REGISTRY · NODES: {nodes} ACTIVE", "ok"],
-    "free.billboard": ["", "the billboard leaves the Registry. node {node} released · NODES: {nodes} ACTIVE", "ok"],
+    "control.relay": ["", "Session opened: maint. node {node} answers to you now · NODES: {nodes} ACTIVE", "ok"],
+    "control.billboard": ["", "the billboard leaves the Registry. node {node} answers to you now · NODES: {nodes} ACTIVE", "ok"],
 
     "till.pay": ["use drawer --open", "the drawer slides out. {tokens} noodle tokens credited to {handle}. Spend them on hints at the stall.", "ok"],
     "legs.install": ["install legs.so", "installed legs.so. SPACE to jump.", "ok"],

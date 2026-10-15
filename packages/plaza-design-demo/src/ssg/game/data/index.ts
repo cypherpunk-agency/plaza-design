@@ -18,6 +18,7 @@ import beachJson from './beach.json';
 import trainJson from './train.json';
 import laundromatJson from './laundromat.json';
 import stacksJson from './stacks.json';
+import libraryJson from './library.json';
 
 const yard: Loose<SceneData> = yardJson;
 const capsule: Loose<SceneData> = capsuleJson;
@@ -55,14 +56,18 @@ export const TRAIN = train as SceneData;
 const stacks: Loose<SceneData> = stacksJson;
 export const STACKS = stacks as SceneData;
 
+/** The public library (P16 Long overdue): the card reader, the session timer, the printer, the LIBRARY LAN's nodes, scan.so. */
+const library: Loose<SceneData> = libraryJson;
+export const LIBRARY = library as SceneData;
+
 /** Every scene file, by scene id. A new scene is one import and one line here. */
 export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH, laundromat: LAUNDROMAT,
-  train: TRAIN, stacks: STACKS };
+  train: TRAIN, stacks: STACKS, library: LIBRARY };
 
 /** The logic modules (TIMER, SWITCH), shared by every scene. Checked like a scene. */
 export const LOGIC = logic as LogicData;
 
-/** The shared net: nodes any scene's LINK may reach. */
+/** The shared net: its networks (NET.md), the programs, and nodes any scene's LINK may reach. */
 export const NET = net as NetData;
 
 /** The engine's own wording; a scene's `texts` override it key by key. */

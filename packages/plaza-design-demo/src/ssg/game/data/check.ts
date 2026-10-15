@@ -12,7 +12,7 @@
  */
 
 import type {
-  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
+  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
 } from './types';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
@@ -48,7 +48,10 @@ const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
 const KEYS: Record<string, string[]> = {
   scene: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog'],
   logic: ['modules'],
-  net: ['nodes', 'cables', 'keyring', 'watchdog'],
+  net: ['nodes', 'cables', 'keyring', 'watchdog', 'networks', 'programs'],
+  network: ['id', 'name', 'note', 'from', 'need', 'machines'],
+  machine: ['id', 'in', 'node'],
+  program: ['id', 'name', 'look', 'foundIn'],
   module: ['id', 'start', 'foundIn', 'part'],
   device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
@@ -62,7 +65,7 @@ const KEYS: Record<string, string[]> = {
   clock: ['every', 'first', 'set', 'start'],
   watchdog: ['id', 'name', 'route', 'dwellMs', 'moveMs'],
   log: ['rate', 'fall', 'when', 'archive', 'linger', 'lockMs'],
-  link: ['reach', 'when'],
+  link: ['reach', 'known', 'when'],
   sector: ['id', 'label', 'seal'],
   seal: [...SEAL_KEYS, 'withinMs', 'signal'],
   layout: ['spot', 'board', 'dir', 'vision', 'row'],
@@ -102,8 +105,11 @@ interface World {
   keyring: Map<string, { item: KeyItem; file: string }>;
   netNodes: Map<string, DeviceData>;
   logic: LogicData;
-  /** Modules handed out by a `give` step: module id → files that do. */
+  /** Modules (and programs) handed out by a `give` step: id → files that do. */
   gives: Map<string, Set<string>>;
+  /** The net's networks (net.json), and the programs there are. */
+  nets: NetworkData[];
+  programs: Set<string>;
 }
 
 /**
@@ -142,7 +148,7 @@ export function checkGame(scenes: SceneCheck[], logic: LogicData, net: NetData, 
   });
 
   const netNodes = new Map(net.nodes.map((n) => [n.id, n]));
-  const world: World = { keyring, netNodes, logic, gives: new Map() };
+  const world: World = { keyring, netNodes, logic, gives: new Map(), nets: net.networks ?? [], programs: new Set((net.programs ?? []).map((p) => p.id)) };
 
   // the shared net: nodes any scene may reach, so they may use only the engine and their own state
   for (const k of Object.keys(net)) if (!KEYS.net.includes(k)) errs.push(`net.json: unknown field "${k}" (a typo?)`);
@@ -163,6 +169,7 @@ export function checkGame(scenes: SceneCheck[], logic: LogicData, net: NetData, 
     errs.push(...checkScene(z.data, z.code, world, engine, net));
     if (z.extra) errs.push(...z.extra(z.data).map((m) => z.data.id + '.json › ' + m));
   }
+  errs.push(...checkNetworks(net, scenes.map((z) => z.data), world));
 
   // modules: where each is found (foundIn) must be a file that hands it out, and one handed out must say where
   const files = new Set(['net', ...scenes.map((z) => z.data.id)]);
@@ -173,6 +180,73 @@ export function checkGame(scenes: SceneCheck[], logic: LogicData, net: NetData, 
       else if (!by.includes(m.foundIn)) errs.push(`${w} › foundIn: ${m.foundIn === 'net' ? 'net.json' : m.foundIn + '.json'} has no { "give": "${m.id}" } step`);
     } else if (by.length && !m.start) errs.push(`${w}: ${by.map((f) => (f === 'net' ? 'net.json' : f + '.json')).join(', ')} hands it out; say so in "foundIn"`);
   });
+  // programs: like modules, where each is found must hand it out
+  (net.programs ?? []).forEach((p, i) => {
+    const w = `net.json › programs[${p.id ?? i}]`, by = [...(world.gives.get(p.id) ?? [])];
+    for (const k of Object.keys(p)) if (!KEYS.program.includes(k)) errs.push(`${w}: unknown field "${k}" (a typo?)`);
+    if (!/^[\w-]+\.so$/.test(p.id ?? '')) errs.push(`${w}: a program id is a file name ending in .so`);
+    if (logic.modules.some((m) => m.id === p.id)) errs.push(`${w}: logic.json has a module "${p.id}" too: one or the other`);
+    if (typeof p.name !== 'string' || !p.name || typeof p.look !== 'string' || !p.look) errs.push(`${w}: needs a name and a look`);
+    if (!files.has(p.foundIn)) errs.push(`${w} › foundIn: "${p.foundIn}" is not a scene id (or "net")`);
+    else if (!by.includes(p.foundIn)) errs.push(`${w} › foundIn: ${p.foundIn}.json has no { "give": "${p.id}" } step`);
+  });
+  return errs;
+}
+
+/**
+ * The networks (net.json `networks`, NET.md): ids once each; every rule names a network, a LINK
+ * port (`scene:device.noun`) or a controlled node's label that some machine carries; every
+ * machine is a device or node of the scene files it names.
+ */
+function checkNetworks(net: NetData, scenes: SceneData[], world: World): string[] {
+  const errs: string[] = [], nets = net.networks ?? [], ids = new Set<string>();
+  const byId = new Map(scenes.map((z) => [z.id, z] as const));
+  const thing = (scene: string, id: string): DeviceData | undefined => {
+    if (scene === 'net') return world.netNodes.get(id);
+    const z = byId.get(scene);
+    return z?.devices.find((d) => d.id === id) ?? z?.nodes?.find((d) => d.id === id);
+  };
+  const labels = new Set(nets.flatMap((n) => (n.machines ?? []).map((m) => m.node).filter((x): x is string => !!x)));
+  nets.forEach((n, i) => {
+    const w = `net.json › networks[${n.id ?? i}]`, e = (m: string) => errs.push(w + ': ' + m);
+    for (const k of Object.keys(n)) if (!KEYS.network.includes(k)) e(`unknown field "${k}" (a typo?)`);
+    if (typeof n.id !== 'string' || !/^[\w-]+$/.test(n.id)) e('needs an id (letters, digits, "-" or "_")');
+    else if (ids.has(n.id)) e(`id "${n.id}" appears twice`);
+    ids.add(n.id);
+    for (const f of ['name', 'note', 'need'] as const) if (typeof n[f] !== 'string' || !n[f]) e(`needs "${f}"`);
+    if (!Array.isArray(n.from) || !n.from.length) e('"from" lists how it is reached (port, net or controlled)');
+    (n.from ?? []).forEach((r, j) => {
+      const wr = `from[${j}]`, keys = Object.keys(r);
+      if (keys.length !== 1 || !['port', 'net', 'controlled'].includes(keys[0])) { e(`${wr}: one of { "port" }, { "net" }, { "controlled" }`); return; }
+      if ('net' in r && !nets.some((o) => o.id === r.net)) e(`${wr}: no network "${r.net}"`);
+      if ('net' in r && r.net === n.id) e(`${wr}: a network is not reached from itself`);
+      if ('controlled' in r && !labels.has(r.controlled)) e(`${wr}: no machine carries the node label "${r.controlled}"`);
+      if ('port' in r) {
+        const m = /^([\w-]+):([\w-]+)\.(.+)$/.exec(r.port);
+        if (!m) { e(`${wr}: a port is "scene:device.noun"`); return; }
+        const d = thing(m[1], m[2]), noun = d?.nouns.find((x) => x.id === m[3]);
+        if (!d) e(`${wr}: "${m[1]}" has no device or node "${m[2]}"`);
+        else if (!noun || noun.kind !== 'LINK') e(`${wr}: ${m[2]}.${m[3]} is not a LINK noun`);
+      }
+    });
+    if (!Array.isArray(n.machines) || !n.machines.length) e('"machines": what is on it');
+    (n.machines ?? []).forEach((m, j) => {
+      const wm = `machines[${m.id ?? j}]`;
+      for (const k of Object.keys(m)) if (!KEYS.machine.includes(k)) e(`${wm}: unknown field "${k}" (a typo?)`);
+      if (!Array.isArray(m.in) || !m.in.length) { e(`${wm}: "in" lists the scene files that have it ("net" for net.json)`); return; }
+      m.in.forEach((s) => { if (s !== 'net' && !byId.has(s)) e(`${wm}: no scene "${s}"`); else if (!thing(s, m.id)) e(`${wm}: ${s === 'net' ? 'net.json' : s + '.json'} has no device or node "${m.id}"`); });
+      if (m.node !== undefined && (typeof m.node !== 'string' || !m.node)) e(`${wm}: "node" is its Registry label (0x2F)`);
+    });
+  });
+  // every LINK is a port of some network, or reaches nodes of its own
+  for (const z of [...scenes.map((s) => ({ id: s.id, devs: [...s.devices, ...(s.nodes ?? [])] })), { id: 'net', devs: net.nodes }]) {
+    for (const d of z.devs) for (const n of d.nouns) {
+      if (!n.link) continue;
+      const port = z.id + ':' + d.id + '.' + n.id;
+      const used = nets.some((x) => x.from.some((r) => 'port' in r && r.port === port));
+      if (!used && !n.link.reach?.length && !n.link.known?.length) errs.push(`${z.id === 'net' ? 'net.json' : z.id + '.json'} › ${d.id} › ${n.id} › link: reaches nothing: no network names the port "${port}", and it has no "reach" or "known"`);
+    }
+  }
   return errs;
 }
 
@@ -228,12 +302,12 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     }
     if ('give' in a) {
       // a keyring item, a module from logic.json, or tokens (with a count)
-      const mod = world.logic.modules.some((m) => m.id === a.give);
+      const mod = world.logic.modules.some((m) => m.id === a.give) || world.programs.has(a.give);
       if (a.give === 'tokens') { if (!(Number.isInteger(a.count) && a.count! >= 1)) err(where, 'give "tokens" needs "count": how many, a whole number from 1'); }
       else if (a.count !== undefined) err(where, '"count" only goes with give "tokens"');
       if (mod) { const f = file === 'net.json' ? 'net' : file.replace(/\.json$/, ''); world.gives.set(a.give, new Set([...(world.gives.get(a.give) ?? []), f])); }
       else if (a.give !== 'tokens' && !world.keyring.has(a.give)) {
-        err(where, /\.so$/.test(a.give) ? `give "${a.give}": no module with that id in logic.json` : `give "${a.give}": no keyring item with that id (scene or net.json "keyring")`);
+        err(where, /\.so$/.test(a.give) ? `give "${a.give}": no module with that id in logic.json (or program in net.json)` : `give "${a.give}": no keyring item with that id (scene or net.json "keyring")`);
       }
     } else if ('count' in a) err(where, '"count" only goes with give "tokens"');
     if ('trace' in a) {
@@ -403,11 +477,15 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       if (n.link) {
         const wl = `${w} › link`;
         keys(n.link, 'link', wl);
-        if (!Array.isArray(n.link.reach) || !n.link.reach.length) err(wl, 'reach lists the node ids it can scan');
-        else n.link.reach.forEach((id) => {
-          if (!all.has(id) || !(world.netNodes.has(id) || isNode(id))) err(wl, `reach "${id}": no node with that id (scene "nodes" or net.json)`);
-          if (id === d.id) err(wl, 'a node cannot reach itself');
-        });
+        for (const f of ['reach', 'known'] as const) {
+          const ids = n.link[f];
+          if (ids === undefined) continue;
+          if (!Array.isArray(ids) || !ids.length) { err(wl, `${f} lists node ids (or leave it out)`); continue; }
+          ids.forEach((id) => {
+            if (!all.has(id) || !(world.netNodes.has(id) || isNode(id))) err(wl, `${f} "${id}": no node with that id (scene "nodes" or net.json)`);
+            if (id === d.id) err(wl, 'a node cannot reach itself');
+          });
+        }
         cond(n.link.when, known, wl + ' › when');
       }
       if (n.clock) {
@@ -471,7 +549,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       if (!to) { err(w, `to "${cb.to}": no such device.noun`); return; }
       if (to.kind === 'GUARD') { err(w, `to "${cb.to}": a GUARD wants a person at the keyboard, not a cable`); return; }
       if ((to.kind as string) === 'WATCH') { err(w, `to "${cb.to}": the watchdog takes no orders (wire from its arrives / leaves)`); return; }
-      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...to.link.reach.map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : [])];
+      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...[...(to.link.reach ?? []), ...(to.link.known ?? [])].map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : [])];
       if (!verbs.includes(cb.verb)) err(w, `verb "${cb.verb}" is not one of ${cb.to}'s verbs`);
     });
     dupes(cbs.map((cb) => cb.from + ' → ' + cb.to), field, 'cable');

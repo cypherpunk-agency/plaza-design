@@ -276,6 +276,7 @@ export const MOTH_MESSAGE = [
   "they took you off the list. not a glitch. don't call anyone.",
   "here's a way back in. jack in to your PC.",
   '→ uplink.so',
+  "uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.",
 ];
 export const UPLINK_LINES = (touch: boolean) => [
   'uplink.so. Moth wrote this. I can tell by the comments.',
