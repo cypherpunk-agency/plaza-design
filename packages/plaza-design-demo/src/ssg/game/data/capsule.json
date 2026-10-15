@@ -42,8 +42,8 @@
           "id": "bolt", "kind": "ACT", "verbs": ["open"],
           "on": {
             "open": [
-              { "if": "doorOpen", "say": ["{via}use bolt --open", "already open. it is just a door now. it always was.", "dim"] },
-              { "say": ["{via}use bolt --open", "LOCK: managed by CONCIERGE. please contact CONCIERGE. CONCIERGE is not reachable by door.", "err"] }
+              { "if": "doorOpen", "say": ["{via}use bolt --open", "already open.", "dim"] },
+              { "say": ["{via}use bolt --open", "LOCK: managed by CONCIERGE. contact CONCIERGE via the building network.", "err"] }
             ]
           }
         },
@@ -51,8 +51,8 @@
           "id": "plate", "kind": "STORE", "verbs": ["read"],
           "on": {
             "read": [
-              { "if": "doorOpen", "say": ["cat plate", "RENT: PAID. HAVE A COMPLIANT DAY."] },
-              { "say": ["cat plate", "RENT: PENDING. DOOR LOCKED FOR YOUR CONVENIENCE."] }
+              { "if": "doorOpen", "say": ["cat plate", "RENT: PAID. ACCESS RESTORED."] },
+              { "say": ["cat plate", "RENT: PENDING. DOOR LOCKED UNTIL RECEIPT IS VERIFIED."] }
             ]
           }
         }
@@ -96,7 +96,7 @@
       "nouns": [
         {
           "id": "kettle", "kind": "ACT", "verbs": ["boil"], "events": ["boiled"],
-          "on": { "boil": { "do": [{ "effect": "kettle.boil" }, { "emit": "boiled" }], "say": ["{via}use kettle --boil", "it boils. it says so."] } }
+          "on": { "boil": { "do": [{ "effect": "kettle.boil" }, { "emit": "boiled" }], "say": ["{via}use kettle --boil", "KETTLE: boiled. 100°C."] } }
         }
       ]
     },
@@ -117,12 +117,12 @@
           "id": "motor", "kind": "ACT", "verbs": ["open", "close"],
           "on": {
             "open": [
-              { "if": "sun", "say": ["{via}use motor --open", "already open. the sun is doing its best.", "dim"] },
+              { "if": "sun", "say": ["{via}use motor --open", "already open.", "dim"] },
               { "if": "doorOpen", "do": [{ "set": "sun", "to": true }], "say": ["{via}use motor --open", "the blinds roll up. privacy mode is off: you exist on paper again."] },
               { "if": "!signal", "say": ["use motor --open", "BLINDS: privacy mode (rent: pending). they only open for your morning routine.", "err"] },
               { "do": [{ "set": "sun", "to": true }], "say": ["signal → motor --open", "morning routine detected. the blinds roll up. sun. it lands on the floor.", "ok"] }
             ],
-            "close": { "do": [{ "set": "sun", "to": false }], "say": ["{via}use motor --close", "the blinds roll down. night again, as the plug likes it.", "dim"] }
+            "close": { "do": [{ "set": "sun", "to": false }], "say": ["{via}use motor --close", "the blinds roll down.", "dim"] }
           }
         }
       ]
@@ -148,7 +148,7 @@
               { "if": "doorOpen", "say": ["ls outbox", "outbox: empty. receipt_rent.pdf was delivered and filed, twice.", "dim"] },
               { "say": ["ls outbox", "receipt_rent.pdf · rent, capsule 7B · waiting for a network since Tuesday."] }
             ],
-            "open": { "do": [{ "emit": "ready" }], "say": ["{via}open outbox", "receipt_rent.pdf: ready to send. somebody has to be listening."] }
+            "open": { "do": [{ "emit": "ready" }], "say": ["{via}open outbox", "receipt_rent.pdf: ready to send. waiting for a recipient."] }
           }
         },
         {
@@ -165,7 +165,7 @@
     {
       "id": "plug",
       "name": "SMART PLUG",
-      "look": "A smart plug with a schedule. The schedule has one rule and no doubts.",
+      "look": "A smart plug on a schedule.",
       "everyday": [{ "noun": "power", "verb": "on", "label": "switch on" }, { "noun": "power", "verb": "off", "label": "switch off" }],
       "status": [{ "if": "plugOn", "then": "on", "else": "off" }, " · schedule: night"],
       "layout": {
@@ -180,14 +180,14 @@
           "on": {
             "on": [
               { "if": "plugOn", "say": ["{via}use power --on", "already on.", "dim"] },
-              { "do": [{ "set": "plugOn", "to": true }, { "effect": "router.boot" }], "say": ["{via}use power --on", "click. the router blinks awake. probably."] }
+              { "do": [{ "set": "plugOn", "to": true }, { "effect": "router.boot" }], "say": ["{via}use power --on", "click. power on. the router boots."] }
             ],
             "off": { "do": [{ "effect": "plug.off" }] }
           }
         },
         {
           "id": "schedule", "kind": "SENSE", "verbs": ["read"], "events": ["night"],
-          "on": { "read": { "say": ["cat schedule", "rule 1: at night, plug off. it is night. it is always night in here."] } }
+          "on": { "read": { "say": ["cat schedule", "rule 1: at night, plug off. night = room light below threshold. current: night."] } }
         }
       ]
     },
@@ -215,9 +215,9 @@
           "id": "temp", "kind": "SENSE", "verbs": ["read"],
           "on": {
             "read": [
-              { "if": "!plugOn", "say": ["cat temp", "{temp}°C. no power, no opinions.", "dim"] },
-              { "if": "pixelOnRouter", "say": ["cat temp", "{temp}°C and rising. Pixel is asleep on top. Pixel ignores you, flawlessly.", "err"] },
-              { "say": ["cat temp", "{temp}°C. comfortable."] }
+              { "if": "!plugOn", "say": ["cat temp", "{temp}°C. no power.", "dim"] },
+              { "if": "pixelOnRouter", "say": ["cat temp", "{temp}°C and rising. vents blocked: Pixel is asleep on top.", "err"] },
+              { "say": ["cat temp", "{temp}°C. normal."] }
             ]
           }
         }
@@ -315,14 +315,14 @@
     "goals.done": "done. Downtown is through the door.",
     "prompt.door": "[E] DOOR",
     "prompt.out": "[E] DOWNTOWN",
-    "door.locked": ["open door", "locked. the panel next to it has opinions.", "err"],
+    "door.locked": ["open door", "locked. see panel.", "err"],
 
     "plug.off": ["{via}use power --off", "click. dark again.", "dim"],
-    "plug.night": ["signal → power --off", "SCHEDULE: it is night. the plug obeys. dark again.", "err"],
-    "plug.off.already": ["use power --off", "already off. the schedule approves.", "dim"],
+    "plug.night": ["signal → power --off", "SCHEDULE: night. plug off.", "err"],
+    "plug.off.already": ["use power --off", "already off.", "dim"],
 
-    "router.online": ["", "ROUTER: online. its lights blink like it has news.", "ok"],
-    "router.reboot": ["", "ROUTER: {temp}°C. thermal reboot. the cat on top does not move.", "err"],
+    "router.online": ["", "ROUTER: online.", "ok"],
+    "router.reboot": ["", "ROUTER: {temp}°C. thermal reboot. vents blocked.", "err"],
 
     "pixel.router": ["", "Pixel has found something warmer than the bed: the router.", "dim"],
     "pixel.sun": ["", "Pixel follows the sun to the floor and lies down in it. the router cools off.", "ok"],

@@ -145,7 +145,7 @@ export const READABLES: Readable[] = [
 
 const NPC_LINES: Record<string, [string[], string[]]> = {
   hood: [['Not authenticated. Not my problem.'], ['A box on this street went dark.', 'Registry is sending a van. Wasn\'t you, right?']],
-  umbrella: [['I don\'t see you. That\'s the deal.'], ['Still nobody. A louder nobody, though.']],
+  umbrella: [['I don\'t see you. That\'s the deal.', 'Unless you\'re selling Registry Premium. Terms: forever. Cancellation: see Terms. I read them twice.'], ['Still nobody. A louder nobody, though.']],
   hat: [['Keep walking, ghost.'], ['Heard the noodle guy talks to ghosts now.', 'Bad for business. His, not mine.']],
 };
 
@@ -256,7 +256,7 @@ const MAN: Record<string, string> = {
 };
 
 /** Your own deck's files, when the terminal talks to no machine. */
-const DECK: Record<string, string> = { 'inbox.txt': 'From: the Registry\nSubject: your identity\nBody: revoked. Have a nice day.' };
+const DECK: Record<string, string> = { 'inbox.txt': 'From: the Registry\nSubject: your identity\nStatus: REVOKED\nEffective: immediately\nAppeal: not available.' };
 
 export function commands(c: Ctx): string[] {
   const base = ['help', 'man', 'ls', 'cat', 'whoami', 'set', 'nodes', 'map', 'sound', 'clear', 'exit', 'reset'];
@@ -361,10 +361,10 @@ export function run(c: Ctx, line: string) {
       if (!at) { c.print('install: no such module here.', 'err'); return; }
       at.sh.install(at.dev, args[0] || '');
       return;
-    case 'sudo': c.denied(); c.print(who(s) + ' is not in the sudoers file. This incident will be reported to /dev/null.', 'err'); return;
-    case 'rm': c.print('PERMISSION DENIED (but we like your style).', 'err'); return;
-    case 'enter': c.denied(); c.print('nice try.', 'err'); return;
-    case 'hack': c.print('hacking is not a command. It is a lifestyle.', 'dim'); return;
+    case 'sudo': c.denied(); c.print(who(s) + ' is not in the sudoers file. This incident will be reported.', 'err'); return;
+    case 'rm': c.print('rm: permission denied.', 'err'); return;
+    case 'enter': c.denied(); c.print('enter: ACCESS DENIED. identity: not found.', 'err'); return;
+    case 'hack': c.print('hack: command not found.', 'dim'); return;
     default:
       if (c.shell?.use(c.machine, line)) return;
       c.print(verb + ': unknown command. Type help.', 'err');
