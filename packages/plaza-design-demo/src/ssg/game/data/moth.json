@@ -131,8 +131,8 @@
           "id": "feeder", "kind": "ACT", "verbs": ["feed"],
           "on": {
             "feed": [
-              { "if": "fed", "say": ["{via}use feeder --feed", "FEEDER: daily portion already dispensed. Sprat disagrees.", "dim"] },
-              { "do": [{ "set": "fed", "to": true }], "say": ["{via}use feeder --feed", "FEEDER: 1 portion dispensed. Sprat takes it personally, in a good way.", "ok"] }
+              { "if": "fed", "say": ["{via}use feeder --feed", "FEEDER: daily portion already dispensed.", "dim"] },
+              { "do": [{ "set": "fed", "to": true }], "say": ["{via}use feeder --feed", "FEEDER: 1 portion dispensed.", "ok"] }
             ]
           }
         },
@@ -168,7 +168,7 @@
           "on": {
             "water": [
               { "if": "fern=wet", "say": ["{via}use pump --water", "POT: moisture within tolerance. further water declined.", "dim"] },
-              { "do": [{ "set": "fern", "to": "wet" }], "say": ["{via}use pump --water", "the pump gurgles. Fern straightens, slightly, out of spite.", "ok"] }
+              { "do": [{ "set": "fern", "to": "wet" }], "say": ["{via}use pump --water", "POT: 200 ml dispensed. moisture 41%.", "ok"] }
             ]
           }
         }

@@ -68,7 +68,7 @@ export const cam3Panel: PanelFn = ({ body, m, say, frame }) => {
         g.fillStyle = tv ? 'rgba(0,255,255,.8)' : 'rgba(255,90,110,.95)';
         g.fillText(tv ? '● CAM-3' : 'REGISTRY PREMIUM', k.x + k.w / 2, k.y + 16);
         g.font = '2.6px "IBM Plex Mono", monospace'; g.fillStyle = 'rgba(255,217,165,.8)';
-        g.fillText('Terms: forever. Cancellation: see Terms. The password is NOT pigeon.', k.x + k.w / 2, k.y + k.h - 5);
+        g.fillText('MINIMUM TERM 36 MONTHS · EARLY CANCELLATION FEE APPLIES', k.x + k.w / 2, k.y + k.h - 5);
       } else if (k.id === 'window') {
         const beat = Math.floor(t / 260) % (MORSE.length + 6);
         g.fillStyle = (MORSE[beat] ?? 0) ? 'rgba(255,217,165,.95)' : 'rgba(40,24,10,1)'; g.fillRect(k.x, k.y, k.w, k.h);

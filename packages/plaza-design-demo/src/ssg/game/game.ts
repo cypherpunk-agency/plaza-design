@@ -904,7 +904,7 @@ export class Game {
     this.plate(this.sx(1770), this.y(110), 82, 15, O);
     this.neon('SPACEPORT >', this.sx(1770), this.y(110), O, { size: 10, phase: 70 });
     this.plate(this.sx(905), this.y(104), 88, 13, O);
-    this.neon('OPEN 24/7/365.25', this.sx(905), this.y(104), O, { size: 8, phase: 160 });
+    this.neon('OPEN 24/7', this.sx(905), this.y(104), O, { size: 8, phase: 160 });
     // Billboard, bolted flat to the wall and lit by two lamps on arms above it.
     const bx = this.sx(640);
     this.plate(bx, this.y(128), 124, 36, '255,90,110');

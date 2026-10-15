@@ -263,7 +263,7 @@ export const galleriaStation: Scene = {
   readables: [
     { id: 'board', x: G.board, name: 'DEPARTURES', promptH: 120, pages: ['LINE 0 > HARBOR > DOWNTOWN > GALLERIA.', 'LOOP SERVICE. DELAYS POSSIBLE. NO REASON WILL BE GIVEN.'] },
     { id: 'snacks', x: G.snacks, name: 'SNACK MACHINE', promptH: 80, pages: ['CHIPS: SOLD OUT.', 'NO REFUNDS AT THIS LOCATION.'] },
-    { id: 'screen', x: G.screen, name: 'REGISTRY SCREEN', promptH: 160, pages: ['THE REGISTRY THANKS YOU FOR YOUR PATIENCE.', 'YOUR PATIENCE HAS BEEN RECORDED.'] },
+    { id: 'screen', x: G.screen, name: 'REGISTRY SCREEN', promptH: 160, pages: ['THE REGISTRY THANKS YOU FOR YOUR PATIENCE.', 'WAITING TIMES ARE RECORDED.'] },
     { id: 'linemap', x: G.lineMap, name: 'LINE MAP', promptH: 86, pages: ['LINE 0: DOWNTOWN · GALLERIA · HARBOR.', 'YOU ARE HERE: GALLERIA. THE LINE IS A LOOP.'] },
     { id: 'regular', x: 628, name: 'OLD WOMAN', label: '[E] TALK', promptH: 54, pages: ['I come down here for the air conditioning.', 'And the trains. I like to watch them leave without me. It feels like winning.'] },
   ],
