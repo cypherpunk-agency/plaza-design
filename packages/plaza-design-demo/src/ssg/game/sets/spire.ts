@@ -7,11 +7,18 @@
  * Act I), so it is a silhouette: in the opening glide it has no name at all. Register:
  * sets/index.ts (`spire`).
  *
+ * Its docking decks (Tommi, 2026-10-15: show air traffic going in and out of it): three thin ledges
+ * on the slab, each with a lit bay and edge lights; with `traffic`, corporate shuttles come in from
+ * the city, settle on a deck, wait and leave, and a Registry patrol circles low on its fixed loop
+ * (red and blue strobes; its far side passes behind the slab).
+ *
  * Drawn in its own frame: origin where its foot meets the water, x to the right, heights up
- * (y = -h). About 300 units to the antenna's light at scale 1 (the stacks' far band).
+ * (y = -h). About 300 units to the antenna's light at scale 1 (the stacks' far band); a unit is
+ * about 2 m there, so a shuttle is a fleck of light seven units long.
  */
 
 import { O, RED } from '../scenes/kit';
+import { drawCraft, type CraftKind } from './air-traffic';
 
 export interface SpireLook {
   /** Animation clock in frames (the light blinks, the seams breathe, the halo turns). */
@@ -28,6 +35,50 @@ export interface SpireLook {
   glow?: boolean;
   /** The ring of air traffic (default on). */
   halo?: boolean;
+  /** The docking decks on the slab (default on). */
+  decks?: boolean;
+  /** Shuttles docking at the decks and the patrol's loop (default off: the opening glide turns it on). */
+  traffic?: boolean;
+  /** Screen units per frame unit (the caller's scale), so the traffic's lights stay a pixel or two. */
+  scale?: number;
+}
+
+/** The decks: height, side (-1 west, 1 east), how far they stick out. */
+const DECKS: [number, -1 | 1, number][] = [[226, 1, 14], [196, -1, 18], [150, 1, 16]];
+/** The shuttles' timetable: which deck, the cycle's length (frames) and phase. */
+const SHUTTLES: [number, number, number][] = [[0, 1500, 0], [1, 1300, 520], [2, 1700, 1100], [1, 1300, 1170]];
+
+/** One craft drawn tiny in the Spire's frame: `len` frame units long. */
+function tiny(x: CanvasRenderingContext2D, kind: CraftKind, px: number, py: number, face: 1 | -1, len: number, o: SpireLook, t: number) {
+  const k = len / (kind === 'shuttle' ? 380 : 180);
+  x.save(); x.translate(px, py); x.scale(k, k);
+  drawCraft(x, kind, { t, face, still: o.still, scale: (o.scale ?? 1) * k });
+  x.restore();
+}
+
+/** The decks' ledges and lights (in front of the slab). */
+function decks(x: CanvasRenderingContext2D, o: SpireLook, fill: string, t: number) {
+  for (const [h, side, out] of DECKS) {
+    const x0 = side > 0 ? HW - 2 : -HW - out + 2;
+    x.fillStyle = fill; x.fillRect(x0, -h, out, 3);
+    x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(x0, -h, out, 1);
+    // the bay: a warm slot in the slab, the edge lights
+    x.fillStyle = 'rgba(255,214,160,.55)'; x.fillRect(side > 0 ? HW - 7 : -HW + 2, -h - 6, 5, 6);
+    const on = o.still || Math.floor((t + h * 3) / 40) % 2 === 0;
+    x.fillStyle = on ? 'rgba(170,225,235,.95)' : 'rgba(170,225,235,.35)';
+    const d = Math.max(1, 1.2 / (o.scale ?? 1));
+    x.fillRect(side > 0 ? x0 + out - d : x0, -h - d, d, d);
+  }
+}
+
+/** Where a shuttle is in its cycle: in from the city (west), down onto its deck, a wait, out east and up. */
+function shuttleAt(deck: number, u: number): { x: number; h: number; face: 1 | -1 } | null {
+  const [h, side, out] = DECKS[deck], edge = side > 0 ? HW + out - 6 : -HW - out + 6;
+  const ease = (v: number) => v * v * (3 - 2 * v), seg = (a: number, b: number) => ease(Math.max(0, Math.min(1, (u - a) / (b - a))));
+  if (u < 0.3) { const k = seg(0, 0.3), from = side > 0 ? 260 : -260; return { x: from + (edge - from) * k, h: h + 3 + 50 * (1 - k) * (1 - k), face: side > 0 ? -1 : 1 }; }
+  if (u < 0.62) return { x: edge, h: h + 3, face: side > 0 ? -1 : 1 };
+  if (u < 0.95) { const k = seg(0.62, 0.95), to = side > 0 ? 300 : -300; return { x: edge + (to - edge) * k, h: h + 3 + 70 * k * k, face: side > 0 ? 1 : -1 }; }
+  return null;
 }
 
 /** The antenna light's height and x, for whoever draws its reflection on the water. */
@@ -36,6 +87,14 @@ export const SPIRE_LIGHT = { x: 0, h: 300 };
 /** The slab's half-width, its height to the shoulders, the point's top, the halo's height and radius. */
 const HW = 23, SLAB = 248, PEAK = 282, HALO_H = 186, HALO_R = 54;
 const SEAM = '170,225,235';
+
+/** The Registry's patrol on its fixed loop round the Spire's middle: the near half in front of the slab, the far half behind it. */
+function patrolLoop(x: CanvasRenderingContext2D, o: SpireLook, t: number, front: boolean) {
+  const a = t * 0.006, s = Math.sin(a), px = Math.cos(a) * 64, py = 104 - s * 9;
+  if (front !== s > 0) return;
+  if (!front && Math.abs(px) < HW + 4) return;
+  tiny(x, 'patrol', px, -py, -Math.sin(a) > 0 ? 1 : -1, 5, o, t);
+}
 
 export function drawSpire(x: CanvasRenderingContext2D, o: SpireLook) {
   const y = (h: number) => -h, edge = o.edge ?? 0.12, win = o.windows ?? 1, fill = o.fill ?? '#040203';
@@ -57,6 +116,8 @@ export function drawSpire(x: CanvasRenderingContext2D, o: SpireLook) {
     }
   };
   halo(false);
+  // the patrol's far half, behind the slab
+  if (o.traffic) patrolLoop(x, o, t, false);
   // the plinth in the water, and the slab's foot on it
   x.fillStyle = fill;
   x.fillRect(-46, y(12), 92, 12); x.fillRect(-34, y(20), 68, 8);
@@ -77,6 +138,14 @@ export function drawSpire(x: CanvasRenderingContext2D, o: SpireLook) {
     x.fillStyle = 'rgba(' + SEAM + ',' + Math.min(0.9, 0.5 * win).toFixed(3) + ')'; x.fillRect(-HW + 2, y(SLAB - 8), HW * 2 - 4, 1);
   }
   halo(true);
+  if (o.decks !== false) decks(x, o, fill, t);
+  if (o.traffic) {
+    for (const [deck, period, phase] of SHUTTLES) {
+      const at = shuttleAt(deck, (((t + phase) % period) + period) % period / period);
+      if (at) tiny(x, 'shuttle', at.x, -at.h, at.face, 8, o, t);
+    }
+    patrolLoop(x, o, t, true);
+  }
   // the antenna on the point, and the red light
   x.fillStyle = fill; x.fillRect(-5, y(PEAK + 16), 2, 18);
   x.fillStyle = 'rgba(' + O + ',.2)'; x.fillRect(-5, y(PEAK + 16), 1, 16);

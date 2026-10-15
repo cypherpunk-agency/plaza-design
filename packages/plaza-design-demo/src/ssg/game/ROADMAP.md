@@ -58,6 +58,40 @@ ground jumps), the cranes cross each other, the Spire reads as a weird T, the Ga
 and there is no life (people, vehicles, robots, flying traffic). Redesign: one continuous coast
 (drafts: https://claude.ai/artifact/Jm78v7Z47o92QYtkx5CHmt; title beach: https://claude.ai/artifact/5ZyckEFhebVnW87KWp5DPg).
 
+**Glide, second pass (Tommi, 2026-10-15, after playing it): built.** About 78 s now (was 54),
+calmer and stretched out ("easy, but also kind of stressful"). Beats (sudo time control, keys 1–9):
+BEACH 0 · PIER 10.4 · INLET 17.1 · HARBOR 27.3 · SPIRE 44.4 · GALLERIA 54.8 · DOWNTOWN 61.5 ·
+LINE 0 62.4 · UNDER 73.0 (`title/path.ts` holds the map and the camera).
+- Leisure and industry never touch: the beach ends at rocks; an INLET (footbridge, the breakwater's
+  light) and the port's fenced BUFFER (double fence, signs, cameras, floodlight, the staff gate) come
+  before the quay. The pier got planks, bracing, benches, a kiosk (BAIT · ICE · TEA), its lantern.
+- Ships lie behind the quay; far boats are kept clear of the harbor (never in front of a crane).
+- The Spire: bigger, its docking decks, corporate shuttles coming and going, a Registry patrol on its
+  loop; the camera eases off over a quiet bay bridge (no pylons mid-span, no other lanes near it).
+- The sky's kinds (sets/air-traffic.ts, `title/air.ts`): pods, sky taxis (one landing on the public
+  pad by the Galleria), Registry patrols on fixed loops, the delivery-drone stream from LOGISTICS
+  HUB 3, corporate shuttles, a slow cargo hauler, a medevac, a dropship with two escorts, the blimp.
+- One road from the port's TRUCK GATE west: trucks out of the gate, cars and bus 7 from Downtown's
+  side streets, denser toward the city (`title/traffic.ts`); nothing drives on the pier or the quay.
+- One scale (the player 1.8 m): vehicles, boxes (`BOX40`), the cranes (1.7× their scene frames), the
+  ship, the 20 m LINE 0 cars (`drawMetroCar`: a warm inside, seated and standing riders, empty seats,
+  reflections). The platform scenes keep their own car (`drawTrainCar`).
+- LINE 0 has its own way: the viaduct from the Galleria's station (people waiting, DOWNTOWN 2 MIN),
+  under THE RING (sets/ring-highway.ts: columns, lamps, gantry, its own traffic), never across the
+  road. The train comes out of a portal in a glass tower (the canyon line from the harbor), overtakes
+  the camera, runs down its ramp and dives under the street.
+- The ending: the camera follows it down into a cutaway of the ground (sets/cutaway.ts: asphalt,
+  pipes, piles, LINE 0's lit bore with the same train in it), then lower, a glimpse of the Undercity:
+  a flooded canal under a brick vault, a boat with a lantern, someone in it. Then the dark; the
+  handover to the train home is unchanged, the glide stays a function of time, reduced motion works.
+- Towers (sets/downtown-towers.ts): every one different (skins, setbacks, crowns, roof gear, grime)
+  and signs of six kinds (plate, neon blade, stacked letters, ticker, holo ad, rooftop billboard),
+  flickering, dead letters, their colour in the wet street. Four skyline rows behind Downtown,
+  thickening toward the tunnel.
+Open: the length (78 s, not skippable); the ride home still starts "from the harbor's closed stop"
+(the glide shows it coming out of the canyon line's tower, which agrees); whether the platforms
+should take `drawMetroCar`'s inside.
+
 Guidance: the scene leads (one way on, people facing it, signs), the GOAL line, and an **idle
 ping** on the next goal target after ~20 s standing still, in the opening scenes only for now. ✓
 

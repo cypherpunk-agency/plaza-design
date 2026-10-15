@@ -4,7 +4,9 @@
  * Launching the game shows a sunrise over the sea: the sun comes up out of it (RISE, about 7 s;
  * any key or click skips it) and settles half up on the horizon, then the main menu pops in over it
  * (menu.ts, `showTitle`). Reduced motion: settled from the start. NEW GAME: the menu fades and the
- * same shot starts moving west (glide.ts), not skippable, about 54 s, into LINE 0's tunnel.
+ * same shot starts moving west (glide.ts), not skippable, about 78 s: the coast, the harbor, the
+ * Spire across the bay, the Galleria, Downtown, and LINE 0 out of its tower and down under the street,
+ * the camera following it into a cutaway of the ground to a glimpse of the Undercity, then the dark.
  * CONTINUE and LOAD GAME cut straight into the save.
  *
  * THE HANDOVER (to the story half of the opening, opening.ts: the train home, Downtown before,
