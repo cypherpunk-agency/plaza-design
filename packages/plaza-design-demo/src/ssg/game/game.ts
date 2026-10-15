@@ -1673,7 +1673,7 @@ export class Game {
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
       avoid: this.mapAvoid(),
       ride: this.here === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null,
-      seen: (z) => !!this.save.flags[seenFlag(z)], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
+      seen: (z) => !!this.save.flags[seenFlag(z)], flag: (f) => !!this.save.flags[f], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
     };
   }
 

@@ -9,6 +9,7 @@
  *   so the real run is never touched.
  */
 
+import { DISTRICTS, heardFlag, mappedFlag } from './city';
 import { CUTSCENES } from './cutscenes';
 import { KEYRING, LOGIC } from './data';
 import type { Save } from './level';
@@ -34,6 +35,8 @@ export function unlockAll(s: Save) {
   for (const k of KEYRING.keys()) if (!s.keyring.includes(k)) s.keyring.push(k);
   s.tokens = Math.max(s.tokens, 99);
   for (const id of Object.keys(SCENES)) s.flags['seen:' + id] = true;
+  // the whole city on the map: every district heard of and on record (the Spire and the Undercity too)
+  for (const d of DISTRICTS) { s.flags[heardFlag(d.id)] = true; s.flags[mappedFlag(d.id)] = true; }
   s.flags.end = true; // the market gate stands open
   return s;
 }

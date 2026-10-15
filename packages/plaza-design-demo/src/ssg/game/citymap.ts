@@ -5,12 +5,15 @@
  * draws it and reads the keys and taps on it. game.ts holds the open map (`MapView`) and acts on
  * what the map asks for (`MapAct`): close, quick travel to a place, fly to a stand.
  *
- * - **City view**: every district as a silhouette in its band, lit once you have been in it, dark
- *   and `???` until then; the ways between them (LINE 0 in its tunnel, the market gate, the taxis,
- *   and the planned ways dim and dashed); you. Arrows pick a district, E or a tap opens it.
- * - **District view**: the map zooms into one district; its places hang on pins, with a card each
- *   along the bottom (44 px tall on a phone). A visited place you can reach is cyan: E, a click or
- *   a second tap goes there. ESC, `< CITY` or a tap outside the district goes back.
+ * - **City view**: the map discovers the city as you travel (city.ts: `districtStage`, `placeKnown`,
+ *   `linkKnown`). A district you know is a lit silhouette with its name; one you have heard of (or
+ *   seen from next door) a dark silhouette with its short name; one you have never been near a dim
+ *   block and `???` (the Spire, a landmark, keeps its silhouette). The ways between them show once
+ *   you have seen them (LINE 0 in its tunnel, the market gate, the shore path); planned ways are not
+ *   drawn. Arrows pick a district, E or a tap opens it.
+ * - **District view**: the map zooms into one district; the places you know of hang on pins, with a
+ *   card each along the bottom (44 px tall on a phone). A visited place you can reach is cyan: E, a
+ *   click or a second tap goes there. ESC, `< CITY` or a tap outside the district goes back.
  * - **Taxi**: the city view with the pads in cyan; pick one and fly.
  * - **On the metro**: the train runs on LINE 0's loop, and you on it.
  *
@@ -21,9 +24,9 @@
 import type { SceneId } from './scenes';
 import { C, GREEN, O, PAPER, RED, rng, text } from './scenes/kit';
 import {
-  DISTRICT_MAP, DISTRICTS, districtPlaces, districtSeen, FARE, GROUND_Y, LINKS, LOOP_MAP, MAP_H, MAP_W, PAD_MAP,
-  placeBlocked, placeOf, seenPlace, STAND_IDS, STANDS, standOf, STATION_MAP, STATIONS, STRATA,
-  type DistrictId, type MapPlace, type Stand, type Station, type TravelState,
+  DISTRICT_MAP, DISTRICT_REVEAL, DISTRICTS, districtName, districtPlaces, districtStage, FARE, GROUND_Y, knownPlaces, linkKnown, LINKS,
+  LOOP_MAP, MAP_H, MAP_W, PAD_MAP, placeBlocked, placeKnown, placeOf, seenPlace, STAND_IDS, STANDS, standOf, STATION_MAP, stationKnown,
+  STATIONS, STRATA, type DistrictId, type Knowledge, type MapPlace, type Stand, type Station, type Stratum, type TravelState,
 } from './city';
 
 // ---------- the open map ----------
@@ -45,7 +48,7 @@ export interface MapView {
 }
 
 /** Everything the map draws from. */
-export interface MapState extends TravelState {
+export interface MapState extends TravelState, Knowledge {
   view: MapView;
   /** A touch screen: say TAP rather than keys. */
   touch: boolean;
@@ -95,7 +98,8 @@ function setZoom(st: MapState, zoomed: boolean) {
   m.hover = -1;
 }
 
-const placesOf = (m: MapView) => districtPlaces(DIDS[m.district]);
+/** The places of the district picked that you know of: the district view's pins and cards. */
+const placesOf = (st: MapState) => knownPlaces(DIDS[st.view.district], st.seen);
 
 // ---------- layout ----------
 
@@ -178,7 +182,7 @@ function hitAt(st: MapState, vw: number, vh: number, px: number, py: number): Hi
   if (m.mode === 'taxi') { const i = near(STAND_IDS.map((s) => PAD_MAP[s])); return i >= 0 ? { kind: 'pad', i } : { kind: 'none' }; }
   if (m.zoomed) {
     if (inBox(L.back, px, py)) return { kind: 'back' };
-    const ps = placesOf(m), ci = cards(L, ps.length).findIndex((b) => inBox(b, px, py));
+    const ps = placesOf(st), ci = cards(L, ps.length).findIndex((b) => inBox(b, px, py));
     if (ci >= 0) return { kind: 'place', i: ci };
     const pi = near(ps.map((p) => p.pt));
     if (pi >= 0) return { kind: 'place', i: pi };
@@ -194,7 +198,7 @@ function hitAt(st: MapState, vw: number, vh: number, px: number, py: number): Hi
 
 /** Open the district picked, if it has places on the map (the Spire, the Undercity and the Fringe have none yet). */
 function zoomIn(st: MapState): MapAct {
-  const m = st.view, ps = placesOf(m);
+  const m = st.view, ps = placesOf(st);
   if (!ps.length) return { kind: 'denied' };
   setZoom(st, true);
   m.index = Math.max(0, ps.findIndex((p) => p.scenes.includes(st.scene)));
@@ -236,7 +240,7 @@ export function mapKey(st: MapState, key: string): MapAct {
     if (dir) { const j = neighbour(m.district, dir[0], dir[1]); if (j === m.district) return { kind: 'none' }; m.district = j; m.hover = -1; return { kind: 'blip' }; }
     return ok ? zoomIn(st) : { kind: 'none' };
   }
-  const ps = placesOf(m), n = ps.length;
+  const ps = placesOf(st), n = ps.length;
   if (dir) { m.index = ((m.index < 0 ? 0 : m.index + (dir[0] || dir[1])) + n) % n; m.hover = -1; return { kind: 'blip' }; }
   return ok && m.index >= 0 ? { kind: 'go', place: ps[m.index] } : { kind: 'none' };
 }
@@ -260,7 +264,7 @@ export function mapPointer(st: MapState, vw: number, vh: number, px: number, py:
       if (mouse || m.index === i) return { act: { kind: 'fly', stand: STAND_IDS[i] }, pointer };
       m.index = i; return { act: { kind: 'blip' }, pointer };
     case 'place':
-      if (mouse || m.index === i) return { act: { kind: 'go', place: placesOf(m)[i] }, pointer };
+      if (mouse || m.index === i) return { act: { kind: 'go', place: placesOf(st)[i] }, pointer };
       m.index = i; return { act: { kind: 'blip' }, pointer };
     default: return { act: { kind: 'none' }, pointer };
   }
@@ -296,6 +300,8 @@ type Pen = ReturnType<typeof pen>;
 interface Ink { body: string; edge: string; win: string | null; lamp: string | null }
 const LIT: Ink = { body: '#1d0f06', edge: 'rgba(' + O + ',.8)', win: 'rgba(' + O + ',.34)', lamp: 'rgba(' + PAPER + ',.6)' };
 const DARK: Ink = { body: '#0e0804', edge: 'rgba(' + O + ',.24)', win: null, lamp: null };
+/** A district you have never been near: a dim block, no shape. */
+const UNKNOWN = { body: '#080503', edge: 'rgba(' + O + ',.12)' };
 
 /** A building standing on `bottom` (the street by default), its lit windows seeded so they stay put. */
 function bld(p: Pen, k: Ink, x0: number, top: number, w: number, seed: number, bottom = GROUND_Y, dens = 0.45) {
@@ -437,14 +443,17 @@ function youPoint(st: MapState): Pt | null {
 
 /** A place's state on the map, its colour and its card's second line. */
 function placeLook(p: MapPlace, st: MapState): { col: string; name: string; note: string; here: boolean; go: boolean } {
-  const why = placeBlocked(p, st), known = seenPlace(p, st.seen), here = why === 'YOU ARE HERE';
-  if (!known) return { col: 'rgba(' + PAPER + ',.4)', name: '???', note: 'NOT VISITED', here, go: false };
+  const why = placeBlocked(p, st), visited = seenPlace(p, st.seen), here = why === 'YOU ARE HERE';
+  if (!visited) return { col: 'rgba(' + PAPER + ',.5)', name: placeKnown(p, st.seen) ? p.name : '???', note: 'NOT VISITED', here, go: false };
   if (here) return { col: 'rgba(255,255,255,.95)', name: p.name, note: 'YOU ARE HERE', here, go: false };
   if (why) return { col: 'rgba(' + PAPER + ',.75)', name: p.name, note: why.startsWith('THE MARKET') ? 'GATE SHUT' : 'NOT WHILE MOVING', here, go: false };
   return { col: 'rgba(' + C + ',.95)', name: p.name, note: 'QUICK TRAVEL', here, go: true };
 }
 
 // ---------- the map ----------
+
+/** A stratum's word in the margin: the street always; above and below once you know of a district there (or a landmark stands in it). */
+const stratumShown = (s: Stratum, st: MapState) => s === 'street' || DISTRICTS.some((d) => d.stratum === s && (DISTRICT_REVEAL[d.id].landmark || districtStage(d.id, st) !== 'unknown'));
 
 /** The city map over the whole view (vw × vh, the game's view units). */
 export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapState) {
@@ -475,13 +484,19 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
   p.rect(0, GROUND_Y, MAP_W, 0.8, 'rgba(' + O + ',.4)');
   water(p, 342, GROUND_Y + 0.5, 56, STRATA.underworld.top - GROUND_Y - 0.5, st.t, 0);
   for (const s of ['street', 'underworld'] as const) p.line([[0, STRATA[s].top], [MAP_W, STRATA[s].top]], 'rgba(' + O + ',.3)', 1, [4, 3]);
-  // LINE 0's tunnel
-  p.rect(143, 133, 181, 13, '#050302'); p.frame(143, 133, 181, 13, 'rgba(' + O + ',.25)');
-  // the districts
-  DIDS.forEach((d) => SILHOUETTE[d](p, districtSeen(d, st.seen) ? LIT : DARK, st.t));
-  // the ways between districts: planned ones dim and dashed, open ones solid, the market gate green or red
+  // LINE 0's tunnel, once you know of the line
+  // the line's map hangs on its platforms: you know its loop once you have stood on one (from the street you see only the stairs)
+  const lineKnown = (Object.keys(STATIONS) as Station[]).some((s) => st.seen(STATIONS[s].scene)) || st.seen('train') || !!st.ride;
+  if (lineKnown) { p.rect(143, 133, 181, 13, '#050302'); p.frame(143, 133, 181, 13, 'rgba(' + O + ',.25)'); }
+  // the districts: lit once known, a dark shape once heard of (a landmark always), else a dim block
+  DIDS.forEach((d) => {
+    const stage = districtStage(d, st);
+    if (stage === 'unknown' && !DISTRICT_REVEAL[d].landmark) { const r = DISTRICT_MAP[d]; p.rect(r.x, r.y, r.w, r.h, UNKNOWN.body); p.frame(r.x, r.y, r.w, r.h, UNKNOWN.edge); return; }
+    SILHOUETTE[d](p, stage === 'known' ? LIT : DARK, st.t);
+  });
+  // the ways between districts you have seen: open ones solid, the market gate green or red (planned ones are not drawn)
   for (const l of LINKS) {
-    if (l.state === 'planned') { p.line(l.path, 'rgba(' + O + ',.4)', 1, [3, 3]); continue; }
+    if (!linkKnown(l, st.seen)) continue;
     p.line(l.path, 'rgba(' + O + ',.85)', lw);
     if (l.state === 'gate') {
       const [a, b] = toView(c, (l.path[0][0] + l.path[1][0]) / 2, l.path[0][1]);
@@ -490,9 +505,9 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     }
   }
   // LINE 0: the loop, its stations, the stairs up from them
-  const lineKnown = (Object.keys(STATIONS) as Station[]).some((s) => st.seen(STATIONS[s].scene) || st.seen(STATIONS[s].up));
-  p.line([...LOOP_MAP, LOOP_MAP[0]], 'rgba(' + O + ',' + (lineKnown ? 0.85 : 0.3) + ')', lw);
+  if (lineKnown) p.line([...LOOP_MAP, LOOP_MAP[0]], 'rgba(' + O + ',.85)', lw);
   for (const s of Object.keys(STATIONS) as Station[]) {
+    if (!lineKnown && !stationKnown(s, st.seen)) continue;
     const [sx, sy] = STATION_MAP[s];
     p.line([[sx, sy - 3], [sx, GROUND_Y]], 'rgba(' + O + ',.5)');
     const [a, b] = toView(c, sx, sy), next = !!st.ride && st.ride.to === s && st.ride.f > 0, r = Math.max(3, Math.round(c.s * 2));
@@ -501,7 +516,7 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     x.strokeRect(Math.round(a) - r + 0.5, Math.round(b) - r + 0.5, r * 2, r * 2);
     if (next && f < 0.5) { const [, ny] = toView(c, sx, 149.5); text(x, 'NEXT: ' + STATIONS[s].name, a, ny, 'rgba(' + O + ',.95)', 7, '600'); }
   }
-  if (f < 0.5) { const [a, b] = toView(c, 266, 129.5); text(x, 'LINE 0', a, b, 'rgba(' + O + ',.6)', 7, '600', 'left'); }
+  if (f < 0.5 && lineKnown) { const [a, b] = toView(c, 266, 129.5); text(x, 'LINE 0', a, b, 'rgba(' + O + ',.6)', 7, '600', 'left'); }
   // taxi routes between the stands (cyan in taxi mode: your pad to the one picked)
   const pickStand = taxi ? STAND_IDS[m.index] : null, fromStand = standOf(st.scene);
   if (taxi) STAND_IDS.forEach((s, i) => {
@@ -512,8 +527,9 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     const [ax, ay] = PAD_MAP[fromStand], [bx, by] = PAD_MAP[pickStand];
     p.line([[ax, ay - 3], [(ax + bx) / 2, Math.min(ay, by) - 22], [bx, by - 3]], 'rgba(' + C + ',' + (blink ? 0.9 : 0.6) + ')', lw, [3, 2]);
   }
-  // the pads (in the city view only as structure; in taxi mode they are what you pick)
+  // the pads (in the city view only as structure, once you have seen them; in taxi mode they are what you pick)
   STAND_IDS.forEach((s, i) => {
+    if (!taxi && !st.seen(STANDS[s].scene)) return;
     const [a, b] = toView(c, ...PAD_MAP[s]), col = taxi ? C : O, sel = taxi && m.index === i, hov = taxi && m.hover === i;
     const r = Math.max(4, Math.round(c.s * 2.5)), cx = Math.round(a), cy = Math.round(b);
     x.fillStyle = '#030606'; x.fillRect(cx - r, cy - r, r * 2 + 1, r * 2 + 1);
@@ -522,11 +538,11 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     if (sel || hov) { x.strokeStyle = 'rgba(' + C + ',.9)'; x.strokeRect(cx - r - 3.5, cy - r - 3.5, r * 2 + 7, r * 2 + 7); }
     if (taxi) text(x, st.seen(STANDS[s].scene) ? STANDS[s].name : '???', cx, cy - r - 9, sel ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.75)', 7, '600');
   });
-  // the places you have been: small dots in the city view
-  if (f < 1 && !taxi) for (const d of DIDS) for (const q of districtPlaces(d)) if (seenPlace(q, st.seen)) p.rect(q.pt[0] - 0.8, q.pt[1] - 0.8, 1.6, 1.6, 'rgba(' + PAPER + ',' + 0.7 * (1 - f) + ')');
+  // the places you know of: small dots in the city view, bright where you have been
+  if (f < 1 && !taxi) for (const d of DIDS) for (const q of knownPlaces(d, st.seen)) p.rect(q.pt[0] - 0.8, q.pt[1] - 0.8, 1.6, 1.6, 'rgba(' + PAPER + ',' + (seenPlace(q, st.seen) ? 0.7 : 0.3) * (1 - f) + ')');
 
   // the district view: the rest of the city dims, the places hang on pins
-  const ps = placesOf(m), boxes = cards(L, ps.length);
+  const ps = placesOf(st), boxes = cards(L, ps.length);
   if (f > 0) {
     const r = DISTRICT_MAP[did], [a, b] = toView(c, r.x, r.y), w = r.w * c.s, h = r.h * c.s;
     x.fillStyle = 'rgba(2,1,0,' + 0.7 * f + ')';
@@ -535,13 +551,13 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     x.strokeStyle = 'rgba(' + O + ',' + 0.5 * f + ')'; x.setLineDash([4, 3]); x.strokeRect(Math.round(a) + 0.5, Math.round(b) + 0.5, Math.round(w), Math.round(h)); x.setLineDash([]);
     // the ways out of this district, named where they leave it
     if (f > 0.7) for (const l of LINKS) {
-      if ((l.from !== did && l.to !== did) || l.from === l.to) continue;
+      if ((l.from !== did && l.to !== did) || l.from === l.to || !linkKnown(l, st.seen)) continue;
       const [lx, ly] = l.path[Math.floor(l.path.length / 2)], [va, vb] = toView(c, lx, ly);
       if (vb > L.focus.y + L.focus.h - 4 || vb < L.focus.y + 4) continue;
-      const label = l.name + (l.state === 'planned' ? ' · NO ACCESS' : l.state === 'gate' ? (st.gateOpen ? ' · OPEN' : ' · SHUT') : '');
+      const label = l.name + (l.state === 'gate' ? (st.gateOpen ? ' · OPEN' : ' · SHUT') : '');
       const tw = label.length * 4.3 + 6, tx = Math.max(L.area.x + tw / 2 + 2, Math.min(L.area.x + L.area.w - tw / 2 - 2, va));
       x.fillStyle = 'rgba(4,2,1,.85)'; x.fillRect(Math.round(tx - tw / 2), Math.round(vb - 5), Math.round(tw), 10);
-      text(x, label, tx, vb, l.state === 'planned' ? 'rgba(' + PAPER + ',.5)' : 'rgba(' + PAPER + ',.8)', 7);
+      text(x, label, tx, vb, 'rgba(' + PAPER + ',.8)', 7);
     }
   }
   x.restore();
@@ -579,8 +595,8 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
   if (f < 1) {
     x.save(); x.globalAlpha = 1 - f;
     // (in taxi mode the stands' names take their place)
-    if (!taxi) DIDS.forEach((d, i) => {
-      const r = DISTRICT_MAP[d], known = districtSeen(d, st.seen), name = known ? DISTRICTS[i].short : '???';
+    if (!taxi) DIDS.forEach((d) => {
+      const r = DISTRICT_MAP[d], known = districtStage(d, st) !== 'unknown', name = districtName(d, st);
       const [a, b] = toView(c, ...r.label), tw = name.length * 4.4 + 8;
       x.fillStyle = '#060302'; x.fillRect(Math.round(a - tw / 2), Math.round(b - 5), Math.round(tw), 11);
       x.strokeStyle = 'rgba(' + O + ',' + (known ? 0.7 : 0.3) + ')'; x.strokeRect(Math.round(a - tw / 2) + 0.5, Math.round(b - 5) + 0.5, Math.round(tw) - 1, 10);
@@ -596,7 +612,7 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
         x.lineWidth = 2; x.stroke(); x.lineWidth = 1;
       };
       if (m.hover >= 0 && m.hover !== m.district) mark(m.hover, 'rgba(' + PAPER + ',.4)', false);
-      const open = districtPlaces(did).length > 0;
+      const open = placesOf(st).length > 0;
       mark(m.district, open ? 'rgba(' + C + ',' + (blink ? 1 : 0.6) + ')' : 'rgba(' + RED + ',' + (blink ? 0.8 : 0.4) + ')', true);
     }
     x.restore();
@@ -620,7 +636,7 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
 
   // ---- the header
   const hy = L.panel.y + 9;
-  const title = f > 0.5 && !taxi ? 'CITY MAP > ' + (districtSeen(did, st.seen) ? DISTRICTS[m.district].name.toUpperCase() : '???') : 'CITY MAP';
+  const title = f > 0.5 && !taxi ? 'CITY MAP > ' + districtName(did, st, true) : 'CITY MAP';
   text(x, title, L.panel.x + 7, hy, 'rgba(' + O + ',.95)', 9, '600', 'left');
   const sub = taxi ? 'SKY TAXI · ' + FARE + ' TOKEN A RIDE · TOKENS ' + st.tokens
     : st.ride ? (st.ride.f > 0 ? 'LINE 0 · NEXT: ' + STATIONS[st.ride.to].name : 'LINE 0 · AT ' + STATIONS[st.ride.from].name)
@@ -628,7 +644,10 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
   text(x, sub, L.panel.x + L.panel.w - 7, hy, 'rgba(' + PAPER + ',.7)', 7, '', 'right');
   // the strata, in the margin
   x.save(); x.beginPath(); x.rect(L.area.x, L.area.y, L.area.w, L.area.h); x.clip();
-  if (f < 1) for (const s of Object.values(STRATA)) { const [a, b] = toView(c, 2, s.top + 5); text(x, s.label, a, b, 'rgba(' + O + ',' + 0.55 * (1 - f) + ')', 7, '', 'left'); }
+  if (f < 1) for (const k of Object.keys(STRATA) as Stratum[]) {
+    if (!stratumShown(k, st)) continue;
+    const [a, b] = toView(c, 2, STRATA[k].top + 5); text(x, STRATA[k].label, a, b, 'rgba(' + O + ',' + 0.55 * (1 - f) + ')', 7, '', 'left');
+  }
   x.restore();
 
   // ---- the footer: what is picked, and the keys
@@ -648,18 +667,19 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     }
     keys(st.touch ? 'TAP A PLACE · < CITY OR TAP OUTSIDE: BACK' : '<- -> PICK · E GO · ESC BACK · TAB / M CLOSE');
   } else {
-    const i = m.hover >= 0 ? m.hover : m.district, d = DIDS[i], known = districtSeen(d, st.seen), all = districtPlaces(d);
+    const i = m.hover >= 0 ? m.hover : m.district, d = DIDS[i], stage = districtStage(d, st), all = knownPlaces(d, st.seen);
     const n = all.filter((q) => seenPlace(q, st.seen)).length;
-    text(x, '> ' + (known ? DISTRICTS[i].name.toUpperCase() : '???'), fx, fy, all.length ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.7)', 9, '600', 'left');
-    text(x, !all.length ? 'NO ACCESS' : known ? n + ' OF ' + all.length + ' PLACES VISITED' : 'NOT VISITED', fr, fy, !all.length ? 'rgba(' + RED + ',.9)' : 'rgba(' + PAPER + ',.75)', 7, '600', 'right');
+    text(x, '> ' + districtName(d, st, true), fx, fy, all.length ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.7)', 9, '600', 'left');
+    // the count is of the places you know of: the map never tells you how many there are
+    const state = stage === 'unknown' ? 'NO RECORD' : all.length ? n + ' OF ' + all.length + ' KNOWN PLACES VISITED' : districtPlaces(d).length ? 'NOT VISITED' : 'NO ACCESS';
+    text(x, state, fr, fy, state === 'NO ACCESS' ? 'rgba(' + RED + ',.9)' : 'rgba(' + PAPER + ',.75)', 7, '600', 'right');
     // the legend
     const ly = fy + 11;
     x.fillStyle = 'rgba(' + O + ',.85)'; x.fillRect(fx, ly, 10, 1);
     text(x, 'OPEN', fx + 13, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
-    x.strokeStyle = 'rgba(' + O + ',.5)'; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(fx + 36, ly + 0.5); x.lineTo(fx + 46, ly + 0.5); x.stroke(); x.setLineDash([]);
-    text(x, 'NO ACCESS', fx + 49, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
-    x.fillStyle = 'rgba(255,255,255,.9)'; x.fillRect(fx + 92, ly - 2, 4, 4);
-    text(x, 'YOU', fx + 99, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
+    x.fillStyle = 'rgba(255,255,255,.9)'; x.fillRect(fx + 38, ly - 2, 4, 4);
+    text(x, 'YOU', fx + 45, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
+    text(x, '??? NO RECORD', fx + 66, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
     if (vw > 420) keys(st.touch ? 'TAP A DISTRICT · TAP OUTSIDE TO CLOSE' : 'ARROWS PICK · E OPEN · TAB / M CLOSE');
   }
   x.restore();
@@ -692,30 +712,35 @@ function drawSheet(x: CanvasRenderingContext2D, b: Box, st: MapState) {
     });
     return;
   }
-  const i = m.hover >= 0 ? m.hover : m.district, d = DIDS[i], dm = DISTRICT_MAP[d], known = districtSeen(d, st.seen);
+  const i = m.hover >= 0 ? m.hover : m.district, d = DIDS[i], dm = DISTRICT_MAP[d], stage = districtStage(d, st);
   const stratum = DISTRICTS[i].stratum;
   row('DISTRICT ' + (i + 1) + ' OF ' + DIDS.length, 'rgba(' + O + ',.7)');
-  row(known ? DISTRICTS[i].name.toUpperCase() : '???', known ? 'rgba(' + PAPER + ',.95)' : 'rgba(' + PAPER + ',.5)', 9, '600');
-  row(STRATA[stratum].label, 'rgba(' + O + ',.7)');
-  row(known ? dm.note : 'NO RECORD', 'rgba(' + PAPER + ',.6)');
+  row(districtName(d, st, true), stage !== 'unknown' ? 'rgba(' + PAPER + ',.95)' : 'rgba(' + PAPER + ',.5)', 9, '600');
+  row(stratumShown(stratum, st) ? STRATA[stratum].label : '???', 'rgba(' + O + ',.7)');
+  row(stage === 'known' ? dm.note : stage === 'heard' ? 'NOT VISITED' : 'NO RECORD', 'rgba(' + PAPER + ',.6)');
   rule();
-  const ps = districtPlaces(d);
+  // only the places you know of, and only the ways you have seen
+  const ps = knownPlaces(d, st.seen);
   if (ps.length) {
     row('PLACES', 'rgba(' + O + ',.8)', 7, '600', ps.filter((q) => seenPlace(q, st.seen)).length + ' / ' + ps.length + ' VISITED', 'rgba(' + PAPER + ',.6)');
     for (const q of ps) {
       const look = placeLook(q, st);
       row('  ' + look.name, look.col, 7, '', look.here ? 'YOU' : look.note === 'GATE SHUT' ? 'SHUT' : '', look.here ? 'rgba(255,255,255,.9)' : 'rgba(' + RED + ',.85)');
     }
-  } else row('PLACES', 'rgba(' + O + ',.8)', 7, '600', 'NO ACCESS', 'rgba(' + RED + ',.85)');
+  } else {
+    const none = stage === 'unknown' ? 'NO RECORD' : districtPlaces(d).length ? 'NONE KNOWN' : 'NO ACCESS';
+    row('PLACES', 'rgba(' + O + ',.8)', 7, '600', none, none === 'NO ACCESS' ? 'rgba(' + RED + ',.85)' : 'rgba(' + PAPER + ',.5)');
+  }
   rule();
   row('WAYS', 'rgba(' + O + ',.8)', 7, '600');
   const ways: [string, string, string][] = [];
-  if ((Object.keys(STATIONS) as Station[]).some((s) => placeOf(STATIONS[s].scene).district === d)) ways.push(['LINE 0', 'METRO', 'rgba(' + PAPER + ',.6)']);
-  if (STAND_IDS.some((s) => placeOf(STANDS[s].scene).district === d)) ways.push(['SKY TAXI', 'STAND', 'rgba(' + PAPER + ',.6)']);
+  if ((Object.keys(STATIONS) as Station[]).some((s) => placeOf(STATIONS[s].scene).district === d && stationKnown(s, st.seen))) ways.push(['LINE 0', 'METRO', 'rgba(' + PAPER + ',.6)']);
+  if (STAND_IDS.some((s) => placeOf(STANDS[s].scene).district === d && st.seen(STANDS[s].scene))) ways.push(['SKY TAXI', 'STAND', 'rgba(' + PAPER + ',.6)']);
   for (const l of LINKS) {
-    if ((l.from !== d && l.to !== d) || l.from === l.to) continue;
+    if ((l.from !== d && l.to !== d) || l.from === l.to || !linkKnown(l, st.seen)) continue;
     const open = l.state === 'open' || (l.state === 'gate' && st.gateOpen);
-    ways.push([l.name, l.state === 'gate' ? (open ? 'OPEN' : 'SHUT') : open ? 'OPEN' : 'NO ACCESS', l.state === 'gate' ? (open ? 'rgba(' + GREEN + ',.9)' : 'rgba(' + RED + ',.85)') : 'rgba(' + PAPER + ',.4)']);
+    ways.push([l.name, open ? 'OPEN' : 'SHUT', l.state === 'gate' ? (open ? 'rgba(' + GREEN + ',.9)' : 'rgba(' + RED + ',.85)') : 'rgba(' + PAPER + ',.6)']);
   }
+  if (!ways.length) row('  NONE KNOWN', 'rgba(' + PAPER + ',.5)');
   for (const [name, state, col] of ways) row('  ' + name, 'rgba(' + PAPER + ',.7)', 7, '', state, col);
 }

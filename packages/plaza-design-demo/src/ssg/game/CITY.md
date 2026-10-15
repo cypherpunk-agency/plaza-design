@@ -76,14 +76,33 @@ The metro (LINE 0) runs through the street districts; its stations are places of
 
 Built (test, 2026-10-15): `citymap.ts` draws it from `city.ts`'s map data.
 
-- **City view**: each district a silhouette in its band (`DISTRICT_MAP`), lit once you have been
-  in one of its places, dark and `???` before. LINE 0 runs in a tunnel under the street as a loop,
-  its stations with stairs up; the market gate is green or red; the planned ways (`LINKS`: sky
-  elevator, taxi depot, bridge, drain, service tunnel, canal outfall, service lift, the road to the
-  Fringe) are dim and dashed, never reachable. A title block beside it names the district picked:
-  stratum, character, places, ways.
-- **District view**: arrows or a tap pick a district, E or the tap zooms into it. Its places hang
-  on pins (`PLACE_MAP`) with a card each along the bottom; a visited place you can reach is cyan
+- **City view**: each district a silhouette in its band (`DISTRICT_MAP`). LINE 0 runs in a tunnel
+  under the street as a loop, its stations with stairs up; the market gate is green or red. A title
+  block beside it names the district picked: stratum, character, places, ways.
+- **You discover the map as you travel** (decided with Tommi, 2026-10-15; `city.ts`, "what you
+  know of the city"). Each district has a stage (`districtStage`):
+  - *unknown*: a dim block and `???`, no record;
+  - *heard*: its short name and a dark silhouette (its shape as seen from the street), no record;
+  - *known*: lit, its full name and its note.
+
+  A district is known once you have been in one of its places (or the flag `mapped:<district>`),
+  heard once you have been in a district listed in its `near` (`DISTRICT_REVEAL`: the street
+  districts see their neighbours) or by the flag `heard:<district>`. The Undercity has no `near`:
+  it stays unknown until the story sets `heard:undercity` or you find a way down.
+  **The Spire is a mystery at first**: it is a landmark, so its silhouette is drawn from the start,
+  but its tag says `???` and its record says nothing. It is *heard* once you have stood in the
+  Galleria (the sky elevator's housing is on the mall's roof) or at the harbor (its foot stands in
+  the bay), or when the story sets `heard:spire`; *known* once you have been up there (a Spire
+  place) or the story sets `mapped:spire`.
+  Places show once seen: visited, or their way in in plain view from a scene you have been in
+  (`PLACE_IN_VIEW`); the counter reads "N OF M KNOWN PLACES VISITED". Ways show once seen (a
+  link's `at` scenes); planned ways (`LINKS` with state 'planned': sky elevator, taxi depot, bridge,
+  drain, service tunnel, canal outfall, service lift, the road to the Fringe) are not drawn at all.
+  LINE 0's loop shows once you have stood on a platform or ridden it; from the street, only the
+  station under its stairs. Taxi pads show once seen (in taxi mode all of them). Sudo (`unlockAll`)
+  sets `heard:` and `mapped:` for every district.
+- **District view**: arrows or a tap pick a district, E or the tap zooms into it. The places you
+  know of hang on pins (`PLACE_MAP`) with a card each along the bottom; a visited place you can reach is cyan
   and E, a click or a second tap goes there. ESC, `< CITY` or a tap outside goes back; TAB or M
   closes.
 - **Taxi**: the city view with the pads cyan; pick a stand and fly. **On the metro**: the train runs

@@ -17,7 +17,8 @@
  * (TAB or M, the CITY MAP kiosk, a taxi stand); quick travel on it goes to places.
  *
  * Canvas drawing only. Scenes you have been in are remembered in the save as
- * `flags['seen:<scene>']`; the map labels those and shows the rest as `???`.
+ * `flags['seen:<scene>']`. The map discovers the city from those and from a few story flags
+ * (`districtStage`, `placeKnown`, `linkKnown`): what you have not come near is `???` or not drawn.
  */
 
 import type { SceneId } from './scenes';
@@ -238,13 +239,13 @@ export const LOOP_MAP: [number, number][] = [[148, 137], [196, 137], [252, 137],
  * The ways between districts, other than LINE 0 and the taxis between stands (drawn from
  * STATIONS and STANDS): `path` in map units, from → to. `state`: 'open' (you can use it),
  * 'gate' (the market gate: open once Downtown is cleared), 'planned' (CITY.md has it, the game
- * not yet: drawn dim and dashed, never reachable).
+ * not yet: not on the map at all). `at`: the scenes it is in plain view from (`linkKnown`).
  */
 export type LinkKind = 'walk' | 'road' | 'elevator' | 'taxi' | 'bridge' | 'drain' | 'tunnel' | 'canal' | 'lift';
-export interface MapLink { kind: LinkKind; name: string; from: DistrictId; to: DistrictId; path: [number, number][]; state: 'open' | 'gate' | 'planned' }
+export interface MapLink { kind: LinkKind; name: string; from: DistrictId; to: DistrictId; path: [number, number][]; state: 'open' | 'gate' | 'planned'; at?: SceneId[] }
 export const LINKS: MapLink[] = [
-  { kind: 'walk', name: 'MARKET GATE', from: 'downtown', to: 'market', path: [[133, 119], [127, 119]], state: 'gate' },
-  { kind: 'walk', name: 'SHORE PATH', from: 'harbor', to: 'harbor', path: [[342, 123], [382, 123]], state: 'open' },
+  { kind: 'walk', name: 'MARKET GATE', from: 'downtown', to: 'market', path: [[133, 119], [127, 119]], state: 'gate', at: ['downtown', 'market'] },
+  { kind: 'walk', name: 'SHORE PATH', from: 'harbor', to: 'harbor', path: [[342, 123], [382, 123]], state: 'open', at: ['harbor', 'beach'] },
   { kind: 'road', name: 'ACCESS ROAD', from: 'market', to: 'fringe', path: [[62, 123], [58, 123]], state: 'planned' },
   { kind: 'elevator', name: 'SKY ELEVATOR', from: 'galleria', to: 'spire', path: [[268, 82], [268, 54]], state: 'planned' },
   { kind: 'taxi', name: 'SKY TAXI DEPOT', from: 'downtown', to: 'spire', path: [[222, 114], [216, 84], [206, 54]], state: 'planned' },
@@ -265,6 +266,90 @@ export const MAP_PLACES: MapPlace[] = PLACES.flatMap((p) => { const pt = PLACE_M
 export const districtPlaces = (d: DistrictId) => MAP_PLACES.filter((p) => p.district === d).sort((a, b) => a.pt[0] - b.pt[0]);
 /** A district counts as seen once you have been in any of its places. */
 export const districtSeen = (d: DistrictId, seen: (id: SceneId) => boolean) => PLACES.some((p) => p.district === d && seenPlace(p, seen));
+
+// ---------- what you know of the city (the map discovers it as you travel) ----------
+
+/**
+ * How much of a district you know, which is how much the map shows of it:
+ * - 'unknown': a dim block and `???` (a landmark keeps its silhouette, nothing more).
+ * - 'heard': its short name and its shape as seen from the street; still no record.
+ * - 'known': its full name and its note.
+ */
+export type DistrictStage = 'unknown' | 'heard' | 'known';
+
+/**
+ * What moves each district along, all from save flags so the story can set them:
+ * - known once you have been in one of its places, or by the flag `mapped:<district>`;
+ * - heard once you have been in a district in `near` (where it is in plain view, or named on
+ *   the signs), or by the flag `heard:<district>`.
+ * `landmark`: seen from everywhere, so its silhouette and its stratum are drawn even before you
+ * know anything of it (the Spire).
+ *
+ * The Spire: `???` at first. Heard once you have stood in the Galleria (the sky elevator's housing
+ * is on the mall's roof) or at the harbor (the Spire's foot stands in the bay), or by `heard:spire`.
+ * Known once you have been up there (a place of it), or by `mapped:spire`.
+ * The Undercity: nobody points at it; it stays unknown until the story sets `heard:undercity`
+ * or you find a way down.
+ */
+export const DISTRICT_REVEAL: Record<DistrictId, { near: DistrictId[]; landmark?: boolean }> = {
+  fringe: { near: ['market'] },
+  market: { near: ['downtown'] },
+  downtown: { near: ['market', 'galleria'] },
+  galleria: { near: ['downtown', 'harbor'] },
+  harbor: { near: ['galleria'] },
+  spire: { near: ['galleria', 'harbor'], landmark: true },
+  undercity: { near: [] },
+};
+export const heardFlag = (d: DistrictId) => 'heard:' + d;
+export const mappedFlag = (d: DistrictId) => 'mapped:' + d;
+
+/** What the map reads from the save: scenes you have been in, and any flag. */
+export interface Knowledge { seen: (id: SceneId) => boolean; flag: (name: string) => boolean }
+
+export function districtStage(d: DistrictId, k: Knowledge): DistrictStage {
+  if (districtSeen(d, k.seen) || k.flag(mappedFlag(d))) return 'known';
+  if (k.flag(heardFlag(d)) || DISTRICT_REVEAL[d].near.some((n) => districtSeen(n, k.seen))) return 'heard';
+  return 'unknown';
+}
+/** A district's name as far as you know it: `???`, its short name (heard), or its full name (`long`, known). */
+export function districtName(d: DistrictId, k: Knowledge, long = false): string {
+  const st = districtStage(d, k), dd = DISTRICTS.find((q) => q.id === d)!;
+  return st === 'unknown' ? '???' : st === 'known' && long ? dd.name.toUpperCase() : dd.short;
+}
+
+/**
+ * Where each place's way in is in plain view from: being in one of these scenes puts the place on
+ * the map (named, not yet visited). A place you have been in is on it anyway.
+ */
+export const PLACE_IN_VIEW: Partial<Record<PlaceId, SceneId[]>> = {
+  market: ['downtown'],
+  shop: ['downtown'],
+  'station-downtown': ['downtown', 'train'],
+  downtown: ['capsule', 'metro', 'yard', 'shop', 'moth'],
+  yard: ['downtown'],
+  capsule: ['downtown'],
+  moth: ['downtown'],
+  'station-galleria': ['mall', 'train'],
+  mall: ['galleriaStation'],
+  'station-harbor': ['harbor', 'beach', 'train'],
+  harbor: ['harborStation', 'beach'],
+  beach: ['harbor'],
+};
+/** A place is on the map once you have been in it or seen its way in. */
+export const placeKnown = (p: Place, seen: (id: SceneId) => boolean) => seenPlace(p, seen) || (PLACE_IN_VIEW[p.id] ?? []).some(seen);
+/** A district's places on the map that you know of, west to east. */
+export const knownPlaces = (d: DistrictId, seen: (id: SceneId) => boolean) => districtPlaces(d).filter((p) => placeKnown(p, seen));
+
+/**
+ * A way between districts is on the map once you have seen it: from a scene in its `at`, or (with
+ * no `at`) once you have been in a district at either end. A planned way is never on the map.
+ */
+export function linkKnown(l: MapLink, seen: (id: SceneId) => boolean): boolean {
+  if (l.state === 'planned') return false;
+  return l.at ? l.at.some(seen) : districtSeen(l.from, seen) || districtSeen(l.to, seen);
+}
+/** A LINE 0 station is on the map once you have stood on its platform or walked past its stairs. */
+export const stationKnown = (s: Station, seen: (id: SceneId) => boolean) => seen(STATIONS[s].scene) || seen(STATIONS[s].up);
 
 /** What quick travel needs to know. */
 export interface TravelState {
