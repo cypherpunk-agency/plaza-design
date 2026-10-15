@@ -19,7 +19,8 @@ import { PARCEL } from './yard';
 import { Companion, WARM } from './companion';
 import { reconcile, syncGoals, sceneShell } from './downtown';
 import { NO_RULES, SceneHost } from './engine';
-import { isSceneId, SCENES, sceneTitle, type SceneDef, type SceneExit, type SceneId, type SceneView } from './scenes';
+import { isSceneId, ITEMS, SCENES, sceneTitle, type ItemId, type SceneDef, type SceneExit, type SceneId, type SceneView } from './scenes';
+import { KEYRING } from './data';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import { botReact, isBot, characterHeight, characterX, talkTo } from './characters';
 import {
@@ -550,7 +551,7 @@ export class Game {
     const s = this.cssScale;
     const zh = this.zh;
     // captions and the popup keep under the key bar and the HUD's lines (drawHud: ~46 world units under the bar)
-    zh.uiTop = this.keyBar.root.offsetHeight + 8 + 46 * s;
+    zh.uiTop = this.keyBar.root.offsetHeight + 8 + this.hudH * s;
     zh.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
   }
 
@@ -1265,6 +1266,9 @@ export class Game {
     return lines;
   }
 
+  /** How far down the HUD's lines reach under the key bar (world units), as drawn last. */
+  private hudH = 46;
+
   /** Where the speech bubble was drawn last (view units), so captions keep off it; null without one. */
   private bubbleBox: { x: number; y: number; w: number; h: number } | null = null;
 
@@ -1300,16 +1304,25 @@ export class Game {
     const top = (this.keyBar.root.offsetHeight + 8) * (this.canvas.width / (this.canvas.clientWidth || 1)) / this.k;
     x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def), 8, top + 10);
     x.fillStyle = 'rgba(255,217,165,.7)';
-    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : ''), 8, top + 21);
+    // what you have: tokens, modules, the key chips that do something (uplink.so), what you carry; one line, or two when it is long
+    const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : '');
+    const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
+    const held = Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]) => (ITEMS[id as ItemId] ?? id) + (n > 1 ? '×' + n : ''));
+    const more = [keys.length ? 'KEYS ' + keys.join(' ') : '', held.length ? 'HELD ' + held.join(' ') : ''].filter(Boolean).join(' · ');
+    let y = top + 21;
+    if (more && x.measureText(own + ' · ' + more).width <= this.viewW - 16) x.fillText(own + ' · ' + more, 8, y);
+    else { x.fillText(own, 8, y); if (more) x.fillText(more, 8, (y += 11)); }
     // the scene's goal, where it has goals (a scene without a data file has none)
     const zh = this.zh.model.data.goals.length ? this.zh : null;
-    if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, top + 32); }
+    if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, (y += 11)); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     const tl = this.termLine;
     if (tl && this.t < tl.until && !this.term.focused) {
       x.fillStyle = tl.kind === 'err' ? 'rgba(255,90,110,.95)' : tl.kind === 'ok' ? 'rgba(34,197,94,.95)' : 'rgba(255,217,165,.85)';
-      x.fillText(tl.text.length > 90 ? tl.text.slice(0, 89) + '…' : tl.text, 8, top + (zh ? 43 : 32));
+      x.fillText(tl.text.length > 90 ? tl.text.slice(0, 89) + '…' : tl.text, 8, y + 11);
     }
+    // how far down the HUD's lines reach (world units under the key bar): captions and popups keep below
+    this.hudH = Math.max(46, y + 11 + 4 - top);
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
       x.fillText(this.toast.text, this.sx(this.p.x), this.y(this.p.y + 56));
@@ -1472,6 +1485,15 @@ export class Game {
         pay: (n) => { if (save.tokens < n) return false; save.tokens -= n; this.flash('-' + n + ' token' + (n === 1 ? '' : 's')); return true; },
         give: (n) => { save.tokens += n; this.flash('+' + n + ' token' + (n === 1 ? '' : 's')); },
         flags: save.flags, set: (f) => { save.flags[f] = true; }, t: this.t,
+        // what you carry: the save's items, across scenes and reloads
+        has: (item, n = 1) => (save.items[item] ?? 0) >= n,
+        take: (item, n = 1) => {
+          if ((save.items[item] ?? 0) < n) return false;
+          save.items[item] -= n;
+          if (save.items[item] <= 0) delete save.items[item];
+          return true;
+        },
+        add: (item, n = 1) => { save.items[item] = (save.items[item] ?? 0) + n; },
       });
       storeSave(save);
       this.syncHud();

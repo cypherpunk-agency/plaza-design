@@ -21,7 +21,8 @@ import { shop } from './shop';
 import { galleriaStation, harborStation } from './stations';
 import { train } from './train';
 
-export type { SceneDef, SceneExit, SceneReadable, SceneUse, UseCtx, View as SceneView } from './kit';
+export type { ItemId, SceneDef, SceneExit, SceneReadable, SceneUse, UseCtx, View as SceneView } from './kit';
+export { ITEMS } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 export const SCENES = {

@@ -627,6 +627,7 @@ One localStorage object (`access-denied-save-v2`; sudo's is `access-denied-save-
 ```ts
 modules: string[]            // owned logic modules: ["timer.so"]; legs.so stays `jump`
 keyring: string[]            // keyring item ids, and made fragments as `join(a,b)`
+items: { [id]: number }      // what you carry, bought or given: { fish: 2, tea: 1 } (ids: scenes/kit.ts ITEMS)
 scenes: { [id]: SceneSave }    // each scene's progress, by scene id
 
 interface SceneSave {
@@ -647,7 +648,14 @@ interface SceneSave {
 }
 ```
 
-A stored save missing a field gets it from a new game (`modules`, an empty `keyring`, empty `scenes`).
+A stored save missing a field gets it from a new game (`modules`, an empty `keyring`, empty `items`, empty `scenes`).
+
+**Items** (2026-10-15): things you carry that are not keyring chips (the harbor's fish and tea, the
+mall's basil leaf and blank chip, the corner shop's goods). A scene's `use` reads them through
+`UseCtx`: `has(id, n)`, `take(id, n)` (true and taken, or false and nothing), `add(id, n)`. The ids
+and their HUD names are **code** (`ITEMS`, scenes/kit.ts); the HUD's second line shows them only
+when you carry something (`HELD fish×2 tea`), after the key chips that grant something (`KEYS
+moth.key uplink.so`: keyring items of kind `key`, by their label when it is one word).
 Empty engine fields are left out, so the yard's save looks as before. The yard writes
 its part a moment after things go quiet, when you leave it, when the game stops and when the
 page is hidden (`pagehide`); while trace or a lockout moves it also writes every 2 s at most.

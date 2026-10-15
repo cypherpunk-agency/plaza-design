@@ -176,8 +176,8 @@ const BIRDS: Character[] = [
 
 // ---------- things to do ----------
 
-/** What you carry, for this visit: fish for the cat, tea for the crane. */
-let fishHeld = 0, teaHeld = 0, fishSold = 0, teaSold = 0, craneTeas = 0, bribeAsked = false;
+/** How the stands and the crane have answered so far, this visit. What you carry (fish for the cat, tea for the crane) is in the save: `UseCtx` items. */
+let fishSold = 0, teaSold = 0, craneTeas = 0, bribeAsked = false;
 /** When the crane last came down for a cup (frames), to animate the spreader. */
 let craneCall = -1e9;
 const CALL = 820;
@@ -196,17 +196,17 @@ const TEA_LINES = [
 const USES: SceneUse[] = [
   { id: 'fish', x: L.fish.use, label: '[E] BUY FISH · 1 TOKEN', name: 'FISH SELLER', promptH: 92, use: (c) => {
     if (!c.pay(1)) return ['One token a fish. You have the look of someone with no tokens and strong opinions.', 'Come back richer. The fish will still be here. Less fresh, but here.'];
-    fishHeld++; c.set('harbor:fish');
+    c.add('fish'); c.set('harbor:fish');
     return FISH_LINES[fishSold++ % FISH_LINES.length];
   } },
   { id: 'drink', x: L.drinks.use, label: '[E] HOT DRINK · 1 TOKEN', name: 'TEA CART', promptH: 92, use: (c) => {
     if (!c.pay(1)) return ['One token. Warmth is extra and I don\'t sell it.'];
-    teaHeld++; c.set('harbor:tea');
+    c.add('tea'); c.set('harbor:tea');
     return TEA_LINES[teaSold++ % TEA_LINES.length];
   } },
   { id: 'crane', x: L.callBox, label: '[E] CRANE CALL BOX', name: 'STS-2 CAB', promptH: 78, use: (c) => {
-    if (teaHeld <= 0) return ['(The intercom crackles.) STS-2. Unless you\'re a container, I can\'t help you.', 'Unless you\'ve got tea. The cart down the pier does tea. I can\'t come down: if I come down they make me fill in a form about why.'];
-    teaHeld--; craneCall = c.t;
+    if (!c.take('tea')) return ['(The intercom crackles.) STS-2. Unless you\'re a container, I can\'t help you.', 'Unless you\'ve got tea. The cart down the pier does tea. I can\'t come down: if I come down they make me fill in a form about why.'];
+    craneCall = c.t;
     if (craneTeas++ === 0) {
       c.give(1); c.set('harbor:crane');
       return ['Is that tea? Hold it up. Higher. Right, stand clear.', '(Sixty tonnes of spreader come down, very gently, for one paper cup.)', 'Bless you. Fourteen hours up here. Have a token, don\'t tell the union.', 'From up here I see every box on the pier. Tonight the schedule has one nobody can find in the manifest. I lift what the schedule says.'];
@@ -226,8 +226,8 @@ const USES: SceneUse[] = [
     return { name: 'PAINTED MARK', pages: ['A lantern, painted by hand in whitewash over the company logo. The paint is still tacky.', 'Under it, in pencil: COUNTED OUT? THE CANALS, UNDER THE THIRD BRIDGE. ASK FOR A LANTERN.'] };
   } },
   { id: 'cat', x: CAT.x, label: '[E] THE CAT', name: 'DOCK CAT', promptH: 40, use: (c) => {
-    if (fishHeld <= 0) return ['(The cat looks at your empty hands, then at the fish stand, then back at you. The message is clear.)'];
-    fishHeld--; c.set('harbor:cat');
+    if (!c.take('fish')) return ['(The cat looks at your empty hands, then at the fish stand, then back at you. The message is clear.)'];
+    c.set('harbor:cat');
     return ['(You put the fish down. The cat inspects it like a customs officer, then eats it like a smuggler.)', '(It lets you scratch one ear, once. That\'s the deal.)'];
   } },
 ];
