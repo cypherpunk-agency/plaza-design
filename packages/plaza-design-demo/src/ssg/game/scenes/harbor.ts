@@ -18,6 +18,11 @@ import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { clutter, stall, type StallSpec } from './build';
 import { box, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, C, type SceneDef, type SceneUse, type View } from './kit';
 import { camera, menuBoard, ticker, YELLOW } from './screens';
+import { CH, container, PAL, stack, type Crate } from '../sets/containers';
+import { drawGantry, GANTRIES } from '../sets/crane';
+import { placed } from '../sets/view';
+
+export { CH, container, type Crate };
 
 /** The horizon: water from the pier's back edge up to here. */
 const HZ = 84;
@@ -32,7 +37,7 @@ const L = {
   podium: 352,
   manifest: 600,
   callBox: 688,
-  cranes: [{ x: 780, name: 'STS-1', phase: 0 }, { x: 1880, name: 'STS-3', phase: 2.1 }],
+  cranes: [{ x: 780, id: 'sts1', phase: 0 }, { x: 1880, id: 'sts3', phase: 2.1 }] as { x: number; id: keyof typeof GANTRIES; phase: number }[],
   fish: { x: 900, w: 112, use: 940 },
   drinks: { x: 1032, w: 96, use: 1082 },
   den: 1200,
@@ -51,21 +56,6 @@ const L = {
   ferry: 2370,
 };
 
-/** A container's height (world units). */
-export const CH = 58;
-/** Container paints: fill, outline, rib highlight. Earthy and faded; no cyan (that is for things you can use). */
-const PAL: [string, string, string][] = [
-  ['#3a1608', 'rgba(255,136,0,.8)', 'rgba(255,150,60,.12)'], // orange
-  ['#0f2024', 'rgba(110,160,160,.65)', 'rgba(140,190,190,.1)'], // faded teal
-  ['#2c0c10', 'rgba(220,90,90,.72)', 'rgba(230,110,110,.1)'], // red
-  ['#2a2208', 'rgba(230,190,80,.72)', 'rgba(240,210,110,.1)'], // yellow
-  ['#142012', 'rgba(130,170,110,.62)', 'rgba(150,190,120,.1)'], // green
-  ['#1a1a22', 'rgba(170,170,190,.6)', 'rgba(190,190,210,.09)'], // grey-blue
-  ['#24150e', 'rgba(200,150,110,.62)', 'rgba(210,160,120,.1)'], // brown
-  ['#2c2824', 'rgba(225,215,200,.6)', 'rgba(235,225,210,.1)'], // dirty white
-];
-
-export interface Crate { w: number; p: number; seed: number; code?: string; label?: string; dx?: number }
 /** Container stacks: `x` the left edge, boxes bottom to top, `dx` how crooked each sits. */
 const STACKS: { x: number; boxes: Crate[] }[] = [
   { x: 390, boxes: [
@@ -103,8 +93,6 @@ const ripples: [number, number, number][] = (() => { const r = rng(43); return A
 const SHIPS = [[300, 230, 16], [1150, 300, 20], [1900, 180, 12]];
 /** Gulls in flight: [x, height, speed, parallax, phase]. */
 const GULLS = (() => { const r = rng(91); return Array.from({ length: 7 }, () => [r() * 2600, 130 + r() * 150, 0.25 + r() * 0.35, 0.7 + r() * 0.3, r() * 100]); })();
-/** Crane apex: height of the A-frame's top. */
-const APEX = 320;
 
 // ---------- people ----------
 
@@ -376,67 +364,12 @@ export function gullFlying(x: CanvasRenderingContext2D, sx: number, sy: number, 
   if (robot) { x.fillStyle = '#3a3e46'; x.fillRect(c, r - 3, 1, 2); }
 }
 
-/** A container: corrugated side, door bars at one end, rust, a dent, codes, a placard. Seeded. */
-export function container(x: CanvasRenderingContext2D, v: View, wx: number, h: number, b: Crate) {
-  const s0 = Math.round(v.sx(wx + (b.dx ?? 0))), top = Math.round(v.y(h + CH)), w = b.w;
-  if (!onScreen(v, s0, w)) return;
-  const [fill, edge, hi] = PAL[b.p], r = rng(b.seed * 31 + 7);
-  box(x, s0, top, w, CH, fill, edge);
-  x.fillStyle = 'rgba(0,0,0,.3)'; for (let i = 4; i < w - 3; i += 4) x.fillRect(s0 + i, top + 4, 1, CH - 8);
-  x.fillStyle = hi; for (let i = 6; i < w - 3; i += 4) x.fillRect(s0 + i, top + 4, 1, CH - 8);
-  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(s0 + 1, top + 1, w - 2, 3); x.fillRect(s0 + 1, top + CH - 4, w - 2, 3);
-  // corner castings
-  x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(s0 + 1, top + 1, 3, 3); x.fillRect(s0 + w - 4, top + 1, 3, 3); x.fillRect(s0 + 1, top + CH - 4, 3, 3); x.fillRect(s0 + w - 4, top + CH - 4, 3, 3);
-  // the door end: two locking bars with their handles
-  const doorL = r() < 0.5, d0 = doorL ? s0 + 5 : s0 + w - 16;
-  x.fillStyle = 'rgba(255,217,165,.3)'; x.fillRect(d0, top + 5, 2, CH - 10); x.fillRect(d0 + 8, top + 5, 2, CH - 10);
-  x.fillRect(d0 - 2, top + CH / 2, 5, 2); x.fillRect(d0 + 6, top + CH / 2 + 4, 5, 2);
-  // rust running down from the top rail
-  const n = 1 + Math.floor(r() * 4);
-  for (let k = 0; k < n; k++) {
-    const rx = Math.round(s0 + 8 + r() * (w - 16)), rl = Math.round(8 + r() * (CH - 16));
-    x.fillStyle = 'rgba(150,64,22,.5)'; x.fillRect(rx, top + 4, 2, rl);
-    x.fillStyle = 'rgba(150,64,22,.25)'; x.fillRect(rx + 2, top + 4, 1, Math.round(rl * 0.6)); x.fillRect(rx - 3, top + 4, 6, 2);
-  }
-  if (r() < 0.45) { const dx = Math.round(s0 + 18 + r() * (w - 40)); x.fillStyle = 'rgba(0,0,0,.35)'; x.beginPath(); x.ellipse(dx, top + CH * 0.6, 7, 4, 0.3, 0, 7); x.fill(); x.fillStyle = 'rgba(255,255,255,.07)'; x.fillRect(dx - 5, top + CH * 0.6 - 4, 6, 1); }
-  // codes and the line's name, stencilled
-  const cx = doorL ? s0 + 20 : s0 + 6;
-  if (b.code) text(x, b.code, cx, top + 10, 'rgba(' + PAPER + ',.6)', 7, '600', 'left');
-  if (b.label && w > 100) text(x, b.label, s0 + w / 2 + (doorL ? 8 : -8), top + CH / 2 + 2, 'rgba(' + PAPER + ',.42)', 7, '600');
-  // a placard: hazard diamond, or a barcode sticker
-  const q = r(), px = doorL ? s0 + w - 22 : s0 + 26;
-  if (q < 0.35) { x.fillStyle = 'rgba(232,200,58,.7)'; x.beginPath(); x.moveTo(px, top + CH - 20); x.lineTo(px + 6, top + CH - 14); x.lineTo(px, top + CH - 8); x.lineTo(px - 6, top + CH - 14); x.closePath(); x.fill(); x.fillStyle = 'rgba(20,10,5,.8)'; x.fillRect(px - 1, top + CH - 16, 2, 4); }
-  else if (q < 0.75) { box(x, px - 7, top + CH - 18, 14, 9, 'rgba(232,222,196,.7)'); x.fillStyle = 'rgba(20,10,5,.8)'; for (let i = 0; i < 10; i += 2) x.fillRect(px - 5 + i, top + CH - 16, 1, 5); }
-}
-
-/** The gantry crane: A-frame, legs, boom, machinery house; the trolley carries the operator's cab and a container. */
+/** The gantry crane (the frame is the set piece, sets/crane.ts); the trolley carries the operator's cab and a container. */
 function drawCrane(x: CanvasRenderingContext2D, v: View, ci: number) {
-  const c = L.cranes[ci], cx = c.x, phase = c.phase, { sx, y, t } = v, l0 = sx(cx - 80), l1 = sx(cx + 74);
+  const c = L.cranes[ci], cx = c.x, phase = c.phase, { sx, y, t } = v;
   if (!onScreen(v, sx(cx - 230), 460)) return;
-  const steel = '#21110a', edge = 'rgba(' + O + ',.8)';
-  const ap = sx(cx - 20), b0 = sx(cx - 230), b1 = sx(cx + 150);
-  x.strokeStyle = 'rgba(' + O + ',.5)'; x.lineWidth = 3; x.beginPath();
-  x.moveTo(l0 + 3, y(232)); x.lineTo(ap, y(APEX)); x.lineTo(l1 + 3, y(232)); x.stroke(); x.lineWidth = 1;
-  x.strokeStyle = 'rgba(' + O + ',.3)'; x.beginPath();
-  x.moveTo(ap, y(APEX)); x.lineTo(b0 + 4, y(206)); x.moveTo(ap, y(APEX - 4)); x.lineTo(sx(cx - 130), y(206));
-  x.moveTo(ap, y(APEX)); x.lineTo(b1 - 4, y(206)); x.stroke();
-  box(x, ap - 6, y(APEX + 6), 12, 6, steel, edge);
-  x.fillStyle = Math.sin(t * 0.04 + phase + 1) > 0 ? 'rgba(' + RED + ',.9)' : 'rgba(' + RED + ',.2)'; x.fillRect(ap - 1, y(APEX + 9), 3, 3);
-  for (const lx of [l0, l1]) box(x, lx, y(232), 6, 232, steel, edge);
-  box(x, l0, y(48), l1 - l0 + 6, 6, steel, edge);
-  box(x, l0, y(170), l1 - l0 + 6, 8, steel, edge);
-  x.strokeStyle = 'rgba(' + O + ',.35)'; x.beginPath();
-  x.moveTo(l0 + 6, y(54)); x.lineTo(l1, y(162)); x.moveTo(l1, y(54)); x.lineTo(l0 + 6, y(162)); x.stroke();
-  // yellow-and-black hazard bands on the legs' feet, and the wheels on the rail
-  for (const lx of [l0, l1]) { for (let k = 0; k < 4; k++) { x.fillStyle = k % 2 ? 'rgba(20,12,6,1)' : 'rgba(' + YELLOW + ',.6)'; x.fillRect(lx, y(30 - k * 6), 6, 6); } box(x, lx - 6, y(8), 18, 8, '#2a160a', edge); }
-  box(x, b0, y(206), b1 - b0, 4, steel, edge); box(x, b0, y(194), b1 - b0, 3, steel, edge);
-  x.strokeStyle = 'rgba(' + O + ',.4)'; x.beginPath();
-  for (let i = b0; i < b1 - 10; i += 12) { x.moveTo(i, y(191)); x.lineTo(i + 12, y(203)); }
-  x.stroke();
-  box(x, sx(cx - 40), y(232), 80, 26, '#1a0e08', edge);
-  text(x, c.name, sx(cx), y(219), 'rgba(' + PAPER + ',.75)', 8, '600');
-  x.fillStyle = Math.sin(t * 0.04 + phase) > 0 ? 'rgba(' + RED + ',1)' : 'rgba(' + RED + ',.25)';
-  x.fillRect(sx(cx) - 2, y(238), 4, 4);
+  const edge = 'rgba(' + O + ',.8)';
+  placed(x, sx(cx), y(0), 1, () => drawGantry(x, GANTRIES[c.id], t, 'all', phase));
 
   // the trolley: its normal round, or (STS-2) coming down for a cup of tea
   let twx = cx - 40 + Math.sin(t * 0.004 + phase) * 150, hang = 128 + Math.round(Math.sin(t * 0.01 + phase) * 6), carry = true;
@@ -831,7 +764,6 @@ const TEA_STALL: StallSpec = { x: L.drinks.x, w: L.drinks.w, seed: 34, sign: 'HO
 function L_STACKS(x: CanvasRenderingContext2D, v: View) {
   for (const s of STACKS) {
     if (!onScreen(v, v.sx(s.x) - 20, 180)) continue;
-    let dx = 0;
-    s.boxes.forEach((b, i) => { dx += b.dx ?? 0; container(x, v, s.x + dx - (b.dx ?? 0), i * CH, b); });
+    stack(x, v, s.x, s.boxes);
   }
 }

@@ -35,9 +35,10 @@ import { KeyBar } from './keybar';
 import { messagesOf, unread } from './contacts';
 import { levels, startLevel, SUDO, unlockAll } from './sudo';
 import { Menu } from './menu';
+import { Opening, OPENING_FLAG, rideHome } from './title';
 import {
   commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
-  newSave, ownedModules, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
+  newSave, ownedModules, run, SAVE_KEY, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
 /** What petting a scene's cat, or shooing its pigeon, gets you. */
@@ -150,6 +151,8 @@ export class Game {
       save: () => this.save,
       scene: () => ({ id: this.here, name: sceneTitle(this.def) }),
       newGame: () => this.newGame(),
+      continueGame: () => this.continueGame(undefined, true),
+      hasSave: () => this.hasSave(),
       quit: () => host.onExit(),
       onClose: () => this.canvas.focus(),
       ...(SUDO ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
@@ -247,7 +250,11 @@ export class Game {
 
   // ---------- lifecycle ----------
 
-  start(scene?: SceneId | CutsceneId) {
+  /**
+   * Start the game. `title`: launching it (the Konami code, `?play` or `?sudo` without a scene):
+   * the title screen first (title/). A scene, a cutscene or a LOAD GAME reload goes straight there.
+   */
+  start(scene?: SceneId | CutsceneId, title = false) {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -260,17 +267,97 @@ export class Game {
     this.raf = requestAnimationFrame((n) => this.loop(n));
     this.canvas.focus();
     if (scene && isCutsceneId(scene)) { this.playCutscene(scene); return; }
-    // a save that has never been Downtown starts at home: a new one with the intro first
+    if (title) { this.showTitle(); return; }
     const first = !this.started;
     this.started = true;
+    this.continueGame(scene && isSceneId(scene) ? scene : undefined, first);
+  }
+
+  /**
+   * Into the save (the title's CONTINUE, or a start in a scene): a save that has never been
+   * Downtown starts at home, or on the train home while the opening runs (`opening:home`).
+   */
+  private continueGame(scene: SceneId | undefined, first: boolean) {
+    this.endTitle();
+    this.started = true;
     if (!scene && first && !this.save.flags.arrived && !this.save.flags[seenFlag('downtown')]) {
-      if (!this.save.flags[seenFlag(START_SCENE)]) { this.playCutscene('intro'); return; }
-      scene = START_SCENE;
+      if (this.save.flags[OPENING_FLAG] && !this.save.flags[seenFlag(START_SCENE)]) { rideHome(); scene = 'train'; }
+      else scene = START_SCENE;
     }
-    if (scene && isSceneId(scene) && this.here !== scene) this.enter(scene, true);
+    if (scene && this.here !== scene) this.enter(scene, true);
     this.showHost();
     this.markSeen(this.here);
     this.greet();
+  }
+
+  /** Is there a run to continue: a stored save that has been played? */
+  private hasSave() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      const s = JSON.parse(raw) as Partial<Save>;
+      return (s.playMs ?? 0) > 0 || Object.keys(s.flags ?? {}).length > 0;
+    } catch { return false; }
+  }
+
+  // ---------- the opening: the title screen and the glide (title/) ----------
+
+  /** The title shot and the glide, while they run: the world is not drawn or stepped. */
+  private opening: Opening | null = null;
+
+  /** The title screen: the sunrise with the main menu over it; `gliding`: straight into the glide (NEW GAME from the pause menu). */
+  private showTitle(gliding = false) {
+    this.endCutscene(false);
+    this.bubble = null;
+    this.keys.clear();
+    this.hosts.forEach((h) => h.closeAll());
+    this.term.close();
+    this.opening = new Opening(this.reduced);
+    document.documentElement.classList.add('cutscene');
+    this.host.setScene('ACCESS DENIED');
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: a sunrise over the sea');
+    if (gliding) { this.menu.hide(); this.newGame(); } else this.menu.showTitle();
+  }
+
+  private endTitle() {
+    if (!this.opening) return;
+    this.opening = null;
+    document.documentElement.classList.remove('cutscene');
+    this.syncHud();
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + this.placeName);
+  }
+
+  private stepOpening(dt: number) {
+    const o = this.opening!;
+    o.step(dt / 60);
+    const x = this.x;
+    x.setTransform(this.k, 0, 0, this.k, 0, 0);
+    x.imageSmoothingEnabled = false;
+    o.draw(x, this.viewW, this.viewH);
+    if (o.done) this.openingDone();
+  }
+
+  /**
+   * The glide has gone into the tunnel: the handover (title/index.ts). A fresh save with
+   * `opening:home`, LINE 0 running from the harbor to Downtown, and you in car 3.
+   */
+  private openingDone() {
+    this.endTitle();
+    this.term.close();
+    this.term.clear();
+    this.bubble = null;
+    this.showEnd = false;
+    this.toast = null;
+    this.save = SUDO ? unlockAll(newSave()) : newSave();
+    // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
+    this.hosts.forEach((h) => h.reset());
+    reconcile(this.downtown.model, this.save);
+    this.save.flags[OPENING_FLAG] = true;
+    storeSave(this.save);
+    this.syncHud();
+    rideHome();
+    this.started = true;
+    this.enter('train', true);
   }
 
   /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
@@ -297,6 +384,7 @@ export class Game {
   }
 
   stop() {
+    this.endTitle();
     document.documentElement.classList.remove('game-map');
     this.menu.hide();
     this.endCutscene(false);
@@ -354,6 +442,8 @@ export class Game {
     if (!this.running) return;
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
+    // The title and the glide: their own picture, with the title's menu over it.
+    if (this.opening) { this.stepOpening(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     // The pause menu: the world holds still under it (the last frame stays on the canvas).
     if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
@@ -379,6 +469,8 @@ export class Game {
   // ---------- input ----------
 
   private onKeyDown(e: KeyboardEvent) {
+    // the title takes the menu's keys; the glide cannot be skipped
+    if (this.opening) { if (this.menu.open && !this.term.focused) this.menu.key(e); else e.preventDefault(); return; }
     if (this.cut) { e.preventDefault(); if (!e.repeat) this.cut.skip(); return; }
     if (this.menu.open) { if (!this.term.focused) this.menu.key(e); return; }
     if (this.term.focused) return;
@@ -462,20 +554,14 @@ export class Game {
     this.menu.show();
   }
 
-  /** NEW GAME (confirmed in the menu): a fresh save, slots untouched, the intro, then the start scene. */
+  /**
+   * NEW GAME (the title's, or confirmed in the pause menu): the opening's glide. Nothing is reset
+   * until it hands over (`openingDone`): leave mid-glide and the old run is still there. Slots are untouched.
+   */
   private newGame() {
-    this.term.close();
-    this.term.clear();
-    this.bubble = null;
-    this.showEnd = false;
-    this.toast = null;
-    this.save = SUDO ? unlockAll(newSave()) : newSave();
-    // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
-    this.hosts.forEach((h) => h.reset());
-    reconcile(this.downtown.model, this.save);
-    storeSave(this.save);
-    this.syncHud();
-    this.playCutscene('intro', () => this.handTo(START_SCENE));
+    if (!this.opening) { this.showTitle(true); return; }
+    this.opening.go();
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: the coast at sunrise, from the sea west to Downtown and LINE 0');
   }
 
   private flash(text: string) { this.toast = { text, until: this.t + 110 }; }
@@ -525,6 +611,7 @@ export class Game {
 
   /** Tap or click a thing to open its popup (in hack vision: its verbs); hovering lights it up. A tap on the scene's life within reach is E on it. */
   private onCanvasPointer(e: PointerEvent, press: boolean) {
+    if (this.opening) return;
     if (this.cut) { if (press) { e.preventDefault(); this.cut.skip(); } return; }
     // a click or tap moves a speech bubble on, the same as E
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
@@ -1472,6 +1559,8 @@ export class Game {
 
   /** Sudo's LEVELS: play a cutscene (then its next scene), or arrive in a scene at its spawn. */
   private enterLevel(id: string) {
+    if (id === 'opening') { this.showTitle(); return; }
+    this.endTitle();
     this.bubble = null;
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
     this.handTo(startLevel(id) ?? id);

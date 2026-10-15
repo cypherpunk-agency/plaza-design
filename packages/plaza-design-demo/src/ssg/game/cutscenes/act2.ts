@@ -6,6 +6,8 @@
  * The words under it are cutscenes.json's cards.
  */
 
+import { drawSpire } from '../sets/spire';
+import { placed } from '../sets/view';
 import type { CutView } from './types';
 
 const PAPER = '255,217,165', ORANGE = '255,136,0', RED = '255,42,68', GREEN = '34,197,94';
@@ -30,18 +32,8 @@ export function drawAct2(x: CanvasRenderingContext2D, v: CutView, t: number, dur
   }
   // the Spire: its foot in the bay, the deck, its towers, the antenna on the tallest
   const sx = Math.round(W * 0.74), unit = (hz - top) / 92;
-  x.fillStyle = '#040203';
-  x.fillRect(sx - 4 * unit, hz - 30 * unit, 8 * unit, 30 * unit);
-  x.fillRect(sx - 22 * unit, hz - 36 * unit, 44 * unit, 6 * unit);
-  x.fillRect(sx - 18 * unit, hz - 52 * unit, 8 * unit, 16 * unit);
-  x.fillRect(sx - 6 * unit, hz - 66 * unit, 11 * unit, 30 * unit);
-  x.fillRect(sx + 9 * unit, hz - 48 * unit, 8 * unit, 12 * unit);
-  x.fillStyle = 'rgba(' + ORANGE + ',.25)'; x.fillRect(sx - 1, hz - 80 * unit, 2, 14 * unit);
-  x.strokeStyle = 'rgba(' + ORANGE + ',.18)'; x.strokeRect(sx - 22 * unit + 0.5, hz - 36 * unit + 0.5, 44 * unit, 6 * unit);
-  const blink = Math.sin(a * 3) > 0.2;
-  x.fillStyle = blink ? 'rgba(' + RED + ',1)' : 'rgba(' + RED + ',.25)'; x.fillRect(sx - 2, hz - 81 * unit, 4, 3);
-  if (blink) { const g = x.createRadialGradient(sx, hz - 80 * unit, 1, sx, hz - 80 * unit, 18); g.addColorStop(0, 'rgba(' + RED + ',.3)'); g.addColorStop(1, 'rgba(' + RED + ',0)'); x.fillStyle = g; x.fillRect(sx - 18, hz - 80 * unit - 18, 36, 36); }
-  for (let i = 0; i < 14; i++) { x.fillStyle = 'rgba(' + PAPER + ',' + (0.12 + (i % 3) * 0.06) + ')'; x.fillRect(sx - 5 * unit + (i % 4) * 2.5 * unit, hz - 62 * unit + Math.floor(i / 4) * 7 * unit, 2, 2); }
+  // the set piece (sets/spire.ts), scaled so its light sits about 81 units of sky up
+  placed(x, sx, hz, (unit * 81) / 302, () => drawSpire(x, { t: a * 60, glow: true, windows: 1.6, edge: 0.18 }));
   // the water
   x.fillStyle = '#01040a'; x.fillRect(0, hz, W, bottom - hz);
   x.fillStyle = 'rgba(' + ORANGE + ',.12)'; x.fillRect(0, hz, W, 1);

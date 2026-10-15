@@ -24,8 +24,10 @@
 import type { DrawView } from '../engine/host';
 import type { SceneModel } from '../engine/model';
 import { drawCharacters, drawCharacter, type Character } from '../characters';
-import { box, C, drawTowers, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, type View } from '../scenes/kit';
+import { box, C, drawTowers, GREEN, O, onScreen, PAPER, RED, rng, tell, text, towers, type View } from '../scenes/kit';
 import { adScreen, menuBoard, registryBoard, YELLOW } from '../scenes/screens';
+import { SALT, saltLights, saltShell, saltUnder } from '../sets/beach-bar';
+import { placed } from '../sets/view';
 
 /** The beach: the promenade, the sand, then the pier out to Moth's boat. */
 export const BEACH_W = 1530;
@@ -350,13 +352,9 @@ function sunbeds(x: CanvasRenderingContext2D, V: View, m: SceneModel, p: number)
 function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string | null, p: number) {
   const { x0, x1 } = L.shack, l = V.sx(x0), r = V.sx(x1), y = V.y, w = r - l;
   if (r < -60 || l > V.viewW + 60) return;
-  const floor = 64, roof = 116;
-  // warm light under and around the bar
-  const lg = x.createRadialGradient(V.sx(560), y(30), 4, V.sx(560), y(30), 160);
-  lg.addColorStop(0, 'rgba(255,190,110,.28)'); lg.addColorStop(1, 'rgba(255,190,110,0)');
-  x.fillStyle = lg; x.fillRect(l - 120, y(150), w + 240, 160);
-  // stilts
-  for (const sx of [x0 + 6, x0 + 80, x0 + 150, x1 - 8]) { x.fillStyle = '#3a2618'; x.fillRect(V.sx(sx) - 2, y(floor), 5, floor); x.fillStyle = 'rgba(' + O + ',.35)'; x.fillRect(V.sx(sx) - 2, y(floor), 1, floor); }
+  const { floor } = SALT;
+  // the warm light and the stilts, then the shack itself (sets/beach-bar.ts)
+  placed(x, l, y(0), 1, () => saltUnder(x, w));
   // the back wall under the floor: shelves of bottles
   box(x, l + 8, y(floor - 2), w - 16, floor - 30, '#24140c', 'rgba(' + O + ',.35)');
   const bc = ['#5aa83a', '#d8b040', '#c83a2a', '#e8e0d0', '#3a6ad8', '#8a3a8a', '#d86a2a'];
@@ -376,21 +374,7 @@ function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string
   x.fillStyle = '#2a2a30'; x.fillRect(ph - 3, y(57), 6, 5); x.fillStyle = '#c99068'; x.fillRect(ph - 1, y(56), 2, 2); x.fillStyle = '#46506e'; x.fillRect(ph - 2, y(54), 4, 2);
   // LIME, between the bottles and the counter
   lime(x, V);
-  // the shack itself, up on the stilts
-  box(x, l - 4, y(roof - 6), w + 8, roof - 6 - floor, mix([120, 84, 56], [70, 48, 38], p), 'rgba(' + O + ',.75)');
-  for (let bx = x0; bx < x1; bx += 8) { x.fillStyle = 'rgba(20,10,6,.25)'; x.fillRect(V.sx(bx), y(roof - 6), 1, roof - 6 - floor); }
-  // windows up there, lit from inside
-  for (const wx of [x0 + 24, x1 - 52]) { box(x, V.sx(wx), y(roof - 18), 28, 18, 'rgba(255,190,110,.55)', 'rgba(' + O + ',.8)'); x.fillStyle = 'rgba(40,20,10,.6)'; x.fillRect(V.sx(wx) + 13, y(roof - 18), 2, 18); }
-  // the ladder up
-  for (let k = 0; k < 7; k++) { x.fillStyle = '#5a3a24'; x.fillRect(V.sx(x1) + 4, y(8 + k * 8), 10, 2); }
-  x.fillStyle = '#5a3a24'; x.fillRect(V.sx(x1) + 4, y(floor), 2, floor); x.fillRect(V.sx(x1) + 13, y(floor), 2, floor);
-  // the roof: palm thatch, ragged
-  x.fillStyle = mix([170, 130, 70], [100, 74, 50], p);
-  x.beginPath(); x.moveTo(l - 16, y(roof - 6)); x.lineTo(V.sx((x0 + x1) / 2), y(roof + 18)); x.lineTo(r + 16, y(roof - 6)); x.closePath(); x.fill();
-  x.fillStyle = 'rgba(40,20,10,.35)';
-  for (let k = 0; k < 30; k++) x.fillRect(l - 14 + k * ((w + 28) / 30), y(roof - 6), 2, 3 + Math.round(hash(k) * 4));
-  // SALT in neon on the shack front
-  sign(x, V.t, 'SALT', V.sx(550), y(floor + 22), YELLOW, { size: 11, phase: 30 });
+  placed(x, l, y(0), 1, () => saltShell(x, w, p, V.t));
   // the counter, waist high, with a lit rim
   box(x, l + 2, y(26), w - 4, 26, '#3a2414', 'rgba(255,170,80,.75)');
   x.fillStyle = 'rgba(255,190,110,.9)'; x.fillRect(l + 2, y(26), w - 4, 2);
@@ -399,22 +383,7 @@ function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string
   menuBoard(x, V, { x: L.order - 8, h: 36, w: 66, tall: 22, mount: 'hang', to: floor, items: [['HOUSE', '2T'], ['WATER', '2T']], phase: 70 });
   // stools in front
   for (const sx of [500, 560, 600]) { x.fillStyle = '#5a3a24'; x.fillRect(V.sx(sx) - 1, y(14), 2, 14); box(x, V.sx(sx) - 5, y(16), 10, 3, '#8a5a3a', 'rgba(' + O + ',.6)'); }
-  // string lights from the eaves to two poles, swaying
-  const poles = [x0 - 40, x1 + 46];
-  for (const px of poles) { x.fillStyle = '#3a2618'; x.fillRect(V.sx(px) - 1, y(86), 3, 86); }
-  const runs: [number, number, number, number][] = [[poles[0], 84, x0 - 4, floor + 34], [x0 - 4, floor + 34, x1 + 4, floor + 34], [x1 + 4, floor + 34, poles[1], 84]];
-  runs.forEach(([ax, ah, bx, bh], ri) => {
-    const sag = ri === 1 ? 10 : 8, sw = Math.sin(V.t * 0.02 + ri) * 1.5;
-    x.strokeStyle = 'rgba(40,24,16,.9)'; x.beginPath(); x.moveTo(V.sx(ax), y(ah)); x.quadraticCurveTo((V.sx(ax) + V.sx(bx)) / 2 + sw, y((ah + bh) / 2 - sag * 2), V.sx(bx), y(bh)); x.stroke();
-    const n = Math.max(3, Math.round(Math.abs(bx - ax) / 14));
-    for (let k = 1; k < n; k++) {
-      const f = k / n, mx = (V.sx(ax) + V.sx(bx)) / 2 + sw, my = y((ah + bh) / 2 - sag * 2);
-      const qx = (1 - f) * (1 - f) * V.sx(ax) + 2 * (1 - f) * f * mx + f * f * V.sx(bx), qy = (1 - f) * (1 - f) * y(ah) + 2 * (1 - f) * f * my + f * f * y(bh);
-      const col = ['255,200,110', '255,120,90', '255,230,160', '140,220,120'][(k + ri) % 4], on = (Math.floor(V.t / 25) + k) % 9 !== 0;
-      x.fillStyle = 'rgba(' + col + ',' + (on ? 0.95 : 0.3) + ')'; x.fillRect(Math.round(qx) - 1, Math.round(qy) + 1, 2, 3);
-      if (on) { x.fillStyle = 'rgba(' + col + ',.12)'; x.fillRect(Math.round(qx) - 4, Math.round(qy) - 2, 8, 8); }
-    }
-  });
+  placed(x, l, y(0), 1, () => saltLights(x, w, V.t));
   // the jukebox
   const jx = V.sx(L.jukebox);
   box(x, jx - 13, y(44), 26, 44, '#3a2a30', 'rgba(255,190,120,.8)');

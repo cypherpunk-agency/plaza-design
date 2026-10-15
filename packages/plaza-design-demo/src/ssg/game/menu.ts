@@ -1,5 +1,7 @@
 /**
- * The pause menu: a black CRT panel over the paused game.
+ * The pause menu: a black CRT panel over the paused game. Also the title screen's menu
+ * (`showTitle`): the same panel, see-through, over the opening's sunrise (title/), with NEW GAME,
+ * CONTINUE, LOAD GAME; NEW GAME fades it out while the shot starts moving.
  *
  * Esc opens it (game.ts decides when: overlays, bubbles and schematics close
  * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
@@ -21,8 +23,12 @@ export interface MenuHooks {
   save(): Save;
   /** Where the player is, for a slot: id to load into, name to show. */
   scene(): { id: string; name: string };
-  /** NEW GAME, confirmed: reset the save, play the intro, hand over to the start scene. */
+  /** NEW GAME, confirmed: the opening's glide, then a fresh save on the train home. */
   newGame(): void;
+  /** The title's CONTINUE: straight into the save. */
+  continueGame(): void;
+  /** Is there a run to continue (the title's CONTINUE, and whether NEW GAME asks first)? */
+  hasSave(): boolean;
   /** QUIT TO HOMEPAGE. */
   quit(): void;
   /** The menu closed (resume): give the game its focus back. */
@@ -45,6 +51,9 @@ export class Menu {
   private sel = 0;
   /** What Esc does on the current screen; null on the main screen (resume). */
   private back: (() => void) | null = null;
+  /** The title screen's menu (no RESUME, nothing to go back to), not the pause menu. */
+  private title = false;
+  private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 
   constructor(host: HTMLElement, private hooks: MenuHooks, touch: boolean) {
     const root = (this.root = document.createElement('div'));
@@ -82,6 +91,8 @@ export class Menu {
 
   show() {
     if (this.open) return;
+    this.title = false;
+    this.root.classList.remove('gm-title-screen', 'gm-fade');
     this.open = true;
     this.root.hidden = false;
     document.documentElement.classList.add('game-menu');
@@ -92,9 +103,32 @@ export class Menu {
     this.main(0);
   }
 
+  /** The title screen: the menu over the opening's sunrise. */
+  showTitle() {
+    if (this.open) this.hide();
+    this.title = true;
+    this.root.classList.remove('gm-fade');
+    this.root.classList.add('gm-title-screen');
+    this.open = true;
+    this.root.hidden = false;
+    document.documentElement.classList.add('game-menu');
+    this.main(0);
+  }
+
+  /** NEW GAME on the title: `then` runs at once (the shot starts moving) while the menu fades away. */
+  private fadeOut(then: () => void) {
+    this.items = [];
+    this.back = () => {};
+    this.root.classList.add('gm-fade');
+    then();
+    setTimeout(() => { this.hide(); this.root.classList.remove('gm-fade'); }, this.reduced ? 0 : 900);
+  }
+
   hide() {
     if (!this.open) return;
     this.open = false;
+    this.title = false;
+    this.root.classList.remove('gm-title-screen');
     this.root.hidden = true;
     document.documentElement.classList.remove('game-menu');
     this.hooks.onClose();
@@ -114,17 +148,41 @@ export class Menu {
   // ---------- screens ----------
 
   private main(sel: number) {
-    const o = this.hooks.levels ? 1 : 0; // LEVELS shifts everything below it
-    const tag = this.hooks.scene().name + ' · PAUSED' + (o ? ' · SUDO' : '');
-    this.show_(tag, [
+    const sudo = !!this.hooks.levels;
+    const tag = this.title ? "A CITY THAT DECIDED YOU AREN'T THERE" + (sudo ? ' · SUDO' : '') : this.hooks.scene().name + ' · PAUSED' + (sudo ? ' · SUDO' : '');
+    this.show_(tag, this.mainItems(), sel, null);
+  }
+
+  /** The main screen's items: the title's, or the pause menu's. LEVELS only in sudo. */
+  private mainItems(): Item[] {
+    const levels: Item[] = this.hooks.levels ? [{ label: 'LEVELS', tone: 'go', run: () => this.levels(0) }] : [];
+    const sound_: Item = { label: 'SOUND: ' + (sound.enabled ? 'ON' : 'OFF'), run: () => this.toggleSound() };
+    const quit: Item = { label: 'QUIT TO HOMEPAGE', run: () => { this.hide(); this.hooks.quit(); } };
+    if (this.title) {
+      const saved = this.hooks.hasSave(), start = () => this.fadeOut(() => this.hooks.newGame());
+      return [
+        { label: 'NEW GAME', tone: 'go', run: () => (saved ? this.confirm('START OVER? THE SAVED RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', start, this.backTo('NEW GAME')) : start()) },
+        saved
+          ? { label: 'CONTINUE', run: () => { this.hide(); this.hooks.continueGame(); } }
+          : { label: 'CONTINUE', meta: 'NO SAVED RUN YET', tone: 'dim', run: () => { sound.denied(); this.say('NOTHING TO CONTINUE YET.', 'dim'); } },
+        ...levels,
+        { label: 'LOAD GAME', run: () => this.slots('load', 0) },
+        sound_, quit,
+      ];
+    }
+    return [
       { label: 'RESUME', run: () => this.hide() },
-      ...(o ? [{ label: 'LEVELS', tone: 'go' as const, run: () => this.levels(0) }] : []),
+      ...levels,
       { label: 'SAVE GAME', run: () => this.slots('save', 0) },
       { label: 'LOAD GAME', run: () => this.slots('load', 0) },
-      { label: 'NEW GAME', tone: 'bad', run: () => this.confirm('START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', () => { this.hide(); this.hooks.newGame(); }, () => this.main(3 + o)) },
-      { label: 'SOUND: ' + (sound.enabled ? 'ON' : 'OFF'), run: () => this.toggleSound() },
-      { label: 'QUIT TO HOMEPAGE', run: () => { this.hide(); this.hooks.quit(); } },
-    ], sel, null);
+      { label: 'NEW GAME', tone: 'bad', run: () => this.confirm('START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', () => { this.hide(); this.hooks.newGame(); }, this.backTo('NEW GAME')) },
+      sound_, quit,
+    ];
+  }
+
+  /** Back to the main screen, on the item with this label. */
+  private backTo(label: string) {
+    return () => this.main(Math.max(0, this.mainItems().findIndex((i) => i.label === label)));
   }
 
   /** Sudo: every level; picking one goes straight there. */
@@ -135,8 +193,8 @@ export class Menu {
       meta: l.id === here ? 'HERE' : l.note,
       run: () => { this.hide(); this.hooks.enter?.(l.id); },
     }));
-    items.push({ label: 'BACK', run: () => this.main(1) });
-    this.show_('LEVELS · SUDO', items, sel, () => this.main(1));
+    items.push({ label: 'BACK', run: this.backTo('LEVELS') });
+    this.show_('LEVELS · SUDO', items, sel, this.backTo('LEVELS'));
   }
 
   private slots(mode: 'save' | 'load', sel: number, note?: [string, Tone]) {
@@ -167,9 +225,9 @@ export class Menu {
         },
       });
     }
-    const o = this.hooks.levels ? 1 : 0, at = (mode === 'save' ? 1 : 2) + o;
-    items.push({ label: 'BACK', run: () => this.main(at) });
-    this.show_(mode === 'save' ? 'SAVE GAME' : 'LOAD GAME', items, sel, () => this.main(at));
+    const back = this.backTo(mode === 'save' ? 'SAVE GAME' : 'LOAD GAME');
+    items.push({ label: 'BACK', run: back });
+    this.show_(mode === 'save' ? 'SAVE GAME' : 'LOAD GAME', items, sel, back);
     if (note) this.say(...note);
   }
 
@@ -246,6 +304,8 @@ export class Menu {
   }
 
   private escape() {
+    // the title screen has nothing under it to go back to
+    if (!this.back && this.title) return;
     sound.close();
     if (this.back) this.back();
     else this.hide();

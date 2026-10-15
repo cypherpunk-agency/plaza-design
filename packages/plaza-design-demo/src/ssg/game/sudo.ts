@@ -39,6 +39,8 @@ export const startLevel = (id: string): SceneId | null => STORY[id]?.start() ?? 
 /** Every place the game can start in, in the order you'd meet them. */
 export function levels(): Level[] {
   return [
+    // the opening: the title screen over the sunrise; its NEW GAME plays the glide into the train home (title/)
+    { id: 'opening', name: 'OPENING · TITLE AND GLIDE', note: 'LEVEL' },
     ...Object.entries(STORY).map(([id, l]) => ({ id, name: l.name, note: 'LEVEL' })),
     ...Object.values(CUTSCENES).map((c) => ({ id: c.id, name: c.id.toUpperCase(), note: 'CUTSCENE' })),
     ...Object.entries(SCENES).map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),

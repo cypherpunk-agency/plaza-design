@@ -15,7 +15,8 @@
 
 import { LINE, STATIONS, type Station } from '../city';
 import { box, O, onScreen, PAPER, tell, text, type View } from './kit';
-import { crowd, drawRider } from './riders';
+import { crowd } from './riders';
+import { CAR, drawTrainCar } from '../sets/train-car';
 
 // ---------- the platforms ----------
 
@@ -29,7 +30,7 @@ const shift: Record<Station, number> = { downtown: 0, galleria: 0, harbor: 0 };
 /** Where the train's nose stops at every platform (track x, in the track's parallax), so the doors fall in the same places. */
 export const STOP = 150;
 /** The train on a platform, drawn in the track's parallax: cars, their length, the gap, which window bays are doors. */
-export const TRAIN = { cars: 3, car: 290, gap: 8, track: 0.94, doorBays: [1, 4], bay: 46, bay0: 14, bayW: 32 };
+export const TRAIN = { cars: 3, car: CAR.len, gap: 8, track: 0.94, doorBays: CAR.doorBays, bay: CAR.bay, bay0: CAR.bay0, bayW: CAR.bayW };
 
 const phaseOf = (st: Station, t: number) => {
   const L = TIMETABLE.loop;
@@ -114,7 +115,7 @@ export function platformQueue(st: Station, t: number): { train: number; boarded:
   return { train: ph >= gone ? n + 1 : n, boarded: ph >= T.arrive + T.dwell * 0.5 && ph < gone };
 }
 
-/** The train at a platform: three cars, lit windows with riders, doors that slide open, the headlight while it moves, its destination on the front. */
+/** The train at a platform: three cars (sets/train-car.ts), lit windows with riders, doors that slide open, the headlight while it moves, its destination on the front. */
 export function drawPlatformTrain(x: CanvasRenderingContext2D, v: View, st: Station, stop: number) {
   const at = platformTrain(st, v.t, stop);
   if (!at) return;
@@ -127,37 +128,7 @@ export function drawPlatformTrain(x: CanvasRenderingContext2D, v: View, st: Stat
   for (let c = 0; c < T.cars; c++) {
     const c0 = nose + c * (T.car + T.gap);
     if (!onScreen(v, c0, T.car)) continue;
-    box(x, c0, y(100), T.car, 86, '#14171a', 'rgba(' + O + ',.6)');
-    x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(c0 + 1, y(44), T.car - 2, 2);
-    for (let i = 0; i < 6; i++) {
-      const wx = c0 + T.bay0 + i * T.bay;
-      if (T.doorBays.includes(i)) {
-        // doors: open shows the lit inside, and a step of light on the platform edge
-        const d = Math.round(at.open * 13);
-        box(x, wx, y(74), T.bayW, 58, '#101316', 'rgba(' + O + ',.45)');
-        if (d) {
-          x.fillStyle = 'rgba(255,217,165,.45)'; x.fillRect(wx + 16 - d, y(72), d * 2, 56);
-          x.fillStyle = 'rgba(255,217,165,.12)'; x.fillRect(wx + 16 - d - 4, y(16), d * 2 + 8, 14);
-        }
-        x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(wx + 3 - d, y(66), 9, 14); x.fillRect(wx + 20 + d, y(66), 9, 14);
-        continue;
-      }
-      // a lit window and whoever sits in it this time: nobody, one person, now and then two
-      x.fillStyle = 'rgba(255,217,165,.32)'; x.fillRect(wx, y(84), 32, 24);
-      const who = riders[c * 6 + i];
-      if (who.on) {
-        x.save(); x.beginPath(); x.rect(wx, y(84), 32, 24); x.clip();
-        const two = who.phase > 7.5;
-        drawRider(x, who.kind, wx + (two ? 9 : 16), y(60), v.t, { sit: true, flip: who.flip, ps: 2, phase: who.phase });
-        if (two) drawRider(x, riders[(c * 6 + i + 7) % riders.length].kind, wx + 23, y(60), v.t, { sit: true, flip: !who.flip, ps: 2, phase: who.phase + 3 });
-        x.restore();
-      }
-    }
-    if (c === 0) {
-      x.fillStyle = 'rgba(255,240,215,.95)'; x.fillRect(c0 + 3, y(30), 5, 4);
-      box(x, c0 + 6, y(98), 104, 11, '#050302');
-      text(x, '0 > ' + STATIONS[nextStation(st)].name, c0 + 58, y(92.5), 'rgba(255,136,0,.9)', 7, '600');
-    }
+    drawTrainCar(x, c0, y, { t: v.t, c, riders, open: at.open, dest: STATIONS[nextStation(st)].name });
   }
 }
 

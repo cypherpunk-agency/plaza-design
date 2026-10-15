@@ -1,7 +1,8 @@
 /**
  * ACCESS DENIED: hooks the game into the landing page.
  *
- * - The CRT boot runs first, on every visit.
+ * - The CRT boot runs first, on every visit. The game itself opens on its title screen (title/):
+ *   a sunrise over the sea with the main menu; NEW GAME glides from it into the train home.
  * - The Konami code (up up down down left right left right B A) is the only way in:
  *   the button says ACCESS GRANTED for once, then the window becomes the game.
  * - `?play` in the URL skips the boot and the Konami code; `?play=<scene id>` starts in that scene
@@ -115,7 +116,9 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
       setScene: (text) => { if (sceneLabel) sceneLabel.textContent = text; },
     });
     if (isTouch() && !controls) { controls = true; touchControls(windowEl); }
-    game.start(resumeScene !== undefined ? sceneParam(resumeScene) : playScene());
+    // launching (the Konami code, `?play` or `?sudo` with no scene named): the title screen first (title/)
+    const named = (() => { try { return !!new URLSearchParams(location.search).get('play'); } catch { return false; } })();
+    game.start(resumeScene !== undefined ? sceneParam(resumeScene) : playScene(), resumeScene === undefined && !named);
   };
 
   // Back from a LOAD GAME reload: the slot's save is in place, straight into its scene.

@@ -846,6 +846,42 @@ ${FEEDBACK_STYLES}
 
     @keyframes gm-blink { 50% { opacity: 0; } }
 
+    /* The title screen (game/title/): the same menu, see-through, over the sunrise; NEW GAME fades it */
+    #game-menu.gm-title-screen { background: transparent; }
+    #game-menu.gm-title-screen .gm-crt {
+      width: min(400px, 100%);
+      padding: var(--spacing-2) var(--spacing-4);
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      text-align: center;
+      animation: none;
+    }
+    #game-menu.gm-title-screen .gm-crt::after { display: none; }
+    #game-menu.gm-title-screen .gm-title {
+      font-size: 38px;
+      letter-spacing: 0.22em;
+      color: #ffd9a5;
+      text-shadow: 3px 0 0 rgba(255, 61, 242, 0.75), -3px 0 0 rgba(0, 229, 229, 0.6), 0 0 18px rgba(255, 136, 0, 0.45);
+    }
+    #game-menu.gm-title-screen .gm-sub { margin-bottom: var(--spacing-4); letter-spacing: 0.28em; color: rgba(255, 217, 165, 0.85); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); }
+    #game-menu.gm-title-screen .gm-list {
+      width: min(270px, 100%);
+      margin: 0 auto;
+      padding: 6px 4px;
+      text-align: left;
+      background: rgba(10, 4, 16, 0.74);
+      border: 2px solid rgba(255, 136, 0, 0.75);
+      box-shadow: 0 0 24px rgba(255, 136, 0, 0.2);
+    }
+    #game-menu.gm-title-screen .gm-msg,
+    #game-menu.gm-title-screen .gm-keys { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
+    #game-menu.gm-title-screen .gm-keys { color: rgba(255, 217, 165, 0.7); }
+    #game-menu.gm-fade { opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+    html.touch #game-menu.gm-title-screen .gm-title { font-size: 24px; }
+    html.touch #game-menu.gm-title-screen .gm-sub { margin-bottom: var(--spacing-1); font-size: 8px; }
+    html.touch #game-menu.gm-title-screen .gm-msg { margin-top: 2px; min-height: 1em; }
+
     /* Phones in landscape: a short screen, so a tighter panel */
     html.touch #game-menu .gm-crt { padding: var(--spacing-2) var(--spacing-4); }
     html.touch #game-menu .gm-title { font-size: 16px; }
@@ -854,6 +890,7 @@ ${FEEDBACK_STYLES}
 
     @media (prefers-reduced-motion: reduce) {
       #game-menu.gm-on .gm-crt { animation: none; }
+      #game-menu.gm-fade { transition: none; }
       #game-menu .gm-item.sel::before,
       #game-menu .gm-item.sel .gm-label::after { animation: none; }
     }

@@ -22,7 +22,11 @@
 import { drawCharacter, drawCharacters, type Character } from '../characters';
 import type { EngineDraw } from '../engine/host';
 import type { SceneModel } from '../engine/model';
-import { CH, container, gullFlying, type Crate } from '../scenes/harbor';
+import { gullFlying } from '../scenes/harbor';
+import { CH, container, type Crate } from '../sets/containers';
+import { drawGantry, STS2 } from '../sets/crane';
+import { drawSpire } from '../sets/spire';
+import { placed } from '../sets/view';
 import { box, C, drawTowers, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, type View } from '../scenes/kit';
 import { camera, taped, ticker, YELLOW } from '../scenes/screens';
 import { H, KIND, trolley, X } from './rules';
@@ -105,15 +109,7 @@ function farBand(x: CanvasRenderingContext2D, v: View, m: SceneModel) {
   drawTowers(x, v, SKYLINE, 0.12, y(HZ), 0.12, '#030100', 1);
   // the Spire: its foot in the bay, its towers on a deck, the antenna on the tallest (a landmark: the one bright thing far off)
   const sp = v.sx(1500, 0.1);
-  if (onScreen(v, sp - 80, 200)) {
-    x.fillStyle = '#040203';
-    x.fillRect(sp - 8, y(HZ + 150), 26, 150); x.fillRect(sp - 60, y(HZ + 172), 130, 22);
-    x.fillRect(sp - 50, y(HZ + 230), 22, 58); x.fillRect(sp - 18, y(HZ + 260), 30, 88); x.fillRect(sp + 24, y(HZ + 214), 24, 42);
-    x.strokeStyle = 'rgba(' + O + ',.12)'; x.strokeRect(sp - 60.5, y(HZ + 172) + 0.5, 130, 22); x.strokeRect(sp - 7.5, y(HZ + 150) + 0.5, 26, 150);
-    x.fillStyle = 'rgba(' + O + ',.18)'; x.fillRect(sp - 3, y(HZ + 300), 2, 40);
-    x.fillStyle = Math.sin(t * 0.05) > 0.2 ? 'rgba(' + RED + ',.85)' : 'rgba(' + RED + ',.2)'; x.fillRect(sp - 4, y(HZ + 302), 4, 3);
-    for (let i = 0; i < 12; i++) { x.fillStyle = 'rgba(255,217,165,' + (0.08 + 0.1 * ((i * 7) % 3) / 2) + ')'; x.fillRect(sp - 14 + (i % 4) * 7, y(HZ + 250 - Math.floor(i / 4) * 22), 3, 2); }
-  }
+  if (onScreen(v, sp - 80, 200)) placed(x, sp, y(HZ), 1, () => drawSpire(x, { t }));
   // the water
   x.fillStyle = '#01040a'; x.fillRect(0, y(HZ), v.viewW, v.gy - y(HZ));
   x.fillStyle = 'rgba(' + O + ',.1)'; x.fillRect(0, y(HZ), v.viewW, 1);
@@ -185,29 +181,10 @@ function blocks(x: CanvasRenderingContext2D, v: View, back: boolean) {
 
 /** The crane's frame: legs, portal beam, the boom out over the water, the machinery house, the A-frame. */
 function craneFrame(x: CanvasRenderingContext2D, v: View, m: SceneModel, front: boolean) {
-  const { sx, y, t } = v, [a, b] = L.legs, steel = '#21110a', edge = 'rgba(' + O + ',.8)';
-  if (!front) {
-    // the boom, the A-frame and the machinery house: behind everything on the quay
-    const b0 = sx(230), b1 = sx(1736), ap = sx(870);
-    x.strokeStyle = 'rgba(' + O + ',.45)'; x.lineWidth = 3; x.beginPath(); x.moveTo(sx(a) + 3, y(232)); x.lineTo(ap, y(300)); x.lineTo(sx(b) + 3, y(232)); x.stroke(); x.lineWidth = 1;
-    x.strokeStyle = 'rgba(' + O + ',.28)'; x.beginPath(); x.moveTo(ap, y(300)); x.lineTo(b0 + 4, y(L.boom + 4)); x.moveTo(ap, y(300)); x.lineTo(b1 - 4, y(L.boom + 4)); x.moveTo(ap, y(296)); x.lineTo(sx(1300), y(L.boom + 4)); x.stroke();
-    box(x, b0, y(L.boom + 6), b1 - b0, 5, steel, edge); box(x, b0, y(L.boom - 6), b1 - b0, 3, steel, edge);
-    x.strokeStyle = 'rgba(' + O + ',.35)'; x.beginPath(); for (let i = b0; i < b1 - 12; i += 14) { x.moveTo(i, y(L.boom - 6)); x.lineTo(i + 14, y(L.boom + 4)); } x.stroke();
-    box(x, sx(820), y(258), 100, 26, '#1a0e08', edge);
-    text(x, 'STS-2', sx(870), y(244), 'rgba(' + PAPER + ',.8)', 9, '600');
-    x.fillStyle = Math.sin(t * 0.04) > 0 ? 'rgba(' + RED + ',1)' : 'rgba(' + RED + ',.25)'; x.fillRect(ap - 2, y(306), 4, 4);
-    // the far leg pair, dimmer
-    for (const lx of [a + 18, b + 18]) box(x, sx(lx), y(232), 5, 232, '#140a06', 'rgba(' + O + ',.35)');
-    return;
-  }
-  // the near legs, the portal beam, the cross-bracing, hazard feet, the ladder and its cage
-  for (const lx of [a, b]) {
-    box(x, sx(lx), y(232), 8, 232, steel, edge);
-    for (let k = 0; k < 4; k++) { x.fillStyle = k % 2 ? 'rgba(20,12,6,1)' : 'rgba(' + YELLOW + ',.6)'; x.fillRect(sx(lx), y(30 - k * 6), 8, 6); }
-    box(x, sx(lx) - 8, y(9), 24, 9, '#2a160a', edge);
-  }
-  box(x, sx(a), y(176), sx(b) - sx(a) + 8, 8, steel, edge);
-  x.strokeStyle = 'rgba(' + O + ',.3)'; x.beginPath(); x.moveTo(sx(a) + 8, y(60)); x.lineTo(sx(b), y(168)); x.moveTo(sx(b), y(60)); x.lineTo(sx(a) + 8, y(168)); x.stroke();
+  const { sx, y, t } = v, [a, b] = L.legs;
+  placed(x, sx(a), y(0), 1, () => drawGantry(x, STS2, t, front ? 'front' : 'back'));
+  if (!front) return;
+  // the ladder and its cage
   const ld = sx(L.ladder);
   x.strokeStyle = 'rgba(' + PAPER + ',.35)'; x.beginPath(); x.moveTo(ld - 6.5, y(0)); x.lineTo(ld - 6.5, y(170)); x.moveTo(ld + 6.5, y(0)); x.lineTo(ld + 6.5, y(170)); x.stroke();
   x.fillStyle = 'rgba(' + PAPER + ',.3)'; for (let h = 6; h < 170; h += 8) x.fillRect(ld - 6, y(h), 12, 1);

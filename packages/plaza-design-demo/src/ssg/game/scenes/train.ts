@@ -21,6 +21,8 @@ import { box, O, onScreen, PAPER, RED, rng, tell, text, towers, type SceneDef, t
 import { between, clock, lineOpen, LOOP, ride, rideAtSiding, rideDue, rideNext, rideOpen, rideRun, SEG, SIDING, ticker } from './line';
 import { crowd, drawRider, KINDS, SEAT_H, type RiderKind } from './riders';
 import { TRAIN_RULES } from './train0';
+import { drawGalleriaDome } from '../sets/galleria-dome';
+import { placed } from '../sets/view';
 
 /** Layout: positions in world units, heights up from the car's floor. */
 const L = {
@@ -139,10 +141,7 @@ function drawLandmark(x: CanvasRenderingContext2D, i: number, s: number, base: n
     x.strokeStyle = 'rgba(194,65,12,.45)'; x.strokeRect(s - 5.5, base - 149.5, 11, 150);
     x.fillStyle = 'rgba(' + RED + ',' + (Math.sin(t * 0.05) > 0 ? 0.85 : 0.2) + ')'; x.fillRect(s - 1, base - 213, 3, 3);
   } else if (i === 1) {
-    x.fillStyle = '#0e0806'; x.beginPath(); x.ellipse(s, base - 40, 70, 34, 0, Math.PI, 0); x.fill(); x.fillRect(s - 80, base - 40, 160, 40);
-    x.strokeStyle = 'rgba(255,190,110,.4)'; x.beginPath(); x.ellipse(s, base - 40, 70, 34, 0, Math.PI, 0); x.stroke();
-    x.fillStyle = 'rgba(255,190,110,.16)'; for (let k = -60; k <= 60; k += 15) x.fillRect(s + k, base - 40 - Math.sqrt(Math.max(0, 1 - (k / 70) ** 2)) * 30, 1, 30);
-    text(x, 'GALLERIA', s, base - 28, 'rgba(255,217,165,.5)', 7, '600');
+    placed(x, s, base, 1, () => drawGalleriaDome(x));
   } else {
     for (const dx of [-60, 30]) {
       x.strokeStyle = 'rgba(194,65,12,.5)'; x.lineWidth = 2; x.beginPath();
