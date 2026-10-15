@@ -141,6 +141,15 @@ cable between two devices, talking to a daemon.* (LEVELS L1)
 The flat: door lock, blinds, kettle, smart plug, router, HOME-PC, a fridge note, and Pixel,
 a robot cat who sleeps on whatever is warm.
 
+**How Capsule 7B starts now (the opening, 2026-10-15; `opening.ts`).** You see the flat first
+the night before, at dawn and warm, where every everyday action works and nothing is a puzzle
+(state `flat`). You sleep; the flat is reset to its first-visit state and it is 09:40, cold
+(state `deleted`): the door says "rent: pending. identity: not found.", the kettle, blinds and
+plug fail with dry lines, and hacking is still locked. After two failures (or checking mail, or
+25 s) Moth's message arrives and hands you `uplink.so` (keyring `uplink`): hacking unlocks.
+The GOAL is "jack in to your PC"; once HOME-PC's schematic is open (`opening:jacked`), P01–P03
+run exactly as below. The flat's cold light lifts when the door opens.
+
 ### P01 Router on a schedule
 
 - **Scene · spot:** Capsule 7B, the smart plug under the desk. Main path. Difficulty 1.
@@ -401,8 +410,9 @@ don't install themselves." / "Go back to the box. What does it list now that it 
   1 s), 1 s (1 to 2 s) and 3 s (3 to 4 s) all bonk.
 - **Mechanics:** camera scope, events, TIMER (`timer.so`, owned from the start), timing, a
   daemon that grants permission instead of obeying.
-- **Unlocks:** the parcel: `uplink.so`, Moth's key chip (`moth.key`), the fixer's note "nice
-  wiring." (LEVELS L2). No hints in the yard (GAME-DATA, Decided).
+- **Unlocks:** the parcel: Moth's key chip (`moth.key`), the fixer's note "nice wiring."
+  (LEVELS L2). `uplink.so` now comes from Moth's message in the opening (`opening.ts`); the
+  parcel still holds a spare, so older saves and sudo keep it. No hints in the yard (GAME-DATA, Decided).
 - **Data:** `data/yard.json` is the reference for every sketch on this page.
 
 Cut from the yard but worth keeping (`lab4`, `lab5`): the **workbench** ("Two sockets, one

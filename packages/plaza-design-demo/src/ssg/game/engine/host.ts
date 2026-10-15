@@ -130,6 +130,13 @@ export class SceneHost {
   crowd: () => Box[] = () => [];
   /** The top of the free view, under the HUD and the buttons (CSS px of the game view). The game sets it. */
   uiTop = 0;
+  /**
+   * The story can step in (the opening, opening.ts); the game sets both. `hackLock`: hacking is not
+   * yours yet (no HACK/BOARD, no H/B, no pink row in the popup, no jacking in). `story`: a device's
+   * everyday actions in this state, instead of its data's (null: the data's).
+   */
+  hackLock: () => boolean = () => false;
+  story: (dev: string) => PopupItem[] | null = () => null;
   private btns: HTMLDivElement;
   private hackBtn: HTMLButtonElement;
   private boardBtn: HTMLButtonElement;
@@ -275,6 +282,9 @@ export class SceneHost {
     if (from && l[1] && this.active) { this.fx.caption(from, l[1], l[2], this.locate); this.onReact(from, l[1], l[2]); }
   }
 
+  /** Something of this scene says a line, as if it had reacted (a caption over it, the history): the story's lines. */
+  react(from: string, l: Line) { this.say(l, from); }
+
   /** A ping where something of this scene is (a device, one of its targets, or what `where` knows); an edge arrow when it is off the view. */
   ping(from: string, kind: PingKind = 'look') { if (this.active) this.fx.ping(from, kind, this.locate); }
 
@@ -324,6 +334,9 @@ export class SceneHost {
 
   /** BOARD is off until something is on it; HACK lights up while hack vision is on. */
   private sync() {
+    // HACK and BOARD only where there is something to hack, and only once hacking is yours
+    const hide = !this.active || !this.hackable;
+    if (this.btns.hidden !== hide) this.btns.hidden = hide;
     const none = !this.schem.known.size, on = this.vision.isOpen;
     if (this.boardBtn.disabled !== none) {
       this.boardBtn.disabled = none;
@@ -354,13 +367,14 @@ export class SceneHost {
    * has devices: in a scene with nothing to hack they stay away (and H and B do nothing).
    */
   show(on: boolean) { this.active = on; this.btns.hidden = !on || !this.hackable; }
-  /** The scene has devices: hack vision and the board mean something here. */
-  get hackable() { return this.model.devices.size > 0; }
+  /** The scene has devices, and hacking is yours: hack vision and the board mean something here. */
+  get hackable() { return this.model.devices.size > 0 && !this.hackLock(); }
 
   get visionOn() { return this.vision.isOpen; }
   /** H: hack vision on or off. From an open schematic or panel it goes straight to the world, in vision. */
   toggleVision() {
     this.popup.close();
+    if (this.hackLock()) return;
     if (this.vision.isOpen && !this.overlayOpen) this.vision.close();
     else { this.panels.close(); this.schem.close(); this.vision.openVision(); }
     this.sync();
@@ -454,18 +468,24 @@ export class SceneHost {
   pick(id: string) {
     const d = this.model.devices.get(id);
     if (!d) return;
+    const items = this.popupItems(id);
+    // nothing to do with it yet (hacking locked, no everyday actions): it only shows how it looks
+    if (!items.length) { this.say(['', d.look, 'dim'], id); return; }
     this.popupAt = this.player.x;
-    this.popup.open(id, d.name, this.model.label('menu.aria', { device: d.name }), this.popupItems(id), this.seen.get(id), this.project ? this.room(id) : undefined);
+    this.popup.open(id, d.name, this.model.label('menu.aria', { device: d.name }), items, this.seen.get(id), this.project ? this.room(id) : undefined);
   }
 
   private popupItems(id: string): PopupItem[] {
     const m = this.model, d = m.devices.get(id)!;
-    const items: PopupItem[] = (d.data.everyday ?? []).flatMap((e) => {
+    // the story's everyday actions for this device, in this state (the popup closes first, as for the data's)
+    const story = this.story(id)?.map((it) => ({ ...it, run: () => { this.popup.close(); it.run(); } }));
+    const items: PopupItem[] = story ?? (d.data.everyday ?? []).flatMap((e) => {
       const n = d.nouns.find((x) => x.id === e.noun);
       // a noun sealed away (or gone) is not everyday any more
       if (!n || (n.sector && m.sealed(id, n.sector))) return [];
       return [{ label: e.label ?? e.verb, cur: n.current?.() === e.verb, run: () => this.everyday(id, e.noun, e.verb) }];
     });
+    if (this.hackLock()) return items;
     if (d.data.deck) items.push({ label: m.label('menu.jack'), hack: true, run: () => { this.popup.close(); this.openDevice(id); } });
     items.push({ label: m.label('menu.hack'), hack: true, run: () => this.hackIt(id) });
     return items;
@@ -483,6 +503,7 @@ export class SceneHost {
   /** `⌁ hack it`: hack view, this device's circuit unfolded and in view. */
   hackIt(id: string) {
     this.popup.close(); this.panels.close(); this.schem.close();
+    if (this.hackLock()) return;
     if (!this.vision.isOpen) this.vision.openVision();
     this.vision.focus(id);
     this.sync();
@@ -491,13 +512,14 @@ export class SceneHost {
   /** Open a device's schematic, unless a full trace has you locked out of it. */
   openDevice(id: string) {
     const d = this.model.devices.get(id);
-    if (!d) return;
+    if (!d || this.hackLock()) return;
     const left = this.model.lockLeft(id);
     if (left) { this.say(this.model.line('trace.locked', { device: d.name, sec: Math.ceil(left / 1000) })); return; }
     this.say(['login ' + id, d.look, 'dim']);
     this.schem.openDevice(id);
   }
   toggleBoard() {
+    if (this.hackLock()) return;
     if (!this.schem.known.size) { this.print(this.model.label('board.empty'), 'dim'); return; }
     this.schem.toggleBoard();
   }

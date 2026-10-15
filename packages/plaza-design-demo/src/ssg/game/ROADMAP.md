@@ -39,16 +39,24 @@ once, then stops.
    towers swallowing the sun → it catches LINE 0 diving into its tunnel. CONTINUE / LOAD: a cut
    straight into the save.
 2. **The train home (teach walking, talking).** Dawn, the end of your night shift as a courier.
-   Passengers, news, ads. Nothing else to do. Get off at Downtown.
+   Passengers, news, ads. Nothing else to do. Get off at Downtown. ✓
 3. **Downtown, before (the full working street).** The turnstile hesitates ("verifying… ok"),
    the till takes your key, doors open, CONCIERGE greets you by name. Scenes take a `before`
-   state from a save flag.
-4. **The flat, the breather (teach everyday actions).** Kettle, blinds, Pixel. You sleep.
+   state from a save flag. ✓
+4. **The flat, the breather (teach everyday actions).** Kettle, blinds, Pixel. You sleep. ✓
 5. **Morning: deleted.** The door says "rent: pending"; everyday actions don't help. Moth's
-   message brings `uplink.so`: hacking unlocks as the first quest. Then Capsule 7B's puzzles.
+   message brings `uplink.so`: hacking unlocks as the first quest. Then Capsule 7B's puzzles. ✓
 
 Guidance: the scene leads (one way on, people facing it, signs), the GOAL line, and an **idle
-ping** on the next goal target after ~20 s standing still, in the opening scenes only for now.
+ping** on the next goal target after ~20 s standing still, in the opening scenes only for now. ✓
+
+Built (2026-10-15): parts 2–5 and the idle ping, as states of the existing scenes (train,
+Downtown's platform with its new exit turnstile, Downtown, Capsule 7B), driven by save flags
+(`opening:home` → `:street` → `:flat` → `:slept` → `:uplink` → `:jacked`); everything per state
+is data in `opening.ts`. Hacking is locked until `uplink.so`. Until the glide lands, NEW GAME
+(and a first launch) go straight to the train; sudo LEVELS has OPENING · TRAIN HOME and
+OPENING · MORNING, DELETED. Open: CONCIERGE greets you without a name (the courier has none
+yet; the handle comes from the fixer after you are deleted).
 
 ## Act I: where is Moth?
 
