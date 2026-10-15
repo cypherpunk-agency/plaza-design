@@ -133,5 +133,5 @@ hour in any weather.
   suns painted into scenes (the beach's sunset, the metro skyline's) are replaced.
 - **The moon has phases** by the day count.
 - **Interiors get the sun through their windows** (shafts whose colour and angle follow the clock).
-- **The slatted sun** and **shadows**: options in https://claude.ai/artifact/ (Sun and Shadow
+- **The slatted sun** and **shadows**: options in https://claude.ai/artifact/RFj9FzGtGvsq9yfVRXVqSx (Sun and Shadow
   Drafts); waiting on Tommi's pick.
