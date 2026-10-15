@@ -14,6 +14,7 @@
 import data from '../data/cutscenes.json';
 import { drawAct2 } from './act2';
 import { drawSkyline } from './skyline';
+import type { Timeline } from '../transport';
 import type { Cutscene, CutsceneData, CutView } from './types';
 
 export type { Cutscene, CutsceneData, CutView, TextCard } from './types';
@@ -52,11 +53,28 @@ export class CutscenePlay {
 
   constructor(readonly scene: Cutscene, private opts: { reduced: boolean; touch: boolean }) {}
 
-  /** Advance by `dt` seconds. */
+  /** Advance by `dt` seconds of play. Done once play runs it to its end (a seek never ends it). */
   step(dt: number) {
-    this.t += dt;
+    if (dt <= 0) return;
+    this.t = Math.min(this.scene.duration, this.t + dt);
     if (this.t >= this.scene.duration) this.done = true;
   }
+
+  /**
+   * Sudo's time control (transport.ts): the frame is drawn from `t` alone (the skyline's packets
+   * are the one exception: ambient, they move with the frames), so seeking is setting `t`.
+   */
+  get timeline(): Timeline {
+    return this.tl ??= {
+      id: 'cut:' + this.scene.id,
+      label: this.scene.id.toUpperCase(),
+      duration: this.scene.duration,
+      beats: this.scene.beats ?? this.scene.cards.map((c, i) => ({ at: c.at, name: 'CARD ' + (i + 1) })),
+      time: () => this.t,
+      seek: (s) => { this.t = Math.max(0, Math.min(this.scene.duration, s)); },
+    };
+  }
+  private tl: Timeline | null = null;
 
   /** Any key or tap: jump to the fade out. Returns false while the grace period lasts. */
   skip() {

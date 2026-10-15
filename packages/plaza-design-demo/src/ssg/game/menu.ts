@@ -41,6 +41,8 @@ export interface MenuHooks {
 }
 
 type Tone = 'go' | 'ok' | 'bad' | 'dim';
+/** Milliseconds after the title menu comes up in which choosing does nothing. */
+const POP_GRACE = 450;
 interface Item { label: string; meta?: string; tone?: Tone; run: () => void }
 
 export class Menu {
@@ -55,6 +57,8 @@ export class Menu {
   private back: (() => void) | null = null;
   /** The title screen's menu (no RESUME, nothing to go back to), not the pause menu. */
   private title = false;
+  /** When the title menu came up (`POP_GRACE`). */
+  private poppedAt = 0;
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 
   constructor(host: HTMLElement, private hooks: MenuHooks, touch: boolean) {
@@ -94,7 +98,7 @@ export class Menu {
   show() {
     if (this.open) return;
     this.title = false;
-    this.root.classList.remove('gm-title-screen', 'gm-fade');
+    this.root.classList.remove('gm-title-screen', 'gm-fade', 'gm-pop');
     this.open = true;
     this.root.hidden = false;
     document.documentElement.classList.add('game-menu');
@@ -105,12 +109,14 @@ export class Menu {
     this.main(0);
   }
 
-  /** The title screen: the menu over the opening's sunrise. */
-  showTitle() {
+  /** The title screen: the menu over the opening's sunrise. `pop`: it pops in (the sun has just settled). */
+  showTitle(pop = false) {
     if (this.open) this.hide();
     this.title = true;
-    this.root.classList.remove('gm-fade');
+    this.root.classList.remove('gm-fade', 'gm-pop');
     this.root.classList.add('gm-title-screen');
+    this.poppedAt = performance.now();
+    if (pop) { void this.root.offsetWidth; this.root.classList.add('gm-pop'); }
     this.open = true;
     this.root.hidden = false;
     document.documentElement.classList.add('game-menu');
@@ -130,7 +136,7 @@ export class Menu {
     if (!this.open) return;
     this.open = false;
     this.title = false;
-    this.root.classList.remove('gm-title-screen');
+    this.root.classList.remove('gm-title-screen', 'gm-pop');
     this.root.hidden = true;
     document.documentElement.classList.remove('game-menu');
     this.hooks.onClose();
@@ -302,6 +308,9 @@ export class Menu {
   private activate() {
     const it = this.items[this.sel];
     if (!it) return;
+    // the title menu has just popped in: the key or tap that was already on its way (the one that
+    // skipped the sunrise, or still held) must not pick NEW GAME
+    if (this.title && performance.now() - this.poppedAt < POP_GRACE) return;
     if (it.tone !== 'dim') sound.open();
     it.run();
   }

@@ -43,6 +43,7 @@ import type { PopupItem } from './engine/popup';
 import { CAPSULE_SPAWN } from './capsule';
 import { Menu } from './menu';
 import { Opening } from './title';
+import { Transport } from './transport';
 import {
   commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
   newSave, ownedModules, run, SAVE_KEY, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
@@ -166,6 +167,11 @@ export class Game {
       onClose: () => this.canvas.focus(),
       ...(SUDO ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
     }, this.touch);
+    // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts)
+    if (SUDO) this.transport = new Transport(host.windowEl);
+    // a click or tap during the title's sunrise skips to the settled shot (on click, not pointerdown:
+    // the menu comes up under the finger, and the release must not land on it)
+    this.canvas.addEventListener('click', () => { if (this.opening && !this.opening.gliding && !this.opening.risen) this.skipRise(); });
     this.canvas.addEventListener('pointerdown', (e) => this.onCanvasPointer(e, true));
     this.canvas.addEventListener('pointermove', (e) => this.onCanvasPointer(e, false));
     // hack vision: drag pans, pinch and the wheel zoom (visionPointer)
@@ -329,7 +335,14 @@ export class Game {
   /** The title shot and the glide, while they run: the world is not drawn or stepped. */
   private opening: Opening | null = null;
 
-  /** The title screen: the sunrise with the main menu over it; `gliding`: straight into the glide (NEW GAME from the pause menu). */
+  /** Sudo's time control (transport.ts); null without `?sudo`. */
+  private transport: Transport | null = null;
+
+  /**
+   * The title screen: the sun comes up out of the sea, then the main menu pops in over it
+   * (`stepOpening`; reduced motion: settled, menu up at once). `gliding`: straight into the glide
+   * from the settled shot (NEW GAME from the pause menu).
+   */
   private showTitle(gliding = false) {
     this.endCutscene(false);
     this.bubble = null;
@@ -340,7 +353,15 @@ export class Game {
     document.documentElement.classList.add('cutscene');
     this.host.setScene('ACCESS DENIED');
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: a sunrise over the sea');
-    if (gliding) { this.menu.hide(); this.newGame(); } else this.menu.showTitle();
+    if (gliding) { this.menu.hide(); this.newGame(); } else if (this.opening.risen) this.menu.showTitle(); else this.menu.hide();
+  }
+
+  /** Any key or click while the sun comes up: the settled shot, and the menu with it. */
+  private skipRise() {
+    const o = this.opening;
+    if (!o || o.gliding || o.risen) return;
+    o.skipRise();
+    this.menu.showTitle(true);
   }
 
   private endTitle() {
@@ -353,7 +374,13 @@ export class Game {
 
   private stepOpening(dt: number) {
     const o = this.opening!;
-    o.step(dt / 60);
+    o.step((dt / 60) * (this.transport?.rate ?? 1));
+    // the title's menu is up exactly while the sun has settled (sudo can seek back into the sunrise)
+    if (!o.gliding) {
+      if (o.risen && !this.menu.open) this.menu.showTitle(true);
+      else if (!o.risen && this.menu.open) this.menu.hide();
+    }
+    this.transport?.sync();
     const x = this.x;
     x.setTransform(this.k, 0, 0, this.k, 0, 0);
     x.imageSmoothingEnabled = false;
@@ -413,6 +440,7 @@ export class Game {
     this.modeKey = '';
     this.menu.hide();
     this.endCutscene(false);
+    this.transport?.attach(null);
     this.running = false;
     cancelAnimationFrame(this.raf);
     window.removeEventListener('keydown', this.onKeyDown);
@@ -467,6 +495,8 @@ export class Game {
     if (!this.running) return;
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
+    // sudo's time control follows whatever timed picture is up (none: it hides)
+    this.transport?.attach(this.opening?.timeline ?? this.cut?.timeline ?? null);
     // The title and the glide: their own picture, with the title's menu over it.
     if (this.opening) { this.stepOpening(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     // The pause menu: the world holds still under it (the last frame stays on the canvas).
@@ -495,8 +525,14 @@ export class Game {
   // ---------- input ----------
 
   private onKeyDown(e: KeyboardEvent) {
-    // the title takes the menu's keys; the glide cannot be skipped
-    if (this.opening) { if (this.menu.open && !this.term.focused) this.menu.key(e); else e.preventDefault(); return; }
+    // sudo's time control takes its keys first (Space stays the title menu's while it is up)
+    if ((this.opening || this.cut) && !this.term.focused && this.transport?.key(e, !!this.opening && this.menu.open)) return;
+    // the title takes the menu's keys; a key while the sun comes up skips to the menu; the glide cannot be skipped
+    if (this.opening) {
+      if (this.menu.open && !this.term.focused) this.menu.key(e);
+      else { e.preventDefault(); if (!e.repeat && !['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) this.skipRise(); }
+      return;
+    }
     if (this.cut) { e.preventDefault(); if (!e.repeat) this.cut.skip(); return; }
     if (this.menu.open) { if (!this.term.focused) this.menu.key(e); return; }
     if (this.term.focused) return;
@@ -1994,7 +2030,8 @@ export class Game {
 
   private stepCutscene(dt: number) {
     const c = this.cut!;
-    c.step(dt / 60);
+    c.step((dt / 60) * (this.transport?.rate ?? 1));
+    this.transport?.sync();
     const x = this.x;
     x.setTransform(this.k, 0, 0, this.k, 0, 0);
     x.imageSmoothingEnabled = false;

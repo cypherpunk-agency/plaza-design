@@ -3,6 +3,14 @@
     "title": "ACCESS DENIED",
     "duration": 26,
     "next": "capsule",
+    "beats": [
+      { "at": 0, "name": "SKYLINE" },
+      { "at": 2.5, "name": "CARD 1" },
+      { "at": 10, "name": "CARD 2" },
+      { "at": 13.5, "name": "SHOWER" },
+      { "at": 17.5, "name": "CARD 3" },
+      { "at": 25.1, "name": "FADE OUT" }
+    ],
     "cards": [
       {
         "at": 2.5,
@@ -25,6 +33,15 @@
     "title": "ACCESS DENIED · ACT II",
     "duration": 16,
     "next": "stacks",
+    "beats": [
+      { "at": 0, "name": "FERRY" },
+      { "at": 0.8, "name": "ACT I" },
+      { "at": 2.6, "name": "FOUND." },
+      { "at": 5.4, "name": "ACT I OUT" },
+      { "at": 6, "name": "ACT II" },
+      { "at": 7.6, "name": "SEVEN FRAGMENTS" },
+      { "at": 15.1, "name": "FADE OUT" }
+    ],
     "cards": [
       {
         "at": 1.2,

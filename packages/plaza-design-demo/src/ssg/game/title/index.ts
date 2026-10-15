@@ -1,9 +1,11 @@
 /**
  * The opening (ROADMAP "The opening: intro and tutorial", step 1): the title screen and the glide.
  *
- * Launching the game shows a sunrise over the sea with the main menu over it (menu.ts,
- * `showTitle`). NEW GAME: the menu fades and the same shot starts moving west (glide.ts), not
- * skippable, about 54 s, into LINE 0's tunnel. CONTINUE and LOAD GAME cut straight into the save.
+ * Launching the game shows a sunrise over the sea: the sun comes up out of it (RISE, about 7 s;
+ * any key or click skips it) and settles half up on the horizon, then the main menu pops in over it
+ * (menu.ts, `showTitle`). Reduced motion: settled from the start. NEW GAME: the menu fades and the
+ * same shot starts moving west (glide.ts), not skippable, about 54 s, into LINE 0's tunnel.
+ * CONTINUE and LOAD GAME cut straight into the save.
  *
  * THE HANDOVER (to the story half of the opening, opening.ts: the train home, Downtown before,
  * the flat, the morning you are deleted). When the glide ends, game.ts `openingDone()`:
@@ -16,28 +18,69 @@
  * Nothing is reset before that: leave mid-glide (QUIT TO HOMEPAGE) and the old run is still there.
  */
 
-import { drawGlide, GLIDE } from './glide';
+import type { Timeline } from '../transport';
+import { drawGlide, GLIDE, GLIDE_BEATS, RISE, RISE_BEATS } from './glide';
 
-export { GLIDE } from './glide';
+export { GLIDE, RISE } from './glide';
 
-/** The title shot and the glide: one picture, one clock. game.ts steps and draws it instead of the world while it runs. */
+/**
+ * The title shot and the glide: one picture, two clocks. game.ts steps and draws it instead of the
+ * world while it runs. `t` is the title's (the sunrise until RISE, then the water moving); NEW GAME
+ * notes it (`t0`) and the glide's `tau` runs from 0, with `t = t0 + tau` from then on. The frame is
+ * a function of (t, tau) alone, so sudo's time control (transport.ts) can seek either.
+ */
 export class Opening {
-  /** Seconds since the title came up. */
-  t = 0;
+  /** Seconds since the title came up (reduced motion: already settled). */
+  t: number;
   /** Seconds into the glide; null while the title waits for a choice. */
   tau: number | null = null;
   done = false;
+  /** The title's time when the glide started. */
+  private t0 = 0;
+  private titleTl: Timeline | null = null;
+  private glideTl: Timeline | null = null;
 
-  constructor(private reduced: boolean) {}
+  constructor(private reduced: boolean) { this.t = reduced ? RISE : 0; }
 
-  /** NEW GAME: the same shot starts moving. */
-  go() { if (this.tau === null) this.tau = 0; }
+  /** The sun has settled on the horizon: the menu is up. */
+  get risen() { return this.t >= RISE; }
+
+  /** Any key or click during the sunrise: straight to the settled shot. */
+  skipRise() { if (this.tau === null && this.t < RISE) this.t = RISE; }
+
+  /** NEW GAME: the same shot starts moving (from the settled one, if the sun was still coming up). */
+  go() {
+    if (this.tau !== null) return;
+    this.skipRise();
+    this.t0 = this.t;
+    this.tau = 0;
+  }
 
   get gliding() { return this.tau !== null; }
 
+  /** Advance by `dt` seconds of play. The glide is done once play runs it to its end (a seek never ends it). */
   step(dt: number) {
-    this.t += dt;
-    if (this.tau !== null) { this.tau += dt; if (this.tau >= GLIDE) this.done = true; }
+    if (dt <= 0) return;
+    if (this.tau === null) { this.t += dt; return; }
+    this.tau = Math.min(GLIDE, this.tau + dt);
+    this.t = this.t0 + this.tau;
+    if (this.tau >= GLIDE) this.done = true;
+  }
+
+  /** Sudo's time control: the sunrise, or once NEW GAME is pressed, the glide. */
+  get timeline(): Timeline {
+    if (this.tau === null) {
+      return this.titleTl ??= {
+        id: 'title', label: 'TITLE', duration: RISE, beats: RISE_BEATS,
+        time: () => this.t,
+        seek: (s) => { if (this.tau === null) this.t = Math.max(0, s); },
+      };
+    }
+    return this.glideTl ??= {
+      id: 'glide', label: 'GLIDE', duration: GLIDE, beats: GLIDE_BEATS,
+      time: () => this.tau ?? 0,
+      seek: (s) => { if (this.tau === null) return; this.tau = Math.max(0, Math.min(GLIDE, s)); this.t = this.t0 + this.tau; },
+    };
   }
 
   /** Draw a frame into a context already scaled to world units. */
