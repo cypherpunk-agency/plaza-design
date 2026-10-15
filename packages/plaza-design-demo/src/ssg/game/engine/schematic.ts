@@ -77,6 +77,8 @@ export class Schematic {
   readonly root: HTMLDivElement;
   private stage: HTMLDivElement;
   private svg: SVGSVGElement;
+  /** The cables' verb labels ("wait 2 s"), in a layer over the circuits so none hides behind a core; taps go through it. */
+  private tags: SVGSVGElement;
   private title: HTMLSpanElement;
   private modeBtn: HTMLButtonElement;
   private status: HTMLDivElement;
@@ -134,6 +136,7 @@ export class Schematic {
     this.status = el('div', 'hack-status');
     this.stage = el('div', 'hack-stage');
     this.svg = document.createElementNS(NS, 'svg'); this.svg.setAttribute('class', 'hack-wires');
+    this.tags = document.createElementNS(NS, 'svg'); this.tags.setAttribute('class', 'hack-wires hack-tags');
     this.palette = el('div', 'sch-palette'); this.palette.hidden = true;
     this.palette.appendChild(el('span', '', 'LOGIC'));
     m.logic.modules.forEach((mod) => {
@@ -379,22 +382,27 @@ export class Schematic {
     const at = (b: Box, dx: number, dy: number): Box => ({ l: b.l + dx, t: b.t + dy, r: b.r + dx, b: b.b + dy });
     const hit = (q: Box) => placed.find((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM);
     const inside = (q: Box) => q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= ROOM - 0.5 && q.b <= H - ROOM + 0.5;
+    // the other devices' frames: a plate standing on one hides it, so that is worth moving for too
+    const frames = [...this.stage.querySelectorAll<HTMLElement>('.vis-outline')].map((f) => ({ id: f.dataset.frame, b: box(f) }));
     const free = groups.filter((g) => !mine(g)).map((g) => ({ g, b: extent(g) })).sort((p, q) => p.b.l - q.b.l);
+    const hits = (q: Box) => placed.filter((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM).length;
+    const clearOfBar = (q: Box) => !bar || !(q.l < bar.r && q.r > bar.l && q.t < bar.b + ROOM && q.b > bar.t);
     for (const { g, b } of free) {
       let dx = 0, dy = 0;
       if (b.r > W - ROOM) dx = W - ROOM - b.r;
       if (b.l + dx < ROOM) dx = ROOM - b.l;
       if (b.t < ROOM) dy = ROOM - b.t;
-      const q0 = at(b, dx, dy);
-      if (hit(q0)) {
-        const tries = placed.flatMap((p) => [
+      const q0 = at(b, dx, dy), own = g.dataset.dev;
+      const others = frames.filter((f) => f.id !== own);
+      const cover = (q: Box) => others.reduce((s, f) => s + Math.max(0, Math.min(q.r, f.b.r) - Math.max(q.l, f.b.l) - 2) * Math.max(0, Math.min(q.b, f.b.b) - Math.max(q.t, f.b.t) - 2), 0);
+      if (hit(q0) || cover(q0) > 0) {
+        // beside or above whatever is in the way (another plate, another device's frame), or where it is
+        const tries = [[0, 0], ...[...placed, ...others.map((f) => f.b)].flatMap((p) => [
           [0, p.t - ROOM - q0.b], [0, p.b + ROOM - q0.t], [p.l - ROOM - q0.r, 0], [p.r + ROOM - q0.l, 0],
-        ]).filter(([x, y]) => inside(at(q0, x, y)));
-        // the nearest free spot; on a crowded (phone) view, the one that overlaps least, but clear of the buttons
-        const hits = (q: Box) => placed.filter((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM).length;
-        const clearOfBar = (q: Box) => !bar || !(q.l < bar.r && q.r > bar.l && q.t < bar.b + ROOM && q.b > bar.t);
-        const best = tries.filter(([x, y]) => clearOfBar(at(q0, x, y)))
-          .map(([x, y]) => ({ x, y, n: hits(at(q0, x, y)), d: Math.hypot(x, y) }))
+        ])].filter(([x, y]) => inside(at(q0, x, y)) && clearOfBar(at(q0, x, y)));
+        // no other plate first; then covering as few devices as it can; then the nearest, up before down
+        const best = tries
+          .map(([x, y]) => ({ x, y, n: hits(at(q0, x, y)), d: Math.hypot(x, y) * (y > 0 ? 2 : 1) + cover(at(q0, x, y)) * 0.5 }))
           .sort((u, v) => u.n - v.n || u.d - v.d)[0];
         if (best) { dx += best.x; dy += best.y; }
       }
@@ -743,6 +751,9 @@ export class Schematic {
 
   private lines() {
     this.svg.querySelectorAll('path:not(.temp), text').forEach((p) => p.remove());
+    this.tags.textContent = '';
+    // the labels' layer stays the stage's last child: over every circuit
+    if (this.stage.lastChild !== this.tags) this.stage.appendChild(this.tags);
     if (this.mode === 'vision') {
       // each core stays tied to its device: a leader from the core to the nearest point of the frame
       const st = this.stage.getBoundingClientRect();
@@ -781,7 +792,18 @@ export class Schematic {
     const t = document.createElementNS(NS, 'text');
     t.setAttribute('x', String((P1.x + P2.x) / 2)); t.setAttribute('y', String((P1.y + P2.y) / 2 - 6));
     t.setAttribute('text-anchor', 'middle'); t.setAttribute('class', 'verb'); t.textContent = l.verb;
-    this.svg.appendChild(t);
+    this.tags.appendChild(t);
+    // clear of the names and cores it would sit on: a little higher, or under the cable, whichever is free
+    const st = this.stage.getBoundingClientRect();
+    const boxes = [...this.stage.querySelectorAll('.sch-label, .sch-core, .sch-verbs')].map((e) => e.getBoundingClientRect());
+    const mx = (P1.x + P2.x) / 2, my = (P1.y + P2.y) / 2;
+    for (const dy of [-6, -16, 14, -26, 24]) {
+      t.setAttribute('y', String(my + dy));
+      const r = t.getBoundingClientRect(), l0 = r.left - st.left, t0 = r.top - st.top;
+      if (!boxes.some((b) => l0 < b.right - st.left && l0 + r.width > b.left - st.left && t0 < b.bottom - st.top && t0 + r.height > b.top - st.top)) break;
+      if (dy === 24) t.setAttribute('y', String(my - 6));
+    }
+    t.setAttribute('x', String(mx));
   }
 
   // ---------- gestures ----------

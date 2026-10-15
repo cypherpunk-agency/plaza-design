@@ -11,7 +11,7 @@
 
 import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { fridge, shelf, type ShelfSpec } from './build';
-import { box, C, exitDoor, O, onScreen, PAPER, rng, tell, text, type SceneDef, type SceneUse, type View } from './kit';
+import { box, C, exitDoor, O, onScreen, PAPER, rng, tell, text, type SceneDef, type ItemId, type SceneUse, type View } from './kit';
 import { adScreen, camera, lotteryScreen, ticker, wallSign } from './screens';
 
 /** Layout: positions in world units, heights up from the floor. */
@@ -79,10 +79,12 @@ const GOODS = [
   ['Noodle cup. Three for three tokens, one for one.', 'The maths is the only honest thing in this shop.'],
   ['Gum. The last pack.', 'It has been the last pack since I opened.'],
 ];
+/** What each of GOODS puts in your hands. */
+const GOOD_ITEMS: ItemId[] = ['blue', 'crisps', 'noodlecup', 'gum'];
 const USES: SceneUse[] = [
   { id: 'buy', x: L.till, label: '[E] BUY · 1 TOKEN', name: 'SHOPKEEPER', promptH: 62, use: (c) => {
     if (!c.pay(1)) return ['One token. You have none. I can do nothing for you, at no charge.', 'Credit? This is a corner shop, not a bank. Banks have better locks.'];
-    c.set('shop:bought');
+    c.set('shop:bought'); c.add(GOOD_ITEMS[bought % GOOD_ITEMS.length]);
     return GOODS[bought++ % GOODS.length];
   } },
 ];

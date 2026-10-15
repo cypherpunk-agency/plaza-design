@@ -118,7 +118,12 @@ function freeNode(w: World, p: Player, dev: string) {
 function effects(p: Player): Record<string, Effect> {
   return {
     /** A Registry box opens up: its node is free (which node: `texts["node.<device>"]`). */
-    'node.free': (w, c) => freeNode(w, p, c.dev).line,
+    'node.free': (w, c) => {
+      const r = freeNode(w, p, c.dev), peer = w.m.data.texts['peer.' + c.dev];
+      // a freed node is seen down the street: its peer answers a moment later (the box's: the noodle till)
+      if (r.fresh && peer) w.m.later(700, () => { w.say(w.line('peer.' + c.dev, { node: w.m.label('node.' + c.dev) }), w.m.label('peer.' + c.dev + '.who')); w.changed(); });
+      return r.line;
+    },
 
     /** legs.so out of the box and into your deck: SPACE jumps (the save keeps it as `jump`). */
     'legs.install': (w) => {
@@ -216,7 +221,7 @@ export function downtownRules(p: Player): SceneRules {
       texts: {
         'joke.0': 'label', 'joke.1': 'label', 'joke.2': 'label',
         'node.box': 'label', 'node.relay': 'label', 'node.billboard': 'label',
-        'free.box': 'line', 'free.relay': 'line', 'free.billboard': 'line',
+        'free.box': 'line', 'free.relay': 'line', 'free.billboard': 'line', 'peer.box': 'line', 'peer.box.who': 'label',
         'till.pay': 'line', 'legs.install': 'line',
         'dlv.busy': 'line', 'dlv.lost': 'line', 'dlv.home': 'line', 'dlv.go': 'line', 'dlv.out': 'line',
         'dlv.follow': 'line', 'dlv.bonk': 'line', 'dlv.passed': 'line', 'gate.end': 'line',

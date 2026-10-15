@@ -343,6 +343,9 @@ export const demoStyles = `
     .hack-wires .hit:hover + .cable { stroke: var(--color-error); filter: drop-shadow(0 0 4px var(--color-error)); }
     .hack-wires .temp { stroke: var(--color-text-body); stroke-width: 2; stroke-dasharray: 4 4; }
     .hack-wires .verb { fill: var(--color-success); font: 10px var(--font-mono); paint-order: stroke; stroke: #000; stroke-width: 3px; }
+    /* the cables' labels sit over the circuits (taps go through to the verbs underneath) */
+    .hack-tags { z-index: 7; }
+    .hack-tags .verb { stroke-width: 4px; stroke-linejoin: round; }
 
     .sch { position: absolute; width: 0; height: 0; }
 

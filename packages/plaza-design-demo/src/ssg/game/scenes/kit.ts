@@ -105,7 +105,28 @@ export interface UseCtx {
   flags: Readonly<Record<string, boolean>>;
   set: (flag: string) => void;
   t: number;
+  /**
+   * What the player carries (the save's `items`, kept across scenes and reloads; the HUD shows it):
+   * `has` at least n of an item, `take` n if there are that many (true), else nothing (false),
+   * `add` n (bought, given). Item ids and their names: `ITEMS`.
+   */
+  has: (item: ItemId, n?: number) => boolean;
+  take: (item: ItemId, n?: number) => boolean;
+  add: (item: ItemId, n?: number) => void;
 }
+
+/** Everything the player can carry, by id, with its name in the HUD. */
+export const ITEMS = {
+  fish: 'fish',
+  tea: 'tea',
+  basil: 'basil leaf',
+  blankchip: 'blank chip',
+  blue: 'BLUE',
+  crisps: 'crisps',
+  noodlecup: 'noodle cup',
+  gum: 'gum',
+} as const;
+export type ItemId = keyof typeof ITEMS;
 
 /**
  * A scene, complete: one walkable screen. Every place in the game is one (the

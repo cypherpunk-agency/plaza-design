@@ -28,6 +28,8 @@ export interface Save {
   keyring: string[];
   /** Each scene's own progress, by scene id: `scenes.yard`. Downtown keeps using the fields above. */
   scenes: Record<string, SceneSave | undefined>;
+  /** What the player carries (bought, given), item id → how many: `{ fish: 2, tea: 1 }`. Scene uses read it through `UseCtx`. */
+  items: Record<string, number>;
   /** Time played in ms (the pause menu's save slots show it). Older saves: missing, counts from 0. */
   playMs?: number;
 }
@@ -41,7 +43,7 @@ export const SAVE_KEY = SUDO ? 'access-denied-save-sudo-v2' : 'access-denied-sav
 /** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` scene replaces it later. */
 
 export function newSave(): Save {
-  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], freed: [], flags: {}, hints: {}, scenes: {} };
+  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], items: {}, freed: [], flags: {}, hints: {}, scenes: {} };
 }
 
 /** A stored save, with anything missing filled in from a new game. */
@@ -53,6 +55,8 @@ export function loadSave(): Save {
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
       if (!s.scenes || typeof s.scenes !== 'object') s.scenes = {};
       if (!Array.isArray(s.keyring)) s.keyring = [];
+      if (!s.items || typeof s.items !== 'object' || Array.isArray(s.items)) s.items = {};
+      s.items = Object.fromEntries(Object.entries(s.items).filter(([, n]) => Number.isInteger(n) && n > 0));
       return s;
     }
   } catch { /* private window or blocked storage: start fresh */ }

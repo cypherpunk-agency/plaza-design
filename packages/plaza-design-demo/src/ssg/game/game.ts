@@ -19,7 +19,8 @@ import { PARCEL } from './yard';
 import { Companion, WARM } from './companion';
 import { reconcile, syncGoals, sceneShell } from './downtown';
 import { NO_RULES, SceneHost } from './engine';
-import { isSceneId, SCENES, sceneTitle, type SceneDef, type SceneExit, type SceneId, type SceneView } from './scenes';
+import { isSceneId, ITEMS, SCENES, sceneTitle, type ItemId, type SceneDef, type SceneExit, type SceneId, type SceneView } from './scenes';
+import { KEYRING } from './data';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import { botReact, isBot, characterHeight, characterX, talkTo } from './characters';
 import {
@@ -200,6 +201,11 @@ export class Game {
     // Pixel is the game's, not the scene's: lines about Pixel stand over Pixel, and popups keep clear of the cat
     zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : null);
     zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
+    // captions never cover the player's speech bubble, and keep their lane over people's heads
+    zh.shield = () => { const b = this.bubbleBox, s = this.cssScale; return b ? [{ l: b.x * s, t: b.y * s, r: (b.x + b.w) * s, b: (b.y + b.h) * s }] : []; };
+    zh.crowd = () => this.heads();
+    // something reacted where you cannot see it: the camera may lean that way for a moment
+    zh.onReact = (from, text, tone) => { if (this.here === id) this.nudgeTo(from, text, tone); };
     zh.onClose = () => this.canvas.focus();
     this.hosts.set(id, zh);
     // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
@@ -306,8 +312,12 @@ export class Game {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.canvas.width = Math.round(cssW * dpr);
     this.canvas.height = Math.round(cssH * dpr);
-    // Small screens (phones in landscape) show a shorter slice of the street at a larger scale.
-    let k = Math.max(1, Math.floor((cssH * dpr) / (cssH < 420 ? 230 : 320)));
+    // Small screens (phones in landscape) show a shorter slice of the street at a larger scale (tuned: leave as is).
+    // Larger screens take the integer scale nearest to a view about 300 units tall (so 1280×720 draws at 2,
+    // not 1, and people read), but never under 240 units, so wide places still show enough.
+    const px = cssH * dpr, phone = cssH < 420;
+    let k = phone ? Math.max(1, Math.floor(px / 230)) : Math.max(1, Math.round(px / 300));
+    if (!phone && k > 1 && px / k < 240) k--;
     // A place narrower than the view (a flat, the yard) is shown closer, so it fills the width,
     // as long as enough height stays in view for its rooms and signs.
     const fit = Math.floor(this.canvas.width / (this.levelW + 24));
@@ -383,11 +393,10 @@ export class Game {
     if (k === 'Enter') { e.preventDefault(); this.openDeck(); return; }
     // the deck's map app: the city as far as you know it
     if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.showMap(); return; }
-    if (zh && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
-    if (zh && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
+    // B and H mean something only where there is something to hack (a scene with devices)
+    if (zh.hackable && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
+    if (zh.hackable && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
-    // walking up into an open train door (or out of one) is the same as E there
-    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.walkThroughDoor()) return;
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }
@@ -469,6 +478,7 @@ export class Game {
     this.hosts.forEach((h) => h.closeAll());
     this.bubble = null;
     this.here = id;
+    this.nudge = null; this.easeBack = false; this.nudged.clear();
     this.hostOf(id);
     this.showHost();
     this.markSeen(id);
@@ -526,12 +536,24 @@ export class Game {
     if (t) { e.preventDefault(); this.useLife(t.id); }
   }
 
+  /** Canvas world units (the view, after the pixel scale) → CSS px of the game view. */
+  private get cssScale() { return (this.k * this.canvas.clientWidth) / (this.canvas.width || 1); }
+
+  /** The heads of the people on screen (the scene's, Downtown's street people and the fixer), CSS px. */
+  private heads() {
+    const s = this.cssScale, list: { x: number; h: number }[] = [];
+    for (const p of this.def.people ?? []) list.push({ x: characterX(p, this.t), h: characterHeight(p) });
+    if (this.here === 'downtown') { NPCS.forEach((n) => list.push({ x: n.x, h: 46 })); list.push({ x: STALL.fixerX, h: 74 }); }
+    return list.map(({ x, h }) => ({ l: (this.sx(x) - 9) * s, t: this.y(h) * s, r: (this.sx(x) + 9) * s, b: this.y(h - 14) * s }))
+      .filter((b) => b.r > 0 && b.l < this.canvas.clientWidth);
+  }
+
   /** Hack vision hangs in the world: give the scene this frame's world → CSS px mapping (as `sx` and `y` draw it). */
   private followHost() {
-    const s = (this.k * this.canvas.clientWidth) / this.canvas.width;
+    const s = this.cssScale;
     const zh = this.zh;
     // captions and the popup keep under the key bar and the HUD's lines (drawHud: ~46 world units under the bar)
-    zh.uiTop = this.keyBar.root.offsetHeight + 8 + 46 * s;
+    zh.uiTop = this.keyBar.root.offsetHeight + 8 + this.hudH * s;
     zh.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
   }
 
@@ -660,9 +682,17 @@ export class Game {
       p.onGround = false; p.vy = 0;
     }
 
-    // Camera follows, eased, clamped to the level.
-    const goal = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
-    this.cam += (goal - this.cam) * Math.min(1, 0.12 * dt);
+    // Camera follows, eased, clamped to the level. A nudge leans it towards something that reacted
+    // off the view for a moment (walking, talking or the deck cancel it), then it eases back.
+    const n = this.nudge;
+    if (n && (p.moving || !p.onGround || this.bubble || this.term.focused || this.zh.overlayOpen || Math.abs(p.x - n.px) > 2)) { this.nudge = null; this.easeBack = !p.moving; }
+    const follow = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
+    const nudging = !!this.nudge && this.clock < this.nudge!.until;
+    if (this.nudge && !nudging) { this.nudge = null; this.easeBack = true; }
+    const goal = nudging ? this.nudge!.goal : follow;
+    // gentle while leaning out and coming back; the usual follow otherwise (a step turns it off)
+    if (p.moving || Math.abs(goal - this.cam) < 0.5) this.easeBack = false;
+    this.cam += (goal - this.cam) * Math.min(1, (nudging || this.easeBack ? NUDGE_EASE : 0.12) * dt);
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
     if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: WARM[this.here] });
     this.host.setNodes(nodeCount(this.save));
@@ -1246,8 +1276,49 @@ export class Game {
     return lines;
   }
 
+  // ---------- the camera nudge ----------
+
+  /** The camera leaning towards something that reacted off the view: where it leans to, until when (clock frames), where you stood. */
+  private nudge: { goal: number; until: number; px: number } | null = null;
+  /** Coming back from a nudge: the camera eases gently until it is on you again. */
+  private easeBack = false;
+  /** When the last nudge started (clock frames), and what has drawn the eye already this visit (`from|line`). */
+  private lastNudge = -1e9;
+  private nudged = new Set<string>();
+
+  /**
+   * Something said it reacted (`from`, with a line in green or red). If it is off the view but
+   * near, the camera leans that way for a moment so you see it happen, keeping you in view; the
+   * ping (an edge arrow) already points at anything further. Never during a conversation, the deck
+   * or a panel, never while you walk, never with reduced motion; each thing and line once a visit,
+   * and not more often than every few seconds.
+   */
+  private nudgeTo(from: string, text: string, tone?: string) {
+    if (tone !== 'ok' && tone !== 'err') return;
+    if (this.reduced || this.bubble || this.term.focused || this.zh.overlayOpen || this.mapView || this.flight || this.hop || this.cut || this.p.moving) return;
+    const at = this.zh.worldOf(from);
+    if (!at || this.levelW <= this.viewW) return;
+    const key = from + '|' + text, p = this.p, m = NUDGE_MARGIN;
+    if (this.nudged.has(key) || this.clock - this.lastNudge < NUDGE_GAP) return;
+    // already in view (with a margin), or too far to show together with you: the ping is enough
+    if (at.x > this.cam + m && at.x < this.cam + this.viewW - m) return;
+    if (Math.abs(at.x - p.x) > this.viewW - m * 2) return;
+    let goal = at.x < this.cam + m ? at.x - m : at.x + m - this.viewW;
+    goal = Math.max(p.x + m - this.viewW, Math.min(p.x - m, goal));
+    goal = Math.max(0, Math.min(this.levelW - this.viewW, goal));
+    this.nudged.add(key); this.lastNudge = this.clock;
+    this.nudge = { goal, until: this.clock + NUDGE_HOLD, px: p.x };
+  }
+
+  /** How far down the HUD's lines reach under the key bar (world units), as drawn last. */
+  private hudH = 46;
+
+  /** Where the speech bubble was drawn last (view units), so captions keep off it; null without one. */
+  private bubbleBox: { x: number; y: number; w: number; h: number } | null = null;
+
   private drawBubble() {
     const b = this.bubble;
+    this.bubbleBox = null;
     if (!b) return;
     const x = this.x;
     x.save();
@@ -1258,6 +1329,7 @@ export class Game {
     const h = lines.length * 13 + 32;
     const bx = Math.max(6, Math.min(this.viewW - w - 6, this.sx(b.x) - w / 2));
     const by = Math.max(6, this.y(b.h) - h - 50);
+    this.bubbleBox = { x: bx, y: by, w, h };
     x.fillStyle = '#000'; x.fillRect(bx, by, w, h);
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.strokeRect(bx + 1, by + 1, w - 2, h - 2); x.lineWidth = 1;
     x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name === 'YOU' ? who(this.save).toUpperCase() : b.name, bx + 10, by + 15);
@@ -1276,16 +1348,25 @@ export class Game {
     const top = (this.keyBar.root.offsetHeight + 8) * (this.canvas.width / (this.canvas.clientWidth || 1)) / this.k;
     x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def), 8, top + 10);
     x.fillStyle = 'rgba(255,217,165,.7)';
-    x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : ''), 8, top + 21);
+    // what you have: tokens, modules, the key chips that do something (uplink.so), what you carry; one line, or two when it is long
+    const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : '');
+    const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
+    const held = Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]) => (ITEMS[id as ItemId] ?? id) + (n > 1 ? '×' + n : ''));
+    const more = [keys.length ? 'KEYS ' + keys.join(' ') : '', held.length ? 'HELD ' + held.join(' ') : ''].filter(Boolean).join(' · ');
+    let y = top + 21;
+    if (more && x.measureText(own + ' · ' + more).width <= this.viewW - 16) x.fillText(own + ' · ' + more, 8, y);
+    else { x.fillText(own, 8, y); if (more) x.fillText(more, 8, (y += 11)); }
     // the scene's goal, where it has goals (a scene without a data file has none)
     const zh = this.zh.model.data.goals.length ? this.zh : null;
-    if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, top + 32); }
+    if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, (y += 11)); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     const tl = this.termLine;
     if (tl && this.t < tl.until && !this.term.focused) {
       x.fillStyle = tl.kind === 'err' ? 'rgba(255,90,110,.95)' : tl.kind === 'ok' ? 'rgba(34,197,94,.95)' : 'rgba(255,217,165,.85)';
-      x.fillText(tl.text.length > 90 ? tl.text.slice(0, 89) + '…' : tl.text, 8, top + (zh ? 43 : 32));
+      x.fillText(tl.text.length > 90 ? tl.text.slice(0, 89) + '…' : tl.text, 8, y + 11);
     }
+    // how far down the HUD's lines reach (world units under the key bar): captions and popups keep below
+    this.hudH = Math.max(46, y + 11 + 4 - top);
     if (this.toast && this.t < this.toast.until) {
       x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
       x.fillText(this.toast.text, this.sx(this.p.x), this.y(this.p.y + 56));
@@ -1448,6 +1529,15 @@ export class Game {
         pay: (n) => { if (save.tokens < n) return false; save.tokens -= n; this.flash('-' + n + ' token' + (n === 1 ? '' : 's')); return true; },
         give: (n) => { save.tokens += n; this.flash('+' + n + ' token' + (n === 1 ? '' : 's')); },
         flags: save.flags, set: (f) => { save.flags[f] = true; }, t: this.t,
+        // what you carry: the save's items, across scenes and reloads
+        has: (item, n = 1) => (save.items[item] ?? 0) >= n,
+        take: (item, n = 1) => {
+          if ((save.items[item] ?? 0) < n) return false;
+          save.items[item] -= n;
+          if (save.items[item] <= 0) delete save.items[item];
+          return true;
+        },
+        add: (item, n = 1) => { save.items[item] = (save.items[item] ?? 0) + n; },
       });
       storeSave(save);
       this.syncHud();
@@ -1491,14 +1581,6 @@ export class Game {
     if (st && this.reduced && !platformOpen(st, this.t)) platformSync(st, this.t, TIMETABLE.dwell / 2);
   }
 
-  /** ↑ or W in an open train door, on the platform or in the car: step through it. */
-  private walkThroughDoor() {
-    const t = this.nearest();
-    if (!t || (t.id !== 'exit:train' && t.id !== 'exit:out' && t.id !== 'exit:out2')) return false;
-    this.useLife(t.id);
-    return true;
-  }
-
   /** The player walked into a border: leave through that edge's exit, if the scene has one, still walking the same way. */
   private walkOff(edge: 'left' | 'right') {
     const e = this.def.exits.find((z) => z.edge === edge && (!z.requires || this.save.flags[z.requires]));
@@ -1521,7 +1603,7 @@ export class Game {
     this.travel('train', 'out');
   }
 
-  /** E (or ↑) at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
+  /** E at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
   private stepOut() {
     if (!rideOpen()) return;
     const st = rideStop(), left = rideLeft();
@@ -1654,6 +1736,13 @@ export class Game {
     if (this.mapView) drawCityMap(this.x, this.viewW, this.viewH, this.mapState());
   }
 }
+
+/**
+ * The camera nudge: how long it leans towards an event (clock frames, ~1.6 s), how gently it moves
+ * (ease per frame, against the follow's 0.12), the margin kept round the event and the player (world
+ * units), and the least time between two nudges (frames, ~5 s).
+ */
+const NUDGE_HOLD = 96, NUDGE_EASE = 0.045, NUDGE_MARGIN = 36, NUDGE_GAP = 300;
 
 /** Street walls measured against the player (42 units tall): a 76-unit ground floor with 52-unit doors, then 66-unit storeys of 14x28 windows. */
 const GROUND = 76, STOREY = 66, WIN_PITCH = 30;

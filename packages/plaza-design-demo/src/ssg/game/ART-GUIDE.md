@@ -132,21 +132,41 @@ Empty scenes read as unfinished. "A bunch of boxes and text labels" is the failu
 
 ## 11. UI never covers a consequence (Tommi, 2026-10-15)
 
-UI never covers a consequence: captions at the reacting thing, pings for attention, popups
-beside the device away from what it affects, the character speaks only for itself.
+UI never covers a consequence: captions high above the action with a leader to the reacting thing,
+paced so you can read them, pings for attention, the device's actions in a row at the bottom, the
+character speaks only for itself.
 
 - **Everyday actions close their popup at once.** The scene is free when the reaction plays.
-- **Captions** (`engine/feedback.ts`): a device's reply stands over the thing that *reacted*, not
-  over the thing you tapped (the plug's "switch on" makes the router answer over the router), on
-  a thin leader down to it, in the device's dry voice: green worked, red denied, paper otherwise.
-  They fade after a few seconds and stack without covering each other. The terminal (the phone's
-  HUD line) keeps the history. Effects name who reacted: `w.say(line, 'router')`.
-- **Pings**: an expanding ring where something happened (green, red, cyan); an arrow at the edge
-  when it happened off the view.
-- **Popups** open beside the device, on the side away from what it affects (its cables, `affects`,
-  the player, Pixel), never over the device or the player, with a short connector line; nowhere
-  free, they go to the top of the view, under the HUD. At most three everyday rows, then
-  `⌁ jack in` and `⌁ hack it`; touch targets at least 44 px.
+- **Captions** (`engine/feedback.ts`): a device's reply is about the thing that *reacted*, not the
+  thing you tapped (the plug's "switch on" makes the router answer about the router), in the
+  device's dry voice: green worked, red denied, paper otherwise. Effects name who reacted:
+  `w.say(line, 'router')`. The terminal (the phone's HUD line) keeps the full history.
+- **The caption lane** (Tommi, 2026-10-15): captions sit high above the action, in a lane a gap
+  over the tallest thing on screen (devices, people's heads, the player), never under the HUD. Each
+  is a small box with a thin leader down to the exact thing it describes; the leader bends once
+  rather than cross another box. Boxes are measured and spread sideways in the lane (a second row
+  when two cannot sit side by side, or the newer one waits), so they never overlap each other, and
+  they never cover the player or the player's speech bubble. A thing off the view: its caption pins
+  to that edge, with an edge arrow.
+- **Pacing: never more than you can read.** At most two captions at once; the rest queue. Each
+  stays about 2.6 s plus 60 ms a character, then fades (0.3 s); the next comes in only when its
+  space is free (a fading caption still holds its place). A thing that speaks again changes its own
+  caption in place (old words out, then the new ones in) instead of stacking. Red lines jump the
+  queue; a long queue keeps only the first sentence of its oldest lines. Only the captions are
+  paced: the world reacts at its own speed. The numbers are constants at the top of `feedback.ts`.
+- **Pings**: an expanding ring where something happened (green, red, cyan), at once, so the eye
+  goes there while the caption waits its turn; an arrow at the edge when it happened off the view.
+- **The camera nudge** (a test, 2026-10-15): when a device reacts (a green or red line) just off
+  the view and near enough to show together with the player, the camera leans that way for about
+  1.6 s, gently, then eases back to the player. Walking, a conversation, the deck or a panel cancel
+  it; reduced motion has none; each thing's line draws the eye once a visit, and not more often
+  than every 5 s. Anything further only gets the edge arrow. (`game.ts`: `nudgeTo`, `NUDGE_*`.)
+- **Popups** (`engine/popup.ts`, `POPUP_PLACEMENT`): a tapped device's actions open as a row along
+  the bottom, where the thumbs are; on a phone the row takes the action buttons' place (the walk
+  arrows stay). The device gets a ring and a thin connector to the row:
+  `[NAME] [action] … [⌁ jack in] [⌁ hack it] [✕]`, at most three everyday actions, touch targets
+  at least 44 px. Kept for comparison: a row along the top, and beside the device. Each placement
+  is one function in `POPUP_LAYOUTS`, so a new one drops in.
 - **The player's character speaks only for itself** (arriving somewhere, a thought), never to
   narrate what a device did.
 

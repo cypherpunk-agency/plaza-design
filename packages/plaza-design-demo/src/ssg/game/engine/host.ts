@@ -26,7 +26,7 @@ import type { LineKind } from '../terminal';
 import { type Line, type Spot, SceneModel } from './model';
 import { Panels } from './panels';
 import type { SceneRules } from './rules';
-import { Feedback, type Spot2D } from './feedback';
+import { type Box, Feedback, type PingKind, type Spot2D } from './feedback';
 import { Popup, type PopupAnchor, type PopupItem, type PopupRoom } from './popup';
 import { type Anchor, Schematic } from './schematic';
 import { ENGINE_PANEL_FNS } from './toys';
@@ -111,6 +111,19 @@ export class SceneHost {
   where: (from: string) => { x: number; h: number } | null = () => null;
   /** Things the game keeps the popup away from besides the player (Pixel), as world points. */
   extras: () => { x: number; h: number }[] = () => [];
+  /** Something of this scene reacted and said so (`from`, its line, its tone): the game may draw the eye there (the camera nudge). */
+  onReact: (from: string, text: string, tone?: string) => void = () => {};
+  /** Where something of this scene is in the world (a device's spot, or one of the scene's own targets), or null. */
+  worldOf(from: string): { x: number; h: number } | null {
+    const s = this.model.spots().find((z) => z.id === from);
+    if (s) return { x: s.x, h: s.y + s.h / 2 };
+    const t = this.def.targets?.(this.model).find((z) => z.id === from);
+    return t ? { x: t.x, h: 20 } : null;
+  }
+  /** Boxes captions never cover besides the player (the player's speech bubble), CSS px of the game view. The game sets it. */
+  shield: () => Box[] = () => [];
+  /** People on screen (their heads), CSS px: captions keep their lane above them. The game sets it. */
+  crowd: () => Box[] = () => [];
   /** The top of the free view, under the HUD and the buttons (CSS px of the game view). The game sets it. */
   uiTop = 0;
   private btns: HTMLDivElement;
@@ -182,7 +195,7 @@ export class SceneHost {
     window.setInterval(() => {
       const now = performance.now();
       this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
-      if (this.model.tick(now - last, !this.btns.hidden)) { this.schem.meters(); this.vision.meters(); }
+      if (this.model.tick(now - last, this.active)) { this.schem.meters(); this.vision.meters(); }
       last = now;
       // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
       const h = this.heat();
@@ -253,8 +266,11 @@ export class SceneHost {
     if (l[0] && this.echo) this.print('> ' + l[0], 'in');
     if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out');
     this.schem.note(l); this.vision.note(l);
-    if (from && l[1] && this.btns.hidden === false) this.fx.caption(from, l[1], l[2], this.locate);
+    if (from && l[1] && this.active) { this.fx.caption(from, l[1], l[2], this.locate); this.onReact(from, l[1], l[2]); }
   }
+
+  /** A ping where something of this scene is (a device, one of its targets, or what `where` knows); an edge arrow when it is off the view. */
+  ping(from: string, kind: PingKind = 'look') { if (this.active) this.fx.ping(from, kind, this.locate); }
 
   /**
    * Where a speaker is on screen now: a device (its spot), one of the scene's own targets
@@ -325,8 +341,15 @@ export class SceneHost {
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
   closeAll() { this.popup.close(); this.fx.clear(); this.panels.close(); this.schem.close(); this.vision.close(); }
-  /** The HACK and BOARD buttons show in this scene only. */
-  show(on: boolean) { this.btns.hidden = !on; }
+  /** This scene is the one on screen: its clock runs and its captions show. */
+  private active = false;
+  /**
+   * The scene is on screen (or not). Its HACK and BOARD buttons show only here, and only when it
+   * has devices: in a scene with nothing to hack they stay away (and H and B do nothing).
+   */
+  show(on: boolean) { this.active = on; this.btns.hidden = !on || !this.hackable; }
+  /** The scene has devices: hack vision and the board mean something here. */
+  get hackable() { return this.model.devices.size > 0; }
 
   get visionOn() { return this.vision.isOpen; }
   /** H: hack vision on or off. From an open schematic or panel it goes straight to the world, in vision. */
@@ -362,7 +385,14 @@ export class SceneHost {
       if (!at || Math.abs(this.player.x - this.popupAt) > POPUP_WALK) this.popup.close(); else this.popup.place(at);
     }
     this.fx.top = this.uiTop;
-    this.fx.update(this.locate);
+    // captions keep off the player and what the game shields (a speech bubble), and keep their lane over
+    // the devices and the people
+    const me = project(this.player.x, this.player.h + 23), head = project(this.player.x + 10, this.player.h + 48);
+    const hard: Box[] = [{ l: me.x - (head.x - me.x), t: head.y, r: head.x, b: me.y + (me.y - head.y) }, ...this.shield()];
+    const soft: Box[] = [...seen.values()].map((a) => ({ l: a.x - a.w / 2, t: a.y - a.h / 2, r: a.x + a.w / 2, b: a.y + a.h / 2 }));
+    this.extras().forEach((q) => { const c = project(q.x, q.h + 8), e = project(q.x + 9, q.h + 16); soft.push({ l: c.x - (e.x - c.x), t: e.y, r: e.x, b: c.y + (c.y - e.y) }); });
+    soft.push(...this.crowd());
+    this.fx.update(this.locate, hard, soft);
     if (this.vision.isOpen) {
       // a part placed on the board has no spot in the world yet: it turns up next to you
       [...m.devices.values()].filter((d) => d.logic && !m.logicAt.has(d.id)).forEach((d) => { this.place(d.id); this.dirty(); });

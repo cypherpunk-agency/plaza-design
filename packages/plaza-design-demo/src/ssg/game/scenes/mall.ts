@@ -269,7 +269,7 @@ const USES: SceneUse[] = [
   { id: 'florist', x: 1300, label: '[E] FLORIST', name: 'FLORIST', promptH: 70, use: (c) => {
     if (floristAsk++ === 0) return ['Everything here is real. Grown in dirt, in daylight, from a seed. Look, don\'t touch.', 'The fern is nine hundred tokens. The basil is four hundred. A single basil leaf is two.'];
     if (!c.pay(2)) return ['Then just breathe near the fern. The first breath is free.'];
-    c.set('mall:leaf');
+    c.set('mall:leaf'); c.add('basil');
     return leaves++ === 0
       ? ['One leaf. I\'ll wrap it.', 'Smell it on the way home. That\'s what you\'re paying for. Eating it would be a waste of money.']
       : ['Another leaf. You remind me of someone: the one with the deck and the smart pot.', 'Buys plant food here. Talks to their fern. The fern looks well on it.'];
@@ -279,7 +279,7 @@ const USES: SceneUse[] = [
     if (keyAsk++ === 0) return ['Keys cut. Chips copied. Registered chips only, it says so on the counter.', 'Unregistered ones I don\'t copy. I clone. Different word, different price.', 'Bring me a chip and a reason. I copy the chip and forget the reason.'];
     if (c.flags['mall:blankchip']) return ['You have your blank. When you need something opened, bring the chip it\'s afraid of.'];
     if (!c.pay(2)) return ['Two tokens for a blank. The pawnshop pays for memories, if you\'re short. I don\'t ask which ones.'];
-    c.set('mall:blankchip');
+    c.set('mall:blankchip'); c.add('blankchip');
     return ['A blank chip. Unregistered. Not illegal, just unsold.', 'I\'ll remember your face. It\'s the one memory I never sell.'];
   } },
   { id: 'order', x: 1900, label: '[E] ORDER · 1 TOKEN', name: 'FOOD COURT', promptH: 70, use: (c) => {
