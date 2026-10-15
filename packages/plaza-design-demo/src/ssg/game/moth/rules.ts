@@ -12,8 +12,8 @@
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
-import type { ZoneData } from '../data/types';
-import type { World, ZoneRules } from '../zone/rules';
+import type { SceneData } from '../data/types';
+import type { World, SceneRules } from '../engine/rules';
 
 /** The keyring chip the yard's parcel gives: uplink.so, the deck's way past your own building. */
 export const UPLINK = 'uplink';
@@ -28,7 +28,7 @@ function tick(w: World) {
   if (m.opened.has('mothpc/journal')) w.goal('journal');
 }
 
-export const MOTH_RULES: ZoneRules = {
+export const MOTH_RULES: SceneRules = {
   effects: {},
   derived: {
     uplink: (m) => m.keyring().includes(UPLINK),
@@ -40,7 +40,7 @@ export const MOTH_RULES: ZoneRules = {
     texts: { 'prompt.out': 'label', 'door.out': 'line' },
   },
   /** The level's own: P09's drawer takes Moth's key, P10's journal is a song seal the watchdog visits. */
-  check: (z: ZoneData) => {
+  check: (z: SceneData) => {
     const errs: string[] = [];
     const pc = z.nodes?.find((n) => n.id === 'mothpc');
     const drawer = pc?.sectors?.find((s) => s.id === 'drawer'), journal = pc?.sectors?.find((s) => s.id === 'journal');

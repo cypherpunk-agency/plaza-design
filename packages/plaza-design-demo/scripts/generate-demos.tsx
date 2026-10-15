@@ -28,7 +28,7 @@ import { BEACH_RULES } from '../src/ssg/game/beach/rules';
 import { checkGame } from '../src/ssg/game/data/check';
 import { YARD_RULES } from '../src/ssg/game/yard/effects';
 import { DOWNTOWN_RULES_SHAPE } from '../src/ssg/game/downtown/rules';
-import { contractOf } from '../src/ssg/game/zone/rules';
+import { contractOf } from '../src/ssg/game/engine/rules';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -133,12 +133,12 @@ ${js}
 }
 
 /**
- * The game's zone files must make sense before they ship: every cable reaches
+ * The game's scene files must make sense before they ship: every cable reaches
  * a real noun, every effect exists in code, every dialogue choice leads
  * somewhere (src/ssg/game/GAME-DATA.md). The type-check covers their shape.
  */
 function checkGameData() {
-  // one entry per zone: its file and its code (zone/rules.ts); net.json, logic.json and the keyring come along
+  // one entry per scene: its file and its code (scene/rules.ts); net.json, logic.json and the keyring come along
   const problems = checkGame([
     { data: YARD, code: contractOf(YARD_RULES), extra: YARD_RULES.check },
     { data: CAPSULE, code: contractOf(CAPSULE_RULES), extra: CAPSULE_RULES.check },

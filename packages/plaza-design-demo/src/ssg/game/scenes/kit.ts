@@ -31,7 +31,7 @@ export interface View {
 }
 
 /**
- * A way out. `to` is a zone: 'downtown', 'yard' or a scene's id (a district's
+ * A way out. `to` is a scene: 'downtown', 'yard' or a scene's id (a district's
  * station exit leads to its platform scene). `at` is the door you land at there:
  * one of its exits' ids, or a Downtown door (shop, yard, capsule, metro, taxi, market).
  */

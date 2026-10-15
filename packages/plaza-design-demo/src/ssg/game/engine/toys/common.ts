@@ -4,7 +4,7 @@
  * its box, and the ending (solved: the guard opens; a wrong answer: a wrong
  * guess, which may lock the guard and close the panel).
  *
- * Styles live in zone/styles.ts (`.toy-*`). Colours follow ART-GUIDE.md §6:
+ * Styles live in scene/styles.ts (`.toy-*`). Colours follow ART-GUIDE.md §6:
  * pink frame (the hacking layer), cyan controls (yours to use), green open,
  * red denied, warm white for the lamp and the letters you read.
  */

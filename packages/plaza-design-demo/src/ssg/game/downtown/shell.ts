@@ -1,27 +1,27 @@
 /**
- * The deck's keyboard on a zone: the old terminal commands, kept as the last
+ * The deck's keyboard on a scene: the old terminal commands, kept as the last
  * resort. Every tap on a schematic prints its shell line; this goes the other
  * way, so what you type does what the tap would:
  *
  *   ls                     the nouns of the machine (sealed ones as ???)
  *   cat <noun>             its `read`
- *   login <user> <pass>    tries the machine's GUARD (the user must match, if the zone names one)
+ *   login <user> <pass>    tries the machine's GUARD (the user must match, if the scene names one)
  *   install <module>       its `install`
  *   use <noun> --<verb>    any verb, as the shell lines print it (use drawer --open)
  *   <verb> <noun>          the same, the short way (open drawer, scan, connect dispatch)
  *
  * "The machine" is the one whose schematic is open, else the one you stand at
- * (the game decides). Lines come from the engine, so the wording is the zone's.
+ * (the game decides). Lines come from the engine, so the wording is the scene's.
  * Written for Downtown; nothing in it is Downtown-only (the yard uses it too).
  */
 
 import type { LineData } from '../data/types';
 import type { LineKind } from '../terminal';
-import type { ZoneHost } from '../zone';
-import type { Noun } from '../zone/model';
+import type { SceneHost } from '../engine';
+import type { Noun } from '../engine/model';
 
-/** What level.ts's terminal asks of a zone (its `Shell`). */
-export interface ZoneShell {
+/** What level.ts's terminal asks of a scene (its `Shell`). */
+export interface SceneShell {
   ls(dev: string): string;
   readable(dev: string): string[];
   installable(dev: string): string[];
@@ -35,7 +35,7 @@ export interface ZoneShell {
 
 const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9.]+/g, '');
 
-export function zoneShell(host: ZoneHost, print: (text: string, kind?: LineKind) => void): ZoneShell {
+export function sceneShell(host: SceneHost, print: (text: string, kind?: LineKind) => void): SceneShell {
   const m = host.model;
   const say = (l: LineData) => { if (l[1]) print(l[1], l[2] ?? 'out'); };
   /** The nouns you can reach on a device: not sealed. */

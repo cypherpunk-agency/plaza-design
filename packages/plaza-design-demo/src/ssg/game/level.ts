@@ -1,15 +1,15 @@
 /**
  * Downtown, the first level of ACCESS DENIED: its layout, people, the fixer
  * and his hints, the save, and the deck's terminal. The game engine (game.ts)
- * draws and moves things. Downtown's machines are a zone on the hacking system
+ * draws and moves things. Downtown's machines are a scene on the hacking system
  * now (downtown/, data/downtown.json); the terminal stays as the last resort,
- * and its machine commands (ls, cat, login, install) go to that zone (`Shell`).
+ * and its machine commands (ls, cat, login, install) go to that scene (`Shell`).
  *
  * Rule of the game: hints, never answers.
  */
 
 import { START_MODULES } from './data';
-import type { ZoneSave } from './data/types';
+import type { SceneSave } from './data/types';
 import { SPR, type Sprite } from './sprites';
 
 // ---------- save state ----------
@@ -19,15 +19,15 @@ export interface Save {
   tokens: number;
   /** legs.so: installed from the junction box. Stays its own flag (older saves have it). */
   jump: boolean;
-  /** Logic modules owned, shared by every zone: `timer.so`, `switch.so`. Not legs.so (that is `jump`). */
+  /** Logic modules owned, shared by every scene: `timer.so`, `switch.so`. Not legs.so (that is `jump`). */
   modules: string[];
   freed: string[];
   flags: Record<string, boolean>;
   hints: Record<string, number>;
-  /** The keyring: clue fragments and key chips (ids in the game data's `keyring`), carried across zones. */
+  /** The keyring: clue fragments and key chips (ids in the game data's `keyring`), carried across scenes. */
   keyring: string[];
-  /** Each zone's own progress, by zone id: `zones.yard`. Downtown keeps using the fields above. */
-  zones: Record<string, ZoneSave | undefined>;
+  /** Each scene's own progress, by scene id: `scenes.yard`. Downtown keeps using the fields above. */
+  scenes: Record<string, SceneSave | undefined>;
   /** Time played in ms (the pause menu's save slots show it). Older saves: missing, counts from 0. */
   playMs?: number;
 }
@@ -35,22 +35,23 @@ export interface Save {
 /** `?sudo` in the URL: everything unlocked, a LEVELS menu, and its own save (sudo.ts). */
 export const SUDO = (() => { try { return new URLSearchParams(location.search).has('sudo'); } catch { return false; } })();
 
-export const SAVE_KEY = SUDO ? 'access-denied-save-sudo' : 'access-denied-save-v1';
+/** v2: one kind of place (scenes, `scenes.<id>`); saves from before (v1, with `zones`) are not read, everyone starts fresh. */
+export const SAVE_KEY = SUDO ? 'access-denied-save-sudo-v2' : 'access-denied-save-v2';
 
-/** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` zone replaces it later. */
+/** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` scene replaces it later. */
 
 export function newSave(): Save {
-  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], freed: [], flags: {}, hints: {}, zones: {} };
+  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], freed: [], flags: {}, hints: {}, scenes: {} };
 }
 
-/** Saves from before modules, zones and the keyring get what a new game starts with; nothing else changes. */
+/** A stored save, with anything missing filled in from a new game. */
 export function loadSave(): Save {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       const s: Save = { ...newSave(), ...JSON.parse(raw) };
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
-      if (!s.zones || typeof s.zones !== 'object') s.zones = {};
+      if (!s.scenes || typeof s.scenes !== 'object') s.scenes = {};
       if (!Array.isArray(s.keyring)) s.keyring = [];
       return s;
     }
@@ -71,7 +72,7 @@ export const who = (s: Save) => s.handle || 'ghost';
 
 export type Objective = 'handle' | 'till' | 'box' | 'install' | 'relay' | 'gate' | 'done';
 
-/** Downtown's next step (the zone's goals, downtown/save.ts `reached`, follow the same fields). */
+/** Downtown's next step (the scene's goals, downtown/save.ts `reached`, follow the same fields). */
 export function objective(s: Save): Objective {
   if (!s.handle) return 'handle';
   if (!s.flags.till) return 'till';
@@ -206,7 +207,7 @@ export function fixerTalk(s: Save): Talk {
 // ---------- terminal ----------
 
 /**
- * A zone's machines as the terminal sees them (downtown/shell.ts `zoneShell`):
+ * A scene's machines as the terminal sees them (downtown/shell.ts `sceneShell`):
  * the old commands, now doing what a tap on the schematic would.
  */
 export interface Shell {
@@ -225,7 +226,7 @@ export interface Ctx {
   save: Save;
   /** The machine the deck talks to: the one whose schematic is open, else the one you stand at. Null: your own deck. */
   machine: string | null;
-  /** The zone's machines, when you are in one. */
+  /** The scene's machines, when you are in one. */
   shell: Shell | null;
   print: (text: string, kind?: 'out' | 'ok' | 'err' | 'dim' | 'head') => void;
   denied: () => void;

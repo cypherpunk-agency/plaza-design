@@ -1,15 +1,15 @@
 /**
- * The shape of a zone's data file (see GAME-DATA.md).
+ * The shape of a scene's data file (see GAME-DATA.md).
  *
- * A zone file says WHAT is in a zone: devices, their nouns and verbs, which
+ * A scene file says WHAT is in a scene: devices, their nouns and verbs, which
  * events they raise, what everything says, the dialogue and goals, where
  * things stand. HOW the odd rule works (the claw, a timer, the hatch opening
  * for a second) stays in code as a named effect, and the data refers to it
- * by name. The engine (game/zone/) runs any zone file; the hacking layer
+ * by name. The engine (game/engine/) runs any scene file; the hacking layer
  * (guards, sealed sectors, trace, the net) is engine, switched on by data.
  *
  * Strings are templates: `{verb}`, `{via}` and any state key are filled in.
- * Inside a device, its own `state` keys come before the zone's.
+ * Inside a device, its own `state` keys come before the scene's.
  */
 
 /** Noun kinds. GUARD, LOG, LINK and CLOCK have engine behaviour (see `guard`, `log`, `link`, `clock`). */
@@ -21,7 +21,7 @@ export type Dir = 'up' | 'down' | 'left' | 'right';
 /** A terminal line: the shell command, the reply, and how it is coloured. */
 export type LineData = [cmd: string, reply: string, tone?: Tone];
 
-/** Either a line written out, or the key of a line in the zone's `texts` (or the engine's). */
+/** Either a line written out, or the key of a line in the scene's `texts` (or the engine's). */
 export type LineRef = LineData | string;
 
 /**
@@ -100,7 +100,7 @@ export interface LogData {
  */
 export interface LinkData { reach: string[]; when?: Cond }
 
-// ---------- lock toys (zone/toys/): one per lock type ----------
+// ---------- lock toys (scene/toys/): one per lock type ----------
 
 export type ToyKind = 'rings' | 'cipher' | 'cryptex' | 'morse';
 
@@ -146,7 +146,7 @@ export interface ClockData {
   first?: number;
   /** A state key that holds the last event raised (`phase`, so a condition can say `phase=night`). */
   set?: string;
-  /** Running when the zone starts (default true). */
+  /** Running when the scene starts (default true). */
   start?: boolean;
 }
 
@@ -253,14 +253,14 @@ export interface DeviceData {
 export interface EverydayData { noun: string; verb: string; label?: string }
 
 /**
- * A cable present when the zone starts: event → noun + verb. Cuttable like any
+ * A cable present when the scene starts: event → noun + verb. Cuttable like any
  * other, unless `fixed` (a solid conduit you have to work around). Saves keep
  * the player's cuts by `id` (default `from>to`), so a cable added to the data
  * later still shows up in an older save.
  */
 export interface CableData { id?: string; from: string; to: string; verb: string; fixed?: boolean }
 
-/** Crafting (not used by any zone right now; kept so the format can say it). */
+/** Crafting (not used by any scene right now; kept so the format can say it). */
 export interface RecipeData {
   /** Two parts from the bench's inventory, any order. */
   parts: string[];
@@ -297,7 +297,7 @@ export interface GoalData { id: string; text: string }
 export type RuleOp = 'reverse' | 'upper' | 'lower';
 
 /**
- * Something on the player's keyring, which travels with them across zones.
+ * Something on the player's keyring, which travels with them across scenes.
  * A `fragment` is a clue (`text` is what it types into a login); a `key` is a chip
  * that opens a sector sealed with it; a `rule` is a pattern ("new = old, reversed")
  * that turns a fragment into a new one. Ids are global: unique across every file.
@@ -323,10 +323,10 @@ export interface KeyItem {
   card?: 'slow' | 'ping';
 }
 
-export interface ZoneData {
+export interface SceneData {
   id: string;
   name: string;
-  /** Every state key the zone has, with its starting value. */
+  /** Every state key the scene has, with its starting value. */
   state: Record<string, Value>;
   /** Timings and other numbers the effects read. */
   tuning: Record<string, number>;
@@ -335,7 +335,7 @@ export interface ZoneData {
   nodes?: DeviceData[];
   /** Cables present from the start (pre-wired). One that touches a node appears when the node is connected. */
   cables: CableData[];
-  /** Keyring items this zone hands out (with a `give` step). */
+  /** Keyring items this scene hands out (with a `give` step). */
   keyring?: KeyItem[];
   /** A workbench that turns two parts into a logic part. Later. */
   bench?: { parts: string[]; recipes: RecipeData[] };
@@ -345,13 +345,13 @@ export interface ZoneData {
   goals: GoalData[];
   /** Lines and labels the code asks for by key. The engine's own (engine.json) can be overridden here. */
   texts: Record<string, string | LineData>;
-  /** The Registry's watchdog walking this zone's devices and nodes (net.json may have one too). */
+  /** The Registry's watchdog walking this scene's devices and nodes (net.json may have one too). */
   watchdog?: WatchdogData;
 }
 
 /**
  * A logic module (logic.json): an item the player owns, like legs.so, shared
- * by every zone. Owning it puts its part in the board's palette; a placed copy's
+ * by every scene. Owning it puts its part in the board's palette; a placed copy's
  * id is the part id + a counter (`timer1`, `timer2`, …) and gets its own `state`.
  */
 export interface LogicModule {
@@ -361,9 +361,9 @@ export interface LogicModule {
   start?: boolean;
   /**
    * Where the player finds it. `null` = not placed anywhere yet.
-   * TODO(modules): no zone hands a module out yet (switch.so is unobtainable).
-   * When one does, name the zone here and give it a step that grants the module
-   * (it adds the id to `Save.modules`); the check can then require the zone exists.
+   * TODO(modules): no scene hands a module out yet (switch.so is unobtainable).
+   * When one does, name the scene here and give it a step that grants the module
+   * (it adds the id to `Save.modules`); the check can then require the scene exists.
    */
   foundIn?: string | null;
   /** The device placed on the board: TIMER, SWITCH. */
@@ -373,13 +373,13 @@ export interface LogicModule {
 export interface LogicData { modules: LogicModule[] }
 
 /**
- * The shared net (net.json): nodes any zone's LINK may reach, the cables
+ * The shared net (net.json): nodes any scene's LINK may reach, the cables
  * pre-wired between them (they appear when a node they touch is connected),
  * and keyring items found on them.
  */
 export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[]; watchdog?: WatchdogData }
 
-/** The engine's own wording (engine.json): guard, seal, trace, net and wiring lines. A zone may override any. */
+/** The engine's own wording (engine.json): guard, seal, trace, net and wiring lines. A scene may override any. */
 export interface EngineData { texts: Record<string, string | LineData> }
 
 // ---------- saves ----------
@@ -387,13 +387,13 @@ export interface EngineData { texts: Record<string, string | LineData> }
 export interface Pt { x: number; y: number }
 
 /**
- * A zone's progress inside the game's save (`save.zones.<zone id>`).
+ * A scene's progress inside the game's save (`save.scenes.<scene id>`).
  * Transient things (a parcel mid-slide, a timer counting) are not stored: they
  * come back in a stable state. Trace and lockouts are stored, so reloading
  * does not wipe them; so are clocks and the watchdog's place on its route.
  */
-export interface ZoneSave {
-  /** The zone's `state` keys, settled. */
+export interface SceneSave {
+  /** The scene's `state` keys, settled. */
   state: Record<string, Value>;
   /** Goal ids reached. */
   goals: string[];
@@ -401,7 +401,7 @@ export interface ZoneSave {
   links: CableData[];
   /**
    * Logic parts: id (`timer1`), part kind (`timer`), its own state (a switch's `on`), and where it
-   * floats in the world in hack vision (`at`: x along the zone, h above the ground, world units).
+   * floats in the world in hack vision (`at`: x along the scene, h above the ground, world units).
    */
   logic: { id: string; kind: string; state?: Record<string, Value>; at?: { x: number; h: number } }[];
   /** Devices' and nodes' own `state`, by device id (logic parts keep theirs in `logic`). */
@@ -432,7 +432,7 @@ export interface ZoneSave {
 
 /**
  * JSON imports type their strings as `string`, not 'SENSE' | 'ACT' | ….
- * `Loose<ZoneData>` is ZoneData with every string literal widened, so the
+ * `Loose<SceneData>` is SceneData with every string literal widened, so the
  * type-check still catches a missing field or a number where a list belongs;
  * the build-time check (check.ts) catches the rest.
  */

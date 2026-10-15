@@ -4,7 +4,7 @@
  * The crates and every word come from yard.json (`camera`, `texts`).
  */
 
-import { button, el, type PanelFn } from '../zone/panels';
+import { button, el, type PanelFn } from '../engine/panels';
 
 export const cameraPanel: PanelFn = ({ body, m, say, frame }) => {
   body.classList.add('cam');
@@ -12,7 +12,7 @@ export const cameraPanel: PanelFn = ({ body, m, say, frame }) => {
   const btns = el('div', 'cam-btns');
   body.append(c, btns);
   const W = 320, H = 150;
-  const crates = m.zone.camera?.crates ?? [];
+  const crates = m.data.camera?.crates ?? [];
   let s = 1, ox = 0, oy = 0, zoom = 1, focus = { x: 160, y: 75 }, cross = { x: 160, y: 80 }, aim = { x: 160, y: 80 };
   const tags = new Set<string>();
   const hud = m.label('cam.hud'), aimText = m.label('cam.aim');

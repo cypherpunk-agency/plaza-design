@@ -21,7 +21,7 @@
  * scan sit on the board as silhouettes until you connect them.
  *
  * Where devices and nouns sit is part of the save: `layout()` / `restoreLayout()`.
- * Their defaults come from the zone data (`layout.board`, `layout.dir`).
+ * Their defaults come from the scene data (`layout.board`, `layout.dir`).
  *
  * A third mode, hack vision (H), is the board living in the world (a separate
  * instance; the game mutes the world and keeps the devices bright): each device
@@ -41,7 +41,7 @@
  */
 
 import type { Pt } from '../data/types';
-import type { Device, Line, Link, Noun, ZoneModel } from './model';
+import type { Device, Line, Link, Noun, SceneModel } from './model';
 import { drawWatchdogs } from './watchdog-view';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -64,7 +64,7 @@ const RANK: Record<string, number> = { SENSE: 0, STORE: 0, ACT: 1, LINK: 2, GUAR
 const UNIT: Record<string, P> = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
 /** Where logic parts land on the board when nothing else says. */
 const BOARD_CRAFT: P[] = [{ x: 0.6, y: 0.78 }, { x: 0.84, y: 0.78 }, { x: 0.42, y: 0.6 }, { x: 0.72, y: 0.58 }];
-/** Where net nodes (and devices without `layout.board`) land: a row under the zone's own devices. */
+/** Where net nodes (and devices without `layout.board`) land: a row under the scene's own devices. */
 const BOARD_NET: P[] = [{ x: 0.5, y: 0.6 }, { x: 0.28, y: 0.62 }, { x: 0.72, y: 0.62 }, { x: 0.12, y: 0.66 }, { x: 0.88, y: 0.66 }];
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
@@ -109,7 +109,7 @@ export class Schematic {
   private moved = new Map<string, P>();
   /** Hack vision: nouns the player dragged, `device.noun` → offset from their core in world units. */
   private voff = new Map<string, P>();
-  /** The zone's own buttons over the canvas (the host's HACK, BOARD, …): circuits keep clear of them. */
+  /** The scene's own buttons over the canvas (the host's HACK, BOARD, …): circuits keep clear of them. */
   bar: HTMLElement | null = null;
   /** Hack vision: CSS px per world unit (the host sets it), so a moved piece keeps its place in the world at any zoom. */
   unit = 1;
@@ -121,7 +121,7 @@ export class Schematic {
   /** Hack vision: a logic part is being dragged; `at` is where its centre should be, in stage px. */
   onMovePart: (id: string, at: P) => void = () => {};
 
-  constructor(host: HTMLElement, private m: ZoneModel, private say: (l: Line) => void, opts: { vision?: boolean; known?: Set<string> } = {}) {
+  constructor(host: HTMLElement, private m: SceneModel, private say: (l: Line) => void, opts: { vision?: boolean; known?: Set<string> } = {}) {
     this.known = opts.known ?? new Set();
     this.root = el('div'); this.root.hidden = true;
     const bar = el('div', 'hack-bar');
@@ -363,7 +363,7 @@ export class Schematic {
       });
       return b;
     };
-    // the zone's buttons over the canvas (HACK, BOARD, …) lie over the stage too
+    // the scene's buttons over the canvas (HACK, BOARD, …) lie over the stage too
     // (the game's key bar adopts them into its row of actions: then the whole row is in the way)
     const row = this.bar?.parentElement?.classList.contains('kb-actions') ? this.bar.parentElement : this.bar;
     const bar = row && this.bar && !this.bar.hidden && row.offsetParent ? box(row) : null;
@@ -480,7 +480,7 @@ export class Schematic {
     for (const [k, p] of Object.entries(l.offsets ?? {})) if (ok(p)) this.offsets.set(k, { x: p.x, y: p.y });
     this.render();
   }
-  /** Forget where everything sat and which verbs were open (a zone reset). The shared `known` is the owner's to clear. */
+  /** Forget where everything sat and which verbs were open (a scene reset). The shared `known` is the owner's to clear. */
   resetLayout() {
     this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear(); this.moved.clear(); this.voff.clear();
     this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.dev = '';

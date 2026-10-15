@@ -12,25 +12,25 @@
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
-import type { ZoneData } from '../data/types';
-import type { Effect, World, ZoneRules } from '../zone/rules';
-import type { ZoneModel } from '../zone/model';
+import type { SceneData } from '../data/types';
+import type { Effect, World, SceneRules } from '../engine/rules';
+import type { SceneModel } from '../engine/model';
 
 /** Where Pixel can be in the flat. */
 export type PixelAt = 'bed' | 'router' | 'sun';
 
 /** The pre-wired cable the fridge note grumbles about. */
 const SCHEDULE = { from: 'plug.schedule:night', to: 'plug.power' };
-const scheduled = (m: ZoneModel) => m.links.some((l) => l.from === SCHEDULE.from && l.to === SCHEDULE.to);
+const scheduled = (m: SceneModel) => m.links.some((l) => l.from === SCHEDULE.from && l.to === SCHEDULE.to);
 
-const tune = (m: ZoneModel, k: string) => m.zone.tuning[k];
+const tune = (m: SceneModel, k: string) => m.data.tuning[k];
 /** The router's temperature, °C. Starts calm: warm if the plug is on, room temperature if not. */
-const tempOf = (m: ZoneModel) => (m.scratch.temp ??= tune(m, m.get('plugOn') ? 'idleTemp' : 'roomTemp'));
+const tempOf = (m: SceneModel) => (m.scratch.temp ??= tune(m, m.get('plugOn') ? 'idleTemp' : 'roomTemp'));
 /** Powered, and done booting (or rebooting). */
-export const routerUp = (m: ZoneModel) => !!m.get('plugOn') && m.now() >= (m.scratch.bootUntil ?? 0);
+export const routerUp = (m: SceneModel) => !!m.get('plugOn') && m.now() >= (m.scratch.bootUntil ?? 0);
 
 /** Where Pixel wants to be: in the sun if there is any, else on the warm router, else the bed. */
-export const pixelWants = (m: ZoneModel): PixelAt => (m.get('sun') ? 'sun' : m.get('plugOn') ? 'router' : 'bed');
+export const pixelWants = (m: SceneModel): PixelAt => (m.get('sun') ? 'sun' : m.get('plugOn') ? 'router' : 'bed');
 
 const EFFECTS: Record<string, Effect> = {
   /** The plug came on: the router boots, and says so when it is up (if the plug is still on by then). */
@@ -104,7 +104,7 @@ function tick(w: World, dt: number) {
   if (m.get('pixelAt') === 'sun' && m.get('plugOn')) w.goal('pixel');
 }
 
-export const CAPSULE_RULES: ZoneRules = {
+export const CAPSULE_RULES: SceneRules = {
   effects: EFFECTS,
   derived: {
     routerUp: (m) => routerUp(m),
@@ -127,7 +127,7 @@ export const CAPSULE_RULES: ZoneRules = {
     },
   },
   /** The flat's own: the cable the fridge note grumbles about must be there, and the tuning the clock reads. */
-  check: (z: ZoneData) => {
+  check: (z: SceneData) => {
     const errs: string[] = [];
     if (!z.cables.some((c) => c.from === SCHEDULE.from && c.to === SCHEDULE.to)) errs.push(`cables: the schedule's cable (${SCHEDULE.from} → ${SCHEDULE.to}) is P01: it must be pre-wired`);
     for (const k of ['nightEveryMs', 'bootMs', 'rebootMs', 'pixelMoveMs', 'roomTemp', 'idleTemp', 'hotTemp', 'rebootTemp', 'heatPerS', 'coolPerS', 'steamMs']) {

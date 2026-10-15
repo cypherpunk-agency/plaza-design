@@ -21,8 +21,8 @@
  * beach.json (`layout.spot`); this draws them there.
  */
 
-import type { DrawView } from '../zone/host';
-import type { ZoneModel } from '../zone/model';
+import type { DrawView } from '../engine/host';
+import type { SceneModel } from '../engine/model';
 import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { box, C, drawTowers, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, type View } from '../scenes/kit';
 import { adScreen, menuBoard, registryBoard, YELLOW } from '../scenes/screens';
@@ -302,7 +302,7 @@ function boardwalk(x: CanvasRenderingContext2D, V: View, p: number) {
   tell(x, V.t, V.sx(L.board + 60), y(44));
 }
 
-function kiosk(x: CanvasRenderingContext2D, V: View, m: ZoneModel, hover: string | null) {
+function kiosk(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string | null) {
   const c = V.sx(L.kiosk), y = V.y;
   if (!onScreen(V, c - 40, 80)) return;
   box(x, c - 15, y(50), 30, 50, '#e8e0d0', 'rgba(' + O + ',.8)');
@@ -321,7 +321,7 @@ function kiosk(x: CanvasRenderingContext2D, V: View, m: ZoneModel, hover: string
   if (hover === 'kiosk') glow(x, c - 15, y(50), 30, 50);
 }
 
-function sunbeds(x: CanvasRenderingContext2D, V: View, m: ZoneModel, p: number) {
+function sunbeds(x: CanvasRenderingContext2D, V: View, m: SceneModel, p: number) {
   const y = V.y, cols = ['#c83a2a', '#d8b040', '#3a6ad8', '#e8e0d0'];
   L.sunbeds.forEach((bx, i) => {
     const c = V.sx(bx);
@@ -347,7 +347,7 @@ function sunbeds(x: CanvasRenderingContext2D, V: View, m: ZoneModel, p: number) 
 }
 
 /** SALT: the shack on stilts, string lights, the bar under it with LIME, the bottles, the photo, the jukebox, the mixer. */
-function salt(x: CanvasRenderingContext2D, V: View, m: ZoneModel, hover: string | null, p: number) {
+function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string | null, p: number) {
   const { x0, x1 } = L.shack, l = V.sx(x0), r = V.sx(x1), y = V.y, w = r - l;
   if (r < -60 || l > V.viewW + 60) return;
   const floor = 64, roof = 116;
@@ -473,7 +473,7 @@ function crab(x: CanvasRenderingContext2D, V: View) {
 }
 
 /** The lifeguard tower: legs, the cabin with the lifeguard, the flag, an ad panel, and the drone over it. */
-function tower(x: CanvasRenderingContext2D, V: View, m: ZoneModel, hover: string | null) {
+function tower(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string | null) {
   const c = V.sx(L.tower), y = V.y;
   if (!onScreen(V, c - 70, 140)) return;
   x.strokeStyle = '#d8d0c0'; x.lineWidth = 2; x.beginPath();
@@ -548,7 +548,7 @@ function board(x: CanvasRenderingContext2D, V: View) {
 }
 
 /** The pier: planks over the water, piles, the railing, lamps on the schedule (`lamps`), the controller box. */
-function pier(x: CanvasRenderingContext2D, V: View, m: ZoneModel, hover: string | null, p: number) {
+function pier(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string | null, p: number) {
   const l = V.sx(L.pier0), r = V.sx(BEACH_W + 20), y = V.y, lit = m.get('lamps') === 'on';
   if (r < 0 || l > V.viewW) return;
   // piles down into the water (behind the deck)
@@ -664,7 +664,7 @@ function gulls(x: CanvasRenderingContext2D, V: View) {
 }
 
 /** Below the play line: dry sand in front, the water under the pier, and the lamps' light on it. */
-function foreground(x: CanvasRenderingContext2D, V: View, m: ZoneModel, p: number) {
+function foreground(x: CanvasRenderingContext2D, V: View, m: SceneModel, p: number) {
   const gy = V.gy, edge = V.sx(L.shore);
   // water under the pier, out to the end
   const g = x.createLinearGradient(0, gy, 0, V.viewH);
@@ -702,7 +702,7 @@ function glow(x: CanvasRenderingContext2D, l: number, t: number, w: number, h: n
 let since = { at: 0, last: -10 };
 
 /** Draw the beach. `hover`: the device under the pointer. */
-export function drawBeach(x: CanvasRenderingContext2D, m: ZoneModel, d: DrawView, hover: string | null) {
+export function drawBeach(x: CanvasRenderingContext2D, m: SceneModel, d: DrawView, hover: string | null) {
   // the character kit and the sign kit want a scene view: the same camera, with parallax
   const cam = -d.sx(0);
   const V: View = { sx: (wx, par = 1) => Math.round(wx - cam * par), y: d.y, t: d.t, viewW: d.viewW, viewH: d.viewH, cam, gy: d.y(0), flags: {} };

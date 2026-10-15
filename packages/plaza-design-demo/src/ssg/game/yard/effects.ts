@@ -1,16 +1,16 @@
 /**
  * The back yard's code side: the rules too fiddly to be data, as named
- * effects the zone file refers to (`{ "effect": "crane.claw" }`), plus what
+ * effects the scene file refers to (`{ "effect": "crane.claw" }`), plus what
  * the yard computes (`gateOpen`) and how it settles a save. Everything they
- * say comes from the zone's `texts`, so wording never needs a code change.
+ * say comes from the scene's `texts`, so wording never needs a code change.
  *
  * `YARD_RULES.needs` is the contract the build checks yard.json against
  * (data/check.ts): which state keys, goals and texts this code relies on.
  * Keep it next to the code that relies on them.
  */
 
-import type { Value, ZoneData } from '../data/types';
-import type { Effect, World, ZoneRules } from '../zone/rules';
+import type { Value, SceneData } from '../data/types';
+import type { Effect, World, SceneRules } from '../engine/rules';
 
 /** Where the parcel can be. The crates are its starting slots. */
 export type ParcelAt = 'A-3' | 'B-5' | 'C-7' | 'hook' | 'chute' | 'sliding' | 'bounced' | 'tray' | 'taken';
@@ -21,7 +21,7 @@ const YARD_EFFECTS: Record<string, Effect> = {
     const m = w.m, armAt = m.get('armAt') as string;
     if (c.verb === 'grab') {
       if (m.get('held')) return w.line('claw.grab.holding');
-      if (!w.zone.camera?.crates.some((k) => k.id === armAt)) return w.line('claw.grab.air');
+      if (!w.data.camera?.crates.some((k) => k.id === armAt)) return w.line('claw.grab.air');
       if (armAt !== m.get('parcelAt')) return w.line(w.has('claw.grab.wrong.' + armAt) ? 'claw.grab.wrong.' + armAt : 'claw.grab.wrong');
       m.set('held', 'parcel'); m.set('parcelAt', 'hook');
       return w.line('claw.grab.ok');
@@ -82,7 +82,7 @@ export function settleYard(state: Record<string, Value>) {
 
 // ---------- the contract with yard.json ----------
 
-export const YARD_RULES: ZoneRules = {
+export const YARD_RULES: SceneRules = {
   effects: YARD_EFFECTS,
   panels: ['camera'],
   derived: { gateOpen: (m) => m.now() < (m.scratch.gateOpenUntil ?? 0) },
@@ -104,7 +104,7 @@ export const YARD_RULES: ZoneRules = {
     },
   },
   /** The yard's own: the camera sees crates, and the parcel starts in one of them. */
-  check: (z: ZoneData) => {
+  check: (z: SceneData) => {
     const errs: string[] = [];
     if (!z.camera) errs.push('camera: the yard needs its crates (CAM-1 and the claw use them)');
     else if (!z.camera.crates.some((c) => c.id === z.state.parcel)) errs.push(`state.parcel: "${z.state.parcel}" is not a crate`);

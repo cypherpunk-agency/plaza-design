@@ -1,6 +1,6 @@
 /**
  * Downtown's machines on the canvas, drawn where downtown.json stands them
- * (`layout.spot`) and from the zone's state: the market gate and its shutter,
+ * (`layout.spot`) and from the scene's state: the market gate and its shutter,
  * junction box 0x2F under the VERIFY sign, the noodle till, the rooftop relay,
  * CAM-3 on its pole, the billboard (Pigeon TV), DLV-9, the antenna fence and the
  * identity scan; plus the CITY MAP kiosk by the metro stairs (not a device).
@@ -10,8 +10,8 @@
  * on something: a wall, a pole, a counter, a roof.
  */
 
-import type { DrawView } from '../zone';
-import type { ZoneModel } from '../zone/model';
+import type { DrawView } from '../engine';
+import type { SceneModel } from '../engine/model';
 import { box, C, GREEN, RED, sign, tell, text } from '../scenes/kit';
 
 /** The CITY MAP kiosk on the street, left of the metro stairs (E opens the city map). */
@@ -46,7 +46,7 @@ function plate(x: CanvasRenderingContext2D, cx: number, cy: number, w: number, h
 }
 
 /** Draw Downtown's devices (after the street, before the people). `hover`: the device under the pointer. */
-export function drawDowntown(x: CanvasRenderingContext2D, m: ZoneModel, v: DrawView, hover: string | null, dlv: number | null) {
+export function drawDowntown(x: CanvasRenderingContext2D, m: SceneModel, v: DrawView, hover: string | null, dlv: number | null) {
   const { sx, y, t, viewW } = v;
   const seen = (wx: number, w = 60) => { const s = sx(wx); return s > -w && s < viewW + w; };
   const leds = (lx: number, ly: number, n: number, ok: boolean) => {
@@ -56,7 +56,7 @@ export function drawDowntown(x: CanvasRenderingContext2D, m: ZoneModel, v: DrawV
 
   // ---- the VERIFY sign over the junction box: one tube dead; a tube test lights them in turn
   if (seen(372)) {
-    const s = sx(372), ms = m.zone.tuning.signTestMs ?? 3000, since = m.now() - (m.scratch.signTest ?? -1e9);
+    const s = sx(372), ms = m.data.tuning.signTestMs ?? 3000, since = m.now() - (m.scratch.signTest ?? -1e9);
     plate(x, s, y(114), 20, 90, C);
     verticalNeon(x, t, 'VERIFY', s, y(150), 1, since < ms ? Math.floor((since / ms) * 6) : null);
   }

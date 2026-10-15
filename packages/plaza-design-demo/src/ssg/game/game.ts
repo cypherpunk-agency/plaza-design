@@ -20,8 +20,8 @@ import { CAPSULE_SPAWN, CAPSULE_W, CAPSULE_ZONE, capsulePerch, DOOR_X as CAPSULE
 import { Companion, WARM } from './companion';
 import { MOTH_KEY, MOTH_SPAWN, MOTH_W, MOTH_ZONE } from './moth';
 import { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W, BEACH_ZONE } from './beach';
-import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, zoneShell } from './downtown';
-import { type ZoneDef, ZoneHost } from './zone';
+import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, sceneShell } from './downtown';
+import { type EngineDef, SceneHost } from './engine';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneReadable, type SceneUse, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import { botReact, isBot, characterHeight, characterX, talkTo, type Character } from './characters';
@@ -116,18 +116,18 @@ export class Game {
   private zone: Zone = 'downtown';
   /** Every key and what it does, along the top. */
   private keyBar: KeyBar;
-  private yard: ZoneHost;
+  private yard: SceneHost;
   /** Capsule 7B, the player's flat. */
-  private capsule: ZoneHost;
+  private capsule: SceneHost;
   /** Moth's place, flat 4C (story Level 3): FRIENDNET, MOTH-PC, the song seal. */
-  private moth: ZoneHost;
+  private moth: SceneHost;
   /** The beach and SALT, its bar: devices on the engine, people and things to do from the place kit. */
-  private beach: ZoneHost;
+  private beach: SceneHost;
   /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
   private pixel = new Companion();
   private started = false;
   /** Downtown's machines, on the zone engine (downtown/). Its progress is mostly the save's own fields. */
-  private downtown: ZoneHost;
+  private downtown: SceneHost;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
   /** The city map overlay, when open: just looking (TAB, the line map in the train), or picking a taxi stand. */
@@ -178,7 +178,7 @@ export class Game {
     reconcile(this.downtown.model, this.save);
     this.keyBar = new KeyBar(host.windowEl, () => this.canvas.focus());
     // each zone host has its own HACK/BOARD strip; only the current zone's shows
-    host.windowEl.querySelectorAll<HTMLElement>('#zone-btns').forEach((el) => this.keyBar.adopt(el));
+    host.windowEl.querySelectorAll<HTMLElement>('#scene-btns').forEach((el) => this.keyBar.adopt(el));
     this.menu = new Menu(host.windowEl, {
       save: () => this.save,
       zone: () => ({ id: this.zone, name: this.zoneName() }),
@@ -204,10 +204,10 @@ export class Game {
     this.onResize = this.onResize.bind(this);
   }
 
-  /** A zone on the hacking system, with its part of the save (`save.zones.<id>`) and the player's modules and keyring. */
-  private hostZone(def: ZoneDef, print: (text: string, kind?: LineKind) => void = (text, kind) => this.term.print(text, kind)) {
+  /** A zone on the hacking system, with its part of the save (`save.scenes.<id>`) and the player's modules and keyring. */
+  private hostZone(def: EngineDef, print: (text: string, kind?: LineKind) => void = (text, kind) => this.term.print(text, kind)) {
     const id = def.data.id;
-    const zh = new ZoneHost(this.host.windowEl, print, {
+    const zh = new SceneHost(this.host.windowEl, print, {
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
@@ -216,8 +216,8 @@ export class Game {
       tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
       drop: () => storeSave(this.save),
       sudo: SUDO,
-      load: () => this.save.zones[id],
-      store: (z) => { this.save.zones[id] = z; storeSave(this.save); },
+      load: () => this.save.scenes[id],
+      store: (z) => { this.save.scenes[id] = z; storeSave(this.save); },
     }, def);
     // Pixel is the game's, not the zone's: lines about Pixel stand over Pixel, and popups keep clear of the cat
     zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : null);
@@ -232,7 +232,7 @@ export class Game {
   }
 
   /** The zone on the hacking system the player is in (Downtown, the yard, the flat), if any. */
-  private get zoneHost(): ZoneHost | null { return this.zone === 'yard' ? this.yard : this.zone === 'capsule' ? this.capsule : this.zone === 'moth' ? this.moth : this.zone === 'beach' ? this.beach : this.zone === 'downtown' && !this.scene ? this.downtown : null; }
+  private get zoneHost(): SceneHost | null { return this.zone === 'yard' ? this.yard : this.zone === 'capsule' ? this.capsule : this.zone === 'moth' ? this.moth : this.zone === 'beach' ? this.beach : this.zone === 'downtown' && !this.scene ? this.downtown : null; }
   private get zoneHosts() { return [this.yard, this.capsule, this.moth, this.beach, this.downtown]; }
 
   /** Write the save, refresh the HUD and Downtown's goals (they follow the save's fields). */
@@ -578,7 +578,7 @@ export class Game {
     if (t) { e.preventDefault(); this.useScene(t.id); }
   }
 
-  /** The life of the place you are in: a scene's, or a zone's own (ZoneView `people`, `uses`, `readables`). */
+  /** The life of the place you are in: a scene's, or a zone's own (EngineView `people`, `uses`, `readables`). */
   private get life(): Life | undefined { return this.scene ?? this.zoneHost?.def.view; }
 
   /** Hack vision hangs in the world: give the zone this frame's world → CSS px mapping (as `sx` and `y` draw it). */
@@ -597,7 +597,7 @@ export class Game {
     return {
       save: this.save,
       machine: this.termMachine(),
-      shell: zh ? zoneShell(zh, zh === this.downtown ? (text, kind) => this.zonePrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
+      shell: zh ? sceneShell(zh, zh === this.downtown ? (text, kind) => this.zonePrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
       print: (text, kind) => this.term.print(text, kind),
       denied: () => sound.denied(),
       granted: () => sound.granted(),
@@ -618,7 +618,7 @@ export class Game {
     if (this.scene) return this.sceneTargets(this.scene);
     // a zone's things: you reach each from the street, or from the ledge under it (the relay, from the low roof)
     const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
-    const zoneTargets = (zh: ZoneHost) => zh.targets().map((t) => ({ kind: 'zone' as const, id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH }));
+    const zoneTargets = (zh: SceneHost) => zh.targets().map((t) => ({ kind: 'zone' as const, id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH }));
     // Pixel can always be petted, wherever it is with you
     const pet: Target[] = this.pixelHere ? [{ kind: 'pet', id: 'pixel', x: this.pixel.x, h: 0, label: '[E] PET PIXEL', promptH: this.pixel.h + 24 }] : [];
     if (this.zone === 'yard') return [...zoneTargets(this.yard), ...pet];

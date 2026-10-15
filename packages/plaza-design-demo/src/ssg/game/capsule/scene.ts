@@ -14,8 +14,8 @@
  */
 
 import type { Perch } from '../companion';
-import type { DrawView } from '../zone/host';
-import type { ZoneModel } from '../zone/model';
+import type { DrawView } from '../engine/host';
+import type { SceneModel } from '../engine/model';
 import { box, C, GREEN, O, PAPER, RED, RUST, text, tell } from '../scenes/kit';
 import { routerUp, type PixelAt } from './rules';
 
@@ -49,7 +49,7 @@ export const PERCHES: Record<PixelAt, Perch> = {
 };
 
 /** Where Pixel is going in the flat right now. */
-export const capsulePerch = (m: ZoneModel): Perch => PERCHES[m.get('pixelAt') as PixelAt] ?? PERCHES.bed;
+export const capsulePerch = (m: SceneModel): Perch => PERCHES[m.get('pixelAt') as PixelAt] ?? PERCHES.bed;
 
 /** Stable noise, so the tower looks the same on every frame. */
 const hash = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -120,7 +120,7 @@ function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: num
 }
 
 /** Draw the flat and everything around it. `hover`: the device under the pointer. */
-export function drawCapsule(x: CanvasRenderingContext2D, m: ZoneModel, v: DrawView, hover: string | null) {
+export function drawCapsule(x: CanvasRenderingContext2D, m: SceneModel, v: DrawView, hover: string | null) {
   const { sx, y, t } = v, gy = y(0);
   drawTower(x, v);
 

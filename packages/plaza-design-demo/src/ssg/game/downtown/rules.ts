@@ -1,22 +1,22 @@
 /**
  * Downtown's code side: the rules too fiddly to be data, as named effects the
- * zone file refers to (`{ "effect": "dlv.drive" }`), the values Downtown reads
+ * scene file refers to (`{ "effect": "dlv.drive" }`), the values Downtown reads
  * from the player's save, how it settles a save, and where DLV-9 is while it
  * drives. Everything they say comes from downtown.json's `texts`.
  *
  * Downtown is the first street, so its progress has lived in the save's own
- * fields since before the zone engine: `handle`, `tokens`, `jump` (legs.so),
+ * fields since before the engine: `handle`, `tokens`, `jump` (legs.so),
  * `freed` (nodes released from the Registry) and `flags` (`till`, `end`).
- * They keep that meaning. The zone reads them as derived values (`till`,
- * `freed2F`, `jump`, …) and its effects write them; the zone's own state is
+ * They keep that meaning. The scene reads them as derived values (`till`,
+ * `freed2F`, `jump`, …) and its effects write them; the scene's own state is
  * only what is new on the street (the gate's lock, DLV-9, the billboard).
  *
  * Pure: no DOM, so the build-time check and node scripts can import it.
  */
 
-import type { Value, ZoneData } from '../data/types';
-import type { Spot, ZoneModel } from '../zone/model';
-import type { Effect, World, ZoneRules } from '../zone/rules';
+import type { Value, SceneData } from '../data/types';
+import type { Spot, SceneModel } from '../engine/model';
+import type { Effect, World, SceneRules } from '../engine/rules';
 
 /** The parts of the game's save Downtown reads and writes (level.ts `Save`). */
 export interface DowntownSave {
@@ -44,18 +44,18 @@ export interface Player {
 export type DlvAt = 'home' | 'gate' | 'market' | 'driving';
 
 /** The market gate's span along the street, from its `layout.spot`. */
-function gateSpan(z: ZoneData) {
+function gateSpan(z: SceneData) {
   const s = z.devices.find((d) => d.id === 'gate')?.layout?.spot ?? { x: 70, w: 80 };
   return { door: s.x, left: s.x - s.w / 2, right: s.x + s.w / 2 };
 }
 /** Where DLV-9 waits outside the gate, and where it disappears to inside. */
 const OUTSIDE = 22, INSIDE = 70;
-/** A signal takes 150 ms down a cable (zone/model.ts `emit`): give each one this long to land before looking at the lock. */
+/** A signal takes 150 ms down a cable (scene/model.ts `emit`): give each one this long to land before looking at the lock. */
 const SIGNAL_MS = 450;
 
 /** DLV-9's x right now (null: inside the market). `home`: its spot by the dumpster. */
-export function dlvX(m: ZoneModel, home: number): number | null {
-  const at = m.get('dlvAt') as DlvAt, g = gateSpan(m.zone), s = m.scratch;
+export function dlvX(m: SceneModel, home: number): number | null {
+  const at = m.get('dlvAt') as DlvAt, g = gateSpan(m.data), s = m.scratch;
   if (at === 'driving') {
     const f = Math.max(0, Math.min(1, (m.now() - s.dlvT0) / Math.max(1, s.dlvT1 - s.dlvT0)));
     return s.dlvX0 + (s.dlvX1 - s.dlvX0) * f;
@@ -79,8 +79,8 @@ function leg(w: World, x0: number, x1: number) {
  * is through, Downtown is cleared.
  */
 function drive(w: World, p: Player, inward: boolean) {
-  const m = w.m, g = gateSpan(w.zone);
-  const home = w.zone.devices.find((d) => d.id === 'dlv9')!.layout!.spot!.x;
+  const m = w.m, g = gateSpan(w.data);
+  const home = w.data.devices.find((d) => d.id === 'dlv9')!.layout!.spot!.x;
   const from = m.get('dlvAt') as DlvAt, x0 = dlvX(m, home) ?? g.left - INSIDE;
   const scanAt = inward ? g.right : g.left, rest = inward ? g.left - INSIDE : g.right + OUTSIDE;
   m.set('dlvFrom', from); m.set('dlvAt', 'driving');
@@ -185,7 +185,7 @@ export function settleDowntown(state: Record<string, Value>) {
 let jokes = 0;
 
 /** Downtown's rules, reading and writing the player's save through `p`. */
-export function downtownRules(p: Player): ZoneRules {
+export function downtownRules(p: Player): SceneRules {
   const s = () => p.save();
   return {
     effects: effects(p),
@@ -205,7 +205,7 @@ export function downtownRules(p: Player): ZoneRules {
       joke: (m) => m.label('joke.' + (jokes++ % 3)),
     },
     settle: settleDowntown,
-    place: (m: ZoneModel, home: Spot) => {
+    place: (m: SceneModel, home: Spot) => {
       if (home.id !== 'dlv9') return home;
       const x = dlvX(m, home.x);
       return x === null ? null : { ...home, x };
@@ -229,7 +229,7 @@ export function downtownRules(p: Player): ZoneRules {
       },
     },
     /** Downtown's own: CAM-3 needs things to look at, and the moving parts need their devices. */
-    check: (z: ZoneData) => {
+    check: (z: SceneData) => {
       const errs: string[] = [];
       if (!z.camera?.crates.length) errs.push('camera: CAM-3 needs things under its crosshair ("crates")');
       for (const c of z.camera?.crates ?? []) if (!(('cam.zoom.' + c.id) in z.texts)) errs.push(`texts: missing "cam.zoom.${c.id}" (what CAM-3 says zoomed onto ${c.id})`);

@@ -1,5 +1,5 @@
 /**
- * Downtown, the first street, on the zone engine: every machine is a device on
+ * Downtown, the first street, on the engine: every machine is a device on
  * the board with nouns and verbs, hack vision (H) and the board (B) work here
  * like in the yard, and the deck's keyboard stays as the last resort.
  * What is on the street is data/downtown.json; its own code is the effects
@@ -9,18 +9,18 @@
  */
 
 import { DOWNTOWN } from '../data';
-import type { ZoneDef } from '../zone';
+import type { EngineDef } from '../engine';
 import { cam3Panel } from './camera';
 import { downtownRules, dlvX, type Player } from './rules';
 import { drawDowntown } from './scene';
 
 export { MAP_KIOSK_X } from './scene';
 export { reconcile, syncGoals } from './save';
-export { zoneShell, type ZoneShell } from './shell';
+export { sceneShell, type SceneShell } from './shell';
 export type { Player } from './rules';
 
-/** Downtown, complete, for this player's save. The game hosts it with `new ZoneHost(…, downtownZone(player))`. */
-export function downtownZone(player: Player): ZoneDef {
+/** Downtown, complete, for this player's save. The game hosts it with `new SceneHost(…, downtownZone(player))`. */
+export function downtownZone(player: Player): EngineDef {
   const home = DOWNTOWN.devices.find((d) => d.id === 'dlv9')?.layout?.spot?.x ?? 0;
   return {
     data: DOWNTOWN,

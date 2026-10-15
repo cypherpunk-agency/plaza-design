@@ -16,8 +16,8 @@
  * draws them there.
  */
 
-import type { DrawView } from '../zone/host';
-import type { ZoneModel } from '../zone/model';
+import type { DrawView } from '../engine/host';
+import type { SceneModel } from '../engine/model';
 import { box, C, GREEN, O, PAPER, RED, RUST, text, tell } from '../scenes/kit';
 
 /** The flat: 660 wide, 112 high. */
@@ -121,7 +121,7 @@ function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: num
 }
 
 /** Draw the flat and everything around it. `hover`: the device under the pointer. */
-export function drawMoth(x: CanvasRenderingContext2D, m: ZoneModel, v: DrawView, hover: string | null) {
+export function drawMoth(x: CanvasRenderingContext2D, m: SceneModel, v: DrawView, hover: string | null) {
   const { sx, y, t } = v, gy = y(0);
   drawBuilding(x, v);
   const glow = (id: string, x0: number, top: number, w: number, h: number) => {

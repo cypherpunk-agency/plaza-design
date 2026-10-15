@@ -2,18 +2,18 @@
  * Capsule 7B: your flat, where the game starts. What is in it is
  * data/capsule.json; what is left here is its own code: the flat's clock,
  * the router and Pixel (rules.ts) and the drawing (scene.ts). The engine in
- * zone/ runs the rest. The way out is the door, once CONCIERGE unlocks it.
+ * scene/ runs the rest. The way out is the door, once CONCIERGE unlocks it.
  */
 
 import { CAPSULE } from '../data';
-import type { ZoneDef } from '../zone';
+import type { EngineDef } from '../engine';
 import { CAPSULE_RULES } from './rules';
 import { DOOR_X, drawCapsule } from './scene';
 
 export { CAPSULE_SPAWN, CAPSULE_W, capsulePerch, DOOR_X } from './scene';
 
-/** The flat, complete: data, rules, view. The game hosts it with `new ZoneHost(…, CAPSULE_ZONE)`. */
-export const CAPSULE_ZONE: ZoneDef = {
+/** The flat, complete: data, rules, view. The game hosts it with `new SceneHost(…, CAPSULE_ZONE)`. */
+export const CAPSULE_ZONE: EngineDef = {
   data: CAPSULE,
   rules: CAPSULE_RULES,
   view: {

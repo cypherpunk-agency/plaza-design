@@ -1,5 +1,5 @@
 /**
- * Styles for the zone engine's newer pieces, kept apart from render.tsx so
+ * Styles for the engine's newer pieces, kept apart from render.tsx so
  * they merge on their own: the watchdog (sprite, badge, frozen devices),
  * fixed cables (conduits), the trace / lockout meter's words, the keyring's
  * place and its × on made fragments, card chips, and the lock toys' panels.
@@ -9,7 +9,7 @@
  * can use, green open, red denied and the Registry, warm white what you read.
  */
 
-export const ZONE_STYLES = `
+export const ENGINE_STYLES = `
     /* The keyring: bottom right of the stage, clear of the devices (the palette sits bottom left) */
     .sch-keyring { top: auto; left: auto; right: var(--spacing-2); bottom: var(--spacing-2); max-width: 58%; justify-content: flex-end; }
     .sch-chip.card { border-radius: 2px; border-style: double; border-width: 3px; padding: 0 5px; color: rgb(255, 61, 242); border-color: rgb(255, 61, 242); background: #140414; }
@@ -89,7 +89,7 @@ export const ZONE_STYLES = `
     .sch.frozen .sch-verb { opacity: 0.45; }
     #vision .sch.frozen .vis-outline { border-color: rgb(255, 64, 96); box-shadow: 0 0 12px rgba(255, 64, 96, 0.5), inset 0 0 14px rgba(255, 64, 96, 0.25); }
 
-    /* Lock toys (zone/toys/): one full-screen panel per lock type */
+    /* Lock toys (scene/toys/): one full-screen panel per lock type */
     .hack-panel-body.toy { place-items: center; }
     .toy-wrap { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: var(--spacing-2); width: min(100%, 560px); height: 100%; max-height: 520px; padding: var(--spacing-2) var(--spacing-3); border: 2px solid rgb(255, 61, 242); background: #07020a; box-shadow: 0 0 22px rgba(255, 61, 242, 0.25); }
     .toy-head { display: flex; gap: var(--spacing-3); align-items: baseline; padding-right: 64px; }

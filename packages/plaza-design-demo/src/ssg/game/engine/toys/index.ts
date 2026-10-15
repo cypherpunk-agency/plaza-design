@@ -2,7 +2,7 @@
  * Lock toys: one per lock type (PUZZLES.md, Decided 4). A GUARD noun with
  * `guard.toy` gets the verb `probe`, which opens its toy full screen (the
  * engine panel `toy`, with the guard's `device.noun`). Solving it opens the
- * guard exactly like a right password (`ZoneModel.toySolved`); a wrong answer
+ * guard exactly like a right password (`SceneModel.toySolved`); a wrong answer
  * is a wrong guess (`toyWrong`). Each toy is a pure rule plus a panel:
  *
  * - `rings`: shield rings (rings.ts)
@@ -34,5 +34,5 @@ export const toyPanel: PanelFn = (kit, arg) => {
   TOYS[toy](kit, arg);
 };
 
-/** Panels the engine adds to every zone's own (the host passes them to `Panels`). */
+/** Panels the engine adds to every scene's own (the host passes them to `Panels`). */
 export const ENGINE_PANEL_FNS: Record<string, PanelFn> = { toy: toyPanel };

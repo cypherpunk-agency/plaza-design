@@ -27,7 +27,7 @@ export class Clocks {
 
   clear() { this.clocks.clear(); }
 
-  /** Add the clocks of a device that is here now (a zone device at the start, a node when it connects). */
+  /** Add the clocks of a device that is here now (a scene device at the start, a node when it connects). */
   add(dev: string, nouns: NounData[]) {
     for (const n of nouns) {
       if (n.kind !== 'CLOCK' || !n.clock) continue;

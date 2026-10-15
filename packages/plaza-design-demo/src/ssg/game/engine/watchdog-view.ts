@@ -8,10 +8,10 @@
  *
  * It lives in its own layer of the stage (`.wd-layer`), which the schematic's
  * redraws leave alone; positions come from the cores already drawn, so it
- * needs nothing from the schematic but its stage. Styles: zone/styles.ts.
+ * needs nothing from the schematic but its stage. Styles: scene/styles.ts.
  */
 
-import type { ZoneModel } from './model';
+import type { SceneModel } from './model';
 
 const NS = 'http://www.w3.org/2000/svg';
 /** The dog, 11 × 7 pixels: X body, E its eye. */
@@ -41,7 +41,7 @@ function sprite(): SVGSVGElement {
 type P = { x: number; y: number };
 
 /** Draw (or move) the watchdogs on this stage. `mode`: the schematic's (the badge shows on the board only). */
-export function drawWatchdogs(stage: HTMLElement, m: ZoneModel, mode: 'device' | 'board' | 'vision') {
+export function drawWatchdogs(stage: HTMLElement, m: SceneModel, mode: 'device' | 'board' | 'vision') {
   let layer = stage.querySelector<HTMLDivElement>(':scope > .wd-layer');
   const dogs = m.dogs.any ? m.watchdogs() : [];
   if (!dogs.length) { layer?.remove(); return; }

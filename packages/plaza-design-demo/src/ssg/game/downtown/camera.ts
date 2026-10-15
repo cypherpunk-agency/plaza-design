@@ -6,7 +6,7 @@
  * What it can see and every word come from downtown.json (`camera`, `texts`).
  */
 
-import { button, el, type PanelFn } from '../zone/panels';
+import { button, el, type PanelFn } from '../engine/panels';
 
 /** Morse for GHOST, the penthouse lamp's reminder (O03): 1 = on for a beat. */
 const MORSE = '--. .... --- ... -'.split('').flatMap((c) => (c === '-' ? [1, 1, 1, 0] : c === '.' ? [1, 0] : [0, 0]));
@@ -17,7 +17,7 @@ export const cam3Panel: PanelFn = ({ body, m, say, frame }) => {
   const btns = el('div', 'cam-btns');
   body.append(c, btns);
   const W = 320, H = 150;
-  const things = m.zone.camera?.crates ?? [];
+  const things = m.data.camera?.crates ?? [];
   let s = 1, ox = 0, oy = 0, zoom = 1, focus = { x: 160, y: 75 }, cross = { x: 160, y: 80 }, aim = { x: 160, y: 80 };
   const tags = new Set<string>();
   const under = (p: { x: number; y: number }) => things.find((k) => p.x >= k.x - 3 && p.x <= k.x + k.w + 3 && p.y >= k.y - 3 && p.y <= k.y + k.h + 3);

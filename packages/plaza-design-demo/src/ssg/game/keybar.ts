@@ -2,7 +2,7 @@
  * The key bar: every key and what it does, along the top of the game window,
  * so nobody has to read a manual. Keys you press for an action are buttons
  * (they send the same key the keyboard would); keys you hold to move are
- * plain labels. The zone's own HACK and BOARD buttons join the same strip.
+ * plain labels. The scene's own HACK and BOARD buttons join the same strip.
  *
  * Styles live in render.tsx (`#key-bar`).
  */
@@ -64,8 +64,8 @@ export class KeyBar {
     this.sync(false);
   }
 
-  /** The zone's own buttons (HACK, BOARD) sit in the same strip, first. */
-  adopt(el: HTMLElement | null) { if (el && el.parentElement !== this.actions) this.actions.insertBefore(el, this.actions.querySelector('.hack-btn:not(#zone-btns *)')); }
+  /** The scene's own buttons (HACK, BOARD) sit in the same strip, first. */
+  adopt(el: HTMLElement | null) { if (el && el.parentElement !== this.actions) this.actions.insertBefore(el, this.actions.querySelector('.hack-btn:not(#scene-btns *)')); }
 
   /** Jump only shows once you have legs.so; SOUND shows whether it's on. */
   sync(canJump: boolean) {

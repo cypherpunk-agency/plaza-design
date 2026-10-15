@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
-import { ZONE_STYLES } from './game/zone/styles';
-import { FEEDBACK_STYLES } from './game/zone/feedback';
-import { POPUP_STYLES } from './game/zone/popup';
+import { ENGINE_STYLES } from './game/engine/styles';
+import { FEEDBACK_STYLES } from './game/engine/feedback';
+import { POPUP_STYLES } from './game/engine/popup';
 
 export interface MetaConfig {
   title: string;
@@ -265,7 +265,7 @@ export const demoStyles = `
 
     html.game-mode #term-input { display: block; }
 
-    /* A zone's schematic overlay and panels (game/zone/) */
+    /* A scene's schematic overlay and panels (game/engine/) */
     #hack,
     .hack-panel {
       position: absolute;
@@ -477,7 +477,7 @@ export const demoStyles = `
 
     .sch-x:hover { background: rgb(255, 61, 242); color: #000; }
 
-    /* The hacking layer (game/zone/schematic.ts): sealed ??? nouns, the keyring, a login's keyboard, trace, net silhouettes */
+    /* The hacking layer (game/engine/schematic.ts): sealed ??? nouns, the keyring, a login's keyboard, trace, net silhouettes */
     .sch-noun.sealed .sch-label { border-style: dashed; border-color: rgba(255, 136, 0, 0.5); color: var(--color-text-faint); background: rgba(13, 6, 3, 0.6); }
     .sch-noun.sealed .sch-label:hover { border-color: rgb(255, 136, 0); color: rgb(255, 136, 0); box-shadow: none; }
     .sch-noun.sealed.target .sch-label { border-color: rgb(255, 210, 63); }
@@ -550,7 +550,7 @@ export const demoStyles = `
     /*
      * Hack vision (H): the board, living in the world. The game mutes the world on the canvas;
      * over it each device on screen gets a pink frame, and its schematic (the board's own core,
-     * nouns, branches, dots and cables) stands over it, tied to the frame by a leader (game/zone/schematic.ts)
+     * nouns, branches, dots and cables) stands over it, tied to the frame by a leader (game/engine/schematic.ts)
      */
     #vision {
       position: absolute;
@@ -630,8 +630,8 @@ export const demoStyles = `
 
     html.touch #vision .hack-status { bottom: 56px; max-width: 70%; }
 
-    /* HACK and BOARD over the canvas, in a zone on the hacking system (game/zone/host.ts) */
-    /* The key bar: every key and what it does (game/keybar.ts); the zone's HACK/BOARD join it */
+    /* HACK and BOARD over the canvas, in a scene on the hacking system (game/engine/host.ts) */
+    /* The key bar: every key and what it does (game/keybar.ts); the scene's HACK/BOARD join it */
     #key-bar {
       position: absolute;
       top: calc(var(--game-top, 40px) + var(--spacing-2));
@@ -657,11 +657,11 @@ export const demoStyles = `
     #key-bar kbd { font: inherit; color: var(--color-accent-400); border: var(--border-thin) solid #0d4a52; padding: 0 3px; margin-right: 2px; }
     #key-bar .hack-btn { background: rgba(0, 0, 0, 0.65); }
     #key-bar .hack-btn.on { color: var(--color-success); border-color: var(--color-success); }
-    #key-bar #zone-btns { position: static; }
-    #key-bar #zone-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
+    #key-bar #scene-btns { position: static; }
+    #key-bar #scene-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
     html.touch #key-bar .kb-moves { display: none; }
 
-    #zone-btns {
+    #scene-btns {
       position: absolute;
       top: calc(var(--game-top, 40px) + var(--spacing-2));
       right: var(--spacing-3);
@@ -670,12 +670,12 @@ export const demoStyles = `
       gap: var(--spacing-2);
     }
 
-    #zone-btns[hidden],
-    html:not(.game-mode) #zone-btns { display: none; }
-    #zone-btns .hack-btn { background: rgba(0, 0, 0, 0.65); }
-    #zone-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
-    #zone-btns .hack-btn:disabled { opacity: 0.4; cursor: default; color: var(--color-text-muted); border-color: var(--color-border-default); }
-    html.touch #zone-btns .hack-btn { padding: var(--spacing-1) var(--spacing-3); }
+    #scene-btns[hidden],
+    html:not(.game-mode) #scene-btns { display: none; }
+    #scene-btns .hack-btn { background: rgba(0, 0, 0, 0.65); }
+    #scene-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
+    #scene-btns .hack-btn:disabled { opacity: 0.4; cursor: default; color: var(--color-text-muted); border-color: var(--color-border-default); }
+    html.touch #scene-btns .hack-btn { padding: var(--spacing-1) var(--spacing-3); }
 
     .hack-panel-body { position: relative; min-height: 0; padding: var(--spacing-3); display: grid; }
     .hack-panel-close { position: absolute; right: var(--spacing-2); top: var(--spacing-2); z-index: 2; }
@@ -694,8 +694,8 @@ export const demoStyles = `
     .dlg-kb { color: var(--color-text-faint); }
     .dlg-input { width: 100%; padding: 3px 6px; background: #000; color: var(--color-text-body); border: var(--border-thin) solid var(--color-border-default); font-family: var(--font-mono); font-size: var(--text-xs); }
 
-    /* The zone engine's newer pieces: watchdog, conduits, meters, keyring, lock toys (game/zone/styles.ts) */
-${ZONE_STYLES}
+    /* The engine's newer pieces: watchdog, conduits, meters, keyring, lock toys (game/engine/styles.ts) */
+${ENGINE_STYLES}
 ${POPUP_STYLES}
 ${FEEDBACK_STYLES}
 

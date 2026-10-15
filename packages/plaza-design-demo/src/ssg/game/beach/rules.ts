@@ -11,8 +11,8 @@
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
-import type { ZoneData } from '../data/types';
-import type { Effect, World, ZoneRules } from '../zone/rules';
+import type { SceneData } from '../data/types';
+import type { Effect, World, SceneRules } from '../engine/rules';
 
 const EFFECTS: Record<string, Effect> = {
   /** Rent sunbed 7: one token now, then one a minute (tick). */
@@ -53,7 +53,7 @@ function tick(w: World, dt: number) {
   } else s.danger = 0;
 }
 
-export const BEACH_RULES: ZoneRules = {
+export const BEACH_RULES: SceneRules = {
   effects: EFFECTS,
   tick,
   needs: {
@@ -67,7 +67,7 @@ export const BEACH_RULES: ZoneRules = {
     },
   },
   /** The beach's own: the jukebox talks to the mixer from the start (the optional puzzle rewires it), and the tuning the clock reads. */
-  check: (z: ZoneData) => {
+  check: (z: SceneData) => {
     const errs: string[] = [];
     if (!z.cables.some((c) => c.from === 'jukebox.songs:played' && c.to.startsWith('mixer.'))) errs.push('cables: the jukebox must talk to the mixer from the start (jukebox.songs:played → mixer.…)');
     for (const k of ['minuteMs', 'dangerMs']) if (typeof z.tuning[k] !== 'number') errs.push(`tuning.${k}: missing (the beach's clock reads it)`);

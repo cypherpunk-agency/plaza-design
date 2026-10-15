@@ -1,12 +1,12 @@
 /**
- * The back yard: the first zone on the hacking system (devices → nouns →
+ * The back yard: the first scene on the hacking system (devices → nouns →
  * verbs, cables between nouns). What is in it is data/yard.json; what is
  * left here is its own code: the crane and the parcel (effects.ts), CAM-1
- * (camera.ts) and the drawing (scene.ts). The engine in zone/ runs the rest.
+ * (camera.ts) and the drawing (scene.ts). The engine in scene/ runs the rest.
  */
 
 import { YARD } from '../data';
-import type { ZoneDef } from '../zone';
+import type { EngineDef } from '../engine';
 import { cameraPanel } from './camera';
 import { YARD_RULES } from './effects';
 import { drawYard, drawYardBackdrop, TRAY_X } from './scene';
@@ -16,8 +16,8 @@ export { YARD_SPAWN, YARD_W } from './scene';
 /** What the fixer's parcel holds: Moth's key chip (flat 4C, MOTH-PC's drawer) and uplink.so (your deck past your building). */
 export const PARCEL = ['moth.key', 'uplink'];
 
-/** The yard, complete: data, rules, view. The game hosts it with `new ZoneHost(…, YARD_ZONE)`. */
-export const YARD_ZONE: ZoneDef = {
+/** The yard, complete: data, rules, view. The game hosts it with `new SceneHost(…, YARD_ZONE)`. */
+export const YARD_ZONE: EngineDef = {
   data: YARD,
   rules: YARD_RULES,
   view: {

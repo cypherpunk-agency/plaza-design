@@ -5,7 +5,7 @@
  * vision) is in yard.json (`layout.spot`); this draws them there.
  */
 
-import type { ZoneModel } from '../zone/model';
+import type { SceneModel } from '../engine/model';
 import type { ParcelAt } from './effects';
 
 export const YARD_W = 760;
@@ -232,7 +232,7 @@ export function drawYardBackdrop(x: CanvasRenderingContext2D, v: View & { viewH:
  * the world and draws the devices (CAM-1, the crane, the hatch) on top: 'world' is everything
  * but the devices, 'devices' only them, 'all' both (the same picture, in the same order).
  */
-export function drawYard(x: CanvasRenderingContext2D, m: ZoneModel, v: View, highlight: string | null, layer: 'all' | 'world' | 'devices' = 'all') {
+export function drawYard(x: CanvasRenderingContext2D, m: SceneModel, v: View, highlight: string | null, layer: 'all' | 'world' | 'devices' = 'all') {
   const { sx, y, t } = v;
   const armAt = m.get('armAt') as string, pan = m.get('pan') as number;
   const mono = (size: number, weight = '') => (weight ? weight + ' ' : '') + size + 'px "IBM Plex Mono", monospace';
@@ -338,13 +338,13 @@ export function drawYard(x: CanvasRenderingContext2D, m: ZoneModel, v: View, hig
   }
 }
 
-function parcelPos(m: ZoneModel): [number, number] | null {
+function parcelPos(m: SceneModel): [number, number] | null {
   const a = m.get('parcelAt') as ParcelAt;
   if (a === 'A-3' || a === 'B-5' || a === 'C-7') return [SLOT[a], 22];
   if (a === 'hook') return [hookX, 51];
   if (a === 'chute') return [CHUTE.x0, CHUTE.h0];
   if (a === 'sliding') {
-    const f = Math.min(1, (m.now() - (m.scratch.slideStart ?? 0)) / m.zone.tuning.slideMs);
+    const f = Math.min(1, (m.now() - (m.scratch.slideStart ?? 0)) / m.data.tuning.slideMs);
     return [CHUTE.x0 + (CHUTE.x1 - CHUTE.x0) * f, CHUTE.h0 + (CHUTE.h1 - CHUTE.h0) * f];
   }
   if (a === 'bounced') return [CHUTE.x1 - 4, CHUTE.h1];

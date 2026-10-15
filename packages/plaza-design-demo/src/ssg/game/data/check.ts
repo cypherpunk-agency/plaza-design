@@ -12,16 +12,16 @@
  */
 
 import type {
-  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SealData, StatusPart, ToyKind, WatchdogData, ZoneData,
+  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
 } from './types';
 
-/** What the code side of a zone provides and expects (see zone/rules.ts `contractOf`). */
+/** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
 export interface CodeContract {
   /** Named effects implemented in code. */
   effects: string[];
   /** Panels the data may open. */
   panels: string[];
-  /** State keys the code relies on: the zone's `state` must give each a starting value. */
+  /** State keys the code relies on: the scene's `state` must give each a starting value. */
   state: string[];
   /** Read-only values the code computes, usable in conditions and templates. */
   derived: string[];
@@ -31,14 +31,14 @@ export interface CodeContract {
   texts: Record<string, 'line' | 'label'>;
 }
 
-/** One zone to check: its file, what its code provides, and checks only its code knows. */
-export interface ZoneCheck { data: ZoneData; code: CodeContract; extra?: (z: ZoneData) => string[] }
+/** One scene to check: its file, what its code provides, and checks only its code knows. */
+export interface SceneCheck { data: SceneData; code: CodeContract; extra?: (z: SceneData) => string[] }
 
 const KINDS = ['SENSE', 'ACT', 'STORE', 'DAEMON', 'GUARD', 'LOG', 'LINK', 'CLOCK'];
 /** Kinds whose verbs the engine supplies, so they may list none. */
 const ENGINE_VERBS = ['GUARD', 'LINK', 'CLOCK'];
 const TOYS = ['rings', 'cipher', 'cryptex', 'morse'] as const;
-/** The noun the engine puts on each device of a watchdog's route (zone/model.ts WATCH_NOUN). */
+/** The noun the engine puts on each device of a watchdog's route (scene/model.ts WATCH_NOUN). */
 const WATCH_NOUN = 'watchdog';
 const WATCH_EVENTS = ['arrives', 'leaves'];
 const TONES = ['ok', 'err', 'dim'];
@@ -46,7 +46,7 @@ const DIRS = ['up', 'down', 'left', 'right'];
 const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect', 'give', 'trace', 'unseal'];
 const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
 const KEYS: Record<string, string[]> = {
-  zone: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog'],
+  scene: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog'],
   logic: ['modules'],
   net: ['nodes', 'cables', 'keyring', 'watchdog'],
   module: ['id', 'start', 'foundIn', 'part'],
@@ -107,11 +107,11 @@ interface World {
 }
 
 /**
- * Check the whole game's data: every zone (with its code), the shared logic
- * modules (as they run in each zone, reported as logic.json), the shared net
+ * Check the whole game's data: every scene (with its code), the shared logic
+ * modules (as they run in each scene, reported as logic.json), the shared net
  * (net.json) and the keyring, whose ids must be unique across every file.
  */
-export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, engine: EngineData): string[] {
+export function checkGame(scenes: SceneCheck[], logic: LogicData, net: NetData, engine: EngineData): string[] {
   const errs: string[] = [];
   const keyring = new Map<string, { item: KeyItem; file: string }>();
   const items = (file: string, list: KeyItem[] | undefined) => (list ?? []).forEach((k, i) => {
@@ -119,7 +119,7 @@ export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, en
     for (const f of Object.keys(k)) if (!KEYS.item.includes(f)) e(`unknown field "${f}" (a typo?)`);
     if (typeof k.id !== 'string' || !k.id) { e('needs an id'); return; }
     const had = keyring.get(k.id);
-    if (had) e(`id "${k.id}" is also in ${had.file} (keyring ids are global: the keyring travels between zones)`);
+    if (had) e(`id "${k.id}" is also in ${had.file} (keyring ids are global: the keyring travels between scenes)`);
     if (!/^[\w.-]+$/.test(k.id)) e('an id is letters, digits, ".", "-" or "_" (made fragments are stored as join(a,b))');
     if (!['fragment', 'key', 'rule', 'card'].includes(k.kind)) e(`kind "${k.kind}" is not fragment / key / rule / card`);
     if (k.kind === 'card' && !['slow', 'ping'].includes(k.card as string)) e('a card needs "card": slow / ping (what it does in the shield rings)');
@@ -134,7 +134,7 @@ export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, en
     if (!had) keyring.set(k.id, { item: k, file });
   });
   items('net.json', net.keyring);
-  zones.forEach((z) => items(z.data.id + '.json', z.data.keyring));
+  scenes.forEach((z) => items(z.data.id + '.json', z.data.keyring));
   for (const { item, file } of keyring.values()) (item.from ?? []).forEach((id) => {
     const k = keyring.get(id);
     if (!k) errs.push(`${file} › keyring[${item.id}] › from: no keyring item "${id}"`);
@@ -144,7 +144,7 @@ export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, en
   const netNodes = new Map(net.nodes.map((n) => [n.id, n]));
   const world: World = { keyring, netNodes, logic, gives: new Map() };
 
-  // the shared net: nodes any zone may reach, so they may use only the engine and their own state
+  // the shared net: nodes any scene may reach, so they may use only the engine and their own state
   for (const k of Object.keys(net)) if (!KEYS.net.includes(k)) errs.push(`net.json: unknown field "${k}" (a typo?)`);
   const bare: CodeContract = { effects: [], panels: [], state: [], derived: [], goals: [], texts: {} };
   const netRoute = new Set(Array.isArray(net.watchdog?.route) ? net.watchdog!.route : []);
@@ -159,17 +159,17 @@ export function checkGame(zones: ZoneCheck[], logic: LogicData, net: NetData, en
   });
   nc.cables(net.cables, 'cables', net.nodes);
 
-  for (const z of zones) {
-    errs.push(...checkZone(z.data, z.code, world, engine, net));
+  for (const z of scenes) {
+    errs.push(...checkScene(z.data, z.code, world, engine, net));
     if (z.extra) errs.push(...z.extra(z.data).map((m) => z.data.id + '.json › ' + m));
   }
 
   // modules: where each is found (foundIn) must be a file that hands it out, and one handed out must say where
-  const files = new Set(['net', ...zones.map((z) => z.data.id)]);
+  const files = new Set(['net', ...scenes.map((z) => z.data.id)]);
   logic.modules.forEach((m) => {
     const w = `logic.json › modules[${m.id}]`, by = [...(world.gives.get(m.id) ?? [])];
     if (typeof m.foundIn === 'string') {
-      if (!files.has(m.foundIn)) errs.push(`${w} › foundIn: "${m.foundIn}" is not a zone id (or "net")`);
+      if (!files.has(m.foundIn)) errs.push(`${w} › foundIn: "${m.foundIn}" is not a scene id (or "net")`);
       else if (!by.includes(m.foundIn)) errs.push(`${w} › foundIn: ${m.foundIn === 'net' ? 'net.json' : m.foundIn + '.json'} has no { "give": "${m.id}" } step`);
     } else if (by.length && !m.start) errs.push(`${w}: ${by.map((f) => (f === 'net' ? 'net.json' : f + '.json')).join(', ')} hands it out; say so in "foundIn"`);
   });
@@ -217,7 +217,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       if (!env.code.panels.includes(a.open)) err(where, `unknown panel "${a.open}" (${env.code.panels.join(', ') || 'none here'})`);
       if (a.open === 'talk') {
         if (a.with !== undefined && !env.dialogues.includes(a.with)) err(where, `talk with "${a.with}": no such dialogue`);
-        else if (a.with === undefined && !env.dialogues.length) err(where, 'talk: this zone has no dialogue');
+        else if (a.with === undefined && !env.dialogues.length) err(where, 'talk: this scene has no dialogue');
       }
     }
     if ('effect' in a && !env.code.effects.includes(a.effect)) err(where, `unknown effect "${a.effect}" (code has: ${env.code.effects.join(', ') || 'none here'})`);
@@ -233,7 +233,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       else if (a.count !== undefined) err(where, '"count" only goes with give "tokens"');
       if (mod) { const f = file === 'net.json' ? 'net' : file.replace(/\.json$/, ''); world.gives.set(a.give, new Set([...(world.gives.get(a.give) ?? []), f])); }
       else if (a.give !== 'tokens' && !world.keyring.has(a.give)) {
-        err(where, /\.so$/.test(a.give) ? `give "${a.give}": no module with that id in logic.json` : `give "${a.give}": no keyring item with that id (zone or net.json "keyring")`);
+        err(where, /\.so$/.test(a.give) ? `give "${a.give}": no module with that id in logic.json` : `give "${a.give}": no keyring item with that id (scene or net.json "keyring")`);
       }
     } else if ('count' in a) err(where, '"count" only goes with give "tokens"');
     if ('trace' in a) {
@@ -405,7 +405,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         keys(n.link, 'link', wl);
         if (!Array.isArray(n.link.reach) || !n.link.reach.length) err(wl, 'reach lists the node ids it can scan');
         else n.link.reach.forEach((id) => {
-          if (!all.has(id) || !(world.netNodes.has(id) || isNode(id))) err(wl, `reach "${id}": no node with that id (zone "nodes" or net.json)`);
+          if (!all.has(id) || !(world.netNodes.has(id) || isNode(id))) err(wl, `reach "${id}": no node with that id (scene "nodes" or net.json)`);
           if (id === d.id) err(wl, 'a node cannot reach itself');
         });
         cond(n.link.when, known, wl + ' › when');
@@ -415,7 +415,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         keys(c, 'clock', wc);
         if (!(num(c.every) && c.every >= 100)) err(wc, 'every is the beat in ms, 100 or more');
         if (c.first !== undefined && !(num(c.first) && c.first >= 0)) err(wc, 'first is ms before the first beat, 0 or more');
-        if (c.start !== undefined && typeof c.start !== 'boolean') err(wc, 'start is true or false (running when the zone starts)');
+        if (c.start !== undefined && typeof c.start !== 'boolean') err(wc, 'start is true or false (running when the scene starts)');
         if (c.set !== undefined && !writable.has(c.set)) err(wc, `set "${c.set}": not a state key (it holds the last event)`);
         if (!(n.events ?? []).length) err(w, 'a CLOCK needs events: what it raises, in turn (["tick"], or ["night", "day"])');
         for (const v of ['start', 'stop']) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a CLOCK: leave it out of verbs`);
@@ -441,7 +441,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       }
     }
   };
-  /** Nodes from the zone (not net.json) are in `all` too; a node is anything in reach that is not a world device. */
+  /** Nodes from the scene (not net.json) are in `all` too; a node is anything in reach that is not a world device. */
   const nodeIds = new Set<string>();
   const isNode = (id: string) => nodeIds.has(id);
 
@@ -488,11 +488,11 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
 }
 
 /**
- * Check a zone file, its nodes, and the shared logic modules as they run in
- * that zone (their effects and conditions must make sense there). Problems in
+ * Check a scene file, its nodes, and the shared logic modules as they run in
+ * that scene (their effects and conditions must make sense there). Problems in
  * the modules are reported against `logic.json`.
  */
-export function checkZone(z: ZoneData, code: CodeContract, world: World, engine: EngineData, net?: NetData): string[] {
+export function checkScene(z: SceneData, code: CodeContract, world: World, engine: EngineData, net?: NetData): string[] {
   const errs: string[] = [];
   const file = z.id + '.json';
   const texts = { ...engine.texts, ...z.texts };
@@ -516,13 +516,13 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
     (z.watchdog.route ?? []).forEach((d) => { if (other?.route?.includes(d)) err('watchdog › route', `"${d}" is on net.json's watchdog route too: one watchdog per device`); });
   }
 
-  keys(z, 'zone', '');
+  keys(z, 'scene', '');
 
   // ---------- state ----------
   for (const k of code.state) if (!(k in z.state)) err('state', `missing "${k}" (the code needs a starting value)`);
   for (const k of code.derived) if (k in z.state) err('state', `"${k}" is computed by the code; it cannot be a state key too`);
 
-  // ---------- texts (the engine's, overridable, and the zone's own) ----------
+  // ---------- texts (the engine's, overridable, and the scene's own) ----------
   for (const [k, want] of Object.entries(code.texts)) {
     const v = texts[k];
     if (v === undefined) err('texts', `missing "${k}" (the code asks for it)`);
@@ -541,7 +541,7 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
     if (d.deck !== undefined && typeof d.deck !== 'boolean') err(where + ' › deck', 'true or false: a computer you can jack into');
     if (d.affects !== undefined) {
       if (!Array.isArray(d.affects)) err(where + ' › affects', 'a list of device ids (what it changes that no cable shows)');
-      else d.affects.forEach((id, i) => { if (!z.devices.some((x) => x.id === id) || id === d.id) err(`${where} › affects[${i}]`, `"${id}" is not another device in this zone`); });
+      else d.affects.forEach((id, i) => { if (!z.devices.some((x) => x.id === id) || id === d.id) err(`${where} › affects[${i}]`, `"${id}" is not another device in this scene`); });
     }
     if (d.everyday === undefined) return;
     if (!Array.isArray(d.everyday)) { err(where + ' › everyday', 'a list of { noun, verb, label? }'); return; }
@@ -574,7 +574,7 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
     if (d.layout?.spot) err(`nodes[${d.id}] › layout`, 'a node is not in the world: no spot (it lives on the board)');
   });
 
-  // ---------- logic modules (shared; checked as they run in this zone) ----------
+  // ---------- logic modules (shared; checked as they run in this scene) ----------
   const lc = checker('logic.json', errs, env, world, all);
   const logic = world.logic;
   lc.keys(logic, 'logic', '');
@@ -586,7 +586,7 @@ export function checkZone(z: ZoneData, code: CodeContract, world: World, engine:
     if (!/^[\w-]+\.so$/.test(m.id)) lc.err(w, 'a module id is a file name ending in .so');
     if (m.id === 'legs.so') lc.err(w, "legs.so is Downtown's own module (the save keeps it as `jump`)");
     if (m.start !== undefined && typeof m.start !== 'boolean') lc.err(w, 'start is true or false');
-    if (m.foundIn !== undefined && m.foundIn !== null && typeof m.foundIn !== 'string') lc.err(w, 'foundIn is a zone id or null');
+    if (m.foundIn !== undefined && m.foundIn !== null && typeof m.foundIn !== 'string') lc.err(w, 'foundIn is a scene id or null');
     if (all.has(m.part.id)) lc.err(w, `part id "${m.part.id}" is also a device or node in ${file}`);
     if (/\d$/.test(m.part.id)) lc.err(w, `part id "${m.part.id}" must not end in a digit (placed copies add a counter)`);
     if (m.part.sectors || m.part.layout) lc.err(w + ' › part', 'a logic part has no sectors or layout');

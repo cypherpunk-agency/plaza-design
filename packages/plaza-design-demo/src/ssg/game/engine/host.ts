@@ -1,8 +1,8 @@
 /**
- * A zone on screen: its model, the schematic overlay, hack vision, its panels,
+ * A scene on screen: its model, the schematic overlay, hack vision, its panels,
  * the HACK and BOARD buttons, and its part of the save. One class for every
- * zone; what differs is the zone's data, its rules (effects) and its view
- * (scene drawing, extra panels, extra things to press E on): a `ZoneDef`.
+ * scene; what differs is the scene's data, its rules (effects) and its view
+ * (scene drawing, extra panels, extra things to press E on): a `EngineDef`.
  *
  * Tap a thing in the world (or stand next to it and press E) and its schematic
  * opens. B opens the board with every device you have opened or seen, for
@@ -14,18 +14,18 @@
  * prints its shell line in the deck's terminal.
  *
  * Progress (state, goals, cables, placed parts, sectors, the net, the board's
- * layout) goes into the game's save as one `ZoneSave` (`save.zones.<id>`), a
+ * layout) goes into the game's save as one `SceneSave` (`save.scenes.<id>`), a
  * moment after things settle, and on `persist()` (leaving, stopping the game).
- * The keyring and the modules are the player's, across zones.
+ * The keyring and the modules are the player's, across scenes.
  */
 
-import type { ZoneData, ZoneSave } from '../data/types';
+import type { SceneData, SceneSave } from '../data/types';
 import type { Character } from '../characters';
 import type { SceneReadable, SceneUse } from '../scenes/kit';
 import type { LineKind } from '../terminal';
-import { type Line, type Spot, ZoneModel } from './model';
+import { type Line, type Spot, SceneModel } from './model';
 import { type PanelFn, Panels } from './panels';
-import type { ZoneRules } from './rules';
+import type { SceneRules } from './rules';
 import { Feedback, type Spot2D } from './feedback';
 import { Popup, type PopupAnchor, type PopupItem, type PopupRoom } from './popup';
 import { type Anchor, Schematic } from './schematic';
@@ -35,32 +35,32 @@ import { ENGINE_PANEL_FNS } from './toys';
  * Something to stand next to and press E on. `promptH`: how high its prompt hangs above the street;
  * `y`: how high the thing itself sits (a box on a roof), so the game can tell where you stand to reach it.
  */
-export interface ZoneTarget { id: string; x: number; label: string; promptH: number; y?: number }
+export interface SceneTarget { id: string; x: number; label: string; promptH: number; y?: number }
 
-/** How the game's canvas maps world units for a zone's drawing. */
+/** How the game's canvas maps world units for a scene's drawing. */
 export interface DrawView { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number; viewH: number }
 
 /**
  * What to draw: 'all', or for hack vision 'world' (everything but the devices: the game mutes
- * it) and then 'devices' (only the zone's devices, drawn bright over the muted world).
+ * it) and then 'devices' (only the scene's devices, drawn bright over the muted world).
  */
 export type DrawLayer = 'all' | 'world' | 'devices';
 
-/** A zone's code on the screen side: its scene, its own panels, its extra targets. */
-export interface ZoneView {
-  /** Panels this zone adds to the engine's `talk` (the yard's `camera`). Must match `rules.panels`. */
+/** A scene's code on the screen side: its scene, its own panels, its extra targets. */
+export interface EngineView {
+  /** Panels this scene adds to the engine's `talk` (the yard's `camera`). Must match `rules.panels`. */
   panels?: Record<string, PanelFn>;
   /**
-   * Draw the zone (its backdrop and its things) after the ground. `hover`: the device under the pointer.
+   * Draw the scene (its backdrop and its things) after the ground. `hover`: the device under the pointer.
    * `layer` (default 'all'): a view that cannot split draws everything for 'world' and nothing for 'devices'.
    */
-  draw(x: CanvasRenderingContext2D, m: ZoneModel, v: DrawView, hover: string | null, layer?: DrawLayer): void;
+  draw(x: CanvasRenderingContext2D, m: SceneModel, v: DrawView, hover: string | null, layer?: DrawLayer): void;
   /** Things to press E on besides the devices (an exit, a pickup tray). */
-  targets?(m: ZoneModel): ZoneTarget[];
-  /** E on one of those. Return 'exit' to walk out of the zone. */
-  use?(id: string, m: ZoneModel, say: (l: Line) => void): 'exit' | void;
+  targets?(m: SceneModel): SceneTarget[];
+  /** E on one of those. Return 'exit' to walk out of the scene. */
+  use?(id: string, m: SceneModel, say: (l: Line) => void): 'exit' | void;
   /**
-   * A place's life, in the same shape the explorable scenes use (scenes/kit.ts), so any zone
+   * A place's life, in the same shape the explorable scenes use (scenes/kit.ts), so any scene
    * can have it: `people` (characters.ts; the view draws them, the game makes [E] TALK targets for
    * those with `id` and `talk`), `uses` (things to do with E: buy, rent, pay in tokens) and
    * `readables`. The game handles them exactly as it does a scene's.
@@ -70,11 +70,11 @@ export interface ZoneView {
   readables?: SceneReadable[];
 }
 
-/** A zone, complete: its data file, its rules, its view. */
-export interface ZoneDef { data: ZoneData; rules: ZoneRules; view: ZoneView }
+/** A scene, complete: its data file, its rules, its view. */
+export interface EngineDef { data: SceneData; rules: SceneRules; view: EngineView }
 
-/** How a zone reaches the game's save. */
-export interface ZoneStore {
+/** How a scene reaches the game's save. */
+export interface SceneStore {
   /** Logic modules the player owns. */
   modules: () => string[];
   /** Keyring item ids the player holds. */
@@ -89,19 +89,19 @@ export interface ZoneStore {
   drop?: (id: string) => void;
   /** Sudo mode: every LINK reaches every node. */
   sudo?: boolean;
-  /** This zone's saved progress, if any. */
-  load: () => ZoneSave | undefined;
-  /** Keep this as the zone's progress (and write the save). */
-  store: (z: ZoneSave) => void;
+  /** This scene's saved progress, if any. */
+  load: () => SceneSave | undefined;
+  /** Keep this as the scene's progress (and write the save). */
+  store: (z: SceneSave) => void;
 }
 
-/** How long things must be quiet before the zone writes the save. */
+/** How long things must be quiet before the scene writes the save. */
 const SAVE_AFTER_MS = 800;
 /** How often trace moves. */
 const TICK_MS = 250;
 /** While trace or a lockout moves, the save hears of it this often at most. */
 const HEAT_SAVE_MS = 2000;
-/** World (x along the zone, h above the ground) to CSS px inside the canvas. */
+/** World (x along the scene, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
 /** Walk this far (world units) from where a thing's popup opened, and it closes. */
 const POPUP_WALK = 36;
@@ -110,8 +110,8 @@ const PART = { w: 26, h: 16 };
 /** Where a new part floats: this high, beside the player, and parts keep this far apart (world units). */
 const PART_H = 64, PART_GAP = 34;
 
-export class ZoneHost {
-  readonly model: ZoneModel;
+export class SceneHost {
+  readonly model: SceneModel;
   private schem: Schematic;
   private vision: Schematic;
   private panels: Panels;
@@ -121,7 +121,7 @@ export class ZoneHost {
   private popupAt = 0;
   /** Where each device stood on screen in the last frame (for the popup). */
   private seen = new Map<string, Anchor>();
-  /** Captions over the thing that reacted, and pings (zone/feedback.ts). */
+  /** Captions over the thing that reacted, and pings (scene/feedback.ts). */
   private fx: Feedback;
   /** Speakers that are not devices or targets (the game's: 'pixel'), as world points; null when not here. */
   where: (from: string) => { x: number; h: number } | null = () => null;
@@ -143,8 +143,8 @@ export class ZoneHost {
   /** While a typed command runs (`typed`), the deck already shows it: don't print the shell line again. */
   private echo = true;
 
-  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: ZoneStore | undefined, readonly def: ZoneDef) {
-    this.model = new ZoneModel({
+  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: SceneStore | undefined, readonly def: EngineDef) {
+    this.model = new SceneModel({
       say: (l, from) => this.say(l, from),
       open: (panel, arg) => this.panels.open(panel, arg),
       changed: () => { this.schem?.render(); this.vision?.render(); this.dirty(); },
@@ -160,7 +160,7 @@ export class ZoneHost {
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
-    // the engine's own panels (the lock toys) under the zone's
+    // the engine's own panels (the lock toys) under the scene's
     this.popup = new Popup(host);
     this.fx = new Feedback(host);
     this.popup.onClose = () => this.onClose();
@@ -176,7 +176,7 @@ export class ZoneHost {
     this.panels.onClose = () => { if (!this.schem.isOpen) this.onClose(); };
 
     // HACK and BOARD over the canvas, so nobody has to guess the keys
-    this.btns = document.createElement('div'); this.btns.id = 'zone-btns'; this.btns.hidden = true;
+    this.btns = document.createElement('div'); this.btns.id = 'scene-btns'; this.btns.hidden = true;
     const button = (text: string, fn: () => void) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'hack-btn'; b.textContent = text;
       // hand the keys back to the canvas, or Space and Enter would press the button again
@@ -217,15 +217,15 @@ export class ZoneHost {
 
   // ---------- the save ----------
 
-  /** Everything the save keeps about the zone. */
-  snapshot(): ZoneSave {
+  /** Everything the save keeps about the scene. */
+  snapshot(): SceneSave {
     const board = this.schem.layout(), pieces = this.vision.pieces();
     // hack vision: plates and circuits moved off their default spot (world units from it)
     const vision = Object.keys(pieces).length ? { vision: pieces } : {};
     return { ...this.model.snapshot(), board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets, ...vision } };
   }
 
-  private restore(z: ZoneSave) {
+  private restore(z: SceneSave) {
     this.model.restore(z);
     this.schem.known.clear();
     (z.board?.known ?? []).forEach((id) => { if (this.model.devices.has(id)) this.schem.known.add(id); });
@@ -240,7 +240,7 @@ export class ZoneHost {
     this.saveTimer = window.setTimeout(() => this.persist(), SAVE_AFTER_MS);
   }
 
-  /** Write the zone's progress now, if it changed since the last write. */
+  /** Write the scene's progress now, if it changed since the last write. */
   persist() {
     clearTimeout(this.saveTimer);
     if (!this.store) return;
@@ -250,7 +250,7 @@ export class ZoneHost {
     this.store.store(z);
   }
 
-  /** `reset <zone>`: the zone as on the first visit; the rest of the save (keyring included) is untouched. */
+  /** `reset <scene>`: the scene as on the first visit; the rest of the save (keyring included) is untouched. */
   reset() {
     this.closeAll();
     this.model.reset();
@@ -273,7 +273,7 @@ export class ZoneHost {
   }
 
   /**
-   * Where a speaker is on screen now: a device (its spot), one of the zone's own targets
+   * Where a speaker is on screen now: a device (its spot), one of the scene's own targets
    * (the pickup tray), or what the game knows (Pixel). `off`: it is off to that side of the view.
    */
   private locate = (from: string): Spot2D | null => {
@@ -341,7 +341,7 @@ export class ZoneHost {
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
   closeAll() { this.popup.close(); this.fx.clear(); this.panels.close(); this.schem.close(); this.vision.close(); }
-  /** The HACK and BOARD buttons show in this zone only. */
+  /** The HACK and BOARD buttons show in this scene only. */
   show(on: boolean) { this.btns.hidden = !on; }
 
   get visionOn() { return this.vision.isOpen; }
@@ -481,17 +481,17 @@ export class ZoneHost {
     this.schem.toggleBoard();
   }
 
-  /** Things you can stand next to and press E on: the zone's own (an exit), then every device in the world. */
-  targets(): ZoneTarget[] {
+  /** Things you can stand next to and press E on: the scene's own (an exit), then every device in the world. */
+  targets(): SceneTarget[] {
     const m = this.model, own = this.def.view.targets?.(m) ?? [];
     const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, y: s.y, label: m.label('prompt.open'), promptH: s.y + Math.min(s.h + 12, 100) }));
     return [...own, ...devs];
   }
 
-  /** E next to a target. Returns 'exit' when the player walks out of the zone. */
+  /** E next to a target. Returns 'exit' when the player walks out of the scene. */
   use(id: string): 'exit' | void {
     if (this.model.devices.has(id) && this.model.spots().some((s) => s.id === id)) { this.pick(id); return; }
-    // what the zone's own targets say (the pickup tray) stands over them
+    // what the scene's own targets say (the pickup tray) stands over them
     return this.def.view.use?.(id, this.model, (l) => this.say(l, id));
   }
 
@@ -504,10 +504,10 @@ export class ZoneHost {
   }
 
   objective() {
-    const next = this.model.zone.goals.find((g) => !this.model.goals.has(g.id));
+    const next = this.model.data.goals.find((g) => !this.model.goals.has(g.id));
     return next ? next.text : this.model.label('goals.done');
   }
 
-  /** Draw the zone; in hack vision the game draws 'world', mutes it, then 'devices' (see `DrawLayer`). */
+  /** Draw the scene; in hack vision the game draws 'world', mutes it, then 'devices' (see `DrawLayer`). */
   draw(x: CanvasRenderingContext2D, v: DrawView, layer: DrawLayer = 'all') { this.def.view.draw(x, this.model, v, this.hover, layer); }
 }

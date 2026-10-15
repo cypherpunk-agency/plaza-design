@@ -1,9 +1,9 @@
 /**
- * A zone's rules, for any zone file: devices made of nouns, nouns with verbs,
+ * A scene's rules, for any scene file: devices made of nouns, nouns with verbs,
  * events on nouns, and cables that say "when this noun does X, that noun does Y".
  *
- * What a zone contains and says lives in its data file (see GAME-DATA.md);
- * the zone's own fiddly rules run as named effects (`ZoneRules`, next to its
+ * What a scene contains and says lives in its data file (see GAME-DATA.md);
+ * the scene's own fiddly rules run as named effects (`SceneRules`, next to its
  * scene). On top, the hacking layer, all switched on from data:
  * - GUARD nouns: logins whose password hides in clue fragments on the keyring;
  * - sealed sectors: nouns that show as `???` until a key, a guard or a seal opens them;
@@ -17,10 +17,10 @@
 
 import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from '../data';
 import type {
-  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SectorData, StatusPart, Value, WatchdogData, ZoneData, ZoneSave,
+  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SectorData, StatusPart, Value, WatchdogData, SceneData, SceneSave,
 } from '../data/types';
-import { ENGINE_EFFECTS, type Vars, type World, type ZoneRules } from './rules';
-// [engine features: watchdog, clocks] (zone/watchdog.ts, zone/clock.ts)
+import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
+// [engine features: watchdog, clocks] (scene/watchdog.ts, scene/clock.ts)
 import { Clocks } from './clock';
 import { type DogView, Watchdogs } from './watchdog';
 
@@ -71,21 +71,21 @@ export interface Ctx { dev: string; noun: string; verb: string; bySignal: boolea
 /** A device standing in the world, from its `layout.spot`: centre x, size, and how high its bottom sits (0: on the street). */
 export interface Spot { id: string; x: number; w: number; h: number; y: number }
 
-export interface ZoneHooks {
+export interface SceneHooks {
   /**
    * A line to show. `from`: who said it, when the model knows: the device whose verb ran
    * (or whose effect names itself), or another speaker an effect names ('pixel'). The host
    * puts it as a caption over that thing; without `from` it goes to the terminal only.
    */
   say: (line: Line, from?: string) => void;
-  /** Open a panel: `talk` (arg: the dialogue), or one of the zone's own (`camera`). */
+  /** Open a panel: `talk` (arg: the dialogue), or one of the scene's own (`camera`). */
   open: (panel: string, arg?: string) => void;
   changed: () => void;
   /** A full trace threw the player out of this device. */
   kick?: (dev: string) => void;
   /** The logic modules the player owns (`timer.so`, …). Default: what a new game starts with. */
   modules?: () => string[];
-  /** The player's keyring (item ids), shared by every zone. Default: the model keeps its own. */
+  /** The player's keyring (item ids), shared by every scene. Default: the model keeps its own. */
   keyring?: () => string[];
   /** Put an item on the keyring (and save). */
   give?: (id: string) => void;
@@ -95,7 +95,7 @@ export interface ZoneHooks {
   tokens?: (add: number) => number;
   /** A made fragment was thrown off the keyring (already gone from `keyring()`): write the save. */
   drop?: (id: string) => void;
-  /** Sudo mode (`?sudo`): every LINK reaches every node there is (the zone's and net.json's). */
+  /** Sudo mode (`?sudo`): every LINK reaches every node there is (the scene's and net.json's). */
   sudo?: () => boolean;
 }
 
@@ -137,8 +137,8 @@ export const WATCH_NOUN = 'watchdog';
 /** A pre-wired cable's id: its own, or `from>to`. */
 export const wiredId = (c: CableData) => c.id ?? c.from + '>' + c.to;
 
-export class ZoneModel {
-  /** The zone's state keys. Starting values come from the zone's `state`. */
+export class SceneModel {
+  /** The scene's state keys. Starting values come from the scene's `state`. */
   state: Record<string, Value> = {};
   /** Numbers effects keep while things are in flight (a slide's start). Not saved; cleared by reset. */
   scratch: Record<string, number> = {};
@@ -157,7 +157,7 @@ export class ZoneModel {
   locks = new Map<string, number>();
   /** Net nodes met: seen on a scan (a silhouette on the board), or connected (a device). */
   net = new Map<string, 'seen' | 'connected'>();
-  /** Where each logic part floats in the world in hack vision (x along the zone, h above the ground). */
+  /** Where each logic part floats in the world in hack vision (x along the scene, h above the ground). */
   logicAt = new Map<string, { x: number; h: number }>();
   /** Devices the player is looking into right now (the host sets it: a device's schematic). */
   viewing = new Set<string>();
@@ -180,34 +180,34 @@ export class ZoneModel {
   private fails = new Map<string, number>();
   private seq = new Map<string, { i: number; t: number }>();
   private nodeData = new Map<string, DeviceData>();
-  /** Pre-wired cables of the zone and the net; those touching a node wait until it is connected. */
+  /** Pre-wired cables of the scene and the net; those touching a node wait until it is connected. */
   private prewired: CableData[];
   private ownKeyring: string[] = [];
-  /** Every keyring item this zone may meet: the game's, its own, the net's. */
+  /** Every keyring item this scene may meet: the game's, its own, the net's. */
   private keys: Map<string, KeyItem>;
   private sealing = false;
   /** Bumped by reset and restore: timers started before it never fire. */
   private epoch = 0;
 
-  constructor(private hooks: ZoneHooks, readonly zone: ZoneData, readonly rules: ZoneRules, readonly logic: LogicData = LOGIC, net: NetData = NET) {
-    this.texts = { ...ENGINE.texts, ...zone.texts };
-    for (const n of [...net.nodes, ...(zone.nodes ?? [])]) this.nodeData.set(n.id, n);
-    this.prewired = [...zone.cables, ...net.cables];
-    this.keys = new Map([...KEYRING, ...[...net.keyring, ...(zone.keyring ?? [])].map((k) => [k.id, k] as const)]);
-    this.dogs = new Watchdogs([zone.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
+  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET) {
+    this.texts = { ...ENGINE.texts, ...data.texts };
+    for (const n of [...net.nodes, ...(data.nodes ?? [])]) this.nodeData.set(n.id, n);
+    this.prewired = [...data.cables, ...net.cables];
+    this.keys = new Map([...KEYRING, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
+    this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
     this.clocks = new Clocks(() => this.now());
     this.init();
   }
 
-  /** Back to how the zone file starts it: its own cables, no parts, no goals, nothing opened. */
+  /** Back to how the scene file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
     this.epoch++;
     this.clocks.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
-    this.state = { ...this.zone.state };
-    this.zone.devices.forEach((d) => this.devices.set(d.id, this.build(d, d.id)));
+    this.state = { ...this.data.state };
+    this.data.devices.forEach((d) => this.devices.set(d.id, this.build(d, d.id)));
     this.links = [];
     this.wire();
   }
@@ -239,7 +239,7 @@ export class ZoneModel {
     setTimeout(() => { if (e === this.epoch) fn(); }, ms);
   }
 
-  /** A zone state key (for effects and the scene). */
+  /** A scene state key (for effects and the scene). */
   get(key: string): Value { return this.state[key]; }
   set(key: string, v: Value) { this.state[key] = v; }
   /** A state key, a derived value (`gateOpen`) or `signal`, as conditions read them. */
@@ -247,7 +247,7 @@ export class ZoneModel {
   noun(key: string) { const [d, n] = split(key); return this.devices.get(d)?.nouns.find((x) => x.id === n); }
   /**
    * Devices standing in the world (their `layout.spot`); logic parts and net nodes live on the board only.
-   * A device that moves (the zone's `rules.place`) stands where its code says, or is gone for now (null).
+   * A device that moves (the scene's `rules.place`) stands where its code says, or is gone for now (null).
    */
   spots(): Spot[] {
     const out: Spot[] = [];
@@ -295,7 +295,7 @@ export class ZoneModel {
 
   goal(id: string) { if (this.goals.has(id)) return; this.goals.add(id); this.changed(); }
 
-  /** Does a data condition hold right now (zone state only)? For panels. */
+  /** Does a data condition hold right now (scene state only)? For panels. */
   cond(c: string) { return this.test(c, this.ctx('')); }
   /** Run data actions outside any noun (dialogue choices). */
   apply(actions: Action[]) { actions.forEach((a) => { const l = this.doAction(a, this.ctx('')); if (l) this.sayLine(l); }); this.changed(); }
@@ -371,7 +371,7 @@ export class ZoneModel {
     return id;
   }
 
-  /** Remove a placed logic part and every cable touching it. The zone's own devices stay. */
+  /** Remove a placed logic part and every cable touching it. The scene's own devices stay. */
   removeDevice(id: string): void {
     if (!this.devices.get(id)?.logic) return;
     this.devices.delete(id); this.local.delete(id); this.logicAt.delete(id); this.clocks.remove(id);
@@ -432,7 +432,7 @@ export class ZoneModel {
   }
 
   /**
-   * Spend `n` noodle tokens (a zone effect that sells something: the beach's sunbed meter).
+   * Spend `n` noodle tokens (a scene effect that sells something: the beach's sunbed meter).
    * True, and taken, if the player has them; false, and nothing taken, if not.
    */
   pay(n: number): boolean {
@@ -560,7 +560,7 @@ export class ZoneModel {
     this.later(ms + 50, () => this.changed());
   }
 
-  // ---------- lock toys (zone/toys/): a GUARD with `toy` opens with hands, not passwords ----------
+  // ---------- lock toys (scene/toys/): a GUARD with `toy` opens with hands, not passwords ----------
 
   /** The verb that opens a toy guard's panel. */
   get toyVerb() { return this.label('toy.verb'); }
@@ -680,8 +680,8 @@ export class ZoneModel {
 
   /**
    * Advance trace by `dt` ms: logs that record you while you are inside fill
-   * the meter; otherwise it drains. `live` (the zone is on screen) also runs
-   * the zone's own clock (`ZoneRules.tick`). Returns true when a meter or a lock changed
+   * the meter; otherwise it drains. `live` (the scene is on screen) also runs
+   * the scene's own clock (`SceneRules.tick`). Returns true when a meter or a lock changed
    * (the host redraws the meters, or everything when a lock ended).
    */
   tick(dt: number, live = true): boolean {
@@ -723,7 +723,7 @@ export class ZoneModel {
     return steps.length > 0 || beats.length > 0;
   }
 
-  // ---------- the watchdog (zone/watchdog.ts) ----------
+  // ---------- the watchdog (scene/watchdog.ts) ----------
 
   /** Is the watchdog sitting on this device (so it is frozen)? */
   frozen(dev: string) { return this.dogs.any && this.dogs.on(dev) !== null; }
@@ -739,7 +739,7 @@ export class ZoneModel {
     return this.line(v.at === c.dev ? 'watchdog.here' : v.at ? 'watchdog.away' : 'watchdog.walking', vars);
   }
 
-  // ---------- clocks (zone/clock.ts) ----------
+  // ---------- clocks (scene/clock.ts) ----------
 
   private runClock(n: NounData, c: Ctx): Line | null {
     const key = c.dev + '.' + n.id, via = c.bySignal ? 'signal → ' : '';
@@ -816,17 +816,17 @@ export class ZoneModel {
 
   // ---------- saving ----------
 
-  /** The zone's progress for the save, settled: nothing in flight. Trace and lockouts stay (reloading is not a way out). */
-  snapshot(): ZoneSave {
+  /** The scene's progress for the save, settled: nothing in flight. Trace and lockouts stay (reloading is not a way out). */
+  snapshot(): SceneSave {
     const state: Record<string, Value> = {};
-    for (const k of Object.keys(this.zone.state)) state[k] = this.state[k];
+    for (const k of Object.keys(this.data.state)) state[k] = this.state[k];
     this.rules.settle?.(state);
     const devs = [...this.devices.values()];
     const logic = devs.filter((d) => d.logic).map((d) => {
       const kind = d.id.replace(/\d+$/, ''), own = this.local.get(d.id), at = this.logicAt.get(d.id);
       return { id: d.id, kind, ...(own ? { state: { ...own } } : {}), ...(at ? { at: { x: at.x, h: at.h } } : {}) };
     });
-    const z: ZoneSave = { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
+    const z: SceneSave = { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
     const local = devs.filter((d) => !d.logic && this.local.has(d.id)).map((d) => [d.id, { ...this.local.get(d.id)! }]);
     if (local.length) z.local = Object.fromEntries(local);
     if (this.opened.size) z.open = [...this.opened];
@@ -852,11 +852,11 @@ export class ZoneModel {
    * a part kind, a sector, a cable to a noun that is gone) is dropped, not trusted.
    * Placed parts come back even if their module is no longer owned.
    */
-  restore(s: ZoneSave) {
+  restore(s: SceneSave) {
     this.init();
-    for (const [k, v] of Object.entries(s.state ?? {})) if (k in this.zone.state) this.state[k] = v;
+    for (const [k, v] of Object.entries(s.state ?? {})) if (k in this.data.state) this.state[k] = v;
     this.rules.settle?.(this.state);
-    const goalIds = new Set(this.zone.goals.map((g) => g.id));
+    const goalIds = new Set(this.data.goals.map((g) => g.id));
     (s.goals ?? []).forEach((g) => { if (goalIds.has(g)) this.goals.add(g); });
     (s.net?.seen ?? []).forEach((id) => { if (this.nodeData.has(id)) this.net.set(id, 'seen'); });
     (s.net?.connected ?? []).forEach((id) => { if (this.nodeData.has(id)) this.join(id); });
@@ -887,7 +887,7 @@ export class ZoneModel {
    * fixed one always comes back, one new in the data appears. Then trace,
    * lockouts, clocks and the watchdog come back where they were.
    */
-  private restoreEngine(s: ZoneSave) {
+  private restoreEngine(s: SceneSave) {
     (s.cut ?? []).forEach((id) => { if (typeof id === 'string') this.cuts.add(id); });
     const here = (key: string) => this.devices.has(split(key.split(':')[0])[0]);
     for (const c of this.prewired) {
@@ -906,7 +906,7 @@ export class ZoneModel {
     this.dogs.restore(s.watchdog);
   }
 
-  /** Start the zone over (the terminal's `reset yard`). The keyring is the player's, so it stays. */
+  /** Start the scene over (the terminal's `reset yard`). The keyring is the player's, so it stays. */
   reset() { this.init(); this.hooks.changed(); }
 
   // ---------- data → live devices ----------
@@ -1016,19 +1016,19 @@ export class ZoneModel {
     return null;
   }
 
-  /** `{ "open": "talk" }` on a noun: the dialogue named like the noun, else the zone's first. */
-  private dialogueFor(noun: string) { return noun in this.zone.dialogue ? noun : Object.keys(this.zone.dialogue)[0]; }
+  /** `{ "open": "talk" }` on a noun: the dialogue named like the noun, else the scene's first. */
+  private dialogueFor(noun: string) { return noun in this.data.dialogue ? noun : Object.keys(this.data.dialogue)[0]; }
 
   private world(c: Ctx): World {
     return {
-      m: this, zone: this.zone,
+      m: this, data: this.data,
       line: (key, vars) => this.lineIn(key, c, vars),
       has: (key) => key in this.texts,
       // an effect speaks for its own device, unless it names who reacted (`w.say(line, 'router')`)
       say: (l, from) => this.sayLine(l, from ?? (c.dev || this.speaker)),
       changed: () => this.changed(),
       goal: (g) => this.goal(g),
-      tune: (key) => this.zone.tuning[key],
+      tune: (key) => this.data.tuning[key],
       emit: (event) => this.emit(c.dev + '.' + c.noun + ':' + event),
     };
   }

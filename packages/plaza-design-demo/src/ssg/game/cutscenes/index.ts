@@ -2,7 +2,7 @@
  * Cutscenes: the registry and the player.
  *
  * A cutscene is a picture drawn by code (`draw(ctx, view, t)`) plus editable data
- * (data/cutscenes.json: title, duration, the zone it hands over to, text cards).
+ * (data/cutscenes.json: title, duration, the scene it hands over to, text cards).
  * The player adds what every cutscene shares: letterbox bars, the cards typed out
  * in the bottom bar, a fade in and out, and a small "any key to skip" hint.
  *
@@ -41,7 +41,7 @@ const TYPE = 32;
 
 const PAPER = '255,233,208', RUST = '194,65,12', ORANGE = '255,136,0';
 
-/** One playing cutscene. The game steps and draws it instead of the zone while it runs. */
+/** One playing cutscene. The game steps and draws it instead of the scene while it runs. */
 export class CutscenePlay {
   t = 0;
   done = false;

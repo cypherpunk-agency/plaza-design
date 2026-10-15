@@ -6,7 +6,7 @@
  *
  * Everyday actions run the noun's verb exactly as a tap on the schematic
  * would, and the popup closes at once: the scene is free when the reaction
- * plays (the reply is a caption over whatever reacted, zone/feedback.ts).
+ * plays (the reply is a caption over whatever reacted, scene/feedback.ts).
  * It opens beside the thing, on the side away from what the thing affects
  * (what it is cabled to, the player, Pixel), never over the thing or the
  * player, with a short connector line to it; with no side free (a crowded
@@ -165,7 +165,7 @@ export class Popup {
 
 /** The popup's look (render.tsx inlines it): cyan entries you can use, pink ones that hack. */
 export const POPUP_STYLES = `
-    /* A thing's popup in the world (game/zone/popup.ts): its everyday actions, then jack in / hack it */
+    /* A thing's popup in the world (game/engine/popup.ts): its everyday actions, then jack in / hack it */
     .thing-layer {
       position: absolute;
       left: 0;

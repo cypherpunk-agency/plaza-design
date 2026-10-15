@@ -2,20 +2,20 @@
  * The beach and SALT, its bar: a real beach at sunset, west of the harbor,
  * with Moth's boat moored at the end of the pier.
  *
- * Built as a zone on the hacking engine: its devices (the sunbed kiosk, the
+ * Built as a scene on the hacking engine: its devices (the sunbed kiosk, the
  * jukebox, SALT's mixer, the lifeguard drone, the pier's lamp schedule, the
  * boat) are data/beach.json; the kiosk's billing and the drone's flag running
  * out are rules.ts; the drawing is scene.ts. Its life (people who talk, the
  * cat, ordering a drink, a gull to shoo, a crab, the Registry's notice) uses
  * the same shape as the explorable scenes (`people`, `uses`, `readables` on
- * the view), which the game hosts for any zone.
+ * the view), which the game hosts for any scene.
  *
  * Ways out: the stairs at the left end (E) and the left edge itself (walk
  * off) lead up to the promenade and the harbor (city.ts `EDGES.beach`).
  */
 
 import { BEACH } from '../data';
-import type { ZoneDef } from '../zone';
+import type { EngineDef } from '../engine';
 import { BEACH_RULES } from './rules';
 import { CRAB, drawBeach, GULL, L, PEOPLE } from './scene';
 
@@ -23,7 +23,7 @@ export { BEACH_RULES } from './rules';
 export { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W } from './scene';
 
 /** The beach, complete: data, rules, view. The game hosts it with `hostZone(BEACH_ZONE)`. */
-export const BEACH_ZONE: ZoneDef = {
+export const BEACH_ZONE: EngineDef = {
   data: BEACH,
   rules: BEACH_RULES,
   view: {

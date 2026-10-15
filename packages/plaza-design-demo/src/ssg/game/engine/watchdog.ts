@@ -2,7 +2,7 @@
  * The Registry's watchdog: a process that walks a route of devices and nodes
  * on a fixed rhythm. It sits on each stop for `dwellMs`, then takes `moveMs`
  * to the next, and loops. The device it sits on is frozen (the model refuses
- * its verbs and drops signals in and out of it; see `ZoneModel.frozen`).
+ * its verbs and drops signals in and out of it; see `SceneModel.frozen`).
  *
  * Its place is a pure function of how long it has been walking, so a save
  * keeps one number (ms into its loop) and a test can move the clock. The

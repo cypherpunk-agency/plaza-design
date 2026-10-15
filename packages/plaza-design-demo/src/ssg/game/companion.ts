@@ -1,7 +1,7 @@
 /**
- * Pixel, the robot cat: a small companion the engine draws in any zone.
+ * Pixel, the robot cat: a small companion the engine draws in any scene.
  *
- * Pixel sleeps on whatever is warm. In the flat (Capsule 7B) the zone says
+ * Pixel sleeps on whatever is warm. In the flat (Capsule 7B) the scene says
  * where that is (`perch`: the bed, the router, the sunny spot); outside, Pixel
  * follows the player: walks behind, sits when you stop, and after a while
  * curls up on a warm machine nearby (`WARM`) or naps where it sat.
@@ -18,7 +18,7 @@
 export interface Perch { x: number; h: number; rest: 'sleep' | 'sun' | 'sit' }
 
 /**
- * Warm machines outside, per zone, where Pixel sometimes curls up while you
+ * Warm machines outside, per scene, where Pixel sometimes curls up while you
  * stand around: the noodle stall's lamp-warm counter, junction box 0x2F
  * (warm electronics), the yard's cable-spool table under the lit kitchen
  * window, the dumpster lid under the caged lamp. Coordinates follow the
@@ -178,7 +178,7 @@ export class Companion {
   }
 
   /**
-   * One frame. `perch`: in a home zone, where Pixel wants to be (follow the
+   * One frame. `perch`: in a home scene, where Pixel wants to be (follow the
    * warmth); without it, Pixel follows the player and naps near `warm` spots.
    */
   update(dt: number, o: { px: number; face: number; moving: boolean; perch?: Perch | null; warm?: Perch[] }) {

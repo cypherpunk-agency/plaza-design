@@ -1,12 +1,12 @@
 /**
- * A zone's full-screen moments: talking to a daemon (the engine's `talk`,
- * any dialogue in the zone file), and whatever panels the zone's view adds
+ * A scene's full-screen moments: talking to a daemon (the engine's `talk`,
+ * any dialogue in the scene file), and whatever panels the scene's view adds
  * (the yard's CAM-1). Each covers the game window until closed.
  * Styles live in render.tsx (`.hack-panel`, `.cam-*`, `.dlg-*`).
  */
 
 import type { DialogueNode } from '../data/types';
-import type { Line, ZoneModel } from './model';
+import type { Line, SceneModel } from './model';
 
 export function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
   const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e;
@@ -17,17 +17,17 @@ export function button(text: string, cls: string, fn: () => void) {
   return b;
 }
 
-/** What a zone's own panel gets: the body to fill, the model, and a frame loop that stops when the panel closes. */
+/** What a scene's own panel gets: the body to fill, the model, and a frame loop that stops when the panel closes. */
 export interface PanelKit {
   body: HTMLDivElement;
-  m: ZoneModel;
+  m: SceneModel;
   say: (l: Line) => void;
   close: () => void;
   /** requestAnimationFrame, cancelled on close. Return false to stop. */
   frame: (fn: (t: number) => boolean | void) => void;
 }
 
-/** A zone's own panel (`camera`), opened by `{ "open": "camera" }`. `arg` is the step's `with`. */
+/** A scene's own panel (`camera`), opened by `{ "open": "camera" }`. `arg` is the step's `with`. */
 export type PanelFn = (kit: PanelKit, arg?: string) => void;
 
 export class Panels {
@@ -36,7 +36,7 @@ export class Panels {
   private raf = 0;
   onClose: () => void = () => {};
 
-  constructor(host: HTMLElement, private m: ZoneModel, private say: (l: Line) => void, private own: Record<string, PanelFn> = {}) {
+  constructor(host: HTMLElement, private m: SceneModel, private say: (l: Line) => void, private own: Record<string, PanelFn> = {}) {
     this.root = el('div', 'hack-panel'); this.root.hidden = true;
     this.body = el('div', 'hack-panel-body');
     this.root.append(button(m.label('ui.close'), 'hack-btn hack-panel-close', () => this.close()), this.body);
@@ -47,7 +47,7 @@ export class Panels {
   close() { if (this.root.hidden) return; this.root.hidden = true; cancelAnimationFrame(this.raf); this.body.textContent = ''; this.onClose(); }
   private show(cls: string) { cancelAnimationFrame(this.raf); this.body.textContent = ''; this.body.className = 'hack-panel-body ' + cls; this.root.hidden = false; }
 
-  /** Open a panel by name: `talk` (arg: the dialogue), or one of the zone's own. */
+  /** Open a panel by name: `talk` (arg: the dialogue), or one of the scene's own. */
   open(name: string, arg?: string) {
     if (name === 'talk') { this.talk(arg); return; }
     const fn = this.own[name];
@@ -63,7 +63,7 @@ export class Panels {
   // ---------- talking: permission, not answers ----------
 
   talk(who?: string) {
-    const D = this.m.zone.dialogue[who ?? Object.keys(this.m.zone.dialogue)[0]];
+    const D = this.m.data.dialogue[who ?? Object.keys(this.m.data.dialogue)[0]];
     if (!D) return;
     this.show('dlg');
     const box = el('div', 'dlg-box');

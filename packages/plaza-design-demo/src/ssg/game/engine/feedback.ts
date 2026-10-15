@@ -121,13 +121,13 @@ export class Feedback {
     }
   }
 
-  /** Leaving the zone: nothing lingers. */
+  /** Leaving the scene: nothing lingers. */
   clear() { this.caps.forEach((c) => { c.el.remove(); c.lead.remove(); }); this.pings.forEach((p) => p.el.remove()); this.caps = []; this.pings = []; }
 }
 
 /** Captions and pings (render.tsx inlines it). Paper is the warm white of text you read; green worked, red denied, cyan look. */
 export const FEEDBACK_STYLES = `
-    /* Feedback in the world (game/zone/feedback.ts): device captions over the thing that reacted, pings */
+    /* Feedback in the world (game/engine/feedback.ts): device captions over the thing that reacted, pings */
     .fx-layer {
       position: absolute;
       left: 0;
