@@ -6,6 +6,8 @@
  * - Everything is unlocked: every logic module, legs.so, every keyring item,
  *   the items a later level asks for (the maglev pass), tokens to spare, every place on the city map, the market gate open.
  *   Puzzles themselves stay unsolved, so they can still be played.
+ * - A time control (transport.ts) over the title's sunrise, the glide and every cutscene:
+ *   timecode and beat, play/pause, step, speed, a scrubber. Space, `,` `.`, `[` `]`, Home, 1–9.
  * - Sudo plays on its own save and slots (`SUDO` in level.ts picks the keys),
  *   so the real run is never touched.
  */

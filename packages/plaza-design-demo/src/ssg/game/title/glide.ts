@@ -30,6 +30,14 @@ import { frameView, placed } from '../sets/view';
 
 /** Seconds from NEW GAME to the handover; the last second is the dark of the tunnel. */
 export const GLIDE = 54;
+/**
+ * Seconds of the sunrise before the menu: the sun comes up from under the sea and settles half up
+ * on the horizon, the sky warming from night to dawn. The title's clock `t` runs from 0; from RISE
+ * on the shot is settled (the menu pops in, NEW GAME's glide starts from it).
+ */
+export const RISE = 7;
+/** When the sun starts and stops moving, inside the rise (it rests a moment before the menu). */
+const SUN_FROM = 0.4, SUN_TO = 6.5;
 /** The camera's top speed (world units a second at depth 1), and when it eases in and out. */
 const SPEED = 130, EASE_IN = 5, CRUISE_END = 45, EASE_OUT = 6;
 /** Where the regions start, west of the start (the beach is east of 0 too). */
@@ -42,7 +50,8 @@ const smooth = (a: number, b: number, v: number) => { const f = Math.max(0, Math
 const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
 const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
 const hex = (c: string) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
-const mixHex = (a: string, b: string, f: number) => { const A = hex(a), B = hex(b); return 'rgb(' + A.map((v, i) => Math.round(lerp(v, B[i], f))).join(',') + ')'; };
+/** Two #rrggbb colours mixed, as #rrggbb (so a mix can be mixed again). */
+const mixHex = (a: string, b: string, f: number) => { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(lerp(v, B[i], f)).toString(16).padStart(2, '0')).join(''); };
 
 /** How far west the camera has come at `tau` seconds into the glide (eases in, cruises, eases out). */
 const DIST = (() => {
@@ -56,6 +65,28 @@ const DIST = (() => {
 })();
 export const glideDist = (tau: number) => { const i = Math.max(0, tau) * 30, k = Math.floor(i), f = i - k; return k + 1 >= DIST.length ? DIST[DIST.length - 1] : lerp(DIST[k], DIST[k + 1], f); };
 const G_END = glideDist(GLIDE);
+/** When the camera is over world position X (depth doesn't matter: anything at X is at the middle of the view). */
+const tauAt = (X: number) => { let a = 0, b = GLIDE; for (let i = 0; i < 40; i++) { const m = (a + b) / 2; if (glideDist(m) < X) a = m; else b = m; } return Math.round(b * 10) / 10; };
+
+/** The sunrise's progress (0 at night, 1 settled) at title time `t`: the sun's ease, and the sky's (a little ahead of it). */
+const sunUp = (t: number) => smooth(SUN_FROM, SUN_TO, t);
+const warmth = (t: number) => smooth(0, SUN_TO + 0.2, t);
+/** Where the sun's middle sits below the horizon, in sun radii: from well under the sea to a tenth under (half up). */
+const sunDepth = (t: number) => lerp(1.25, 0.1, sunUp(t));
+/** When the sun's top breaks the waterline (its reflections start there). */
+const WATERLINE = (() => { let a = 0, b = RISE; for (let i = 0; i < 30; i++) { const m = (a + b) / 2; if (sunDepth(m) > 1) a = m; else b = m; } return Math.round(b * 10) / 10; })();
+
+/** Named moments, for sudo's time control (transport.ts): the sunrise's, and the glide's (where the camera is). */
+export const RISE_BEATS = [{ at: 0, name: 'NIGHT' }, { at: WATERLINE, name: 'WATERLINE' }, { at: SUN_TO, name: 'SETTLED' }];
+export const GLIDE_BEATS = [
+  { at: 0, name: 'BEACH' },
+  { at: tauAt(HARBOR_X), name: 'HARBOR' },
+  { at: tauAt(BAY_X - 180), name: 'SPIRE' },
+  { at: tauAt(CITY_X + 380), name: 'GALLERIA' },
+  { at: tauAt(4700), name: 'DOWNTOWN' },
+  { at: 43, name: 'STREET' },
+  { at: 47, name: 'TUNNEL' },
+];
 
 // ---------- what stands where (laid out once) ----------
 
@@ -99,8 +130,9 @@ const RIDERS = crowd(4511, 18);
 export interface GlideView { W: number; H: number; reduced: boolean }
 
 /**
- * Draw the shot. `t`: seconds since the title came up (the sun rises, the water moves);
- * `tau`: seconds into the glide, or null on the title (the camera idles).
+ * Draw the shot. `t`: seconds since the title came up (the sun rises until RISE, the water moves);
+ * `tau`: seconds into the glide, or null on the title (the camera idles). A pure function of the
+ * two: any (t, tau) draws the same frame (sudo's time control seeks on it).
  */
 export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, tau: number | null) {
   const { W, H, reduced } = v, still = reduced, u = H / 300, gt = tau ?? 0, f = still ? 0 : t * 60;
@@ -112,36 +144,44 @@ export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, 
   const ground = (p: number) => hz + (gy0 - hz) * Math.pow(Math.max(0, p), 0.85) - drop * p;
   const sx = (X: number, p: number) => W / 2 + p * (g - X);
   const city = smooth(27, 42, gt), rain = smooth(37, 43, gt), grid = 1 - smooth(0.5, 7, gt);
+  // the sunrise before the menu (settled from RISE on, and all through the glide)
+  const warm = warmth(t), up = sunUp(t);
 
   // ---------- sky, stars, clouds ----------
+  // each stop: night (before the sun), dawn (the title), Downtown's (the glide's end)
   const sk = x.createLinearGradient(0, 0, 0, hz);
-  sk.addColorStop(0, mixHex('#140a2a', '#120a20', city));
-  sk.addColorStop(0.34, mixHex('#3a1250', '#2c1240', city));
-  sk.addColorStop(0.62, mixHex('#a3266a', '#7a2a50', city));
-  sk.addColorStop(0.86, mixHex('#ff7a3c', '#c8583c', city));
-  sk.addColorStop(1, mixHex('#ffb04a', '#e08a48', city));
+  const stop = (at: number, night: string, dawn: string, town: string) => sk.addColorStop(at, mixHex(mixHex(night, dawn, warm), town, city));
+  stop(0, '#05040e', '#140a2a', '#120a20');
+  stop(0.34, '#0b0820', '#3a1250', '#2c1240');
+  stop(0.62, '#1a0f34', '#a3266a', '#7a2a50');
+  stop(0.86, '#3a1846', '#ff7a3c', '#c8583c');
+  stop(1, '#5a2240', '#ffb04a', '#e08a48');
   x.fillStyle = sk; x.fillRect(0, 0, W, hz + 1);
+  // the stars: bright at night, fading to the dawn's few as the sky warms
+  const starK = lerp(1.9, 1, warm) * (1 - city * 0.7);
   for (const [sxr, syr, a, ph] of STARS) {
     const tw = still ? 1 : 0.6 + 0.4 * Math.sin(t * 1.3 + ph);
-    x.fillStyle = 'rgba(' + PAPER + ',' + (a * tw * (1 - city * 0.7)).toFixed(2) + ')'; x.fillRect(Math.round(sxr * W), Math.round(syr * hz * 0.7), 1, 1);
+    x.fillStyle = 'rgba(' + PAPER + ',' + Math.min(1, a * tw * starK).toFixed(2) + ')'; x.fillRect(Math.round(sxr * W), Math.round(syr * hz * 0.7), 1, 1);
   }
   for (const [cx, cy, cw] of CLOUDS) {
     const px = ((cx * W * 1.4 + 0.03 * g + (still ? 0 : t * 2)) % (W * 1.6)) - W * 0.3, py = Math.round(hz * cy);
-    x.fillStyle = 'rgba(255,170,120,' + (0.18 + 0.1 * (1 - city)) + ')'; x.fillRect(Math.round(px), py, Math.round(cw * u), 2);
-    x.fillStyle = 'rgba(255,210,160,.14)'; x.fillRect(Math.round(px + cw * u * 0.2), py + 2, Math.round(cw * u * 0.5), 1);
+    x.fillStyle = 'rgba(255,170,120,' + ((0.18 + 0.1 * (1 - city)) * lerp(0.25, 1, warm)).toFixed(3) + ')'; x.fillRect(Math.round(px), py, Math.round(cw * u), 2);
+    x.fillStyle = 'rgba(255,210,160,' + (0.14 * lerp(0.2, 1, warm)).toFixed(3) + ')'; x.fillRect(Math.round(px + cw * u * 0.2), py + 2, Math.round(cw * u * 0.5), 1);
   }
 
   // ---------- the sun, low and slatted, and its glow ----------
-  const R = Math.round(H * 0.19), sunX = W / 2 + 0.04 * g + idle * 0.04, sunY = hz + R * 0.1 - Math.min(t, 180) * 0.05 * u;
+  // it comes up out of the sea and settles half up (the horizon clips what is under it)
+  const R = Math.round(H * 0.19), sunX = W / 2 + 0.04 * g + idle * 0.04, sunY = hz + R * sunDepth(t);
   const glow = x.createRadialGradient(sunX, sunY, R * 0.4, sunX, sunY, R * 2.6);
-  glow.addColorStop(0, 'rgba(255,160,80,' + (0.45 * (1 - city * 0.5)) + ')'); glow.addColorStop(1, 'rgba(255,120,60,0)');
+  glow.addColorStop(0, 'rgba(255,160,80,' + (0.45 * (1 - city * 0.5) * lerp(0.15, 1, up)).toFixed(3) + ')'); glow.addColorStop(1, 'rgba(255,120,60,0)');
   x.fillStyle = glow; x.fillRect(sunX - R * 2.6, sunY - R * 2.6, R * 5.2, Math.min(R * 5.2, hz - (sunY - R * 2.6)));
   x.save();
   x.beginPath(); x.rect(0, 0, W, hz);
   x.clip();
   x.beginPath();
-  x.rect(sunX - R, sunY - R, R * 2, R * 1.04);
-  for (let k = 0, yy = sunY + R * 0.06; yy < sunY + R; k++) { const bar = Math.max(2, R * (0.12 - k * 0.018)); x.rect(sunX - R, yy, R * 2, bar); yy += bar + Math.max(2, R * 0.03 + k * R * 0.012); }
+  // solid at the top, slatted from a little above its middle (so the slats show with it half up)
+  x.rect(sunX - R, sunY - R, R * 2, R * 0.52);
+  for (let k = 0, yy = sunY - R * 0.44; yy < sunY + R; k++) { const bar = Math.max(2, R * (0.13 - k * 0.018)); x.rect(sunX - R, yy, R * 2, bar); yy += bar + Math.max(2, R * 0.03 + k * R * 0.012); }
   x.clip();
   const sg = x.createLinearGradient(0, sunY - R, 0, sunY + R);
   sg.addColorStop(0, '#ffe36a'); sg.addColorStop(0.55, '#ffa23a'); sg.addColorStop(1, '#ff4f8a');
@@ -160,12 +200,14 @@ export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, 
 
   // ---------- the sea ----------
   const sea = x.createLinearGradient(0, hz, 0, H);
-  sea.addColorStop(0, '#2a0f3a'); sea.addColorStop(0.6, '#120624'); sea.addColorStop(1, '#08030f');
+  sea.addColorStop(0, mixHex('#0c0820', '#2a0f3a', warm)); sea.addColorStop(0.6, mixHex('#07041a', '#120624', warm)); sea.addColorStop(1, '#08030f');
   x.fillStyle = sea; x.fillRect(0, hz, W, H - hz);
-  x.fillStyle = 'rgba(255,170,100,.35)'; x.fillRect(0, hz, W, 1);
+  x.fillStyle = 'rgba(255,170,100,' + (0.35 * lerp(0.2, 1, warm)).toFixed(3) + ')'; x.fillRect(0, hz, W, 1);
+  // the sun's light on the water: nothing until its top breaks the waterline, then the bars come in under it
+  const refl = smooth(0, 0.45, 1 - sunDepth(t));
   // the grid on the water (the title's): lines running to the sun, rows rolling in
   if (grid > 0.01) {
-    x.save(); x.globalAlpha = 0.5 * grid; x.strokeStyle = 'rgba(' + PINK + ',.45)'; x.lineWidth = 1; x.beginPath();
+    x.save(); x.globalAlpha = 0.5 * grid * lerp(0.45, 1, warm); x.strokeStyle = 'rgba(' + PINK + ',.45)'; x.lineWidth = 1; x.beginPath();
     const roll = still ? 0 : (t * 0.35) % 1;
     for (let i = 0; i < 12; i++) { const k = (i + roll) / 12, yy = Math.round(hz + (H - hz) * k * k) + 0.5; x.moveTo(0, yy); x.lineTo(W, yy); }
     const shift = (g * 0.6) % 40;
@@ -173,10 +215,10 @@ export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, 
     x.stroke(); x.restore();
   }
   // the sun on the water: bars under it, shimmering
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 7 && refl > 0; i++) {
     const yy = Math.round(hz + 3 + i * i * 1.6 * u + i * 3 * u), ww = R * 1.4 * (1 - i / 8) * (still ? 1 : 1 + 0.14 * Math.sin(t * 2.2 + i * 1.3));
     if (yy > H) break;
-    x.fillStyle = 'rgba(255,154,74,' + ((0.75 - i * 0.08) * (still ? 1 : 0.8 + 0.2 * Math.sin(t * 3 + i))).toFixed(2) + ')';
+    x.fillStyle = 'rgba(255,154,74,' + ((0.75 - i * 0.08) * refl * (still ? 1 : 0.8 + 0.2 * Math.sin(t * 3 + i))).toFixed(2) + ')';
     x.fillRect(Math.round(sunX - ww / 2), yy, Math.round(ww), Math.max(1, Math.round(2 * u)));
   }
   // the Spire's light lying on the water
@@ -198,13 +240,13 @@ export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, 
     x.fillStyle = fill; x.fillRect(l, yt, r - l, H - yt);
     x.fillStyle = edge; x.fillRect(l, yt, r - l, 1);
   };
-  region(-1e5, HARBOR_X, BEACH_TOP, '#3a1a2c', 'rgba(255,217,165,.55)');
+  region(-1e5, HARBOR_X, BEACH_TOP, mixHex('#1a0c1a', '#3a1a2c', warm), 'rgba(255,217,165,' + (0.55 * lerp(0.35, 1, warm)).toFixed(3) + ')');
   region(HARBOR_X, BAY_X, 0.42, '#1a0c16', 'rgba(' + ORANGE + ',.6)');
   region(BAY_X, CITY_X, 0.92, '#140a12', 'rgba(' + ORANGE + ',.5)');
   region(CITY_X, 1e5, 0.0, '#120a12', 'rgba(' + ORANGE + ',.4)');
   // surf along the sand
   { const yy = Math.round(ground(BEACH_TOP)) + 1, l = Math.max(0, sx(HARBOR_X, BEACH_TOP)), r = W, roll = still ? 0 : (t * 18) % 60;
-    x.fillStyle = 'rgba(255,217,165,.6)'; for (let px = l - 60 + roll; px < r; px += 60) if (px + 34 > l) x.fillRect(Math.round(Math.max(l, px)), yy, Math.round(Math.min(34, r - px)), 1); }
+    x.fillStyle = 'rgba(255,217,165,' + (0.6 * lerp(0.35, 1, warm)).toFixed(3) + ')'; for (let px = l - 60 + roll; px < r; px += 60) if (px + 34 > l) x.fillRect(Math.round(Math.max(l, px)), yy, Math.round(Math.min(34, r - px)), 1); }
 
   // ---------- Galleria's dome, Downtown's far rows ----------
   const dX = sx(CITY_X + 380, 0.3);

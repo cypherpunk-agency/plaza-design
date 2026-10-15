@@ -925,6 +925,19 @@ ${FEEDBACK_STYLES}
     #game-menu.gm-title-screen .gm-keys { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
     #game-menu.gm-title-screen .gm-keys { color: rgba(255, 217, 165, 0.7); }
     #game-menu.gm-fade { opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+    /* the sun has settled: the title and the menu pop in (a flicker up from a thin line) */
+    #game-menu.gm-title-screen.gm-pop .gm-title { animation: gm-pop-title 0.55s steps(8, end) both; }
+    #game-menu.gm-title-screen.gm-pop .gm-sub,
+    #game-menu.gm-title-screen.gm-pop .gm-list,
+    #game-menu.gm-title-screen.gm-pop .gm-keys { animation: gm-pop-in 0.45s ease-out 0.3s both; }
+    @keyframes gm-pop-title {
+      0% { opacity: 0; transform: scaleY(0.05); }
+      40% { opacity: 1; transform: scaleY(0.05); }
+      55% { opacity: 0.4; transform: scaleY(1.15); }
+      70% { opacity: 1; transform: scaleY(0.95); }
+      100% { opacity: 1; transform: none; }
+    }
+    @keyframes gm-pop-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
     html.touch #game-menu.gm-title-screen .gm-title { font-size: 24px; }
     html.touch #game-menu.gm-title-screen .gm-sub { margin-bottom: var(--spacing-1); font-size: 8px; }
     html.touch #game-menu.gm-title-screen .gm-msg { margin-top: 2px; min-height: 1em; }
@@ -938,9 +951,59 @@ ${FEEDBACK_STYLES}
     @media (prefers-reduced-motion: reduce) {
       #game-menu.gm-on .gm-crt { animation: none; }
       #game-menu.gm-fade { transition: none; }
+      #game-menu.gm-pop .gm-title,
+      #game-menu.gm-pop .gm-sub,
+      #game-menu.gm-pop .gm-list,
+      #game-menu.gm-pop .gm-keys { animation: none; }
       #game-menu .gm-item.sel::before,
       #game-menu .gm-item.sel .gm-label::after { animation: none; }
     }
+
+    /* Sudo's time control (game/transport.ts): a thin bar on the bottom edge over the title, the glide and cutscenes */
+    #sudo-transport {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: var(--game-bottom, 40px);
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 34px;
+      padding: 0 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255, 217, 165, 0.9);
+      background: rgba(0, 0, 0, 0.62);
+      border-top: 1px solid rgba(255, 136, 0, 0.35);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    #sudo-transport[hidden], html:not(.game-mode) #sudo-transport { display: none; }
+    #sudo-transport.st-folded { right: auto; background: transparent; border-top: 0; }
+    #sudo-transport.st-folded .st-body { display: none; }
+    #sudo-transport .st-body { display: flex; flex: 1; align-items: center; gap: 4px; min-width: 0; }
+    #sudo-transport button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 6px;
+      font: inherit;
+      color: inherit;
+      background: rgba(20, 10, 24, 0.8);
+      border: 1px solid rgba(0, 229, 229, 0.45);
+      cursor: pointer;
+    }
+    #sudo-transport button:hover { border-color: rgb(0, 255, 255); color: rgb(0, 255, 255); }
+    #sudo-transport .st-fold { color: rgba(255, 136, 0, 0.95); border-color: rgba(255, 136, 0, 0.6); }
+    #sudo-transport .st-speed { min-width: 46px; }
+    #sudo-transport .st-time { white-space: nowrap; font-variant-numeric: tabular-nums; padding: 0 4px; }
+    #sudo-transport .st-beat { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30%; color: rgb(0, 255, 255); }
+    #sudo-transport .st-track { position: relative; flex: 1; min-width: 80px; height: 32px; cursor: pointer; }
+    #sudo-transport .st-rail { position: absolute; left: 0; right: 0; top: 14px; height: 4px; background: rgba(255, 217, 165, 0.2); }
+    #sudo-transport .st-fill { height: 100%; width: 0; background: rgb(255, 136, 0); box-shadow: 0 0 6px rgba(255, 136, 0, 0.6); }
+    #sudo-transport .st-ticks { position: absolute; inset: 0; pointer-events: none; }
+    #sudo-transport .st-ticks i { position: absolute; top: 9px; width: 1px; height: 14px; background: rgba(0, 255, 255, 0.8); }
 
     /* Phones: basic support, landscape only (game/index.ts) */
     #touch {

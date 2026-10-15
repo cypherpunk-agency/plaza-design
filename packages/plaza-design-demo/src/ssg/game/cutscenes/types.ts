@@ -30,6 +30,8 @@ export interface CutsceneData {
   /** The scene it hands over to by default: 'downtown', 'yard', 'capsule' or a scene id. */
   next: string;
   cards: TextCard[];
+  /** Named moments in the picture, for sudo's time control (transport.ts); without them the cards are the beats. */
+  beats?: { at: number; name: string }[];
 }
 
 export interface Cutscene extends CutsceneData {
