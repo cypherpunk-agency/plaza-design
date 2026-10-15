@@ -53,7 +53,7 @@ partying, the bonfire; add parasols and sun loungers. When the glide starts west
 first transitional piece. **Glide feedback:** the seams between regions break the illusion (the
 ground jumps), the cranes cross each other, the Spire reads as a weird T, the Galleria floats,
 and there is no life (people, vehicles, robots, flying traffic). Redesign: one continuous coast
-(drafts: https://claude.ai/artifact/ — see "Glide Coast Drafts").
+(drafts: https://claude.ai/artifact/Jm78v7Z47o92QYtkx5CHmt; title beach: https://claude.ai/artifact/5ZyckEFhebVnW87KWp5DPg).
 
 Guidance: the scene leads (one way on, people facing it, signs), the GOAL line, and an **idle
 ping** on the next goal target after ~20 s standing still, in the opening scenes only for now. ✓
