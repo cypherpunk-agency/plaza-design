@@ -4,11 +4,11 @@
  * credit score. Bands: far = towers through the gaps; middle = tenement facades with their
  * screens, blade signs and light strings, and the back crowd; play = stalls, people, the wet street.
  *
- * The reference scene for the kits (ART-GUIDE §10): people from ../people.ts, screens and signs
+ * The reference scene for the kits (ART-GUIDE §10): people from ../characters.ts, screens and signs
  * from screens.ts, stalls, facades and furniture from build.ts. Everything placed is plain data.
  */
 
-import { crowd, drawPeople, drawPerson, type Person } from '../people';
+import { crowd, drawCharacters, drawCharacter, type Character } from '../characters';
 import { bin, booth, clutter, facade, lamp, stall, stallBox, stool, type FacadeSpec, type StallSpec } from './build';
 import { box, DESIGN_TOP, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, towers, wetFloor, type Scene, type SceneUse } from './kit';
 import { adScreen, bladeSign, brokenScreen, camera, menuBoard, oddsBoard, registryBoard, scoreDisplay, ticker, wantedScreen, YELLOW } from './screens';
@@ -28,27 +28,27 @@ const L = {
 
 // ---------- the people behind the counters ----------
 
-const cook: Person = { id: 'cook', seed: 4101, look: { body: 'wide', garb: 'apron', hair: 'scarf', extras: [] }, x: 150, act: 'vend', name: 'NOODLE COOK', talk: [
+const cook: Character = { id: 'cook', seed: 4101, look: { body: 'wide', garb: 'apron', hair: 'scarf', extras: [] }, x: 150, act: 'vend', name: 'NOODLE COOK', talk: [
   ['Noodles. Two tokens. "Other" is one.', 'The inspector asked what is in them. I said other. He wrote it down. Now it is on the menu.'],
   ['Still deciding? The noodles are not.'],
 ] };
-const simVendor: Person = { seed: 4102, look: { body: 'slim', hair: 'mohawk', garb: 'jacket', extras: ['visor', 'cyberarm'] }, x: 356, act: 'phone' };
-const brolly: Person = { seed: 4103, look: { body: 'tall', hair: 'cap', garb: 'coat', extras: [] }, x: 470, act: 'vend', facing: 1 };
-const fruitVendor: Person = { seed: 4104, look: { body: 'tall', hair: 'bun', garb: 'apron', extras: ['glasses'], hairCol: '#d8d2c6' }, x: 668, act: 'haggle', facing: 1 };
-const implantVendor: Person = { seed: 4105, look: { body: 'tall', hair: 'bald', garb: 'suit', extras: ['cyberarm', 'visor'] }, x: 862, act: 'vend' };
-const fishmonger: Person = { id: 'fish', key: true, seed: 4106, look: { body: 'tall', hair: 'beanie', garb: 'apron', extras: [] }, x: 1062, h: 2, act: 'vend', name: 'FISHMONGER', talk: [
+const simVendor: Character = { seed: 4102, look: { body: 'slim', hair: 'mohawk', garb: 'jacket', extras: ['visor', 'cyberarm'] }, x: 356, act: 'phone' };
+const brolly: Character = { seed: 4103, look: { body: 'tall', hair: 'cap', garb: 'coat', extras: [] }, x: 470, act: 'vend', facing: 1 };
+const fruitVendor: Character = { seed: 4104, look: { body: 'tall', hair: 'bun', garb: 'apron', extras: ['glasses'], hairCol: '#d8d2c6' }, x: 668, act: 'haggle', facing: 1 };
+const implantVendor: Character = { seed: 4105, look: { body: 'tall', hair: 'bald', garb: 'suit', extras: ['cyberarm', 'visor'] }, x: 862, act: 'vend' };
+const fishmonger: Character = { id: 'fish', key: true, seed: 4106, look: { body: 'tall', hair: 'beanie', garb: 'apron', extras: [] }, x: 1062, h: 2, act: 'vend', name: 'FISHMONGER', talk: [
   ['Fresh today. Which today, I did not say.', 'You are the friend. The quiet one, Moth, said a friend might come asking.', 'Moth bought line and hooks off me last week. Said they were not for fish.', 'Then asked which pier the Registry boats skip. I sell fish. I said the harbor has a lot of piers.'],
   ['Moth paid cash. Nobody pays cash. Cash is for people who do not want to be remembered.'],
   ['Buy a fish or go stand in someone else\'s rain.'],
 ] };
 /** FORTUNE UNIT 9 is a real robot: a boxy service unit whose screen face changes its mind. */
-const fortuneBot: Person = { seed: 4107, look: { bot: 'servbot', paint: '#54406a', v: 1 }, x: 1206, act: 'blink', facing: -1 };
-const fixer2: Person = { id: 'repair', seed: 4108, look: { body: 'wide', hair: 'short', garb: 'hivis', extras: ['cyberarm', 'glasses'] }, x: 1352, h: 6, act: 'vend', name: 'REPAIRS', talk: [
+const fortuneBot: Character = { seed: 4107, look: { bot: 'servbot', paint: '#54406a', v: 1 }, x: 1206, act: 'blink', facing: -1 };
+const fixer2: Character = { id: 'repair', seed: 4108, look: { body: 'wide', hair: 'short', garb: 'hivis', extras: ['cyberarm', 'glasses'] }, x: 1352, h: 6, act: 'vend', name: 'REPAIRS', talk: [
   ['I fix anything with a screw in it.', 'Not the Registry. That one is working as intended.'],
   ['Your deck? Nice. Do not let me see the inside, I will want it.'],
 ] };
-const dumplingCook: Person = { seed: 4109, look: { body: 'avg', hair: 'brim', garb: 'apron', extras: ['mask'] }, x: 1560, act: 'vend' };
-const sleeper: Person = { id: 'sleeper', seed: 4110, look: { body: 'tall', hair: 'long', garb: 'jacket', extras: ['headphones'] }, x: 1806, act: 'sleep', name: 'FIRMWARE VENDOR', talk: [
+const dumplingCook: Character = { seed: 4109, look: { body: 'avg', hair: 'brim', garb: 'apron', extras: ['mask'] }, x: 1560, act: 'vend' };
+const sleeper: Character = { id: 'sleeper', seed: 4110, look: { body: 'tall', hair: 'long', garb: 'jacket', extras: ['headphones'] }, x: 1806, act: 'sleep', name: 'FIRMWARE VENDOR', talk: [
   ['Zzz...', '(The note on the counter says BACK IN 5 MIN. The tape has gone yellow.)'],
   ['...not buying, not selling, not awake...'],
 ] };
@@ -76,12 +76,12 @@ sleeper.h = stallBox(STALLS[8]).counter;
 // ---------- the robots who work here ----------
 
 /** A rich man walking the market, his valet a step behind with the umbrella over him. */
-const richMan: Person = { seed: 4230, look: { body: 'wide', garb: 'suit', hair: 'bald', extras: ['glasses'] }, x: 300, act: 'walk', range: [300, 640], speed: 0.24 };
+const richMan: Character = { seed: 4230, look: { body: 'wide', garb: 'suit', hair: 'bald', extras: ['glasses'] }, x: 300, act: 'walk', range: [300, 640], speed: 0.24 };
 /** The shopper from the dumpling end, her porter behind her with the groceries. */
-const shopper: Person = { seed: 4214, x: 1220, act: 'walk', range: [1260, 1740], look: { extras: ['bag'] } };
+const shopper: Character = { seed: 4214, x: 1220, act: 'walk', range: [1260, 1740], look: { extras: ['bag'] } };
 /** Up on the REPAIRS stall's roof, welding its light. */
-const crawler: Person = { look: 'crawler', seed: 4311, x: 1404, act: 'weld', facing: -1 };
-const ROBOTS: Person[] = [
+const crawler: Character = { look: 'crawler', seed: 4311, x: 1404, act: 'weld', facing: -1 };
+const ROBOTS: Character[] = [
   { look: 'sweeper', seed: 4301, x: 664, act: 'sweep', range: [664, 736] },
   { look: { bot: 'valet', v: 1 }, seed: 4302, x: 300, follow: richMan, gap: 16 },
   { look: 'porter', seed: 4303, x: 1240, follow: shopper, gap: 20 },
@@ -113,7 +113,7 @@ crawler.h = stallBox(STALLS[6]).awning;
 // ---------- the street ----------
 
 /** People on the street, in front of the stalls: drawn after them. Plain data. */
-const STREET: Person[] = [
+const STREET: Character[] = [
   { look: 'pigeon', x: 236, act: 'stand' }, { look: 'pigeon', x: 262, act: 'walk', range: 30 }, { look: 'pigeon', seed: 9, x: 70, act: 'stand' },
   { id: 'regular', seed: 4201, look: { body: 'old', hair: 'brim', garb: 'coat', extras: [] }, x: 250, h: 10, act: 'sit', facing: -1, name: 'REGULAR', talk: [
     ['Twenty years I have eaten here.', 'The recipe changed forty times. The price only ever changed one way.'],
@@ -145,7 +145,7 @@ const STREET: Person[] = [
   { seed: 4215, x: 140, act: 'walk', range: [140, 560] },
   ...ROBOTS,
 ];
-const ALL: Person[] = [cook, fishmonger, fixer2, sleeper, ...STREET];
+const ALL: Character[] = [cook, fishmonger, fixer2, sleeper, ...STREET];
 
 /** The back crowd: small, dim, between the stalls and the tenements. */
 const BACK = crowd(57, 16, -100, 2100, { ps: 2, dim: 0.5, parallax: 0.9, h: 8 });
@@ -235,7 +235,7 @@ export const market: Scene = {
       }
     }
     // the back crowd, small and dim between the stalls
-    drawPeople(x, v, BACK);
+    drawCharacters(x, v, BACK);
 
     // play band
     wetFloor(x, v);
@@ -243,7 +243,7 @@ export const market: Scene = {
     lamp(x, v, { x: 64, seed: 1 });
     for (const s of STALLS) stall(x, v, s);
     booth(x, v, FORTUNE);
-    drawPerson(x, v, sleeper);
+    drawCharacter(x, v, sleeper);
     // the rules board, and the camera watching it
     const nb = sx(L.board);
     if (onScreen(v, nb - 40, 80)) { box(x, nb - 1, y(48), 3, 48, '#2a160a'); notice(x, t, nb, y(78), 56, 30, ['MARKET', 'RULES']); }
@@ -264,11 +264,11 @@ export const market: Scene = {
       if (v.flags.end) exitDoor(x, v, L.gate, '#0a0603', 'DOWNTOWN >');
       else sign(x, t, 'NO EXIT', ew + 50, y(70), RED, { size: 8, phase: 200 });
     }
-    drawPeople(x, v, STREET);
+    drawCharacters(x, v, STREET);
   },
 
   drawFront(x, v) {
     // the near crowd: heads and shoulders passing along the bottom of the view
-    for (const p of NEAR) drawPerson(x, v, p);
+    for (const p of NEAR) drawCharacter(x, v, p);
   },
 };

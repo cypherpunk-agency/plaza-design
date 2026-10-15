@@ -8,11 +8,11 @@
  *
  * Bands: far = the far side of the atrium and the skylight; middle = the big ad screen, the
  * gallery and its strollers; play = the shopfronts, the floor, its furniture and its people.
- * Built from the kits (ART-GUIDE §10): people (../people.ts), screens (screens.ts), booths and
+ * Built from the kits (ART-GUIDE §10): people (../characters.ts), screens (screens.ts), booths and
  * shelves (build.ts). The signs are dry; the people have the jokes.
  */
 
-import { crowd, drawPeople, drawPerson, type Person } from '../people';
+import { crowd, drawCharacters, drawCharacter, type Character } from '../characters';
 import { booth, shelf, type ShelfSpec, type StallSpec } from './build';
 import { box, C, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, reflect, rng, sign, tell, text, type Scene, type SceneUse, type View } from './kit';
 import { adScreen, camera, menuBoard, ticker, wallSign, YELLOW } from './screens';
@@ -46,16 +46,16 @@ const FAR = 0.55;
 
 // ---------- the keepers ----------
 
-const implantClerk: Person = { seed: 7101, look: { body: 'slim', garb: 'suit', hair: 'bald', extras: ['visor', 'cyberarm'] }, x: 304, act: 'vend', facing: -1 };
-const pawnbroker: Person = { seed: 7102, look: { body: 'wide', garb: 'jacket', hair: 'short', hairCol: '#a8a29a', top: '#6a2a3e', extras: ['glasses'] }, x: 590, act: 'vend', facing: -1 };
-const deckTech: Person = { seed: 7103, look: { body: 'avg', garb: 'hivis', hair: 'bun', extras: ['glasses', 'cyberarm'] }, x: 1130, act: 'vend', facing: -1 };
-const florist: Person = { seed: 7104, look: { body: 'old', garb: 'apron', hair: 'bun', hairCol: '#e8e4dc', extras: [] }, x: 1352, act: 'vend', facing: -1 };
-const teen: Person = { id: 'teen', seed: 7105, look: { body: 'slim', garb: 'tee', hair: 'mohawk', hairCol: '#6a3a9a', extras: ['headphones', 'phone'] }, x: 1468, act: 'phone', facing: -1, name: 'KIOSK', talk: [
+const implantClerk: Character = { seed: 7101, look: { body: 'slim', garb: 'suit', hair: 'bald', extras: ['visor', 'cyberarm'] }, x: 304, act: 'vend', facing: -1 };
+const pawnbroker: Character = { seed: 7102, look: { body: 'wide', garb: 'jacket', hair: 'short', hairCol: '#a8a29a', top: '#6a2a3e', extras: ['glasses'] }, x: 590, act: 'vend', facing: -1 };
+const deckTech: Character = { seed: 7103, look: { body: 'avg', garb: 'hivis', hair: 'bun', extras: ['glasses', 'cyberarm'] }, x: 1130, act: 'vend', facing: -1 };
+const florist: Character = { seed: 7104, look: { body: 'old', garb: 'apron', hair: 'bun', hairCol: '#e8e4dc', extras: [] }, x: 1352, act: 'vend', facing: -1 };
+const teen: Character = { id: 'teen', seed: 7105, look: { body: 'slim', garb: 'tee', hair: 'mohawk', hairCol: '#6a3a9a', extras: ['headphones', 'phone'] }, x: 1468, act: 'phone', facing: -1, name: 'KIOSK', talk: [
   ['Phone cases. Screens. Screen protectors for your screen protector.', 'I get paid by the hour. The hours are very long. Coincidence.'],
   ['If you\'re not buying, could you at least look interested? Camera 6 counts customers.'],
 ] };
-const keyCutter: Person = { seed: 7106, look: { body: 'old', garb: 'apron', hair: 'brim', acc: '#5a3a2a', extras: ['glasses'] }, x: 1652, act: 'vend', facing: -1 };
-const COOKS: Person[] = [
+const keyCutter: Character = { seed: 7106, look: { body: 'old', garb: 'apron', hair: 'brim', acc: '#5a3a2a', extras: ['glasses'] }, x: 1652, act: 'vend', facing: -1 };
+const COOKS: Character[] = [
   { seed: 7107, look: { body: 'wide', garb: 'apron', hair: 'scarf', acc: '#c83a2a', extras: [] }, x: 1900, act: 'vend', facing: -1 },
   { seed: 7108, look: { body: 'tall', garb: 'tee', hair: 'cap', acc: '#d8b040', top: '#a84a3a', extras: ['mask'] }, x: 2050, act: 'vend', facing: -1 },
   { seed: 7109, look: { body: 'short', garb: 'apron', hair: 'beanie', extras: [] }, x: 2200, act: 'vend', facing: -1 },
@@ -64,26 +64,26 @@ const COOKS: Person[] = [
 // ---------- the floor's people ----------
 
 const GUARD = { garb: 'jacket' as const, top: '#2e3a4a', bottom: '#1e2430', hair: 'cap' as const, acc: '#1a1a22' };
-const kid: Person = { id: 'kid', seed: 7201, look: { body: 'kid', garb: 'tee', hair: 'cap', acc: '#c83a2a', extras: [] }, x: 1012, act: 'stand', facing: -1, name: 'KID', talk: [
+const kid: Character = { id: 'kid', seed: 7201, look: { body: 'kid', garb: 'tee', hair: 'cap', acc: '#c83a2a', extras: [] }, x: 1012, act: 'stand', facing: -1, name: 'KID', talk: [
   ['I threw a token in. I wished for two tokens.', 'The fountain is thinking about it.'],
   ['Mum says the fountain money goes to the Registry. I said then the Registry has my wish.', 'She said that\'s what worries her.'],
 ] };
-const diner: Person = { id: 'diner', seed: 7202, look: { body: 'avg', garb: 'suit', hair: 'short', extras: ['glasses'] }, x: 2080, h: 10, act: 'sit', facing: -1, name: 'DINER', talk: [
+const diner: Character = { id: 'diner', seed: 7202, look: { body: 'avg', garb: 'suit', hair: 'short', extras: ['glasses'] }, x: 2080, h: 10, act: 'sit', facing: -1, name: 'DINER', talk: [
   ['Six counters in this food court. Four of them are the same kitchen.', 'I eat lunch here because the park charges by the minute.'],
   ['Try the noodles. Everything else is also the noodles, in a different shape.'],
 ] };
-const security: Person = { id: 'security', seed: 7203, look: { body: 'wide', ...GUARD, extras: ['visor'] }, x: 2320, act: 'stand', facing: -1, name: 'SECURITY', talk: [
+const security: Character = { id: 'security', seed: 7203, look: { body: 'wide', ...GUARD, extras: ['visor'] }, x: 2320, act: 'stand', facing: -1, name: 'SECURITY', talk: [
   ['Galleria security. You look unverified. Most people do, after nine.', 'I\'m not paid to chase you. I\'m paid to write down which way you went.'],
   ['Lost child? Desk 2. Lost identity? Also desk 2. It\'s a busy desk.'],
 ] };
-const dancer: Person = { id: 'dancer', seed: 7204, look: { body: 'tall', ...GUARD, hair: 'short', hairCol: '#16100c', extras: [] }, x: 2432, act: 'dance', facing: -1, name: 'SECURITY', talk: [
+const dancer: Character = { id: 'dancer', seed: 7204, look: { body: 'tall', ...GUARD, hair: 'short', hairCol: '#16100c', extras: [] }, x: 2432, act: 'dance', facing: -1, name: 'SECURITY', talk: [
   ['(He freezes, mid-move.)', 'Camera 14 has a blind spot behind this pillar. Four minutes an hour. I did not tell you that.', 'I\'m stretching. It\'s in the union agreement.'],
   ['You again. Either dance or stand guard. Those are the only two jobs in here.'],
 ] };
-const TALKERS: Person[] = [teen, kid, diner, security, dancer];
+const TALKERS: Character[] = [teen, kid, diner, security, dancer];
 
 /** Shoppers, a patrol, the cleaning robot, a pigeon that got in: drawn in front of the shops. */
-const FLOOR: Person[] = [
+const FLOOR: Character[] = [
   { seed: 7301, x: 140, act: 'walk', range: [140, 620], look: { body: 'avg', garb: 'dress', hair: 'long', extras: ['bag'] } },
   { seed: 7302, x: 230, act: 'phone', facing: 1, look: { body: 'tall', garb: 'suit', hair: 'short', extras: ['phone'] } },
   { seed: 7303, x: 470, act: 'walk', range: [470, 900], speed: 0.26, look: { body: 'old', garb: 'coat', hair: 'brim', extras: ['cane'] } },
@@ -106,16 +106,16 @@ const FLOOR: Person[] = [
   { seed: 7316, x: 1980, act: 'queue', facing: 1, look: { body: 'avg', garb: 'hivis', hair: 'helmet', extras: [] } },
 ];
 /** A pigeon that came in through the service door and stayed: answers E with a shoo (game.ts). */
-const PIGEON: Person = { look: 'pigeon', seed: 7, x: 2160, act: 'walk', range: 24 };
+const PIGEON: Character = { look: 'pigeon', seed: 7, x: 2160, act: 'walk', range: 24 };
 /** Riding escalator B up to the gallery: placed every frame along the steps. */
-const RIDERS: Person[] = [7401, 7402, 7403].map((seed, i) => ({ seed, x: 0, h: 0, act: i === 1 ? 'phone' : 'stand', facing: 1, look: i === 2 ? { body: 'kid' } : { extras: ['bag'] } } as Person));
+const RIDERS: Character[] = [7401, 7402, 7403].map((seed, i) => ({ seed, x: 0, h: 0, act: i === 1 ? 'phone' : 'stand', facing: 1, look: i === 2 ? { body: 'kid' } : { extras: ['bag'] } } as Character));
 /** Strollers on the gallery over the shops (middle band) and on the far side's floors. */
 const GALLERY = crowd(77, 10, -100, 2700, { ps: 3, dim: 0.42, h: L.slab, acts: ['walk', 'walk', 'stand', 'phone'] });
 const FAR_CROWD = crowd(79, 30, -100, 2900, { ps: 2, dim: 0.55, parallax: FAR, acts: ['walk', 'walk', 'walk', 'stand'] });
 
 // ---------- the shopfronts ----------
 
-interface Shop { id: string; x: number; w: number; sign: string; col: string; tint: string; keeper: Person; back?: (x: CanvasRenderingContext2D, v: View, s0: number, w: number) => void; counter?: (x: CanvasRenderingContext2D, v: View, s0: number, w: number) => void; plate?: string }
+interface Shop { id: string; x: number; w: number; sign: string; col: string; tint: string; keeper: Character; back?: (x: CanvasRenderingContext2D, v: View, s0: number, w: number) => void; counter?: (x: CanvasRenderingContext2D, v: View, s0: number, w: number) => void; plate?: string }
 
 const PAWN_SHELF: ShelfSpec = { x: 466, w: 70, h: 84, rows: 3, seed: 81, stock: 'household' };
 const SHOPS: Shop[] = [
@@ -211,7 +211,7 @@ function shopfront(x: CanvasRenderingContext2D, v: View, s: Shop) {
   x.fillStyle = g; x.fillRect(s0, y(L.ceil), w, L.ceil);
   x.fillStyle = 'rgba(' + s.tint + ',.85)'; x.fillRect(s0 + 10, y(L.ceil - 2), w - 20, 2);
   s.back?.(x, v, s0, w);
-  drawPerson(x, v, s.keeper);
+  drawCharacter(x, v, s.keeper);
   // the counter across the shop's front half
   const cl = s0 + Math.round(w * 0.35), cw = Math.round(w * 0.6);
   box(x, cl, y(28), cw, 28, '#2a1a10', 'rgba(' + O + ',.85)');
@@ -332,7 +332,7 @@ function drawFarSide(x: CanvasRenderingContext2D, v: View) {
     x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(0, y(lv), v.viewW, 1);
   });
   // the far side's shoppers, one floor each
-  FAR_CROWD.forEach((p, i) => { p.h = levels[i % levels.length] + 8; drawPerson(x, v, p); });
+  FAR_CROWD.forEach((p, i) => { p.h = levels[i % levels.length] + 8; drawCharacter(x, v, p); });
   levels.forEach((lv) => { x.fillStyle = 'rgba(170,210,255,.04)'; x.fillRect(0, y(lv + 20), v.viewW, 12); x.fillStyle = 'rgba(' + O + ',.25)'; x.fillRect(0, y(lv + 20), v.viewW, 1); });
 }
 
@@ -346,7 +346,7 @@ function drawEscalator(x: CanvasRenderingContext2D, v: View) {
   x.strokeStyle = 'rgba(' + O + ',.7)'; x.stroke();
   x.fillStyle = 'rgba(' + O + ',.35)';
   for (let k = 0; k < 16; k++) { const f = ((k + t * 0.012) % 16) / 16; x.fillRect(Math.round(a + (b - a) * f), Math.round(y0 + (y1 - y0) * f) - 1, 6, 1); }
-  RIDERS.forEach((p, i) => { const f = ((t * 0.0012 + i / 3) % 1); p.x = E.x + 8 + f * (E.w - 16); p.h = f * (L.slab - 4); drawPerson(x, v, p); });
+  RIDERS.forEach((p, i) => { const f = ((t * 0.0012 + i / 3) % 1); p.x = E.x + 8 + f * (E.w - 16); p.h = f * (L.slab - 4); drawCharacter(x, v, p); });
   x.fillStyle = 'rgba(170,210,255,.07)'; x.beginPath(); x.moveTo(a, y0 - 2); x.lineTo(b, y1 - 2); x.lineTo(b, y1 - 20); x.lineTo(a, y0 - 20); x.closePath(); x.fill();
   x.strokeStyle = 'rgba(30,20,14,1)'; x.lineWidth = 3; x.beginPath(); x.moveTo(a - 4, y0 - 20); x.lineTo(b, y1 - 20); x.stroke(); x.lineWidth = 1;
   x.strokeStyle = 'rgba(' + O + ',.55)'; x.beginPath(); x.moveTo(a - 4, y0 - 21.5); x.lineTo(b, y1 - 21.5); x.stroke();
@@ -452,7 +452,7 @@ export const mall: Scene = {
 
     // ---- the gallery over the shops: slab, strollers, glass railing ----
     x.fillStyle = '#0f0906'; x.fillRect(0, y(L.slab + 40), v.viewW, 40);
-    drawPeople(x, v, GALLERY);
+    drawCharacters(x, v, GALLERY);
     x.fillStyle = 'rgba(170,210,255,.05)'; x.fillRect(0, y(L.rail), v.viewW, L.rail - L.slab);
     x.fillStyle = 'rgba(' + O + ',.4)'; x.fillRect(0, y(L.rail), v.viewW, 1);
     x.fillStyle = 'rgba(' + O + ',.2)'; for (let wx = 0; wx < L.width + 400; wx += 60) { const s = sx(wx); if (s > -2 && s < v.viewW + 2) x.fillRect(s, y(L.rail), 1, L.rail - L.slab); }
@@ -507,8 +507,8 @@ export const mall: Scene = {
     }
 
     // ---- the people ----
-    drawPeople(x, v, FLOOR);
-    drawPeople(x, v, [kid, diner, security, dancer, PIGEON]);
+    drawCharacters(x, v, FLOOR);
+    drawCharacters(x, v, [kid, diner, security, dancer, PIGEON]);
 
     // ---- the polished floor, with the shops' light in it ----
     x.fillStyle = '#070504'; x.fillRect(0, gy, v.viewW, v.viewH - gy);

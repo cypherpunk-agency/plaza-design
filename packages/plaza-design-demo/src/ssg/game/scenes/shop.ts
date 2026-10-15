@@ -6,10 +6,10 @@
  * wall and, on tall screens, the building above the shop in cutaway (the stockroom, then flats);
  * play = shelves, fridges, machine, counter, people.
  *
- * Built from the kits: people (../people.ts), screens (screens.ts), shelves and fridges (build.ts).
+ * Built from the kits: people (../characters.ts), screens (screens.ts), shelves and fridges (build.ts).
  */
 
-import { drawPeople, drawPerson, type Person } from '../people';
+import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { fridge, shelf, type ShelfSpec } from './build';
 import { box, C, exitDoor, O, onScreen, PAPER, rng, tell, text, type Scene, type SceneUse, type View } from './kit';
 import { adScreen, camera, lotteryScreen, ticker, wallSign } from './screens';
@@ -43,12 +43,12 @@ const RAIN = (() => { const r = rng(73); return Array.from({ length: 24 }, () =>
 
 // ---------- people ----------
 
-const keeper: Person = { id: 'keeper', seed: 5101, look: { body: 'avg', hair: 'short', garb: 'jacket', extras: ['glasses'], top: '#6a2a3e' }, x: L.keeper, act: 'vend', facing: -1, name: 'SHOPKEEPER', talk: [
+const keeper: Character = { id: 'keeper', seed: 5101, look: { body: 'avg', hair: 'short', garb: 'jacket', extras: ['glasses'], top: '#6a2a3e' }, x: L.keeper, act: 'vend', facing: -1, name: 'SHOPKEEPER', talk: [
   ['We\'re open.', 'We\'re always open. The sticker says 24/7. I wanted 24/7/365.25. The printer said no.'],
   ['The camera? The Registry insists. It films the till.', 'The till has nothing to hide. The till has nothing at all, most nights.'],
   ['Buy something or keep the cat company. The cat charges less.'],
 ] };
-const PEOPLE: Person[] = [
+const PEOPLE: Character[] = [
   { id: 'browser', seed: 5102, x: 200, act: 'walk', range: [200, 450], speed: 0.18, look: { body: 'tall', extras: ['phone', 'backpack'] }, name: 'CUSTOMER', talk: [
     ['They moved the cheap noodles to the top shelf.', 'Top shelf is for people with legs.so. I have the free legs.'],
     ['I come in to read the labels. It is warmer than the library and the library closed.'],
@@ -65,7 +65,7 @@ const PEOPLE: Person[] = [
 ];
 
 /** People passing outside, seen through the window: small, dim, far. */
-const OUTSIDE: Person[] = [
+const OUTSIDE: Character[] = [
   { seed: 5201, x: 40, act: 'walk', range: 260, ps: 2, dim: 0.45, parallax: 0.3, h: 36, speed: 0.4, look: { extras: ['umbrella'] } },
   { seed: 5202, x: 300, act: 'walk', range: -260, ps: 2, dim: 0.5, parallax: 0.3, h: 36, speed: 0.3 },
 ];
@@ -196,7 +196,7 @@ export const shop: Scene = {
       x.save(); x.beginPath(); x.rect(wx, top, W.w, wh); x.clip();
       x.fillStyle = '#080402'; x.fillRect(wx + 6, top + 18, 20, wh); x.fillRect(wx + 34, top + 8, 28, wh); x.fillRect(wx + 66, top + 26, 20, wh);
       x.fillStyle = 'rgba(255,136,0,.25)'; x.fillRect(wx + 40, top + 16, 2, 2); x.fillRect(wx + 50, top + 30, 2, 2); x.fillRect(wx + 12, top + 28, 2, 2);
-      drawPeople(x, v, OUTSIDE);
+      drawCharacters(x, v, OUTSIDE);
       x.strokeStyle = 'rgba(170,210,255,.25)';
       for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % wh; x.beginPath(); x.moveTo(wx + rx, top + yy); x.lineTo(wx + rx - 1, top + yy + 4); x.stroke(); }
       x.restore();
@@ -239,7 +239,7 @@ export const shop: Scene = {
       lotteryScreen(x, v, { x: K.x + 120, h: 76, w: 80, tall: 36, mount: 'wall' });
       wallSign(x, v, { x: K.x + 60, h: 126, text: 'CASH ONLY', col: O, size: 8, phase: 90 });
       camera(x, v, { x: K.x + 14, h: 134, facing: 1, phase: 3 });
-      drawPerson(x, v, keeper);
+      drawCharacter(x, v, keeper);
       box(x, kx, y(K.h), K.w, K.h, '#24130a', 'rgba(' + O + ',.85)');
       x.fillStyle = 'rgba(' + O + ',.9)'; x.fillRect(kx, y(K.h), K.w, 2);
       // the till (paying is something you can do: a cyan edge), a jar of sweets, the plate
@@ -254,7 +254,7 @@ export const shop: Scene = {
       x.fillStyle = 'rgba(232,200,58,.35)'; x.fillRect(kx + 80, y(K.h - 8), 8, 6);
       x.fillStyle = 'rgba(216,58,42,.35)'; x.fillRect(kx + 92, y(K.h - 12), 6, 6);
     }
-    drawPeople(x, v, PEOPLE);
+    drawCharacters(x, v, PEOPLE);
 
     // the floor: worn tiles
     x.fillStyle = '#060403'; x.fillRect(w0, v.gy, w1 - w0, v.viewH - v.gy);

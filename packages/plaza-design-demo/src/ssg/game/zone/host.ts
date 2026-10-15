@@ -20,7 +20,7 @@
  */
 
 import type { ZoneData, ZoneSave } from '../data/types';
-import type { Person } from '../people';
+import type { Character } from '../characters';
 import type { SceneReadable, SceneUse } from '../scenes/kit';
 import type { LineKind } from '../terminal';
 import { type Line, type Spot, ZoneModel } from './model';
@@ -61,11 +61,11 @@ export interface ZoneView {
   use?(id: string, m: ZoneModel, say: (l: Line) => void): 'exit' | void;
   /**
    * A place's life, in the same shape the explorable scenes use (scenes/kit.ts), so any zone
-   * can have it: `people` (people.ts; the view draws them, the game makes [E] TALK targets for
+   * can have it: `people` (characters.ts; the view draws them, the game makes [E] TALK targets for
    * those with `id` and `talk`), `uses` (things to do with E: buy, rent, pay in tokens) and
    * `readables`. The game handles them exactly as it does a scene's.
    */
-  people?: Person[];
+  people?: Character[];
   uses?: SceneUse[];
   readables?: SceneReadable[];
 }

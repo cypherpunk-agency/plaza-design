@@ -1,7 +1,7 @@
 {
   "texts": {
     "wire.connect": ["on {from} do {to} {verbCmd}", "wired: when {event}, {toNoun} will {verb}.", "ok"],
-    "wire.cut": ["unwire {from} {to}", "cable cut. snip.", "dim"],
+    "wire.cut": ["unwire {from} {to}", "cable cut.", "dim"],
     "timer.wait": ["{via}use timer --wait {sec}s", "timer: waiting {sec} s…", "dim"],
 
     "ui.close": "CLOSE ×",
@@ -26,7 +26,7 @@
 
     "guard.type": "type…",
     "guard.placeholder": "a guess, then Enter",
-    "guard.ok": ["login {noun} ****", "{noun}: accepted. welcome back, whoever you are.", "ok"],
+    "guard.ok": ["login {noun} ****", "{noun}: accepted. session open.", "ok"],
     "guard.wrong": ["login {noun} {guess}", "{noun}: wrong. {left} more and it locks.", "err"],
     "guard.wrong.last": ["login {noun} {guess}", "{noun}: wrong.", "err"],
     "guard.lock": ["login {noun} {guess}", "{noun}: wrong. locked for {sec} s.", "err"],

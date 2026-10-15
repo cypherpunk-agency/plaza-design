@@ -107,7 +107,7 @@ with an ID scanner, people fishing off the rail, a busker, the metro crossing ov
 
 ## Order (proposal)
 
-1. Bring the existing scenes up to section 10 first, starting from a shared people kit (sprites
+1. Bring the existing scenes up to section 10 first, starting from a shared character kit (sprites
    with variants, idle behaviours, talk lines), so every scene gets life the same way.
 2. Then new scenes in story order: warehouse (a root fragment), beach (Moth's boat), bridge
    (connects districts), dropship (travel), then the rest as side places.

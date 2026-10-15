@@ -5,7 +5,7 @@
  * World coordinates; `x` is the LEFT edge unless noted, heights are up from the ground.
  *
  *   stall(x, v, { x, w, seed, sign, goods, awning, light, vendor, damage, note, back })
- *       A market stall: light, back panel (`back` draws screens on it), poles, the vendor (a Person,
+ *       A market stall: light, back panel (`back` draws screens on it), poles, the vendor (a Character,
  *       drawn behind the counter), awning, counter, goods on display, the sign on hangers.
  *       goods: fruit fish noodles dumplings umbrellas sims implants tech junk bottles
  *       awning: stripe scallop tarp tin none · light: bulb tube lantern none · damage 0..1
@@ -26,7 +26,7 @@
  *   vending(x, v, { x, seed, lines })              an ambient vending machine (orange/red: NOT usable; usable ones are cyan)
  */
 
-import { drawPerson, type Person } from '../people';
+import { drawCharacter, type Character } from '../characters';
 import { box, onScreen, O, PAPER, reflect, rng, text, type View } from './kit';
 import { taped, wallSign } from './screens';
 
@@ -52,7 +52,7 @@ export interface StallSpec {
   goods?: Goods;
   awning?: 'stripe' | 'scallop' | 'tarp' | 'tin' | 'none';
   light?: 'bulb' | 'tube' | 'lantern' | 'none';
-  vendor?: Person;
+  vendor?: Character;
   damage?: number;
   /** A hand-written note taped to the counter front. */
   note?: string[];
@@ -97,7 +97,7 @@ export function stall(x: CanvasRenderingContext2D, v: View, s: StallSpec) {
   box(x, s0 + 2, y(S.awn), S.pole, S.awn, '#2a160a', rgba(O, 0.7));
   box(x, s0 + s.w - 2 - S.pole, y(S.awn), S.pole, S.awn, '#2a160a', rgba(O, 0.7));
   if (dmg > 0.2) { x.fillStyle = 'rgba(200,190,170,.5)'; x.fillRect(s0 + 1, y(40), S.pole + 2, 4); }
-  if (s.vendor) drawPerson(x, v, s.vendor);
+  if (s.vendor) drawCharacter(x, v, s.vendor);
   // goods that hang (umbrellas, fish, lanterns) under the awning
   hanging(x, v, s, S);
   // awning
@@ -285,7 +285,7 @@ export function booth(x: CanvasRenderingContext2D, v: View, s: StallSpec) {
   g.addColorStop(0, 'rgba(255,190,110,.18)'); g.addColorStop(1, 'rgba(255,190,110,.04)');
   x.fillStyle = g; x.fillRect(s0 + 6, y(S.panel - 6), s.w - 12, S.panel - 6 - S.counter - 4);
   s.back?.(x, v, { x: s.x + 6, w: s.w - 12, h0: S.counter + 4, h1: S.panel - 6 });
-  if (s.vendor) { x.save(); x.beginPath(); x.rect(s0 + 6, y(S.panel - 6), s.w - 12, S.panel); x.clip(); drawPerson(x, v, s.vendor); x.restore(); }
+  if (s.vendor) { x.save(); x.beginPath(); x.rect(s0 + 6, y(S.panel - 6), s.w - 12, S.panel); x.clip(); drawCharacter(x, v, s.vendor); x.restore(); }
   box(x, s0 - 3, y(S.counter + 4), s.w + 6, 4, S.wood, rgba(O, 0.85));
   awning(x, v, { ...s, w: s.w }, { ...S, awn: S.panel + 10, depth: 8 }, s.damage ?? 0);
   if (s.sign) wallSign(x, v, { x: s.x + s.w / 2, h: S.panel + 22, text: s.sign, col: s.col ?? O, size: 8, phase: s.seed * 13 });

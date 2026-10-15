@@ -23,7 +23,7 @@
 
 import type { DrawView } from '../zone/host';
 import type { ZoneModel } from '../zone/model';
-import { drawPeople, drawPerson, type Person } from '../people';
+import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { box, C, drawTowers, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, type View } from '../scenes/kit';
 import { adScreen, menuBoard, registryBoard, YELLOW } from '../scenes/screens';
 
@@ -68,10 +68,10 @@ const hash = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453
 const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
 const mix = (a: number[], b: number[], f: number, al = 1) => 'rgba(' + Math.round(lerp(a[0], b[0], f)) + ',' + Math.round(lerp(a[1], b[1], f)) + ',' + Math.round(lerp(a[2], b[2], f)) + ',' + al + ')';
 
-// ---------- the people (people.ts) ----------
+// ---------- the people (characters.ts) ----------
 
 /** LIME, SALT's robot bartender: drawn as a robot here (not a people-kit person), talks through the kit. */
-export const LIME: Person = { id: 'lime', key: true, seed: 7001, x: L.lime, h: 4, name: 'LIME', talk: [
+export const LIME: Character = { id: 'lime', key: true, seed: 7001, x: L.lime, h: 4, name: 'LIME', talk: [
   ["Welcome to SALT. I'm LIME. I pour, I listen, I don't keep logs. Officially.", "You've got the face of someone looking for someone. Everyone at a beach bar has that face. Yours is worse."],
   ['Moth? Third stool, every evening for a month. Water with a slice of me in it. Tipped in jokes.', "I don't run on jokes. I kept them anyway."],
   ["That boat at the end of the pier is Moth's. Three days, nobody aboard. The harbour stuck a notice on it.", "Leave it locked for now. Moth said someone would come. Didn't say when. I assumed someone taller."],
@@ -79,47 +79,47 @@ export const LIME: Person = { id: 'lime', key: true, seed: 7001, x: L.lime, h: 4
   ['My opinion of Moth: talks too fast, eats too little, rewires things that are not theirs. Ten out of ten. Would serve again.', 'Drinks are two tokens. The jukebox is free. The jukebox and the mixer get along too well, if you ask me. Nobody asks me.'],
 ] };
 
-const lifeguard: Person = { id: 'guard', seed: 7002, look: { body: 'avg', hair: 'cap', garb: 'tee', extras: ['glasses'], top: '#a83a2a', acc: '#c83a2a' }, x: 756, h: 62, act: 'sit', facing: 1, name: 'LIFEGUARD', talk: [
+const lifeguard: Character = { id: 'guard', seed: 7002, look: { body: 'avg', hair: 'cap', garb: 'tee', extras: ['glasses'], top: '#a83a2a', acc: '#c83a2a' }, x: 756, h: 62, act: 'sit', facing: 1, name: 'LIFEGUARD', talk: [
   ["I'm paid to watch the water. The drone is paid to watch me. Nobody's paid to watch the drone.", 'If the flag goes red, everyone is out. The drone decides. Last week it decided a jellyfish was a shark. Then a cloud.'],
   ['The drone says danger, I blow the whistle. Thirty years of training. I blow the whistle.'],
 ] };
 
-const sunbather: Person = { id: 'sunbather', seed: 7003, look: { body: 'wide', hair: 'short', garb: 'tee', extras: ['glasses'], top: '#d86a2a' }, x: 334, h: 9, act: 'sleep', name: 'SUNBATHER', talk: [
+const sunbather: Character = { id: 'sunbather', seed: 7003, look: { body: 'wide', hair: 'short', garb: 'tee', extras: ['glasses'], top: '#d86a2a' }, x: 334, h: 9, act: 'sleep', name: 'SUNBATHER', talk: [
   ['I rented this sunbed for ten minutes. That was three hours ago.', "I'm not getting up. If I get up, I have to look at the bill."],
   ['Still here. Still not looking.'],
 ] };
 
-const volley: Person = { id: 'volley', seed: 7004, look: { body: 'slim', hair: 'bun', garb: 'tee', extras: [], top: '#d8b040' }, x: 878, act: 'dance', facing: 1, name: 'VOLLEYBALL', talk: [
+const volley: Character = { id: 'volley', seed: 7004, look: { body: 'slim', hair: 'bun', garb: 'tee', extras: [], top: '#d8b040' }, x: 878, act: 'dance', facing: 1, name: 'VOLLEYBALL', talk: [
   ['We need a fourth. You any good? No? Perfect. Neither are we.', "The net's municipal. We pay by the point. We stopped keeping score."],
 ] };
 
-const kid: Person = { id: 'kid', seed: 7005, look: { body: 'kid', hair: 'cap', garb: 'tee', extras: [], top: '#3a6ad8', acc: '#d8b040' }, x: 1022, act: 'sit', facing: -1, name: 'KID', talk: [
+const kid: Character = { id: 'kid', seed: 7005, look: { body: 'kid', hair: 'cap', garb: 'tee', extras: [], top: '#3a6ad8', acc: '#d8b040' }, x: 1022, act: 'sit', facing: -1, name: 'KID', talk: [
   ["It's a Registry office. That's the queue. Those are the people in the queue.", 'When the tide comes in, it gets deleted. That is how it works, my mum said.'],
   ['You can be in the queue if you want. You have to wait, though. That is the rule.'],
 ] };
 
-const surfer: Person = { id: 'surfer', seed: 7006, look: { body: 'tall', hair: 'long', garb: 'tee', extras: [], hairCol: '#c8b040', top: '#2e4a5e' }, x: L.surfer, act: 'stand', facing: -1, name: 'SURFER', talk: [
+const surfer: Character = { id: 'surfer', seed: 7006, look: { body: 'tall', hair: 'long', garb: 'tee', extras: [], hairCol: '#c8b040', top: '#2e4a5e' }, x: L.surfer, act: 'stand', facing: -1, name: 'SURFER', talk: [
   ["Waves are good today. Waves are free. Don't tell anyone, they'll put a meter on them."],
   ["See the buoy? Edge of the swim zone. Past it the Registry stops counting you. Feels great. Briefly."],
 ] };
 
-const fisher: Person = { id: 'fisher', seed: 7007, look: { body: 'old', hair: 'brim', garb: 'coat', extras: [], top: '#4e5e3a' }, x: L.fisher, h: 8, act: 'sit', facing: 1, name: 'OLD MAN', talk: [
+const fisher: Character = { id: 'fisher', seed: 7007, look: { body: 'old', hair: 'brim', garb: 'coat', extras: [], top: '#4e5e3a' }, x: L.fisher, h: 8, act: 'sit', facing: 1, name: 'OLD MAN', talk: [
   ["Fifty years I've fished off this pier. Caught a fish twice. Same fish.", "That boat at the end? Kid with a hood and a laptop. Said 'gone fishing'. Never saw a rod come out. Good. Fish deserve a break."],
   ['Three days ago they tied it up and walked off along the shore. Did not look back. Looked at the water a lot.'],
 ] };
 
 /** Who lives on the beach. The ones with `talk` get [E] TALK; the cat gets [E] PET (the game, as in a scene). */
-export const PEOPLE: Person[] = [
+export const PEOPLE: Character[] = [
   LIME, lifeguard, sunbather, volley, kid, surfer, fisher,
   { look: 'cat', seed: 2, x: 1252, act: 'sit' },
 ];
 
 /** Ambient people, drawn but not talkable. */
-const SUNBEDS: Person[] = [
+const SUNBEDS: Character[] = [
   { seed: 7101, look: { body: 'slim', hair: 'long', garb: 'dress', extras: ['glasses'], top: '#c83a8a' }, x: 292, h: 9, act: 'sleep' },
   { seed: 7102, look: { body: 'avg', hair: 'brim', garb: 'tee', extras: ['phone'], top: '#e8e0d0' }, x: 376, h: 10, act: 'sit', facing: 1 },
 ];
-const BEACHGOERS: Person[] = [
+const BEACHGOERS: Character[] = [
   { seed: 7110, look: { body: 'avg', hair: 'short', garb: 'tee', extras: [], top: '#7ab83a' }, x: 936, act: 'dance', facing: -1 },
   { seed: 7111, look: { body: 'tall', hair: 'mohawk', garb: 'tee', extras: [], top: '#c83a2a' }, x: 966, act: 'dance', facing: -1 },
   { seed: 7112, look: { body: 'short', hair: 'beanie', garb: 'tee', extras: [], top: '#46506e' }, x: 852, act: 'dance', facing: 1 },
@@ -130,7 +130,7 @@ const BEACHGOERS: Person[] = [
 ];
 /** Swimmers out in the sea (far band): heads in the water, or on the shore when the flag is red. */
 const SWIM = [{ x: 610, d: 0.55 }, { x: 680, d: 0.35 }, { x: 740, d: 0.6 }, { x: 830, d: 0.45 }, { x: 960, d: 0.5 }, { x: 1180, d: 0.4 }, { x: 1250, d: 0.6 }];
-const ASHORE: Person[] = SWIM.map((s, i) => ({ seed: 7200 + i, look: { garb: 'tee' as const, extras: [] }, x: s.x, h: WATERLINE - 2, act: i % 3 ? 'stand' as const : 'phone' as const, ps: 2, dim: 0.25, facing: (i % 2 ? 1 : -1) as 1 | -1 }));
+const ASHORE: Character[] = SWIM.map((s, i) => ({ seed: 7200 + i, look: { garb: 'tee' as const, extras: [] }, x: s.x, h: WATERLINE - 2, act: i % 3 ? 'stand' as const : 'phone' as const, ps: 2, dim: 0.25, facing: (i % 2 ? 1 : -1) as 1 | -1 }));
 
 // ---------- things to do with E that are not devices (index.ts `uses`) ----------
 
@@ -703,7 +703,7 @@ let since = { at: 0, last: -10 };
 
 /** Draw the beach. `hover`: the device under the pointer. */
 export function drawBeach(x: CanvasRenderingContext2D, m: ZoneModel, d: DrawView, hover: string | null) {
-  // the people kit and the sign kit want a scene view: the same camera, with parallax
+  // the character kit and the sign kit want a scene view: the same camera, with parallax
   const cam = -d.sx(0);
   const V: View = { sx: (wx, par = 1) => Math.round(wx - cam * par), y: d.y, t: d.t, viewW: d.viewW, viewH: d.viewH, cam, gy: d.y(0), flags: {} };
   if (d.t < since.last || d.t - since.last > 30) since.at = d.t;
@@ -718,29 +718,29 @@ export function drawBeach(x: CanvasRenderingContext2D, m: ZoneModel, d: DrawView
   sea(x, V, p, red);
   shore(x, V, p);
   gulls(x, V);
-  if (red) drawPeople(x, V, ASHORE);
+  if (red) drawCharacters(x, V, ASHORE);
   stairs(x, V, p);
   boardwalk(x, V, p);
   sunbeds(x, V, m, p);
-  drawPeople(x, V, SUNBEDS);
-  drawPerson(x, V, sunbather);
+  drawCharacters(x, V, SUNBEDS);
+  drawCharacter(x, V, sunbather);
   kiosk(x, V, m, hover);
   salt(x, V, m, hover, p);
   crab(x, V);
   tower(x, V, m, hover);
-  drawPerson(x, V, lifeguard);
+  drawCharacter(x, V, lifeguard);
   volleyball(x, V);
   castle(x, V, p);
   board(x, V);
-  drawPeople(x, V, BEACHGOERS);
-  drawPerson(x, V, volley);
-  drawPerson(x, V, kid);
-  drawPerson(x, V, surfer);
+  drawCharacters(x, V, BEACHGOERS);
+  drawCharacter(x, V, volley);
+  drawCharacter(x, V, kid);
+  drawCharacter(x, V, surfer);
   boat(x, V, hover, p);
   pier(x, V, m, hover, p);
-  drawPerson(x, V, fisher);
+  drawCharacter(x, V, fisher);
   rod(x, V);
-  drawPerson(x, V, PEOPLE[PEOPLE.length - 1]);
+  drawCharacter(x, V, PEOPLE[PEOPLE.length - 1]);
   postGull(x, V);
   foreground(x, V, m, p);
   // the light goes: a dusk wash over everything but the lamps, deeper as the sun goes down

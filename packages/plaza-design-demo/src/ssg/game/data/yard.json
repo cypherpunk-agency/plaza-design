@@ -23,7 +23,7 @@
     {
       "id": "cam",
       "name": "CAM-1",
-      "look": "A camera on a pole. It has seen things. Mostly crates.",
+      "look": "A camera on a pole over the crates.",
       "status": [{ "if": "found", "then": "tagged: {parcel}", "else": "watching the yard" }],
       "layout": {
         "spot": { "x": 90, "w": 26, "h": 86 },
@@ -47,7 +47,7 @@
           "id": "footage", "kind": "STORE", "verbs": ["read", "copy"],
           "on": {
             "read": { "say": ["cat footage", "three hours of crates. one is addressed to someone you know."] },
-            "copy": { "say": ["cp footage ~/deck", "copied. riveting."] }
+            "copy": { "say": ["cp footage ~/deck", "copied footage (3 hours)."] }
           }
         }
       ]
@@ -55,7 +55,7 @@
     {
       "id": "crane",
       "name": "CRANE",
-      "look": "A yard crane. Does exactly what it is told, in order, with a sigh.",
+      "look": "A yard crane. Does exactly what it is told, in order.",
       "status": ["arm: {armAt}", { "if": "held", "then": " · holding {held}" }],
       "layout": {
         "spot": { "x": 350, "w": 186, "h": 130 },
@@ -109,7 +109,7 @@
         },
         {
           "id": "log", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat log", "log: opened 0 times today. proud of it."] } }
+          "on": { "read": { "say": ["cat log", "log: opened 0 times today. 0 times this week."] } }
         },
         {
           "id": "hinge", "kind": "DAEMON", "verbs": ["talk"],
@@ -129,8 +129,8 @@
   "camera": {
     "crates": [
       { "id": "A-3", "x": 60, "y": 92, "w": 44, "h": 34, "label": "RAISINS (BULK)" },
-      { "id": "B-5", "x": 140, "y": 88, "w": 40, "h": 38, "label": "NOT YOURS. REALLY." },
-      { "id": "C-7", "x": 222, "y": 96, "w": 36, "h": 30, "label": "TO: YOU. FRAGILE-ISH." }
+      { "id": "B-5", "x": 140, "y": 88, "w": 40, "h": 38, "label": "HOLD · NOT FOR COLLECTION" },
+      { "id": "C-7", "x": 222, "y": 96, "w": 36, "h": 30, "label": "TO: YOU · FRAGILE" }
     ]
   },
 
@@ -178,20 +178,20 @@
 
     "claw.grab.holding": ["use claw --grab", "already holding {held}."],
     "claw.grab.air": ["use claw --grab", "the claw grabs air."],
-    "claw.grab.wrong": ["use claw --grab", "a crate marked \"not yours. really.\" the claw respects that."],
-    "claw.grab.wrong.A-3": ["use claw --grab", "a crate of raisins. the claw puts it back, disappointed."],
+    "claw.grab.wrong": ["use claw --grab", "a crate marked \"HOLD · NOT FOR COLLECTION\". the claw lets go."],
+    "claw.grab.wrong.A-3": ["use claw --grab", "crate A-3: raisins, bulk. not your parcel. released."],
     "claw.grab.ok": ["use claw --grab", "got it. a parcel, slightly squashed.", "ok"],
-    "claw.drop.empty": ["use claw --drop", "the claw drops nothing, with conviction."],
+    "claw.drop.empty": ["use claw --drop", "claw empty. nothing dropped."],
     "claw.drop.at": ["use claw --drop", "dropped at {armAt}. thud."],
-    "claw.drop.chute": ["use claw --drop", "into the chute. the claw says: dropped."],
+    "claw.drop.chute": ["use claw --drop", "dropped into the chute."],
 
     "parcel.tray": ["", "the parcel slides through the hatch and into the pickup tray.", "ok"],
-    "parcel.bonk": ["", "bonk. the parcel hits a closed hatch. the crane fishes it back, sighing.", "err"],
+    "parcel.bonk": ["", "the parcel hits the closed hatch. the crane fishes it back.", "err"],
     "parcel.take": ["take parcel", "a parcel, slightly squashed. inside: a key chip with a moth sticker, a deck chip labelled uplink.so, and a note: \"Moth asked me to give you this. nice wiring. —the fixer\"", "ok"],
 
     "cam.zoom": "ZOOM",
     "cam.tag": "TAG",
-    "cam.zoom.gravel": ["cam1 zoom", "zoomed into: gravel. high quality gravel."],
+    "cam.zoom.gravel": ["cam1 zoom", "zoomed into: gravel."],
     "cam.zoom.crate": ["cam1 zoom {id}", "crate {id} label: \"{label}\""],
     "cam.zoom.parcel": ["cam1 zoom {id}", "crate {id} label: \"{label}\"", "ok"],
     "cam.zoom.out": ["cam1 zoom --out", "whole yard again.", "dim"],

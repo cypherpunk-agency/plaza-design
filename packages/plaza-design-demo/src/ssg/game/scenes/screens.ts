@@ -19,7 +19,7 @@
  *   scoreDisplay  a public credit score that ticks down while you watch (`name`, `score`)
  *   menuBoard     a food menu, one item always flickering SOLD OUT (`title`, `items`)
  *   oddsBoard     betting odds that keep changing (`title`, `rows`)
- *   wantedScreen  WANTED: a face (people kit portrait) and a crime that cycle (`seeds`, `crimes`)
+ *   wantedScreen  WANTED: a face (character kit portrait) and a crime that cycle (`seeds`, `crimes`)
  *   lotteryScreen rolling numbers and tonight's prize
  * Signs:
  *   wallSign      a neon word on a plate bolted to a wall (kit.sign, in world coordinates)
@@ -34,7 +34,7 @@
  * plainly states. Jokes belong in people's mouths (their `talk`), never on a sign.
  */
 
-import { drawPortrait } from '../people';
+import { drawPortrait } from '../characters';
 import { box, GREEN, mono, O, onScreen, PAPER, RED, rng, sign, text, type View } from './kit';
 
 export const YELLOW = '255,210,58';
@@ -281,7 +281,7 @@ export function oddsBoard(x: CanvasRenderingContext2D, v: View, m: Mounted & { t
   glass(x, r);
 }
 
-/** WANTED: a face and a crime, cycling. The faces are people from the people kit. */
+/** WANTED: a face and a crime, cycling. The faces are people from the character kit. */
 export function wantedScreen(x: CanvasRenderingContext2D, v: View, m: Mounted & { seeds?: number[]; crimes?: string[] }) {
   const r = housing(x, v, m, RED);
   if (!r) return;

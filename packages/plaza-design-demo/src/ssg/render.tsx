@@ -870,6 +870,10 @@ ${FEEDBACK_STYLES}
 
     html.game-mode.touch #touch { display: flex; }
     html.game-mode.cutscene #touch { display: none; }
+    /* the city map owns the screen: only a way out (ESC) stays */
+    html.game-map #key-bar,
+    html.game-map #touch .pad:first-child,
+    html.game-map #touch button:not([data-key="Escape"]) { display: none; }
 
     /* On a phone the game gets the whole screen: no inset, no border, no header or terminal footer.
        Controls stay clear of the notch (viewport-fit=cover, safe-area insets). */

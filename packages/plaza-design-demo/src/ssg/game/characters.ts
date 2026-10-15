@@ -3,9 +3,9 @@
  *
  * HOW A SCENE ADDS PEOPLE
  *
- *   import { drawPeople, type Person } from '../people';
+ *   import { drawCharacters, type Character } from '../characters';
  *
- *   const STREET: Person[] = [
+ *   const STREET: Character[] = [
  *     { seed: 3, x: 300, act: 'walk', range: 220 },                  // a passer-by, walks 300 ⇄ 520
  *     { seed: 8, x: 410, act: 'haggle', facing: -1 },                // two people haggling...
  *     { seed: 9, x: 386, act: 'haggle', facing: 1 },                 // ...facing each other
@@ -15,7 +15,7 @@
  *       talk: [['First visit?', 'The fish is fresh.'], ['Still here?']] },  // talks; pages cycle per visit
  *   ];
  *   export const myScene: Scene = { ..., people: STREET,                 // the engine makes [E] TALK targets
- *     drawBackdrop(x, v) { ...walls...; drawPeople(x, v, STREET); ...counters in front... } };
+ *     drawBackdrop(x, v) { ...walls...; drawCharacters(x, v, STREET); ...counters in front... } };
  *
  * - A person is plain data: `seed` picks every part; `look` fixes some parts (the seed fills the rest).
  *   The same seed always gives the same person; neighbouring seeds give very different ones.
@@ -28,7 +28,7 @@
  *   matters (a rumour, a hint): they get a faint speech mark so a curious player finds them.
  * - Behind a counter: use a 'tall' or 'avg' body, or lift them with `h` (a crate to stand on), so
  *   more than a forehead shows over the goods.
- * - Draw order is the scene's: call `drawPeople` (or `drawPerson`) where the people belong, behind a
+ * - Draw order is the scene's: call `drawCharacters` (or `drawCharacter`) where the people belong, behind a
  *   counter or in front of a stall. `ps` (pixel size, default 3 = the player's scale) and `dim` (0..1)
  *   and `parallax` put people in a back band; a back crowd is `crowd(seed, n, from, to, { ps: 2, dim: .55, parallax: .9 })`.
  * - Fast: every look and pose is baked once into a small canvas (with its rim) and blitted after that.
@@ -88,7 +88,7 @@ export interface Look {
   skin?: string; hairCol?: string; top?: string; bottom?: string; acc?: string;
 }
 
-export interface Person {
+export interface Character {
   /** Needed for talk (the engine's target id). */
   id?: string;
   seed?: number;
@@ -110,7 +110,7 @@ export interface Person {
   dim?: number;
   parallax?: number;
   /** Walk behind this person (a valet with the umbrella, a porter with the shopping), `gap` units back. */
-  follow?: Person;
+  follow?: Character;
   gap?: number;
 }
 
@@ -501,7 +501,7 @@ function botFrom(seed: number, kind: Bot, fix: Partial<BotLook> = {}): BotFull {
   };
 }
 
-const botKind = (look: Person['look']): Bot | undefined =>
+const botKind = (look: Character['look']): Bot | undefined =>
   typeof look === 'string' ? (BOT_KINDS.includes(look as Bot) ? look as Bot : undefined) : look && 'bot' in look ? look.bot : undefined;
 
 const FACES: Record<Face, string[]> = {
@@ -875,10 +875,10 @@ function bake(key: string, make: () => [Grid, Meta], ps: number, flip: boolean, 
 // ---------- behaviour ----------
 
 interface Ready { full?: Full; critter?: Critter; bot?: BotFull; key: string; ph: number; seed: number; a: number; b: number }
-const READY = new WeakMap<Person, Ready>();
+const READY = new WeakMap<Character, Ready>();
 let looks = 0;
 
-function ready(p: Person): Ready {
+function ready(p: Character): Ready {
   let R = READY.get(p);
   if (R) return R;
   const seed = p.seed ?? Math.round(p.x * 7 + 3), bk = botKind(p.look);
@@ -893,7 +893,7 @@ function ready(p: Person): Ready {
 }
 
 /** Where a walker is and which way it faces: there and back between a and b, with a pause at each end. */
-function walkAt(p: Person, R: Ready, t: number, speed: number, pause: number) {
+function walkAt(p: Character, R: Ready, t: number, speed: number, pause: number) {
   const len = Math.abs(R.b - R.a);
   if (len < 1) return { x: R.a, face: p.facing ?? 1, moving: false, end: 0 };
   const run = len / speed, period = 2 * (run + pause), u = (t + R.ph * 3) % period, dir = R.b > R.a ? 1 : -1;
@@ -910,7 +910,7 @@ const PAUSE: Partial<Record<Act, number>> = { sweep: 160, carry: 110, roll: 130,
 
 interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean }
 
-function frameOf(p: Person, R: Ready, t: number): Frame {
+function frameOf(p: Character, R: Ready, t: number): Frame {
   const act = p.act ?? 'stand', ph = R.ph, tt = t + ph;
   let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = false, end = 0;
   if (p.follow) {
@@ -955,7 +955,7 @@ function frameOf(p: Person, R: Ready, t: number): Frame {
 }
 
 /** A robot's pose (legs, wheels, rotors) and state (arms, load, screen face) for its job. */
-function botFrame(p: Person, R: Ready, t: number, x: number, face: 1 | -1, moving: boolean, end: number): Frame {
+function botFrame(p: Character, R: Ready, t: number, x: number, face: 1 | -1, moving: boolean, end: number): Frame {
   const B = R.bot!, S = BOT[B.kind], act = p.act ?? 'stand', tt = t + R.ph, slow = (n: number) => Math.floor(tt / n) % 2;
   const legged = S.shape === 'android' || S.shape === 'loader' || S.shape === 'mech' || (S.shape === 'box' && B.v === 2);
   let pose = 'stand';
@@ -997,10 +997,10 @@ function stealAt(R: Ready, t: number, sp: number) {
 
 // ---------- drawing ----------
 
-const psOf = (p: Person) => p.ps ?? 3;
+const psOf = (p: Character) => p.ps ?? 3;
 
 /** One person, as they are at time v.t. */
-export function drawPerson(x: CanvasRenderingContext2D, v: View, p: Person) {
+export function drawCharacter(x: CanvasRenderingContext2D, v: View, p: Character) {
   const R = ready(p), ps = psOf(p), f = frameOf(p, R, v.t);
   const sx = v.sx(f.x, p.parallax ?? 1);
   if (sx < -40 || sx > v.viewW + 40) return;
@@ -1066,7 +1066,7 @@ const ADS = [['LOANS', 'TODAY'], ['NOODLE', '2 TKN'], ['SCORE', 'CHECK'], ['RENT
 const TXT = '600 7px "IBM Plex Mono", monospace';
 
 /** A robot's live effects, cheap fills over the baked sprite: sensor beams, sparks, notes, board text, a charging cable. */
-function botFx(x: CanvasRenderingContext2D, v: View, p: Person, B: BotFull, f: Frame, b: Baked, cell: (c: number, r: number) => number[], flip: boolean, tt: number, glitch: boolean | undefined) {
+function botFx(x: CanvasRenderingContext2D, v: View, p: Character, B: BotFull, f: Frame, b: Baked, cell: (c: number, r: number) => number[], flip: boolean, tt: number, glitch: boolean | undefined) {
   const S = BOT[B.kind], act = p.act ?? 'stand', ps = psOf(p), R = Math.round;
   void f;
   if (glitch) { const [gx, gy] = cell(CX, S.top >> 1); x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(R(gx - 12), R(gy + ((tt * 13) % 9) - 4), 24, 1); }
@@ -1143,15 +1143,15 @@ function botFx(x: CanvasRenderingContext2D, v: View, p: Person, B: BotFull, f: F
 }
 
 /** Draw a list of people, back to front in the order given. */
-export function drawPeople(x: CanvasRenderingContext2D, v: View, list: readonly Person[]) {
-  for (const p of list) drawPerson(x, v, p);
+export function drawCharacters(x: CanvasRenderingContext2D, v: View, list: readonly Character[]) {
+  for (const p of list) drawCharacter(x, v, p);
 }
 
 /** Where a person is now (walkers move). */
-export function personX(p: Person, t: number) { return frameOf(p, ready(p), t).x; }
+export function characterX(p: Character, t: number) { return frameOf(p, ready(p), t).x; }
 
 /** How tall a person is drawn, in world units (for prompts and bubbles). */
-export function personHeight(p: Person) {
+export function characterHeight(p: Character) {
   const R = ready(p), ps = psOf(p);
   if (R.bot) { const S = BOT[R.bot.kind]; return S.top * ps + (p.h ?? 0) + (S.fly ?? 0); }
   if (R.critter) return CRITTERS[R.critter].frames[Object.keys(CRITTERS[R.critter].frames)[0]].length * ps + (p.h ?? CRITTERS[R.critter].h ?? 0);
@@ -1160,19 +1160,19 @@ export function personHeight(p: Person) {
 }
 
 /** Robots (and the old drone, cleaner and courier) answer E even without `talk`. */
-export function isBot(p: Person) { const R = ready(p); return !!R.bot || (!!R.critter && R.critter in CRITTER_BOT); }
+export function isBot(p: Character) { const R = ready(p); return !!R.bot || (!!R.critter && R.critter in CRITTER_BOT); }
 
-const REACTED = new Map<Person, number>();
+const REACTED = new Map<Character, number>();
 /** A robot's [E] prompt, name and reaction line; `next` moves it on to its next line. */
-export function botReact(p: Person, next = false): { label: string; name: string; pages: string[] } {
+export function botReact(p: Character, next = false): { label: string; name: string; pages: string[] } {
   const R = ready(p), S = R.bot ? BOT[R.bot.kind] : CRITTER_BOT[R.critter!]!, n = REACTED.get(p) ?? 0;
   if (next) REACTED.set(p, n + 1);
   return { label: S.prompt, name: p.name ?? S.name + (R.bot ? '-' + (100 + ((R.seed * 37) % 900)) : ''), pages: S.lines[n % S.lines.length] };
 }
 
-const SAID = new Map<Person, number>();
+const SAID = new Map<Character, number>();
 /** The pages a person says now: one set, or the next of several (the last repeats). */
-export function talkTo(p: Person): { name: string; pages: string[] } {
+export function talkTo(p: Character): { name: string; pages: string[] } {
   const T = p.talk ?? [];
   const name = p.name ?? 'STRANGER';
   if (!T.length || typeof T[0] === 'string') return { name, pages: T as string[] };
@@ -1192,7 +1192,7 @@ const CROWD_JOBS: [Bot, Act][] = [
  * A crowd of distinct ambient people between `from` and `to`: walkers, a few standing about, and
  * (`bots`, default 0.2) about one in five a robot doing its job. For back bands pass { ps: 2, dim: .5, parallax: .9 }.
  */
-export function crowd(seed: number, n: number, from: number, to: number, opt: { ps?: number; dim?: number; parallax?: number; h?: number; acts?: Act[]; bots?: number } = {}): Person[] {
+export function crowd(seed: number, n: number, from: number, to: number, opt: { ps?: number; dim?: number; parallax?: number; h?: number; acts?: Act[]; bots?: number } = {}): Character[] {
   const r = rnd(seed), acts = opt.acts ?? ['walk', 'walk', 'walk', 'stand', 'phone', 'walk', 'smoke'], share = opt.bots ?? 0.2;
   // a foreground band gets no drones; an all-walking crowd gets only robots that move
   const front = (opt.parallax ?? 1) > 1 || (opt.h ?? 0) < 0, onlyWalk = acts.every((a) => a === 'walk');
