@@ -556,6 +556,7 @@ export class Game {
     if (this.clockRuns()) city.tick(dt / 60);
     this.syncClock();
     this.update(dt);
+    this.checkGain();
     this.draw();
     this.followHost();
     this.raf = requestAnimationFrame((n) => this.loop(n));
@@ -1769,12 +1770,11 @@ export class Game {
     // hack vision keeps only the goal: what you own is in the LOGIC drawer there
     if (!vision) {
       x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);
-      x.fillStyle = 'rgba(255,217,165,.7)';
-      // what you have: tokens, modules, the key chips that do something (uplink.so), what you carry; one line, or two when it is long
-      const [own, more] = this.owned();
-      y = top + 21;
-      if (more && x.measureText(own + ' · ' + more).width <= this.viewW - 16) x.fillText(own + ' · ' + more, 8, y);
-      else { x.fillText(own, 8, y); if (more) x.fillText(more, 8, (y += 11)); }
+      y = top + 10;
+      // what you own is not here (Tommi, 2026-10-15): hack vision's LOGIC drawer has it, and a short
+      // line shows when something comes
+      const g = this.gain;
+      if (g && this.t < g.until) { x.fillStyle = 'rgba(34,197,94,' + Math.min(1, (g.until - this.t) / 30) * 0.95 + ')'; x.fillText(g.text, 8, (y += 11)); }
     }
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
@@ -1804,6 +1804,19 @@ export class Game {
     return [own, [keys.length ? 'KEYS ' + keys.join(' ') : '', held.length ? 'HELD ' + held.join(' ') : ''].filter(Boolean).join(' · ')];
   }
   private ownLine() { const [own, more] = this.owned(); return more ? own + ' · ' + more : own; }
+
+  /** What you own, as a set of words, to see what came (or went) since the last frame. */
+  private gainWords = '';
+  private gain: { text: string; until: number } | null = null;
+  private checkGain() {
+    const s = this.save, words = [...ownedModules(s), ...s.programs, ...s.keyring.map((id) => KEYRING.get(id)?.label ?? id), ...Object.entries(s.items).filter(([, n]) => n > 0).map(([id]) => ITEMS[id as ItemId] ?? id)];
+    const now = words.join('|');
+    if (this.gainWords && now !== this.gainWords) {
+      const before = new Set(this.gainWords.split('|')), added = words.filter((w) => !before.has(w));
+      if (added.length) this.gain = { text: '+ ' + added.join(' · '), until: this.t + 240 };
+    }
+    this.gainWords = now;
+  }
 
   private drawEnd() {
     const x = this.x, cx = this.viewW / 2, cy = this.viewH / 2 - 30;
