@@ -1,8 +1,11 @@
 # ACCESS DENIED: game data
 
-The back yard and Downtown run on it, through the zone engine (`game/zone/`); Capsule 7B
-is next. Started as a proposal; what Tommi has settled is under **Decided**, what is still
-open under **Open questions**.
+Every place in the game is a **scene**, and every scene runs on the engine (`game/engine/`):
+Capsule 7B, Downtown, the back yard, Moth's place and the beach with their own data files; the
+market, shop, mall, harbor, the metro platforms and the car with none (zero devices). Which
+place and district a scene belongs to is the city's data (`city.ts`, CITY.md). Started as a
+proposal; what Tommi has settled is under **Decided**, what is still open under **Open
+questions**.
 
 ## Decided
 
@@ -11,13 +14,13 @@ open under **Open questions**.
   moves across the line (or stays put on purpose), it goes in the **Boundary log** below.
 - **No editor for now.** JSON plus the build-time check is enough.
 - **Logic modules are shared unlockables.** TIMER and SWITCH live in `data/logic.json`,
-  not in a zone. Each is a module the player owns, like `legs.so`: `timer.so`, `switch.so`.
+  not in a scene. Each is a module the player owns, like `legs.so`: `timer.so`, `switch.so`.
   Owned modules are in the save (`Save.modules`; `legs.so` stays `Save.jump`). The board
   shows owned ones as `+ TIMER`, the rest as a dashed `???` slot ("not found yet").
-  A new game owns `timer.so`. A zone hands a module out with a `give` step (see **Giving
-  things**); `foundIn` names that zone, and the check holds the two together. `switch.so` is
+  A new game owns `timer.so`. A scene hands a module out with a `give` step (see **Giving
+  things**); `foundIn` names that scene, and the check holds the two together. `switch.so` is
   found in MOTH-PC's drawer in Moth's place (`foundIn: "moth"`, P09).
-- **Yard progress is saved**, in the same save as Downtown: `save.zones.yard` (see **Saves**).
+- **Yard progress is saved**, in the same save as Downtown: `save.scenes.yard` (see **Saves**).
 - **No hints in the yard for now.** Goals stay (the GOAL line in the HUD); Downtown's fixer
   hints are untouched.
 - **Fan-out:** one event can feed several cables (a breaker trip stops every washer). `connect`
@@ -29,15 +32,16 @@ open under **Open questions**.
 
 Append one line per decision: what, which side, why.
 
-- Logic parts (TIMER, SWITCH): **data**, in a shared file (`logic.json`), because every zone
+- Logic parts (TIMER, SWITCH): **data**, in a shared file (`logic.json`), because every scene
   uses them and they are items the player owns.
 - Settling a save (a parcel mid-slide comes back on the hook at the chute): **code**
   (`settleYard` in `yard/effects.ts`), next to the chute effect it mirrors.
 - Board layout defaults (`DEFAULT_DIR`, `BOARD_HOME` in `schematic.ts`): **code** for now;
   the player's own layout is saved. *Superseded:* now **data** (`layout` on each device), see below.
-- The zone engine (`game/zone/`): **code**, one for every zone. A zone is its data file plus
-  `ZoneRules` (effects, derived values, settle, what it needs) and `ZoneView` (drawing, own
-  panels, extra E targets), bundled as a `ZoneDef`. The game hosts one with `new ZoneHost(…, def)`.
+- The engine (`game/engine/`): **code**, one for every scene. A scene was its data file plus
+  rules (effects, derived values, settle, what it needs) and a view (drawing, own panels, extra
+  E targets); since the merge (below) all of that is one `SceneDef` (scenes/kit.ts), and the
+  game hosts every scene with `new SceneHost(…, def, rules)`.
 - Where devices stand in the world (`layout.spot`), their board home (`layout.board`) and noun
   directions (`layout.dir`, `layout.vision`): **data**.
 - Hack vision's noun order (`layout.row`): **data**, optional; the default order by kind is
@@ -47,14 +51,14 @@ Append one line per decision: what, which side, why.
   its spot over the device, `device.noun` → the noun's offset from its core; world units).
 - What a click or E does to a thing: a popup beside it. Its everyday actions (`everyday`) and
   whether it is a computer you jack into (`deck`): **data**. The popup and `⌁ hack it`: **code**
-  (`zone/popup.ts`, `ZoneHost.pick`); its words (`menu.*`): **data** in `engine.json`. Exits and things that come and go (the
-  pickup tray): **code** (`ZoneView.targets`), since they follow scene art and state.
+  (`engine/popup.ts`, `SceneHost.pick`); its words (`menu.*`): **data** in `engine.json`. Exits and things that come and go (the
+  pickup tray): **code** (`SceneDef.targets`), since they follow scene art and state.
 - State keys: the data owns them; the code lists only the keys it relies on (`needs.state`),
   and the check requires those. Data may add its own keys freely (before: exactly the code's).
 - `timer.wait`: **code**, moved from the yard to the engine (`ENGINE_EFFECTS`): TIMER is a
-  shared module, so every zone needs it. Its line moved to `engine.json`.
+  shared module, so every scene needs it. Its line moved to `engine.json`.
 - Generic wording (wiring, talk, guards, seals, trace, net, keyring): **data**, in
-  `data/engine.json`; any zone may override a key with the same kind (line or label).
+  `data/engine.json`; any scene may override a key with the same kind (line or label).
 - Guards, sealed sectors, trace, the net, the keyring and combining: **engine code** with
   **data** switches (`guard`, `sectors`, `log`, `link`, `keyring`, `give`/`trace`/`unseal`
   steps). How a seal opens, how trace moves and how fragments combine are a fixed set of
@@ -63,8 +67,8 @@ Append one line per decision: what, which side, why.
   set); which rules exist and what recipes make (`from`): **data**.
 - Settling (`settleYard`) and the yard's own check (crates, the parcel's crate): **code**, in
   `YARD_RULES` (`settle`, `check`), next to the effects they mirror.
-- A zone's own clock (`ZoneRules.tick(w, dt)`): **engine code** hook, run by `ZoneModel.tick` while
-  the zone is on screen. Capsule 7B uses it for the plug's schedule (`night` every `nightEveryMs`),
+- A scene's own clock (`SceneRules.tick(w, dt)`): **engine code** hook, run by `SceneModel.tick` while
+  the scene is on screen. Capsule 7B uses it for the plug's schedule (`night` every `nightEveryMs`),
   the router's temperature and thermal reboots, and Pixel moving to the warmest spot. What it does is
   **code** (`capsule/rules.ts`); its numbers are **data** (`tuning`). Stands in for `clock.every`.
 - A LINK that can be down (`link.when`, a condition): **data** switch on an **engine** rule: while
@@ -74,25 +78,25 @@ Append one line per decision: what, which side, why.
 - The plug's `off` (silent when the schedule's signal hits a plug that is already off): **code**
   (`plug.off` effect), since data cases cannot test `signal` and a state key together.
 - Pixel, the companion: **code** (`companion.ts`): sprite, moves, warm spots outside (`WARM`). Whether
-  Pixel follows you is a save flag (`flags.pixel`); in the flat, where Pixel naps is the zone's
+  Pixel follows you is a save flag (`flags.pixel`); in the flat, where Pixel naps is the scene's
   state (`pixelAt`).
 - How high a device sits in the world (`layout.spot.y`: a sign on a wall, a relay on a roof):
   **data**, next to `x`, `w`, `h`. Hack vision frames it there, taps find it there, and its E
-  target says how high it is (`ZoneTarget.y`) so the game can tell which ledge you reach it from.
-- A device that moves in the world (DLV-9 driving to the market gate): **code**, `ZoneRules.place`
+  target says how high it is (`SceneTarget.y`) so the game can tell which ledge you reach it from.
+- A device that moves in the world (DLV-9 driving to the market gate): **code**, `SceneRules.place`
   (where it stands now, or null while it is out of the world). Its home stays `layout.spot`.
-- Typing in the deck (the terminal, last resort) on a zone: **engine**, `ZoneHost.typed(fn)` runs
-  what was typed without echoing the shell line a second time; `ZoneHost.viewing` is the device
-  whose schematic is open. What the commands mean (`ls`, `cat`, `login`) is the zone's code.
+- Typing in the deck (the terminal, last resort) on a scene: **engine**, `SceneHost.typed(fn)` runs
+  what was typed without echoing the shell line a second time; `SceneHost.viewing` is the device
+  whose schematic is open. What the commands mean (`ls`, `cat`, `login`) is the scene's code.
 - Downtown's progress stays in the save's own fields (`handle`, `tokens`, `jump`, `freed`,
   `flags.till`, `flags.end`), as before the engine: **code** reads them as derived values
   (`till`, `freed2F`, `jump`, `end`, `handle`, …) and its effects write them (`node.free`,
-  `legs.install`, `till.pay`, `dlv.drive`), in `downtown/rules.ts`. The zone's own `state` is only
+  `legs.install`, `till.pay`, `dlv.drive`), in `downtown/rules.ts`. The scene's own `state` is only
   what is new on the street (the gate's lock, DLV-9, the billboard's feed). `downtown/save.ts`
-  `reconcile` makes the zone agree with the fields on every load, so old saves keep everything.
+  `reconcile` makes the scene agree with the fields on every load, so old saves keep everything.
 - Which node a Registry box frees and the shell's login users: **data**, as Downtown texts
   (`node.box: "0x2F"`, `login.user.box: "maint"`), read by the effects and the shell.
-- The deck's commands on a zone (`ls`, `cat`, `login`, `install`, `use <noun> --<verb>`):
+- The deck's commands on a scene (`ls`, `cat`, `login`, `install`, `use <noun> --<verb>`):
   **code**, `downtown/shell.ts` (nothing Downtown-only in it; the yard's deck uses it too).
 - The fixer's stepped hints: still **code** (`level.ts` `HINTS`), as before; moving them into
   `downtown.json` would need a `hints` field (open).
@@ -102,123 +106,152 @@ Append one line per decision: what, which side, why.
   (outer, middle, inner); when the rings toy exists, that sector's seal becomes `{ "guard":
   "shields" }` on a toy GUARD: a data change. COPY between nodes stands in as a verb on DISPATCH's
   `routes` (`send to dlv9`). The watchdog is not used yet.
-- The watchdog: **engine code** (`zone/watchdog.ts`: its walk, the freeze, its sprite) with a
-  **data** switch (`watchdog: { route, dwellMs, moveMs }` in a zone or `net.json`). What freezing
+- The watchdog: **engine code** (`engine/watchdog.ts`: its walk, the freeze, its sprite) with a
+  **data** switch (`watchdog: { route, dwellMs, moveMs }` in a scene or `net.json`). What freezing
   means (no verbs, no signals in or out, sequence seals forget) is a fixed engine rule; where it
   walks and how fast is data. Its events are an **engine noun** (`watchdog`, kind WATCH) on each
   device of the route, so puzzles wire "while it's away" with ordinary cables.
-- Clocks: **engine code** (`zone/clock.ts`), a noun kind (`CLOCK`) with **data** `clock: { every }`.
+- Clocks: **engine code** (`engine/clock.ts`), a noun kind (`CLOCK`) with **data** `clock: { every }`.
   PUZZLES.md had proposed a named effect `clock.every`; a noun kind won because the schedule must
-  be a thing on the schematic you can read, stop and cut cables from, and it needs no zone code.
-- Lock toys: **engine code** (`zone/toys/`, one panel and one pure rule per toy: rings, cipher,
+  be a thing on the schematic you can read, stop and cut cables from, and it needs no scene code.
+- Lock toys: **engine code** (`engine/toys/`, one panel and one pure rule per toy: rings, cipher,
   cryptex, morse) with **data** parameters on the guard (`toy` plus `rings` / `cipher` / `cryptex`
   / `morse`). How a toy plays is code (geometry, timing); every number, word and line is data.
 - Cards (SLOW, PING for the shield rings): **data** keyring items (`kind: "card"`); what a card
   does is **code** (a fixed set, like fragment rules).
 - Giving modules and tokens: **data** (`{ "give": "switch.so" }`, `{ "give": "tokens", "count": 3 }`);
-  the save fields they land in are **code** (`ZoneStore.grant` / `tokens`, `game.ts`).
+  the save fields they land in are **code** (`SceneStore.grant` / `tokens`, `game.ts`).
 - Fixed cables: **data** (`fixed: true` on a pre-wired cable); refusing the cut is **engine code**.
 - A guard's own success line: **data** (`guard.say`), so P05/P06/P08 keep their grant lines
   without an `opened` handler. (The PUZZLES.md sketches had used `on.opened`; the engine never
   ran verbs for events, so the line moved onto the guard.)
 - What the save keeps (trace, lockouts, clocks, the watchdog's place, cut cables by id):
-  **engine code** (`ZoneModel.snapshot` / `restore`), decided below under **Saves**.
+  **engine code** (`SceneModel.snapshot` / `restore`), decided below under **Saves**.
 - Moth's place (`moth.json`, story Level 3, P09 and P10): all **data** on the engine as it was; no
-  engine change. FRIENDNET and MOTH-PC are the zone's own `nodes` (PUZZLES had said `mothnet.json`;
-  the zone id is `moth`). The rig's LINK `when: uplink` and MOTH-PC's status read two **code**
+  engine change. FRIENDNET and MOTH-PC are the scene's own `nodes` (PUZZLES had said `mothnet.json`;
+  the scene id is `moth`). The rig's LINK `when: uplink` and MOTH-PC's status read two **code**
   derived values (`moth/rules.ts`: `uplink` = the `uplink` chip is on the keyring, `journalOpen`);
   the goals a node or a sector ticks are code there too, as in the capsule.
 - `uplink.so` is a keyring chip (`uplink`, label "uplink.so", from the yard's parcel), not a module:
   modules are logic parts you place on the board, and keyring ids may not end in `.so`. The parcel
   hands out it and `moth.key` in **code** (`yard/index.ts` `PARCEL`, the tray's `use`); a save that
   took the parcel earlier gets both when the game loads (`game.ts`).
-- Hooks outside zone/ for a new zone (Moth's place): `game.ts` hosts it like the capsule (zoneHost,
-  levelW, placeName, goTo, the door's key check, its first-visit lines, drawing it indoors);
-  `city.ts` adds `moth` to `Zone` and `DOORS.moth` (1496, the residents' door of the shuttered
-  front at 1420, next to the metro stairs); `companion.ts` `WARM.moth` (the tank lid); `sudo.ts`
-  `levels()`; `index.ts` accepts `?play=moth`. The door's refusal (no key chip) is **code** in
-  `game.ts` `useDoor`, like the other Downtown doors.
+- Hooks outside engine/ for a new zone (Moth's place, before the merge): `game.ts` hosted it like
+  the capsule (its own branches for width, name, arrival, the door's key check, first-visit lines
+  and drawing); `city.ts` `DOORS.moth` (1496, the residents' door of the shuttered front at 1420,
+  next to the metro stairs); `companion.ts` `WARM.moth` (the tank lid). *Superseded* by the merge:
+  Moth's place is a `SceneDef` (`moth/index.ts`), the residents' door is Downtown's exit `moth`
+  with `needs` (the key chip and the refusal's words, **data** on the exit).
 
-- **A place's life on any zone** (the beach, 2026-10-15): `ZoneView` takes the explorable scenes'
-  shape, `people` (characters.ts), `uses` and `readables` (scenes/kit.ts `SceneUse`, `SceneReadable`),
-  and the game hosts them exactly as a scene's: [E] TALK on people with `id` + `talk`, [E] PET /
-  SHOO on people-kit cats and pigeons, uses that pay or give tokens (`UseCtx`), readables in a
-  bubble; a tap within reach is E. **Code** (`game.ts`: `lifeTargets`, `useScene`, `tapLife`, the
-  `life` getter is the scene or the zone's view; exits stay a scene's). Generic on purpose: a
-  scene is meant to become a zone with no devices later, and this is the same shape for both.
-  Who stands where and what they say is still code-side data (the view's lists), like a scene's.
-- `ZoneModel.pay(n)`: **engine code**, the counterpart of `give tokens`: a zone effect spends
+- **A place's life on any zone** (the beach, 2026-10-15, before the merge): a zone's view took the
+  explorable scenes' shape, `people` (characters.ts), `uses` and `readables` (scenes/kit.ts
+  `SceneUse`, `SceneReadable`), and the game hosted them exactly as a scene's: [E] TALK on people
+  with `id` + `talk`, [E] PET / SHOO on cats and pigeons, uses that pay or give tokens (`UseCtx`),
+  readables in a bubble; a tap within reach is E. **Code** (`game.ts`: `lifeTargets`, `useLife`,
+  `tapLife`). It was the first step of the merge below. Who stands where and what they say is
+  code-side data (the definition's lists).
+- `SceneModel.pay(n)`: **engine code**, the counterpart of `give tokens`: a scene effect spends
   tokens (true and taken, or false and nothing). The beach's sunbed kiosk bills with it
   (`sunbed.rent`, then one a minute from `BEACH_RULES.tick`); the price and the minute are data
   (`tuning.minuteMs`), the billing rule is code. A one-off purchase with E (SALT's drink) is a
   `use` instead, which already pays through `UseCtx.pay`.
-- Hooks outside zone/ for the beach: `game.ts` hosts it (`Hosted`/`isHosted` now lists the zones on
-  the engine besides Downtown, so zoneHost, goTo, travel, handTo and scene exits take any of them);
-  levelW, placeName, the first-visit lines, drawing it like the flats (it draws its own sky, no rain);
-  its stairs (`view.use` → 'exit') travel to the harbor. `city.ts`: `beach` in `Zone`, `EDGES.beach`
-  (the left edge walks into the harbor, landing at its exit `beach` once it has one), a map place
-  `BEACH`. `companion.ts` `WARM.beach` (the jukebox's top). `sudo.ts` `levels()` and unlockAll;
-  `index.ts` `?play=beach`.
+- Hooks outside engine/ for the beach (before the merge): `game.ts` hosted it beside the other
+  zones (its own branches), its stairs travelled to the harbor, and `city.ts` had an edge table
+  for its left edge. *Superseded* by the merge: the beach is a `SceneDef` (`beach/index.ts`), the
+  stairs an engine exit, the left edge an edge exit (landing at the harbor's exit `beach` once it
+  has one). Still outside: `companion.ts` `WARM.beach` (the jukebox's top) and a map place `BEACH`.
+- **One kind of place: scenes and zones merged** (2026-10-15). "Zone" is gone; every place is a
+  scene, one `SceneDef` each (scenes/kit.ts), listed in `SCENES` (scenes/index.ts). What a
+  definition holds: **data-like code** for what is there (`width`, `spawn`, `exits`, `people`,
+  `uses`, `readables`, `intro`, `ambient`, `pixel`, `platforms`), its data file and rules on the
+  engine where it has devices (`data`, `rules`, `panels`, `targets`, `use`, `hideDevice`), and its
+  drawing (`drawBackdrop`, `drawFront`). The game has **one path** for every scene (`game.ts`:
+  `hostOf`, `enter`, `targets`, `useLife` / `useExit`, `draw`, `travel`), no zone-or-scene
+  branches. Decisions on the way:
+  - Every scene is hosted on the engine (`SceneHost`, made the first time the scene is needed); a
+    scene without a data file gets an empty one (`emptyData`): zero devices, no goals. So HACK and
+    BOARD are in every scene, and hack vision there mutes the world with nothing to hack. **Code**.
+  - Ways out are all `exits`: doors with E, open borders (`edge`), actions (`board`, `out`, `taxi`,
+    `map`), and **engine exits** (`engine: true`): a door whose prompt and lock are the scene's
+    own code (the flat's door until CONCIERGE opens it) returns the exit's id from `use`. An exit
+    may set a save flag on leaving (`sets`: the flat's door sets `pixel`) and need a keyring item
+    (`needs`: Moth's residents' door). Downtown's doors and its map kiosk are its exits; `at` is
+    always an exit id in the destination. **Data** on the definition.
+  - What the engine draws around a scene (`ambient`: `sky`, Downtown's `city` walls, the wet
+    `street`, `rain`) and whether hack vision draws its devices in a second pass (`layers`, the
+    yard): **data** switches; the drawing is **code** (game.ts for the engine's, the scene's own).
+  - First-visit lines: **data**, each scene's `intro` (a function where it depends on a touch
+    screen), remembered as `flags['scene:<id>']` for every scene.
+  - Downtown's street people and the fixer stay **code** in game.ts and level.ts (their lines
+    depend on the save); Downtown's sign is a readable.
+- **The city as data** (2026-10-15, CITY.md): city → district → place → scene. `city.ts`
+  `DISTRICTS` (seven, each with its stratum), `PLACES` (every existing place: id, name, district,
+  entrance scene and the exit quick travel lands at) and `SCENE_PLACE` (each scene's place; a place
+  can have several scenes). **Typed code, not JSON**, so the type-check holds every scene id to a
+  place; the build checks the rest (`cityProblems`). The map and quick travel read places
+  (`MAP_PLACES`: those with a spot on today's map). LINE 0's car is a place with no district.
 
 ## The idea in one paragraph
 
-A zone is a data file that says **what** is there: devices, their nouns and verbs,
+A scene is a data file that says **what** is there: devices, their nouns and verbs,
 which events they raise, which cables exist, what everything says, the dialogue,
 goals. The code says **how** the few fiddly rules work (the claw, a timer,
 the hatch opening for one second) as **named effects**, and the data points at them
 by name. Writing a new device, rewording a reply or adding a dialogue branch is a
 data change. A new kind of behaviour is a code change: one new effect.
 
-## The zone engine
+## The engine
 
-`game/zone/` runs any zone file. Pieces:
+`game/engine/` runs any scene file. Pieces:
 
-- `model.ts` (`ZoneModel`): the rules, no DOM. State, devices, nouns, verbs, cables, logic
+- `model.ts` (`SceneModel`): the rules, no DOM. State, devices, nouns, verbs, cables, logic
   parts, and the hacking layer (guards, sectors, trace, net, keyring). Node can run it; `now`
   is swappable for tests.
-- `rules.ts`: `ZoneRules`, what a zone's code gives the engine (`effects`, `panels`,
+- `rules.ts`: `SceneRules`, what a scene's code gives the engine (`effects`, `panels`,
   `derived`, `settle`, `needs`, `check`, `place`), the engine's own effects (`timer.wait`), and
   `contractOf`, which turns rules into the contract the build checks.
 - `schematic.ts`, `panels.ts`: the overlay (device, board, hack vision) and the full-screen
-  panels (the engine's `talk`; a zone's own, like the yard's `camera`, via `PanelFn`).
+  panels (the engine's `talk`; a scene's own, like the yard's `camera`, via `PanelFn`).
 - `watchdog.ts` (its walk, pure), `watchdog-view.ts` (its sprite and badge on the schematic),
   `clock.ts` (CLOCK nouns, pure), `toys/` (the lock toys: `rings.ts`, `cipher.ts`, `cryptex.ts`,
   `morse.ts`, each a pure rule plus its panel; `index.ts` is the engine panel `toy`),
   `styles.ts` (their CSS, inlined by `render.tsx`).
-- `host.ts` (`ZoneHost`): one zone on screen: model, overlays, HACK/BOARD buttons, trace
-  ticking, save. `ZoneView` is a zone's drawing, own panels and extra E targets; `ZoneDef`
-  is `{ data, rules, view }`.
+- `host.ts` (`SceneHost`): one scene on screen: model, overlays, HACK/BOARD buttons, trace
+  ticking, save. It runs a scene's definition (`SceneDef`, scenes/kit.ts): its data file (or an
+  empty one, `emptyData`), its rules (or `NO_RULES`), its panels, extra E targets and drawing.
 
-A new zone: `data/<id>.json` (add it to `ZONE_FILES` in `data/index.ts` and to the
-`checkGame` list in `scripts/generate-demos.tsx`), a `ZoneRules` with its effects (often
-none), and a `ZoneView` that draws it. `game.ts` hosts it with `hostZone(def)`; its progress
-goes to `save.zones.<id>`.
+A new scene: a `SceneDef` (its size, spawn, exits, life and drawing) in `SCENES`
+(scenes/index.ts), and its place in `city.ts` (`SCENE_PLACE`, and a new place in `PLACES` if it
+is one). With devices, also `data/<id>.json` (add it to `SCENE_FILES` in `data/index.ts` and to
+the `checkGame` list in `scripts/generate-demos.tsx`) and a `SceneRules` with its effects (often
+none) on the definition. `game.ts` hosts it like every other (`hostOf`); its progress goes to
+`save.scenes.<id>`.
 
 ## What the data describes
 
-One file per zone: `game/data/yard.json`, `game/data/capsule.json`. Top level:
+One file per scene: `game/data/yard.json`, `game/data/capsule.json`. Top level:
 
 | Field | What it holds |
 |---|---|
 | `state` | Every state key and its starting value (`armAt: "home"`, `gateAllowed: false`). |
 | `tuning` | Numbers effects read: `gateOpenMs`, `slideMs`, … |
-| `devices` | The zone's devices. Each: `id`, `name`, `look`, `status`, `nouns`, optional `state`, `sectors`, `layout`. |
+| `devices` | The scene's devices. Each: `id`, `name`, `look`, `status`, `nouns`, optional `state`, `sectors`, `layout`. |
 | `nodes` | Computers on the net, not in the world (same shape as devices, no `layout.spot`). |
 | `cables` | Cables present from the start (`from: "crane.claw:dropped"`, `to`, `verb`). Empty in the yard. |
-| `keyring` | Keyring items this zone hands out: clue fragments, key chips, rules. |
+| `keyring` | Keyring items this scene hands out: clue fragments, key chips, rules. |
 | `camera` | The yard's: the crates CAM-1 sees (position, size, label). |
 | `dialogue` | Conversation trees, one per daemon (`hinge`). |
 | `goals` | In order: `id` and the objective `text`. |
 | `texts` | Every other line and label the code asks for, by key (and overrides of `engine.json`). |
-| `watchdog` | Optional: the Registry's watchdog walking this zone's devices and nodes (see **The watchdog**). |
+| `watchdog` | Optional: the Registry's watchdog walking this scene's devices and nodes (see **The watchdog**). |
 
-Shared files: `logic.json` (modules), `net.json` (`nodes`, `cables`, `keyring`, `watchdog` any zone
+Shared files: `logic.json` (modules), `net.json` (`nodes`, `cables`, `keyring`, `watchdog` any scene
 may reach), `engine.json` (`texts`: the engine's own wording).
 
 The logic modules are one shared file, `game/data/logic.json`: `modules`, each with an
 `id` (`timer.so`), `start` (owned in a new game), `foundIn` (where it is found; `null` for
-now) and `part`, a device like a zone's. A placed copy is `timer1`, `timer2`, … and gets
-its own `state`. The check runs it in each zone it is used in, and reports it as `logic.json`.
+now) and `part`, a device like a scene's. A placed copy is `timer1`, `timer2`, … and gets
+its own `state`. The check runs it in each scene it is used in, and reports it as `logic.json`.
 
 A **noun** has an `id`, a `kind` (SENSE / ACT / STORE / DAEMON; GUARD, LOG, LINK and CLOCK
 add engine behaviour, below), `verbs`, optional
@@ -267,8 +300,8 @@ In hack vision a device's nouns sit in one row above its name plate. Without `ro
 nouns it leaves out) they go by kind: SENSE and STORE, then ACT, then LINK / GUARD / LOG,
 then DAEMON. The old `vision` directions are still accepted but no longer read.
 
-A zone device needs `spot`; a node must not have one. Without `board`, devices and nodes take
-the next free slot under the zone's own; logic parts land by the palette.
+A scene device needs `spot`; a node must not have one. Without `board`, devices and nodes take
+the next free slot under the scene's own; logic parts land by the palette.
 
 ## Everyday actions and the popup
 
@@ -292,7 +325,7 @@ do with the thing without hacking anything, then `⌁ jack in` for a computer, t
 
 ## Pre-wired cables
 
-`cables` (zone and `net.json`) are laid at the start, look like the player's and cut the same
+`cables` (scene and `net.json`) are laid at the start, look like the player's and cut the same
 (tap the cable). A cable touching a node arrives when that node is connected. The check refuses
 a cable into a GUARD, or into the watchdog's noun.
 
@@ -315,7 +348,7 @@ a cable into a GUARD, or into the watchdog's noun.
 
 ## Keyring
 
-The player's keyring (`Save.keyring`, item ids) travels across zones. Items live in a zone's
+The player's keyring (`Save.keyring`, item ids) travels across scenes. Items live in a scene's
 or `net.json`'s `keyring`; ids are global (the check refuses a duplicate across files).
 
 ```json
@@ -444,10 +477,10 @@ of its verbs on the board in the last `linger` ms.
 A LINK noun (`"link": { "reach": ["concierge"] }`) has the engine's verbs `scan` (nodes in reach
 appear on the board as dashed silhouettes) and `connect <node>` (the node comes in as a full
 schematic, on the board only, with its pre-wired cables). A node may have its own LINK: that is
-a hop. Nodes are in a zone's `nodes` or in `net.json`. Seen and connected nodes are saved.
+a hop. Nodes are in a scene's `nodes` or in `net.json`. Seen and connected nodes are saved.
 A link may have a `when` (the router's and the home PC's: `routerUp`): while it does not hold,
 it neither scans nor connects. In sudo mode (`?sudo`) every LINK reaches every node there is
-(the zone's and `net.json`'s), its `when` still applies.
+(the scene's and `net.json`'s), its `when` still applies.
 
 ## The watchdog
 
@@ -458,7 +491,7 @@ fixed rhythm; the one it sits on is **frozen**.
 "watchdog": { "route": ["friendnet", "mothpc"], "dwellMs": 4000, "moveMs": 8000 }
 ```
 
-- In a zone file (its devices and nodes) or in `net.json` (net nodes only). Optional `id`
+- In a scene file (its devices and nodes) or in `net.json` (net nodes only). Optional `id`
   (default `watchdog`; saves keep its place by it) and `name` (default: the text `watchdog.name`).
   A device may be on one route only.
 - It sits on each stop for `dwellMs`, walks `moveMs` to the next, and loops; it starts sitting on
@@ -513,20 +546,20 @@ A `give` step hands the player one of three things:
 Each says its line (`keyring.*`, `give.module` / `give.module.have`, `give.tokens` with `{n}` and
 `{total}`). A module given shows up in the board's palette at once. The check: an unknown id says
 whether it looked like a module (`*.so`) or a keyring item; `tokens` needs a whole `count` from 1;
-`count` goes with nothing else. **`foundIn`** in `logic.json` must name the zone (or `net`) whose
+`count` goes with nothing else. **`foundIn`** in `logic.json` must name the scene (or `net`) whose
 data gives the module, and a module some file gives must say so in `foundIn` (unless `start`).
 
 ## What stays code
 
 - **Named effects** (`yard/effects.ts`): `crane.claw` (what can be grabbed, dropping into
   the chute), `hatch.open` (open for `gateOpenMs`), plus the parcel's slide that the claw
-  starts. The engine's `timer.wait` (wait, then raise `done`) is in `zone/rules.ts`. They read
+  starts. The engine's `timer.wait` (wait, then raise `done`) is in `engine/rules.ts`. They read
   their wording from `texts`.
 - **Panels and drawing**: how CAM-1 zooms, how the board drags cables, the canvas scene.
   They read their words and crate positions from data, but the look is code.
 - **The contract**: `YARD_RULES` in `effects.ts` lists what the code provides and expects
   (effects, panels, state keys, computed values like `gateOpen`, goals it ticks, text keys);
-  `contractOf` adds the engine's. The build (`checkGame`) checks every zone, `logic.json`,
+  `contractOf` adds the engine's. The build (`checkGame`) checks every scene, `logic.json`,
   `net.json` and the keyring against them.
 
 Rule of thumb: if a designer would want to change it without a programmer, it is data.
@@ -539,7 +572,7 @@ graduate to a step (a `wait` step is the obvious next one).
 | Option | For | Against |
 |---|---|---|
 | **JSON**, typed and checked | Any tool reads and writes it (a future editor, a script, an LLM); bundled by esbuild as is; no build step | No comments; strict quoting |
-| TS objects (`satisfies ZoneData`) | Full type-checking and autocomplete; comments | Code, not data: an editor can't save it back; tempts people to write closures into it |
+| TS objects (`satisfies SceneData`) | Full type-checking and autocomplete; comments | Code, not data: an editor can't save it back; tempts people to write closures into it |
 | YAML / TOML → JSON at build | Pleasant to write by hand; comments | A converter step and a dependency; YAML's surprises (`no` → false) |
 
 **Recommendation: JSON**, bundled into the page by esbuild (no fetches, so the strict
@@ -551,7 +584,7 @@ added later as a source that compiles to the same JSON; nothing else changes.
 Two layers, neither a manual step:
 
 1. **Type-check** (`tsc`, your editor): `data/index.ts` assigns the JSON to
-   `Loose<ZoneData>`, so a missing field or a string where a list belongs is a red squiggle.
+   `Loose<SceneData>`, so a missing field or a string where a list belongs is a red squiggle.
 2. **Build** (`pnpm build:homepage`): `data/check.ts` runs first and fails the build
    with one readable line per problem:
 
@@ -569,32 +602,34 @@ At runtime a missing text shows as `[missing text key]` in the terminal rather t
 
 ## How authoring can grow
 
-- **One file per zone** (`yard.json`, `downtown.json`), plus shared files when
-  something repeats across zones (logic parts, common replies).
+- **One file per scene** (`yard.json`, `downtown.json`), plus shared files when
+  something repeats across scenes (logic parts, common replies).
 - **Ids are the glue**: `device.noun:event` for cables, node ids for dialogue, goal ids,
   text keys. Keep them short and stable; rename with care since saves will store them.
 - **Downtown** is built (`downtown.json`): machines are devices, its terminal commands are
   nouns and verbs (and still type, `downtown/shell.ts`), objectives are `goals`. People and the
   fixer stay speech bubbles in `level.ts` for now; its save stays the save's own fields (above).
 - **Localisation**: all wording is already in data. Next step is moving `texts`,
-  dialogue and `look`s into `texts.en.json` keyed by id, with the zone file holding keys only.
+  dialogue and `look`s into `texts.en.json` keyed by id, with the scene file holding keys only.
 - **Layout**: done: `layout` on each device (see **Layout**).
 - **Crafting**: removed with the workbench. The format keeps an optional
   `bench: { parts, recipes }` whose recipes make logic parts, so it can return.
 - **A visual editor** (not now, see Decided): JSON plus the checker is the foundation.
-  A first editor could be the game's own board in an "author mode" that saves the zone file back.
+  A first editor could be the game's own board in an "author mode" that saves the scene file back.
 
 ## Saves
 
-One localStorage object (`access-denied-save-v1`). Besides Downtown's fields:
+One localStorage object (`access-denied-save-v2`; sudo's is `access-denied-save-sudo-v2`, slots
+`access-denied-v2-slot-<n>`). v2 came with the merge of zones into scenes: saves from before
+(v1, with `zones`) are not read, and everyone starts fresh. Besides Downtown's fields:
 
 ```ts
 modules: string[]            // owned logic modules: ["timer.so"]; legs.so stays `jump`
 keyring: string[]            // keyring item ids, and made fragments as `join(a,b)`
-zones: { [id]: ZoneSave }    // each zone's progress, by zone id
+scenes: { [id]: SceneSave }    // each scene's progress, by scene id
 
-interface ZoneSave {
-  state: { found, armAt, held, parcel, parcelAt, gateAllowed, pan }   // the zone's state keys, settled
+interface SceneSave {
+  state: { found, armAt, held, parcel, parcelAt, gateAllowed, pan }   // the scene's state keys, settled
   goals: string[]                                   // goal ids reached
   links: { from, to, verb }[]                       // every cable (pre-wired ones you cut are missing)
   logic: { id, kind, state?, at? }[]                // placed parts: timer1, switch1 (+ its on/off, + where it floats in hack vision)
@@ -611,7 +646,7 @@ interface ZoneSave {
 }
 ```
 
-Older saves get `modules` from the new-game default, an empty `keyring` and an empty `zones`.
+A stored save missing a field gets it from a new game (`modules`, an empty `keyring`, empty `scenes`).
 Empty engine fields are left out, so the yard's save looks as before. The yard writes
 its part a moment after things go quiet, when you leave it, when the game stops and when the
 page is hidden (`pagehide`); while trace or a lockout moves it also writes every 2 s at most.
@@ -636,24 +671,28 @@ Decided (save details):
 - `game/data/yard.json`: the back yard. `game/data/logic.json`: the shared logic modules.
   `game/data/net.json`: the shared net (empty for now). `game/data/engine.json`: engine wording.
 - `game/data/check.ts`: the build-time check (`checkGame`). `game/data/index.ts`: bundles the JSON.
-- `game/zone/`: the engine (see **The zone engine**).
-- `game/capsule/`: Capsule 7B, the start zone: `rules.ts` (`CAPSULE_RULES`: the clock, the router,
-  Pixel), `scene.ts` (drawing, Pixel's perches), `index.ts` (`CAPSULE_ZONE`, the door).
-  `game/companion.ts`: Pixel. `START_ZONE` (city.ts) is `capsule`: a save that has never been
+- `game/engine/`: the engine (see **The engine**).
+- `game/capsule/`: Capsule 7B, the start scene: `rules.ts` (`CAPSULE_RULES`: the clock, the router,
+  Pixel), `scene.ts` (drawing, Pixel's perches), `index.ts` (`capsule`, its `SceneDef`: the door).
+  `game/companion.ts`: Pixel. `START_SCENE` (city.ts) is `capsule`: a save that has never been
   Downtown starts there, a new one after the intro.
 - `game/yard/`: the yard's own code: `effects.ts` (`YARD_RULES`), `camera.ts` (CAM-1),
-  `scene.ts` (drawing), `index.ts` (`YARD_ZONE`, the parcel: `PARCEL`).
+  `scene.ts` (drawing), `index.ts` (`yard`, its `SceneDef`; the parcel: `PARCEL`).
 - `game/data/moth.json`: Moth's place, flat 4C (story Level 3): the flat's things, FRIENDNET,
   MOTH-PC, the watchdog. `game/moth/`: `rules.ts` (`MOTH_RULES`: `uplink`, `journalOpen`, goals),
-  `scene.ts` (drawing), `index.ts` (`MOTH_ZONE`, the door out).
+  `scene.ts` (drawing), `index.ts` (`moth`, its `SceneDef`: the door out).
 - `game/data/beach.json`: the beach and SALT (the sunbed kiosk, the jukebox, the mixer, the
   lifeguard drone, the pier lights' CLOCK, Moth's boat). `game/beach/`: `rules.ts` (`BEACH_RULES`:
   minute billing, the drone's flag running out), `scene.ts` (drawing, the people), `index.ts`
-  (`BEACH_ZONE`: the view with `people`, `uses`, `readables`, the stairs out).
+  (`beach`, its `SceneDef`: `people`, `uses`, `readables`, the stairs out).
 - `game/data/downtown.json`: Downtown. `game/downtown/`: its code: `rules.ts` (effects, derived
   values from the save, DLV-9's drive; `downtownRules(player)`), `save.ts` (`reconcile` with old
   saves), `shell.ts` (typed commands), `camera.ts` (CAM-3), `scene.ts` (drawing, the CITY MAP
-  kiosk), `index.ts` (`downtownZone(player)`).
+  kiosk), `index.ts` (`downtown`, its `SceneDef`: the doors as exits; its rules are made for the
+  player's save, `rules(player)`).
+- `game/scenes/`: `kit.ts` (`SceneDef`, exits, uses, readables, the shared drawing kit),
+  `index.ts` (`SCENES`, every scene), and the scenes without devices (market, shop, mall, harbor,
+  the platforms, the car). `game/city.ts`: districts, places, each scene's place, the map.
 
 ## Cutscenes
 
@@ -664,7 +703,7 @@ is code (`game/cutscenes/`, one draw function per id); everything said and timed
 "intro": {
   "title": "ACCESS DENIED",          // shown in the window header while it plays
   "duration": 26,                    // seconds; then it hands over
-  "next": "capsule",                 // the zone it hands over to: "downtown", "yard", "capsule" or a scene id
+  "next": "capsule",                 // the scene it hands over to: any scene id
   "cards": [ { "at": 2.5, "until": 9, "text": "The city never logs off. …" } ]
 }
 ```
@@ -674,7 +713,7 @@ keep them to one or two short lines. A new cutscene needs an entry here and a dr
 `cutscenes/index.ts` (`DRAW`). Code plays one with `game.playCutscene(id, then?)`; without `then`
 it hands over to `next`. `?play=<id>` plays it on start.
 
-Boundary: the picture (layout, motion) is **code**; titles, timing, cards and the next zone are **data**.
+Boundary: the picture (layout, motion) is **code**; titles, timing, cards and the next scene are **data**.
 
 ## Open questions
 
@@ -689,7 +728,7 @@ Boundary: the picture (layout, motion) is **code**; titles, timing, cards and th
    engine took it: a guard's own success line (`guard.say`, from the sketches' `on.opened` lines).
 5. Built since: the watchdog, `give` for modules and tokens, the lock toys, `fixed` cables, CLOCK
    nouns. Not built: the `effect`s the sketches name (`node.free`, `pixel.move`,
-   `dlv.drive`, `washer.run`, `train.brake`, …): zone code, written with each zone.
+   `dlv.drive`, `washer.run`, `train.brake`, …): scene code, written with each scene.
 6. **Toys and trace:** playing a toy does not count as being inside the device (only `probe` and
    answers touch it). Should a LOG fill while a toy panel is open?
 7. Should the fixer's hints move into `downtown.json` (a `hints` field per goal)?

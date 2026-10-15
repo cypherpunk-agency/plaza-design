@@ -15,6 +15,10 @@ connect. ROADMAP.md says what gets built when; SCENES.md and STORY.md say what t
 4. **Scene**: one walkable screen, on the hacking engine (devices, wiring, hack view), with its
    people, things to use, readables and exits. A scene with no devices is still a scene.
 
+In code: `city.ts` has the districts (`DISTRICTS`), the places (`PLACES`: id, name, district,
+entrance scene) and every scene's place (`SCENE_PLACE`); every scene is a `SceneDef` in
+`scenes/index.ts` (`SCENES`), hosted on the engine whether it has devices or not.
+
 ## The vertical city
 
 The city is a cross-section with three strata.

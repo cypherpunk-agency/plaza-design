@@ -11,8 +11,9 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
 
 1. Popup feedback: everyday actions close the popup; device captions with a leader line; pings;
    the popup beside the device, away from what it affects; max 3 everyday actions. (running)
-2. One kind of place, called **scene**: scenes and zones merge; "zone" is renamed "scene"
-   everywhere. (The people kit is now the **character kit**, characters.ts: done.)
+2. One kind of place, called **scene**: every place is a scene (`SceneDef`, scenes/index.ts),
+   hosted one way on the engine (engine/). ✓ (The people kit is now the **character kit**,
+   characters.ts: done.)
 3. The camera nudge (test): when something reacts off-screen, the view leans toward it, or an
    edge ping points there.
 4. A tone pass over older content (the world is dry, the characters have the humour), and the
@@ -20,8 +21,9 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
 
 ## Then: the city
 
-5. The city in code (districts → places → scenes, CITY.md), then the map redesign as a vertical
-   cross-section with two zoom levels (to be tested and adjusted).
+5. The city in code (districts → places → scenes, CITY.md: city.ts `DISTRICTS`, `PLACES`,
+   `SCENE_PLACE`) ✓, then the map redesign as a vertical cross-section with two zoom levels (to
+   be tested and adjusted).
 
 ## Act I: where is Moth?
 

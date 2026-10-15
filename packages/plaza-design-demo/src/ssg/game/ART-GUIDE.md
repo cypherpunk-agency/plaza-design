@@ -136,7 +136,7 @@ UI never covers a consequence: captions at the reacting thing, pings for attenti
 beside the device away from what it affects, the character speaks only for itself.
 
 - **Everyday actions close their popup at once.** The scene is free when the reaction plays.
-- **Captions** (`zone/feedback.ts`): a device's reply stands over the thing that *reacted*, not
+- **Captions** (`engine/feedback.ts`): a device's reply stands over the thing that *reacted*, not
   over the thing you tapped (the plug's "switch on" makes the router answer over the router), on
   a thin leader down to it, in the device's dry voice: green worked, red denied, paper otherwise.
   They fade after a few seconds and stack without covering each other. The terminal (the phone's

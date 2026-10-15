@@ -1,7 +1,7 @@
 # ACCESS DENIED: puzzle catalogue
 
 Every puzzle, device, character and good line we have so far, put in story order so the
-next agents can build from it. The back yard and Downtown are built (Downtown on the zone
+next agents can build from it. The back yard and Downtown are built (Downtown on the scene
 engine since 2026-10-14: `data/downtown.json`); everything else is a design. Read with `LEVELS.md` (the story and level plan),
 `GAME-DATA.md` (the data format) and `ART-GUIDE.md` (how things look).
 
@@ -29,7 +29,7 @@ Tommi's call).
 
 ## Summary
 
-| # | Puzzle | Zone · spot | Mechanics | Path | Diff. |
+| # | Puzzle | Scene · spot | Mechanics | Path | Diff. |
 |---|---|---|---|---|---|
 | P01 | Router on a schedule | Capsule 7B · smart plug | pre-wired cable to cut, ACT verb, reading | main | 1 |
 | P02 | Rent: pending | Capsule 7B · door, HOME-PC | scan/connect, one cable (event → verb), daemon CONCIERGE | main | 1 |
@@ -102,32 +102,32 @@ Story thread (finding Moth), one line per step:
 
 ## Format pieces (as built)
 
-The engine (`game/zone/`, GAME-DATA.md) now has every piece these puzzles need except the
-zone-specific effects. The sketches below are written in its real format (abbreviated: `look`,
+The engine (`game/engine/`, GAME-DATA.md) now has every piece these puzzles need except the
+scene-specific effects. The sketches below are written in its real format (abbreviated: `look`,
 `status` and `layout` are left out where they add nothing, and so is the `on` entry of a verb
-whose lines are not written yet), so they paste into a zone file and the build's check takes
+whose lines are not written yet), so they paste into a scene file and the build's check takes
 them from there: it will ask for the missing pieces by name. (They were first written as proposals; GAME-DATA.md's
 open question 4 records the alignment.)
 
 | Piece | As built (GAME-DATA.md section) | Data or code |
 |---|---|---|
 | Kinds `LINK`, `GUARD`, `LOG`, `CLOCK` | LINK: `link.reach`, engine verbs `scan`, `connect <node>` (**The net**). GUARD: `guard`, engine verbs `try <fragment>` and `type…`, or `probe` on a toy (**Guards**, **Lock toys**). LOG: `log.rate` (**Trace**). CLOCK: `clock.every`, engine verbs `start` / `stop` (**Clocks**). | data; behaviour is engine code |
-| Clues | Keyring items in the zone's (or `net.json`'s) `keyring`: `{ "id", "kind": "fragment", "label", "text" }`; a rule is `{ "kind": "rule", "rule": "reverse" }`. The step `{ "give": "vrify" }` puts one on the keyring (**Keyring**). | data + save |
+| Clues | Keyring items in the scene's (or `net.json`'s) `keyring`: `{ "id", "kind": "fragment", "label", "text" }`; a rule is `{ "kind": "rule", "rule": "reverse" }`. The step `{ "give": "vrify" }` puts one on the keyring (**Keyring**). | data + save |
 | Guard | `guard`: `{ "password": "…" \| [...], "near"?: { guess: line }, "tries"?, "lockMs"?, "trace"? (%), "say"?: line, "do"?: steps }`, or `"toy"` with its parameters instead of `password`. Success says `say`, runs `do`, raises `opened` if listed, opens sectors sealed by it. No `user` field: name the user in the lines. | data; toys are code |
 | Sealed sectors | Device `sectors`: `[{ "id", "label", "seal": { "key": "moth.key" } \| { "guard": "login" } \| { "if": "stateKey" } \| { "sequence": [...] } }]`; each noun in it says `"sector": "<id>"` (**Sealed sectors**). | data |
-| Chips, modules, tokens | `{ "give": "moth.key" }` (a key chip), `{ "give": "switch.so" }` (a module into `Save.modules`; `foundIn` in `logic.json` names the zone), `{ "give": "tokens", "count": 3 }` (**Giving things**). | data + save |
+| Chips, modules, tokens | `{ "give": "moth.key" }` (a key chip), `{ "give": "switch.so" }` (a module into `Save.modules`; `foundIn` in `logic.json` names the scene), `{ "give": "tokens", "count": 3 }` (**Giving things**). | data + save |
 | Pre-wired cables | `cables`, cut by tapping. `"fixed": true` for a conduit you cannot cut; optional `id` (**Pre-wired cables**). | data |
 | Clocks | A CLOCK noun: `{ "kind": "CLOCK", "events": ["night", "day"], "clock": { "every": 4000, "set": "phase" } }` raises its events in turn (**Clocks**). | data; the beat is engine code |
 | Trace | A LOG noun: `{ "kind": "LOG", "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" } }` plus the pre-wired cable `log:entry → archive.store`. `rate` is % per second (a `fillMs` of 20000 is `rate` 5). Full meter: kicked out, locked out for `log.lockMs` (**Trace**). | data; meter is code |
-| Net | Nodes in a zone's `nodes` or `net.json`; a LINK's `reach` lists which it can `scan` (**The net**). | data |
-| Watchdog | `"watchdog": { "route": [...], "dwellMs", "moveMs" }` in a zone or `net.json`. The device it sits on freezes. Each route device gets the engine noun `watchdog` with events `arrives` / `leaves` (**The watchdog**). | data; freezing is code |
+| Net | Nodes in a scene's `nodes` or `net.json`; a LINK's `reach` lists which it can `scan` (**The net**). | data |
+| Watchdog | `"watchdog": { "route": [...], "dwellMs", "moveMs" }` in a scene or `net.json`. The device it sits on freezes. Each route device gets the engine noun `watchdog` with events `arrives` / `leaves` (**The watchdog**). | data; freezing is code |
 | Hints | Downtown's stepped fixer hints, per goal, cost a token each (`hints` comes back for Downtown, GAME-DATA.md). Not built. | data |
 | Nodes freed | A named effect `node.free` (Downtown's code) or a state key the NODES counter reads. Not built. | code (effect) |
 
 Rule kept from GAME-DATA.md: if it needs geometry, a loop or timing beyond "wait N ms", it is a
 named effect; everything that is wording, wiring or a choice is data. Effects the sketches name
 (`pixel.move`, `node.free`, `dlv.drive`, `washer.run` / `washer.stop`, `train.brake`,
-`train.doors`, `gantry.move`, `grudge.add`) are each zone's own code, written with that zone.
+`train.doors`, `gantry.move`, `grudge.add`) are each scene's own code, written with that scene.
 Two proposed effects became data: `tokens.add` is `{ "give": "tokens", "count": 3 }`, and P10's
 `seal.hear` is the engine's sequence seal.
 
@@ -143,7 +143,7 @@ a robot cat who sleeps on whatever is warm.
 
 ### P01 Router on a schedule
 
-- **Zone · spot:** Capsule 7B, the smart plug under the desk. Main path. Difficulty 1.
+- **Scene · spot:** Capsule 7B, the smart plug under the desk. Main path. Difficulty 1.
 - **Player sees:** the router is dark. The fridge note: *"who set the router to sleep at
   night? it's a capsule. it is always night in here. —past you"*
 - **Solution:** open the plug's schematic. A cable is already there: `clock:night → plug.power
@@ -169,7 +169,7 @@ a robot cat who sleeps on whatever is warm.
 
 ### P02 Rent: pending
 
-- **Zone · spot:** Capsule 7B, the door and HOME-PC. Main path. Difficulty 1.
+- **Scene · spot:** Capsule 7B, the door and HOME-PC. Main path. Difficulty 1.
 - **Player sees:** the door is locked. CONCIERGE's plate: RENT: PENDING. HOME-PC's outbox holds
   `receipt_rent.pdf`, "waiting for a network since Tuesday".
 - **Solution:** with the router up (P01), `scan` on the router's `uplink` brings CONCIERGE onto
@@ -189,7 +189,7 @@ a robot cat who sleeps on whatever is warm.
     its own form is attached to it."
 - **Data sketch:**
 
-The router's uplink sits in a sector that opens once the plug is on; CONCIERGE is a node (zone
+The router's uplink sits in a sector that opens once the plug is on; CONCIERGE is a node (scene
 `nodes`), so `scan` shows it and `connect` brings it onto the board.
 
 ```json
@@ -209,7 +209,7 @@ The router's uplink sits in a sector that opens once the plug is on; CONCIERGE i
 
 ### P03 Pixel and the warm router
 
-- **Zone · spot:** Capsule 7B, kettle and blinds. Main path (the send in P02 fails while the
+- **Scene · spot:** Capsule 7B, kettle and blinds. Main path (the send in P02 fails while the
   router keeps rebooting). Difficulty 2.
 - **Player sees:** router status "temp 71°C · Pixel asleep on top", then "rebooting". Pixel's
   schematic: `mood` reads "warm-seeking. opinions: none. naps: many."; USE does nothing
@@ -263,7 +263,7 @@ and the save stay the same.
 | files that appear after login | a sealed sector that unfolds after the guard opens |
 | `install legs.so` | `install` verb on the `legs.so` STORE noun |
 | `set handle`, `sudo`, `rm`, `hack`, `enter` | stay as keyboard lines on your own deck (the keyboard is the last resort, and the jokes live there) |
-| `flags.till`, `freed`, `jump`, `tokens`, `hints` | zone `state` + the existing save fields (keep `Save.jump`, `Save.freed` so old saves load) |
+| `flags.till`, `freed`, `jump`, `tokens`, `hints` | scene `state` + the existing save fields (keep `Save.jump`, `Save.freed` so old saves load) |
 | `objective()` | `goals`: `handle`, `till`, `box`, `install`, `relay`, `gate` (same ids) |
 | `HINTS` + `fixerTalk()` | the fixer as a dialogue with `hints` per goal, one token each, "hints, never answers" |
 
@@ -275,7 +275,7 @@ lifestyle."), `enter` ("nice try.").
 
 ### P04 Name yourself
 
-- **Zone · spot:** Downtown, at the noodle stall. Main path. Difficulty 1.
+- **Scene · spot:** Downtown, at the noodle stall. Main path. Difficulty 1.
 - **Player sees:** the fixer: "Another ghost. Sit." / "Noodles are free for the dead." /
   "Registry pulled your key? Then nobody on this street sees you." / "Got a name, ghost?"
 - **Solution:** open the deck's keyboard corner, `set handle <name>`.
@@ -285,7 +285,7 @@ lifestyle."), `enter` ("nice try.").
 
 ### P05 The noodle till
 
-- **Zone · spot:** Downtown, the till on the noodle stall counter. Main path. Difficulty 1.
+- **Scene · spot:** Downtown, the till on the noodle stall counter. Main path. Difficulty 1.
 - **Player sees:** NOODLE TILL v1.0, firmware: factory. The fixer: "my till still runs on
   factory settings. Don't tell anyone." / "Factory settings. Every manual prints them."
 - **Solution:** READ `receipts.log` (flavour: "#0414 ramen, for a ghost .... on the house").
@@ -314,7 +314,7 @@ lifestyle."), `enter` ("nice try.").
 
 ### P06 VERIFY's dead letter (junction box 0x2F)
 
-- **Zone · spot:** Downtown, the Registry junction box under the vertical VERIFY sign. Main
+- **Scene · spot:** Downtown, the Registry junction box under the vertical VERIFY sign. Main
   path. Difficulty 2.
 - **Player sees:** JUNCTION BOX 0x2F · REGISTRY UTILITIES · AUTHORISED STAFF ONLY. Above it the
   VERIFY sign in neon, one tube dead (the E: it reads V·RIFY). The fixer: "That junction box
@@ -383,7 +383,7 @@ don't install themselves." / "Go back to the box. What does it list now that it 
 
 ### P07 The parcel
 
-- **Zone · spot:** the fixer's back yard (door at the end of the block past the stall). Main
+- **Scene · spot:** the fixer's back yard (door at the end of the block past the stall). Main
   path. Built (`data/yard.json`). Difficulty 2.
 - **Player sees:** CAM-1 on a pole, the CRANE over three crates, a chute down to a hatch in the
   fence with a face: HINGE. `job.log`: "parcel for you, slot ?-? (smudged by a thumb)."
@@ -418,7 +418,7 @@ tacky."), lamp + speaker = DISCO ("nobody asked."). The format keeps `bench` for
 
 ### P08 Rotation is not security (rooftop relay 0x31)
 
-- **Zone · spot:** Downtown, the relay on the low roof (jump from the dumpster, legs.so). Main
+- **Scene · spot:** Downtown, the relay on the low roof (jump from the dumpster, legs.so). Main
   path. Difficulty 2.
 - **Player sees:** ROOFTOP RELAY 0x31 · REGISTRY UTILITIES. A `log` noun with a trace meter
   (the first one in the game, slow and forgiving).
@@ -488,13 +488,13 @@ story out of systems.* (LEVELS L3)
 
 ### P09 Gone fishing (not fishing)
 
-**Built** (`data/moth.json`, zone `moth`, 2026-10-15). Differences from the sketch below: the line
+**Built** (`data/moth.json`, scene `moth`, 2026-10-15). Differences from the sketch below: the line
 out is Moth's rig in the flat (`desk.net`, a LINK with `when: uplink`: the `uplink` chip from the
 yard's parcel); the rig's own screen refuses a local login ("friends come in through FRIENDNET").
 FRIENDNET's `home` LINK reaches MOTH-PC. The drawer holds `notes.txt` (Moth's hints for P10),
 `photos` (gives `sprat`) and `switch.so`. No NEOBANK link yet (P11 is not built).
 
-- **Zone · spot:** the net: FRIENDNET, then MOTH-PC. Main path. Difficulty 2.
+- **Scene · spot:** the net: FRIENDNET, then MOTH-PC. Main path. Difficulty 2.
 - **Player sees:** FRIENDNET, a chat service where every status line is a little too honest.
   Moth: "gone fishing (not fishing)". You: "{handle}: pretending to be busy". The fixer:
   "serving noodles to the dead". A contact called REGISTRY-WD: "just checking".
@@ -510,9 +510,9 @@ FRIENDNET's `home` LINK reaches MOTH-PC. The drawer holds `notes.txt` (Moth's hi
     sang it wrong." → the seal order for P10
 - **Data sketch:**
 
-MOTH-PC is a node (the level's zone file `nodes`, reached from FRIENDNET's `home` LINK; see the
+MOTH-PC is a node (the level's scene file `nodes`, reached from FRIENDNET's `home` LINK; see the
 note under P11). Installing `switch.so` is a `give`; `logic.json` then says `"foundIn":
-"mothnet"` (that zone's id) for it, and the check holds the two together.
+"mothnet"` (that scene's id) for it, and the check holds the two together.
 
 ```json
 { "id": "mothpc", "name": "MOTH-PC", "look": "A computer that smells of solder and fish food.",
@@ -550,7 +550,7 @@ the first ("one song at a time", "open it when the dog leaves. shut it behind th
 The journal's last entry gives the keyring fragment `washer3` ("Moth's jacket": "washer 3, market
 laundromat"), which P13's laundromat can read.
 
-- **Zone · spot:** MOTH-PC, the `journal` sector. Main path. Difficulty 4.
+- **Scene · spot:** MOTH-PC, the `journal` sector. Main path. Difficulty 4.
 - **Player sees:** the journal's seal is a noun with three bells as verbs, `high`, `low`, `mid`
   (the engine's sequence seal: it says "seal: 1 of 3", "wrong order. it resets"). It ignores
   fingers: only signals ring it. Moth's music box on the desk plays on its own schedule (a CLOCK,
@@ -578,7 +578,7 @@ laundromat"), which P13's laundromat can read.
 
 The seal is MOTH-PC's `journal` sector (P09's sketch: `"seal": { "sequence": ["high", "low",
 "mid"], "withinMs": 1500, "signal": true }`), so no effect is needed. The music box is a node next
-to MOTH-PC (in the same zone file):
+to MOTH-PC (in the same scene file):
 
 ```json
 { "id": "musicbox", "name": "MUSIC BOX", "look": "Three notes, over and over. Moth liked routines.", "status": "plays every 4 s",
@@ -597,7 +597,7 @@ WATCHDOG: here. just checking."), with the events `arrives` / `leaves` the solut
 
 ### P11 Who paid for whose ticket (NEOBANK)
 
-- **Zone · spot:** the net, NEOBANK (reached from MOTH-PC's `bank` link). Optional, strongly
+- **Scene · spot:** the net, NEOBANK (reached from MOTH-PC's `bank` link). Optional, strongly
   hinted. Difficulty 3.
 - **Player sees:** NEOBANK's login for "moth", password hint: "who I feed + when I hatched".
   NEO, the banking assistant, a chatbot with feelings ("Hi! I'm NEO. I'm fine. Thanks for not
@@ -644,7 +644,7 @@ good name); typing `sprat0412` works too.
 ]
 ```
 
-These nodes (FRIENDNET, MOTH-PC, the music box, NEOBANK) belong to the level's own zone file
+These nodes (FRIENDNET, MOTH-PC, the music box, NEOBANK) belong to the level's own scene file
 (`nodes` in, say, `mothnet.json`), not `net.json`: they need its goals, dialogue (NEO) and
 watchdog. A node in `net.json` may only use the engine and its own state.
 
@@ -663,7 +663,7 @@ send it out again (`follow you`), the gate stays open: Downtown's end screen, an
 market's door from then on. The lock only opens on the scanner's word (a TIMER wired to it is told
 off). DLV-9's `hatch` gives the left glove (a key chip). Not used yet: the watchdog.
 
-- **Zone · spot:** Downtown, the west end: the NEON MARKET GATE, and DLV-9, a lost delivery
+- **Scene · spot:** Downtown, the west end: the NEON MARKET GATE, and DLV-9, a lost delivery
   robot by the dumpster. Main path. Difficulty 4.
 - **Player sees:** the gate wants a scanner signature ("ACCESS DENIED. Scanner signature
   required. Passwords are so last decade."). Its schematic: `scanner` SENSE (event `matched`),
@@ -761,7 +761,7 @@ scaffold (Act II).
 
 ### P13 Washer 3 (the laundromat)
 
-- **Zone · spot:** the market, a laundromat between the stalls (new spot; LEVELS "more
+- **Scene · spot:** the market, a laundromat between the stalls (new spot; LEVELS "more
   puzzles"). Main path. Difficulty 4.
 - **Player sees:** four networked washers on one breaker that trips above two running machines.
   Washer 3: "door locked · 1 cycle left · contents: 1 jacket (prepaid)". Washers 1, 2 and 4 hold
@@ -809,7 +809,7 @@ wired in the walls, so those four are `fixed`: the puzzle is the schedule, not t
 
 ### O05 DON'T TRUST. VERIFY. (the market billboard)
 
-- **Zone · spot:** the market, the big billboard over the stalls (`scenes`: "decrypting…" then
+- **Scene · spot:** the market, the big billboard over the stalls (`scenes`: "decrypting…" then
   "[SIG OK]"). Optional. Difficulty 2.
 - **Player sees:** the billboard scrolls `KVU'A AYBZA. CLYPMF.` Its `cipher` guard opens the
   cipher wheel toy (`lab1` #2: drag the rotor, the letter in the lens).
@@ -845,7 +845,7 @@ READING IT · SMILE · YOU ARE ON CAMERA. CAR 3 OF 3. EMERGENCY BRAKE.
 
 ### P14 The stop that isn't on the map
 
-- **Zone · spot:** metro platform → train, the emergency brake in car 3. Main path.
+- **Scene · spot:** metro platform → train, the emergency brake in car 3. Main path.
   Difficulty 3.
 - **Player sees:** the turnstile takes the maglev pass (key chip from P13). On the train, the
   MAGLEV node (`scan` from the departures board) lists PLAZA CENTRAL only. TRAIN-0's schematic:
@@ -881,7 +881,7 @@ the plate; add "your emergency has been registered. it will be ready in 48 hours
 
 ### O07 The junction cabinet (patch bay)
 
-- **Zone · spot:** metro, a service cabinet at the end of the platform. Optional. Difficulty 3.
+- **Scene · spot:** metro, a service cabinet at the end of the platform. Optional. Difficulty 3.
   (`combos` puzzle shelf: "Rewire a junction cabinet so the Registry's feed routes into the
   mesh.")
 - **Player sees:** a patch bay (`lab1` #7): inputs `platform cam`, `ads`, `departures`; outputs
@@ -915,7 +915,7 @@ the plate; add "your emergency has been registered. it will be ready in 48 hours
 
 ### O10 The music box (LOST+FOUND)
 
-- **Zone · spot:** metro, the bench, a LOST+FOUND locker wall, the platform camera. Optional.
+- **Scene · spot:** metro, the bench, a LOST+FOUND locker wall, the platform camera. Optional.
   Difficulty 3. (LEVELS "more puzzles")
 - **Player sees:** the commuter on the bench lost a music box on the train. LOST+FOUND (the
   city's lost-property office; "it has found everything except love") has it in locker 12,
@@ -942,7 +942,7 @@ SIDE UP (ANY) · NRLU 404 0451.
 
 ### P15 NRLU 404 0451 (draft)
 
-- **Zone · spot:** the harbor pier, container stacks, crane STS-2. Main path, end of Act I.
+- **Scene · spot:** the harbor pier, container stacks, crane STS-2. Main path, end of Act I.
   Difficulty 5. Draft: the reunion and what Moth knows need Tommi's call.
 - **Player sees:** STS-2 moves containers onto the night ferry on a loop. The Port Authority
   scanner sweeps each container the crane lifts (pre-wired `scanner:warm → alarm sound`: a
@@ -988,7 +988,7 @@ freeze.
 
 ### O01 SNACKOMAT
 
-- **Zone · spot:** the corner shop (`scene:shop`), beside THIRST.EXE. Optional practice
+- **Scene · spot:** the corner shop (`scene:shop`), beside THIRST.EXE. Optional practice
   device, there from the start. Difficulty 1. (LEVELS "practice device"; device and lines from
   `lab3`)
 - **Player sees:** a vending machine that holds grudges. Outer layer: `coil 4` ("raisins. always
@@ -1033,7 +1033,7 @@ At grudge 0 its dialogue hands over the key with `{ "give": "snack.key" }` and o
 **Built**: CAM-3 on a pole at x 520, its `lens` opens the `cam3` panel (ZOOM, TAG, LOOP); the
 penthouse window blinks GHOST in Morse in the feed.
 
-- **Zone · spot:** Downtown, a camera on a pole across from the billboard. Optional; the first
+- **Scene · spot:** Downtown, a camera on a pole across from the billboard. Optional; the first
   camera most players meet. Difficulty 1. (`lab3` §04)
 - **Player sees:** ● REC CAM-3. READ the lens: the scope. Things under the crosshair: the
   billboard, the penthouse window, the yard door, a pigeon.
@@ -1048,7 +1048,7 @@ penthouse window blinks GHOST in Morse in the feed.
 
 ### O03 The window that blinks
 
-- **Zone · spot:** Downtown, the one lit window on the penthouse tower's top floor (drawn in
+- **Scene · spot:** Downtown, the one lit window on the penthouse tower's top floor (drawn in
   `game.ts`). Optional. Difficulty 2. (`lab1` #6: "a blinking light in the city spells a
   password in Morse")
 - **Player sees:** via CAM-3's zoom, a lamp that blinks in a rhythm. Its device (reachable by
@@ -1075,7 +1075,7 @@ is what makes them yours: the fragment comes from the guard.
 
 ### O04 J's cryptex
 
-- **Zone · spot:** Downtown, inside the penthouse ("The door has no handle. Only a window, very
+- **Scene · spot:** Downtown, inside the penthouse ("The door has no handle. Only a window, very
   high up."). Optional, late (needs a climbing module from Act II). Difficulty 3. (`combos`:
   "A locked case in the penthouse: the reels hold a five-letter word hidden somewhere in the
   city.")
@@ -1104,7 +1104,7 @@ ad`. Wire `cam3.lens:frame → billboard.screen show feed`, LOOP: the ad comes b
 unless its cable is cut; if the pigeon is still up when it trends, node 0x3C is free. The funny
 wrong pairs are not built.
 
-- **Zone · spot:** Downtown, the REGISTRY PREMIUM billboard. Optional. Difficulty 2. ("wiring a
+- **Scene · spot:** Downtown, the REGISTRY PREMIUM billboard. Optional. Difficulty 2. ("wiring a
   feed to a billboard", `lab3` §05)
 - **Player sees:** the billboard's `screen` is pre-wired to the Registry ad feed (`ads:next →
   screen show`). CAM-3's `lens` raises `frame`.
@@ -1125,7 +1125,7 @@ wrong pairs are not built.
 
 ### O08 LIFT-2 and floor 13
 
-- **Zone · spot:** the mall (`scene:mall`), a lift beside ESCALATOR B ("UP ONLY." / "There is no
+- **Scene · spot:** the mall (`scene:mall`), a lift beside ESCALATOR B ("UP ONLY." / "There is no
   down. Management regrets nothing."). Optional. Difficulty 2. (`lab3` §02)
 - **Player sees:** LIFT-2, who knows one song. `doors` (open: "a draft. nobody there." · close:
   "closed. dramatically." · hold: "held. they are tired now."), `car` (floor 1: "going down. the
@@ -1143,7 +1143,7 @@ wrong pairs are not built.
 
 ### O09 The rooftop garden
 
-- **Zone · spot:** the mall roof, floor 13. Optional. Difficulty 3. (LEVELS "more puzzles")
+- **Scene · spot:** the mall roof, floor 13. Optional. Difficulty 3. (LEVELS "more puzzles")
 - **Player sees:** a pump, a moisture sensor, a rain sensor fed by WEATHER SAT ("always says
   rain; always right"), a neighbour's party tonight under a big canopy. Pre-wired: `rain:raining
   → pump off`. The flowers must bloom by sunset.
@@ -1156,7 +1156,7 @@ wrong pairs are not built.
 
 ### O11 Wishing fountain
 
-- **Zone · spot:** the mall atrium. Optional micro-joke. Difficulty 1.
+- **Scene · spot:** the mall atrium. Optional micro-joke. Difficulty 1.
 - **Player sees:** WISHING FOUNTAIN: "Wishes are processed in the order received." / "Current
   queue: 1,204,577. Estimated wait: yes." Its `queue` STORE.
 - **Solution:** READ the queue: "#1: to be first in the queue (granted)." Move your wish up
