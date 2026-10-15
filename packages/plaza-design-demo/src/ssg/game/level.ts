@@ -247,6 +247,8 @@ export interface Ctx {
   persist: () => void;
   /** Start the back yard over (its part of the save only). */
   resetYard: () => void;
+  /** Your own deck while you still exist (the opening, opening.ts): its files and what `whoami` says. */
+  deck?: { files: Record<string, string>; whoami: string };
 }
 
 const MAN: Record<string, string> = {
@@ -287,7 +289,7 @@ export function commands(c: Ctx): string[] {
 export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'sound', 'clear', 'exit', 'contacts'];
 
 /** What the deck can read right now: the machine's readable nouns, or your own files. */
-const readable = (c: Ctx) => (c.machine && c.shell ? c.shell.readable(c.machine) : Object.keys(DECK));
+const readable = (c: Ctx) => (c.machine && c.shell ? c.shell.readable(c.machine) : Object.keys(c.deck?.files ?? DECK));
 
 /**
  * What the touch deck offers as the next word of `line`. Only what you could
@@ -336,14 +338,15 @@ export function run(c: Ctx, line: string) {
       return;
     }
     case 'man': c.print(MAN[(args[0] || '').toLowerCase()] ?? 'man <command>: explains a command. Try: man login', 'dim'); return;
-    case 'ls': c.print(at ? at.sh.ls(at.dev) : Object.keys(DECK).join('   ')); return;
+    case 'ls': c.print(at ? at.sh.ls(at.dev) : Object.keys(c.deck?.files ?? DECK).join('   ')); return;
     case 'cat': {
       if (at) { at.sh.cat(at.dev, args[0] || ''); return; }
-      const name = Object.keys(DECK).find((k) => k.toLowerCase() === (args[0] || '').toLowerCase());
-      c.print(name ? DECK[name] : 'cat: ' + (args[0] || '<file>') + ': no such file', name ? 'out' : 'err');
+      const files = c.deck?.files ?? DECK, name = Object.keys(files).find((k) => k.toLowerCase() === (args[0] || '').toLowerCase());
+      c.print(name ? files[name] : 'cat: ' + (args[0] || '<file>') + ': no such file', name ? 'out' : 'err');
       return;
     }
     case 'whoami': {
+      if (c.deck) { c.print(c.deck.whoami); return; }
       const mods = ownedModules(s).join(', ') || 'none';
       c.print(who(s) + ' (unauthenticated) · tokens: ' + s.tokens + ' · modules: ' + mods);
       return;

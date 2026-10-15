@@ -187,7 +187,7 @@
 
     "parcel.tray": ["", "the parcel slides through the hatch and into the pickup tray.", "ok"],
     "parcel.bonk": ["", "the parcel hits the closed hatch. the crane fishes it back.", "err"],
-    "parcel.take": ["take parcel", "a parcel, slightly squashed. inside: a key chip with a moth sticker, a deck chip labelled uplink.so, and a note: \"Moth asked me to give you this. nice wiring. —the fixer\"", "ok"],
+    "parcel.take": ["take parcel", "a parcel, slightly squashed. inside: a key chip with a moth sticker, a spare uplink.so chip, and a note: \"Moth asked me to give you this. nice wiring. —the fixer\"", "ok"],
 
     "cam.zoom": "ZOOM",
     "cam.tag": "TAG",

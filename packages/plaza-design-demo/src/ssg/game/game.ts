@@ -24,18 +24,25 @@ import { KEYRING } from './data';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import { botReact, isBot, characterHeight, characterX, talkTo } from './characters';
 import {
-  boardRide, lineOpen, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideAtSiding, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
+  boardRide, lineOpen, nextStation, ride, SEG, platformDoors, platformLeft, platformOpen, platformSync, rideAtSiding, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
 import {
-  DOORS, DRIVER_HARBOR, harborOpen, HOP, SIDING_OUT, placeBlocked, type MapPlace, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
+  DOORS, DRIVER_HARBOR, harborOpen, HOP, LINE, SIDING_OUT, placeBlocked, type MapPlace, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
   seenFlag, START_SCENE, standOf, STANDS, STATIONS, stationAt, type Stand, type Station,
 } from './city';
 import { drawCityMap, mapKey, mapPointer, openMap, type MapAct, type MapState, type MapView } from './citymap';
 import { KeyBar } from './keybar';
 import { messagesOf, unread } from './contacts';
 import { levels, startLevel, SUDO, unlockAll } from './sudo';
+import {
+  DECK_BEFORE, HOME_RUN, IDLE_PING, isBefore, hackLocked, MORNING, MOTH_MESSAGE, OPENING, OPENING_EVERYDAY, OPENING_EXITS, OPENING_GOAL, OPENING_INTRO,
+  OPENING_LINES, OPENING_PINGS, OPENING_TARGETS, OPENING_TIME, openingLevel, openingResume, openingState, pick, SLEEP, TURNSTILE, UPLINK_KEY, UPLINK_LINES, WAKE_LINES,
+  type ExitRule, type OpeningState, type PingTarget,
+} from './opening';
+import type { PopupItem } from './engine/popup';
+import { CAPSULE_SPAWN } from './capsule';
 import { Menu } from './menu';
-import { Opening, OPENING_FLAG, rideHome } from './title';
+import { Opening } from './title';
 import {
   commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
   newSave, ownedModules, run, SAVE_KEY, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
@@ -215,7 +222,10 @@ export class Game {
       store: (z) => { this.save.scenes[id] = z; storeSave(this.save); },
     }, def, rules);
     // Pixel is the game's, not the scene's: lines about Pixel stand over Pixel, and popups keep clear of the cat
-    zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : null);
+    zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : from === 'goal' && this.goalAt !== null ? { x: this.goalAt, h: 20 } : null);
+    // the opening (opening.ts): hacking is not yours until uplink.so, and some everyday actions say something else
+    zh.hackLock = () => hackLocked(this.save.flags);
+    zh.story = (dev) => this.storyChips(id, dev);
     zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
     // captions never cover the player's speech bubble, and keep their lane over people's heads
     zh.shield = () => { const b = this.bubbleBox, s = this.cssScale; return b ? [{ l: b.x * s, t: b.y * s, r: (b.x + b.w) * s, b: (b.y + b.h) * s }] : []; };
@@ -274,15 +284,18 @@ export class Game {
   }
 
   /**
-   * Into the save (the title's CONTINUE, or a start in a scene): a save that has never been
-   * Downtown starts at home, or on the train home while the opening runs (`opening:home`).
+   * Into the save (the title's CONTINUE, or a start in a scene). A save in the middle of the
+   * opening goes back to where it was (opening.ts); one that has never been Downtown starts at home.
    */
   private continueGame(scene: SceneId | undefined, first: boolean) {
     this.endTitle();
     this.started = true;
-    if (!scene && first && !this.save.flags.arrived && !this.save.flags[seenFlag('downtown')]) {
-      if (this.save.flags[OPENING_FLAG] && !this.save.flags[seenFlag(START_SCENE)]) { rideHome(); scene = 'train'; }
-      else scene = START_SCENE;
+    const resume = !scene && first ? openingResume(this.save.flags) : null;
+    if (resume) scene = resume;
+    else if (!scene && first && !this.save.flags.arrived && !this.save.flags[seenFlag('downtown')]) {
+      // a save that never got going: the opening, on the train home (no glide: that is NEW GAME's)
+      if (!this.save.flags[seenFlag(START_SCENE)]) { this.startOpening(); return; }
+      scene = START_SCENE;
     }
     if (scene && this.here !== scene) this.enter(scene, true);
     this.showHost();
@@ -338,8 +351,8 @@ export class Game {
   }
 
   /**
-   * The glide has gone into the tunnel: the handover (title/index.ts). A fresh save with
-   * `opening:home`, LINE 0 running from the harbor to Downtown, and you in car 3.
+   * The glide has gone into the tunnel: the handover (title/index.ts). A fresh save, then
+   * `startOpening()`: `opening:home`, the train home (car 3) on its run into Downtown.
    */
   private openingDone() {
     this.endTitle();
@@ -352,17 +365,17 @@ export class Game {
     // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
     this.hosts.forEach((h) => h.reset());
     reconcile(this.downtown.model, this.save);
-    this.save.flags[OPENING_FLAG] = true;
     storeSave(this.save);
     this.syncHud();
-    rideHome();
     this.started = true;
-    this.enter('train', true);
+    // the story half of the opening takes over: `opening:home`, the train home (opening.ts)
+    this.startOpening();
   }
 
   /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
   private greet() {
-    if (this.here !== 'downtown') return;
+    // (before you are deleted, the street is not yet the one you have to fight)
+    if (this.here !== 'downtown' || hackLocked(this.save.flags)) return;
     const how = this.touch
       ? 'Every machine here does something: tap it. HACK, top right, shows how they all work.'
       : 'Every machine here does something: E or a tap. H shows how they all work, B is the board.';
@@ -520,7 +533,7 @@ export class Game {
 
   private openDeck() {
     if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
-    const at = this.termMachine();
+    const at = hackLocked(this.save.flags) ? null : this.termMachine();
     if (at) this.term.print('[' + (this.zh.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
     this.term.focus();
   }
@@ -600,8 +613,15 @@ export class Game {
       if (at && this.save.flags.pixel) this.pixel.place(x - 14, 0, 'walk', 1);
       else this.pixel.place(home.x, home.h, home.rest);
     } else if (this.pixelHere) this.pixel.place(x - this.p.face * 20, 0, 'sit', this.p.face);
+    // the opening: the train home runs into Downtown; arriving, the player says the opening's words instead
+    const st = this.story, said = pick(OPENING_INTRO, st, id);
+    if (id === 'train' && st === 'home') this.rideHome();
     const flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
-    if (intro && !this.save.flags[flag]) {
+    if (said) {
+      const once = 'opening:said:' + st + ':' + id;
+      if (said.consume) this.save.flags[flag] = true;
+      if (!this.save.flags[once]) { this.save.flags[once] = true; storeSave(this.save); this.say('YOU', said.lines(this.touch), this.p.x, 46); }
+    } else if (intro && !this.save.flags[flag]) {
       this.save.flags[flag] = true;
       storeSave(this.save);
       this.say('YOU', intro, this.p.x, 46);
@@ -622,7 +642,8 @@ export class Game {
     const wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
     const h = this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
     const id = zh.spotAt(wx, h);
-    zh.hover = id;
+    // (pink is the hacking layer's colour: no pink bracket on hover until hacking is yours)
+    zh.hover = hackLocked(this.save.flags) ? null : id;
     this.canvas.style.cursor = id ? 'pointer' : '';
     if (press && zh.visionOn) { zh.poke(id); return; }
     // a thing's popup: its everyday actions, then jack in (computers) and hack it
@@ -671,7 +692,7 @@ export class Game {
       save: this.save,
       machine: this.termMachine(),
       // the deck's commands reach the scene's machines, when it has any
-      shell: zh.model.devices.size ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
+      shell: zh.model.devices.size && !hackLocked(this.save.flags) ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
       print: (text, kind) => this.term.print(text, kind),
       denied: () => sound.denied(),
       granted: () => sound.granted(),
@@ -680,12 +701,14 @@ export class Game {
       leaveMachine: () => this.term.close(),
       persist: () => this.persist(),
       resetYard: () => this.hostOf('yard').reset(),
+      // your own deck, while you still exist
+      deck: isBefore(this.save.flags) ? DECK_BEFORE : undefined,
     };
   }
 
   private syncHud() {
     this.host.setNodes(nodeCount(this.save));
-    this.host.setScene(sceneTitle(this.def) + ' · ' + who(this.save).toUpperCase());
+    this.host.setScene(sceneTitle(this.def) + this.clockText + ' · ' + this.me.toUpperCase());
   }
 
   /**
@@ -699,6 +722,11 @@ export class Game {
     const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
     for (const t of this.zh.targets()) if (!s.hideDevice?.(t.id, this.save.flags)) list.push({ kind: 'device', id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH });
     list.push(...this.lifeTargets(s));
+    // the opening's own things to press E on (the bed)
+    for (const [key, t] of Object.entries(OPENING_TARGETS[this.story] ?? {})) {
+      const [scene, id] = key.split('/');
+      if (scene === this.here) list.push({ kind: 'life', id: 'story:' + id, x: t.x, h: 0, label: t.label, promptH: t.promptH });
+    }
     // Pixel can always be petted, wherever it is with you
     if (this.pixelHere) list.push({ kind: 'pixel', id: 'pixel', x: this.pixel.x, h: 0, label: '[E] PET PIXEL', promptH: this.pixel.h + 24 });
     return list;
@@ -739,9 +767,17 @@ export class Game {
     if (!target) return;
     if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
+    if (target.kind === 'device') {
+      // the opening: a scene's own way out (the flat's door) may say something else in this state
+      const rule = pick(OPENING_EXITS, this.story, this.here, target.id);
+      if (rule && this.storyExit(rule, target.x, () => {})) return;
+    }
     if (target.kind === 'device') { const out = this.zh.use(target.id), e = out ? this.def.exits.find((z) => z.id === out) : undefined; if (e) this.useExit(e); return; }
     if (target.kind === 'pixel') { sound.blip(); this.say('PIXEL', this.pixel.pet(), this.pixel.x, this.pixel.h + 14); return; }
     if (target.kind === 'talk') {
+      // before you are deleted, the street talks to you differently (opening.ts)
+      const o = pick(OPENING_LINES, this.story, 'downtown', target.id);
+      if (o) { const npc = NPCS.find((n) => n.id === target.id); this.say(o.name ?? 'YOU', o.pages, npc?.x ?? STALL.fixerX, npc ? 48 : 30); return; }
       if (target.id === 'fixer') {
         const talk = fixerTalk(this.save);
         this.persist();
@@ -763,7 +799,8 @@ export class Game {
       if (Math.floor(b.chars) !== before && Math.floor(b.chars) % 2 === 0) sound.blip();
     }
     this.updateTravel(dt);
-    const locked = this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.flight || !!this.hop;
+    this.updateStory();
+    const locked = this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
@@ -802,6 +839,10 @@ export class Game {
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
     if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: WARM[this.here] });
     this.host.setNodes(nodeCount(this.save));
+    // the opening's idle ping: standing still a while, the next goal's target pings (opening.ts)
+    const aim = pick(OPENING_PINGS, this.story, this.here);
+    if (!aim || locked || p.moving || !p.onGround || this.bubble || this.zh.popupOpen) this.still = this.clock;
+    else if (this.clock - this.still > IDLE_PING) { this.still = this.clock; this.pingGoal(aim); }
   }
 
   /** Pixel is drawn at home (the flat), and where it follows you (`pixel: 'along'`) once it does (`flags.pixel`). */
@@ -828,7 +869,7 @@ export class Game {
     const rain = this.rainLevel();
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
     const vision = zh.visionOn, v = this.view();
-    if (amb.sky) { this.drawSky(); this.drawShips(); }
+    if (amb.sky) { this.drawSky(); if (isBefore(this.save.flags)) this.drawDawn(); this.drawShips(); }
     if (amb.city) {
       this.drawSkyline(0.18, 7, 70, 150, 0.18, 0.12);
       this.drawAntenna();
@@ -846,6 +887,7 @@ export class Game {
       zh.draw(x, v);
       if (vision) { if (amb.rain) this.drawRain(rain); this.mute(zh.model.spots()); }
     }
+    this.drawLight();
     this.drawCharacters();
     s.drawFront?.(x, v);
     if (amb.rain && !vision) this.drawRain(rain);
@@ -853,10 +895,14 @@ export class Game {
     this.drawBubble();
     this.drawHud();
     if (this.showEnd) this.drawEnd();
+    this.drawBeat();
+    this.drawSleep();
     this.drawMap();
   }
 
   private rainLevel() {
+    // dawn, before you are deleted: the rain is late today
+    if (isBefore(this.save.flags)) return 0;
     // Weather passes through: a drizzle builds to a shower and clears, about every 80 seconds.
     const phase = (this.t / 4800) % 1;
     return Math.max(0, Math.sin(phase * Math.PI * 2)) ** 1.5;
@@ -1358,7 +1404,7 @@ export class Game {
   }
 
   private drawPrompt() {
-    if (this.bubble || this.showEnd || this.zh.overlayOpen || this.zh.popupOpen || this.mapView) return;
+    if (this.bubble || this.showEnd || this.zh.overlayOpen || this.zh.popupOpen || this.mapView || this.beat || this.sleep) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;
@@ -1438,7 +1484,7 @@ export class Game {
     this.bubbleBox = { x: bx, y: by, w, h };
     x.fillStyle = '#000'; x.fillRect(bx, by, w, h);
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.strokeRect(bx + 1, by + 1, w - 2, h - 2); x.lineWidth = 1;
-    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name === 'YOU' ? who(this.save).toUpperCase() : b.name, bx + 10, by + 15);
+    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : isBefore(this.save.flags) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
     x.fillStyle = '#fff'; shownLines.forEach((l, i) => x.fillText(l, bx + 10, by + 30 + i * 13));
     if (b.chars >= full.length && Math.floor(this.t / 20) % 2) {
       x.beginPath(); x.moveTo(bx + w - 16, by + h - 10); x.lineTo(bx + w - 8, by + h - 10); x.lineTo(bx + w - 12, by + h - 5); x.closePath(); x.fill();
@@ -1452,7 +1498,7 @@ export class Game {
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
     // below the key bar along the top (its height in world units)
     const top = (this.keyBar.root.offsetHeight + 8) * (this.canvas.width / (this.canvas.clientWidth || 1)) / this.k;
-    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def), 8, top + 10);
+    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);
     x.fillStyle = 'rgba(255,217,165,.7)';
     // what you have: tokens, modules, the key chips that do something (uplink.so), what you carry; one line, or two when it is long
     const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : '');
@@ -1463,8 +1509,9 @@ export class Game {
     if (more && x.measureText(own + ' · ' + more).width <= this.viewW - 16) x.fillText(own + ' · ' + more, 8, y);
     else { x.fillText(own, 8, y); if (more) x.fillText(more, 8, (y += 11)); }
     // the scene's goal, where it has goals (a scene without a data file has none)
-    const zh = this.zh.model.data.goals.length ? this.zh : null;
-    if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, (y += 11)); }
+    // (the opening has its own: opening.ts)
+    const zh = this.zh.model.data.goals.length ? this.zh : null, story = pick(OPENING_GOAL, this.story, this.here);
+    if (story || zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + (story ?? zh!.objective()), 8, (y += 11)); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     const tl = this.termLine;
     if (tl && this.t < tl.until && !this.term.focused) {
@@ -1491,6 +1538,217 @@ export class Game {
     x.fillText('Downtown cleared. Nodes freed: ' + this.save.freed.length + '. You are still a ghost, ' + who(this.save) + '.', cx, cy + 26);
     x.fillText('The Neon Market gate stands open at the west end. Your progress is saved in this browser.', cx, cy + 42);
     x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC menu', cx, cy + 66);
+    x.restore();
+  }
+
+  // ---------- the opening (opening.ts) ----------
+  // The train home, the turnstile, Downtown before, the flat at dawn, the sleep, the morning you
+  // are deleted, Moth's uplink.so. The scenes are the usual ones; the save's flags pick their state.
+
+  private get story(): OpeningState { return openingState(this.save.flags); }
+  /** Who you are in the HUD and your bubbles: a courier while you still exist, then your handle (or "ghost"). */
+  private get me() { return isBefore(this.save.flags) ? 'courier' : who(this.save); }
+  /** The opening's clock, after the scene's name in the HUD (" · 05:52"). */
+  private get clockText() { const t = pick(OPENING_TIME, this.story, this.here); return t ? ' · ' + t : ''; }
+
+  /** When the player last moved or did something (clock frames), for the idle ping. */
+  private still = 0;
+  /** Where the idle ping points when it is not a device (world x): the scene's 'goal' speaker. */
+  private goalAt: number | null = null;
+  /** The turnstile taking its time: when it started, and what happens once it says ok. */
+  private beat: { start: number; then: () => void } | null = null;
+  /** Sleeping: when the fade started; `woke` once the flat has turned into the morning. */
+  private sleep: { start: number; woke: boolean } | null = null;
+  /** The morning: when you woke, how many plain things failed, whether Moth has written (or is about to: the mail). */
+  private morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
+
+  /** NEW GAME (until the glide lands) and a first launch: the opening, on the train home. */
+  private startOpening() {
+    this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
+    this.save.flags[OPENING.home] = true;
+    storeSave(this.save);
+    this.handTo('train');
+  }
+
+  /** Sudo's LEVELS: the opening from one of its points (opening.ts `OPENING_LEVELS`), the flat as on the first night. */
+  private openingFrom(flags: string[]) {
+    for (const f of Object.keys(this.save.flags)) if (f.startsWith('opening:')) delete this.save.flags[f];
+    flags.forEach((f) => { this.save.flags[f] = true; });
+    this.hostOf('capsule').reset();
+    this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
+    storeSave(this.save);
+    const to = openingResume(this.save.flags) ?? 'train';
+    this.handTo(to);
+    if (this.story === 'deleted') this.wakeUp();
+  }
+
+  /** The train home: on its run into Downtown (from the harbor's closed stop), slow enough to talk to people on the way. */
+  private rideHome() {
+    Object.assign(ride, {
+      at: LINE.indexOf('harbor'), to: LINE.indexOf('downtown'), phase: 'running', timer: HOME_RUN.start, pos: 2 * SEG, d: 0, span: SEG,
+      frames: HOME_RUN.frames, v: 0, open: 0, doors: false, halt: null, say: 'NEXT: DOWNTOWN',
+    });
+  }
+
+  /** A device's everyday actions in this state (opening.ts `OPENING_EVERYDAY`), as popup chips; null: its data's. */
+  private storyChips(scene: SceneId, dev: string): PopupItem[] | null {
+    const chips = pick(OPENING_EVERYDAY, this.story, scene, dev);
+    if (!chips) return null;
+    const zh = this.hostOf(scene);
+    return chips.map((c) => ({
+      label: c.label,
+      run: () => {
+        if (c.act) zh.model.act(dev, c.act[0], c.act[1]);
+        if (c.set) { zh.model.set(c.set[0], c.set[1]); zh.model.changed(); }
+        if (c.say) zh.react(dev, c.say);
+        if (c.say?.[2] === 'ok') sound.granted(); else if (c.say?.[2] === 'err') sound.denied();
+        if (c.fail) { this.morning.tries++; this.morning.last = this.clock; }
+        if (c.mail) { this.morning.due = true; this.morning.last = this.clock; }
+      },
+    }));
+  }
+
+  /** A way out that does something else in this state (opening.ts `ExitRule`); `go` leaves through it. False: use it as usual. */
+  private storyExit(rule: ExitRule, x: number, go: () => void): boolean {
+    if ('say' in rule) { this.say(rule.say.name, rule.say.pages, x, 60); return true; }
+    if ('react' in rule) { this.zh.react(rule.react, rule.line); sound.denied(); if (rule.fail) { this.morning.tries++; this.morning.last = this.clock; } return true; }
+    if ('turnstile' in rule) {
+      // Downtown station's exit gate: one beat too long on "verifying", then ok. Nobody else waits.
+      this.keys.clear();
+      this.beat = { start: this.clock, then: () => { this.save.flags[OPENING.street] = true; storeSave(this.save); go(); } };
+      sound.blip();
+      return true;
+    }
+    // CONCIERGE at the tower's door: it knows you, and lets you up
+    sound.granted();
+    this.say('CONCIERGE', ['welcome home. you are expected. the lift is on its way down.'], x, 60);
+    this.bubble!.then = () => { this.save.flags[OPENING.flat] = true; storeSave(this.save); go(); };
+    return true;
+  }
+
+  /** The story's clock, every frame: the turnstile's beat, the sleep, the morning's message, jacking in. */
+  private updateStory() {
+    if (this.beat && this.clock - this.beat.start >= TURNSTILE.verify + TURNSTILE.ok) {
+      const then = this.beat.then;
+      this.beat = null;
+      sound.granted();
+      then();
+    }
+    if (this.sleep) {
+      const e = this.clock - this.sleep.start;
+      if (!this.sleep.woke && e >= SLEEP.out + SLEEP.card / 2) { this.sleep.woke = true; this.morningFlat(); }
+      if (e >= SLEEP.out + SLEEP.card + SLEEP.in) { this.sleep = null; this.wakeUp(); }
+      return;
+    }
+    const st = this.story;
+    if (st === 'deleted' && this.here === 'capsule') {
+      const m = this.morning;
+      if (m.at < 0) m.at = this.clock;
+      if (!m.sent && !this.bubble && !this.zh.popupOpen && this.clock - m.last > MORNING.after && (m.due || m.tries >= MORNING.tries || this.clock - m.at > MORNING.wait)) this.mothWrites();
+    }
+    // jacked in to HOME-PC: Capsule 7B's own goals take over
+    if (st === 'uplinked' && this.here === 'capsule' && this.zh.viewing === 'pc') { this.save.flags[OPENING.jacked] = true; storeSave(this.save); }
+  }
+
+  /** [E] SLEEP: the fade, the card, the morning. */
+  private sleepNow() {
+    this.keys.clear();
+    this.bubble = null;
+    this.zh.closeAll();
+    this.sleep = { start: this.clock, woke: false };
+    sound.close();
+  }
+
+  /** In the dark between the two flats: the flat as it is the morning after (Capsule 7B's puzzles from the start), you by the bed. */
+  private morningFlat() {
+    this.save.flags[OPENING.slept] = true;
+    this.hostOf('capsule').reset();
+    this.morning = { at: this.clock, tries: 0, last: -1e9, sent: false, due: false };
+    Object.assign(this.p, { x: CAPSULE_SPAWN, y: 0, vy: 0, onGround: true, face: -1 });
+    const home = this.def.perch?.(this.zh.model);
+    if (home) this.pixel.place(home.x, home.h, home.rest);
+    storeSave(this.save);
+    this.syncHud();
+  }
+
+  /** Awake: the player says what is wrong (the morning's clock starts). */
+  private wakeUp() {
+    this.morning.at = this.clock;
+    this.say('YOU', WAKE_LINES, this.p.x, 46);
+  }
+
+  /** Moth's message: in the deck, as a bubble, and uplink.so with it (hacking is yours from now on). */
+  private mothWrites() {
+    this.morning.sent = true;
+    MOTH_MESSAGE.forEach((l) => this.term.print('moth> ' + l, 'ok'));
+    this.save.flags[OPENING.uplink] = true;
+    if (!this.save.keyring.includes(UPLINK_KEY)) this.save.keyring.push(UPLINK_KEY);
+    storeSave(this.save);
+    this.syncHud();
+    this.term.print('[deck] uplink.so received. hack vision: H · the board: B', 'ok');
+    sound.granted();
+    this.say('MOTH › YOU', MOTH_MESSAGE, this.p.x, 46);
+    this.bubble!.then = () => this.say('YOU', UPLINK_LINES(this.touch), this.p.x, 46);
+  }
+
+  /** The idle ping: the next goal's target (opening.ts `OPENING_PINGS`): a device, or a point (a door, an exit, the bed). */
+  private pingGoal(t: PingTarget) {
+    if ('device' in t) { this.zh.ping(t.device, 'look'); return; }
+    let x: number | undefined;
+    if ('door' in t) x = this.def.exits.filter((e) => e.action === 'out').map((e) => e.x).sort((a, b) => Math.abs(a - this.p.x) - Math.abs(b - this.p.x))[0];
+    else if ('exit' in t) x = this.def.exits.find((e) => e.id === t.exit)?.x;
+    else x = pick(OPENING_TARGETS, this.story, this.here, t.story)?.x;
+    if (x === undefined) return;
+    this.goalAt = x;
+    this.zh.ping('goal', 'look');
+  }
+
+  /** Dawn over Downtown before you are deleted: the sky warms low down, behind the towers. */
+  private drawDawn() {
+    const x = this.x, g = x.createLinearGradient(0, 0, 0, this.gy);
+    g.addColorStop(0, 'rgba(40,20,60,0)'); g.addColorStop(0.55, 'rgba(110,50,70,.1)'); g.addColorStop(1, 'rgba(255,140,70,.24)');
+    x.fillStyle = g; x.fillRect(0, 0, this.viewW, this.gy);
+  }
+
+  /** The flat's light: warm at dawn, cold the morning after (until the door is yours again). Under the player, over the room. */
+  private drawLight() {
+    if (this.here !== 'capsule' || this.zh.visionOn) return;
+    const f = this.save.flags, x = this.x;
+    if (this.story === 'flat') x.fillStyle = 'rgba(255,160,80,.08)';
+    else if (f[OPENING.slept] && !this.zh.model.get('doorOpen')) x.fillStyle = 'rgba(100,135,190,.14)';
+    else return;
+    x.fillRect(0, 0, this.viewW, this.viewH);
+  }
+
+  /** The turnstile verifying, over the gate: dots, one beat too long, then ok. */
+  private drawBeat() {
+    if (!this.beat) return;
+    const x = this.x, e = this.clock - this.beat.start, ok = e >= TURNSTILE.verify;
+    const dots = '.'.repeat(1 + (Math.floor(e / 20) % 3)).padEnd(3, ' ');
+    const line = ok ? 'TURNSTILE: verifying… … ok.' : 'TURNSTILE: verifying' + dots;
+    x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'left'; x.textBaseline = 'middle';
+    const w = x.measureText('TURNSTILE: verifying… … ok.').width + 16, cx = Math.max(w / 2 + 4, Math.min(this.viewW - w / 2 - 4, this.sx(TURNSTILE.x)));
+    const top = this.y(96), gate = this.y(36);
+    x.fillStyle = 'rgba(0,0,0,.85)'; x.fillRect(cx - w / 2, top, w, 20);
+    x.strokeStyle = ok ? 'rgba(34,197,94,.8)' : 'rgba(255,217,165,.45)'; x.strokeRect(cx - w / 2 + 0.5, top + 0.5, w - 1, 19);
+    x.fillStyle = ok ? 'rgba(34,197,94,.95)' : 'rgba(255,217,165,.92)'; x.fillText(line, cx - w / 2 + 8, top + 10.5);
+    x.fillStyle = 'rgba(255,217,165,.45)'; x.fillRect(this.sx(TURNSTILE.x), top + 20, 1, gate - top - 20);
+    x.restore();
+  }
+
+  /** The sleep: dark, a card with the clock (06:04, then 09:40), light again. */
+  private drawSleep() {
+    if (!this.sleep) return;
+    const x = this.x, e = this.clock - this.sleep.start, S = SLEEP;
+    const a = e < S.out ? e / S.out : e < S.out + S.card ? 1 : Math.max(0, 1 - (e - S.out - S.card) / S.in);
+    x.fillStyle = 'rgba(0,0,0,' + a + ')'; x.fillRect(0, 0, this.viewW, this.viewH);
+    if (e < S.out || e > S.out + S.card) return;
+    const f = (e - S.out) / S.card, fade = Math.min(1, Math.min(f, 1 - f) * 6);
+    x.save(); x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '600 18px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,136,0,' + 0.95 * fade + ')';
+    x.fillText(f < 0.5 ? S.from : S.to, this.viewW / 2, this.viewH / 2 - 6);
+    x.font = '8px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,' + 0.7 * fade + ')';
+    x.fillText('CAPSULE 7B', this.viewW / 2, this.viewH / 2 + 14);
     x.restore();
   }
 
@@ -1559,9 +1817,11 @@ export class Game {
 
   /** Sudo's LEVELS: play a cutscene (then its next scene), or arrive in a scene at its spawn. */
   private enterLevel(id: string) {
-    if (id === 'opening') { this.showTitle(); return; }
+    if (id === 'title') { this.showTitle(); return; }
     this.endTitle();
     this.bubble = null;
+    const opening = openingLevel(id);
+    if (opening) { this.openingFrom(opening.flags); return; }
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
     this.handTo(startLevel(id) ?? id);
     this.markSeen(this.here);
@@ -1621,9 +1881,10 @@ export class Game {
   /** E next to a scene's exit or something of its life (`kind:id`, as `exitTargets` and `lifeTargets` make them). */
   private useLife(target: string) {
     const s = this.def, [kind, id] = target.split(':');
+    if (kind === 'story') { if (id === 'bed') this.sleepNow(); return; }
     if (kind === 'read') {
-      const r = s.readables!.find((z) => z.id === id)!;
-      this.say(r.name, r.pages, r.x, r.h ?? 70);
+      const r = s.readables!.find((z) => z.id === id)!, o = pick(OPENING_LINES, this.story, this.here, id);
+      this.say(o?.name ?? r.name, o?.pages ?? r.pages, r.x, r.h ?? 70);
       return;
     }
     if (kind === 'pet') {
@@ -1673,6 +1934,9 @@ export class Game {
 
   /** Leave through an exit: board, step out, hail a taxi, look at the map, or walk to its scene, landing at its matching exit there. */
   private useExit(e: SceneExit) {
+    // the opening: some ways out do something else in this state (the turnstile, CONCIERGE, "bed first")
+    const rule = pick(OPENING_EXITS, this.story, this.here, e.id);
+    if (rule && this.storyExit(rule, e.x, () => { if (isSceneId(e.to)) this.travel(e.to, e.at); })) return;
     // a door that reads key chips (Moth's building): only the right one opens it
     if (e.needs && !this.save.keyring.includes(e.needs.key)) { sound.denied(); this.say(e.needs.name, e.needs.pages, e.x, e.needs.h); return; }
     if (e.action === 'board') { const st = stationAt(this.here); if (st && platformOpen(st, this.t)) this.enterTrain(st); return; }
@@ -1824,6 +2088,7 @@ export class Game {
 
   /** Quick travel to a place you know, from the map: no fare, a short fade; or say why not. */
   private quickTravel(place: MapPlace) {
+    if (hackLocked(this.save.flags)) { this.flash('not now: ' + (pick(OPENING_GOAL, this.story, this.here) ?? 'later')); sound.denied(); return; }
     const why = placeBlocked(place, this.mapState());
     if (why) { this.flash(why.toLowerCase()); sound.denied(); return; }
     this.mapView = null;
@@ -1850,6 +2115,8 @@ export class Game {
     }
     if (this.here !== 'train') return;
     const ev = stepRide(dt);
+    // the train home stands at Downtown with its doors open until you get off
+    if (this.story === 'home' && ride.phase === 'dwell' && rideStop() === 'downtown') ride.timer = 0;
     if (ev === 'depart') { this.flash('NEXT: ' + STATIONS[rideNext()].name); sound.close(); }
     else if (ev === 'arrive') { this.flash(STATIONS[rideStop()].name + ' · doors open'); sound.open(); }
     else if (ev === 'pass') this.flash('HARBOR · STATION CLOSED · NOT STOPPING');

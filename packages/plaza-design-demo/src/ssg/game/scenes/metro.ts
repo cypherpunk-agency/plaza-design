@@ -13,6 +13,7 @@ import { box, notice, O, onScreen, PAPER, RED, rng, tell, text, type SceneDef, t
 import { drawDepartures, drawPlatformTrain, STOP } from './line';
 import type { RiderKind } from './riders';
 import { drawBench, drawScreen, drawWaiting } from './stations';
+import { TURNSTILE } from '../opening';
 
 /** Layout: positions in world units, heights up from the platform. */
 const L = {
@@ -189,6 +190,22 @@ function drawStairs(x: CanvasRenderingContext2D, v: View, wx: number) {
   tell(x, t, s + 31, y(34), 2);
 }
 
+/**
+ * The exit turnstile by the stairs (IDENTITY CHECK AT ALL EXITS): a waist-high post with a key
+ * reader and a flap, standing on the slab. It lets you through; on the opening's dawn it takes
+ * a beat too long (game.ts draws its "verifying").
+ */
+function drawTurnstile(x: CanvasRenderingContext2D, v: View, wx: number) {
+  const { y, t } = v, s = v.sx(wx);
+  if (!onScreen(v, s - 30, 60)) return;
+  box(x, s - 6, y(34), 12, 34, '#16110d', 'rgba(' + O + ',.75)');
+  box(x, s - 4, y(31), 8, 7, '#06191b', 'rgba(0,255,255,.6)');
+  x.fillStyle = 'rgba(0,255,255,' + (0.5 + 0.3 * Math.sin(t * 0.05)) + ')'; x.fillRect(s - 2, y(28), 4, 1);
+  // the flap, folded back towards the stairs, and a second post across the way
+  box(x, s - 26, y(22), 20, 3, '#2a160a', 'rgba(' + O + ',.8)');
+  box(x, s - 30, y(26), 4, 26, '#16110d', 'rgba(' + O + ',.6)');
+}
+
 /** The near floor strip: the platform's slab, then the viaduct's girder and piers with the street glowing far below. */
 function drawDeck(x: CanvasRenderingContext2D, v: View) {
   const { gy, t } = v, bottom = v.viewH;
@@ -267,5 +284,6 @@ export const metro: SceneDef = {
     drawDeck(x, v);
     drawCityMap(x, v, L.cityMap);
     drawStairs(x, v, 32);
+    drawTurnstile(x, v, TURNSTILE.x);
   },
 };

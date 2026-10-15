@@ -74,6 +74,11 @@ Each level adds one layer of the system and one step of the story.
 
 ### Level 1: Capsule 7B (home)
 
+*Now preceded by the opening (ROADMAP.md, `opening.ts`): the train home, the turnstile,
+Downtown before, this flat the night before. The level itself starts the morning after: the
+door says "identity: not found", Moth's message brings `uplink.so` (hacking unlocks), and the
+puzzles below follow once you jack in to HOME-PC.*
+
 *Teaches: tap and read, verbs, pre-wired devices, cutting a cable, scanning a
 network, one cable between two devices, talking to a daemon.*
 
@@ -101,9 +106,10 @@ router is off.
 *Teaches: events, a logic module (TIMER), timing, a daemon granting
 permission, the camera.*
 
-The fixer kept a parcel for you. Inside: `uplink.so`, which lets your deck
-reach past your building, and a note: "Moth asked me to give you this. Key's
-inside too." Moth's key chip is now yours.
+The fixer kept a parcel for you. Inside: Moth's key chip and a note: "Moth
+asked me to give you this." (`uplink.so`, which lets your deck reach past your
+building, now arrives earlier, in Moth's message on the morning you are deleted;
+the parcel keeps a spare.)
 
 ### Level 3: Moth's place
 

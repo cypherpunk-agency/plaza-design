@@ -849,7 +849,7 @@ ${FEEDBACK_STYLES}
     /* The title screen (game/title/): the same menu, see-through, over the sunrise; NEW GAME fades it */
     #game-menu.gm-title-screen { background: transparent; }
     #game-menu.gm-title-screen .gm-crt {
-      width: min(400px, 100%);
+      width: min(640px, 100%);
       padding: var(--spacing-2) var(--spacing-4);
       background: transparent;
       border: 0;
@@ -859,7 +859,7 @@ ${FEEDBACK_STYLES}
     }
     #game-menu.gm-title-screen .gm-crt::after { display: none; }
     #game-menu.gm-title-screen .gm-title {
-      font-size: 38px;
+      font-size: 36px;
       letter-spacing: 0.22em;
       color: #ffd9a5;
       text-shadow: 3px 0 0 rgba(255, 61, 242, 0.75), -3px 0 0 rgba(0, 229, 229, 0.6), 0 0 18px rgba(255, 136, 0, 0.45);

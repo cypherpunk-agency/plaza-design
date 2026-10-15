@@ -23,6 +23,7 @@ import { crowd, drawRider, KINDS, SEAT_H, type RiderKind } from './riders';
 import { TRAIN_RULES } from './train0';
 import { drawGalleriaDome } from '../sets/galleria-dome';
 import { placed } from '../sets/view';
+import { openingState } from '../opening';
 
 /** Layout: positions in world units, heights up from the car's floor. */
 const L = {
@@ -38,6 +39,12 @@ const L = {
   lineMap: 120,
   /** Ad cards over the windows. */
   ads: [{ x: 250, text: 'REGISTRY PREMIUM · FASTER CHECKS' }, { x: 640, text: 'CAMERAS OPERATE IN THIS CAR' }, { x: 1040, text: 'NULLROUTE LOGISTICS · NO QUESTIONS' }],
+  /**
+   * The train home (the opening, opening.ts): the same cards say the morning's things, and the
+   * middle one is LINE 0's news. `news`: what scrolls on it.
+   */
+  adsHome: ['YOUR COMMUTE, COUNTED · PREMIUM', 'LINE 0 NEWS', 'SMILE · YOU ARE ON CAMERA'],
+  news: 'REGISTRY AUDIT: 1,204 RECORDS RETIRED OVERNIGHT. NO ACTION NEEDED.',
   /**
    * The regulars: people who are always in this car, whatever the stop, and talk
    * if you ask (E). `sit` on a seat under a window, else standing by a pole.
@@ -357,7 +364,9 @@ function drawOutside(x: CanvasRenderingContext2D, v: View) {
   x.clip();
   // the night sky with the city's glow low down
   const g = x.createLinearGradient(0, top, 0, sill);
-  g.addColorStop(0, '#05030c'); g.addColorStop(1, '#1a0904');
+  // the train home runs at dawn: the sky low down goes warm (the opening)
+  const dawn = openingState(v.flags) === 'home';
+  g.addColorStop(0, dawn ? '#0d0718' : '#05030c'); g.addColorStop(1, dawn ? '#5a2410' : '#1a0904');
   x.fillStyle = g; x.fillRect(0, top, v.viewW, bottom - top);
   // far: the skyline, sliding slowly, each district's landmark over its stop
   for (const b of SKY) {
@@ -511,11 +520,11 @@ function drawLineMap(x: CanvasRenderingContext2D, v: View, mp: number) {
 
 /** The display over a door: the stop (or the next one), a countdown, and the ticker. */
 function drawDoorDisplay(x: CanvasRenderingContext2D, v: View, s: number) {
-  const { y, t } = v;
+  const { y, t } = v, home = openingState(v.flags) === 'home';
   box(x, s - 50, y(106), 100, 34, '#050302', 'rgba(' + O + ',.6)');
   const hot = ride.phase !== 'dwell' || ride.timer < 120, stopped = ride.phase === 'braking' || ride.phase === 'halted';
   text(x, ride.say, s, y(99), stopped ? 'rgba(255,90,80,' + (0.7 + 0.3 * Math.sin(t * 0.2)) + ')' : 'rgba(255,136,0,' + (hot ? 0.75 + 0.25 * Math.sin(t * 0.12) : 0.95) + ')', 8, '600');
-  const time = stopped ? 'PLEASE WAIT' : between() || ride.phase === 'closing' ? 'ARRIVES IN ' + clock(rideDue()) : ride.phase === 'dwell' ? 'DEPARTS IN ' + clock(Math.max(0, ride.dwell - ride.timer)) : 'DOORS OPENING';
+  const time = stopped ? 'PLEASE WAIT' : between() || ride.phase === 'closing' ? 'ARRIVES IN ' + clock(rideDue()) : ride.phase === 'dwell' ? home ? 'DOORS OPEN' : 'DEPARTS IN ' + clock(Math.max(0, ride.dwell - ride.timer)) : 'DOORS OPENING';
   text(x, time, s, y(89), 'rgba(' + PAPER + ',.8)', 7, '600');
   ticker(x, t, s - 46, y(79), 92, 'NEXT: ' + STATIONS[rideNext()].name, 0.6);
   // the door's lamp: green while it is open
@@ -591,12 +600,21 @@ export const train: SceneDef = {
     const g = x.createLinearGradient(0, y(L.ceil), 0, y(L.ceil - 40));
     g.addColorStop(0, 'rgba(255,240,215,.08)'); g.addColorStop(1, 'rgba(255,240,215,0)');
     x.fillStyle = g; x.fillRect(w0, y(L.ceil), w1 - w0, 40);
-    for (const a of L.ads) {
+    const home = openingState(v.flags) === 'home';
+    L.ads.forEach((a, i) => {
       const s = sx(a.x);
-      if (!onScreen(v, s - 72, 144)) continue;
+      if (!onScreen(v, s - 72, 144)) return;
       box(x, s - 70, y(156), 140, 16, '#1a120b', 'rgba(' + O + ',.5)');
-      text(x, a.text, s - 2, y(148), 'rgba(' + PAPER + ',.75)', 7, '600');
-    }
+      if (home && i === 1) {
+        // LINE 0's news: its name, then the morning's item scrolling past
+        text(x, 'NEWS', s - 56, y(148), 'rgba(' + PAPER + ',.9)', 7, '600');
+        x.save(); x.beginPath(); x.rect(s - 44, y(154), 108, 12); x.clip();
+        x.font = '600 7px "IBM Plex Mono", monospace'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(255,200,170,.85)';
+        const msg = L.news + '   ·   ', len = x.measureText(msg).width, off = (t * 0.4) % len;
+        x.fillText(msg, Math.round(s + 64 - off), y(148)); x.fillText(msg, Math.round(s + 64 - off + len), y(148));
+        x.restore();
+      } else text(x, home ? L.adsHome[i] : a.text, s - 2, y(148), 'rgba(' + PAPER + ',.75)', 7, '600');
+    });
     tell(x, t, sx(640) + 65, y(148));
     for (const c of L.cams) drawCam(x, v, c);
     const mp = sx(L.lineMap);
@@ -635,7 +653,7 @@ export const train: SceneDef = {
       if (e.hover === 'train') { x.save(); x.strokeStyle = 'rgba(255,61,242,.85)'; x.shadowColor = 'rgba(255,61,242,.8)'; x.shadowBlur = 8; x.strokeRect(bk - 15.5, y(62) - 3.5, 31, 47); x.restore(); }
       // the Registry's screen: what it wants from you today, a red REC light
       box(x, gw + 4, y(124), 62, 30, '#0a0604', 'rgba(' + O + ',.6)');
-      const lines = [['KEEP YOUR ID', 'VISIBLE'], ['ALL JOURNEYS', 'RECORDED'], ['REPORT', 'IRREGULARITIES']][Math.floor(t / 180) % 3];
+      const lines = (home ? [['REGISTRY AUDIT', 'COMPLETE'], ['1,204 RECORDS', 'RETIRED'], ['NO ACTION', 'NEEDED']] : [['KEEP YOUR ID', 'VISIBLE'], ['ALL JOURNEYS', 'RECORDED'], ['REPORT', 'IRREGULARITIES']])[Math.floor(t / 180) % 3];
       text(x, lines[0], gw + 35, y(114), 'rgba(255,200,170,.85)', 7, '600'); text(x, lines[1], gw + 35, y(104), 'rgba(255,200,170,.85)', 7, '600');
       x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(gw + 60, y(121), 2, 2);
     }

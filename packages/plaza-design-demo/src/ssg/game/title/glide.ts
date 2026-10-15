@@ -34,6 +34,8 @@ export const GLIDE = 54;
 const SPEED = 130, EASE_IN = 5, CRUISE_END = 45, EASE_OUT = 6;
 /** Where the regions start, west of the start (the beach is east of 0 too). */
 const HARBOR_X = 1250, BAY_X = 3350, CITY_X = 3650;
+/** The sand's waterline (depth): low, so the title is mostly sea. */
+const BEACH_TOP = 0.88;
 
 const PAPER = '255,217,165', ORANGE = '255,136,0', PINK = '255,61,242', RED = '255,42,68', DAWN = '255,150,90';
 const smooth = (a: number, b: number, v: number) => { const f = Math.max(0, Math.min(1, (v - a) / (b - a))); return f * f * (3 - 2 * f); };
@@ -79,12 +81,12 @@ const SIGNS = [
 ];
 /** Downtown, three rows deep: far (dim, behind the dome), middle, near (tall, signs, they swallow the sun). */
 const ROWS: { p: number; X: number; towers: (Tower & { x: number })[]; fill: string; edge: number; lit: number; glow: number; hk: number }[] = [
-  { p: 0.3, X: 3700, towers: towerRow(41, 46, [26, 60], [50, 120]), fill: '#2a1434', edge: 0.22, lit: 0.1, glow: 0.4, hk: 1 },
-  { p: 0.55, X: 4250, towers: towerRow(43, 34, [40, 90], [110, 210], SIGNS.slice(3)), fill: '#1b0e22', edge: 0.3, lit: 0.18, glow: 0.6, hk: 1 },
-  { p: 0.86, X: 4700, towers: towerRow(47, 26, [70, 130], [220, 400], SIGNS.slice(0, 3)), fill: '#0f0812', edge: 0.4, lit: 0.22, glow: 0.8, hk: 1 },
+  { p: 0.3, X: 3700, towers: towerRow(41, 46, [26, 60], [50, 120]), fill: '#2a1434', edge: 0.22, lit: 0.07, glow: 0.4, hk: 1 },
+  { p: 0.55, X: 4250, towers: towerRow(43, 34, [40, 90], [110, 210], SIGNS.slice(3)), fill: '#1b0e22', edge: 0.3, lit: 0.09, glow: 0.55, hk: 1 },
+  { p: 0.86, X: 4700, towers: towerRow(47, 26, [70, 130], [220, 400], SIGNS.slice(0, 3)), fill: '#0f0812', edge: 0.4, lit: 0.11, glow: 0.7, hk: 1 },
 ];
 /** Palms near the camera (depth 1.1), on the beach: X, height (of the view's), lean, seed. The first two frame the title. */
-const PALMS: [number, number, number, number][] = [[200, 0.6, 26, 3], [520, 0.7, -30, 4], [900, 0.58, 22, 5], [1130, 0.66, -18, 6]];
+const PALMS: [number, number, number, number][] = [[470, 0.62, 26, 3], [640, 0.72, -30, 4], [1060, 0.58, 22, 5], [1200, 0.66, -18, 6]];
 /** People on the street at the end (characters.ts, small: ps 1). */
 const STREET: Character[] = [
   { seed: 9101, look: { body: 'avg', hair: 'beanie', garb: 'jacket', extras: ['bag'] }, x: 60, act: 'walk', range: [20, 200], speed: 0.35, ps: 1 },
@@ -189,18 +191,19 @@ export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, 
   }
 
   // ---------- the land, by region: sand, the quay, a promenade round the bay, the city ----------
+  // (each region's seams stand upright, at the depth of its edge, so a seam never cuts across the view)
   const region = (Xe: number, Xw: number, top: number, fill: string, edge: string) => {
-    const pb = 1.3, yb = H * 2;
-    x.fillStyle = fill; x.beginPath();
-    x.moveTo(sx(Xw, top), ground(top)); x.lineTo(sx(Xe, top), ground(top)); x.lineTo(sx(Xe, pb), yb); x.lineTo(sx(Xw, pb), yb); x.closePath(); x.fill();
-    x.fillStyle = edge; x.fillRect(Math.round(sx(Xw, top)), Math.round(ground(top)), Math.round(sx(Xe, top) - sx(Xw, top)), 1);
+    const at = top > 0.1 ? top : 0.5, l = Math.round(sx(Xw, at)), r = Math.round(sx(Xe, at)), yt = Math.round(ground(top));
+    if (r < 0 || l > W) return;
+    x.fillStyle = fill; x.fillRect(l, yt, r - l, H - yt);
+    x.fillStyle = edge; x.fillRect(l, yt, r - l, 1);
   };
-  region(-1e5, HARBOR_X, 0.62, '#3a1a2c', 'rgba(255,217,165,.55)');
+  region(-1e5, HARBOR_X, BEACH_TOP, '#3a1a2c', 'rgba(255,217,165,.55)');
   region(HARBOR_X, BAY_X, 0.42, '#1a0c16', 'rgba(' + ORANGE + ',.6)');
   region(BAY_X, CITY_X, 0.92, '#140a12', 'rgba(' + ORANGE + ',.5)');
   region(CITY_X, 1e5, 0.0, '#120a12', 'rgba(' + ORANGE + ',.4)');
   // surf along the sand
-  { const yy = Math.round(ground(0.62)) + 1, l = Math.max(0, sx(HARBOR_X, 0.62)), r = Math.min(W, sx(-1e5, 0.62)), roll = still ? 0 : (t * 18) % 60;
+  { const yy = Math.round(ground(BEACH_TOP)) + 1, l = Math.max(0, sx(HARBOR_X, BEACH_TOP)), r = W, roll = still ? 0 : (t * 18) % 60;
     x.fillStyle = 'rgba(255,217,165,.6)'; for (let px = l - 60 + roll; px < r; px += 60) if (px + 34 > l) x.fillRect(Math.round(Math.max(l, px)), yy, Math.round(Math.min(34, r - px)), 1); }
 
   // ---------- Galleria's dome, Downtown's far rows ----------
@@ -230,8 +233,8 @@ export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, 
   }
 
   // ---------- the beach: SALT on its stilts, the palms ----------
-  { const s = sx(560, 0.64), sc = 0.55 * u;
-    if (s > -360 * sc && s < W + 120 * sc) placed(x, Math.round(s), Math.round(ground(0.64)), sc, () => {
+  { const s = sx(840, 0.9), sc = 0.62 * u;
+    if (s > -360 * sc && s < W + 120 * sc) placed(x, Math.round(s), Math.round(ground(0.92)), sc, () => {
       saltUnder(x, 226);
       x.fillStyle = '#24140c'; x.fillRect(8, -(SALT.floor - 2), 210, SALT.floor - 30);
       x.fillStyle = '#3a2414'; x.fillRect(2, -26, 222, 26); x.fillStyle = 'rgba(255,190,110,.9)'; x.fillRect(2, -26, 222, 2);
@@ -312,7 +315,8 @@ function line0(x: CanvasRenderingContext2D, v: GlideView, sx: (X: number, p: num
   const { W } = v, sc = 0.5 * u, P = G_END + 0.12 * W;
   const px = sx(P, 1), street = ground(1);
   if (px > W + 700 * sc || px < -1400 * sc) return;
-  const slope = Math.tan((7 * Math.PI) / 180), cut = 74, run = cut / slope;
+  const slope = Math.tan((7 * Math.PI) / 180), cut = 112, run = cut / slope;
+  const floor = (lx: number) => (lx < 0 ? cut : lx < run ? cut - lx * slope : 0);
   // the cutting: the street opens, a ramp falls from street level to the portal's floor
   x.save(); x.translate(Math.round(px), Math.round(street)); x.scale(sc, sc);
   x.fillStyle = '#07040a'; x.beginPath(); x.moveTo(0, 0); x.lineTo(run, 0); x.lineTo(0, cut); x.closePath(); x.fill();
@@ -326,10 +330,12 @@ function line0(x: CanvasRenderingContext2D, v: GlideView, sx: (X: number, p: num
   if (gt > 44) {
     x.save(); x.beginPath(); x.rect(4, -400, 4000, 800); x.clip();
     for (let c = 0; c < 3; c++) {
-      const c0 = nose + c * (CAR.len + 8), h0 = c0 < run ? cut - c0 * slope : 0;
-      x.save(); x.translate(c0, h0 - 4); if (c0 < run) x.rotate(-Math.atan(slope));
+      // each car sits on the rail under both its ends: placed by its middle, turned to the line between its bogies
+      const c0 = nose + c * (CAR.len + 8), a = c0 + 40, b = c0 + CAR.len - 40, ya = floor(a), yb = floor(b);
+      x.save(); x.translate((a + b) / 2, (ya + yb) / 2); x.rotate(Math.atan2(yb - ya, b - a)); x.translate(-CAR.len / 2, 0);
+      for (const k of [40, CAR.len - 40]) { x.fillStyle = '#0a0a0c'; x.fillRect(k - 18, -14, 36, 12); x.fillStyle = '#26262a'; x.beginPath(); x.arc(k - 9, -4, 4, 0, 7); x.arc(k + 9, -4, 4, 0, 7); x.fill(); }
       drawTrainCar(x, 0, (h) => -h, { t: f, c, riders: RIDERS, open: 0, dest: 'DOWNTOWN' });
-      if (c === 2) { x.fillStyle = 'rgba(' + PAPER + ',.75)'; x.font = '600 7px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillText('3', CAR.len - 20, -50); }
+      if (c === 2) { x.fillStyle = '#050302'; x.fillRect(CAR.len - 46, -98, 36, 11); x.fillStyle = 'rgba(' + PAPER + ',.8)'; x.font = '600 7px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('CAR 3', CAR.len - 28, -92.5); }
       x.restore();
     }
     // the headlight's beam on the ramp ahead
@@ -337,16 +343,19 @@ function line0(x: CanvasRenderingContext2D, v: GlideView, sx: (X: number, p: num
     x.restore();
   }
   // the portal: a concrete headwall from the street down to the floor, a black arch, LINE 0 on a plate
-  x.fillStyle = '#1e1418'; x.fillRect(-40, 0, 44, cut + 2);
-  x.strokeStyle = 'rgba(' + ORANGE + ',.55)'; x.strokeRect(-39.5, 0.5, 43, cut + 1);
-  x.fillStyle = '#000'; x.beginPath(); x.moveTo(-30, cut); x.lineTo(-30, 26); x.quadraticCurveTo(-30, 8, -12, 8); x.lineTo(4, 8); x.lineTo(4, cut); x.closePath(); x.fill();
-  x.fillStyle = '#0a0606'; x.fillRect(-6000, 0, 5966, 400);
-  x.fillStyle = 'rgba(' + ORANGE + ',.9)'; x.fillRect(-6000, -1, 6000 + run + 400 + 2000, 3);
+  x.fillStyle = '#0a0606'; x.fillRect(-6000, -1, 5960, 500);
+  x.fillStyle = '#1e1418'; x.fillRect(-40, -1, 46, cut + 3);
+  x.strokeStyle = 'rgba(' + ORANGE + ',.55)'; x.strokeRect(-39.5, -0.5, 45, cut + 2);
+  // the mouth: black inside, a lamp over it
+  x.fillStyle = '#000'; x.beginPath(); x.moveTo(-30, cut); x.lineTo(-30, 30); x.quadraticCurveTo(-30, 8, -8, 8); x.lineTo(6, 8); x.lineTo(6, cut); x.closePath(); x.fill();
+  x.fillStyle = 'rgba(255,220,160,.9)'; x.fillRect(-14, 3, 8, 2);
+  // the street over the tunnel and past the cutting (the cutting itself is open)
+  x.fillStyle = 'rgba(' + ORANGE + ',.9)'; x.fillRect(-6000, -1, 6006, 3); x.fillRect(run, -1, 3000, 3);
   x.fillStyle = '#0d0705'; x.fillRect(-34, -22, 46, 15); x.strokeStyle = 'rgba(' + ORANGE + ',.7)'; x.strokeRect(-33.5, -21.5, 45, 14);
   x.fillStyle = 'rgba(' + ORANGE + ',.4)'; x.fillRect(-28, -7, 2, 7); x.fillRect(4, -7, 2, 7);
   x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(' + ORANGE + ',.95)'; x.shadowColor = 'rgba(' + ORANGE + ',.8)'; x.shadowBlur = still ? 0 : 6; x.fillText('LINE 0', -11, -14); x.restore();
   // the people on the street over the tunnel, and a Registry drone checking them
-  const sv: View = { ...frameView(f), sx: (wx) => Math.round(wx - 260), y: (h) => -h };
+  const sv: View = { ...frameView(f), sx: (wx) => Math.round(wx - 340), y: (h) => -h };
   for (const c of STREET) drawCharacter(x, sv, { ...c, ps: 2 });
   x.restore();
   void g;
