@@ -761,6 +761,26 @@ scaffold (Act II).
 
 ### P13 Washer 3 (the laundromat)
 
+**Built** (`data/laundromat.json`, `laundromat/`), as below, with these choices:
+- The laundromat is its own scene, its door in the market between the umbrellas and the fruit
+  (the market rules hang on its wall). Inside: four washers, the breaker with its conduits drawn
+  in the wall, the schedule box (counts down to the next slot), SUDS on a post, FOLD-O at the
+  folding table, the owners of washers 1, 2 and 4 waiting (the one on washer 2 saw Moth leave the
+  jacket), a cat on the sill, a soap dispenser, the Registry's 72-hour notice, a lost-sock board.
+- The schedule is a slot every 24 s (first after 3 s); a cycle takes 5 s (`tuning.cycleMs`); the
+  breaker resets itself 3 s after a trip (or by hand, `reset`). Washer 3 is not on the schedule.
+- Fingers start nothing and stop nothing: SUDS refuses (`suds.start`, `suds.prepaid`: "prepaid
+  cycles start when a machine finishes", and `suds.cancel`: the crime-and-sin line). The washers'
+  everyday actions are read / start it / stop it, so both refusals are one tap away.
+- **House rule 4: doors open when the queue is clear.** Washer 3's door releases only once all
+  four washes are done, so skipping a stranger (cutting their slot and never starting them) does
+  not work: "door held: 2 still waiting". Any order with at most two running works.
+- The jacket (washer 3's `door`, `open`): the item `maglev.pass` (HELD; what P14's brake checks),
+  the keyring key chip `glove.right` (the twin of DLV-9's `glove.left`), the save flag `p13`. With
+  both gloves the fixer has his line once (`flags.gloves`).
+- Code: `washer.run`, `washer.stop`, `washer.take` (laundromat/rules.ts) and two engine hooks for
+  effects, `SceneModel.carry` (items) and `SceneModel.flag` (save flags).
+
 - **Scene · spot:** the market, a laundromat between the stalls (new spot; LEVELS "more
   puzzles"). Main path. Difficulty 4.
 - **Player sees:** four networked washers on one breaker that trips above two running machines.
@@ -878,6 +898,28 @@ READING IT · SMILE · YOU ARE ON CAMERA. CAR 3 OF 3. EMERGENCY BRAKE.
 `train.brake` (new effect) stops the train where it is: at the siding the harbor exit appears;
 anywhere else "the train stops in a tunnel. a voice apologises. it restarts." Brake lines: keep
 the plate; add "your emergency has been registered. it will be ready in 48 hours."
+
+**As built (2026-10-15):** `data/train.json` (TRAIN-0, its panel by the brake at the end of car 3),
+`scenes/train0.ts` (the rules), the ride in `scenes/line.ts`. Differences from the sketch:
+
+- The ride is real (stations Downtown, Galleria, Harbor), so `position` reads where the train is
+  ("between GALLERIA and DOWNTOWN. track km 4.2."), not PLAZA CENTRAL. No turnstile, no MAGLEV
+  node: the pass is the save's item `maglev.pass` (P13), and the brake checks it. Without it:
+  "BRAKE: emergency #0451 is registered to another passenger. pull not accepted.", then "a new
+  emergency has been registered in your name. it will be ready in 48 hours." (alternating).
+- The siding lies before the harbor station (track unit 5350 of 9000, among the containers).
+  The brake has a long braking distance; `harbor siding` fires when a stop would land at the
+  siding, about 2 s before it shows in the windows, so by hand you are early or late (about a
+  1 s window nobody can see). Wired to `brake pull`, the train brakes to stand exactly at it.
+- `doors` take no hand: "manual release disabled". Only a signal opens them, and only at the
+  siding (elsewhere: a wall forty centimetres away). The pre-wired `safety` cable
+  `brake:stopped → doors lock` must be replaced by `brake:stopped → doors open`.
+- Doors open at the siding: the save flag `harbor:open` is set (the harbor lock is off for good),
+  and STEP OUT · SIDING leads up a service stair to the harbor (its `metro` exit).
+- A stop anywhere else: "the train stops {on the bridge / in the tunnel / …}." then "a voice
+  apologises for the delay. the train restarts." The plate is a STORE noun on the device.
+- A new regular in the car, the old woman by the door, hints at it: "Nobody plans an emergency.
+  Well. Some people do."
 
 ### O07 The junction cabinet (patch bay)
 

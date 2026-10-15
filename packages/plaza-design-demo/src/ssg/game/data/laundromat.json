@@ -1,0 +1,277 @@
+{
+  "id": "laundromat",
+  "name": "the laundromat",
+
+  "state": {
+    "w1": "idle",
+    "w2": "idle",
+    "w3": "idle",
+    "w4": "idle",
+    "breaker": "on",
+    "trips": 0,
+    "jacket": false
+  },
+
+  "tuning": {
+    "cycleMs": 5000,
+    "resetMs": 3000,
+    "maxRunning": 2
+  },
+
+  "devices": [
+    {
+      "id": "clock",
+      "name": "SCHEDULE",
+      "look": "The laundromat's schedule, a timer box under the opening hours. At every slot it starts every machine with a load in it.",
+      "everyday": [{ "noun": "hours", "verb": "read", "label": "read the hours" }],
+      "status": "SLOT EVERY 24 S · STARTS WASHERS 1, 2, 4",
+      "layout": {
+        "spot": { "x": 178, "y": 58, "w": 34, "h": 30 },
+        "board": { "x": 0.12, "y": 0.3 },
+        "dir": { "clock": "right", "hours": "up" }
+      },
+      "nouns": [
+        {
+          "id": "clock", "kind": "CLOCK", "verbs": ["read"], "events": ["open"],
+          "clock": { "every": 24000, "first": 3000 },
+          "on": { "read": { "say": ["cat schedule", "every 24 s: a slot. at each slot every machine with a load starts. washer 3: prepaid, not on the schedule."] } }
+        },
+        {
+          "id": "hours", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat hours", "OPEN 06:00–02:00. MACHINES START AT EACH SLOT. LOADS LEFT OVER 72 H ARE REPORTED AS ABANDONED."] } }
+        }
+      ]
+    },
+    {
+      "id": "washer1",
+      "name": "WASHER 1",
+      "look": "A front-loader with a cracked display. Six shirts inside, all blue, all waiting.",
+      "everyday": [{ "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }, { "noun": "drum", "verb": "stop", "label": "stop it" }],
+      "status": [{ "if": "w1=idle", "then": "door locked · 1 cycle left" }, { "if": "w1=running", "then": "WASHING" }, { "if": "w1=done", "then": "cycle complete" }],
+      "layout": {
+        "spot": { "x": 290, "w": 46, "h": 50 },
+        "board": { "x": 0.15, "y": 0.75 },
+        "dir": { "drum": "up", "queue": "down" }
+      },
+      "nouns": [
+        {
+          "id": "drum", "kind": "ACT", "verbs": ["start", "stop"], "events": ["done"],
+          "on": { "start": { "do": [{ "effect": "washer.run" }] }, "stop": { "do": [{ "effect": "washer.stop" }] } }
+        },
+        {
+          "id": "queue", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat queue", "WASHER 1 · LOAD: 6 SHIRTS, BLUE · 1 CYCLE LEFT · OWNER: WAITING ON SITE."] } }
+        }
+      ]
+    },
+    {
+      "id": "washer2",
+      "name": "WASHER 2",
+      "look": "A front-loader with a hand-knitted cover on its lid. Somebody's whole week is in there.",
+      "everyday": [{ "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }, { "noun": "drum", "verb": "stop", "label": "stop it" }],
+      "status": [{ "if": "w2=idle", "then": "door locked · 1 cycle left" }, { "if": "w2=running", "then": "WASHING" }, { "if": "w2=done", "then": "cycle complete" }],
+      "layout": {
+        "spot": { "x": 350, "w": 46, "h": 50 },
+        "board": { "x": 0.38, "y": 0.75 },
+        "dir": { "drum": "up", "queue": "down" }
+      },
+      "nouns": [
+        {
+          "id": "drum", "kind": "ACT", "verbs": ["start", "stop"], "events": ["done"],
+          "on": { "start": { "do": [{ "effect": "washer.run" }] }, "stop": { "do": [{ "effect": "washer.stop" }] } }
+        },
+        {
+          "id": "queue", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat queue", "WASHER 2 · LOAD: MIXED, 1 WEEK · 1 CYCLE LEFT · LOADED TUESDAY."] } }
+        }
+      ]
+    },
+    {
+      "id": "washer3",
+      "name": "WASHER 3",
+      "look": "A front-loader, the newest of the four. Through the glass: one jacket, dark, folded once. A sleeve against the door.",
+      "everyday": [{ "noun": "door", "verb": "open", "label": "open the door" }, { "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }],
+      "status": [
+        { "if": "door3=locked", "then": "door locked · 1 cycle left · 1 jacket (prepaid)" },
+        { "if": "w3=running", "then": " · WASHING" },
+        { "if": "door3=held", "then": "cycle complete · door held · {waiting} waiting" },
+        { "if": "door3=open", "then": "DOOR OPEN · 1 jacket" },
+        { "if": "door3=empty", "then": "door open · empty" }
+      ],
+      "layout": {
+        "spot": { "x": 410, "w": 46, "h": 50 },
+        "board": { "x": 0.61, "y": 0.75 },
+        "dir": { "drum": "up", "queue": "down", "door": "right" }
+      },
+      "nouns": [
+        {
+          "id": "drum", "kind": "ACT", "verbs": ["start", "stop"], "events": ["done"],
+          "on": { "start": { "do": [{ "effect": "washer.run" }] }, "stop": { "do": [{ "effect": "washer.stop" }] } }
+        },
+        {
+          "id": "queue", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat queue", "WASHER 3 · 1. JACKET (PREPAID, 9 CYCLES) · 1 CYCLE LEFT · OWNER NOT ON SITE."] } }
+        },
+        {
+          "id": "door", "kind": "ACT", "verbs": ["open"],
+          "on": {
+            "open": [
+              { "if": "door3=empty", "say": ["open door", "empty. it smells of fabric conditioner and solder.", "dim"] },
+              { "if": "door3=open", "do": [{ "effect": "washer.take" }] },
+              { "if": "door3=held", "say": ["open door", "door held. house rule 4: doors open when the queue is clear. {waiting} still waiting.", "err"] },
+              { "say": ["open door", "locked. one cycle left.", "err"] }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "washer4",
+      "name": "WASHER 4",
+      "look": "A front-loader with a dent in it shaped like a boot. Work clothes inside, hi-vis, grey with the day.",
+      "everyday": [{ "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }, { "noun": "drum", "verb": "stop", "label": "stop it" }],
+      "status": [{ "if": "w4=idle", "then": "door locked · 1 cycle left" }, { "if": "w4=running", "then": "WASHING" }, { "if": "w4=done", "then": "cycle complete" }],
+      "layout": {
+        "spot": { "x": 470, "w": 46, "h": 50 },
+        "board": { "x": 0.84, "y": 0.75 },
+        "dir": { "drum": "up", "queue": "down" }
+      },
+      "nouns": [
+        {
+          "id": "drum", "kind": "ACT", "verbs": ["start", "stop"], "events": ["done"],
+          "on": { "start": { "do": [{ "effect": "washer.run" }] }, "stop": { "do": [{ "effect": "washer.stop" }] } }
+        },
+        {
+          "id": "queue", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat queue", "WASHER 4 · LOAD: WORKWEAR, HI-VIS · 1 CYCLE LEFT · OWNER: ASLEEP ON SITE."] } }
+        }
+      ]
+    },
+    {
+      "id": "breaker",
+      "name": "BREAKER",
+      "look": "A grey breaker box on the wall, one lever, one circuit for four washers. Its conduits run into the wall to every machine.",
+      "everyday": [{ "noun": "load", "verb": "read", "label": "check the load" }, { "noun": "load", "verb": "reset", "label": "reset it" }],
+      "status": [{ "if": "breaker=on", "then": "ON · {running} of 2 running" }, { "if": "breaker=tripped", "then": "TRIPPED · resetting" }],
+      "layout": {
+        "spot": { "x": 530, "y": 44, "w": 24, "h": 34 },
+        "board": { "x": 0.5, "y": 0.3 },
+        "dir": { "load": "down" }
+      },
+      "nouns": [
+        {
+          "id": "load", "kind": "SENSE", "verbs": ["read", "reset"], "events": ["tripped"],
+          "on": {
+            "read": { "say": ["cat load", "BREAKER · CIRCUIT 1 · {running} of 2 running. above 2 it trips and stops every washer. trips today: {trips}."] },
+            "reset": [
+              { "if": "breaker=on", "say": ["use load --reset", "BREAKER: already on. {running} of 2 running.", "dim"] },
+              { "do": [{ "set": "breaker", "to": "on" }], "say": ["use load --reset", "BREAKER: reset. 0 of 2 running.", "ok"] }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "suds",
+      "name": "SUDS",
+      "look": "The laundromat's daemon, a screen on a post by the folding table. A face made of bubbles. It runs the queue and has views on it.",
+      "everyday": [{ "noun": "suds", "verb": "talk", "label": "talk to SUDS" }, { "noun": "rules", "verb": "read", "label": "read the house rules" }],
+      "status": [{ "if": "waiting", "then": "QUEUE: {waiting} WAITING" }, { "if": "!waiting", "then": "QUEUE CLEAR" }],
+      "layout": {
+        "spot": { "x": 586, "w": 30, "h": 56 },
+        "board": { "x": 0.85, "y": 0.3 },
+        "dir": { "suds": "up", "rules": "left" }
+      },
+      "nouns": [
+        { "id": "suds", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } },
+        {
+          "id": "rules", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat rules", "HOUSE RULES. 1. MACHINES START ON THE SCHEDULE. 2. TWO MACHINES AT ONCE (CIRCUIT 1). 3. NO WASH IS CANCELLED. 4. DOORS OPEN WHEN THE QUEUE IS CLEAR."] } }
+        }
+      ]
+    }
+  ],
+
+  "cables": [
+    { "id": "slot.w1", "from": "clock.clock:open", "to": "washer1.drum", "verb": "start" },
+    { "id": "slot.w2", "from": "clock.clock:open", "to": "washer2.drum", "verb": "start" },
+    { "id": "slot.w4", "from": "clock.clock:open", "to": "washer4.drum", "verb": "start" },
+    { "id": "trip.w1", "from": "breaker.load:tripped", "to": "washer1.drum", "verb": "stop", "fixed": true },
+    { "id": "trip.w2", "from": "breaker.load:tripped", "to": "washer2.drum", "verb": "stop", "fixed": true },
+    { "id": "trip.w3", "from": "breaker.load:tripped", "to": "washer3.drum", "verb": "stop", "fixed": true },
+    { "id": "trip.w4", "from": "breaker.load:tripped", "to": "washer4.drum", "verb": "stop", "fixed": true }
+  ],
+
+  "keyring": [
+    { "id": "glove.right", "kind": "key", "label": "right glove" }
+  ],
+
+  "dialogue": {
+    "suds": {
+      "speaker": "SUDS · laundromat daemon",
+      "start": "start",
+      "sayCmd": "say \"{line}\" > suds",
+      "nodes": {
+        "start": [
+          { "if": "jacket", "text": "Washer 3 is free again. SUDS has already let it. To a sock. Long-term.", "choices": [["Good for the sock.", "bye"], ["Ask about the rules.", "rules"]] },
+          { "if": "trips", "text": "SUDS here. The breaker tripped again. It does that. It is the only thing in here that finishes. How can SUDS help?", "choices": [["Open washer 3.", "open"], ["Stop one of the washes.", "cancel"], ["Why does it trip?", "breaker"], ["Whose jacket is in 3?", "jacket"]] },
+          { "text": "SUDS here. Four machines, one breaker, no complaints accepted. How can SUDS help?", "choices": [["Open washer 3.", "open"], ["Stop one of the washes.", "cancel"], ["Why does it trip?", "breaker"], ["Whose jacket is in 3?", "jacket"]] }
+        ],
+        "open": { "text": "Washer 3 has one cycle left, prepaid. SUDS does not open doors on wet laundry. SUDS has standards.", "choices": [["When does it run?", "prepaid"], ["Let me start over.", "start"]] },
+        "prepaid": { "text": "Prepaid cycles are not on the schedule. They start when a machine finishes. Nothing has finished since Tuesday. Three start at every slot, the breaker trips, everybody starts over.", "choices": [["So nothing ever finishes.", "never"], ["Let me start over.", "start"]] },
+        "never": { "text": "Correct. SUDS has asked for a second circuit. SUDS was sent a form. SUDS filled in the form. The form is also waiting for a slot.", "choices": [["Let me start over.", "start"]] },
+        "cancel": { "text": "Cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them.", "choices": [["What if they ran later instead?", "later"], ["Let me start over.", "start"]] },
+        "later": { "text": "Later is not cancelling. Later is scheduling. SUDS loves scheduling. The schedule is the box by the door. SUDS does not touch its wiring. SUDS cannot see anyone touching its wiring. Hypothetically.", "choices": [["Hypothetically.", "start"]] },
+        "breaker": { "text": "One circuit, four washers. The breaker allows two at once. The schedule starts three. They were installed by two contractors who never met. SUDS has met both. SUDS sides with the breaker.", "choices": [["And then?", "rule4"], ["Let me start over.", "start"]] },
+        "rule4": { "text": "When it trips, every machine stops. Lost cycle, wet laundry, nobody goes home. And nobody's laundry leaves until everybody's laundry is clean. House rule 4. Solidarity. Also the fire code.", "choices": [["Let me start over.", "start"]] },
+        "jacket": { "text": "One jacket, prepaid nine cycles, owner not on site for three days. SUDS does not ask questions. SUDS asks for detergent.", "choices": [["It's my friend's.", "friend"], ["Let me start over.", "start"]] },
+        "friend": { "text": "Then your friend washes very thoroughly. Nine cycles. Either a stain or a secret. SUDS does not judge. SUDS rinses.", "choices": [["Let me start over.", "start"]] },
+        "manners": { "text": "Politeness noted and logged. The breaker remains unmoved. It has no ears. Only amps.", "choices": [["Let me start over.", "start"]] },
+        "rules": { "text": "Start on the schedule. Two at a time. Never cancel. Doors open when the queue is clear. Four rules. SUDS wrote none of them and loves all of them.", "choices": [["Let me start over.", "start"]] },
+        "bye": { "text": "Separate your colours." }
+      },
+      "free": {
+        "match": "please|thank",
+        "goto": "manners",
+        "miss": "SUDS files that under 'delicates'.",
+        "retry": "Again. Slower. Like a spin cycle.",
+        "retryGoto": "start"
+      }
+    }
+  },
+
+  "goals": [
+    { "id": "run", "text": "get washer 3 through its last cycle" },
+    { "id": "jacket", "text": "take Moth's jacket" }
+  ],
+
+  "texts": {
+    "goals.done": "done. Moth's pass is for LINE 0. the metro is down the stairs on Downtown's street.",
+    "talk.aria": "Say something to SUDS",
+
+    "name.washer1": "WASHER 1",
+    "name.washer2": "WASHER 2",
+    "name.washer3": "WASHER 3",
+    "name.washer4": "WASHER 4",
+
+    "suds.start": ["use drum --start", "SUDS: machines start on the schedule. the schedule is the box by the door. SUDS loves the schedule.", "err"],
+    "suds.prepaid": ["use drum --start", "SUDS: washer 3 is prepaid. prepaid cycles start when a machine finishes. nothing has finished since tuesday.", "err"],
+    "suds.cancel": ["use drum --stop", "SUDS: cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them.", "err"],
+    "suds.cancel.own": ["use drum --stop", "SUDS: that cycle is prepaid. SUDS does not refund. SUDS does not stop. SUDS waits.", "err"],
+
+    "washer.nopower": ["signal → drum --start", "{name}: no power. breaker tripped.", "err"],
+    "washer.already": ["signal → drum --start", "{name}: already washing.", "dim"],
+    "washer.started": ["signal → drum --start", "{name}: cycle started. {sec} s.", "dim"],
+    "washer.done": ["", "{name}: cycle complete.", "ok"],
+    "washer.idle": ["use drum --stop", "{name}: not running.", "dim"],
+    "washer3.done.open": ["", "WASHER 3: cycle complete. queue clear. door released.", "ok"],
+    "washer3.done.held": ["", "WASHER 3: cycle complete. door held: {n} still waiting. house rule 4.", "dim"],
+    "queue.clear": ["", "SUDS: queue clear. every wash done. door 3 released.", "ok"],
+
+    "breaker.trip": ["", "BREAKER: {n} machines on circuit 1. tripped. every washer stopped.", "err"],
+    "breaker.auto": ["", "BREAKER: reset. 0 of 2 running.", "dim"],
+
+    "jacket.take": ["open door", "WASHER 3: door open. one jacket, Moth's, still warm from the drum.", "ok"],
+    "jacket.pass": ["", "in the inside pocket: a maglev pass. HOLDER: MOTH. SECOND HOLDER: you.", "ok"]
+  }
+}

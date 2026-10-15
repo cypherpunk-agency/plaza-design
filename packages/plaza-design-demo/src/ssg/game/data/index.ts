@@ -16,11 +16,13 @@ import capsuleJson from './capsule.json';
 import mothJson from './moth.json';
 import beachJson from './beach.json';
 import trainJson from './train.json';
+import laundromatJson from './laundromat.json';
 
 const yard: Loose<SceneData> = yardJson;
 const capsule: Loose<SceneData> = capsuleJson;
 const moth: Loose<SceneData> = mothJson;
 const beach: Loose<SceneData> = beachJson;
+const laundromat: Loose<SceneData> = laundromatJson;
 const downtown: Loose<SceneData> = downtownJson;
 const logic: Loose<LogicData> = logicJson;
 const net: Loose<NetData> = netJson;
@@ -38,6 +40,9 @@ export const MOTH = moth as SceneData;
 /** The beach and SALT, its bar: a real beach west of the harbor, with Moth's boat at the end of the pier. */
 export const BEACH = beach as SceneData;
 
+/** The laundromat in the Neon Market (P13 Washer 3): four washers on one breaker, the schedule, SUDS, Moth's jacket. */
+export const LAUNDROMAT = laundromat as SceneData;
+
 /** Downtown, the first street (and the scene the old terminal saves belong to). */
 export const DOWNTOWN = downtown as SceneData;
 
@@ -46,7 +51,7 @@ const train: Loose<SceneData> = trainJson;
 export const TRAIN = train as SceneData;
 
 /** Every scene file, by scene id. A new scene is one import and one line here. */
-export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH,
+export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH, laundromat: LAUNDROMAT,
   train: TRAIN };
 
 /** The logic modules (TIMER, SWITCH), shared by every scene. Checked like a scene. */

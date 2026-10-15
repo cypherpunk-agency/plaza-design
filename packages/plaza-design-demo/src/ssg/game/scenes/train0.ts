@@ -18,7 +18,6 @@
 
 import { HARBOR_FLAG, LINE, STATIONS } from '../city';
 import type { SceneData } from '../data/types';
-import type { Player } from '../downtown/rules';
 import type { Effect, SceneRules, World } from '../engine/rules';
 import { between, BRAKE, brakeRide, LOOP, ride, rideAtSiding, rideDoors, rideNext, rideStop, rideStopsAt, SEG, sidingAlong, TUNNEL_IN } from './line';
 
@@ -41,10 +40,8 @@ function whereWords(pos: number): string {
 /** Phases as numbers, for the tick to notice a change (scratch holds numbers only). */
 const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5, resuming: 6 } as const;
 
-/** TRAIN-0's rules, for the player's save (the pass is an item; the harbor flag is a save flag). */
-export function trainRules(player: Player): SceneRules {
-  const items = () => (player.save() as unknown as { items?: Record<string, number> }).items ?? {};
-  const hasPass = () => (items()[PASS] ?? 0) > 0;
+/** TRAIN-0's rules. The pass is an item the player carries and the harbor flag a save flag: the model's `carry` and `flag` reach the save. */
+function trainRules(): SceneRules {
 
   const effects: Record<string, Effect> = {
     'train.position': (w) => {
@@ -55,7 +52,7 @@ export function trainRules(player: Player): SceneRules {
     },
     'train.brake': (w) => {
       const m = w.m;
-      if (!hasPass()) {
+      if (m.carry(PASS) <= 0) {
         const n = Number(m.get('pulls') ?? 0);
         m.set('pulls', n + 1);
         return w.line(n % 2 === 0 ? 'brake.notyours' : 'brake.queued');
@@ -72,8 +69,7 @@ export function trainRules(player: Player): SceneRules {
       if (ride.phase !== 'halted') return w.line('doors.moving');
       if (!rideAtSiding()) return w.line('doors.wall');
       rideDoors(true);
-      const save = player.save();
-      if (!save.flags[HARBOR_FLAG]) { save.flags[HARBOR_FLAG] = true; player.persist(); }
+      w.m.flag(HARBOR_FLAG);
       w.goal('siding');
       return w.line('doors.siding');
     },
@@ -135,8 +131,6 @@ export function trainRules(player: Player): SceneRules {
   };
 }
 
-/** For the build-time check: the contract does not depend on whose save it is. */
-export const TRAIN_RULES_SHAPE = trainRules({
-  save: () => ({ handle: '', tokens: 0, jump: false, freed: [], flags: {} }),
-  persist: () => {}, nodes: () => 0, granted: () => {}, end: () => {},
-});
+export const TRAIN_RULES = trainRules();
+/** The build-time check's name for them (generate-demos). */
+export const TRAIN_RULES_SHAPE = TRAIN_RULES;

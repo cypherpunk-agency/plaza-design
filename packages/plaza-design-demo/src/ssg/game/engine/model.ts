@@ -93,6 +93,13 @@ export interface SceneHooks {
   grant?: (module: string) => void;
   /** Add noodle tokens; returns the new total. Default: the model counts its own. */
   tokens?: (add: number) => number;
+  /**
+   * What the player carries (the save's `items`, scenes/kit.ts `ITEMS`): add `n` of an item (0 to
+   * only ask; negative to take) and return how many are held now. Default: the model keeps its own.
+   */
+  carry?: (item: string, n: number) => number;
+  /** Set a save flag (a story beat a scene's code marks: `p13`). Default: the model keeps its own. */
+  flag?: (name: string) => void;
   /** A made fragment was thrown off the keyring (already gone from `keyring()`): write the save. */
   drop?: (id: string) => void;
   /** Sudo mode (`?sudo`): every LINK reaches every node there is (the scene's and net.json's). */
@@ -172,6 +179,8 @@ export class SceneModel {
   private spans = new Map<string, number>();
   private ownModules: string[] = [];
   private ownTokens = 0;
+  private ownItems: Record<string, number> = {};
+  private ownFlags = new Set<string>();
   readonly texts: Record<string, string | LineData>;
   /** Per-device state (a SWITCH's on/off), keyed by device id. */
   private local = new Map<string, Record<string, Value>>();
@@ -441,6 +450,20 @@ export class SceneModel {
     if (this.hooks.tokens) this.hooks.tokens(-n); else this.ownTokens -= n;
     return true;
   }
+
+  /**
+   * What the player carries (an item of scenes/kit.ts `ITEMS`, not a keyring chip): add `n` (0: just
+   * ask; negative: take, never below 0) and return how many are held now. Scene effects use it to hand
+   * over things like the maglev pass.
+   */
+  carry(item: string, n = 0): number {
+    if (this.hooks.carry) return this.hooks.carry(item, n);
+    this.ownItems[item] = Math.max(0, (this.ownItems[item] ?? 0) + n);
+    return this.ownItems[item];
+  }
+
+  /** Set a save flag (a story beat only the code sees: a level done). */
+  flag(name: string) { if (this.hooks.flag) this.hooks.flag(name); else this.ownFlags.add(name); }
 
   /** Was this keyring chip made on the keyring (so it may be thrown away)? The data's own are evidence: they stay. */
   isMade(id: string) { return !this.keys.has(id) && !!this.item(id); }

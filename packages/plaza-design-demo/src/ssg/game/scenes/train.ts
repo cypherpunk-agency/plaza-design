@@ -20,7 +20,7 @@ import { TRAIN } from '../data';
 import { box, O, onScreen, PAPER, RED, rng, tell, text, towers, type SceneDef, type View } from './kit';
 import { between, clock, lineOpen, LOOP, ride, rideAtSiding, rideDue, rideNext, rideOpen, rideRun, SEG, SIDING, ticker } from './line';
 import { crowd, drawRider, KINDS, SEAT_H, type RiderKind } from './riders';
-import { trainRules } from './train0';
+import { TRAIN_RULES } from './train0';
 
 /** Layout: positions in world units, heights up from the car's floor. */
 const L = {
@@ -573,7 +573,7 @@ export const train: SceneDef = {
   ],
   // TRAIN-0's emergency panel by the brake: P14 (data/train.json, train0.ts)
   data: TRAIN,
-  rules: trainRules,
+  rules: TRAIN_RULES,
 
   drawBackdrop(x, v, e) {
     const { sx, y, t, gy } = v, w0 = sx(0), w1 = sx(L.width);
