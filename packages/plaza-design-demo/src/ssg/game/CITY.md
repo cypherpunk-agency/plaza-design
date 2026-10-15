@@ -238,46 +238,77 @@ and the ferry; interchanges are marked on the map (the street-map draft).
 
 ## The map
 
-- The city map is the cross-section itself: the Spire on top, the street districts in the
-  middle, the Undercity below. The ways between them are drawn as links: the metro, elevators,
-  canals and taxi routes.
-- Two zoom levels: the city shows districts; tapping a district shows its places. Quick travel
-  goes to places.
+- The city map is a **street plan** of the whole city, tilted back so the towers stand up (or
+  flat), with four layers: STREET, METRO, ABOVE, BELOW. The strata are layers now, not bands of
+  a cross-section: ABOVE is the Spire's airspace and the air traffic, BELOW the tunnels, canals
+  and the Undercity.
+- Two zoom levels: the city shows districts; tapping a district zooms the same map into it and
+  shows its places. Quick travel goes to places.
 - Inside a place there is no map: its scenes connect by doors.
-- To be tested in the game and adjusted.
 
-Built (test, 2026-10-15): `citymap.ts` draws it from `city.ts`'s map data.
+Built (2026-10-15, from the approved draft E): `cityplan.ts` traces the plan, `citymap.ts` draws
+it, both from `city.ts`'s map data.
 
-- **City view**: each district a silhouette in its band (`DISTRICT_MAP`). LINE 0 runs in a tunnel
-  under the street as a loop, its stations with stairs up; the market gate is green or red. A title
-  block beside it names the district picked: stratum, character, places, ways.
+- **The plan** (`cityplan.ts`, plan units 844 × 390, x east, y south): the coast with the sea
+  east of it, the Spire's island in the bay, the canal from the west through the Old Quarter into
+  the bay, the avenues (AVENUE 0, REGISTRY ROAD, OLD QUARTER LANE, GALLERIA WAY, SKYLINE DRIVE,
+  DOCK ROAD, THE RING highway, LAUNCH ROAD to the Skyport), Circle Park, the Skyport's fence.
+  Each district has a centre its streets grow from (`DISTRICT_MAP`); the land is shared out to
+  the nearest centre (`districtAt`).
+- **The streets** are one network traced through a direction field (one term per district's
+  character: Downtown's warped grid and the ring round Circle Park, the market's skew, the
+  Galleria's diagonal, streets following the shore and the canal, the Fringe loose, the Skyport a
+  military grid). A spatial hash keeps streets of a family apart (`sep` per district); each dead
+  end is carried on until it meets another street, the shore or the canal's bank; Chaikin
+  smoothing. Streets never cross water; only the avenues cross the canal, on bridges. No
+  randomness but a hash, so it is the same every time. It is traced once, lazily, the first time
+  the map opens (well under a frame's budget on a desktop), and each view's ground (land,
+  streets, towers) is painted once into an offscreen canvas and only blitted after; what moves is
+  drawn each frame.
+- **Tilted** (default, T toggles FLAT): towers extruded by the district's density, windows lit in
+  its colour where the district is known, black where it is only heard of. The Spire stands on its
+  island (the set from `sets/spire.ts`). Landmarks stand as scenery once their district is heard:
+  the Galleria's dome and the Church of the Algorithm, the harbor's cranes, SALT and its palms,
+  the market's arch and Club VOID, the Registry's sign, St. Agnes and the variety theatre, the
+  Fringe's chimneys and vertical farm, the Skyport's gantry and its launches. Boats on the water:
+  barges on the canal, ships at the quay and out at sea, the patrol, fishing boats (the ferry only
+  once known).
+- **Layers** (tabs, 1–4 or L): STREET. METRO: LINE 0's loop and its moving trains once you have
+  stood on a platform (else only the stations seen from the street); interchange roundels with
+  chips (L0, TAXI, and the other lines once known); the harbor station says CLOSED UNTIL THE
+  SIDING until P14. LINE 1 (Canal Line), bus 7 and the ferry are not travel yet: each is drawn only
+  once the story sets `heard:line1` / `heard:bus7` / `heard:ferry` (`LINES_PLANNED`; sudo sets
+  them). ABOVE: the pads you have stood at, air traffic by kind (taxis, Registry patrols, delivery
+  drones, corporate shuttles, cargo, medevac) between districts you have heard of, the Spire's
+  restricted airspace. BELOW: LINE 0's tunnel, the canal and (once heard of) the culverts and the
+  Undercity's arches.
 - **You discover the map as you travel** (decided with Tommi, 2026-10-15; `city.ts`, "what you
   know of the city"). Each district has a stage (`districtStage`):
-  - *unknown*: a dim block and `???`, no record;
-  - *heard*: its short name and a dark silhouette (its shape as seen from the street), no record;
+  - *unknown*: veiled, `???`, no record;
+  - *heard*: dark (faint dashed streets, black towers) and its short name, no record;
   - *known*: lit, its full name and its note.
 
   A district is known once you have been in one of its places (or the flag `mapped:<district>`),
-  heard once you have been in a district listed in its `near` (`DISTRICT_REVEAL`: the street
-  districts see their neighbours) or by the flag `heard:<district>`. The Undercity has no `near`:
-  it stays unknown until the story sets `heard:undercity` or you find a way down.
-  **The Spire is a mystery at first**: it is a landmark, so its silhouette is drawn from the start,
-  but its tag says `???` and its record says nothing. It is *heard* once you have stood in the
-  Galleria (the sky elevator's housing is on the mall's roof) or at the harbor (its foot stands in
-  the bay), or when the story sets `heard:spire`; *known* once you have been up there (a Spire
-  place) or the story sets `mapped:spire`.
+  heard once you have been in a district listed in its `near` (`DISTRICT_REVEAL`) or by the flag
+  `heard:<district>`. The Old Quarter is heard from the market and from Downtown. The Undercity
+  has no `near`: it stays unknown until the story sets `heard:undercity` or you find a way down.
+  **The Spire and the Skyport are landmarks**: drawn from the start (you see them from anywhere),
+  but `???` until heard. The Spire is heard from the Galleria or the harbor (or `heard:spire`),
+  known once you have been up there; the Skyport only by the story (`heard:skyport`).
   Places show once seen: visited, or their way in in plain view from a scene you have been in
   (`PLACE_IN_VIEW`); the counter reads "N OF M KNOWN PLACES VISITED". Ways show once seen (a
-  link's `at` scenes); planned ways (`LINKS` with state 'planned': sky elevator, taxi depot, bridge,
-  drain, service tunnel, canal outfall, service lift, the road to the Fringe) are not drawn at all.
-  LINE 0's loop shows once you have stood on a platform or ridden it; from the street, only the
-  station under its stairs. Taxi pads show once seen (in taxi mode all of them). Sudo (`unlockAll`)
-  sets `heard:` and `mapped:` for every district.
-- **District view**: arrows or a tap pick a district, E or the tap zooms into it. The places you
-  know of hang on pins (`PLACE_MAP`) with a card each along the bottom; a visited place you can reach is cyan
-  and E, a click or a second tap goes there. ESC, `< CITY` or a tap outside goes back; TAB or M
-  closes.
-- **Taxi**: the city view with the pads cyan; pick a stand and fly. **On the metro**: the train runs
-  on the loop with you on it; quick travel says why not while it moves.
+  link's `at` scenes); planned ways are not drawn. Sudo (`unlockAll`) sets `heard:` and `mapped:`
+  for all nine districts and the not-yet lines.
+- **District view**: arrows or a tap pick a district (hover names it, and names a place's pin),
+  E or the tap zooms into it with a smooth pan and zoom of the same map. The places you know of
+  hang on pins (`PLACE_MAP`) with a card each along the bottom; a visited place you can reach is
+  cyan and E, a click or a second tap goes there. ESC, `< CITY` or a tap outside goes back; TAB or
+  M closes.
+- **Taxi** (a stand): the ABOVE layer with the pads cyan (the harbor's red until P14); pick one and
+  fly. **On the metro**: the METRO layer, the train on the loop with you on it; quick travel says
+  why not while it moves.
 - The map draws in its own units (about 300 tall), so its text reads the same at 1280 × 720 as on
-  a phone; on a phone the strip and footer keep clear of the ESC button.
+  a phone; on a phone the strip and footer keep clear of the ESC/MENU button. Reduced motion
+  stills everything that moves.
+- The build checks the plan (`planProblems`): every place, station and pad stands on land, in its
+  own district and inside its district's frame.

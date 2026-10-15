@@ -1,35 +1,49 @@
 /**
- * The city map (CITY.md, "The map"): the city as a vertical cross-section, the Spire on top, the
- * street districts in the middle band, the Undercity below, the Fringe at the street's west edge.
- * The data is city.ts's (`DISTRICT_MAP`, `PLACE_MAP`, `LINKS`, the stations and pads); this file
- * draws it and reads the keys and taps on it. game.ts holds the open map (`MapView`) and acts on
- * what the map asks for (`MapAct`): close, quick travel to a place, fly to a stand.
+ * The city map (CITY.md, "The map"): the street plan, tilted back so the towers stand up (or flat),
+ * with four layers: STREET, METRO, ABOVE, BELOW. The data is city.ts's (`DISTRICT_MAP`, `PLACE_MAP`,
+ * the stations, pads and lines, `LINKS`), the streets are cityplan.ts's (traced once, the first time
+ * the map opens); this file draws them and reads the keys and taps on it. game.ts holds the open
+ * map (`MapView`) and acts on what the map asks for (`MapAct`): close, quick travel to a place, fly
+ * to a stand.
  *
  * - **City view**: the map discovers the city as you travel (city.ts: `districtStage`, `placeKnown`,
- *   `linkKnown`). A district you know is a lit silhouette with its name; one you have heard of (or
- *   seen from next door) a dark silhouette with its short name; one you have never been near a dim
- *   block and `???` (the Spire, a landmark, keeps its silhouette). The ways between them show once
- *   you have seen them (LINE 0 in its tunnel, the market gate, the shore path); planned ways are not
- *   drawn. Arrows pick a district, E or a tap opens it.
- * - **District view**: the map zooms into one district; the places you know of hang on pins, with a
- *   card each along the bottom (44 px tall on a phone). A visited place you can reach is cyan: E, a
- *   click or a second tap goes there. ESC, `< CITY` or a tap outside the district goes back.
- * - **Taxi**: the city view with the pads in cyan; pick one and fly.
- * - **On the metro**: the train runs on LINE 0's loop, and you on it.
+ *   `linkKnown`). A district you know is lit (its streets, its towers' windows, its colour); one you
+ *   have heard of is dark (dashed streets, black towers) with its short name; one you have never
+ *   been near is veiled, `???`. The Spire and the Skyport are landmarks: drawn from the start, `???`
+ *   until heard. Landmarks stand as scenery once their district is heard. Places show once seen,
+ *   as pins; hover shows the name. Arrows pick a district, E or a tap opens it.
+ * - **Layers** (tabs, 1–4 or L): STREET; METRO (LINE 0 once you have stood on a platform, its
+ *   stations as roundels, trains running; LINE 1, bus 7 and the ferry only once the story makes them
+ *   known); ABOVE (the taxi pads you have seen, air traffic by kind, the Spire's restricted
+ *   airspace); BELOW (LINE 0's tunnel, the canals, the Undercity). TILT / FLAT (T).
+ * - **District view**: the same map pans and zooms into one district; the places you know of hang
+ *   on pins, with a card each along the bottom (44 px tall on a phone). A visited place you can
+ *   reach is cyan: E, a click or a second tap goes there. ESC, `< CITY` or a tap outside goes back.
+ * - **Taxi**: the ABOVE layer with the pads cyan; pick one and fly.
+ * - **On the metro**: the METRO layer, the train on LINE 0's loop with you on it.
  *
+ * The ground (land, canal, streets, avenues, towers) is painted once per view into an offscreen
+ * canvas at the screen's resolution (`CACHE`) and only blitted after; what moves (boats, trains,
+ * air traffic, the Spire, launches) is drawn each frame and stands still with reduced motion.
  * Colours keep their jobs (ART-GUIDE §6): orange structure, cyan what you can use, green/red the
- * gate, red no access and the Registry's antenna, paper for text.
+ * gate, red no access, paper for text.
  */
 
 import type { SceneId } from './scenes';
-import { C, GREEN, O, PAPER, RED, rng, text } from './scenes/kit';
+import { C, GREEN, O, PAPER, RED, text } from './scenes/kit';
+import { drawGalleriaDome, drawSpire } from './sets';
 import {
-  DISTRICT_MAP, DISTRICT_REVEAL, DISTRICTS, districtName, districtPlaces, districtStage, FARE, GROUND_Y, knownPlaces, linkKnown, LINKS,
-  LOOP_MAP, MAP_H, MAP_W, PAD_MAP, placeBlocked, placeKnown, placeOf, seenPlace, STAND_IDS, STANDS, standOf, STATION_MAP, stationKnown,
-  STATIONS, STRATA, type DistrictId, type Knowledge, type MapPlace, type Stand, type Station, type Stratum, type TravelState,
+  DISTRICT_MAP, DISTRICT_REVEAL, DISTRICTS, districtName, districtPlaces, districtStage, FARE, knownPlaces, LINES_PLANNED, lineKnownFlag, linkKnown, LINKS,
+  LOOP_MAP, MAP_H, MAP_W, PAD_MAP, PLACE_MAP, placeBlocked, placeKnown, placeOf, seenPlace, STAND_IDS, STANDS, standOf, STATION_MAP, stationKnown,
+  STATIONS, type DistrictId, type DistrictStage, type Knowledge, type MapPlace, type Stand, type Station, type TravelState,
 } from './city';
+import { CANAL, CANAL_W, COAST, coastX, districtAt, FENCE, hash, ISLE, onIsle, PARK, plan, type Pt } from './cityplan';
 
 // ---------- the open map ----------
+
+export type Layer = 'street' | 'metro' | 'above' | 'below';
+const LAYERS: Layer[] = ['street', 'metro', 'above', 'below'];
+const LAYER_NAME: Record<Layer, string> = { street: 'STREET', metro: 'METRO', above: 'ABOVE', below: 'BELOW' };
 
 /** The map while it is open (game.ts keeps it; the keys and taps here change it). */
 export interface MapView {
@@ -39,12 +53,17 @@ export interface MapView {
   index: number;
   /** Under the mouse: a district (city view), a place (district view) or a stand (taxi); -1 none. */
   hover: number;
+  /** City view: the place pin under the mouse (into MAP_PLACES), for its name; -1 none. */
+  tip: number;
   /** The district picked (into DISTRICTS): the one the city view marks and the district view shows. */
   district: number;
   /** In the district view (or zooming into it). */
   zoomed: boolean;
   /** The game clock when the last zoom started (its animation runs ZOOM frames from there). */
   zoomAt: number;
+  /** The layer shown, and whether the plan lies flat (else tilted back). */
+  layer: Layer;
+  flat: boolean;
 }
 
 /** Everything the map draws from. */
@@ -68,8 +87,11 @@ export type MapAct =
   | { kind: 'fly'; stand: Stand };
 
 const DIDS = DISTRICTS.map((d) => d.id) as DistrictId[];
+const UNDER = DIDS.indexOf('undercity');
 /** Frames of the zoom between the city and a district. */
 const ZOOM = 16;
+/** The layer and the tilt you last looked at, kept while the game runs. */
+let lastLayer: Layer = 'street', lastFlat = false;
 
 /** The district you are in; on the train, the one whose station it last stood at. */
 function hereDistrict(scene: SceneId, rideFrom: Station | null): number {
@@ -77,10 +99,14 @@ function hereDistrict(scene: SceneId, rideFrom: Station | null): number {
   return DIDS.indexOf(d);
 }
 
-/** A map opening on the city view, your district picked (taxi: the next stand along). */
+/** A map opening on the city view, your district picked (taxi: the next stand along, ABOVE; on the train: METRO). */
 export function openMap(mode: 'view' | 'taxi', scene: SceneId, rideFrom: Station | null): MapView {
-  const district = hereDistrict(scene, rideFrom), here = standOf(scene), i = here ? STAND_IDS.indexOf(here) : -1;
-  return { mode, index: mode === 'taxi' ? (i + 1) % STAND_IDS.length : -1, hover: -1, district, zoomed: false, zoomAt: -1e9 };
+  const here = standOf(scene), i = here ? STAND_IDS.indexOf(here) : -1;
+  const layer: Layer = mode === 'taxi' ? 'above' : scene === 'train' ? 'metro' : lastLayer;
+  return {
+    mode, index: mode === 'taxi' ? (i + 1) % STAND_IDS.length : -1, hover: -1, tip: -1,
+    district: layer === 'below' ? UNDER : hereDistrict(scene, rideFrom), zoomed: false, zoomAt: -1e9, layer, flat: lastFlat,
+  };
 }
 
 /** How far into the district view the map is (0 city, 1 district), eased. */
@@ -100,6 +126,36 @@ function setZoom(st: MapState, zoomed: boolean) {
 
 /** The places of the district picked that you know of: the district view's pins and cards. */
 const placesOf = (st: MapState) => knownPlaces(DIDS[st.view.district], st.seen);
+/** Every place on the map that you know of (the city view's pins). */
+const allKnown = (st: MapState) => DIDS.flatMap((d) => knownPlaces(d, st.seen));
+
+// ---------- the plan, tilted or flat ----------
+
+/** The tilt: the plan leaned back (y squashed, sheared east), as an affine map plan → sheet. */
+const TILT = { a: 0.82, c: 0.3, d: 0.6, e: 20, f: 130 };
+type Proj = (px: number, py: number) => Pt;
+const flatP: Proj = (px, py) => [px, py];
+const tiltP: Proj = (px, py) => [px * TILT.a + py * TILT.c + TILT.e, py * TILT.d + TILT.f];
+const projOf = (flat: boolean) => (flat ? flatP : tiltP);
+/** Sheet → plan (the ground under a point of the sheet). */
+function unproj(flat: boolean, sx: number, sy: number): Pt {
+  if (flat) return [sx, sy];
+  const py = (sy - TILT.f) / TILT.d;
+  return [(sx - TILT.e - py * TILT.c) / TILT.a, py];
+}
+/** The part of the sheet the city view shows. */
+const sheetBox = (flat: boolean): Box => (flat ? { x: 0, y: 0, w: MAP_W, h: MAP_H } : { x: 12, y: 22, w: 828, h: 348 });
+
+/** A district's frame on the sheet: its plan frame (tilted: its corners projected, room above for its towers). */
+function districtBox(d: DistrictId, flat: boolean): Box {
+  const [x, y, w, h] = DISTRICT_MAP[d].frame, P = projOf(flat);
+  const pts = [P(x, y), P(x + w, y), P(x, y + h), P(x + w, y + h)];
+  const x0 = Math.min(...pts.map((p) => p[0])), x1 = Math.max(...pts.map((p) => p[0]));
+  let y0 = Math.min(...pts.map((p) => p[1]));
+  const y1 = Math.max(...pts.map((p) => p[1]));
+  if (!flat) y0 -= 10 + 40 * DISTRICT_MAP[d].dens;
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
 
 // ---------- layout ----------
 
@@ -114,8 +170,8 @@ const scaleBox = (b: Box | null, u: number): Box | null => (b ? { x: b.x / u, y:
 export interface Box { x: number; y: number; w: number; h: number }
 interface Cam { s: number; ox: number; oy: number }
 
-/** Where everything sits in a view vw × vh: the panel, the map area, and (district view) the zoomed part, the strip of cards, the back button. */
-function layout(vw: number, vh: number, tapMin: number, avoid: Box | null = null) {
+/** Where everything sits in a view vw × vh: the panel, the map area, the tabs, and (district view) the strip of cards and the back button. */
+function layout(vw: number, vh: number, tapMin: number, avoid: Box | null, flat: boolean, taxi: boolean) {
   const panel: Box = { x: 3, y: 3, w: vw - 6, h: vh - 6 };
   const head = 16, foot = 26;
   const area: Box = { x: panel.x + 5, y: panel.y + head, w: panel.w - 10, h: panel.h - head - foot };
@@ -125,14 +181,18 @@ function layout(vw: number, vh: number, tapMin: number, avoid: Box | null = null
   const sy = area.y + area.h - stripH, sx = Math.max(area.x, clear(sy));
   const strip: Box = { x: sx, y: sy, w: area.x + area.w - sx, h: stripH };
   const footX = Math.max(panel.x + 7, clear(panel.y + panel.h - foot));
-  const focus: Box = { x: area.x, y: area.y + 2, w: area.w, h: area.h - stripH - 8 };
   const back: Box = { x: strip.x, y: strip.y, w: Math.round(Math.max(54, tapMin * 1.5)), h: stripH };
-  // the city view: the section on the left, and a title block on the right where there is room for one
-  const s0 = Math.min(area.w / MAP_W, area.h / MAP_H), spare = area.w - MAP_W * s0 - 6;
-  const sheetW = spare >= 130 ? Math.min(200, spare) : 0;
-  const sheet: Box | null = sheetW ? { x: area.x + area.w - sheetW, y: area.y, w: sheetW, h: area.h } : null;
-  const city: Box = { x: area.x, y: area.y, w: area.w - (sheetW ? sheetW + 6 : 0), h: area.h };
-  return { panel, area, city, sheet, strip, focus, back, foot: panel.y + panel.h - foot, footX };
+  // the layer tabs, over the map's top-left corner (sky on the tilted plan); TILT / FLAT last
+  const th = Math.round(Math.max(15, tapMin)), tabs: Box[] = [];
+  if (!taxi) {
+    let tx = area.x + 4;
+    for (const s of [...LAYERS.map((l) => LAYER_NAME[l]), 'FLAT']) { const w = Math.round(Math.max(tapMin, s.length * 4.4 + 12)); tabs.push({ x: tx, y: area.y + 4, w, h: th }); tx += w + (s === 'BELOW' ? 8 : 3); }
+  }
+  const top = taxi ? 0 : th + 8;
+  // the flat plan keeps below the tabs (its top-left is the Skyport); the tilted one has sky there
+  const fitBox: Box = flat ? { x: area.x, y: area.y + top, w: area.w, h: area.h - top } : area;
+  const focus: Box = { x: area.x + 4, y: area.y + top + 2, w: area.w - 8, h: area.h - top - stripH - 10 };
+  return { panel, area, strip, focus, back, tabs, fitBox, foot: panel.y + panel.h - foot, footX };
 }
 type Layout = ReturnType<typeof layout>;
 
@@ -140,21 +200,27 @@ function fit(r: Box, b: Box): Cam {
   const s = Math.min(b.w / r.w, b.h / r.h);
   return { s, ox: b.x + (b.w - r.w * s) / 2 - r.x * s, oy: b.y + (b.h - r.h * s) / 2 - r.y * s };
 }
+const cityCam = (L: Layout, flat: boolean) => fit(sheetBox(flat), L.fitBox);
+const districtCam = (L: Layout, d: DistrictId, flat: boolean) => { const r = districtBox(d, flat), pad = 8; return fit({ x: r.x - pad, y: r.y - pad, w: r.w + pad * 2, h: r.h + pad * 2 }, L.focus); };
 
-/** The map's camera: the whole section fitted to the area, sliding (scale and centre) into the district picked. */
+/** The map's camera: the whole plan fitted to the area, sliding (scale and centre) into the district picked. */
 function camera(st: MapState, L: Layout): Cam {
-  const c0 = fit({ x: 0, y: 0, w: MAP_W, h: MAP_H }, L.city), f = zoomF(st);
+  const flat = st.view.flat, c0 = cityCam(L, flat), f = zoomF(st);
   if (f <= 0) return c0;
-  const r = DISTRICT_MAP[DIDS[st.view.district]], pad = 6;
-  const c1 = fit({ x: r.x - pad, y: r.y - pad, w: r.w + pad * 2, h: r.h + pad * 2 }, L.focus);
+  const c1 = districtCam(L, DIDS[st.view.district], flat);
+  if (f >= 1) return c1;
   const s = c0.s * Math.pow(c1.s / c0.s, f);
-  const mx = MAP_W / 2 + (r.x + r.w / 2 - MAP_W / 2) * f, my = MAP_H / 2 + (r.y + r.h / 2 - MAP_H / 2) * f;
-  const vx = L.city.x + L.city.w / 2 + (L.focus.x + L.focus.w / 2 - L.city.x - L.city.w / 2) * f;
-  const vy = L.city.y + L.city.h / 2 + (L.focus.y + L.focus.h / 2 - L.city.y - L.city.h / 2) * f;
+  // the sheet point at the view's centre slides from the city's centre to the district's
+  const a0 = L.fitBox, a1 = L.focus;
+  const m0x = (a0.x + a0.w / 2 - c0.ox) / c0.s, m0y = (a0.y + a0.h / 2 - c0.oy) / c0.s;
+  const m1x = (a1.x + a1.w / 2 - c1.ox) / c1.s, m1y = (a1.y + a1.h / 2 - c1.oy) / c1.s;
+  const mx = m0x + (m1x - m0x) * f, my = m0y + (m1y - m0y) * f;
+  const vx = a0.x + a0.w / 2 + (a1.x + a1.w / 2 - a0.x - a0.w / 2) * f, vy = a0.y + a0.h / 2 + (a1.y + a1.h / 2 - a0.y - a0.h / 2) * f;
   return { s, ox: vx - mx * s, oy: vy - my * s };
 }
 
-const toView = (c: Cam, X: number, Y: number): [number, number] => [c.ox + X * c.s, c.oy + Y * c.s];
+/** Plan → map units, through the projection and the camera. */
+const viewer = (c: Cam, flat: boolean) => { const P = projOf(flat); return (px: number, py: number): Pt => { const [a, b] = P(px, py); return [c.ox + a * c.s, c.oy + b * c.s]; }; };
 
 /** The cards along the strip in the district view, one per place, centred right of the back button. */
 function cards(L: Layout, n: number): Box[] {
@@ -166,17 +232,33 @@ function cards(L: Layout, n: number): Box[] {
 
 // ---------- reading taps ----------
 
-type Hit = { kind: 'outside' | 'none' | 'back' } | { kind: 'district' | 'place' | 'pad'; i: number };
+type Hit = { kind: 'outside' | 'none' | 'back' } | { kind: 'place' | 'pad' | 'tab'; i: number } | { kind: 'district'; i: number; tip: number };
 const inBox = (b: Box, px: number, py: number) => px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h;
+const lay = (st: MapState, vw: number, vh: number) => layout(vw, vh, st.tapMin, st.avoid, st.view.flat, st.view.mode === 'taxi');
+
+/** Which districts can be picked in a layer: the street's (and the Spire, the Skyport), or under it all, the Undercity. */
+const pickable = (layer: Layer) => DIDS.map((_, i) => i).filter((i) => (layer === 'below' ? i === UNDER : i !== UNDER));
+
+/** The district on the plan under a point of the sheet (the Spire: its island, or its tower standing up). */
+function districtUnder(st: MapState, sx: number, sy: number): number {
+  const flat = st.view.flat, [px, py] = unproj(flat, sx, sy);
+  if (st.view.layer === 'below') return px > 0 && px < coastX(py) && py > 0 && py < MAP_H ? UNDER : -1;
+  if (!flat) { const [ix, iy] = tiltP(ISLE.x, ISLE.y); if (Math.abs(sx - ix) < 14 && sy < iy + 8 && sy > iy - 160) return DIDS.indexOf('spire'); }
+  if (onIsle(px, py)) return DIDS.indexOf('spire');
+  if (px < 0 || py < 0 || py > MAP_H || px >= coastX(py)) return -1;
+  return DIDS.indexOf(districtAt(px, py));
+}
 
 /** What is under a point of the view (view units). */
 function hitAt(st: MapState, vw: number, vh: number, px: number, py: number): Hit {
-  const L = layout(vw, vh, st.tapMin, st.avoid), m = st.view, c = camera(st, L);
+  const L = lay(st, vw, vh), m = st.view, c = camera(st, L), V = viewer(c, m.flat);
   if (!inBox(L.panel, px, py)) return { kind: 'outside' };
+  const ti = L.tabs.findIndex((b) => inBox(b, px, py));
+  if (ti >= 0) return { kind: 'tab', i: ti };
   const reach = Math.max(9, st.tapMin / 2);
-  const near = (pts: [number, number][]) => {
+  const near = (pts: Pt[]) => {
     let best = -1, bd = reach;
-    pts.forEach(([X, Y], i) => { const [a, b] = toView(c, X, Y), d = Math.hypot(a - px, b - py); if (d < bd) { bd = d; best = i; } });
+    pts.forEach(([X, Y], i) => { const [a, b] = V(X, Y), d = Math.hypot(a - px, b - py); if (d < bd) { bd = d; best = i; } });
     return best;
   };
   if (m.mode === 'taxi') { const i = near(STAND_IDS.map((s) => PAD_MAP[s])); return i >= 0 ? { kind: 'pad', i } : { kind: 'none' }; }
@@ -186,17 +268,21 @@ function hitAt(st: MapState, vw: number, vh: number, px: number, py: number): Hi
     if (ci >= 0) return { kind: 'place', i: ci };
     const pi = near(ps.map((p) => p.pt));
     if (pi >= 0) return { kind: 'place', i: pi };
-    const r = DISTRICT_MAP[DIDS[m.district]], [a, b] = toView(c, r.x, r.y);
+    const r = districtBox(DIDS[m.district], m.flat), a = c.ox + r.x * c.s, b = c.oy + r.y * c.s;
     // a tap outside the district (or outside the map) goes back to the city
     return inBox({ x: a, y: b, w: r.w * c.s, h: r.h * c.s }, px, py) && inBox(L.area, px, py) ? { kind: 'none' } : { kind: 'back' };
   }
-  if (!inBox(L.city, px, py)) return { kind: 'none' };
-  const X = (px - c.ox) / c.s, Y = (py - c.oy) / c.s;
-  const i = DIDS.findIndex((d) => { const r = DISTRICT_MAP[d]; return X >= r.x && X <= r.x + r.w && Y >= r.y && Y <= r.y + r.h; });
-  return i >= 0 ? { kind: 'district', i } : { kind: 'none' };
+  if (!inBox(L.area, px, py)) return { kind: 'none' };
+  const tip = m.layer === 'street' ? near(allKnown(st).map((p) => p.pt)) : -1;
+  const tipPlace = tip >= 0 ? allKnown(st)[tip] : null;
+  // a place's pin picks its district; else the ground under the point
+  const i = tipPlace?.district ? DIDS.indexOf(tipPlace.district) : districtUnder(st, (px - c.ox) / c.s, (py - c.oy) / c.s);
+  return i >= 0 && pickable(m.layer).includes(i) ? { kind: 'district', i, tip: tipPlace ? MAP_PLACE_IDS.indexOf(tipPlace.id) : -1 } : { kind: 'none' };
 }
+const MAP_PLACE_IDS = DIDS.flatMap((d) => districtPlaces(d).map((p) => p.id));
+const mapPlaceById = (i: number) => DIDS.flatMap((d) => districtPlaces(d))[i] ?? null;
 
-/** Open the district picked, if it has places on the map (the Spire, the Undercity and the Fringe have none yet). */
+/** Open the district picked, if it has places on the map that you know of. */
 function zoomIn(st: MapState): MapAct {
   const m = st.view, ps = placesOf(st);
   if (!ps.length) return { kind: 'denied' };
@@ -206,23 +292,39 @@ function zoomIn(st: MapState): MapAct {
 }
 function zoomOut(st: MapState): MapAct { setZoom(st, false); return { kind: 'back' }; }
 
-/** From district i, the nearest district in direction (dx, dy) on the section. */
-function neighbour(i: number, dx: number, dy: number) {
-  const at = (d: DistrictId) => { const r = DISTRICT_MAP[d]; return [r.x + r.w / 2, r.y + r.h / 2]; };
-  const [x0, y0] = at(DIDS[i]);
+/** Show another layer (taxi mode keeps ABOVE). BELOW picks the Undercity; leaving it picks where you are. */
+function setLayer(st: MapState, layer: Layer): MapAct {
+  const m = st.view;
+  if (m.mode === 'taxi' || layer === m.layer) return { kind: 'none' };
+  m.layer = lastLayer = layer;
+  const want = layer === 'below' ? UNDER : m.district === UNDER ? hereDistrict(st.scene, st.ride?.from ?? null) : m.district;
+  if (want !== m.district) { if (m.zoomed) setZoom(st, false); m.district = want; }
+  m.hover = -1; m.tip = -1;
+  return { kind: 'blip' };
+}
+function toggleFlat(st: MapState): MapAct { const m = st.view; m.flat = lastFlat = !m.flat; m.hover = -1; m.tip = -1; return { kind: 'blip' }; }
+
+/** A district's middle on the sheet (for the arrows). */
+function districtMid(d: DistrictId, flat: boolean): Pt {
+  const c = DISTRICT_MAP[d].centre ?? (d === 'spire' ? [ISLE.x, ISLE.y] : DISTRICT_MAP[d].label);
+  return projOf(flat)(c[0], c[1]);
+}
+/** From district i, the nearest district in direction (dx, dy) on the sheet, among those this layer can pick. */
+function neighbour(i: number, dx: number, dy: number, layer: Layer, flat: boolean) {
+  const [x0, y0] = districtMid(DIDS[i], flat);
   let best = i, bs = Infinity;
-  DIDS.forEach((d, j) => {
-    if (j === i) return;
-    const [x1, y1] = at(d), vx = x1 - x0, vy = y1 - y0, along = vx * dx + vy * dy, across = Math.abs(vx * dy - vy * dx);
-    if (along <= 0) return;
+  for (const j of pickable(layer)) {
+    if (j === i) continue;
+    const [x1, y1] = districtMid(DIDS[j], flat), vx = x1 - x0, vy = y1 - y0, along = vx * dx + vy * dy, across = Math.abs(vx * dy - vy * dx);
+    if (along <= 0) continue;
     // in a cone round the direction first; past its edge only if nothing is in it
     const s = along + across * 2 + (along < across * 0.7 ? 1000 : 0);
     if (s < bs) { bs = s; best = j; }
-  });
+  }
   return best;
 }
 
-/** A key on the open map. Arrows (or WASD) pick, E / Enter / Space open or go, ESC goes back a level, TAB or M closes. */
+/** A key on the open map. Arrows (or WASD) pick, E / Enter / Space open or go, 1–4 or L the layer, T tilt, ESC back a level, TAB or M closes. */
 export function mapKey(st: MapState, key: string): MapAct {
   const m = st.view, k = key.length === 1 ? key.toLowerCase() : key;
   const dir: [number, number] | null = k === 'ArrowLeft' || k === 'a' ? [-1, 0] : k === 'ArrowRight' || k === 'd' ? [1, 0]
@@ -235,9 +337,12 @@ export function mapKey(st: MapState, key: string): MapAct {
     if (dir) { m.index = (m.index + (dir[0] || dir[1]) + n) % n; return { kind: 'blip' }; }
     return ok ? { kind: 'fly', stand: STAND_IDS[m.index] } : { kind: 'none' };
   }
+  if (k >= '1' && k <= '4') return setLayer(st, LAYERS[+k - 1]);
+  if (k === 'l') return setLayer(st, LAYERS[(LAYERS.indexOf(m.layer) + 1) % LAYERS.length]);
+  if (k === 't') return toggleFlat(st);
   if (k === 'Escape') return m.zoomed ? zoomOut(st) : { kind: 'close' };
   if (!m.zoomed) {
-    if (dir) { const j = neighbour(m.district, dir[0], dir[1]); if (j === m.district) return { kind: 'none' }; m.district = j; m.hover = -1; return { kind: 'blip' }; }
+    if (dir) { const j = neighbour(m.district, dir[0], dir[1], m.layer, m.flat); if (j === m.district) return { kind: 'none' }; m.district = j; m.hover = -1; m.tip = -1; return { kind: 'blip' }; }
     return ok ? zoomIn(st) : { kind: 'none' };
   }
   const ps = placesOf(st), n = ps.length;
@@ -251,15 +356,16 @@ export function mapKey(st: MapState, key: string): MapAct {
  * district goes back to the city; outside the panel closes the map.
  */
 export function mapPointer(st: MapState, vw: number, vh: number, px: number, py: number, press: boolean, mouse: boolean): { act: MapAct; pointer: boolean } {
-  const u = mapUnit(vh), m = st.view, h = hitAt({ ...st, tapMin: st.tapMin / u, avoid: scaleBox(st.avoid, u) }, vw / u, vh / u, px / u, py / u);
-  const i = 'i' in h ? h.i : -1;
-  if (mouse) m.hover = i;
-  const pointer = i >= 0 || (h.kind === 'back' && m.zoomed);
+  const u = mapUnit(vh), m = st.view, s2 = { ...st, tapMin: st.tapMin / u, avoid: scaleBox(st.avoid, u) }, h = hitAt(s2, vw / u, vh / u, px / u, py / u);
+  const i = 'i' in h && h.kind !== 'tab' ? h.i : -1;
+  if (mouse) { m.hover = i; m.tip = h.kind === 'district' ? h.tip : -1; }
+  const pointer = i >= 0 || h.kind === 'tab' || (h.kind === 'back' && m.zoomed);
   if (!press) return { act: { kind: 'none' }, pointer };
   switch (h.kind) {
     case 'outside': return { act: m.zoomed && m.mode === 'view' ? zoomOut(st) : { kind: 'close' }, pointer };
     case 'back': return { act: zoomOut(st), pointer };
-    case 'district': m.district = i; return { act: zoomIn(st), pointer };
+    case 'tab': return { act: h.i < LAYERS.length ? setLayer(st, LAYERS[h.i]) : toggleFlat(st), pointer };
+    case 'district': m.district = i; if (!mouse) m.tip = h.tip; return { act: zoomIn(st), pointer };
     case 'pad':
       if (mouse || m.index === i) return { act: { kind: 'fly', stand: STAND_IDS[i] }, pointer };
       m.index = i; return { act: { kind: 'blip' }, pointer };
@@ -270,144 +376,287 @@ export function mapPointer(st: MapState, vw: number, vh: number, px: number, py:
   }
 }
 
-// ---------- drawing helpers ----------
+// ---------- what you know, for drawing ----------
 
-type Pt = [number, number];
-/** Drawing in map units through the camera: rects snap to whole view pixels, so the section keeps its pixel look at every zoom. */
-function pen(x: CanvasRenderingContext2D, c: Cam) {
-  const X = (v: number) => Math.round(c.ox + v * c.s), Y = (v: number) => Math.round(c.oy + v * c.s);
-  return {
-    s: c.s,
-    rect(x0: number, y0: number, w: number, h: number, fill: string) {
-      const a = X(x0), b = Y(y0); x.fillStyle = fill; x.fillRect(a, b, Math.max(1, X(x0 + w) - a), Math.max(1, Y(y0 + h) - b));
-    },
-    frame(x0: number, y0: number, w: number, h: number, stroke: string) {
-      const a = X(x0), b = Y(y0); x.strokeStyle = stroke; x.lineWidth = 1; x.strokeRect(a + 0.5, b + 0.5, Math.max(1, X(x0 + w) - a - 1), Math.max(1, Y(y0 + h) - b - 1));
-    },
-    line(pts: Pt[], stroke: string, width = 1, dash: number[] = []) {
-      x.strokeStyle = stroke; x.lineWidth = width; x.setLineDash(dash); x.beginPath();
-      pts.forEach(([a, b], i) => (i ? x.lineTo(X(a) + 0.5, Y(b) + 0.5) : x.moveTo(X(a) + 0.5, Y(b) + 0.5)));
-      x.stroke(); x.setLineDash([]); x.lineWidth = 1;
-    },
-    poly(pts: Pt[], fill: string) {
-      x.fillStyle = fill; x.beginPath(); pts.forEach(([a, b], i) => (i ? x.lineTo(X(a), Y(b)) : x.moveTo(X(a), Y(b)))); x.closePath(); x.fill();
-    },
-  };
+type Ctx = CanvasRenderingContext2D;
+const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a.toFixed(3) + ')';
+const mix = (c: string, k: number, add: number) => c.split(',').map((v) => Math.round(+v * k + add)).join(',');
+
+/** How a district is drawn: lit (known), dark (heard, or a landmark not yet heard of), or veiled (unknown). */
+type Look = 'lit' | 'dark' | 'veiled';
+function lookOf(d: DistrictId, k: Knowledge): Look {
+  const s: DistrictStage = districtStage(d, k);
+  return s === 'known' ? 'lit' : s === 'heard' || DISTRICT_REVEAL[d].landmark ? 'dark' : 'veiled';
 }
-type Pen = ReturnType<typeof pen>;
+/** Scenery stands once a district is heard of (a landmark always). */
+const shows = (d: DistrictId, k: Knowledge) => lookOf(d, k) !== 'veiled';
+/** You know LINE 0's map once you have stood on a platform or ridden it (from the street you see only the stairs). */
+const lineKnown = (st: MapState) => (Object.keys(STATIONS) as Station[]).some((s) => st.seen(STATIONS[s].scene)) || st.seen('train') || !!st.ride;
 
-/** How a district's silhouette is inked: lit once you have been there, dark (a shape only) before. */
-interface Ink { body: string; edge: string; win: string | null; lamp: string | null }
-const LIT: Ink = { body: '#1d0f06', edge: 'rgba(' + O + ',.8)', win: 'rgba(' + O + ',.34)', lamp: 'rgba(' + PAPER + ',.6)' };
-const DARK: Ink = { body: '#0e0804', edge: 'rgba(' + O + ',.24)', win: null, lamp: null };
-/** A district you have never been near: a dim block, no shape. */
-const UNKNOWN = { body: '#080503', edge: 'rgba(' + O + ',.12)' };
+// ---------- the ground, painted once per view ----------
 
-/** A building standing on `bottom` (the street by default), its lit windows seeded so they stay put. */
-function bld(p: Pen, k: Ink, x0: number, top: number, w: number, seed: number, bottom = GROUND_Y, dens = 0.45) {
-  p.rect(x0, top, w, bottom - top, k.body);
-  if (k.win) {
-    const r = rng(seed);
-    for (let y = top + 3; y < bottom - 4; y += 5) for (let x = x0 + 2; x < x0 + w - 2; x += 3) if (r() < dens) p.rect(x, y, 1.4, 2, k.win);
+/** The ground in plan units: land, washes, canal, streets, avenues, the fence, bridges, the sea, the veil over what you do not know. */
+function paintGround(g: Ctx, look: (d: DistrictId) => Look) {
+  const P = plan(), W = MAP_W, H = MAP_H;
+  const landPath = () => { g.beginPath(); g.moveTo(-40, -40); g.lineTo(COAST[0][0], -40); COAST.forEach(([a, b]) => g.lineTo(a, b)); g.lineTo(COAST[COAST.length - 1][0], H + 40); g.lineTo(-40, H + 40); g.closePath(); };
+  g.fillStyle = '#16121a'; landPath(); g.fill();
+  // district washes, soft, so colour reads as an area not a box
+  g.save(); landPath(); g.clip();
+  for (const d of DIDS) {
+    const dm = DISTRICT_MAP[d], lk = look(d);
+    if (!dm.centre || lk === 'veiled') continue;
+    const [cx, cy] = dm.centre, tint = mix(dm.col, 0.16, 14);
+    const gr = g.createRadialGradient(cx, cy, 10, cx, cy, 120);
+    gr.addColorStop(0, rgba(tint, lk === 'lit' ? 0.95 : 0.35)); gr.addColorStop(1, rgba(tint, 0));
+    g.fillStyle = gr; g.fillRect(cx - 120, cy - 120, 240, 240);
   }
-  p.frame(x0, top, w, bottom - top, k.edge);
+  g.restore();
+  if (look('downtown') === 'lit') { g.fillStyle = 'rgba(58,168,106,.28)'; g.beginPath(); g.ellipse(PARK.x, PARK.y, PARK.rx, PARK.ry, 0, 0, 7); g.fill(); }
+  // the canal: its banks, the water, a dashed fairway
+  const canal = () => { g.beginPath(); CANAL.forEach(([a, b], i) => (i ? g.lineTo(a, b) : g.moveTo(a, b))); };
+  g.lineJoin = 'round'; g.lineCap = 'butt';
+  g.strokeStyle = 'rgba(120,190,210,.45)'; g.lineWidth = CANAL_W + 2; canal(); g.stroke();
+  g.strokeStyle = '#071420'; g.lineWidth = CANAL_W; canal(); g.stroke();
+  g.strokeStyle = 'rgba(120,190,210,.16)'; g.lineWidth = 1; g.setLineDash([3, 4]); canal(); g.stroke(); g.setLineDash([]);
+  // streets: a dark edge, then the road (dashed and faint where you have only heard of the district)
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  const poly = (pts: Pt[]) => { g.beginPath(); pts.forEach(([a, b], i) => (i ? g.lineTo(a, b) : g.moveTo(a, b))); };
+  for (const pass of [0, 1]) for (const S of P.streets) {
+    const lk = look(S.d); if (lk === 'veiled' || (lk === 'dark' && pass === 0)) continue;
+    g.strokeStyle = pass === 0 ? 'rgba(4,3,6,.9)' : lk === 'lit' ? 'rgba(255,217,165,.30)' : 'rgba(255,217,165,.09)';
+    g.lineWidth = pass === 0 ? S.w + 1.6 : S.w; if (lk === 'dark') g.setLineDash([2, 3]);
+    poly(S.pts); g.stroke(); g.setLineDash([]);
+  }
+  for (const pass of [0, 1]) for (const A of P.avenues) {
+    const lk = look(A.d); if (lk === 'veiled') continue;
+    const lit = lk === 'lit';
+    g.strokeStyle = pass ? (A.ring ? rgba('255,170,96', lit ? 0.8 : 0.3) : rgba(PAPER, lit ? 0.62 : 0.2)) : 'rgba(4,3,6,.95)';
+    g.lineWidth = pass ? A.w : A.w + 2.4; poly(A.pts); g.stroke();
+    if (A.ring && pass) { g.strokeStyle = 'rgba(20,10,4,.9)'; g.lineWidth = 0.8; g.setLineDash([3, 3]); g.stroke(); g.setLineDash([]); }
+  }
+  // bridges: where an avenue crosses the canal, its railings show
+  g.fillStyle = 'rgba(255,217,165,.9)';
+  for (const b of P.bridges) {
+    if (look(b.d) === 'veiled') continue;
+    g.fillRect(b.x + b.nx * b.hw - 0.5, b.y + b.ny * b.hw - 0.5, 1, 1); g.fillRect(b.x - b.nx * b.hw - 0.5, b.y - b.ny * b.hw - 0.5, 1, 1);
+  }
+  // the Skyport behind its fence (a landmark: always there), its launch pads
+  { const [x, y, w, h] = FENCE; g.strokeStyle = 'rgba(255,42,68,.6)'; g.lineWidth = 1; g.setLineDash([4, 2]); g.strokeRect(x, y, w, h); g.setLineDash([]); g.fillStyle = 'rgba(255,42,68,.05)'; g.fillRect(x, y, w, h); }
+  for (const [lx, ly] of [[34, 50], [70, 44]]) { g.strokeStyle = 'rgba(170,190,210,.6)'; g.beginPath(); g.arc(lx, ly, 7, 0, 7); g.stroke(); g.beginPath(); g.arc(lx, ly, 3, 0, 7); g.stroke(); }
+  // the Fringe's landfill and the farms' fields
+  if (look('fringe') !== 'veiled') { g.fillStyle = 'rgba(90,74,48,.55)'; g.beginPath(); g.ellipse(104, 348, 34, 16, -0.2, 0, 7); g.fill(); for (let k = 0; k < 5; k++) { g.fillStyle = 'rgba(60,160,80,.28)'; g.fillRect(108 + k * 9, 168, 6, 22); } }
+  // the sea and the shore
+  g.fillStyle = '#071420'; g.beginPath(); g.moveTo(W + 60, -40); g.lineTo(COAST[0][0], -40); COAST.forEach(([a, b]) => g.lineTo(a, b)); g.lineTo(COAST[COAST.length - 1][0], H + 40); g.lineTo(W + 60, H + 40); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(120,190,210,.45)'; g.lineWidth = 1.5; g.beginPath(); COAST.forEach(([a, b], i) => (i ? g.lineTo(a, b) : g.moveTo(a, b))); g.stroke();
+  // the Spire's island
+  g.fillStyle = '#141020'; g.beginPath(); g.arc(ISLE.x, ISLE.y, ISLE.r, 0, 7); g.fill(); g.strokeStyle = 'rgba(' + O + ',.3)'; g.stroke();
+  // the veil over the districts you know nothing of: their cells, softened at the edges
+  const { cells, cell, cols, rows } = P;
+  for (let j = 0; j < rows; j++) {
+    let run = -1, ra = 0;
+    for (let i = 0; i <= cols; i++) {
+      let a = 0;
+      if (i < cols) {
+        let n = 0, v = 0;
+        for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+          const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= cols || jj >= rows) continue;
+          const c = cells[jj * cols + ii]; if (!c) continue; n++; if (look(DIDS[c - 1]) === 'veiled') v++;
+        }
+        a = cells[j * cols + i] && n ? Math.round((v / n) * 4) / 4 : 0;
+      }
+      if (a !== ra || i === cols) {
+        if (run >= 0 && ra > 0) { g.fillStyle = 'rgba(9,7,10,' + (0.82 * ra).toFixed(3) + ')'; g.fillRect(run * cell, j * cell, (i - run) * cell, cell); }
+        run = i; ra = a;
+      }
+    }
+  }
 }
 
-const WAVES = (() => { const r = rng(9); return Array.from({ length: 60 }, () => [r(), r(), 3 + r() * 6]); })();
-/** Water: dark, with ripples that drift. */
-function water(p: Pen, x0: number, y0: number, w: number, h: number, t: number, seed: number) {
-  p.rect(x0, y0, w, h, '#03091a');
-  WAVES.forEach(([a, b, len], i) => {
-    if (i % 3 !== seed % 3) return;
-    const xx = x0 + ((a * w + t * 0.05 * (1 + (i % 2))) % w), yy = y0 + 1 + b * (h - 2);
-    p.rect(xx, yy, Math.min(len, x0 + w - xx), 0.6, 'rgba(170,210,255,.18)');
-  });
-  p.rect(x0, y0, w, 0.8, 'rgba(170,210,255,.3)');
+/** Towers standing up on the tilted plan, back to front: lit in districts you know, black where you have only heard. */
+function paintTowers(g: Ctx, look: (d: DistrictId) => Look, lift: number) {
+  const P = plan();
+  for (const L of P.towers) {
+    const lk = look(L.d); if (lk === 'veiled') continue;
+    const dm = DISTRICT_MAP[L.d], tall = L.d === 'fringe' || L.d === 'skyport' ? 4 : 4 + L.k * L.k * 46 * dm.dens, hgt = Math.round(tall * lift);
+    if (hgt < 2) continue;
+    const c = (Math.cos(L.th) * L.s) / 2, sn = (Math.sin(L.th) * L.s) / 2;
+    const P4 = [[-c + sn, -sn - c], [c + sn, sn - c], [c - sn, sn + c], [-c - sn, -sn + c]].map(([dx, dy]) => tiltP(L.x + dx, L.y + dy));
+    const lo = [...P4].sort((a, b) => b[1] - a[1]).slice(0, 2).sort((a, b) => a[0] - b[0]);
+    const lit = lk === 'lit';
+    g.globalAlpha = lift < 1 ? 0.45 : 1;
+    // the front face, darker at the foot
+    const fg = g.createLinearGradient(0, lo[0][1] - hgt, 0, lo[0][1]);
+    fg.addColorStop(0, lit ? rgba(mix(dm.col, 0.16, 10), 1) : '#0f0b0e'); fg.addColorStop(1, lit ? rgba(mix(dm.col, 0.05, 6), 1) : '#070507');
+    g.fillStyle = fg; g.beginPath(); g.moveTo(lo[0][0], lo[0][1] - hgt); g.lineTo(lo[1][0], lo[1][1] - hgt); g.lineTo(lo[1][0], lo[1][1]); g.lineTo(lo[0][0], lo[0][1]); g.closePath(); g.fill();
+    // the roof, a shade lighter, with a lit edge
+    g.fillStyle = lit ? rgba(mix(dm.col, 0.24, 14), 1) : '#16111a'; g.beginPath(); P4.forEach(([a, b], i) => (i ? g.lineTo(a, b - hgt) : g.moveTo(a, b - hgt))); g.closePath(); g.fill();
+    g.strokeStyle = lit ? rgba(dm.col, 0.55) : 'rgba(' + O + ',.16)'; g.lineWidth = 0.6; g.beginPath(); g.moveTo(lo[0][0], lo[0][1] - hgt); g.lineTo(lo[1][0], lo[1][1] - hgt); g.stroke();
+    // windows in tidy rows
+    const fw = lo[1][0] - lo[0][0], slope = (lo[1][1] - lo[0][1]) / Math.max(1, fw);
+    if (lit && hgt > 9 && fw > 3) for (let wy = 4; wy < hgt - 3; wy += 3) for (let wx = 1.5; wx < fw - 1; wx += 2.2) {
+      if (hash(L.x * 3 + L.y + wy * 7 + wx) > 0.45) { g.fillStyle = rgba(dm.col, 0.35 + hash(wy + wx + 0.5) * 0.4); g.fillRect(lo[0][0] + wx, lo[0][1] - hgt + wy + slope * wx, 1, 1); }
+    }
+  }
+  g.globalAlpha = 1;
 }
 
-// ---------- the districts' silhouettes ----------
+/** Each layer's veil over the ground: the streets step back so the lines read. */
+const LAYER_DIM: Record<Layer, string | null> = { street: null, metro: 'rgba(8,6,10,.72)', above: 'rgba(10,6,24,.6)', below: 'rgba(4,10,8,.72)' };
 
-const SILHOUETTE: Record<DistrictId, (p: Pen, k: Ink, t: number) => void> = {
-  // a dead automated factory: a sawtooth hall, two cold chimneys, a tank, a fence; nobody
-  fringe: (p, k) => {
-    bld(p, k, 14, 78, 4, 1, 102, 0); bld(p, k, 24, 86, 3, 2, 102, 0);
-    p.rect(8, 102, 44, 22, k.body);
-    const saw: Pt[] = [];
-    for (let i = 0; i < 5; i++) { const a = 8 + i * 8.8; p.poly([[a, 102], [a, 95], [a + 8.8, 102]], k.body); saw.push([a, 102], [a, 95], [a + 8.8, 102]); }
-    p.line(saw, k.edge);
-    p.frame(8, 102, 44, 22, k.edge);
-    p.rect(42, 92, 9, 10, k.body); p.frame(42, 92, 9, 10, k.edge);
-    for (let x = 4; x < 58; x += 4) p.rect(x, 119, 0.6, 5, k.edge);
-    p.rect(4, 119, 54, 0.6, k.edge);
-  },
-  // low shacks packed together, awnings, a string of lanterns, the gate arch to Downtown
-  market: (p, k, t) => {
-    const shacks: [number, number, number][] = [[63, 106, 10], [73, 99, 9], [82, 108, 8], [90, 101, 12], [102, 107, 9], [111, 97, 8], [119, 104, 8]];
-    shacks.forEach(([x, top, w], i) => {
-      p.rect(x + 1, top - 3, 3 + (i % 3), 3, k.body); p.frame(x + 1, top - 3, 3 + (i % 3), 3, k.edge);
-      bld(p, k, x, top, w, 30 + i, GROUND_Y, 0.3);
-      if (k.lamp) p.rect(x - 1, top + 7, w + 2, 1.3, 'rgba(' + O + ',.6)');
-    });
-    if (k.lamp) for (let x = 64; x < 126; x += 5) p.rect(x, 113 + Math.sin(x * 0.7) * 1.2, 1.3, 1.3, (Math.floor(t / 30) + x) % 7 ? k.lamp : 'rgba(' + PAPER + ',.25)');
-    p.rect(126, 101, 1.5, 23, k.edge); p.rect(132, 101, 1.5, 23, k.edge); p.rect(126, 101, 7.5, 1.5, k.edge);
-  },
-  // towers of all heights on one street: the narrow Capsule 7B tower, Moth's building, a billboard
-  downtown: (p, k) => {
-    const towers: [number, number, number][] = [[134, 94, 8], [143, 80, 12], [156, 88, 10], [167, 72, 9], [177, 86, 7], [185, 66, 9], [195, 92, 8], [203, 82, 11], [215, 96, 6]];
-    towers.forEach(([x, top, w], i) => bld(p, k, x, top, w, 50 + i));
-    if (k.lamp) { p.rect(157, 94, 8, 4, 'rgba(' + PAPER + ',.3)'); p.frame(157, 94, 8, 4, k.edge); }
-    if (k.lamp) for (let x = 138; x < 222; x += 12) p.rect(x, 116, 1, 1, k.lamp);
-  },
-  // the mall: glass bands, a dome, the rooftop garden, the sky elevator's housing
-  galleria: (p, k) => {
-    p.rect(246, 84, 28, 4, k.body); p.frame(246, 84, 28, 4, k.edge);
-    p.rect(250, 80, 20, 4, k.body); p.frame(250, 80, 20, 4, k.edge);
-    p.rect(255, 77, 10, 3, k.body); p.frame(255, 77, 10, 3, k.edge);
-    p.rect(234, 88, 52, 36, k.body);
-    if (k.lamp) {
-      for (let y = 92; y < 120; y += 5) p.rect(236, y, 48, 1, 'rgba(' + PAPER + ',.16)');
-      p.rect(254, 116, 12, 8, 'rgba(' + PAPER + ',.3)');
-      for (let x = 236; x < 246; x += 3) p.rect(x, 85, 2, 3, 'rgba(' + O + ',.45)');
+interface Cache { key: string; canvas: HTMLCanvasElement; cam: Cam; box: Box }
+const CACHE: Cache[] = [];
+/** At most this many device pixels per cached view (a phone at 3× would otherwise ask for a lot). */
+const CACHE_PX = 4.5e6;
+
+/** The ground of one view (the city, or one district) at the screen's resolution, painted once and kept. */
+function groundFor(st: MapState, L: Layout, cam: Cam, camKey: string, dpr: number): Cache {
+  const m = st.view, look = (d: DistrictId) => lookOf(d, st);
+  const sig = DIDS.map((d) => look(d)[0]).join('');
+  const box = L.area, key = [camKey, m.layer, m.flat ? 'f' : 't', sig, box.w.toFixed(1), box.h.toFixed(1), cam.s.toFixed(4), dpr.toFixed(3)].join('|');
+  const hit = CACHE.find((c) => c.key === key);
+  if (hit) return hit;
+  let px = dpr;
+  if (box.w * box.h * px * px > CACHE_PX) px = Math.sqrt(CACHE_PX / (box.w * box.h));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(box.w * px)); canvas.height = Math.max(1, Math.round(box.h * px));
+  const g = canvas.getContext('2d')!;
+  g.setTransform(px, 0, 0, px, -box.x * px, -box.y * px);
+  g.transform(cam.s, 0, 0, cam.s, cam.ox, cam.oy);
+  g.fillStyle = '#07060c'; g.fillRect(-200, -200, MAP_W + 400, MAP_H + 400);
+  g.save();
+  if (!m.flat) g.transform(TILT.a, 0, TILT.c, TILT.d, TILT.e, TILT.f);
+  paintGround(g, look);
+  g.restore();
+  if (!m.flat) paintTowers(g, look, m.layer === 'street' ? 1 : 0.35);
+  const dim = LAYER_DIM[m.layer];
+  if (dim) { g.fillStyle = dim; g.fillRect(-200, -200, MAP_W + 400, MAP_H + 400); }
+  const c: Cache = { key, canvas, cam, box };
+  CACHE.unshift(c);
+  if (CACHE.length > 4) CACHE.length = 4;
+  return c;
+}
+
+/** Draw a cached view under another camera (scaled while the map zooms). */
+function blit(x: Ctx, c: Cache, cam: Cam) {
+  const r = cam.s / c.cam.s;
+  x.save(); x.translate(cam.ox - c.cam.ox * r, cam.oy - c.cam.oy * r); x.scale(r, r);
+  x.imageSmoothingEnabled = true; x.drawImage(c.canvas, c.box.x, c.box.y, c.box.w, c.box.h);
+  x.restore();
+}
+
+// ---------- what moves on the map ----------
+
+/** A point along a polyline (0..1), and the heading there. */
+function along(pts: Pt[], f: number): [number, number, number] {
+  let L = 0; const seg: number[] = [];
+  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(d); L += d; }
+  let s = f * L, i = 0;
+  while (i < seg.length - 1 && s > seg[i]) { s -= seg[i]; i++; }
+  const g = seg[i] ? s / seg[i] : 0;
+  return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * g, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * g, Math.atan2(pts[i + 1][1] - pts[i][1], pts[i + 1][0] - pts[i][0])];
+}
+const pingPong = (f: number) => { f %= 2; return f < 1 ? f : 2 - f; };
+
+/** Boats and ships, in plan units (the caller sets the projection): barges on the canal, ships at the quay and passing, the patrol, fishing boats. */
+function drawBoats(x: Ctx, t: number, k: Knowledge, a: number) {
+  const boat = (px: number, py: number, ang: number, len: number, wid: number, hull: string, light: string | null, wake = true) => {
+    x.save(); x.translate(px, py); x.rotate(ang);
+    if (wake) { x.fillStyle = 'rgba(160,220,255,' + (0.18 * a).toFixed(3) + ')'; x.beginPath(); x.moveTo(-len / 2, 0); x.lineTo(-len / 2 - len, -wid); x.lineTo(-len / 2 - len, wid); x.closePath(); x.fill(); }
+    x.globalAlpha = a; x.fillStyle = hull; x.beginPath(); x.moveTo(-len / 2, -wid / 2); x.lineTo(len / 2 - wid / 2, -wid / 2); x.lineTo(len / 2, 0); x.lineTo(len / 2 - wid / 2, wid / 2); x.lineTo(-len / 2, wid / 2); x.closePath(); x.fill();
+    if (light) { x.fillStyle = light; x.fillRect(-1, -1, 2, 2); }
+    x.restore();
+  };
+  // barges on the canal, up and down
+  if (shows('oldq', k)) for (let i = 0; i < 3; i++) { const f = (t * 0.0006 + i / 3) % 2, fw = f < 1, [px, py, ang] = along(CANAL, pingPong(f)); boat(px, py, fw ? ang : ang + Math.PI, 7, 3, '#5a4a30', 'rgba(255,210,120,.9)'); }
+  // the ferry to the Spire's foot (once the story makes it known)
+  if (k.flag(lineKnownFlag('ferry'))) { const f = (t * 0.0012) % 2, out = f < 1, [px, py, ang] = along([[700, 300], [744, 220], [760, 150]], pingPong(f)); boat(px, py, out ? ang : ang + Math.PI, 10, 4, '#d8d0c0', 'rgba(255,217,165,.9)'); }
+  // out at sea: a container ship going north, a tanker at anchor, a cruise liner far out
+  { const py = ((t * 0.08) % (MAP_H + 80)) - 40; boat(812, py, -Math.PI / 2, 26, 7, '#7a2a1a', 'rgba(255,255,255,.8)'); x.globalAlpha = a; for (let i = 0; i < 4; i++) { x.fillStyle = ['#1f4a52', '#5a4a14', '#3a2050', '#2c3a24'][i]; x.fillRect(809, py - 8 + i * 5, 6, 4); } x.globalAlpha = 1; }
+  { const bob = Math.sin(t * 0.02) * 0.6; boat(800, 60 + bob, -0.4, 28, 7, '#3a3a40', 'rgba(255,42,68,.9)', false); }
+  { const px = MAP_W + 40 - ((t * 0.05) % (MAP_W * 0.5 + 80)), py = 22; if (px < MAP_W + 30 && px > 650) { boat(px, py, Math.PI, 34, 8, '#e8e0f0', null); x.globalAlpha = a; for (let i = 0; i < 6; i++) { x.fillStyle = i % 2 ? 'rgba(255,190,110,.9)' : 'rgba(255,240,215,.9)'; x.fillRect(px - 12 + i * 4, py - 1, 2, 2); } x.globalAlpha = 1; } }
+  if (!shows('harbor', k)) return;
+  // two ships moored at the quay
+  for (const [py, len, hull] of [[262, 30, '#2a3a5a'], [300, 24, '#5a2a1a']] as [number, number, string][]) {
+    const px = coastX(py) + 9; boat(px, py, Math.PI / 2 + 0.12, len, 8, hull, null, false);
+    x.globalAlpha = a; for (let i = 0; i < len / 6 - 1; i++) { x.fillStyle = ['#7a2a1a', '#1f4a52', '#5a4a14', '#3a2050'][i % 4]; x.fillRect(px - 3, py - len / 2 + 3 + i * 6, 6, 5); }
+    x.fillStyle = 'rgba(255,230,180,.8)'; x.fillRect(px - 1, py + len / 2 - 4, 2, 2); x.globalAlpha = 1;
+  }
+  // the harbor patrol, and fishing boats off the beach
+  { const g = t * 0.004, px = 770 + Math.cos(g) * 26, py = 260 + Math.sin(g) * 46; boat(px, py, g + Math.PI / 2, 8, 3, '#2a2d33', Math.floor(t / 6) % 2 ? 'rgba(255,42,68,.95)' : 'rgba(80,120,255,.95)'); }
+  for (let i = 0; i < 3; i++) { const px = 782 + i * 14 + Math.sin(t * 0.01 + i) * 3, py = 360 + i * 6 + Math.cos(t * 0.013 + i) * 2; boat(px, py, Math.sin(t * 0.005 + i) * 0.3, 5, 2, '#e8e0d0', null, false); x.globalAlpha = a; x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(px, py - 4, 1, 4); x.globalAlpha = 1; }
+}
+
+/**
+ * The landmarks standing on the tilted plan, in sheet units: a small model of each district's
+ * landmark on its spot, there once the district is heard of (scenery, not places). `px`: how many
+ * map units a sheet unit is (signs on the models only when they can be read).
+ */
+function drawLandmarks(x: Ctx, t: number, k: Knowledge, px: number, still: boolean) {
+  const at = (a: number, b: number) => tiltP(a, b).map(Math.round) as Pt;
+  const sign = (s: string, cx: number, cy: number, col: string, size: number) => { if (size * px >= 6) text(x, s, cx, cy, col, size, '600'); };
+  const blink = (n: number, ph = 0) => still || Math.floor((t + ph) / n) % 2 === 0;
+  // the Galleria's dome (the set, small)
+  if (shows('galleria', k)) { const [gx, gy] = at(560, 100); x.save(); x.translate(gx, gy); x.scale(0.28, 0.28); drawGalleriaDome(x, { label: false, lit: lookOf('galleria', k) === 'lit' ? 1.4 : 0.5 }); x.restore(); }
+  // the Church of the Algorithm: a white cube, one eye
+  if (shows('galleria', k)) { const [cx, cy] = at(612, 96); x.fillStyle = '#d8dee6'; x.fillRect(cx - 8, cy - 16, 16, 16); x.fillStyle = '#0a0a10'; x.beginPath(); x.ellipse(cx, cy - 9, 5, 3, 0, 0, 7); x.fill(); x.fillStyle = 'rgba(170,225,235,' + (still ? 0.8 : 0.6 + 0.4 * Math.sin(t * 0.04)).toFixed(2) + ')'; x.beginPath(); x.arc(cx, cy - 9, 1.6, 0, 7); x.fill(); }
+  // the harbor's cranes and SALT on the beach, its palms
+  if (shows('harbor', k)) {
+    for (const [cx0, cy0, up] of [[650, 300, true], [690, 318, false], [716, 298, true]] as [number, number, boolean][]) {
+      const [cx, cy] = at(cx0, cy0); x.strokeStyle = '#d07020'; x.lineWidth = 1.5; x.beginPath();
+      x.moveTo(cx - 5, cy); x.lineTo(cx - 5, cy - 26); x.moveTo(cx + 5, cy); x.lineTo(cx + 5, cy - 26); x.moveTo(cx - 7, cy - 26); x.lineTo(cx + 7, cy - 26); x.stroke();
+      x.beginPath(); if (up) { x.moveTo(cx - 6, cy - 26); x.lineTo(cx - 3, cy - 46); } else { x.moveTo(cx - 6, cy - 26); x.lineTo(cx + 20, cy - 26); } x.stroke();
+      x.fillStyle = blink(20) ? 'rgba(255,42,68,.95)' : 'rgba(90,16,32,.9)'; x.fillRect(cx - 1, cy - 30, 2, 2);
     }
-    p.frame(234, 88, 52, 36, k.edge);
-    p.rect(265, 82, 6, 6, k.body); p.frame(265, 82, 6, 6, k.edge);
-  },
-  // the working harbor: a warehouse, containers, a crane, the quay and pier; the beach across the bay
-  harbor: (p, k) => {
-    p.poly([[296, 104], [307, 98], [318, 104]], k.body); p.line([[296, 104], [307, 98], [318, 104]], k.edge);
-    bld(p, k, 296, 104, 22, 70, GROUND_Y, 0);
-    if (k.lamp) p.rect(304, 115, 6, 9, 'rgba(' + PAPER + ',.22)');
-    for (const [x, y] of [[320, 116], [327, 116], [320, 112]] as Pt[]) { p.rect(x, y, 7, 4, k.body); p.frame(x, y, 7, 4, k.edge); }
-    p.rect(331, 89, 1.5, 35, k.edge); p.rect(339, 89, 1.5, 35, k.edge); p.rect(326, 88, 22, 1.5, k.edge);
-    p.rect(334, 90, 4, 3, k.body); p.frame(334, 90, 4, 3, k.edge); p.rect(346, 89.5, 0.6, 10, k.edge);
-    p.rect(294, 124, 48, 2, k.edge);
-    p.rect(340, 121.5, 10, 1.2, k.edge); p.rect(348, 122, 0.8, 6, k.edge);
-    p.poly([[380, 125], [398, 121], [398, 127], [380, 127]], k.lamp ? '#3a2a18' : k.body);
-    p.line([[380, 125], [398, 121]], k.edge);
-    p.rect(385, 120, 8, 2, k.body); p.frame(385, 120, 8, 2, k.edge); p.rect(389, 113, 0.8, 7, k.edge);
-  },
-  // the Spire: towers on a deck over the east of the city, the Registry's antenna on the tallest, its foot in the bay
-  spire: (p, k, t) => {
-    p.rect(366, 54, 10, 98, k.body); p.frame(366, 54, 10, 98, k.edge);
-    for (let y = 58; y < 148; y += 10) p.line([[366, y], [376, y + 10]], k.edge);
-    p.rect(196, 48, 190, 6, k.body); p.frame(196, 48, 190, 6, k.edge);
-    const towers: [number, number, number][] = [[204, 28, 14], [222, 20, 16], [244, 8, 22], [270, 20, 14], [288, 32, 12], [304, 22, 16], [324, 34, 12], [340, 24, 18], [362, 36, 16]];
-    towers.forEach(([x, top, w], i) => bld(p, k, x, top, w, 90 + i, 48, 0.12));
-    p.rect(254.5, 0, 1.5, 8, k.edge);
-    if (Math.floor(t / 30) % 2 === 0) p.rect(254, 0, 2.5, 1.5, 'rgba(' + RED + ',.9)');
-  },
-  // canals and arches under the street: the Ghosts' homes in the arches, lanterns over the water
-  undercity: (p, k, t) => {
-    p.rect(60, 156, 332, 3, k.body); p.frame(60, 156, 332, 3, k.edge);
-    for (let x = 62; x < 390; x += 26) {
-      p.rect(x, 159, 5, 45, k.body); p.frame(x, 159, 5, 45, k.edge);
-      if (x + 26 < 392) { p.rect(x + 5, 159, 21, 3, k.body); p.rect(x + 5, 162, 3, 2, k.body); p.rect(x + 23, 162, 3, 2, k.body); p.line([[x + 5, 164], [x + 8, 164], [x + 8, 162], [x + 23, 162], [x + 23, 164], [x + 26, 164]], k.edge); }
-      if (k.lamp && (x / 26) % 2 < 1) p.rect(x + 13, 195, 4, 9, k.lamp);
+    const [bx, by] = at(722, 346); x.fillStyle = '#2a1222'; x.fillRect(bx - 8, by - 8, 16, 8); x.fillStyle = 'rgba(255,140,200,.85)'; x.fillRect(bx - 6, by - 11, 12, 2);
+    sign('SALT', bx, by - 15, 'rgba(255,190,220,.9)', 5);
+    for (const dx of [-16, 14]) { x.strokeStyle = '#1a0a14'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(bx + dx, by); x.lineTo(bx + dx + 2, by - 18); x.stroke(); x.fillStyle = '#1a0a14'; for (let i = 0; i < 5; i++) { const a = -Math.PI + (i * Math.PI) / 4; x.fillRect(bx + dx + 2 + Math.cos(a) * 6, by - 18 + Math.abs(Math.sin(a)) * 3, 2, 1); } }
+  }
+  // the market's arch, and Club VOID's ripple
+  if (shows('market', k)) {
+    const [mx, my] = at(250, 236); x.strokeStyle = 'rgba(232,84,206,.9)'; x.lineWidth = 2; x.beginPath(); x.arc(mx, my - 4, 12, Math.PI, 0); x.stroke();
+    sign('MARKET', mx, my - 20, blink(15, 7) ? 'rgba(255,140,230,.95)' : 'rgba(110,30,100,.9)', 6);
+    const [vx, vy] = at(204, 204); x.fillStyle = '#0c0410'; x.fillRect(vx - 8, vy - 14, 16, 14); sign('VOID', vx, vy - 7, 'rgba(176,64,255,.95)', 6);
+    if (!still) { const f = (t * 0.03) % 1; x.strokeStyle = 'rgba(176,64,255,' + (0.6 * (1 - f)).toFixed(2) + ')'; x.lineWidth = 1; x.beginPath(); x.ellipse(vx, vy, 10 + f * 14, (10 + f * 14) * 0.5, 0, 0, 7); x.stroke(); }
+  }
+  // the Registry's sign over Downtown
+  if (shows('downtown', k)) {
+    const [dx, dy] = at(400, 186); x.fillStyle = '#1e1014'; x.fillRect(dx - 2, dy - 40, 4, 40); x.fillStyle = '#100808'; x.fillRect(dx - 14, dy - 54, 28, 14);
+    x.fillStyle = 'rgba(255,136,0,' + (still ? 0.8 : 0.6 + 0.3 * Math.sin(t * 0.05)).toFixed(2) + ')'; x.fillRect(dx - 12, dy - 52, 24, 10);
+    sign('REGISTRY', dx, dy - 47, '#100808', 5);
+  }
+  // the Old Quarter: St. Agnes's bell tower with its warm window, the variety theatre's marquee
+  if (shows('oldq', k)) {
+    const [sx, sy] = at(282, 328); x.fillStyle = '#2a1a12'; x.fillRect(sx - 4, sy - 30, 8, 30); x.fillRect(sx - 9, sy - 12, 18, 12); x.beginPath(); x.moveTo(sx - 5, sy - 30); x.lineTo(sx, sy - 42); x.lineTo(sx + 5, sy - 30); x.fill();
+    x.fillStyle = '#d6965f'; x.fillRect(sx - 0.5, sy - 48, 1, 6); x.fillRect(sx - 2, sy - 46, 4, 1); x.fillStyle = 'rgba(255,190,110,.85)'; x.fillRect(sx - 1.5, sy - 24, 3, 4);
+    const [tx, ty] = at(364, 334); x.fillStyle = '#24140c'; x.fillRect(tx - 10, ty - 14, 20, 14); x.fillStyle = '#3a2010'; x.fillRect(tx - 12, ty - 16, 24, 4);
+    for (let i = 0; i < 8; i++) { x.fillStyle = (Math.floor((still ? 0 : t) / 8) + i) % 2 ? '#ffd27a' : '#5a3a14'; x.fillRect(tx - 11 + i * 3, ty - 17, 1.5, 1.5); }
+  }
+  // the Fringe: chimneys smoking, a vertical farm lit green
+  if (shows('fringe', k)) {
+    for (const [fx0, fy0] of [[60, 128], [90, 250]]) {
+      const [fx, fy] = at(fx0, fy0); x.fillStyle = '#2a2a30'; x.fillRect(fx - 10, fy - 10, 20, 10); x.fillRect(fx + 4, fy - 30, 4, 20);
+      for (let i = 0; i < 3; i++) { const f = still ? i / 3 : (t * 0.01 + i / 3) % 1; x.fillStyle = 'rgba(120,120,130,' + (0.4 * (1 - f)).toFixed(2) + ')'; x.beginPath(); x.arc(fx + 6 + f * 8, fy - 32 - f * 16, 2 + f * 4, 0, 7); x.fill(); }
     }
-    water(p, 60, 204, 332, 10, t, 1);
-    p.rect(60, 214, 332, 4, k.body); p.frame(60, 214, 332, 4, k.edge);
-  },
-};
+    const [vx, vy] = at(126, 166); x.fillStyle = '#10180f'; x.fillRect(vx - 5, vy - 34, 10, 34);
+    for (let i = 0; i < 7; i++) { x.fillStyle = 'rgba(90,255,120,' + (still ? 0.45 : 0.35 + 0.25 * Math.sin(t * 0.02 + i)).toFixed(2) + ')'; x.fillRect(vx - 4, vy - 32 + i * 4.5, 8, 1.5); }
+  }
+  // the Skyport (a landmark): the gantry, and a launch every so often, up over the wastes
+  {
+    const [gx, gy] = at(34, 50); x.strokeStyle = '#8a96a6'; x.lineWidth = 1;
+    for (const dx of [-3, 3]) { x.beginPath(); x.moveTo(gx + dx, gy); x.lineTo(gx + dx, gy - 46); x.stroke(); }
+    for (let i = 0; i < 9; i++) { x.beginPath(); x.moveTo(gx - 3, gy - i * 5); x.lineTo(gx + 3, gy - i * 5 - 5); x.stroke(); }
+    x.fillStyle = blink(25) ? 'rgba(255,42,68,.95)' : 'rgba(90,16,32,.9)'; x.fillRect(gx - 1, gy - 49, 2, 2);
+    const ph = still ? 400 : t % 720, [rx, ry] = at(70, 44);
+    if (ph < 260) {
+      const up = ph < 40 ? 0 : (ph - 40) ** 1.7 * 0.012, py = ry - 12 - up;
+      for (let i = 0; i < 14; i++) { const sy = py + 10 + i * 5; if (sy > ry) break; x.fillStyle = 'rgba(200,200,210,' + (0.35 - i * 0.02).toFixed(2) + ')'; x.beginPath(); x.arc(rx + Math.sin(i * 1.7) * i * 0.5, sy, 2 + i * 0.5, 0, 7); x.fill(); }
+      if (py > -40) { x.fillStyle = '#dfe6ee'; x.fillRect(rx - 2, py - 10, 4, 12); x.beginPath(); x.moveTo(rx - 2, py - 10); x.lineTo(rx, py - 15); x.lineTo(rx + 2, py - 10); x.fill(); x.fillStyle = Math.floor(t / 2) % 2 ? '#ffd27a' : '#ff8800'; x.fillRect(rx - 1.5, py + 2, 3, 4 + (t % 3)); }
+    } else {
+      x.fillStyle = '#dfe6ee'; x.fillRect(rx - 2, ry - 22, 4, 12); x.beginPath(); x.moveTo(rx - 2, ry - 22); x.lineTo(rx, ry - 27); x.lineTo(rx + 2, ry - 22); x.fill();
+      x.strokeStyle = '#6a7686'; x.beginPath(); x.moveTo(rx + 4, ry); x.lineTo(rx + 4, ry - 24); x.stroke();
+    }
+  }
+}
 
 // ---------- LINE 0 ----------
 
@@ -437,8 +686,7 @@ function trainPoint(r: { from: Station; to: Station; f: number }): Pt {
 function youPoint(st: MapState): Pt | null {
   if (st.view.mode === 'taxi') { const s = standOf(st.scene); if (s) return PAD_MAP[s]; }
   if (st.ride) return trainPoint(st.ride);
-  const p = districtPlaces(placeOf(st.scene).district ?? 'downtown').find((q) => q.scenes.includes(st.scene));
-  return p ? p.pt : null;
+  return PLACE_MAP[placeOf(st.scene).id] ?? null;
 }
 
 /** A place's state on the map, its colour and its card's second line. */
@@ -446,118 +694,261 @@ function placeLook(p: MapPlace, st: MapState): { col: string; name: string; note
   const why = placeBlocked(p, st), visited = seenPlace(p, st.seen), here = why === 'YOU ARE HERE';
   if (!visited) return { col: 'rgba(' + PAPER + ',.5)', name: placeKnown(p, st.seen) ? p.name : '???', note: 'NOT VISITED', here, go: false };
   if (here) return { col: 'rgba(255,255,255,.95)', name: p.name, note: 'YOU ARE HERE', here, go: false };
-  if (why) return { col: 'rgba(' + PAPER + ',.75)', name: p.name, note: why.startsWith('THE MARKET') ? 'GATE SHUT' : 'NOT WHILE MOVING', here, go: false };
+  if (why) return { col: 'rgba(' + PAPER + ',.75)', name: p.name, note: why.startsWith('THE MARKET') ? 'GATE SHUT' : why.startsWith('HARBOR') ? 'CLOSED' : 'NOT WHILE MOVING', here, go: false };
   return { col: 'rgba(' + C + ',.95)', name: p.name, note: 'QUICK TRAVEL', here, go: true };
 }
 
 // ---------- the map ----------
 
-/** A stratum's word in the margin: the street always; above and below once you know of a district there (or a landmark stands in it). */
-const stratumShown = (s: Stratum, st: MapState) => s === 'street' || DISTRICTS.some((d) => d.stratum === s && (DISTRICT_REVEAL[d.id].landmark || districtStage(d.id, st) !== 'unknown'));
-
 /** The city map over the whole view (vw × vh, the game's view units). */
 export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapState) {
   const u = mapUnit(vh);
   x.save(); x.scale(u, u);
-  drawMap(x, vw / u, vh / u, { ...st, tapMin: st.tapMin / u, avoid: scaleBox(st.avoid, u) });
+  // device pixels per map unit, for the cached ground
+  const dpr = Math.abs(x.getTransform().a) || u;
+  drawMap(x, vw / u, vh / u, { ...st, tapMin: st.tapMin / u, avoid: scaleBox(st.avoid, u) }, dpr);
   x.restore();
 }
 
-function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapState) {
-  const m = st.view, L = layout(vw, vh, st.tapMin, st.avoid), c = camera(st, L), f = zoomF(st), p = pen(x, c);
-  const blink = Math.floor(st.t / 20) % 2 === 0, taxi = m.mode === 'taxi', did = DIDS[m.district];
-  const lw = Math.max(1, Math.round(c.s * 0.9));
+/** A label on a dark plate (map units), so it reads over anything. */
+function plate(x: Ctx, s: string, cx: number, cy: number, col: string, size = 7, edge: string | null = null, align: CanvasTextAlign = 'center') {
+  x.font = '600 ' + size + 'px "IBM Plex Mono", monospace';
+  const w = x.measureText(s).width + 6, h = size + 4, left = align === 'left' ? cx - 3 : align === 'right' ? cx - w + 3 : cx - w / 2;
+  x.fillStyle = 'rgba(6,4,3,.82)'; x.fillRect(Math.round(left), Math.round(cy - h / 2), Math.round(w), h);
+  if (edge) { x.strokeStyle = edge; x.lineWidth = 1; x.strokeRect(Math.round(left) + 0.5, Math.round(cy - h / 2) + 0.5, Math.round(w) - 1, h - 1); }
+  text(x, s, cx, cy + 0.5, col, size, '600', align);
+}
+
+function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
+  const m = st.view, taxi = m.mode === 'taxi', L = lay(st, vw, vh), c = camera(st, L), f = zoomF(st), V = viewer(c, m.flat);
+  const still = st.reduced, t = still ? 0 : st.t, blink = still || Math.floor(st.t / 20) % 2 === 0, did = DIDS[m.district], layer = m.layer;
+  const lineOn = lineKnown(st);
   x.save();
   x.fillStyle = 'rgba(0,0,0,.8)'; x.fillRect(0, 0, vw, vh);
   x.fillStyle = '#040201'; x.fillRect(L.panel.x, L.panel.y, L.panel.w, L.panel.h);
-  x.strokeStyle = 'rgba(' + O + ',.9)'; x.strokeRect(L.panel.x + 0.5, L.panel.y + 0.5, L.panel.w - 1, L.panel.h - 1);
+  x.strokeStyle = 'rgba(' + O + ',.9)'; x.lineWidth = 1; x.strokeRect(L.panel.x + 0.5, L.panel.y + 0.5, L.panel.w - 1, L.panel.h - 1);
 
-  // ---- the section, clipped to the map area
+  // ---- the plan, clipped to the map area
   x.save();
   x.beginPath(); x.rect(L.area.x, L.area.y, L.area.w, L.area.h); x.clip();
-  // a drawing sheet: a faint grid, the strata's bands and their datum lines
-  p.rect(0, STRATA.overworld.top, MAP_W, STRATA.overworld.bottom, '#06050c');
-  for (let gx = 0; gx <= MAP_W; gx += 10) p.rect(gx, 0, 0.3, MAP_H, 'rgba(' + O + ',' + (gx % 50 ? 0.04 : 0.08) + ')');
-  for (let gy = 0; gy <= MAP_H; gy += 10) p.rect(0, gy, MAP_W, 0.3, 'rgba(' + O + ',' + (gy % 50 ? 0.04 : 0.08) + ')');
-  // the ground: earth under the street, down to the Undercity's ceiling; the bay
-  p.rect(0, GROUND_Y, MAP_W, STRATA.underworld.top - GROUND_Y + 4, '#0b0603');
-  p.rect(0, GROUND_Y, MAP_W, 0.8, 'rgba(' + O + ',.4)');
-  water(p, 342, GROUND_Y + 0.5, 56, STRATA.underworld.top - GROUND_Y - 0.5, st.t, 0);
-  for (const s of ['street', 'underworld'] as const) p.line([[0, STRATA[s].top], [MAP_W, STRATA[s].top]], 'rgba(' + O + ',.3)', 1, [4, 3]);
-  // LINE 0's tunnel, once you know of the line
-  // the line's map hangs on its platforms: you know its loop once you have stood on one (from the street you see only the stairs)
-  const lineKnown = (Object.keys(STATIONS) as Station[]).some((s) => st.seen(STATIONS[s].scene)) || st.seen('train') || !!st.ride;
-  if (lineKnown) { p.rect(143, 133, 181, 13, '#050302'); p.frame(143, 133, 181, 13, 'rgba(' + O + ',.25)'); }
-  // the districts: lit once known, a dark shape once heard of (a landmark always), else a dim block
-  DIDS.forEach((d) => {
-    const stage = districtStage(d, st);
-    if (stage === 'unknown' && !DISTRICT_REVEAL[d].landmark) { const r = DISTRICT_MAP[d]; p.rect(r.x, r.y, r.w, r.h, UNKNOWN.body); p.frame(r.x, r.y, r.w, r.h, UNKNOWN.edge); return; }
-    SILHOUETTE[d](p, stage === 'known' ? LIT : DARK, st.t);
-  });
-  // the ways between districts you have seen: open ones solid, the market gate green or red (planned ones are not drawn)
-  for (const l of LINKS) {
-    if (!linkKnown(l, st.seen)) continue;
-    p.line(l.path, 'rgba(' + O + ',.85)', lw);
-    if (l.state === 'gate') {
-      const [a, b] = toView(c, (l.path[0][0] + l.path[1][0]) / 2, l.path[0][1]);
-      x.fillStyle = st.gateOpen ? 'rgba(' + GREEN + ',.95)' : 'rgba(' + RED + ',.9)';
-      x.fillRect(Math.round(a) - 2, Math.round(b) - 5, 4, 10);
-    }
+  // the ground: the city's view (sharp in the city view), and the district's on top while zoomed in (sharp there)
+  const c0 = cityCam(L, m.flat);
+  blit(x, groundFor(st, L, c0, 'city', dpr), c);
+  if (f > 0) blit(x, groundFor(st, L, districtCam(L, did, m.flat), did, dpr), c);
+  // now in sheet units
+  x.save(); x.translate(c.ox, c.oy); x.scale(c.s, c.s);
+  // the sea's swell (flat), the boats
+  if (m.flat && !still) { x.strokeStyle = 'rgba(120,190,210,.12)'; x.lineWidth = 1 / c.s; for (let i = 0; i < 16; i++) { const yy = (i * 25 + t * 0.2) % MAP_H, cx = coastX(yy) + 6; x.beginPath(); x.moveTo(cx, yy); x.lineTo(MAP_W, yy + 6); x.stroke(); } }
+  x.save(); if (!m.flat) x.transform(TILT.a, 0, TILT.c, TILT.d, TILT.e, TILT.f);
+  x.beginPath(); x.rect(0, 0, MAP_W, MAP_H); x.clip();
+  drawBoats(x, t, st, layer === 'street' ? 1 : 0.4);
+  x.restore();
+  // the landmarks and the Spire, standing up on the tilted plan
+  if (!m.flat) {
+    if (layer === 'street') drawLandmarks(x, t, st, c.s, still);
+    const [ix, iy] = tiltP(ISLE.x, ISLE.y), k = layer === 'street' ? 0.5 : 0.37;
+    x.save(); x.translate(ix, iy + 4); x.scale(k, k); drawSpire(x, { t, still, glow: true, edge: 0.3, windows: 1 }); x.restore();
+  } else {
+    const g = x.createRadialGradient(ISLE.x, ISLE.y, 2, ISLE.x, ISLE.y, 40);
+    g.addColorStop(0, 'rgba(255,42,68,.4)'); g.addColorStop(1, 'rgba(255,42,68,0)'); x.fillStyle = g; x.fillRect(ISLE.x - 40, ISLE.y - 40, 80, 80);
+    x.fillStyle = '#040203'; x.fillRect(ISLE.x - 6, ISLE.y - 4, 12, 8);
+    x.fillStyle = still || Math.sin(t * 0.05) > 0 ? 'rgba(255,42,68,.95)' : 'rgba(90,16,32,.9)'; x.fillRect(ISLE.x - 2, ISLE.y - 2, 4, 4);
   }
-  // LINE 0: the loop, its stations, the stairs up from them
-  if (lineKnown) p.line([...LOOP_MAP, LOOP_MAP[0]], 'rgba(' + O + ',.85)', lw);
-  for (const s of Object.keys(STATIONS) as Station[]) {
-    if (!lineKnown && !stationKnown(s, st.seen)) continue;
-    const [sx, sy] = STATION_MAP[s];
-    p.line([[sx, sy - 3], [sx, GROUND_Y]], 'rgba(' + O + ',.5)');
-    const [a, b] = toView(c, sx, sy), next = !!st.ride && st.ride.to === s && st.ride.f > 0, r = Math.max(3, Math.round(c.s * 2));
-    x.fillStyle = '#0a0604'; x.fillRect(Math.round(a) - r, Math.round(b) - r, r * 2 + 1, r * 2 + 1);
-    x.strokeStyle = next ? 'rgba(' + O + ',' + (blink ? 1 : 0.5) + ')' : 'rgba(' + PAPER + ',' + (st.seen(STATIONS[s].scene) ? 0.85 : 0.35) + ')';
-    x.strokeRect(Math.round(a) - r + 0.5, Math.round(b) - r + 0.5, r * 2, r * 2);
-    if (next && f < 0.5) { const [, ny] = toView(c, sx, 149.5); text(x, 'NEXT: ' + STATIONS[s].name, a, ny, 'rgba(' + O + ',.95)', 7, '600'); }
-  }
-  if (f < 0.5 && lineKnown) { const [a, b] = toView(c, 266, 129.5); text(x, 'LINE 0', a, b, 'rgba(' + O + ',.6)', 7, '600', 'left'); }
-  // taxi routes between the stands (cyan in taxi mode: your pad to the one picked)
-  const pickStand = taxi ? STAND_IDS[m.index] : null, fromStand = standOf(st.scene);
-  if (taxi) STAND_IDS.forEach((s, i) => {
-    const t = STAND_IDS[(i + 1) % STAND_IDS.length], [ax, ay] = PAD_MAP[s], [bx, by] = PAD_MAP[t];
-    p.line([[ax, ay - 3], [(ax + bx) / 2, Math.min(ay, by) - 22], [bx, by - 3]], 'rgba(' + PAPER + ',.16)', 1, [2, 3]);
-  });
-  if (taxi && pickStand && fromStand && pickStand !== fromStand) {
-    const [ax, ay] = PAD_MAP[fromStand], [bx, by] = PAD_MAP[pickStand];
-    p.line([[ax, ay - 3], [(ax + bx) / 2, Math.min(ay, by) - 22], [bx, by - 3]], 'rgba(' + C + ',' + (blink ? 0.9 : 0.6) + ')', lw, [3, 2]);
-  }
-  // the pads (in the city view only as structure, once you have seen them; in taxi mode they are what you pick)
-  STAND_IDS.forEach((s, i) => {
-    if (!taxi && !st.seen(STANDS[s].scene)) return;
-    const [a, b] = toView(c, ...PAD_MAP[s]), col = taxi ? C : O, sel = taxi && m.index === i, hov = taxi && m.hover === i;
-    const r = Math.max(4, Math.round(c.s * 2.5)), cx = Math.round(a), cy = Math.round(b);
-    x.fillStyle = '#030606'; x.fillRect(cx - r, cy - r, r * 2 + 1, r * 2 + 1);
-    x.strokeStyle = 'rgba(' + col + ',' + (sel ? (blink ? 1 : 0.5) : taxi ? 0.8 : 0.55) + ')'; x.strokeRect(cx - r + 0.5, cy - r + 0.5, r * 2, r * 2);
-    x.fillStyle = 'rgba(' + col + ',.85)'; x.fillRect(cx - 2, cy - 2, 1, 5); x.fillRect(cx + 2, cy - 2, 1, 5); x.fillRect(cx - 1, cy, 3, 1);
-    if (sel || hov) { x.strokeStyle = 'rgba(' + C + ',.9)'; x.strokeRect(cx - r - 3.5, cy - r - 3.5, r * 2 + 7, r * 2 + 7); }
-    if (taxi) text(x, st.seen(STANDS[s].scene) ? STANDS[s].name : '???', cx, cy - r - 9, sel ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.75)', 7, '600');
-  });
-  // the places you know of: small dots in the city view, bright where you have been
-  if (f < 1 && !taxi) for (const d of DIDS) for (const q of knownPlaces(d, st.seen)) p.rect(q.pt[0] - 0.8, q.pt[1] - 0.8, 1.6, 1.6, 'rgba(' + PAPER + ',' + (seenPlace(q, st.seen) ? 0.7 : 0.3) * (1 - f) + ')');
+  x.restore();
 
-  // the district view: the rest of the city dims, the places hang on pins
+  // the district names (city view): on plates on the street layer, faint words under the other layers' lines
+  if (f < 1) {
+    x.save(); x.globalAlpha = 1 - f;
+    if (!taxi) for (const d of DIDS) {
+      if (d === 'undercity') continue;
+      const stage = districtStage(d, st), lk = lookOf(d, st), [a, b] = V(...DISTRICT_MAP[d].label);
+      const col = stage === 'known' ? rgba(mix(DISTRICT_MAP[d].col, 0.5, 128), 0.95) : stage === 'heard' ? rgba(PAPER, 0.7) : rgba(PAPER, 0.4);
+      if (layer !== 'street') { text(x, districtName(d, st), a, b, rgba(PAPER, layer === 'below' ? 0.22 : 0.35), 7, '600'); continue; }
+      plate(x, districtName(d, st), a, b, col, 7, lk === 'veiled' ? 'rgba(' + O + ',.15)' : rgba(DISTRICT_MAP[d].col, stage === 'known' ? 0.55 : 0.25));
+    }
+    x.restore();
+  }
+  // ---- the layer's own drawing, in map units
+  const lw = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n * c.s));
+  const path = (pts: Pt[], col: string, w: number, dash: number[] = [], close = false) => {
+    x.strokeStyle = col; x.lineWidth = w; x.lineJoin = 'round'; x.lineCap = 'round'; x.setLineDash(dash); x.beginPath();
+    pts.forEach(([a, b], i) => { const [p, q] = V(a, b); if (i) x.lineTo(p, q); else x.moveTo(p, q); });
+    if (close) x.closePath();
+    x.stroke(); x.setLineDash([]); x.lineCap = 'butt';
+  };
+  const roundel = (pt: Pt, ring: string, r: number, inter: boolean) => {
+    const [a, b] = V(...pt); x.fillStyle = '#0a0705'; x.beginPath(); x.arc(a, b, r, 0, 7); x.fill();
+    x.strokeStyle = ring; x.lineWidth = Math.max(1.5, r * 0.35); x.stroke();
+    if (inter) { x.strokeStyle = '#0a0705'; x.lineWidth = 1; x.beginPath(); x.arc(a, b, r * 0.55, 0, 7); x.stroke(); }
+  };
+  const chips = (a: number, b: number, list: [string, string][]) => {
+    let ox = a;
+    for (const [s, col] of list) { x.font = '600 6px "IBM Plex Mono", monospace'; const w = x.measureText(s).width + 5; x.fillStyle = rgba(col, 0.9); x.fillRect(Math.round(ox), Math.round(b), Math.round(w), 8); text(x, s, ox + 2.5, b + 4.5, '#0a0705', 6, '600', 'left'); ox += w + 2; }
+  };
+  const legend: [string, string, number, number[]][] = [];
+  if (layer === 'metro') {
+    const r = lw(8, 4.5, 9);
+    // the lines the story has made known (not run yet: names on a line, no places)
+    for (const ln of LINES_PLANNED) {
+      if (!st.flag(lineKnownFlag(ln.id))) continue;
+      path(ln.path, rgba(ln.col, 0.9), lw(ln.width * 2.5, ln.width, ln.width * 3), ln.dash ? ln.dash.map((d) => d * 0.8) : []);
+      legend.push([ln.short === 'L1' ? 'LINE 1' : ln.name, ln.col, ln.width * 1.6, ln.dash ?? []]);
+      if (!still && !ln.dash) { const [a, b] = along(ln.path, pingPong(t * 0.0013)), [p, q] = V(a, b); x.fillStyle = 'rgba(160,250,250,.95)'; x.fillRect(p - 2.5, q - 2.5, 5, 5); }
+      for (const s of ln.stops) {
+        const inter = (Object.keys(STATIONS) as Station[]).some((k) => Math.hypot(STATION_MAP[k][0] - s.pt[0], STATION_MAP[k][1] - s.pt[1]) < 4);
+        if (inter) continue;
+        roundel(s.pt, rgba(ln.col, 1), r * 0.85, false);
+        const [a, b] = V(...s.pt); plate(x, shows(s.district, st) ? s.name : '???', a + r + 4, b, rgba(PAPER, 0.85), 7, null, 'left');
+      }
+    }
+    // LINE 0: the loop once you know it, else only the stations you have seen from the street
+    if (lineOn) {
+      path([...LOOP_MAP, LOOP_MAP[0]], 'rgba(' + O + ',.95)', lw(6, 3, 7));
+      legend.unshift(['LINE 0', O, 4, []]);
+      // the trains (one is yours while you ride)
+      if (!st.ride) for (let i = 0; i < 2; i++) { const [p, q] = V(...loopPoint(LOOP_LEN * ((t * 0.0016 + i / 2) % 1))); x.fillStyle = '#ffe36a'; x.fillRect(p - 3, q - 3, 6, 6); }
+    }
+    for (const s of Object.keys(STATIONS) as Station[]) {
+      if (!lineOn && !stationKnown(s, st.seen)) continue;
+      const d = placeOf(STATIONS[s].scene).district!, joins: [string, string][] = [['L0', O]];
+      const stand = STAND_IDS.find((k) => placeOf(STANDS[k].scene).district === d && st.seen(STANDS[k].scene));
+      if (stand) joins.push(['TAXI', '255,190,110']);
+      for (const ln of LINES_PLANNED) if (st.flag(lineKnownFlag(ln.id)) && ln.path.some((p) => Math.hypot(p[0] - STATION_MAP[s][0], p[1] - STATION_MAP[s][1]) < 4)) joins.push([ln.short, ln.col]);
+      const inter = joins.length > 1, next = !!st.ride && st.ride.to === s && st.ride.f > 0;
+      roundel(STATION_MAP[s], next ? 'rgba(' + O + ',' + (blink ? 1 : 0.5) + ')' : inter ? '#ffffff' : 'rgba(' + O + ',1)', inter ? r * 1.15 : r, inter);
+      const [a, b] = V(...STATION_MAP[s]), lx = a + r + 5;
+      plate(x, (next ? 'NEXT: ' : '') + STATIONS[s].name, lx, b - 2, rgba(PAPER, st.seen(STATIONS[s].scene) ? 0.95 : 0.6), 7, null, 'left');
+      if (inter) chips(lx - 3, b + 5, joins);
+      if (s === 'harbor' && !st.harborOpen) plate(x, 'CLOSED UNTIL THE SIDING', lx, b + (inter ? 18 : 9), 'rgba(' + RED + ',.9)', 7, null, 'left');
+      if (inter) legend.push(['CHANGE HERE', '255,255,255', -1, []]);
+    }
+  } else if (layer === 'above') {
+    // air traffic by kind, between pads (scenery: the pads themselves you see only where you have stood)
+    const SPOT: Record<string, [Pt, DistrictId]> = {
+      dt: [PAD_MAP.downtown, 'downtown'], ga: [PAD_MAP.galleria, 'galleria'], ha: [PAD_MAP.harbor, 'harbor'], mk: [[236, 214], 'market'],
+      reg: [[348, 120], 'downtown'], hub: [[556, 244], 'harbor'], sp: [[50, 40], 'skyport'], fr: [[70, 150], 'fringe'], med: [[470, 262], 'downtown'],
+      s1: [[756, 106], 'spire'], s2: [[790, 128], 'spire'],
+    };
+    const KIND: Record<string, { col: string; n: string }> = {
+      taxi: { col: '255,210,90', n: 'SKY TAXI' }, patrol: { col: RED, n: 'REGISTRY PATROL' }, drone: { col: '160,200,255', n: 'DELIVERY DRONES' },
+      corp: { col: '235,235,255', n: 'CORPORATE SHUTTLE' }, cargo: { col: O, n: 'CARGO' }, medic: { col: '120,255,140', n: 'MEDEVAC' },
+    };
+    const ROUTES: [string, string[]][] = [
+      ['taxi', ['dt', 'ga']], ['taxi', ['ga', 'ha']], ['taxi', ['dt', 'mk']], ['taxi', ['ha', 'dt']],
+      ['patrol', ['reg', 'dt', 'mk', 'reg']], ['patrol', ['reg', 'ga', 'ha', 'reg']],
+      ['drone', ['hub', 'dt']], ['drone', ['hub', 'mk']], ['drone', ['hub', 'ha']], ['drone', ['hub', 'ga']],
+      ['corp', ['ga', 's1']], ['corp', ['reg', 's2']], ['corp', ['sp', 's2']], ['cargo', ['ha', 'fr']], ['medic', ['med', 'dt']],
+    ];
+    const used = new Set<string>();
+    ROUTES.forEach(([kind, stops], ri) => {
+      if (stops.some((s) => !shows(SPOT[s][1], st))) return;
+      const K = KIND[kind], bend = (kind === 'cargo' ? 10 : kind === 'corp' ? 40 : 24) + (ri % 3) * 6;
+      used.add(kind);
+      for (let s = 0; s < stops.length - 1; s++) {
+        const [a0, b0] = tiltOrFlat(m.flat, SPOT[stops[s]][0]), [a1, b1] = tiltOrFlat(m.flat, SPOT[stops[s + 1]][0]), mx = (a0 + a1) / 2, my = (b0 + b1) / 2 - bend;
+        const at = (g: number): Pt => { const sx = (1 - g) * (1 - g) * a0 + 2 * (1 - g) * g * mx + g * g * a1, sy = (1 - g) * (1 - g) * b0 + 2 * (1 - g) * g * my + g * g * b1; return [c.ox + sx * c.s, c.oy + sy * c.s]; };
+        x.strokeStyle = rgba(K.col, kind === 'drone' ? 0.25 : 0.4); x.lineWidth = kind === 'cargo' ? 1.6 : 1; x.setLineDash(kind === 'patrol' ? [5, 3] : kind === 'drone' ? [1, 3] : [3, 3]);
+        x.beginPath(); for (let g = 0; g <= 1.001; g += 0.05) { const [p, q] = at(g); if (g) x.lineTo(p, q); else x.moveTo(p, q); } x.stroke(); x.setLineDash([]);
+        const n = kind === 'drone' ? 4 : 1, speed = kind === 'cargo' ? 0.0007 : kind === 'drone' ? 0.004 : kind === 'patrol' ? 0.0022 : 0.003;
+        for (let i = 0; i < n; i++) {
+          const [p, q] = at(pingPong(t * speed + i / n + ri * 0.13)), sz = kind === 'cargo' ? 3.5 : kind === 'drone' ? 1.5 : 2.5;
+          x.fillStyle = rgba(K.col, 1); x.fillRect(p - sz / 2, q - sz / 2, sz, sz);
+          if (kind === 'patrol' && !still && Math.floor(t / 6) % 2) { x.fillStyle = 'rgba(80,120,255,1)'; x.fillRect(p + sz / 2, q - sz / 2, 1.5, 1.5); }
+        }
+      }
+    });
+    for (const k of ['taxi', 'patrol', 'drone', 'corp', 'cargo', 'medic']) if (used.has(k)) legend.push([KIND[k].n, KIND[k].col, 3, []]);
+    // the Spire's restricted airspace (a landmark: always)
+    const [ia, ib] = V(ISLE.x, ISLE.y);
+    x.strokeStyle = 'rgba(235,235,255,.55)'; x.lineWidth = 1; x.setLineDash([3, 3]);
+    for (const rr of [34, 46]) { x.beginPath(); x.ellipse(ia, ib, rr * c.s * (m.flat ? 1 : 0.9), rr * c.s * (m.flat ? 1 : 0.6), 0, 0, 7); x.stroke(); }
+    x.setLineDash([]);
+    plate(x, 'RESTRICTED AIRSPACE', ia, ib + 46 * c.s * (m.flat ? 1 : 0.6) + 9, 'rgba(235,235,255,.8)', 7);
+    // the stands: the ones you have stood at (in taxi mode, all of them: cyan, to pick)
+    const pick = taxi ? STAND_IDS[m.index] : null, from = standOf(st.scene);
+    if (taxi && pick && from && pick !== from) {
+      const [a0, b0] = V(...PAD_MAP[from]), [a1, b1] = V(...PAD_MAP[pick]), mx = (a0 + a1) / 2, my = Math.min(b0, b1) - 26;
+      x.strokeStyle = 'rgba(' + C + ',' + (blink ? 0.9 : 0.6) + ')'; x.lineWidth = 1.5; x.setLineDash([3, 2]); x.beginPath(); x.moveTo(a0, b0); x.quadraticCurveTo(mx, my, a1, b1); x.stroke(); x.setLineDash([]);
+    }
+    STAND_IDS.forEach((s, i) => {
+      if (!taxi && !st.seen(STANDS[s].scene)) return;
+      const [a, b] = V(...PAD_MAP[s]), sel = taxi && m.index === i, hov = taxi && m.hover === i, shut = s === 'harbor' && !st.harborOpen;
+      const col = taxi ? (shut ? RED : C) : '255,190,110', r = Math.max(5, Math.min(9, c.s * 7));
+      x.fillStyle = '#060404'; x.beginPath(); x.arc(a, b, r, 0, 7); x.fill();
+      x.strokeStyle = rgba(col, sel ? (blink ? 1 : 0.55) : 0.85); x.lineWidth = 1.5; x.stroke();
+      text(x, 'H', a, b + 0.5, rgba(col, 0.95), 7, '600');
+      if (sel || hov) { x.strokeStyle = rgba(C, 0.9); x.lineWidth = 1; x.beginPath(); x.arc(a, b, r + 4, 0, 7); x.stroke(); }
+      plate(x, (st.seen(STANDS[s].scene) ? STANDS[s].name : '???') + (taxi && shut ? ' · CLOSED' : ''), a, b + r + 8, sel ? rgba(C, 0.95) : taxi && shut ? rgba(RED, 0.9) : rgba(PAPER, 0.85), 7);
+    });
+  } else if (layer === 'below') {
+    // LINE 0's tunnel, the canals (the one you can see from the street, and the culverts under it), the Undercity
+    const uc = DISTRICT_MAP.undercity.col, under = shows('undercity', st);
+    path(CANAL, rgba(uc, 0.7), lw(5, 2.5, 6));
+    if (under) {
+      for (const pts of [[[260, 300], [300, 200], [280, 100]], [[480, 300], [520, 360]], [[120, 296], [100, 220]], [[600, 320], [640, 240], [620, 200]]] as Pt[][]) path(pts, rgba(uc, 0.45), lw(3, 1.5, 4), [4, 3]);
+      // the arches along the canal, where the deleted live
+      for (let i = 0; i < 22; i++) { const [a, b] = along(CANAL, 0.04 + i * 0.042), [p, q] = V(a, b + 9); x.strokeStyle = rgba(uc, 0.35); x.lineWidth = 1; x.beginPath(); x.arc(p, q, Math.max(2, 3 * c.s), Math.PI, 0); x.stroke(); }
+    }
+    legend.push(['CANALS', uc, 3, []]);
+    if (lineOn) {
+      path([...LOOP_MAP, LOOP_MAP[0]], 'rgba(' + O + ',.6)', lw(6, 3, 7));
+      legend.unshift(["LINE 0'S TUNNEL", O, 3, []]);
+      for (const s of Object.keys(STATIONS) as Station[]) roundel(STATION_MAP[s], 'rgba(' + O + ',.8)', lw(5, 3, 6), false);
+    }
+    if (under) legend.push(['UNDERCITY', uc, 2, [4, 3]]);
+    const [la, lb] = V(...DISTRICT_MAP.undercity.label);
+    plate(x, districtName('undercity', st), la, lb, under ? rgba(uc, 0.95) : rgba(PAPER, 0.45), 9, rgba(uc, under ? 0.6 : 0.25));
+  }
+
+  // the ways between districts you have seen (street layer): the market gate green or red, the shore path
+  if (layer === 'street') for (const l of LINKS) {
+    if (!linkKnown(l, st.seen)) continue;
+    if (l.state === 'gate') {
+      const [a, b] = V((l.path[0][0] + l.path[1][0]) / 2, (l.path[0][1] + l.path[1][1]) / 2), s = Math.max(3, c.s * 4);
+      x.fillStyle = '#060404'; x.fillRect(Math.round(a - s / 2) - 1, Math.round(b - s * 1.4) - 1, Math.round(s) + 2, Math.round(s * 2.8) + 2);
+      x.fillStyle = st.gateOpen ? 'rgba(' + GREEN + ',.95)' : 'rgba(' + RED + ',.9)'; x.fillRect(Math.round(a - s / 2), Math.round(b - s * 1.4), Math.round(s), Math.round(s * 2.8));
+    } else path(l.path, 'rgba(' + PAPER + ',.55)', 1.2, [3, 2]);
+  }
+
+  if (c.s > 1.1 && layer === 'street') {
+    x.save(); x.globalAlpha = Math.min(1, (c.s - 1.1) * 3);
+    for (const A of plan().avenues) {
+      if (A.d !== did || lookOf(A.d, st) !== 'lit' || A.pts.length < 6) continue;
+      const name = A.name;
+      const mid = A.pts[Math.floor(A.pts.length / 2)], [a, b] = V(...mid);
+      if (!inBox(L.focus, a, b)) continue;
+      text(x, name, a, b - 6, 'rgba(' + PAPER + ',.6)', 7, '600');
+    }
+    x.restore();
+  }
+
+  // the places you know of (street layer, city view): small pins, bright where you have been
+  if (f < 1 && !taxi && layer === 'street') {
+    x.save(); x.globalAlpha = 1 - f;
+    for (const q of allKnown(st)) {
+      const [a, b] = V(...q.pt), vis = seenPlace(q, st.seen);
+      x.fillStyle = '#050302'; x.fillRect(Math.round(a) - 2, Math.round(b) - 2, 5, 5);
+      x.fillStyle = vis ? 'rgba(' + PAPER + ',.9)' : 'rgba(' + PAPER + ',.4)'; x.fillRect(Math.round(a) - 1, Math.round(b) - 1, 3, 3);
+    }
+    const tp = m.tip >= 0 ? mapPlaceById(m.tip) : null;
+    if (tp && placeKnown(tp, st.seen)) { const [a, b] = V(...tp.pt); plate(x, tp.name, a, b - 10, 'rgba(' + PAPER + ',.95)', 7, 'rgba(' + O + ',.6)'); }
+    x.restore();
+  }
+
+  // the district view: the rest of the city dims, the places hang on pins (any layer)
   const ps = placesOf(st), boxes = cards(L, ps.length);
   if (f > 0) {
-    const r = DISTRICT_MAP[did], [a, b] = toView(c, r.x, r.y), w = r.w * c.s, h = r.h * c.s;
-    x.fillStyle = 'rgba(2,1,0,' + 0.7 * f + ')';
+    const r = districtBox(did, m.flat), a = c.ox + r.x * c.s, b = c.oy + r.y * c.s, w = r.w * c.s, h = r.h * c.s;
+    x.fillStyle = 'rgba(2,1,0,' + 0.6 * f + ')';
     x.fillRect(L.area.x, L.area.y, L.area.w, b - L.area.y); x.fillRect(L.area.x, b + h, L.area.w, L.area.y + L.area.h - b - h);
     x.fillRect(L.area.x, b, a - L.area.x, h); x.fillRect(a + w, b, L.area.x + L.area.w - a - w, h);
-    x.strokeStyle = 'rgba(' + O + ',' + 0.5 * f + ')'; x.setLineDash([4, 3]); x.strokeRect(Math.round(a) + 0.5, Math.round(b) + 0.5, Math.round(w), Math.round(h)); x.setLineDash([]);
+    x.strokeStyle = 'rgba(' + O + ',' + 0.5 * f + ')'; x.lineWidth = 1; x.setLineDash([4, 3]); x.strokeRect(Math.round(a) + 0.5, Math.round(b) + 0.5, Math.round(w), Math.round(h)); x.setLineDash([]);
     // the ways out of this district, named where they leave it
     if (f > 0.7) for (const l of LINKS) {
       if ((l.from !== did && l.to !== did) || l.from === l.to || !linkKnown(l, st.seen)) continue;
-      const [lx, ly] = l.path[Math.floor(l.path.length / 2)], [va, vb] = toView(c, lx, ly);
-      if (vb > L.focus.y + L.focus.h - 4 || vb < L.focus.y + 4) continue;
-      const label = l.name + (l.state === 'gate' ? (st.gateOpen ? ' · OPEN' : ' · SHUT') : '');
-      const tw = label.length * 4.3 + 6, tx = Math.max(L.area.x + tw / 2 + 2, Math.min(L.area.x + L.area.w - tw / 2 - 2, va));
-      x.fillStyle = 'rgba(4,2,1,.85)'; x.fillRect(Math.round(tx - tw / 2), Math.round(vb - 5), Math.round(tw), 10);
-      text(x, label, tx, vb, 'rgba(' + PAPER + ',.8)', 7);
+      const [lx, ly] = l.path[Math.floor(l.path.length / 2)], [va, vb] = V(lx, ly);
+      if (!inBox(L.focus, va, vb)) continue;
+      plate(x, l.name + (l.state === 'gate' ? (st.gateOpen ? ' · OPEN' : ' · SHUT') : ''), va, vb + 12, 'rgba(' + PAPER + ',.85)', 7);
     }
   }
   x.restore();
@@ -566,22 +957,23 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     const a0 = Math.min(1, (f - 0.4) / 0.4);
     x.save(); x.globalAlpha = a0;
     ps.forEach((q, i) => {
-      const look = placeLook(q, st), [px, py] = toView(c, ...q.pt), b = boxes[i], sel = m.index === i, hov = m.hover === i;
+      const look = placeLook(q, st), [px, py] = V(...q.pt), b = boxes[i], sel = m.index === i, hov = m.hover === i;
       const cx = Math.round(px), cy = Math.round(py);
       // a leader from the pin down to its card
-      x.strokeStyle = sel ? look.col : 'rgba(' + PAPER + ',.22)'; x.beginPath(); x.moveTo(cx + 0.5, cy + 4); x.lineTo(cx + 0.5, Math.min(cy + 10, b.y - 4)); x.lineTo(b.x + b.w / 2 + 0.5, b.y - 1); x.stroke();
+      x.strokeStyle = sel ? look.col : 'rgba(' + PAPER + ',.22)'; x.lineWidth = 1; x.beginPath(); x.moveTo(cx + 0.5, cy + 4); x.lineTo(cx + 0.5, Math.min(cy + 10, b.y - 4)); x.lineTo(b.x + b.w / 2 + 0.5, b.y - 1); x.stroke();
       // the pin
       x.fillStyle = '#050302'; x.fillRect(cx - 4, cy - 4, 9, 9);
       x.strokeStyle = look.col; x.strokeRect(cx - 3.5, cy - 3.5, 8, 8);
       x.fillStyle = look.col; x.fillRect(cx - 1, cy - 1, 3, 3);
       if (sel) { x.strokeStyle = look.go ? 'rgba(' + C + ',' + (blink ? 1 : 0.5) + ')' : 'rgba(' + PAPER + ',' + (blink ? 0.9 : 0.4) + ')'; x.strokeRect(cx - 7.5, cy - 7.5, 16, 16); }
-      if (look.here) text(x, 'YOU', cx, cy - 12, blink ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,.6)', 7, '600');
+      if (sel || hov) plate(x, look.name, cx, cy - 16, look.col, 7);
+      else if (look.here) text(x, 'YOU', cx, cy - 12, blink ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,.6)', 7, '600');
       // its card
       x.fillStyle = sel ? '#0b0705' : '#070403'; x.fillRect(b.x, b.y, b.w, b.h);
       x.strokeStyle = sel ? look.col : hov ? 'rgba(' + PAPER + ',.6)' : 'rgba(' + O + ',.45)'; x.strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
       if (sel && look.go && blink) { x.strokeStyle = 'rgba(' + C + ',.5)'; x.strokeRect(b.x - 1.5, b.y - 1.5, b.w + 3, b.h + 3); }
       text(x, look.name, b.x + b.w / 2, b.y + b.h / 2 - 5, look.col, 7, '600');
-      text(x, look.note, b.x + b.w / 2, b.y + b.h / 2 + 6, look.go ? 'rgba(' + C + ',.7)' : look.note === 'GATE SHUT' || look.note === 'NOT WHILE MOVING' ? 'rgba(' + RED + ',.85)' : 'rgba(' + PAPER + ',.5)', 7);
+      text(x, look.note, b.x + b.w / 2, b.y + b.h / 2 + 6, look.go ? 'rgba(' + C + ',.7)' : ['GATE SHUT', 'NOT WHILE MOVING', 'CLOSED'].includes(look.note) ? 'rgba(' + RED + ',.85)' : 'rgba(' + PAPER + ',.5)', 7);
     });
     // back to the city
     const bk = L.back;
@@ -591,48 +983,62 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     x.restore();
   }
 
-  // the city view: each district's name tag, and the one picked
-  if (f < 1) {
+  // the district picked (city view): its frame's corners, cyan if it opens, red if not
+  if (f < 1 && !taxi) {
     x.save(); x.globalAlpha = 1 - f;
-    // (in taxi mode the stands' names take their place)
-    if (!taxi) DIDS.forEach((d) => {
-      const r = DISTRICT_MAP[d], known = districtStage(d, st) !== 'unknown', name = districtName(d, st);
-      const [a, b] = toView(c, ...r.label), tw = name.length * 4.4 + 8;
-      x.fillStyle = '#060302'; x.fillRect(Math.round(a - tw / 2), Math.round(b - 5), Math.round(tw), 11);
-      x.strokeStyle = 'rgba(' + O + ',' + (known ? 0.7 : 0.3) + ')'; x.strokeRect(Math.round(a - tw / 2) + 0.5, Math.round(b - 5) + 0.5, Math.round(tw) - 1, 10);
-      text(x, name, a, b + 0.5, known ? 'rgba(' + PAPER + ',.95)' : 'rgba(' + PAPER + ',.45)', 7, '600');
-    });
-    if (!taxi) {
-      const mark = (i: number, col: string, corners: boolean) => {
-        const r = DISTRICT_MAP[DIDS[i]], [a, b] = toView(c, r.x, r.y), w = Math.round(r.w * c.s), h = Math.round(r.h * c.s), A = Math.round(a) - 2.5, B = Math.round(b) - 2.5;
-        x.strokeStyle = col;
-        if (!corners) { x.strokeRect(A, B, w + 4, h + 4); return; }
-        const k = 7; x.beginPath();
-        for (const [px, py, sx, sy] of [[A, B, 1, 1], [A + w + 4, B, -1, 1], [A, B + h + 4, 1, -1], [A + w + 4, B + h + 4, -1, -1]]) { x.moveTo(px + sx * k, py); x.lineTo(px, py); x.lineTo(px, py + sy * k); }
-        x.lineWidth = 2; x.stroke(); x.lineWidth = 1;
-      };
-      if (m.hover >= 0 && m.hover !== m.district) mark(m.hover, 'rgba(' + PAPER + ',.4)', false);
-      const open = placesOf(st).length > 0;
-      mark(m.district, open ? 'rgba(' + C + ',' + (blink ? 1 : 0.6) + ')' : 'rgba(' + RED + ',' + (blink ? 0.8 : 0.4) + ')', true);
-    }
+    const mark = (i: number, col: string, corners: boolean) => {
+      const r = districtBox(DIDS[i], m.flat), A = Math.round(c.ox + r.x * c.s) - 2.5, B = Math.round(c.oy + r.y * c.s) - 2.5, w = Math.round(r.w * c.s) + 4, h = Math.round(r.h * c.s) + 4;
+      x.strokeStyle = col;
+      if (!corners) { x.lineWidth = 1; x.setLineDash([3, 3]); x.strokeRect(A, B, w, h); x.setLineDash([]); return; }
+      const k = 7; x.beginPath();
+      for (const [px, py, sx, sy] of [[A, B, 1, 1], [A + w, B, -1, 1], [A, B + h, 1, -1], [A + w, B + h, -1, -1]]) { x.moveTo(px + sx * k, py); x.lineTo(px, py); x.lineTo(px, py + sy * k); }
+      x.lineWidth = 2; x.stroke(); x.lineWidth = 1;
+    };
+    x.beginPath(); x.rect(L.area.x, L.area.y, L.area.w, L.area.h); x.clip();
+    if (m.hover >= 0 && m.hover !== m.district) mark(m.hover, 'rgba(' + PAPER + ',.4)', false);
+    const open = placesOf(st).length > 0;
+    mark(m.district, open ? 'rgba(' + C + ',' + (blink ? 1 : 0.6) + ')' : 'rgba(' + RED + ',' + (blink ? 0.8 : 0.4) + ')', true);
     x.restore();
   }
 
   // the train while you ride, and you
-  if (st.ride) {
-    const [a, b] = toView(c, ...trainPoint(st.ride));
-    x.fillStyle = 'rgba(' + PAPER + ',.95)'; x.fillRect(Math.round(a) - 6, Math.round(b) - 2, 12, 4);
-  }
+  if (st.ride) { const [a, b] = V(...trainPoint(st.ride)); x.fillStyle = 'rgba(' + PAPER + ',.95)'; x.fillRect(Math.round(a) - 5, Math.round(b) - 3, 10, 6); }
   const you = youPoint(st);
   if (you && (f < 0.5 || st.ride || taxi)) {
-    const [a, b] = toView(c, ...you), hx = Math.round(a), hy = Math.round(b);
-    x.fillStyle = blink ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,.35)'; x.fillRect(hx - 2, hy - 2, 5, 5);
-    if (blink) { x.strokeStyle = 'rgba(255,255,255,.6)'; x.strokeRect(hx - 5.5, hy - 5.5, 11, 11); }
-    x.fillStyle = 'rgba(4,2,1,.8)'; x.fillRect(hx + 7, hy - 5, 17, 10);
-    text(x, 'YOU', hx + 8, hy, 'rgba(255,255,255,.9)', 7, '600', 'left');
+    const [a, b] = V(...you), hx = Math.round(a), hy = Math.round(b);
+    if (!still) { const rr = 6 + ((st.t * 0.08) % 6); x.strokeStyle = 'rgba(255,255,255,' + (0.8 - (rr - 6) / 8).toFixed(2) + ')'; x.lineWidth = 1; x.beginPath(); x.arc(hx, hy, rr, 0, 7); x.stroke(); }
+    x.fillStyle = blink ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,.4)'; x.fillRect(hx - 2, hy - 2, 5, 5);
+    // (left of you where the layer labels its stops on the right)
+    if (layer === 'street') plate(x, 'YOU', hx + 9, hy - 6, 'rgba(255,255,255,.95)', 7, null, 'left');
+    else plate(x, 'YOU', hx - 9, hy - 6, 'rgba(255,255,255,.95)', 7, null, 'right');
   }
 
-  if (L.sheet && f < 1) { x.save(); x.globalAlpha = 1 - f; drawSheet(x, L.sheet, st); x.restore(); }
+  // the legend of the layer (city view), bottom right
+  if (f < 0.5 && legend.length && layer !== 'street') {
+    const seen = new Set<string>(), rows = legend.filter(([n]) => (seen.has(n) ? false : (seen.add(n), true)));
+    x.font = '600 7px "IBM Plex Mono", monospace';
+    const w = Math.max(...rows.map(([n]) => x.measureText(n).width)) + 30, h = rows.length * 10 + 6;
+    // tilted: in the sky under the tabs; flat: the sea's corner, top right
+    const lx = m.flat ? L.area.x + L.area.w - w - 4 : L.area.x + 4, ly = m.flat ? L.area.y + 4 : (L.tabs[0] ? L.tabs[0].y + L.tabs[0].h + 6 : L.area.y + 4);
+    x.save(); x.globalAlpha = 1 - f * 2;
+    x.fillStyle = 'rgba(6,4,3,.85)'; x.fillRect(lx, ly, w, h); x.strokeStyle = 'rgba(' + O + ',.4)'; x.strokeRect(lx + 0.5, ly + 0.5, w - 1, h - 1);
+    rows.forEach(([n, col, wd, dash], i) => {
+      const ry = ly + 8 + i * 10;
+      if (wd < 0) { x.strokeStyle = '#fff'; x.lineWidth = 1.5; x.beginPath(); x.arc(lx + 12, ry, 3, 0, 7); x.stroke(); }
+      else { x.strokeStyle = rgba(col, 0.95); x.lineWidth = Math.max(1, wd); x.setLineDash(dash); x.beginPath(); x.moveTo(lx + 5, ry); x.lineTo(lx + 19, ry); x.stroke(); x.setLineDash([]); }
+      text(x, n, lx + 24, ry + 0.5, 'rgba(' + PAPER + ',.75)', 7, '', 'left');
+    });
+    x.restore();
+  }
+
+  // ---- the tabs: the layers, and TILT / FLAT
+  L.tabs.forEach((b, i) => {
+    const isLayer = i < LAYERS.length, on = isLayer ? LAYERS[i] === layer : m.flat, label = isLayer ? LAYER_NAME[LAYERS[i]] : m.flat ? 'FLAT' : 'TILT';
+    x.fillStyle = on ? 'rgba(40,20,6,.95)' : 'rgba(6,4,3,.88)'; x.fillRect(b.x, b.y, b.w, b.h);
+    x.strokeStyle = on ? 'rgba(' + O + ',.95)' : 'rgba(' + O + ',.4)'; x.lineWidth = 1; x.strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
+    if (on && isLayer) { x.fillStyle = 'rgba(' + O + ',.95)'; x.fillRect(b.x + 3, b.y + b.h - 3, b.w - 6, 1.5); }
+    text(x, label, b.x + b.w / 2, b.y + b.h / 2, on ? 'rgba(' + PAPER + ',.95)' : 'rgba(' + PAPER + ',.6)', 7, '600');
+  });
 
   // ---- the header
   const hy = L.panel.y + 9;
@@ -640,15 +1046,8 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
   text(x, title, L.panel.x + 7, hy, 'rgba(' + O + ',.95)', 9, '600', 'left');
   const sub = taxi ? 'SKY TAXI · ' + FARE + ' TOKEN A RIDE · TOKENS ' + st.tokens
     : st.ride ? (st.ride.f > 0 ? 'LINE 0 · NEXT: ' + STATIONS[st.ride.to].name : 'LINE 0 · AT ' + STATIONS[st.ride.from].name)
-    : 'CROSS-SECTION · NOT TO SCALE';
+    : { street: 'STREET PLAN · NOT TO SCALE', metro: 'METRO', above: 'ABOVE · AIR TRAFFIC', below: 'BELOW · TUNNELS AND CANALS' }[layer];
   text(x, sub, L.panel.x + L.panel.w - 7, hy, 'rgba(' + PAPER + ',.7)', 7, '', 'right');
-  // the strata, in the margin
-  x.save(); x.beginPath(); x.rect(L.area.x, L.area.y, L.area.w, L.area.h); x.clip();
-  if (f < 1) for (const k of Object.keys(STRATA) as Stratum[]) {
-    if (!stratumShown(k, st)) continue;
-    const [a, b] = toView(c, 2, STRATA[k].top + 5); text(x, STRATA[k].label, a, b, 'rgba(' + O + ',' + 0.55 * (1 - f) + ')', 7, '', 'left');
-  }
-  x.restore();
 
   // ---- the footer: what is picked, and the keys
   const fy = L.foot + 8, fx = L.footX, fr = L.panel.x + L.panel.w - 7;
@@ -656,7 +1055,7 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
   const keys = (s: string) => text(x, s, fr, fy + 11, 'rgba(' + PAPER + ',.6)', 7, '', 'right');
   if (taxi) {
     const s = STAND_IDS[m.index], name = st.seen(STANDS[s].scene) ? STANDS[s].name : '???';
-    text(x, '> ' + name + (standOf(st.scene) === s ? '  (YOU ARE HERE)' : ''), fx, fy, 'rgba(' + C + ',.95)', 9, '600', 'left');
+    text(x, '> ' + name + (standOf(st.scene) === s ? '  (YOU ARE HERE)' : s === 'harbor' && !st.harborOpen ? '  (CLOSED)' : ''), fx, fy, 'rgba(' + C + ',.95)', 9, '600', 'left');
     keys(st.touch ? 'TAP A PAD · TAP AGAIN TO FLY · TAP OUTSIDE TO CANCEL' : '<- -> CHOOSE · E FLY · ESC CANCEL');
   } else if (m.zoomed) {
     const i = m.hover >= 0 ? m.hover : m.index, q = ps[i];
@@ -665,7 +1064,7 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
       text(x, '> ' + look.name, fx, fy, look.col, 9, '600', 'left');
       text(x, why || (st.touch ? (i === m.index ? 'TAP AGAIN TO GO' : 'TAP TO PICK') : 'E · CLICK  GO THERE'), fr, fy, why ? (look.here ? 'rgba(255,255,255,.8)' : 'rgba(' + RED + ',.9)') : 'rgba(' + C + ',.9)', 7, '600', 'right');
     }
-    keys(st.touch ? 'TAP A PLACE · < CITY OR TAP OUTSIDE: BACK' : '<- -> PICK · E GO · ESC BACK · TAB / M CLOSE');
+    keys(st.touch ? 'TAP A PLACE · < CITY OR TAP OUTSIDE: BACK' : '<- -> PICK · E GO · 1-4 LAYER · ESC BACK · TAB / M CLOSE');
   } else {
     const i = m.hover >= 0 ? m.hover : m.district, d = DIDS[i], stage = districtStage(d, st), all = knownPlaces(d, st.seen);
     const n = all.filter((q) => seenPlace(q, st.seen)).length;
@@ -673,75 +1072,11 @@ function drawMap(x: CanvasRenderingContext2D, vw: number, vh: number, st: MapSta
     // the count is of the places you know of: the map never tells you how many there are
     const state = stage === 'unknown' ? 'NO RECORD' : all.length ? n + ' OF ' + all.length + ' KNOWN PLACES VISITED' : districtPlaces(d).length ? 'NOT VISITED' : 'NO ACCESS';
     text(x, state, fr, fy, state === 'NO ACCESS' ? 'rgba(' + RED + ',.9)' : 'rgba(' + PAPER + ',.75)', 7, '600', 'right');
-    // the legend
-    const ly = fy + 11;
-    x.fillStyle = 'rgba(' + O + ',.85)'; x.fillRect(fx, ly, 10, 1);
-    text(x, 'OPEN', fx + 13, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
-    x.fillStyle = 'rgba(255,255,255,.9)'; x.fillRect(fx + 38, ly - 2, 4, 4);
-    text(x, 'YOU', fx + 45, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
-    text(x, '??? NO RECORD', fx + 66, ly, 'rgba(' + PAPER + ',.6)', 7, '', 'left');
-    if (vw > 420) keys(st.touch ? 'TAP A DISTRICT · TAP OUTSIDE TO CLOSE' : 'ARROWS PICK · E OPEN · TAB / M CLOSE');
+    text(x, stage === 'known' ? DISTRICT_MAP[d].note : stage === 'heard' ? 'NOT VISITED' : '???  NO RECORD', fx, fy + 11, 'rgba(' + PAPER + ',.5)', 7, '', 'left');
+    if (vw > 420) keys(st.touch ? 'TAP A DISTRICT · TAP A TAB · TAP OUTSIDE TO CLOSE' : 'ARROWS PICK · E OPEN · 1-4 LAYER · T TILT · TAB / M CLOSE');
   }
   x.restore();
 }
 
-/**
- * The title block beside the city view, as on a drawing: the district picked (or under the mouse),
- * its stratum and character, its places, its ways out. Taxi mode: the stands and the fare.
- */
-function drawSheet(x: CanvasRenderingContext2D, b: Box, st: MapState) {
-  const m = st.view, lx = b.x + 8, rx = b.x + b.w - 8;
-  x.fillStyle = '#060302'; x.fillRect(b.x, b.y, b.w, b.h);
-  x.strokeStyle = 'rgba(' + O + ',.6)'; x.strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
-  let y = b.y + 10;
-  const rule = () => { x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(b.x + 4, y - 4, b.w - 8, 1); y += 5; };
-  const row = (s: string, col: string, size = 7, weight = '', right?: string, rcol?: string) => {
-    if (y > b.y + b.h - 6) return;
-    text(x, s, lx, y, col, size, weight, 'left');
-    if (right) text(x, right, rx, y, rcol ?? col, 7, '', 'right');
-    y += size + 4;
-  };
-  if (m.mode === 'taxi') {
-    row('SKY TAXI', 'rgba(' + O + ',.9)', 7, '600');
-    row('FARE', 'rgba(' + PAPER + ',.6)', 7, '', FARE + ' TOKEN');
-    row('TOKENS', 'rgba(' + PAPER + ',.6)', 7, '', String(st.tokens));
-    rule();
-    STAND_IDS.forEach((s, i) => {
-      const here = standOf(st.scene) === s, name = st.seen(STANDS[s].scene) ? STANDS[s].name : '???';
-      const shut = s === 'harbor' && !st.harborOpen; // the harbor lock (P14)
-      row((i === m.index ? '> ' : '  ') + name, i === m.index ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.7)', 7, '600', here ? 'YOU' : shut ? 'CLOSED' : '', shut && !here ? 'rgba(' + RED + ',.85)' : 'rgba(255,255,255,.9)');
-    });
-    return;
-  }
-  const i = m.hover >= 0 ? m.hover : m.district, d = DIDS[i], dm = DISTRICT_MAP[d], stage = districtStage(d, st);
-  const stratum = DISTRICTS[i].stratum;
-  row('DISTRICT ' + (i + 1) + ' OF ' + DIDS.length, 'rgba(' + O + ',.7)');
-  row(districtName(d, st, true), stage !== 'unknown' ? 'rgba(' + PAPER + ',.95)' : 'rgba(' + PAPER + ',.5)', 9, '600');
-  row(stratumShown(stratum, st) ? STRATA[stratum].label : '???', 'rgba(' + O + ',.7)');
-  row(stage === 'known' ? dm.note : stage === 'heard' ? 'NOT VISITED' : 'NO RECORD', 'rgba(' + PAPER + ',.6)');
-  rule();
-  // only the places you know of, and only the ways you have seen
-  const ps = knownPlaces(d, st.seen);
-  if (ps.length) {
-    row('PLACES', 'rgba(' + O + ',.8)', 7, '600', ps.filter((q) => seenPlace(q, st.seen)).length + ' / ' + ps.length + ' VISITED', 'rgba(' + PAPER + ',.6)');
-    for (const q of ps) {
-      const look = placeLook(q, st);
-      row('  ' + look.name, look.col, 7, '', look.here ? 'YOU' : look.note === 'GATE SHUT' ? 'SHUT' : '', look.here ? 'rgba(255,255,255,.9)' : 'rgba(' + RED + ',.85)');
-    }
-  } else {
-    const none = stage === 'unknown' ? 'NO RECORD' : districtPlaces(d).length ? 'NONE KNOWN' : 'NO ACCESS';
-    row('PLACES', 'rgba(' + O + ',.8)', 7, '600', none, none === 'NO ACCESS' ? 'rgba(' + RED + ',.85)' : 'rgba(' + PAPER + ',.5)');
-  }
-  rule();
-  row('WAYS', 'rgba(' + O + ',.8)', 7, '600');
-  const ways: [string, string, string][] = [];
-  if ((Object.keys(STATIONS) as Station[]).some((s) => placeOf(STATIONS[s].scene).district === d && stationKnown(s, st.seen))) ways.push(['LINE 0', 'METRO', 'rgba(' + PAPER + ',.6)']);
-  if (STAND_IDS.some((s) => placeOf(STANDS[s].scene).district === d && st.seen(STANDS[s].scene))) ways.push(['SKY TAXI', 'STAND', 'rgba(' + PAPER + ',.6)']);
-  for (const l of LINKS) {
-    if ((l.from !== d && l.to !== d) || l.from === l.to || !linkKnown(l, st.seen)) continue;
-    const open = l.state === 'open' || (l.state === 'gate' && st.gateOpen);
-    ways.push([l.name, open ? 'OPEN' : 'SHUT', l.state === 'gate' ? (open ? 'rgba(' + GREEN + ',.9)' : 'rgba(' + RED + ',.85)') : 'rgba(' + PAPER + ',.6)']);
-  }
-  if (!ways.length) row('  NONE KNOWN', 'rgba(' + PAPER + ',.5)');
-  for (const [name, state, col] of ways) row('  ' + name, 'rgba(' + PAPER + ',.7)', 7, '', state, col);
-}
+/** Plan → sheet, for the layer drawings that bend their own curves. */
+const tiltOrFlat = (flat: boolean, p: Pt): Pt => projOf(flat)(p[0], p[1]);

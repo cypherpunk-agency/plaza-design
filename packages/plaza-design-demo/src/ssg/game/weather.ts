@@ -51,6 +51,8 @@ export const CLIMATES: Record<Climate, ClimateDef> = {
   spire: { name: 'THE SPIRE', weights: { clear: 1 }, fixed: 'clear', note: 'CLEAR. ABOVE THE WEATHER.' },
   undercity: { name: 'UNDERCITY', weights: { rain: 1 }, fixed: 'rain', note: 'WET. DRAINAGE AT CAPACITY.' },
   fringe: { name: 'THE FRINGE', weights: { smog: 3, heat: 2, clear: 2, cloudy: 1, rain: 0.5 } },
+  oldq: { name: 'OLD QUARTER', weights: { fog: 3, rain: 3, cloudy: 3, clear: 1, storm: 0.5 } },
+  skyport: { name: 'SKYPORT', weights: { clear: 3, heat: 3, smog: 1, cloudy: 1, storm: 0.5 } },
 };
 export const CLIMATE_IDS = Object.keys(CLIMATES) as Climate[];
 

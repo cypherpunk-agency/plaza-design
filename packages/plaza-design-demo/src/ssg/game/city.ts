@@ -1,7 +1,7 @@
 /**
  * The city (CITY.md, the source of truth): city → district → place → scene.
  *
- * - `DISTRICTS`: the seven districts, each on its stratum (the Spire over the
+ * - `DISTRICTS`: the nine districts, each on its stratum (the Spire over the
  *   street, the Undercity under it).
  * - `PLACES`: every place that exists now, in its district, with its entrance
  *   scene (where quick travel lands, at its exit `at`). A place has one scene or
@@ -11,9 +11,10 @@
  *
  * Then how you travel through it: Downtown's doors, the metro line (a loop:
  * Downtown, Galleria, Harbor), the sky-taxi stands, and the map's data: each
- * district's block on the city's cross-section (`DISTRICT_MAP`, in its stratum's
- * band, `STRATA`), each place's point on it (`PLACE_MAP`), the stations and pads,
- * and the ways between districts (`LINKS`). citymap.ts draws the map from these
+ * district on the street plan (`DISTRICT_MAP`: where its streets grow from, its
+ * frame and colour), each place's point on it (`PLACE_MAP`), the stations, pads
+ * and LINE 0's loop, the lines not run yet (`LINES_PLANNED`) and the ways between
+ * districts (`LINKS`). cityplan.ts traces the streets, citymap.ts draws the map
  * (TAB or M, the CITY MAP kiosk, a taxi stand); quick travel on it goes to places.
  *
  * Canvas drawing only. Scenes you have been in are remembered in the save as
@@ -26,7 +27,7 @@ import { box, C, O, onScreen, PAPER, rng, sign, tell, text, type View } from './
 
 // ---------- the city: districts and places ----------
 
-/** The city is a cross-section: the Spire on top, the street in the middle, the Undercity below. */
+/** The city has three strata: the Spire above, the street, the Undercity below (the map's ABOVE and BELOW layers). */
 export type Stratum = 'overworld' | 'street' | 'underworld';
 
 export interface District {
@@ -37,15 +38,21 @@ export interface District {
   stratum: Stratum;
 }
 
-/** The seven districts, as CITY.md has them. */
+/**
+ * The nine districts, as CITY.md numbers them. The Old Quarter (along both banks of the canal) was
+ * split from the Neon Market (the market and the laundromat stay Neon Market); the Skyport and the
+ * Exclusion Zone lie north-west beyond the Fringe, behind a fence. Neither has a place yet.
+ */
 export const DISTRICTS = [
   { id: 'downtown', name: 'Downtown', short: 'DOWNTOWN', stratum: 'street' },
-  { id: 'market', name: 'Neon Market / Old Quarter', short: 'NEON MARKET', stratum: 'street' },
+  { id: 'oldq', name: 'Old Quarter', short: 'OLD QUARTER', stratum: 'street' },
+  { id: 'market', name: 'Neon Market', short: 'NEON MARKET', stratum: 'street' },
   { id: 'galleria', name: 'Galleria', short: 'GALLERIA', stratum: 'street' },
   { id: 'harbor', name: 'Harbor & Shore', short: 'HARBOR', stratum: 'street' },
   { id: 'spire', name: 'The Spire / Plaza Central', short: 'THE SPIRE', stratum: 'overworld' },
   { id: 'undercity', name: 'Undercity', short: 'UNDERCITY', stratum: 'underworld' },
   { id: 'fringe', name: 'The Fringe', short: 'THE FRINGE', stratum: 'street' },
+  { id: 'skyport', name: 'Skyport and the Exclusion Zone', short: 'SKYPORT', stratum: 'street' },
 ] as const satisfies readonly District[];
 export type DistrictId = (typeof DISTRICTS)[number]['id'];
 
@@ -196,91 +203,108 @@ export const HOP = 40;
 export const FLIGHT = 200;
 export const DRIVER_BROKE = ['One token a ride. You have the look of someone with zero.', 'Walking is free. Very popular with people like you.'];
 
-// ---------- the map: the city as a cross-section (CITY.md, "The map") ----------
+// ---------- the map: the street plan (CITY.md, "The map") ----------
 
 /**
- * The city map is a vertical cross-section, drawn by citymap.ts from the data here. Map units:
- * MAP_W × MAP_H, x runs west → east, y top → bottom. The street's ground is at `GROUND_Y`;
- * LINE 0 runs in its tunnel under the street; the Undercity lies under that.
+ * The city map is a street plan, drawn by citymap.ts (and traced by cityplan.ts) from the data
+ * here. Plan units: MAP_W × MAP_H, x runs west → east, y north → south. The sea lies east of the
+ * coast, the Spire stands on its island in the bay, the canal flows in from the west through the
+ * Old Quarter into the bay (cityplan.ts has the coast, the canal and the avenues). The map shows the
+ * plan tilted back by default (towers stand up), or flat.
  */
-export const MAP_W = 400, MAP_H = 232, GROUND_Y = 124;
+export const MAP_W = 844, MAP_H = 390;
 
-/** Each stratum's band on the section (map y, top and bottom) and the word in its margin. */
-export const STRATA: Record<Stratum, { label: string; top: number; bottom: number }> = {
-  overworld: { label: 'OVERWORLD', top: 0, bottom: 56 },
-  street: { label: 'STREET LEVEL', top: 56, bottom: 152 },
-  underworld: { label: 'UNDERWORLD', top: 152, bottom: MAP_H },
+/**
+ * Each district on the plan. `centre`: where its streets grow from (the land is shared out to the
+ * nearest centre: `districtAt` in cityplan.ts); null for the Spire (its island) and the Undercity
+ * (under everything). `sep`: how far apart its streets run. `dens`: how tall its towers stand (0..1).
+ * `col`: its colour (r,g,b), for washes and lit windows. `frame`: what the district view zooms to
+ * (x, y, w, h). `label`: where its name stands. `note`: the line the map gives it once you know it
+ * (CITY.md's character).
+ */
+export interface DistrictPlan { centre: [number, number] | null; sep: number; dens: number; col: string; frame: [number, number, number, number]; label: [number, number]; note: string }
+export const DISTRICT_MAP: Record<DistrictId, DistrictPlan> = {
+  downtown: { centre: [395, 205], sep: 11, dens: 1, col: '255,136,0', frame: [300, 132, 186, 140], label: [392, 126], note: 'WORKING CLASS · MIXED · RAIN' },
+  oldq: { centre: [300, 318], sep: 9, dens: 0.5, col: '214,150,96', frame: [150, 282, 330, 84], label: [318, 374], note: 'OLD TOWN · THE CANAL · AGEING' },
+  market: { centre: [230, 236], sep: 9, dens: 0.6, col: '232,84,206', frame: [168, 180, 134, 100], label: [234, 176], note: 'LOW INCOME · PACKED · LOW TECH' },
+  galleria: { centre: [560, 110], sep: 15, dens: 0.75, col: '96,206,222', frame: [486, 44, 156, 136], label: [560, 40], note: 'MIDDLE CLASS AND UP · RETAIL' },
+  harbor: { centre: [640, 290], sep: 17, dens: 0.45, col: '255,210,90', frame: [560, 200, 214, 172], label: [612, 206], note: 'INDUSTRY · LEISURE · WATER' },
+  spire: { centre: null, sep: 0, dens: 1, col: '170,225,235', frame: [728, 70, 84, 84], label: [770, 160], note: 'RESTRICTED · HIGH TECH · FEW PEOPLE' },
+  undercity: { centre: null, sep: 0, dens: 0, col: '90,200,190', frame: [60, 150, 680, 230], label: [440, 352], note: 'CANALS · SEWERS · UNREGISTERED' },
+  fringe: { centre: [90, 210], sep: 28, dens: 0.25, col: '120,120,134', frame: [8, 124, 158, 250], label: [86, 380], note: 'AUTOMATED · NO RESIDENTS' },
+  skyport: { centre: [48, 62], sep: 34, dens: 0.15, col: '170,190,210', frame: [6, 14, 96, 104], label: [54, 10], note: 'RESTRICTED · LAUNCHES · FENCED' },
 };
 
-/**
- * Each district's block on the section, in its stratum's band: where its silhouette stands,
- * what a tap on it hits and what the district view zooms to. `label`: the centre of its name tag.
- * `note`: the line the map's title block gives it once you have been there (CITY.md's character).
- * West to east on the street: the Fringe at the edge, the market, Downtown, the Galleria, the
- * harbor and its bay. The Spire's deck spans over the east, its foot stands in the bay; the
- * Undercity runs under all of it.
- */
-export const DISTRICT_MAP: Record<DistrictId, { x: number; y: number; w: number; h: number; label: [number, number]; note: string }> = {
-  fringe: { x: 4, y: 74, w: 54, h: 54, label: [34, 72], note: 'AUTOMATED · NO RESIDENTS' },
-  market: { x: 62, y: 92, w: 66, h: 36, label: [95, 87], note: 'LOW INCOME · PACKED · LOW TECH' },
-  downtown: { x: 132, y: 62, w: 94, h: 84, label: [156, 60], note: 'WORKING CLASS · MIXED · RAIN' },
-  galleria: { x: 230, y: 74, w: 60, h: 72, label: [246, 70], note: 'MIDDLE CLASS AND UP · RETAIL' },
-  harbor: { x: 294, y: 84, w: 104, h: 64, label: [312, 80], note: 'INDUSTRY · LEISURE · WATER' },
-  spire: { x: 196, y: 0, w: 190, h: 56, label: [300, 6], note: 'RESTRICTED · HIGH TECH · FEW PEOPLE' },
-  undercity: { x: 60, y: 156, w: 332, h: 68, label: [226, 160], note: 'CANALS · SEWERS · UNREGISTERED' },
-};
-
-/**
- * Where each place sits on the section (map units): a door on the street, a flat up its tower,
- * a station in the tunnel. A place listed here is on the map and can be quick-travelled to.
- */
+/** Where each place sits on the plan. A place listed here is on the map and can be quick-travelled to. */
 export const PLACE_MAP: Partial<Record<PlaceId, [number, number]>> = {
-  laundromat: [84, 122],
-  market: [96, 122],
-  shop: [140, 122],
-  library: [149, 122],
-  downtown: [158, 122],
-  yard: [174, 122],
-  capsule: [189, 78],
-  moth: [208, 96],
-  'station-downtown': [196, 137],
-  mall: [258, 104],
-  'station-galleria': [252, 137],
-  harbor: [320, 122],
-  warehouse: [307, 112],
-  'station-harbor': [306, 137],
-  beach: [389, 123],
+  laundromat: [215, 262],
+  market: [250, 230],
+  shop: [330, 228],
+  library: [356, 196],
+  downtown: [388, 236],
+  yard: [420, 262],
+  capsule: [440, 176],
+  moth: [372, 154],
+  'station-downtown': [412, 228],
+  mall: [560, 110],
+  'station-galleria': [540, 150],
+  harbor: [646, 262],
+  warehouse: [650, 312],
+  'station-harbor': [610, 238],
+  beach: [730, 356],
 };
 
-/** Each LINE 0 station on the section's tunnel, and each sky-taxi pad. */
-export const STATION_MAP: Record<Station, [number, number]> = { downtown: [196, 137], galleria: [252, 137], harbor: [306, 137] };
-export const PAD_MAP: Record<Stand, [number, number]> = { downtown: [222, 120], galleria: [280, 85], harbor: [343, 120] };
+/** Each LINE 0 station on the plan, and each sky-taxi pad. */
+export const STATION_MAP: Record<Station, [number, number]> = { downtown: [412, 228], galleria: [540, 150], harbor: [610, 238] };
+export const PAD_MAP: Record<Stand, [number, number]> = { downtown: [452, 206], galleria: [574, 84], harbor: [690, 276] };
 
 /**
- * LINE 0's loop on the section: east along the upper track (Downtown, Galleria, Harbor), round
- * the east end, west along the lower track, round the west end and back to Downtown.
+ * LINE 0's loop on the plan, as the metro diagram draws it (straight runs, 45° corners): north from
+ * Downtown, east to the Galleria, down to the harbor, back west under Downtown. The train runs it
+ * in this order (Downtown, Galleria, Harbor, Downtown).
  */
-export const LOOP_MAP: [number, number][] = [[148, 137], [196, 137], [252, 137], [306, 137], [318, 137], [321, 140], [318, 143], [148, 143], [145, 140]];
+export const LOOP_MAP: [number, number][] = [[412, 228], [412, 190], [452, 150], [540, 150], [580, 150], [610, 180], [610, 238], [590, 258], [432, 258], [412, 238]];
+
+/**
+ * The lines the game does not run yet (CITY.md: LINE 1, the Canal Line; bus 7; the ferry). The map
+ * draws one only once the story makes it known (the flag `heard:<id>`; sudo sets them all), and
+ * never as travel: its stops are names on a line, not places. `col`: r,g,b. `stops`: name, point,
+ * district.
+ */
+export interface MapLine { id: string; name: string; short: string; col: string; width: number; dash?: number[]; path: [number, number][]; stops: { name: string; pt: [number, number]; district: DistrictId }[] }
+export const LINES_PLANNED: MapLine[] = [
+  {
+    id: 'line1', name: 'LINE 1 · CANAL LINE', short: 'L1', col: '0,200,200', width: 2.4,
+    path: [[60, 270], [140, 270], [200, 290], [300, 290], [412, 290], [500, 290], [560, 300], [610, 300], [700, 320], [730, 346]],
+    stops: [
+      { name: 'FRINGE DEPOT', pt: [60, 270], district: 'fringe' }, { name: 'OLD QUARTER', pt: [200, 290], district: 'oldq' },
+      { name: 'CANAL STREET', pt: [412, 290], district: 'oldq' }, { name: 'HARBOR SHORE', pt: [610, 300], district: 'harbor' }, { name: 'BEACH', pt: [730, 346], district: 'harbor' },
+    ],
+  },
+  { id: 'bus7', name: 'BUS 7', short: 'BUS', col: '255,210,90', width: 1, dash: [6, 3], path: [[250, 226], [330, 226], [412, 228], [478, 190], [540, 150]], stops: [] },
+  { id: 'ferry', name: 'FERRY', short: 'FERRY', col: '160,200,255', width: 1, dash: [2, 4], path: [[700, 300], [744, 220], [760, 150]], stops: [] },
+];
+export const lineKnownFlag = (id: string) => 'heard:' + id;
 
 /**
  * The ways between districts, other than LINE 0 and the taxis between stands (drawn from
- * STATIONS and STANDS): `path` in map units, from → to. `state`: 'open' (you can use it),
+ * STATIONS and STANDS): `path` on the plan, from → to. `state`: 'open' (you can use it),
  * 'gate' (the market gate: open once Downtown is cleared), 'planned' (CITY.md has it, the game
  * not yet: not on the map at all). `at`: the scenes it is in plain view from (`linkKnown`).
  */
 export type LinkKind = 'walk' | 'road' | 'elevator' | 'taxi' | 'bridge' | 'drain' | 'tunnel' | 'canal' | 'lift';
 export interface MapLink { kind: LinkKind; name: string; from: DistrictId; to: DistrictId; path: [number, number][]; state: 'open' | 'gate' | 'planned'; at?: SceneId[] }
 export const LINKS: MapLink[] = [
-  { kind: 'walk', name: 'MARKET GATE', from: 'downtown', to: 'market', path: [[133, 119], [127, 119]], state: 'gate', at: ['downtown', 'market'] },
-  { kind: 'walk', name: 'SHORE PATH', from: 'harbor', to: 'harbor', path: [[342, 123], [382, 123]], state: 'open', at: ['harbor', 'beach'] },
-  { kind: 'road', name: 'ACCESS ROAD', from: 'market', to: 'fringe', path: [[62, 123], [58, 123]], state: 'planned' },
-  { kind: 'elevator', name: 'SKY ELEVATOR', from: 'galleria', to: 'spire', path: [[268, 82], [268, 54]], state: 'planned' },
-  { kind: 'taxi', name: 'SKY TAXI DEPOT', from: 'downtown', to: 'spire', path: [[222, 114], [216, 84], [206, 54]], state: 'planned' },
-  { kind: 'bridge', name: 'THE BRIDGE', from: 'harbor', to: 'spire', path: [[346, 120], [356, 114], [366, 120]], state: 'planned' },
-  { kind: 'drain', name: 'STORM DRAIN', from: 'market', to: 'undercity', path: [[106, 124], [106, 166]], state: 'planned' },
-  { kind: 'tunnel', name: 'SERVICE TUNNEL', from: 'downtown', to: 'undercity', path: [[145, 143], [145, 166]], state: 'planned' },
-  { kind: 'canal', name: 'CANAL OUTFALL', from: 'harbor', to: 'undercity', path: [[352, 150], [352, 204]], state: 'planned' },
-  { kind: 'lift', name: 'SERVICE LIFT', from: 'spire', to: 'undercity', path: [[371, 152], [371, 178]], state: 'planned' },
+  { kind: 'walk', name: 'MARKET GATE', from: 'downtown', to: 'market', path: [[304, 229], [318, 229]], state: 'gate', at: ['downtown', 'market'] },
+  { kind: 'walk', name: 'SHORE PATH', from: 'harbor', to: 'harbor', path: [[690, 286], [716, 320], [728, 350]], state: 'open', at: ['harbor', 'beach'] },
+  { kind: 'road', name: 'ACCESS ROAD', from: 'market', to: 'fringe', path: [[170, 230], [150, 228]], state: 'planned' },
+  { kind: 'elevator', name: 'SKY ELEVATOR', from: 'galleria', to: 'spire', path: [[560, 110], [770, 120]], state: 'planned' },
+  { kind: 'taxi', name: 'SKY TAXI DEPOT', from: 'downtown', to: 'spire', path: [[452, 206], [770, 120]], state: 'planned' },
+  { kind: 'bridge', name: 'THE BRIDGE', from: 'harbor', to: 'spire', path: [[700, 200], [748, 136]], state: 'planned' },
+  { kind: 'drain', name: 'STORM DRAIN', from: 'market', to: 'undercity', path: [[250, 250], [250, 300]], state: 'planned' },
+  { kind: 'tunnel', name: 'SERVICE TUNNEL', from: 'downtown', to: 'undercity', path: [[412, 258], [412, 300]], state: 'planned' },
+  { kind: 'canal', name: 'CANAL OUTFALL', from: 'harbor', to: 'undercity', path: [[724, 322], [700, 330]], state: 'planned' },
+  { kind: 'lift', name: 'SERVICE LIFT', from: 'spire', to: 'undercity', path: [[770, 120], [740, 200]], state: 'planned' },
 ];
 
 // ---------- quick travel ----------
@@ -317,15 +341,20 @@ export type DistrictStage = 'unknown' | 'heard' | 'known';
  * Known once you have been up there (a place of it), or by `mapped:spire`.
  * The Undercity: nobody points at it; it stays unknown until the story sets `heard:undercity`
  * or you find a way down.
+ * The Old Quarter: heard from the market and from Downtown (its bells, its canal at the end of the
+ * street). The Skyport: a landmark like the Spire (its launches are seen from everywhere), so it is
+ * drawn from the start, but it stays `???` until the story names it (`heard:skyport`).
  */
 export const DISTRICT_REVEAL: Record<DistrictId, { near: DistrictId[]; landmark?: boolean }> = {
   fringe: { near: ['market'] },
-  market: { near: ['downtown'] },
-  downtown: { near: ['market', 'galleria'] },
+  market: { near: ['downtown', 'oldq'] },
+  downtown: { near: ['market', 'galleria', 'oldq'] },
+  oldq: { near: ['market', 'downtown'] },
   galleria: { near: ['downtown', 'harbor'] },
   harbor: { near: ['galleria'] },
   spire: { near: ['galleria', 'harbor'], landmark: true },
   undercity: { near: [] },
+  skyport: { near: [], landmark: true },
 };
 export const heardFlag = (d: DistrictId) => 'heard:' + d;
 export const mappedFlag = (d: DistrictId) => 'mapped:' + d;
