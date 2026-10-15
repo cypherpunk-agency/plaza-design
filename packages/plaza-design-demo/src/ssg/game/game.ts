@@ -23,7 +23,7 @@ import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, zoneShell } from './do
 import { type ZoneDef, ZoneHost } from './zone';
 import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
-import { personHeight, personX, talkTo } from './people';
+import { botReact, isBot, personHeight, personX, talkTo } from './people';
 import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
@@ -1467,6 +1467,8 @@ export class Game {
     // animals: people always want to pet the cat (and the pigeon gets shooed)
     (s.people ?? []).forEach((p, i) => {
       if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'scene', id: 'pet:' + i, x: personX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: personHeight(p) + 14 });
+      // robots without talk still answer: a beep, a status, a polite refusal
+      else if (!p.talk && isBot(p)) list.push({ kind: 'scene', id: 'bot:' + i, x: personX(p, this.t), h: 0, label: botReact(p).label, promptH: personHeight(p) + 14 });
     });
     return list;
   }
@@ -1484,6 +1486,12 @@ export class Game {
       const lines = p.look === 'cat' ? PET_CAT : PET_PIGEON;
       sound.blip();
       this.say(p.look === 'cat' ? 'CAT' : 'PIGEON', lines[n % lines.length], personX(p, this.t), personHeight(p) + 4);
+      return;
+    }
+    if (kind === 'bot') {
+      const p = s.people![Number(id)], said = botReact(p, true);
+      sound.blip();
+      this.say(said.name, said.pages, personX(p, this.t), personHeight(p) + 4);
       return;
     }
     if (kind === 'talk') {

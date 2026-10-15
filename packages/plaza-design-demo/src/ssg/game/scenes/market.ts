@@ -41,7 +41,8 @@ const fishmonger: Person = { id: 'fish', key: true, seed: 4106, look: { body: 't
   ['Moth paid cash. Nobody pays cash. Cash is for people who do not want to be remembered.'],
   ['Buy a fish or go stand in someone else\'s rain.'],
 ] };
-const fortuneBot: Person = { seed: 4107, look: { body: 'avg', hair: 'helmet', garb: 'robe', extras: ['cyberarm'], top: '#54406a', acc: '#8e949e' }, x: 1206, act: 'vend', facing: -1 };
+/** FORTUNE UNIT 9 is a real robot: a boxy service unit whose screen face changes its mind. */
+const fortuneBot: Person = { seed: 4107, look: { bot: 'servbot', paint: '#54406a', v: 1 }, x: 1206, act: 'blink', facing: -1 };
 const fixer2: Person = { id: 'repair', seed: 4108, look: { body: 'wide', hair: 'short', garb: 'hivis', extras: ['cyberarm', 'glasses'] }, x: 1352, h: 6, act: 'vend', name: 'REPAIRS', talk: [
   ['I fix anything with a screw in it.', 'Not the Registry. That one is working as intended.'],
   ['Your deck? Nice. Do not let me see the inside, I will want it.'],
@@ -71,6 +72,43 @@ const STALLS: StallSpec[] = [
 const FORTUNE: StallSpec = { x: 1170, w: 76, seed: 17, sign: 'FORTUNES', col: GREEN, goods: 'junk', awning: 'none', vendor: fortuneBot, note: ['1 TOKEN'] };
 // the sleeper lies on his own counter
 sleeper.h = stallBox(STALLS[8]).counter;
+
+// ---------- the robots who work here ----------
+
+/** A rich man walking the market, his valet a step behind with the umbrella over him. */
+const richMan: Person = { seed: 4230, look: { body: 'wide', garb: 'suit', hair: 'bald', extras: ['glasses'] }, x: 300, act: 'walk', range: [300, 640], speed: 0.24 };
+/** The shopper from the dumpling end, her porter behind her with the groceries. */
+const shopper: Person = { seed: 4214, x: 1220, act: 'walk', range: [1260, 1740], look: { extras: ['bag'] } };
+/** Up on the REPAIRS stall's roof, welding its light. */
+const crawler: Person = { look: 'crawler', seed: 4311, x: 1404, act: 'weld', facing: -1 };
+const ROBOTS: Person[] = [
+  { look: 'sweeper', seed: 4301, x: 664, act: 'sweep', range: [664, 736] },
+  { look: { bot: 'valet', v: 1 }, seed: 4302, x: 300, follow: richMan, gap: 16 },
+  { look: 'porter', seed: 4303, x: 1240, follow: shopper, gap: 20 },
+  { look: 'mech', seed: 4304, x: 620, act: 'patrol', range: [620, 940] },
+  { look: 'loader', seed: 4305, x: 1150, act: 'carry', range: [1160, 1040] },
+  { look: 'litterbot', seed: 4306, x: 1250, act: 'roll', range: [1250, 1130] },
+  { look: 'deliverybot', seed: 4307, x: 200, act: 'roll', range: [200, 720] },
+  { id: 'busker', seed: 4308, look: { bot: 'busker', v: 0 }, x: 1600, act: 'play', facing: 1, name: 'BUSKER', talk: [
+    ['This one is called Rain On Tin. I wrote it on tin. In the rain.', 'Tips are optional. Eye contact is mandatory.'],
+    ['I used to play the mall. Then the mall got a playlist.', 'The playlist does not take requests either, but it does not pretend to.'],
+    ['Still here? That makes you my audience. Congratulations. There is no prize.'],
+  ] },
+  { id: 'marshal', seed: 4309, look: 'marshal', x: 1764, act: 'direct', facing: -1, name: 'QUEUE MARSHAL', talk: [
+    ['Wait for green. Green is coming.', 'Green has been coming since I was installed.'],
+    ['Your score is not my business. It is my whole job, but it is not my business.'],
+  ] },
+  { id: 'oldunit', seed: 4310, look: 'wreck', x: 1906, act: 'slump', facing: -1, name: 'OLD UNIT', talk: [
+    ['...hello. Do you have a spare servo? A bolt? Half a bolt?', 'I sorted parcels for nineteen years. Then they sorted me.'],
+    ['The new model does my job and sings. I did not know the job needed singing.'],
+    ['Do not worry about me. My warranty ran out. My optimism did not. That one is a bug.'],
+  ] },
+  crawler,
+  { look: 'flyerdrone', seed: 4312, x: 400, h: 20, act: 'hover', range: [400, 560] },
+  { look: 'cargodrone', seed: 4313, x: -200, h: 40, act: 'hover', range: [-200, 2300], speed: 0.4 },
+  { look: 'minidrone', seed: 4314, x: 1900, h: 30, act: 'hover', range: [1900, 900], speed: 0.6 },
+];
+crawler.h = stallBox(STALLS[6]).awning;
 
 // ---------- the street ----------
 
@@ -103,8 +141,9 @@ const STREET: Person[] = [
   { seed: 4212, x: 1722, act: 'queue', facing: -1, look: { body: 'old', extras: ['cane'] } },
   { look: 'cleaner', x: 1900, act: 'walk', range: [1900, 1980] },
   { seed: 4213, x: 1978, act: 'lean', facing: -1, look: { garb: 'jacket', hair: 'short', extras: [] } },
-  { seed: 4214, x: 1220, act: 'walk', range: [1260, 1740], look: { extras: ['bag'] } },
+  shopper, richMan,
   { seed: 4215, x: 140, act: 'walk', range: [140, 560] },
+  ...ROBOTS,
 ];
 const ALL: Person[] = [cook, fishmonger, fixer2, sleeper, ...STREET];
 
