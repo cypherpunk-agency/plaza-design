@@ -761,6 +761,26 @@ scaffold (Act II).
 
 ### P13 Washer 3 (the laundromat)
 
+**Built** (`data/laundromat.json`, `laundromat/`), as below, with these choices:
+- The laundromat is its own scene, its door in the market between the umbrellas and the fruit
+  (the market rules hang on its wall). Inside: four washers, the breaker with its conduits drawn
+  in the wall, the schedule box (counts down to the next slot), SUDS on a post, FOLD-O at the
+  folding table, the owners of washers 1, 2 and 4 waiting (the one on washer 2 saw Moth leave the
+  jacket), a cat on the sill, a soap dispenser, the Registry's 72-hour notice, a lost-sock board.
+- The schedule is a slot every 24 s (first after 3 s); a cycle takes 5 s (`tuning.cycleMs`); the
+  breaker resets itself 3 s after a trip (or by hand, `reset`). Washer 3 is not on the schedule.
+- Fingers start nothing and stop nothing: SUDS refuses (`suds.start`, `suds.prepaid`: "prepaid
+  cycles start when a machine finishes", and `suds.cancel`: the crime-and-sin line). The washers'
+  everyday actions are read / start it / stop it, so both refusals are one tap away.
+- **House rule 4: doors open when the queue is clear.** Washer 3's door releases only once all
+  four washes are done, so skipping a stranger (cutting their slot and never starting them) does
+  not work: "door held: 2 still waiting". Any order with at most two running works.
+- The jacket (washer 3's `door`, `open`): the item `maglev.pass` (HELD; what P14's brake checks),
+  the keyring key chip `glove.right` (the twin of DLV-9's `glove.left`), the save flag `p13`. With
+  both gloves the fixer has his line once (`flags.gloves`).
+- Code: `washer.run`, `washer.stop`, `washer.take` (laundromat/rules.ts) and two engine hooks for
+  effects, `SceneModel.carry` (items) and `SceneModel.flag` (save flags).
+
 - **Scene · spot:** the market, a laundromat between the stalls (new spot; LEVELS "more
   puzzles"). Main path. Difficulty 4.
 - **Player sees:** four networked washers on one breaker that trips above two running machines.

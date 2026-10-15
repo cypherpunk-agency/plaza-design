@@ -125,6 +125,9 @@ export const ITEMS = {
   crisps: 'crisps',
   noodlecup: 'noodle cup',
   gum: 'gum',
+  soap: 'soap',
+  /** Moth's maglev pass, from the jacket in washer 3 (P13); LINE 0's emergency brake asks for it (P14). */
+  'maglev.pass': 'maglev pass',
 } as const;
 export type ItemId = keyof typeof ITEMS;
 

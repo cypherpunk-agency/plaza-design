@@ -10,14 +10,16 @@
 
 import { crowd, drawCharacters, drawCharacter, type Character } from '../characters';
 import { bin, booth, clutter, facade, lamp, stall, stallBox, stool, type FacadeSpec, type StallSpec } from './build';
-import { box, DESIGN_TOP, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, towers, wetFloor, type SceneDef, type SceneUse } from './kit';
-import { adScreen, bladeSign, brokenScreen, camera, menuBoard, oddsBoard, registryBoard, scoreDisplay, ticker, wantedScreen, YELLOW } from './screens';
+import { box, C, DESIGN_TOP, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, reflect, rng, sign, tell, towers, wetFloor, type SceneDef, type SceneUse, type View as SceneView } from './kit';
+import { adScreen, bladeSign, brokenScreen, camera, menuBoard, oddsBoard, registryBoard, scoreDisplay, taped, ticker, wantedScreen, YELLOW } from './screens';
 
 /** Layout: positions in world units, heights up from the street. */
 const L = {
   width: 2080,
   spawn: 86,
-  board: 590,
+  board: 574,
+  /** The laundromat's shopfront between the umbrellas and the fruit (its door: the exit `laundromat`; inside: P13, washer 3). */
+  laundry: { x0: 552, x1: 636, door: 616 },
   /** Doors at play level: the service door to the mall, and the gate to Downtown in the end wall (open once Downtown is cleared). */
   service: 32,
   gate: 2036,
@@ -85,10 +87,11 @@ const ROBOTS: Character[] = [
   { look: 'sweeper', seed: 4301, x: 664, act: 'sweep', range: [664, 736] },
   { look: { bot: 'valet', v: 1 }, seed: 4302, x: 300, follow: richMan, gap: 16 },
   { look: 'porter', seed: 4303, x: 1240, follow: shopper, gap: 20 },
-  { look: 'mech', seed: 4304, x: 620, act: 'patrol', range: [620, 940] },
+  // the movers keep clear of the laundromat's door (a robot passing would take its E)
+  { look: 'mech', seed: 4304, x: 660, act: 'patrol', range: [660, 940] },
   { look: 'loader', seed: 4305, x: 1150, act: 'carry', range: [1160, 1040] },
   { look: 'litterbot', seed: 4306, x: 1250, act: 'roll', range: [1250, 1130] },
-  { look: 'deliverybot', seed: 4307, x: 200, act: 'roll', range: [200, 720] },
+  { look: 'deliverybot', seed: 4307, x: 200, act: 'roll', range: [200, 530] },
   { id: 'busker', seed: 4308, look: { bot: 'busker', v: 0 }, x: 1600, act: 'play', facing: 1, name: 'BUSKER', talk: [
     ['This one is called Rain On Tin. I wrote it on tin. In the rain.', 'Tips are optional. Eye contact is mandatory.'],
     ['I used to play the mall. Then the mall got a playlist.', 'The playlist does not take requests either, but it does not pretend to.'],
@@ -129,7 +132,7 @@ const STREET: Character[] = [
   { look: 'drone', x: 962, h: 66, act: 'scan' },
   { seed: 4206, x: 962, act: 'stand', facing: 1, look: { body: 'avg', hair: 'hood', garb: 'jacket', extras: [] } },
   { look: 'cat', seed: 2, x: 1138, act: 'sit', facing: -1 },
-  { look: 'courier', x: 600, act: 'walk', range: [600, 1260], speed: 0.5 },
+  { look: 'courier', x: 660, act: 'walk', range: [660, 1260], speed: 0.5 },
   { seed: 4207, x: 1436, act: 'argue', facing: 1, look: { body: 'tall', garb: 'coat', hair: 'long' } },
   { seed: 4208, x: 1460, act: 'argue', facing: -1, look: { body: 'short', garb: 'jacket', hair: 'mohawk', extras: ['mask'] } },
   { seed: 4209, x: 1668, act: 'queue', facing: -1, look: { extras: ['phone'] } },
@@ -155,6 +158,40 @@ const NEAR = crowd(59, 4, 0, 2200, { ps: 5, dim: 0.78, parallax: 1.3, h: -58, ac
 // ---------- the middle band ----------
 
 const FAR = towers(51, 2600, [30, 60], [160, 320], 0.07);
+/**
+ * The laundromat's front, squeezed between two stalls: a lit glass window with the washers
+ * inside, the door (cyan handle: you can go in), its name on a plate, the market rules bolted
+ * to its wall and a camera over the door. Interiors behind glass are lit (ART-GUIDE §8).
+ */
+function laundryFront(x: CanvasRenderingContext2D, v: SceneView) {
+  const { sx, y, t } = v, F = L.laundry, a = sx(F.x0), w = F.x1 - F.x0;
+  if (!onScreen(v, a - 20, w + 40)) return;
+  // the shop's wall, up past the stalls' awnings
+  box(x, a, y(116), w, 116, '#130d0a', 'rgba(' + O + ',.6)');
+  x.fillStyle = 'rgba(' + O + ',.12)'; for (let hy = 8; hy < 116; hy += 8) x.fillRect(a + 1, y(hy), w - 2, 1);
+  // a long window high in the wall: cold white light, the washers' portholes, one turning
+  const wx = a + 4, ww = w - 8, wt = y(96), wh = 16;
+  box(x, wx, wt, ww, wh, 'rgba(210,230,245,.22)', 'rgba(' + O + ',.8)');
+  for (let k = 0; k < 4; k++) {
+    const px = wx + 10 + k * 19, py = wt + 9;
+    x.fillStyle = 'rgba(200,200,210,.35)'; x.fillRect(px - 7, wt + 2, 14, wh - 2);
+    x.strokeStyle = 'rgba(30,40,50,.9)'; x.beginPath(); x.arc(px, py, 4, 0, 7); x.stroke();
+    if (k === 2) { const a2 = t * 0.25; x.fillStyle = 'rgba(70,96,154,.9)'; x.fillRect(Math.round(px + Math.cos(a2) * 2) - 1, Math.round(py + Math.sin(a2) * 2) - 1, 3, 3); }
+  }
+  // the door: glass, lit from inside, the cyan handle; the hours taped on it
+  const dx = sx(F.door) - 13;
+  box(x, dx - 2, y(56), 30, 56, '#020100', 'rgba(' + O + ',.75)');
+  box(x, dx, y(52), 26, 52, 'rgba(200,225,240,.18)', 'rgba(' + PAPER + ',.35)');
+  x.fillStyle = 'rgba(' + C + ',.85)'; x.fillRect(dx + 4, y(28), 2, 7);
+  tell(x, t, dx + 22, y(30), 6);
+  taped(x, v, { x: F.door, h: 36, text: ['06–02'], tilt: 0.05 });
+  // the light it throws on the wet street
+  reflect(x, v, sx(F.door), '210,230,245', 1.2, 30);
+  // its name on a plate over the window, a camera over the door
+  sign(x, t, 'LAUNDRY', sx(F.x0 + w / 2), y(106), C, { size: 8, phase: 70 });
+  camera(x, v, { x: F.door - 2, h: 64, facing: -1, phase: 12 });
+}
+
 const FRONTS: FacadeSpec[] = (() => { const r = rng(53), list: FacadeSpec[] = []; for (let wx = -60, i = 0; wx < 2500; i++) { const w = 90 + Math.round(r() * 80); list.push({ x: wx, w, seed: 300 + i, parallax: 0.7, alpha: 0.4 }); wx += w + 2 + Math.round(r() * 6); } return list; })();
 
 // ---------- things to do ----------
@@ -198,6 +235,7 @@ export const market: SceneDef = {
   exits: [
     { id: 'mall', x: L.service, to: 'mall', at: 'market', label: '[E] SERVICE DOOR · MALL', promptH: 82 },
     { id: 'downtown', x: L.gate, to: 'downtown', at: 'market', label: '[E] GATE · DOWNTOWN', promptH: 82, requires: 'end' },
+    { id: 'laundromat', x: L.laundry.door, to: 'laundromat', at: 'market', label: '[E] LAUNDROMAT', promptH: 92 },
   ],
   readables: [
     { id: 'sims', x: 342, name: 'SIM CARDS', promptH: 128, pages: ['PREPAID SIM · ACTIVATION 3 MIN.', 'ALL SIMS ARE REGISTERED AT SALE. REGISTERED TO WHOM IS NOT STATED.'] },
@@ -244,10 +282,10 @@ export const market: SceneDef = {
     for (const s of STALLS) stall(x, v, s);
     booth(x, v, FORTUNE);
     drawCharacter(x, v, sleeper);
-    // the rules board, and the camera watching it
+    // the laundromat's front, the market rules bolted to its wall
+    laundryFront(x, v);
     const nb = sx(L.board);
-    if (onScreen(v, nb - 40, 80)) { box(x, nb - 1, y(48), 3, 48, '#2a160a'); notice(x, t, nb, y(78), 56, 30, ['MARKET', 'RULES']); }
-    camera(x, v, { x: 566, h: 104, pole: true, facing: 1, phase: 5 });
+    if (onScreen(v, nb - 40, 80)) notice(x, t, nb, y(78), 44, 30, ['MARKET', 'RULES']);
     stool(x, v, { x: 250, seed: 3 });
     clutter(x, v, { x: 556, seed: 2, n: 2, kinds: ['crate', 'box'] });
     clutter(x, v, { x: 1128, seed: 5, n: 1, kinds: ['barrel'] });

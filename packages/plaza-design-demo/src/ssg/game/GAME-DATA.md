@@ -185,6 +185,15 @@ Append one line per decision: what, which side, why.
     screen), remembered as `flags['scene:<id>']` for every scene.
   - Downtown's street people and the fixer stay **code** in game.ts and level.ts (their lines
     depend on the save); Downtown's sign is a readable.
+- **Effects that hand over what you carry, and story flags** (the laundromat, P13): `SceneModel.carry(item,
+  n)` (the save's `items`, the HUD's HELD; 0 asks, negative takes) and `SceneModel.flag(name)` (a save
+  flag), through the hooks `carry` / `flag` (`SceneStore`, game.ts). **Engine code**; which item and
+  which flag is the scene's code (`washer.take`: `maglev.pass`, `p13`). No data step yet (`give`
+  stays keyring, modules, tokens); if items get handed out from data often, `give` can learn them.
+- The laundromat (P13): the washers, breaker, schedule and SUDS are **data** (`laundromat.json`); a
+  cycle's timing, the trip and the jacket are **code** (`laundromat/rules.ts`, `washer.run` /
+  `washer.stop` / `washer.take`, the breaker's self-reset in `tick`, `door3` derived). A running
+  cycle is not saved: it comes back stopped, its load still in (`settle`).
 - **The city as data** (2026-10-15, CITY.md): city → district → place → scene. `city.ts`
   `DISTRICTS` (seven, each with its stratum), `PLACES` (every existing place: id, name, district,
   entrance scene and the exit quick travel lands at) and `SCENE_PLACE` (each scene's place; a place

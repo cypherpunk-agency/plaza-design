@@ -34,7 +34,7 @@ The city is a cross-section with three strata.
 | District | Stratum | Character | Places (now ✓, and planned) |
 | --- | --- | --- | --- |
 | **Downtown** | street | working class, mixed, rain and neon | the street ✓ (noodle stall, kiosk); Capsule 7B tower ✓ (your flat; later the lobby and roof); the fixer's back yard ✓; Moth's building ✓ (flat 4C; later the stairwell); the corner shop ✓; J's penthouse; the billboard catwalk |
-| **Neon Market / Old Quarter** | street | low life, packed, low-tech | the market ✓; the laundromat; the ripperdoc clinic; the arcade and karaoke; the pawn shop; club VOID |
+| **Neon Market / Old Quarter** | street | low life, packed, low-tech | the market ✓; the laundromat ✓; the ripperdoc clinic; the arcade and karaoke; the pawn shop; club VOID |
 | **Galleria** | street (and up) | middle and upper-middle class, consumer, shiny | the mall ✓; the rooftop garden; gated condos; the Church of the Algorithm |
 | **Harbor & Shore** | street (and water) | industrial and leisure, busy against calm | the harbor pier ✓; the warehouse; the beach ✓ (SALT, the pier, Moth's boat); the bridge |
 | **The Spire / Plaza Central** | overworld | elite, cold, almost lifeless | Plaza Holdings HQ (lobby, floors, Sorel's office, the penthouse); the Registry office; the antenna; the sky-taxi depot |
