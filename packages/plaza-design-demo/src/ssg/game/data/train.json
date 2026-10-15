@@ -14,9 +14,12 @@
       "name": "TRAIN-0",
       "look": "LINE 0's train, from its emergency panel at the end of car 3: the brake, a plate, a slot for a pass. It goes round. It never says where.",
       "everyday": [
-        { "noun": "plate", "verb": "read", "label": "read the brake plate" },
+        { "noun": "brake", "verb": "pull", "label": "pull the brake" },
         { "noun": "emergency.reg", "verb": "read", "label": "read the register" },
-        { "noun": "brake", "verb": "pull", "label": "pull the brake" }
+        { "noun": "plate", "verb": "read", "label": "read the brake plate" }
+      ],
+      "items": [
+        { "item": "maglev.pass", "noun": "brake", "label": "show the maglev pass", "on": { "say": "brake.pass" } }
       ],
       "status": ["LINE 0 · {where}"],
       "layout": {
@@ -74,6 +77,7 @@
     "brake.queued": ["{via}use brake --pull", "BRAKE: a new emergency has been registered in your name. it will be ready in 48 hours.", "err"],
     "brake.standing": ["{via}use brake --pull", "BRAKE: the train is standing. there is nothing to stop.", "dim"],
     "brake.already": ["{via}use brake --pull", "BRAKE: already braking.", "dim"],
+    "brake.pass": ["show maglev.pass", "BRAKE: pass read · MOTH, second holder: you · emergency #0451 is registered to you. pull when ready.", "ok"],
     "brake.pulled": ["{via}use brake --pull", "BRAKE: emergency #0451 · passenger verified (MAGLEV PASS) · braking.", "ok"],
 
     "halt.track": ["train", "the train stops {where}. the lights flicker. nobody looks up.", "dim"],

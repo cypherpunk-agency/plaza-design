@@ -24,7 +24,7 @@
       "name": "SUNBED RENTAL",
       "look": "A rental kiosk on the boardwalk. A meter, a card reader, a list of terms longer than the beach.",
       "everyday": [
-        { "noun": "rent", "verb": "rent", "label": "rent a sunbed (1 token / min)" },
+        { "noun": "rent", "verb": "rent", "label": "rent a sunbed · 1 token a minute · you have {tokens}" },
         { "noun": "rent", "verb": "end", "label": "end the rental" },
         { "noun": "terms", "verb": "read", "label": "read the terms" }
       ],

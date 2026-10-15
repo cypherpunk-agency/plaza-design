@@ -186,10 +186,17 @@ Append one line per decision: what, which side, why.
   - Downtown's street people and the fixer stay **code** in game.ts and level.ts (their lines
     depend on the save); Downtown's sign is a readable.
 - **Effects that hand over what you carry, and story flags** (the laundromat, P13): `SceneModel.carry(item,
-  n)` (the save's `items`, the HUD's HELD; 0 asks, negative takes) and `SceneModel.flag(name)` (a save
+  n)` (the save's `items`; 0 asks, negative takes) and `SceneModel.flag(name)` (a save
   flag), through the hooks `carry` / `flag` (`SceneStore`, game.ts). **Engine code**; which item and
-  which flag is the scene's code (`washer.take`: `maglev.pass`, `p13`). No data step yet (`give`
-  stays keyring, modules, tokens); if items get handed out from data often, `give` can learn them.
+  which flag is the scene's code (`washer.take`: `maglev.pass`, `p13`). Using an item up is a data
+  step now (`take`, see **Using what you carry**); handing one out is not yet (`give` stays keyring,
+  modules, tokens); if items get handed out from data often, `give` can learn them.
+- **What you carry shows where it is used** (Tommi, 2026-10-15): no inventory screen, no HELD line.
+  Which thing takes which item, its popup words and what happens: **data** for devices (`items` on a
+  device, `take` step), **code-side data** for a scene's code uses (`SceneUse.items`, `price`, `act`,
+  scenes/kit.ts). The popup's "items first, three at most" rule and the dashed chip: **code**
+  (`SceneHost.popupItems`, `MAX_EVERYDAY`; game.ts `useLife`). Tokens show only where you pay
+  (`priceTag`: uses' `price`, the taxi stand, the fixer's hint, a `{tokens}` in a popup label).
 - The laundromat (P13): the washers, breaker, schedule and SUDS are **data** (`laundromat.json`); a
   cycle's timing, the trip and the jacket are **code** (`laundromat/rules.ts`, `washer.run` /
   `washer.stop` / `washer.take`, the breaker's self-reset in `tick`, `door3` derived). A running
@@ -292,7 +299,8 @@ The small vocabulary, all of it:
 
 - **Steps** (`do`): `set` a state key `to` a value, `open` a panel (`talk`, optionally
   `with` a dialogue id; `camera`), `emit` one of this noun's events, tick a `goal`, run an
-  `effect`, `give` something (a keyring item, a module, or `tokens` with a `count`), raise or
+  `effect`, `give` something (a keyring item, a module, or `tokens` with a `count`), `take` an item
+  the player carries (`{ "take": "soap" }`, optional `count`; see **Using what you carry**), raise or
   lower this device's `trace` (%), `unseal` a sector (`sector` or `device/sector`). Any step may
   have an `if`.
 - **Conditions**: `key`, `!key`, `key=value`, and `signal` (the verb came over a cable). The
@@ -353,6 +361,68 @@ do with the thing without hacking anything, then `⌁ jack in` for a computer, t
   everyday (`hinge: talk`).
 - `deck: true`: a computer or terminal; `⌁ jack in` opens the full device screen (the
   schematic), where its LINK reaches the net. Nodes have neither (they are not in the world).
+
+## Using what you carry
+
+There is no inventory screen (Tommi, 2026-10-15). What you carry (the save's `items`: the maglev
+pass, soap, a cup of tea; ids in `ITEMS`, scenes/kit.ts) appears **at the moment and place it is
+used**: as an everyday action in the popup of the thing that takes it, only while you hold one.
+Keys and modules stay where they were (key chips at guards and seals, modules and programs in hack
+vision's LOGIC drawer).
+
+A device says what it takes with `items`:
+
+```json
+"items": [
+  { "item": "soap", "noun": "drum", "label": "pour in soap", "on": [
+    { "if": "w1=running", "say": "soap.running" },
+    { "do": [{ "take": "soap" }], "say": "soap.in" }
+  ] }
+]
+```
+
+- `item`: an `ITEMS` id. `label`: the popup's words (`{tokens}` and state keys are filled in).
+  `noun`: whose voice it speaks in and whose events `emit` raises; it must be everyday (no
+  GUARD / LINK / LOG / SEAL / CLOCK, nothing in a sector), like `everyday`.
+- `on`: a case or a list of cases, exactly like a verb's (`if`, `when`, `do`, `say`). It runs as a
+  finger would (`signal` is false); a device frozen by the watchdog or locked out by trace refuses.
+- **Take or keep**: a `take` step uses the item up (`count`, default 1); without one you keep it
+  (a pass you show). So a refusal can keep the item (soap into a running drum).
+- **Three at most**: the popup still has three everyday actions. Item actions come first (dashed
+  chips: from your pocket); when there are more than three, the device's last `everyday` entries
+  make room. Order `everyday` so the ones that can go are last (TRAIN-0: pull the brake, read the
+  register, read the plate: with the pass, the plate drops out).
+- The check: the item exists, the noun is everyday, every case and step as a verb's; a node has
+  no `items`.
+
+The scenes' code uses (`SceneUse`, scenes/kit.ts: a stall, a call box, a cat) say the same in TS:
+
+```ts
+{ id: 'crane', x: L.callBox, label: '[E] CRANE CALL BOX', act: 'press the call button', name: 'STS-1 CAB',
+  use: () => ["…unless you've got tea…"],
+  items: [{ item: 'tea', label: 'hold up the tea', use: (c) => { c.take('tea'); … } }] }
+```
+
+While you hold one of its `items`, E opens a popup (the item actions first, then `act`, three at
+most); otherwise E runs `use` straight away as before. The item's `use` takes it with `c.take` or
+keeps it.
+
+**Tokens** show only where you pay: a use's `price` (a number, or a function of the save's flags
+for prices that come and go: the florist charges once you have asked) puts `· 1 TOKEN · YOU HAVE 7`
+on its prompt (and, lower case, on its popup entry); the taxi stand shows the fare the same way, the
+fixer's TALK shows `HINT 1 TOKEN · YOU HAVE n` when the next thing he says is a hint
+(`fixerPrice`, level.ts), and a device's popup label can say `{tokens}` (the beach's sunbed: "rent a
+sunbed · 1 token a minute · you have {tokens}"). Spending still flashes `-n tokens`.
+
+Today's items and where they are used:
+
+| Item | From | Used at |
+|---|---|---|
+| `maglev.pass` | washer 3's jacket (P13) | TRAIN-0's brake popup: "show the maglev pass" (kept; the pull itself, by finger or cable, still needs it held) |
+| `tea` | the harbor's tea cart, the stacks' urn | the harbor's crane call box: "hold up the tea" (taken) |
+| `fish` | the harbor's fish stall | the harbor's dock cat: "give it the fish" (taken) |
+| `soap` | the laundromat's dispenser | any washer: "pour in soap" (taken; refused while the drum turns) |
+| `basil`, `blankchip`, `blue`, `crisps`, `noodlecup`, `gum` | the mall's florist and key cutter, the corner shop | no use yet |
 
 ## Pre-wired cables
 
@@ -722,9 +792,9 @@ A stored save missing a field gets it from a new game (`modules`, an empty `keyr
 **Items** (2026-10-15): things you carry that are not keyring chips (the harbor's fish and tea, the
 mall's basil leaf and blank chip, the corner shop's goods). A scene's `use` reads them through
 `UseCtx`: `has(id, n)`, `take(id, n)` (true and taken, or false and nothing), `add(id, n)`. The ids
-and their HUD names are **code** (`ITEMS`, scenes/kit.ts); the HUD's second line shows them only
-when you carry something (`HELD fish×2 tea`), after the key chips that grant something (`KEYS
-moth.key uplink.so`: keyring items of kind `key`, by their label when it is one word).
+and their names are **code** (`ITEMS`, scenes/kit.ts). Nothing lists them (no inventory, no HUD
+line): a short green `+ name` line shows when one comes, and they appear where they are used (see
+**Using what you carry**). The terminal's `whoami` still lists tokens and modules, on purpose (a deliberate command).
 Empty engine fields are left out, so the yard's save looks as before. The yard writes
 its part a moment after things go quiet, when you leave it, when the game stops and when the
 page is hidden (`pagehide`); while trace or a lockout moves it also writes every 2 s at most.

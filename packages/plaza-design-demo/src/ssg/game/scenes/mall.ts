@@ -240,7 +240,7 @@ const MEMORIES: string[][] = [
 ];
 
 const USES: SceneUse[] = [
-  { id: 'implants', x: 262, label: '[E] VANTA IMPLANTS', name: 'VANTA CLERK', promptH: 70, use: (c) => {
+  { id: 'implants', x: 262, label: '[E] VANTA IMPLANTS', price: (f) => (implantAsk && !f['mall:implant'] ? 2 : 0), name: 'VANTA CLERK', promptH: 70, use: (c) => {
     if (implantAsk++ === 0) return ['Welcome to Vanta. Eyes, ears, spines: the full catalogue.', 'An optic upgrade starts at four hundred tokens. Thirty-six months\' finance. Your lungs secure the loan.'];
     if (c.flags['mall:implant']) return ['The light in your thumb? It\'s working. You just don\'t have any messages.', 'We sell a messages package, if you\'d like some.'];
     if (!c.pay(2)) return ['We do have a budget option: looking at the catalogue. That\'s free.', 'Until it isn\'t. Read the terms.'];
@@ -259,14 +259,14 @@ const USES: SceneUse[] = [
     c.set('mall:pawn' + (n + 1)); c.give(1);
     return MEMORIES[n];
   } },
-  { id: 'deck', x: 1130, label: '[E] DECK CHECKUP · 1 TOKEN', name: 'DECK REPAIR', promptH: 96, use: (c) => {
+  { id: 'deck', x: 1130, label: '[E] DECK CHECKUP', price: 1, name: 'DECK REPAIR', promptH: 96, use: (c) => {
     if (!c.pay(1)) return ['A checkup is one token. I can look at it for free, but then all I\'ll tell you is that it\'s a deck.'];
     c.set('mall:deck');
     return deckChecks++ === 0
       ? ['(She opens your deck, blows into it, closes it.) Dust in the fan. Fixed.', 'Three sets of fingerprints on the keys. Yours, a cat\'s, and someone who types fast and angry. A friend?']
       : ['It\'s clean. Stop paying me to tell you it\'s clean.', '...Fine. Token received. It\'s clean.'];
   } },
-  { id: 'florist', x: 1300, label: '[E] FLORIST', name: 'FLORIST', promptH: 70, use: (c) => {
+  { id: 'florist', x: 1300, label: '[E] FLORIST', price: () => (floristAsk ? 2 : 0), name: 'FLORIST', promptH: 70, use: (c) => {
     if (floristAsk++ === 0) return ['Everything here is real. Grown in dirt, in daylight, from a seed. Look, don\'t touch.', 'The fern is nine hundred tokens. The basil is four hundred. A single basil leaf is two.'];
     if (!c.pay(2)) return ['Then just breathe near the fern. The first breath is free.'];
     c.set('mall:leaf'); c.add('basil');
@@ -274,7 +274,7 @@ const USES: SceneUse[] = [
       ? ['One leaf. I\'ll wrap it.', 'Smell it on the way home. That\'s what you\'re paying for. Eating it would be a waste of money.']
       : ['Another leaf. You remind me of someone: the one with the deck and the smart pot.', 'Buys plant food here. Talks to their fern. The fern looks well on it.'];
   } },
-  { id: 'keys', x: 1610, label: '[E] KEY CUTTER', name: 'KEY CUTTER', promptH: 70, use: (c) => {
+  { id: 'keys', x: 1610, label: '[E] KEY CUTTER', price: (f) => (keyAsk && !f['mall:blankchip'] ? 2 : 0), name: 'KEY CUTTER', promptH: 70, use: (c) => {
     c.set('mall:keycutter');
     if (keyAsk++ === 0) return ['Keys cut. Chips copied. Registered chips only, it says so on the counter.', 'Unregistered ones I don\'t copy. I clone. Different word, different price.', 'Bring me a chip and a reason. I copy the chip and forget the reason.'];
     if (c.flags['mall:blankchip']) return ['You have your blank. When you need something opened, bring the chip it\'s afraid of.'];
@@ -282,7 +282,7 @@ const USES: SceneUse[] = [
     c.set('mall:blankchip'); c.add('blankchip');
     return ['A blank chip. Unregistered. Not illegal, just unsold.', 'I\'ll remember your face. It\'s the one memory I never sell.'];
   } },
-  { id: 'order', x: 1900, label: '[E] ORDER · 1 TOKEN', name: 'FOOD COURT', promptH: 70, use: (c) => {
+  { id: 'order', x: 1900, label: '[E] ORDER', price: 1, name: 'FOOD COURT', promptH: 70, use: (c) => {
     if (!c.pay(1)) return ['One token. We take tokens, registered cards and nothing else. You are nothing else.'];
     c.set('mall:ate');
     return MEALS[meals++ % MEALS.length];

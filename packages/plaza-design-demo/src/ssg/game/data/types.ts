@@ -40,7 +40,7 @@ export type Cond = string;
  */
 export interface TimeWindow { from: string; to: string; days?: ('odd' | 'even' | number)[] }
 
-/** One step. Each has exactly one of set / open / emit / goal / effect / give / trace / unseal. */
+/** One step. Each has exactly one of set / open / emit / goal / effect / give / take / trace / unseal. */
 export type Action = { if?: Cond; when?: TimeWindow } & (
   | { set: string; to: Value }   // change a state key (strings are templates)
   | { open: string; with?: string } // open a full-screen panel: talk (with: which dialogue), camera
@@ -48,6 +48,7 @@ export type Action = { if?: Cond; when?: TimeWindow } & (
   | { goal: string }             // tick a goal
   | { effect: string }           // run a named effect implemented in code
   | { give: string; count?: number } // hand the player a keyring item, a module (`switch.so`), or `tokens` (with `count`)
+  | { take: string; count?: number } // take an item the player carries (scenes/kit.ts ITEMS: `soap`), `count` of them (default 1)
   | { trace: number }            // raise (or, negative, lower) this device's trace, in %
   | { unseal: string }           // open a sealed sector of this device (or `device/sector`)
 );
@@ -254,6 +255,12 @@ export interface DeviceData {
    * Hacking verbs (logins, links, logs, wiring) are not everyday: they live in hack view.
    */
   everyday?: EverydayData[];
+  /**
+   * What it takes from what you carry (scenes/kit.ts ITEMS): each shows in its popup as an everyday
+   * action only while you hold the item ("show the maglev pass" at the brake), first, and the popup
+   * still keeps to three (the last everyday ones make room). Nothing is taken unless a `take` step says so.
+   */
+  items?: ItemUseData[];
   /** A computer or terminal: its popup offers `⌁ jack in`, the full device screen (the schematic). */
   deck?: boolean;
   /**
@@ -263,8 +270,15 @@ export interface DeviceData {
   affects?: string[];
 }
 
-/** One everyday action: a noun's verb, with the popup's label (default: the verb). */
+/** One everyday action: a noun's verb, with the popup's label (default: the verb). `{tokens}` in the label: what you have. */
 export interface EverydayData { noun: string; verb: string; label?: string }
+
+/**
+ * Something you carry, used on this thing: `item` (an ITEMS id), the popup's `label` ("pour in
+ * soap"), and what happens, as a verb's cases on `noun` (its lines come from there; `emit` raises
+ * that noun's events). A `take` step uses the item up; without one you keep it (a pass you show).
+ */
+export interface ItemUseData { item: string; noun: string; label: string; on: Case | Case[] }
 
 /**
  * A cable present when the scene starts: event → noun + verb. Cuttable like any

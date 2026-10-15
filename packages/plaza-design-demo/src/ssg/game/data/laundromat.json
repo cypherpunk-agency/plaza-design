@@ -47,6 +47,7 @@
       "name": "WASHER 1",
       "look": "A front-loader with a cracked display. Six shirts inside, all blue, all waiting.",
       "everyday": [{ "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }, { "noun": "drum", "verb": "stop", "label": "stop it" }],
+      "items": [{ "item": "soap", "noun": "drum", "label": "pour in soap", "on": [{ "if": "w1=running", "say": "soap.running" }, { "do": [{ "take": "soap" }], "say": "soap.in" }] }],
       "status": [{ "if": "w1=idle", "then": "door locked · 1 cycle left" }, { "if": "w1=running", "then": "WASHING" }, { "if": "w1=done", "then": "cycle complete" }],
       "layout": {
         "spot": { "x": 290, "w": 46, "h": 50 },
@@ -69,6 +70,7 @@
       "name": "WASHER 2",
       "look": "A front-loader with a hand-knitted cover on its lid. Somebody's whole week is in there.",
       "everyday": [{ "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }, { "noun": "drum", "verb": "stop", "label": "stop it" }],
+      "items": [{ "item": "soap", "noun": "drum", "label": "pour in soap", "on": [{ "if": "w2=running", "say": "soap.running" }, { "do": [{ "take": "soap" }], "say": "soap.in" }] }],
       "status": [{ "if": "w2=idle", "then": "door locked · 1 cycle left" }, { "if": "w2=running", "then": "WASHING" }, { "if": "w2=done", "then": "cycle complete" }],
       "layout": {
         "spot": { "x": 350, "w": 46, "h": 50 },
@@ -91,6 +93,7 @@
       "name": "WASHER 3",
       "look": "A front-loader, the newest of the four. Through the glass: one jacket, dark, folded once. A sleeve against the door.",
       "everyday": [{ "noun": "door", "verb": "open", "label": "open the door" }, { "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }],
+      "items": [{ "item": "soap", "noun": "drum", "label": "pour in soap", "on": [{ "if": "w3=running", "say": "soap.running" }, { "do": [{ "take": "soap" }], "say": "soap.in" }] }],
       "status": [
         { "if": "door3=locked", "then": "door locked · 1 cycle left · 1 jacket (prepaid)" },
         { "if": "w3=running", "then": " · WASHING" },
@@ -130,6 +133,7 @@
       "name": "WASHER 4",
       "look": "A front-loader with a dent in it shaped like a boot. Work clothes inside, hi-vis, grey with the day.",
       "everyday": [{ "noun": "queue", "verb": "read", "label": "read the display" }, { "noun": "drum", "verb": "start", "label": "start it" }, { "noun": "drum", "verb": "stop", "label": "stop it" }],
+      "items": [{ "item": "soap", "noun": "drum", "label": "pour in soap", "on": [{ "if": "w4=running", "say": "soap.running" }, { "do": [{ "take": "soap" }], "say": "soap.in" }] }],
       "status": [{ "if": "w4=idle", "then": "door locked · 1 cycle left" }, { "if": "w4=running", "then": "WASHING" }, { "if": "w4=done", "then": "cycle complete" }],
       "layout": {
         "spot": { "x": 470, "w": 46, "h": 50 },
@@ -246,6 +250,8 @@
   ],
 
   "texts": {
+    "soap.running": ["pour soap", "SOAP DRAWER: locked while the drum turns. add soap before a cycle.", "err"],
+    "soap.in": ["pour soap", "SOAP DRAWER: 1 sachet accepted. this load was prepaid with soap. it now has more soap.", "dim"],
     "goals.done": "done. Moth's pass is for LINE 0. the metro is down the stairs on Downtown's street.",
     "talk.aria": "Say something to SUDS",
 

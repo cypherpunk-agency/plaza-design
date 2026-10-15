@@ -46,7 +46,7 @@ export const laundromat: SceneDef = {
     ] },
   ],
   uses: [
-    { id: 'soap', x: L.soap, label: '[E] SOAP · 1 TOKEN', name: 'SOAP DISPENSER', promptH: 92, h: 76, use: (c) => {
+    { id: 'soap', x: L.soap, label: '[E] SOAP', price: 1, name: 'SOAP DISPENSER', promptH: 92, h: 76, use: (c) => {
       if (!c.pay(1)) return ['INSERT 1 TOKEN.', 'NO TOKEN DETECTED. NO SOAP DISPENSED. ATTEMPT LOGGED.'];
       c.add('soap');
       return ['1 SACHET DISPENSED. SCENT: STANDARD.', 'PURCHASE LOGGED TO YOUR IDENTITY. IDENTITY NOT FOUND. PURCHASE LOGGED ANYWAY.'];

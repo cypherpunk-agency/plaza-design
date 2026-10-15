@@ -32,8 +32,8 @@
  * hacking entries. Styles: POPUP_STYLES, inlined by render.tsx.
  */
 
-/** One entry: an everyday action (cyan), or a hacking one (pink). `cur`: the state it is in now. */
-export interface PopupItem { label: string; hack?: boolean; cur?: boolean; run: () => void }
+/** One entry: an everyday action (cyan), or a hacking one (pink). `cur`: the state it is in now. `own`: it uses something you carry (dashed). */
+export interface PopupItem { label: string; hack?: boolean; cur?: boolean; own?: boolean; run: () => void }
 /** Where the thing stands on screen: its box centre and size, in CSS px of the game view. */
 export interface PopupAnchor { x: number; y: number; w: number; h: number }
 /** What placing the popup keeps in mind (CSS px of the game view). */
@@ -288,7 +288,7 @@ export class Popup {
     this.sel = Math.min(this.sel, items.length - 1);
     this.list.textContent = '';
     items.forEach((it, i) => {
-      const b = el('button', 'thing-item' + (it.hack ? ' hack' : '') + (it.cur ? ' cur' : '') + (i === this.sel ? ' sel' : ''));
+      const b = el('button', 'thing-item' + (it.hack ? ' hack' : '') + (it.cur ? ' cur' : '') + (it.own ? ' own' : '') + (i === this.sel ? ' sel' : ''));
       // the hacking entries' mark (⌁, missing from IBM Plex Mono) is drawn: a small jack plug
       const label = it.label.replace(/^⌁\s*/, '');
       if (label !== it.label) b.appendChild(el('span', 'thing-ico'));
@@ -527,6 +527,8 @@ export const POPUP_STYLES = `
 
     .thing-pop.plate .thing-item.hack { color: rgb(255, 61, 242); background: #1a0418; border-color: rgb(255, 61, 242); }
     .thing-pop.plate .thing-item.cur { color: var(--color-success); border-color: var(--color-success); background: #04140a; }
+    /* something you carry, used on the thing (the maglev pass at the brake): dashed, it comes from your pocket */
+    .thing-item.own, .thing-pop.plate .thing-item.own { border-style: dashed; }
     .thing-pop.plate .thing-item.sel,
     .thing-pop.plate .thing-item:hover { box-shadow: 0 0 0 1px currentColor, 0 0 10px rgba(0, 255, 255, 0.45); }
     .thing-pop.plate .thing-item.hack.sel,

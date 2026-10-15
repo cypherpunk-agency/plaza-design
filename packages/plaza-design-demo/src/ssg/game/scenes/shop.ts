@@ -82,7 +82,7 @@ const GOODS = [
 /** What each of GOODS puts in your hands. */
 const GOOD_ITEMS: ItemId[] = ['blue', 'crisps', 'noodlecup', 'gum'];
 const USES: SceneUse[] = [
-  { id: 'buy', x: L.till, label: '[E] BUY · 1 TOKEN', name: 'SHOPKEEPER', promptH: 62, use: (c) => {
+  { id: 'buy', x: L.till, label: '[E] BUY', price: 1, name: 'SHOPKEEPER', promptH: 62, use: (c) => {
     if (!c.pay(1)) return ['One token. You have none. I can do nothing for you, at no charge.', 'Credit? This is a corner shop, not a bank. Banks have better locks.'];
     c.set('shop:bought'); c.add(GOOD_ITEMS[bought % GOOD_ITEMS.length]);
     return GOODS[bought++ % GOODS.length];

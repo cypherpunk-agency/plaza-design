@@ -59,7 +59,7 @@ export const beach: SceneDef = {
     ] },
   ],
   uses: [
-    { id: 'order', x: L.order, label: '[E] ORDER · 2 TOKENS', name: 'LIME', promptH: 70, h: 70, use: (c) => {
+    { id: 'order', x: L.order, label: '[E] ORDER', price: 2, name: 'LIME', promptH: 70, h: 70, use: (c) => {
       if (!c.pay(2)) return ['Two tokens. You have ' + c.tokens + '. I would lend you one, but I remember everything.', 'The jukebox is free. Just saying. Nobody listens to the bartender.'];
       c.set('beach:drink');
       return ['One SALT SPECIAL. Mostly lime. Do not tell the lime.', "Moth's usual was water with a slice of me in it. Cheaper. Moth was always cheaper."];

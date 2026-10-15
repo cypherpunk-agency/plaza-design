@@ -324,6 +324,27 @@ export class SceneModel {
     this.changed();
   }
 
+  /**
+   * Use something you carry on a device (its data's `items[i]`: show the pass, pour in soap), from
+   * its popup. Only while you hold it; a frozen or locked-out device refuses, as for a verb. Its
+   * cases run as that noun's verb would (lines, `emit`); a `take` step uses the item up.
+   */
+  offer(dev: string, i: number) { this.as(dev, () => this.offerAs(dev, i)); }
+  private offerAs(dev: string, i: number) {
+    const d = this.devices.get(dev), u = d?.data.items?.[i];
+    if (!d || !u || this.carry(u.item) <= 0) return;
+    if (this.frozen(dev)) { this.sayLine(this.frozenLine(dev, u.noun, u.label, false)); this.changed(); return; }
+    const left = this.lockLeft(dev);
+    if (left) { this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
+    this.touched.set(dev, this.now());
+    const line = this.runCases(u.on, { dev, noun: u.noun, verb: u.label, bySignal: false });
+    if (line) this.sayLine(line);
+    this.changed();
+  }
+
+  /** A popup label with `{tokens}` (what you have now) and the state filled in. */
+  labelOf(dev: string, text: string) { return this.fmt(text, this.ctx(dev), { tokens: this.hooks.tokens ? this.hooks.tokens(0) : this.ownTokens }); }
+
   /** Tell the view; open any sector whose `if` seal holds now. */
   changed() { this.checkSeals(); this.hooks.changed(); }
 
@@ -1133,8 +1154,10 @@ export class SceneModel {
   }
 
   /** Run a verb: the first case whose `if` holds does its steps and says its line. */
-  private perform(n: NounData, c: Ctx): Line | null {
-    const cases = n.on?.[c.verb] ?? n.on?.['*'];
+  private perform(n: NounData, c: Ctx): Line | null { return this.runCases(n.on?.[c.verb] ?? n.on?.['*'], c); }
+
+  /** The first case whose `if` holds (and whose `when` is now): its steps, then its line. */
+  private runCases(cases: Case | Case[] | undefined, c: Ctx): Line | null {
     if (!cases) return null;
     for (const k of list<Case>(cases)) {
       if ((k.if && !this.test(k.if, c)) || !now(k.when)) continue;
@@ -1155,6 +1178,7 @@ export class SceneModel {
     else if ('goal' in a) this.goal(a.goal);
     else if ('effect' in a) return (this.rules.effects[a.effect] ?? ENGINE_EFFECTS[a.effect])(this.world(c), c) ?? null;
     else if ('give' in a) return this.give(a.give, a.count);
+    else if ('take' in a) this.carry(a.take, -(a.count ?? 1));
     else if ('trace' in a) this.addTrace(c.dev, a.trace);
     else if ('unseal' in a) { const [d, s] = a.unseal.includes('/') ? a.unseal.split('/') : [c.dev, a.unseal]; return this.unseal(d, s); }
     return null;

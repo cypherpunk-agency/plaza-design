@@ -21,11 +21,12 @@ import { PARCEL } from './yard';
 import { Companion, WARM } from './companion';
 import { reconcile, syncGoals, sceneShell } from './downtown';
 import { CITY, NO_RULES, SceneHost } from './engine';
+import { MAX_EVERYDAY } from './engine/host';
 import { city, parseHM, TRAVEL, WAIT_CARD, WAITS, type WaitTo } from './clock';
 import { reportLines, sceneClimate, screenLine, setHereClimate, weatherNow, type Weather } from './weather';
 import { puddles, weatherFront, weatherMid, weatherSky } from './sets/weather';
 import { ticker, YELLOW } from './scenes/screens';
-import { isSceneId, ITEMS, SCENES, sceneTitle, type ItemId, type SceneDef, type SceneExit, type SceneId, type SceneRest, type SceneView } from './scenes';
+import { isSceneId, ITEMS, priceTag, SCENES, sceneTitle, type ItemId, type SceneSaid, type SceneUse, type UseCtx, type SceneDef, type SceneExit, type SceneId, type SceneRest, type SceneView } from './scenes';
 import { KEYRING, NET, SCENE_FILES, type MachineData, type NetworkData } from './data';
 import { SCAN } from './engine/model';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
@@ -53,7 +54,7 @@ import { Menu } from './menu';
 import { Opening } from './title';
 import { ClockBar, Transport } from './transport';
 import {
-  commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
+  commands, FRONTS, fixerPrice, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
   newSave, ownedModules, run, SAVE_KEY, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
@@ -847,7 +848,9 @@ export class Game {
   /** Downtown's people on the street and the fixer at his stall (level.ts says what they say). */
   private streetTargets(): Target[] {
     const list: Target[] = NPCS.map((n) => ({ kind: 'talk' as const, id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
-    list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' });
+    // a hint costs a bowl: the price shows where you pay (and only then)
+    const hint = fixerPrice(this.save);
+    list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' + (hint ? ' · HINT ' + priceTag(hint, this.save.tokens) : '') });
     return list;
   }
 
@@ -1795,13 +1798,16 @@ export class Game {
     x.restore();
   }
 
-  /** What you own, for the HUD (and hack vision's LOGIC drawer): tokens and modules; the key chips that do something and what you carry. */
+  /**
+   * What hack vision's LOGIC drawer lists: modules, programs and the key chips that do something.
+   * Not tokens and not what you carry (Tommi, 2026-10-15): those show where they are used (a price
+   * on the prompt, "show the maglev pass" in the brake's popup).
+   */
   private owned(): [string, string] {
     const s = this.save;
-    const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (s.programs.length ? ' · PROGRAMS ' + s.programs.join(' ') : '') + (SUDO ? ' · SUDO' : '');
+    const own = 'MODULES ' + (ownedModules(s).join(' ') || '-') + (s.programs.length ? ' · PROGRAMS ' + s.programs.join(' ') : '') + (SUDO ? ' · SUDO' : '');
     const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
-    const held = Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]) => (ITEMS[id as ItemId] ?? id) + (n > 1 ? '×' + n : ''));
-    return [own, [keys.length ? 'KEYS ' + keys.join(' ') : '', held.length ? 'HELD ' + held.join(' ') : ''].filter(Boolean).join(' · ')];
+    return [own, keys.length ? 'KEYS ' + keys.join(' ') : ''];
   }
   private ownLine() { const [own, more] = this.owned(); return more ? own + ' · ' + more : own; }
 
@@ -2219,7 +2225,9 @@ export class Game {
       }
       // The train's door: only while it stands at a stop with the doors open.
       if (e.action === 'out' && !rideOpen()) continue;
-      const label = e.action === 'out' ? '[E] STEP OUT · ' + (rideAtSiding() ? 'SIDING' : STATIONS[rideStop()].name) : e.label;
+      // a taxi stand shows its fare and what you have (tokens show only where you pay)
+      const label = e.action === 'out' ? '[E] STEP OUT · ' + (rideAtSiding() ? 'SIDING' : STATIONS[rideStop()].name)
+        : e.action === 'taxi' ? e.label + ' · ' + priceTag(FARE, this.save.tokens) : e.label;
       list.push({ kind: 'exit', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
     return list;
@@ -2232,7 +2240,7 @@ export class Game {
   private lifeTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
     for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
-    for (const u of s.uses ?? []) list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
+    for (const u of s.uses ?? []) list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: this.useLabel(u), promptH: u.promptH ?? 70 });
     // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
     if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
     // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
@@ -2276,31 +2284,51 @@ export class Game {
       return;
     }
     if (kind === 'use') {
-      const u = s.uses!.find((z) => z.id === id)!, save = this.save;
-      const out = u.use({
-        tokens: save.tokens,
-        pay: (n) => { if (save.tokens < n) return false; save.tokens -= n; this.flash('-' + n + ' token' + (n === 1 ? '' : 's')); return true; },
-        give: (n) => { save.tokens += n; this.flash('+' + n + ' token' + (n === 1 ? '' : 's')); },
-        flags: save.flags, set: (f) => { save.flags[f] = true; }, t: this.t,
-        weather: this.weatherHere().kind, min: city.min,
-        // what you carry: the save's items, across scenes and reloads
-        has: (item, n = 1) => (save.items[item] ?? 0) >= n,
-        take: (item, n = 1) => {
-          if ((save.items[item] ?? 0) < n) return false;
-          save.items[item] -= n;
-          if (save.items[item] <= 0) delete save.items[item];
-          return true;
-        },
-        add: (item, n = 1) => { save.items[item] = (save.items[item] ?? 0) + n; },
-      });
-      storeSave(save);
-      this.syncHud();
-      const said = Array.isArray(out) ? { name: u.name, pages: out } : out;
-      this.say(said.name, said.pages, u.x, u.h ?? 60);
+      const u = s.uses!.find((z) => z.id === id)!;
+      // something you carry that it takes: a popup, those first ("give the tea"), then the use itself
+      const own = (u.items ?? []).filter((x) => (this.save.items[x.item] ?? 0) > 0);
+      if (!own.length) { this.runUse(u, u.use); return; }
+      const price = this.usePrice(u), base = u.act ?? u.label.replace(/^\[E\]\s*/, '').toLowerCase();
+      const items: PopupItem[] = [
+        ...own.map((x) => ({ label: x.label, own: true, run: () => this.runUse(u, x.use) })),
+        { label: base + (price ? ' · ' + priceTag(price, this.save.tokens).toLowerCase() : ''), run: () => this.runUse(u, u.use) },
+      ].slice(0, MAX_EVERYDAY);
+      this.zh.choose('use:' + u.id, u.name, items, { x: u.x, y: 0, w: 40, h: Math.max(16, (u.promptH ?? 70) - 24) });
+      sound.open();
       return;
     }
     const e = s.exits.find((z) => z.id === id);
     if (e) this.useExit(e);
+  }
+
+  /** What a use costs now (0: nothing to pay this time). */
+  private usePrice(u: SceneUse) { return typeof u.price === 'function' ? u.price(this.save.flags) : u.price ?? 0; }
+  /** A use's E prompt: its price and what you have, only when there is something to pay. */
+  private useLabel(u: SceneUse) { const n = this.usePrice(u); return n ? u.label + ' · ' + priceTag(n, this.save.tokens) : u.label; }
+
+  /** Run a use (or what it does with something you carry), say what comes of it, write the save. */
+  private runUse(u: SceneUse, fn: (c: UseCtx) => SceneSaid) {
+    const save = this.save;
+    const out = fn({
+      tokens: save.tokens,
+      pay: (n) => { if (save.tokens < n) return false; save.tokens -= n; this.flash('-' + n + ' token' + (n === 1 ? '' : 's')); return true; },
+      give: (n) => { save.tokens += n; this.flash('+' + n + ' token' + (n === 1 ? '' : 's')); },
+      flags: save.flags, set: (f) => { save.flags[f] = true; }, t: this.t,
+      weather: this.weatherHere().kind, min: city.min,
+      // what you carry: the save's items, across scenes and reloads
+      has: (item, n = 1) => (save.items[item] ?? 0) >= n,
+      take: (item, n = 1) => {
+        if ((save.items[item] ?? 0) < n) return false;
+        save.items[item] -= n;
+        if (save.items[item] <= 0) delete save.items[item];
+        return true;
+      },
+      add: (item, n = 1) => { save.items[item] = (save.items[item] ?? 0) + n; },
+    });
+    storeSave(save);
+    this.syncHud();
+    const said = Array.isArray(out) ? { name: u.name, pages: out } : out;
+    if (said.pages.length) this.say(said.name, said.pages, u.x, u.h ?? 60);
   }
 
   /** Leave through an exit: board, step out, hail a taxi, look at the map, or walk to its scene, landing at its matching exit there. */

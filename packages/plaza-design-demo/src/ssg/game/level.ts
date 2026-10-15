@@ -192,6 +192,15 @@ const HINTS: Record<Objective, string[]> = {
 /** `ask`: after the last page, the deck opens with this already typed (the keyboard is right here). */
 export interface Talk { pages: string[]; spend?: boolean; ask?: string }
 
+/** What talking to the fixer costs now: 1 when the next thing he says is a hint for a bowl, else 0 (the prompt shows it). */
+export function fixerPrice(s: Save): number {
+  if (!s.flags.metFixer || !s.flags.greeted) return 0;
+  const goal = objective(s);
+  if (goal === 'handle' || goal === 'till') return 0;
+  if (s.keyring.includes('glove.left') && s.keyring.includes('glove.right') && !s.flags.gloves) return 0;
+  return (s.hints[goal] ?? 0) < HINTS[goal].length ? 1 : 0;
+}
+
 /** What the fixer says. Hints cost one noodle token and never give the answer. */
 export function fixerTalk(s: Save): Talk {
   const name = who(s);

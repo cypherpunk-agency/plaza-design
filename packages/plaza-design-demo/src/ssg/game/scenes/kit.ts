@@ -91,13 +91,36 @@ export interface SceneReadable { id: string; x: number; name: string; pages: str
 export interface SceneUse {
   id: string;
   x: number;
+  /** The E prompt ("[E] BUY FISH"); a `price` is added to it ("· 1 TOKEN · YOU HAVE 7"). */
   label: string;
   /** Who speaks the answer (the bubble's name), unless `use` returns its own. */
   name: string;
   promptH?: number;
   h?: number;
-  use: (c: UseCtx) => string[] | { name: string; pages: string[] };
+  /**
+   * What it costs now, in tokens (0 or none: nothing to pay this time; the florist charges only once
+   * you ask). Tokens show only where you pay (Tommi, 2026-10-15): on the prompt and the popup.
+   */
+  price?: number | ((flags: Readonly<Record<string, boolean>>) => number);
+  /** Its words in the popup, when it opens one (what you carry is offered): default the label, lower case. */
+  act?: string;
+  /**
+   * What it takes from what you carry: while you hold one, E opens a popup with these first ("give
+   * the tea") and the use itself, three at most. `use` runs as the main one does; it takes the item
+   * itself (`c.take`) or keeps it.
+   */
+  items?: SceneItemUse[];
+  use: (c: UseCtx) => SceneSaid;
 }
+
+/** What a use says: lines in its own name, or another speaker's. */
+export type SceneSaid = string[] | { name: string; pages: string[] };
+
+/** Something you carry, used on a scene's use (the tea at the crane's call box). */
+export interface SceneItemUse { item: ItemId; label: string; use: (c: UseCtx) => SceneSaid }
+
+/** "1 TOKEN · YOU HAVE 7": a price where you pay (prompts upper case; popups lower it). */
+export const priceTag = (n: number, have: number) => n + ' TOKEN' + (n === 1 ? '' : 'S') + ' · YOU HAVE ' + have;
 
 /** What a scene's `use` gets: the player's tokens and flags, and a way to pay. */
 export interface UseCtx {
@@ -113,7 +136,7 @@ export interface UseCtx {
   weather: WeatherKind;
   min: number;
   /**
-   * What the player carries (the save's `items`, kept across scenes and reloads; the HUD shows it):
+   * What the player carries (the save's `items`, kept across scenes and reloads; shown where it is used):
    * `has` at least n of an item, `take` n if there are that many (true), else nothing (false),
    * `add` n (bought, given). Item ids and their names: `ITEMS`.
    */
@@ -122,7 +145,7 @@ export interface UseCtx {
   add: (item: ItemId, n?: number) => void;
 }
 
-/** Everything the player can carry, by id, with its name in the HUD. */
+/** Everything the player can carry, by id, with its name (the HUD's short "+ name" line when it comes). */
 export const ITEMS = {
   fish: 'fish',
   tea: 'tea',

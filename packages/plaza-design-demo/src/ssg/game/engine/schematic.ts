@@ -127,7 +127,7 @@ export class Schematic {
   /** Hack vision: the top of the free view, under the HUD (stage px; the host sets it): name cards keep below it. */
   top = 0;
   private drawnUnit = 1;
-  /** Hack vision: what you own (tokens, modules, keys), shown in the LOGIC drawer. The host sets it. */
+  /** Hack vision: what you own (modules, programs, keys), shown in the LOGIC drawer. The host sets it. */
   drawerInfo: () => string = () => '';
   /** Hack vision: the drawer opened or closed (the bars light their LOGIC button). */
   onDrawer: () => void = () => {};

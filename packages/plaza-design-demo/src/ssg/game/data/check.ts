@@ -15,6 +15,7 @@ import type {
   Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
 } from './types';
 import { windowProblem } from '../clock';
+import { ITEMS } from '../scenes/kit';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
 export interface CodeContract {
@@ -47,7 +48,9 @@ const TONES = ['ok', 'err', 'dim'];
 const CITY_KEYS = ['weather', 'hour', 'day'];
 const WEATHER = ['clear', 'cloudy', 'rain', 'storm', 'fog', 'smog', 'heat'];
 const DIRS = ['up', 'down', 'left', 'right'];
-const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect', 'give', 'trace', 'unseal'];
+const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect', 'give', 'take', 'trace', 'unseal'];
+/** What the player can carry (scenes/kit.ts ITEMS): `take` steps and a device's `items` name these. */
+const ITEM_IDS = Object.keys(ITEMS);
 const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
 const KEYS: Record<string, string[]> = {
   scene: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog'],
@@ -57,8 +60,9 @@ const KEYS: Record<string, string[]> = {
   machine: ['id', 'in', 'node'],
   program: ['id', 'name', 'look', 'foundIn'],
   module: ['id', 'start', 'foundIn', 'part'],
-  device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'deck', 'affects'],
+  device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'items', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
+  itemUse: ['item', 'noun', 'label', 'on'],
   noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
   guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
   rings: ['rings', 'tolerance'],
@@ -322,7 +326,11 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       else if (a.give !== 'tokens' && !world.keyring.has(a.give)) {
         err(where, /\.so$/.test(a.give) ? `give "${a.give}": no module with that id in logic.json (or program in net.json)` : `give "${a.give}": no keyring item with that id (scene or net.json "keyring")`);
       }
-    } else if ('count' in a) err(where, '"count" only goes with give "tokens"');
+    } else if ('take' in a) {
+      // an item the player carries, used up (soap into a washer)
+      if (!ITEM_IDS.includes(a.take)) err(where, `take "${a.take}": not an item you can carry (scenes/kit.ts ITEMS: ${ITEM_IDS.join(', ')})`);
+      if (a.count !== undefined && !(Number.isInteger(a.count) && a.count >= 1)) err(where, '"count" is how many to take, a whole number from 1');
+    } else if ('count' in a) err(where, '"count" only goes with give "tokens" or take');
     if ('trace' in a) {
       if (!noun) err(where, 'trace only works on a noun (it is the device you are in)');
       if (!num(a.trace)) err(where, 'trace is a number (%; negative lowers it)');
@@ -653,6 +661,38 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
     dupes(d.everyday.map((e) => e.noun + ' ' + e.verb), where + ' › everyday', 'action');
   };
 
+  /**
+   * What a device takes from what you carry (`items`): an ITEMS id, a noun that is everyday (not
+   * hacking, not sealed), the popup's words, and cases as a verb's. They show only while held, first;
+   * the popup keeps to three at runtime, so there is no count limit here.
+   */
+  const itemUses = (d: DeviceData, where: string) => {
+    if (d.items === undefined) return;
+    if (!Array.isArray(d.items)) { err(where + ' › items', 'a list of { item, noun, label, on }'); return; }
+    const local = Object.keys(d.state ?? {});
+    const known = new Set([...env.known, ...local]), writable = new Set([...env.writable, ...local]);
+    d.items.forEach((u, i) => {
+      const w = `${where} › items[${u.item ?? i}]`;
+      keys(u, 'itemUse', w);
+      if (!ITEM_IDS.includes(u.item)) err(w, `"${u.item}" is not an item you can carry (scenes/kit.ts ITEMS: ${ITEM_IDS.join(', ')})`);
+      if (typeof u.label !== 'string' || !u.label.trim()) err(w, 'label is the words on the popup ("pour in soap")');
+      const n = d.nouns.find((x) => x.id === u.noun);
+      if (!n) { err(w, `noun "${u.noun}" is not one of its nouns`); return; }
+      if (HACKING.includes(n.kind)) err(w, `${n.id} is a ${n.kind}: hacking, not everyday`);
+      if (n.sector) err(w, `${n.id} sits in sector "${n.sector}": sealed things are not everyday`);
+      if (u.on === undefined) { err(w, 'needs "on": what happens (a case, or a list of them)'); return; }
+      list<Case>(u.on).forEach((k, j) => {
+        const wc = `${w} › on` + (Array.isArray(u.on) ? `[${j}]` : '');
+        keys(k, 'case', wc);
+        c.cond(k.if, known, wc);
+        c.when(k.when, wc);
+        (k.do ?? []).forEach((a, x) => c.action(a, `${wc} › do[${x}]`, known, writable, d, n));
+        if (k.say !== undefined) line(k.say, `${wc} › say`);
+      });
+    });
+    dupes(d.items.map((u) => u.item + ' ' + u.label), where + ' › items', 'item action');
+  };
+
   // ---------- devices and nodes ----------
   dupes([...z.devices, ...nodes].map((d) => d.id), 'devices', 'device or node id');
   nodes.forEach((n) => { if (world.netNodes.has(n.id)) err(`nodes[${n.id}]`, 'net.json has a node with this id too'); });
@@ -660,10 +700,11 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
     c.device(d, `devices[${d.id}]`);
     if (!d.layout?.spot) err(`devices[${d.id}]`, 'needs layout.spot: where it stands in the world (computers on the net go in "nodes")');
     everyday(d, `devices[${d.id}]`);
+    itemUses(d, `devices[${d.id}]`);
   });
   nodes.forEach((d) => {
     c.device(d, `nodes[${d.id}]`);
-    if (d.everyday || d.deck !== undefined || d.affects) err(`nodes[${d.id}]`, 'a node is not in the world: no everyday actions, deck or affects (you reach it through a LINK)');
+    if (d.everyday || d.items || d.deck !== undefined || d.affects) err(`nodes[${d.id}]`, 'a node is not in the world: no everyday actions, items, deck or affects (you reach it through a LINK)');
     if (d.layout?.spot) err(`nodes[${d.id}] › layout`, 'a node is not in the world: no spot (it lives on the board)');
   });
 

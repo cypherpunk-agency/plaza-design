@@ -206,7 +206,7 @@ const FORTUNES = [
 ];
 
 const USES: SceneUse[] = [
-  { id: 'haggle', x: 486, label: '[E] HAGGLE · UMBRELLA', name: 'UMBRELLA SELLER', promptH: 70, use: (c) => {
+  { id: 'haggle', x: 486, label: '[E] HAGGLE · UMBRELLA', price: (f) => (haggle >= 4 && !f['market:umbrella'] ? 1 : 0), name: 'UMBRELLA SELLER', promptH: 70, use: (c) => {
     if (c.flags['market:umbrella']) return ['You already have one of mine. It works. Mostly.', 'If it asks for an update, say no.'];
     const steps = [
       ['Umbrella? Nine tokens.', 'Look up. The sky does my advertising.'],
@@ -219,7 +219,7 @@ const USES: SceneUse[] = [
     c.set('market:umbrella');
     return ['Pleasure. It is a smart umbrella: it opens once you accept its terms.', 'Forty pages. Read them under a roof.'];
   } },
-  { id: 'fortune', x: 1208, label: '[E] FORTUNE · 1 TOKEN', name: 'FORTUNE UNIT 9', promptH: 98, use: (c) => {
+  { id: 'fortune', x: 1208, label: '[E] FORTUNE', price: 1, name: 'FORTUNE UNIT 9', promptH: 98, use: (c) => {
     if (!c.pay(1)) return ['FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.', 'IT CAN SEE YOUR BALANCE. IT IS ZERO.'];
     return FORTUNES[fortunes++ % FORTUNES.length];
   } },

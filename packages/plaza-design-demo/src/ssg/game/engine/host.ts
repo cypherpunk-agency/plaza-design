@@ -96,6 +96,8 @@ const TICK_MS = 250;
 const HEAT_SAVE_MS = 2000;
 /** World (x along the scene, h above the ground) to CSS px inside the canvas. */
 export type Project = (wx: number, h: number) => { x: number; y: number };
+/** At most this many everyday actions in a popup (data/check.ts says the same of `everyday`); what you carry comes first. */
+export const MAX_EVERYDAY = 3;
 /** Walk this far (world units) from where a thing's popup opened, and it closes. */
 const POPUP_WALK = 36;
 /** A logic part's body floating in hack vision, in world units. */
@@ -574,12 +576,21 @@ export class SceneHost {
     const m = this.model, d = m.devices.get(id)!;
     // the story's everyday actions for this device, in this state (the popup closes first, as for the data's)
     const story = this.story(id)?.map((it) => ({ ...it, run: () => { this.popup.close(); it.run(); } }));
+    // a noun sealed away (or gone) is not everyday any more
+    const open = (noun: string) => { const n = d.nouns.find((x) => x.id === noun); return n && !(n.sector && m.sealed(id, n.sector)) ? n : null; };
     const items: PopupItem[] = story ?? (d.data.everyday ?? []).flatMap((e) => {
-      const n = d.nouns.find((x) => x.id === e.noun);
-      // a noun sealed away (or gone) is not everyday any more
-      if (!n || (n.sector && m.sealed(id, n.sector))) return [];
-      return [{ label: e.label ?? e.verb, cur: n.current?.() === e.verb, run: () => this.everyday(id, e.noun, e.verb) }];
+      const n = open(e.noun);
+      if (!n) return [];
+      return [{ label: m.labelOf(id, e.label ?? e.verb), cur: n.current?.() === e.verb, run: () => this.everyday(id, e.noun, e.verb) }];
     });
+    // what you carry that it takes (data: `items`): only while you hold it, first; still three at most,
+    // so the last everyday ones make room (GAME-DATA.md, "Using what you carry")
+    if (!story) {
+      const own: PopupItem[] = (d.data.items ?? []).flatMap((u, i) => (open(u.noun) && m.carry(u.item) > 0
+        ? [{ label: m.labelOf(id, u.label), own: true, run: () => { this.popup.close(); m.offer(id, i); } }] : []));
+      items.unshift(...own);
+      items.splice(MAX_EVERYDAY);
+    }
     if (this.hackLock()) return items;
     if (d.data.deck) items.push({ label: m.label('menu.jack'), hack: true, run: () => { this.popup.close(); this.openDevice(id); } });
     items.push({ label: m.label('menu.hack'), hack: true, run: () => this.hackIt(id) });

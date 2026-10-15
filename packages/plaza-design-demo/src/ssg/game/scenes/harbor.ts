@@ -194,28 +194,31 @@ const TEA_LINES = [
 ];
 
 const USES: SceneUse[] = [
-  { id: 'fish', x: L.fish.use, label: '[E] BUY FISH · 1 TOKEN', name: 'FISH SELLER', promptH: 92, use: (c) => {
+  { id: 'fish', x: L.fish.use, label: '[E] BUY FISH', price: 1, name: 'FISH SELLER', promptH: 92, use: (c) => {
     if (!c.pay(1)) return ['One token a fish. You have the look of someone with no tokens and strong opinions.', 'Come back richer. The fish will still be here. Less fresh, but here.'];
     c.add('fish'); c.set('harbor:fish');
     return FISH_LINES[fishSold++ % FISH_LINES.length];
   } },
-  { id: 'drink', x: L.drinks.use, label: '[E] HOT DRINK · 1 TOKEN', name: 'TEA CART', promptH: 92, use: (c) => {
+  { id: 'drink', x: L.drinks.use, label: '[E] HOT DRINK', price: 1, name: 'TEA CART', promptH: 92, use: (c) => {
     if (!c.pay(1)) return ['One token. Warmth is extra and I don\'t sell it.'];
     c.add('tea'); c.set('harbor:tea');
     // in the rain, the tea cart has the one line it has been saving
     if (c.weather === 'rain' || c.weather === 'storm') return ['Rain\'s in. Same price. The rain is free, I checked.', '(Tea, hot, with a lid. The lid is the luxury.)'];
     return TEA_LINES[teaSold++ % TEA_LINES.length];
   } },
-  { id: 'crane', x: L.callBox, label: '[E] CRANE CALL BOX', name: 'STS-1 CAB', promptH: 78, use: (c) => {
-    if (!c.take('tea')) return ['(The intercom crackles.) STS-1. Unless you\'re a container, I can\'t help you.', 'Unless you\'ve got tea. The cart down the pier does tea. I can\'t come down: if I come down they make me fill in a form about why.'];
+  { id: 'crane', x: L.callBox, label: '[E] CRANE CALL BOX', act: 'press the call button', name: 'STS-1 CAB', promptH: 78,
+    use: () => ['(The intercom crackles.) STS-1. Unless you\'re a container, I can\'t help you.', 'Unless you\'ve got tea. The cart down the pier does tea. I can\'t come down: if I come down they make me fill in a form about why.'],
+    // the tea, held up to the cab: offered in the call box's popup while you carry one
+    items: [{ item: 'tea', label: 'hold up the tea', use: (c) => {
+    if (!c.take('tea')) return [];
     craneCall = c.t;
     if (craneTeas++ === 0) {
       c.give(1); c.set('harbor:crane');
       return ['Is that tea? Hold it up. Higher. Right, stand clear.', '(Sixty tonnes of spreader come down, very gently, for one paper cup.)', 'Bless you. Fourteen hours up here. Have a token, don\'t tell the union.', 'From up here I see every box on the pier. My mate on STS-2, round at berth 4 in terminal 2, has one on tonight\'s schedule the yard system can\'t find. Lifts what the schedule says, that one. Never asks what.'];
     }
     return ['Another one? You\'re spoiling me. (Up goes the cup.)', 'The patrol boat never looks up, you know. Nobody looks up.'];
-  } },
-  { id: 'bribe', x: L.bribe, label: '[E] TALK TO THE GUARD', name: 'GUARD', promptH: 62, use: (c) => {
+  } }] },
+  { id: 'bribe', x: L.bribe, label: '[E] TALK TO THE GUARD', price: (f) => (f['harbor:bribed'] || !bribeAsked ? 0 : 3), name: 'GUARD', promptH: 62, use: (c) => {
     if (c.flags['harbor:bribed']) return ['I\'m not looking. I\'m admiring the water. Very busy water tonight.'];
     if (!bribeAsked) { bribeAsked = true; return ['Bonded store. Sealed cargo. Nothing to see.', 'Not seeing anything costs three tokens.']; }
     if (!c.pay(3)) return ['Three. I can count, even if the Registry won\'t let me vote.'];
@@ -227,11 +230,16 @@ const USES: SceneUse[] = [
     c.set('harbor:ghostmark');
     return { name: 'PAINTED MARK', pages: ['A lantern, painted by hand in whitewash over the company logo. The paint is still tacky.', 'Under it, in pencil: COUNTED OUT? THE CANALS, UNDER THE THIRD BRIDGE. ASK FOR A LANTERN.'] };
   } },
-  { id: 'cat', x: CAT.x, label: '[E] THE CAT', name: 'DOCK CAT', promptH: 40, use: (c) => {
-    if (!c.take('fish')) return ['(The cat looks at your empty hands, then at the fish stand, then back at you. The message is clear.)'];
+  { id: 'cat', x: CAT.x, label: '[E] THE CAT', act: 'look at the cat', name: 'DOCK CAT', promptH: 40,
+    use: (c) => [c.has('fish')
+      ? '(The cat looks at the fish in your hand, then at you. It waits for you to work it out.)'
+      : '(The cat looks at your empty hands, then at the fish stand, then back at you. The message is clear.)'],
+    // the fish, put down for it: offered in the cat's popup while you carry one
+    items: [{ item: 'fish', label: 'give it the fish', use: (c) => {
+    if (!c.take('fish')) return [];
     c.set('harbor:cat');
     return ['(You put the fish down. The cat inspects it like a customs officer, then eats it like a smuggler.)', '(It lets you scratch one ear, once. That\'s the deal.)'];
-  } },
+  } }] },
 ];
 
 // ---------- drawing ----------
