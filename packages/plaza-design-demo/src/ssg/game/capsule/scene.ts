@@ -18,6 +18,8 @@ import type { DrawView } from '../engine/host';
 import type { SceneModel } from '../engine/model';
 import { box, C, GREEN, O, PAPER, RED, RUST, text, tell } from '../scenes/kit';
 import { routerUp, type PixelAt } from './rules';
+import { light, rel } from '../light';
+import { drawPane, glass, windowShaft } from '../sets/sky';
 
 /** The flat: 520 wide, 104 high. Its walls' inner faces at 8 and W - 8. */
 export const CAPSULE_W = 520;
@@ -96,24 +98,12 @@ function drawTower(x: CanvasRenderingContext2D, v: DrawView) {
   }
 }
 
-/** Where the window looks out: a morning between two towers, the one hour the sun gets in. */
+/** The window looks east, between two towers (the one hour the sun gets in is the morning's). */
+export const CAPSULE_FACING = 90;
+
+/** Where the window looks out: the sky of the moment between the towers across the way (sets/sky.ts), and a far drone. */
 function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: number, h: number, t: number) {
-  const sky = x.createLinearGradient(0, top, 0, top + h);
-  sky.addColorStop(0, '#1a1430'); sky.addColorStop(0.55, '#6a3a3a'); sky.addColorStop(1, '#d88a4a');
-  x.fillStyle = sky; x.fillRect(l, top, w, h);
-  // the sun, low, in the gap between towers
-  const g = x.createRadialGradient(l + w * 0.36, top + h * 0.7, 1, l + w * 0.36, top + h * 0.7, 22);
-  g.addColorStop(0, 'rgba(255,240,200,.95)'); g.addColorStop(0.3, 'rgba(255,200,120,.6)'); g.addColorStop(1, 'rgba(255,170,90,0)');
-  x.fillStyle = g; x.fillRect(l, top, w, h);
-  // towers in silhouette, a few windows still lit
-  const towers = [[0, 0.28, 0.2], [0.1, 0.12, 0.45], [0.55, 0.2, 0.15], [0.74, 0.26, 0.3], [0.9, 0.1, 0.05]];
-  for (const [fx, fw, fh] of towers) {
-    const tx = Math.round(l + fx * w), tw = Math.round(fw * w), ty = Math.round(top + fh * h);
-    x.fillStyle = '#120a10'; x.fillRect(tx, ty, tw, top + h - ty);
-    for (let yy = ty + 4; yy < top + h - 3; yy += 5) for (let xx = tx + 2; xx < tx + tw - 2; xx += 4) {
-      if (hash(xx * 3 + yy) < 0.15) { x.fillStyle = 'rgba(255,170,90,.45)'; x.fillRect(xx, yy, 1, 2); }
-    }
-  }
+  drawPane(x, l, top, w, h, light(), { facing: CAPSULE_FACING, seed: 7, horizon: 0.95 });
   // a far drone drifting past
   const dx = l + ((t * 0.15) % (w + 20)) - 10;
   x.fillStyle = 'rgba(255,42,68,.6)'; x.fillRect(Math.round(dx), top + 8, 2, 1);
@@ -174,28 +164,27 @@ export function drawCapsule(x: CanvasRenderingContext2D, m: SceneModel, v: DrawV
   if (sun) {
     // rolled up into the box at the top
     box(x, wl - 4, wt - 8, W0.w + 8, 8, '#2a1a10', 'rgba(' + O + ',.7)');
-    // the beam, falling in and landing on the floor
-    const b0 = sx(L.sun.x0), b1 = sx(L.sun.x1);
-    const g = x.createLinearGradient(0, wt, 0, gy);
-    g.addColorStop(0, 'rgba(255,210,140,.16)'); g.addColorStop(1, 'rgba(255,210,140,.06)');
-    x.fillStyle = g; x.beginPath(); x.moveTo(wl, wt + wh); x.lineTo(wl + W0.w, wt); x.lineTo(b1, gy); x.lineTo(b0, gy); x.closePath(); x.fill();
-    x.fillStyle = 'rgba(255,215,150,.35)'; x.fillRect(b0, gy - 2, b1 - b0, 3);
-    x.fillStyle = 'rgba(255,215,150,.12)'; x.fillRect(b0 - 6, gy + 1, b1 - b0 + 12, 8);
-    // dust in the light
-    for (let i = 0; i < 7; i++) {
-      const f = ((t * 0.003 + hash(i)) % 1), dxp = wl + W0.w * 0.2 + (b1 - wl) * f * 0.8 + Math.sin(t * 0.02 + i) * 3;
-      x.fillStyle = 'rgba(255,230,190,.5)'; x.fillRect(Math.round(dxp), Math.round(wt + (gy - wt) * f), 1, 1);
+    // the light falling in (sets/sky.ts windowShaft): the sun's when it is on this side, its colour and angle by the hour
+    const lt = light(), win = { l: wl, r: wl + W0.w, t: wt, b: wt + wh };
+    if (!windowShaft(x, win, gy, Math.min(v.viewH, gy + 14), lt, CAPSULE_FACING, { dust: true, t })) {
+      // no sun: the sky's own light (or the city's at night) still makes a pale patch where the sun would lie
+      const [gc, ga] = glass(lt), b0 = sx(L.sun.x0), b1 = sx(L.sun.x1), a = Math.max(0.05, ga * 0.6);
+      const col = lt.daylight > 0.2 ? gc : '150,160,210';
+      x.fillStyle = 'rgba(' + col + ',' + (a * 0.5).toFixed(3) + ')'; x.beginPath(); x.moveTo(wl, wt + wh); x.lineTo(wl + W0.w, wt + wh); x.lineTo(b1, gy); x.lineTo(b0, gy); x.closePath(); x.fill();
+      x.fillStyle = 'rgba(' + col + ',' + a.toFixed(3) + ')'; x.fillRect(b0, gy - 1, b1 - b0, 2);
     }
   } else {
-    // closed: slats, with the morning leaking through the gaps
+    // closed: slats, with the light of the hour leaking through the gaps (the sun's when it is on this side)
+    const lt = light(), sunIn = lt.direct * (Math.abs(rel(lt.sun.az, CAPSULE_FACING)) < 80 ? 1 : 0), [gc, ga] = glass(lt);
+    const leak = sunIn > 0.05 ? 'rgba(' + lt.sunCol + ',' + (0.12 + 0.14 * sunIn).toFixed(3) + ')' : 'rgba(' + (lt.daylight > 0.2 ? gc : '120,130,180') + ',' + Math.max(0.06, ga * 0.6).toFixed(3) + ')';
     x.fillStyle = '#24160d'; x.fillRect(wl - 2, wt - 2, W0.w + 4, wh + 4);
     for (let yy = wt; yy < wt + wh; yy += 4) {
       x.fillStyle = 'rgba(' + O + ',.18)'; x.fillRect(wl - 2, yy, W0.w + 4, 1);
-      x.fillStyle = 'rgba(255,200,130,.22)'; x.fillRect(wl, yy + 3, W0.w, 1);
+      x.fillStyle = leak; x.fillRect(wl, yy + 3, W0.w, 1);
     }
     x.strokeStyle = 'rgba(' + O + ',.55)'; x.strokeRect(wl - 1.5, wt - 1.5, W0.w + 3, wh + 3);
     // thin warm lines on the floor under the window
-    x.fillStyle = 'rgba(255,200,130,.08)'; x.fillRect(sx(L.sun.x0), gy - 1, sx(L.sun.x1) - sx(L.sun.x0), 1);
+    x.fillStyle = leak; x.globalAlpha = 0.5; x.fillRect(sx(L.sun.x0), gy - 1, sx(L.sun.x1) - sx(L.sun.x0), 1); x.globalAlpha = 1;
   }
   // the blinds' motor box, with its cyan tell
   box(x, wl + W0.w + 4, wt + 4, 8, 12, '#0d1416', 'rgba(' + C + ',.6)');

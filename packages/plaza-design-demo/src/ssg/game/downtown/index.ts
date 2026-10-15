@@ -47,6 +47,25 @@ export const downtown: SceneDef = {
   ],
   readables: READABLES.map((r) => ({ id: r.id, x: r.x, name: 'SIGN', pages: r.pages, promptH: 160 })),
   ambient: { sky: true, city: true, street: true, weather: true },
+  // the street runs north–south; you look east across it, over the towers toward the bay: the sun
+  // comes up behind them (the opening's dawn) and the facades stand in their own shade all morning
+  facing: 80,
+  shade: {
+    front: { h: 300, gaps: [[950, 1040], [1040, 1200], [1520, 1680]] },
+    back: { h: 220, gaps: [[380, 430], [1090, 1160], [1600, 1660], [2010, 2100]] },
+  },
+  lights: [
+    { x: 766, h: 96, kind: 'lamp', r: 56 }, { x: 854, h: 96, kind: 'lamp', r: 56 },
+    { x: 995, h: 70, kind: 'lamp', r: 48, col: '255,180,100' },
+    { x: 810, h: 130, kind: 'neon', col: '0,255,255', r: 48 },
+    { x: 90, h: 100, kind: 'neon', col: '0,255,255', r: 44 },
+    { x: 1770, h: 110, kind: 'neon', r: 44 },
+    { x: 905, h: 104, kind: 'neon', r: 40 },
+    { x: 640, h: 132, kind: 'neon', col: '255,90,110', r: 64 },
+    { x: 1340, h: 220, kind: 'screen', r: 30, a: 0.7 },
+    { x: 976, h: 140, kind: 'neon', col: '255,61,242', r: 30 },
+  ],
+  casters: [{ x: 1020, h: 22, w: 40 }],
   keepFace: true,
   platforms: PLATFORMS,
   pixel: 'along',

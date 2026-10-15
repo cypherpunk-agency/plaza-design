@@ -19,6 +19,8 @@ export { drawGalleriaDome } from './galleria-dome';
 export { drawTower, towerRow } from './downtown-towers';
 export { frameView, placed } from './view';
 export { puddles, weatherFront, weatherMid, weatherSky, type PuddleSpec, type WeatherLook } from './weather';
+export { drawPane, drawSky, glass, moonDisc, seaCols, skyCols, skyPos, sunPath, windowShaft, type PaneOpts, type SkyOpts } from './sky';
+export { addLight, castShadow, drawCasters, drawGrade, drawLights, drawShade, gradeOf, inShade, prepareLights, prepareShade, shadowsOn, type Caster, type SceneLight, type Shade, type ShadeSide } from './lighting';
 
 export interface SetEntry {
   id: string;
@@ -77,6 +79,29 @@ export const SETS: SetEntry[] = [
       'game.ts drawWorld: every scene with `ambient.weather` (downtown, market, harbor, stacks, warehouse, beach, yard, metro, harborStation)',
       'Downtown keeps its own neon smears in the street (game.ts drawStreet), as wet as the weather',
       'title/glide.ts does NOT use it: the glide\'s "first rain" stays scripted',
+    ],
+  },
+  {
+    id: 'sky', file: 'sets/sky.ts',
+    what: 'The sky of the moment from the city clock (light.ts): gradient by the sun\'s height, twilight glow, stars, the moon with its phase, the slatted sun (option A) where it really is for the scene\'s facing; the sun\'s path on water; window panes and sun shafts for interiors.',
+    users: [
+      'game.ts drawWorld: every scene with `ambient.sky` (downtown, harbor, market, stacks, warehouse, yard, metro, harborStation), horizon from `SceneDef.horizon`',
+      'beach/scene.ts: its own sky call (horizon over the sea), seaCols and sunPath on the water',
+      'scenes/harbor.ts, stacks/scene.ts, scenes/stations.ts (harbor): seaCols and sunPath on the water',
+      'scenes/train.ts: the car\'s windows and the sky over its roof (the train home rides into the dawn)',
+      'capsule/scene.ts: the window (drawPane), the shaft when the blinds are up (windowShaft), the light leaking through the slats',
+      'moth/scene.ts, laundromat/scene.ts, library/scene.ts, scenes/shop.ts: the window\'s sky and the sun\'s shaft; scenes/mall.ts: the skylight',
+      'game.ts drawWindow: dark panes reflect the sky by day (glass)',
+    ],
+  },
+  {
+    id: 'lighting', file: 'sets/lighting.ts',
+    what: 'The light over a scene: the grade by the hour and the weather, the light layer (SceneDef.lights: lamps, windows, neon, screens, headlights), cast shadows A (people, robots, animals, SceneDef.casters) and building shade C (SceneDef.shade).',
+    users: [
+      'game.ts drawWorld: every scene (grade outdoors; lights, casters and shade where declared); the player\'s and the street NPCs\' shadows',
+      'characters.ts drawCharacter: every person, robot and animal\'s shadow',
+      'scenes/train.ts, laundromat/scene.ts, library/scene.ts, scenes/shop.ts: the grade over what their windows show',
+      'declared in: downtown/index.ts, scenes/harbor.ts, beach/index.ts, scenes/market.ts, scenes/warehouse.ts, scenes/metro.ts',
     ],
   },
 ];

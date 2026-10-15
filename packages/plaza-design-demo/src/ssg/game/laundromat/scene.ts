@@ -18,6 +18,9 @@
  * this draws them there.
  */
 
+import { light, windowLit } from '../light';
+import { drawPane, windowShaft } from '../sets/sky';
+import { drawGrade } from '../sets/lighting';
 import { drawCharacters, type Character } from '../characters';
 import type { EngineDraw } from '../engine/host';
 import type { SceneModel } from '../engine/model';
@@ -109,19 +112,22 @@ function upstairs(x: CanvasRenderingContext2D, v: View, w0: number, w1: number) 
   }
 }
 
+/** The front window looks south onto the market (light.ts facing). */
+export const LAUNDROMAT_FACING = 180;
+
 /** The market through the front window: the stalls' awnings and bulbs, people passing, rain, the shop's own sign backwards on the glass. */
 function frontWindow(x: CanvasRenderingContext2D, v: View) {
   const { sx, y, t } = v, W = L.window, l = sx(W.x0), top = y(W.h1), w = W.x1 - W.x0, h = W.h1 - W.h0;
   if (!onScreen(v, l, w)) return;
   x.save(); x.beginPath(); x.rect(l, top, w, h); x.clip();
-  const sky = x.createLinearGradient(0, top, 0, top + h);
-  sky.addColorStop(0, '#06050c'); sky.addColorStop(1, '#170a08');
-  x.fillStyle = sky; x.fillRect(l, top, w, h);
-  // the tenements across the market, a few windows lit
+  // the sky of the moment over the tenements (sets/sky.ts; the window looks south onto the market)
+  const lt = light();
+  drawPane(x, l, top, w, h, lt, { facing: LAUNDROMAT_FACING, seed: 23, towers: false, horizon: 0.08 });
+  // the tenements across the market, their windows lit by the clock
   x.fillStyle = '#0c0705'; x.fillRect(l, top + 6, w, h);
   for (let yy = top + 10; yy < top + 44; yy += 8) for (let xx = l + 4; xx < l + w - 4; xx += 9) {
     const n = hash(xx * 3 + yy * 11);
-    x.fillStyle = n < 0.22 ? 'rgba(255,170,90,.35)' : 'rgba(' + RUST + ',.1)'; x.fillRect(xx, yy, 4, 4);
+    x.fillStyle = n < 0.32 && windowLit(Math.round((xx - l) * 3 + (yy - top) * 11)) ? 'rgba(255,170,90,.35)' : 'rgba(' + RUST + ',.1)'; x.fillRect(xx, yy, 4, 4);
   }
   // the stalls opposite: striped awnings, strings of bulbs
   for (let i = 0; i < 4; i++) {
@@ -131,9 +137,11 @@ function frontWindow(x: CanvasRenderingContext2D, v: View) {
     for (let b = 0; b < 5; b++) { x.fillStyle = (b + Math.floor(t / 40) + i) % 5 ? 'rgba(255,190,110,.6)' : 'rgba(255,217,165,.2)'; x.fillRect(ax + 4 + b * 8, ay - 3, 2, 2); }
   }
   drawCharacters(x, v, OUTSIDE);
-  // rain on the street, and on the glass
+  // the market outside takes the hour's grade (sets/lighting.ts)
+  drawGrade(x, v, lt, true);
+  // rain on the street, and on the glass, when it rains
   x.strokeStyle = 'rgba(170,210,255,.22)';
-  for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % h; x.beginPath(); x.moveTo(l + rx, top + yy); x.lineTo(l + rx - 1, top + yy + 4); x.stroke(); }
+  if ((lt.w?.rain ?? 0) > 0.05) for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % h; x.beginPath(); x.moveTo(l + rx, top + yy); x.lineTo(l + rx - 1, top + yy + 4); x.stroke(); }
   x.restore();
   // the frame and its mullions; the shop's name backwards on the glass, lit from inside
   x.strokeStyle = 'rgba(' + O + ',.8)'; x.lineWidth = 1; x.strokeRect(l + 0.5, top + 0.5, w - 1, h - 1);
@@ -141,6 +149,8 @@ function frontWindow(x: CanvasRenderingContext2D, v: View) {
   text(x, 'TAMORDNUAL', l + w / 2, top + 10, 'rgba(255,136,0,.5)', 8, '600');
   // the sill the cat sits on
   box(x, l - 4, y(W.h0), w + 8, 4, '#2a1a10', 'rgba(' + O + ',.7)');
+  // the sun through the front window, onto the floor (none at night: the lamps then)
+  windowShaft(x, { l, r: l + w, t: top, b: y(W.h0) }, y(0), Math.min(v.viewH, y(0) + 16), lt, LAUNDROMAT_FACING);
 }
 
 /** A row of dryers over the washers: dead, stacked, the middle band (one has a note on it). */

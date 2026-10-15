@@ -19,6 +19,8 @@ export { MOTH_DOOR_X, MOTH_SPAWN, MOTH_W } from './scene';
 export const moth: SceneDef = {
   id: 'moth',
   name: "Moth's place",
+  // facing (light.ts): the window looks west over the street: the evening sun
+  facing: 270,
   width: MOTH_W,
   spawn: MOTH_SPAWN,
   exits: [{ id: 'door', x: MOTH_SPAWN, to: 'downtown', at: 'moth', label: '', engine: true }],

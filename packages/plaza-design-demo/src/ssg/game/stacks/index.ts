@@ -11,6 +11,7 @@
  * and the lane to warehouse 4 (scenes/warehouse.ts).
  */
 
+import { STACKS_HZ } from './scene';
 import { STACKS } from '../data';
 import type { SceneDef } from '../scenes/kit';
 import { stacksRulesFor } from './rules';
@@ -25,9 +26,12 @@ const URN_X = 672;
 export const stacks: SceneDef = {
   id: 'stacks',
   name: 'the stacks',
+  // facing (light.ts): terminal 2 looks east over the bay (the Spire out on the water)
+  facing: 90,
   width: STACKS_W,
   spawn: L.spawn,
   ambient: { sky: true, weather: true },
+  horizon: STACKS_HZ,
   exits: [
     { id: 'harbor', x: L.gate, to: 'harbor', at: 'stacks', label: '[E] PIER', promptH: 82 },
     { id: 'warehouse', x: L.lane, to: 'warehouse', at: 'stacks', label: '[E] WAREHOUSE 4', promptH: 92 },

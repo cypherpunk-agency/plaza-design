@@ -16,6 +16,8 @@ export { CAPSULE_SPAWN, CAPSULE_W, capsulePerch, DOOR_X } from './scene';
 export const capsule: SceneDef = {
   id: 'capsule',
   name: 'Capsule 7B',
+  // facing (light.ts): its window looks east, between two towers: the morning sun gets in
+  facing: 90,
   width: CAPSULE_W,
   // by the bed; coming in from Downtown you land just inside the door
   spawn: CAPSULE_SPAWN,

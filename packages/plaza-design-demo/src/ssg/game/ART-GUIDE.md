@@ -91,6 +91,22 @@ those colours mean "this is for you".
 - Neon reflects in the wet street directly below it.
 - Interiors behind glass are lit; exteriors at night are not, except where a
   light falls.
+- **Light follows the city clock** (TIME.md "Light"; `light.ts`, `sets/sky.ts`, `sets/lighting.ts`).
+  A scene paints itself as it always did (the night look); the engine adds the hour on top. A
+  scene declares, as data on its `SceneDef`:
+  - `facing`: the compass direction the view looks (the sea is east, 90). It decides where the
+    sun and moon stand in the sky and which way shadows fall. Interiors: where the window looks.
+  - `ambient.sky` (and `horizon`, its height over the ground) for the engine's sky; or call
+    `drawSky` / `drawPane` yourself. Never paint a fixed sun or a fixed sky colour again; water
+    takes `seaCols` and `sunPath`.
+  - `lights`: its lamps, lit windows, neon and screens (`SceneLight`: x, h, kind, col, r). They
+    glow on the light layer, weak by day and full at night; lamps throw the night's shadows.
+    Something that moves adds its light per frame (`addLight`).
+  - `casters`: key props that cast a shadow (people, robots and animals do it themselves).
+  - `shade`: the buildings between the street and the sun (`back`, `front`, with their gaps).
+  - Windows with a room light: ask `windowLit(seed)` (on at dusk, some off after midnight).
+- Interiors are not graded; they get the outside through their windows (`drawPane`,
+  `windowShaft`) and grade what the window shows (`drawGrade(…, true)` inside its clip).
 
 ## 9. Text in the world
 

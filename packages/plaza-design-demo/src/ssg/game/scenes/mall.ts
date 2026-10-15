@@ -12,6 +12,8 @@
  * shelves (build.ts). The signs are dry; the people have the jokes.
  */
 
+import { light } from '../light';
+import { drawPane, glass } from '../sets/sky';
 import { crowd, drawCharacters, drawCharacter, type Character } from '../characters';
 import { booth, shelf, type ShelfSpec, type StallSpec } from './build';
 import { box, C, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, reflect, rng, sign, tell, text, type SceneDef, type SceneUse, type View } from './kit';
@@ -306,7 +308,8 @@ function drawFarSide(x: CanvasRenderingContext2D, v: View) {
   const { y } = v, levels = farLevels(v), roofH = levels[levels.length - 1] + L.storey + 18;
   const sky = y(roofH);
   if (sky > 0) {
-    x.fillStyle = '#03050a'; x.fillRect(0, 0, v.viewW, sky);
+    // the sky of the moment through the skylight (sets/sky.ts): looking up, so only its upper part
+    drawPane(x, 0, 0, v.viewW, sky, light(), { facing: 180, seed: 61, towers: false, horizon: 1.8 });
     const glow = x.createLinearGradient(0, 0, 0, sky);
     glow.addColorStop(0, 'rgba(194,65,12,.03)'); glow.addColorStop(1, 'rgba(194,65,12,.09)');
     x.fillStyle = glow; x.fillRect(0, 0, v.viewW, sky);
@@ -317,6 +320,13 @@ function drawFarSide(x: CanvasRenderingContext2D, v: View) {
     x.beginPath(); for (let wx = 0; wx < 2800; wx += 20) { const s = v.sx(wx, 0.4); if (s < -20 || s > v.viewW) continue; x.moveTo(s, sky - 1); x.lineTo(s + 10, sky - 13); x.lineTo(s + 20, sky - 1); } x.stroke();
   }
   x.fillStyle = '#0a0706'; x.fillRect(0, Math.max(0, sky), v.viewW, y(L.slab) - Math.max(0, sky));
+  // daylight from the skylight, falling into the atrium (none at night: the shops' lights then)
+  const lt = light(), [gc, ga] = glass(lt);
+  if (ga > 0.02 && sky > -400) {
+    const dl = x.createLinearGradient(0, Math.max(0, sky), 0, v.gy);
+    dl.addColorStop(0, 'rgba(' + gc + ',' + (ga * 0.5).toFixed(3) + ')'); dl.addColorStop(1, 'rgba(' + gc + ',0)');
+    x.fillStyle = dl; x.fillRect(0, Math.max(0, sky), v.viewW, v.gy - Math.max(0, sky));
+  }
   levels.forEach((lv, li) => {
     for (let i = 0; i < 26; i++) {
       const s = v.sx(i * (SHOP_W + 6) - 40, FAR);
@@ -424,6 +434,8 @@ function drawSecurity(x: CanvasRenderingContext2D, v: View) {
 export const mall: SceneDef = {
   id: 'mall',
   name: 'Mall',
+  // facing (light.ts): the dome and the glass front face south
+  facing: 180,
   width: L.width,
   spawn: L.spawn,
   intro: ['The mall. Warm, dry and recording everything I look at.'],

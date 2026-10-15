@@ -24,6 +24,9 @@ import { CITY, NO_RULES, SceneHost } from './engine';
 import { city, parseHM, TRAVEL, WAIT_CARD, WAITS, type WaitTo } from './clock';
 import { reportLines, sceneClimate, screenLine, setHereClimate, weatherNow, type Weather } from './weather';
 import { puddles, weatherFront, weatherMid, weatherSky } from './sets/weather';
+import { light as lightNow, lightAt, setLight, windowLit, type Light } from './light';
+import { drawSky as drawSkySet, glass } from './sets/sky';
+import { addLight, castShadow, drawCasters, drawGrade, drawLights, drawShade, prepareLights, prepareShade, shadowsOn } from './sets/lighting';
 import { ticker, YELLOW } from './scenes/screens';
 import { isSceneId, ITEMS, SCENES, sceneTitle, type ItemId, type SceneDef, type SceneExit, type SceneId, type SceneRest, type SceneView } from './scenes';
 import { KEYRING, NET, SCENE_FILES, type MachineData, type NetworkData } from './data';
@@ -980,7 +983,9 @@ export class Game {
     x.fillRect(0, 0, this.viewW, this.viewH);
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
     // the world, at hack vision's pan and zoom; the HUD and the overlays over it at the usual scale
+    shadowsOn(true);
     this.zoomed(() => this.drawWorld());
+    shadowsOn(false);
     x.setTransform(k, 0, 0, k, 0, 0);
     this.drawHud();
     if (this.showEnd) this.drawEnd();
@@ -998,9 +1003,12 @@ export class Game {
     const vision = zh.visionOn, v = this.view();
     // the district's weather, where the scene is outdoors (weather.ts; drawn by sets/weather.ts)
     const W = amb.weather ? this.weatherHere() : null, covers = amb.covers?.map((c) => [v.sx(c.from), v.sx(c.to), v.y(c.under)] as [number, number, number]);
-    const look = W ? { w: W, t: this.reduced ? this.clock * 0.35 : this.t, still: this.reduced, covers } : null;
+    // the light of the moment (light.ts): the sun and moon for this scene's facing, the weather's cover
+    const L = this.lightHere(W);
+    const look = W ? { w: W, t: this.reduced ? this.clock * 0.35 : this.t, still: this.reduced, covers, day: L.daylight } : null;
     const rain = W?.wet ?? 0;
-    if (amb.sky) { this.drawSky(); if (isBefore(this.save.flags)) this.drawDawn(); if (look) weatherSky(x, v, look); this.drawShips(); }
+    // the opening's dawn is the clock's own (it is pinned to 05:41 … 06:04): the sky set draws it
+    if (amb.sky) { drawSkySet(x, v, L, { horizon: v.y(s.horizon ?? 0) }); if (look) weatherSky(x, v, look); this.drawShips(); }
     if (amb.city) {
       this.drawSkyline(0.18, 7, 70, 150, 0.18, 0.12);
       this.drawAntenna();
@@ -1022,12 +1030,36 @@ export class Game {
       mid();
       if (vision) { if (look) weatherFront(x, v, { ...look, still: true }); this.mute(zh.model.spots()); }
     }
+    if (!vision) drawCasters(x, v, s.casters);
     this.drawLight();
     this.drawCharacters();
+    // the light over it all: shade bands over whoever stands in them, the grade, then the light layer
+    if (!vision) drawShade(x, v);
     s.drawFront?.(x, v);
+    if (!vision) { drawGrade(x, v, L); drawLights(x, v, s.lights, L); }
     if (look && !vision) weatherFront(x, v, look);
     this.drawPrompt();
     this.drawBubble();
+  }
+
+  /**
+   * This frame's light for the scene on screen (light.ts): its facing, outdoors or in, the weather
+   * (indoors: the district's, for what the windows show). Sets it for characters and sets to read,
+   * and works out the shade bands and the lamps for night shadows.
+   */
+  private lightHere(W: Weather | null): Light {
+    const s = this.def, amb = s.ambient ?? {};
+    const outdoor = s.outdoor ?? !!(amb.weather || amb.sky);
+    const L = lightAt(city.day, city.min, s.facing ?? 180, W ?? this.weatherHere(), outdoor);
+    setLight(L);
+    prepareLights(s.lights);
+    prepareShade(outdoor ? s.shade : undefined, s.width, L);
+    return L;
+  }
+
+  /** The ground under the player at world x (a ledge they are over, or the street): where their shadow lies. */
+  private groundUnder(wx: number, h: number) {
+    return Math.max(0, ...this.platforms.filter((pl) => wx > pl.x && wx < pl.x + pl.w && pl.h <= h + 0.5).map((pl) => pl.h));
   }
 
   /**
@@ -1040,16 +1072,6 @@ export class Game {
     return { ...w, kind: w.kind === 'rain' || w.kind === 'storm' ? 'cloudy' : w.kind, rain: 0, storm: 0, wet: Math.min(w.wet, 0.4), wind: Math.min(w.wind, 0.3) };
   }
   private weatherHere() { return this.weatherOf(this.here); }
-
-  private drawSky() {
-    const x = this.x, r = rng(5);
-    for (let i = 0; i < 70; i++) {
-      const sx = ((r() * 2400 - this.cam * 0.05) % 2400 + 2400) % 2400;
-      if (sx > this.viewW) { r(); continue; }
-      x.fillStyle = 'rgba(255,217,165,' + (0.15 + r() * 0.35) + ')';
-      x.fillRect(sx, r() * (this.gy - 200), 1, 1);
-    }
-  }
 
   private drawShips() {
     const span = this.viewW + 260;
@@ -1077,7 +1099,7 @@ export class Game {
         x.strokeStyle = 'rgba(194,65,12,' + alpha + ')'; x.lineWidth = 1; x.strokeRect(sx + 0.5, base - h + 0.5, w - 1, h);
         let i = 0;
         for (let yy = base - h + 5; yy < base - 4; yy += 6) for (let xx = sx + 3; xx < sx + w - 3; xx += 5) {
-          if (lit[i++ % 24] < win) { x.fillStyle = 'rgba(255,136,0,' + (0.18 + alpha) + ')'; x.fillRect(xx, yy, 2, 2); }
+          if (lit[i++ % 24] < win && windowLit(seed * 7919 + wx * 13 + i)) { x.fillStyle = 'rgba(255,136,0,' + (0.18 + alpha) + ')'; x.fillRect(xx, yy, 2, 2); }
         }
       }
       wx += w + 2;
@@ -1311,7 +1333,7 @@ export class Game {
       for (const [wx, s, light] of this.winsFor(i, f.w, storeys)) {
         const h0 = GROUND + s * STOREY + 16;
         if (h0 > this.gy || onSignWall(f.x + wx - 7, f.x + wx + 7, h0, h0 + 28)) continue;
-        this.drawWindow(sx + wx - 7, this.y(h0 + 28), light, (wx + s * 7 + i * 3) % 6 === 0);
+        this.drawWindow(sx + wx - 7, this.y(h0 + 28), light, (wx + s * 7 + i * 3) % 6 === 0, i * 1000 + wx * 7 + s);
       }
       if (f.h <= this.gy) {
         x.fillStyle = '#140a05'; x.fillRect(sx - 2, top, f.w + 4, 4);
@@ -1325,9 +1347,13 @@ export class Game {
   }
 
   /** A storey window (14×28, a bit shorter than the player): a dark room, a warm lit one (some behind blinds) or a TV's cold flicker. */
-  private drawWindow(wx: number, wy: number, light: number, ac: boolean) {
+  private drawWindow(wx: number, wy: number, light: number, ac: boolean, seed: number) {
     const x = this.x;
     x.fillStyle = '#040201'; x.fillRect(wx, wy, 14, 28);
+    // the room's light follows the clock (on at dusk, off after midnight); a dark pane reflects the sky by day
+    if (light >= 0 && !windowLit(seed)) light = -1;
+    if (light < 0) { const [gc, ga] = glass(lightNow()); if (ga > 0.02) { x.fillStyle = 'rgba(' + gc + ',' + ga.toFixed(3) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26); } }
+    if (light >= 0) addLight({ x: wx + 7 + this.cam, h: this.gy - wy - 14, kind: 'window', w: 12, hh: 26, r: 14, col: light >= 1 ? '150,170,220' : '255,150,70', a: 0.6 });
     if (light >= 1) {
       x.fillStyle = 'rgba(150,170,220,' + (0.1 + 0.06 * Math.sin(this.t * 0.05 + light * 3)) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
     } else if (light >= 0) {
@@ -1466,6 +1492,7 @@ export class Game {
     const jack = open ? this.downtown.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
     const sprite = jack ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
+    if (!this.zh.visionOn) castShadow(x, this.view(), p.x, 42, 12, this.groundUnder(p.x, p.y));
     const box = drawSprite(x, sprite, this.sx(p.x), this.y(p.y), { glow: GLOW_YOU, flip: p.face < 0 });
     if (jack) {
       const tx = this.sx(jack.x), ty = this.y(jack.y + jack.h / 2), from = p.face > 0 ? box.x0 + box.w : box.x0;
@@ -1488,7 +1515,7 @@ export class Game {
       for (let j = 0; j < 20; j++) { const yy = this.y(32) - j * 1.6, xx = stx + Math.sin(ph + j * 0.35) * 3; j ? x.lineTo(xx, yy) : x.moveTo(xx, yy); }
       x.stroke();
     }
-    for (const n of NPCS) drawSprite(x, n.sprite, this.sx(n.x), this.gy, { glow: GLOW_THEM, flip: n.flip });
+    for (const n of NPCS) { castShadow(x, this.view(), n.x, 40, 12); drawSprite(x, n.sprite, this.sx(n.x), this.gy, { glow: GLOW_THEM, flip: n.flip }); }
   }
 
   /**
@@ -2053,13 +2080,6 @@ export class Game {
     if (x === undefined) return;
     this.goalAt = x;
     this.zh.ping('goal', 'look');
-  }
-
-  /** Dawn over Downtown before you are deleted: the sky warms low down, behind the towers. */
-  private drawDawn() {
-    const x = this.x, g = x.createLinearGradient(0, 0, 0, this.gy);
-    g.addColorStop(0, 'rgba(40,20,60,0)'); g.addColorStop(0.55, 'rgba(110,50,70,.1)'); g.addColorStop(1, 'rgba(255,140,70,.24)');
-    x.fillStyle = g; x.fillRect(0, 0, this.viewW, this.gy);
   }
 
   /** The flat's light: warm at dawn, cold the morning after (until the door is yours again). Under the player, over the room. */

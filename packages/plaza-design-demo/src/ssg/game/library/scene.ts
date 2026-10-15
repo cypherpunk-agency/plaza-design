@@ -14,6 +14,9 @@
  * and hack vision is library.json (`layout.spot`); this draws them there.
  */
 
+import { light } from '../light';
+import { drawPane, windowShaft } from '../sets/sky';
+import { drawGrade } from '../sets/lighting';
 import { drawCharacters, type Character } from '../characters';
 import type { EngineDraw } from '../engine/host';
 import type { SceneModel } from '../engine/model';
@@ -95,25 +98,31 @@ const RAIN = (() => { const r = rng(37); return Array.from({ length: 40 }, () =>
 
 // ---------- the room ----------
 
+/** The reading room's windows look west (light.ts facing). */
+export const LIBRARY_FACING = 270;
+
 /** A tall window in the back wall: Downtown's towers in the rain, and its arch and mullions. */
 function backWindow(x: CanvasRenderingContext2D, v: View, x0: number, x1: number) {
   const { sx, y, t } = v, l = sx(x0), w = x1 - x0, top = y(150), bot = y(64), h = bot - top;
   if (!onScreen(v, l, w)) return;
   x.save(); x.beginPath(); x.rect(l, top, w, h); x.clip();
-  const sky = x.createLinearGradient(0, top, 0, bot);
-  sky.addColorStop(0, '#05040b'); sky.addColorStop(1, '#1a0b07');
-  x.fillStyle = sky; x.fillRect(l, top, w, h);
-  // the towers, slid a little with the camera (far band)
+  // the sky of the moment (sets/sky.ts: the windows look west, the evening sun low between the towers)
+  const lt = light();
+  drawPane(x, l, top, w, h, lt, { facing: LIBRARY_FACING, seed: 71 + x0, towers: false, horizon: 0.92 });
+  // the towers, slid a little with the camera (far band); their windows on the city's clock
   const off = -((v.cam * 0.25) % 260);
-  for (const b of TOWERS) placed(x, l + off + b.x * 0.9, bot + 4, 0.55, () => drawTower(x, b, { t, fill: '#0b0605', edge: 0.3, lit: 0.22, glow: 0.65 }));
+  for (const b of TOWERS) placed(x, l + off + b.x * 0.9, bot + 4, 0.55, () => drawTower(x, b, { t, fill: '#0b0605', edge: 0.3, lit: 0.22, glow: 0.65, clock: true }));
+  drawGrade(x, v, lt, true);
   x.strokeStyle = 'rgba(170,210,255,.2)';
-  for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % h; x.beginPath(); x.moveTo(l + (rx / 60) * w, top + yy); x.lineTo(l + (rx / 60) * w - 1, top + yy + 4); x.stroke(); }
+  if ((lt.w?.rain ?? 0) > 0.05) for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % h; x.beginPath(); x.moveTo(l + (rx / 60) * w, top + yy); x.lineTo(l + (rx / 60) * w - 1, top + yy + 4); x.stroke(); }
   x.restore();
   // frame, mullions, the arch over it, the sill
   x.strokeStyle = 'rgba(' + O + ',.55)'; x.strokeRect(l + 0.5, top + 0.5, w - 1, h - 1);
   x.fillStyle = 'rgba(' + O + ',.45)'; x.fillRect(l + Math.round(w / 2), top, 1, h); x.fillRect(l, top + Math.round(h / 3), w, 1);
   x.strokeStyle = 'rgba(' + O + ',.5)'; x.beginPath(); x.arc(l + w / 2, top, w / 2, Math.PI, 0); x.stroke();
   box(x, l - 3, bot, w + 6, 3, '#2a1a10', 'rgba(' + O + ',.6)');
+  // the sun through it, onto the reading room's floor
+  windowShaft(x, { l, r: l + w, t: top, b: bot }, y(0), Math.min(v.viewH, y(0) + 16), lt, LIBRARY_FACING);
 }
 
 /** The empty shelves along the back wall, floor to gallery: dark wood, a few left-behind things. */

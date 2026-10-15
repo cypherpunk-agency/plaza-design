@@ -23,6 +23,8 @@ export { drawLibraryFront } from './scene';
 export const library: SceneDef = {
   id: 'library',
   name: 'the public library',
+  // facing (light.ts): the reading room's tall windows look west over Downtown's towers
+  facing: 270,
   width: LIBRARY_W,
   spawn: L.spawn,
   exits: [{ id: 'downtown', x: L.door, to: 'downtown', at: 'library', label: '[E] DOWNTOWN', promptH: 82 }],

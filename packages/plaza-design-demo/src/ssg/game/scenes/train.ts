@@ -17,6 +17,9 @@
 
 import { LINE, STATIONS } from '../city';
 import { TRAIN } from '../data';
+import { drawSky } from '../sets/sky';
+import { drawGrade } from '../sets/lighting';
+import { light } from '../light';
 import { box, O, onScreen, PAPER, RED, rng, tell, text, towers, type SceneDef, type View } from './kit';
 import { between, clock, lineOpen, LOOP, ride, rideAtSiding, rideDue, rideNext, rideOpen, rideRun, SEG, SIDING, ticker } from './line';
 import { crowd, drawRider, KINDS, SEAT_H, type RiderKind } from './riders';
@@ -362,12 +365,8 @@ function drawOutside(x: CanvasRenderingContext2D, v: View) {
   for (const wx of L.windows) { const s = v.sx(wx); if (onScreen(v, s, L.winW)) x.rect(s + 3, top + 3, L.winW - 6, sill - top - 6); }
   for (const d of L.doors) { const s = v.sx(d); x.rect(s - 18, y(56), 12, 22); x.rect(s + 6, y(56), 12, 22); }
   x.clip();
-  // the night sky with the city's glow low down
-  const g = x.createLinearGradient(0, top, 0, sill);
-  // the train home runs at dawn: the sky low down goes warm (the opening)
-  const dawn = openingState(v.flags) === 'home';
-  g.addColorStop(0, dawn ? '#0d0718' : '#05030c'); g.addColorStop(1, dawn ? '#5a2410' : '#1a0904');
-  x.fillStyle = g; x.fillRect(0, top, v.viewW, bottom - top);
+  // the sky of the moment (sets/sky.ts; the windows look east-south-east, so the train home at 05:41 rides into the dawn)
+  drawSky(x, v, light(), { horizon: sill, fillTo: bottom });
   // far: the skyline, sliding slowly, each district's landmark over its stop
   for (const b of SKY) {
     const s = far(b.x);
@@ -397,6 +396,8 @@ function drawOutside(x: CanvasRenderingContext2D, v: View) {
   drawTunnel(x, near, top, bottom, v);
   drawSiding(x, v, near, top, sill, t);
   for (let i = 0; i < 3; i++) drawPlatform(x, i, near, top, sill, v);
+  // what the windows show takes the hour's grade (sets/lighting.ts): daylight outside, night stays night
+  if (regionAt(ride.pos) !== 'tunnel') drawGrade(x, v, light(), true);
   // rain on the glass, blown sideways (not in the tunnel)
   if (regionAt(ride.pos) !== 'tunnel') {
     x.strokeStyle = 'rgba(170,210,255,.2)';
@@ -429,8 +430,10 @@ function drawRoof(x: CanvasRenderingContext2D, v: View, w0: number, w1: number) 
     // far band: night sky with the city's glow low down, the city sliding past slowly
     const glow = x.createLinearGradient(0, y(s1 + 140), 0, roof);
     glow.addColorStop(0, 'rgba(194,65,12,0)'); glow.addColorStop(1, 'rgba(194,65,12,.12)');
-    x.fillStyle = '#03020a'; x.fillRect(0, 0, v.viewW, roof);
-    x.fillStyle = glow; x.fillRect(0, y(s1 + 140), v.viewW, 140);
+    x.save(); x.beginPath(); x.rect(0, 0, v.viewW, roof); x.clip();
+    drawSky(x, v, light(), { horizon: y(L.win.h0), fillTo: roof });
+    x.restore();
+    x.fillStyle = glow; x.globalAlpha = 1 - light().daylight * 0.8; x.fillRect(0, y(s1 + 140), v.viewW, 140); x.globalAlpha = 1;
     for (const b of SKY_HIGH) {
       const s = far(b.x), bh = b.h * 0.7;
       if (s > v.viewW || s + b.w < 0) continue;
@@ -565,6 +568,8 @@ function drawRiders(x: CanvasRenderingContext2D, v: View) {
 export const train: SceneDef = {
   id: 'train',
   name: 'Metro car',
+  // facing (light.ts): the windows on your side look east-south-east (the train home runs into the dawn)
+  facing: 110,
   width: L.width,
   spawn: L.spawn,
   intro: ['The metro car. It stops everywhere and asks nothing. Getting off at the right stop is up to me.'],

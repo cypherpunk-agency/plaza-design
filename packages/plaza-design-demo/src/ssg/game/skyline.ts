@@ -45,6 +45,11 @@ export interface SkyDraw {
   floor: boolean;
   /** 0..1, a shower through the picture. */
   rain: number;
+  /**
+   * Over a sky drawn by someone else (the metro: sets/sky.ts, the city clock's): no black fill,
+   * no banded sun of its own, and the star mesh only as much as `stars` (0 by day).
+   */
+  over?: { stars: number };
 }
 
 // cityScene's default palette (the game does not follow the theme switch).
@@ -463,10 +468,10 @@ export class Skyline {
   draw(x: CanvasRenderingContext2D, frame: SkyFrame, d: SkyDraw) {
     if (!this.l || this.l.key !== frameKey(frame)) this.l = layout(x, frame);
     const l = this.l, { cam, a, still } = d;
-    x.fillStyle = BG; x.fillRect(0, 0, l.W, l.H);
-    sky(x, l, cam, a);
+    if (!d.over) { x.fillStyle = BG; x.fillRect(0, 0, l.W, l.H); }
+    if (!d.over || d.over.stars > 0.05) { x.globalAlpha = 1; x.save(); if (d.over) x.globalAlpha = d.over.stars; sky(x, l, cam, a); x.restore(); }
     ships(x, l, cam, a, false);
-    sun(x, l, Math.round(l.sunX - cam * PAR_SUN), a);
+    if (!d.over) sun(x, l, Math.round(l.sunX - cam * PAR_SUN), a);
     drawBand(x, l, l.far, -Math.round(cam * PAR_FAR), a, 1);
     drawBand(x, l, l.mid, -Math.round(cam * PAR_MID), a, 1);
     ships(x, l, cam, a, true);

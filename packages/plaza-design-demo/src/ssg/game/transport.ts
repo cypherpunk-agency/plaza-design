@@ -18,6 +18,7 @@
  */
 
 import { city, CLOCK_SPEEDS, hm } from './clock';
+import { moonName, moonPhase } from './light';
 import { anyOverride, CLIMATE_IDS, CLIMATES, isWeather, overrideOf, setOverride, WEATHER_KINDS, weatherNow, type Climate } from './weather';
 
 export interface Beat { at: number; name: string }
@@ -272,7 +273,8 @@ export class ClockBar {
     const day = 'DAY ' + city.day, time = hm(city.min) + (city.pinned !== null ? ' PINNED' : '');
     const speed = city.speed ? city.speed + '×' : '■';
     const here = this.here(), w = weatherNow(here);
-    const now = (here ? CLIMATES[here].name : '-') + ' · ' + w.kind.toUpperCase() + (anyOverride() ? ' · SET' : '');
+    // the weather here, and tonight's moon (light.ts: phases by the day count)
+    const now = (here ? CLIMATES[here].name : '-') + ' · ' + w.kind.toUpperCase() + (anyOverride() ? ' · SET' : '') + ' · ' + moonName(moonPhase(city.day));
     if (day !== s.day) e.day.textContent = s.day = day;
     if (time !== s.time) e.time.textContent = s.time = time;
     if (speed !== s.speed) { e.speed.textContent = s.speed = speed; e.speed.setAttribute('aria-label', 'Clock speed: ' + (city.speed ? city.speed + ' times' : 'stopped')); }

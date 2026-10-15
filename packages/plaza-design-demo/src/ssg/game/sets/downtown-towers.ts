@@ -9,6 +9,7 @@
  */
 
 import { O, RED, rng } from '../scenes/kit';
+import { windowLit } from '../light';
 
 export interface Tower {
   w: number;
@@ -31,6 +32,8 @@ export interface TowerLook {
   glow: number;
   /** Extra height drawn below the foot (screen units in this frame), so a tower never ends in mid-air. */
   below?: number;
+  /** The lit windows follow the city clock (light.ts windowLit: on at dusk, off after midnight). Off: as seeded (the glide). */
+  clock?: boolean;
 }
 
 /** A row of towers for a stretch of skyline: widths and heights in ranges, signs from `signs` now and then. */
@@ -58,7 +61,7 @@ export function drawTower(x: CanvasRenderingContext2D, b: Tower, o: TowerLook) {
   const tick = o.still ? 0 : Math.floor(o.t / 90);
   for (let wy = 8; wy < b.h - 4 + below; wy += 9) for (let wx = 5; wx < b.w - 6; wx += 7) {
     const v = r();
-    const on = v < o.lit || (v < o.lit + 0.03 && (tick + wx + wy) % 5 === 0);
+    const on = o.clock ? v < o.lit * 1.6 && windowLit(b.seed * 1009 + wx * 31 + wy) : v < o.lit || (v < o.lit + 0.03 && (tick + wx + wy) % 5 === 0);
     if (!on) continue;
     x.fillStyle = 'rgba(255,' + (v < o.lit * 0.3 ? '217,165' : '170,90') + ',' + o.glow * (0.55 + v) + ')';
     x.fillRect(wx, y(b.h) + wy, 3, 4);

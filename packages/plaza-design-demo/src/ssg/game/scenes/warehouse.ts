@@ -150,9 +150,19 @@ function drawWarehouse(x: CanvasRenderingContext2D, v: View) {
 export const warehouse: SceneDef = {
   id: 'warehouse',
   name: 'Warehouse 4',
+  // facing (light.ts): the warehouse stands west of you, inland: the sun sets over its roof
+  facing: 270,
   width: L.width,
   spawn: L.spawn,
   ambient: { sky: true, weather: true },
+  // the warehouse wall stands west of you: in the afternoon it shades the yard in front of it
+  shade: { front: { h: 240, gaps: [[-400, 160]] } },
+  lights: [
+    { x: 735, h: 140, kind: 'window', w: 30, hh: 22, r: 28 },
+    { x: 486, h: 62, kind: 'lamp', r: 40, col: '255,60,60', a: 0.7 },
+    { x: 600, h: 110, kind: 'lamp', r: 46 },
+  ],
+  casters: [{ x: L.van.x + L.van.w / 2, h: 46, w: L.van.w }],
   exits: [{ id: 'stacks', x: L.back, to: 'stacks', at: 'warehouse', label: '[E] STACKS', promptH: 82 }],
   intro: ['Warehouse 4. The Registry keeps what it takes in here.', 'The door has a reader. The reader has an opinion about me.'],
   pixel: 'along',
