@@ -22,8 +22,8 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
 ## Then: the city
 
 5. The city in code (districts → places → scenes, CITY.md: city.ts `DISTRICTS`, `PLACES`,
-   `SCENE_PLACE`) ✓, then the map redesign as a vertical cross-section with two zoom levels (to
-   be tested and adjusted).
+   `SCENE_PLACE`) ✓, then the map redesign as a vertical cross-section with two zoom levels ✓
+   (citymap.ts; a test, to be adjusted).
 
 ## Act I: where is Moth?
 

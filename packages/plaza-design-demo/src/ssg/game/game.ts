@@ -26,9 +26,10 @@ import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
 import {
-  DOORS, drawCityMap, HOP, MAP_PLACES, placeAt, placeBlocked, type MapPlace, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
-  seenFlag, START_SCENE, STAND_IDS, standOf, STANDS, STATIONS, stationAt, type MapState, type Stand, type Station,
+  DOORS, HOP, placeBlocked, type MapPlace, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
+  seenFlag, START_SCENE, standOf, STANDS, STATIONS, stationAt, type Stand, type Station,
 } from './city';
+import { drawCityMap, mapKey, mapPointer, openMap, type MapAct, type MapState, type MapView } from './citymap';
 import { KeyBar } from './keybar';
 import { levels, SUDO, unlockAll } from './sudo';
 import { Menu } from './menu';
@@ -112,8 +113,8 @@ export class Game {
   private started = false;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
-  /** The city map overlay, when open: just looking (TAB, the line map in the train), or picking a taxi stand. */
-  private mapView: { mode: 'view' | 'taxi'; options: string[]; index: number; hover: number } | null = null;
+  /** The city map overlay (citymap.ts), when open: just looking (TAB, the kiosk), or picking a taxi stand. */
+  private mapView: MapView | null = null;
   /** A quick trip from the map in progress: a short fade out, the move, a fade in (HOP frames). */
   private hop: { place: MapPlace; start: number; done: boolean } | null = null;
   /** A sky-taxi flight in progress. */
@@ -1535,8 +1536,7 @@ export class Game {
       this.say('DRIVER', DRIVER_BROKE, this.p.x + 20, 40);
       return;
     }
-    const here = standOf(this.here), i = here ? STAND_IDS.indexOf(here) : -1;
-    this.mapView = { mode: 'taxi', options: [...STAND_IDS], index: (i + 1) % STAND_IDS.length, hover: -1 };
+    this.mapView = openMap('taxi', this.here, this.here === 'train' ? rideStop() : null);
     sound.open();
   }
 
@@ -1544,75 +1544,80 @@ export class Game {
   showMap() {
     if (!this.running || this.flight || this.hop) return;
     this.bubble = null;
-    this.mapView = { mode: 'view', options: [], index: -1, hover: -1 };
+    this.mapView = openMap('view', this.here, this.here === 'train' ? rideStop() : null);
   }
 
   /** True while the city map is open. */
   get mapOpen() { return !!this.mapView; }
 
   private mapKey(e: KeyboardEvent) {
-    const m = this.mapView!, k = e.key;
-    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter'].includes(k)) e.preventDefault();
+    const k = e.key;
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter', 'Tab', 'Escape'].includes(k)) e.preventDefault();
     if (e.repeat) return;
-    if (k === 'Escape' || k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.mapView = null; this.canvas.style.cursor = ''; sound.close(); return; }
-    if (m.mode === 'view') {
-      // quick travel: the arrows step through the places, starting from where you are; E, Enter or Space goes
-      const n = MAP_PLACES.length, here = MAP_PLACES.findIndex((p) => p.scenes.includes(this.here)), from = m.index >= 0 ? m.index : Math.max(0, here);
-      const step = m.index < 0 && here < 0 ? 0 : 1;
-      if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (from + n - step) % n; m.hover = -1; sound.blip(); return; }
-      if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (from + step) % n; m.hover = -1; sound.blip(); return; }
-      if (k === 'e' || k === 'E' || k === 'Enter' || k === ' ') { if (m.index >= 0) this.quickTravel(m.index); else { this.mapView = null; sound.close(); } }
-      return;
-    }
-    const n = m.options.length;
-    if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (m.index + n - 1) % n; sound.blip(); return; }
-    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (m.index + 1) % n; sound.blip(); return; }
-    if (k === 'e' || k === 'E' || k === 'Enter' || k === ' ') this.mapConfirm();
+    this.mapAct(mapKey(this.mapState(), k));
   }
 
-  private mapConfirm() {
-    const m = this.mapView!, pick = m.options[m.index];
-    this.mapView = null;
-    if (m.mode === 'taxi') {
-      const to = pick as Stand;
-      if (to === standOf(this.here)) { this.flash('you are already here'); return; }
-      this.save.tokens -= FARE;
-      storeSave(this.save);
-      this.syncHud();
-      this.flight = { to, start: this.clock };
-      sound.open();
+  /** Do what the map asks: close, a sound, quick travel to a place, a taxi to a stand. */
+  private mapAct(a: MapAct) {
+    switch (a.kind) {
+      case 'close': this.mapView = null; this.canvas.style.cursor = ''; sound.close(); return;
+      case 'blip': sound.blip(); return;
+      case 'zoom': sound.open(); return;
+      case 'back': sound.close(); return;
+      case 'denied': sound.denied(); return;
+      case 'go': this.quickTravel(a.place); return;
+      case 'fly': this.fly(a.stand); return;
     }
+  }
+
+  /** Take a sky taxi to a stand, for the fare. */
+  private fly(to: Stand) {
+    this.mapView = null;
+    this.canvas.style.cursor = '';
+    if (to === standOf(this.here)) { this.flash('you are already here'); return; }
+    this.save.tokens -= FARE;
+    storeSave(this.save);
+    this.syncHud();
+    this.flight = { to, start: this.clock };
+    sound.open();
   }
 
   /** The map's state, for drawing it and for deciding where you may go. */
   private mapState(): MapState {
-    const m = this.mapView ?? { mode: 'view' as const, options: [], index: -1, hover: -1 };
+    const m = this.mapView ?? openMap('view', this.here, null);
     return {
-      mode: m.mode, options: m.options, index: m.index, hover: m.hover, touch: this.touch, scene: this.here,
+      view: m, touch: this.touch, scene: this.here, reduced: this.reduced,
+      // the smallest touch target, 44 CSS px, in view units
+      tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
+      avoid: this.mapAvoid(),
       ride: this.here === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null,
       seen: (z) => !!this.save.flags[seenFlag(z)], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
     };
   }
 
-  /** The pointer on the open map: hovering marks a place; a click goes there (on touch a first tap picks, a second goes); outside the panel closes it. */
+  /** The phone's ESC button, which stays over the open map, in view units (null when it is not shown). */
+  private mapAvoid() {
+    const b = document.querySelector<HTMLElement>('#touch button[data-key="Escape"]');
+    const br = b?.getBoundingClientRect(), r = this.canvas.getBoundingClientRect();
+    if (!br || !br.width || !r.width) return null;
+    const f = this.canvas.width / r.width / this.k;
+    return { x: (br.left - r.left) * f, y: (br.top - r.top) * f, w: br.width * f, h: br.height * f };
+  }
+
+  /** The pointer on the open map (citymap.ts reads it: districts, places, pads, back, outside). */
   private mapPointer(e: PointerEvent, press: boolean) {
-    const m = this.mapView!, r = this.canvas.getBoundingClientRect();
+    const r = this.canvas.getBoundingClientRect();
     const px = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k, py = ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
-    const i = placeAt(this.viewW, this.viewH, px, py);
-    if (m.mode === 'view' && e.pointerType === 'mouse') m.hover = Math.max(-1, i);
-    this.canvas.style.cursor = m.mode === 'view' && i >= 0 ? 'pointer' : '';
-    if (!press) return;
-    e.preventDefault();
-    if (i === -2) { this.mapView = null; this.canvas.style.cursor = ''; sound.close(); return; }
-    if (m.mode !== 'view' || i < 0) return;
-    if (e.pointerType === 'mouse' || m.index === i) this.quickTravel(i);
-    else { m.index = i; sound.blip(); }
+    const { act, pointer } = mapPointer(this.mapState(), this.viewW, this.viewH, px, py, press, e.pointerType === 'mouse');
+    this.canvas.style.cursor = pointer ? 'pointer' : '';
+    if (press) e.preventDefault();
+    this.mapAct(act);
   }
 
   /** Quick travel to a place you know, from the map: no fare, a short fade; or say why not. */
-  private quickTravel(i: number) {
-    const place = MAP_PLACES[i], why = placeBlocked(place, this.mapState());
-    if (why) { this.flash(why.toLowerCase()); sound.denied(); if (this.mapView) this.mapView.index = i; return; }
+  private quickTravel(place: MapPlace) {
+    const why = placeBlocked(place, this.mapState());
+    if (why) { this.flash(why.toLowerCase()); sound.denied(); return; }
     this.mapView = null;
     this.canvas.style.cursor = '';
     this.hop = { place, start: this.clock, done: false };

@@ -73,3 +73,20 @@ The metro (LINE 0) runs through the street districts; its stations are places of
   goes to places.
 - Inside a place there is no map: its scenes connect by doors.
 - To be tested in the game and adjusted.
+
+Built (test, 2026-10-15): `citymap.ts` draws it from `city.ts`'s map data.
+
+- **City view**: each district a silhouette in its band (`DISTRICT_MAP`), lit once you have been
+  in one of its places, dark and `???` before. LINE 0 runs in a tunnel under the street as a loop,
+  its stations with stairs up; the market gate is green or red; the planned ways (`LINKS`: sky
+  elevator, taxi depot, bridge, drain, service tunnel, canal outfall, service lift, the road to the
+  Fringe) are dim and dashed, never reachable. A title block beside it names the district picked:
+  stratum, character, places, ways.
+- **District view**: arrows or a tap pick a district, E or the tap zooms into it. Its places hang
+  on pins (`PLACE_MAP`) with a card each along the bottom; a visited place you can reach is cyan
+  and E, a click or a second tap goes there. ESC, `< CITY` or a tap outside goes back; TAB or M
+  closes.
+- **Taxi**: the city view with the pads cyan; pick a stand and fly. **On the metro**: the train runs
+  on the loop with you on it; quick travel says why not while it moves.
+- The map draws in its own units (about 300 tall), so its text reads the same at 1280 × 720 as on
+  a phone; on a phone the strip and footer keep clear of the ESC button.
