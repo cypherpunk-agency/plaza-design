@@ -204,6 +204,7 @@ export const demoStyles = `
       display: none;
     }
 
+    html.game-mode #cta,
     html.game-mode #cta .cta-label {
       visibility: hidden;
     }
