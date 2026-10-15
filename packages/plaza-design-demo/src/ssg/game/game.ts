@@ -203,6 +203,8 @@ export class Game {
     // captions never cover the player's speech bubble, and keep their lane over people's heads
     zh.shield = () => { const b = this.bubbleBox, s = this.cssScale; return b ? [{ l: b.x * s, t: b.y * s, r: (b.x + b.w) * s, b: (b.y + b.h) * s }] : []; };
     zh.crowd = () => this.heads();
+    // something reacted where you cannot see it: the camera may lean that way for a moment
+    zh.onReact = (from, text, tone) => { if (this.here === id) this.nudgeTo(from, text, tone); };
     zh.onClose = () => this.canvas.focus();
     this.hosts.set(id, zh);
     // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
@@ -475,6 +477,7 @@ export class Game {
     this.hosts.forEach((h) => h.closeAll());
     this.bubble = null;
     this.here = id;
+    this.nudge = null; this.easeBack = false; this.nudged.clear();
     this.hostOf(id);
     this.showHost();
     this.markSeen(id);
@@ -678,9 +681,17 @@ export class Game {
       p.onGround = false; p.vy = 0;
     }
 
-    // Camera follows, eased, clamped to the level.
-    const goal = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
-    this.cam += (goal - this.cam) * Math.min(1, 0.12 * dt);
+    // Camera follows, eased, clamped to the level. A nudge leans it towards something that reacted
+    // off the view for a moment (walking, talking or the deck cancel it), then it eases back.
+    const n = this.nudge;
+    if (n && (p.moving || !p.onGround || this.bubble || this.term.focused || this.zh.overlayOpen || Math.abs(p.x - n.px) > 2)) { this.nudge = null; this.easeBack = !p.moving; }
+    const follow = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
+    const nudging = !!this.nudge && this.clock < this.nudge!.until;
+    if (this.nudge && !nudging) { this.nudge = null; this.easeBack = true; }
+    const goal = nudging ? this.nudge!.goal : follow;
+    // gentle while leaning out and coming back; the usual follow otherwise (a step turns it off)
+    if (p.moving || Math.abs(goal - this.cam) < 0.5) this.easeBack = false;
+    this.cam += (goal - this.cam) * Math.min(1, (nudging || this.easeBack ? NUDGE_EASE : 0.12) * dt);
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
     if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: WARM[this.here] });
     this.host.setNodes(nodeCount(this.save));
@@ -1264,6 +1275,40 @@ export class Game {
     return lines;
   }
 
+  // ---------- the camera nudge ----------
+
+  /** The camera leaning towards something that reacted off the view: where it leans to, until when (clock frames), where you stood. */
+  private nudge: { goal: number; until: number; px: number } | null = null;
+  /** Coming back from a nudge: the camera eases gently until it is on you again. */
+  private easeBack = false;
+  /** When the last nudge started (clock frames), and what has drawn the eye already this visit (`from|line`). */
+  private lastNudge = -1e9;
+  private nudged = new Set<string>();
+
+  /**
+   * Something said it reacted (`from`, with a line in green or red). If it is off the view but
+   * near, the camera leans that way for a moment so you see it happen, keeping you in view; the
+   * ping (an edge arrow) already points at anything further. Never during a conversation, the deck
+   * or a panel, never while you walk, never with reduced motion; each thing and line once a visit,
+   * and not more often than every few seconds.
+   */
+  private nudgeTo(from: string, text: string, tone?: string) {
+    if (tone !== 'ok' && tone !== 'err') return;
+    if (this.reduced || this.bubble || this.term.focused || this.zh.overlayOpen || this.mapView || this.flight || this.hop || this.cut || this.p.moving) return;
+    const at = this.zh.worldOf(from);
+    if (!at || this.levelW <= this.viewW) return;
+    const key = from + '|' + text, p = this.p, m = NUDGE_MARGIN;
+    if (this.nudged.has(key) || this.clock - this.lastNudge < NUDGE_GAP) return;
+    // already in view (with a margin), or too far to show together with you: the ping is enough
+    if (at.x > this.cam + m && at.x < this.cam + this.viewW - m) return;
+    if (Math.abs(at.x - p.x) > this.viewW - m * 2) return;
+    let goal = at.x < this.cam + m ? at.x - m : at.x + m - this.viewW;
+    goal = Math.max(p.x + m - this.viewW, Math.min(p.x - m, goal));
+    goal = Math.max(0, Math.min(this.levelW - this.viewW, goal));
+    this.nudged.add(key); this.lastNudge = this.clock;
+    this.nudge = { goal, until: this.clock + NUDGE_HOLD, px: p.x };
+  }
+
   /** How far down the HUD's lines reach under the key bar (world units), as drawn last. */
   private hudH = 46;
 
@@ -1686,6 +1731,13 @@ export class Game {
     if (this.mapView) drawCityMap(this.x, this.viewW, this.viewH, this.mapState());
   }
 }
+
+/**
+ * The camera nudge: how long it leans towards an event (clock frames, ~1.6 s), how gently it moves
+ * (ease per frame, against the follow's 0.12), the margin kept round the event and the player (world
+ * units), and the least time between two nudges (frames, ~5 s).
+ */
+const NUDGE_HOLD = 96, NUDGE_EASE = 0.045, NUDGE_MARGIN = 36, NUDGE_GAP = 300;
 
 /** Street walls measured against the player (42 units tall): a 76-unit ground floor with 52-unit doors, then 66-unit storeys of 14x28 windows. */
 const GROUND = 76, STOREY = 66, WIN_PITCH = 30;

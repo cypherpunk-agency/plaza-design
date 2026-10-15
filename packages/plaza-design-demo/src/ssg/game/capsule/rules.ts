@@ -98,6 +98,11 @@ function tick(w: World, dt: number) {
     }
   } else s.pixelWait = 0;
 
+  // CONCIERGE unlocked the door (a net node has no place in the flat): the lock itself says so, by the door
+  const open = m.get('doorOpen') ? 1 : 0;
+  if (s.doorWas === 0 && open) w.say(w.line('lock.unlocked'), 'lock');
+  s.doorWas = open;
+
   // goals only the code can see
   if (up && !scheduled(m)) w.goal('router');
   if (m.net.get('concierge') === 'connected') w.goal('concierge');
@@ -123,7 +128,7 @@ export const CAPSULE_RULES: SceneRules = {
       'router.online': 'line', 'router.reboot': 'line',
       'pixel.router': 'line', 'pixel.sun': 'line', 'pixel.bed': 'line',
       // index.ts
-      'prompt.door': 'label', 'prompt.out': 'label', 'door.locked': 'line',
+      'prompt.door': 'label', 'prompt.out': 'label', 'door.locked': 'line', 'lock.unlocked': 'line',
     },
   },
   /** The flat's own: the cable the fridge note grumbles about must be there, and the tuning the clock reads. */

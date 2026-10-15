@@ -156,6 +156,11 @@ character speaks only for itself.
   paced: the world reacts at its own speed. The numbers are constants at the top of `feedback.ts`.
 - **Pings**: an expanding ring where something happened (green, red, cyan), at once, so the eye
   goes there while the caption waits its turn; an arrow at the edge when it happened off the view.
+- **The camera nudge** (a test, 2026-10-15): when a device reacts (a green or red line) just off
+  the view and near enough to show together with the player, the camera leans that way for about
+  1.6 s, gently, then eases back to the player. Walking, a conversation, the deck or a panel cancel
+  it; reduced motion has none; each thing's line draws the eye once a visit, and not more often
+  than every 5 s. Anything further only gets the edge arrow. (`game.ts`: `nudgeTo`, `NUDGE_*`.)
 - **Popups** (`engine/popup.ts`, `POPUP_PLACEMENT`): a tapped device's actions open as a row along
   the bottom, where the thumbs are; on a phone the row takes the action buttons' place (the walk
   arrows stay). The device gets a ring and a thin connector to the row:

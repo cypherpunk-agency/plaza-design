@@ -515,6 +515,8 @@
     "node.relay": "0x31",
     "node.billboard": "0x3C",
     "free.box": ["", "Welcome back, maintenance. node {node} released from REGISTRY · NODES: {nodes} ACTIVE", "ok"],
+    "peer.box": ["", "TILL: unregistered peer {node} on the street. handshake accepted. nobody was asked.", "ok"],
+    "peer.box.who": "till",
     "free.relay": ["", "Session opened: maint. node {node} released from REGISTRY · NODES: {nodes} ACTIVE", "ok"],
     "free.billboard": ["", "the billboard leaves the Registry. node {node} released · NODES: {nodes} ACTIVE", "ok"],
 

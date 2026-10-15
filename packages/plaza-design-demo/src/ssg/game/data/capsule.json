@@ -317,6 +317,7 @@
     "prompt.door": "[E] DOOR",
     "prompt.out": "[E] DOWNTOWN",
     "door.locked": ["open door", "locked. see panel.", "err"],
+    "lock.unlocked": ["", "DOOR LOCK: receipt on file. bolt released.", "ok"],
 
     "plug.off": ["{via}use power --off", "click. dark again.", "dim"],
     "plug.night": ["signal → power --off", "SCHEDULE: night. plug off.", "err"],

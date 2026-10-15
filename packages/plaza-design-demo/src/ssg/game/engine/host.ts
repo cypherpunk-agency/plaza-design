@@ -111,6 +111,15 @@ export class SceneHost {
   where: (from: string) => { x: number; h: number } | null = () => null;
   /** Things the game keeps the popup away from besides the player (Pixel), as world points. */
   extras: () => { x: number; h: number }[] = () => [];
+  /** Something of this scene reacted and said so (`from`, its line, its tone): the game may draw the eye there (the camera nudge). */
+  onReact: (from: string, text: string, tone?: string) => void = () => {};
+  /** Where something of this scene is in the world (a device's spot, or one of the scene's own targets), or null. */
+  worldOf(from: string): { x: number; h: number } | null {
+    const s = this.model.spots().find((z) => z.id === from);
+    if (s) return { x: s.x, h: s.y + s.h / 2 };
+    const t = this.def.targets?.(this.model).find((z) => z.id === from);
+    return t ? { x: t.x, h: 20 } : null;
+  }
   /** Boxes captions never cover besides the player (the player's speech bubble), CSS px of the game view. The game sets it. */
   shield: () => Box[] = () => [];
   /** People on screen (their heads), CSS px: captions keep their lane above them. The game sets it. */
@@ -257,7 +266,7 @@ export class SceneHost {
     if (l[0] && this.echo) this.print('> ' + l[0], 'in');
     if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out');
     this.schem.note(l); this.vision.note(l);
-    if (from && l[1] && this.active) this.fx.caption(from, l[1], l[2], this.locate);
+    if (from && l[1] && this.active) { this.fx.caption(from, l[1], l[2], this.locate); this.onReact(from, l[1], l[2]); }
   }
 
   /** A ping where something of this scene is (a device, one of its targets, or what `where` knows); an edge arrow when it is off the view. */
