@@ -31,6 +31,7 @@ import { YARD_RULES } from '../src/ssg/game/yard/effects';
 import { DOWNTOWN_RULES_SHAPE } from '../src/ssg/game/downtown/rules';
 import { contractOf } from '../src/ssg/game/engine/rules';
 import { cityProblems } from '../src/ssg/game/city';
+import { planProblems } from '../src/ssg/game/cityplan';
 import { TRAIN } from '../src/ssg/game/data';
 import { TRAIN_RULES_SHAPE } from '../src/ssg/game/scenes/train0';
 import { STACKS } from '../src/ssg/game/data';
@@ -163,6 +164,8 @@ function checkGameData() {
   ], LOGIC, NET, ENGINE);
   // the city's districts and places (city.ts): every place has its scenes, its entrance among them
   problems.push(...cityProblems().map((p) => 'city.ts › ' + p));
+  // the street plan (cityplan.ts): every place, station and pad on land, in its own district
+  problems.push(...planProblems().map((p) => 'cityplan.ts › ' + p));
   if (!problems.length) return;
   console.error(`Game data has ${problems.length} problem${problems.length > 1 ? 's' : ''} (src/ssg/game/data/):\n`);
   problems.forEach((p) => console.error('  ' + p));

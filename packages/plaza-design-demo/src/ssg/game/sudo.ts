@@ -14,7 +14,7 @@
  *   so the real run is never touched.
  */
 
-import { DISTRICTS, HARBOR_FLAG, heardFlag, mappedFlag } from './city';
+import { DISTRICTS, HARBOR_FLAG, heardFlag, LINES_PLANNED, lineKnownFlag, mappedFlag } from './city';
 import { CUTSCENES } from './cutscenes';
 import { KEYRING, LOGIC, NET } from './data';
 import type { Save } from './level';
@@ -77,8 +77,10 @@ export function unlockAll(s: Save) {
   // what story levels hand you to carry, so the next one can be played on its own (P13's maglev pass for P14's brake)
   for (const item of SUDO_ITEMS) if (!s.items[item]) s.items[item] = 1;
   for (const id of Object.keys(SCENES)) s.flags['seen:' + id] = true;
-  // the whole city on the map: every district heard of and on record (the Spire and the Undercity too)
+  // the whole city on the map: all nine districts heard of and on record (the Spire, the Undercity,
+  // the Old Quarter and the Skyport too), and the lines not run yet (LINE 1, bus 7, the ferry) drawn on its METRO layer
   for (const d of DISTRICTS) { s.flags[heardFlag(d.id)] = true; s.flags[mappedFlag(d.id)] = true; }
+  for (const l of LINES_PLANNED) s.flags[lineKnownFlag(l.id)] = true;
   s.flags.end = true; // the market gate stands open
   // the harbor open (P14); `?sudo&locked` tests the lock instead: harbor shut, and no maglev pass
   if (LOCKED) { delete s.flags[HARBOR_FLAG]; delete s.items['maglev.pass']; }
