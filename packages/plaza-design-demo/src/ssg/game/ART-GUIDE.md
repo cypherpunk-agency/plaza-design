@@ -174,7 +174,24 @@ character speaks only for itself.
 - **The player's character speaks only for itself** (arriving somewhere, a thought), never to
   narrate what a device did.
 
-## 12. Before you call a scene done
+## 12. Build scenery once, reuse it everywhere (Tommi, 2026-10-15)
+
+The same things show up in more than one place: the Spire and STS-2 in the opening glide and
+at the harbor, LINE 0's cars in the glide, the train and the stations, Downtown before and
+after you are deleted. A change to one of them must reach every place it appears.
+
+- **A landmark or recurring prop is drawn by one function** in `sets/` (one file per thing:
+  `sets/spire.ts`, `sets/crane.ts`, `sets/train-car.ts`, …), taking position, scale, time and
+  a few options (lit, damaged, distance). Scenes and cutscenes call it; nobody copies its
+  drawing code. Seeded variety (the kits in `scenes/build.ts`, `characters.ts`) stays seeded.
+- **`sets/index.ts` is the register:** every set piece with a one-line description and the
+  scenes and cutscenes that use it. Add a user when you call one; `grep` its id to find them.
+- **A scene that changes with the story is one scene with states,** not a copy: Downtown
+  before and after is `downtown` with a `before` state from a save flag; the train home and
+  P14's train are the same train. The state switches lines, colours and what works, never the
+  layout.
+
+## 13. Before you call a scene done
 
 - [ ] Squint, silhouette and phone tests pass.
 - [ ] Every sign and text is mounted on something visible.
