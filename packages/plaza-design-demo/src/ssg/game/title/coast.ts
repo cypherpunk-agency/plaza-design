@@ -661,7 +661,7 @@ function traffic(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
       const fade = Math.min(1, (X - ROAD0) / 40, (ROAD0 + span - X) / 40);
       if (fade <= 0) continue;
       x.save(); x.globalAlpha = fade;
-      const face = (-lane.dir) as 1 | -1, kind = lane.kinds[j % lane.kinds.length], n = j;
+      const face = lane.dir, kind = lane.kinds[j % lane.kinds.length], n = j;
       placed(x, R(s), ly, S, () => {
         if (kind === 'truck') drawTruck(x, { t: c.f, paint: ['#c8c0b0', '#8a2a2a', '#3a5a3a'][n % 3], box: n % 4 === 3 ? null : LOADS[n % LOADS.length], face, lights: lit });
         else drawCar(x, { t: c.f, paint: kind === 'cab' ? '#d8b040' : CAR_PAINTS[n % CAR_PAINTS.length], kind: kind === 'car' ? (n % 2 ? 'sedan' : 'hatch') : kind, face, lights: lit });
