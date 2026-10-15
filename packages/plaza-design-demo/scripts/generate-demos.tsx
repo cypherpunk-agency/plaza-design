@@ -30,6 +30,8 @@ import { YARD_RULES } from '../src/ssg/game/yard/effects';
 import { DOWNTOWN_RULES_SHAPE } from '../src/ssg/game/downtown/rules';
 import { contractOf } from '../src/ssg/game/engine/rules';
 import { cityProblems } from '../src/ssg/game/city';
+import { TRAIN } from '../src/ssg/game/data';
+import { TRAIN_RULES_SHAPE } from '../src/ssg/game/scenes/train0';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -146,6 +148,7 @@ function checkGameData() {
     { data: DOWNTOWN, code: contractOf(DOWNTOWN_RULES_SHAPE), extra: DOWNTOWN_RULES_SHAPE.check },
     { data: MOTH, code: contractOf(MOTH_RULES), extra: MOTH_RULES.check },
     { data: BEACH, code: contractOf(BEACH_RULES), extra: BEACH_RULES.check },
+    { data: TRAIN, code: contractOf(TRAIN_RULES_SHAPE), extra: TRAIN_RULES_SHAPE.check },
   ], LOGIC, NET, ENGINE);
   // the city's districts and places (city.ts): every place has its scenes, its entrance among them
   problems.push(...cityProblems().map((p) => 'city.ts › ' + p));

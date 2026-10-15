@@ -154,6 +154,19 @@ export const STATIONS: Record<Station, { name: string; scene: SceneId; up: Scene
 /** The station whose platform this scene is, if it is one. */
 export const stationAt = (id: SceneId): Station | null => LINE.find((s) => STATIONS[s].scene === id) ?? null;
 
+/**
+ * The harbor lock (ROADMAP, Act I): until P14 (`HARBOR_FLAG`, set when the train's doors open at
+ * the old siding) LINE 0 does not stop at the harbor and the sky taxi will not fly to its pier;
+ * the beach is only reached through the harbor, so it is shut too. Quick travel keeps to the same
+ * rule. After P14 it is open for good (sudo sets the flag; `?sudo&locked` leaves it unset).
+ */
+export const HARBOR_FLAG = 'harbor:open';
+export const harborOpen = (flags: Readonly<Record<string, boolean>>) => !!flags[HARBOR_FLAG];
+/** The taxi driver, asked for the harbor pier while it is shut. */
+/** What you say coming up from the old siding (P14): a service stair, then the pier by the harbor's metro stairs. */
+export const SIDING_OUT = ['A service stair. Two hundred steps, a door marked AUTHORISED PERSONNEL, not locked.', 'The harbor. Moth booked this stop two days ago. For me.'];
+export const DRIVER_HARBOR = ['Harbor pier is closed to air traffic. Port Authority notice. I can show you the notice.', 'I can also take you somewhere that is open. Those are my two services.'];
+
 // ---------- sky taxis ----------
 
 export type Stand = 'downtown' | 'galleria' | 'harbor';
@@ -358,6 +371,8 @@ export interface TravelState {
   ride: { from: Station; to: Station; f: number } | null;
   seen: (id: SceneId) => boolean;
   gateOpen: boolean;
+  /** The harbor lock is off (P14 solved): `harborOpen`. */
+  harborOpen: boolean;
 }
 
 /** Why you cannot quick-travel to a place right now ('' if you can). */
@@ -365,6 +380,8 @@ export function placeBlocked(p: Place, st: TravelState): string {
   if (!seenPlace(p, st.seen)) return 'NOT VISITED YET';
   if (p.scenes.includes(st.scene)) return 'YOU ARE HERE';
   if (p.id === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
+  // the harbor lock: from outside the harbor, nothing goes there (inside it, you can still walk about)
+  if (p.district === 'harbor' && !st.harborOpen && placeOf(st.scene).district !== 'harbor') return 'HARBOR CLOSED · LINE 0 DOES NOT STOP';
   if (st.ride && st.ride.f > 0) return 'NOT FROM A MOVING METRO · GET OFF FIRST';
   return '';
 }

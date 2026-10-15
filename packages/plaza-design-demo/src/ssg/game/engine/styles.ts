@@ -47,8 +47,8 @@ export const ENGINE_STYLES = `
     .sch-noun > .port:nth-of-type(3) { top: 46px; }
     .sch-noun > .port:nth-of-type(2) ~ .sch-verbs.down { top: 46px; }
     .sch-noun > .port:nth-of-type(3) ~ .sch-verbs.down { top: 60px; }
-    #vision .sch-noun > .port:nth-of-type(2) { top: 23px; }
-    #vision .sch-noun > .port:nth-of-type(3) { top: 34px; }
+    #vision .sch-noun > .port:nth-of-type(2) { top: 31px; }
+    #vision .sch-noun > .port:nth-of-type(3) { top: 44px; }
 
     /* Fixed cables: a solid conduit you cannot cut */
     .hack-wires .conduit { stroke: #3a2a1a; stroke-width: 9; stroke-linecap: round; }

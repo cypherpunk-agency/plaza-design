@@ -16,9 +16,11 @@
  */
 
 import { LINE, STATIONS } from '../city';
+import { TRAIN } from '../data';
 import { box, O, onScreen, PAPER, RED, rng, tell, text, towers, type SceneDef, type View } from './kit';
-import { clock, LOOP, ride, rideDue, rideNext, rideOpen, rideRun, SEG, ticker } from './line';
+import { between, clock, lineOpen, LOOP, ride, rideAtSiding, rideDue, rideNext, rideOpen, rideRun, SEG, SIDING, ticker } from './line';
 import { crowd, drawRider, KINDS, SEAT_H, type RiderKind } from './riders';
+import { trainRules } from './train0';
 
 /** Layout: positions in world units, heights up from the car's floor. */
 const L = {
@@ -41,6 +43,7 @@ const L = {
   people: [
     { id: 'suit', kind: 'suit', x: 225, sit: true, name: 'MAN IN A SUIT', pages: ['I have a meeting at Galleria.', 'I have had it for six loops now. It keeps getting moved to the next stop.'] },
     { id: 'courier', kind: 'courier', x: 556, sit: false, name: 'COURIER', pages: ['Parcel for "whoever is at the Harbor". That is the whole address.', 'I ride round until somebody looks like a whoever.'] },
+    { id: 'elder', kind: 'elder', x: 885, sit: true, name: 'OLD WOMAN', pages: ['That brake? I pulled it once. Forty years ago. They still send me a letter every birthday.', 'You have to register an emergency two days ahead now. Nobody plans an emergency.', 'Well. Some people do.'] },
     { id: 'punk', kind: 'punk', x: 1015, sit: true, name: 'PUNK', pages: ['They check IDs at every exit now.', 'So I never get off. Checkmate.'] },
   ] as { id: string; kind: RiderKind; x: number; sit: boolean; name: string; pages: string[] }[],
   poles: [180, 330, 560, 720, 950],
@@ -206,13 +209,14 @@ function drawThing(x: CanvasRenderingContext2D, th: Thing, s: number, base: numb
 function drawPlatform(x: CanvasRenderingContext2D, i: number, near: (u: number) => number, top: number, base: number, v: View) {
   const u0 = i * SEG, P = WORLD.platform, a = near(u0 + P), b = near(u0 - P);
   if (b < 0 || a > v.viewW) return;
-  const name = STATIONS[LINE[i]].name;
+  // a closed station (the harbor before P14): lamps off, nobody waiting, CLOSED on the plates
+  const closed = !lineOpen[LINE[i]], name = STATIONS[LINE[i]].name + (closed ? ' · CLOSED' : '');
   // what is behind it: Downtown's city shows through its open canopy; the tunnel's tiles; the water past the sea wall
   if (i === 1) { x.fillStyle = '#0e0b09'; x.fillRect(a, top, b - a, base - top + 30); x.fillStyle = 'rgba(255,217,165,.06)'; for (let yy = top + 4; yy < base + 30; yy += 6) x.fillRect(a, yy, b - a, 1); }
   if (i === 2) { x.fillStyle = '#01040a'; x.fillRect(a, base - 26, b - a, 60); x.fillStyle = '#0d0907'; x.fillRect(a, base - 6, b - a, 40); }
   if (i === 0) { x.fillStyle = 'rgba(' + O + ',.32)'; x.fillRect(a, base - 18, b - a, 1); for (let u = u0 - P; u < u0 + P; u += 18) { const s = near(u); if (s > -2 && s < v.viewW + 2) x.fillRect(Math.round(s), base - 18, 1, 18); } }
   // the canopy's lamps along the top, the platform's edge along the bottom
-  box(x, a, top, b - a, 8, '#120d0a'); x.fillStyle = 'rgba(255,240,215,.55)'; x.fillRect(a, top + 8, b - a, 2);
+  box(x, a, top, b - a, 8, '#120d0a'); x.fillStyle = closed ? 'rgba(255,240,215,.1)' : 'rgba(255,240,215,.55)'; x.fillRect(a, top + 8, b - a, 2);
   x.fillStyle = 'rgba(255,210,58,.6)'; x.fillRect(a, base + 18, b - a, 2);
   for (let u = u0 - P + 60; u < u0 + P; u += 140) {
     const s = near(u);
@@ -229,6 +233,7 @@ function drawPlatform(x: CanvasRenderingContext2D, i: number, near: (u: number) 
     text(x, name, s + 7, top + 24.5, 'rgba(' + PAPER + ',.9)', 8, '600');
   }
   // people waiting on the far platform
+  if (closed) return;
   const folk = crowd(70 + i * 13, 8);
   folk.forEach((f, k) => {
     if (!f.on) return;
@@ -297,6 +302,43 @@ function drawBridge(x: CanvasRenderingContext2D, v: View, near: (u: number) => n
   }
 }
 
+/**
+ * The old siding before the harbor (P14), on no map: a short stub of platform beside the track,
+ * its edge line worn off, a dead lamp, a blank name plate painted over, and a concrete stair
+ * housing with a service door and one caged bulb. At speed it is gone in under a second.
+ */
+function drawSiding(x: CanvasRenderingContext2D, v: View, near: (u: number) => number, top: number, sill: number, t: number) {
+  const a = near(SIDING + 200), b = near(SIDING - 200);
+  if (b < -10 || a > v.viewW + 10) return;
+  // (raised a little over the sill, so the platform's edge shows in the windows)
+  const base = sill - 6;
+  // the platform slab and its worn edge
+  box(x, Math.round(a), base - 12, Math.round(b - a), 40, '#0d0b09', 'rgba(' + O + ',.35)');
+  x.fillStyle = 'rgba(255,210,58,.18)'; for (let u = SIDING - 196; u < SIDING + 196; u += 22) { const s = near(u); if ((u * 7) % 5 > 1) x.fillRect(Math.round(s), base - 11, 12, 1); }
+  // the stair housing: a concrete box, its service door, a caged bulb (the only light here)
+  const h = near(SIDING - 60), hw = 96;
+  box(x, Math.round(h - hw / 2), top + 10, hw, base - 12 - top - 10, '#100d0b', 'rgba(' + O + ',.45)');
+  box(x, Math.round(h - 12), base - 52, 24, 40, '#060504', 'rgba(' + O + ',.5)');
+  x.fillStyle = 'rgba(' + O + ',.6)'; x.fillRect(Math.round(h + 7), base - 33, 2, 4);
+  const on = Math.floor(t / 7) % 23 !== 0;
+  x.fillStyle = on ? 'rgba(200,230,210,.85)' : 'rgba(200,230,210,.2)'; x.fillRect(Math.round(h - 2), base - 60, 4, 4);
+  if (on) { const g = x.createRadialGradient(h, base - 58, 1, h, base - 58, 40); g.addColorStop(0, 'rgba(200,230,210,.16)'); g.addColorStop(1, 'rgba(200,230,210,0)'); x.fillStyle = g; x.fillRect(Math.round(h - 40), base - 98, 80, 80); }
+  box(x, Math.round(h - 32), base - 76, 64, 11, '#16120e', 'rgba(' + O + ',.5)');
+  text(x, 'AUTHORISED PERSONNEL', h, base - 70, 'rgba(' + PAPER + ',.55)', 6, '600');
+  // the name plate on its post, painted over: no name
+  const p = near(SIDING + 110);
+  x.fillStyle = '#0a0806'; x.fillRect(Math.round(p) - 1, base - 66, 3, 54);
+  box(x, Math.round(p) - 30, base - 80, 60, 16, '#14100c', 'rgba(' + O + ',.5)');
+  box(x, Math.round(p) - 27, base - 77, 12, 10, 'rgba(' + O + ',.35)');
+  x.fillStyle = 'rgba(40,36,32,.95)'; x.fillRect(Math.round(p) - 12, base - 77, 38, 10);
+  // a dead lamp at the far end
+  const l = near(SIDING + 180);
+  x.fillStyle = '#0a0806'; x.fillRect(Math.round(l), top + 20, 3, base - 12 - top - 20); x.fillRect(Math.round(l) - 8, top + 20, 11, 3);
+  x.fillStyle = 'rgba(' + PAPER + ',.12)'; x.fillRect(Math.round(l) - 8, top + 23, 6, 2);
+  // the stencil on the slab's face
+  text(x, 'SIDING H · OUT OF USE', near(SIDING + 20), base + 2, 'rgba(' + PAPER + ',.35)', 6, '600');
+}
+
 /** The canyon's skywalks: lit tubes between the towers, crossing over the line. */
 function drawSkywalks(x: CanvasRenderingContext2D, v: View, near: (u: number) => number, top: number) {
   for (let u = 2 * SEG + WORLD.district + 160; u < 3 * SEG - WORLD.district; u += 520) {
@@ -345,6 +387,7 @@ function drawOutside(x: CanvasRenderingContext2D, v: View) {
     x.fillStyle = '#030101'; x.fillRect(Math.round(s), top, 4, bottom - top);
   }
   drawTunnel(x, near, top, bottom, v);
+  drawSiding(x, v, near, top, sill, t);
   for (let i = 0; i < 3; i++) drawPlatform(x, i, near, top, sill, v);
   // rain on the glass, blown sideways (not in the tunnel)
   if (regionAt(ride.pos) !== 'tunnel') {
@@ -454,11 +497,14 @@ function drawLineMap(x: CanvasRenderingContext2D, v: View, mp: number) {
   x.strokeStyle = 'rgba(' + PAPER + ',.45)'; x.strokeRect(mp - 32.5, y(148) + 0.5, 64, 6);
   const stopX = (i: number) => mp - 30 + i * 30;
   for (let i = 0; i < 3; i++) {
-    const here = ride.phase !== 'running' && i === ride.at;
+    const here = !between() && i === ride.at;
+    // a closed stop: a red cross where its dot would be
+    if (!lineOpen[LINE[i]]) { x.fillStyle = 'rgba(' + RED + ',.8)'; x.fillRect(stopX(i) - 1, y(152), 4, 1); x.fillRect(stopX(i) - 1, y(149), 4, 1); continue; }
     x.fillStyle = here && Math.floor(t / 25) % 2 ? 'rgba(255,136,0,1)' : 'rgba(' + PAPER + ',.65)'; x.fillRect(stopX(i) - 1, y(150), 4, 4);
   }
-  if (ride.phase === 'running') {
-    const f = rideRun(), back = ride.at === 2, px = back ? stopX(2) - f * 60 : stopX(ride.at) + f * 30, py = back ? y(143) : y(149);
+  if (between()) {
+    // the train, from where it is on the loop: east along the top past the stops, back along the bottom
+    const u = ride.pos / SEG, back = u > 2, px = back ? stopX(2) - (u - 2) * 60 : stopX(0) + u * 30, py = back ? y(143) : y(149);
     x.fillStyle = 'rgba(255,136,0,' + (Math.floor(t / 12) % 2 ? 1 : 0.5) + ')'; x.fillRect(Math.round(px), py, 3, 3);
   }
   tell(x, t, mp + 40, y(138), 1);
@@ -468,9 +514,9 @@ function drawLineMap(x: CanvasRenderingContext2D, v: View, mp: number) {
 function drawDoorDisplay(x: CanvasRenderingContext2D, v: View, s: number) {
   const { y, t } = v;
   box(x, s - 50, y(106), 100, 34, '#050302', 'rgba(' + O + ',.6)');
-  const hot = ride.phase !== 'dwell' || ride.timer < 120;
-  text(x, ride.say, s, y(99), 'rgba(255,136,0,' + (hot ? 0.75 + 0.25 * Math.sin(t * 0.12) : 0.95) + ')', 8, '600');
-  const time = ride.phase === 'running' || ride.phase === 'closing' ? 'ARRIVES IN ' + clock(rideDue()) : ride.phase === 'dwell' ? 'DEPARTS IN ' + clock(Math.max(0, ride.dwell - ride.timer)) : 'DOORS OPENING';
+  const hot = ride.phase !== 'dwell' || ride.timer < 120, stopped = ride.phase === 'braking' || ride.phase === 'halted';
+  text(x, ride.say, s, y(99), stopped ? 'rgba(255,90,80,' + (0.7 + 0.3 * Math.sin(t * 0.2)) + ')' : 'rgba(255,136,0,' + (hot ? 0.75 + 0.25 * Math.sin(t * 0.12) : 0.95) + ')', 8, '600');
+  const time = stopped ? 'PLEASE WAIT' : between() || ride.phase === 'closing' ? 'ARRIVES IN ' + clock(rideDue()) : ride.phase === 'dwell' ? 'DEPARTS IN ' + clock(Math.max(0, ride.dwell - ride.timer)) : 'DOORS OPENING';
   text(x, time, s, y(89), 'rgba(' + PAPER + ',.8)', 7, '600');
   ticker(x, t, s - 46, y(79), 92, 'NEXT: ' + STATIONS[rideNext()].name, 0.6);
   // the door's lamp: green while it is open
@@ -522,12 +568,14 @@ export const train: SceneDef = {
   readables: [
     { id: 'staff', x: L.staff, name: 'STAFF DOOR', promptH: 86, pages: ['STAFF ONLY. LOCKED.', 'NO PASSENGER ACCESS.'] },
     { id: 'ad', x: 640, name: 'NOTICE', promptH: 170, pages: ['CAMERAS OPERATE IN THIS CAR.', 'RECORDINGS ARE KEPT FOR THE DURATION OF THE PASSENGER PLUS 90 DAYS.'] },
-    { id: 'brake', x: L.brake, name: 'EMERGENCY BRAKE', promptH: 86, pages: ['EMERGENCY BRAKE.', 'MISUSE WILL BE RECORDED AGAINST YOUR REGISTRY ID.'] },
     { id: 'gangway', x: L.gangDoor, name: 'TO CAR 2', promptH: 132, pages: ['CAR 2 · LOCKED.', 'INTER-CAR TRAVEL SUSPENDED UNTIL FURTHER NOTICE.'] },
     ...L.people.map((p) => ({ id: p.id, x: p.x, name: p.name, pages: p.pages, label: '[E] TALK', promptH: p.sit ? 56 : 62 })),
   ],
+  // TRAIN-0's emergency panel by the brake: P14 (data/train.json, train0.ts)
+  data: TRAIN,
+  rules: trainRules,
 
-  drawBackdrop(x, v) {
+  drawBackdrop(x, v, e) {
     const { sx, y, t, gy } = v, w0 = sx(0), w1 = sx(L.width);
     x.fillStyle = '#020101'; x.fillRect(0, 0, v.viewW, v.viewH);
     // middle band: the car's wall, windows cut into it
@@ -576,10 +624,16 @@ export const train: SceneDef = {
       box(x, gw + 2, y(D + 18), 66, 12, '#1a120b', 'rgba(' + O + ',.5)');
       text(x, 'CAR 3 OF 3', gw + 35, y(D + 12), 'rgba(' + PAPER + ',.8)', 7, '600');
       tell(x, t, gw + 64, y(D + 8), 3);
-      // the emergency brake: a red handle on a plate
+      // the emergency brake (TRAIN-0's panel): a red handle on a plate, pulled down while the train is stopped by it; the pass reader under it
+      const pulled = ride.phase === 'braking' || ride.phase === 'halted';
+      box(x, bk - 12, y(60), 24, 8, '#1a120b', 'rgba(' + O + ',.5)');
+      text(x, 'EMERGENCY', bk, y(56), 'rgba(' + PAPER + ',.75)', 5, '600');
       box(x, bk - 8, y(52), 16, 22, '#1a0a0a', 'rgba(' + RED + ',.8)');
-      x.fillStyle = 'rgba(' + RED + ',.95)'; x.fillRect(bk - 4, y(46), 8, 3);
+      x.fillStyle = 'rgba(' + RED + ',.95)'; x.fillRect(bk - 4, y(pulled ? 37 : 46), 8, 3);
+      box(x, bk - 6, y(28), 12, 6, '#0d1416', 'rgba(' + O + ',.5)');
+      x.fillStyle = pulled ? 'rgba(34,197,94,.9)' : 'rgba(' + O + ',.6)'; x.fillRect(bk - 4, y(26), 2, 2);
       tell(x, t, bk + 4, y(34), 2);
+      if (e.hover === 'train') { x.save(); x.strokeStyle = 'rgba(255,61,242,.85)'; x.shadowColor = 'rgba(255,61,242,.8)'; x.shadowBlur = 8; x.strokeRect(bk - 15.5, y(62) - 3.5, 31, 47); x.restore(); }
       // the Registry's screen: what it wants from you today, a red REC light
       box(x, gw + 4, y(124), 62, 30, '#0a0604', 'rgba(' + O + ',.6)');
       const lines = [['KEEP YOUR ID', 'VISIBLE'], ['ALL JOURNEYS', 'RECORDED'], ['REPORT', 'IRREGULARITIES']][Math.floor(t / 180) % 3];
@@ -595,7 +649,8 @@ export const train: SceneDef = {
       box(x, s - 24, y(66), 48, 66, '#100c0a', 'rgba(' + O + ',.8)');
       if (g) {
         // the platform through the open doors, lit, its light spilling onto the car's floor
-        box(x, s - g, y(64), g * 2, 64, 'rgba(255,217,165,.3)');
+        // (at the old siding: no platform lights, only the stair's one cold bulb)
+        box(x, s - g, y(64), g * 2, 64, rideAtSiding() ? 'rgba(200,230,210,.12)' : 'rgba(255,217,165,.3)');
         x.fillStyle = 'rgba(255,210,58,.6)'; x.fillRect(s - g, y(2), g * 2, 2);
         x.fillStyle = '#100c0a'; x.fillRect(s - 24, y(64), 24 - g, 64); x.fillRect(s + g, y(64), 24 - g, 64);
         x.fillStyle = 'rgba(255,217,165,.07)'; x.fillRect(s - g - 6, gy, g * 2 + 12, 20);

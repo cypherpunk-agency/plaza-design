@@ -9,19 +9,35 @@
  *   so the real run is never touched.
  */
 
-import { DISTRICTS, heardFlag, mappedFlag } from './city';
+import { DISTRICTS, HARBOR_FLAG, heardFlag, mappedFlag } from './city';
 import { CUTSCENES } from './cutscenes';
 import { KEYRING, LOGIC } from './data';
 import type { Save } from './level';
-import { SCENES, sceneTitle } from './scenes';
+import { SCENES, sceneTitle, type SceneId } from './scenes';
+import { boardRide } from './scenes/line';
 
 export { SUDO } from './level';
 
 export interface Level { id: string; name: string; note: string }
 
+/** `?sudo&locked`: test the harbor lock (P14 unsolved, no maglev pass) with everything else unlocked. */
+const LOCKED = (() => { try { return new URLSearchParams(location.search).has('locked'); } catch { return false; } })();
+
+/**
+ * Story levels that start somewhere particular, not at a scene's spawn: `start` sets the world up
+ * and returns the scene to enter. P14: on the train at Galleria, doors about to close, the run past
+ * the siding next.
+ */
+const STORY: Record<string, { name: string; start: () => SceneId }> = {
+  p14: { name: "P14 · THE STOP THAT ISN'T ON THE MAP", start: () => { boardRide('galleria', 240); return 'train'; } },
+};
+/** A story level's start (null: not one, `id` is a scene or cutscene). */
+export const startLevel = (id: string): SceneId | null => STORY[id]?.start() ?? null;
+
 /** Every place the game can start in, in the order you'd meet them. */
 export function levels(): Level[] {
   return [
+    ...Object.entries(STORY).map(([id, l]) => ({ id, name: l.name, note: 'LEVEL' })),
     ...Object.values(CUTSCENES).map((c) => ({ id: c.id, name: c.id.toUpperCase(), note: 'CUTSCENE' })),
     ...Object.entries(SCENES).map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),
   ];
@@ -38,5 +54,8 @@ export function unlockAll(s: Save) {
   // the whole city on the map: every district heard of and on record (the Spire and the Undercity too)
   for (const d of DISTRICTS) { s.flags[heardFlag(d.id)] = true; s.flags[mappedFlag(d.id)] = true; }
   s.flags.end = true; // the market gate stands open
+  // the harbor open (P14) and Moth's maglev pass (P13's jacket) in your pocket; `?sudo&locked` tests the lock: neither
+  if (LOCKED) { delete s.flags[HARBOR_FLAG]; delete s.items['maglev.pass']; }
+  else { s.flags[HARBOR_FLAG] = true; s.items['maglev.pass'] = Math.max(1, s.items['maglev.pass'] ?? 0); }
   return s;
 }

@@ -708,7 +708,8 @@ function drawSheet(x: CanvasRenderingContext2D, b: Box, st: MapState) {
     rule();
     STAND_IDS.forEach((s, i) => {
       const here = standOf(st.scene) === s, name = st.seen(STANDS[s].scene) ? STANDS[s].name : '???';
-      row((i === m.index ? '> ' : '  ') + name, i === m.index ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.7)', 7, '600', here ? 'YOU' : '', 'rgba(255,255,255,.9)');
+      const shut = s === 'harbor' && !st.harborOpen; // the harbor lock (P14)
+      row((i === m.index ? '> ' : '  ') + name, i === m.index ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.7)', 7, '600', here ? 'YOU' : shut ? 'CLOSED' : '', shut && !here ? 'rgba(' + RED + ',.85)' : 'rgba(255,255,255,.9)');
     });
     return;
   }

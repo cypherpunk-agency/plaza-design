@@ -12,7 +12,7 @@
  *   canopy on steel posts; play = platform, board, benches, the gate to the pier.
  */
 
-import type { Station } from '../city';
+import { harborOpen, type Station } from '../city';
 import { box, C, drawTowers, notice, O, onScreen, PAPER, RED, reflect, rng, tell, text, towers, type SceneDef, type View } from './kit';
 import { drawDepartures, drawPlatformTrain, platformQueue, STOP, TRAIN } from './line';
 import { crowd, drawRider, SEAT_H, type RiderKind } from './riders';
@@ -424,7 +424,10 @@ export const harborStation: SceneDef = {
     for (const wx of [170, 900]) nameplate(x, v, sx(wx), 140, 'HARBOR', H.canopy.under);
     drawDepartures(x, v, 'harbor', H.board, 112, H.canopy.under);
     for (const b of H.benches) drawBench(x, v, b);
-    drawWaiting(x, v, 'harbor', H.waiting);
+    // the harbor lock (until P14): trains pass, nobody waits, notices taped to the posts
+    if (!harborOpen(v.flags)) {
+      for (const p of H.posts) { const s = sx(p); if (onScreen(v, s - 40, 80)) notice(x, t, s, y(96), 70, 32, ['STATION CLOSED', 'BY ORDER · PA-7'], 2); }
+    } else drawWaiting(x, v, 'harbor', H.waiting);
     const cx = sx(H.checkpoint);
     if (onScreen(v, cx - 30, 60)) { box(x, cx - 1, y(44), 3, 44, '#2a160a'); notice(x, t, cx, y(76), 66, 32, ['REGISTRY', 'CHECKPOINT'], 3); x.fillStyle = 'rgba(' + RED + ',.85)'; x.fillRect(cx - 30, y(73), 6, 3); }
     const tx = sx(H.tide);

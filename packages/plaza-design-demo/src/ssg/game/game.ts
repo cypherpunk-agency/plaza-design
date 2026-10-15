@@ -24,15 +24,15 @@ import { KEYRING } from './data';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import { botReact, isBot, characterHeight, characterX, talkTo } from './characters';
 import {
-  boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
+  boardRide, lineOpen, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideAtSiding, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
 import {
-  DOORS, HOP, placeBlocked, type MapPlace, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
+  DOORS, DRIVER_HARBOR, harborOpen, HOP, SIDING_OUT, placeBlocked, type MapPlace, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
   seenFlag, START_SCENE, standOf, STANDS, STATIONS, stationAt, type Stand, type Station,
 } from './city';
 import { drawCityMap, mapKey, mapPointer, openMap, type MapAct, type MapState, type MapView } from './citymap';
 import { KeyBar } from './keybar';
-import { levels, SUDO, unlockAll } from './sudo';
+import { levels, startLevel, SUDO, unlockAll } from './sudo';
 import { Menu } from './menu';
 import {
   commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
@@ -1441,7 +1441,7 @@ export class Game {
   private enterLevel(id: string) {
     this.bubble = null;
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
-    this.handTo(id);
+    this.handTo(startLevel(id) ?? id);
     this.markSeen(this.here);
     storeSave(this.save);
   }
@@ -1471,7 +1471,7 @@ export class Game {
       }
       // The train's door: only while it stands at a stop with the doors open.
       if (e.action === 'out' && !rideOpen()) continue;
-      const label = e.action === 'out' ? '[E] STEP OUT · ' + STATIONS[rideStop()].name : e.label;
+      const label = e.action === 'out' ? '[E] STEP OUT · ' + (rideAtSiding() ? 'SIDING' : STATIONS[rideStop()].name) : e.label;
       list.push({ kind: 'exit', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
     return list;
@@ -1606,6 +1606,8 @@ export class Game {
   /** E at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
   private stepOut() {
     if (!rideOpen()) return;
+    // P14: the old siding has no station, only a service stair up to the harbor's pier
+    if (rideAtSiding()) { this.travel('harbor', 'metro'); this.say('YOU', SIDING_OUT, this.p.x, 50); return; }
     const st = rideStop(), left = rideLeft();
     this.travel(STATIONS[st].scene, 'train');
     platformSync(st, this.t, this.reduced ? TIMETABLE.dwell / 2 : left);
@@ -1657,6 +1659,8 @@ export class Game {
     this.mapView = null;
     this.canvas.style.cursor = '';
     if (to === standOf(this.here)) { this.flash('you are already here'); return; }
+    // the harbor lock: no flights to the pier until P14
+    if (to === 'harbor' && !harborOpen(this.save.flags)) { sound.denied(); this.say('DRIVER', DRIVER_HARBOR, this.p.x + 20, 40); return; }
     this.save.tokens -= FARE;
     storeSave(this.save);
     this.syncHud();
@@ -1673,7 +1677,7 @@ export class Game {
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
       avoid: this.mapAvoid(),
       ride: this.here === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null,
-      seen: (z) => !!this.save.flags[seenFlag(z)], flag: (f) => !!this.save.flags[f], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
+      seen: (z) => !!this.save.flags[seenFlag(z)], flag: (f) => !!this.save.flags[f], gateOpen: !!this.save.flags.end, harborOpen: harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
     };
   }
 
@@ -1708,6 +1712,8 @@ export class Game {
 
   /** Flights land; on board, the train stands, closes its doors, runs to the next stop on the loop and opens them (line.ts). */
   private updateTravel(dt: number) {
+    // the harbor lock: LINE 0 stops there only once P14 is solved
+    lineOpen.harbor = harborOpen(this.save.flags);
     if (this.flight && this.clock - this.flight.start >= FLIGHT) {
       const to = this.flight.to;
       this.flight = null;
@@ -1724,6 +1730,7 @@ export class Game {
     const ev = stepRide(dt);
     if (ev === 'depart') { this.flash('NEXT: ' + STATIONS[rideNext()].name); sound.close(); }
     else if (ev === 'arrive') { this.flash(STATIONS[rideStop()].name + ' · doors open'); sound.open(); }
+    else if (ev === 'pass') this.flash('HARBOR · STATION CLOSED · NOT STOPPING');
   }
 
   /** The city map when it is open, and the fade of a quick trip (dark in the middle, with where you are going). */

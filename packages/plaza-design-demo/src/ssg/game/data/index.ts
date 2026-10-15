@@ -15,6 +15,7 @@ import yardJson from './yard.json';
 import capsuleJson from './capsule.json';
 import mothJson from './moth.json';
 import beachJson from './beach.json';
+import trainJson from './train.json';
 
 const yard: Loose<SceneData> = yardJson;
 const capsule: Loose<SceneData> = capsuleJson;
@@ -40,8 +41,13 @@ export const BEACH = beach as SceneData;
 /** Downtown, the first street (and the scene the old terminal saves belong to). */
 export const DOWNTOWN = downtown as SceneData;
 
+/** The metro car: TRAIN-0's emergency panel (P14, the stop that isn't on the map). */
+const train: Loose<SceneData> = trainJson;
+export const TRAIN = train as SceneData;
+
 /** Every scene file, by scene id. A new scene is one import and one line here. */
-export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH };
+export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH,
+  train: TRAIN };
 
 /** The logic modules (TIMER, SWITCH), shared by every scene. Checked like a scene. */
 export const LOGIC = logic as LogicData;
