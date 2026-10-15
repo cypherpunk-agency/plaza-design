@@ -18,6 +18,7 @@ export { drawPalm } from './palm';
 export { drawGalleriaDome } from './galleria-dome';
 export { drawTower, towerRow } from './downtown-towers';
 export { frameView, placed } from './view';
+export { puddles, weatherFront, weatherMid, weatherSky, type PuddleSpec, type WeatherLook } from './weather';
 
 export interface SetEntry {
   id: string;
@@ -68,5 +69,14 @@ export const SETS: SetEntry[] = [
     id: 'downtown-towers', file: 'sets/downtown-towers.ts',
     what: 'Downtown as a skyline: tower slabs with seeded lit windows, rooftop masts and tanks, signs on plates.',
     users: ['title/glide.ts: three rows deep, closing in on the sun'],
+  },
+  {
+    id: 'weather', file: 'sets/weather.ts',
+    what: "The weather over an outdoor scene, from its district's forecast (weather.ts): cloud deck and lightning behind, puddles, smog and fog banks in the middle, rain, low fog, heat shimmer and the storm's flash in front.",
+    users: [
+      'game.ts drawWorld: every scene with `ambient.weather` (downtown, market, harbor, stacks, warehouse, beach, yard, metro, harborStation)',
+      'Downtown keeps its own neon smears in the street (game.ts drawStreet), as wet as the weather',
+      'title/glide.ts does NOT use it: the glide\'s "first rain" stays scripted',
+    ],
   },
 ];

@@ -242,6 +242,9 @@ export const metro: SceneDef = {
   name: 'Downtown metro',
   width: L.width,
   spawn: L.spawn,
+  ambient: { weather: true },
+  // the benches: sit and let the trains go by (TIME.md, waiting)
+  rests: L.benches.map((b, i) => ({ id: 'bench' + i, x: b.x - (b.who ? 12 : 0), kind: 'bench' as const })),
   intro: ['The metro. One line, three stops, round and round. Getting off at the right one is my problem.'],
   exits: [
     { id: 'downtown', x: 32, to: 'downtown', at: 'metro', label: '[E] STAIRS DOWN · DOWNTOWN', promptH: 82 },

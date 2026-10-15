@@ -255,6 +255,7 @@ export const galleriaStation: SceneDef = {
   name: 'Galleria metro',
   width: G.width,
   spawn: G.spawn,
+  rests: G.benches.map((b, i) => ({ id: 'bench' + i, x: b.x - (b.who ? 12 : 0), kind: 'bench' as const })),
   intro: ['The Galleria metro, under the mall. The ads followed me down.'],
   exits: [
     { id: 'mall', x: G.exit, to: 'mall', at: 'metro', label: '[E] UP · GALLERIA MALL', promptH: 92 },
@@ -398,7 +399,8 @@ export const harborStation: SceneDef = {
   name: 'Harbor metro',
   width: H.width,
   spawn: H.spawn,
-  ambient: { sky: true, rain: true },
+  rests: H.benches.map((b, i) => ({ id: 'bench' + i, x: b.x - (b.who ? 12 : 0), kind: 'bench' as const })),
+  ambient: { sky: true, weather: true },
   intro: ['The Harbor metro. Salt, diesel, and a timetable nobody believes.'],
   exits: [
     { id: 'harbor', x: H.exit, to: 'harbor', at: 'metro', label: '[E] GATE · HARBOR PIER', promptH: 92 },

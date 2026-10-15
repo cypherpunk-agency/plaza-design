@@ -71,7 +71,7 @@ export class Panels {
     const sayLine = (line: string) => this.say([D.sayCmd.replace('{line}', line), '', 'dim']);
     /** A node's first variant whose `if` holds; its steps run as it is shown. */
     const pick = (id: string): DialogueNode => {
-      const n = [D.nodes[id]].flat().find((v) => !v.if || this.m.cond(v.if))!;
+      const n = [D.nodes[id]].flat().find((v) => (!v.if || this.m.cond(v.if)) && this.m.within(v.when))!;
       if (n.do) this.m.apply(n.do);
       return n;
     };

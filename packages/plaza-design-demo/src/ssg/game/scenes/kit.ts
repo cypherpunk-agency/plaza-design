@@ -20,6 +20,7 @@ import type { SceneData } from '../data/types';
 import type { Player } from '../downtown/rules';
 import type { EngineDraw, Line, SceneModel, SceneRules, SceneTarget } from '../engine';
 import type { PanelFn } from '../engine/panels';
+import type { WeatherKind } from '../weather';
 
 /** What a scene's draw functions get from the engine, refreshed every frame. */
 export interface View {
@@ -77,6 +78,9 @@ export interface SceneExit {
   needs?: { key: string; name: string; pages: string[]; h: number };
 }
 
+/** A bench, a bar stool or a bed: E there offers "wait until…" (clock.ts WAITS). */
+export interface SceneRest { id: string; x: number; kind: 'bench' | 'stool' | 'bed'; promptH?: number; h?: number }
+
 /** Something to read (or a person who says a line) with E. */
 export interface SceneReadable { id: string; x: number; name: string; pages: string[]; label?: string; h?: number; promptH?: number }
 
@@ -105,6 +109,9 @@ export interface UseCtx {
   flags: Readonly<Record<string, boolean>>;
   set: (flag: string) => void;
   t: number;
+  /** The weather here now (weather.ts), and the city clock's minute of the day (0–1439): for lines that change with them. */
+  weather: WeatherKind;
+  min: number;
   /**
    * What the player carries (the save's `items`, kept across scenes and reloads; the HUD shows it):
    * `has` at least n of an item, `take` n if there are that many (true), else nothing (false),
@@ -153,9 +160,15 @@ export interface SceneDef {
   uses?: SceneUse[];
   /**
    * What the engine draws around the scene: `sky`, its stars and ships behind everything; `city`,
-   * Downtown's skyline and street walls (game.ts); `street`, the wet street floor; `rain` in front.
+   * Downtown's skyline and street walls (game.ts); `street`, the wet street floor; `weather`, the
+   * district's weather (weather.ts, sets/weather.ts): it is outdoors (rain, fog, smog, heat, puddles).
    */
-  ambient?: { sky?: boolean; city?: boolean; street?: boolean; rain?: boolean };
+  ambient?: { sky?: boolean; city?: boolean; street?: boolean; weather?: boolean };
+  /**
+   * Places to sit or lie down and let time pass (TIME.md "Waiting"): E offers "wait until…" (the
+   * next hour, dusk, night, morning). `bed` sleeps.
+   */
+  rests?: SceneRest[];
   /** What the player says on the first visit (save flag `scene:<id>`); a function when it depends on a touch screen. */
   intro?: string[] | ((touch: boolean) => string[]);
   /** Arriving keeps the way the player faces (an open street); otherwise they face into the scene. */

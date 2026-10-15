@@ -17,7 +17,7 @@
 
 import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from '../data';
 import type {
-  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SectorData, StatusPart, Value, WatchdogData, SceneData, SceneSave,
+  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave,
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
 // [engine features: watchdog, clocks] (scene/watchdog.ts, scene/clock.ts)
@@ -29,6 +29,15 @@ import { type DogView, Watchdogs } from './watchdog';
  * with a sequence) and WATCH (the watchdog's noun on each device of its route).
  */
 export type NounKind = Kind | 'SEAL' | 'WATCH';
+
+/**
+ * The city, as every scene's conditions see it (TIME.md): the game plugs it in (game.ts). `read`:
+ * the keys every scene has (`weather`, `hour`, `day`) for a scene id; `when`: is a time window now?
+ * Unplugged (the build's check, tests): no city keys, and every window holds.
+ */
+export const CITY_KEYS = ['weather', 'hour', 'day'] as const;
+export const CITY: { read?: (key: string, scene: string) => Value | undefined; when?: (w: TimeWindow) => boolean } = {};
+const now = (w: TimeWindow | undefined) => !w || !CITY.when || CITY.when(w);
 export type Line = [cmd: string, reply: string, tone?: 'ok' | 'err' | 'dim'];
 
 export interface Noun {
@@ -1016,7 +1025,7 @@ export class SceneModel {
     const cases = n.on?.[c.verb] ?? n.on?.['*'];
     if (!cases) return null;
     for (const k of list<Case>(cases)) {
-      if (k.if && !this.test(k.if, c)) continue;
+      if ((k.if && !this.test(k.if, c)) || !now(k.when)) continue;
       let out: Line | null = null;
       const keep = (l: Line | null) => { if (!l) return; if (out) this.sayLine(out); out = l; };
       (k.do ?? []).forEach((a) => keep(this.doAction(a, c)));
@@ -1027,7 +1036,7 @@ export class SceneModel {
   }
 
   private doAction(a: Action, c: Ctx): Line | null {
-    if (a.if && !this.test(a.if, c)) return null;
+    if ((a.if && !this.test(a.if, c)) || !now(a.when)) return null;
     if ('set' in a) this.write(a.set, typeof a.to === 'string' ? this.fmt(a.to, c) : a.to, c.dev);
     else if ('open' in a) this.hooks.open(a.open, a.open === 'talk' ? a.with ?? this.dialogueFor(c.noun) : a.with);
     else if ('emit' in a) this.emit(c.dev + '.' + c.noun + ':' + a.emit);
@@ -1082,8 +1091,13 @@ export class SceneModel {
     const derived = this.rules.derived?.[key];
     if (derived) return derived(this);
     if (key in this.state) return this.state[key];
+    // the city's keys (weather, hour, day): a scene's own state of the same name wins
+    if (CITY.read && (CITY_KEYS as readonly string[]).includes(key)) return CITY.read(key, this.data.id);
     return undefined;
   }
+
+  /** Is this time window now (true without one)? For dialogue variants. */
+  within(w?: TimeWindow) { return now(w); }
 
   private write(key: string, v: Value, dev = '') {
     const own = this.local.get(dev);

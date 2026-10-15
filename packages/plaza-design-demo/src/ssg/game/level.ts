@@ -8,6 +8,7 @@
  * Rule of the game: hints, never answers.
  */
 
+import { fixClock, newClock, type ClockSave } from './clock';
 import { contactsOf, messagesOf, readFlag } from './contacts';
 import { START_MODULES } from './data';
 import type { SceneSave } from './data/types';
@@ -33,6 +34,8 @@ export interface Save {
   items: Record<string, number>;
   /** Time played in ms (the pause menu's save slots show it). Older saves: missing, counts from 0. */
   playMs?: number;
+  /** The city clock (clock.ts): day, minute of the day, the weather's seed. Older saves: day 1, 09:40, seed 1. */
+  clock: ClockSave;
 }
 
 /** `?sudo` in the URL: everything unlocked, a LEVELS menu, and its own save (sudo.ts). */
@@ -44,7 +47,7 @@ export const SAVE_KEY = SUDO ? 'access-denied-save-sudo-v2' : 'access-denied-sav
 /** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` scene replaces it later. */
 
 export function newSave(): Save {
-  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], items: {}, freed: [], flags: {}, hints: {}, scenes: {} };
+  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], items: {}, freed: [], flags: {}, hints: {}, scenes: {}, clock: newClock() };
 }
 
 /** A stored save, with anything missing filled in from a new game. */
@@ -58,6 +61,8 @@ export function loadSave(): Save {
       if (!Array.isArray(s.keyring)) s.keyring = [];
       if (!s.items || typeof s.items !== 'object' || Array.isArray(s.items)) s.items = {};
       s.items = Object.fromEntries(Object.entries(s.items).filter(([, n]) => Number.isInteger(n) && n > 0));
+      // a save from before the city clock (TIME.md): day 1, 09:40
+      s.clock = fixClock(JSON.parse(raw).clock);
       return s;
     }
   } catch { /* private window or blocked storage: start fresh */ }
@@ -249,6 +254,8 @@ export interface Ctx {
   resetYard: () => void;
   /** Your own deck while you still exist (the opening, opening.ts): its files and what `whoami` says. */
   deck?: { files: Record<string, string>; whoami: string };
+  /** The Registry's weather report for where you are (weather.ts `reportLines`). */
+  weather?: () => string[];
 }
 
 const MAN: Record<string, string> = {
@@ -267,6 +274,7 @@ const MAN: Record<string, string> = {
   clear: 'clear: wipes the screen.',
   reset: 'reset --yes: wipes your progress and starts over. reset yard: only the back yard.',
   contacts: 'contacts: who is on your deck, and whether they have signal.',
+  weather: 'weather: the Registry\'s forecast for where you are and the rest of the city, the next 12 hours.',
   msg: 'msg <contact>: reads what they sent you.',
 };
 
@@ -274,7 +282,7 @@ const MAN: Record<string, string> = {
 const DECK: Record<string, string> = { 'inbox.txt': 'From: the Registry\nSubject: your identity\nStatus: REVOKED\nEffective: immediately\nAppeal: not available.' };
 
 export function commands(c: Ctx): string[] {
-  const base = ['help', 'man', 'ls', 'cat', 'whoami', 'set', 'nodes', 'map', 'sound', 'clear', 'exit', 'reset'];
+  const base = ['help', 'man', 'ls', 'cat', 'whoami', 'set', 'nodes', 'map', 'weather', 'sound', 'clear', 'exit', 'reset'];
   // contacts on your deck (contacts.ts): Moth, after Act I
   if (contactsOf(c.save.flags).length) base.push('contacts', 'msg');
   if (c.machine && c.shell) {
@@ -286,7 +294,7 @@ export function commands(c: Ctx): string[] {
 }
 
 /** Commands that need nothing after them: on the touch deck, one tap runs them. */
-export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'sound', 'clear', 'exit', 'contacts'];
+export const NO_ARGS = ['help', 'ls', 'whoami', 'nodes', 'map', 'weather', 'sound', 'clear', 'exit', 'contacts'];
 
 /** What the deck can read right now: the machine's readable nouns, or your own files. */
 const readable = (c: Ctx) => (c.machine && c.shell ? c.shell.readable(c.machine) : Object.keys(c.deck?.files ?? DECK));
@@ -362,6 +370,14 @@ export function run(c: Ctx, line: string) {
     }
     case 'nodes': c.print('NODES: ' + nodeCount(s) + ' ACTIVE · freed by you: ' + (s.freed.join(', ') || 'none yet')); return;
     case 'map': c.print(map(c)); return;
+    case 'weather': {
+      const lines = c.weather?.() ?? [];
+      if (!lines.length) { c.print('weather: no signal from the Registry weather service.', 'dim'); return; }
+      c.print(lines[0], 'head');
+      lines.slice(1, -1).forEach((l) => c.print(l));
+      c.print(lines[lines.length - 1], 'dim');
+      return;
+    }
     case 'sound': c.print('sound ' + (c.toggleSound() ? 'on' : 'off') + '.', 'dim'); return;
     case 'clear': c.clear(); return;
     case 'exit': case 'logout': c.leaveMachine(); return;

@@ -27,7 +27,7 @@ export const stacks: SceneDef = {
   name: 'the stacks',
   width: STACKS_W,
   spawn: L.spawn,
-  ambient: { sky: true, rain: true },
+  ambient: { sky: true, weather: true },
   exits: [
     { id: 'harbor', x: L.gate, to: 'harbor', at: 'stacks', label: '[E] PIER', promptH: 82 },
     { id: 'warehouse', x: L.lane, to: 'warehouse', at: 'stacks', label: '[E] WAREHOUSE 4', promptH: 92 },

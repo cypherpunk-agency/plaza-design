@@ -101,3 +101,26 @@ hour in any weather.
 3. Weather: states, climates, the seeded forecast, the report, rain and fog visuals.
 4. `when` / `weather` in the data; the city clock noun; schedules for people and devices.
 5. Lines by time and weather across the scenes; the capsule's night schedule on the real clock.
+
+## Built (steps 1 and 3, with first hooks of 4)
+
+- **The clock:** `clock.ts` (`city`, `CLOCK_RATE` 0.5 game min per real second, `TRAVEL` quick
+  15 / taxi 10, `WAITS`, `WAIT_CARD`). Saved as `save.clock = { day, min, seed }` (old saves: day 1,
+  09:40). It runs in a scene (hack vision and the board too) and stops in the menu, the map, a taxi
+  or quick trip, talk (speech bubbles, daemon panels, toys), cutscenes, the title and the glide
+  (game.ts `clockRuns`). The opening pins it to `OPENING_TIME` and lets go after uplink.so, from
+  09:42 (`pinStory`). The HUD, the header and the footer (`DAY 3 · 21:40`) show it.
+- **Waiting:** a scene's `rests` (benches on the three platforms, the market's stool, your bed)
+  offer "wait until…" in the popup plate; a fade and a time card, the clock jumps. Not while the
+  clock is pinned (the opening's bed is still its own sleep).
+- **Weather:** `weather.ts` (climates, 3-hour blocks fading over 40 min, a city-wide front,
+  `weatherAt(climate, day, min)`, `forecast`, `reportLines`, `screenLine`, sudo overrides).
+  Drawn by `sets/weather.ts` in every scene with `ambient.weather`. Dawn before you are deleted
+  stays dry. The `weather` terminal command; the report on Downtown's new ticker, the harbor's
+  ferry ticker and every default ticker's WEATHER item.
+- **Logic:** `weather`, `hour`, `day` in conditions; `when` time windows on cases, steps and
+  dialogue variants (GAME-DATA.md); `when` and `lines` on people.
+- **Sudo:** the time control's second mode in a scene (transport.ts `ClockBar`): day, time
+  slider, speed (■, 1×, 10×, 60×), weather override per climate or the whole city.
+- **Not yet:** the sky, grade and light (step 2: the sun still sits where each scene drew it);
+  the CITY CLOCK noun and schedules; sound.

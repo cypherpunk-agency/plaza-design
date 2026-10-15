@@ -27,11 +27,21 @@ export type LineRef = LineData | string;
 /**
  * A condition: `key` (state is truthy), `!key`, `key=value`, or `signal`
  * (the verb arrived over a cable rather than from the player's finger).
+ * The city (TIME.md) adds read-only keys every scene has: `weather` (the scene's district now:
+ * `weather=rain`, `!weather=clear`; clear, cloudy, rain, storm, fog, smog, heat), `hour` (0–23)
+ * and `day` (1, 2, …). A scene's own state key of the same name wins.
  */
 export type Cond = string;
 
+/**
+ * A time window on the city clock (TIME.md): from `from` up to (not including) `to`, "HH:MM",
+ * crossing midnight when `to` is earlier ("22:00" to "04:00"). `days`: only on these days ("odd",
+ * "even" or day numbers); a window that crosses midnight belongs to the day it started.
+ */
+export interface TimeWindow { from: string; to: string; days?: ('odd' | 'even' | number)[] }
+
 /** One step. Each has exactly one of set / open / emit / goal / effect / give / trace / unseal. */
-export type Action = { if?: Cond } & (
+export type Action = { if?: Cond; when?: TimeWindow } & (
   | { set: string; to: Value }   // change a state key (strings are templates)
   | { open: string; with?: string } // open a full-screen panel: talk (with: which dialogue), camera
   | { emit: string }             // raise one of this noun's events
@@ -42,8 +52,8 @@ export type Action = { if?: Cond } & (
   | { unseal: string }           // open a sealed sector of this device (or `device/sector`)
 );
 
-/** What a verb does. In a list, the first case whose `if` holds runs. */
-export interface Case { if?: Cond; do?: Action[]; say?: LineRef }
+/** What a verb does. In a list, the first case whose `if` holds (and whose `when` is now) runs. */
+export interface Case { if?: Cond; when?: TimeWindow; do?: Action[]; say?: LineRef }
 
 /** A status line part: plain text, or text chosen by a condition. */
 export type StatusPart = string | { if: Cond; then?: string; else?: string };
@@ -273,6 +283,8 @@ export interface CrateData { id: string; x: number; y: number; w: number; h: num
 
 export interface DialogueNode {
   if?: Cond;
+  /** Only shown inside this time window (with `if`, both must hold). */
+  when?: TimeWindow;
   text: string;
   do?: Action[];
   /** [what you say, node it leads to]. No choices: the conversation ends. */

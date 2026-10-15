@@ -295,7 +295,17 @@ The small vocabulary, all of it:
   `effect`, `give` something (a keyring item, a module, or `tokens` with a `count`), raise or
   lower this device's `trace` (%), `unseal` a sector (`sector` or `device/sector`). Any step may
   have an `if`.
-- **Conditions**: `key`, `!key`, `key=value`, and `signal` (the verb came over a cable).
+- **Conditions**: `key`, `!key`, `key=value`, and `signal` (the verb came over a cable). The
+  city adds keys every scene has (TIME.md): `weather` (the scene's district now: `weather=rain`,
+  `!weather=clear`; clear, cloudy, rain, storm, fog, smog, heat), `hour` (0–23) and `day`. A
+  scene's own state key of the same name wins; the check knows the weather's states.
+- **Time windows** (TIME.md): a case, a step or a dialogue variant may carry
+  `"when": { "from": "06:00", "to": "09:00" }` (to is not included; `"22:00"` to `"04:00"`
+  crosses midnight; optional `"days": ["odd" | "even" | 3, …]`). It runs only inside the window;
+  with `if`, both must hold. A case or variant with `when` (and no `if`) may stand before the
+  last. Example: beach.json's lifeguard drone reads differently in a storm and at night. People in
+  code (characters.ts) take `when` (present only then) and `lines` (variants by `when` and
+  `weather` before `talk`): the harbor's jogger (06:00–09:00) and fisherman.
 - **Templates**: `{verb}`, `{via}` (`"signal → "` when a cable sent it), any state key.
 - **Lines**: `["command", "reply", "ok" | "err" | "dim"]`, written out or as a key into `texts`.
 - **Status**: a string, or parts like `{ "if": "held", "then": " · holding {held}" }`.
