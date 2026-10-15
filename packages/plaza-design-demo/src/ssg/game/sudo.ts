@@ -3,7 +3,7 @@
  *
  * - The pause menu gets LEVELS: every scene and cutscene; pick one to go there. OPENING · TRAIN
  *   HOME (and · MORNING, DELETED) play the opening; it locks hacking until uplink.so, even here.
- * - Everything is unlocked: every logic module, legs.so, every keyring item,
+ * - Everything is unlocked: every logic module, every program (scan.so; `&noscan` leaves it out), legs.so, every keyring item,
  *   the items a later level asks for (the maglev pass), tokens to spare, every place on the city map, the market gate open.
  *   Puzzles themselves stay unsolved, so they can still be played.
  * - A time control (transport.ts) over the title's sunrise, the glide and every cutscene:
@@ -14,7 +14,7 @@
 
 import { DISTRICTS, HARBOR_FLAG, heardFlag, mappedFlag } from './city';
 import { CUTSCENES } from './cutscenes';
-import { KEYRING, LOGIC } from './data';
+import { KEYRING, LOGIC, NET } from './data';
 import type { Save } from './level';
 import { SCENES, sceneTitle, type ItemId, type SceneId } from './scenes';
 import { boardRide } from './scenes/line';
@@ -26,6 +26,8 @@ export interface Level { id: string; name: string; note: string }
 
 /** `?sudo&locked`: test the harbor lock (P14 unsolved, no maglev pass) with everything else unlocked. */
 const LOCKED = (() => { try { return new URLSearchParams(location.search).has('locked'); } catch { return false; } })();
+/** `?sudo&noscan`: test the net before the library (no scan.so: LINKs only connect to what they know, no NET) with everything else unlocked. */
+const NOSCAN = (() => { try { return new URLSearchParams(location.search).has('noscan'); } catch { return false; } })();
 
 /**
  * Story levels that start somewhere particular, not at a scene's spawn: `start` sets the world up
@@ -33,6 +35,8 @@ const LOCKED = (() => { try { return new URLSearchParams(location.search).has('l
  * the siding next.
  */
 const STORY: Record<string, { name: string; start: () => SceneId }> = {
+  // P16, the first hacking job: the library's reading room (add &noscan to play it without scan.so already owned)
+  p16: { name: 'P16 · LONG OVERDUE (THE LIBRARY)', start: () => 'library' },
   p14: { name: "P14 · THE STOP THAT ISN'T ON THE MAP", start: () => { boardRide('galleria', 240); return 'train'; } },
   // P15, the end of Act I: the stacks at the gate booth (the scene keeps its progress; its watchdog starts on PORT AUTHORITY)
   p15: { name: 'P15 · NRLU 404 0451 (ACT I FINALE)', start: () => 'stacks' },
@@ -61,6 +65,9 @@ export function unlockAll(s: Save) {
   if (!s.handle) s.handle = 'root';
   s.jump = true;
   for (const m of LOGIC.modules) if (!s.modules.includes(m.id)) s.modules.push(m.id);
+  // the programs (scan.so); `?sudo&noscan` leaves them out, to test the net before the library
+  if (NOSCAN) s.programs = s.programs.filter((p) => !NET.programs.some((x) => x.id === p));
+  else for (const p of NET.programs) if (!s.programs.includes(p.id)) s.programs.push(p.id);
   for (const k of KEYRING.keys()) if (!s.keyring.includes(k)) s.keyring.push(k);
   s.tokens = Math.max(s.tokens, 99);
   // what story levels hand you to carry, so the next one can be played on its own (P13's maglev pass for P14's brake)

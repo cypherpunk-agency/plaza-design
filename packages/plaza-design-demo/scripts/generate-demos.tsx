@@ -35,6 +35,8 @@ import { TRAIN } from '../src/ssg/game/data';
 import { TRAIN_RULES_SHAPE } from '../src/ssg/game/scenes/train0';
 import { STACKS } from '../src/ssg/game/data';
 import { STACKS_RULES_SHAPE } from '../src/ssg/game/stacks/rules';
+import { LIBRARY } from '../src/ssg/game/data';
+import { LIBRARY_RULES } from '../src/ssg/game/library/rules';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -154,6 +156,7 @@ function checkGameData() {
     { data: TRAIN, code: contractOf(TRAIN_RULES_SHAPE), extra: TRAIN_RULES_SHAPE.check },
     { data: LAUNDROMAT, code: contractOf(LAUNDROMAT_RULES), extra: LAUNDROMAT_RULES.check },
     { data: STACKS, code: contractOf(STACKS_RULES_SHAPE), extra: STACKS_RULES_SHAPE.check },
+    { data: LIBRARY, code: contractOf(LIBRARY_RULES), extra: LIBRARY_RULES.check },
   ], LOGIC, NET, ENGINE);
   // the city's districts and places (city.ts): every place has its scenes, its entrance among them
   problems.push(...cityProblems().map((p) => 'city.ts › ' + p));

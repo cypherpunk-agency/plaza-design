@@ -6,9 +6,9 @@
  *
  * Downtown is the first street, so its progress has lived in the save's own
  * fields since before the engine: `handle`, `tokens`, `jump` (legs.so),
- * `freed` (nodes released from the Registry) and `flags` (`till`, `end`).
- * They keep that meaning. The scene reads them as derived values (`till`,
- * `freed2F`, `jump`, …) and its effects write them; the scene's own state is
+ * `controlled` (Registry nodes that answer to you now, NET.md) and `flags` (`till`, `end`).
+ * The scene reads them as derived values (`till`,
+ * `controlled2F`, `jump`, …) and its effects write them; the scene's own state is
  * only what is new on the street (the gate's lock, DLV-9, the billboard).
  *
  * Pure: no DOM, so the build-time check and node scripts can import it.
@@ -23,7 +23,7 @@ export interface DowntownSave {
   handle: string;
   tokens: number;
   jump: boolean;
-  freed: string[];
+  controlled: string[];
   flags: Record<string, boolean>;
 }
 
@@ -32,7 +32,7 @@ export interface Player {
   save: () => DowntownSave;
   /** Write the save and refresh the HUD (tokens, NODES). */
   persist: () => void;
-  /** NODES: how many run free of the Registry. */
+  /** NODES: how many run outside the Registry (yours count). */
   nodes: () => number;
   /** The ACCESS GRANTED chime. */
   granted: () => void;
@@ -115,19 +115,19 @@ function drive(w: World, p: Player, inward: boolean) {
   });
 }
 
-/** Release a node from the Registry (NODES +1). `fresh`: it was not free before. */
-function freeNode(w: World, p: Player, dev: string) {
-  const node = w.m.label('node.' + dev), s = p.save(), fresh = !s.freed.includes(node);
-  if (fresh) { s.freed.push(node); p.persist(); p.granted(); }
-  return { fresh, line: w.line('free.' + dev, { node, nodes: p.nodes() }) };
+/** Take control of a Registry node (NODES +1): an access point onto its networks now (NET.md). `fresh`: it was not yours before. */
+function controlNode(w: World, p: Player, dev: string) {
+  const node = w.m.label('node.' + dev), s = p.save(), fresh = !s.controlled.includes(node);
+  if (fresh) { s.controlled.push(node); p.persist(); p.granted(); }
+  return { fresh, line: w.line('control.' + dev, { node, nodes: p.nodes() }) };
 }
 
 function effects(p: Player): Record<string, Effect> {
   return {
-    /** A Registry box opens up: its node is free (which node: `texts["node.<device>"]`). */
-    'node.free': (w, c) => {
-      const r = freeNode(w, p, c.dev), peer = w.m.data.texts['peer.' + c.dev];
-      // a freed node is seen down the street: its peer answers a moment later (the box's: the noodle till)
+    /** A Registry box opens up: its node is yours (which node: `texts["node.<device>"]`). */
+    'node.control': (w, c) => {
+      const r = controlNode(w, p, c.dev), peer = w.m.data.texts['peer.' + c.dev];
+      // a node you took is seen down the street: its peer answers a moment later (the box's: the noodle till)
       if (r.fresh && peer) w.m.later(700, () => { w.say(w.line('peer.' + c.dev, { node: w.m.label('node.' + c.dev) }), w.m.label('peer.' + c.dev + '.who')); w.changed(); });
       return r.line;
     },
@@ -161,7 +161,7 @@ function effects(p: Player): Record<string, Effect> {
       m.later(w.tune('adBackMs'), () => m.emit('billboard.ads:next'));
       m.later(w.tune('trendMs'), () => {
         if (m.get('feed') !== 'cam3') return;
-        const f = freeNode(w, p, 'billboard');
+        const f = controlNode(w, p, 'billboard');
         if (f.fresh) { w.say(w.line('tv.trend')); w.say(f.line); }
         w.changed();
       });
@@ -208,9 +208,9 @@ export function downtownRules(p: Player): SceneRules {
       tokens: () => s().tokens,
       jump: () => !!s().jump,
       till: () => !!s().flags.till,
-      freed2F: () => s().freed.includes('0x2F'),
-      freed31: () => s().freed.includes('0x31'),
-      freedTV: () => s().freed.includes('0x3C'),
+      controlled2F: () => s().controlled.includes('0x2F'),
+      controlled31: () => s().controlled.includes('0x31'),
+      controlledTV: () => s().controlled.includes('0x3C'),
       end: () => !!s().flags.end,
       nodes: () => p.nodes(),
       /** The denied jokes, in turn. */
@@ -228,7 +228,7 @@ export function downtownRules(p: Player): SceneRules {
       texts: {
         'joke.0': 'label', 'joke.1': 'label', 'joke.2': 'label',
         'node.box': 'label', 'node.relay': 'label', 'node.billboard': 'label',
-        'free.box': 'line', 'free.relay': 'line', 'free.billboard': 'line', 'peer.box': 'line', 'peer.box.who': 'label',
+        'control.box': 'line', 'control.relay': 'line', 'control.billboard': 'line', 'peer.box': 'line', 'peer.box.who': 'label',
         'till.pay': 'line', 'legs.install': 'line',
         'dlv.busy': 'line', 'dlv.lost': 'line', 'dlv.home': 'line', 'dlv.go': 'line', 'dlv.out': 'line',
         'dlv.follow': 'line', 'dlv.bonk': 'line', 'dlv.passed': 'line', 'gate.end': 'line',
@@ -246,7 +246,7 @@ export function downtownRules(p: Player): SceneRules {
       if (!z.camera?.crates.length) errs.push('camera: CAM-3 needs things under its crosshair ("crates")');
       for (const c of z.camera?.crates ?? []) if (!(('cam.zoom.' + c.id) in z.texts)) errs.push(`texts: missing "cam.zoom.${c.id}" (what CAM-3 says zoomed onto ${c.id})`);
       for (const id of ['gate', 'dlv9', 'box', 'relay', 'billboard']) if (!z.devices.some((d) => d.id === id)) errs.push(`devices: the code drives "${id}"; it is missing`);
-      for (const id of ['box', 'relay', 'billboard']) if (!(('node.' + id) in z.texts)) errs.push(`texts: missing "node.${id}" (the node it frees)`);
+      for (const id of ['box', 'relay', 'billboard']) if (!(('node.' + id) in z.texts)) errs.push(`texts: missing "node.${id}" (the node you take with it)`);
       return errs;
     },
   };
@@ -254,6 +254,6 @@ export function downtownRules(p: Player): SceneRules {
 
 /** For the build-time check: the contract does not depend on whose save it is. */
 export const DOWNTOWN_RULES_SHAPE = downtownRules({
-  save: () => ({ handle: '', tokens: 0, jump: false, freed: [], flags: {} }),
+  save: () => ({ handle: '', tokens: 0, jump: false, controlled: [], flags: {} }),
   persist: () => {}, nodes: () => 42, granted: () => {}, end: () => {},
 });

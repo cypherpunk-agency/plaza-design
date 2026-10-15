@@ -50,7 +50,7 @@ const sendKey = (key: string, type: 'keydown' | 'keyup') => window.dispatchEvent
  * On-screen controls for touch screens: they press the same keys a keyboard does. One bar along the
  * bottom, by mode (the game sets `html.hack-on`, `html.hack-ok`; render.tsx shows what fits):
  * walking, the arrows left and HACK, JMP, ACT, MENU right (the map is in the menu); hack vision,
- * no arrows and EXIT, BOARD, LOGIC, UNFOLD. HACK only once hacking is yours here.
+ * no arrows and EXIT, BOARD, LOGIC, NET (once scan.so is yours: `html.net-ok`), UNFOLD. HACK only once hacking is yours here.
  */
 function touchControls(host: HTMLElement) {
   const bar = document.createElement('div');
@@ -61,7 +61,7 @@ function touchControls(host: HTMLElement) {
     '<button data-key=" " aria-label="Jump" class="walk-only">JMP</button><button data-key="e" aria-label="Talk or jack in" class="walk-only">ACT</button>' +
     '<button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Escape" aria-label="Menu" class="small walk-only">MENU</button>' +
     '<button data-key="h" aria-label="Leave hack vision" class="vis-only">EXIT</button><button data-key="b" aria-label="The board" class="vis-only">BOARD</button>' +
-    '<button data-key="l" aria-label="Logic parts" class="vis-only logic" data-logic>LOGIC</button><button data-key="u" aria-label="Unfold every circuit" class="vis-only unfold">UNFOLD</button></div>';
+    '<button data-key="l" aria-label="Logic parts" class="vis-only logic" data-logic>LOGIC</button><button data-key="n" aria-label="The net map" class="vis-only net">NET</button><button data-key="u" aria-label="Unfold every circuit" class="vis-only unfold">UNFOLD</button></div>';
   bar.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     const key = b.dataset.key!;
     const down = (e: Event) => { e.preventDefault(); b.classList.add('down'); sendKey(key, 'keydown'); };

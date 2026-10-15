@@ -26,7 +26,8 @@ import { reportLines, sceneClimate, screenLine, setHereClimate, weatherNow, type
 import { puddles, weatherFront, weatherMid, weatherSky } from './sets/weather';
 import { ticker, YELLOW } from './scenes/screens';
 import { isSceneId, ITEMS, SCENES, sceneTitle, type ItemId, type SceneDef, type SceneExit, type SceneId, type SceneRest, type SceneView } from './scenes';
-import { KEYRING } from './data';
+import { KEYRING, NET, SCENE_FILES, type MachineData, type NetworkData } from './data';
+import { SCAN } from './engine/model';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
 import { botReact, isBot, isHere, characterHeight, characterX, talkTo } from './characters';
 import {
@@ -37,6 +38,7 @@ import {
   seenFlag, START_SCENE, standOf, STANDS, STATIONS, stationAt, type Stand, type Station,
 } from './city';
 import { drawCityMap, mapKey, mapPointer, openMap, type MapAct, type MapState, type MapView } from './citymap';
+import { drawNetMap, netKey, netPointer, openNet, type MachineState, type NetAct, type NetState, type NetView } from './netmap';
 import { KeyBar } from './keybar';
 import { messagesOf, unread } from './contacts';
 import { levels, startLevel, SUDO, unlockAll } from './sudo';
@@ -81,6 +83,8 @@ const O = '255,136,0', C = '0,255,255';
 const YARD_DOOR_X = DOORS.yard;
 /** A tap on the canvas is E on a target this close to it (world units), within this reach of the player. */
 const TAPPED = 18, TAP_REACH = 60;
+/** Save flag: the net map has been opened once (NET stops pinging). */
+const NET_OPENED = 'net:opened';
 
 /** Small seeded random, so the city looks the same on every visit. */
 const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
@@ -135,6 +139,9 @@ export class Game {
   private hop: { place: MapPlace; start: number; done: boolean } | null = null;
   /** A sky-taxi flight in progress. */
   private flight: { to: Stand; start: number } | null = null;
+  /** The net map (netmap.ts), when open; `netBack`: hack vision was on when it opened (it comes back on close). */
+  private netView: NetView | null = null;
+  private netBack = false;
 
   constructor(private host: GameHost) {
     this.canvas = document.createElement('canvas');
@@ -247,6 +254,10 @@ export class Game {
       flag: (f) => { this.save.flags[f] = true; storeSave(this.save); },
       drop: () => storeSave(this.save),
       sudo: SUDO,
+      // the net (NET.md): programs you own (scan.so), and the nodes that answer to you
+      programs: () => this.save.programs,
+      program: (p) => this.grantProgram(p),
+      controlled: () => this.save.controlled,
       load: () => this.save.scenes[id],
       store: (z) => { this.save.scenes[id] = z; storeSave(this.save); },
     }, def, rules);
@@ -266,6 +277,10 @@ export class Game {
     zh.onResetView = () => this.resetVision();
     zh.onVisionUi = () => this.syncModeUi();
     zh.drawerInfo = () => this.ownLine();
+    // NET in hack vision's bar: once scan.so is yours, pinging until the net map has been opened once
+    zh.netOk = () => this.netOk;
+    zh.netNew = () => !this.save.flags[NET_OPENED];
+    zh.onNet = () => this.showNet();
     this.hosts.set(id, zh);
     // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
     this.host.windowEl.querySelectorAll<HTMLElement>('#scene-btns').forEach((el) => this.keyBar.adopt(el));
@@ -524,7 +539,7 @@ export class Game {
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
     if (this.levelW !== this.fitW) this.onResize(); // a new place: fit the view to it
     // the city map (and a taxi flight) owns the screen: the key bar and touch buttons step aside (render.tsx)
-    document.documentElement.classList.toggle('game-map', !!this.mapView || !!this.flight);
+    document.documentElement.classList.toggle('game-map', !!this.mapView || !!this.flight || !!this.netView);
     this.visionCamera();
     this.syncModeUi();
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
@@ -561,6 +576,7 @@ export class Game {
     if (this.menu.open) { if (!this.term.focused) this.menu.key(e); return; }
     if (this.term.focused) return;
     if (this.flight || this.hop) { e.preventDefault(); return; }
+    if (this.netView) { this.netKeyDown(e); return; }
     if (this.mapView) { this.mapKey(e); return; }
     const zh = this.zh;
     if (zh && zh.overlayOpen) {
@@ -596,6 +612,8 @@ export class Game {
     // hack vision's own keys: L the logic drawer, U every circuit unfolded, 0 the normal view
     if (zh.visionOn && (k === 'l' || k === 'L')) { zh.toggleLogic(); return; }
     if (zh.visionOn && (k === 'u' || k === 'U')) { zh.toggleUnfold(); return; }
+    // N: the net map, once scan.so is yours
+    if ((k === 'n' || k === 'N') && this.netOk) { this.showNet(); return; }
     if (zh.visionOn && k === '0') { this.resetVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
@@ -713,6 +731,7 @@ export class Game {
     if (this.cut) { if (press) { e.preventDefault(); this.cut.skip(); } return; }
     // a click or tap moves a speech bubble on, the same as E
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
+    if (this.netView) { this.netPointerAt(e, press); return; }
     if (this.mapView) { this.mapPointer(e, press); return; }
     const zh = this.zh;
     if (zh.overlayOpen || this.flight) return;
@@ -789,6 +808,12 @@ export class Game {
       deck: isBefore(this.save.flags) ? DECK_BEFORE : undefined,
       // the Registry's forecast, where you are
       weather: () => reportLines(sceneClimate(this.here)),
+      // the net from where you stand (NET.md): scan, connect (needs scan.so, except what a port here knows)
+      net: hackLocked(this.save.flags) ? undefined : {
+        scan: () => this.deckScan(),
+        connect: (name) => this.deckConnect(name),
+        names: () => this.zh.model.nodesHere().filter((id) => this.zh.model.net.has(id) || this.zh.model.ports().length),
+      },
     };
   }
 
@@ -962,6 +987,7 @@ export class Game {
     this.drawBeat();
     this.drawSleep();
     this.drawMap();
+    if (this.netView) drawNetMap(this.x, this.viewW, this.viewH, this.netState());
   }
 
   private drawWorld() {
@@ -1658,10 +1684,12 @@ export class Game {
   private syncModeUi() {
     const zh = this.zh, on = zh.visionOn;
     this.keyBar.sync(this.save.jump, on);
-    const key = [on, zh.hackable, zh.logicOpen, zh.unfoldAll].join();
+    const net = this.netOk, ping = net && !this.save.flags[NET_OPENED];
+    const key = [on, zh.hackable, zh.logicOpen, zh.unfoldAll, net, ping].join();
     if (key === this.modeKey) return;
     this.modeKey = key;
     const html = document.documentElement.classList;
+    html.toggle('net-ok', net); html.toggle('net-new', ping);
     html.toggle('hack-ok', zh.hackable); html.toggle('hack-on', on);
     html.toggle('logic-open', zh.logicOpen); html.toggle('unfold-on', zh.unfoldAll);
   }
@@ -1749,7 +1777,7 @@ export class Game {
     }
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
-    const zh = this.zh.model.data.goals.length ? this.zh : null, story = pick(OPENING_GOAL, this.story, this.here);
+    const zh = this.zh.model.data.goals.length ? this.zh : null, story = pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
     if (story || zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + (story ?? zh!.objective()), 8, (y += 11)); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     const tl = this.termLine;
@@ -1769,7 +1797,7 @@ export class Game {
   /** What you own, for the HUD (and hack vision's LOGIC drawer): tokens and modules; the key chips that do something and what you carry. */
   private owned(): [string, string] {
     const s = this.save;
-    const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : '');
+    const own = 'TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (s.programs.length ? ' · PROGRAMS ' + s.programs.join(' ') : '') + (SUDO ? ' · SUDO' : '');
     const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
     const held = Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]) => (ITEMS[id as ItemId] ?? id) + (n > 1 ? '×' + n : ''));
     return [own, [keys.length ? 'KEYS ' + keys.join(' ') : '', held.length ? 'HELD ' + held.join(' ') : ''].filter(Boolean).join(' · ')];
@@ -1784,7 +1812,7 @@ export class Game {
     x.font = '600 16px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,136,0,.95)'; x.shadowColor = 'rgba(255,136,0,.8)'; x.shadowBlur = 10;
     x.fillText('END OF TRANSMISSION', cx, cy);
     x.shadowBlur = 0; x.font = '10px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,.9)';
-    x.fillText('Downtown cleared. Nodes freed: ' + this.save.freed.length + '. You are still a ghost, ' + who(this.save) + '.', cx, cy + 26);
+    x.fillText('Downtown cleared. Nodes that answer to you: ' + this.save.controlled.length + '. You are still a ghost, ' + who(this.save) + '.', cx, cy + 26);
     x.fillText('The Neon Market gate stands open at the west end. Your progress is saved in this browser.', cx, cy + 42);
     x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC menu', cx, cy + 66);
     x.restore();
@@ -2453,6 +2481,141 @@ export class Game {
     if (ev === 'depart') { this.flash('NEXT: ' + STATIONS[rideNext()].name); sound.close(); }
     else if (ev === 'arrive') { this.flash(STATIONS[rideStop()].name + ' · doors open'); sound.open(); }
     else if (ev === 'pass') this.flash('HARBOR · STATION CLOSED · NOT STOPPING');
+  }
+
+  // ---------- the net map (netmap.ts, NET.md) ----------
+
+  /** NET is yours: scan.so owned, and hacking yours (not in the opening's locked part). */
+  private get netOk() { return this.save.programs.includes(SCAN) && !hackLocked(this.save.flags); }
+
+  /** A program came (scan.so from the library): saved, and NET shows in hack vision's bar, pinging until used. */
+  private grantProgram(id: string) {
+    if (!this.save.programs.includes(id)) this.save.programs.push(id);
+    storeSave(this.save);
+    this.syncHud();
+    if (id === SCAN) { this.flash(this.touch ? 'NET: in hack vision, the net map' : 'NET: N, the net map'); sound.granted(); }
+  }
+
+  /**
+   * N or NET: the net map, full screen. Opening it is a scan from where you are plugged in (scan.so):
+   * the networks you reach go into the save as found, the nodes in reach onto the board as silhouettes.
+   */
+  showNet() {
+    if (!this.running || this.flight || this.hop || !this.netOk) return;
+    this.bubble = null;
+    this.mapView = null;
+    this.netBack = this.zh.visionOn;
+    if (this.zh.visionOn) this.zh.toggleVision();
+    // the map takes the screen: popups, captions and panels go
+    this.zh.closeAll();
+    const zh = this.zh, reached = zh.model.netsHere();
+    // what you reach is found; so is any network with a port standing here (you can see the plug, if not the way in)
+    const here = NET.networks.filter((n) => n.from.some((r) => 'port' in r && r.port.startsWith(this.here + ':'))).map((n) => n.id);
+    for (const n of [...reached, ...here]) if (!this.save.nets.includes(n)) this.save.nets.push(n);
+    if (zh.model.ports().length || reached.size) zh.typed(() => zh.scanHere());
+    this.save.flags[NET_OPENED] = true;
+    storeSave(this.save);
+    this.netView = openNet();
+    sound.open();
+  }
+
+  private closeNet(back = this.netBack) {
+    this.netView = null;
+    this.canvas.style.cursor = '';
+    sound.close();
+    if (back && !this.zh.visionOn && this.zh.hackable) this.zh.toggleVision();
+  }
+
+  /** A machine's name, from the scene file (or net.json) that has it. */
+  private machineName(m: MachineData) {
+    for (const s of m.in) {
+      const d = s === 'net' ? NET.nodes.find((x) => x.id === m.id) : [...(SCENE_FILES[s]?.devices ?? []), ...(SCENE_FILES[s]?.nodes ?? [])].find((x) => x.id === m.id);
+      if (d) return d.name;
+    }
+    return m.id.toUpperCase();
+  }
+
+  /** What the net map draws from: the networks you reach from here, those found, each machine's state from here. */
+  private netState(): NetState {
+    const zh = this.zh, model = zh.model, reached = model.netsHere();
+    const portKeys = new Set(model.ports().map((p) => p.key));
+    const plugged = new Set(NET.networks.filter((n) => n.from.some((r) => 'port' in r && portKeys.has(r.port))).map((n) => n.id));
+    const state = (m: MachineData, n: NetworkData): MachineState => {
+      if (!reached.has(n.id)) return 'out';
+      if (!m.in.includes(this.here) && !m.in.includes('net')) return 'far';
+      const d = model.devices.get(m.id);
+      if (d && !d.node) return 'here';
+      return model.net.get(m.id) === 'connected' ? 'board' : 'reach';
+    };
+    return {
+      view: this.netView ?? openNet(), nets: NET.networks, reached, plugged, found: new Set(this.save.nets),
+      where: sceneTitle(this.def), ports: [...new Set(model.ports().map((p) => model.devices.get(p.dev)?.name ?? p.dev))],
+      controlled: this.save.controlled, name: (m) => this.machineName(m), state, touch: this.touch,
+      tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k, avoid: this.mapAvoid(), t: this.clock,
+    };
+  }
+
+  private netKeyDown(e: KeyboardEvent) {
+    const k = e.key;
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter', 'Tab', 'Escape'].includes(k)) e.preventDefault();
+    if (e.repeat) return;
+    this.netAct(netKey(this.netState(), k));
+  }
+
+  private netPointerAt(e: PointerEvent, press: boolean) {
+    const r = this.canvas.getBoundingClientRect();
+    const px = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k, py = ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
+    const { act, pointer } = netPointer(this.netState(), this.viewW, this.viewH, px, py, press, e.pointerType === 'mouse');
+    this.canvas.style.cursor = pointer ? 'pointer' : '';
+    if (press) e.preventDefault();
+    this.netAct(act);
+  }
+
+  /** Do what the net map asks: close, or a machine picked (onto the board, or why not). */
+  private netAct(a: NetAct) {
+    if (a.kind === 'close') { this.closeNet(); return; }
+    if (a.kind === 'blip') { sound.blip(); return; }
+    if (a.kind !== 'pick') return;
+    const name = this.machineName(a.machine);
+    if (a.state === 'out') { sound.denied(); this.flash(name + ': out of reach. plug in from ' + a.net.need); return; }
+    if (a.state === 'far') {
+      sound.denied();
+      const place = a.machine.in.filter((s) => isSceneId(s)).map((s) => sceneTitle(SCENES[s as SceneId]))[0] ?? 'another place';
+      this.flash(name + ' answers. its board is at ' + place);
+      return;
+    }
+    this.closeNet(false);
+    this.zh.plugIn(a.machine.id);
+  }
+
+  /** The deck's `scan`: what you reach from where you are plugged in (needs scan.so). */
+  private deckScan() {
+    const zh = this.zh, reached = zh.model.netsHere();
+    for (const n of reached) if (zh.model.canScan && !this.save.nets.includes(n)) this.save.nets.push(n);
+    storeSave(this.save);
+    const l = zh.model.scanHere();
+    this.term.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : 'dim');
+    if (l[2] !== 'err' && reached.size) this.term.print('networks in reach: ' + NET.networks.filter((n) => reached.has(n.id)).map((n) => n.name).join(', '), 'dim');
+  }
+
+  /** The deck's `connect <machine>` (by id or name): onto the board, and the deck talks to it from then on. */
+  private deckConnect(name: string) {
+    const zh = this.zh, want = name.toLowerCase().replace(/\s+/g, '');
+    const all = NET.networks.flatMap((n) => n.machines);
+    const m = all.find((x) => x.id.toLowerCase() === want || this.machineName(x).toLowerCase().replace(/\s+/g, '') === want);
+    const id = m?.id ?? name;
+    if (!zh.model.devices.has(id) && !zh.model.nodesHere().includes(id) && !m) { this.term.print('connect: no machine called ' + (name || '?') + ' in reach. try scan.', 'err'); return; }
+    zh.typed(() => zh.plugIn(id));
+  }
+
+  /** The GOAL after Capsule 7B, until scan.so is yours: the library (Act I: Capsule 7B → the library → Downtown). */
+  private libraryGoal(): string | null {
+    if (this.save.programs.includes(SCAN) || this.here === 'library' || hackLocked(this.save.flags)) return null;
+    const cap = this.hosts.get('capsule')?.model.goals ?? new Set(this.save.scenes.capsule?.goals ?? []);
+    if (!cap.has('door')) return null;
+    // in the flat, its own goals first
+    if (this.here === 'capsule' && this.zh.model.data.goals.some((g) => !cap.has(g.id))) return null;
+    return 'the public library, down the street: scan.so (Moth\'s tip)';
   }
 
   /** The city map when it is open, and the fade of a quick trip (dark in the middle, with where you are going). */

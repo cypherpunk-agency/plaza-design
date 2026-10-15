@@ -12,6 +12,7 @@ import { DOORS, drawMetroStairs, drawTaxiPad } from '../city';
 import { DOWNTOWN } from '../data';
 import { LEVEL_W, PLATFORMS, READABLES, SPAWN_X } from '../level';
 import { MOTH_KEY } from '../moth';
+import { drawLibraryFront } from '../library';
 import type { SceneDef } from '../scenes/kit';
 import { cam3Panel } from './camera';
 import { downtownRules, dlvX } from './rules';
@@ -34,6 +35,7 @@ export const downtown: SceneDef = {
   exits: [
     { id: 'market', x: DOORS.market, to: 'market', at: 'downtown', label: '[E] NEON MARKET', promptH: 120, requires: 'end' },
     { id: 'shop', x: DOORS.shop, to: 'shop', at: 'downtown', label: '[E] CORNER SHOP', promptH: 84 },
+    { id: 'library', x: DOORS.library, to: 'library', at: 'downtown', label: '[E] PUBLIC LIBRARY', promptH: 96 },
     { id: 'yard', x: DOORS.yard, to: 'yard', label: '[E] BACK YARD', promptH: 86 },
     { id: 'capsule', x: DOORS.capsule, to: 'capsule', at: 'door', label: '[E] HOME · CAPSULE 7B', promptH: 84 },
     { id: 'metro', x: DOORS.metro, to: 'metro', at: 'downtown', label: '[E] METRO', promptH: 106 },
@@ -56,6 +58,7 @@ export const downtown: SceneDef = {
   hideDevice: (id, flags) => id === 'gate' && !!flags.end,
   // the machines, then the metro stairs and the sky-taxi pad in front of the fronts (the street around them is game.ts)
   drawBackdrop: (x, v, e) => {
+    drawLibraryFront(x, v, DOORS.library);
     drawDowntown(x, e.m, v, e.hover, dlvX(e.m, home));
     drawMetroStairs(x, v, DOORS.metro);
     drawTaxiPad(x, v, DOORS.taxi);

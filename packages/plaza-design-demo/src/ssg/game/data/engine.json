@@ -57,12 +57,20 @@
     "net.connected": ["{via}connect {node}", "already connected to {name}.", "dim"],
     "net.ghost": ["", "{name}: seen on a scan. connect to it from {link}.", "dim"],
     "net.down": ["{via}{verb}", "no link: {name} is down.", "err"],
+    "net.noscan": ["{via}{verb}", "{verb}: no such program. scan.so is not installed. this port only connects to what it already knows.", "err"],
+    "net.noscan.none": ["{via}{verb}", "{verb}: no such program. scan.so is not installed.", "err"],
+    "net.unreached": ["connect {node}", "{name} is out of reach from here. plug in from {need}.", "err"],
+    "net.here": ["connect {node}", "{name} is right here: it is on your board.", "dim"],
+    "net.elsewhere": ["connect {node}", "{name} answers, but its board is at {place}. go there to wire it.", "dim"],
+    "net.unplugged": ["scan", "scan: you are not plugged in anywhere. find a port: a computer, a router, a reader.", "dim"],
 
     "wire.fixed": ["unwire {from} {to}", "that one is a conduit, not a cable. bolted shut. work around it.", "err"],
 
     "give.tokens": ["", "+{n} noodle tokens. you have {total}.", "ok"],
     "give.module": ["install {module}", "installed {module}. {name} is in your board's palette now.", "ok"],
     "give.module.have": ["install {module}", "{module} is already installed.", "dim"],
+    "give.program": ["install {program}", "{program} installed: {look}", "ok"],
+    "give.program.have": ["install {program}", "{program} is already installed.", "dim"],
     "keyring.card": ["", "keyring + {label}. a card: lock toys take it, once a try.", "ok"],
     "keyring.discard": ["rm {label}", "dropped {label} off the keyring.", "dim"],
 

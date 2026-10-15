@@ -258,6 +258,6 @@ export const stacksRulesFor = stacksRules;
 
 /** For the build-time check: the contract does not depend on whose save it is. */
 export const STACKS_RULES_SHAPE = stacksRules({
-  save: () => ({ handle: '', tokens: 0, jump: false, freed: [], flags: {} }),
+  save: () => ({ handle: '', tokens: 0, jump: false, controlled: [], flags: {} }),
   persist: () => {}, nodes: () => 42, granted: () => {}, end: () => {},
 });

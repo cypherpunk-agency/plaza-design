@@ -32,11 +32,12 @@ Tommi's call).
 | # | Puzzle | Scene · spot | Mechanics | Path | Diff. |
 |---|---|---|---|---|---|
 | P01 | Router on a schedule | Capsule 7B · smart plug | pre-wired cable to cut, ACT verb, reading | main | 1 |
-| P02 | Rent: pending | Capsule 7B · door, HOME-PC | scan/connect, one cable (event → verb), daemon CONCIERGE | main | 1 |
+| P02 | Rent: pending | Capsule 7B · door, HOME-PC | connect (the PC knows CONCIERGE), one cable (event → verb), daemon CONCIERGE | main | 1 |
 | P03 | Pixel and the warm router | Capsule 7B · kettle, blinds | events, a device you can't command (the cat) | main | 2 |
+| P16 | Long overdue | the public library · card reader, session timer, printer | connect from inside a place, a LAN reachable only there, a STORE clue, one guard; reward `scan.so` | main | 2 |
 | P04 | Name yourself | Downtown · your deck | keyboard (free text), the fixer | main | 1 |
 | P05 | The noodle till | Downtown · noodle stall | password guard + clue fragments, sealed drawer | main | 1 |
-| P06 | VERIFY's dead letter | Downtown · junction box 0x2F | password guard, a clue you see in the world, module install, freed node | main | 2 |
+| P06 | VERIFY's dead letter | Downtown · junction box 0x2F | password guard, a clue you see in the world, module install, controlled node | main | 2 |
 | P07 | The parcel (built) | back yard · crane, CAM-1, HINGE | camera scope, events, TIMER, timing, daemon permission | main | 2 |
 | P08 | Rotation is not security | Downtown · rooftop relay 0x31 | pattern clue, first trace and log, LINK scan | main | 2 |
 | P09 | Gone fishing (not fishing) | the net · FRIENDNET → MOTH-PC | scan/connect hops, key chip opens a sealed sector, module found | main | 2 |
@@ -51,7 +52,7 @@ Tommi's call).
 | O03 | The window that blinks | Downtown · penthouse window | scope + Morse, a fragment carried for a long time | optional | 2 |
 | O04 | J's cryptex | Downtown · penthouse | cryptex guard, root fragment | optional (late) | 3 |
 | O05 | DON'T TRUST. VERIFY. | market · billboard | cipher wheel (Caesar), policy 7 | optional | 2 |
-| O06 | Pigeon TV | Downtown · billboard | wiring a feed to a screen, cutting the ad feed, freed node | optional | 2 |
+| O06 | Pigeon TV | Downtown · billboard | wiring a feed to a screen, cutting the ad feed, controlled node | optional | 2 |
 | O07 | The junction cabinet | metro · service cabinet | patch bay: rewire pre-wired cables under constraints | optional | 3 |
 | O08 | LIFT-2 and floor 13 | mall · lift | daemon talk, cable a song to the roof, a seal opened by kindness | optional | 2 |
 | O09 | The rooftop garden | mall roof (floor 13) | a lying sensor (WEATHER SAT), cut and rewire, TIMER | optional | 3 |
@@ -71,7 +72,8 @@ Each step adds one or two ideas; nothing is used before it is taught.
 | Step | Level | New ideas | Main puzzles | Side puzzles open |
 |---|---|---|---|---|
 | 1 | **Capsule 7B** (LEVELS L1) | tap and read; ACT verbs; cables already there; cutting one; `scan`/`connect`; one cable; a daemon | P01, P02, P03 | — |
-| 2 | **Downtown I**: the street | the keyboard (once); password guards and clue fragments; sealed nouns; installing a module; freed nodes; fixer hints for tokens | P04, P05, P06 | O01, O02, O03 (read only) |
+| 1b | **The public library** (P16, built) | connecting from inside a place; a network only reachable there; a STORE clue; a guard; `scan.so` and the net map | P16 | — |
+| 2 | **Downtown I**: the street | the keyboard (once); password guards and clue fragments; sealed nouns; installing a module; controlled nodes; fixer hints for tokens | P04, P05, P06 | O01, O02, O03 (read only) |
 | 3 | **Back yard** (L2, built) | events start cables; TIMER; timing; asking a daemon; the camera | P07 | — |
 | 4 | **Downtown II**: the rooftops | a pattern as a clue; trace and logs; a LINK that shows the net | P08 | O06 |
 | 5 | **Moth's place** (L3) | key chip seals; hops across nodes; SWITCH; the watchdog; a logic seal | P09, P10 | P11, O08, O09 |
@@ -122,11 +124,11 @@ open question 4 records the alignment.)
 | Net | Nodes in a scene's `nodes` or `net.json`; a LINK's `reach` lists which it can `scan` (**The net**). | data |
 | Watchdog | `"watchdog": { "route": [...], "dwellMs", "moveMs" }` in a scene or `net.json`. The device it sits on freezes. Each route device gets the engine noun `watchdog` with events `arrives` / `leaves` (**The watchdog**). | data; freezing is code |
 | Hints | Downtown's stepped fixer hints, per goal, cost a token each (`hints` comes back for Downtown, GAME-DATA.md). Not built. | data |
-| Nodes freed | A named effect `node.free` (Downtown's code) or a state key the NODES counter reads. Not built. | code (effect) |
+| Nodes controlled | A named effect `node.control` (Downtown's code) or a state key the NODES counter reads. Not built. | code (effect) |
 
 Rule kept from GAME-DATA.md: if it needs geometry, a loop or timing beyond "wait N ms", it is a
 named effect; everything that is wording, wiring or a choice is data. Effects the sketches name
-(`pixel.move`, `node.free`, `dlv.drive`, `washer.run` / `washer.stop`, `train.brake`,
+(`pixel.move`, `node.control`, `dlv.drive`, `washer.run` / `washer.stop`, `train.brake`,
 `train.doors`, `gantry.move`, `grudge.add`) are each scene's own code, written with that scene.
 Two proposed effects became data: `tokens.add` is `{ "give": "tokens", "count": 3 }`, and P10's
 `seal.hear` is the engine's sequence seal.
@@ -181,8 +183,8 @@ run exactly as below. The flat's cold light lifts when the door opens.
 - **Scene · spot:** Capsule 7B, the door and HOME-PC. Main path. Difficulty 1.
 - **Player sees:** the door is locked. CONCIERGE's plate: RENT: PENDING. HOME-PC's outbox holds
   `receipt_rent.pdf`, "waiting for a network since Tuesday".
-- **Solution:** with the router up (P01), `scan` on the router's `uplink` brings CONCIERGE onto
-  the board; `connect`. Opening the outbox raises `ready`. Wire `pc.outbox:ready →
+- **Solution:** with the router up (P01), the router's `uplink` (or HOME-PC's `net`) knows CONCIERGE
+  (`known`, as built since NET.md: no scan.so before the library): `connect concierge`. Opening the outbox raises `ready`. Wire `pc.outbox:ready →
   concierge.desk verify`, open the outbox again, the door unlocks.
 - **Mechanics:** LINK `scan`/`connect`, one cable carrying a verb, a daemon.
 - **Unlocks:** the door; Downtown. Talking to CONCIERGE is flavour and teaches TALK.
@@ -244,10 +246,52 @@ Open question kept from LEVELS: does Pixel come along as a companion (warm laps,
 
 ---
 
+## Level 1b: the public library (built)
+
+### P16 Long overdue (the library)
+
+- **Scene · spot:** the public library (Downtown, the street west of the noodle stall; `library`,
+  data/library.json, library/). Main path, after Capsule 7B and before Downtown's net puzzles.
+  Difficulty 2. The first hacking job: it hands out `scan.so`.
+- **Player sees:** a warm reading room kept for its chairs (the books were digitized in 2049). Three
+  public terminals, two in use; a SESSION TIMER over them: 30 minutes per verified identity. The CARD
+  READER by the terminals says NO CARD. The staff PRINTER on the end of the librarian's desk has been
+  printing the same page for eleven years. Moth's message (the opening) and Capsule 7B's last line
+  point here: "the library on your street still lends scan.so."
+- **Teaches:** connecting from inside a place (the room's devices are ports onto a network); a network
+  you can only reach here (LIBRARY LAN: no line out); reading a STORE for a clue; one guard.
+- **Solution (as built):**
+  1. Hack the card reader: its `lan` LINK knows CATALOG (`known`: no scan.so needed).
+     `connect catalog`. CATALOG (DAEMON, talk) says there is one item in SOFTWARE LENDING, scan.so,
+     on loan to staff and overdue; staff go by card number; "it is on the notice; the notice is in
+     the printer's queue." The session timer's `policy` says the same from the other side: staff are
+     identified by card number, not by name.
+  2. The printer's `queue` (STORE, read): the stuck job, an overdue notice naming the borrower,
+     STAFF CARD 0013. Reading it puts `staff card 0013` (fragment `0013`) on the keyring.
+  3. The printer's `spool` LINK knows SOFTWARE LENDING. `connect lending`. Its `login` GUARD
+     takes the card number (drag the chip, or type it: `login staff 0013`; "13" gets a dry hint
+     that card numbers have four digits). The `staff` sector unfolds: `loans`, `scan.so`.
+  4. `renew` scan.so: "LOAN RENEWED. DUE: 30 DAYS FROM TODAY. A COPY HAS BEEN SENT TO THE
+     BORROWER'S DEVICE. YOURS, APPARENTLY." `{ "give": "scan.so" }` makes it yours (`save.programs`):
+     NET appears in hack vision's bar, pinging, and N opens the net map.
+- **After:** `scan` from the reader now also finds HEATING (the boiler controller: locked by "the
+  committee", which is the regulars). The net map from the library shows only LIBRARY LAN in reach.
+- **Mechanics:** LINK `known` (connect before scan.so); a network reachable only from inside
+  (net.json `library`: ports `library:reader.lan`, `library:printer.spool`); STORE → fragment;
+  GUARD with `near`; a sealed sector; a `give` of a program. Goals: `lan` (code: CATALOG or LENDING
+  connected), `notice`, `login`, `scan`.
+- **People (ART-GUIDE §10):** the LIBRARIAN (has been waiting eleven years to stamp something), the
+  two at the terminals (a student's thesis on why thirty minutes is not enough; a kid using his
+  mum's thirty minutes), three regulars in armchairs who come for the radiators (one "not asleep",
+  one knitting a scarf for the radiator, one reading the last paper newspaper slowly), SHELF-E
+  re-shelving the one book that is left, the cat on the radiator. Notices are dry ("BUILDING
+  RETAINED FOR SEATING"). The surprising detail: a chained paper book, REFERENCE ONLY, whose bus
+  ticket bookmark moves a page a day.
+
 ## Level 2: Downtown I, the street
 
 *Teaches: the keyboard (once), password guards with clue fragments, sealed nouns, installing a
-module, freed nodes, the fixer's hints.*
+module, controlled nodes, the fixer's hints.*
 
 ### Downtown rebuilt on the new system
 
@@ -272,7 +316,7 @@ and the save stay the same.
 | files that appear after login | a sealed sector that unfolds after the guard opens |
 | `install legs.so` | `install` verb on the `legs.so` STORE noun |
 | `set handle`, `sudo`, `rm`, `hack`, `enter` | stay as keyboard lines on your own deck (the keyboard is the last resort, and the jokes live there) |
-| `flags.till`, `freed`, `jump`, `tokens`, `hints` | scene `state` + the existing save fields (keep `Save.jump`, `Save.freed` so old saves load) |
+| `flags.till`, `controlled`, `jump`, `tokens`, `hints` | scene `state` + the existing save fields (keep `Save.jump`, `Save.controlled` so old saves load) |
 | `objective()` | `goals`: `handle`, `till`, `box`, `install`, `relay`, `gate` (same ids) |
 | `HINTS` + `fixerTalk()` | the fixer as a dialogue with `hints` per goal, one token each, "hints, never answers" |
 
@@ -290,7 +334,7 @@ lifestyle."), `enter` ("nice try.").
 - **Solution:** open the deck's keyboard corner, `set handle <name>`.
 - **Mechanics:** the keyboard, on purpose the only required free text in Act I.
 - **Unlocks:** the fixer's greeting and the till hint. NPCs stay as they are (hood, umbrella,
-  hat), and change their lines once a node is freed.
+  hat), and change their lines once a node is controlled.
 
 ### P05 The noodle till
 
@@ -332,9 +376,9 @@ lifestyle."), `enter` ("nice try.").
   sign policy 7." Look at the sign (tap it in the world, or open the sign's device: its `tubes`
   noun has `test`, which lights each letter in turn: "tube 2 of 6: dead since forever."): fragment
   `vrify`. Try `verify` first and the guard says "Close. Count the letters again." Drag `vrify`
-  onto `login` (user `maint`). The sector unfolds: `legs.so`; `install` it. Node 0x2F is freed.
+  onto `login` (user `maint`). The sector unfolds: `legs.so`; `install` it. Node 0x2F is yours (controlled).
 - **Mechanics:** STORE reading, a clue you see in the world, a guard with a near-miss line, a
-  sealed module, freed node.
+  sealed module, controlled node.
 - **Unlocks:** legs.so (SPACE to jump), the low roof and the relay; NODES 43; the street
   notices ("A box on this street went dark. Registry is sending a van.").
 - **Lines to keep:** `login admin admin` on the box: "ACCESS DENIED. Not everyone is the noodle
@@ -441,7 +485,7 @@ tacky."), lamp + speaker = DISCO ("nobody asked."). The format keeps `bench` for
   relay's `uplink`.
 - **Mechanics:** a pattern as a clue (fragment + rule), first trace and log, cutting a
   pre-wired cable to stay unseen, LINK `scan`.
-- **Unlocks:** node 0x31 freed ("ACCESS GRANTED. Rotation is not security. Noted."); `gate.memo`
+- **Unlocks:** node 0x31 controlled ("ACCESS GRANTED. Rotation is not security. Noted."); `gate.memo`
   ("NEON MARKET GATE: scanner signature required. Scanner modules are sold in the Market. Irony
   noted."); `root.frag` ("root fragment 1/7 · 9f2c 41ab e07d 3c55 · keep it."), the first of
   seven for the antenna (Act II). With `uplink.so` (from the yard) installed, `scan` on the
@@ -847,7 +891,7 @@ wired in the walls, so those four are `fixed`: the puzzle is the schedule, not t
   wheel by 7 and the line reads DON'T TRUST. VERIFY. A second line decrypts to the sign
   painter's handle (Act II hook: she is the one who sees everything from her scaffold).
 - **Mechanics:** cipher wheel guard toy, a running joke as the clue.
-- **Unlocks:** the billboard's REGISTRY signature [SIG OK] goes to the mesh: node freed.
+- **Unlocks:** the billboard's REGISTRY signature [SIG OK] goes to the mesh: node controlled.
 - **Data sketch:**
 
 ```json
@@ -944,7 +988,7 @@ the plate; add "your emergency has been registered. it will be ready in 48 hours
   seems pleased."), departures → board (NEXT TRAIN: NOW keeps running). Any patch that leaves the
   board dark: "the departure board goes dark. four people sit down, angrily."
 - **Mechanics:** cut and rewire several pre-wired cables under constraints.
-- **Unlocks:** a freed node and the platform camera, which O10 needs.
+- **Unlocks:** a controlled node and the platform camera, which O10 needs.
 - **Data sketch:**
 
 ```json
@@ -1231,7 +1275,7 @@ wrong pairs are not built.
   does. echo achieved." · anything else: "the cable sparks. nothing happens, confidently."
   Pulling every cable: "all cables pulled. the city is boring again."
 - **Mechanics:** wiring a feed to a screen, cutting a pre-wired cable.
-- **Unlocks:** the billboard leaves the Registry: node freed. The hood: "Billboard's showing a
+- **Unlocks:** the billboard leaves the Registry: node controlled. The hood: "Billboard's showing a
   pigeon. Best thing it ever ran."
 
 ### O08 LIFT-2 and floor 13

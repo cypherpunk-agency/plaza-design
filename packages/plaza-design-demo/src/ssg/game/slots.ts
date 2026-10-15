@@ -3,7 +3,7 @@
  *
  * The autosave (`SAVE_KEY` in level.ts) stays the "continue" state the game keeps
  * writing. A slot is a full copy of that save plus a few lines to show in the
- * slot list, under its own key: `access-denied-v2-slot-1` … `-3`.
+ * slot list, under its own key: `access-denied-v3-slot-1` … `-3`.
  *
  * Loading a slot reloads the page: the slot's save goes into sessionStorage
  * (`RESUME_KEY`), the boot is skipped, and index.ts writes it over the autosave
@@ -15,9 +15,9 @@ import { SAVE_KEY, SUDO, type Save } from './level';
 
 export const SLOT_COUNT = 3;
 /** Sudo mode keeps its own slots, like its own save. */
-export const slotKey = (n: number) => `access-denied-v2-${SUDO ? 'sudo-' : ''}slot-${n}`;
+export const slotKey = (n: number) => `access-denied-v3-${SUDO ? 'sudo-' : ''}slot-${n}`;
 /** sessionStorage: a save to land in after the reload (LOAD GAME). */
-export const RESUME_KEY = 'access-denied-resume-v2';
+export const RESUME_KEY = 'access-denied-resume-v3';
 
 export interface Slot {
   v: 2;

@@ -46,6 +46,9 @@ you have found.
 moving from node to node on a rhythm. A node it sits on freezes: no verbs, no
 signals. You plan around it with timing, like crossing a street.
 
+**Programs** (NET.md, built): `scan.so` from the library (P16) lets LINKs scan and opens the net
+map (N). Until then a port connects only to what it already knows.
+
 **Modules.** Logic parts are modules you own (`timer.so`, later `switch.so`),
 found or given in the story, like `legs.so` today.
 

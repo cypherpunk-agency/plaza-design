@@ -103,7 +103,7 @@
           "id": "sticky", "kind": "STORE", "verbs": ["read"],
           "on": { "read": { "say": ["cat sticky", "\"no, you can't log in here. nobody can. friends come in through FRIENDNET, like friends. —M\""] } }
         },
-        { "id": "net", "kind": "LINK", "link": { "reach": ["friendnet"], "when": "uplink" } }
+        { "id": "net", "kind": "LINK", "link": { "when": "uplink" } }
       ]
     },
     {
@@ -228,7 +228,7 @@
           "id": "wall", "kind": "STORE", "verbs": ["read"],
           "on": { "read": { "say": ["cat wall", "moth's wall: \"happy hatch day, moth!! 0412 forever\" · the fixer: \"your tab has chapters now.\" · REGISTRY-WD: \"just checking.\""] } }
         },
-        { "id": "home", "kind": "LINK", "link": { "reach": ["mothpc"] } }
+        { "id": "home", "kind": "LINK", "link": {} }
       ]
     },
     {

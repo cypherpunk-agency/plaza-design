@@ -71,12 +71,18 @@ yet; the handle comes from the fixer after you are deleted).
 | # | Level | Puzzle | Place (district) | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Capsule 7B | P01–P03 | your flat (Downtown) | ✓ |
+| 1b | The library | P16 (scan.so, the NET button) | the public library (Downtown) | ✓ |
 | 2 | Downtown I–III | handle, till, 0x2F, relay, the market gate (P12) | the street (Downtown) | ✓ |
 | 3 | The back yard | the parcel | the fixer's yard (Downtown) | ✓ |
 | 4 | Moth's place | P09, P10 | flat 4C (Downtown) | ✓ |
 | 5 | Washer 3 | P13 | the laundromat (Neon Market) | ✓ |
 | 6 | The stop that isn't on the map | P14 | the metro line (TRAIN-0, the old siding) | ✓ |
 | 7 | **NRLU 404 0451** (Act I finale) | P15 | the harbor stacks, STS-2, and the **warehouse** (Harbor & Shore) | ✓ |
+
+**The net (NET.md, built 2026-10-15):** Act I runs Capsule 7B → the library → Downtown's net
+puzzles. After the capsule the GOAL line points to the library (Moth's message and Capsule 7B's last
+line say it still lends scan.so); P16 gives `scan.so`, NET shows in hack vision's bar (N), and LINKs
+scan from then on. Networks and reach are net.json's; "freed" nodes are `controlled` nodes now.
 
 **Decided for the rest of Act I (Tommi, 2026-10-15):**
 - **The harbor is locked until P14.** LINE 0 passes the harbor station (STATION CLOSED) and the

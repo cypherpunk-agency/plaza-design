@@ -159,7 +159,7 @@
           "id": "notes", "kind": "STORE", "verbs": ["read"],
           "on": { "read": { "say": ["cat notes", "\"Pixel naps on whatever is warmest. last winter: the router. the router did not survive the winter.\""] } }
         },
-        { "id": "net", "kind": "LINK", "link": { "reach": ["concierge"], "when": "routerUp" } }
+        { "id": "net", "kind": "LINK", "link": { "known": ["concierge"], "when": "routerUp" } }
       ]
     },
     {
@@ -211,7 +211,7 @@
         "vision": { "uplink": "up", "temp": "right" }
       },
       "nouns": [
-        { "id": "uplink", "kind": "LINK", "link": { "reach": ["concierge"], "when": "routerUp" } },
+        { "id": "uplink", "kind": "LINK", "link": { "known": ["concierge"], "when": "routerUp" } },
         {
           "id": "temp", "kind": "SENSE", "verbs": ["read"],
           "on": {
@@ -313,7 +313,7 @@
   ],
 
   "texts": {
-    "goals.done": "done. Downtown is through the door.",
+    "goals.done": "done. the public library is down the street, past the noodle stall. Moth says it still lends scan.so.",
     "prompt.door": "[E] DOOR",
     "prompt.out": "[E] DOWNTOWN",
     "door.locked": ["open door", "locked. see panel.", "err"],

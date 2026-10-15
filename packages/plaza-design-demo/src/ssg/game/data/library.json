@@ -1,0 +1,195 @@
+{
+  "id": "library",
+  "name": "the public library",
+  "state": { "renewed": false },
+  "tuning": {},
+  "devices": [
+    {
+      "id": "reader",
+      "name": "CARD READER",
+      "look": "Reads a library card, then asks the catalog who you are. Yours would be the first question it could not answer.",
+      "everyday": [{ "noun": "slot", "verb": "tap", "label": "tap a card" }],
+      "status": "PRESENT CARD · 30 MIN PER VERIFIED IDENTITY",
+      "layout": {
+        "spot": { "x": 168, "w": 22, "h": 52 },
+        "board": { "x": 0.16, "y": 0.62 },
+        "dir": { "slot": "up", "lan": "right" },
+        "vision": { "slot": "up", "lan": "right" }
+      },
+      "nouns": [
+        {
+          "id": "slot", "kind": "ACT", "verbs": ["tap"],
+          "on": { "tap": { "say": ["use slot --tap", "NO CARD PRESENTED. PUBLIC TERMINALS: 30 MINUTES PER VERIFIED IDENTITY. UNVERIFIED PERSONS MAY SIT.", "err"] } }
+        },
+        { "id": "lan", "kind": "LINK", "link": { "known": ["catalog"] } }
+      ]
+    },
+    {
+      "id": "session",
+      "name": "SESSION TIMER",
+      "look": "Three lamps, one per public terminal. It counts down what the Registry says you are worth: thirty minutes a day.",
+      "everyday": [{ "noun": "clock", "verb": "read", "label": "read the timer" }],
+      "status": "T1 12 MIN · T2 3 MIN · T3 FREE",
+      "layout": {
+        "spot": { "x": 290, "y": 84, "w": 46, "h": 22 },
+        "board": { "x": 0.38, "y": 0.22 },
+        "dir": { "clock": "up", "policy": "left" },
+        "vision": { "clock": "up", "policy": "left" }
+      },
+      "nouns": [
+        {
+          "id": "clock", "kind": "SENSE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat clock", "T1: 12:40 LEFT (VERIFIED) · T2: 03:05 LEFT (VERIFIED) · T3: FREE. PRESENT CARD."] } }
+        },
+        {
+          "id": "policy", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat policy", "SESSIONS: 30 MIN PER VERIFIED IDENTITY PER DAY. STAFF: UNLIMITED. STAFF ARE IDENTIFIED BY CARD NUMBER, NOT BY NAME. NAMES CHANGE."] } }
+        }
+      ]
+    },
+    {
+      "id": "printer",
+      "name": "PRINTER",
+      "look": "The staff printer, on the end of the desk. It has been printing the same page since before the staff left. It is not finished.",
+      "everyday": [{ "noun": "tray", "verb": "look", "label": "look at the tray" }],
+      "status": "QUEUE: 1 JOB · STUCK SINCE 2049",
+      "layout": {
+        "spot": { "x": 548, "y": 28, "w": 30, "h": 22 },
+        "board": { "x": 0.62, "y": 0.62 },
+        "dir": { "tray": "up", "queue": "left", "spool": "right" },
+        "vision": { "tray": "up", "queue": "left", "spool": "right" }
+      },
+      "nouns": [
+        {
+          "id": "tray", "kind": "ACT", "verbs": ["look"],
+          "on": { "look": { "say": ["use tray --look", "the tray is empty. the printer hums as if it were about to.", "dim"] } }
+        },
+        {
+          "id": "queue", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "do": [{ "give": "card.0013" }, { "goal": "notice" }], "say": ["cat queue", "JOB 1 OF 1 · STUCK · OVERDUE NOTICE · ITEM: scan.so (SOFTWARE LENDING) · BORROWER: STAFF CARD 0013 · DUE: 4,018 DAYS AGO · FINE: WAIVED (STAFF)"] } }
+        },
+        { "id": "spool", "kind": "LINK", "link": { "known": ["lending"] } }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "catalog",
+      "name": "CATALOG",
+      "look": "The library's catalog daemon. It has catalogued everything in the building, and the building is mostly chairs.",
+      "status": "BOOKS 0 · CHAIRS 41 · SOFTWARE 1 (ON LOAN)",
+      "layout": {
+        "board": { "x": 0.36, "y": 0.66 },
+        "dir": { "catalog": "down", "index": "up", "patrons": "right" },
+        "vision": { "catalog": "down", "index": "up", "patrons": "right" }
+      },
+      "nouns": [
+        { "id": "catalog", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } },
+        {
+          "id": "index", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat index", "BOOKS: 0 (DIGITIZED 2049). CHAIRS: 41. RADIATORS: 2. SOFTWARE LENDING: 1 ITEM, ON LOAN, OVERDUE."] } }
+        },
+        {
+          "id": "patrons", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat patrons", "PATRONS VERIFIED TODAY: 11. PATRON AT THE READER: NO RECORD. SEARCHED 3 TIMES. FILED UNDER: MISCELLANEOUS."] } }
+        }
+      ]
+    },
+    {
+      "id": "lending",
+      "name": "SOFTWARE LENDING",
+      "look": "The archive the library lent programs from, back when it lent things. One item left, and it is out.",
+      "status": [{ "if": "renewed", "then": "scan.so · RENEWED · DUE IN 30 DAYS", "else": "1 ITEM · ON LOAN · OVERDUE" }],
+      "layout": {
+        "board": { "x": 0.84, "y": 0.3 },
+        "dir": { "shelf": "up", "login": "left", "loans": "down", "scan.so": "right" },
+        "vision": { "shelf": "up", "login": "left", "loans": "down", "scan.so": "right" }
+      },
+      "nouns": [
+        {
+          "id": "shelf", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat shelf", "SOFTWARE LENDING · 1 ITEM · scan.so: finds what a port can reach · STATUS: ON LOAN TO STAFF. STAFF LOGIN (CARD NUMBER) TO VIEW LOANS."] } }
+        },
+        {
+          "id": "login", "kind": "GUARD",
+          "guard": {
+            "password": "0013", "tries": 3, "lockMs": 4000,
+            "near": { "13": ["login staff 13", "STAFF CARD NUMBERS ARE FOUR DIGITS. THE LIBRARY HAD AMBITIONS.", "err"] },
+            "do": [{ "goal": "login" }]
+          }
+        },
+        {
+          "id": "loans", "kind": "STORE", "verbs": ["read"], "sector": "staff",
+          "on": { "read": { "say": ["cat loans", "STAFF CARD 0013 · scan.so · OUT SINCE 2049 · RENEWALS LEFT: 99. THE LIBRARY WAS GENEROUS WITH STAFF."] } }
+        },
+        {
+          "id": "scan.so", "kind": "STORE", "verbs": ["read", "renew"], "sector": "staff",
+          "on": {
+            "read": { "say": ["cat scan.so", "[program] scan.so · finds the machines a port can reach, and connects to them. on loan to you, technically. renew it."] },
+            "renew": [
+              { "if": "renewed", "say": ["renew scan.so", "already renewed. due in 30 days. nobody will check.", "dim"] },
+              { "do": [{ "set": "renewed", "to": true }, { "give": "scan.so" }, { "goal": "scan" }], "say": ["renew scan.so", "LOAN RENEWED. DUE: 30 DAYS FROM TODAY. A COPY HAS BEEN SENT TO THE BORROWER'S DEVICE. YOURS, APPARENTLY.", "ok"] }
+            ]
+          }
+        }
+      ],
+      "sectors": [{ "id": "staff", "label": "staff", "seal": { "guard": "login" } }]
+    },
+    {
+      "id": "heating",
+      "name": "HEATING",
+      "look": "The boiler controller. The reason the building is full.",
+      "status": "21.5 °C · SETPOINT LOCKED",
+      "layout": {
+        "board": { "x": 0.62, "y": 0.2 },
+        "dir": { "thermostat": "up", "budget": "right" },
+        "vision": { "thermostat": "up", "budget": "right" }
+      },
+      "nouns": [
+        {
+          "id": "thermostat", "kind": "SENSE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat thermostat", "21.5 °C. SETPOINT 21.5 °C. LOCKED BY: THE COMMITTEE. COMMITTEE: SEE CHAIRS."] } }
+        },
+        {
+          "id": "budget", "kind": "STORE", "verbs": ["read"],
+          "on": { "read": { "say": ["cat budget", "HEATING BUDGET: EXCEEDED EVERY FEBRUARY SINCE 2049. HEATING CONTINUES PENDING REVIEW. REVIEW PENDING."] } }
+        }
+      ]
+    }
+  ],
+  "cables": [],
+  "keyring": [
+    { "id": "card.0013", "kind": "fragment", "label": "staff card 0013", "text": "0013" }
+  ],
+  "dialogue": {
+    "catalog": {
+      "speaker": "CATALOG · library daemon",
+      "start": "start",
+      "sayCmd": "say \"{line}\" > catalog",
+      "nodes": {
+        "start": [
+          { "if": "renewed", "text": "scan.so is renewed and on your device. I have catalogued you as BORROWER. It is the first thing you have been in a while, I expect.", "choices": [["It is.", "bye"], ["What else is in here?", "more"]] },
+          { "text": "CATALOG. I have catalogued everything in this building: forty-one chairs, two radiators, eleven regulars. You are not in me. That has never happened.", "choices": [["I need a terminal.", "terminal"], ["What can I borrow?", "borrow"], ["Is that a cat?", "cat"]] }
+        ],
+        "terminal": { "text": "Terminals are for verified identities. Thirty minutes each, per day. I do not make the rules. I file them.", "choices": [["Let me start over.", "start"]] },
+        "borrow": { "text": "Books: no. They are digitized, and the copies are licensed to nobody. Chairs: yes, but chairs are not lent. They are sat in. Software: one item. scan.so. On loan. Overdue.", "choices": [["Since when?", "since"], ["Let me start over.", "start"]] },
+        "since": { "text": "Four thousand and eighteen days. I send the printer an overdue notice every morning. The printer is still printing the first one.", "choices": [["Who has it?", "who"]] },
+        "who": { "text": "Staff. Staff are listed by card number, and I may not tell you which. It is on the notice. The notice is in the printer's queue. The printer is on this network. So, somehow, are you.", "choices": [["Thanks.", "bye"], ["Let me start over.", "start"]] },
+        "cat": { "text": "There is no cat in the catalog. The cat is not a holding. The cat is a regular.", "choices": [["Fair.", "start"]] },
+        "more": { "text": "The heating. It is on the network too. I am not supposed to know where. Everyone else here does.", "choices": [["Thanks.", "bye"]] },
+        "bye": { "text": "Quiet, please. Conversations are transcribed. Mine are filed." }
+      }
+    }
+  },
+  "goals": [
+    { "id": "lan", "text": "the card reader talks to the library's network: get on it" },
+    { "id": "notice", "text": "find out who borrowed the software" },
+    { "id": "login", "text": "log in to SOFTWARE LENDING as the borrower" },
+    { "id": "scan", "text": "renew scan.so" }
+  ],
+  "texts": {
+    "goals.done": "scan.so is yours. NET, in hack vision (N): what you reach from where you are plugged in. Downtown's street next.",
+    "talk.aria": "Say something to CATALOG",
+    "prompt.out": "[E] DOWNTOWN"
+  }
+}

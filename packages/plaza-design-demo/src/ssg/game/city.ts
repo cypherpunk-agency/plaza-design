@@ -61,6 +61,7 @@ const PLACE_DATA = [
   { id: 'laundromat', name: 'LAUNDROMAT', district: 'market', entrance: 'laundromat', at: 'market' },
   { id: 'market', name: 'NEON MARKET', district: 'market', entrance: 'market', at: 'downtown' },
   { id: 'shop', name: 'CORNER SHOP', district: 'downtown', entrance: 'shop' },
+  { id: 'library', name: 'PUBLIC LIBRARY', district: 'downtown', entrance: 'library' },
   { id: 'station-downtown', name: 'DOWNTOWN METRO', district: 'downtown', entrance: 'metro', at: 'downtown' },
   { id: 'downtown', name: 'DOWNTOWN', district: 'downtown', entrance: 'downtown', at: 'metro' },
   { id: 'yard', name: 'BACK YARD', district: 'downtown', entrance: 'yard' },
@@ -83,6 +84,7 @@ export const SCENE_PLACE = {
   yard: 'yard',
   moth: 'moth',
   shop: 'shop',
+  library: 'library',
   metro: 'station-downtown',
   market: 'market',
   laundromat: 'laundromat',
@@ -141,7 +143,7 @@ export const seenPlace = (p: Place, seen: (id: SceneId) => boolean) => p.scenes.
  * - moth: the residents' door of that same front (1496): Moth's building, flat 4C (needs Moth's key chip)
  * - taxi: the sky-taxi pad at the east end, past the SPACEPORT sign
  */
-export const DOORS = { market: 70, shop: 242, yard: 972, capsule: 1230, metro: 1440, moth: 1496, taxi: 1930 } as const;
+export const DOORS = { market: 70, shop: 242, library: 633, yard: 972, capsule: 1230, metro: 1440, moth: 1496, taxi: 1930 } as const;
 
 // ---------- the metro ----------
 
@@ -233,6 +235,7 @@ export const PLACE_MAP: Partial<Record<PlaceId, [number, number]>> = {
   laundromat: [84, 122],
   market: [96, 122],
   shop: [140, 122],
+  library: [149, 122],
   downtown: [158, 122],
   yard: [174, 122],
   capsule: [189, 78],
@@ -346,8 +349,9 @@ export const PLACE_IN_VIEW: Partial<Record<PlaceId, SceneId[]>> = {
   market: ['downtown'],
   laundromat: ['market'],
   shop: ['downtown'],
+  library: ['downtown'],
   'station-downtown': ['downtown', 'train'],
-  downtown: ['capsule', 'metro', 'yard', 'shop', 'moth'],
+  downtown: ['capsule', 'metro', 'yard', 'shop', 'moth', 'library'],
   yard: ['downtown'],
   capsule: ['downtown'],
   moth: ['downtown'],
