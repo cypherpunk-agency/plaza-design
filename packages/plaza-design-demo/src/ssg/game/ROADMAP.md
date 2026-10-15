@@ -35,7 +35,7 @@ decided: see CITY.md. New places wait for the map redesign, so each lands in its
 | 2 | Downtown I–III | handle, till, 0x2F, relay, the market gate (P12) | the street (Downtown) | ✓ |
 | 3 | The back yard | the parcel | the fixer's yard (Downtown) | ✓ |
 | 4 | Moth's place | P09, P10 | flat 4C (Downtown) | ✓ |
-| 5 | **Washer 3** | P13 | the laundromat (Neon Market) | next |
+| 5 | Washer 3 | P13 | the laundromat (Neon Market) | ✓ |
 | 6 | **The stop that isn't on the map** | P14 | the metro line | next |
 | 7 | **NRLU 404 0451** (Act I finale) | P15 | the harbor stacks, STS-2, and the **warehouse** (Harbor & Shore) | next |
 

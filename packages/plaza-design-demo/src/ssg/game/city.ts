@@ -58,6 +58,7 @@ export interface PlaceData { id: string; name: string; district: DistrictId | nu
 
 /** Every place that exists now, in the order quick travel steps through them (west to east). */
 const PLACE_DATA = [
+  { id: 'laundromat', name: 'LAUNDROMAT', district: 'market', entrance: 'laundromat', at: 'market' },
   { id: 'market', name: 'NEON MARKET', district: 'market', entrance: 'market', at: 'downtown' },
   { id: 'shop', name: 'CORNER SHOP', district: 'downtown', entrance: 'shop' },
   { id: 'station-downtown', name: 'DOWNTOWN METRO', district: 'downtown', entrance: 'metro', at: 'downtown' },
@@ -83,6 +84,7 @@ export const SCENE_PLACE = {
   shop: 'shop',
   metro: 'station-downtown',
   market: 'market',
+  laundromat: 'laundromat',
   mall: 'mall',
   galleriaStation: 'station-galleria',
   harbor: 'harbor',
@@ -211,6 +213,7 @@ export const DISTRICT_MAP: Record<DistrictId, { x: number; y: number; w: number;
  * a station in the tunnel. A place listed here is on the map and can be quick-travelled to.
  */
 export const PLACE_MAP: Partial<Record<PlaceId, [number, number]>> = {
+  laundromat: [84, 122],
   market: [96, 122],
   shop: [140, 122],
   downtown: [158, 122],
@@ -323,6 +326,7 @@ export function districtName(d: DistrictId, k: Knowledge, long = false): string 
  */
 export const PLACE_IN_VIEW: Partial<Record<PlaceId, SceneId[]>> = {
   market: ['downtown'],
+  laundromat: ['market'],
   shop: ['downtown'],
   'station-downtown': ['downtown', 'train'],
   downtown: ['capsule', 'metro', 'yard', 'shop', 'moth'],
@@ -364,7 +368,7 @@ export interface TravelState {
 export function placeBlocked(p: Place, st: TravelState): string {
   if (!seenPlace(p, st.seen)) return 'NOT VISITED YET';
   if (p.scenes.includes(st.scene)) return 'YOU ARE HERE';
-  if (p.id === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
+  if (p.district === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
   if (st.ride && st.ride.f > 0) return 'NOT FROM A MOVING METRO · GET OFF FIRST';
   return '';
 }

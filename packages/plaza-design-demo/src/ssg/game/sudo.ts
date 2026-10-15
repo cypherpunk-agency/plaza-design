@@ -3,7 +3,7 @@
  *
  * - The pause menu gets LEVELS: every scene and cutscene; pick one to go there.
  * - Everything is unlocked: every logic module, legs.so, every keyring item,
- *   tokens to spare, every place on the city map, the market gate open.
+ *   the items a later level asks for (the maglev pass), tokens to spare, every place on the city map, the market gate open.
  *   Puzzles themselves stay unsolved, so they can still be played.
  * - Sudo plays on its own save and slots (`SUDO` in level.ts picks the keys),
  *   so the real run is never touched.
@@ -13,7 +13,7 @@ import { DISTRICTS, heardFlag, mappedFlag } from './city';
 import { CUTSCENES } from './cutscenes';
 import { KEYRING, LOGIC } from './data';
 import type { Save } from './level';
-import { SCENES, sceneTitle } from './scenes';
+import { SCENES, sceneTitle, type ItemId } from './scenes';
 
 export { SUDO } from './level';
 
@@ -27,6 +27,9 @@ export function levels(): Level[] {
   ];
 }
 
+/** Items (scenes/kit.ts `ITEMS`) that unlock a later level: sudo carries them from the start. */
+const SUDO_ITEMS: ItemId[] = ['maglev.pass'];
+
 /** Give the save everything there is to own. Scene progress stays as it is. */
 export function unlockAll(s: Save) {
   if (!s.handle) s.handle = 'root';
@@ -34,6 +37,8 @@ export function unlockAll(s: Save) {
   for (const m of LOGIC.modules) if (!s.modules.includes(m.id)) s.modules.push(m.id);
   for (const k of KEYRING.keys()) if (!s.keyring.includes(k)) s.keyring.push(k);
   s.tokens = Math.max(s.tokens, 99);
+  // what story levels hand you to carry, so the next one can be played on its own (P13's maglev pass for P14's brake)
+  for (const item of SUDO_ITEMS) if (!s.items[item]) s.items[item] = 1;
   for (const id of Object.keys(SCENES)) s.flags['seen:' + id] = true;
   // the whole city on the map: every district heard of and on record (the Spire and the Undercity too)
   for (const d of DISTRICTS) { s.flags[heardFlag(d.id)] = true; s.flags[mappedFlag(d.id)] = true; }

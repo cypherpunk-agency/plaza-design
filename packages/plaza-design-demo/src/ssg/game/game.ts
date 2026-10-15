@@ -193,6 +193,14 @@ export class Game {
       // scene steps that hand out modules and tokens (GAME-DATA.md, "Giving things")
       grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); storeSave(this.save); this.syncHud(); },
       tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
+      // what you carry (the HUD's HELD) and story flags, for scene effects (the laundromat's jacket)
+      carry: (item, n) => {
+        const now = Math.max(0, (this.save.items[item] ?? 0) + n);
+        if (now) this.save.items[item] = now; else delete this.save.items[item];
+        if (n) { storeSave(this.save); this.syncHud(); }
+        return now;
+      },
+      flag: (f) => { this.save.flags[f] = true; storeSave(this.save); },
       drop: () => storeSave(this.save),
       sudo: SUDO,
       load: () => this.save.scenes[id],

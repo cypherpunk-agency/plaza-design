@@ -21,10 +21,11 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
-import { BEACH, CAPSULE, DOWNTOWN, ENGINE, LOGIC, MOTH, NET, YARD } from '../src/ssg/game/data';
+import { BEACH, CAPSULE, DOWNTOWN, ENGINE, LAUNDROMAT, LOGIC, MOTH, NET, YARD } from '../src/ssg/game/data';
 import { CAPSULE_RULES } from '../src/ssg/game/capsule/rules';
 import { MOTH_RULES } from '../src/ssg/game/moth/rules';
 import { BEACH_RULES } from '../src/ssg/game/beach/rules';
+import { LAUNDROMAT_RULES } from '../src/ssg/game/laundromat/rules';
 import { checkGame } from '../src/ssg/game/data/check';
 import { YARD_RULES } from '../src/ssg/game/yard/effects';
 import { DOWNTOWN_RULES_SHAPE } from '../src/ssg/game/downtown/rules';
@@ -146,6 +147,7 @@ function checkGameData() {
     { data: DOWNTOWN, code: contractOf(DOWNTOWN_RULES_SHAPE), extra: DOWNTOWN_RULES_SHAPE.check },
     { data: MOTH, code: contractOf(MOTH_RULES), extra: MOTH_RULES.check },
     { data: BEACH, code: contractOf(BEACH_RULES), extra: BEACH_RULES.check },
+    { data: LAUNDROMAT, code: contractOf(LAUNDROMAT_RULES), extra: LAUNDROMAT_RULES.check },
   ], LOGIC, NET, ENGINE);
   // the city's districts and places (city.ts): every place has its scenes, its entrance among them
   problems.push(...cityProblems().map((p) => 'city.ts › ' + p));

@@ -69,6 +69,10 @@ export interface SceneStore {
   grant?: (module: string) => void;
   /** Add noodle tokens, return the new total (and write the save). */
   tokens?: (add: number) => number;
+  /** Add n of an item the player carries (0: ask; negative: take), return how many now (and write the save). */
+  carry?: (item: string, n: number) => number;
+  /** Set a save flag (and write the save). */
+  flag?: (name: string) => void;
   /** A made fragment left the keyring (it is already gone from `keyring()`): write the save. */
   drop?: (id: string) => void;
   /** Sudo mode: every LINK reaches every node. */
@@ -151,6 +155,8 @@ export class SceneHost {
       give: store ? (id) => store.give(id) : undefined,
       grant: store?.grant,
       tokens: store?.tokens,
+      carry: store?.carry,
+      flag: store?.flag,
       drop: store?.drop,
       sudo: store?.sudo ? () => true : undefined,
     }, def.data ?? emptyData(def.id, def.name), rules);

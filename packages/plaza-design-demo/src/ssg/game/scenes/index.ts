@@ -3,13 +3,14 @@
  * place each belongs to). `?play=<id>` starts in one, and sudo's LEVELS lists
  * them in this order. Most are walkable scenery with people, things to use
  * and read, and ways out; the ones with devices bring their data file and
- * rules (capsule/, downtown/, yard/, moth/, beach/). Layout and texts are plain
+ * rules (capsule/, downtown/, yard/, moth/, laundromat/, beach/). Layout and texts are plain
  * objects in each module; drawing is code.
  */
 
 import { beach } from '../beach';
 import { capsule } from '../capsule';
 import { downtown } from '../downtown';
+import { laundromat } from '../laundromat';
 import { moth } from '../moth';
 import { yard } from '../yard';
 import { harbor } from './harbor';
@@ -26,7 +27,7 @@ export { ITEMS } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 export const SCENES = {
-  capsule, downtown, yard, moth, beach, harbor, market, shop, mall, metro, galleriaStation, harborStation, train,
+  capsule, downtown, yard, moth, beach, harbor, market, laundromat, shop, mall, metro, galleriaStation, harborStation, train,
 } satisfies Record<string, SceneDef>;
 export type SceneId = keyof typeof SCENES;
 

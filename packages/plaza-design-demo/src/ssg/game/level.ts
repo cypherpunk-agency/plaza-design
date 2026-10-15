@@ -191,6 +191,11 @@ export function fixerTalk(s: Save): Talk {
     return { pages: [name + '. Fine name for a nobody.', 'House rule: hints cost a bowl. Answers aren\'t on the menu.', 'You\'re broke, though. And my till still runs on factory settings. Don\'t tell anyone.'] };
   }
   if (goal === 'till') return { pages: ['The till is right there. Factory settings. Every manual prints them.'] };
+  // P13's payoff: DLV-9's left glove (P12) and the right one from Moth's jacket (washer 3), once
+  if (s.keyring.includes('glove.left') && s.keyring.includes('glove.right') && !s.flags.gloves) {
+    s.flags.gloves = true;
+    return { pages: ['Two gloves. Left and right. Let me see.', "Moth's gloves. Moth loses one of everything.", 'Keys, gloves, sleep, flats. Never a friend, though. Eat something.'] };
+  }
 
   const used = s.hints[goal] ?? 0, hints = HINTS[goal];
   const remark: Record<Objective, string> = {
