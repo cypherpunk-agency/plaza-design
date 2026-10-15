@@ -44,7 +44,7 @@ export const downtown: SceneDef = {
     { id: 'map', x: MAP_KIOSK_X, to: '', action: 'map', label: '[E] CITY MAP', promptH: 92 },
   ],
   readables: READABLES.map((r) => ({ id: r.id, x: r.x, name: 'SIGN', pages: r.pages, promptH: 160 })),
-  ambient: { sky: true, city: true, street: true, rain: true },
+  ambient: { sky: true, city: true, street: true, weather: true },
   keepFace: true,
   platforms: PLATFORMS,
   pixel: 'along',

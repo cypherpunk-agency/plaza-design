@@ -2,8 +2,10 @@
  * ACCESS DENIED, the game: input, movement, camera and drawing. Every place is
  * a scene (scenes/: `SCENES`, one `SceneDef` each), and every scene is hosted
  * the same way on the hacking engine (engine/: `SceneHost`), devices or not:
- * this file walks you through it, draws the engine's sky, street and rain
- * around it, and hands it taps, E, H (hack vision) and B (the board).
+ * this file walks you through it, draws the engine's sky, street and the
+ * weather around it, and hands it taps, E, H (hack vision) and B (the board).
+ * It runs the city clock (clock.ts: when it runs, travel, waiting, the opening's
+ * pins) and asks the forecast (weather.ts) what the sky does in each scene.
  * Downtown's street walls, its people and the fixer are drawn here; what they
  * say, and the terminal, live in level.ts.
  * Pixel the robot cat, who follows you once you leave the flat, is companion.ts.
@@ -18,11 +20,15 @@ import { type LineKind, Terminal } from './terminal';
 import { PARCEL } from './yard';
 import { Companion, WARM } from './companion';
 import { reconcile, syncGoals, sceneShell } from './downtown';
-import { NO_RULES, SceneHost } from './engine';
-import { isSceneId, ITEMS, SCENES, sceneTitle, type ItemId, type SceneDef, type SceneExit, type SceneId, type SceneView } from './scenes';
+import { CITY, NO_RULES, SceneHost } from './engine';
+import { city, parseHM, TRAVEL, WAIT_CARD, WAITS, type WaitTo } from './clock';
+import { reportLines, sceneClimate, screenLine, setHereClimate, weatherNow, type Weather } from './weather';
+import { puddles, weatherFront, weatherMid, weatherSky } from './sets/weather';
+import { ticker, YELLOW } from './scenes/screens';
+import { isSceneId, ITEMS, SCENES, sceneTitle, type ItemId, type SceneDef, type SceneExit, type SceneId, type SceneRest, type SceneView } from './scenes';
 import { KEYRING } from './data';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
-import { botReact, isBot, characterHeight, characterX, talkTo } from './characters';
+import { botReact, isBot, isHere, characterHeight, characterX, talkTo } from './characters';
 import {
   boardRide, lineOpen, nextStation, ride, SEG, platformDoors, platformLeft, platformOpen, platformSync, rideAtSiding, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
@@ -43,7 +49,7 @@ import type { PopupItem } from './engine/popup';
 import { CAPSULE_SPAWN } from './capsule';
 import { Menu } from './menu';
 import { Opening } from './title';
-import { Transport } from './transport';
+import { ClockBar, Transport } from './transport';
 import {
   commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
   newSave, ownedModules, run, SAVE_KEY, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
@@ -111,7 +117,6 @@ export class Game {
   private touch = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
   private ships: Ship[] = [];
   private windows = new Map<number, [number, number, number][]>();
-  private drops: [number, number, number, number][] = [];
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   /** The scene the player is in. */
   private here: SceneId = 'downtown';
@@ -167,8 +172,20 @@ export class Game {
       onClose: () => this.canvas.focus(),
       ...(SUDO ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
     }, this.touch);
-    // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts)
-    if (SUDO) this.transport = new Transport(host.windowEl);
+    // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts); in a scene, the city clock's
+    if (SUDO) {
+      this.transport = new Transport(host.windowEl);
+      this.clockBar = new ClockBar(host.windowEl, () => sceneClimate(this.here), () => this.syncClock(true));
+    }
+    // the city clock: the save's, and what every scene's conditions read of the city (engine/model.ts CITY)
+    city.bind(this.save.clock);
+    CITY.read = (key, scene) => (key === 'weather' ? this.weatherOf(scene).kind : key === 'hour' ? city.hour : city.day);
+    CITY.when = (w) => city.within(w);
+    // the footer's timestamp shows the city's time while the game runs (render.tsx hides the page's UTC clock)
+    const stampHost = host.footer.querySelector('.footer-timestamp');
+    this.stampEl = document.createElement('span');
+    this.stampEl.id = 'game-clock';
+    stampHost?.appendChild(this.stampEl);
     // a click or tap during the title's sunrise skips to the settled shot (on click, not pointerdown:
     // the menu comes up under the finger, and the release must not land on it)
     this.canvas.addEventListener('click', () => { if (this.opening && !this.opening.gliding && !this.opening.risen) this.skipRise(); });
@@ -186,8 +203,7 @@ export class Game {
       const depth = 0.15 + (i / 9) * 0.5;
       this.ships.push({ sprite: hulls[i % hulls.length], ps: depth > 0.45 ? 2 : 1, y: 18 + r() * 120, speed: 0.04 + depth * 0.12, offset: r() * 3000, flip: r() < 0.5, depth });
     }
-    const rd = rng(11);
-    this.drops = Array.from({ length: 220 }, () => [rd() * 2000, rd() * 600, 0.4 + rd() * 0.6, rd()]);
+
 
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
@@ -400,6 +416,7 @@ export class Game {
     this.showEnd = false;
     this.toast = null;
     this.save = SUDO ? unlockAll(newSave()) : newSave();
+    city.bind(this.save.clock);
     // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
     this.hosts.forEach((h) => h.reset());
     reconcile(this.downtown.model, this.save);
@@ -419,7 +436,8 @@ export class Game {
       : 'Every machine here does something: E or a tap. H shows how they all work, B is the board.';
     if (!this.save.flags.arrived) {
       this.save.flags.arrived = true; this.save.flags.schematics = true;
-      const pages = ['Downtown. Rain, neon, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.', how];
+      const wet = this.weatherHere().rain > 0.2;
+      const pages = [wet ? 'Downtown. Rain, neon, and nobody who sees me.' : 'Downtown. Neon, wet streets, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.', how];
       if (this.save.flags.pixel) pages.splice(1, 0, 'Pixel came along. Nobody asked Pixel. Nobody ever does.');
       this.say('YOU', pages, this.p.x, 46);
     } else if (!this.save.flags.schematics) {
@@ -441,6 +459,7 @@ export class Game {
     this.menu.hide();
     this.endCutscene(false);
     this.transport?.attach(null);
+    this.clockBar?.show(false);
     this.running = false;
     cancelAnimationFrame(this.raf);
     window.removeEventListener('keydown', this.onKeyDown);
@@ -495,8 +514,9 @@ export class Game {
     if (!this.running) return;
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
-    // sudo's time control follows whatever timed picture is up (none: it hides)
+    // sudo's time control follows whatever timed picture is up (none: it hides); in a scene, the city clock's bar
     this.transport?.attach(this.opening?.timeline ?? this.cut?.timeline ?? null);
+    this.clockBar?.show(!this.opening && !this.cut && !this.menu.open && !this.term.focused);
     // The title and the glide: their own picture, with the title's menu over it.
     if (this.opening) { this.stepOpening(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     // The pause menu: the world holds still under it (the last frame stays on the canvas).
@@ -516,6 +536,10 @@ export class Game {
     }
     if (!this.reduced || this.t < 1) this.t += dt;
     this.clock += dt;
+    // the city clock: the opening's pins, then a tick if it runs here and now (clock.ts)
+    this.pinStory();
+    if (this.clockRuns()) city.tick(dt / 60);
+    this.syncClock();
     this.update(dt);
     this.draw();
     this.followHost();
@@ -659,6 +683,7 @@ export class Game {
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
     this.syncHud();
+    setHereClimate(sceneClimate(id));
     if (!quiet) sound.open();
     // Pixel: at home (coming in behind you through the door, or already asleep there), at your heels where it follows you
     if (s.perch) {
@@ -725,7 +750,7 @@ export class Game {
   /** The heads of the people on screen (the scene's, Downtown's street people and the fixer), CSS px. */
   private heads() {
     const s = this.cssScale, list: { x: number; h: number }[] = [];
-    for (const p of this.def.people ?? []) list.push({ x: characterX(p, this.t), h: characterHeight(p) });
+    for (const p of this.def.people ?? []) if (isHere(p)) list.push({ x: characterX(p, this.t), h: characterHeight(p) });
     if (this.here === 'downtown') { NPCS.forEach((n) => list.push({ x: n.x, h: 46 })); list.push({ x: STALL.fixerX, h: 74 }); }
     return list.map(({ x, h }) => ({ l: (this.sx(x) - 9) * s, t: this.y(h) * s, r: (this.sx(x) + 9) * s, b: this.y(h - 14) * s }))
       .filter((b) => b.r > 0 && b.l < this.canvas.clientWidth);
@@ -762,6 +787,8 @@ export class Game {
       resetYard: () => this.hostOf('yard').reset(),
       // your own deck, while you still exist
       deck: isBefore(this.save.flags) ? DECK_BEFORE : undefined,
+      // the Registry's forecast, where you are
+      weather: () => reportLines(sceneClimate(this.here)),
     };
   }
 
@@ -942,9 +969,11 @@ export class Game {
     x.setTransform(k, 0, 0, k, 0, 0);
     x.fillStyle = '#000';
     x.fillRect(0, 0, this.viewW, this.viewH);
-    const rain = this.rainLevel();
     const vision = zh.visionOn, v = this.view();
-    if (amb.sky) { this.drawSky(); if (isBefore(this.save.flags)) this.drawDawn(); this.drawShips(); }
+    // the district's weather, where the scene is outdoors (weather.ts; drawn by sets/weather.ts)
+    const W = amb.weather ? this.weatherHere() : null, look = W ? { w: W, t: this.reduced ? this.clock * 0.35 : this.t, still: this.reduced } : null;
+    const rain = W?.wet ?? 0;
+    if (amb.sky) { this.drawSky(); if (isBefore(this.save.flags)) this.drawDawn(); if (look) weatherSky(x, v, look); this.drawShips(); }
     if (amb.city) {
       this.drawSkyline(0.18, 7, 70, 150, 0.18, 0.12);
       this.drawAntenna();
@@ -952,31 +981,38 @@ export class Game {
       this.drawFronts();
     }
     if (amb.street) this.drawStreet(rain, !!amb.city);
+    // the weather in the scene: puddles, smog and fog banks behind the people, rain and the rest in front
+    const mid = () => { if (look) { puddles(x, v, look, { width: this.levelW, seed: this.here.length * 97 + s.width, lights: amb.city ? SMEARS : undefined }); weatherMid(x, v, look); } };
     if (vision && s.layers) {
-      // the world (rain too) goes muted into the background; the devices and you stay bright on top
+      // the world (the weather too) goes muted into the background; the devices and you stay bright on top
       zh.draw(x, v, 'world');
-      if (amb.rain) this.drawRain(rain);
+      mid();
+      if (look) weatherFront(x, v, { ...look, still: true });
       this.mute();
       zh.draw(x, v, 'devices');
     } else {
       zh.draw(x, v);
-      if (vision) { if (amb.rain) this.drawRain(rain); this.mute(zh.model.spots()); }
+      mid();
+      if (vision) { if (look) weatherFront(x, v, { ...look, still: true }); this.mute(zh.model.spots()); }
     }
     this.drawLight();
     this.drawCharacters();
     s.drawFront?.(x, v);
-    if (amb.rain && !vision) this.drawRain(rain);
+    if (look && !vision) weatherFront(x, v, look);
     this.drawPrompt();
     this.drawBubble();
   }
 
-  private rainLevel() {
-    // dawn, before you are deleted: the rain is late today
-    if (isBefore(this.save.flags)) return 0;
-    // Weather passes through: a drizzle builds to a shower and clears, about every 80 seconds.
-    const phase = (this.t / 4800) % 1;
-    return Math.max(0, Math.sin(phase * Math.PI * 2)) ** 1.5;
+  /**
+   * The weather a scene has now: its district's (weather.ts). Dawn, before you are deleted, is
+   * dry whatever the forecast says ("Rain's late today": the opening is scripted).
+   */
+  private weatherOf(scene: string): Weather {
+    const w = weatherNow(sceneClimate(scene));
+    if (!isBefore(this.save.flags) || (w.rain < 0.01 && w.storm < 0.01)) return w;
+    return { ...w, kind: w.kind === 'rain' || w.kind === 'storm' ? 'cloudy' : w.kind, rain: 0, storm: 0, wet: Math.min(w.wet, 0.4), wind: Math.min(w.wind, 0.3) };
   }
+  private weatherHere() { return this.weatherOf(this.here); }
 
   private drawSky() {
     const x = this.x, r = rng(5);
@@ -1090,6 +1126,8 @@ export class Game {
     this.neon('SPACEPORT >', this.sx(1770), this.y(110), O, { size: 10, phase: 70 });
     this.plate(this.sx(905), this.y(104), 88, 13, O);
     this.neon('OPEN 24/7', this.sx(905), this.y(104), O, { size: 8, phase: 160 });
+    // the Registry's weather ticker over the shopfronts (weather.ts screenLine: the forecast, dry)
+    ticker(x, this.view(), { x: 210, h: 90, w: 80, tall: 11, text: screenLine(sceneClimate('downtown')), col: YELLOW, speed: 0.4, phase: 60 });
     // Billboard, bolted flat to the wall and lit by two lamps on arms above it.
     const bx = this.sx(640);
     this.plate(bx, this.y(128), 124, 36, '255,90,110');
@@ -1380,14 +1418,13 @@ export class Game {
       pool.addColorStop(0, 'rgba(255,160,70,' + (0.18 + rain * 0.06) + ')'); pool.addColorStop(1, 'rgba(255,160,70,0)');
       x.fillStyle = pool; x.fillRect(s0 - 10, gy + 1, STALL.w + 20, 34);
     }
-    // Neon smeared into the wet street.
-    const smears: [number, string][] = [[372, C], [STALL.x + STALL.w / 2, C], [640, '255,90,110'], [90, C], [1770, O], [905, O], [DOORS.metro + 31, C], [DOORS.taxi - 18, C], [DOORS.shop, C]];
-    for (const [wx, col] of city ? smears : []) {
+    // Neon smeared into the street, as wet as the weather leaves it.
+    for (const [wx, col] of city ? SMEARS : []) {
       const sx = this.sx(wx);
       if (sx < -20 || sx > this.viewW + 20) continue;
       for (let i = 0; i < 10; i++) {
         const wob = Math.sin(this.t * 0.05 + i) * (1 + rain * 2);
-        x.fillStyle = 'rgba(' + col + ',' + (0.05 + rain * 0.05) * (1 - i / 10) + ')';
+        x.fillStyle = 'rgba(' + col + ',' + (0.03 + rain * 0.07) * (1 - i / 10) + ')';
         x.fillRect(sx - 6 + wob, gy + 3 + i * 4, 12, 3);
       }
     }
@@ -1448,33 +1485,10 @@ export class Game {
     x.restore();
   }
 
-  private drawRain(level: number) {
-    if (level < 0.03) return;
-    const x = this.x, wind = 0.25 + 0.2 * Math.sin(this.t * 0.004);
-    const n = Math.floor(this.drops.length * level);
-    for (let i = 0; i < n; i++) {
-      const [dx, dy, depth, seed] = this.drops[i];
-      const fall = 2.5 + depth * 4.5, len = 4 + depth * 8;
-      const yy = (dy + this.t * fall) % (this.viewH + 40) - 20;
-      const xx = ((dx - this.t * fall * wind - this.cam * depth * 0.6) % this.viewW + this.viewW) % this.viewW;
-      x.strokeStyle = 'rgba(170,210,255,' + (0.08 + depth * 0.22) + ')';
-      x.beginPath(); x.moveTo(xx, yy); x.lineTo(xx - len * wind, yy + len); x.stroke();
-      // Splash where a near drop meets the street.
-      if (depth > 0.75 && yy > this.gy - 6 && yy < this.gy + 2) {
-        x.fillStyle = 'rgba(200,230,255,.35)'; x.fillRect(xx - 2, this.gy - 1, 1, 1); x.fillRect(xx + 2, this.gy - 2, 1, 1);
-      }
-      if (depth > 0.8 && seed < 0.15) {
-        const ph = ((this.t * 0.02 + seed * 50) % 1);
-        x.strokeStyle = 'rgba(255,136,0,' + 0.25 * (1 - ph) + ')';
-        x.beginPath(); x.ellipse((dx * 1.7) % this.viewW, this.gy + 8 + seed * 200 % (this.viewH - this.gy - 12), ph * 10, ph * 2, 0, 0, 7); x.stroke();
-      }
-    }
-    // A rare lightning flash in heavy rain.
-    if (level > 0.8 && Math.floor(this.t) % 997 < 3) { x.fillStyle = 'rgba(200,220,255,.08)'; x.fillRect(0, 0, this.viewW, this.viewH); }
-  }
+
 
   private drawPrompt() {
-    if (this.bubble || this.showEnd || this.zh.overlayOpen || this.zh.popupOpen || this.mapView || this.beat || this.sleep) return;
+    if (this.bubble || this.showEnd || this.zh.overlayOpen || this.zh.popupOpen || this.mapView || this.beat || this.sleep || this.hop || this.flight) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;
@@ -1783,8 +1797,8 @@ export class Game {
   private get story(): OpeningState { return openingState(this.save.flags); }
   /** Who you are in the HUD and your bubbles: a courier while you still exist, then your handle (or "ghost"). */
   private get me() { return isBefore(this.save.flags) ? 'courier' : who(this.save); }
-  /** The opening's clock, after the scene's name in the HUD (" · 05:52"). */
-  private get clockText() { const t = pick(OPENING_TIME, this.story, this.here); return t ? ' · ' + t : ''; }
+  /** The city clock, after the scene's name in the HUD (" · 21:40"; the opening's times are its pins). */
+  private get clockText() { return ' · ' + city.text; }
 
   /** When the player last moved or did something (clock frames), for the idle ping. */
   private still = 0;
@@ -1792,8 +1806,12 @@ export class Game {
   private goalAt: number | null = null;
   /** The turnstile taking its time: when it started, and what happens once it says ok. */
   private beat: { start: number; then: () => void } | null = null;
-  /** Sleeping: when the fade started; `woke` once the flat has turned into the morning. */
-  private sleep: { start: number; woke: boolean } | null = null;
+  /**
+   * Sleeping or waiting (the opening's sleep, or "wait until…" at a bench or the bed): when the
+   * fade started, its timings, the card (from, to, where), what happens in the dark (`mid`, once:
+   * `woke`) and once it is light again (`end`).
+   */
+  private sleep: { start: number; woke: boolean; card: { out: number; card: number; in: number }; from: string; to: string; label: string; mid: () => void; end: () => void } | null = null;
   /** The morning: when you woke, how many plain things failed, whether Moth has written (or is about to: the mail). */
   private morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
 
@@ -1870,9 +1888,9 @@ export class Game {
       then();
     }
     if (this.sleep) {
-      const e = this.clock - this.sleep.start;
-      if (!this.sleep.woke && e >= SLEEP.out + SLEEP.card / 2) { this.sleep.woke = true; this.morningFlat(); }
-      if (e >= SLEEP.out + SLEEP.card + SLEEP.in) { this.sleep = null; this.wakeUp(); }
+      const e = this.clock - this.sleep.start, S = this.sleep.card;
+      if (!this.sleep.woke && e >= S.out + S.card / 2) { this.sleep.woke = true; this.sleep.mid(); }
+      if (e >= S.out + S.card + S.in) { const end = this.sleep.end; this.sleep = null; end(); }
       return;
     }
     const st = this.story;
@@ -1890,7 +1908,77 @@ export class Game {
     this.keys.clear();
     this.bubble = null;
     this.zh.closeAll();
-    this.sleep = { start: this.clock, woke: false };
+    this.sleep = { start: this.clock, woke: false, card: SLEEP, from: SLEEP.from, to: SLEEP.to, label: 'CAPSULE 7B', mid: () => this.morningFlat(), end: () => this.wakeUp() };
+    sound.close();
+  }
+
+  // ---------- the city clock (clock.ts): when it runs, the opening's pins, waiting ----------
+
+  /** Sudo's city clock bar (transport.ts); null without `?sudo`. */
+  private clockBar: ClockBar | null = null;
+  /** The footer's timestamp in game mode (DAY 3 · 21:40), and what it and the HUD showed last. */
+  private stampEl: HTMLElement;
+  private shownClock = '';
+  /** The opening holds the clock (opening.ts OPENING_TIME); true while it does. */
+  private storyPinned = false;
+  /** When the save was last written for the clock's sake (clock frames). */
+  private clockSaved = 0;
+
+  /**
+   * Does the city clock run now? In a scene, hack vision and the board included; not on the map,
+   * in a taxi or a quick trip (they cost their fixed time), in talk (a speech bubble, a daemon's
+   * panel, a lock toy), while sleeping or waiting, or over the end card. (The menu, cutscenes and
+   * the title stop the whole loop before this.)
+   */
+  private clockRuns() {
+    return !this.mapView && !this.flight && !this.hop && !this.bubble && !this.zh.panelOpen && !this.sleep && !this.showEnd && !this.beat;
+  }
+
+  /**
+   * The opening pins the clock to its times (opening.ts OPENING_TIME: the train 05:41 … the
+   * morning after 09:40) from the train home until Moth's uplink.so; then it runs, from 09:42.
+   */
+  private pinStory() {
+    const st = this.story;
+    if (st === 'home' || st === 'flat' || st === 'deleted') {
+      const at = parseHM(pick(OPENING_TIME, st, this.here) ?? '');
+      if (at !== null) { if (city.pinned !== at) city.pin(at); }
+      else if (city.pinned === null) city.pin(Math.floor(city.min));
+      this.storyPinned = true;
+    } else if (this.storyPinned) {
+      this.storyPinned = false;
+      city.release(parseHM(pick(OPENING_TIME, 'uplinked', 'capsule') ?? '') ?? undefined);
+      storeSave(this.save);
+    }
+  }
+
+  /** The HUD's and the footer's clock, when the minute changes (`force`: now). The save is written now and then. */
+  private syncClock(force = false) {
+    const t = city.stamp;
+    if (force || t !== this.shownClock) {
+      this.shownClock = t;
+      this.stampEl.textContent = t;
+      if (!this.cut && !this.opening) this.syncHud();
+    }
+    if (this.clock - this.clockSaved > CLOCK_SAVE) { this.clockSaved = this.clock; storeSave(this.save); }
+  }
+
+  /** E at a bench, a stool or the bed: the popup's "wait until…" choices. */
+  private offerWait(r: SceneRest) {
+    const bed = r.kind === 'bed';
+    const items = WAITS.map((w) => ({ label: (bed && w.id === 'morning' ? 'sleep till ' : 'wait: ') + w.label, run: () => this.waitUntil(w, r) }));
+    this.zh.choose('rest:' + r.id, bed ? 'YOUR BED' : r.kind === 'stool' ? 'A STOOL' : 'A BENCH', items, { x: r.x, y: r.h ?? 0, w: 40, h: Math.max(16, (r.promptH ?? 60) - 24) });
+    sound.open();
+  }
+
+  /** Wait (or sleep) until then: a fade, a card from now to then, the clock jumped ahead in the dark. */
+  private waitUntil(w: WaitTo, r: SceneRest) {
+    if (city.pinned !== null) return;
+    const minutes = city.waitFor(w), from = city.text, to = city.min + minutes;
+    this.keys.clear();
+    this.bubble = null;
+    const label = (r.kind === 'bed' ? 'SLEEPING · ' : 'WAITING · ') + this.placeName.toUpperCase();
+    this.sleep = { start: this.clock, woke: false, card: WAIT_CARD, from, to: hmOf(to), label, mid: () => { city.advance(minutes); this.syncClock(true); storeSave(this.save); }, end: () => {} };
     sound.close();
   }
 
@@ -1971,19 +2059,19 @@ export class Game {
     x.restore();
   }
 
-  /** The sleep: dark, a card with the clock (06:04, then 09:40), light again. */
+  /** The sleep or a wait: dark, a card with the clock (06:04, then 09:40; now, then later), light again. */
   private drawSleep() {
     if (!this.sleep) return;
-    const x = this.x, e = this.clock - this.sleep.start, S = SLEEP;
+    const x = this.x, e = this.clock - this.sleep.start, S = this.sleep.card;
     const a = e < S.out ? e / S.out : e < S.out + S.card ? 1 : Math.max(0, 1 - (e - S.out - S.card) / S.in);
     x.fillStyle = 'rgba(0,0,0,' + a + ')'; x.fillRect(0, 0, this.viewW, this.viewH);
     if (e < S.out || e > S.out + S.card) return;
     const f = (e - S.out) / S.card, fade = Math.min(1, Math.min(f, 1 - f) * 6);
     x.save(); x.textAlign = 'center'; x.textBaseline = 'middle';
     x.font = '600 18px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,136,0,' + 0.95 * fade + ')';
-    x.fillText(f < 0.5 ? S.from : S.to, this.viewW / 2, this.viewH / 2 - 6);
+    x.fillText(f < 0.5 ? this.sleep.from : this.sleep.to, this.viewW / 2, this.viewH / 2 - 6);
     x.font = '8px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,' + 0.7 * fade + ')';
-    x.fillText('CAPSULE 7B', this.viewW / 2, this.viewH / 2 + 14);
+    x.fillText(this.sleep.label, this.viewW / 2, this.viewH / 2 + 14);
     x.restore();
   }
 
@@ -2103,10 +2191,13 @@ export class Game {
     const list: Target[] = [];
     for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
     for (const u of s.uses ?? []) list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
-    // the scene's people with something to say (characters.ts): the target follows a walker
-    for (const p of s.people ?? []) if (p.id && p.talk) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: characterHeight(p) + 16 });
+    // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
+    if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
+    // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
+    for (const p of s.people ?? []) if (p.id && p.talk && isHere(p)) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: characterHeight(p) + 16 });
     // animals: people always want to pet the cat (and the pigeon gets shooed)
     (s.people ?? []).forEach((p, i) => {
+      if (!isHere(p)) return;
       if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'life', id: 'pet:' + i, x: characterX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: characterHeight(p) + 14 });
       // robots without talk still answer: a beep, a status, a polite refusal
       else if (!p.talk && isBot(p)) list.push({ kind: 'life', id: 'bot:' + i, x: characterX(p, this.t), h: 0, label: botReact(p).label, promptH: characterHeight(p) + 14 });
@@ -2118,6 +2209,7 @@ export class Game {
   private useLife(target: string) {
     const s = this.def, [kind, id] = target.split(':');
     if (kind === 'story') { if (id === 'bed') this.sleepNow(); return; }
+    if (kind === 'rest') { const r = s.rests?.find((z) => z.id === id); if (r) this.offerWait(r); return; }
     if (kind === 'read') {
       const r = s.readables!.find((z) => z.id === id)!, o = pick(OPENING_LINES, this.story, this.here, id);
       this.say(o?.name ?? r.name, o?.pages ?? r.pages, r.x, r.h ?? 70);
@@ -2148,6 +2240,7 @@ export class Game {
         pay: (n) => { if (save.tokens < n) return false; save.tokens -= n; this.flash('-' + n + ' token' + (n === 1 ? '' : 's')); return true; },
         give: (n) => { save.tokens += n; this.flash('+' + n + ' token' + (n === 1 ? '' : 's')); },
         flags: save.flags, set: (f) => { save.flags[f] = true; }, t: this.t,
+        weather: this.weatherHere().kind, min: city.min,
         // what you carry: the save's items, across scenes and reloads
         has: (item, n = 1) => (save.items[item] ?? 0) >= n,
         take: (item, n = 1) => {
@@ -2342,13 +2435,15 @@ export class Game {
     if (this.flight && this.clock - this.flight.start >= FLIGHT) {
       const to = this.flight.to;
       this.flight = null;
+      // the flight costs its fixed time on the city clock (clock.ts TRAVEL)
+      city.advance(TRAVEL.taxi);
       this.travel(STANDS[to].scene, 'taxi');
       this.flash('-' + FARE + ' token · ' + STANDS[to].name);
     }
     // a quick trip moves you while the screen is dark, half way through its fade
     if (this.hop) {
       const e = this.clock - this.hop.start;
-      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; this.travel(this.hop.place.entrance, this.hop.place.at); }
+      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; city.advance(TRAVEL.quick); this.travel(this.hop.place.entrance, this.hop.place.at); }
       if (e >= HOP) this.hop = null;
     }
     if (this.here !== 'train') return;
@@ -2381,6 +2476,14 @@ const NUDGE_HOLD = 96, NUDGE_EASE = 0.045, NUDGE_MARGIN = 36, NUDGE_GAP = 300;
 /** Hack vision zooms out at least this far, even where the scene already fits the view (room over its devices for the circuits). */
 const VISION_ZOOM_MIN = 0.7;
 
+/** How often the clock's progress is written to the save while it runs (frames, ~10 s). */
+const CLOCK_SAVE = 600;
+/** A minute of the day as HH:MM (any number of minutes on). */
+const hmOf = (min: number) => { const m = ((Math.floor(min) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+
+/** Lights over Downtown's street whose colour its wet floor and puddles hold: world x, an rgb triple. */
+const SMEARS: [number, string][] = [[372, '0,255,255'], [810, '0,255,255'], [640, '255,90,110'], [90, '0,255,255'], [1770, '255,136,0'], [905, '255,136,0'], [DOORS.metro + 31, '0,255,255'], [DOORS.taxi - 18, '0,255,255'], [DOORS.shop, '0,255,255'], [210, '255,210,58']];
+
 /** Street walls measured against the player (42 units tall): a 76-unit ground floor with 52-unit doors, then 66-unit storeys of 14x28 windows. */
 const GROUND = 76, STOREY = 66, WIN_PITCH = 30;
 
@@ -2394,6 +2497,7 @@ const SIGN_WALLS: [number, number, number, number][] = [
   [720, 880, 60, 142], // noodle stall and its NOODLES plate
   [1448, 1496, 70, 100], // METRO plate on its post
   [1880, 1946, 88, 114], // SKY TAXI plate on its pole
+  [166, 254, 86, 112], // the Registry's weather ticker
 ];
 const onSignWall = (x0: number, x1: number, h0: number, h1: number) =>
   SIGN_WALLS.some(([a, b, c, d]) => x0 < b && x1 > a && h0 < d && h1 > c);

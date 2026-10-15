@@ -152,7 +152,7 @@ export const warehouse: SceneDef = {
   name: 'Warehouse 4',
   width: L.width,
   spawn: L.spawn,
-  ambient: { sky: true, rain: true },
+  ambient: { sky: true, weather: true },
   exits: [{ id: 'stacks', x: L.back, to: 'stacks', at: 'warehouse', label: '[E] STACKS', promptH: 82 }],
   intro: ['Warehouse 4. The Registry keeps what it takes in here.', 'The door has a reader. The reader has an opinion about me.'],
   pixel: 'along',

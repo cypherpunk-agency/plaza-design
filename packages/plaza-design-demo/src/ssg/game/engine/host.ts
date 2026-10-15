@@ -180,7 +180,7 @@ export class SceneHost {
     // the engine's own panels (the lock toys) under the scene's
     this.popup = new Popup(host);
     this.fx = new Feedback(host);
-    this.popup.onClose = () => this.onClose();
+    this.popup.onClose = () => { this.chosen = null; this.onClose(); };
     this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.panels });
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
@@ -392,6 +392,8 @@ export class SceneHost {
   get viewing() { return this.schem.viewing; }
 
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
+  /** A full-screen panel is up: talking to a daemon, or a lock toy (the city clock stops; the board does not stop it). */
+  get panelOpen() { return this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
   closeAll() { this.popup.close(); this.fx.clear(); this.panels.close(); this.schem.close(); this.vision.close(); }
   /** This scene is the one on screen: its clock runs and its captions show. */
@@ -432,6 +434,8 @@ export class SceneHost {
       seen.set(id, { x: c.x, y: c.y, w: sw, h: sh });
     };
     m.spots().forEach((s) => add(s.id, s.x, s.y, s.w, s.h));
+    // a thing of the game's that has a popup open (a bench's "wait until…": `choose`)
+    if (this.chosen) add(this.chosen.id, this.chosen.x, this.chosen.y, this.chosen.w, this.chosen.h);
     this.seen = new Map(seen);
     if (this.popup.isOpen) {
       const at = this.popup.dev ? seen.get(this.popup.dev) : undefined;
@@ -508,6 +512,21 @@ export class SceneHost {
     if (!items.length) { this.say(['', d.look, 'dim'], id); return; }
     this.popupAt = this.player.x;
     this.popup.open(id, d.name, this.model.label('menu.aria', { device: d.name }), items, this.seen.get(id), this.project ? this.room(id) : undefined);
+  }
+
+  /** What `choose` opened the popup for (not a device), while it is open. */
+  private chosen: { id: string; x: number; y: number; w: number; h: number } | null = null;
+
+  /**
+   * The popup for something that is not a device (the game's: a bench's "wait until…"): `name` on
+   * the plate, these actions, over the box at world `x` (centre), `y` up from the ground, `w` × `h`.
+   */
+  choose(id: string, name: string, items: PopupItem[], at: { x: number; y: number; w: number; h: number }) {
+    this.chosen = { id, ...at };
+    this.refollow();
+    this.popupAt = this.player.x;
+    const wrapped = items.map((it) => ({ ...it, run: () => { this.popup.close(); it.run(); } }));
+    this.popup.open(id, name, name, wrapped, this.seen.get(id), this.project ? this.room(id) : undefined);
   }
 
   private popupItems(id: string): PopupItem[] {

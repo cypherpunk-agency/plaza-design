@@ -36,6 +36,7 @@
 
 import { drawPortrait } from '../characters';
 import { box, GREEN, mono, O, onScreen, PAPER, RED, rng, sign, text, type View } from './kit';
+import { screenLine } from '../weather';
 
 export const YELLOW = '255,210,58';
 
@@ -73,7 +74,8 @@ export const TICKER = [
   'CAMERA NETWORK 99.7% ONLINE',
   'CREDIT ADJUSTMENTS APPLY FROM MIDNIGHT',
   'REPORT UNREGISTERED PERSONS · REWARD 3 PTS',
-  'WEATHER: RAIN · AIR QUALITY: POOR',
+  // (the weather item is the forecast's, live: weather.ts screenLine; see ticker)
+  'WEATHER',
 ];
 
 export const CRIMES = ['UNREGISTERED', 'CURFEW BREACH', 'EXPIRED IDENTITY', 'UNLICENSED TRADE', 'OFFLINE 72H+', 'UNPAID RENT', 'FAILED FACE SCAN'];
@@ -143,7 +145,8 @@ function clip(x: CanvasRenderingContext2D, r: Rect) { x.save(); x.beginPath(); x
 export function ticker(x: CanvasRenderingContext2D, v: View, m: Mounted & { text?: string; col?: string; speed?: number }) {
   const col = m.col ?? O, r = housing(x, v, m, col);
   if (!r) return;
-  const s = (m.text ?? TICKER.join('   ·   ')) + '   ·   ';
+  // the default strip's WEATHER item is the Registry's live forecast for here (weather.ts)
+  const s = (m.text ?? TICKER.map((l) => (l === 'WEATHER' ? screenLine() : l)).join('   ·   ')) + '   ·   ';
   clip(x, r);
   x.font = mono(Math.min(9, r.h - 3), '600'); x.textBaseline = 'middle'; x.fillStyle = rgba(col, 0.92);
   const tw = x.measureText(s).width, off = ((v.t * (m.speed ?? 0.5) + (m.phase ?? 0)) % tw);

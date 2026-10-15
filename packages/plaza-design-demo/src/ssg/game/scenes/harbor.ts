@@ -21,6 +21,7 @@ import { camera, menuBoard, ticker, YELLOW } from './screens';
 import { CH, container, PAL, stack, type Crate } from '../sets/containers';
 import { drawGantry, GANTRIES } from '../sets/crane';
 import { placed } from '../sets/view';
+import { screenLine } from '../weather';
 
 export { CH, container, type Crate };
 
@@ -117,7 +118,11 @@ const tide: Character = { id: 'tide', key: true, seed: 6106, look: { body: 'slim
   ['Want to meet Brine? Nobody wants to. The boat\'s never in the same berth twice.', 'If the Captain wants you, you\'ll see a lamp out on the water. Three long. Don\'t wave back, it\'s rude.'],
 ] };
 const guard: Character = { seed: 6107, look: { body: 'tall', ...UNIFORM, hair: 'short', hairCol: '#2e1d12', extras: [] }, x: 1452, act: 'stand', facing: -1 };
-const fisher: Character = { id: 'fisher', seed: 6108, look: { body: 'avg', garb: 'coat', hair: 'beanie', top: '#4e5e3a', acc: '#c83a2a', extras: [] }, x: 2160, act: 'stand', facing: 1, name: 'FISHERMAN', talk: [
+const fisher: Character = { id: 'fisher', seed: 6108, look: { body: 'avg', garb: 'coat', hair: 'beanie', top: '#4e5e3a', acc: '#c83a2a', extras: [] }, x: 2160, act: 'stand', facing: 1, name: 'FISHERMAN', lines: [
+  // what he says changes with the weather (TIME.md: lines by weather; the plain `talk` otherwise)
+  { weather: ['rain', 'storm'], pages: ['Rain is good for fishing. The fish come up to see what all the noise is.', 'Also nobody checks your licence in the rain. The Registry melts.'] },
+  { weather: ['fog'], pages: ['Fog. Can\'t see the float, can\'t see the patrol boat, can\'t see my own feet.', 'Best night of the year. Nobody can see me either.'] },
+], talk: [
   ['Fish don\'t need ID. Best neighbours I\'ve had.', 'Caught a drone gull once. Threw it back. It filed a complaint.'],
   ['The patrol boat comes round every few minutes. The fish know the schedule better than the Registry does.'],
 ] };
@@ -147,7 +152,12 @@ const PIER: Character[] = [
   { look: 'courier', x: 1180, act: 'walk', range: [1180, 2100], speed: 0.45 },
   { seed: 6207, x: 2040, act: 'walk', range: [2040, 2300], speed: 0.3, look: { body: 'avg', garb: 'jacket', hair: 'hood', extras: ['umbrella'], acc: '#2a2a30' } },
 ];
-const TALKERS: Character[] = [customs, docker, tide, fisher];
+/** Only on the pier in the early morning (TIME.md: a person with a time window), running laps before the shift whistle. */
+const jogger: Character = { id: 'jogger', seed: 6120, when: { from: '06:00', to: '09:00' }, look: { body: 'slim', garb: 'tee', hair: 'short', top: '#9a7a2a', extras: ['headphones'] }, x: 1500, act: 'walk', range: [1500, 2300], speed: 0.9, name: 'JOGGER', talk: [
+  ['Six laps of the pier before the shift whistle. The Registry counts my steps.', 'I am trying to get it to give up.'],
+  ['Can\'t stop. If I stop, my insurance thinks I died.'],
+] };
+const TALKERS: Character[] = [customs, docker, tide, fisher, jogger];
 /** The pier's birds: every one answers E (ART-GUIDE §10). The gulls react; the pigeon gets shooed. */
 const GULL_TALK = [
   ['(The gull looks at you, then at your pockets, then screams.)'],
@@ -192,6 +202,8 @@ const USES: SceneUse[] = [
   { id: 'drink', x: L.drinks.use, label: '[E] HOT DRINK · 1 TOKEN', name: 'TEA CART', promptH: 92, use: (c) => {
     if (!c.pay(1)) return ['One token. Warmth is extra and I don\'t sell it.'];
     c.add('tea'); c.set('harbor:tea');
+    // in the rain, the tea cart has the one line it has been saving
+    if (c.weather === 'rain' || c.weather === 'storm') return ['Rain\'s in. Same price. The rain is free, I checked.', '(Tea, hot, with a lid. The lid is the luxury.)'];
     return TEA_LINES[teaSold++ % TEA_LINES.length];
   } },
   { id: 'crane', x: L.callBox, label: '[E] CRANE CALL BOX', name: 'STS-1 CAB', promptH: 78, use: (c) => {
@@ -576,7 +588,7 @@ export const harbor: SceneDef = {
   name: 'Harbor',
   width: L.width,
   spawn: L.spawn,
-  ambient: { sky: true, rain: true },
+  ambient: { sky: true, weather: true },
   intro: ['The harbor. Everything here is in a box, and nobody asks what.'],
   exits: [
     { id: 'metro', x: L.metro, to: 'harborStation', at: 'harbor', label: '[E] TO THE METRO', promptH: 82 },
@@ -686,7 +698,7 @@ export const harbor: SceneDef = {
     drawTaxiPad(x, v, L.taxi);
     const fx = sx(L.ferry);
     if (onScreen(v, fx - 30, 60)) { box(x, fx - 1, y(44), 3, 44, '#2a160a'); notice(x, t, fx, y(74), 58, 32, ['FERRY', 'TIMES'], 2); }
-    ticker(x, v, { x: L.ferry + 2, h: 84, w: 74, tall: 10, mount: 'pole', text: 'NIGHT FERRY 7 · BOARDING SUSPENDED · AWAITING CARGO CLEARANCE', col: YELLOW, speed: 0.35 });
+    ticker(x, v, { x: L.ferry + 2, h: 84, w: 74, tall: 10, mount: 'pole', text: 'NIGHT FERRY 7 · BOARDING SUSPENDED · AWAITING CARGO CLEARANCE   ·   ' + screenLine('harbor'), col: YELLOW, speed: 0.35 });
 
     // end of the pier: the railing, its padlocks, the beacon
     const ex = sx(L.rails);

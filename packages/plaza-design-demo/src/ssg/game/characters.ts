@@ -60,6 +60,9 @@
  */
 
 import type { View } from './scenes/kit';
+import { city } from './clock';
+import type { TimeWindow } from './data/types';
+import { hereClimate, weatherNow, type WeatherKind } from './weather';
 
 export type Body = 'avg' | 'tall' | 'short' | 'wide' | 'slim' | 'kid' | 'old';
 export type Hair = 'bald' | 'short' | 'long' | 'bun' | 'mohawk' | 'cap' | 'beanie' | 'hood' | 'brim' | 'helmet' | 'scarf';
@@ -103,6 +106,13 @@ export interface Character {
   speed?: number;
   name?: string;
   talk?: string[] | string[][];
+  /**
+   * Lines for a time or a weather (TIME.md "Lines by time and weather"), before `talk`: the first
+   * whose `when` is now and whose `weather` includes the weather here is said; else `talk` as usual.
+   */
+  lines?: { when?: TimeWindow; weather?: WeatherKind[]; pages: string[] }[];
+  /** Only here inside this window on the city clock: outside it they are not drawn and say nothing. */
+  when?: TimeWindow;
   key?: boolean;
   /** Pixel size: 3 = the player's scale; 2 for a back band; 4–5 for a near foreground. */
   ps?: number;
@@ -999,8 +1009,12 @@ function stealAt(R: Ready, t: number, sp: number) {
 
 const psOf = (p: Character) => p.ps ?? 3;
 
-/** One person, as they are at time v.t. */
+/** Is this person here now (their `when` on the city clock)? */
+export const isHere = (p: Character) => !p.when || city.within(p.when);
+
+/** One person, as they are at time v.t (nobody, outside their `when`). */
 export function drawCharacter(x: CanvasRenderingContext2D, v: View, p: Character) {
+  if (!isHere(p)) return;
   const R = ready(p), ps = psOf(p), f = frameOf(p, R, v.t);
   const sx = v.sx(f.x, p.parallax ?? 1);
   if (sx < -40 || sx > v.viewW + 40) return;
@@ -1175,6 +1189,12 @@ const SAID = new Map<Character, number>();
 export function talkTo(p: Character): { name: string; pages: string[] } {
   const T = p.talk ?? [];
   const name = p.name ?? 'STRANGER';
+  // a line for now, or for this weather, first
+  if (p.lines?.length) {
+    const wx = weatherNow(hereClimate()).kind;
+    const l = p.lines.find((q) => (!q.when || city.within(q.when)) && (!q.weather || q.weather.includes(wx)));
+    if (l) return { name, pages: l.pages };
+  }
   if (!T.length || typeof T[0] === 'string') return { name, pages: T as string[] };
   const n = SAID.get(p) ?? 0;
   SAID.set(p, n + 1);

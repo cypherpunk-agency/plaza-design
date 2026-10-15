@@ -1005,6 +1005,56 @@ ${FEEDBACK_STYLES}
     #sudo-transport .st-ticks { position: absolute; inset: 0; pointer-events: none; }
     #sudo-transport .st-ticks i { position: absolute; top: 9px; width: 1px; height: 14px; background: rgba(0, 255, 255, 0.8); }
 
+    /* Sudo's city clock (game/transport.ts ClockBar): the same bar in a scene: day, time, speed, weather override */
+    #sudo-clock {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: var(--game-bottom, 40px);
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 34px;
+      padding: 0 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255, 217, 165, 0.9);
+      background: rgba(0, 0, 0, 0.62);
+      border-top: 1px solid rgba(255, 136, 0, 0.35);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #sudo-clock[hidden], html:not(.game-mode) #sudo-clock, html.game-map #sudo-clock { display: none; }
+    #sudo-clock.st-folded { right: auto; background: transparent; border-top: 0; }
+    #sudo-clock.st-folded .st-body { display: none; }
+    #sudo-clock .st-body { display: flex; flex: 1; align-items: center; gap: 4px; min-width: 0; }
+    #sudo-clock button, #sudo-clock select {
+      min-width: 32px;
+      height: 30px;
+      padding: 0 6px;
+      font: inherit;
+      color: inherit;
+      background: rgba(20, 10, 24, 0.9);
+      border: 1px solid rgba(0, 229, 229, 0.45);
+      cursor: pointer;
+    }
+    #sudo-clock button:hover, #sudo-clock select:hover { border-color: rgb(0, 255, 255); color: rgb(0, 255, 255); }
+    #sudo-clock .st-fold { color: rgba(255, 136, 0, 0.95); border-color: rgba(255, 136, 0, 0.6); background: rgba(0, 0, 0, 0.62); }
+    #sudo-clock .sc-day { white-space: nowrap; }
+    #sudo-clock .sc-slider { flex: 1; min-width: 60px; accent-color: rgb(255, 136, 0); }
+    #sudo-clock .st-time { white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 5ch; }
+    #sudo-clock .st-speed { min-width: 40px; }
+    #sudo-clock .sc-now { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 22%; color: rgb(0, 255, 255); }
+    /* a phone: the walk and action buttons own the bottom; the clock sits under the HUD lines, folded to TC at first */
+    html.touch #sudo-clock { bottom: auto; top: calc(var(--game-top, 0px) + 68px); }
+    html.touch #sudo-clock .sc-now { display: none; }
+
+    /* The footer's timestamp shows the city clock in game mode (game.ts), the real UTC time otherwise */
+    #game-clock { display: none; }
+    html.game-mode .footer-timestamp #clock { display: none; }
+    html.game-mode .footer-timestamp #game-clock { display: inline; }
+
     /* Phones: basic support, landscape only (game/index.ts) */
     #touch {
       display: none;

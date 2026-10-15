@@ -230,7 +230,9 @@ export const market: SceneDef = {
   name: 'Street Market',
   width: L.width,
   spawn: L.spawn,
-  ambient: { sky: true, rain: true },
+  ambient: { sky: true, weather: true },
+  // the stool by the stalls: sit, watch the market, let time pass (TIME.md, waiting)
+  rests: [{ id: 'stool', x: 250, kind: 'stool', promptH: 50 }],
   intro: ['The night market. Cash, noise and nobody looking up.'],
   exits: [
     { id: 'mall', x: L.service, to: 'mall', at: 'market', label: '[E] SERVICE DOOR · MALL', promptH: 82 },

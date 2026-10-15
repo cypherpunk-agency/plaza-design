@@ -14,6 +14,7 @@
 import type {
   Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
 } from './types';
+import { windowProblem } from '../clock';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
 export interface CodeContract {
@@ -42,6 +43,9 @@ const TOYS = ['rings', 'cipher', 'cryptex', 'morse'] as const;
 const WATCH_NOUN = 'watchdog';
 const WATCH_EVENTS = ['arrives', 'leaves'];
 const TONES = ['ok', 'err', 'dim'];
+/** The city's condition keys every scene has, and the weather's states (engine/model.ts CITY_KEYS, weather.ts WEATHER_KINDS). */
+const CITY_KEYS = ['weather', 'hour', 'day'];
+const WEATHER = ['clear', 'cloudy', 'rain', 'storm', 'fog', 'smog', 'heat'];
 const DIRS = ['up', 'down', 'left', 'right'];
 const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect', 'give', 'trace', 'unseal'];
 const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
@@ -69,9 +73,9 @@ const KEYS: Record<string, string[]> = {
   spot: ['x', 'w', 'h', 'y'],
   pt: ['x', 'y'],
   item: ['id', 'kind', 'label', 'text', 'rule', 'from', 'card'],
-  case: ['if', 'do', 'say'],
-  action: ['if', 'to', 'with', 'count', ...ACTION_KEYS],
-  node: ['if', 'text', 'do', 'choices'],
+  case: ['if', 'when', 'do', 'say'],
+  action: ['if', 'when', 'to', 'with', 'count', ...ACTION_KEYS],
+  node: ['if', 'when', 'text', 'do', 'choices'],
   dialogue: ['speaker', 'start', 'sayCmd', 'nodes', 'free'],
   goal: ['id', 'text'],
   cable: ['id', 'from', 'to', 'verb', 'fixed'],
@@ -196,8 +200,16 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
   const cond = (c: Cond | undefined, known: Set<string>, where: string) => {
     if (c === undefined) return;
     if (typeof c !== 'string' || !c) { err(where, 'a condition is a string: key, !key or key=value'); return; }
-    const key = c.replace(/^!/, '').split('=')[0];
+    const [key, want] = c.replace(/^!/, '').split('=');
     if (!known.has(key)) err(where, `condition "${c}": unknown key "${key}"`);
+    // the city's weather (TIME.md): only its states (unless the scene has its own `weather` state)
+    else if (key === 'weather' && !env.writable.has(key) && want !== undefined && !WEATHER.includes(want)) err(where, `condition "${c}": the weather is one of ${WEATHER.join(', ')}`);
+  };
+  /** A time window on the city clock (TIME.md): `when`. */
+  const when = (w: unknown, where: string) => {
+    if (w === undefined) return;
+    const p = windowProblem(w);
+    if (p) err(where + ' › when', p);
   };
   const sectorOf = (ref: string, dev: DeviceData | null) => {
     const [d, s] = ref.includes('/') ? ref.split('/') : [dev?.id ?? '', ref];
@@ -210,6 +222,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     const which = ACTION_KEYS.filter((k) => k in a);
     if (which.length !== 1) { err(where, `needs exactly one of ${ACTION_KEYS.join(' / ')}`); return; }
     cond(a.if, known, where);
+    when(a.when, where);
     if ('set' in a) { if (!writable.has(a.set)) err(where, `cannot set "${a.set}": not a state key`); if (!('to' in a)) err(where, 'set needs "to"'); }
     else if ('to' in a) err(where, '"to" only goes with "set"');
     if ('with' in a && !('open' in a)) err(where, '"with" only goes with "open"');
@@ -252,10 +265,11 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         const wc = `${w} › on.${v}` + (Array.isArray(cs) ? `[${i}]` : '');
         keys(c, 'case', wc);
         cond(c.if, known, wc);
+        when(c.when, wc);
         (c.do ?? []).forEach((a, j) => action(a, `${wc} › do[${j}]`, known, writable, d, n));
         if (c.say !== undefined) line(c.say, `${wc} › say`);
       });
-      if (Array.isArray(cs) && cs.slice(0, -1).some((c) => c.if === undefined)) err(`${w} › on.${v}`, 'only the last case may have no "if" (the ones after it never run)');
+      if (Array.isArray(cs) && cs.slice(0, -1).some((c) => c.if === undefined && c.when === undefined)) err(`${w} › on.${v}`, 'only the last case may have no "if" or "when" (the ones after it never run)');
     }
   };
 
@@ -484,7 +498,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     }
   };
 
-  return { err, keys, dupes, line, cond, action, device, cables, nodeIds, watchdog };
+  return { err, keys, dupes, line, cond, when, action, device, cables, nodeIds, watchdog };
 }
 
 /**
@@ -497,7 +511,8 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
   const file = z.id + '.json';
   const texts = { ...engine.texts, ...z.texts };
   const env: Env = {
-    known: new Set([...Object.keys(z.state), ...code.derived, 'signal']),
+    // the city's keys (weather, hour, day: engine/model.ts CITY_KEYS) are in every scene
+    known: new Set([...Object.keys(z.state), ...code.derived, 'signal', ...CITY_KEYS]),
     writable: new Set(Object.keys(z.state)),
     code, goals: new Set(z.goals.map((g) => g.id)), dialogues: Object.keys(z.dialogue), texts,
     routes: new Set([...(Array.isArray(z.watchdog?.route) ? z.watchdog!.route : []), ...(Array.isArray(net?.watchdog?.route) ? net!.watchdog!.route : [])]),
@@ -628,10 +643,11 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
         const wn = `${w} › nodes.${nid}` + (Array.isArray(variants) ? `[${i}]` : '');
         keys(n, 'node', wn);
         c.cond(n.if, env.known, wn);
+        c.when(n.when, wn);
         (n.do ?? []).forEach((a, j) => c.action(a, `${wn} › do[${j}]`, env.known, env.writable, null, null));
         (n.choices ?? []).forEach(([, next], j) => { if (!exists(next)) err(`${wn} › choices[${j}]`, `leads to "${next}", which is not a node`); });
       });
-      if (Array.isArray(variants) && variants.slice(0, -1).some((n) => n.if === undefined)) err(`${w} › nodes.${nid}`, 'only the last variant may have no "if"');
+      if (Array.isArray(variants) && variants.slice(0, -1).some((n) => n.if === undefined && n.when === undefined)) err(`${w} › nodes.${nid}`, 'only the last variant may have no "if" or "when"');
     }
     if (dl.free) {
       try { new RegExp(dl.free.match, 'i'); } catch { err(`${w} › free.match`, 'not a valid regular expression'); }

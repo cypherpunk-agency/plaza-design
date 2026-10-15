@@ -12,7 +12,13 @@
  * What plays it (game.ts) gives a `Timeline`: its time, a way to seek, and its beats. Seeking only
  * sets the time: the picture must draw any time the same (title/glide.ts, cutscenes/ draw from t).
  * Playing hands over at the end as before; a seek to the end holds on the last frame until play.
+ *
+ * In a scene (nothing timed playing) the bar's second mode is the city clock (`ClockBar`, below):
+ * day, time of day, speed and a weather override.
  */
+
+import { city, CLOCK_SPEEDS, hm } from './clock';
+import { anyOverride, CLIMATE_IDS, CLIMATES, isWeather, overrideOf, setOverride, WEATHER_KINDS, weatherNow, type Climate } from './weather';
 
 export interface Beat { at: number; name: string }
 
@@ -175,4 +181,104 @@ export class Transport {
   private restart() { this.tl?.seek(0); }
 
   private setSpeed(i: number) { this.speed = Math.max(0, Math.min(SPEEDS.length - 1, i)); }
+}
+
+// ---------- the city clock (sudo, in a scene) ----------
+
+const CLOCK_FOLD_KEY = 'access-denied-sudo-clock';
+
+/**
+ * Sudo's second mode of the time control: in a scene (no timed picture playing), the bar is the
+ * city clock's (clock.ts, weather.ts; TIME.md "Sudo"): the day (‹ ›), the time of day (a slider),
+ * the speed (■ stop, 1×, 10×, 60×), and the weather (where: here, the city or a climate; what:
+ * AUTO, the forecast, or a state). `TC` folds it away to itself (folded at first; remembered in
+ * this browser, apart from the cutscene bar). While a story beat pins the clock (the opening) the
+ * time reads PINNED: setting it moves the pin, and the story puts it back.
+ */
+export class ClockBar {
+  private root: HTMLDivElement;
+  private els: { day: HTMLElement; time: HTMLElement; slider: HTMLInputElement; speed: HTMLButtonElement; where: HTMLSelectElement; kind: HTMLSelectElement; now: HTMLElement };
+  private shown = { day: '', time: '', slider: -1, speed: '', now: '', kind: '' };
+  private sliding = false;
+
+  constructor(host: HTMLElement, private here: () => Climate | null, private changed: () => void) {
+    const root = (this.root = document.createElement('div'));
+    root.id = 'sudo-clock';
+    root.hidden = true;
+    root.setAttribute('role', 'toolbar');
+    root.setAttribute('aria-label', 'Sudo city clock and weather');
+    const opt = (v: string, t: string) => '<option value="' + v + '">' + t + '</option>';
+    root.innerHTML =
+      '<button type="button" class="st-fold" title="Hide or show the city clock" aria-label="Hide or show the city clock">TC</button>' +
+      '<div class="st-body">' +
+      '<button type="button" class="st-b" data-do="day-" title="A day back" aria-label="A day back">&lsaquo;</button>' +
+      '<span class="sc-day"></span>' +
+      '<button type="button" class="st-b" data-do="day+" title="A day on" aria-label="A day on">&rsaquo;</button>' +
+      '<input class="sc-slider" type="range" min="0" max="1439" step="1" aria-label="Time of day">' +
+      '<span class="st-time sc-time"></span>' +
+      '<button type="button" class="st-b st-speed" data-do="speed" title="Clock speed: stop, 1×, 10×, 60×" aria-label="Clock speed"></button>' +
+      '<select class="sc-where" aria-label="Weather override: where" title="Weather override: where">' + opt('here', 'HERE') + opt('city', 'CITY') +
+      CLIMATE_IDS.map((c) => opt(c, CLIMATES[c].name)).join('') + '</select>' +
+      '<select class="sc-kind" aria-label="Weather override: what" title="Weather override: what">' + opt('', 'AUTO') + WEATHER_KINDS.map((k) => opt(k, k.toUpperCase())).join('') + '</select>' +
+      '<span class="st-beat sc-now"></span>' +
+      '</div>';
+    const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    this.els = { day: q('.sc-day'), time: q('.sc-time'), slider: q('.sc-slider'), speed: q('.st-speed'), where: q('.sc-where'), kind: q('.sc-kind'), now: q('.sc-now') };
+    // buttons never take focus (the game's keys stay the game's); the slider and the menus give it back after a change
+    root.addEventListener('mousedown', (e) => { if (!(e.target as HTMLElement).closest('select, input')) e.preventDefault(); });
+    const blur = () => (document.activeElement as HTMLElement | null)?.blur?.();
+    root.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-do]');
+      if (!b) return;
+      const d = b.dataset.do;
+      if (d === 'day-') city.setTime(city.day - 1, city.min);
+      else if (d === 'day+') city.setTime(city.day + 1, city.min);
+      else if (d === 'speed') city.speed = CLOCK_SPEEDS[(CLOCK_SPEEDS.indexOf(city.speed) + 1) % CLOCK_SPEEDS.length];
+      this.changed();
+      this.sync();
+    });
+    const s = this.els.slider;
+    s.addEventListener('input', () => { this.sliding = true; city.setTime(city.day, Number(s.value)); this.changed(); this.sync(); });
+    s.addEventListener('change', () => { this.sliding = false; blur(); });
+    this.els.where.addEventListener('change', () => { this.syncKind(); blur(); });
+    this.els.kind.addEventListener('change', () => {
+      const k = this.els.kind.value;
+      setOverride(this.where(), k && isWeather(k) ? k : null);
+      this.changed(); this.sync(); blur();
+    });
+    q('.st-fold').addEventListener('click', () => {
+      const folded = root.classList.toggle('st-folded');
+      try { localStorage.setItem(CLOCK_FOLD_KEY, folded ? '1' : '0'); } catch { /* no storage */ }
+    });
+    try { if (localStorage.getItem(CLOCK_FOLD_KEY) !== '0') root.classList.add('st-folded'); } catch { root.classList.add('st-folded'); }
+    host.appendChild(root);
+  }
+
+  /** In a scene with nothing timed playing: the bar shows; otherwise it hides. */
+  show(on: boolean) { if (this.root.hidden === on) this.root.hidden = !on; if (on) this.sync(); }
+
+  /** Where the override goes: the scene's climate (HERE), the city, or a named climate. */
+  private where(): Climate | 'city' {
+    const v = this.els.where.value;
+    return v === 'here' ? this.here() ?? 'downtown' : (v as Climate | 'city');
+  }
+
+  private syncKind() { this.els.kind.value = overrideOf(this.where()) ?? ''; this.shown.kind = this.els.kind.value; }
+
+  /** Bring the bar up to date (every frame while shown; writes the DOM only on change). */
+  sync() {
+    if (this.root.hidden) return;
+    const s = this.shown, e = this.els;
+    const day = 'DAY ' + city.day, time = hm(city.min) + (city.pinned !== null ? ' PINNED' : '');
+    const speed = city.speed ? city.speed + '×' : '■';
+    const here = this.here(), w = weatherNow(here);
+    const now = (here ? CLIMATES[here].name : '-') + ' · ' + w.kind.toUpperCase() + (anyOverride() ? ' · SET' : '');
+    if (day !== s.day) e.day.textContent = s.day = day;
+    if (time !== s.time) e.time.textContent = s.time = time;
+    if (speed !== s.speed) { e.speed.textContent = s.speed = speed; e.speed.setAttribute('aria-label', 'Clock speed: ' + (city.speed ? city.speed + ' times' : 'stopped')); }
+    if (now !== s.now) e.now.textContent = s.now = now;
+    const m = Math.floor(city.min);
+    if (!this.sliding && m !== s.slider) { e.slider.value = String((s.slider = m)); e.slider.setAttribute('aria-valuetext', hm(m)); }
+    if ((overrideOf(this.where()) ?? '') !== s.kind) this.syncKind();
+  }
 }

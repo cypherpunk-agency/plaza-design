@@ -138,6 +138,8 @@
           "on": {
             "read": [
               { "if": "flag=danger", "say": ["cat eye", "SWIMMERS: 0. THREAT: UNCONFIRMED. WATER CLOSED UNTIL FURTHER NOTICE."] },
+              { "if": "weather=storm", "say": ["cat eye", "SWIMMERS: 0. WEATHER: STORM. BATHING SUSPENDED BY FORECAST. THE FLAG IS ADVISORY."] },
+              { "when": { "from": "22:00", "to": "06:00" }, "say": ["cat eye", "SWIMMERS: 2 (VERIFIED: 0). BATHING HOURS 06:00 TO 22:00. NIGHT SWIMMERS ARE COUNTED AS DEBRIS."] },
               { "say": ["cat eye", "SWIMMERS: 7 (VERIFIED: 5). SHARKS: 0. CONFIDENCE: 61%."] }
             ]
           }

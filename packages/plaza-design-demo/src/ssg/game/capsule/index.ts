@@ -28,6 +28,8 @@ export const capsule: SceneDef = {
       : 'Tap a thing to use it. H: hack vision. B: the board, to wire things up.',
   ],
   pixel: 'home',
+  // your bed (the opening's sleep is its own: opening.ts OPENING_TARGETS); x as the bed in scene.ts (462–512)
+  rests: [{ id: 'bed', x: 496, kind: 'bed', promptH: 46 }],
   perch: capsulePerch,
   data: CAPSULE,
   rules: CAPSULE_RULES,

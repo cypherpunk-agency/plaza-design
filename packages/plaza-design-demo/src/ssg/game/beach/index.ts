@@ -38,6 +38,8 @@ export const beach: SceneDef = {
     "SALT, the bar on stilts, is open. And at the end of the pier there's a boat. Moth's status said \"gone fishing\".",
   ],
   keepFace: true,
+  // a real beach, under the harbor's sky: its weather (heat by day; weather.ts climate 'beach')
+  ambient: { weather: true },
   pixel: 'along',
   data: BEACH,
   rules: BEACH_RULES,
