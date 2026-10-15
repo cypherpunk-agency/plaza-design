@@ -1,7 +1,9 @@
 /**
- * Set piece (ART-GUIDE §12): a palm, as a silhouette against the sky. A curved, tapering trunk
- * with rings, a crown of drooping fronds that sway a little, a rim of light on the side the sun
- * is on. Seeded, so a row of palms is never a row of twins. Register: sets/index.ts (`palm`).
+ * Set piece (ART-GUIDE §12): a palm, as a silhouette against the sky. A ringed trunk that tapers as
+ * it curves up to its lean, a crown of nine fronds that droop outward with leaflets hanging off
+ * each spine, a few coconuts, all swaying a little; a rim of light down the side the sun is on.
+ * Seeded, so a row of palms is never a row of twins: vary `h` and `lean` too. Register:
+ * sets/index.ts (`palm`).
  *
  * Drawn in its own frame: origin at the foot of the trunk, heights up (y = -h).
  */
@@ -23,42 +25,54 @@ export interface PalmLook {
 const rnd = (n: number) => { const s = Math.sin(n * 91.7 + 13.1) * 43758.5453; return s - Math.floor(s); };
 
 export function drawPalm(x: CanvasRenderingContext2D, o: PalmLook) {
-  const fill = o.fill ?? '#0b0410', h = o.h, lean = o.lean, side = o.side ?? 1;
-  const sway = o.still ? 0 : Math.sin(o.t * 0.012 + o.seed) * 0.05;
-  const tx = lean, ty = -h, cx = lean * 0.15 - side * h * 0.06, cy = -h * 0.55;
-  const w0 = Math.max(3, h * 0.055), w1 = Math.max(2, h * 0.03);
-  // the trunk: a tapering band along a curve
-  x.fillStyle = fill;
-  x.beginPath();
-  x.moveTo(-w0, 0); x.quadraticCurveTo(cx - w0 * 0.8, cy, tx - w1, ty);
-  x.lineTo(tx + w1, ty); x.quadraticCurveTo(cx + w0 * 0.8, cy, w0, 0); x.closePath(); x.fill();
-  // rings on the trunk, and the light along one side of it
-  const at = (f: number) => [(1 - f) * (1 - f) * 0 + 2 * (1 - f) * f * cx + f * f * tx, 2 * (1 - f) * f * cy + f * f * ty];
+  const fill = o.fill ?? '#0b0410', h = o.h, side = o.side ?? 1, t = o.still ? 0 : o.t;
+  // the whole palm leans a touch further and back in the wind
+  const sway = Math.sin(t * 0.02 + o.seed) * h * 0.012, lean = o.lean + sway;
+  const k = h / 110; // the draft's palm was 110 tall: widths and steps scale from it
+  const w0 = Math.max(3, 4.6 * k), w1 = Math.max(2, 2.2 * k);
+  const at = (f: number): [number, number] => [lean * f * f + Math.sin(f * 3) * o.lean * 0.08, -h * f];
+  // the trunk: short bands up a curve, tapering, with a ring every few
+  const N = Math.max(12, Math.round(h / (1.6 * Math.max(1, k * 0.8))));
+  const step = h / N + 0.6;
+  for (let i = 0; i <= N; i++) {
+    const f = i / N, [px, py] = at(f), w = w0 + (w1 - w0) * f;
+    x.fillStyle = fill; x.fillRect(Math.round(px - w / 2), Math.round(py - step), Math.max(1, Math.round(w)), Math.ceil(step) + 1);
+  }
+  for (let i = 1; i < N; i += 3) {
+    const f = i / N, [px, py] = at(f), w = w0 + (w1 - w0) * f;
+    // the ring: a lighter notch, and the rim on the sun's side
+    x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(Math.round(px - w / 2), Math.round(py), Math.max(1, Math.round(w)), 1);
+    if (o.rim) { x.fillStyle = 'rgba(' + o.rim + ',.55)'; x.fillRect(Math.round(px + (side > 0 ? w / 2 - 1 : -w / 2)), Math.round(py - 1), 1, 2); }
+  }
   if (o.rim) {
-    x.strokeStyle = 'rgba(' + o.rim + ',.35)'; x.lineWidth = 1; x.beginPath();
-    x.moveTo(side * w0, 0); x.quadraticCurveTo(cx + side * w0 * 0.8, cy, tx + side * w1, ty); x.stroke();
+    x.fillStyle = 'rgba(' + o.rim + ',.22)';
+    for (let i = 0; i < N; i++) { const f = i / N, [px, py] = at(f), w = w0 + (w1 - w0) * f; if (i % 3 !== 1) x.fillRect(Math.round(px + (side > 0 ? w / 2 - 1 : -w / 2)), Math.round(py - step), 1, Math.ceil(step)); }
   }
-  x.fillStyle = 'rgba(0,0,0,.35)';
-  for (let f = 0.08; f < 0.95; f += 0.07) { const [px, py] = at(f), ww = w0 + (w1 - w0) * f; x.fillRect(Math.round(px - ww), Math.round(py), Math.round(ww * 2), 1); }
-  // the crown: fronds drooping out from the top, each a curved blade
-  const n = 7, len = h * 0.42;
-  for (let i = 0; i < n; i++) {
-    const r = rnd(o.seed * 10 + i), base = -Math.PI / 2 + (i - (n - 1) / 2) * 0.5 + (r - 0.5) * 0.25;
-    const a = base + sway * (1 + i * 0.2), l = len * (0.75 + r * 0.4), droop = 0.9 + r * 0.5;
-    const ex = tx + Math.cos(a) * l, ey = ty + Math.sin(a) * l * 0.55 + l * 0.35 * droop * Math.abs(Math.cos(a));
-    const mx = tx + Math.cos(a) * l * 0.55, my = ty + Math.sin(a) * l * 0.6 - l * 0.12;
-    const thick = Math.max(2, l * 0.11);
-    x.fillStyle = fill;
-    x.beginPath(); x.moveTo(tx, ty); x.quadraticCurveTo(mx, my - thick, ex, ey); x.quadraticCurveTo(mx, my + thick * 0.4, tx, ty + 2); x.fill();
-    // leaflets: short strokes hanging off the blade
-    x.strokeStyle = fill; x.lineWidth = 1; x.beginPath();
-    for (let f = 0.25; f < 0.95; f += 0.12) {
-      const qx = (1 - f) * (1 - f) * tx + 2 * (1 - f) * f * mx + f * f * ex, qy = (1 - f) * (1 - f) * ty + 2 * (1 - f) * f * my + f * f * ey;
-      x.moveTo(qx, qy); x.lineTo(qx + Math.cos(a) * thick * 0.6, qy + thick * 1.4);
+  // the crown: nine fronds, each a spine that droops outward and down, leaflets hanging off it
+  const [tx, ty] = at(1), sl = 1.5 * k, lw = Math.max(1, 1.6 * k);
+  const fronds = 9;
+  for (let j = 0; j < fronds; j++) {
+    const a0 = -Math.PI + (j / (fronds - 1)) * Math.PI + (rnd(o.seed + j) - 0.5) * 0.3;
+    const L = h * (0.36 + rnd(o.seed * 3 + j) * 0.16), steps = Math.max(6, Math.round(L / sl));
+    let px = tx, py = ty, ang = a0 + Math.sin(t * 0.03 + j + o.seed) * 0.06;
+    const right = Math.cos(ang) > 0;
+    for (let s = 0; s < steps; s++) {
+      const f = s / steps;
+      ang += (Math.cos(ang) > 0 ? 0.035 : -0.035) * (0.6 + f);
+      const nx = px + Math.cos(ang) * sl, ny = py + Math.sin(ang) * sl + f * 0.9 * k;
+      x.strokeStyle = fill; x.lineWidth = Math.max(0.8, lw * (1 - f * 0.6)); x.beginPath(); x.moveTo(px, py); x.lineTo(nx, ny); x.stroke();
+      if (s % 2 === 0 && f > 0.08) {
+        // a leaflet: hangs down from the spine, shorter toward the tip, fluttering a little
+        const ll = ((1 - f) * 5 + 1.5) * k, la = ang + (Math.cos(ang) > 0 ? 1.2 : -1.2) + (o.still ? 0 : Math.sin(t * 0.08 + s + j) * 0.12);
+        x.lineWidth = Math.max(0.7, 0.9 * k * 0.8); x.beginPath(); x.moveTo(nx, ny); x.lineTo(nx + Math.cos(la) * ll, ny + Math.abs(Math.sin(la)) * ll + k); x.stroke();
+      }
+      // the light on the top of the fronds facing the sun
+      if (o.rim && (right ? 1 : -1) * side > 0 && s % 3 === 1 && f < 0.7) { x.fillStyle = 'rgba(' + o.rim + ',.3)'; x.fillRect(Math.round(nx), Math.round(ny - 1), 1, 1); }
+      px = nx; py = ny;
     }
-    x.stroke();
-    if (o.rim && Math.cos(a) * side > 0.2) { x.strokeStyle = 'rgba(' + o.rim + ',.3)'; x.beginPath(); x.moveTo(tx, ty); x.quadraticCurveTo(mx, my - thick, ex, ey); x.stroke(); }
   }
-  // coconuts
-  x.fillStyle = fill; for (const d of [-3, 2, 5]) { x.beginPath(); x.arc(tx + d, ty + 4, Math.max(1.5, h * 0.018), 0, 7); x.fill(); }
+  // the crown's heart and the coconuts under it
+  x.fillStyle = fill; x.beginPath(); x.arc(tx, ty, 2.6 * k, 0, 7); x.fill();
+  x.fillStyle = '#2a1408';
+  for (const [dx, dy] of [[-2, 1], [1, 2], [-0.5, 3]]) { x.beginPath(); x.arc(tx + dx * k, ty + dy * k + 1, Math.max(1, 1.2 * k), 0, 7); x.fill(); }
 }

@@ -26,7 +26,8 @@ import type { SceneModel } from '../engine/model';
 import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { box, C, drawTowers, GREEN, O, onScreen, PAPER, RED, rng, tell, text, towers, type View } from '../scenes/kit';
 import { adScreen, menuBoard, registryBoard, YELLOW } from '../scenes/screens';
-import { SALT, saltLights, saltShell, saltUnder } from '../sets/beach-bar';
+import { SALT, saltBack, saltCounter, saltLights, saltLime, saltShell, saltUnder } from '../sets/beach-bar';
+import { drawLounger } from '../sets/beach-party';
 import { placed } from '../sets/view';
 
 /** The beach: the promenade, the sand, then the pier out to Moth's boat. */
@@ -328,14 +329,8 @@ function sunbeds(x: CanvasRenderingContext2D, V: View, m: SceneModel, p: number)
   L.sunbeds.forEach((bx, i) => {
     const c = V.sx(bx);
     if (!onScreen(V, c - 30, 60)) return;
-    // the umbrella first (behind)
-    x.fillStyle = '#4a3a2a'; x.fillRect(c - 12, y(52), 1, 52);
-    x.fillStyle = cols[i]; x.beginPath(); x.moveTo(c - 32, y(46)); x.quadraticCurveTo(c - 12, y(60), c + 8, y(46)); x.closePath(); x.fill();
-    x.fillStyle = 'rgba(255,255,255,.2)'; x.fillRect(c - 30, y(46), 38, 1);
-    // the bed: frame and slats
-    x.fillStyle = '#5a4030'; x.fillRect(c - 14, y(8), 2, 8); x.fillRect(c + 12, y(8), 2, 8);
-    box(x, c - 16, y(10), 32, 3, mix([200, 190, 170], [140, 120, 110], p), 'rgba(' + O + ',.5)');
-    x.fillStyle = mix([200, 190, 170], [140, 120, 110], p); x.fillRect(c + 10, y(18), 4, 8);
+    // the parasol and the bed (sets/beach-party.ts)
+    placed(x, c, y(0), 1, () => drawLounger(x, { col: cols[i], p }));
     // a numbered tag on each: the kiosk rents them by number
     box(x, c - 4, y(6), 8, 6, '#1a120b', 'rgba(' + PAPER + ',.5)');
     text(x, String(4 + i), c, y(3), 'rgba(' + PAPER + ',.9)', 7, '600');
@@ -355,19 +350,8 @@ function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string
   const { floor } = SALT;
   // the warm light and the stilts, then the shack itself (sets/beach-bar.ts)
   placed(x, l, y(0), 1, () => saltUnder(x, w));
-  // the back wall under the floor: shelves of bottles
-  box(x, l + 8, y(floor - 2), w - 16, floor - 30, '#24140c', 'rgba(' + O + ',.35)');
-  const bc = ['#5aa83a', '#d8b040', '#c83a2a', '#e8e0d0', '#3a6ad8', '#8a3a8a', '#d86a2a'];
-  for (let row = 0; row < 2; row++) {
-    const sy = y(36 + row * 13);
-    x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(l + 12, sy, w - 24, 1);
-    for (let k = 0; k < 18; k++) {
-      const bx = l + 16 + k * ((w - 30) / 18), n = hash(k + row * 40);
-      if (n < 0.15) continue;
-      x.fillStyle = bc[Math.floor(n * bc.length)]; x.fillRect(Math.round(bx), sy - 7, 3, 7); x.fillRect(Math.round(bx) + 1, sy - 9, 1, 2);
-      if (n > 0.7) { x.fillStyle = 'rgba(255,240,200,.5)'; x.fillRect(Math.round(bx), sy - 6, 1, 3); }
-    }
-  }
+  // the back wall under the floor: shelves of bottles (sets/beach-bar.ts)
+  placed(x, l, y(0), 1, () => saltBack(x, w));
   // Moth's photo, propped behind the gin (a small square of paper on the top shelf)
   const ph = V.sx(500);
   box(x, ph - 4, y(58), 8, 9, '#e8e0d0');
@@ -376,9 +360,7 @@ function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string
   lime(x, V);
   placed(x, l, y(0), 1, () => saltShell(x, w, p, V.t));
   // the counter, waist high, with a lit rim
-  box(x, l + 2, y(26), w - 4, 26, '#3a2414', 'rgba(255,170,80,.75)');
-  x.fillStyle = 'rgba(255,190,110,.9)'; x.fillRect(l + 2, y(26), w - 4, 2);
-  for (let bx = x0 + 10; bx < x1 - 4; bx += 14) { x.fillStyle = 'rgba(20,10,6,.35)'; x.fillRect(V.sx(bx), y(24), 1, 24); }
+  placed(x, l, y(0), 1, () => saltCounter(x, w));
   // the menu on the left stilt
   menuBoard(x, V, { x: L.order - 8, h: 36, w: 66, tall: 22, mount: 'hang', to: floor, items: [['HOUSE', '2T'], ['WATER', '2T']], phase: 70 });
   // stools in front
@@ -399,7 +381,7 @@ function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string
   // the mixer on the counter: bottles upside down over one pump
   const mx = V.sx(L.mixer), poured = !!m.get('freeDrink');
   box(x, mx - 11, y(52), 22, 26, '#2a2a30', 'rgba(255,190,120,.8)');
-  for (let k = 0; k < 4; k++) { x.fillStyle = bc[k + 1]; x.fillRect(mx - 9 + k * 5, y(52), 3, 8); }
+  for (let k = 0; k < 4; k++) { x.fillStyle = ['#d8b040', '#c83a2a', '#e8e0d0', '#3a6ad8'][k]; x.fillRect(mx - 9 + k * 5, y(52), 3, 8); }
   box(x, mx - 7, y(40), 14, 6, '#04100f', 'rgba(' + C + ',.7)');
   x.fillStyle = 'rgba(' + C + ',.9)'; x.fillRect(mx - 5, y(38), poured ? 10 : 4, 1);
   tell(x, V.t, mx + 8, y(30), 3);
@@ -411,23 +393,11 @@ function salt(x: CanvasRenderingContext2D, V: View, m: SceneModel, hover: string
   if (hover === 'mixer') glow(x, mx - 11, y(52), 22, 26);
 }
 
-/** LIME, the robot bartender: a slim chrome body on a rail behind the counter, a round face screen, shaking a shaker. */
+/** LIME, the robot bartender (sets/beach-bar.ts), on its rail behind the counter. */
 function lime(x: CanvasRenderingContext2D, V: View) {
-  const c = V.sx(L.lime) + Math.round(Math.sin(V.t * 0.01) * 6), y = V.y;
+  const c = V.sx(L.lime);
   if (!onScreen(V, c - 20, 40)) return;
-  x.fillStyle = '#5a5e66'; x.fillRect(c - 1, y(33), 3, 16);
-  box(x, c - 8, y(49), 16, 18, '#8e949e', 'rgba(220,230,240,.7)');
-  x.fillStyle = '#5aa83a'; x.fillRect(c - 8, y(37), 16, 2); // a lime-green band: its name
-  // the face: a round screen, two eyes that blink
-  x.fillStyle = '#1a1e24'; x.beginPath(); x.arc(c, y(57), 7, 0, 7); x.fill();
-  x.strokeStyle = 'rgba(220,230,240,.7)'; x.beginPath(); x.arc(c, y(57), 7, 0, 7); x.stroke();
-  const blink = V.t % 300 < 8;
-  x.fillStyle = 'rgba(160,240,140,.95)'; x.fillRect(c - 4, y(58), 2, blink ? 1 : 2); x.fillRect(c + 2, y(58), 2, blink ? 1 : 2);
-  x.fillRect(c - 2, y(54), 4, 1);
-  // the shaker arm
-  const sh = Math.round(Math.sin(V.t * 0.4) * 2), shaking = V.t % 400 < 120;
-  x.fillStyle = '#8e949e'; x.fillRect(c + 8, y(45), 6, 2);
-  box(x, c + 12, y(shaking ? 51 + sh : 43), 4, 8, '#d8d2c6');
+  placed(x, c, V.y(0), 1, () => saltLime(x, V.t));
 }
 
 function crab(x: CanvasRenderingContext2D, V: View) {
