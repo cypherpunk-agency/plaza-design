@@ -1,11 +1,11 @@
 /**
- * ACCESS DENIED, the engine: input, movement, camera and drawing for the
- * side-scrolling street. What people say, the fixer and the terminal live in
- * level.ts. Downtown's machines (downtown/) and the fixer's back yard (yard/)
- * and the player's flat (capsule/, where a new game starts)
- * are zones on the hacking system (schematics of nouns and verbs, the zone
- * engine in zone/): this file hosts them, draws the street around them and
- * hands them taps, E, H (hack vision) and B (the board).
+ * ACCESS DENIED, the game: input, movement, camera and drawing. Every place is
+ * a scene (scenes/: `SCENES`, one `SceneDef` each), and every scene is hosted
+ * the same way on the hacking engine (engine/: `SceneHost`), devices or not:
+ * this file walks you through it, draws the engine's sky, street and rain
+ * around it, and hands it taps, E, H (hack vision) and B (the board).
+ * Downtown's street walls, its people and the fixer are drawn here; what they
+ * say, and the terminal, live in level.ts.
  * Pixel the robot cat, who follows you once you leave the flat, is companion.ts.
  *
  * The canvas fills the landing page's window between its header and footer and
@@ -15,29 +15,26 @@
 import { sound } from './audio';
 import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprites';
 import { type LineKind, Terminal } from './terminal';
-import { PARCEL, YARD_SPAWN, YARD_W, YARD_ZONE } from './yard';
-import { CAPSULE_SPAWN, CAPSULE_W, CAPSULE_ZONE, capsulePerch, DOOR_X as CAPSULE_DOOR_X } from './capsule';
+import { PARCEL } from './yard';
 import { Companion, WARM } from './companion';
-import { MOTH_KEY, MOTH_SPAWN, MOTH_W, MOTH_ZONE } from './moth';
-import { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W, BEACH_ZONE } from './beach';
-import { downtownZone, MAP_KIOSK_X, reconcile, syncGoals, sceneShell } from './downtown';
-import { type EngineDef, SceneHost } from './engine';
-import { isSceneId, sceneById, SCENES, type Scene, type SceneId, type SceneReadable, type SceneUse, type SceneView } from './scenes';
+import { reconcile, syncGoals, sceneShell } from './downtown';
+import { NO_RULES, SceneHost } from './engine';
+import { isSceneId, SCENES, sceneTitle, type SceneDef, type SceneExit, type SceneId, type SceneView } from './scenes';
 import { CutscenePlay, cutsceneById, isCutsceneId, type CutsceneId } from './cutscenes';
-import { botReact, isBot, characterHeight, characterX, talkTo, type Character } from './characters';
+import { botReact, isBot, characterHeight, characterX, talkTo } from './characters';
 import {
   boardRide, nextStation, platformDoors, platformLeft, platformOpen, platformSync, rideLeft, rideNext, rideOpen, rideRun, rideStop, stepRide, STOP, TIMETABLE,
 } from './scenes/line';
 import {
-  DOORS, drawCityMap, HOP, PLACES, placeAt, placeBlocked, type Place, EDGES, drawFlight, drawMetroStairs, drawTaxiPad, DRIVER_BROKE, FARE, FLIGHT, isDoorId,
-  seenFlag, START_ZONE, STAND_IDS, standOf, STANDS, STATIONS, stationAt, type DoorId, type MapState, type Stand, type Station, type Zone,
+  DOORS, drawCityMap, HOP, PLACES, placeAt, placeBlocked, type Place, drawFlight, DRIVER_BROKE, FARE, FLIGHT,
+  seenFlag, START_SCENE, STAND_IDS, standOf, STANDS, STATIONS, stationAt, type MapState, type Stand, type Station,
 } from './city';
 import { KeyBar } from './keybar';
 import { levels, SUDO, unlockAll } from './sudo';
 import { Menu } from './menu';
 import {
-  commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount, PLATFORMS,
-  newSave, ownedModules, READABLES, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
+  commands, FRONTS, fixerTalk, LEVEL_W, loadSave, NO_ARGS, NPCS, npcTalk, nodeCount,
+  newSave, ownedModules, run, SPAWN_X, STALL, storeSave, suggest, who, type Ctx, type Save,
 } from './level';
 
 /** What petting a scene's cat, or shooing its pigeon, gets you. */
@@ -51,23 +48,12 @@ const PET_PIGEON = [
   ['The pigeon flaps, lands a metre away, and looks at you like you started it.'],
 ];
 
-/** A place's life (scenes and zones alike, scenes/kit.ts): its people, things to do and things to read. */
-type Life = { people?: Character[]; uses?: SceneUse[]; readables?: SceneReadable[] };
-/** The zones hosted on the hacking engine besides Downtown. */
-type Hosted = 'yard' | 'capsule' | 'moth' | 'beach';
-const isHosted = (z: string): z is Hosted => z === 'yard' || z === 'capsule' || z === 'moth' || z === 'beach';
-
-type Target = { kind: 'talk' | 'zone' | 'read' | 'door' | 'map' | 'scene' | 'pet'; id: string; x: number; h: number; label: string; promptH?: number };
-/** Downtown's doors, stairs and pad as targets (the market gate's door only once the gate is open). */
-const DOOR_TARGETS: { id: DoorId; label: string; promptH: number }[] = [
-  { id: 'market', label: '[E] NEON MARKET', promptH: 120 },
-  { id: 'shop', label: '[E] CORNER SHOP', promptH: 84 },
-  { id: 'yard', label: '[E] BACK YARD', promptH: 86 },
-  { id: 'capsule', label: '[E] HOME · CAPSULE 7B', promptH: 84 },
-  { id: 'metro', label: '[E] METRO', promptH: 106 },
-  { id: 'moth', label: '[E] FLAT 4C · MOTH', promptH: 102 },
-  { id: 'taxi', label: '[E] HAIL TAXI', promptH: 122 },
-];
+/**
+ * Something to press E on: a way out (`exit`), the scene's life (`life`: a readable, a use, someone
+ * to talk to, an animal, a robot), a device or the scene's own target on the engine (`device`),
+ * Pixel (`pixel`), and Downtown's street people and the fixer (`talk`, level.ts).
+ */
+type Target = { kind: 'exit' | 'life' | 'device' | 'pixel' | 'talk'; id: string; x: number; h: number; label: string; promptH?: number };
 /** A speech bubble; `then` runs once its last page is read (the fixer's question opens the deck). */
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number; then?: () => void }
 interface Ship { sprite: Sprite; ps: number; y: number; speed: number; offset: number; flip: boolean; depth: number }
@@ -75,6 +61,8 @@ interface Ship { sprite: Sprite; ps: number; y: number; speed: number; offset: n
 const O = '255,136,0', C = '0,255,255';
 /** The door to the fixer's back yard, in the alley past the noodle stall (clear of the till and the man in the hat). */
 const YARD_DOOR_X = DOORS.yard;
+/** A tap on the canvas is E on a target this close to it (world units), within this reach of the player. */
+const TAPPED = 18, TAP_REACH = 60;
 
 /** Small seeded random, so the city looks the same on every visit. */
 const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
@@ -86,7 +74,7 @@ export interface GameHost {
   inputHost: HTMLElement;
   onExit: () => void;
   setNodes: (n: number) => void;
-  setZone: (text: string) => void;
+  setScene: (text: string) => void;
 }
 
 export class Game {
@@ -113,21 +101,15 @@ export class Game {
   private windows = new Map<number, [number, number, number][]>();
   private drops: [number, number, number, number][] = [];
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
-  private zone: Zone = 'downtown';
+  /** The scene the player is in. */
+  private here: SceneId = 'downtown';
   /** Every key and what it does, along the top. */
   private keyBar: KeyBar;
-  private yard: SceneHost;
-  /** Capsule 7B, the player's flat. */
-  private capsule: SceneHost;
-  /** Moth's place, flat 4C (story Level 3): FRIENDNET, MOTH-PC, the song seal. */
-  private moth: SceneHost;
-  /** The beach and SALT, its bar: devices on the engine, people and things to do from the place kit. */
-  private beach: SceneHost;
+  /** Every scene on the engine, hosted the first time it is needed (`hostOf`), with its part of the save. */
+  private hosts = new Map<SceneId, SceneHost>();
   /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
   private pixel = new Companion();
   private started = false;
-  /** Downtown's machines, on the zone engine (downtown/). Its progress is mostly the save's own fields. */
-  private downtown: SceneHost;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
   /** The city map overlay, when open: just looking (TAB, the line map in the train), or picking a taxi stand. */
@@ -156,32 +138,14 @@ export class Game {
     });
     this.term.onClose = () => this.canvas.focus();
 
-    this.yard = this.hostZone(YARD_ZONE);
-    this.yard.onClose = () => this.canvas.focus();
-    this.capsule = this.hostZone(CAPSULE_ZONE);
-    this.capsule.onClose = () => this.canvas.focus();
-    this.moth = this.hostZone(MOTH_ZONE);
-    this.moth.onClose = () => this.canvas.focus();
-    this.beach = this.hostZone(BEACH_ZONE);
-    this.beach.onClose = () => this.canvas.focus();
-    // the fixer's parcel holds Moth's key chip and uplink.so: a save that took it before they were in it gets them now
-    if (this.yard.model.get('parcelAt') === 'taken') PARCEL.forEach((k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); });
-    this.downtown = this.hostZone(downtownZone({
-      save: () => this.save,
-      persist: () => this.persist(),
-      nodes: () => nodeCount(this.save),
-      granted: () => sound.granted(),
-      end: () => { this.showEnd = true; },
-    }), (text, kind) => this.zonePrint(text, kind));
-    this.downtown.onClose = () => this.canvas.focus();
-    // older saves kept Downtown in their own fields: the zone agrees with them (nothing is lost)
-    reconcile(this.downtown.model, this.save);
     this.keyBar = new KeyBar(host.windowEl, () => this.canvas.focus());
-    // each zone host has its own HACK/BOARD strip; only the current zone's shows
-    host.windowEl.querySelectorAll<HTMLElement>('#scene-btns').forEach((el) => this.keyBar.adopt(el));
+    // the fixer's parcel holds Moth's key chip and uplink.so: a save that took it before they were in it gets them now
+    if (this.hostOf('yard').model.get('parcelAt') === 'taken') PARCEL.forEach((k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); });
+    // Downtown keeps most of its progress in the save's own fields: its devices agree with them
+    reconcile(this.downtown.model, this.save);
     this.menu = new Menu(host.windowEl, {
       save: () => this.save,
-      zone: () => ({ id: this.zone, name: this.zoneName() }),
+      scene: () => ({ id: this.here, name: sceneTitle(this.def) }),
       newGame: () => this.newGame(),
       quit: () => host.onExit(),
       onClose: () => this.canvas.focus(),
@@ -204,36 +168,55 @@ export class Game {
     this.onResize = this.onResize.bind(this);
   }
 
-  /** A zone on the hacking system, with its part of the save (`save.scenes.<id>`) and the player's modules and keyring. */
-  private hostZone(def: EngineDef, print: (text: string, kind?: LineKind) => void = (text, kind) => this.term.print(text, kind)) {
-    const id = def.data.id;
+  /**
+   * A scene on the engine, with its part of the save (`save.scenes.<id>`) and the player's modules
+   * and keyring: hosted the first time it is needed, then kept. Its HACK/BOARD strip joins the key bar.
+   */
+  private hostOf(id: SceneId): SceneHost {
+    const had = this.hosts.get(id);
+    if (had) return had;
+    const def: SceneDef = SCENES[id];
+    const print = def.buzz ? (text: string, kind?: LineKind) => this.buzzPrint(text, kind) : (text: string, kind?: LineKind) => this.term.print(text, kind);
+    const rules = typeof def.rules === 'function' ? def.rules({
+      save: () => this.save,
+      persist: () => this.persist(),
+      nodes: () => nodeCount(this.save),
+      granted: () => sound.granted(),
+      end: () => { this.showEnd = true; },
+    }) : def.rules ?? NO_RULES;
     const zh = new SceneHost(this.host.windowEl, print, {
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
-      // zone steps that hand out modules and tokens (GAME-DATA.md, "Giving things")
+      // scene steps that hand out modules and tokens (GAME-DATA.md, "Giving things")
       grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); storeSave(this.save); this.syncHud(); },
       tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
       drop: () => storeSave(this.save),
       sudo: SUDO,
       load: () => this.save.scenes[id],
       store: (z) => { this.save.scenes[id] = z; storeSave(this.save); },
-    }, def);
-    // Pixel is the game's, not the zone's: lines about Pixel stand over Pixel, and popups keep clear of the cat
+    }, def, rules);
+    // Pixel is the game's, not the scene's: lines about Pixel stand over Pixel, and popups keep clear of the cat
     zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : null);
     zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
+    zh.onClose = () => this.canvas.focus();
+    this.hosts.set(id, zh);
+    // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
+    this.host.windowEl.querySelectorAll<HTMLElement>('#scene-btns').forEach((el) => this.keyBar.adopt(el));
     return zh;
   }
 
-  /** Downtown's lines in the deck: ACCESS DENIED and friends buzz, as the old terminal did. */
-  private zonePrint(text: string, kind?: LineKind) {
+  /** A scene's lines in the deck that buzz (Downtown's ACCESS DENIED and friends), as the old terminal did. */
+  private buzzPrint(text: string, kind?: LineKind) {
     this.term.print(text, kind);
     if (kind === 'err') sound.denied();
   }
 
-  /** The zone on the hacking system the player is in (Downtown, the yard, the flat), if any. */
-  private get zoneHost(): SceneHost | null { return this.zone === 'yard' ? this.yard : this.zone === 'capsule' ? this.capsule : this.zone === 'moth' ? this.moth : this.zone === 'beach' ? this.beach : this.zone === 'downtown' && !this.scene ? this.downtown : null; }
-  private get zoneHosts() { return [this.yard, this.capsule, this.moth, this.beach, this.downtown]; }
+  /** The scene the player is in: its definition, and its host on the engine. */
+  private get def(): SceneDef { return SCENES[this.here]; }
+  private get zh(): SceneHost { return this.hostOf(this.here); }
+  /** Downtown's host: its goals follow the save's own fields. */
+  private get downtown(): SceneHost { return this.hostOf('downtown'); }
 
   /** Write the save, refresh the HUD and Downtown's goals (they follow the save's fields). */
   private persist() {
@@ -244,7 +227,7 @@ export class Game {
 
   // ---------- lifecycle ----------
 
-  start(zone?: Hosted | SceneId | CutsceneId) {
+  start(scene?: SceneId | CutsceneId) {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -256,24 +239,23 @@ export class Game {
     this.last = 0;
     this.raf = requestAnimationFrame((n) => this.loop(n));
     this.canvas.focus();
-    if (zone && isCutsceneId(zone)) { this.playCutscene(zone); return; }
+    if (scene && isCutsceneId(scene)) { this.playCutscene(scene); return; }
     // a save that has never been Downtown starts at home: a new one with the intro first
     const first = !this.started;
     this.started = true;
-    if (!zone && first && !this.save.flags.arrived && !this.save.flags[seenFlag('downtown')]) {
-      if (!this.save.flags[seenFlag(START_ZONE)]) { this.playCutscene('intro'); return; }
-      zone = START_ZONE;
+    if (!scene && first && !this.save.flags.arrived && !this.save.flags[seenFlag('downtown')]) {
+      if (!this.save.flags[seenFlag(START_SCENE)]) { this.playCutscene('intro'); return; }
+      scene = START_SCENE;
     }
-    if (zone && isHosted(zone) && this.zone !== zone) this.goTo(zone, true);
-    else if (zone && isSceneId(zone) && this.zone !== zone) this.enterScene(zone, true);
-    this.showZones();
-    this.markSeen(this.zone);
+    if (scene && isSceneId(scene) && this.here !== scene) this.enter(scene, true);
+    this.showHost();
+    this.markSeen(this.here);
     this.greet();
   }
 
   /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
   private greet() {
-    if (this.zone !== 'downtown') return;
+    if (this.here !== 'downtown') return;
     const how = this.touch
       ? 'Every machine here does something: tap it. HACK, top right, shows how they all work.'
       : 'Every machine here does something: E or a tap. H shows how they all work, B is the board.';
@@ -288,10 +270,10 @@ export class Game {
     }
   }
 
-  /** The HACK and BOARD buttons belong to the zone you are in. */
-  private showZones() {
-    const here = this.zoneHost;
-    this.zoneHosts.forEach((h) => h.show(h === here));
+  /** The HACK and BOARD buttons belong to the scene you are in. */
+  private showHost() {
+    const here = this.zh;
+    this.hosts.forEach((h) => h.show(h === here));
   }
 
   stop() {
@@ -305,7 +287,7 @@ export class Game {
     window.removeEventListener('resize', this.onResize);
     this.keys.clear();
     this.mapView = null;
-    this.zoneHosts.forEach((h) => { h.closeAll(); h.persist(); });
+    this.hosts.forEach((h) => { h.closeAll(); h.persist(); });
     this.term.close();
     this.canvas.hidden = true;
     storeSave(this.save);
@@ -360,7 +342,7 @@ export class Game {
     this.clock += dt;
     this.update(dt);
     this.draw();
-    if (this.zoneHost) this.followZone();
+    this.followHost();
     this.raf = requestAnimationFrame((n) => this.loop(n));
   }
 
@@ -372,7 +354,7 @@ export class Game {
     if (this.term.focused) return;
     if (this.flight || this.hop) { e.preventDefault(); return; }
     if (this.mapView) { this.mapKey(e); return; }
-    const zh = this.zoneHost;
+    const zh = this.zh;
     if (zh && zh.overlayOpen) {
       if (e.key === 'Escape') { e.preventDefault(); zh.closeOverlay(); }
       else if (e.key === 'b' || e.key === 'B') zh.toggleBoard();
@@ -418,17 +400,16 @@ export class Game {
   private openDeck() {
     if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
     const at = this.termMachine();
-    if (at) this.term.print('[' + (this.zoneHost?.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
+    if (at) this.term.print('[' + (this.zh.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
     this.term.focus();
   }
 
-  /** The machine the deck talks to: the zone device whose schematic is open, else the one you stand at. */
+  /** The machine the deck talks to: the scene's device whose schematic is open, else the one you stand at. */
   private termMachine(): string | null {
-    const zh = this.zoneHost;
-    if (!zh || this.scene) return null;
+    const zh = this.zh;
     if (zh.viewing) return zh.viewing;
     const t = this.nearest();
-    return t?.kind === 'zone' && zh.model.devices.has(t.id) ? t.id : null;
+    return t?.kind === 'device' && zh.model.devices.has(t.id) ? t.id : null;
   }
 
   private jump() {
@@ -447,17 +428,12 @@ export class Game {
   private openMenu() {
     this.keys.clear();
     this.p.moving = false;
-    if (this.zone === 'yard') this.yard.persist();
+    this.zh.persist();
     storeSave(this.save);
     this.menu.show();
   }
 
-  /** The zone's name as the HUD shows it: DOWNTOWN, BACK YARD, a scene's name. */
-  private zoneName() {
-    return this.scene ? this.scene.name.toUpperCase() : this.zone === 'yard' ? 'BACK YARD' : this.zone === 'moth' ? "MOTH'S PLACE" : this.zone === 'beach' ? 'THE BEACH' : 'DOWNTOWN';
-  }
-
-  /** NEW GAME (confirmed in the menu): a fresh save, slots untouched, the intro, then the start zone. */
+  /** NEW GAME (confirmed in the menu): a fresh save, slots untouched, the intro, then the start scene. */
   private newGame() {
     this.term.close();
     this.term.clear();
@@ -465,99 +441,66 @@ export class Game {
     this.showEnd = false;
     this.toast = null;
     this.save = SUDO ? unlockAll(newSave()) : newSave();
-    // every zone's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
-    this.zoneHosts.forEach((h) => h.reset());
+    // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
+    this.hosts.forEach((h) => h.reset());
     reconcile(this.downtown.model, this.save);
     storeSave(this.save);
     this.syncHud();
-    this.playCutscene('intro', () => this.handTo(START_ZONE));
+    this.playCutscene('intro', () => this.handTo(START_SCENE));
   }
 
   private flash(text: string) { this.toast = { text, until: this.t + 110 }; }
   /** Phones have no terminal: its latest line shows in the game for a few seconds. */
   private termLine: { text: string; kind: LineKind; until: number } | null = null;
 
-  private get levelW() { return this.scene?.width ?? (this.zone === 'yard' ? YARD_W : this.zone === 'capsule' ? CAPSULE_W : this.zone === 'moth' ? MOTH_W : this.zone === 'beach' ? BEACH_W : LEVEL_W); }
-  /** The place's name, for the HUD and the canvas label. */
-  private get placeName() { return this.scene?.name ?? (this.zone === 'yard' ? 'the back yard' : this.zone === 'capsule' ? 'Capsule 7B' : this.zone === 'moth' ? "Moth's place" : this.zone === 'beach' ? 'the beach' : 'Downtown'); }
-  private get platforms() { return this.zone === 'downtown' ? PLATFORMS : []; }
+  private get levelW() { return this.def.width; }
+  /** The scene's name, for the HUD and the canvas label. */
+  private get placeName() { return this.def.name; }
+  private get platforms() { return this.def.platforms ?? []; }
 
   /**
-   * Go to Downtown, the fixer's back yard or your flat. In Downtown you land in
-   * front of door `at` (default: the yard's); in the flat at its door when you
-   * come from Downtown (`at` 'downtown'), else by the bed.
+   * Walk into a scene: at its exit `at` (the door you came through, seen from inside), else at its spawn.
+   * Pixel comes along where it follows you, or is at home; the first visit has the player say a few words.
    */
-  private goTo(zone: 'downtown' | Hosted, quiet = false, at?: string) {
-    this.zoneHost?.persist();
-    this.zoneHosts.forEach((h) => h.closeAll());
+  private enter(id: SceneId, quiet = false, at?: string) {
+    const s: SceneDef = SCENES[id];
+    this.zh.persist();
+    this.hosts.forEach((h) => h.closeAll());
     this.bubble = null;
-    this.zone = zone;
-    this.showZones();
-    this.markSeen(zone);
-    const x = zone === 'yard' ? YARD_SPAWN : zone === 'capsule' ? (at === 'downtown' ? CAPSULE_DOOR_X + 20 : CAPSULE_SPAWN) : zone === 'moth' ? MOTH_SPAWN : zone === 'beach' ? (at === 'harbor' ? BEACH_EDGE_X : BEACH_SPAWN) : at && isDoorId(at) ? DOORS[at] : YARD_DOOR_X;
-    Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: zone === 'capsule' ? (at === 'downtown' ? 1 : -1) : zone === 'moth' ? 1 : this.p.face });
+    this.here = id;
+    this.hostOf(id);
+    this.showHost();
+    this.markSeen(id);
+    const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
+    Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
     this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
-    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + this.placeName);
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
     this.syncHud();
     if (!quiet) sound.open();
-    // Pixel: at home in the flat (coming in behind you, or already asleep there), at your heels elsewhere
-    if (zone === 'capsule') {
-      const home = capsulePerch(this.capsule.model);
-      if (at === 'downtown' && this.save.flags.pixel) this.pixel.place(x - 14, 0, 'walk', 1);
+    // Pixel: at home (coming in behind you through the door, or already asleep there), at your heels where it follows you
+    if (s.perch) {
+      const home = s.perch(this.zh.model);
+      if (at && this.save.flags.pixel) this.pixel.place(x - 14, 0, 'walk', 1);
       else this.pixel.place(home.x, home.h, home.rest);
-    } else if (this.save.flags.pixel) this.pixel.place(x - this.p.face * 20, 0, 'sit', this.p.face);
-    if (zone === 'capsule' && !this.save.flags.capsule) {
-      this.save.flags.capsule = true;
+    } else if (this.pixelHere) this.pixel.place(x - this.p.face * 20, 0, 'sit', this.p.face);
+    const flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
+    if (intro && !this.save.flags[flag]) {
+      this.save.flags[flag] = true;
       storeSave(this.save);
-      this.say('YOU', [
-        'Capsule 7B. Home: four walls, one window, rent "pending".',
-        "Door's locked, the router's dark, and Pixel is asleep on the bed, as is tradition.",
-        this.touch
-          ? 'Tap a thing to use it. HACK, top right: hack vision. BOARD: wire things up.'
-          : 'Tap a thing to use it. H: hack vision. B: the board, to wire things up.',
-      ], this.p.x, 46);
+      this.say('YOU', intro, this.p.x, 46);
     }
-    if (zone === 'moth' && !this.save.flags.moth) {
-      this.save.flags.moth = true;
-      storeSave(this.save);
-      this.say('YOU', [
-        "Moth's place. Lights on, record playing, nobody home.",
-        'Takeaway boxes, a thirsty plant, a fish. Moth left in a hurry. Or Moth always lives like this. Both, probably.',
-        "Moth's computer is the way in. It always is.",
-      ], this.p.x, 46);
-    }
-    if (zone === 'beach' && !this.save.flags.beach) {
-      this.save.flags.beach = true;
-      storeSave(this.save);
-      this.say('YOU', [
-        'A beach. A real one: sand, sea, a sunset nobody is charging for. Yet.',
-        "SALT, the bar on stilts, is open. And at the end of the pier there's a boat. Moth's status said \"gone fishing\".",
-      ], this.p.x, 46);
-    }
-    if (zone === 'yard' && !this.save.flags.yard) {
-      this.save.flags.yard = true;
-      storeSave(this.save);
-      this.say('YOU', [
-        "The fixer's back yard. My parcel is in here somewhere.",
-        'Tap a thing to use it.',
-        this.touch
-          ? 'HACK, top right: hack vision, every device and its guts at once. BOARD: wire them up, add timers and switches.'
-          : 'H: hack vision, every device and its guts at once. B: the board, to wire them up and add timers and switches.',
-      ], this.p.x, 46);
-    }
+    this.greet();
   }
 
-  /** In a zone (Downtown, the yard, the flat), tap or click a thing to open its schematic (in hack vision: its verbs); hovering lights it up. */
+  /** Tap or click a thing to open its popup (in hack vision: its verbs); hovering lights it up. A tap on the scene's life within reach is E on it. */
   private onCanvasPointer(e: PointerEvent, press: boolean) {
     if (this.cut) { if (press) { e.preventDefault(); this.cut.skip(); } return; }
     // a click or tap moves a speech bubble on, the same as E
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
     if (this.mapView) { this.mapPointer(e, press); return; }
-    // in a scene, a tap on someone or something within reach is E on it
-    if (press && this.scene) { this.tapLife(e); return; }
-    const zh = this.zoneHost;
-    if (!zh || zh.overlayOpen || this.mapView || this.flight) return;
+    const zh = this.zh;
+    if (zh.overlayOpen || this.flight) return;
     const r = this.canvas.getBoundingClientRect();
     const wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
     const h = this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
@@ -567,24 +510,25 @@ export class Game {
     if (press && zh.visionOn) { zh.poke(id); return; }
     // a thing's popup: its everyday actions, then jack in (computers) and hack it
     if (press && id) { e.preventDefault(); zh.pick(id); return; }
-    // a zone with a place's life (the beach): a tap on someone within reach is E on them
+    // a tap on someone or something within reach is E on them
     if (press) this.tapLife(e);
   }
 
-  /** A tap on someone or something of the place's life (a person, a use, a readable) within reach: E on it. */
+  /**
+   * A tap on someone or something of the scene's life (a person, a use, a readable) within reach: E on it.
+   * In a scene without devices, where a tap has nothing else to do, its ways out answer a tap too.
+   */
   private tapLife(e: PointerEvent) {
     const r = this.canvas.getBoundingClientRect(), wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
-    const t = this.targets().find((z) => z.kind === 'scene' && Math.abs(z.x - wx) < 18 && Math.abs(z.x - this.p.x) < 60);
-    if (t) { e.preventDefault(); this.useScene(t.id); }
+    const doors = !this.zh.model.devices.size;
+    const t = this.targets().find((z) => (z.kind === 'life' || (doors && z.kind === 'exit')) && Math.abs(z.x - wx) < TAPPED && Math.abs(z.x - this.p.x) < TAP_REACH);
+    if (t) { e.preventDefault(); this.useLife(t.id); }
   }
 
-  /** The life of the place you are in: a scene's, or a zone's own (EngineView `people`, `uses`, `readables`). */
-  private get life(): Life | undefined { return this.scene ?? this.zoneHost?.def.view; }
-
-  /** Hack vision hangs in the world: give the zone this frame's world → CSS px mapping (as `sx` and `y` draw it). */
-  private followZone() {
+  /** Hack vision hangs in the world: give the scene this frame's world → CSS px mapping (as `sx` and `y` draw it). */
+  private followHost() {
     const s = (this.k * this.canvas.clientWidth) / this.canvas.width;
-    const zh = this.zoneHost!;
+    const zh = this.zh;
     // captions and the popup keep under the key bar and the HUD's lines (drawHud: ~46 world units under the bar)
     zh.uiTop = this.keyBar.root.offsetHeight + 8 + 46 * s;
     zh.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
@@ -593,11 +537,12 @@ export class Game {
   // ---------- world logic ----------
 
   private ctx(): Ctx {
-    const zh = this.zoneHost;
+    const zh = this.zh;
     return {
       save: this.save,
       machine: this.termMachine(),
-      shell: zh ? sceneShell(zh, zh === this.downtown ? (text, kind) => this.zonePrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
+      // the deck's commands reach the scene's machines, when it has any
+      shell: zh.model.devices.size ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
       print: (text, kind) => this.term.print(text, kind),
       denied: () => sound.denied(),
       granted: () => sound.granted(),
@@ -605,35 +550,35 @@ export class Game {
       clear: () => this.term.clear(),
       leaveMachine: () => this.term.close(),
       persist: () => this.persist(),
-      resetYard: () => this.yard.reset(),
+      resetYard: () => this.hostOf('yard').reset(),
     };
   }
 
   private syncHud() {
     this.host.setNodes(nodeCount(this.save));
-    this.host.setZone(this.placeName.replace(/^the /, '').toUpperCase() + ' · ' + who(this.save).toUpperCase());
+    this.host.setScene(sceneTitle(this.def) + ' · ' + who(this.save).toUpperCase());
   }
 
+  /**
+   * Everything to press E on here, in one list for every scene: its ways out, Downtown's street
+   * people, the devices and the scene's own targets on the engine, the scene's life, and Pixel.
+   */
   private targets(): Target[] {
-    if (this.scene) return this.sceneTargets(this.scene);
-    // a zone's things: you reach each from the street, or from the ledge under it (the relay, from the low roof)
+    const s = this.def, list: Target[] = [...this.exitTargets(s)];
+    if (this.here === 'downtown') list.push(...this.streetTargets());
+    // a device is reached from the ground, or from the ledge under it (the relay, from the low roof)
     const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
-    const zoneTargets = (zh: SceneHost) => zh.targets().map((t) => ({ kind: 'zone' as const, id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH }));
+    for (const t of this.zh.targets()) if (!s.hideDevice?.(t.id, this.save.flags)) list.push({ kind: 'device', id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH });
+    list.push(...this.lifeTargets(s));
     // Pixel can always be petted, wherever it is with you
-    const pet: Target[] = this.pixelHere ? [{ kind: 'pet', id: 'pixel', x: this.pixel.x, h: 0, label: '[E] PET PIXEL', promptH: this.pixel.h + 24 }] : [];
-    if (this.zone === 'yard') return [...zoneTargets(this.yard), ...pet];
-    if (this.zone === 'capsule') return [...zoneTargets(this.capsule), ...pet];
-    if (this.zone === 'moth') return [...zoneTargets(this.moth), ...pet];
-    // a zone with a place's life (people, things to do): the same targets a scene's would have
-    if (this.zone === 'beach') return [...zoneTargets(this.beach), ...this.lifeTargets(this.beach.def.view), ...pet];
-    const list: Target[] = [...pet], gateOpen = !!this.save.flags.end;
-    for (const d of DOOR_TARGETS) if (d.id !== 'market' || gateOpen) list.push({ kind: 'door', id: d.id, x: DOORS[d.id], h: 0, label: d.label, promptH: d.promptH });
-    NPCS.forEach((n) => list.push({ kind: 'talk', id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
+    if (this.pixelHere) list.push({ kind: 'pixel', id: 'pixel', x: this.pixel.x, h: 0, label: '[E] PET PIXEL', promptH: this.pixel.h + 24 });
+    return list;
+  }
+
+  /** Downtown's people on the street and the fixer at his stall (level.ts says what they say). */
+  private streetTargets(): Target[] {
+    const list: Target[] = NPCS.map((n) => ({ kind: 'talk' as const, id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
     list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' });
-    list.push({ kind: 'map', id: 'map', x: MAP_KIOSK_X, h: 0, label: '[E] CITY MAP', promptH: 92 });
-    // Once Downtown is cleared the gate stands open: the market's door takes the gate's place.
-    list.push(...zoneTargets(this.downtown).filter((t) => t.id !== 'gate' || !gateOpen));
-    READABLES.forEach((r) => list.push({ kind: 'read', id: r.id, x: r.x, h: r.h, label: '[E] READ' }));
     return list;
   }
 
@@ -663,11 +608,10 @@ export class Game {
     }
     const target = this.nearest();
     if (!target) return;
-    if (target.kind === 'scene') { this.useScene(target.id); return; }
-    if (target.kind === 'zone') { if (this.zoneHost?.use(target.id) === 'exit') this.leaveZone(); return; }
-    if (target.kind === 'door') { this.useDoor(target.id as DoorId); return; }
-    if (target.kind === 'map') { sound.open(); this.showMap(); return; }
-    if (target.kind === 'pet') { sound.blip(); this.say('PIXEL', this.pixel.pet(), this.pixel.x, this.pixel.h + 14); return; }
+    if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
+    // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
+    if (target.kind === 'device') { const out = this.zh.use(target.id), e = out ? this.def.exits.find((z) => z.id === out) : undefined; if (e) this.useExit(e); return; }
+    if (target.kind === 'pixel') { sound.blip(); this.say('PIXEL', this.pixel.pet(), this.pixel.x, this.pixel.h + 14); return; }
     if (target.kind === 'talk') {
       if (target.id === 'fixer') {
         const talk = fixerTalk(this.save);
@@ -679,9 +623,6 @@ export class Game {
         const npc = NPCS.find((n) => n.id === target.id)!;
         this.say(npc.id === 'hood' ? 'HOODED STRANGER' : npc.id === 'umbrella' ? 'UMBRELLA' : 'MAN IN A HAT', npcTalk(npc.id, this.save), npc.x, 48);
       }
-    } else if (target.kind === 'read') {
-      const r = READABLES.find((z) => z.id === target.id)!;
-      this.say('SIGN', r.pages, r.x, 70);
     }
   }
 
@@ -693,7 +634,7 @@ export class Game {
       if (Math.floor(b.chars) !== before && Math.floor(b.chars) % 2 === 0) sound.blip();
     }
     this.updateTravel(dt);
-    const locked = this.showEnd || this.term.focused || !!this.zoneHost?.overlayOpen || !!this.mapView || !!this.flight || !!this.hop;
+    const locked = this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.flight || !!this.hop;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
@@ -722,71 +663,55 @@ export class Game {
     const goal = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
     this.cam += (goal - this.cam) * Math.min(1, 0.12 * dt);
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
-    if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.zone === 'capsule' ? capsulePerch(this.capsule.model) : null, warm: WARM[this.zone] });
+    if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: WARM[this.here] });
     this.host.setNodes(nodeCount(this.save));
   }
 
-  /** Pixel is drawn in the flat, and in Downtown and the yard once it follows you. */
-  private get pixelHere() { return this.zone === 'capsule' || (!!this.save.flags.pixel && (this.zone === 'downtown' || this.zone === 'yard' || this.zone === 'moth' || this.zone === 'beach')); }
-
-  /** E on a zone's way out: the yard's back to its alley; the flat's door down to your building's lobby, with Pixel. */
-  private leaveZone() {
-    if (this.zone === 'capsule') {
-      this.save.flags.pixel = true;
-      storeSave(this.save);
-      this.goTo('downtown', false, 'capsule');
-      this.greet();
-      return;
-    }
-    // Moth's flat: back out onto the street, in front of the building's door
-    if (this.zone === 'moth') { this.goTo('downtown', false, 'moth'); return; }
-    // the beach: the stairs up to the promenade, and the harbor
-    if (this.zone === 'beach') { this.travel('harbor'); return; }
-    this.goTo('downtown');
-  }
+  /** Pixel is drawn at home (the flat), and where it follows you (`pixel: 'along'`) once it does (`flags.pixel`). */
+  private get pixelHere() { const s = this.def; return s.pixel === 'home' || (!!this.save.flags.pixel && s.pixel === 'along'); }
 
   // ---------- drawing ----------
 
   private sx(worldX: number, parallax = 1) { return Math.round(worldX - this.cam * parallax); }
   private y(h: number) { return this.gy - h; }
 
+  /**
+   * One frame, the same way for every scene: the engine's sky and Downtown's street walls where
+   * the scene has them (`ambient`), the scene's own drawing, the player and Pixel, the scene's
+   * foreground, rain, then prompts, bubbles and the HUD. Hack vision mutes the world: a scene
+   * that draws in two passes (`layers`) gets its devices drawn bright over the muted world; any
+   * other keeps holes round its devices' frames (none: everything is muted). The player stays bright.
+   */
   private draw() {
-    const x = this.x, k = this.k;
+    const x = this.x, k = this.k, s = this.def, zh = this.zh, amb = s.ambient ?? {};
     x.setTransform(k, 0, 0, k, 0, 0);
     x.imageSmoothingEnabled = false;
     x.fillStyle = '#000';
     x.fillRect(0, 0, this.viewW, this.viewH);
     const rain = this.rainLevel();
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / FLIGHT), this.clock, STANDS[this.flight.to].name); return; }
-    if (this.scene) { this.drawScene(this.scene, rain); this.drawMap(); return; }
-
-    // hack vision, on any zone: the world goes muted, what you can use (and you) stays bright
-    const vision = !!this.zoneHost?.visionOn;
-    if (this.zone === 'yard') {
-      // Boxed in by the backs of houses: no city behind the yard, it draws its own walls.
-      this.drawStreet(rain);
-      const v = { sx: (wx: number) => this.sx(wx), y: (h: number) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH };
-      // Hack vision: the world (rain too) goes muted into the background; the devices and you stay bright on top.
-      if (vision) { this.yard.draw(x, v, 'world'); this.drawRain(rain); this.mute(); this.yard.draw(x, v, 'devices'); }
-      else this.yard.draw(x, v);
-    } else if (this.zone === 'capsule' || this.zone === 'moth' || this.zone === 'beach') {
-      // Indoors: the flat draws everything, the building around it included.
-      this.zoneHost!.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
-    } else {
-      this.drawSky();
-      this.drawShips();
+    const vision = zh.visionOn, v = this.view();
+    if (amb.sky) { this.drawSky(); this.drawShips(); }
+    if (amb.city) {
       this.drawSkyline(0.18, 7, 70, 150, 0.18, 0.12);
       this.drawAntenna();
       this.drawSkyline(0.45, 19, 50, 120, 0.3, 0.18);
       this.drawFronts();
-      this.drawStreet(rain);
-      this.downtown.draw(x, { sx: (wx) => this.sx(wx), y: (h) => this.y(h), t: this.t, viewW: this.viewW, viewH: this.viewH });
-      this.drawStands();
     }
-    // zones that draw in one pass (the flat, Downtown): mute round their devices' frames
-    if (vision && this.zone !== 'yard') { if (this.zone !== 'capsule' && this.zone !== 'moth' && this.zone !== 'beach') this.drawRain(rain); this.mute(this.zoneHost!.model.spots()); }
+    if (amb.street) this.drawStreet(rain, !!amb.city);
+    if (vision && s.layers) {
+      // the world (rain too) goes muted into the background; the devices and you stay bright on top
+      zh.draw(x, v, 'world');
+      if (amb.rain) this.drawRain(rain);
+      this.mute();
+      zh.draw(x, v, 'devices');
+    } else {
+      zh.draw(x, v);
+      if (vision) { if (amb.rain) this.drawRain(rain); this.mute(zh.model.spots()); }
+    }
     this.drawCharacters();
-    if (this.zone !== 'capsule' && this.zone !== 'moth' && this.zone !== 'beach' && !vision) this.drawRain(rain);
+    s.drawFront?.(x, v);
+    if (amb.rain && !vision) this.drawRain(rain);
     this.drawPrompt();
     this.drawBubble();
     this.drawHud();
@@ -1048,13 +973,6 @@ export class Game {
     }
   }
 
-  /** On the street, in front of the fronts: the metro stairs and the sky-taxi pad. */
-  private drawStands() {
-    const v = this.view();
-    drawMetroStairs(this.x, v, DOORS.metro);
-    drawTaxiPad(this.x, v, DOORS.taxi);
-  }
-
   /**
    * One street wall (the middle band: calmer than the street in front of it).
    * A ground floor at the player's scale, storeys of windows above, and a
@@ -1196,21 +1114,22 @@ export class Game {
     this.neon('NOODLES', cx, this.y(130), C, { size: 13, phase: 0 });
   }
 
-  private drawStreet(rain: number) {
+  /** The wet street floor; on Downtown's street (`city`) the stall's light and the neon smeared into it. */
+  private drawStreet(rain: number, city: boolean) {
     const x = this.x, gy = this.gy;
     x.fillStyle = '#030201'; x.fillRect(0, gy, this.viewW, this.viewH - gy);
     x.fillStyle = 'rgba(255,136,0,.55)'; x.fillRect(0, gy, this.viewW, 1);
     for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(255,100,0,' + (0.16 - i * 0.024) + ')'; x.fillRect(0, gy + 6 + i * i * 2 + i * 4, this.viewW, 1); }
     // The noodle stall's lamps pool warm light on the wet street in front of it.
     const s0 = this.sx(STALL.x);
-    if (this.zone !== 'yard' && s0 + STALL.w + 20 > 0 && s0 - 20 < this.viewW) {
+    if (city && s0 + STALL.w + 20 > 0 && s0 - 20 < this.viewW) {
       const pool = x.createLinearGradient(0, gy, 0, gy + 34);
       pool.addColorStop(0, 'rgba(255,160,70,' + (0.18 + rain * 0.06) + ')'); pool.addColorStop(1, 'rgba(255,160,70,0)');
       x.fillStyle = pool; x.fillRect(s0 - 10, gy + 1, STALL.w + 20, 34);
     }
     // Neon smeared into the wet street.
     const smears: [number, string][] = [[372, C], [STALL.x + STALL.w / 2, C], [640, '255,90,110'], [90, C], [1770, O], [905, O], [DOORS.metro + 31, C], [DOORS.taxi - 18, C], [DOORS.shop, C]];
-    for (const [wx, col] of this.zone === 'yard' ? [] : smears) {
+    for (const [wx, col] of city ? smears : []) {
       const sx = this.sx(wx);
       if (sx < -20 || sx > this.viewW + 20) continue;
       for (let i = 0; i < 10; i++) {
@@ -1223,10 +1142,10 @@ export class Game {
 
   private drawCharacters() {
     const x = this.x, p = this.p;
-    if (this.zone === 'downtown') this.drawStallPeople();
+    if (this.here === 'downtown') this.drawStallPeople();
     if (this.pixelHere) this.pixel.draw(x, (wx) => this.sx(wx), (h) => this.y(h), this.t);
     // jacked in: a Downtown machine's schematic is open and you stand at it, so the deck's cable runs to it
-    const open = this.zone === 'downtown' ? this.downtown.viewing : null;
+    const open = this.here === 'downtown' ? this.downtown.viewing : null;
     const jack = open ? this.downtown.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
     const sprite = jack ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
@@ -1302,13 +1221,13 @@ export class Game {
   }
 
   private drawPrompt() {
-    if (this.bubble || this.showEnd || this.zoneHost?.overlayOpen || this.zoneHost?.popupOpen || this.mapView) return;
+    if (this.bubble || this.showEnd || this.zh.overlayOpen || this.zh.popupOpen || this.mapView) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;
     x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center';
     x.fillStyle = 'rgba(0,255,255,.95)'; x.shadowColor = 'rgba(0,255,255,.8)'; x.shadowBlur = 6;
-    const h = t.promptH ?? (t.kind === 'read' ? 160 : t.id === 'fixer' ? 66 : 62);
+    const h = t.promptH ?? (t.id === 'fixer' ? 66 : 62);
     // kept inside the view, so a way out at a scene's very end still reads in full
     const half = x.measureText(t.label).width / 2 + 4;
     x.fillText(t.label, Math.max(half, Math.min(this.viewW - half, this.sx(t.x))), this.y(h));
@@ -1354,10 +1273,11 @@ export class Game {
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
     // below the key bar along the top (its height in world units)
     const top = (this.keyBar.root.offsetHeight + 8) * (this.canvas.width / (this.canvas.clientWidth || 1)) / this.k;
-    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(this.placeName.replace(/^the /, '').toUpperCase(), 8, top + 10);
+    x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def), 8, top + 10);
     x.fillStyle = 'rgba(255,217,165,.7)';
     x.fillText('TOKENS ' + s.tokens + ' · MODULES ' + (ownedModules(s).join(' ') || '-') + (SUDO ? ' · SUDO' : ''), 8, top + 21);
-    const zh = this.scene ? null : this.zoneHost;
+    // the scene's goal, where it has goals (a scene without a data file has none)
+    const zh = this.zh.model.data.goals.length ? this.zh : null;
     if (zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + zh.objective(), 8, top + 32); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     const tl = this.termLine;
@@ -1387,14 +1307,14 @@ export class Game {
   }
 
   // ---------- cutscenes (cutscenes/) ----------
-  // While one plays, the zone's update and draw are skipped entirely; any key or tap skips it.
+  // While one plays, the scene's update and draw are skipped entirely; any key or tap skips it.
 
   private cut: CutscenePlay | null = null;
   private cutThen: (() => void) | null = null;
 
   /**
    * Play a cutscene, then continue: `then` runs when it ends or is skipped. Without
-   * `then`, the game hands over to the cutscene's `next` zone (from its data).
+   * `then`, the game hands over to the cutscene's `next` scene (from its data).
    * For a menu's NEW GAME or a story beat: `game.playCutscene('intro', () => …)`.
    */
   playCutscene(id: CutsceneId | string, then?: () => void) {
@@ -1404,13 +1324,13 @@ export class Game {
     this.endCutscene(false);
     this.bubble = null;
     this.keys.clear();
-    this.zoneHosts.forEach((h) => h.closeAll());
+    this.hosts.forEach((h) => h.closeAll());
     this.term.close();
     this.cut = new CutscenePlay(scene, { reduced: this.reduced, touch: this.touch });
     this.cutThen = after;
     document.documentElement.classList.add('cutscene');
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + scene.cards.map((c) => c.text).join(' '));
-    this.host.setZone(scene.title);
+    this.host.setScene(scene.title);
   }
 
   private stepCutscene(dt: number) {
@@ -1435,96 +1355,68 @@ export class Game {
     if (andThen) then?.();
   }
 
-  /** Sudo's LEVELS: play a cutscene (then its next zone), or arrive in a zone at its spawn. */
+  /** Sudo's LEVELS: play a cutscene (then its next scene), or arrive in a scene at its spawn. */
   private enterLevel(id: string) {
     this.bubble = null;
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
     this.handTo(id);
-    this.markSeen(this.zone);
+    this.markSeen(this.here);
     storeSave(this.save);
   }
 
-  /** Arrive in a zone by id ('downtown', 'yard', 'capsule' or a scene id; anything else is Downtown), at its spawn. */
-  handTo(zone: string) {
-    if (isHosted(zone)) this.goTo(zone, true);
-    else if (isSceneId(zone)) this.enterScene(zone, true);
-    else {
-      this.goTo('downtown', true);
-      this.p.x = SPAWN_X;
-      this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
-    }
-    this.greet();
+  /** Arrive in a scene by id (anything else is Downtown), at its spawn. */
+  handTo(id: string) {
+    this.enter(isSceneId(id) ? id : 'downtown', true);
   }
 
-  // ---------- explorable scenes (scenes/) ----------
+  // ---------- a scene's ways out and its life ----------
 
-  /** The scene the player is in, when the zone is one of the explorable scenes. */
-  private get scene(): Scene | undefined { return sceneById(this.zone); }
   private sceneView: SceneView | null = null;
 
-  /** Walk into an explorable scene: at the exit `at` (the door you came through, seen from inside), else at its spawn. */
-  private enterScene(id: SceneId, quiet = false, at?: string) {
-    const s = SCENES[id];
-    this.zoneHost?.persist();
-    this.zoneHosts.forEach((h) => { h.closeAll(); h.show(false); });
-    this.bubble = null;
-    this.zone = id;
-    this.showZones();
-    this.markSeen(id);
-    const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
-    Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: x > s.width / 2 ? -1 : 1 });
-    this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
-    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
-    this.syncHud();
-    if (!quiet) sound.open();
-    const flag = 'scene:' + id;
-    if (s.intro && !this.save.flags[flag]) {
-      this.save.flags[flag] = true;
-      storeSave(this.save);
-      this.say('YOU', s.intro, this.p.x, 46);
-    }
-  }
-
-  private sceneTargets(s: Scene): Target[] {
+  /**
+   * A scene's ways out as E targets: its doors, stairs and pads (an open border is walked
+   * into instead; one its code offers is an engine target). A platform's BOARD is one
+   * target at each of the train's doors, only while it stands there with them open.
+   */
+  private exitTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
     for (const e of s.exits) {
-      if (e.edge || (e.requires && !this.save.flags[e.requires])) continue;
-      // A platform's BOARD: one at each of the train's doors, only while it stands there with them open.
+      if (e.edge || e.engine || (e.requires && !this.save.flags[e.requires])) continue;
       if (e.action === 'board') {
-        const st = stationAt(this.zone);
-        if (st) for (const dx of platformDoors(st, this.t, this.cam, STOP)) list.push({ kind: 'scene', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + STATIONS[nextStation(st)].name, promptH: e.promptH ?? 70 });
+        const st = stationAt(this.here);
+        if (st) for (const dx of platformDoors(st, this.t, this.cam, STOP)) list.push({ kind: 'exit', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + STATIONS[nextStation(st)].name, promptH: e.promptH ?? 70 });
         continue;
       }
       // The train's door: only while it stands at a stop with the doors open.
       if (e.action === 'out' && !rideOpen()) continue;
       const label = e.action === 'out' ? '[E] STEP OUT · ' + STATIONS[rideStop()].name : e.label;
-      list.push({ kind: 'scene', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
+      list.push({ kind: 'exit', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
-    return [...list, ...this.lifeTargets(s)];
+    return list;
   }
 
   /**
-   * A place's life as E targets (scenes and zones alike): readables, uses, the people who talk,
-   * and the animals (cats to pet, pigeons to shoo). E on one runs `useScene`.
+   * A scene's life as E targets: readables, uses, the people who talk, and the animals
+   * (cats to pet, pigeons to shoo) and robots. E on one runs `useLife`.
    */
-  private lifeTargets(s: Life): Target[] {
+  private lifeTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
-    for (const r of s.readables ?? []) list.push({ kind: 'scene', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
-    for (const u of s.uses ?? []) list.push({ kind: 'scene', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
+    for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
+    for (const u of s.uses ?? []) list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: u.label, promptH: u.promptH ?? 70 });
     // the scene's people with something to say (characters.ts): the target follows a walker
-    for (const p of s.people ?? []) if (p.id && p.talk) list.push({ kind: 'scene', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: characterHeight(p) + 16 });
+    for (const p of s.people ?? []) if (p.id && p.talk) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: characterHeight(p) + 16 });
     // animals: people always want to pet the cat (and the pigeon gets shooed)
     (s.people ?? []).forEach((p, i) => {
-      if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'scene', id: 'pet:' + i, x: characterX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: characterHeight(p) + 14 });
+      if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'life', id: 'pet:' + i, x: characterX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: characterHeight(p) + 14 });
       // robots without talk still answer: a beep, a status, a polite refusal
-      else if (!p.talk && isBot(p)) list.push({ kind: 'scene', id: 'bot:' + i, x: characterX(p, this.t), h: 0, label: botReact(p).label, promptH: characterHeight(p) + 14 });
+      else if (!p.talk && isBot(p)) list.push({ kind: 'life', id: 'bot:' + i, x: characterX(p, this.t), h: 0, label: botReact(p).label, promptH: characterHeight(p) + 14 });
     });
     return list;
   }
 
-  /** E next to a scene's exit or readable. An exit lands you at its matching door in the destination. */
-  private useScene(target: string) {
-    const s = this.life!, [kind, id] = target.split(':');
+  /** E next to a scene's exit or something of its life (`kind:id`, as `exitTargets` and `lifeTargets` make them). */
+  private useLife(target: string) {
+    const s = this.def, [kind, id] = target.split(':');
     if (kind === 'read') {
       const r = s.readables!.find((z) => z.id === id)!;
       this.say(r.name, r.pages, r.x, r.h ?? 70);
@@ -1562,87 +1454,64 @@ export class Game {
       this.say(said.name, said.pages, u.x, u.h ?? 60);
       return;
     }
-    const e = this.scene?.exits.find((z) => z.id === id);
-    if (!e) return;
-    if (e.action === 'board') { const st = stationAt(this.zone); if (st && platformOpen(st, this.t)) this.enterTrain(st); return; }
+    const e = s.exits.find((z) => z.id === id);
+    if (e) this.useExit(e);
+  }
+
+  /** Leave through an exit: board, step out, hail a taxi, look at the map, or walk to its scene, landing at its matching exit there. */
+  private useExit(e: SceneExit) {
+    // a door that reads key chips (Moth's building): only the right one opens it
+    if (e.needs && !this.save.keyring.includes(e.needs.key)) { sound.denied(); this.say(e.needs.name, e.needs.pages, e.x, e.needs.h); return; }
+    if (e.action === 'board') { const st = stationAt(this.here); if (st && platformOpen(st, this.t)) this.enterTrain(st); return; }
     if (e.action === 'out') { this.stepOut(); return; }
     if (e.action === 'taxi') { this.hailTaxi(); return; }
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
-    if (e.to === 'downtown' || isHosted(e.to) || isSceneId(e.to)) this.travel(e.to, e.at);
+    if (!isSceneId(e.to)) return;
+    // the flat's door: Pixel comes along from now on
+    if (e.sets) { this.save.flags[e.sets] = true; storeSave(this.save); }
+    this.travel(e.to, e.at);
   }
 
-  /** The scene view, refreshed for this frame (Downtown's stands draw with it too). */
+  /** The scene view, refreshed for this frame. */
   private view(): SceneView {
     const v = (this.sceneView ??= { sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), t: 0, viewW: 0, viewH: 0, cam: 0, gy: 0, flags: this.save.flags });
     v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags;
     return v;
   }
 
-  /** A scene draws its own backdrop and foreground; the engine adds sky, the player, rain and the HUD. */
-  private drawScene(s: Scene, rain: number) {
-    const v = this.view();
-    if (s.ambient?.sky) { this.drawSky(); this.drawShips(); }
-    s.drawBackdrop(this.x, v);
-    this.drawCharacters();
-    s.drawFront?.(this.x, v);
-    if (s.ambient?.rain) this.drawRain(rain);
-    this.drawPrompt();
-    this.drawBubble();
-    this.drawHud();
-    if (this.showEnd) this.drawEnd();
-  }
-
   // ---------- travel: doors, the metro, sky taxis, the city map (city.ts) ----------
 
-  /** Go to a zone, landing at door `at` there (a scene's exit id, or a Downtown door). */
-  private travel(zone: Zone, at?: string) {
+  /** Go to a scene, landing at its exit `at` there. */
+  private travel(id: SceneId, at?: string) {
     this.mapView = null;
-    if (zone === 'downtown' || isHosted(zone)) this.goTo(zone, false, at);
-    else this.enterScene(zone, false, at);
+    this.enter(id, false, at);
     // With reduced motion the platforms' clocks stand still: stand a train there with its doors open.
-    const st = stationAt(zone);
+    const st = stationAt(id);
     if (st && this.reduced && !platformOpen(st, this.t)) platformSync(st, this.t, TIMETABLE.dwell / 2);
   }
 
   /** ↑ or W in an open train door, on the platform or in the car: step through it. */
   private walkThroughDoor() {
-    if (!this.scene) return false;
     const t = this.nearest();
     if (!t || (t.id !== 'exit:train' && t.id !== 'exit:out' && t.id !== 'exit:out2')) return false;
-    this.useScene(t.id);
+    this.useLife(t.id);
     return true;
   }
 
-  /** The player walked into a border: leave through that edge's exit, if the zone has one, still walking the same way. */
+  /** The player walked into a border: leave through that edge's exit, if the scene has one, still walking the same way. */
   private walkOff(edge: 'left' | 'right') {
-    const s = this.scene;
-    const e = s ? s.exits.find((z) => z.edge === edge && (!z.requires || this.save.flags[z.requires])) : EDGES[this.zone]?.[edge];
-    if (!e || !(e.to === 'downtown' || isHosted(e.to) || isSceneId(e.to))) return;
+    const e = this.def.exits.find((z) => z.edge === edge && (!z.requires || this.save.flags[z.requires]));
+    if (!e || !isSceneId(e.to)) return;
     this.travel(e.to, e.at);
     this.p.face = edge === 'left' ? -1 : 1;
   }
 
-  /** Remember a place for the city map: `flags['seen:<zone>']`. */
-  private markSeen(zone: Zone) {
-    const f = seenFlag(zone);
+  /** Remember a scene for the city map: `flags['seen:<scene>']`. */
+  private markSeen(id: SceneId) {
+    const f = seenFlag(id);
     if (this.save.flags[f]) return;
     this.save.flags[f] = true;
     storeSave(this.save);
-  }
-
-  /** E at one of Downtown's doors, stairs or pad. */
-  private useDoor(id: DoorId) {
-    if (id === 'yard') { this.goTo('yard'); return; }
-    if (id === 'taxi') { this.hailTaxi(); return; }
-    // your building's lobby: the lift up to your flat
-    if (id === 'capsule') { this.travel('capsule', 'downtown'); return; }
-    // Moth's building: the residents' door reads key chips, and only Moth's opens it
-    if (id === 'moth') {
-      if (!this.save.keyring.includes(MOTH_KEY)) { sound.denied(); this.say('DOOR', ['RESIDENTS ONLY. PRESENT KEY CHIP.', 'FLAT 4C · RESIDENT: MOTH · AUTHORISED VISITORS: 0.'], DOORS.moth, 52); return; }
-      this.travel('moth', 'downtown');
-      return;
-    }
-    this.travel(id, 'downtown');
   }
 
   /** Board the train standing at a station's platform: in the car by its door, which stays open as long as it would have on the platform. */
@@ -1655,7 +1524,7 @@ export class Game {
   private stepOut() {
     if (!rideOpen()) return;
     const st = rideStop(), left = rideLeft();
-    this.travel(STATIONS[st].zone, 'train');
+    this.travel(STATIONS[st].scene, 'train');
     platformSync(st, this.t, this.reduced ? TIMETABLE.dwell / 2 : left);
   }
 
@@ -1666,7 +1535,7 @@ export class Game {
       this.say('DRIVER', DRIVER_BROKE, this.p.x + 20, 40);
       return;
     }
-    const here = standOf(this.zone), i = here ? STAND_IDS.indexOf(here) : -1;
+    const here = standOf(this.here), i = here ? STAND_IDS.indexOf(here) : -1;
     this.mapView = { mode: 'taxi', options: [...STAND_IDS], index: (i + 1) % STAND_IDS.length, hover: -1 };
     sound.open();
   }
@@ -1688,7 +1557,7 @@ export class Game {
     if (k === 'Escape' || k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.mapView = null; this.canvas.style.cursor = ''; sound.close(); return; }
     if (m.mode === 'view') {
       // quick travel: the arrows step through the places, starting from where you are; E, Enter or Space goes
-      const n = PLACES.length, here = PLACES.findIndex((p) => p.zone === this.zone), from = m.index >= 0 ? m.index : Math.max(0, here);
+      const n = PLACES.length, here = PLACES.findIndex((p) => p.scene === this.here), from = m.index >= 0 ? m.index : Math.max(0, here);
       const step = m.index < 0 && here < 0 ? 0 : 1;
       if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'a' || k === 'A' || k === 'w' || k === 'W') { m.index = (from + n - step) % n; m.hover = -1; sound.blip(); return; }
       if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'd' || k === 'D' || k === 's' || k === 'S') { m.index = (from + step) % n; m.hover = -1; sound.blip(); return; }
@@ -1706,7 +1575,7 @@ export class Game {
     this.mapView = null;
     if (m.mode === 'taxi') {
       const to = pick as Stand;
-      if (to === standOf(this.zone)) { this.flash('you are already here'); return; }
+      if (to === standOf(this.here)) { this.flash('you are already here'); return; }
       this.save.tokens -= FARE;
       storeSave(this.save);
       this.syncHud();
@@ -1719,8 +1588,8 @@ export class Game {
   private mapState(): MapState {
     const m = this.mapView ?? { mode: 'view' as const, options: [], index: -1, hover: -1 };
     return {
-      mode: m.mode, options: m.options, index: m.index, hover: m.hover, touch: this.touch, zone: this.zone,
-      ride: this.zone === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null,
+      mode: m.mode, options: m.options, index: m.index, hover: m.hover, touch: this.touch, scene: this.here,
+      ride: this.here === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null,
       seen: (z) => !!this.save.flags[seenFlag(z)], gateOpen: !!this.save.flags.end, tokens: this.save.tokens, t: this.clock,
     };
   }
@@ -1755,16 +1624,16 @@ export class Game {
     if (this.flight && this.clock - this.flight.start >= FLIGHT) {
       const to = this.flight.to;
       this.flight = null;
-      this.travel(STANDS[to].zone, 'taxi');
+      this.travel(STANDS[to].scene, 'taxi');
       this.flash('-' + FARE + ' token · ' + STANDS[to].name);
     }
     // a quick trip moves you while the screen is dark, half way through its fade
     if (this.hop) {
       const e = this.clock - this.hop.start;
-      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; this.travel(this.hop.place.zone, this.hop.place.at); this.greet(); }
+      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; this.travel(this.hop.place.scene, this.hop.place.at); }
       if (e >= HOP) this.hop = null;
     }
-    if (this.zone !== 'train') return;
+    if (this.here !== 'train') return;
     const ev = stepRide(dt);
     if (ev === 'depart') { this.flash('NEXT: ' + STATIONS[rideNext()].name); sound.close(); }
     else if (ev === 'arrive') { this.flash(STATIONS[rideStop()].name + ' · doors open'); sound.open(); }

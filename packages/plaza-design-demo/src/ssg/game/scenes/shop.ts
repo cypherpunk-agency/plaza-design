@@ -11,7 +11,7 @@
 
 import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { fridge, shelf, type ShelfSpec } from './build';
-import { box, C, exitDoor, O, onScreen, PAPER, rng, tell, text, type Scene, type SceneUse, type View } from './kit';
+import { box, C, exitDoor, O, onScreen, PAPER, rng, tell, text, type SceneDef, type SceneUse, type View } from './kit';
 import { adScreen, camera, lotteryScreen, ticker, wallSign } from './screens';
 
 /** Layout: positions in world units, heights up from the floor. */
@@ -155,7 +155,7 @@ function mirror(x: CanvasRenderingContext2D, v: View) {
   x.strokeStyle = 'rgba(210,210,220,.8)'; x.lineWidth = 2; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); x.lineWidth = 1;
 }
 
-export const shop: Scene = {
+export const shop: SceneDef = {
   id: 'shop',
   name: 'Corner Shop',
   width: L.width,

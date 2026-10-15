@@ -4,10 +4,10 @@
  * - The CRT boot runs first, on every visit.
  * - The Konami code (up up down down left right left right B A) is the only way in:
  *   the button says ACCESS GRANTED for once, then the window becomes the game.
- * - `?play` in the URL skips the boot and the Konami code; `?play=yard` starts in the back yard,
- *   `?play=capsule` in your flat (Capsule 7B, where a new game starts), `?play=moth` in Moth's place, `?play=beach` on the beach (SALT, the pier),
- *   `?play=<scene id>` in one of the explorable scenes (scenes/: harbor, market, shop, mall, the metro platforms metro, galleriaStation and harborStation, train),
- *   `?play=<cutscene id>` plays a cutscene first (cutscenes/: intro), then its next zone.
+ * - `?play` in the URL skips the boot and the Konami code; `?play=<scene id>` starts in that scene
+ *   (scenes/index.ts `SCENES`: capsule, your flat, where a new game starts; yard, moth, beach, harbor, market, shop, mall,
+ *   the metro platforms metro, galleriaStation and harborStation, train), `?play=<cutscene id>` plays a cutscene
+ *   first (cutscenes/: intro), then its next scene.
  * - Phones (basic support, landscape only): the Konami code as swipes
  *   (up up down down left right left right, tap tap), on-screen buttons, and a
  *   "rotate your phone" screen in portrait.
@@ -30,12 +30,12 @@ export { runBoot };
 
 /** `?play` (or `?sudo`, sudo.ts) in the URL skips the boot and the Konami code: straight into the game. */
 export const playParam = () => { try { const q = new URLSearchParams(location.search); return q.has('play') || q.has('sudo'); } catch { return false; } };
-/** `?play=yard` starts in the fixer's back yard (the demo zone for the new hacking system); `?play=harbor` etc. in a scene. */
-const playZone = () => {
-  try { return zoneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
+/** `?play=yard` starts in the fixer's back yard, `?play=harbor` on the harbor pier: any scene. */
+const playScene = () => {
+  try { return sceneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
 };
-/** A zone id the game can start in; Downtown (and anything unknown) is undefined. */
-const zoneParam = (z: string) => (z === 'yard' || z === 'capsule' || z === 'moth' || z === 'beach' ? z : isSceneId(z) || isCutsceneId(z) ? z : undefined);
+/** A scene (or cutscene) id the game can start in; Downtown (and anything unknown) is undefined: the game decides. */
+const sceneParam = (z: string) => ((isSceneId(z) && z !== 'downtown') || isCutsceneId(z) ? z : undefined);
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
@@ -83,10 +83,10 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
   const header = document.querySelector('.plaza-window-header') as HTMLElement | null;
   const footer = document.querySelector('.plaza-window-footer') as HTMLElement | null;
   const inputHost = document.querySelector('.footer-input-area') as HTMLElement | null;
-  const zone = document.querySelector('.header-initiating') as HTMLElement | null;
+  const sceneLabel = document.querySelector('.header-initiating') as HTMLElement | null;
   const nodes = document.getElementById('node-count');
   if (!cta || !windowEl || !header || !footer || !inputHost) return;
-  const zoneText = zone?.textContent ?? '';
+  const sceneText = sceneLabel?.textContent ?? '';
 
   let game: Game | null = null;
   let progress = 0;
@@ -98,12 +98,12 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
     if (!html.classList.contains('game-mode')) return;
     game?.stop();
     html.classList.remove('game-mode');
-    if (zone) zone.textContent = zoneText;
+    if (sceneLabel) sceneLabel.textContent = sceneText;
     cta.classList.remove('is-granted');
     opts.scene.start();
   };
 
-  const enter = (resumeZone?: string) => {
+  const enter = (resumeScene?: string) => {
     entering = false;
     cta.classList.remove('is-granted');
     html.classList.add('game-mode');
@@ -112,13 +112,13 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
       windowEl, header, footer, inputHost,
       onExit: exit,
       setNodes: (n) => { if (nodes) nodes.textContent = String(n); },
-      setZone: (text) => { if (zone) zone.textContent = text; },
+      setScene: (text) => { if (sceneLabel) sceneLabel.textContent = text; },
     });
     if (isTouch() && !controls) { controls = true; touchControls(windowEl); }
-    game.start(resumeZone !== undefined ? zoneParam(resumeZone) : playZone());
+    game.start(resumeScene !== undefined ? sceneParam(resumeScene) : playScene());
   };
 
-  // Back from a LOAD GAME reload: the slot's save is in place, straight into its zone.
+  // Back from a LOAD GAME reload: the slot's save is in place, straight into its scene.
   const resume = takeResume();
   if (resume !== null) enter(resume);
   else if (playParam()) enter();

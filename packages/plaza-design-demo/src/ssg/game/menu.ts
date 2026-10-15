@@ -3,7 +3,7 @@
  *
  * Esc opens it (game.ts decides when: overlays, bubbles and schematics close
  * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
- * In sudo mode (`?sudo`) LEVELS comes second: every zone, scene and cutscene.
+ * In sudo mode (`?sudo`) LEVELS comes second: every scene and cutscene.
  * The city map is not here: it lives in the world (TAB on your deck, map boards).
  * Arrows or W/S move, Enter/E/Space select, Esc goes back a screen or resumes;
  * mouse and touch pick items directly. Styles: #game-menu in render.tsx.
@@ -20,8 +20,8 @@ export interface MenuHooks {
   /** The current save, settled and written (the menu copies it into a slot). */
   save(): Save;
   /** Where the player is, for a slot: id to load into, name to show. */
-  zone(): { id: string; name: string };
-  /** NEW GAME, confirmed: reset the save, play the intro, hand over to the start zone. */
+  scene(): { id: string; name: string };
+  /** NEW GAME, confirmed: reset the save, play the intro, hand over to the start scene. */
   newGame(): void;
   /** QUIT TO HOMEPAGE. */
   quit(): void;
@@ -115,7 +115,7 @@ export class Menu {
 
   private main(sel: number) {
     const o = this.hooks.levels ? 1 : 0; // LEVELS shifts everything below it
-    const tag = this.hooks.zone().name + ' · PAUSED' + (o ? ' · SUDO' : '');
+    const tag = this.hooks.scene().name + ' · PAUSED' + (o ? ' · SUDO' : '');
     this.show_(tag, [
       { label: 'RESUME', run: () => this.hide() },
       ...(o ? [{ label: 'LEVELS', tone: 'go' as const, run: () => this.levels(0) }] : []),
@@ -129,7 +129,7 @@ export class Menu {
 
   /** Sudo: every level; picking one goes straight there. */
   private levels(sel: number) {
-    const here = this.hooks.zone().id;
+    const here = this.hooks.scene().id;
     const items: Item[] = this.hooks.levels!().map((l) => ({
       label: l.name,
       meta: l.id === here ? 'HERE' : l.note,
@@ -174,7 +174,7 @@ export class Menu {
   }
 
   private store(n: number) {
-    const z = this.hooks.zone();
+    const z = this.hooks.scene();
     const ok = writeSlot(n, this.hooks.save(), z.id, z.name);
     if (ok) sound.granted(); else sound.denied();
     this.slots('save', n - 1, ok ? ['SAVED TO SLOT ' + n + '.', 'ok'] : ['SAVE FAILED: THIS BROWSER BLOCKS STORAGE.', 'bad']);

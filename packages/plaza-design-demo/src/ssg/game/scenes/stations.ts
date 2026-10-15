@@ -13,7 +13,7 @@
  */
 
 import type { Station } from '../city';
-import { box, C, drawTowers, notice, O, onScreen, PAPER, RED, reflect, rng, tell, text, towers, type Scene, type View } from './kit';
+import { box, C, drawTowers, notice, O, onScreen, PAPER, RED, reflect, rng, tell, text, towers, type SceneDef, type View } from './kit';
 import { drawDepartures, drawPlatformTrain, platformQueue, STOP, TRAIN } from './line';
 import { crowd, drawRider, SEAT_H, type RiderKind } from './riders';
 
@@ -250,7 +250,7 @@ function drawSnacks(x: CanvasRenderingContext2D, v: View, wx: number) {
   tell(x, t, s + 12, y(36), 1);
 }
 
-export const galleriaStation: Scene = {
+export const galleriaStation: SceneDef = {
   id: 'galleriaStation',
   name: 'Galleria metro',
   width: G.width,
@@ -393,7 +393,7 @@ function drawGate(x: CanvasRenderingContext2D, v: View, wx: number) {
   exitPlate(x, v, s, '< HARBOR · PIER');
 }
 
-export const harborStation: Scene = {
+export const harborStation: SceneDef = {
   id: 'harborStation',
   name: 'Harbor metro',
   width: H.width,

@@ -16,7 +16,7 @@
 import { drawTaxiPad } from '../city';
 import { drawCharacters, drawCharacter, type Character } from '../characters';
 import { clutter, stall, type StallSpec } from './build';
-import { box, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, C, type Scene, type SceneUse, type View } from './kit';
+import { box, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, tell, text, towers, C, type SceneDef, type SceneUse, type View } from './kit';
 import { camera, menuBoard, ticker, YELLOW } from './screens';
 
 /** The horizon: water from the pier's back edge up to here. */
@@ -623,7 +623,7 @@ function drawHut(x: CanvasRenderingContext2D, v: View) {
   box(x, hx + 60, y(38), 5, 4, '#c8b8a0'); void t;
 }
 
-export const harbor: Scene = {
+export const harbor: SceneDef = {
   id: 'harbor',
   name: 'Harbor',
   width: L.width,

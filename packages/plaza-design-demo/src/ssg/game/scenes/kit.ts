@@ -1,7 +1,9 @@
 /**
- * Shared shapes and types for the explorable scenes. A scene is mostly data
- * (positions, sizes, texts as plain objects) plus two draw functions; this file
- * holds what every scene draws the same way, so they all follow ART-GUIDE.md:
+ * The scene definition (`SceneDef`), and shared shapes and drawing for every
+ * scene. A scene is one walkable screen: mostly data (positions, sizes, texts
+ * as plain objects) plus its drawing, and, when it has devices, a data file
+ * and rules on the engine (engine/). This file also holds what every scene
+ * draws the same way, so they all follow ART-GUIDE.md:
  * dim far band, medium middle band, the play band brightest; signs on plates;
  * cyan only on things you can use.
  *
@@ -13,6 +15,11 @@
  */
 
 import type { Character } from '../characters';
+import type { Perch } from '../companion';
+import type { SceneData } from '../data/types';
+import type { Player } from '../downtown/rules';
+import type { EngineDraw, Line, SceneModel, SceneRules, SceneTarget } from '../engine';
+import type { PanelFn } from '../engine/panels';
 
 /** What a scene's draw functions get from the engine, refreshed every frame. */
 export interface View {
@@ -31,9 +38,10 @@ export interface View {
 }
 
 /**
- * A way out. `to` is a scene: 'downtown', 'yard' or a scene's id (a district's
- * station exit leads to its platform scene). `at` is the door you land at there:
- * one of its exits' ids, or a Downtown door (shop, yard, capsule, metro, taxi, market).
+ * A way out. `to` is a scene id (a district's station exit leads to its
+ * platform scene). `at` is the exit you land at there, by its id (Downtown's
+ * doors are its exits too: shop, yard, capsule, metro, moth, taxi, market);
+ * without one you land at its `spawn`.
  */
 export interface SceneExit {
   id: string;
@@ -57,6 +65,16 @@ export interface SceneExit {
    * doors, stairs and pads keep E.
    */
   edge?: 'left' | 'right';
+  /**
+   * The scene's own code offers this way out: an engine target (its prompt depends on the
+   * scene's state, a door that is locked first) whose `use` returns this exit's id. No prompt
+   * of its own; `x` is only where you land arriving through it.
+   */
+  engine?: boolean;
+  /** A save flag set when you leave through it (the flat's door: Pixel comes along from now on). */
+  sets?: string;
+  /** A keyring item it needs; without it, E is refused with these words. */
+  needs?: { key: string; name: string; pages: string[]; h: number };
 }
 
 /** Something to read (or a person who says a line) with E. */
@@ -89,11 +107,19 @@ export interface UseCtx {
   t: number;
 }
 
-export interface Scene {
+/**
+ * A scene, complete: one walkable screen. Every place in the game is one (the
+ * capsule, Downtown, the market, a metro platform, the car), with the same
+ * capabilities: devices on the engine (`data`, `rules`; none: zero devices,
+ * hack vision shows nothing to hack), people, uses, readables, exits and its
+ * own drawing. Which place it belongs to is the city's data (city.ts).
+ */
+export interface SceneDef {
   id: string;
   /** Shown in the HUD. */
   name: string;
   width: number;
+  /** Where you land without an exit to arrive at. */
   spawn: number;
   exits: SceneExit[];
   readables?: SceneReadable[];
@@ -101,12 +127,48 @@ export interface Scene {
   people?: Character[];
   /** Things to do here with E (buy, haggle). */
   uses?: SceneUse[];
-  /** `sky`: the engine's stars and ships behind everything; `rain`: the engine's rain in front. */
-  ambient?: { sky?: boolean; rain?: boolean };
-  /** What the player says on the first visit. */
-  intro?: string[];
-  /** Everything behind the player: far, middle and play band. */
-  drawBackdrop: (x: CanvasRenderingContext2D, v: View) => void;
+  /**
+   * What the engine draws around the scene: `sky`, its stars and ships behind everything; `city`,
+   * Downtown's skyline and street walls (game.ts); `street`, the wet street floor; `rain` in front.
+   */
+  ambient?: { sky?: boolean; city?: boolean; street?: boolean; rain?: boolean };
+  /** What the player says on the first visit (save flag `scene:<id>`); a function when it depends on a touch screen. */
+  intro?: string[] | ((touch: boolean) => string[]);
+  /** Arriving keeps the way the player faces (an open street); otherwise they face into the scene. */
+  keepFace?: boolean;
+  /** Ledges to stand on (Downtown's low roof). */
+  platforms?: { x: number; w: number; h: number }[];
+  /** Pixel: 'home' where it lives (`perch`: where it wants to be), 'along' where it follows you once it does. */
+  pixel?: 'home' | 'along';
+  perch?: (m: SceneModel) => Perch;
+  /** The engine's error lines buzz (Downtown's ACCESS DENIED, as the old terminal did). */
+  buzz?: boolean;
+
+  // ---------- on the engine ----------
+
+  /** Its data file (devices, goals, texts). None: zero devices. */
+  data?: SceneData;
+  /** Its code: named effects and the rest (Downtown's are made for the player's save). */
+  rules?: SceneRules | ((player: Player) => SceneRules);
+  /** Panels besides the engine's `talk` (the yard's `camera`). Must match `rules.panels`. */
+  panels?: Record<string, PanelFn>;
+  /** Hack vision draws it in two passes: the world (muted), then the devices on top. Otherwise the game mutes round the devices' frames. */
+  layers?: boolean;
+  /** A device that takes no E for now (Downtown's gate once it stands open: the market's door takes its place). */
+  hideDevice?: (id: string, flags: Readonly<Record<string, boolean>>) => boolean;
+  /** Things to press E on besides the devices (a door its code locks, a pickup tray). */
+  targets?(m: SceneModel): SceneTarget[];
+  /** E on one of those. Return an exit's id (`engine` exits) to leave through it. */
+  use?(id: string, m: SceneModel, say: (l: Line) => void): string | void;
+
+  // ---------- drawing ----------
+
+  /**
+   * Everything behind the player: far, middle and play band, and the devices. `e` has the model,
+   * the device under the pointer and, in hack vision, the layer: a scene that cannot split
+   * draws everything for 'world' and nothing for 'devices'.
+   */
+  drawBackdrop: (x: CanvasRenderingContext2D, v: View, e: EngineDraw) => void;
   /** Foreground in front of the player (near pillars, passers-by). */
   drawFront?: (x: CanvasRenderingContext2D, v: View) => void;
 }

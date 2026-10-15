@@ -5,27 +5,25 @@
  * its own (`drawCityMap` in 'view' mode: TAB, a menu) that shows the line and,
  * while you ride, where the train is.
  *
- * Canvas drawing only. Places you have been are remembered in the save as
- * `flags['seen:<zone>']`; the map labels those and shows the rest as `???`.
+ * Canvas drawing only. Scenes you have been in are remembered in the save as
+ * `flags['seen:<scene>']`; the map labels those and shows the rest as `???`.
  */
 
 import type { SceneId } from './scenes';
 import { box, C, GREEN, O, onScreen, PAPER, RED, rng, sign, tell, text, type View } from './scenes/kit';
-
-export type Zone = 'downtown' | 'yard' | 'capsule' | 'moth' | 'beach' | SceneId;
 
 /**
  * Where a new game starts: Capsule 7B, the player's flat. The intro cutscene
  * hands over to it (cutscenes.json `next`), and a save that has never been
  * Downtown starts there too.
  */
-export const START_ZONE = 'capsule' satisfies Zone;
+export const START_SCENE = 'capsule' satisfies SceneId;
 
-export const seenFlag = (zone: Zone) => 'seen:' + zone;
+export const seenFlag = (id: SceneId) => 'seen:' + id;
 
 /**
- * Downtown's ways out, by where they sit on the street (world x). Coming back
- * through one of them lands you in front of it.
+ * Downtown's ways out, by where they sit on the street (world x): its exits
+ * (downtown/index.ts). Coming back through one of them lands you in front of it.
  * - market: the NEON MARKET gate at the west end (opens once Downtown is cleared)
  * - shop: the corner shop's door (the front at 150)
  * - yard: the fixer's back yard, past the noodle stall
@@ -38,17 +36,6 @@ export const DOORS = { market: 70, shop: 242, yard: 972, capsule: 1230, metro: 1
 export type DoorId = keyof typeof DOORS;
 export const isDoorId = (id: string): id is DoorId => Object.prototype.hasOwnProperty.call(DOORS, id);
 
-/**
- * Walk-off exits for the zones that are not scenes (scenes list theirs as exits
- * with `edge`): walking into that border takes you there, no E. The yard's
- * passage at its left edge opens onto Downtown's alley.
- */
-export const EDGES: Partial<Record<Zone, Partial<Record<'left' | 'right', { to: Zone; at: string }>>>> = {
-  yard: { left: { to: 'downtown', at: 'yard' } },
-  // the beach's promenade runs on, west, into the harbor (the harbor lands you at its exit 'beach' once it has one)
-  beach: { left: { to: 'harbor', at: 'beach' } },
-};
-
 // ---------- the metro ----------
 
 export type Station = 'downtown' | 'galleria' | 'harbor';
@@ -58,25 +45,25 @@ export const LINE: Station[] = ['downtown', 'galleria', 'harbor'];
  * Each station: its name, its platform (a scene, where you land stepping off at
  * its `train` exit) and the district it belongs to (where its stairs lead).
  */
-export const STATIONS: Record<Station, { name: string; zone: Zone; district: Zone }> = {
-  downtown: { name: 'DOWNTOWN', zone: 'metro', district: 'downtown' },
-  galleria: { name: 'GALLERIA', zone: 'galleriaStation', district: 'mall' },
-  harbor: { name: 'HARBOR', zone: 'harborStation', district: 'harbor' },
+export const STATIONS: Record<Station, { name: string; scene: SceneId; district: SceneId }> = {
+  downtown: { name: 'DOWNTOWN', scene: 'metro', district: 'downtown' },
+  galleria: { name: 'GALLERIA', scene: 'galleriaStation', district: 'mall' },
+  harbor: { name: 'HARBOR', scene: 'harborStation', district: 'harbor' },
 };
-/** The station whose platform this zone is, if it is one. */
-export const stationAt = (zone: Zone): Station | null => LINE.find((s) => STATIONS[s].zone === zone) ?? null;
+/** The station whose platform this scene is, if it is one. */
+export const stationAt = (id: SceneId): Station | null => LINE.find((s) => STATIONS[s].scene === id) ?? null;
 
 // ---------- sky taxis ----------
 
 export type Stand = 'downtown' | 'galleria' | 'harbor';
 export const STAND_IDS: Stand[] = ['downtown', 'galleria', 'harbor'];
-/** Each stand: its name and the zone it is in; you land at that zone's `taxi` door. */
-export const STANDS: Record<Stand, { name: string; zone: Zone }> = {
-  downtown: { name: 'DOWNTOWN EAST', zone: 'downtown' },
-  galleria: { name: 'GALLERIA ROOF', zone: 'mall' },
-  harbor: { name: 'HARBOR PIER', zone: 'harbor' },
+/** Each stand: its name and the scene it is in; you land at that scene's `taxi` exit. */
+export const STANDS: Record<Stand, { name: string; scene: SceneId }> = {
+  downtown: { name: 'DOWNTOWN EAST', scene: 'downtown' },
+  galleria: { name: 'GALLERIA ROOF', scene: 'mall' },
+  harbor: { name: 'HARBOR PIER', scene: 'harbor' },
 };
-export const standOf = (zone: Zone): Stand | null => (zone === 'downtown' ? 'downtown' : zone === 'mall' ? 'galleria' : zone === 'harbor' ? 'harbor' : null);
+export const standOf = (id: SceneId): Stand | null => STAND_IDS.find((s) => STANDS[s].scene === id) ?? null;
 export const FARE = 1;
 /** Frames of a quick trip from the map: a fade out, the move, a fade in. */
 export const HOP = 40;
@@ -87,14 +74,14 @@ export const DRIVER_BROKE = ['One token a ride. You have the look of someone wit
 // ---------- the map ----------
 
 /** Map units: the city is 320 × 180. */
-const DISTRICTS: { zone: Zone; name: string; x: number; y: number; w: number; h: number }[] = [
-  { zone: 'market', name: 'NEON MARKET', x: 10, y: 60, w: 66, h: 54 },
-  { zone: 'downtown', name: 'DOWNTOWN', x: 84, y: 50, w: 106, h: 78 },
-  { zone: 'mall', name: 'GALLERIA', x: 198, y: 10, w: 78, h: 58 },
-  { zone: 'harbor', name: 'HARBOR', x: 204, y: 108, w: 100, h: 40 },
+const DISTRICTS: { scene: SceneId; name: string; x: number; y: number; w: number; h: number }[] = [
+  { scene: 'market', name: 'NEON MARKET', x: 10, y: 60, w: 66, h: 54 },
+  { scene: 'downtown', name: 'DOWNTOWN', x: 84, y: 50, w: 106, h: 78 },
+  { scene: 'mall', name: 'GALLERIA', x: 198, y: 10, w: 78, h: 58 },
+  { scene: 'harbor', name: 'HARBOR', x: 204, y: 108, w: 100, h: 40 },
 ];
-/** Smaller places inside Downtown: [x, y, label, zone that must be seen to label it ('' = always)]. */
-const SPOTS: Record<string, [number, number, string, Zone | '']> = {
+/** Smaller places inside Downtown: [x, y, label, scene that must be seen to label it ('' = always)]. */
+const SPOTS: Record<string, [number, number, string, SceneId | '']> = {
   shop: [98, 112, 'SHOP', 'shop'],
   yard: [150, 116, 'YARD', 'yard'],
   home: [166, 74, '7B', ''],
@@ -116,32 +103,32 @@ const RIPPLES = (() => { const r = rng(9); return Array.from({ length: 26 }, () 
 
 /**
  * A place on the map you can quick-travel to once you have been there: its
- * name, the zone and the door you arrive at (its usual way in), and where it
+ * name, the scene and the exit you arrive at (its usual way in), and where it
  * is on the map: a district's block (`rect`) or a point. Listed in the order
  * the arrow keys step through them, west to east.
  */
-export interface Place { id: string; name: string; zone: Zone; at?: string; pt: [number, number]; rect?: [number, number, number, number] }
-const district = (z: Zone) => DISTRICTS.find((d) => d.zone === z)!;
-const block = (z: Zone): Pick<Place, 'pt' | 'rect'> => { const d = district(z); return { pt: [d.x + d.w / 2, d.y + d.h / 2], rect: [d.x, d.y, d.w, d.h] }; };
+export interface Place { id: string; name: string; scene: SceneId; at?: string; pt: [number, number]; rect?: [number, number, number, number] }
+const district = (z: SceneId) => DISTRICTS.find((d) => d.scene === z)!;
+const block = (z: SceneId): Pick<Place, 'pt' | 'rect'> => { const d = district(z); return { pt: [d.x + d.w / 2, d.y + d.h / 2], rect: [d.x, d.y, d.w, d.h] }; };
 export const PLACES: Place[] = [
-  { id: 'market', name: 'NEON MARKET', zone: 'market', at: 'downtown', ...block('market') },
-  { id: 'shop', name: 'CORNER SHOP', zone: 'shop', pt: [SPOTS.shop[0], SPOTS.shop[1]] },
-  { id: 'station-downtown', name: 'DOWNTOWN METRO', zone: 'metro', at: 'downtown', pt: STATION_AT.downtown },
-  { id: 'downtown', name: 'DOWNTOWN', zone: 'downtown', at: 'metro', ...block('downtown') },
-  { id: 'yard', name: 'BACK YARD', zone: 'yard', pt: [SPOTS.yard[0], SPOTS.yard[1]] },
-  { id: 'capsule', name: 'CAPSULE 7B', zone: 'capsule', at: 'downtown', pt: [SPOTS.home[0], SPOTS.home[1]] },
-  { id: 'station-galleria', name: 'GALLERIA METRO', zone: 'galleriaStation', at: 'mall', pt: STATION_AT.galleria },
-  { id: 'mall', name: 'GALLERIA MALL', zone: 'mall', ...block('mall') },
-  { id: 'station-harbor', name: 'HARBOR METRO', zone: 'harborStation', at: 'harbor', pt: STATION_AT.harbor },
-  { id: 'harbor', name: 'HARBOR', zone: 'harbor', ...block('harbor') },
-  { id: 'beach', name: 'BEACH', zone: 'beach', at: 'harbor', pt: [292, 160] },
+  { id: 'market', name: 'NEON MARKET', scene: 'market', at: 'downtown', ...block('market') },
+  { id: 'shop', name: 'CORNER SHOP', scene: 'shop', pt: [SPOTS.shop[0], SPOTS.shop[1]] },
+  { id: 'station-downtown', name: 'DOWNTOWN METRO', scene: 'metro', at: 'downtown', pt: STATION_AT.downtown },
+  { id: 'downtown', name: 'DOWNTOWN', scene: 'downtown', at: 'metro', ...block('downtown') },
+  { id: 'yard', name: 'BACK YARD', scene: 'yard', pt: [SPOTS.yard[0], SPOTS.yard[1]] },
+  { id: 'capsule', name: 'CAPSULE 7B', scene: 'capsule', at: 'door', pt: [SPOTS.home[0], SPOTS.home[1]] },
+  { id: 'station-galleria', name: 'GALLERIA METRO', scene: 'galleriaStation', at: 'mall', pt: STATION_AT.galleria },
+  { id: 'mall', name: 'GALLERIA MALL', scene: 'mall', ...block('mall') },
+  { id: 'station-harbor', name: 'HARBOR METRO', scene: 'harborStation', at: 'harbor', pt: STATION_AT.harbor },
+  { id: 'harbor', name: 'HARBOR', scene: 'harbor', ...block('harbor') },
+  { id: 'beach', name: 'BEACH', scene: 'beach', at: 'harbor', pt: [292, 160] },
 ];
 
 /** Why you cannot quick-travel to a place right now ('' if you can). */
-export function placeBlocked(p: Place, st: Pick<MapState, 'seen' | 'gateOpen' | 'zone' | 'ride'>): string {
-  if (!st.seen(p.zone)) return 'NOT VISITED YET';
-  if (p.zone === st.zone) return 'YOU ARE HERE';
-  if (p.zone === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
+export function placeBlocked(p: Place, st: Pick<MapState, 'seen' | 'gateOpen' | 'scene' | 'ride'>): string {
+  if (!st.seen(p.scene)) return 'NOT VISITED YET';
+  if (p.scene === st.scene) return 'YOU ARE HERE';
+  if (p.scene === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
   if (st.ride && st.ride.f > 0) return 'NOT FROM A MOVING METRO · GET OFF FIRST';
   return '';
 }
@@ -176,17 +163,18 @@ export interface MapState {
   hover: number;
   /** A touch screen: say TAP rather than keys. */
   touch: boolean;
-  zone: Zone;
+  /** The scene you are in. */
+  scene: SceneId;
   /** While riding: the stop the train stands at or last left, the next one, and how far along it is (0..1). */
   ride: { from: Station; to: Station; f: number } | null;
-  seen: (zone: Zone) => boolean;
+  seen: (id: SceneId) => boolean;
   gateOpen: boolean;
   tokens: number;
   t: number;
 }
 
 function herePoint(st: MapState): [number, number] {
-  const z = st.zone;
+  const z = st.scene;
   if (st.mode === 'taxi') { const s = standOf(z); if (s) return PAD_AT[s]; }
   const station = stationAt(z);
   if (station) return STATION_AT[station];
@@ -198,7 +186,7 @@ function herePoint(st: MapState): [number, number] {
   if (z === 'yard') return [SPOTS.yard[0], SPOTS.yard[1]];
   if (z === 'capsule') return [SPOTS.home[0], SPOTS.home[1]];
   if (z === 'beach') return [292, 160];
-  const d = DISTRICTS.find((q) => q.zone === z);
+  const d = DISTRICTS.find((q) => q.scene === z);
   return d ? [d.x + d.w / 2, d.y + d.h / 2 + 6] : [137, 95];
 }
 
@@ -238,7 +226,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
   x.stroke(); x.lineWidth = 1;
   // districts: lit blocks where you have been, dark where you have not
   DISTRICTS.forEach((d, di) => {
-    const known = st.seen(d.zone);
+    const known = st.seen(d.scene);
     R(d.x, d.y, d.w, d.h, known ? '#170b05' : '#070403');
     for (const [bi, bx, by, bw, bh] of BLOCKS) if (bi === di) R(bx, by, bw, bh, known ? 'rgba(' + O + ',.28)' : 'rgba(' + O + ',.07)');
     frame(d.x, d.y, d.w, d.h, 'rgba(' + O + ',' + (known ? 0.75 : 0.3) + ')');
@@ -264,7 +252,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     const [px, py] = P(STATION_AT[id][0], STATION_AT[id][1]), next = !!st.ride && st.ride.to === id && st.ride.f > 0;
     box(x, px - 3, py - 3, 7, 7, '#0a0604', next ? 'rgba(' + O + ',' + (blink ? 1 : 0.5) + ')' : 'rgba(' + PAPER + ',.85)');
     // a station is named once you have stood on its platform or walked its district
-    const known = st.seen(STATIONS[id].zone) || st.seen(STATIONS[id].district);
+    const known = st.seen(STATIONS[id].scene) || st.seen(STATIONS[id].district);
     if (st.mode === 'view') text(x, known ? STATIONS[id].name : '???', px, py + 10, next ? 'rgba(' + O + ',.95)' : 'rgba(' + PAPER + ',.6)', 7, '600');
   }
   // taxi pads: cyan only when you can pick them
@@ -274,7 +262,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     box(x, px - 4, py - 4, 9, 9, '#030606', 'rgba(' + col + ',' + (sel ? (blink ? 1 : 0.45) : 0.6) + ')');
     x.fillStyle = 'rgba(' + col + ',.8)'; x.fillRect(px - 2, py - 2, 1, 5); x.fillRect(px + 2, py - 2, 1, 5); x.fillRect(px - 1, py, 3, 1);
     if (sel) { x.strokeStyle = 'rgba(' + C + ',.9)'; x.strokeRect(px - 7.5, py - 7.5, 15, 15); }
-    if (st.mode === 'taxi') text(x, st.seen(STANDS[id].zone) ? STANDS[id].name : '???', px, py - 10, sel ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.6)', 7, '600');
+    if (st.mode === 'taxi') text(x, st.seen(STANDS[id].scene) ? STANDS[id].name : '???', px, py - 10, sel ? 'rgba(' + C + ',.95)' : 'rgba(' + PAPER + ',.6)', 7, '600');
   }
   // quick travel: the place you point at or picked, in cyan (you can use it), its name and a dot on it
   if (st.mode === 'view') {
@@ -299,7 +287,7 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     const i = st.hover >= 0 ? st.hover : st.index;
     if (i >= 0) {
       // the place you point at: where it is, and whether you can go
-      const p = PLACES[i], why = placeBlocked(p, st), known = st.seen(p.zone);
+      const p = PLACES[i], why = placeBlocked(p, st), known = st.seen(p.scene);
       text(x, '> ' + (known ? p.name : '???'), ox + 10, fy + 3, why ? 'rgba(' + PAPER + ',.8)' : 'rgba(' + C + ',.95)', 9, '600', 'left');
       text(x, why || (st.touch ? (i === st.index ? 'TAP AGAIN TO GO' : 'TAP TO PICK') : 'E · CLICK  GO THERE'), ox + w - 10, fy + 3, why ? 'rgba(' + RED + ',.9)' : 'rgba(' + C + ',.9)', 7, '600', 'right');
     } else {
@@ -309,8 +297,8 @@ export function drawCityMap(x: CanvasRenderingContext2D, vw: number, vh: number,
     }
     text(x, st.touch ? 'TAP A PLACE YOU KNOW TO GO THERE · TAP OUTSIDE TO CLOSE' : '<- -> PICK A PLACE · E GO · TAB / M / ESC CLOSE', ox + w - 10, fy + 13, 'rgba(' + PAPER + ',.6)', 7, '', 'right');
   } else {
-    const name = st.seen(STANDS[pick as Stand].zone) ? STANDS[pick as Stand].name : '???';
-    const here = standOf(st.zone) === pick;
+    const name = st.seen(STANDS[pick as Stand].scene) ? STANDS[pick as Stand].name : '???';
+    const here = standOf(st.scene) === pick;
     text(x, '> ' + name + (here ? '  (YOU ARE HERE)' : ''), ox + 10, fy + 3, 'rgba(' + C + ',.95)', 9, '600', 'left');
     text(x, '<- -> choose · E fly · ESC cancel', ox + w - 10, fy + 12, 'rgba(' + PAPER + ',.7)', 7, '', 'right');
   }

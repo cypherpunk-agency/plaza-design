@@ -14,7 +14,7 @@
 
 import { crowd, drawCharacters, drawCharacter, type Character } from '../characters';
 import { booth, shelf, type ShelfSpec, type StallSpec } from './build';
-import { box, C, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, reflect, rng, sign, tell, text, type Scene, type SceneUse, type View } from './kit';
+import { box, C, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, reflect, rng, sign, tell, text, type SceneDef, type SceneUse, type View } from './kit';
 import { adScreen, camera, menuBoard, ticker, wallSign, YELLOW } from './screens';
 
 /** Layout: positions in world units, heights up from the atrium floor. */
@@ -421,7 +421,7 @@ function drawSecurity(x: CanvasRenderingContext2D, v: View) {
   box(x, s + 30, y(24), 40, 10, '#e0d4b8', 'rgba(40,30,20,.8)'); text(x, 'DESK 2', s + 50, y(19), 'rgba(30,18,8,.95)', 7, '700');
 }
 
-export const mall: Scene = {
+export const mall: SceneDef = {
   id: 'mall',
   name: 'Mall',
   width: L.width,

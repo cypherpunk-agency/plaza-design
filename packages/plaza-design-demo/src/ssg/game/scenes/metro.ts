@@ -9,7 +9,7 @@
  */
 
 import { Skyline } from '../skyline';
-import { box, notice, O, onScreen, PAPER, RED, rng, tell, text, type Scene, type View } from './kit';
+import { box, notice, O, onScreen, PAPER, RED, rng, tell, text, type SceneDef, type View } from './kit';
 import { drawDepartures, drawPlatformTrain, STOP } from './line';
 import type { RiderKind } from './riders';
 import { drawBench, drawScreen, drawWaiting } from './stations';
@@ -220,7 +220,7 @@ function drawDeck(x: CanvasRenderingContext2D, v: View) {
   for (let wx = 0; wx < L.width; wx += 260) { const s = v.sx(wx + 140); if (onScreen(v, s - 40, 80)) text(x, 'MIND THE GAP', s, gy + 7, 'rgba(255,210,58,.6)', 7, '600'); }
 }
 
-export const metro: Scene = {
+export const metro: SceneDef = {
   id: 'metro',
   name: 'Downtown metro',
   width: L.width,

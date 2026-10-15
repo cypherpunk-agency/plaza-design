@@ -1,11 +1,19 @@
 /**
- * The explorable scenes, by id. Each is walkable scenery with a few things to
- * read and a way back to Downtown; `?play=<id>` starts in one. Layout and texts
- * are plain objects in each module (ready to move to data later); drawing is code.
+ * Every scene, by id: every place in the game is one (city.ts says which
+ * place each belongs to). `?play=<id>` starts in one, and sudo's LEVELS lists
+ * them in this order. Most are walkable scenery with people, things to use
+ * and read, and ways out; the ones with devices bring their data file and
+ * rules (capsule/, downtown/, yard/, moth/, beach/). Layout and texts are plain
+ * objects in each module; drawing is code.
  */
 
+import { beach } from '../beach';
+import { capsule } from '../capsule';
+import { downtown } from '../downtown';
+import { moth } from '../moth';
+import { yard } from '../yard';
 import { harbor } from './harbor';
-import type { Scene } from './kit';
+import type { SceneDef } from './kit';
 import { mall } from './mall';
 import { market } from './market';
 import { metro } from './metro';
@@ -13,11 +21,15 @@ import { shop } from './shop';
 import { galleriaStation, harborStation } from './stations';
 import { train } from './train';
 
-export type { Scene, SceneExit, SceneReadable, SceneUse, UseCtx, View as SceneView } from './kit';
+export type { SceneDef, SceneExit, SceneReadable, SceneUse, UseCtx, View as SceneView } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
-export const SCENES = { harbor, market, shop, mall, metro, galleriaStation, harborStation, train } satisfies Record<string, Scene>;
+export const SCENES = {
+  capsule, downtown, yard, moth, beach, harbor, market, shop, mall, metro, galleriaStation, harborStation, train,
+} satisfies Record<string, SceneDef>;
 export type SceneId = keyof typeof SCENES;
 
 export const isSceneId = (id: string): id is SceneId => Object.prototype.hasOwnProperty.call(SCENES, id);
-export const sceneById = (id: string): Scene | undefined => (isSceneId(id) ? SCENES[id] : undefined);
+export const sceneById = (id: string): SceneDef | undefined => (isSceneId(id) ? SCENES[id] : undefined);
+/** A scene's name in capitals, as the HUD, the menu and the slots show it: BACK YARD, CAPSULE 7B. */
+export const sceneTitle = (s: SceneDef) => s.name.replace(/^the /i, '').toUpperCase();

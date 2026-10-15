@@ -16,7 +16,7 @@
  */
 
 import { LINE, STATIONS } from '../city';
-import { box, O, onScreen, PAPER, RED, rng, tell, text, towers, type Scene, type View } from './kit';
+import { box, O, onScreen, PAPER, RED, rng, tell, text, towers, type SceneDef, type View } from './kit';
 import { clock, LOOP, ride, rideDue, rideNext, rideOpen, rideRun, SEG, ticker } from './line';
 import { crowd, drawRider, KINDS, SEAT_H, type RiderKind } from './riders';
 
@@ -508,7 +508,7 @@ function drawRiders(x: CanvasRenderingContext2D, v: View) {
   for (const p of L.people) { const s = sx(p.x); if (onScreen(v, s - 16, 32)) drawRider(x, p.kind, s, y(0), t, { sit: p.sit, flip: p.x > 600, phase: p.x }); }
 }
 
-export const train: Scene = {
+export const train: SceneDef = {
   id: 'train',
   name: 'Metro car',
   width: L.width,

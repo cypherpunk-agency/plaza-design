@@ -7,8 +7,8 @@
  *
  * Loading a slot reloads the page: the slot's save goes into sessionStorage
  * (`RESUME_KEY`), the boot is skipped, and index.ts writes it over the autosave
- * and starts the game in the slot's zone before anything else can write. That
- * way every zone's runtime starts clean from the loaded save.
+ * and starts the game in the slot's scene before anything else can write. That
+ * way every scene's runtime starts clean from the loaded save.
  */
 
 import { SAVE_KEY, SUDO, type Save } from './level';
@@ -20,11 +20,11 @@ export const slotKey = (n: number) => `access-denied-v2-${SUDO ? 'sudo-' : ''}sl
 export const RESUME_KEY = 'access-denied-resume-v2';
 
 export interface Slot {
-  v: 1;
-  /** Zone id the slot was saved in ('downtown', 'yard', a scene id); loading starts there. */
-  zone: string;
+  v: 2;
+  /** The scene the slot was saved in ('downtown', 'yard', 'market', …); loading starts there. */
+  scene: string;
   /** What the slot list shows: DOWNTOWN, BACK YARD, a scene's name. */
-  zoneName: string;
+  sceneName: string;
   handle: string;
   /** Date.now() when saved. */
   at: number;
@@ -44,9 +44,9 @@ export function readSlot(n: number): Slot | null {
 }
 
 /** Copy the save into slot `n`. False when storage is blocked or full. */
-export function writeSlot(n: number, save: Save, zone: string, zoneName: string): boolean {
+export function writeSlot(n: number, save: Save, scene: string, sceneName: string): boolean {
   const slot: Slot = {
-    v: 1, zone, zoneName,
+    v: 2, scene, sceneName,
     handle: save.handle || 'ghost',
     at: Date.now(),
     playMs: save.playMs ?? 0,
@@ -60,18 +60,18 @@ export function slotLine(s: Slot): string {
   const d = new Date(s.at), p = (v: number) => String(v).padStart(2, '0');
   const when = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   const min = Math.floor((s.playMs || 0) / 60000);
-  return `${s.zoneName} · ${s.handle} · ${when} · ${Math.floor(min / 60)}:${p(min % 60)}`;
+  return `${s.sceneName} · ${s.handle} · ${when} · ${Math.floor(min / 60)}:${p(min % 60)}`;
 }
 
-/** LOAD GAME: reload the page and land in the slot's zone with the slot's save. */
+/** LOAD GAME: reload the page and land in the slot's scene with the slot's save. */
 export function resumeInto(slot: Slot) {
   try {
-    sessionStorage.setItem(RESUME_KEY, JSON.stringify({ zone: slot.zone, save: slot.save }));
+    sessionStorage.setItem(RESUME_KEY, JSON.stringify({ scene: slot.scene, save: slot.save }));
     location.reload();
   } catch {
     // No sessionStorage: write the save now and come back through ?play.
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(slot.save)); } catch { /* nothing to do */ }
-    location.search = '?play' + (slot.zone && slot.zone !== 'downtown' ? '=' + encodeURIComponent(slot.zone) : '') + (SUDO ? '&sudo' : '');
+    location.search = '?play' + (slot.scene && slot.scene !== 'downtown' ? '=' + encodeURIComponent(slot.scene) : '') + (SUDO ? '&sudo' : '');
   }
 }
 
@@ -80,14 +80,14 @@ export function resumePending(): boolean {
   try { return !!sessionStorage.getItem(RESUME_KEY); } catch { return false; }
 }
 
-/** After a LOAD GAME reload: put the slot's save in place as the autosave and return its zone. Once. */
+/** After a LOAD GAME reload: put the slot's save in place as the autosave and return its scene. Once. */
 export function takeResume(): string | null {
   try {
     const raw = sessionStorage.getItem(RESUME_KEY);
     if (!raw) return null;
     sessionStorage.removeItem(RESUME_KEY);
-    const r = JSON.parse(raw) as { zone?: string; save?: Save };
+    const r = JSON.parse(raw) as { scene?: string; save?: Save };
     if (r.save && typeof r.save === 'object') localStorage.setItem(SAVE_KEY, JSON.stringify(r.save));
-    return typeof r.zone === 'string' ? r.zone : 'downtown';
+    return typeof r.scene === 'string' ? r.scene : 'downtown';
   } catch { return null; }
 }

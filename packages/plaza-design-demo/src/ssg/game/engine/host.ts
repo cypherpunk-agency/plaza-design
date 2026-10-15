@@ -1,8 +1,9 @@
 /**
  * A scene on screen: its model, the schematic overlay, hack vision, its panels,
  * the HACK and BOARD buttons, and its part of the save. One class for every
- * scene; what differs is the scene's data, its rules (effects) and its view
- * (scene drawing, extra panels, extra things to press E on): a `EngineDef`.
+ * scene; what differs is the scene's data (none: zero devices), its rules
+ * (effects) and its definition (drawing, extra panels, extra things to press E
+ * on): a `SceneDef` (scenes/kit.ts).
  *
  * Tap a thing in the world (or stand next to it and press E) and its schematic
  * opens. B opens the board with every device you have opened or seen, for
@@ -20,11 +21,10 @@
  */
 
 import type { SceneData, SceneSave } from '../data/types';
-import type { Character } from '../characters';
-import type { SceneReadable, SceneUse } from '../scenes/kit';
+import type { SceneDef, View } from '../scenes/kit';
 import type { LineKind } from '../terminal';
 import { type Line, type Spot, SceneModel } from './model';
-import { type PanelFn, Panels } from './panels';
+import { Panels } from './panels';
 import type { SceneRules } from './rules';
 import { Feedback, type Spot2D } from './feedback';
 import { Popup, type PopupAnchor, type PopupItem, type PopupRoom } from './popup';
@@ -46,32 +46,16 @@ export interface DrawView { sx: (wx: number) => number; y: (h: number) => number
  */
 export type DrawLayer = 'all' | 'world' | 'devices';
 
-/** A scene's code on the screen side: its scene, its own panels, its extra targets. */
-export interface EngineView {
-  /** Panels this scene adds to the engine's `talk` (the yard's `camera`). Must match `rules.panels`. */
-  panels?: Record<string, PanelFn>;
-  /**
-   * Draw the scene (its backdrop and its things) after the ground. `hover`: the device under the pointer.
-   * `layer` (default 'all'): a view that cannot split draws everything for 'world' and nothing for 'devices'.
-   */
-  draw(x: CanvasRenderingContext2D, m: SceneModel, v: DrawView, hover: string | null, layer?: DrawLayer): void;
-  /** Things to press E on besides the devices (an exit, a pickup tray). */
-  targets?(m: SceneModel): SceneTarget[];
-  /** E on one of those. Return 'exit' to walk out of the scene. */
-  use?(id: string, m: SceneModel, say: (l: Line) => void): 'exit' | void;
-  /**
-   * A place's life, in the same shape the explorable scenes use (scenes/kit.ts), so any scene
-   * can have it: `people` (characters.ts; the view draws them, the game makes [E] TALK targets for
-   * those with `id` and `talk`), `uses` (things to do with E: buy, rent, pay in tokens) and
-   * `readables`. The game handles them exactly as it does a scene's.
-   */
-  people?: Character[];
-  uses?: SceneUse[];
-  readables?: SceneReadable[];
+/** What a scene's drawing gets from the engine besides the view: its model, the device under the pointer, the layer. */
+export interface EngineDraw { m: SceneModel; hover: string | null; layer: DrawLayer }
+
+/** A scene without a data file: no devices, no goals, nothing to hack. Hack vision shows nothing here. */
+export function emptyData(id: string, name: string): SceneData {
+  return { id, name, state: {}, tuning: {}, devices: [], cables: [], dialogue: {}, goals: [], texts: {} };
 }
 
-/** A scene, complete: its data file, its rules, its view. */
-export interface EngineDef { data: SceneData; rules: SceneRules; view: EngineView }
+/** A scene without code of its own on the engine. */
+export const NO_RULES: SceneRules = { effects: {} };
 
 /** How a scene reaches the game's save. */
 export interface SceneStore {
@@ -143,7 +127,7 @@ export class SceneHost {
   /** While a typed command runs (`typed`), the deck already shows it: don't print the shell line again. */
   private echo = true;
 
-  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: SceneStore | undefined, readonly def: EngineDef) {
+  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: SceneStore | undefined, readonly def: SceneDef, rules: SceneRules = NO_RULES) {
     this.model = new SceneModel({
       say: (l, from) => this.say(l, from),
       open: (panel, arg) => this.panels.open(panel, arg),
@@ -156,7 +140,7 @@ export class SceneHost {
       tokens: store?.tokens,
       drop: store?.drop,
       sudo: store?.sudo ? () => true : undefined,
-    }, def.data, def.rules);
+    }, def.data ?? emptyData(def.id, def.name), rules);
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
@@ -164,7 +148,7 @@ export class SceneHost {
     this.popup = new Popup(host);
     this.fx = new Feedback(host);
     this.popup.onClose = () => this.onClose();
-    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.view.panels });
+    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.panels });
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
     this.vision.onPlace = (id) => { this.place(id); this.refollow(); this.dirty(); };
@@ -213,7 +197,7 @@ export class SceneHost {
     return [...m.trace].map(([k, v]) => k + Math.round(v)).join() + '|' + [...m.locks.keys()].filter((k) => m.lockLeft(k) > 0).join();
   }
 
-  get id() { return this.def.data.id; }
+  get id() { return this.def.id; }
 
   // ---------- the save ----------
 
@@ -283,7 +267,7 @@ export class SceneHost {
     let x: number, base: number, w: number, h: number;
     if (s) { x = s.x; base = s.y; w = s.w; h = s.h; }
     else {
-      const t = this.def.view.targets?.(this.model).find((z) => z.id === from), q = t ? { x: t.x, h: 0 } : this.where(from);
+      const t = this.def.targets?.(this.model).find((z) => z.id === from), q = t ? { x: t.x, h: 0 } : this.where(from);
       if (!q) return null;
       x = q.x; base = q.h; w = t ? 24 : 18; h = t ? Math.max(16, t.promptH - 14) : 16;
     }
@@ -483,16 +467,16 @@ export class SceneHost {
 
   /** Things you can stand next to and press E on: the scene's own (an exit), then every device in the world. */
   targets(): SceneTarget[] {
-    const m = this.model, own = this.def.view.targets?.(m) ?? [];
+    const m = this.model, own = this.def.targets?.(m) ?? [];
     const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, y: s.y, label: m.label('prompt.open'), promptH: s.y + Math.min(s.h + 12, 100) }));
     return [...own, ...devs];
   }
 
-  /** E next to a target. Returns 'exit' when the player walks out of the scene. */
-  use(id: string): 'exit' | void {
+  /** E next to a target. Returns the id of one of the scene's exits when the player leaves through it. */
+  use(id: string): string | void {
     if (this.model.devices.has(id) && this.model.spots().some((s) => s.id === id)) { this.pick(id); return; }
     // what the scene's own targets say (the pickup tray) stands over them
-    return this.def.view.use?.(id, this.model, (l) => this.say(l, id));
+    return this.def.use?.(id, this.model, (l) => this.say(l, id));
   }
 
   /** The device in the world under a point (world x, height), smaller things first. */
@@ -509,5 +493,5 @@ export class SceneHost {
   }
 
   /** Draw the scene; in hack vision the game draws 'world', mutes it, then 'devices' (see `DrawLayer`). */
-  draw(x: CanvasRenderingContext2D, v: DrawView, layer: DrawLayer = 'all') { this.def.view.draw(x, this.model, v, this.hover, layer); }
+  draw(x: CanvasRenderingContext2D, v: View, layer: DrawLayer = 'all') { this.def.drawBackdrop(x, v, { m: this.model, hover: this.hover, layer }); }
 }

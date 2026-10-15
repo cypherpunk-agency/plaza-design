@@ -10,7 +10,7 @@
 
 import { crowd, drawCharacters, drawCharacter, type Character } from '../characters';
 import { bin, booth, clutter, facade, lamp, stall, stallBox, stool, type FacadeSpec, type StallSpec } from './build';
-import { box, DESIGN_TOP, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, towers, wetFloor, type Scene, type SceneUse } from './kit';
+import { box, DESIGN_TOP, drawTowers, exitDoor, GREEN, notice, O, onScreen, PAPER, RED, rng, sign, towers, wetFloor, type SceneDef, type SceneUse } from './kit';
 import { adScreen, bladeSign, brokenScreen, camera, menuBoard, oddsBoard, registryBoard, scoreDisplay, ticker, wantedScreen, YELLOW } from './screens';
 
 /** Layout: positions in world units, heights up from the street. */
@@ -188,7 +188,7 @@ const USES: SceneUse[] = [
   } },
 ];
 
-export const market: Scene = {
+export const market: SceneDef = {
   id: 'market',
   name: 'Street Market',
   width: L.width,
