@@ -394,8 +394,6 @@ export class Game {
     if (zh.hackable && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
     if (zh.hackable && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
-    // walking up into an open train door (or out of one) is the same as E there
-    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.walkThroughDoor()) return;
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }
@@ -1537,14 +1535,6 @@ export class Game {
     if (st && this.reduced && !platformOpen(st, this.t)) platformSync(st, this.t, TIMETABLE.dwell / 2);
   }
 
-  /** ↑ or W in an open train door, on the platform or in the car: step through it. */
-  private walkThroughDoor() {
-    const t = this.nearest();
-    if (!t || (t.id !== 'exit:train' && t.id !== 'exit:out' && t.id !== 'exit:out2')) return false;
-    this.useLife(t.id);
-    return true;
-  }
-
   /** The player walked into a border: leave through that edge's exit, if the scene has one, still walking the same way. */
   private walkOff(edge: 'left' | 'right') {
     const e = this.def.exits.find((z) => z.edge === edge && (!z.requires || this.save.flags[z.requires]));
@@ -1567,7 +1557,7 @@ export class Game {
     this.travel('train', 'out');
   }
 
-  /** E (or ↑) at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
+  /** E at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
   private stepOut() {
     if (!rideOpen()) return;
     const st = rideStop(), left = rideLeft();
