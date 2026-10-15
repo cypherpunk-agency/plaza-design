@@ -633,6 +633,8 @@ export const harbor: Scene = {
   exits: [
     { id: 'metro', x: L.metro, to: 'harborStation', at: 'harbor', label: '[E] TO THE METRO', promptH: 82 },
     { id: 'taxi', x: L.taxi, to: '', action: 'taxi', label: '[E] HAIL TAXI', promptH: 122 },
+    // the pier runs on east along the shore to the beach (beach/: its left edge leads back here)
+    { id: 'beach', x: 2450, to: 'beach', at: 'harbor', label: 'BEACH >', edge: 'right' },
   ],
   readables: [
     { id: 'notice', x: L.notice, name: 'PORT AUTHORITY', promptH: 78, pages: ['ALL CARGO IS SUBJECT TO INSPECTION AT THE CUSTOMS ARCH.', 'INSPECTION METHOD: EXTERNAL SCAN. CONTENTS AS DECLARED BY THE SHIPPER.'] },
