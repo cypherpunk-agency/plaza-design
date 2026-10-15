@@ -34,6 +34,7 @@
  */
 
 import type { Line } from './engine';
+import { SUDO } from './level';
 
 export const OPENING = {
   home: 'opening:home',
@@ -56,8 +57,8 @@ export function openingState(f: Flags): OpeningState {
   return 'home';
 }
 
-/** Hacking is locked until Moth's uplink.so. */
-export const hackLocked = (f: Flags) => { const s = openingState(f); return s === 'home' || s === 'flat' || s === 'deleted'; };
+/** Hacking is locked until Moth's uplink.so; in sudo it never is (Tommi, 2026-10-15). */
+export const hackLocked = (f: Flags) => { if (SUDO) return false; const s = openingState(f); return s === 'home' || s === 'flat' || s === 'deleted'; };
 /** Downtown (and the train, the platform) BEFORE you are deleted: the city still works for you. */
 export const isBefore = (f: Flags) => { const s = openingState(f); return s === 'home' || s === 'flat'; };
 /** Every opening flag, to start the opening over (sudo's LEVELS). */
