@@ -47,6 +47,14 @@ once, then stops.
 5. **Morning: deleted.** The door says "rent: pending"; everyday actions don't help. Moth's
    message brings `uplink.so`: hacking unlocks as the first quest. Then Capsule 7B's puzzles. ✓
 
+**Title beach (Tommi, 2026-10-15, after the drafts):** water = the mirror sea combined with the
+pixel swell; the scene = "the bar at the edge": SALT with string lights, a DJ bot, people
+partying, the bonfire; add parasols and sun loungers. When the glide starts west, a pier is the
+first transitional piece. **Glide feedback:** the seams between regions break the illusion (the
+ground jumps), the cranes cross each other, the Spire reads as a weird T, the Galleria floats,
+and there is no life (people, vehicles, robots, flying traffic). Redesign: one continuous coast
+(drafts: https://claude.ai/artifact/ — see "Glide Coast Drafts").
+
 Guidance: the scene leads (one way on, people facing it, signs), the GOAL line, and an **idle
 ping** on the next goal target after ~20 s standing still, in the opening scenes only for now. ✓
 
