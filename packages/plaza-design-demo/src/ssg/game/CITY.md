@@ -5,7 +5,7 @@ connect. ROADMAP.md says what gets built when; SCENES.md and STORY.md say what t
 
 ## Four levels, the Monkey Island way
 
-1. **City**: seven districts, stacked vertically as well as side by side.
+1. **City**: nine districts, stacked vertically as well as side by side.
 2. **District**: a part of the city with its own character. Inside a district you walk between
    its places.
 3. **Place**: a location. It has one scene or several (a rich person's house: the hall, the
@@ -29,20 +29,192 @@ The city is a cross-section with three strata.
 - **Underworld (the Undercity)**: canals, sewers and flooded basements, where the deleted live.
   Reached by drains, canal boats, service lifts and the metro's service tunnels.
 
-## The seven districts
+## The nine districts and their places
 
-| District | Stratum | Character | Places (now ✓, and planned) |
+Decided with Tommi, 2026-10-15 (the catalogue). Every district gets interesting things; essential
+kinds (streets, homes, shops, bars and food, police, care) appear in several districts at their
+own class level, so the same need looks different across the city. The Old Quarter is its own
+district now (no longer part of the Neon Market), and the **Skyport** is a ninth. Code still has
+the seven of before (`city.ts`) until the new ones are built.
+
+### How much the player is asked to take in
+
+Not every place is a level. Each place has a **tier**:
+
+- **H, hero**: several scenes, puzzles, story. About 15–20 in the whole game.
+- **V, visit**: one scene with people, look-ats, one small use, maybe an optional puzzle. About 30–40.
+- **B, backdrop**: seen, not entered: scenery in a scene or the glide, a sign with a dry line, a
+  pin on the map with one line. Any B can be promoted to V later.
+
+Three rules keep it readable: **one goal at a time** (the HUD's GOAL; everything else is optional,
+and a place you can't use yet says why in one line); **acts open districts** (below); **the map
+reveals as you go** (above). Sets (`sets/`, ART-GUIDE.md §12) make the B places cheap.
+
+**Act** is when a place opens: I, II, III, or *any* (open whenever its district is).
+
+### 1. Downtown: working class, the core (Act I)
+
+| Place | Tier | Act | What |
 | --- | --- | --- | --- |
-| **Downtown** | street | working class, mixed, rain and neon | the street ✓ (noodle stall, kiosk); Capsule 7B tower ✓ (your flat; later the lobby and roof); the fixer's back yard ✓; Moth's building ✓ (flat 4C; later the stairwell); the corner shop ✓; the public library ✓ (P16, the reading room kept for its chairs); J's penthouse; the billboard catwalk |
-| **Neon Market / Old Quarter** | street | low life, packed, low-tech | the market ✓; the laundromat ✓; the ripperdoc clinic; the arcade and karaoke; the pawn shop; club VOID |
-| **Galleria** | street (and up) | middle and upper-middle class, consumer, shiny | the mall ✓; the rooftop garden; gated condos; the Church of the Algorithm |
-| **Harbor & Shore** | street (and water) | industrial and leisure, busy against calm | the harbor pier ✓ (and the stacks ✓, terminal 2, a second scene of it); warehouse 4 ✓ (outside only; its evidence locker is Act II); the beach ✓ (SALT, the pier, Moth's boat); the bridge |
-| **The Spire / Plaza Central** | overworld | elite, cold, almost lifeless | Plaza Holdings HQ (lobby, floors, Sorel's office, the penthouse); the Registry office; the antenna; the sky-taxi depot |
-| **Undercity** | underworld | the Ghosts, lantern-lit, low-tech | the canals; the sewer market; the flooded server basement; Ghost homes in the arches |
-| **The Fringe** | street, edge | devoid of life, robots only | a dead automated factory; the data cemetery; the recycling plant |
+| The street ✓ (noodle stall, kiosk) | H | I | rain, neon, the Ring highway's shadow overhead |
+| Capsule 7B ✓ (your flat; later the lobby, the courtyard with washing lines, the roof) | H | I | capsule living |
+| Moth's building ✓ (flat 4C; later the stairwell) | H | I | the old walk-up |
+| The back yard ✓ | H | I | |
+| The corner shop ✓ | V | I | |
+| The public library ✓ | H | I | P16 |
+| The metro station ✓ (LINE 0) | V | I | |
+| FRESHCO supermarket | V | any | the self-checkout that accuses you |
+| The 24h diner | V | any | the night shift's breakfast at dawn |
+| The Registry service point | V | II | a job centre with a queue |
+| The police precinct | V | II | |
+| The substation | B | any | hums; the relay's power |
+| J's penthouse ○ | H | II | fragment 2, rich and poor in one block |
+| The billboard catwalk ○ | V | II | change what the city reads |
 
-The metro (LINE 0) runs through the street districts; its stations are places of their own
-(Downtown ✓, Galleria ✓, Harbor ✓).
+### 2. Old Quarter: the old town on the canal (Act II)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| Canal Street | H | II | stone bridges, banks, LINE 1's station |
+| Tenements and houseboats | V | II | old living, old neighbours |
+| St. Agnes | V | II | the last church that takes cash; an ageing congregation |
+| The residents' association | V | II | against demolition; meets in a back room |
+| The chess club, the pigeon fanciers (O06), the allotments | B/V | any | special interests |
+| The variety theatre | V | II | old stage, new holo-acts |
+| The family restaurant | V | any | |
+| The old school | B | any | half closed |
+| The public bathhouse | V | any | the poor's spa; everyday: wash day |
+| The volunteer fire brigade | V | II | the city's robots don't come here |
+
+### 3. Neon Market: nightlife, low life (Act I)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| The market ✓ | H | I | |
+| The laundromat ✓ | H | I | P13; everyday: waiting for the wash |
+| The dive bar | V | any | |
+| The capsule hotel | V | any | |
+| The pachinko and casino hall | V | II | the illegal one |
+| The hackers' meetup | V | II | a front for the Ghosts |
+| The cyborg fight club | V | II | |
+| The rooftop shacks | B | any | |
+| The unlicensed sky-taxi pad | V | II | |
+| The ripperdoc ○ | V | II | how Moth got the deck implant |
+| The arcade and karaoke ○ | V | II | |
+| The pawn shop ○ | V | II | buys memories by the megabyte |
+| Club VOID ○ | H | II | fragment 4 |
+
+### 4. Galleria: middle class, consumer, culture (Act I via the metro)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| The mall ✓, its metro station ✓ | H | I | O08 |
+| The plaza and wishing fountain (O11) | V | I | the ID gate, the escalator (as in the glide); everyday: the score-check queue |
+| The rooftop garden ○ | V | I | O09 |
+| The premium grocer, the food court | V | any | |
+| The NEOBANK branch | V | II | fragment 6's door in the real world |
+| The Church of the Algorithm ○ | H | II | fragment 5 |
+| The museum (of the analogue age) | V | II | |
+| The cinema and concert hall | B | any | |
+| Plaza Academy | V | II | admission by score |
+| The conference centre | V | II | VERIFYCON is on |
+| The business hotel | B | any | |
+| The wellness spa | V | II | tiers by score |
+| The park | V | any | grass rented by the hour |
+| The gated condos ○ | V | II | the seam with the market |
+| The private hospital | V | II | |
+| The police checkpoint | V | II | at the market seam |
+
+### 5. Harbor & Shore: logistics and leisure (Act I, after P14)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| The harbor pier ✓ and the stacks ✓ | H | I | P15 |
+| Warehouse 4 ✓ (outside; the hall and locker ○) | H | II | fragment 3 |
+| The port gate and port office | V | I | everyday: shift change at the gate |
+| The drone logistics hub | V | II | the delivery fleet (DISPATCH) |
+| The dry dock, the desalination plant | B | any | |
+| The container ship | V | II | boardable |
+| The cruise terminal and liner | V | II | |
+| The ferry pier | V | II | to the Spire's foot |
+| The fish market and fishing boats | V | any | |
+| The sailors' bar | V | any | |
+| The harbor patrol | B | any | customs |
+| The beach ✓ (SALT, the pier) | H | I | |
+| Moth's boat ○ | V | II | |
+| The surf school, the beach hotel | B | any | |
+| The bridge ○ | V | II | |
+
+### 6. The Spire / Plaza Central: the elite (Act II up, Act III)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| Plaza Holdings HQ ○ (lobby, floors, the penthouse) | H | III | |
+| Sorel's office ○ | H | II | fragment 7 |
+| The Registry office ○ | H | III | the watchdog's home |
+| The antenna ○, the server room ○ | H | III | the ending |
+| The sky-taxi depot ○, decks 1 and 2 | V | II | |
+| The sky elevator | V | II | its housing on the mall's roof |
+| The sky apartments | B | any | |
+| The luxury hotel | V | II | |
+| The high-roller casino | V | II | the legal one |
+| The oxygen spa | B | any | |
+| The sky garden | V | II | real trees |
+| The robot restaurant | V | II | served by robots only |
+| Wingsuits off the decks | B | any | gliding |
+
+### 7. Undercity: the deleted (Act II)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| The canals ○ (boat taxis) | H | II | |
+| The Ghosts' homes in the arches ○ | H | II | the slum |
+| The sewer market ○ | V | II | everyday: trading |
+| The flooded server basement ○ | H | II | the UNDERNET's home |
+| The pumping station and the outfall | V | II | a way down from the bay |
+| The shrine of the deleted | V | II | |
+| The free clinic | V | II | run by the Ghosts |
+
+### 8. The Fringe: industry and waste (Act II, side)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| The dead automated factory ○ | V | II | |
+| The recycling plant ○ | V | II | |
+| The power plant | B | any | |
+| The landfill | V | II | garbage robots; everyday: the garbage run |
+| The data cemetery ○ | H | II | memorial servers of the dead |
+| The vertical farms | V | II | robot-run, one human farmer |
+| The cargo field, Fringe Depot (LINE 1's end) | V | II | |
+| The truck stop | V | II | the Ring highway's end: a diner and a motel |
+| The wastelands and the camp of the deleted | V | II | |
+
+### 9. Skyport and the Exclusion Zone (backdrop; late)
+
+| Place | Tier | Act | What |
+| --- | --- | --- | --- |
+| The space port (launch pads, terminal) | B | any | launches seen from all over the city |
+| The military exclusion zone (fence, checkpoint, barracks, drones) | B | III? | beyond the Fringe; may open late |
+
+### Open
+
+- **Your night job.** The opening has you come home on LINE 0 at dawn after a night shift. The
+  harbor is shut until P14 (its station is "closed until the siding"), so the job can't be there in
+  Act I. Proposal: the Galleria's night cleaning crew (on LINE 0, open in Act I; working class
+  cleaning up after the middle class).
+- Whether the Fringe holds a story piece (the data cemetery, a list of names?).
+
+The metro runs through the street districts: LINE 0 (the loop: Downtown ✓, Galleria ✓, Harbor ✓)
+and LINE 1, the Canal Line (Fringe Depot, Old Quarter, Canal Street, Harbor Shore, Beach), with bus 7
+and the ferry; interchanges are marked on the map (the street-map draft).
+
+## Ways to move
+
+- **On the ground**: walking, LINE 0 and LINE 1, bus 7, cabs, the Ring highway and its trucks.
+- **Flying**: sky taxis between pads, dropships, drones, the shuttle from the space port.
+- **On the water**: the ferry, canal boat taxis, swimming out to the buoy, diving at the harbor.
+- **Gliding**: wingsuits off the Spire's decks, a paraglider at the beach.
+- **Elevators**: the sky elevator, the Spire's service lifts into the Undercity, freight lifts.
 
 ## Contrast is planned, not left to chance
 
