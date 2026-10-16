@@ -1,5 +1,14 @@
 # ACCESS DENIED: story, factions, characters (first draft)
 
+See [ROADMAP.md](./ROADMAP.md) for the consolidated build sequence and
+[PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md) for the detailed new encounter order.
+
+> The newer [story and progression concept](./PROGRESSION-CONCEPT.md) (2026-10-16) proposes a harbor night-shift prologue, a Downtown-centred Act I, and later changes of embodiment. It takes precedence for proposed progression; the older arc below remains reference material, not a requirement. Body-transfer causes and outcomes remain open.
+
+Working story design, including historical proposals. All of it remains open to revision,
+whether implemented or not. ROADMAP.md tracks current implementation status; README.md maps
+the documents. Dated decisions below record context rather than fixing the story permanently.
+
 A starting point to argue with. It keeps everything already decided: Moth, the fixer, Capsule 7B,
 Pixel, the Registry, the seven root fragments, and the harbor as the end of Act I
 (PUZZLES.md "Decided").

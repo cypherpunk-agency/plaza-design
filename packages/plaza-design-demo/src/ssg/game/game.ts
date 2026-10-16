@@ -180,7 +180,7 @@ export class Game {
       quit: () => host.onExit(),
       // the city map lives in the menu too (TAB and M still open it on a keyboard)
       map: () => this.showMap(),
-      onClose: () => this.canvas.focus(),
+      onClose: () => { this.syncEnginePause(); this.canvas.focus(); },
       ...(SUDO ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
     }, this.touch);
     // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts); in a scene, the city clock's
@@ -286,6 +286,7 @@ export class Game {
     zh.netNew = () => !this.save.flags[NET_OPENED];
     zh.onNet = () => this.showNet();
     this.hosts.set(id, zh);
+    zh.setPaused(this.enginesPaused);
     // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
     this.host.windowEl.querySelectorAll<HTMLElement>('#scene-btns').forEach((el) => this.keyBar.adopt(el));
     return zh;
@@ -309,6 +310,13 @@ export class Game {
     this.syncHud();
     syncGoals(this.downtown.model, this.save);
   }
+
+  /** Pause puzzle time wherever a full-screen interruption holds the world. Wall-clock locks still expire. */
+  private get enginesPaused() {
+    return !this.running || !!this.opening || !!this.menu?.open || !!this.cut || !!this.mapView || !!this.netView;
+  }
+
+  private syncEnginePause() { this.hosts.forEach((h) => h.setPaused(this.enginesPaused)); }
 
   // ---------- lifecycle ----------
 
@@ -337,13 +345,14 @@ export class Game {
 
   /**
    * Into the save (the title's CONTINUE, or a start in a scene). A save in the middle of the
-   * opening goes back to where it was (opening.ts); one that has never been Downtown starts at home.
+   * saved scene takes precedence; older saves fall back to opening.ts or Downtown/the first scene.
    */
   private continueGame(scene: SceneId | undefined, first: boolean) {
     this.endTitle();
     this.started = true;
     const resume = !scene && first ? openingResume(this.save.flags) : null;
-    if (resume) scene = resume;
+    if (!scene && first && this.save.scene && isSceneId(this.save.scene) && (this.save.scene !== 'sandbox' || SUDO)) scene = this.save.scene;
+    else if (resume) scene = resume;
     else if (!scene && first && !this.save.flags.arrived && !this.save.flags[seenFlag('downtown')]) {
       // a save that never got going: the opening, on the train home (no glide: that is NEW GAME's)
       if (!this.save.flags[seenFlag(START_SCENE)]) { this.startOpening(); return; }
@@ -385,6 +394,7 @@ export class Game {
     this.hosts.forEach((h) => h.closeAll());
     this.term.close();
     this.opening = new Opening(this.reduced);
+    this.syncEnginePause();
     document.documentElement.classList.add('cutscene');
     this.host.setScene('ACCESS DENIED');
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: a sunrise over the sea');
@@ -472,6 +482,8 @@ export class Game {
   }
 
   stop() {
+    this.running = false;
+    this.syncEnginePause();
     this.endTitle();
     document.documentElement.classList.remove('game-map', 'hack-ok', 'hack-on', 'logic-open', 'unfold-on');
     this.modeKey = '';
@@ -479,13 +491,14 @@ export class Game {
     this.endCutscene(false);
     this.transport?.attach(null);
     this.clockBar?.show(false);
-    this.running = false;
     cancelAnimationFrame(this.raf);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     window.removeEventListener('resize', this.onResize);
     this.keys.clear();
     this.mapView = null;
+    this.netView = null;
+    this.netBack = false;
     this.hosts.forEach((h) => { h.closeAll(); h.persist(); });
     this.term.close();
     this.canvas.hidden = true;
@@ -531,6 +544,7 @@ export class Game {
 
   private loop(now: number) {
     if (!this.running) return;
+    this.syncEnginePause();
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
     // sudo's time control follows whatever timed picture is up (none: it hides); in a scene, the city clock's bar
@@ -666,6 +680,7 @@ export class Game {
     this.zh.persist();
     storeSave(this.save);
     this.menu.show();
+    this.syncEnginePause();
   }
 
   /**
@@ -920,7 +935,7 @@ export class Game {
     }
     this.updateTravel(dt);
     this.updateStory();
-    const locked = this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep;
+    const locked = this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
@@ -2008,7 +2023,7 @@ export class Game {
    * the title stop the whole loop before this.)
    */
   private clockRuns() {
-    return !this.mapView && !this.flight && !this.hop && !this.zh.panelOpen && !this.sleep && !this.showEnd && !this.beat;
+    return !this.mapView && !this.netView && !this.flight && !this.hop && !this.zh.panelOpen && !this.sleep && !this.showEnd && !this.beat;
   }
 
   /**
@@ -2180,6 +2195,7 @@ export class Game {
     this.hosts.forEach((h) => h.closeAll());
     this.term.close();
     this.cut = new CutscenePlay(scene, { reduced: this.reduced, touch: this.touch });
+    this.syncEnginePause();
     this.cutThen = after;
     document.documentElement.classList.add('cutscene');
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + scene.cards.map((c) => c.text).join(' '));
@@ -2398,8 +2414,8 @@ export class Game {
 
   /** Remember a scene for the city map: `flags['seen:<scene>']`. */
   private markSeen(id: SceneId) {
+    this.save.scene = id;
     const f = seenFlag(id);
-    if (this.save.flags[f]) return;
     this.save.flags[f] = true;
     storeSave(this.save);
   }
@@ -2428,16 +2444,20 @@ export class Game {
       return;
     }
     this.mapView = openMap('taxi', this.here, this.here === 'train' ? rideStop() : null);
+    this.keys.clear();
+    this.syncEnginePause();
     sound.open();
   }
 
   /** The city map on its own, just to look at (for a menu to call). Esc closes it. */
   showMap() {
     if (!this.running || this.flight || this.hop) return;
+    this.keys.clear();
     this.bubble = null;
     // the map takes the screen: hack vision closes first
     if (this.zh.visionOn) this.zh.toggleVision();
     this.mapView = openMap('view', this.here, this.here === 'train' ? rideStop() : null);
+    this.syncEnginePause();
   }
 
   /** True while the city map is open. */
@@ -2522,6 +2542,8 @@ export class Game {
 
   /** Flights land; on board, the train stands, closes its doors, runs to the next stop on the loop and opens them (line.ts). */
   private updateTravel(dt: number) {
+    // Maps hold the ride as well as the engine that reads its position (P14).
+    if (this.mapView || this.netView) return;
     // the harbor lock: LINE 0 stops there only once P14 is solved
     lineOpen.harbor = harborOpen(this.save.flags);
     if (this.flight && this.clock - this.flight.start >= FLIGHT) {
@@ -2566,6 +2588,7 @@ export class Game {
    */
   showNet() {
     if (!this.running || this.flight || this.hop || !this.netOk) return;
+    this.keys.clear();
     this.bubble = null;
     this.mapView = null;
     this.netBack = this.zh.visionOn;
@@ -2580,6 +2603,7 @@ export class Game {
     this.save.flags[NET_OPENED] = true;
     storeSave(this.save);
     this.netView = openNet();
+    this.syncEnginePause();
     sound.open();
   }
 

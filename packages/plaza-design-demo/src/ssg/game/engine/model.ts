@@ -25,6 +25,7 @@ import { machinesOf, reachNets } from './net';
 // [engine features: watchdog, clocks] (scene/watchdog.ts, scene/clock.ts)
 import { Clocks } from './clock';
 import { type DogView, Watchdogs } from './watchdog';
+import { SceneTime } from './time';
 
 /**
  * Data kinds, plus two the engine makes: SEAL (the input of a sector sealed
@@ -179,7 +180,7 @@ export class SceneModel {
   passed = new Set<string>();
   /** Trace per device, 0–100. */
   trace = new Map<string, number>();
-  /** Lockouts until a time: a device (`dev`, after a full trace) or a guard (`dev.noun`, after wrong guesses). */
+  /** Wall-clock lockout deadlines: a device (`dev`) or a guard (`dev.noun`). */
   locks = new Map<string, number>();
   /** Net nodes met: seen on a scan (a silhouette on the board), or connected (a device). */
   net = new Map<string, 'seen' | 'connected'>();
@@ -187,8 +188,9 @@ export class SceneModel {
   logicAt = new Map<string, { x: number; h: number }>();
   /** Devices the player is looking into right now (the host sets it: a device's schematic). */
   viewing = new Set<string>();
-  /** The clock. A test can swap it. */
-  now: () => number = () => performance.now();
+  private time = new SceneTime();
+  /** Scene time: held while paused. A focused check can swap it. */
+  now: () => number = () => this.time.now();
   /** The wall clock, for lockouts that must run on while the game is closed. A test can swap it. */
   wall: () => number = () => Date.now();
   // [engine features] the watchdog, clocks, cuts of pre-wired cables, lockout lengths, modules and tokens without a save
@@ -236,6 +238,7 @@ export class SceneModel {
   /** Back to how the scene file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
     this.epoch++;
+    this.time.clear();
     this.clocks.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
@@ -267,10 +270,13 @@ export class SceneModel {
     return l;
   }
 
-  /** setTimeout that a reset or restore cancels (a timer counting, a parcel sliding). */
+  /** Hold scene clocks and pending signals/actions together. Lockouts still expire on wall time. */
+  setPaused(on: boolean) { this.time.pause(on); }
+
+  /** Delayed scene action: pauses with the scene, cancelled by reset or restore. */
   later(ms: number, fn: () => void) {
     const e = this.epoch;
-    setTimeout(() => { if (e === this.epoch) fn(); }, ms);
+    this.time.later(ms, () => { if (e === this.epoch) fn(); });
   }
 
   /** A scene state key (for effects and the scene). */
@@ -633,11 +639,11 @@ export class SceneModel {
   }
 
   /** Milliseconds left on a lockout (a device id, or a guard's `dev.noun`); 0 when free. */
-  lockLeft(key: string) { const until = this.locks.get(key); return until && until > this.now() ? until - this.now() : 0; }
+  lockLeft(key: string) { const until = this.locks.get(key); return until ? Math.max(0, until - this.wall()) : 0; }
   /** How long the running lockout lasts in all, ms (for a countdown bar). */
   lockSpan(key: string) { return this.spans.get(key) ?? this.lockLeft(key); }
   private lock(key: string, ms: number) {
-    this.locks.set(key, this.now() + ms); this.spans.set(key, ms);
+    this.locks.set(key, this.wall() + ms); this.spans.set(key, ms);
     this.later(ms + 50, () => this.changed());
   }
 
@@ -780,7 +786,7 @@ export class SceneModel {
       if (t !== before) { this.trace.set(d.id, t); moved = true; }
       if (t >= 100) this.kick(d.id);
     }
-    for (const [k, until] of this.locks) if (until <= this.now()) { this.locks.delete(k); this.spans.delete(k); moved = true; }
+    for (const [k, until] of this.locks) if (until <= this.wall()) { this.locks.delete(k); this.spans.delete(k); moved = true; }
     // [watchdog, clocks] they move on the same tick; while a watchdog walks, its sprite and countdown need redrawing
     if (this.tickEngine()) moved = true;
     return moved || this.dogs.any;
@@ -1002,7 +1008,7 @@ export class SceneModel {
     if (this.cuts.size) z.cut = [...this.cuts];
     const trace = [...this.trace].filter(([, v]) => v > 0).map(([k, v]) => [k, Math.round(v * 10) / 10] as const);
     if (trace.length) z.trace = Object.fromEntries(trace);
-    const locks = [...this.locks].filter(([k]) => this.lockLeft(k) > 0).map(([k, until]) => [k, Math.round(this.wall() + until - this.now())] as const);
+    const locks = [...this.locks].filter(([k]) => this.lockLeft(k) > 0).map(([k, until]) => [k, Math.round(until)] as const);
     if (locks.length) z.locks = Object.fromEntries(locks);
     const clocks = this.clocks.snapshot();
     if (Object.keys(clocks).length) z.clocks = clocks;

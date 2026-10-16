@@ -1,9 +1,15 @@
 # ACCESS DENIED: puzzle catalogue
 
-Every puzzle, device, character and good line we have so far, put in story order so the
-next agents can build from it. The back yard and Downtown are built (Downtown on the scene
-engine since 2026-10-14: `data/downtown.json`); everything else is a design. Read with `LEVELS.md` (the story and level plan),
-`GAME-DATA.md` (the data format) and `ART-GUIDE.md` (how things look).
+See [ROADMAP.md](./ROADMAP.md) for the consolidated build sequence and
+[PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md) for the detailed new encounter order.
+
+> Teaching order is being redesigned in [PROGRESSION-CONCEPT.md](./PROGRESSION-CONCEPT.md) (2026-10-16). The route and progression tables below describe the earlier arrangement; built puzzles are reusable material, not mandatory Act I lessons. Advanced combinations may move to later acts.
+
+Working puzzle catalogue, mixing implemented puzzles and proposals. Everything remains open
+to redesign. ROADMAP.md tracks current status; this file's **Built/As built** passages describe
+the implementation. Older sketches elsewhere are illustrative, not instructions to paste
+over current data. Read with LEVELS.md (level design), GAME-DATA.md (authoring), ART-GUIDE.md
+(visual intent) and README.md (documentation map).
 
 This is a hacking game told as fiction and played as puzzles. Nothing here is a manual for
 real systems: guards are toys, passwords are riddles, the net is made up.
@@ -607,44 +613,23 @@ laundromat"), which P13's laundromat can read.
 - **Scene · spot:** MOTH-PC, the `journal` sector. Main path. Difficulty 4.
 - **Player sees:** the journal's seal is a noun with three bells as verbs, `high`, `low`, `mid`
   (the engine's sequence seal: it says "seal: 1 of 3", "wrong order. it resets"). It ignores
-  fingers: only signals ring it. Moth's music box on the desk plays on its own schedule (a CLOCK,
-  every 4 s, pre-wired to it: "Moth liked routines."). The REGISTRY watchdog walks FRIENDNET ↔
+  fingers: only signals ring it. The RECORD PLAYER's `turntable.record` CLOCK raises `played`
+  every 2 s, with no initial cable. The REGISTRY watchdog walks FRIENDNET ↔
   MOTH-PC: here 4 s, away 8 s. While it sits on MOTH-PC every signal into it is dropped, and when
   it arrives the seal forgets what it heard.
-- **Solution:** the order is the song title: high, low, middle, about a beat (1 s) apart.
-  1. Chain the bells with fan-out: `musicbox:played → mothpc.journal high` and `musicbox:played →
-     timer1 wait 1 s`; `timer1:done → mothpc.journal low` and `timer1:done → timer2 wait 1 s`;
-     `timer2:done → mothpc.journal mid`.
-  2. Guard it against the watchdog with a SWITCH: `mothpc.watchdog:leaves → switch1 turn on`,
-     `mothpc.watchdog:arrives → switch1 turn off`, and put the switch between the music box and
-     the chain (`musicbox:played → switch1 pass`, `switch1:out` into the chain instead). The
-     sequence now only starts while the watchdog is away, and the 2 s it takes fit in the 8 s gap
-     (a start in the last 2 s is cut off by its arrival; the next tick tries again).
-  - Also fine: stop the music box's clock (or cut its cable) and wire `mothpc.watchdog:leaves →
-    musicbox play` directly. Two solutions are allowed.
+- **Current solution:** high, low, middle, about a beat (1 s) apart. Use the single-song SWITCH
+  wiring or direct watchdog-event timer chain above. Leaving a switch on throughout the dog's
+  absence is insufficient: the two-second record loop overlaps the song and resets the seal.
 - **Mechanics:** a sequence seal, SWITCH, TIMER chains with fan-out, the watchdog's events, a clue
   from a photo caption.
 - **Unlocks:** the journal. Moth booked the maglev to the harbor ("where the Registry doesn't
   look: the water"). Last entry: "your pass is in my jacket. the jacket's in washer 3 at the
   market laundromat. nobody searches a wash cycle. follow the trains." This sends the player to
   the market gate (P12) before the metro; LEVELS L3's ending moves to after P13.
-- **Data sketch:**
-
-The seal is MOTH-PC's `journal` sector (P09's sketch: `"seal": { "sequence": ["high", "low",
-"mid"], "withinMs": 1500, "signal": true }`), so no effect is needed. The music box is a node next
-to MOTH-PC (in the same scene file):
-
-```json
-{ "id": "musicbox", "name": "MUSIC BOX", "look": "Three notes, over and over. Moth liked routines.", "status": "plays every 4 s",
-  "nouns": [
-    { "id": "musicbox", "kind": "ACT", "verbs": ["play"], "events": ["played"],
-      "on": { "play": { "do": [{ "emit": "played" }], "say": ["{via}use musicbox --play", "a tune. three notes, over and over.", "dim"] } } },
-    { "id": "clock", "kind": "CLOCK", "events": ["tick"], "clock": { "every": 4000 } }] }
-```
-```json
-"cables": [{ "from": "musicbox.clock:tick", "to": "musicbox.musicbox", "verb": "play" }],
-"watchdog": { "route": ["friendnet", "mothpc"], "dwellMs": 4000, "moveMs": 2000 }
-```
+- **Current data:** `data/moth.json` defines `turntable.record` with `clock.every: 2000` and
+  event `played`, MOTH-PC's journal sequence `["high", "low", "mid"]` with `withinMs: 1500`
+  between notes and `signal: true`, and the FRIENDNET/MOTH-PC watchdog (`dwellMs: 4000`,
+  `moveMs: 2000`). The earlier four-second music-box sketch is superseded.
 
 FRIENDNET shows the watchdog as a contact: its engine noun `watchdog` (`read`: "REGISTRY
 WATCHDOG: here. just checking."), with the events `arrives` / `leaves` the solution wires from.

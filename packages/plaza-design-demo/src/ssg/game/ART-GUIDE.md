@@ -1,8 +1,9 @@
 # ACCESS DENIED: art and readability guide
 
-How the game should look, so a player understands a scene at a glance. Every
-scene, prop and sign follows these rules. When a rule and a cool idea collide,
-the rule wins unless the idea is the point of the scene.
+Working visual and readability principles, so a player understands a scene at a glance.
+The art and the game are still being designed together. These are current intentions to
+evaluate and revise, not fixed rules that override the user's direction. README.md maps the
+other documents; ROADMAP.md tracks implementation status.
 
 ## 1. Read the scene in three seconds
 

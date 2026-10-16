@@ -1,6 +1,12 @@
 # ACCESS DENIED: the first three levels (proposal)
 
-A draft for discussion. It builds on the system we have: devices made of nouns,
+See [ROADMAP.md](./ROADMAP.md) for the consolidated build sequence and
+[PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md) for the detailed new encounter order.
+
+> The newer [progression concept](./PROGRESSION-CONCEPT.md) (2026-10-16) revises the tutorial and act structure. Use the levels below as existing design material; their teaching order is subject to the new scene-by-scene learning plan.
+
+A working level design with historical proposals, all open to revision. ROADMAP.md tracks
+current implementation status; README.md maps the documentation. It builds on devices made of nouns,
 verbs on nouns, events on nouns, cables that carry a verb, logic modules on the
 board, daemons you talk to, the keyboard as the last resort.
 
@@ -95,7 +101,8 @@ router is off.
 - The router sits on the smart plug, and the plug is pre-wired to a schedule:
   `night → plug off`. The fridge note grumbles about it. Cut that cable, turn
   the plug on, and the router wakes.
-- On the router, `scan` brings CONCIERGE onto the board.
+- HOME-PC's `net` and the router's `uplink` know CONCIERGE: `connect concierge` works without
+  scan.so. Scanning unlocks later at the library (P16).
 - HOME-PC's outbox raises `ready` when you open it. Wire `outbox ready →
   CONCIERGE verify`, and the door unlocks with a smug message.
 - Scenic bit: Pixel sleeps on the warm router and keeps it from cooling, so it
@@ -156,8 +163,7 @@ watchdog, a second module (SWITCH), reading a story out of systems.*
 
 ## Open questions
 
-1. Is the watchdog the right kind of tension, or do you want something else
-   (a timer per level, a character who interrupts)?
-2. Should Pixel the cat come along as a companion (warm laps, sabotage)?
-3. Level order: does the yard stay level 2, or do we build Capsule 7B first
-   and make the yard a later errand?
+1. The watchdog is implemented; its tension and alternatives remain design questions.
+2. Pixel currently accompanies the player after leaving the flat. Its role and abilities can evolve.
+3. Capsule 7B and the yard are built. ROADMAP.md records the current opening and Act I order;
+   their ordering and teaching goals remain revisable.

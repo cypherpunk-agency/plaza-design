@@ -1,7 +1,10 @@
 # ACCESS DENIED: scenes, what's wrong and what's next
 
-Tommi's review (2026-10-15) and ideas for new places. The rules that came out of the review
-are ART-GUIDE.md section 10, "A place is alive".
+Historical review (2026-10-15) and ideas for new places. The table below records the scenes
+before their reworks, not their current quality or a list of unfinished tasks. Harbor, market,
+shop, mall and metro scenes have since changed; see ROADMAP.md and the scene code for status.
+The working principles from this feedback are ART-GUIDE.md section 10, "A place is alive".
+Everything remains in design, including implemented places. README.md maps the documents.
 
 ## What's wrong with the scenes we have
 

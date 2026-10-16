@@ -1,175 +1,99 @@
 # ACCESS DENIED: roadmap
 
-One list for the story levels (LEVELS.md, PUZZLES.md, STORY.md) and the new places
-(SCENES.md). Story first: Act I has priority, and the places come in when the story or the
-city needs them. Built places are marked ✓.
+Updated 2026-10-16. This is the active build sequence for the
+[progression concept](./PROGRESSION-CONCEPT.md). Everything remains in design. Milestones
+are deliverables, not dates; later story proposals remain provisional.
 
-The city's structure (city → district → place → scene, the vertical cross-section, the map) is
-decided: see CITY.md. New places wait for the map redesign, so each lands in its district.
+## Current position
 
-## Now: the engine and the screen
+- **Milestone 1: design pass complete.** [PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md)
+  specifies the proposed encounters, prerequisites, learning practice, interfaces, scene
+  permissions, failure recovery and disposition of existing puzzles. This is a completed
+  design deliverable, not evidence of player comprehension or implemented progression.
+- **Next: milestone 2, the harbor shift prototype.** Build only after a request to implement;
+  the current task consolidates documentation and completes milestone 1.
+- The running game still uses the previous train-first opening and multi-district Act I.
+  The harbor shift, staged augmentation and body transitions are not implemented.
+- Player testing and playthrough scope are to be discussed separately. No test session,
+  regression-suite expansion, CI work or publication is implied by this roadmap.
 
-1. Popup feedback: everyday actions close the popup; captions in a lane with a leader line and a
-   paced queue; pings; max 3 everyday actions; the popup as a plate on a line up from the thing
-   (5B, engine/popup.ts). ✓
-2. One kind of place, called **scene**: every place is a scene (`SceneDef`, scenes/index.ts),
-   hosted one way on the engine (engine/). ✓ (The people kit is now the **character kit**,
-   characters.ts: done.)
-3. The camera nudge (test): when something reacts off-screen, the view leans toward it, or an
-   edge ping points there. ✓
-4. A tone pass over older content (the world is dry, the characters have the humour), and the
-   small known issues. ✓
-- The **sandbox** (sudo only): REGISTRY QA BAY 3, one bench per engine feature, for testing
-   and showing the engine off outside the story (GAME-DATA.md, **Sandbox**). ✓ Open: add a bench
-   when the engine learns something new (the items agent's data format, the lighting pass).
+## Build sequence
 
-## Then: the city
+| Milestone | Deliverable | Completion criterion | Dependencies / status |
+| --- | --- | --- | --- |
+| 1. Design prologue and Act I | Scene matrix, teaching dependencies, access model, clinic route, puzzle dispositions | Every required ability has an introduction before use and independent practice before combinations; unresolved finale decisions isolated | Design pass complete; see linked plan |
+| 2. Harbor shift prototype | Small work area, boss, coworker, delivery, independent task, physical disruption, checkout | Complete miniature work story; teaches movement, interaction and carrying without hacking or real deadlines | M1; next implementation slice |
+| 3. Ordinary-life prologue | Glide lands at dusk harbor; night shift connects to dawn commute, Downtown and home/rest | Coherent shift-to-home experience with recurring people, working services and breathing room | M2 plus pacing review |
+| 4. Deletion and first agency | Morning denial, human help, ordinary clinic route, limited augmentation, first direct hack and independent application | Loss is legible; no clinic access deadlock; hacking improves a familiar circumstance | M3; use M1 working defaults |
+| 5. Foundational Downtown hacking | Guided wire, independent wire, cut/replace practice, clue guards, known connections | Each concept is rehearsed before combination; interfaces expand with actual need | M4 |
+| 6. Revised Act I | Local Moth investigation, combination challenge, consistent travel restrictions, motivated finale | Complete local arc; departure uses established abilities; no accidental district bypass | M5; choose finale and transfer causality before implementing ending |
+| 7. Robot transition and Act II opening | Incident, continuity between bodies, safe body introduction, first recovery lead | Embodiment changes play meaningfully while knowledge, relationships and progress survive | M6; settle body location and Kessel's role |
+| 8. Act II chapters | Selected district leads; separate lessons for logic, time, resources and security | Each chapter advances body recovery and teaches a manageable new concept | M7; bounded branching rather than all districts at once |
+| 9. Remote presence and Act III | Limited remote precursor in Act II, body-loss transition, network/ally play, resolution | Remote rules are understood before dependence on them; ending addresses personal and Registry stakes | Prototype remote play before writing/building full Act III |
 
-5. The city in code (districts → places → scenes, CITY.md: city.ts `DISTRICTS`, `PLACES`,
-   `SCENE_PLACE`) ✓, then the map redesign as a vertical cross-section with two zoom levels ✓
-   (citymap.ts), revealed as you travel (the Spire a mystery at first) ✓. Open: the district
-   crop on a landscape phone, whether TAB opens your own district.
+## Milestone 2 scope
 
-## The opening: intro and tutorial (decided, Tommi 2026-10-15)
+Use P1–P6 in the [scene plan](./PROLOGUE-ACT-I-PLAN.md). A work bay and connected checkout
+area can share existing harbor sets; no full district rebuild is required. Start directly at
+shift arrival during development. Retargeting the cinematic and integrating the commute
+belong to milestone 3.
 
-The game opens on the night you are deleted. Exposition by showing: the city works for you
-once, then stops.
+Deliver one boss, one recurring coworker, two transport tasks, one ordinary physical
+problem, checkout and a clear end to the prototype. Give the boss concise contextual
+instructions; fictional productivity pressure must not punish player learning speed.
+Preserve the current story route while the prototype is isolated. Do not put new mechanics,
+security puzzles, robot abilities or the full hacking UI into this slice.
 
-1. **The glide (title + intro).** Launching the game shows a sunrise over the sea (retrowave
-   palms, water, parallax); the main menu appears over it. NEW GAME: the menu fades and the same
-   shot starts moving, no cut, no flicker, not skippable. The camera glides west: beach → harbor
-   (STS-2, the stacks) → the Spire's foot as a nameless silhouette → the Galleria → Downtown's
-   towers swallowing the sun → it catches LINE 0 diving into its tunnel. CONTINUE / LOAD: a cut
-   straight into the save.
-2. **The train home (teach walking, talking).** Dawn, the end of your night shift as a courier.
-   Passengers, news, ads. Nothing else to do. Get off at Downtown. ✓
-3. **Downtown, before (the full working street).** The turnstile hesitates ("verifying… ok"),
-   the till takes your key, doors open, CONCIERGE greets you by name. Scenes take a `before`
-   state from a save flag. ✓
-4. **The flat, the breather (teach everyday actions).** Kettle, blinds, Pixel. You sleep. ✓
-5. **Morning: deleted.** The door says "rent: pending"; everyday actions don't help. Moth's
-   message brings `uplink.so`: hacking unlocks as the first quest. Then Capsule 7B's puzzles. ✓
+## Engineering alongside the chapters
 
-**Title beach (Tommi, 2026-10-15, after the drafts):** water = the mirror sea combined with the
-pixel swell; the scene = "the bar at the edge": SALT with string lights, a DJ bot, people
-partying, the bonfire; add parasols and sun loungers. When the glide starts west, a pier is the
-first transitional piece. **Glide feedback:** the seams between regions break the illusion (the
-ground jumps), the cranes cross each other, the Spire reads as a weird T, the Galleria floats,
-and there is no life (people, vehicles, robots, flying traffic). Redesign: one continuous coast
-(drafts: https://claude.ai/artifact/Jm78v7Z47o92QYtkx5CHmt; title beach: https://claude.ai/artifact/5ZyckEFhebVnW87KWp5DPg).
-
-**Glide, second pass (Tommi, 2026-10-15, after playing it): built.** About 78 s now (was 54),
-calmer and stretched out ("easy, but also kind of stressful"). Beats (sudo time control, keys 1–9):
-BEACH 0 · PIER 10.4 · INLET 17.1 · HARBOR 27.3 · SPIRE 44.4 · GALLERIA 54.8 · DOWNTOWN 61.5 ·
-LINE 0 62.4 · UNDER 73.0 (`title/path.ts` holds the map and the camera).
-- Leisure and industry never touch: the beach ends at rocks; an INLET (footbridge, the breakwater's
-  light) and the port's fenced BUFFER (double fence, signs, cameras, floodlight, the staff gate) come
-  before the quay. The pier got planks, bracing, benches, a kiosk (BAIT · ICE · TEA), its lantern.
-- Ships lie behind the quay; far boats are kept clear of the harbor (never in front of a crane).
-- The Spire: bigger, its docking decks, corporate shuttles coming and going, a Registry patrol on its
-  loop; the camera eases off over a quiet bay bridge (no pylons mid-span, no other lanes near it).
-- The sky's kinds (sets/air-traffic.ts, `title/air.ts`): pods, sky taxis (one landing on the public
-  pad by the Galleria), Registry patrols on fixed loops, the delivery-drone stream from LOGISTICS
-  HUB 3, corporate shuttles, a slow cargo hauler, a medevac, a dropship with two escorts, the blimp.
-- One road from the port's TRUCK GATE west: trucks out of the gate, cars and bus 7 from Downtown's
-  side streets, denser toward the city (`title/traffic.ts`); nothing drives on the pier or the quay.
-- One scale (the player 1.8 m): vehicles, boxes (`BOX40`), the cranes (1.7× their scene frames), the
-  ship, the 20 m LINE 0 cars (`drawMetroCar`: a warm inside, seated and standing riders, empty seats,
-  reflections). The platform scenes keep their own car (`drawTrainCar`).
-- LINE 0 has its own way: the viaduct from the Galleria's station (people waiting, DOWNTOWN 2 MIN),
-  under THE RING (sets/ring-highway.ts: columns, lamps, gantry, its own traffic), never across the
-  road. The train comes out of a portal in a glass tower (the canyon line from the harbor), overtakes
-  the camera, runs down its ramp and dives under the street.
-- The ending: the camera follows it down into a cutaway of the ground (sets/cutaway.ts: asphalt,
-  pipes, piles, LINE 0's lit bore with the same train in it), then lower, a glimpse of the Undercity:
-  a flooded canal under a brick vault, a boat with a lantern, someone in it. Then the dark; the
-  handover to the train home is unchanged, the glide stays a function of time, reduced motion works.
-- Towers (sets/downtown-towers.ts): every one different (skins, setbacks, crowns, roof gear, grime)
-  and signs of six kinds (plate, neon blade, stacked letters, ticker, holo ad, rooftop billboard),
-  flickering, dead letters, their colour in the wet street. Four skyline rows behind Downtown,
-  thickening toward the tunnel.
-Open: the length (78 s, not skippable); the ride home still starts "from the harbor's closed stop"
-(the glide shows it coming out of the canyon line's tower, which agrees); whether the platforms
-should take `drawMetroCar`'s inside.
-
-Guidance: the scene leads (one way on, people facing it, signs), the GOAL line, and an **idle
-ping** on the next goal target after ~20 s standing still, in the opening scenes only for now. ✓
-
-Built (2026-10-15): parts 2–5 and the idle ping, as states of the existing scenes (train,
-Downtown's platform with its new exit turnstile, Downtown, Capsule 7B), driven by save flags
-(`opening:home` → `:street` → `:flat` → `:slept` → `:uplink` → `:jacked`); everything per state
-is data in `opening.ts`. Hacking is locked until `uplink.so`. Until the glide lands, NEW GAME
-(and a first launch) go straight to the train; sudo LEVELS has OPENING · TRAIN HOME and
-OPENING · MORNING, DELETED. Open: CONCIERGE greets you without a name (the courier has none
-yet; the handle comes from the fixer after you are deleted).
-
-## Act I: where is Moth?
-
-| # | Level | Puzzle | Place (district) | Status |
-| --- | --- | --- | --- | --- |
-| 1 | Capsule 7B | P01–P03 | your flat (Downtown) | ✓ |
-| 1b | The library | P16 (scan.so, the NET button) | the public library (Downtown) | ✓ |
-| 2 | Downtown I–III | handle, till, 0x2F, relay, the market gate (P12) | the street (Downtown) | ✓ |
-| 3 | The back yard | the parcel | the fixer's yard (Downtown) | ✓ |
-| 4 | Moth's place | P09, P10 | flat 4C (Downtown) | ✓ |
-| 5 | Washer 3 | P13 | the laundromat (Neon Market) | ✓ |
-| 6 | The stop that isn't on the map | P14 | the metro line (TRAIN-0, the old siding) | ✓ |
-| 7 | **NRLU 404 0451** (Act I finale) | P15 | the harbor stacks, STS-2, and the **warehouse** (Harbor & Shore) | ✓ |
-
-**The net (NET.md, built 2026-10-15):** Act I runs Capsule 7B → the library → Downtown's net
-puzzles. After the capsule the GOAL line points to the library (Moth's message and Capsule 7B's last
-line say it still lends scan.so); P16 gives `scan.so`, NET shows in hack vision's bar (N), and LINKs
-scan from then on. Networks and reach are net.json's; "freed" nodes are `controlled` nodes now.
-
-**Decided for the rest of Act I (Tommi, 2026-10-15):**
-- **The harbor is locked until P14.** LINE 0 passes the harbor station (STATION CLOSED) and the
-  sky taxi won't fly there; the only way in is pulling the brake at the siding. After that the
-  harbor station (and the taxi) open for good. Downtown ↔ Galleria runs as now.
-- **Moth's jacket (P13)** holds the maglev pass (`maglev.pass`) and the right glove. The pass is
-  what makes the brake accept your pull: the emergency is registered in Moth's name, the pass
-  says you're the friend. Without it: "emergency registered to another passenger."
-- **The finale is the stacks:** find NRLU 404 0451 with STS-2's camera, get it lifted past the
-  scanner, Moth answers from the reefer. The **warehouse** is built now as a locked place by the
-  stacks; its evidence locker is Act II (fragment 3).
-- **The ending:** a short talk with Moth at the container (deleted on purpose; the list is split
-  into seven root fragments; the Registry knows Moth has it), an ACT II card, Moth joins your
-  deck as a contact, and the Spire gets its name on the map (`heard:spire`).
-
-Built (2026-10-15): the stacks are a second scene of the harbor's place (terminal 2, a gate from the pier);
-warehouse 4 is its own place with a locked door; the ending plays the ACT II card, puts Moth on your deck
-(`contacts`, `msg moth`) and sets `act1:done`, `heard:spire`, `contact:moth`. See PUZZLES.md, P15 "As built".
-
-Optional puzzles that sit on Act I's way: O05 the market billboard cipher, O07 the metro
-junction cabinet, O08/O09 the mall lift and the **rooftop garden**, O10 the music box (metro
-LOST+FOUND), O11 the wishing fountain. The beach (✓) and its locked boat lead into Act II.
-
-## Act II: seven fragments (an open hub)
-
-The city opens. Each fragment sits with a faction and a place; Moth helps from your deck.
-
-| Fragment | Place (district) | Faction |
+| Foundation | First needed | Scope |
 | --- | --- | --- |
-| 1 | rooftop relay 0x31 (Downtown) ✓ | the Registry |
-| 2 | J's penthouse, O04 (Downtown) | the Registry, an insider |
-| 3 | the **warehouse**'s evidence locker (Harbor & Shore) | the Tide / the Registry |
-| 4 | **club VOID**'s back room (Neon Market) | the Ghosts, Lux |
-| 5 | the **Church of the Algorithm** (Galleria) | the Church |
-| 6 | NEOBANK's vault of dead accounts (the net) | PENNY |
-| 7 | Sorel's office in Plaza Central (the Spire) | Plaza Holdings |
+| Story beats and resumable objectives | M2 | Resume a completed or active task coherently; prevent duplicate item handovers/rewards |
+| Authored time and opening handoff | M3 | Dusk → night → dawn → home → morning; no real-time deadline for lessons |
+| Capability and interface availability | M4–5 | Separate direct use, wiring, board, connection, scanning and logic; one unlock must not expose everything |
+| Knowledge versus travel permission | M3–6 | Remember visited harbor while later entry is denied; align walking, metro, taxi and quick travel |
+| Save compatibility | Before each integrated chapter | Keep older saves on a valid route or explicitly design migration; never silently discard progress |
+| Body and remote-presence state | M7 and M9 | Build only once the fiction and first playable use are specified |
 
-Places that open with Act II: **the canals** and the **sewer market** (the Undercity, the Ghosts'
-home), Moth's boat at the beach (inside), the **bridge** (Harbor ↔ the Spire), the **sky-taxi
-depot** and the **dropship** (travel to the Spire), the **ripperdoc clinic** and the
-**arcade/karaoke** (Neon Market), the **billboard catwalk** (Downtown's roofs), the **flooded
-server basement** (the Undercity).
+Prefer small explicit conditions and reusable scene behaviour. Do not build a generic tutorial
+framework or mastery-scoring system before the prototype demonstrates a need. Technical
+completion and observed player understanding are different evidence.
 
-## Act III: the antenna
+## Review checkpoints
 
-The **Registry office** (a bureaucracy maze, the watchdog's home), Plaza Holdings HQ floor by
-floor, the antenna, and the server room where you were revoked: `> free` or `> take` (and the
-Daemons' third way).
+These define questions for a separately agreed player-test plan, not tests already run.
 
-## Side places, any time they fit
+1. **After M2:** can players move, interact and carry items independently? Does the supervisor
+   guide without rushing? Is the shift interesting in its own right?
+2. **After M4 / first M5 lessons:** is deletion understandable? Does the first hack feel useful?
+   Can players predict what a verb or wire will do?
+3. **After M6:** does Downtown sustain interest? Are combinations fair? Is departure earned?
+4. **Before expanding M8:** does the robot body justify its narrative and mechanical cost?
+5. **Before full M9:** is remote action readable and enjoyable with known devices and places?
 
-The Fringe (a dead automated factory, the data cemetery, the recycling plant), a capsule hotel,
-a food court, a hospital ward, a police checkpoint.
+Use appropriate focused implementation checks and builds when code changes. These do not
+replace an agreed playthrough or demonstrate that the learning curve works.
+
+## Existing material to reuse
+
+The current game supplies the harbor/stacks art, train and stations, Downtown, Capsule 7B,
+library, yard, Moth's flat, other districts, everyday interactions, device engine, wiring,
+guards, logic, maps, time/weather and saves. Availability is not an obligation to expose all
+of it in Act I. The [puzzle disposition table](./PROLOGUE-ACT-I-PLAN.md#existing-puzzle-disposition)
+assigns the old catalogue to this plan.
+
+Existing local reliability work pauses scene clocks and delayed actions with interruptions,
+blocks movement/time under NET, and restores a valid saved scene on Continue. It is separate
+from the progression redesign; it does not provide resumable harbor tasks or exact-position saves.
+
+## Records and documentation roles
+
+- [PROGRESSION-CONCEPT.md](./PROGRESSION-CONCEPT.md): story direction, principles and open embodiment ideas.
+- [PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md): milestone 1 encounter plan and dependencies.
+- [PUZZLES.md](./PUZZLES.md): existing puzzle catalogue and implemented mechanics.
+- [GAME-DATA.md](./GAME-DATA.md): current authoring and engine behaviour.
+- [STORY.md](./STORY.md), [CITY.md](./CITY.md), [LEVELS.md](./LEVELS.md): reusable world/story material; older act orders are superseded by this roadmap.
+- [Archived previous roadmap](./archive/ROADMAP-BEFORE-PROGRESSION-2026-10-16.md): detailed earlier builds, glide notes and former act structure, preserved for reference.
+
+The archive preserves the old record; its checkmarks and dated decisions are not completion
+claims for these new milestones. No production state is inferred from this document.

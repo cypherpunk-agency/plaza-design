@@ -1,13 +1,15 @@
 # ACCESS DENIED: game data
 
 Every place in the game is a **scene**, and every scene runs on the engine (`game/engine/`):
-Capsule 7B, Downtown, the back yard, Moth's place and the beach with their own data files; the
-market, shop, mall, harbor, the metro platforms and the car with none (zero devices). Which
-place and district a scene belongs to is the city's data (`city.ts`, CITY.md). Started as a
-proposal; what Tommi has settled is under **Decided**, what is still open under **Open
-questions**.
+Puzzle scenes (including the train car, library, laundromat and stacks) have data files;
+market, shop, mall, harbor and the metro platforms currently have no devices. Which place and
+district a scene belongs to is the city's data (`city.ts`, CITY.md).
 
-## Decided
+This is the technical reference for the current iteration, not a fixed specification.
+Everything remains open to redesign. Historical decisions below explain how the code got
+here; README.md maps the other documents and ROADMAP.md tracks implemented/proposed work.
+
+## Current approach (revisable)
 
 - **JSON, written by hand** (by us). No YAML step for now.
 - **Data vs code: learned case by case.** No big rule up front; each time something
@@ -765,10 +767,17 @@ At runtime a missing text shows as `[missing text key]` in the terminal rather t
 
 One localStorage object (`access-denied-save-v3`; sudo's is `access-denied-save-sudo-v3`, slots
 `access-denied-v3-slot-<n>`). v3 came with the net (NET.md: `freed` became `controlled`), v2 with
-the merge of zones into scenes: older saves are not read, and everyone starts fresh. Besides
-Downtown's fields:
+the merge of zones into scenes: saves from those earlier versions are not read.
+
+The autosave also stores `scene` for Continue, validated against the current scene registry.
+Older v3 saves without it (or with a removed/invalid id) retain the opening/Downtown fallback.
+Manual slots keep their own scene too. Resume uses the scene's spawn, not an exact saved
+player position or train timestamp; no save reset or version bump is needed for this field.
+
+Besides Downtown's fields, the current save contains:
 
 ```ts
+scene?: string              // Continue's last scene; absent in older v3 saves
 modules: string[]            // owned logic modules: ["timer.so"]; legs.so stays `jump`
 controlled: string[]         // Registry nodes that answer to you, by label: ["0x2F"] (NET.md: access points)
 programs: string[]           // programs owned: ["scan.so"]
@@ -820,6 +829,9 @@ Decided (save details):
   new in the data appear, fixed ones always come back.
 - **Clocks and the watchdog keep their place** (cheap, and a reload should not be a way to reset
   a patrol either). Timers counting and signals in flight are still not stored.
+- **Pause:** `engine/time.ts` holds scene time and pending actions/signals together while the
+  menu, city/net maps, title or cutscene is up, or the game is stopped. Hack vision and the
+  board stay live. Lockout deadlines still use wall time and expire while paused or away.
 
 ## Where things are
 
@@ -831,8 +843,8 @@ Decided (save details):
 - `game/engine/`: the engine (see **The engine**).
 - `game/capsule/`: Capsule 7B, the start scene: `rules.ts` (`CAPSULE_RULES`: the clock, the router,
   Pixel), `scene.ts` (drawing, Pixel's perches), `index.ts` (`capsule`, its `SceneDef`: the door).
-  `game/companion.ts`: Pixel. `START_SCENE` (city.ts) is `capsule`: a save that has never been
-  Downtown starts there, a new one after the intro.
+  `game/companion.ts`: Pixel. `START_SCENE` (city.ts) is `capsule` for the older-save fallback;
+  a new run now uses the title/glide and train home (`title/`, `opening.ts`).
 - `game/yard/`: the yard's own code: `effects.ts` (`YARD_RULES`), `camera.ts` (CAM-1),
   `scene.ts` (drawing), `index.ts` (`yard`, its `SceneDef`; the parcel: `PARCEL`).
 - `game/data/moth.json`: Moth's place, flat 4C (story Level 3): the flat's things, FRIENDNET,
@@ -850,7 +862,8 @@ Decided (save details):
 - `game/data/sandbox.json` and `game/sandbox/`: the sandbox, REGISTRY QA BAY 3 (sudo only; see **Sandbox**).
 - `game/scenes/`: `kit.ts` (`SceneDef`, exits, uses, readables, the shared drawing kit),
   `index.ts` (`SCENES`, every scene), and the scenes without devices (market, shop, mall, harbor,
-  the platforms, the car). `game/city.ts`: districts, places, each scene's place, the map.
+  the platforms). The car has `data/train.json` and `scenes/train0.ts` rules.
+  `game/city.ts`: districts, places, each scene's place, the map.
 
 ## Sandbox
 

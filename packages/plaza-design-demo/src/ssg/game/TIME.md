@@ -1,15 +1,23 @@
 # ACCESS DENIED: time and weather
 
-Decided (Tommi, 2026-10-15): the city runs on a **fast clock**; game logic can be
+> The [progression concept](./PROGRESSION-CONCEPT.md) (2026-10-16) extends the proposed opening from a harbor shift at dusk through night, dawn travel and morning deletion. Existing opening timestamps below describe current code, not fixed timing for that redesign.
+
+Working design (Tommi, from 2026-10-15): the city runs on a **fast clock**; game logic can be
 **time-sensitive** to the minute ("only between 06:00 and 07:00"); **weather is dynamic**, with a
 **weather report** you can read. This file is the design; the numbers are first guesses to tune.
+
+All of this remains open to redesign. The "Built" sections describe the current iteration;
+other sections include proposals. README.md maps the documentation; ROADMAP.md tracks status.
 
 ## The clock
 
 - **One city clock**, saved: day number and time of day (`day`, `min` 0–1439).
 - **Speed:** 1 game hour = 2 real minutes (a day is 48 minutes). One constant, `CLOCK_RATE`.
 - **It runs** while you are in a scene, hack vision and the board included (the city doesn't wait
-  for you to wire). **It stops** in the menu, the map, talk panels, toys and cutscenes.
+  for you to wire). **It stops** in the menu, city/net maps, talk panels, toys and cutscenes.
+- **Puzzle scene time** also stops in the menu, city/net maps, title/cutscenes and when leaving
+  the game: clocks, watchdogs and delayed signals/actions resume with their remaining time.
+  Lockout deadlines use wall time, so those still expire while paused or away.
 - **Travel costs time:** a metro ride is the ride; quick travel adds a fixed hop (15 min); the
   sky taxi 10 min.
 - **Waiting:** a bench, a bar stool or your bed offers "wait until…" (next hour, dusk, night,

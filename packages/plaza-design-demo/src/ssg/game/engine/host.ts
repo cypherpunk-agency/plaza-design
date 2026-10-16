@@ -237,12 +237,13 @@ export class SceneHost {
     this.sync();
     // trace: the meter fills while you look into a logged device, and drains when you leave
     // (the watchdog walks and clocks beat on the same tick)
-    let last = performance.now(), heat = this.heat(), wrote = 0;
+    let last = this.model.now(), heat = this.heat(), wrote = 0;
     window.setInterval(() => {
-      const now = performance.now();
-      this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
-      if (this.model.tick(now - last, this.active)) { this.schem.meters(); this.vision.meters(); }
+      const now = this.model.now(), dt = now - last;
       last = now;
+      if (this.paused) return;
+      this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
+      if (this.model.tick(dt, this.active)) { this.schem.meters(); this.vision.meters(); }
       // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
       const h = this.heat();
       if (h !== heat && now - wrote > HEAT_SAVE_MS) { heat = h; wrote = now; this.persist(); }
@@ -441,6 +442,9 @@ export class SceneHost {
   closeAll() { this.popup.close(); this.fx.clear(); this.panels.close(); this.schem.close(); this.vision.close(); }
   /** This scene is the one on screen: its clock runs and its captions show. */
   private active = false;
+  private paused = false;
+  /** The game's pause state; scene time and delayed actions share it. */
+  setPaused(on: boolean) { this.paused = on; this.model.setPaused(on); }
   /**
    * The scene is on screen (or not). Its HACK and BOARD buttons show only here, and only when it
    * has devices: in a scene with nothing to hack they stay away (and H and B do nothing).

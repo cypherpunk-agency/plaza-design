@@ -1,7 +1,13 @@
 # ACCESS DENIED: the city
 
-Decided with Tommi, 2026-10-15. The source of truth for how the city is built and how places
-connect. ROADMAP.md says what gets built when; SCENES.md and STORY.md say what the places are.
+See [ROADMAP.md](./ROADMAP.md) for the consolidated build sequence and
+[PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md) for the detailed new encounter order.
+
+> For revised act access, see [PROGRESSION-CONCEPT.md](./PROGRESSION-CONCEPT.md) (2026-10-16): guided harbor employment in the prologue, Downtown as the Act I focus, and broader travel later. The act assignments and job-location discussion below reflect the older design. Earlier harbor access is compatible with losing permission to return after deletion.
+
+Working city design, developed with Tommi from 2026-10-15. It describes the current structure
+and proposed places; everything remains open to redesign. Code (`city.ts`, `cityplan.ts`) shows
+what is implemented. ROADMAP.md tracks status; SCENES.md and STORY.md add ideas and context.
 
 ## Four levels, the Monkey Island way
 
@@ -34,8 +40,8 @@ The city is a cross-section with three strata.
 Decided with Tommi, 2026-10-15 (the catalogue). Every district gets interesting things; essential
 kinds (streets, homes, shops, bars and food, police, care) appear in several districts at their
 own class level, so the same need looks different across the city. The Old Quarter is its own
-district now (no longer part of the Neon Market), and the **Skyport** is a ninth. Code still has
-the seven of before (`city.ts`) until the new ones are built.
+district now (no longer part of the Neon Market), and the **Skyport** is a ninth. Code has
+all nine districts in `city.ts`; some have no playable places yet.
 
 ### How much the player is asked to take in
 

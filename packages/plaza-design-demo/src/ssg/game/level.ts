@@ -17,6 +17,8 @@ import { SPR, type Sprite } from './sprites';
 // ---------- save state ----------
 
 export interface Save {
+  /** Last scene for Continue; absent in older v3 saves. Validated against SCENES on resume. */
+  scene?: string;
   handle: string;
   tokens: number;
   /** legs.so: installed from the junction box. Stays its own flag (older saves have it). */
@@ -52,7 +54,7 @@ export const SUDO = (() => { try { return new URLSearchParams(location.search).h
  */
 export const SAVE_KEY = SUDO ? 'access-denied-save-sudo-v3' : 'access-denied-save-v3';
 
-/** Where a new game starts, after the intro cutscene (NEW GAME in the pause menu). A `capsule` scene replaces it later. */
+/** A fresh player save; the title/glide hands it to the train-home opening. */
 
 export function newSave(): Save {
   return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: {}, hints: {}, scenes: {}, clock: newClock() };

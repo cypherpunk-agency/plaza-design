@@ -1,6 +1,11 @@
 # ACCESS DENIED: the net
 
-Decided (Tommi, 2026-10-15). The net is not a place you walk through: you connect through
+> The [progression concept](./PROGRESSION-CONCEPT.md) (2026-10-16) proposes staged hacking interfaces, discovery and logic tools, with remote presence later. This is not implemented; the network rules and built-state notes below describe the current iteration.
+
+Working design (Tommi, from 2026-10-15), still open to revision. "As built" below describes
+current code; later ideas are proposals. See README.md for the documentation map.
+
+Currently the net is not a place you walk through: you connect through
 networks **on the board**, and **where you plug in decides what you can reach**.
 
 ## Networks
