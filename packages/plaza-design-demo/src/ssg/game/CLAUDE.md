@@ -31,6 +31,10 @@ design pass. The prior roadmap is preserved under archive/ and is not the active
   not player saves. Workbench viewing is read-only; behavior edits must stay within the frozen
   `authoring/inventories/S13.json` contract and existing protected Save. Restart after code/schema
   changes and rebuild the homepage after saving source edits.
+- The homepage build also emits the static public `/editor/`. Keep its snapshots/read-only
+  source viewer and edit downloads independent of the loopback source-write service. Never
+  publish that service or its session credentials. Portable edit bundles use the existing
+  model validation/history and must validate atomically before entering pending state.
 - Appearance preservation is an acceptance gate for scene-system changes. Preserve seeded
   variation, coordinates, canvas state and draw order; use the immutable baseline and execution
   ledger for the scoped comparisons. Registered/editor-visible coverage alone is not a passed gate.

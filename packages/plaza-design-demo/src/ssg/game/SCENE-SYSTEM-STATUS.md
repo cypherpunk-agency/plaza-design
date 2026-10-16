@@ -4,9 +4,9 @@
 
 Authorized after publication of `d619294` to main on 2026-10-16. S0-S7 acceptance below is historical completed work. Production remains unchanged.
 
-All six stretch gates pass within their frozen inventories. The aggregate
+All six stretch gates passed at checkpoint `e89279e` within their frozen inventories. The aggregate
 `scripts/scene-system/check-stretch-acceptance.mts` verifies their recorded acceptance and current
-source pins. Both final builds and `git diff --check` pass. Shipping artwork, scene/data documents,
+source pins at that checkpoint. Both final builds and `git diff --check` passed. Shipping artwork, scene/data documents,
 runtime, world and story remain unchanged from `d619294`; the engine adds only an optional,
 immutable diagnostic observer used by the private behavior lab. Player saves are unchanged.
 
@@ -19,10 +19,20 @@ immutable diagnostic observer used by the private behavior lab. Player saves are
 | F5 / S12 | 19 scenes, 3,885 nodes and 3,112 semantic connections; read-only source and scene links |
 | F6 / S13 | Frozen Sandbox behavior edits, native trace/lab, protected source Save and byte-exact restoration |
 
-The completed local editor is running at `http://127.0.0.1:4200` in the isolated development
+The completed local editor was verified at `http://127.0.0.1:4200` in the isolated development
 worktree. Standard launch instructions and scope are in `authoring/README.md`; evidence and
 reproduction are in `docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md`. Stretch work has not been
-published. Campaign playthrough, broader rule/map editing and content redesign remain excluded.
+published as part of that goal. Campaign playthrough, broader rule/map editing and content redesign remain excluded.
+
+### Public distribution extension (2026-10-17)
+
+Separately authorized publication adds `https://cypherpunk.agency/editor/` to the homepage
+payload. The shared editor loads 26 validated static document snapshots and 71 allowlisted
+source texts without a write API or session token. Native previews/workbenches and scoped lab
+remain available. Downloaded edits import atomically in either public or local mode; repository
+Save retains the protected local workflow. Focused packaging/bundle/model/browser checks cover
+this extension. The original stretch acceptance hashes remain historical at `e89279e`, rather
+than being silently reissued for the changed entry/shell.
 
 ### S8 frozen coverage
 

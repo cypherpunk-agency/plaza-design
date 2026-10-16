@@ -127,6 +127,10 @@ separate storage keys. This change does not reset saves or introduce a new save 
 
 ## Validation scope
 
+The [public editor](https://cypherpunk.agency/editor/) uses the same renderer and workbenches.
+Browser changes can be downloaded as an edit bundle and imported into either editor. Repository
+writes remain in the local composer; the public page does not publish edits or change player saves.
+
 The local [scene and animation composer](./authoring/README.md) starts with
 `pnpm --filter plaza-design-demo compose-scenes` from the repository root. Open
 `http://127.0.0.1:4192`; its separate loopback save service uses port 4193. Stop both with Ctrl+C.

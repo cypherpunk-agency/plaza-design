@@ -1,4 +1,15 @@
-# Local scene and animation composer
+# Scene and animation composer
+
+Public editor: **https://cypherpunk.agency/editor/**. It includes the scene/timeline editor,
+asset and animation workbenches, event/source inspector and scoped Sandbox behavior lab.
+Edits stay in your browser session; **Download edits** saves a portable JSON bundle and
+**Import edits** restores it in either the public or local composer, as one undoable operation.
+**Export JSON** still downloads the selected individual source document. Download before
+closing the page. The public editor does not change the published game or repository files.
+
+To apply a downloaded bundle to the repository, open the local composer, use **Import edits**,
+review the changes and use **Save to source**. Its existing validation and conflict protections
+still apply. Publishing the resulting game remains a separate action.
 
 Run from the repository root:
 
@@ -8,7 +19,9 @@ pnpm --filter plaza-design-demo compose-scenes
 
 Open `http://127.0.0.1:4192`. The launcher starts a separate loopback save service at
 port 4193. `--port` and `--api-port` select other ports. Ctrl+C stops both services.
-This entry is a development tool; production builds do not import the editor or its write service.
+The homepage build packages a separate static `/editor/` entry with validated documents and
+allowlisted read-only source text. The game page does not import it, and the public browser
+bundle never includes the local write service, credentials or a filesystem endpoint.
 
 The selector includes all 19 scene compositions, four sequence compositions, two timeline
 documents and the scoped Sandbox behavior document. S0-S7/G1-G8 acceptance is complete; see

@@ -7,6 +7,7 @@ import type { Light } from '../world/light';
 import type { Climate, Weather } from '../world/weather';
 import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type AssetUsage, type AssetPreviewReport } from './asset-browser';
 import type { Environment } from '../art/core/composition';
+import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior'; revision: string; value: unknown }
 export interface PreviewRequest { composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
@@ -18,7 +19,7 @@ export interface WorkbenchContext {
 }
 export type WorkbenchHandle = (() => void) & { refresh?(): void };
 export interface ComposerConfig {
-  registry: ArtRegistry; api: { url: string; token: string }; viewport?: { width: number; height: number };
+  registry: ArtRegistry; api?: { url: string; token: string }; documents?: EditorDocument[]; viewport?: { width: number; height: number };
   preview: { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult | Promise<PreviewResult> };
   destinations?: TimelineContext['destinations']; motionTracks?: TimelineContext['motionTracks']; clips?: TimelineContext['clips'];
   timelineContext?(base: TimelineContext, preview: { time: number; reduced: boolean; sequenceId: string; environment: Record<string, string | number | boolean>; viewport: { width: number; height: number }; timeline?: TimelineDocument }): TimelineContext;
@@ -73,6 +74,24 @@ export class ComposerModel {
     }
     const next = new Map(this.documents); next.set(id, { ...doc, value }); this.validate(next);
     this.documents = next; this.past.push({ label, before: [{ id, value: doc.value }], after: [{ id, value: copy(value) }] });
+    if (this.past.length > 100) this.past.shift(); this.future = [];
+  }
+  /** Downloaded edits enter one validated history transaction; saved revisions stay local. */
+  importDocuments(changes: { id: string; value: unknown }[]) {
+    const next = new Map(this.documents), ids = new Set<string>(), before: Snapshot[] = [], after: Snapshot[] = [];
+    for (const item of changes) {
+      if (ids.has(item.id)) throw new Error('Duplicate imported document'); ids.add(item.id);
+      const doc = this.get(item.id); if (doc.kind === 'world') throw new Error('World structure is read-only');
+      const value = copy(item.value); if (equal(value, doc.value)) continue;
+      if (doc.kind === 'composition') {
+        const composition = this.registry.validate(value);
+        if (composition.scene !== (doc.value as Composition).scene) throw new Error('Scene identity cannot be changed');
+        preserveBoundIdentity(doc.value as Composition, composition);
+      }
+      next.set(item.id, { ...doc, value }); before.push({ id: item.id, value: doc.value }); after.push({ id: item.id, value });
+    }
+    if (!before.length) return; this.validate(next);
+    this.documents = next; this.past.push({ label: 'Import downloaded edits', before, after });
     if (this.past.length > 100) this.past.shift(); this.future = [];
   }
   private restore(snapshots: Snapshot[]) { const next = new Map(this.documents); for (const item of snapshots) next.set(item.id, { ...this.get(item.id), value: copy(item.value) }); this.validate(next); this.documents = next; }
@@ -171,19 +190,28 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const editInstance = (name: string, action: (node: Instance) => void) => run(() => { const doc = compositionDocument(); if (!doc || !selectedId) return; model.updateInstance(doc.id, selectedId, name, action); });
   const editTimeline = (name: string, action: (doc: TimelineDocument) => void) => { playing = false; run(() => model.edit(currentId, name, value => { action(value as TimelineDocument); return value; })); };
   async function api(path: string, body?: unknown) {
+    if (!config.api) throw new Error('This browser editor has no repository write service. Download edits instead.');
     const response = await fetch(config.api.url + path, { method: body === undefined ? 'GET' : 'POST', headers: { 'x-authoring-token': config.api.token, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, body: body === undefined ? undefined : JSON.stringify(body), credentials: 'omit' });
     const value = await response.json(); if (!response.ok) throw new Error(response.status === 409 ? `Source changed outside the editor. Pending edits are kept. Export them or reload. ${value.error ?? ''}` : value.error ?? `Authoring service returned ${response.status}`); return value;
   }
   async function load() {
     playing = false;
     try {
-      const documents = await api('/documents') as EditorDocument[]; model.load(documents);
+      const documents = config.api ? await api('/documents') as EditorDocument[] : copy(config.documents ?? []); model.load(documents);
       if (!documents.some(d => d.id === currentId)) currentId = documents.find(d => d.kind === 'composition')?.id ?? documents[0]?.id ?? '';
-      selectedId = ''; syncSequence(); refresh(); notice(documents.length ? 'Source documents loaded. Edits stay local until Save.' : 'No authoring documents are allowlisted by the launcher.');
+      selectedId = ''; syncSequence(); refresh(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : 'Published snapshot loaded. Edit in this browser, then Download edits to keep your work. Downloads do not change the published game.' : 'No authoring documents are available.');
     } catch (e) { notice(`Could not load authoring documents: ${message(e)}`, true); }
   }
   async function save() {
     if (saving) return; const edits = model.edits(); if (!edits.length) return;
+    if (!config.api) {
+      try {
+        const blob = new Blob([JSON.stringify(createDocumentBundle(edits, model.list()))], { type: 'application/json' });
+        if (blob.size > 2 * 1024 * 1024) throw new Error('Edit bundle exceeds 2 MiB. Export individual documents instead.');
+        const url = URL.createObjectURL(blob), link = element('a'); link.href = url; link.download = 'access-denied-editor-edits.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        notice('Edits downloaded. Import edits to continue later, or import them into the local composer to save to repository source.');
+      } catch (error) { notice(`Download failed: ${message(error)}`, true); } return;
+    }
     saving = true; refreshHeader(); notice('Validating and saving source documents…');
     try { const result = await api('/save', { edits }) as { documents: EditorDocument[] }; model.confirmSaved(result.documents); notice('Saved to source. Undo remains available.'); }
     catch (e) { notice(message(e), true); }
@@ -195,10 +223,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function refreshHeader() {
     header.replaceChildren(element('strong', '', 'Scene composer'));
     const docs = model.list(); const chooser = select(docs.map(d => ({ value: d.id, label: `${model.dirty(d.id) ? '● ' : ''}${d.kind}: ${d.id}` })), currentId, openDocument); chooser.setAttribute('aria-label', 'Authoring document'); header.append(chooser);
-    const dirty = element('span', model.dirty() ? 'dirty' : 'muted', model.dirty() ? 'Unsaved changes' : 'Saved'); header.append(dirty);
-    const saveButton = button(saving ? 'Saving…' : 'Save to source', () => void save()); saveButton.disabled = saving || !model.dirty(); header.append(saveButton);
+    const dirty = element('span', model.dirty() ? 'dirty' : 'muted', model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(dirty);
+    const saveButton = button(saving ? 'Saving…' : config.api ? 'Save to source' : 'Download edits', () => void save()); saveButton.disabled = saving || !model.dirty(); header.append(saveButton);
     const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; header.append(undo, redo);
-    header.append(button('Reload source', () => { if (!model.dirty() || window.confirm('Discard unsaved edits and reload source? Export first to keep them.')) void load(); }));
+    header.append(button(config.api ? 'Reload source' : 'Reset edits', () => { if (!model.dirty() || window.confirm('Discard unsaved edits and reload the source snapshot? Download or export first to keep them.')) void load(); }));
+    const bundleFile = element('input'); bundleFile.type = 'file'; bundleFile.accept = 'application/json,.json'; bundleFile.hidden = true; bundleFile.setAttribute('aria-label', 'Import downloaded edits');
+    bundleFile.onchange = async () => { const file = bundleFile.files?.[0]; if (!file) return; try { if (file.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const changes = readDocumentBundle(JSON.parse(await file.text()), model.list()); run(() => { model.importDocuments(changes); syncSequence(); }); } catch (error) { notice(`Import failed: ${message(error)}`, true); } finally { bundleFile.value = ''; } };
+    header.append(button('Import edits', () => bundleFile.click()), bundleFile);
     header.append(button('Export JSON', () => { const doc = current(); if (!doc) return; const url = URL.createObjectURL(new Blob([JSON.stringify(doc.value, null, 2) + '\n'], { type: 'application/json' })); const link = element('a'); link.href = url; link.download = doc.id + '.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }));
     const file = element('input'); file.type = 'file'; file.accept = '.json,application/json'; file.hidden = true;
     file.onchange = async () => { const selectedFile = file.files?.[0]; if (!selectedFile) return; try { if (selectedFile.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const value: unknown = JSON.parse(await selectedFile.text()); run(() => { const doc = current(); if (!doc || doc.kind === 'world') throw new Error('Select a composition or timeline document to import'); model.edit(doc.id, 'Import document', () => value); syncSequence(); }); } catch (e) { notice(`Import failed: ${message(e)}`, true); } };

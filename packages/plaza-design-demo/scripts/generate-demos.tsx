@@ -40,6 +40,7 @@ import { LIBRARY } from "../src/ssg/game/data/index";
 import { LIBRARY_RULES } from "../src/ssg/game/scenes/library/rules";
 import { SANDBOX } from "../src/ssg/game/data/index";
 import { SANDBOX_RULES } from "../src/ssg/game/scenes/sandbox/rules";
+import { buildPublicEditor } from './scene-system/build-public-editor.mts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -184,6 +185,8 @@ async function main() {
   const html = generateHTML(renderStaticHTML(), css, js);
   fs.writeFileSync(path.join(OUT_DIR, 'index.html'), html, 'utf-8');
   fs.copyFileSync(path.join(REPO_ROOT, 'og-image.png'), path.join(OUT_DIR, 'og-image.png'));
+  const editor = await buildPublicEditor(OUT_DIR);
+  console.log(`  Public editor: ${editor.documentCount} documents, ${editor.sourceCount} source references`);
 
   for (const f of fs.readdirSync(OUT_DIR, { recursive: true }) as string[]) {
     const p = path.join(OUT_DIR, f);

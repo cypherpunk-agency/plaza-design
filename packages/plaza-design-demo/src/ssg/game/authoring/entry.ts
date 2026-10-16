@@ -1,6 +1,6 @@
-/** Browser entry for the development-only local composer. */
+/** Shared browser entry: local protected source editing or public static snapshot/downloads. */
 import { art, type Composition } from '../art';
-import { mountComposer } from './app';
+import { mountComposer, type ComposerConfig, type EditorDocument } from './app';
 import { createNativePreview } from './native-preview';
 import { nativeSceneAdapters } from './scene-adapters';
 import { createSequencePreview } from './sequence-preview';
@@ -21,13 +21,21 @@ import { mountSignageWorkbench } from './signage-workbench';
 
 async function start() {
   const host = document.getElementById('composer'); if (!host) throw new Error('Missing editor host');
-  const response = await fetch('/bootstrap', { credentials: 'omit' }); if (!response.ok) throw new Error('Local editor session is unavailable');
-  const bootstrap = await response.json() as { api: { url: string; token: string } };
+  const publicEditor = document.documentElement.dataset.editorMode === 'public';
+  let api: ComposerConfig['api'], documents: EditorDocument[] | undefined;
+  let sourceSnapshot: Promise<Record<string, string>> | undefined;
+  if (publicEditor) {
+    const response = await fetch('./documents.json', { credentials: 'omit' }); if (!response.ok) throw new Error('Published editor documents are unavailable');
+    documents = await response.json() as EditorDocument[];
+  } else {
+    const response = await fetch('/bootstrap', { credentials: 'omit' }); if (!response.ok) throw new Error('Local editor session is unavailable');
+    api = (await response.json() as { api: ComposerConfig['api'] }).api;
+  }
   await Promise.all([400, 500, 600, 700].map(weight => document.fonts.load(`${weight} 16px "IBM Plex Mono"`)));
   await document.fonts.ready;
   const native = createNativePreview(nativeSceneAdapters), sequences = createSequencePreview(art);
   const mapSession: WorldPanelSession = {};
-  mountComposer(host, { registry: art, api: bootstrap.api, viewport: { width: 960, height: 540 },
+  mountComposer(host, { registry: art, api, documents, viewport: { width: 960, height: 540 },
     assetPreview: createAssetPreview(art, native),
     validateDocument(document) { if (document.kind === 'behavior') { if (document.id !== 'sandbox-behavior') throw new Error('Unsupported behavior document'); validateSandboxBehavior(document.value); } },
     workbenches: [
@@ -41,7 +49,12 @@ async function start() {
       } },
       { id: 'events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
         const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
-        const viewer = mountSourceViewer(source), dispose = mountEventInspector(graph, { documents: context.documents,
+        const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
+          if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
+          const snapshot = await sourceSnapshot; if (signal.aborted) throw new Error('Source selection changed');
+          if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
+          return { file, text: snapshot[file] };
+        } } : {}), dispose = mountEventInspector(graph, { documents: context.documents,
           onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as Composition).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
           onOpenSource: reference => { void viewer.open(reference); },
         }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
@@ -51,6 +64,7 @@ async function start() {
         return mountBehaviorWorkbench(panel, { document: () => api.get('sandbox-behavior').value as SceneData,
           onEdit: (value, label) => api.edit('sandbox-behavior', label, value), undo: api.undo, redo: api.redo, save: api.save, reload: api.reload,
           dirty: () => api.dirty('sandbox-behavior'), revision: () => api.get('sandbox-behavior').revision,
+          saveLabel: publicEditor ? 'Download edits' : 'Save',
         });
       } },
     ],

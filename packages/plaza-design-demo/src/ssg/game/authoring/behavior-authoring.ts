@@ -6,7 +6,7 @@ export {validateSandboxBehavior,preserveSandboxBehavior} from './behavior-valida
 export {createBehaviorSandbox} from './behavior-sandbox';
 export interface BehaviorWorkbenchOptions {
  document:()=>SceneData; onEdit:(value:SceneData,label:string)=>void;
- undo?:()=>void;redo?:()=>void;save?:()=>void|Promise<unknown>;reload?:()=>void|Promise<unknown>;dirty?:()=>boolean;revision?:()=>string;
+ undo?:()=>void;redo?:()=>void;save?:()=>void|Promise<unknown>;reload?:()=>void|Promise<unknown>;dirty?:()=>boolean;revision?:()=>string;saveLabel?:string;
 }
 export type BehaviorWorkbenchHandle = (()=>void) & {refresh():void};
 export function mountBehaviorWorkbench(host:HTMLElement,options:BehaviorWorkbenchOptions):BehaviorWorkbenchHandle {
@@ -24,7 +24,7 @@ export function mountBehaviorWorkbench(host:HTMLElement,options:BehaviorWorkbenc
  function edit(label:string,change:(d:SceneData)=>void){const d=cloneBehavior(options.document());change(d);validateSandboxBehavior(d);const before=generation;options.onEdit(d,label);if(!disposed&&generation===before)refreshSource();}
  function cases(data:SceneData){const on=behaviorNoun(data,key).on![verb];return cloneBehavior(Array.isArray(on)?on:[on]);}
  function update(label:string,change:(items:Case[])=>void){edit(label,d=>{const items=cases(d);change(items);behaviorNoun(d,key).on![verb]=items;});}
- function transport(){toolbar.replaceChildren();for(const [name,action] of [['Undo',options.undo],['Redo',options.redo],['Save',options.save],['Reload source',options.reload]] as const)if(action)button(toolbar,name,async()=>{const before=generation;await action();if(!disposed&&generation===before)refreshSource();});
+ function transport(){toolbar.replaceChildren();for(const [name,action] of [['Undo',options.undo],['Redo',options.redo],[options.saveLabel??'Save',options.save],['Reload source',options.reload]] as const)if(action)button(toolbar,name,async()=>{const before=generation;await action();if(!disposed&&generation===before)refreshSource();});
  button(toolbar,'Export behavior source',()=>{const blob=new Blob([JSON.stringify(options.document(),null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sandbox-devices.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),0);});
  const file=document.createElement('input');file.type='file';file.accept='application/json,.json';file.setAttribute('aria-label','Import behavior source');file.onchange=()=>{const f=file.files?.[0];if(f&&f.size>2*1024*1024){report(new Error('Import exceeds 2 MiB'));return;}if(f)f.text().then(text=>{const value=validateSandboxBehavior(JSON.parse(text));const before=generation;options.onEdit(value,'Import Sandbox behavior');if(!disposed&&generation===before)refreshSource();}).catch(report);};label(toolbar,'Import',file);
  }
