@@ -1,5 +1,68 @@
 # Scene system execution ledger
 
+## Completed stretch goal: S8-S13 / F1-F6
+
+Authorized after publication of `d619294` to main on 2026-10-16. S0-S7 acceptance below is historical completed work. Production remains unchanged.
+
+All six stretch gates pass within their frozen inventories. The aggregate
+`scripts/scene-system/check-stretch-acceptance.mts` verifies their recorded acceptance and current
+source pins. Both final builds and `git diff --check` pass. Shipping artwork, scene/data documents,
+runtime, world and story remain unchanged from `d619294`; the engine adds only an optional,
+immutable diagnostic observer used by the private behavior lab. Player saves are unchanged.
+
+| Gate | Accepted delivery |
+| --- | --- |
+| F1 / S8 | 832 catalog types, 1,938 usages, 582 native type replays, 40 exact hierarchy image pairs |
+| F2 / S9 | 33 character families, 2,286 normal plus 2,286 reduced cases, 438 retained image pairs |
+| F3 / S10 | 35 vehicle families, 229 cases, 102 visible native control effects, 64 machinery framing cases |
+| F4 / S11 | 33 typed and 308 embedded architectural/signage types, 776 cases, 115 effects, 6 camera checks |
+| F5 / S12 | 19 scenes, 3,885 nodes and 3,112 semantic connections; read-only source and scene links |
+| F6 / S13 | Frozen Sandbox behavior edits, native trace/lab, protected source Save and byte-exact restoration |
+
+The completed local editor is running at `http://127.0.0.1:4200` in the isolated development
+worktree. Standard launch instructions and scope are in `authoring/README.md`; evidence and
+reproduction are in `docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md`. Stretch work has not been
+published. Campaign playthrough, broader rule/map editing and content redesign remain excluded.
+
+### S8 frozen coverage
+
+Inventory: `authoring/inventories/S8.json`, pinned to the `d619294` source catalog:
+832 registered types, 27 category values, 1,938 composition placements, 18 embedded reusable
+library sets, and 25 source documents (23 compositions and two timelines). The inventory script
+records exact stable ids and usage paths; later added assets do not silently expand F1.
+
+Supported operations: read-only text/tag and family filtering, catalog metadata and typed field
+inspection, isolated default previews for local pieces, prepared native-scene usage previews,
+structural group/child/attachment inspection, and opening the exact source instance. Sequence
+pieces that require a cinematic controller must report that requirement and open their native
+sequence composition; no fabricated poses. Embedded library sets are labeled embedded rather
+than falsely presented as independently registered types. Existing assemblies remain unchanged.
+
+Preview inputs: fixed seed 3, day 1/minute 580, selected preview time, reduced-motion setting,
+and explicit scene environment controls. Native controller snapshots supply bound visual inputs.
+An isolated pass preview excludes scene grading, reflections and unrelated objects; the mounted
+scene preview remains authoritative for those interactions. No gameplay or source mutation occurs
+when searching, inspecting or previewing. Unsupported state combinations are reported explicitly.
+
+Exclusions: new art/actions, composition-reference schemas, shared-definition authoring, world
+geography/topology, story, publication and campaign playthrough.
+
+F1 accepted against the frozen bounded support matrix. `authoring/inventories/S8-acceptance.json`
+pins the source and coverage. All 832 default support modes and 1,938 exact usage paths pass;
+582 native-scene types replay identically. Forty hierarchy/projection comparisons across all
+19 native scenes have zero channel differences; 80 retained PNGs independently decode identically.
+Actual browser search, prepared usage, zoom, resolved inspector and exact source-instance links
+pass with source and player storage unchanged. Forty native types are invisible at the final chosen
+snapshot and are labeled accordingly. Cinematic-only types explicitly require their native
+sequence context. See `docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md` for limits and reproduction.
+F2 is also accepted against `authoring/inventories/S9-acceptance.json`: 2,286 normal plus 2,286
+reduced character cases, all visible, and 438 independently decoded retained image pairs.
+Mounted UI playback, appearance, effective-time hold and source/storage isolation pass.
+F3-F6 are also accepted against their individual pinned inventories and manifests.
+The final F1 replay includes bounded native camera probes and private frozen simulation time:
+all 582 native types replay exactly and all 40 hierarchy pairs independently decode identically.
+Historical intermediate checkpoints below retain their original completion state.
+
 S0-S7 acceptance complete. Updated 2026-10-16. Scope and completion conditions: [plan](./SCENE-SYSTEM-PLAN.md).
 
 All G1-G8 gates pass. See the [final requirement audit](./docs/reference/SCENE-SYSTEM-FINAL-AUDIT.md)
@@ -332,3 +395,142 @@ The fixture records one layout pass before capture because the original HUD comp
 while drawing. All inputs and render schedules must match between original and migrated code.
 The original baseline environment is Chrome 155 on Windows, DPR 1.25, loaded IBM Plex Mono,
 with explicit canvas size and scale per case. Exact comparison is within that environment.
+
+<!-- S9 workbench scope: delegated section start -->
+## S9 character workbench: frozen scope (2026-10-16)
+
+Scope is frozen in `authoring/inventories/S9.json` before implementation. It includes procedural
+humans, all three animals, three legacy robot critters, eighteen procedural robots with their
+three variants, all eight rider looks, Pixel, player/Downtown sprites, dockworker parcel/case,
+LIME and flying natural/robot gulls. The inventory enumerates meaningful actions, independent
+human appearance axes, transitions, explicit environment and playback controls. Rendering uses
+existing preparation/drawing APIs; this is a read-only workbench with no source Save.
+
+Pixel uses supplied deterministic pose/particle snapshots; its random autonomous companion
+controller is explicitly outside scope. Reduced motion freezes effective preview time and does
+not invent action-specific runtime support. Unlisted class/action combinations are unavailable.
+F2 accepted after focused, rendered and mounted-UI evidence. `authoring/inventories/S9-acceptance.json`
+pins 2,286 normal and 2,286 reduced cases across 33 families, with no blank cases; 414 selected
+appearance/action pairs plus 24 explicit lighting/shadow pairs retain 876 PNGs. Independent
+Pillow decoding verifies identical RGBA and hashes. All scoped controls/playback/isolation pass;
+see the stretch evidence ledger. The implementation checkpoint below records the earlier stage.
+<!-- S9 workbench scope: delegated section end -->
+
+## S12 / F5 frozen inspector scope (2026-10-16)
+
+Implementation starts against `authoring/inventories/S12.inventory.json`: all 19 registered scenes, the 10 existing declarative scene files, shared net/logic declarations, supplied source compositions/timelines, and explicit opaque controller boundaries. Operations are read-only graph/list inspection, filtering, source metadata links and scene/instance navigation. No live model construction, snapshot/restore, rule execution, player-save access, S13 editing or world rewiring is authorized by this milestone. Conditions remain unbound without a matching explicit runtime evaluation snapshot. F5 evidence will be recorded in the focused event-inspector check; command/schema evidence is distinct from browser UI verification.
+
+### S10 vehicle workbench (active; F3 open)
+
+Frozen viewing inventory: authoring/inventories/S10.ts and S10.md, 35 families including embedded Harbor/opening/canal boats, both train scales and interior, legacy cab and sprite fleet. The executable bounded matrix covers default/animated/reduced plus each supported control; unsupported states are explicitly excluded. No source Save, gameplay simulation, arbitrary routes or transport mutations. Runtime-equivalence, deterministic playback and isolation evidence are required before F3 can close.
+
+S9 implementation checkpoint: `character-workbench.ts` mounts the read-only screen and uses
+native preparation/rendering for every frozen family; `workbench-playback.ts` supplies the shared
+UI transport clock. `check-character-workbench.mts` passes 2,286 enumerated cases including
+appearance/color/wear/face overrides, repeated/fresh-session seeking, real movement/load/serve/
+follow transitions, clock/light isolation and transport semantics. The supported screen-face
+controls are limited to native screen-bearing shapes. The browser ESM fixture is
+`character-workbench-fixture.ts`; RGBA comparison and UI acceptance were pending at this
+earlier checkpoint and are now accepted above.
+The initial 1,548-case set was completed with explicit cases for the already-scoped color, wear
+and face controls before browser acceptance; this does not add character families or actions.
+
+### S11 signs, lighting and architecture (accepted; F4 PASS)
+
+Frozen typed inventory: authoring/inventories/S11.ts and S11.md. Exact embedded registered ids and source usages: S11.embedded.json, derived once from accepted S8. All standalone families/typed variants use actual kernels; source-usage previews retain the native composed frame for overlaps, illumination and weather, with isolated artwork labelled separately. Unsupported generic power/weather and sequence previews without their actual provider are unavailable. Viewing only; the final bounded evidence below satisfies F4 with independent native comparisons, supported-control effects, deterministic playback and world/storage/source isolation.
+
+
+F4 accepted in `authoring/inventories/S11-acceptance.json`. The exact frozen matrix contains
+33 typed families, 176 raw kernel cases, 308 composed types, 229 isolated native types,
+57 scene environment cases and six real light-state cases: 776 total. All native comparisons,
+seek repeats and source/world/storage isolation checks pass with zero differing pixels.
+Pillow independently decodes all 2,328 retained source/candidate/diff PNG references; every
+actual RGBA hash and zero diff agrees. The final replay byte-compares 33 unchanged image
+triplets to their retained PNGs and captures 743 fresh triplets; no old image is relabeled
+without comparing the final actual pixels. The retained bundle and all 268 source inputs
+are checked against final disk contents. Bundle SHA-256:
+`0d533b910ab3ee54de700ae50e052d3d87c4aaca32419a47236ade55a5c5631f`.
+
+The same final bundle passes 115 supported-control effect probes and six native camera,
+parallax, pan and render-scale checks. One documented flat-crown/default equivalence is
+intentional; all other effect probes visibly change actual native artwork. Integrated UI
+checks cover all 11 required operations plus environment pixels, exact source links,
+disposal and unchanged source/player storage. Three actual source light keys affect both
+artwork and the shared native illumination frame through local snapshots.
+
+Final evidence prefix is `S11-final-reset`: rendered evidence, independent PNG verification,
+effects, focus, source linkage and editor operations reports. The fixture pins all HTML
+canvas 2D contexts to `willReadFrequently:true`, checking every observed context; mixing
+GPU/CPU gradients produced reproducible rounding differences, preserved in the earlier
+failed runs. Separate diagnostics also exposed real editor snapshot defects: private
+model clocks now start from a fixed snapshot, and each native preview frame resets its
+canvas drawing state before painting. The native Library command/state regression covers
+fresh, contaminated and prior-camera histories. These changes affect editor isolation;
+shipping engine and art operations are unchanged. Historical failed image runs remain
+retained; no tolerance or excluded failing case was introduced.
+
+<!-- S13 delegated scope start -->
+## S13 bounded Sandbox behavior authoring (2026-10-16)
+
+The finite subtree/operation/semantics inventory is frozen in `authoring/inventories/S13.json`
+before implementation: ten handlers on sensor/lamp/memo/hatch/fan, two existing cable ids, four
+existing state keys, literal assignments, existing same-noun event emission and supported
+conditions/response text. Other data and all rule implementations/rewards remain protected.
+Preview uses real SceneModel cases/actions and isolated native sbx.pulse, with deterministic
+queued cable arrival and optional diagnostic trace. Source defaults affect new/reset Sandbox
+states; existing saved wiring remains governed by the runtime's restore behavior.
+No F6 acceptance is claimed. Strict subtree/schema checks, isolated execution, protected Save
+integration, conflict/recovery and actual UI/runtime reload evidence remain pending.
+<!-- S13 delegated scope end -->
+
+S12 implementation checkpoint: `authoring/event-inspector.ts` mounts the read-only inspector;
+`event-inspector-model.ts` projects the actual SceneDef, data, registered rule shapes and supplied
+source documents. `pnpm exec tsx scripts/scene-system/check-event-inspector.mts` passes with
+19 scenes, 23 compositions, 6 sequences, 3,722 nodes and 2,899 connections. All 222 declared nouns,
+41 events, 331 cases and 177 nested actions are covered; all node source files/JSON pointers
+resolve and no current reference is missing. Captured active/blocked/inactive and mismatched
+context checks, missing-target probes, immutable inputs and model/storage/callback traps pass.
+Evidence: `authoring/inventories/S12.evidence.json`. Browser mounting and linked navigation
+remain separate acceptance work; this checkpoint does not close F5.
+
+S12 final bounded completeness pass additionally exposes literal people/readable interactions,
+nested available/price/use/item-use callbacks, and noun-sector access edges. Refreshed focused
+check passes with 3,885 nodes / 3,112 edges / 235 opaque boundaries; declared noun/event/case/action
+counts remain unchanged. Every registered physical readable/talk/use and nested use callback is
+asserted against the actual scene registry. Source data as well as supplied documents remain
+unchanged. The full demo TypeScript check now passes. The preceding checkpoint counts are
+superseded by `authoring/inventories/S12.evidence.json`; browser acceptance remains separate.
+
+
+### S13 / F6 source-pinned acceptance (2026-10-16)
+
+The frozen `authoring/inventories/S13.json` subset passed the actual composer4200 / protected
+service4201 workflow, reported by the primary agent's browser tools. The structured lamp handler
+edit appended literal `memo=2` and the reply `S13 integrated source roundtrip`. Selected-handler
+persistence, native trace, 149/150ms signal delivery, reset/captured-save reentry, keyboard and
+header Undo/Redo refresh, Blob export/file-input import, and actual UI Save passed. A fresh Node
+process imported real `SCENES.sandbox` and used `SceneModel` to confirm memo2/the authored reply.
+Actual source Reload retained the behavior; stale revision409 and unsupported reward422 left the
+saved revision unchanged. The protected journal `/undo` restored all26 original revisions; fresh
+runtime baseline returned memo0/`LAMP: on.` and original source SHA
+`ea44d5a90ad211c2d50fad9519fa42e2b4dc4899925840fdd860e08aab23ac0e`.
+
+`authoring/inventories/S13.acceptance.json` explicitly separates root-observed browser outcomes
+from independently rerun focused checks and pins11 implementation/inventory sources plus26
+restored source revisions. The first browser restoration report could not be persisted through
+an attempted cross-origin evidence POST because CSP correctly blocked it; fresh baseline/hash
+and the browser's emergency-restoration equality check independently confirmed recovery. No
+missing raw report is represented as a captured browser artifact. Evaluator, protected store,
+ComposerModel and TypeScript checks pass. F6 is accepted for this finite inventory; shipping
+saved-wiring semantics, broader rule editing and campaign playthrough remain excluded.
+
+### S12 / F5 final integrated acceptance (2026-10-16)
+
+The primary agent ran `check-event-inspector-browser.js` in actual composer4200: all9 checks
+passed, including JSON/opaque source content, exact scene/object navigation, filtered-detail
+replacement/clear, pending validated behavior overlay and Undo, zero writes, all26 revisions
+and player storage unchanged. `authoring/inventories/S12.acceptance.json` records root-observed
+outcomes and pins83 implementation/source-reference files plus four check/launcher files.
+The focused model/source-reader checks and TypeScript pass. F5 is accepted for the frozen19-scene
+inventory; unevaluated runtime conditions remain unbound and controller callbacks remain opaque.
+F5/F6 evidence and reproduction: `docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md`.

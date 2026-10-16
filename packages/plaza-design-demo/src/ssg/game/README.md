@@ -131,7 +131,10 @@ The local [scene and animation composer](./authoring/README.md) starts with
 `pnpm --filter plaza-design-demo compose-scenes` from the repository root. Open
 `http://127.0.0.1:4192`; its separate loopback save service uses port 4193. Stop both with Ctrl+C.
 Its preview uses the native game renderer and isolated models. Validated **Save to source** writes
-allowlisted composition/timeline JSON; rebuild the game to use saved edits in the homepage.
+allowlisted composition/timeline JSON and the narrowly validated Sandbox behavior document;
+rebuild the game to use saved edits in the homepage. Asset, character, vehicle, signage and
+event-inspection panels are read-only. See the [stretch evidence ledger](./docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md)
+for their frozen support inventories and acceptance limits.
 The world/map panel inspects registry-derived places and links; geography and access rules remain
 code-owned. Restart the composer after renderer/schema changes. See its README and the execution
 ledger for controls, source-save constraints and outstanding acceptance gates.

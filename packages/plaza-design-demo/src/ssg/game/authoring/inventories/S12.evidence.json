@@ -1,0 +1,37 @@
+{
+  "milestone": "S12",
+  "coverage": {
+    "sceneCount": 19,
+    "declarativeScenes": 10,
+    "compositionDocuments": 23,
+    "timelineSequences": 6,
+    "opaqueNodes": 235,
+    "missingNodes": 0,
+    "conditionCount": 96
+  },
+  "counts": {
+    "nodes": 3885,
+    "edges": 3112,
+    "nouns": 222,
+    "events": 41,
+    "actions": 177,
+    "cases": 331
+  },
+  "verified": [
+    "frozen scene registry",
+    "all nested declarations",
+    "23 compositions/6 sequences",
+    "source files/JSON pointers",
+    "captured active/blocked/inactive/mismatch",
+    "missing attachment/handoff",
+    "immutable inputs",
+    "model/storage/callback traps",
+    "validated Sandbox draft handler/cable overlay",
+    "unrelated scenes unchanged; invalid draft rejected"
+  ],
+  "limitations": [
+    "DOM integration accepted separately in S12.acceptance.json",
+    "conditions unbound without exact captures",
+    "controller code explicitly opaque"
+  ]
+}

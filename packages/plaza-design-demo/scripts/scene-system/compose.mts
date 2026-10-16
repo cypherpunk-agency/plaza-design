@@ -6,6 +6,8 @@ import { createServer } from 'node:http';
 import { build } from 'esbuild';
 import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
 import { startAuthoringServer } from '../../src/ssg/game/authoring/server/http';
+import { buildEventInspection } from '../../src/ssg/game/authoring/event-inspector-model';
+import { SourceReader,SourceReadError,readSourceRequest } from '../../src/ssg/game/authoring/server/source-reader';
 import { sourceDocuments, validateSourceDocuments } from '../../src/ssg/game/authoring/source-documents';
 
 const demo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -23,6 +25,8 @@ await build({ entryPoints: [path.join(game, 'authoring/entry.ts')], outfile: pat
 const store = new AuthoringStore({ root: game, documents: sourceDocuments, validateAll: validateSourceDocuments });
 // Refuse to open an editor whose prospective cross-document set is invalid.
 validateSourceDocuments(new Map(store.list().map(doc => [doc.id, doc.value])));
+const inspection=buildEventInspection({documents:store.list()});
+const sourceReader=new SourceReader(game,new Set([...inspection.nodes,...inspection.edges].map(item=>item.source.file)));
 const api = await startAuthoringServer({ store, editorOrigin: origin, port: apiPort });
 const csp = `default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' ${api.url}; img-src 'self' blob: data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'`;
 const faces = [400, 500, 600, 700].map(weight => `@font-face{font-family:'IBM Plex Mono';src:url('/fonts/ibm-plex-mono-latin-${weight}-normal.woff2') format('woff2');font-weight:${weight};font-display:block}`).join('');
@@ -32,6 +36,7 @@ const server = createServer((req, res) => {
   if (req.headers.host !== `127.0.0.1:${port}` || req.socket.remoteAddress !== '127.0.0.1' || req.headers.origin && req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site') { send(403, 'text/plain', 'Local editor origin required'); return; }
   if (req.method !== 'GET') { send(405, 'text/plain', 'Method not allowed'); return; }
   const url = new URL(req.url ?? '/', origin);
+  if(url.pathname==='/source'){try{send(200,'application/json; charset=utf-8',JSON.stringify(readSourceRequest(sourceReader,url)));}catch(error){send(error instanceof SourceReadError?error.status:500,'text/plain; charset=utf-8',error instanceof SourceReadError?error.message:'Source unavailable');}return;}
   if (url.search) { send(400, 'text/plain', 'Query parameters are not supported'); return; }
   if (url.pathname === '/') { send(200, 'text/html; charset=utf-8', html); return; }
   if (url.pathname === '/bootstrap') { send(200, 'application/json', JSON.stringify({ api: { url: api.url, token: api.token } })); return; }

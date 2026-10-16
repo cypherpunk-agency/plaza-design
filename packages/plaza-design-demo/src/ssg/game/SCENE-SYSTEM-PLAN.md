@@ -1,6 +1,6 @@
 # Unified artwork library, scene composer and animated scene composer
 
-Status: S0-S7 complete with G1-G8 evidence. Updated 2026-10-16.
+Status: S0-S7/G1-G8 and the authorized S8-S13/F1-F6 stretch goal are complete within their frozen inventories. Updated 2026-10-16.
 This is a separate engineering track alongside ROADMAP.md. It does not implement or renumber
 story milestones. Execution was subsequently authorized as a persistent goal; publication is
 excluded. Verified batches and remaining work are recorded in SCENE-SYSTEM-STATUS.md.
@@ -357,10 +357,13 @@ instructions, updated README/GAME-DATA/ART-GUIDE/agent guidance, and the evidenc
 
 ## Follow-on roadmap: asset workbenches and scene behavior
 
-Requested 2026-10-16. These are planned stretch milestones **after S7**, not additional
-requirements for the active S0-S7/G1-G8 goal. Do not start them automatically or delay the
-current composer delivery for them. Each milestone can become a separate finite goal. The
-story roadmap remains independent and all content design remains open.
+Requested and authorized as the new S8-S13/F1-F6 goal on 2026-10-16, after S0-S7/G1-G8
+acceptance and publication of `d619294` to main. These extend that completed delivery;
+they do not reopen its acceptance. Each milestone has a separately frozen finite inventory
+and evidence gate. See SCENE-SYSTEM-STATUS.md for actual progress. The story roadmap remains
+independent and all content design remains open. F1-F6 now pass; acceptance manifests, source
+pins and bounded evidence are recorded in SCENE-SYSTEM-STATUS.md and the stretch evidence ledger.
+No further publication is authorized by this goal.
 
 Use one composer shell with focused sub-screens, one shared catalog and the actual game
 renderers. Avoid separate implementations of character, vehicle, sign or building artwork.
@@ -424,8 +427,8 @@ diagnose unsafe loops or repeated side effects according to those semantics. San
 resettable state and a trace of trigger -> condition -> action -> result. Verify reload/resume
 and exactly-once effects where required. Keep unrelated rules and player saves unchanged.
 
-S13 is a later, separately authorized extension beyond the current exclusion of quest-rule
-authoring. World membership, geographic layout, map pins and transport topology remain outside
+S13 is the separately authorized extension beyond S0-S7's exclusion of quest-rule
+authoring, bounded by `authoring/inventories/S13.json`. World membership, geographic layout, map pins and transport topology remain outside
 scope unless a future goal explicitly includes them. A scene connection inspector does not
 implicitly authorize rewriting the game map.
 

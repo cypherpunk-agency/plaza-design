@@ -27,7 +27,9 @@ design pass. The prior roadmap is preserved under archive/ and is not the active
   reading or changing a global light/shadow frame.
 - Read `authoring/README.md` before composer work. Its local launcher is
   `pnpm --filter plaza-design-demo compose-scenes` (repository root; UI 4192, save service 4193).
-  Saved composition/timeline JSON is game source, not a player save; restart after code/schema
+  Saved composition/timeline JSON and the scoped Sandbox behavior document are game source,
+  not player saves. Workbench viewing is read-only; behavior edits must stay within the frozen
+  `authoring/inventories/S13.json` contract and existing protected Save. Restart after code/schema
   changes and rebuild the homepage after saving source edits.
 - Appearance preservation is an acceptance gate for scene-system changes. Preserve seeded
   variation, coordinates, canvas state and draw order; use the immutable baseline and execution

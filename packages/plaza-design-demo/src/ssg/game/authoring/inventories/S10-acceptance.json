@@ -1,0 +1,49 @@
+{
+  "milestone": "S10",
+  "gate": "F3",
+  "status": "PASS",
+  "baseline": "d619294aa039a21b832c21f77c9c1f4f3771b635",
+  "coverage": {
+    "families": 35,
+    "frozenCases": 229,
+    "supportedVisibleControlEffects": 102,
+    "nonemptyDefaults": 35,
+    "retainedPairs": 229,
+    "retainedImages": 687,
+    "rawPixelDifferences": 0,
+    "completeMachineryGeometryCases": 64
+  },
+  "bundleSha256": "a21084adffca7b9db4a7d571c0fd16dcacbeac454c48a238535715a4d0d06a78",
+  "evidence": [
+    "S10-final-v5-rendered-evidence.json",
+    "S10-final-v5-independent-png-verification.json",
+    "S10-final-v5-editor-operations.json",
+    "S10-final-v5-disposal.json",
+    "S10-vehicle-command-contracts.json",
+    "S10-native-machinery-containment.json"
+  ],
+  "sourcePinsAtAcceptance": {
+    "src/ssg/game/authoring/vehicle-workbench.ts": "f8a4bcb2c0aecaabaa4343eb11c6e05c8357112df6cb969288e10bb44cdcd01b",
+    "src/ssg/game/authoring/workbench-playback.ts": "6bad1d35ba6c27b987519abea8113b2de321047088759eac3e82cb8b28eae1b0",
+    "src/ssg/game/authoring/inventories/S10.ts": "d614e9d4b465f751e229b80e66a5fcc762fd6b10da53f89a96fa47d2307fba5b",
+    "src/ssg/game/authoring/app.ts": "4eecc213410da99d0010576e8232cfedd85a2a63f61b50711019bb6ed752db14",
+    "src/ssg/game/authoring/entry.ts": "6f1aba503d9dfb8740c8c6bcd81a87dd0a8872ad898c0b2dd2207c3b569f2e1d",
+    "scripts/scene-system/check-vehicle-workbench-reference.ts": "6ed7d2d507dedc23b69359d116459c351d7ae9352a1f0437d08942d27bcfd07f",
+    "scripts/scene-system/check-vehicle-workbench-fixture.ts": "9e70b6ec514ed11a0de777a8635cf817febe35fb3b57f458d4d634412105be51",
+    "scripts/scene-system/check-vehicle-workbench-geometry.mts": "045e957fce39ca66443a9d545cd8db830a1266282c718218adf73ff41d5f24c0"
+  },
+  "stateMutationAudit": {
+    "unchangedShippingDirectories": [
+      "packages/plaza-design-demo/src/ssg/game/art",
+      "packages/plaza-design-demo/src/ssg/game/scenes",
+      "packages/plaza-design-demo/src/ssg/game/data",
+      "packages/plaza-design-demo/src/ssg/game/runtime",
+      "packages/plaza-design-demo/src/ssg/game/world",
+      "packages/plaza-design-demo/src/ssg/game/story"
+    ],
+    "sourceJsonUnchanged": true,
+    "nativeTransportClockLightWeatherSourcesAndStoragePreserved": true,
+    "engineDiagnosticHook": "Only optional read-only trace instrumentation added for S13; absent observer preserves native execution."
+  },
+  "scope": "Viewing only. Finite typed controls and native snapshot matrix; no exhaustive Cartesian assertion, no route/controller authoring, no Save or source/player-state writes. Retained native routes may leave the camera; separately labelled route-culling rows do not prove visible effects."
+}

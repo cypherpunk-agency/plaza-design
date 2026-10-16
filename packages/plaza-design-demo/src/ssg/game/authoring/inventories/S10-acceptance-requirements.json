@@ -1,0 +1,45 @@
+{
+  "milestone": "S10",
+  "gate": "F3",
+  "status": "SATISFIED",
+  "requiredCoverage": {
+    "families": 35,
+    "cases": 229,
+    "controls": 102,
+    "defaults": 35,
+    "cullingCases": 22,
+    "geometryCases": 64,
+    "retainedPNGImages": 687
+  },
+  "requiredReports": [
+    "S10-final-v5-rendered-evidence.json",
+    "S10-final-v5-independent-png-verification.json",
+    "S10-native-machinery-containment.json",
+    "S10-vehicle-command-contracts.json",
+    "S10-final-v5-editor-operations.json",
+    "S10-final-v5-disposal.json"
+  ],
+  "requiredUIKeys": [
+    "actualComposerMounted",
+    "nativeCargoPixelsChange",
+    "supportedFacingPixelsChange",
+    "unsupportedControlsDisabled",
+    "inspectionRoutePixelsChange",
+    "placementSpeedPixelsChange",
+    "frameForwardBackward",
+    "reducedMotionHeldAcrossSeek",
+    "playAdvancesPauseStops",
+    "loopToggle",
+    "cameraReset",
+    "noSaveInViewingScreen",
+    "playerStorageUnchanged"
+  ],
+  "scope": "Frozen viewing matrix, native supported controls, complete straddle/stacker geometry, deliberate native culling and cropped canal context. No arbitrary routes, invented power/facing, gameplay simulation or source Save.",
+  "requiredDisposalKeys": [
+    "disposeStopsAnimation",
+    "oldCanvasPixelsFrozen",
+    "reopenCreatesFreshMount",
+    "pausedOnReentry"
+  ],
+  "acceptance": "S10-acceptance.json"
+}

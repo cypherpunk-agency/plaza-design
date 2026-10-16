@@ -5,18 +5,28 @@ import { composerStyles } from './styles';
 import { preserveBoundIdentity } from './bound-identity';
 import type { Light } from '../world/light';
 import type { Climate, Weather } from '../world/weather';
+import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type AssetUsage, type AssetPreviewReport } from './asset-browser';
+import type { Environment } from '../art/core/composition';
 
-export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world'; revision: string; value: unknown }
+export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior'; revision: string; value: unknown }
 export interface PreviewRequest { composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
-export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point }
+export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number }
+export interface WorkbenchContext {
+  documents: EditorDocument[]; openScene(scene: string): void; openInstance(document: string, instance: string): void;
+  authoring?: { get(id: string): EditorDocument; edit(id: string, label: string, value: unknown): void; undo(): void; redo(): void; save(): Promise<void>; reload(): Promise<void>; dirty(id: string): boolean };
+}
+export type WorkbenchHandle = (() => void) & { refresh?(): void };
 export interface ComposerConfig {
   registry: ArtRegistry; api: { url: string; token: string }; viewport?: { width: number; height: number };
   preview: { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult | Promise<PreviewResult> };
   destinations?: TimelineContext['destinations']; motionTracks?: TimelineContext['motionTracks']; clips?: TimelineContext['clips'];
   timelineContext?(base: TimelineContext, preview: { time: number; reduced: boolean; sequenceId: string; environment: Record<string, string | number | boolean>; viewport: { width: number; height: number }; timeline?: TimelineDocument }): TimelineContext;
+  validateDocument?(document: EditorDocument, documents: EditorDocument[]): void;
   initialEnvironment?: Record<string, string | number | boolean>; environmentControls?: EnvironmentControl[];
   worldPanel?(host: HTMLElement, openScene: (scene: string) => void, documents: EditorDocument[]): void | (() => void);
+  assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
+  workbenches?: { id: string; title: string; documentDependent?: boolean; documentIds?: string[]; authoring?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }[];
 }
 interface Snapshot { id: string; value: unknown }
 interface Command { label: string; before: Snapshot[]; after: Snapshot[] }
@@ -30,7 +40,7 @@ export class ComposerModel {
   private saved = new Map<string, unknown>();
   private past: Command[] = [];
   private future: Command[] = [];
-  constructor(readonly registry: ArtRegistry, readonly context: Omit<TimelineContext, 'registry' | 'compositions'> = {}) {}
+  constructor(readonly registry: ArtRegistry, readonly context: Omit<TimelineContext, 'registry' | 'compositions'> = {}, readonly validateDocument?: ComposerConfig['validateDocument']) {}
   load(documents: EditorDocument[]) {
     const next = new Map<string, EditorDocument>();
     for (const doc of documents) { if (next.has(doc.id)) throw new Error('Duplicate document id'); next.set(doc.id, copy(doc)); }
@@ -47,6 +57,11 @@ export class ComposerModel {
     for (const doc of documents.values()) if (doc.kind === 'composition') this.registry.validate(doc.value);
     const ctx = this.timelineContext(documents);
     for (const doc of documents.values()) if (doc.kind === 'timeline') validateTimeline(doc.value, ctx);
+    const all = [...documents.values()];
+    for (const doc of all) {
+      if (doc.kind === 'behavior' && !this.validateDocument) throw new Error('Behavior documents require their registered validator');
+      this.validateDocument?.(doc, all);
+    }
   }
   edit(id: string, label: string, operation: (value: unknown) => unknown) {
     const doc = this.get(id); if (doc.kind === 'world') throw new Error('World structure is read-only in this composer');
@@ -103,7 +118,7 @@ const select = (values: { value: string; label: string }[], value: string, onCha
 const label = (text: string, control: HTMLElement) => { const node = element('label'); node.append(element('span', '', text), control); return node; };
 
 export function mountComposer(host: HTMLElement, config: ComposerConfig) {
-  const model = new ComposerModel(config.registry, { destinations: config.destinations, clips: config.clips, motionTracks: config.motionTracks });
+  const model = new ComposerModel(config.registry, { destinations: config.destinations, clips: config.clips, motionTracks: config.motionTracks }, config.validateDocument);
   const root = element('section', 'scene-composer'); root.setAttribute('aria-label', 'Scene and animation composer');
   const style = element('style'); style.textContent = composerStyles; root.append(style);
   const header = element('header'), status = element('div', 'status', 'Loading authoring documents…'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
@@ -119,6 +134,32 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let scrub: HTMLInputElement | undefined, timeLabel: HTMLElement | undefined;
   const environment: Record<string, string | number | boolean> = { cameraX: 0, zoom: 1, ...config.initialEnvironment };
   let cleanupWorld: void | (() => void), worldHost: HTMLElement | undefined;
+  let cleanupAssets: void | (() => void); const assetSession: AssetBrowserSession = {};
+  const assetHost = element('details', 'asset-browser'); assetHost.append(element('summary', '', 'Asset browser · read-only')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
+  const workbenches = (config.workbenches ?? []).map(workbench => {
+    const details = element('details', 'workbench-screen'), panel = element('section'); details.dataset.workbench = workbench.id; details.append(element('summary', '', workbench.title), panel); root.insertBefore(details, workspace);
+    return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '' };
+  });
+  const openInstance = (document: string, instance: string) => { currentId = document; selectedId = instance; playing = false; syncSequence(); refresh(); };
+  const refreshWorkbench = (item: typeof workbenches[number], changed = false) => {
+    const documents = model.list(), relevant = item.config.documentIds ? documents.filter(doc => item.config.documentIds!.includes(doc.id)) : documents;
+    const version = item.config.documentDependent ? JSON.stringify(relevant) : '';
+    if (!item.details.open) { item.dispose?.(); item.dispose = undefined; }
+    else if (changed && item.config.documentDependent && version !== item.documentsVersion && item.dispose) {
+      if (item.dispose.refresh) { item.documentsVersion = version; item.dispose.refresh(); }
+      else { item.dispose(); item.dispose = undefined; }
+    }
+    if (item.details.open && !item.dispose) {
+      item.documentsVersion = version;
+      try { item.dispose = item.config.mount(item.panel, { documents, openScene, openInstance,
+        ...(item.config.authoring ? { authoring: { get: (id: string) => model.get(id), edit: (id: string, label: string, value: unknown) => run(() => model.edit(id, label, () => value)),
+          undo: () => run(() => model.undo()), redo: () => run(() => model.redo()), save, reload: load, dirty: (id: string) => model.dirty(id) } } : {}),
+      }); }
+      catch (error) { item.panel.replaceChildren(element('p', 'error', `Workbench unavailable: ${message(error)}`)); }
+    }
+  };
+  workbenches.forEach(item => item.details.ontoggle = () => { if (item.details.open) { assetHost.open = false; workbenches.filter(other => other !== item).forEach(other => other.details.open = false); } refreshWorkbench(item); });
+  assetHost.ontoggle = () => { if (assetHost.open) workbenches.forEach(item => item.details.open = false); };
   const notice = (text: string, error = false) => { status.textContent = text; status.className = 'status' + (error ? ' error' : ''); };
   const run = (action: () => void) => { try { action(); refresh(); } catch (e) { notice(message(e), true); } };
   const current = () => currentId ? model.get(currentId) : undefined;
@@ -176,7 +217,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (current()?.kind === 'composition') { const input = element('input'); input.type = 'number'; input.min = '0'; input.step = '0.0166666667'; input.value = time.toFixed(3); input.style.width = '85px'; input.onchange = () => { const v = Number(input.value); if (Number.isFinite(v) && v >= 0) { time = v; void draw(); } }; options.append(label('Preview seconds', input), button('−1 frame', () => { time = Math.max(0, time - 1 / 60); refreshOptions(); void draw(); }), button('+1 frame', () => { time += 1 / 60; refreshOptions(); void draw(); })); }
   }
   function refreshLeft() {
-    cleanupWorld?.(); cleanupWorld = undefined; left.replaceChildren();
+    cleanupWorld?.(); cleanupWorld = undefined; cleanupAssets?.(); cleanupAssets = undefined; left.replaceChildren();
+    workbenches.forEach(item => refreshWorkbench(item, true));
+    if (config.assetPreview) {
+      assetPanel.replaceChildren(); cleanupAssets = mountAssetBrowser(assetPanel, { registry: config.registry, documents: model.list(),
+        openUsage(usage) { openInstance(usage.document, usage.instance); },
+        preview: (canvas, entry, usage, zoom) => config.assetPreview!(canvas, entry, usage, model.list(), { time, reduced, environment: { ...environment, renderScale: zoom } }),
+      }, assetSession);
+    }
     if (config.worldPanel) { const details = element('details'); details.open = true; details.append(element('summary', '', 'World and scenes · read-only')); worldHost = element('div'); details.append(worldHost); left.append(details); cleanupWorld = config.worldPanel(worldHost, openScene, model.list()); }
     left.append(element('h2', '', 'Artwork hierarchy'));
     const doc = compositionDocument();
@@ -322,5 +370,5 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let previous = performance.now(), frameId = 0;
   const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous = now; const seq = sequence(); if (playing && seq) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); } } updateTime(); void draw(); } frameId = requestAnimationFrame(tick); };
   frameId = requestAnimationFrame(tick); void load();
-  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); root.remove(); } };
+  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); root.remove(); } };
 }

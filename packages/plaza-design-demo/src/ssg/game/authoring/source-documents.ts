@@ -6,6 +6,7 @@ import { nativeSceneAdapters } from './scene-adapters';
 import { createSequenceValidationContext } from './sequence-preview';
 import type { DocumentDescriptor } from './server/store';
 import { preserveBoundIdentity } from './bound-identity';
+import { preserveSandboxBehavior, validateSandboxBehavior } from './behavior-validation';
 
 const scenes = Object.keys(nativeSceneAdapters);
 const sequenceFiles = {
@@ -22,6 +23,7 @@ const sceneComposition = (scene: string, value: unknown) => {
   return doc;
 };
 export const sourceDocuments: DocumentDescriptor[] = [
+  { id: 'sandbox-behavior', file: 'scenes/sandbox/devices.json', kind: 'behavior', validate: validateSandboxBehavior, validateUpdate: preserveSandboxBehavior },
   ...scenes.map(scene => ({ id: scene, file: `scenes/${scene === 'harborShift' ? 'harbor-shift' : scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: preserveBoundIdentity })),
   ...Object.entries(sequenceFiles).map(([id, file]) => ({ id, file, kind: 'composition' as const, validateUpdate: preserveBoundIdentity, validate(value: unknown) { const doc = art.validate(value); if (doc.scene !== id) throw new Error(`Sequence identity must remain ${id}`); return doc; } })),
   ...Object.entries(timelineFiles).map(([id, file]) => ({ id, file, kind: 'timeline' as const, validate(value: unknown) {

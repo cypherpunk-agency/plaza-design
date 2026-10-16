@@ -1,0 +1,8 @@
+/** Verify the existing F6 evidence pin; does not regenerate acceptance or rerun the recorded browser workflow. */
+import assert from'node:assert/strict';import*as fs from'node:fs';import*as path from'node:path';import{createHash}from'node:crypto';import{fileURLToPath}from'node:url';
+import{sourceDocuments}from'../../src/ssg/game/authoring/source-documents';
+const demo=fileURLToPath(new URL('../../',import.meta.url)),game=path.join(demo,'src/ssg/game'),report=JSON.parse(fs.readFileSync(path.join(game,'authoring/inventories/S13.acceptance.json'),'utf8')),sha=(file:string)=>createHash('sha256').update(fs.readFileSync(file)).digest('hex');assert.equal(report.gate,'F6');
+for(const[file,hash]of Object.entries(report.sourcePins))assert.equal(sha(path.join(game,file)),hash,'F6 implementation pin changed: '+file);
+for(const[file,hash]of Object.entries(report.checkPins??{}))assert.equal(sha(path.join(demo,file)),hash,'F6 focused-check pin changed: '+file);
+const files=Object.fromEntries(sourceDocuments.map(d=>[d.id,d.file]));assert.deepEqual(Object.keys(files).sort(),Object.keys(report.restoredDocumentRevisions).sort(),'F6 protected document inventory changed');
+for(const[id,hash]of Object.entries(report.restoredDocumentRevisions))assert.equal(sha(path.join(game,files[id])),hash,'Restored source document changed: '+id);assert.equal(sha(path.join(game,'scenes/sandbox/devices.json')),report.restoration.baselineRevision);console.log(JSON.stringify({gate:'F6',sourcePins:Object.keys(report.sourcePins).length,checkPins:Object.keys(report.checkPins??{}).length,restoredDocuments:Object.keys(files).length,result:'PASS existing evidence hashes; browser workflow was not rerun'}));

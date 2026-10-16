@@ -93,6 +93,11 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
       const rules = typeof def.rules === 'function' ? def.rules(services) : def.rules ?? NO_RULES;
       const model = new SceneModel({ say: forbidden, open: forbidden, changed() {} }, def.data ?? emptyData(def.id, def.name), rules);
+      // Inspection never advances simulation. Reinitialize native deadlines after replacing
+      // host time, so a clock/countdown snapshot cannot depend on render duration or warmup.
+      model.now = () => 0;
+      model.wall = () => 0;
+      model.reset();
       const snapshot = object(settings.state, 'Scene state');
       for (const [key, value] of Object.entries(snapshot)) {
         if (!Object.prototype.hasOwnProperty.call(model.data.state, key)) throw new Error(`Unknown scene state: ${key}`);
@@ -101,6 +106,9 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
         model.set(key, value as Parameters<SceneModel['set']>[1]);
       }
       const vision = settings.hack === true, engine: EngineDraw = { m: model, hover: typeof settings.hover === 'string' ? settings.hover || null : null, layer: 'all' };
+      // A complete editor frame starts from native canvas defaults, including inherited
+      // drawing state. Camera probes must not inherit the previous probe's paint state.
+      canvas.width = canvas.width;
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
       renderSceneFrame({ context, scale: renderScale, view, scene: def, sceneId: def.id,
@@ -117,7 +125,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);
       const env = { ...preparedEnvironment, ...options, state };
       const bounds = previewBounds(resolveComposition(art, document, env), view, options, document);
-      const result: PreviewResult = { bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * renderScale, y: b.y * renderScale, width: b.width * renderScale, height: b.height * renderScale })),
+      const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * renderScale, y: b.y * renderScale, width: b.width * renderScale, height: b.height * renderScale })),
         deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / renderScale, dy / renderScale) };
       if (request.overlays) drawSelectionOverlay(context, result, request.selectedId);
       return result;

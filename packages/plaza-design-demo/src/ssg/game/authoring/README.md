@@ -10,11 +10,43 @@ Open `http://127.0.0.1:4192`. The launcher starts a separate loopback save servi
 port 4193. `--port` and `--api-port` select other ports. Ctrl+C stops both services.
 This entry is a development tool; production builds do not import the editor or its write service.
 
-The selector includes all 19 scene compositions, four sequence compositions and two timeline
-documents. S0-S7/G1-G8 acceptance is complete in the isolated development checkout; see
+The selector includes all 19 scene compositions, four sequence compositions, two timeline
+documents and the scoped Sandbox behavior document. S0-S7/G1-G8 acceptance is complete; see
 [the execution ledger](../SCENE-SYSTEM-STATUS.md) and
-[evidence/reproduction guide](../docs/reference/SCENE-SYSTEM-EVIDENCE.md). The future asset
-workbenches and event authoring milestones remain planned.
+[evidence/reproduction guide](../docs/reference/SCENE-SYSTEM-EVIDENCE.md). S8-S13 adds focused
+workbenches to the same shell; individual acceptance and limits are recorded in the
+[stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
+
+The S8 read-only asset browser is now available above the scene workspace. Search by type,
+name or tag, filter families, inspect embedded library components, and choose a real source
+usage for its isolated prepared preview. Preview zoom does not edit the asset. **Open instance**
+selects its exact source placement in the ordinary composer. Metadata distinguishes defaults
+from resolved transforms/visibility/anchors. Cinematic-only pieces open their native sequence
+context; conditional or non-painting pieces report invisible snapshots. See the
+[stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
+
+Open one workbench panel at a time. Characters offers the supported humans, animals and robots,
+appearance controls and actual native animation inputs. Vehicles offers ground, flying, rail
+and water families, supported cargo/passenger inputs, and explicitly labeled inspection routes.
+Signs, lighting and architecture offers native kernels plus real scene usages; composed mode
+retains scene overlap, lighting and weather, while isolated mode shows the selected registered
+parts. Unsupported controls are disabled or explained. These panels are viewers: their controls
+do not save changes to artwork or advance the game. Playback, frame stepping, seeking and
+reduced motion affect only the open preview; closing a panel disposes its clock.
+
+The event inspector reads actual declarations and source references. Search scenes, nouns,
+triggers, conditions, actions and connections; select a node to inspect its data, open its scene
+or placement, or read the whitelisted literal source. Opaque controller code is labeled explicitly.
+Conditions without a matching captured runtime context remain unbound rather than being guessed.
+
+Behavior authoring is limited to the frozen Sandbox inventory in
+`inventories/S13.json`: five nouns, ten handlers, four state keys and two signal connections.
+Select a noun and verb, edit supported typed cases/actions/replies, then run the native sandbox
+with its trace and controlled signal queue. Reset, advance time or capture/reenter a lab save
+without touching player saves. Global Undo/Redo and validated import/export use the same pending
+document. Save writes only this allowed source through the existing conflict-protected service;
+Reload source discards its pending draft. Arbitrary code, rewards, other scene rules and map or
+transport editing remain outside this editor's scope.
 
 Compositions and timelines currently use schema version 1, the initial document format.
 There is no earlier serialized format to migrate. Imports reject unsupported versions rather

@@ -84,6 +84,8 @@ export interface Ctx { dev: string; noun: string; verb: string; bySignal: boolea
 export interface Spot { id: string; x: number; w: number; h: number; y: number }
 
 export interface SceneHooks {
+  /** Optional read-only diagnostic events. Exceptions are isolated from engine execution. */
+  observe?: (event: Readonly<SceneTrace>) => void;
   /**
    * A line to show. `from`: who said it, when the model knows: the device whose verb ran
    * (or whose effect names itself), or another speaker an effect names ('pixel'). The host
@@ -123,6 +125,8 @@ export interface SceneHooks {
   /** The nodes the player controls, by Registry label (`0x2F`): access points onto their networks. */
   controlled?: () => string[];
 }
+
+export interface SceneTrace { phase: 'trigger' | 'condition' | 'action' | 'result'; context: Ctx; detail: unknown }
 
 const list = <T>(x: T | T[]) => (Array.isArray(x) ? x : [x]);
 /** "crane.job.log" → ["crane", "job.log"]: noun ids may contain dots. */
@@ -313,7 +317,19 @@ export class SceneModel {
     try { return fn(); } finally { this.speaker = before; }
   }
 
-  act(dev: string, noun: string, verb: string, bySignal = false) { this.as(dev, () => this.actAs(dev, noun, verb, bySignal)); }
+  private observe(phase: SceneTrace['phase'], context: Ctx, detail: unknown) {
+    if (!this.hooks.observe) return;
+    try {
+      const freeze = (v: unknown): unknown => { if (v && typeof v === 'object') { Object.values(v).forEach(freeze); Object.freeze(v); } return v; };
+      this.hooks.observe(freeze(JSON.parse(JSON.stringify({ phase, context, detail }))) as SceneTrace);
+    } catch { /* Diagnostics must never alter gameplay, including observer failures. */ }
+  }
+  act(dev: string, noun: string, verb: string, bySignal = false) {
+    const context = { dev, noun, verb, bySignal };
+    this.observe('trigger', context, {});
+    this.as(dev, () => this.actAs(dev, noun, verb, bySignal));
+    this.observe('result', context, { state: this.state });
+  }
 
   private actAs(dev: string, noun: string, verb: string, bySignal: boolean) {
     const n = this.noun(dev + '.' + noun);
@@ -1166,7 +1182,9 @@ export class SceneModel {
   private runCases(cases: Case | Case[] | undefined, c: Ctx): Line | null {
     if (!cases) return null;
     for (const k of list<Case>(cases)) {
-      if ((k.if && !this.test(k.if, c)) || !now(k.when)) continue;
+      const matches = !((k.if && !this.test(k.if, c)) || !now(k.when));
+      this.observe('condition', c, { condition: k.if ?? null, matches });
+      if (!matches) continue;
       let out: Line | null = null;
       const keep = (l: Line | null) => { if (!l) return; if (out) this.sayLine(out); out = l; };
       (k.do ?? []).forEach((a) => keep(this.doAction(a, c)));
@@ -1177,7 +1195,15 @@ export class SceneModel {
   }
 
   private doAction(a: Action, c: Ctx): Line | null {
-    if ((a.if && !this.test(a.if, c)) || !now(a.when)) return null;
+    const result = this.executeAction(a, c);
+    this.observe('result', c, { action: a, state: this.state, response: result });
+    return result;
+  }
+
+  private executeAction(a: Action, c: Ctx): Line | null {
+    const matches = !((a.if && !this.test(a.if, c)) || !now(a.when));
+    this.observe('action', c, { action: a, matches });
+    if (!matches) return null;
     if ('set' in a) this.write(a.set, typeof a.to === 'string' ? this.fmt(a.to, c) : a.to, c.dev);
     else if ('open' in a) this.hooks.open(a.open, a.open === 'talk' ? a.with ?? this.dialogueFor(c.noun) : a.with);
     else if ('emit' in a) this.emit(c.dev + '.' + c.noun + ':' + a.emit);
