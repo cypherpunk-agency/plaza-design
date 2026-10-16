@@ -1,6 +1,5 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { type View } from "../core/view";
-import { light } from "../../world/light";
 import { box,C,drawTowers,GREEN,O,onScreen,PAPER,RED,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
 import { drawSky,seaCols,sunPath } from "../environment/sky";
@@ -16,7 +15,7 @@ const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
 const mix = (a: number[], b: number[], f: number, al = 1) => 'rgba(' + Math.round(lerp(a[0], b[0], f)) + ',' + Math.round(lerp(a[1], b[1], f)) + ',' + Math.round(lerp(a[2], b[2], f)) + ',' + al + ')';
 const CITY = towers(41, 300, [4, 10], [8, 26], 0.3);
 function sky(x: CanvasRenderingContext2D, V: View, p: number) {
-  const hy = V.y(HORIZON), L = light();
+  const hy = V.y(HORIZON), L = V.lighting;
   drawSky(x, V, L, { horizon: hy, fillTo: hy + 1 });
   const k = 1 - L.cover * 0.6;
   for (let i = 0; i < 5; i++) {
@@ -245,7 +244,7 @@ function glow(x: CanvasRenderingContext2D, l: number, t: number, w: number, h: n
 function seaBase(x:CanvasRenderingContext2D,V:View,p:number){
   const top = V.y(HORIZON), bot = V.y(WATERLINE), h = bot - top;
   // the water takes the sky's colours (sets/sky.ts seaCols), a little warmer near the shore
-  const L = light(), [c0, c1, c2] = seaCols(L);
+  const L = V.lighting, [c0, c1, c2] = seaCols(L);
   const g = x.createLinearGradient(0, top, 0, bot);
   g.addColorStop(0, c0); g.addColorStop(0.4, c1); g.addColorStop(1, c2);
   x.fillStyle = g; x.fillRect(0, top, V.viewW, h + 1);

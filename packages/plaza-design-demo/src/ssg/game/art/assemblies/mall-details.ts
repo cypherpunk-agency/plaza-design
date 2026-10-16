@@ -278,7 +278,6 @@ function cases_booth(x:CanvasRenderingContext2D,v:View){booth(x,v,{...CASES,x:in
 function table(x:CanvasRenderingContext2D,v:View){
   const s = v.sx(inputs.x), { y } = v;
   if (!onScreen(v, s - 40, 80)) return;
-  for (const d of [-24, 24]) { x.fillStyle = '#2a1a10'; x.fillRect(s + d - 1, y(9), 2, 9); box(x, s + d - 7, y(11), 14, 3, '#8a2a1a', 'rgba(255,170,90,.5)'); }
   x.fillStyle = '#2a1d14'; x.fillRect(s - 1, y(20), 3, 20);
   box(x, s - 18, y(22), 36, 3, '#3a2a1e', 'rgba(255,190,120,.6)');
   x.fillStyle = '#e8e0d0'; x.fillRect(s - 8, y(25), 6, 3); x.fillStyle = '#d84a2a'; x.fillRect(s + 4, y(26), 4, 4);

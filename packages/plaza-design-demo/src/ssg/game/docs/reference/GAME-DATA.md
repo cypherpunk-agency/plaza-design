@@ -3,7 +3,7 @@
 Every place in the game is a **scene**, and every scene runs on the engine (`game/engine/`):
 Puzzle scenes (including the train car, library, laundromat and stacks) have data files;
 market, shop, mall, harbor and the metro platforms currently have no devices. Which place and
-district a scene belongs to is the city's data (`city.ts`, CITY.md).
+district a scene belongs to is the city's data (`world/city.ts`, CITY.md).
 
 This is the technical reference for the current iteration, not a fixed specification.
 Everything remains open to redesign. Historical decisions below explain how the code got
@@ -11,10 +11,14 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
 
 ## Current approach (revisable)
 
-- **JSON, written by hand** (by us). No YAML step for now.
+- **JSON source, editable by hand or the local composer.** No YAML step.
 - **Data vs code: learned case by case.** No big rule up front; each time something
   moves across the line (or stays put on purpose), it goes in the **Boundary log** below.
-- **No editor for now.** JSON plus the build-time check is enough.
+- **A local scene and animation composer exists.** Run
+  `pnpm --filter plaza-design-demo compose-scenes` from the repository root and open
+  `http://127.0.0.1:4192` (save service 4193). It edits allowlisted composition/timeline JSON,
+  with typed validation and the native shipping preview path. Device nouns, verbs and rule code
+  remain outside that editor. See [composer instructions](../../authoring/README.md).
 - **Logic modules are shared unlockables.** TIMER and SWITCH live in `data/logic.json`,
   not in a scene. Each is a module the player owns, like `legs.so`: `timer.so`, `switch.so`.
   Owned modules are in the save (`Save.modules`; `legs.so` stays `Save.jump`). The board
@@ -32,7 +36,19 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
 
 ## Boundary log
 
-Append one line per decision: what, which side, why.
+Append one line per decision: what, which side, why. Entries record the implementation at the
+time, including superseded filenames and designs. Use **Where things are** below for current
+paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
+
+- Scene/sequence appearance and placement: **composition JSON** (`scenes/<id>/composition.json`,
+  `story/title/composition.json`, `story/cutscenes/*.composition.json`). Registered art kernels,
+  typed field validation, bounds and anchors: **code** in `art/`. Scene factories/adapters derive
+  gameplay geometry and immutable visual snapshots from the same document as the renderer.
+  Timeline shots, tracks, cards, fades and handoffs: **JSON** in `story/title/timeline.json` and
+  `story/cutscenes/timeline.json`; trusted nonlinear motion evaluators remain **code**. The local
+  save service validates the complete prospective allowlisted source set; it never writes rules,
+  device data, player storage or world geography. This is implemented coverage, not a declaration
+  that all scene-system acceptance gates have passed.
 
 - Logic parts (TIMER, SWITCH): **data**, in a shared file (`logic.json`), because every scene
   uses them and they are items the player owns.
@@ -182,11 +198,13 @@ Append one line per decision: what, which side, why.
     always an exit id in the destination. **Data** on the definition.
   - What the engine draws around a scene (`ambient`: `sky`, Downtown's `city` walls, the wet
     `street`, `rain`) and whether hack vision draws its devices in a second pass (`layers`, the
-    yard): **data** switches; the drawing is **code** (game.ts for the engine's, the scene's own).
+    yard): **data** switches; the drawing is **code**. Current frame ordering is shared in
+    `runtime/render-scene.ts`; visible kernels are in `art/`.
   - First-visit lines: **data**, each scene's `intro` (a function where it depends on a touch
     screen), remembered as `flags['scene:<id>']` for every scene.
-  - Downtown's street people and the fixer stay **code** in game.ts and level.ts (their lines
-    depend on the save); Downtown's sign is a readable.
+  - Downtown's street people and fixer behavior remain **code**. Their current owners are
+    `scenes/downtown/dialogue.ts`, `progression.ts` and `composition.ts`; appearance belongs in
+    `art/`. Downtown's sign is a readable. The original game.ts/level.ts placement is superseded.
 - **Effects that hand over what you carry, and story flags** (the laundromat, P13): `SceneModel.carry(item,
   n)` (the save's `items`; 0 asks, negative takes) and `SceneModel.flag(name)` (a save
   flag), through the hooks `carry` / `flag` (`SceneStore`, game.ts). **Engine code**; which item and
@@ -259,15 +277,19 @@ data change. A new kind of behaviour is a code change: one new effect.
   empty one, `emptyData`), its rules (or `NO_RULES`), its panels, extra E targets and drawing.
 
 A new scene: a `SceneDef` (its size, spawn, exits, life and drawing) in `SCENES`
-(scenes/index.ts), and its place in `city.ts` (`SCENE_PLACE`, and a new place in `PLACES` if it
-is one). With devices, also `data/<id>.json` (add it to `SCENE_FILES` in `data/index.ts` and to
+(scenes/index.ts), and its place in `world/city.ts` (`SCENE_PLACE`, and a new place in `PLACES` if it
+is one). With devices, also `scenes/<id>/devices.json` (add it to `SCENE_FILES` in `data/index.ts` and to
 the `checkGame` list in `scripts/generate-demos.tsx`) and a `SceneRules` with its effects (often
 none) on the definition. `game.ts` hosts it like every other (`hostOf`); its progress goes to
-`save.scenes.<id>`.
+`save.scenes.<id>`. Add its composition, shared artwork elements and canonical scene factory;
+the editor also needs its adapter in `authoring/scene-adapters.ts`, whose entries feed the source
+allowlist. Keep gameplay-bound identities stable when editing that composition.
 
 ## What the data describes
 
-One file per scene: `game/data/yard.json`, `game/data/capsule.json`. Top level:
+One device file per puzzle scene: `game/scenes/yard/devices.json`,
+`game/scenes/capsule/devices.json`. This format describes engine devices and rules, separately
+from each scene's artwork `composition.json`. Top level:
 
 | Field | What it holds |
 |---|---|
@@ -836,34 +858,35 @@ Decided (save details):
 ## Where things are
 
 - `game/data/types.ts`: the format, as TypeScript types.
-- `game/data/yard.json`: the back yard. `game/data/logic.json`: the shared logic modules.
-  `game/data/net.json`: the networks, the programs, and shared nodes (none yet).
-  `game/data/library.json`: the public library (P16): reader, timer, printer, CATALOG, LENDING, HEATING. `game/data/engine.json`: engine wording.
+- `game/scenes/<id>/devices.json`: scene device data (including yard, capsule, Downtown, Moth,
+  beach, train, laundromat, stacks, library and sandbox). `game/data/logic.json`: shared logic
+  modules; `game/data/net.json`: networks/programs; `game/data/engine.json`: engine wording.
 - `game/data/check.ts`: the build-time check (`checkGame`). `game/data/index.ts`: bundles the JSON.
 - `game/engine/`: the engine (see **The engine**).
-- `game/capsule/`: Capsule 7B, the start scene: `rules.ts` (`CAPSULE_RULES`: the clock, the router,
-  Pixel), `scene.ts` (drawing, Pixel's perches), `index.ts` (`capsule`, its `SceneDef`: the door).
-  `game/companion.ts`: Pixel. `START_SCENE` (city.ts) is `capsule` for the older-save fallback;
-  a new run now uses the title/glide and train home (`title/`, `opening.ts`).
-- `game/yard/`: the yard's own code: `effects.ts` (`YARD_RULES`), `camera.ts` (CAM-1),
-  `scene.ts` (drawing), `index.ts` (`yard`, its `SceneDef`; the parcel: `PARCEL`).
-- `game/data/moth.json`: Moth's place, flat 4C (story Level 3): the flat's things, FRIENDNET,
-  MOTH-PC, the watchdog. `game/moth/`: `rules.ts` (`MOTH_RULES`: `uplink`, `journalOpen`, goals),
-  `scene.ts` (drawing), `index.ts` (`moth`, its `SceneDef`: the door out).
-- `game/data/beach.json`: the beach and SALT (the sunbed kiosk, the jukebox, the mixer, the
-  lifeguard drone, the pier lights' CLOCK, Moth's boat). `game/beach/`: `rules.ts` (`BEACH_RULES`:
-  minute billing, the drone's flag running out), `scene.ts` (drawing, the people), `index.ts`
-  (`beach`, its `SceneDef`: `people`, `uses`, `readables`, the stairs out).
-- `game/data/downtown.json`: Downtown. `game/downtown/`: its code: `rules.ts` (effects, derived
-  values from the save, DLV-9's drive; `downtownRules(player)`), `save.ts` (`reconcile` with old
-  saves), `shell.ts` (typed commands), `camera.ts` (CAM-3), `scene.ts` (drawing, the CITY MAP
-  kiosk), `index.ts` (`downtown`, its `SceneDef`: the doors as exits; its rules are made for the
-  player's save, `rules(player)`).
-- `game/data/sandbox.json` and `game/sandbox/`: the sandbox, REGISTRY QA BAY 3 (sudo only; see **Sandbox**).
-- `game/scenes/`: `kit.ts` (`SceneDef`, exits, uses, readables, the shared drawing kit),
-  `index.ts` (`SCENES`, every scene), and the scenes without devices (market, shop, mall, harbor,
-  the platforms). The car has `data/train.json` and `scenes/train0.ts` rules.
-  `game/city.ts`: districts, places, each scene's place, the map.
+- `game/scenes/capsule/`: `rules.ts` (clock, router and Pixel), `scene.ts` (perches and visual
+  adapter), `composition.ts`/`composition.json`, and `index.ts` (canonical scene factory).
+  Pixel's simulation is `game/runtime/companion.ts`. `START_SCENE` in `world/city.ts` remains
+  the older-save fallback; the current new-run controller uses `story/title/` and `story/opening.ts`.
+  The separate `scenes/harbor-shift/` prototype is not yet the campaign opening.
+- `game/scenes/yard/`: `effects.ts` (`YARD_RULES`), `camera.ts`, presentation/controller state,
+  composition source/adapters and the scene factory. Its crane presentation prepares once per
+  logical native frame before pure drawing; isolated previews capture/restore decorative history.
+- `game/scenes/moth/`: rules for `uplink`, `journalOpen` and goals; device data for the flat,
+  FRIENDNET, MOTH-PC and watchdog; composition source, actors and scene factory.
+- `game/scenes/beach/`: rules for billing and the drone flag; actors, device data for SALT and
+  beach machines; composition source/adapters and scene factory. Pictures are in `art/assemblies/`.
+- `game/scenes/downtown/`: rules, save reconciliation, shell, camera, layout, dialogue,
+  progression, composition source/adapters and scene factory. `scenes/train/rules.ts` owns car rules.
+- `game/scenes/sandbox/`: REGISTRY QA BAY 3 (sudo only; see **Sandbox**).
+- `game/scenes/kit.ts`: `SceneDef`, exits/uses/readables, presentation preparation and visual
+  environment contracts. `game/scenes/index.ts`: `SCENES`, including locations without devices.
+- `game/art/`: shared visible kernels, typed registry/catalog, composition/timeline contracts,
+  environmental effects and animated sequences. `game/runtime/characters.ts` prepares actor
+  simulation; `game/art/characters/appearance.ts` paints its prepared appearance.
+- `game/runtime/render-scene.ts`: native frame composition shared by shipping Game and editor.
+  `game/authoring/`: composer UI, native/sequence preview, world inspection and validated local saves.
+- `game/world/city.ts`: districts, places, scene membership and map registry.
+  `game/world/transport/`: route/ride state; reusable transit pictures live under `game/art/`.
 
 ## Sandbox
 
@@ -875,11 +898,12 @@ console by the door (the model back to the data file: devices, cables, parts, se
 lockouts, the net, the watchdog), or `reset sandbox --yes` in the deck (that also forgets the
 board layout). The keyring, tokens and what you carry are the player's and stay.
 
-Files: `data/sandbox.json` (every device, the nodes, cables, keyring chips `sbx.*`, the
-watchdog, UNIT 7's dialogue), `sandbox/rules.ts` (`SANDBOX_RULES`: effects, the tick, `night`, and a
-check that every station keeps what it tests), `sandbox/scene.ts` (drawing, the people, `STATIONS`),
-`sandbox/index.ts` (the `SceneDef`: test cards, the chip dispenser, the bench, the reset console),
-the networks `sandbox` and `sandbox-back` in `net.json` (reached only from the bay's ports).
+Files (relative to the game root): `scenes/sandbox/devices.json` (devices, nodes, cables,
+keyring chips `sbx.*`, watchdog and UNIT 7 dialogue); `scenes/sandbox/rules.ts` (effects,
+tick, derived state and station checks); `scenes/sandbox/scene.ts` (people and visual adapter);
+`scenes/sandbox/composition.ts`/`composition.json` (stations and independently placed machines);
+`scenes/sandbox/index.ts` (scene factory, test cards, dispenser and reset console). Raw pictures
+live in `art/assemblies/sandbox*.ts`. Networks `sandbox` and `sandbox-back` are in `data/net.json`.
 
 Left to right, one bench per feature, each under a plate (`BAY 3·0N` and what it tests) with a
 test card at its foot (E: how to test it):
@@ -902,24 +926,32 @@ step or everyday action of their own, the chip reader and the till are the bench
 
 ## Cutscenes
 
-`game/data/cutscenes.json`: one entry per cutscene, keyed by its id (`intro`). The picture
-is code (`game/cutscenes/`, one draw function per id); everything said and timed is here:
+`game/data/cutscenes.json` maps each cutscene id to a title and a named timeline sequence:
 
 ```json
 "intro": {
   "title": "ACCESS DENIED",          // shown in the window header while it plays
-  "duration": 26,                    // seconds; then it hands over
-  "next": "capsule",                 // the scene it hands over to: any scene id
-  "cards": [ { "at": 2.5, "until": 9, "text": "The city never logs off. …" } ]
+  "timeline": "sequence-cinematics",
+  "sequence": "intro"
 }
 ```
 
-Cards are typed out in the bottom letterbox bar from `at` to `until` (seconds), one at a time;
-keep them to one or two short lines. A new cutscene needs an entry here and a draw function in
-`cutscenes/index.ts` (`DRAW`). Code plays one with `game.playCutscene(id, then?)`; without `then`
-it hands over to `next`. `?play=<id>` plays it on start.
+`story/cutscenes/timeline.json` owns duration, shots, cards, tracks, fades, beats and handoff.
+The pictures use `intro.composition.json`, `act2.composition.json` and `taxi.composition.json`
+beside that timeline. `story/title/` has the opening composition and its separate timeline.
+Cards carry `from`/`to` times in seconds and optional placement; keep them to one or two short
+lines. The local animation composer previews and saves these same source documents.
 
-Boundary: the picture (layout, motion) is **code**; titles, timing, cards and the next scene are **data**.
+`story/cutscenes/index.ts` builds `CUTSCENES`, schedules intro presentation and calls
+`art/sequences/cinematics.ts`; taxi's travel controller is `story/cutscenes/taxi.ts`.
+`story/cutscenes/skyline-session.ts` separates continuous intro playback from isolated seeking.
+Code plays a cutscene with `game.playCutscene(id, then?)`; absent a callback, the timeline's named
+handoff selects the destination. `?play=<id>` can start a registered cutscene directly.
+
+Boundary: composition, text/timing and named handoff are **JSON**; trusted drawing and nonlinear
+motion kernels are **code** in `art/`. Controllers own scheduling and gameplay transitions; preview
+seeks do not commit handoffs. Adding a new sequence also requires registry/validation and source
+allowlist updates where applicable, rather than only adding an arbitrary drawing function.
 
 ## Open questions
 

@@ -11,8 +11,16 @@ port 4193. `--port` and `--api-port` select other ports. Ctrl+C stops both servi
 This entry is a development tool; production builds do not import the editor or its write service.
 
 The selector includes all 19 scene compositions, four sequence compositions and two timeline
-documents. Migration acceptance is recorded in [the execution ledger](../SCENE-SYSTEM-STATUS.md);
-this working editor checkpoint does not mean that the overall plan is complete.
+documents. S0-S7/G1-G8 acceptance is complete in the isolated development checkout; see
+[the execution ledger](../SCENE-SYSTEM-STATUS.md) and
+[evidence/reproduction guide](../docs/reference/SCENE-SYSTEM-EVIDENCE.md). The future asset
+workbenches and event authoring milestones remain planned.
+
+Compositions and timelines currently use schema version 1, the initial document format.
+There is no earlier serialized format to migrate. Imports reject unsupported versions rather
+than guessing or silently rewriting them. A future version must add an explicit migration with
+round-trip/reference checks before changing source documents; ordinary player-save compatibility
+is a separate runtime concern.
 
 Select artwork in the hierarchy or preview. Edit its transform and typed appearance properties,
 place catalog elements, attach them to named anchors, or duplicate/delete decorative artwork.
@@ -30,7 +38,8 @@ Select a timeline document to edit its sequences, shots, camera/property/state t
 text, fades, beats and handoff destination. Scrubbing previews frames without committing a handoff.
 The registered exact motion formulas preserve the existing nonlinear animation; their names in
 documents are typed references, not arbitrary scripts. The opening, intro, Act II and taxi use
-their shipping renderers in this editor. Larger sequence assemblies are still being decomposed.
+their shipping renderers in this editor. Their compositions expose independently selectable
+pieces and nested assemblies; supported fields and bounds come from the same artwork registry.
 
 Edits remain in memory until **Save to source**. Save validates the entire prospective document
 set and writes only allowlisted source JSON. The game imports those exact files on its next build.
@@ -55,6 +64,8 @@ Restart the launcher after changing renderer TypeScript, element registrations o
 An old process intentionally rejects documents containing types it does not know; it cannot
 silently validate newly added code. Ordinary JSON edits can be reloaded through **Reload source**.
 
-Remaining plan work includes explicit isolation of lighting/shadow frame state, further decomposition
-of large sequence assemblies, metadata refinements and complete editor-operation acceptance.
+Lighting and shadow collectors are explicit frame inputs. Native-scene timelines also render
+evaluated text cards and fades through the shared frame renderer. Previewing never dispatches
+named beats or handoffs into player progress. Source-save and full editor-operation acceptance
+are tracked separately from artwork pixel comparisons.
 Follow the execution ledger for verified behavior and outstanding goal gates.

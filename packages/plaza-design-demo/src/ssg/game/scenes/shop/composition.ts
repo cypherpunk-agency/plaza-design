@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Corner Shop source geometry and prepared visual bindings. */
 import {drawComposition,resolveComposition,type Composition,type Environment,type Value} from '../../art/core/composition';
 import {art} from '../../art';
@@ -12,7 +13,7 @@ const required=['wall','spawn','door','limit','vending','till','counter',...acto
 export function validateShopComposition(value:unknown):Composition{const doc=shopArt.validate(value);if(doc.scene!=='shop')throw new Error('Expected shop composition');for(const id of required)if(!doc.instances.some(i=>i.id===id))throw new Error('Missing gameplay-bound shop instance '+id);for(const row of doc.instances){for(const [field,source]of Object.entries(row.bindings??{})){const expected=field==='lighting'?'shop.lighting':field==='pose'?'shop.actor.'+row.props.actor:field==='clip'?'shop.clip.'+row.props.actor:'';if(source!==expected)throw new Error(row.id+': unknown shop binding '+source);}if(row.type==='character.prepared'&&(!actorIds.includes(String(row.props.actor))||row.bindings?.pose!=='shop.actor.'+row.props.actor))throw new Error('Invalid shop actor binding '+row.id);}for(const id of actorIds)if(doc.instances.filter(i=>i.type==='character.prepared'&&i.props.actor===id).length!==1)throw new Error('Shop actor must have one instance '+id);for(const [id,type]of [['wall','wall'],['spawn','marker'],['door','door'],['limit','limit'],['vending','vending'],['till','till'],['counter','counter']])if(doc.instances.find(i=>i.id===id)!.type!=='shop.'+type)throw new Error('Incompatible shop binding '+id);return doc;}
 export const shopComposition=validateShopComposition(document);
 function defaults(doc:Composition){const bindings:Record<string,Value>={};for(const row of doc.instances)for(const[field,source]of Object.entries(row.bindings??{}))bindings[source]=shopArt.get(row.type).visualFields![field].default;return bindings;}
-const geometryView:View={sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
+const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
 export function shopGeometry(doc:Composition=shopComposition){return resolveComposition(shopArt,doc,{view:geometryView,state:{},bindings:defaults(doc),reduced:false});}
 export function shopPlacement(id:string,doc:Composition=shopComposition){const row=shopGeometry(doc).find(r=>r.instance.id===id);if(!row)throw new Error('Missing shop geometry '+id);return row.placement;}
 export function shopWidth(doc:Composition=shopComposition){return Number(shopGeometry(doc).find(r=>r.instance.id==='wall')!.props.width);}

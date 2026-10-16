@@ -21,7 +21,8 @@
  */
 
 import type { Timeline } from "../../ui/transport";
-import { renderOpeningSequence } from '../../art/sequences/opening/sequence';
+import {renderOpeningDocument}from'./render';
+import{light}from'../../world/light';
 import { openingDocuments } from './documents';
 
 const titleSequence = openingDocuments.timeline.sequences.find(s => s.id === 'title')!;
@@ -95,7 +96,7 @@ export class Opening {
   /** Draw a frame into a context already scaled to world units. */
   draw(x: CanvasRenderingContext2D, W: number, H: number) {
     x.save();
-    renderOpeningSequence(x, { W, H, reduced: this.reduced }, openingDocuments, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ambientTime: this.t });
+    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting:light() }, openingDocuments, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ambientTime: this.t });
     x.restore();
   }
 }

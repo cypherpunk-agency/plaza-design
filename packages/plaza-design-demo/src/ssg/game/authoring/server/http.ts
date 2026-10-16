@@ -10,7 +10,7 @@ export async function startAuthoringServer(options: AuthoringServerOptions) {
   const token = randomBytes(32).toString('hex');
   const authenticated = (req: IncomingMessage) => {
     const given = req.headers['x-authoring-token'];
-    return typeof given === 'string' && given.length === token.length && timingSafeEqual(Buffer.from(given), Buffer.from(token));
+    return typeof given === 'string' && /^[0-9a-f]{64}$/.test(given) && timingSafeEqual(Buffer.from(given), Buffer.from(token));
   };
   let boundPort = 0;
   const server = createServer(async (req, res) => {

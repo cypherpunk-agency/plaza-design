@@ -78,7 +78,6 @@ function upstairsPipes(x:CanvasRenderingContext2D,v:View){const{sx,y}=v,w0=sx(0)
   }
 
 }
-function drawUpstairs(x:CanvasRenderingContext2D,v:View,_w0:number,_w1:number){upstairsSlab(x,v);for(let k=0;k<ROOMS.length;k++)upstairsRoom(x,v,k);upstairsPipes(x,v);}
 
 /** The convex security mirror up in the corner: the shop, bent, in silver. */
 function mirror(x: CanvasRenderingContext2D, v: View) {
@@ -106,11 +105,6 @@ const {sx,y}=v;const w0=sx(0);const w1=sx(L.width);
     box(x, w0, y(L.ceil), w1 - w0, L.ceil, '#120a07');
     x.fillStyle = 'rgba(' + O + ',.1)'; for (let wx = 0; wx < L.width; wx += 40) x.fillRect(sx(wx), y(L.ceil), 1, L.ceil - 30);
     box(x, w0, y(30), w1 - w0, 30, '#160c08'); x.fillStyle = 'rgba(' + O + ',.3)'; x.fillRect(w0, y(30), w1 - w0, 1);
-
-}
-function piece_upstairs(x:CanvasRenderingContext2D,v:View,_index=0){
-const {sx}=v;const w0=sx(0);const w1=sx(L.width);
-    drawUpstairs(x, v, w0, w1);
 
 }
 function piece_wall_edges(x:CanvasRenderingContext2D,v:View,_index=0){
@@ -341,36 +335,6 @@ const {sx,y}=v;
 
 }
 function piece_outside(x:CanvasRenderingContext2D,v:View){const W=L.window,wx=v.sx(W.x),top=v.y(W.h1);if(!onScreen(v,wx,W.w))return;x.save();x.beginPath();x.rect(wx,top,W.w,W.h1-W.h0);x.clip();drawCharacters(x,v,OUTSIDE);x.restore();}
-function drawBackdrop(x:CanvasRenderingContext2D,v:View){
-piece_clear(x,v);
-piece_wall(x,v);
-piece_upstairs(x,v);
-piece_wall_edges(x,v);
-for(let i=0;i<L.tubes.length;i++)piece_tubes(x,v,i);
-piece_window_back(x,v);
-piece_outside(x,v);
-piece_window_front(x,v);
-piece_door(x,v);
-piece_mirror(x,v);
-piece_ticker(x,v);
-for(let i=0;i<L.shelves.length;i++)piece_shelves(x,v,i);
-piece_limit(x,v);
-piece_vending(x,v);
-piece_fridge(x,v);
-piece_advert(x,v);
-piece_lottery(x,v);
-piece_cash_sign(x,v);
-piece_camera(x,v);
-piece_keeper(x,v);
-piece_counter(x,v);
-piece_till(x,v);
-piece_sweets(x,v);
-piece_counter_label(x,v);
-piece_stickers(x,v);
-piece_people(x,v);
-piece_floor(x,v);
-piece_reflection(x,v);
-}
 function drawFront(x: CanvasRenderingContext2D, v: View) {
     // a near rack of crisps at the bottom of the view, every bag a different colour
     const s = v.sx(250, inputs.foregroundParallax??1.25), base = v.gy + 56;
@@ -379,5 +343,5 @@ function drawFront(x: CanvasRenderingContext2D, v: View) {
     const cols = ['#d83a2a', '#e8c83a', '#5aa83a', '#f08a2a', '#3a6ad8', '#c83a8a'];
     for (let i = 6, k = 0; i < 84; i += 14, k++) { x.fillStyle = cols[k % cols.length]; x.globalAlpha = 0.32; x.fillRect(s + i, base - 30, 10, 12); x.globalAlpha = 1; }
   }
-return { upstairsSlab,upstairsRoom,upstairsPipes, drawUpstairs, drawBackdrop, drawFront, clear:piece_clear,wall:piece_wall,upstairs:piece_upstairs,wall_edges:piece_wall_edges,tubes:piece_tubes,window_back:piece_window_back,outside:piece_outside,window_front:piece_window_front,door:piece_door,mirror:piece_mirror,ticker:piece_ticker,shelves:piece_shelves,limit:piece_limit,vending:piece_vending,fridge:piece_fridge,advert:piece_advert,lottery:piece_lottery,cash_sign:piece_cash_sign,camera:piece_camera,keeper:piece_keeper,counter:piece_counter,till:piece_till,sweets:piece_sweets,counter_label:piece_counter_label,stickers:piece_stickers,people:piece_people,floor:piece_floor,reflection:piece_reflection };
+return { upstairsSlab, upstairsRoom, upstairsPipes, drawFront, clear:piece_clear, wall:piece_wall, wall_edges:piece_wall_edges, tubes:piece_tubes, window_back:piece_window_back, outside:piece_outside, window_front:piece_window_front, door:piece_door, mirror:piece_mirror, ticker:piece_ticker, shelves:piece_shelves, limit:piece_limit, vending:piece_vending, fridge:piece_fridge, advert:piece_advert, lottery:piece_lottery, cash_sign:piece_cash_sign, camera:piece_camera, keeper:piece_keeper, counter:piece_counter, till:piece_till, sweets:piece_sweets, counter_label:piece_counter_label, stickers:piece_stickers, people:piece_people, floor:piece_floor, reflection:piece_reflection };
 }

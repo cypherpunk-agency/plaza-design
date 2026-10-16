@@ -1,3 +1,4 @@
+import{paintOpeningActor}from'./poses';
 /**
  * The glide's Downtown (glide.ts), from the Galleria's plaza west to LINE 0's tunnel. Second pass
  * (Tommi, 2026-10-15):
@@ -14,14 +15,14 @@
  * - **Side streets** open between the towers (traffic.ts: cars come out of them and turn into them).
  */
 
-import { drawCharacter, type Character } from "../../../runtime/characters";
+import type { Character } from "../../../runtime/characters";
 import { drawTower, signGlows, towerRow, type Tower } from "../../architecture/downtown-towers";
 import { drawRing, RING, ringTraffic } from "../../architecture/ring-highway";
 import { frameView, placed } from "../../core/view";
 import { type CoastView, type Lines, hash, lerp, mixHex, R, S } from "./coast";
 import { PLACES, TOWER_X } from "./path";
 import { SIDE_STREETS } from "./traffic";
-import {pieceNumber as pn,pieceString as ps,pieceActor,visiblePoint,viewportSpan,strictlyVisiblePoint,type PieceInputs} from "./piece-inputs";
+import {pieceNumber as pn,pieceString as ps,visiblePoint,viewportSpan,strictlyVisiblePoint,type PieceInputs} from "./piece-inputs";
 import type {Properties} from "../../core/composition";
 
 const STOREY = 85;
@@ -209,7 +210,7 @@ export function drawTownPeople(x: CanvasRenderingContext2D, c: CoastView, L: Lin
     if (only !== undefined && only !== index) continue;
     const s = c.sx(pn(c.piece,"worldX",w.X));
     if (!visiblePoint(c,s,60)) continue;
-    placed(x, R(s), L.MID, S, () => drawCharacter(x, frameView(c.f), pieceActor(w.c,c.piece)));
+    placed(x, R(s), L.MID, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.pose??c.actors['people.person-'+PEOPLE.indexOf(w)],'people.person-'+PEOPLE.indexOf(w)));
   }
 }
 
@@ -218,6 +219,6 @@ export const townLampIds = LAMPS.map(X=>'lamp-'+X);
 export const townPeopleIds = PEOPLE.map((_,i)=>'person-'+i);
 export function townPieces(x:CanvasRenderingContext2D,c:CoastView,L:Lines,inputs:PieceInputs={}){return townPieceIds.map(id=>({id,draw:()=>{const p=inputs["town."+id];drawTownBack(x,p?{...c,piece:p.props,cull:p.cull}:c,L,id);}}));}
 export function townLampPieces(x:CanvasRenderingContext2D,c:CoastView,L:Lines,inputs:PieceInputs={}){return LAMPS.map(X=>({id:"lamp-"+X,draw:()=>{const p=inputs["lamps.lamp-"+X];drawTownLamps(x,p?{...c,piece:p.props,cull:p.cull}:c,L,X);}}));}
-export function townPeoplePieces(x:CanvasRenderingContext2D,c:CoastView,L:Lines,inputs:PieceInputs={}){return PEOPLE.map((_,i)=>({id:"person-"+i,draw:()=>{const p=inputs["people.person-"+i];drawTownPeople(x,p?{...c,piece:p.props,cull:p.cull}:c,L,i);}}));}
+export function townPeoplePieces(x:CanvasRenderingContext2D,c:CoastView,L:Lines,inputs:PieceInputs={}){return PEOPLE.map((_,i)=>({id:"person-"+i,draw:()=>{const p=inputs["people.person-"+i];drawTownPeople(x,p?{...c,piece:p.props,cull:p.cull,pose:p.pose}:c,L,i);}}));}
 
 export function towerProperties(source:Tower,props:Properties|undefined):Tower {if(!props)return source;return {...source,w:pn(props,'width',source.w),h:pn(props,'height',source.h),seed:pn(props,'seed',source.seed),skin:ps(props,'skin',source.skin??'concrete') as Tower['skin'],grime:pn(props,'grime',source.grime??0),...(props.signs?{signs:props.signs as unknown as Tower['signs']}:{})};}

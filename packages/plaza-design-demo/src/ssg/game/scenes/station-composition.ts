@@ -1,3 +1,4 @@
+import { frameView } from '../art/core/view';
 /** Station-specific composition/state adapter, shared by the two LINE 0 platforms. */
 import { art } from '../art';
 import { drawComposition,resolveComposition,type Composition,type Environment,type Instance,type Value } from '../art/core/composition';
@@ -11,7 +12,7 @@ import type { StationLayout as HLayout } from '../art/assemblies/harbor-station'
 export type StationRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
 export const stationMarkerPolicy={exitAxes:['x'] as const,platformStopAxes:['x'] as const,platformTrainGeometry:'Horizontal stop position drives artwork, boarding doors and train arrival; height, scale, mirror and parallax remain fixed'} as const;
 const all=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...all(n.children??[])]);
-const geometryView:View={sx:x=>x,y:h=>-h,t:0,cam:0,gy:0,viewW:1200,viewH:360,flags:{}};
+const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,t:0,cam:0,gy:0,viewW:1200,viewH:360,flags:{}};
 export function createStationComposition(id:'galleriaStation'|'harborStation',source:unknown){
  const station=id==='galleriaStation'?'galleria':'harbor';
  const original=art.validate(source),expectedTypes=new Map(all(original.instances).map(n=>[n.id,n.type]));

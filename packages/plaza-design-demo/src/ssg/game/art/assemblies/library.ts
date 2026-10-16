@@ -1,6 +1,5 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { type View } from "../core/view";
-import { light } from "../../world/light";
 import { drawGrade } from "../atmosphere/lighting";
 import { drawTower,placed,towerRow } from "../catalog";
 import { box,C,GREEN,O,onScreen,PAPER,RED,rng,RUST,tell,text } from "../core/primitives";
@@ -27,11 +26,11 @@ function backWindow(x: CanvasRenderingContext2D, v: View, x0: number, x1: number
   if (!onScreen(v, l, w)) return;
   x.save(); x.beginPath(); x.rect(l, top, w, h); x.clip();
   // the sky of the moment (sets/sky.ts: the windows look west, the evening sun low between the towers)
-  const lt = light();
+  const lt = v.lighting;
   drawPane(x, l, top, w, h, lt, { facing: LIBRARY_FACING, seed: 71 + x0, towers: false, horizon: 0.92 });
   // the towers, slid a little with the camera (far band); their windows on the city's clock
   const off = -((v.cam * 0.25) % 260);
-  for (const b of TOWERS) placed(x, l + off + b.x * 0.9, bot + 4, 0.55, () => drawTower(x, b, { t, fill: '#0b0605', edge: 0.3, lit: 0.22, glow: 0.65, clock: true }));
+  for (const b of TOWERS) placed(x, l + off + b.x * 0.9, bot + 4, 0.55, () => drawTower(x, b, { t, fill: '#0b0605', edge: 0.3, lit: 0.22, glow: 0.65, clock: true, lighting: v.lighting }));
   drawGrade(x, v, lt, true);
   x.strokeStyle = 'rgba(170,210,255,.2)';
   if ((lt.w?.rain ?? 0) > 0.05) for (const [rx, ry, sp] of RAIN) { const yy = (ry + t * sp * 2) % h; x.beginPath(); x.moveTo(l + (rx / 60) * w, top + yy); x.lineTo(l + (rx / 60) * w - 1, top + yy + 4); x.stroke(); }

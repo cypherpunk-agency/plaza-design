@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Canonical Mall source geometry and prepared character bindings. */
 import {art,drawComposition,resolveComposition,type Composition,type Environment,type Value}from '../../art';
 import {emptyMallVisual,type MallVisual}from '../../art/assemblies/mall-state';
@@ -11,7 +12,7 @@ const required=['scene','spawn','metro','roof','service','directory','fountain',
 export function validateMallComposition(input:unknown):Composition{const doc=art.validate(input);if(doc.scene!=='mall')throw Error('Expected mall composition');for(const id of required)if(!doc.instances.some(i=>i.id===id))throw Error('Missing gameplay-bound Mall instance '+id);for(const i of doc.instances)for(const[k,s]of Object.entries(i.bindings??{})){const expected=k==='snapshot'?'mall.snapshot':k==='vendorPose'?'mall.vendor.'+(i.id==='deck-booth'?'deckTech':'teen'):k==='pose'?'mall.actor.'+i.props.actor:'mall.clip.'+i.props.actor;if(s!==expected)throw Error(i.id+': unknown Mall binding '+s);}return doc;}
 validateMallComposition(mallComposition);
 const defaults=(doc:Composition)=>{const b:Record<string,Value>={'mall.snapshot':emptyMallVisual as unknown as Value};for(const i of doc.instances){if(i.type==='character.prepared'){b['mall.actor.'+i.props.actor]={visible:false,character:{x:0}};b['mall.clip.'+i.props.actor]=null;}if(i.id==='deck-booth'||i.id==='cases-booth')b['mall.vendor.'+(i.id==='deck-booth'?'deckTech':'teen')]={visible:false,character:{x:0}};}return b;};
-const geometryView:View={sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
+const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
 export const mallGeometry=(doc:Composition=mallComposition)=>resolveComposition(art,doc,{view:geometryView,state:{},reduced:false,bindings:defaults(doc)});
 export function mallPlacement(id:string,doc:Composition=mallComposition){const r=mallGeometry(doc).find(r=>r.instance.id===id);if(!r)throw Error('Unknown Mall instance '+id);return r.placement;}
 export function mallLayout(doc:Composition=mallComposition):MallLayout{const rows=mallGeometry(doc),r=(id:string)=>rows.find(r=>r.instance.id===id)!,p=(id:string)=>r(id).placement,s=r('scene').props;return{width:Number(s.width),spawn:p('spawn').x,ceil:Number(s.ceil),fascia:Number(s.fascia),slab:Number(s.slab),rail:Number(s.rail),far0:Number(s.far0),step:Number(s.step),storey:Number(s.storey),kiosk:p('directory').x,registry:p('registry').x,escalator:{x:p('escalator').x,w:Number(r('escalator').props.width)},escSign:p('escalator-sign').x,fountain:{x:p('fountain').x,w:Number(r('fountain').props.width)},pillars:[0,1,2].map(i=>p('pillar-'+i).x),metro:p('metro').x,roof:p('roof').x,service:p('service').x};}

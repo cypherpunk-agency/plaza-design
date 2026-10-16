@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Warehouse gameplay markers and visual snapshots share one source geometry. */
 import source from './composition.json';
 import { art, drawComposition, resolveComposition, type Composition, type Environment, type Instance, type Value } from '../../art';
@@ -16,7 +17,7 @@ export function validateWarehouseComposition(value:unknown):Composition{
   return doc;
 }
 export const warehouseComposition=validateWarehouseComposition(source);
-const view:View={sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
+const view:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
 const defaults=(doc:Composition):Record<string,Value>=>Object.fromEntries(flatten(doc.instances).flatMap(node=>Object.entries(node.bindings??{}).map(([key,name])=>[name,art.get(node.type).visualFields![key].default])));
 export const warehouseGeometry=(doc:Composition=warehouseComposition)=>resolveComposition(art,doc,{view,state:{},bindings:defaults(doc),reduced:false});
 export function warehousePosition(id:string,doc:Composition=warehouseComposition){const row=warehouseGeometry(doc).find(row=>row.instance.id===id);if(!row)throw new Error('Missing warehouse geometry: '+id);return row;}

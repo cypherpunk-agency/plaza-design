@@ -1,7 +1,7 @@
 /** Downtown artwork extracted verbatim. Assembly decomposition follows after parity verification. */
 import type { View } from '../core/view';
 import { drawSprite, SPR, GLOW_THEM, type Sprite } from "../core/sprites";
-import { light as lightNow, windowLit } from "../../world/light";
+import { windowLit } from "../../world/light";
 import { glass } from "../environment/sky";
 import { addLight, castShadow } from "../atmosphere/lighting";
 const O = '255,136,0', C = '0,255,255';
@@ -30,7 +30,7 @@ drawSkyline(parallax: number, seed: number, hMin: number, hMax: number, alpha: n
         x.strokeStyle = 'rgba(194,65,12,' + alpha + ')'; x.lineWidth = 1; x.strokeRect(sx + 0.5, base - h + 0.5, w - 1, h);
         let i = 0;
         for (let yy = base - h + 5; yy < base - 4; yy += 6) for (let xx = sx + 3; xx < sx + w - 3; xx += 5) {
-          if (lit[i++ % 24] < win && windowLit(seed * 7919 + wx * 13 + i)) { x.fillStyle = 'rgba(255,136,0,' + (0.18 + alpha) + ')'; x.fillRect(xx, yy, 2, 2); }
+          if (lit[i++ % 24] < win && windowLit(seed * 7919 + wx * 13 + i, this.v.lighting)) { x.fillStyle = 'rgba(255,136,0,' + (0.18 + alpha) + ')'; x.fillRect(xx, yy, 2, 2); }
         }
       }
       wx += w + 2;
@@ -135,9 +135,9 @@ drawWindow(wx: number, wy: number, light: number, ac: boolean, seed: number) {
     const x = this.x;
     x.fillStyle = '#040201'; x.fillRect(wx, wy, 14, 28);
     // the room's light follows the clock (on at dusk, off after midnight); a dark pane reflects the sky by day
-    if (light >= 0 && !windowLit(seed)) light = -1;
-    if (light < 0) { const [gc, ga] = glass(lightNow()); if (ga > 0.02) { x.fillStyle = 'rgba(' + gc + ',' + ga.toFixed(3) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26); } }
-    if (light >= 0) addLight({ x: wx + 7 + this.cam, h: this.gy - wy - 14, kind: 'window', w: 12, hh: 26, r: 14, col: light >= 1 ? '150,170,220' : '255,150,70', a: 0.6 });
+    if (light >= 0 && !windowLit(seed, this.v.lighting)) light = -1;
+    if (light < 0) { const [gc, ga] = glass(this.v.lighting); if (ga > 0.02) { x.fillStyle = 'rgba(' + gc + ',' + ga.toFixed(3) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26); } }
+    if (light >= 0) addLight(this.v, { x: wx + 7 + this.cam, h: this.gy - wy - 14, kind: 'window', w: 12, hh: 26, r: 14, col: light >= 1 ? '150,170,220' : '255,150,70', a: 0.6 });
     if (light >= 1) {
       x.fillStyle = 'rgba(150,170,220,' + (0.1 + 0.06 * Math.sin(this.t * 0.05 + light * 3)) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
     } else if (light >= 0) {

@@ -1,7 +1,7 @@
 import { stool } from "../assemblies/construction";
 import type { Element } from '../core/composition';
 
-/** First adapter retains the existing drawing implementation until the shared-kit migration. */
+/** Catalog metadata around the shared construction kernel; one drawing implementation. */
 export const stoolElement: Element = {
   type: 'furniture.stool', version: 1, label: 'Stool', category: 'furniture', parts: ['backdrop'],
   fields: { seed: { kind: 'number', label: 'Variation seed', default: 1, step: 1 } },

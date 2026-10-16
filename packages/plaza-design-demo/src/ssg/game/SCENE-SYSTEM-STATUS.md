@@ -1,6 +1,20 @@
 # Scene system execution ledger
 
-Goal active. Updated 2026-10-16. Scope and completion conditions: [plan](./SCENE-SYSTEM-PLAN.md).
+S0-S7 acceptance complete. Updated 2026-10-16. Scope and completion conditions: [plan](./SCENE-SYSTEM-PLAN.md).
+
+All G1-G8 gates pass. See the [final requirement audit](./docs/reference/SCENE-SYSTEM-FINAL-AUDIT.md)
+and [evidence guide](./docs/reference/SCENE-SYSTEM-EVIDENCE.md). The checkpoint and milestone narratives below preserve history;
+their earlier open-item descriptions do not supersede the later isolated verification records.
+
+Final delivery is in `.scene-system/development`, with its local composer at
+`http://127.0.0.1:4196` (API 4197). Main's working checkpoint/editor at 4192 is untouched.
+Final candidate pixel bundle SHA-256:
+`042fe7609b2e0af2f960f22bd2e816d20b8298e15a111ab87a78f1464dd11e8c`.
+All 17,130 final pairs have explicit image references and independent PNG verification:
+489 original scenes, 489 game/editor pairs, 15,308 animation frames, eight map states,
+32 harbor prototype cases and 804 taxi frames. All pixel/channel differences are zero.
+No further publication, campaign playthrough, art redesign or CI work occurred. S8-S13 remain
+planned stretch milestones and are not implemented or included in this completion claim.
 
 ## Working editor checkpoint for main
 
@@ -40,7 +54,7 @@ metadata refinements, full browser-operation acceptance, the stronger shadow-con
 and final evidence/documentation reconciliation remain required. No campaign playthrough or CI
 expansion has been performed. The user requested main only; production remains separate.
 
-## Current milestone
+## Historical milestone progression
 
 S0 is complete. S1's foundation contracts and first assembly checks pass. S2 Downtown extraction
 passes all 489 scene/environment pixel comparisons and both builds. No art redesign, publication or campaign playthrough
@@ -194,16 +208,113 @@ evidence archive, not a substitute for committing implementation sources.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
-| G1 | Incomplete | World artwork extracted; final destination/import-boundary inventory and exclusions still need reconciliation |
-| G2 | Incomplete | Shared native frame and scene delegations exist; legacy art/model/rule coupling remains in several kits |
-| G3 | Incomplete | Nine scene documents and their default pixels verified; ten scene documents remain |
-| G4 | Incomplete | Shared registry/typed fields/bindings/anchors/clips work; sequence metadata and some assembly depth remain |
-| G5 | Incomplete | Full animation replay passes 15,308 frames and static suite passes 489; later batches and final map/prototype/taxi replay remain |
-| G6 | Incomplete | Focused marker/save/transport/seek checks pass; final behavior and mutable-art-state audit remain |
-| G7 | Incomplete | Static/animated local editor and source Save run; map panel, complete scene coverage and full UI acceptance remain |
-| G8 | Incomplete | Final integration builds, ledger cleanup, authoring coverage and migration-path removal remain |
+| G1 | Pass | `final-boundary-audit.json`: 73 original drawing files / 565 owners mapped, concrete destinations and explicit interface exclusions, zero findings |
+| G2 | Pass | Strict drawing/import/state audit; Downtown extraction and S3b equivalence; explicit light/weather/clock context; unused Shop paths removed |
+| G3 | Pass | 19 source scenes + four sequence compositions + two timelines; version/reference/binding validation, source-authoring and world/map checks |
+| G4 | Pass | Typed contracts, 247 sequence pieces, native/coastal bounds, meaningful assemblies; final Harbor supported-field/range checks and six independent Mall stools |
+| G5 | Pass | Final scene/native capture reports plus final-link animation/map/prototype/flight reports: all 17,130 pairs match, decoded images and final source pins independently verified |
+| G6 | Pass | Save/body equivalence, physical marker and transport checks, preview isolation, seek/pause/skip/completion and exactly-once handoffs |
+| G7 | Pass | Actual static UI across eight categories and attachment/layer tools; source Save/undo/reload/conflicts/failures; two authored multi-shot runtime sequences; read-only native map |
+| G8 | Pass | Both final integration builds and whitespace checks pass; audit/evidence ledgers and authoring/agent/module docs reconciled; recoverable source checkpoints retained |
 
 ## Reproduction tooling
+
+See [evidence and reproduction](./docs/reference/SCENE-SYSTEM-EVIDENCE.md) for the final pinned
+scope, preserved reproducible original bundle, exact image capture and independent verification.
+The generic source-reassembled `baseline.html` below is diagnostic; the accepted G5 original
+capture uses `baseline-original-capture.html` from the preserved compiled bundle.
+
+### Isolated S7 verification checkpoint (2026-10-16)
+
+Further work is in `.scene-system/development`, preserving the published working checkpoint
+and the user's editor at port 4192. The verification editor uses 4196/API 4197. No further
+publication is authorized by this goal. Follow-on S8-S13 remain outside its completion gates.
+
+- `S7-explicit-lighting-247-full-replay.json` records all 15,308 original animation frames
+  matching the pinned intermediate bundle exactly. Later controller/preview changes still need
+  a final rebuilt replay; this evidence does not claim those later sources are pixel-verified.
+- `S7-static-browser-operations.json` records actual UI editing across eight required categories,
+  real pointer dragging, add/duplicate/delete, property editing, import/export, invalid-reference
+  rejection and exact undo/redo/restoration.
+- Browser checks found and fixed New sequence selecting the previous sequence because selection
+  synchronization ran before the draft committed. `S7-new-timeline-browser-operations.json`
+  verifies the new selection, shots/cards/fades/beats/camera keys, easing, frame steps, play/pause,
+  bounded looping, exact reverse-seek pixels and reduced-motion replay. All edits were undone
+  exactly; this case did not save source data.
+- Native-scene timelines previously discarded evaluated text/fades. The shared frame renderer
+  now accepts these overlays through a pure library painter. `check-native-timeline.mts` passes
+  an arbitrary evaluated sequence through the actual native preview/shared renderer, checking
+  interval boundaries, interpolation, scaling, camera-independent placement, reduced motion,
+  unchanged static canvas commands and canvas-state restoration. Type checking passes.
+- `check-native-preview.mts` passes required weather-field/range checks and nested reporting
+  climate restoration, including failures. Complete source snapshots are validated before
+  rendering begins.
+
+Fresh-bundle verification subsequently completed with candidate SHA-256
+`a1e21d6ab08d4f970fa740f5221c672affee9beb5dcc978232f030f7ed7ee80f`:
+
+- `S7-final-scenes-and-native-editor.json`: 489 original scene cases match; all 489 direct
+  game/editor comparisons match, including custom weather and enabled world shadows.
+- `S7-final-sequences.json`: all 15,308 original animation frames match.
+- `S7-final-map.json`: all eight fixed original composed-map states match in a fresh page.
+- `S7-final-prototype.json`: all 32 actual harborShift launch cases match.
+- `S7-final-taxi-flight.json`: all 804 direct original/candidate taxi-flight frames match.
+- `S7-direct-save-browser.json`: actual UI Save, undo-after-save, saving the undo and source
+  reload pass. A second writer causes a conflict without losing pending work or overwriting
+  external source. Local player storage is unchanged. Test source was restored to its original
+  bytes from its recovery journal after validation that document data still matched.
+- `pnpm build:homepage` and `pnpm build:design-demo` pass for these renderer sources.
+
+README, agent guidance, GAME-DATA, ART-GUIDE, MODULES and authoring instructions have been
+reconciled with current paths and implementation. Final requirement-by-requirement evidence
+reconciliation and remaining targeted acceptance cases are still required. No gate is declared
+complete by this checkpoint alone.
+
+Further final audit work:
+
+- `S7-attachment-layer-browser.json` verifies actual owner/anchor selection, local offsets,
+  pass/order edits and exact undo. `check-animated-authoring.mts` verifies two temporary
+  multi-shot sequences through the actual preview/renderer/playback, shared furniture and
+  attached motion, clips/discrete state, text/fades, roundtrip, deterministic seek, reduced
+  motion, pause/resume and skip/completion handoff exactly once with no save access.
+  The clip catalog is derived from registry definitions by the shared sequence validation
+  context and supplied to the real editor; source/prospective Save validation uses that same
+  catalog. The integration check uses these actual providers and rejects unknown clip names.
+- Preview city-clock binding is now scoped/restored alongside weather/light, including original
+  save-reference identity, pin/speed and nested failure handling. All 489 game/editor pairs pass
+  again in `S7-clock-scoped-native-editor.json`.
+- Removed unused aggregate shop rendering paths; `S7-shop-retained-art-proof.json` verifies
+  all 32 retained function bodies unchanged. Both integration builds pass after these changes.
+- G5 is still incomplete: full hash replays pass, but final before/after/diff image references
+  do not yet cover every case. A content-addressed capture/index is being added; original
+  expected hashes remain immutable and must reproduce before any new capture is accepted.
+  The capture smoke stopped at original fixture case two: the newly assembled baseline bundle
+  fails to reproduce its reference while the older preserved baseline bundle reproduces the
+  first three exactly. `S7-artifact-smoke-diagnostic.json` records this distinction and the
+  retained failed chunks. Fix the capture fixture/instrumentation; do not replace references.
+  Subsequently resolved using the preserved baseline bundle with two read-only insertions;
+  removing them recovers the exact original bytes (`G5-original-bundle-capture-proof.json`).
+  Actual image capture and independent Pillow verification now cover all 489 scenes, eight
+  map states, 32 prototype cases, 804 taxi frames and 489 game/editor pairs. Completion indexes
+  are `S7-artifact-{scenes,map,prototype,native-editor}-20261016-v1-complete.json` and
+  `S7-artifact-flight-20261016-v2-complete.json`; corresponding independent-verification reports
+  check every image file hash, decoded RGBA, expected case id and zero difference image.
+  The flight v1 failure retained an incorrect small-screen height; v2 uses the original 240px
+  height for 420px width and preserves the expected hashes. Full animation capture and independent
+  decoding are now complete: `S7-artifact-animations-20261016-v1-complete.json` and
+  `S7-artifact-animations-independent-verification.json` verify all 15,308 frames, 13,305 unique
+  PNGs and original/candidate bundle pins. Together the six families cover 17,130 image pairs.
+  Final Harbor/Mall metadata corrections identified below require bounded delta evidence.
+- A malformed non-ASCII session token could previously throw during constant-time comparison.
+  The local HTTP service now rejects non-hex tokens before comparison; its focused check proves
+  HTTP 403 and continued valid-session availability, alongside all existing save protections.
+- Final independent G4 review identified unsupported Harbor property controls/ranges and two
+  stools still embedded in each Mall table. Corrections are underway after checkpoint
+  `S7-before-final-harbor-fields-mall-stools-20261016`; current image evidence remains pinned to
+  the preceding source until affected-case parity and source equivalence are recorded.
+- Save rollback now preserves concurrent outside edits rather than restoring over them, rolls
+  back other safely owned files, and retains an ambiguous prepared journal for explicit recovery.
+  Focused two/three-file failure and restart checks reproduce the former bug and pass after repair.
 
 From repository root, build the existing homepage first. Then:
 

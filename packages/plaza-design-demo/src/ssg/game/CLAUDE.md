@@ -20,6 +20,18 @@ design pass. The prior roadmap is preserved under archive/ and is not the active
 
 - For behavior, start with `runtime/game.ts`, the relevant `scenes/<id>/` package and its
   `devices.json`/rules. Read `docs/reference/MODULES.md` for ownership and dependencies.
+- For scenery, use the registered pieces in `art/` and scene-owned `composition.json` plus
+  `composition.ts` adapters. `runtime/render-scene.ts` is the shared game/editor frame path.
+  Keep gameplay updates and history preparation outside painting; bind explicit validated visual
+  snapshots. Supply the frame's `View.lighting` and `View.illumination` to artwork rather than
+  reading or changing a global light/shadow frame.
+- Read `authoring/README.md` before composer work. Its local launcher is
+  `pnpm --filter plaza-design-demo compose-scenes` (repository root; UI 4192, save service 4193).
+  Saved composition/timeline JSON is game source, not a player save; restart after code/schema
+  changes and rebuild the homepage after saving source edits.
+- Appearance preservation is an acceptance gate for scene-system changes. Preserve seeded
+  variation, coordinates, canvas state and draw order; use the immutable baseline and execution
+  ledger for the scoped comparisons. Registered/editor-visible coverage alone is not a passed gate.
 - Use docs/reference/GAME-DATA.md for the authoring format and docs/reference/ART-GUIDE.md for current visual intent.
   Use ROADMAP.md to distinguish implemented work from proposed work, not to lock priorities.
 - Register new scenes/data and include their code contracts in the homepage generator's

@@ -22,9 +22,8 @@ import { clearWorld } from '../art/core/canvas';
  */
 
 import { SMEARS, renderDowntownCity, renderDowntownStreet, renderDowntownPeople } from "../scenes/downtown/composition";
-import { prepareLights,prepareShade,shadowsOn } from "../art/atmosphere/lighting";
 import { SPR } from "../art/core/sprites";
-import { drawFlight,taxiSequenceDuration } from '../art/sequences/taxi-flight';
+import { drawFlight,taxiSequenceDuration } from '../story/cutscenes/taxi';
 import type { Handoff } from '../art/core/timeline';
 import { KEYRING,NET,SCENE_FILES,type MachineData,type NetworkData } from "../data/index";
 import { MAX_EVERYDAY } from "../engine/host";
@@ -61,6 +60,7 @@ import { ClockBar,Transport } from "../ui/transport";
 import { DRIVER_BROKE,DRIVER_HARBOR,FARE,harborOpen,HOP,LINE,placeBlocked,seenFlag,SIDING_OUT,standOf,STANDS,START_SCENE,stationAt,STATIONS,type MapPlace,type Stand,type Station } from '../world/city';
 import { city,parseHM,TRAVEL,WAIT_CARD,WAITS,type WaitTo } from "../world/clock";
 import { lightAt,setLight,type Light } from "../world/light";
+import { frameView } from '../art/core/view';
 import {
 boardRide,lineOpen,nextStation,
 platformDoors,platformLeft,platformOpen,platformSync,
@@ -1028,9 +1028,7 @@ export class Game {
     clearWorld(x, this.viewW, this.viewH);
     if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / (taxiSequenceDuration * 60)), this.clock, STANDS[this.flight.to].name); return; }
     // the world, at hack vision's pan and zoom; the HUD and the overlays over it at the usual scale
-    shadowsOn(true);
     this.zoomed(() => this.drawWorld());
-    shadowsOn(false);
     x.setTransform(k, 0, 0, k, 0, 0);
     this.drawHud();
     if (this.showEnd) this.drawEnd();
@@ -1064,8 +1062,6 @@ export class Game {
     const outdoor = s.outdoor ?? !!(amb.weather || amb.sky);
     const L = lightAt(city.day, city.min, s.facing ?? 180, W ?? this.weatherHere(), outdoor);
     setLight(L);
-    prepareLights(s.lights);
-    prepareShade(outdoor ? s.shade : undefined, s.width, L);
     return L;
   }
 
@@ -1944,7 +1940,7 @@ export class Game {
 
   /** The scene view, refreshed for this frame. */
   private view(): SceneView {
-    const v = (this.sceneView ??= { sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), t: 0, viewW: 0, viewH: 0, cam: 0, gy: 0, flags: this.save.flags });
+    const v = (this.sceneView ??= { ...frameView(0), sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), flags: this.save.flags });
     v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags;
     return v;
   }

@@ -1,6 +1,6 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
-import type { DrawView } from "../../engine/host";
-import { light,windowLit } from "../../world/light";
+import type { View as DrawView } from "../core/view";
+import { type Light,windowLit } from "../../world/light";
 import { box,C,GREEN,O,PAPER,RED,RUST,tell,text } from "../core/primitives";
 import { drawPane,glass,windowShaft } from "../environment/sky";
 export interface MothLayout { mail:number; board:{x:number;y:number;w:number;h:number}; rod:number; guitar:number; turntable:number; desk:{x0:number;x1:number;h:number}; tank:{x:number;w:number;base:number;h:number}; window:{x0:number;x1:number;h0:number;h1:number}; pot:number; phone:number; sofa:{x0:number;x1:number} }
@@ -61,11 +61,11 @@ function drawBuilding(x: CanvasRenderingContext2D, v: DrawView) {
 
 
 /** The street through the window: rain, the block across the road, a sign, and now and then a Registry drone looking in. */
-function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: number, h: number, t: number) {
+function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: number, h: number, t: number, lighting: Light) {
   x.save();
   x.beginPath(); x.rect(l, top, w, h); x.clip();
   // the sky of the moment over the block (sets/sky.ts; the window looks west: the evening sun)
-  const lt = light();
+  const lt = lighting;
   drawPane(x, l, top, w, h, lt, { facing: MOTH_FACING, seed: 41, towers: false, horizon: 0.3 });
   // the block across the road: a wall of windows, lit by the clock; by day the wall takes the light
   x.fillStyle = '#0d0709'; x.fillRect(l, top + 8, w, h - 8);
@@ -73,7 +73,7 @@ function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: num
   if (lt.daylight > 0.05) { x.fillStyle = 'rgba(120,96,88,' + (0.35 * lt.daylight).toFixed(3) + ')'; x.fillRect(l, top + 8, w, h - 8); }
   for (let yy = top + 12; yy < top + h - 4; yy += 9) for (let xx = l + 3; xx < l + w - 4; xx += 8) {
     const n = hash(xx * 7 + yy * 3), seed = Math.round((xx - l) * 7 + (yy - top) * 3);
-    if (n < 0.45 && windowLit(seed)) { x.fillStyle = n < 0.08 ? 'rgba(150,170,220,.35)' : 'rgba(255,170,90,.4)'; x.fillRect(xx, yy, 4, 5); }
+    if (n < 0.45 && windowLit(seed, lighting)) { x.fillStyle = n < 0.08 ? 'rgba(150,170,220,.35)' : 'rgba(255,170,90,.4)'; x.fillRect(xx, yy, 4, 5); }
     else { x.fillStyle = ga > 0.05 ? 'rgba(' + gc + ',' + (ga * 0.8).toFixed(3) + ')' : 'rgba(' + RUST + ',.12)'; x.fillRect(xx, yy, 4, 5); }
   }
   // a pharmacy cross on the block's corner, on its bracket
@@ -142,14 +142,14 @@ function drawWindow(x: CanvasRenderingContext2D, v: DrawView, _state: MothVisual
   // ---------- the window and the street ----------
   const W0 = L.window, wl = sx(W0.x0), ww = W0.x1 - W0.x0, wt = y(W0.h1), wh = W0.h1 - W0.h0;
   box(x, wl - 3, wt - 3, ww + 6, wh + 6, '#1a0e07', 'rgba(' + O + ',.6)');
-  drawOutside(x, wl, wt, ww, wh, t);
+  drawOutside(x, wl, wt, ww, wh, t, v.lighting);
   x.fillStyle = '#1a0e07'; x.fillRect(wl + ww / 2 - 1, wt, 2, wh);
   // the sill, with a plant that did not make it
   x.fillStyle = 'rgba(' + O + ',.7)'; x.fillRect(wl - 5, y(W0.h0) , ww + 10, 2);
   box(x, wl + 6, y(W0.h0 + 7), 8, 7, '#3a2216', 'rgba(' + O + ',.5)');
   x.strokeStyle = 'rgba(150,110,60,.6)'; x.beginPath(); x.moveTo(wl + 10, y(W0.h0 + 7)); x.lineTo(wl + 8, y(W0.h0 + 15)); x.lineTo(wl + 4, y(W0.h0 + 13)); x.stroke();
   // the light through the window: the evening sun's shaft (sets/sky.ts), else the street's light on the floor
-  if (!windowShaft(x, { l: wl, r: wl + ww, t: wt, b: wt + wh }, gy, Math.min(v.viewH, gy + 16), light(), MOTH_FACING)) {
+  if (!windowShaft(x, { l: wl, r: wl + ww, t: wt, b: wt + wh }, gy, Math.min(v.viewH, gy + 16), v.lighting, MOTH_FACING)) {
     x.fillStyle = 'rgba(150,160,220,.05)'; x.fillRect(wl - 6, gy - 1, ww + 12, 2);
   }
   // while the drone goes past, its red scan comes in through the glass and crosses the floor

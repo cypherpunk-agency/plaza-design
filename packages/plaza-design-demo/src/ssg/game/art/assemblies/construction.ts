@@ -26,7 +26,7 @@
  *   vending(x, v, { x, seed, lines })              an ambient vending machine (orange/red: NOT usable; usable ones are cyan)
  */
 
-import { drawCharacter, type Character, type PreparedCharacter } from "../../runtime/characters";
+import type { PreparedCharacter } from "../../runtime/characters";
 import { drawCharacterFrame } from '../characters/appearance';
 import { type View } from '../core/view';
 import { box, onScreen, O, PAPER, reflect, rng, text } from '../core/primitives';
@@ -54,7 +54,8 @@ export interface StallSpec {
   goods?: Goods;
   awning?: 'stripe' | 'scallop' | 'tarp' | 'tin' | 'none';
   light?: 'bulb' | 'tube' | 'lantern' | 'none';
-  vendor?: Character;
+  /** Actor preparation belongs to the scene controller; pass vendorPose to the painter. */
+  vendor?: never;
   damage?: number;
   /** A hand-written note taped to the counter front. */
   note?: string[];
@@ -102,7 +103,7 @@ export function stall(x: CanvasRenderingContext2D, v: View, s: StallSpec, visual
   if (visual?.vendorPose !== undefined) {
     const p = visual.vendorPose;
     if (p.visible) drawCharacterFrame(x,v,p.character,p.ready,p.pixelSize,p.frame,p.height);
-  } else if (s.vendor) drawCharacter(x, v, s.vendor);
+  }
   // goods that hang (umbrellas, fish, lanterns) under the awning
   hanging(x, v, s, S);
   // awning
@@ -290,12 +291,12 @@ export function booth(x: CanvasRenderingContext2D, v: View, s: StallSpec, visual
   g.addColorStop(0, 'rgba(255,190,110,.18)'); g.addColorStop(1, 'rgba(255,190,110,.04)');
   x.fillStyle = g; x.fillRect(s0 + 6, y(S.panel - 6), s.w - 12, S.panel - 6 - S.counter - 4);
   s.back?.(x, v, { x: s.x + 6, w: s.w - 12, h0: S.counter + 4, h1: S.panel - 6 });
-  if (visual?.vendorPose !== undefined || s.vendor) {
+  if (visual?.vendorPose !== undefined) {
     x.save(); x.beginPath(); x.rect(s0 + 6, y(S.panel - 6), s.w - 12, S.panel); x.clip();
     if (visual?.vendorPose !== undefined) {
       const p = visual.vendorPose;
       if (p.visible) drawCharacterFrame(x, v, p.character, p.ready, p.pixelSize, p.frame, p.height);
-    } else if (s.vendor) drawCharacter(x, v, s.vendor);
+    }
     x.restore();
   }
   box(x, s0 - 3, y(S.counter + 4), s.w + 6, 4, S.wood, rgba(O, 0.85));

@@ -114,14 +114,146 @@
       "children": [
         {
           "id": "coast-ship",
-          "type": "sequence.opening.coast.ship",
+          "type": "assembly.group",
           "props": {},
           "placement": {
             "x": 0,
             "h": 0
           },
           "order": 9.03225806451613,
-          "pass": "backdrop"
+          "pass": "backdrop",
+          "children": [
+            {
+              "id": "coast-ship-hull",
+              "type": "sequence.opening.coast.ship-hull",
+              "props": {
+                "paint": "#1c1220"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.03325806451613,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-ship-stack-1",
+              "type": "sequence.opening.coast.ship-stack-1",
+              "props": {
+                "boxes": [
+                  {
+                    "w": 320,
+                    "h": 69,
+                    "p": 3,
+                    "seed": 307
+                  }
+                ]
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.03425806451613,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-ship-stack-2",
+              "type": "sequence.opening.coast.ship-stack-2",
+              "props": {
+                "boxes": [
+                  {
+                    "w": 320,
+                    "h": 69,
+                    "p": 6,
+                    "seed": 314
+                  }
+                ]
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.03525806451613,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-ship-stack-3",
+              "type": "sequence.opening.coast.ship-stack-3",
+              "props": {
+                "boxes": [
+                  {
+                    "w": 320,
+                    "h": 69,
+                    "p": 1,
+                    "seed": 321
+                  }
+                ]
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.03625806451613,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-ship-stack-4",
+              "type": "sequence.opening.coast.ship-stack-4",
+              "props": {
+                "boxes": [
+                  {
+                    "w": 320,
+                    "h": 69,
+                    "p": 4,
+                    "seed": 328
+                  }
+                ]
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.03725806451613,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-ship-bridge-house",
+              "type": "sequence.opening.coast.ship-bridge-house",
+              "props": {
+                "paint": "#241828"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.03825806451613,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-ship-funnel",
+              "type": "sequence.opening.coast.ship-funnel",
+              "props": {
+                "paint": "#3a1a1a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.03925806451613,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-ship-mast",
+              "type": "sequence.opening.coast.ship-mast",
+              "props": {},
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.040258064516129,
+              "pass": "backdrop"
+            }
+          ]
         },
         {
           "id": "coast-ground",
@@ -750,14 +882,170 @@
         },
         {
           "id": "coast-hub",
-          "type": "sequence.opening.coast.hub",
+          "type": "assembly.group",
           "props": {},
           "placement": {
             "x": 0,
             "h": 0
           },
           "order": 9.516129032258064,
-          "pass": "backdrop"
+          "pass": "backdrop",
+          "children": [
+            {
+              "id": "coast-hub-shed",
+              "type": "sequence.opening.coast.hub-shed",
+              "props": {
+                "paint": "#241c22"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.517129032258064,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-door-0",
+              "type": "sequence.opening.coast.hub-door-0",
+              "props": {
+                "paint": "#18121a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.518129032258065,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-door-1",
+              "type": "sequence.opening.coast.hub-door-1",
+              "props": {
+                "paint": "rgba(255,214,150,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.519129032258064,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-door-2",
+              "type": "sequence.opening.coast.hub-door-2",
+              "props": {
+                "paint": "#18121a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.520129032258064,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-door-3",
+              "type": "sequence.opening.coast.hub-door-3",
+              "props": {
+                "paint": "#18121a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.521129032258065,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-sign",
+              "type": "sequence.opening.coast.hub-sign",
+              "props": {
+                "text": "LOGISTICS HUB 3"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.522129032258064,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-drone-rack",
+              "type": "sequence.opening.coast.hub-drone-rack",
+              "props": {},
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.523129032258064,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-pad-0",
+              "type": "sequence.opening.coast.hub-pad-0",
+              "props": {
+                "phase": 0
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.524129032258063,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-pad-1",
+              "type": "sequence.opening.coast.hub-pad-1",
+              "props": {
+                "phase": 13
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.525129032258064,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-pad-2",
+              "type": "sequence.opening.coast.hub-pad-2",
+              "props": {
+                "phase": 26
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.526129032258064,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-pad-3",
+              "type": "sequence.opening.coast.hub-pad-3",
+              "props": {
+                "phase": 39
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.527129032258063,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-hub-pad-4",
+              "type": "sequence.opening.coast.hub-pad-4",
+              "props": {
+                "phase": 52
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.528129032258065,
+              "pass": "backdrop"
+            }
+          ]
         },
         {
           "id": "coast-stack-0",
@@ -984,25 +1272,338 @@
         },
         {
           "id": "coast-bridge",
-          "type": "sequence.opening.coast.bridge",
+          "type": "assembly.group",
           "props": {},
           "placement": {
             "x": 0,
             "h": 0
           },
           "order": 9.935483870967742,
-          "pass": "backdrop"
+          "pass": "backdrop",
+          "children": [
+            {
+              "id": "coast-bridge-rail",
+              "type": "sequence.opening.coast.bridge-rail",
+              "props": {
+                "paint": "#3a2a3a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.936483870967741,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-bridge-signal-0",
+              "type": "sequence.opening.coast.bridge-signal-0",
+              "props": {
+                "paint": "#1e1222"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.937483870967743,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-bridge-signal-1",
+              "type": "sequence.opening.coast.bridge-signal-1",
+              "props": {
+                "paint": "#1e1222"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.938483870967742,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-bridge-lamp-0",
+              "type": "sequence.opening.coast.bridge-lamp-0",
+              "props": {
+                "paint": "#0e080c"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.939483870967742,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-bridge-lamp-1",
+              "type": "sequence.opening.coast.bridge-lamp-1",
+              "props": {
+                "paint": "#0e080c"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.940483870967743,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-bridge-lamp-2",
+              "type": "sequence.opening.coast.bridge-lamp-2",
+              "props": {
+                "paint": "#0e080c"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.941483870967742,
+              "pass": "backdrop"
+            }
+          ]
         },
         {
           "id": "coast-galleria",
-          "type": "sequence.opening.coast.galleria",
+          "type": "assembly.group",
           "props": {},
           "placement": {
             "x": 0,
             "h": 0
           },
           "order": 9.967741935483872,
-          "pass": "backdrop"
+          "pass": "backdrop",
+          "children": [
+            {
+              "id": "coast-galleria-dome",
+              "type": "sequence.opening.coast.galleria-dome",
+              "props": {
+                "paintMode": "dawn",
+                "paint": "#3a2440",
+                "lit": 1.5
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.968741935483871,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-plinth",
+              "type": "sequence.opening.coast.galleria-plinth",
+              "props": {
+                "paint": "#2a1830"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.969741935483873,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-terrace-rail",
+              "type": "sequence.opening.coast.galleria-terrace-rail",
+              "props": {},
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.970741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-taxi-pad",
+              "type": "sequence.opening.coast.galleria-taxi-pad",
+              "props": {
+                "text": "TAXI · PUBLIC"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.971741935483871,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-taxi-cab",
+              "type": "sequence.opening.coast.galleria-taxi-cab",
+              "props": {
+                "phase": 0,
+                "period": 1500
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.972741935483873,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-0",
+              "type": "sequence.opening.coast.galleria-window-0",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.973741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-1",
+              "type": "sequence.opening.coast.galleria-window-1",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.974741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-2",
+              "type": "sequence.opening.coast.galleria-window-2",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.975741935483871,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-3",
+              "type": "sequence.opening.coast.galleria-window-3",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.976741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-5",
+              "type": "sequence.opening.coast.galleria-window-5",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.977741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-6",
+              "type": "sequence.opening.coast.galleria-window-6",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.978741935483871,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-7",
+              "type": "sequence.opening.coast.galleria-window-7",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.979741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-window-8",
+              "type": "sequence.opening.coast.galleria-window-8",
+              "props": {
+                "light": "rgba(255,200,140,.55)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.980741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-entrance",
+              "type": "sequence.opening.coast.galleria-entrance",
+              "props": {
+                "light": "rgba(255,230,190,.65)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.981741935483871,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-sign",
+              "type": "sequence.opening.coast.galleria-sign",
+              "props": {
+                "text": "GALLERIA"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.982741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-advert",
+              "type": "sequence.opening.coast.galleria-advert",
+              "props": {
+                "text": ""
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.983741935483872,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-planter-0",
+              "type": "sequence.opening.coast.galleria-planter-0",
+              "props": {},
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.984741935483871,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-galleria-planter-1",
+              "type": "sequence.opening.coast.galleria-planter-1",
+              "props": {},
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.985741935483873,
+              "pass": "backdrop"
+            }
+          ]
         }
       ]
     },

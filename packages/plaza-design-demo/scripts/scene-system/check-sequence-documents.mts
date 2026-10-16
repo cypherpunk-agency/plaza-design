@@ -6,7 +6,10 @@ import { cinematicDocuments } from '../../src/ssg/game/story/cutscenes/documents
 import { openingTimelineContext, openingElements } from '../../src/ssg/game/art/sequences/opening/sequence';
 import { cinematicTimelineContext, cinematicElements, cutView } from '../../src/ssg/game/art/sequences/cinematics';
 import { Skyline } from '../../src/ssg/game/art/environment/skyline';
-import { introFrame, IntroSeekSession } from '../../src/ssg/game/art/sequences/skyline';
+import{introFrame}from'../../src/ssg/game/art/sequences/skyline';
+import{IntroSeekSession}from'../../src/ssg/game/story/cutscenes/skyline-session';
+import{lightAt}from'../../src/ssg/game/world/light';
+const lighting=lightAt(1,580,90,null);
 import { groupElement } from '../../src/ssg/game/art/assemblies/group';
 
 function recording() {
@@ -18,8 +21,8 @@ function recording() {
 const context = recording();
 const registry = new ArtRegistry().register(groupElement); [...openingElements, ...cinematicElements].forEach(e => registry.register(e));
 assert.equal(registry.catalog().length, openingElements.length + cinematicElements.length + 1);
-const opening = validateTimeline(openingDocuments.timeline, openingTimelineContext(context.ctx, { W: 640, H: 360, reduced: false }, openingDocuments, 7, 'glide'));
-const cinematic = validateTimeline(cinematicDocuments.timeline, cinematicTimelineContext(cutView(640, 360, false), cinematicDocuments));
+const opening = validateTimeline(openingDocuments.timeline, openingTimelineContext(context.ctx, {W:640,H:360,reduced:false,lighting}, openingDocuments, 7, 'glide'));
+const cinematic = validateTimeline(cinematicDocuments.timeline, cinematicTimelineContext(cutView(640,360,false,lighting), cinematicDocuments));
 assert.deepEqual(opening, JSON.parse(JSON.stringify(openingDocuments.timeline)));
 assert.deepEqual(cinematic, JSON.parse(JSON.stringify(cinematicDocuments.timeline)));
 assert.deepEqual(opening.sequences.map(s => s.id), ['title', 'rise', 'glide']);
@@ -27,14 +30,14 @@ assert.deepEqual(cinematic.sequences.map(s => s.id), ['intro', 'act2', 'taxi']);
 assert.equal(opening.sequences.find(s => s.id === 'glide')!.handoff!.scene, 'train');
 assert.equal(cinematic.sequences.find(s => s.id === 'intro')!.handoff!.scene, 'capsule');
 assert.equal(cinematic.sequences.find(s => s.id === 'act2')!.handoff!.scene, 'stacks');
-const frame = evaluateTimeline(cinematic, 'act2', 8, cinematicTimelineContext(cutView(640, 360, false), cinematicDocuments));
+const frame = evaluateTimeline(cinematic, 'act2', 8, cinematicTimelineContext(cutView(640,360,false,lighting), cinematicDocuments));
 assert.equal(frame.text.length, 1); assert.equal(frame.state.titles.two, 1); assert.ok((frame.state.ferry.amount as number) > 0);
 for (const composition of [openingDocuments.composition, ...Object.values(cinematicDocuments.compositions)]) {
   assert.ok(composition.instances.length >= 6); assert.deepEqual(registry.validate(JSON.parse(JSON.stringify(composition))), composition);
   const edited = structuredClone(composition) as Composition; edited.instances[1].placement.x = 17; assert.equal(registry.validate(edited).instances[1].placement.x, 17);
 }
 
-const view = cutView(640, 360, false);
+const view = cutView(640,360,false,lighting);
 for (const reduced of [false, true]) {
   const forward = new Skyline(), seek = new IntroSeekSession(), f = recording(), r = recording(), expected = new Map<number, string>();
   const v = { ...view, reduced };

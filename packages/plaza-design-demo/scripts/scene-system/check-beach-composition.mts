@@ -1,3 +1,4 @@
+import {referenceView} from './reference-view';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import vm from 'node:vm';import ts from 'typescript';
 import { beach,beachScene } from '../../src/ssg/game/scenes/beach/index';
 import { beachComposition,beachGeometry,beachLayout,beachLights,beachCasters,beachDeviceData,drawBeachComposition,validateBeachComposition } from '../../src/ssg/game/scenes/beach/composition.ts';
@@ -9,7 +10,7 @@ const root=path.resolve('../..'),backup=path.join(root,'.scene-system/beach-s5-o
 function bodies(file:string){const sf=ts.createSourceFile(file,fs.readFileSync(file,'utf8'),99,true),out=new Map<string,string>();function visit(n:ts.Node){if(ts.isFunctionDeclaration(n)&&n.name&&n.body)out.set(n.name.text,n.body.getText(sf).replaceAll('\r',''));ts.forEachChild(n,visit);}visit(sf);return out;}
 const immutable=bodies(path.join(root,'.scene-system/baseline/source/ssg/game/beach/scene.ts')),saved=bodies(path.join(backup,'art/assemblies/beach.ts'));
 for(const[name,body]of immutable)if(saved.has(name))assert.equal(saved.get(name),body,'comparison body must match immutable baseline '+name);
-function load(file:string,globals:Record<string,unknown>){let text=fs.readFileSync(file,'utf8');const sf=ts.createSourceFile(file,text,99,true);for(const n of sf.statements.filter(n=>ts.isImportDeclaration(n)||(ts.isExportDeclaration(n)&&!!n.moduleSpecifier)).reverse())text=text.slice(0,n.getStart(sf))+text.slice(n.end);const exports:Record<string,any>={};vm.runInNewContext(ts.transpileModule(text,{compilerOptions:{target:99,module:ts.ModuleKind.CommonJS}}).outputText,{exports,...globals});return exports;}
+function load(file:string,globals:Record<string,unknown>){let text=fs.readFileSync(file,'utf8');const sf=ts.createSourceFile(file,text,99,true);for(const n of sf.statements.filter(n=>ts.isImportDeclaration(n)||(ts.isExportDeclaration(n)&&!!n.moduleSpecifier)).reverse())text=text.slice(0,n.getStart(sf))+text.slice(n.end);const compat=ts.createSourceFile(file,text,99,true),edits:{start:number;end:number;text:string}[]=[];function attach(n:ts.Node){if(ts.isVariableDeclaration(n)&&n.type?.getText(compat)==='View'&&n.initializer&&ts.isObjectLiteralExpression(n.initializer))edits.push({start:n.initializer.getStart(compat),end:n.initializer.end,text:'referenceView('+n.initializer.getText(compat)+')'});ts.forEachChild(n,attach);}attach(compat);for(const e of edits.sort((a,b)=>b.start-a.start))text=text.slice(0,e.start)+e.text+text.slice(e.end);const exports:Record<string,any>={};vm.runInNewContext(ts.transpileModule(text,{compilerOptions:{target:99,module:ts.ModuleKind.CommonJS}}).outputText,{exports,referenceView,...globals});return exports;}
 const oldArtwork=load(path.join(backup,'art/assemblies/beach.ts'),{...primitives,...sky,...bar,...screens,...chars,placed,drawLounger,light}).createBeachArtwork;
 let oldInputs:any;const oldScene=load(path.join(backup,'scenes/beach/scene.ts'),{createBeachArtwork:(input:unknown)=>{oldInputs=input;return oldArtwork(input);}});
 const a=(id:string)=>BEACH_ACTORS[id];
@@ -23,7 +24,7 @@ function recording(){const ops:unknown[]=[],values:Record<string,unknown>={globa
 Object.defineProperty(globalThis,'document',{value:{createElement:()=>({width:0,height:0,getContext:()=>recording().ctx})},configurable:true});
 let cases=0;
 for(const cam of [0,300,750,1100,1500])for(const gy of [170,280])for(const t of [0,137,710])for(const danger of [false,true]){
- const v:View={sx:(wx,p=1)=>Math.round(wx-cam*p),y:h=>gy-h,t,cam,gy,viewW:640,viewH:gy+80,flags:{}};
+ const v:View=referenceView({sx:(wx,p=1)=>Math.round(wx-cam*p),y:h=>gy-h,t,cam,gy,viewW:640,viewH:gy+80,flags:{}});
  const data:Record<string,unknown>={flag:danger?'danger':'clear',rented:danger,billing:danger?'pause':'run',billed:17,freeDrink:danger,lamps:danger?'off':'on'};const m={get:(k:string)=>data[k]} as SceneModel;
  const old=recording(),now=recording();original.drawBeach(old.ctx,m,v,'mixer');drawBeachComposition(now.ctx,v,m,'mixer',BEACH_ACTORS,GULL);
  if(json(old.ops)!==json(now.ops)){let first=0;while(json(old.ops[first])===json(now.ops[first]))first++;throw new Error(`cam${cam} gy${gy} t${t} danger${danger}: op${first}/${old.ops.length}/${now.ops.length}: ${json(old.ops[first])} != ${json(now.ops[first])}`);}cases++;

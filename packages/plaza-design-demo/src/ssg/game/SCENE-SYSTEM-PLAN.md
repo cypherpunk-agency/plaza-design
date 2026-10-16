@@ -1,6 +1,6 @@
 # Unified artwork library, scene composer and animated scene composer
 
-Status: execution in progress; acceptance gates remain open. Updated 2026-10-16.
+Status: S0-S7 complete with G1-G8 evidence. Updated 2026-10-16.
 This is a separate engineering track alongside ROADMAP.md. It does not implement or renumber
 story milestones. Execution was subsequently authorized as a persistent goal; publication is
 excluded. Verified batches and remaining work are recorded in SCENE-SYSTEM-STATUS.md.
@@ -354,3 +354,86 @@ instructions, updated README/GAME-DATA/ART-GUIDE/agent guidance, and the evidenc
 > Maintain the coverage and evidence ledger. Require zero-pixel-difference comparisons. Do not
 > redesign props, expand the story, run a campaign playthrough, add CI or publish. Finish only
 > when every required gate has evidence.
+
+## Follow-on roadmap: asset workbenches and scene behavior
+
+Requested 2026-10-16. These are planned stretch milestones **after S7**, not additional
+requirements for the active S0-S7/G1-G8 goal. Do not start them automatically or delay the
+current composer delivery for them. Each milestone can become a separate finite goal. The
+story roadmap remains independent and all content design remains open.
+
+Use one composer shell with focused sub-screens, one shared catalog and the actual game
+renderers. Avoid separate implementations of character, vehicle, sign or building artwork.
+Start with viewing and inspection; authoring is required only where explicitly listed below.
+
+| Milestone | Deliverable | Exit gate |
+| --- | --- | --- |
+| S8 Asset browser and composition inspector | Search/filter by asset family and tags; isolated previews; inspect a complex assembly, its children, anchors, passes and scene usages; open its source scene | F1: every asset in the frozen catalog inventory is discoverable, has an honest preview/support status and stable reference; selecting a usage opens the correct instance; assembly and scene previews agree |
+| S9 Character workbench | Humans, animals and robots; appearance variants; supported animation states and actions; deterministic playback, pause, step, seek, loop and reduced-motion preview | F2: the supported class/variant/action matrix is documented and covered; representative transitions and held/carried props match runtime; scrubbing/replay reproduces the same poses without advancing the game |
+| S10 Vehicle workbench | Ground vehicles, flying vehicles and boats; supported movement/animation states and attachments; consistent preview routes and camera controls | F3: every inventoried vehicle family has a runtime-equivalent preview; supported route, facing, speed and passenger/cargo states are reproducible; unsupported combinations are visibly unavailable |
+| S11 Signs, lighting and architecture workbench | Browse signs, neon, screens, buildings and embedded architectural assemblies; preview existing typed variants, text, lighting and environment responses | F4: all inventoried families have previews using their actual drawing parts; supported day/night, weather, power and animation states agree with runtime, including overlaps and illumination; no source edits are needed for viewing |
+| S12 Scene event and connection inspector | Read-only view of scripted events, triggers, conditions, actions, targets, sequence handoffs and existing connections; selection links graph, scene and source | F5: every event/connection in the frozen scene inventory is represented or explicitly identified as opaque controller code; actual ids and runtime conditions are used; inactive, blocked and missing references are distinguishable; inspection has no game-state side effects |
+| S13 Scoped behavior authoring | Edit a bounded, typed set of existing declarative triggers, conditions, actions and connections; safe sandbox preview and direct local Save | F6: the agreed supported-rule inventory round-trips through source and runtime, validates before saving, supports undo/redo and conflicts, and rejects invalid references and unsupported rule edits; no arbitrary code execution |
+
+### Common contracts and evidence for F1-F6
+
+At the start of each milestone, freeze its finite asset/scene inventory, supported state matrix,
+operations and explicit exclusions in SCENE-SYSTEM-STATUS.md. Record unsupported runtime
+capabilities rather than inventing actions to fill a category. New content does not silently
+expand an in-progress goal. Report completion only against that inventory with linked evidence.
+
+Viewers use explicit preview snapshots: seed, time, lighting, weather, camera, relevant visual
+state and prepared animation/behavior inputs. Controllers prepare these inputs using the same
+logic as the game. Inspecting a character's schedule or a vehicle's route must not run live
+quests, grant rewards, change player saves or mutate the active world. Keep procedural motion,
+environment-sensitive effects and any existing shader/render passes in the shared render path.
+Do not add a second animation engine or shader implementation for the workbenches.
+
+For viewing-only milestones, preserve source files and use controlled temporary preview
+overrides. Existing artwork must remain pixel-identical under matching inputs; pin comparison
+cases and retain source revision, environment and numeric results. For new preview controls,
+prove the selected state reaches the real renderer and replays deterministically. Do not claim
+every theoretical state combination has been tested: record the bounded matrix explicitly.
+
+Any later property editing reuses typed properties, validation, undo/redo, import/export and
+direct local Save conflict/recovery protections from S6. An edit must change the corresponding
+runtime instance after reload. Restore shipping data after acceptance fixtures. These milestones
+do not authorize art redesign, story changes, publication or world-geography editing.
+
+### Complex compositions
+
+Inspect the existing group/child/anchor relationships first, including inherited transforms,
+visibility, pass order and embedded attachments. Make repeated versus scene-specific uses
+visible. A reusable composition asset referenced by other documents is a further schema feature,
+not something to assume already exists. Before enabling that authoring, specify stable ids,
+dependency and cycle validation, version/migration rules, instance overrides and whether an edit
+affects one placement or every use. Show affected usages before saving a shared definition.
+Do not convert existing assemblies merely to populate the browser.
+
+### Behavior authoring boundary
+
+S12 inspects both declarative data and controller-owned behavior. Opaque code appears with a
+source link and an explanation; a visual graph must not imply it can safely edit arbitrary
+TypeScript. Distinguish spatial attachments, physical travel connections, event subscriptions
+and conditional actions. Use actual runtime references, not a second manually maintained graph.
+
+Before S13 implementation, select a small concrete scene/rule inventory and document evaluation
+order, one-shot/repeat semantics, persistence, entry/exit behavior and failure recovery. Expose
+only registered typed conditions/actions. Validate targets, destinations and required inputs;
+diagnose unsafe loops or repeated side effects according to those semantics. Sandbox runs need
+resettable state and a trace of trigger -> condition -> action -> result. Verify reload/resume
+and exactly-once effects where required. Keep unrelated rules and player saves unchanged.
+
+S13 is a later, separately authorized extension beyond the current exclusion of quest-rule
+authoring. World membership, geographic layout, map pins and transport topology remain outside
+scope unless a future goal explicitly includes them. A scene connection inspector does not
+implicitly authorize rewriting the game map.
+
+### Ready-to-use follow-on goal instruction
+
+> After S0-S7/G1-G8 are complete, execute only the explicitly selected milestone(s) S8-S13.
+> Freeze the finite coverage inventory and supported operations before implementation. Achieve
+> the corresponding F1-F6 gates with runtime-equivalent rendering, deterministic isolated
+> previews and recorded evidence. Keep viewing-only milestones read-only; use the existing
+> validated authoring/save workflow wherever editing is explicitly in scope. Preserve shipping
+> appearance and behavior. Do not implement later milestones, redesign content or publish.

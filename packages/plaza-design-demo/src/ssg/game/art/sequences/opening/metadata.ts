@@ -1,11 +1,12 @@
 /** Exact defaults and native-space selection geometry for independently placed opening pieces. */
 import type { Anchor, Bounds, Field, Properties, Value } from '../../core/composition';
 import { drawCharacterFrame } from '../../characters/appearance';
-import { prepareCharacter, type Character } from '../../../runtime/characters';
+import type { Character } from '../../../runtime/characters';
+import { BOX40 } from '../../props/containers';
 import { PALMS, LOUNGERS, STACKS, CRANES, PEOPLE, STS2_GLIDE, S, CRANE, lines, lineY, sts2Load,coastAssemblyKernels,coastDetailKernels, type CoastView } from './coast';
 import { GANTRIES,drawGantry } from '../../machinery/crane';
 import { PAL,stack, type Crate } from '../../props/containers';
-import { pieceActor, pieceNumber as pn } from './piece-inputs';
+import { pieceNumber as pn } from './piece-inputs';
 import { STREET, PORTAL_TOWER, PEOPLE as TOWN_PEOPLE, towerProperties } from './town';
 import { SIZE } from '../../vehicles/vehicles';
 import type { TowerSign } from '../../architecture/downtown-towers';
@@ -34,6 +35,10 @@ export function openingFields(id: string): Record<string, Field> {
   if(id.startsWith('coast.pier-')){const item=part.slice(5);if(item==='kiosk')return{text:{kind:'string',label:'Kiosk sign',default:'BAIT · ICE · TEA'}};if(item.startsWith('string-'))return{sag:numeric('Cable sag',6,0,100),phase:numeric('Light phase',Number(item.slice(7)))};return{paint:color('Timber silhouette','#0a0310'),...(item.startsWith('lamp-')||item==='lantern'?{light:{kind:'string',label:'Lamp color',default:item==='lantern'?'rgba(255,232,190,.95)':'rgba(255,220,160,.95)'}}:{})};}
   if(id.startsWith('coast.buffer-')){const item=part.slice(7);if(item.startsWith('sign-'))return{text:{kind:'string',label:'Fence sign',default:['PORT AREA · NO ENTRY','CAMERAS IN OPERATION','TRESPASS IS LOGGED'][Number(item.slice(5))]}};if(item==='gate')return{text:{kind:'string',label:'Gate sign',default:'TERMINAL 2 · STAFF'}};if(item==='fence')return{height:numeric('Fence height',26,1,200)};if(item==='car')return{paint:color('Car shell','#2a2224')};}
 
+  if(id.startsWith('coast.hub-')){const item=part.slice(4);if(item==='shed')return{paint:color('Shed paint','#241c22')};if(item.startsWith('door-'))return{paint:{kind:'string',label:'Roller door color',default:item==='door-1'?'rgba(255,214,150,.55)':'#18121a'}};if(item==='sign')return{text:{kind:'string',label:'Hub sign',default:'LOGISTICS HUB 3'}};if(item.startsWith('pad-'))return{phase:numeric('Landing light phase',Number(item.slice(4))*13)};}
+  if(id.startsWith('coast.ship-')){const item=part.slice(5);if(item.startsWith('stack-')){const i=Number(item.slice(6));return{boxes:{kind:'json',label:'Deck cargo',default:[{...BOX40,p:i*3%PAL.length,seed:300+i*7}]as unknown as Value,validate:validateBoxes}};}if(item==='hull'||item==='bridge-house'||item==='funnel')return{paint:color('Paint',item==='hull'?'#1c1220':item==='bridge-house'?'#241828':'#3a1a1a')};}
+  if(id.startsWith('coast.bridge-')){const item=part.slice(7);return{paint:color('Paint',item==='rail'?'#3a2a3a':item.startsWith('signal-')?'#1e1222':'#0e080c')};}
+  if(id.startsWith('coast.galleria-')){const item=part.slice(9);if(item==='dome')return{paintMode:{kind:'select',label:'Dawn response',default:'dawn',options:['dawn','fixed']},paint:color('Fixed paint','#3a2440'),lit:numeric('Window light',1.5,0,4)};if(item==='plinth')return{paint:color('Facade paint','#2a1830')};if(item.startsWith('window-')||item==='entrance')return{light:{kind:'string',label:'Window light',default:item==='entrance'?'rgba(255,230,190,.65)':'rgba(255,200,140,.55)'}};if(item==='sign'||item==='advert'||item==='taxi-pad')return{text:{kind:'string',label:item==='advert'?'Advert override (empty uses native rotation)':'Sign',default:item==='sign'?'GALLERIA':item==='taxi-pad'?'TAXI · PUBLIC':''}};if(item==='taxi-cab')return{phase:numeric('Flight phase (frames)',0),period:numeric('Flight cycle (frames)',1500,1,100000)};}
   if ((id.startsWith('coast.') || id.startsWith('coast-front.')) && part?.startsWith('palm-')) {
     const [X, band, h, lean, seed] = PALMS[Number(part.slice(5))];
     return { worldX: numeric('Coast X · west', X), height: numeric('Height', h, 1, 1000), lean: numeric('Lean', lean, -500, 500), seed: { ...numeric('Frond seed', seed), animatable: false }, fill: color('Silhouette', band === 'front' ? '#07020a' : '#0b0410') };
@@ -60,9 +65,9 @@ function rect(x: number, y: number, w: number, tall: number, anchors: Record<str
   return { bounds: { x, h: -y, w, tall }, anchors: { origin: { x, h: -(y + tall), role: 'origin' }, ...anchors } };
 }
 function measured(x:number,base:number,scale:number,b:Measured,anchors:Record<string,Anchor>={}):PieceGeometry{return rect(x+b.x*scale,base+b.y*scale,b.width*scale,b.height*scale,anchors);}
-export function actorGeometry(c: CoastView, source: Character, props: Properties, worldX: number, base: number): PieceGeometry {
-  const pose = prepareCharacter(pieceActor(source, props), c.f), x = Math.round(c.sx(pn(props,'worldX',worldX)));
-  const tall = pose.visible ? pose.height : 0, actorX = pose.visible ? pose.frame!.x : 0;
+export function actorGeometry(c: CoastView, _source: Character, props: Properties, worldX: number, base: number): PieceGeometry {
+  const pose=c.pose, x = Math.round(c.sx(pn(props,'worldX',worldX)));
+  const tall = pose?.visible ? pose.height : 0, actorX = pose?.visible ? pose.frame!.x : 0;
   return rect(x + (actorX - 24) * S, base - tall * S, 48 * S, tall * S, { feet: { x: x + actorX * S, h: -base, role: 'surface' } });
 }
 export function openingGeometry(id: string, c: CoastView, props: Properties): PieceGeometry | undefined {

@@ -1,3 +1,4 @@
+import{drawTimelineOverlay,type TimelineOverlay}from'../art/core/timeline-overlay';
 /** Shared native frame orchestration. Game and composer provide state, never duplicate artwork. */
 import type { View } from '../art/core/view';
 import type { SceneDef } from '../scenes/kit';
@@ -7,7 +8,7 @@ import type { Light } from '../world/light';
 import { clearWorld } from '../art/core/canvas';
 import { drawSky } from '../art/environment/sky';
 import { puddles, weatherFront, weatherMid, weatherSky } from '../art/atmosphere/weather';
-import { drawCasters, drawGrade, drawLights, drawShade } from '../art/atmosphere/lighting';
+import { createLightingFrame, drawCasters, drawGrade, drawLights, drawShade } from '../art/atmosphere/lighting';
 import { muteWorld } from '../art/atmosphere/hack-vision';
 
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
@@ -23,6 +24,8 @@ export interface SceneFrame {
   skyTraffic?: Draw; city?: Draw;
   street?: (ctx: CanvasRenderingContext2D, view: View, rain: number, lit: boolean) => void;
   roomWash?: Draw; actors?: Draw; prompts?: Draw; bubbles?: Draw;
+  /** Evaluated authoring/playback overlays, in logical viewport coordinates. */
+  timeline?:TimelineOverlay;
 }
 
 export function renderSceneFrame(frame: SceneFrame) {
@@ -34,6 +37,8 @@ export function renderSceneFrame(frame: SceneFrame) {
   const W = amb.weather ? frame.weather() : null;
   const covers = amb.covers?.map(c => [v.sx(c.from), v.sx(c.to), v.y(c.under)] as [number, number, number]);
   const L = frame.lighting(W);
+  v.lighting = L;
+  v.illumination = createLightingFrame(L, s.lights, L.outdoor ? s.shade : undefined, s.width, true);
   frame.preparePresentation?.();
   const look = W ? { w: W, t: frame.reduced ? frame.clock * 0.35 : v.t, still: frame.reduced, covers, day: L.daylight } : null;
   const rain = W?.wet ?? 0;
@@ -61,4 +66,5 @@ export function renderSceneFrame(frame: SceneFrame) {
   if (look && !vision) weatherFront(x, v, look);
   frame.prompts?.(x, v);
   frame.bubbles?.(x, v);
+  if(frame.timeline)drawTimelineOverlay(x,{width:v.viewW,height:v.viewH,scale:k},frame.timeline);
 }

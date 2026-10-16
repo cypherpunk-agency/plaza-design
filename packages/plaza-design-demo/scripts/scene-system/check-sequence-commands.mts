@@ -1,13 +1,16 @@
 import {canonicalPaint} from './canonical-paint.mts';
 import assert from 'node:assert/strict';
 import originalModule from '../../../../.scene-system/baseline/source/ssg/game/title/glide';
-import { drawGlide as moved } from '../../src/ssg/game/art/sequences/opening/glide';
-import { renderOpeningSequence } from '../../src/ssg/game/art/sequences/opening/sequence';
+import{paintOpeningPieces}from'../../src/ssg/game/art/sequences/opening/glide';
+import{nativeOpeningFrame,renderOpeningDocument as renderOpeningSequence}from'../../src/ssg/game/story/title/render';
+import{lightAt}from'../../src/ssg/game/world/light';
+const lighting=lightAt(1,580,90,null);
+function moved(ctx:CanvasRenderingContext2D,v:any,t:number,tau:number|null){const f=nativeOpeningFrame(ctx,{...v,lighting},t,tau);ctx.save();ctx.scale(f.scale,f.scale);paintOpeningPieces(ctx,f.parts,f.drop);ctx.restore();}
 import { openingDocuments } from '../../src/ssg/game/story/title/documents';
 import cutsceneModule from '../../../../.scene-system/baseline/source/ssg/game/cutscenes/index';
 import cityModule from '../../../../.scene-system/baseline/source/ssg/game/city';
 import { CutscenePlay, CUTSCENES } from '../../src/ssg/game/story/cutscenes';
-import { drawFlight } from '../../src/ssg/game/art/sequences/taxi-flight';
+import { drawFlight } from '../../src/ssg/game/story/cutscenes/taxi';
 const original = originalModule.drawGlide;
 (globalThis as unknown as { document: unknown }).document = { createElement: () => ({ width: 0, height: 0, getContext: () => recorder().ctx }) };
 
@@ -26,7 +29,7 @@ for (const reduced of [false, true]) for (const tau of [null, 0, 20, 62, 75, 78.
   const a = recorder(), b = recorder(), c = recorder();
   original(a.ctx, { W: 640, H: 360, reduced }, t, tau);
   moved(b.ctx, { W: 640, H: 360, reduced }, t, tau);
-  renderOpeningSequence(c.ctx, { W: 640, H: 360, reduced }, openingDocuments, tau === null ? 'title' : 'glide', tau ?? t, { ambientTime: t });
+  renderOpeningSequence(c.ctx, { W:640,H:360,reduced,lighting }, openingDocuments, tau === null ? 'title' : 'glide', tau ?? t, { ambientTime: t });
   const first = (x: unknown[][], y: unknown[][]) => { const i = x.findIndex((value, i) => JSON.stringify(value) !== JSON.stringify(y[i])); return { index: i, original: x.slice(Math.max(0, i - 2), i + 3), current: y.slice(Math.max(0, i - 2), i + 3), lengths: [x.length, y.length] }; };
   if (JSON.stringify(canonicalPaint(a.commands)) !== JSON.stringify(canonicalPaint(b.commands))) { console.log('native mismatch', reduced, tau, first(a.commands, b.commands)); process.exitCode = 1; break; }
   if (JSON.stringify(canonicalPaint(a.commands)) !== JSON.stringify(canonicalPaint(c.commands))) { console.log('composed mismatch', reduced, tau, JSON.stringify(first(canonicalPaint(a.commands), canonicalPaint(c.commands)),null,2)); process.exitCode = 1; break; }

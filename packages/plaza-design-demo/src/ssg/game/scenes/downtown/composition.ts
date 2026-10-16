@@ -2,7 +2,7 @@
 import { drawComposition, resolveComposition, type Composition, type Environment, type Instance, type Properties, type Value } from '../../art/core/composition';
 import { art as downtownArt } from '../../art';
 import type { DowntownDeviceState } from '../../art/electronics/downtown-devices';
-import type { View } from '../../art/core/view';
+import { frameView, type View } from '../../art/core/view';
 import type { SceneModel } from '../../engine/model';
 import type { SceneData } from '../../data/types';
 import type { SceneLight, Caster } from '../../art/atmosphere/lighting';
@@ -33,7 +33,7 @@ export function validateDowntownComposition(input:unknown):Composition {
  return doc;
 }
 export const downtownComposition=validateDowntownComposition(downtownSource);
-const baseView:View={sx:x=>x,y:h=>-h,t:0,gy:0,cam:0,viewW:2000,viewH:360,flags:{}};
+const baseView:View={...frameView(0),sx:x=>x,y:h=>-h,t:0,gy:0,cam:0,viewW:2000,viewH:360,flags:{}};
 function defaults(doc:Composition):Record<string,Value>{const result:Record<string,Value>={};for(const node of visit(doc.instances))for(const[field,source]of Object.entries(node.bindings??{}))result[source]=downtownArt.get(node.type).visualFields![field].default;return result;}
 export function downtownGeometry(doc=downtownComposition){return resolveComposition(downtownArt,doc,{view:baseView,state:{},bindings:defaults(doc),reduced:false});}
 /** Core geometry is authoritative for edited documents, including anchors from other shared kits. */

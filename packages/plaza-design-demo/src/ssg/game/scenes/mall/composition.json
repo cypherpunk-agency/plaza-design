@@ -1752,6 +1752,24 @@
       }
     },
     {
+      "id": "table-0-stool-left",
+      "type": "mall.table-stool",
+      "props": {},
+      "placement": { "x": -24, "h": 0 },
+      "attach": { "instance": "table-0", "anchor": "origin" },
+      "order": 98.98,
+      "pass": "backdrop"
+    },
+    {
+      "id": "table-0-stool-right",
+      "type": "mall.table-stool",
+      "props": {},
+      "placement": { "x": 24, "h": 0 },
+      "attach": { "instance": "table-0", "anchor": "origin" },
+      "order": 98.99,
+      "pass": "backdrop"
+    },
+    {
       "id": "table-0",
       "type": "mall.table",
       "props": {},
@@ -1766,6 +1784,24 @@
       }
     },
     {
+      "id": "table-1-stool-left",
+      "type": "mall.table-stool",
+      "props": {},
+      "placement": { "x": -24, "h": 0 },
+      "attach": { "instance": "table-1", "anchor": "origin" },
+      "order": 99.98,
+      "pass": "backdrop"
+    },
+    {
+      "id": "table-1-stool-right",
+      "type": "mall.table-stool",
+      "props": {},
+      "placement": { "x": 24, "h": 0 },
+      "attach": { "instance": "table-1", "anchor": "origin" },
+      "order": 99.99,
+      "pass": "backdrop"
+    },
+    {
       "id": "table-1",
       "type": "mall.table",
       "props": {},
@@ -1778,6 +1814,24 @@
       "bindings": {
         "snapshot": "mall.snapshot"
       }
+    },
+    {
+      "id": "table-2-stool-left",
+      "type": "mall.table-stool",
+      "props": {},
+      "placement": { "x": -24, "h": 0 },
+      "attach": { "instance": "table-2", "anchor": "origin" },
+      "order": 100.98,
+      "pass": "backdrop"
+    },
+    {
+      "id": "table-2-stool-right",
+      "type": "mall.table-stool",
+      "props": {},
+      "placement": { "x": 24, "h": 0 },
+      "attach": { "instance": "table-2", "anchor": "origin" },
+      "order": 100.99,
+      "pass": "backdrop"
     },
     {
       "id": "table-2",

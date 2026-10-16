@@ -1,6 +1,6 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
-import type { DrawView } from "../../engine/host";
-import { light,rel } from "../../world/light";
+import type { View as DrawView } from "../core/view";
+import { type Light,rel } from "../../world/light";
 import { box,C,GREEN,O,PAPER,RED,RUST,tell,text } from "../core/primitives";
 import { drawPane,glass,windowShaft } from "../environment/sky";
 export interface ArtworkInputs { originX?: number; ceiling?: number; slab?: number; wall?: number; posterX?: number; CAPSULE_W: number;
@@ -68,8 +68,8 @@ function drawTower(x: CanvasRenderingContext2D, v: DrawView) {
 
 
 /** Where the window looks out: the sky of the moment between the towers across the way (sets/sky.ts), and a far drone. */
-function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: number, h: number, t: number) {
-  drawPane(x, l, top, w, h, light(), { facing: CAPSULE_FACING, seed: 7, horizon: 0.95 });
+function drawOutside(x: CanvasRenderingContext2D, l: number, top: number, w: number, h: number, t: number, lighting: Light) {
+  drawPane(x, l, top, w, h, lighting, { facing: CAPSULE_FACING, seed: 7, horizon: 0.95 });
   // a far drone drifting past
   const dx = l + ((t * 0.15) % (w + 20)) - 10;
   x.fillStyle = 'rgba(255,42,68,.6)'; x.fillRect(Math.round(dx), top + 8, 2, 1);
@@ -124,13 +124,13 @@ function drawWindow(x: CanvasRenderingContext2D, v: DrawView, state: CapsuleVisu
   // ---------- the window, the city outside, the blinds ----------
   const W0 = L.window, wl = sx(W0.x - W0.w / 2), wt = y(W0.h1), wh = W0.h1 - W0.h0;
   box(x, wl - 3, wt - 3, W0.w + 6, wh + 6, '#1a0e07', 'rgba(' + O + ',.6)');
-  drawOutside(x, wl, wt, W0.w, wh, t);
+  drawOutside(x, wl, wt, W0.w, wh, t, v.lighting);
   x.fillStyle = '#1a0e07'; x.fillRect(wl + W0.w / 2 - 1, wt, 2, wh); x.fillRect(wl, wt + wh / 2 - 1, W0.w, 2);
   if (sun) {
     // rolled up into the box at the top
     box(x, wl - 4, wt - 8, W0.w + 8, 8, '#2a1a10', 'rgba(' + O + ',.7)');
     // the light falling in (sets/sky.ts windowShaft): the sun's when it is on this side, its colour and angle by the hour
-    const lt = light(), win = { l: wl, r: wl + W0.w, t: wt, b: wt + wh };
+    const lt = v.lighting, win = { l: wl, r: wl + W0.w, t: wt, b: wt + wh };
     if (!windowShaft(x, win, gy, Math.min(v.viewH, gy + 14), lt, CAPSULE_FACING, { dust: true, t })) {
       // no sun: the sky's own light (or the city's at night) still makes a pale patch where the sun would lie
       const [gc, ga] = glass(lt), b0 = sx(L.sun.x0), b1 = sx(L.sun.x1), a = Math.max(0.05, ga * 0.6);
@@ -140,7 +140,7 @@ function drawWindow(x: CanvasRenderingContext2D, v: DrawView, state: CapsuleVisu
     }
   } else {
     // closed: slats, with the light of the hour leaking through the gaps (the sun's when it is on this side)
-    const lt = light(), sunIn = lt.direct * (Math.abs(rel(lt.sun.az, CAPSULE_FACING)) < 80 ? 1 : 0), [gc, ga] = glass(lt);
+    const lt = v.lighting, sunIn = lt.direct * (Math.abs(rel(lt.sun.az, CAPSULE_FACING)) < 80 ? 1 : 0), [gc, ga] = glass(lt);
     const leak = sunIn > 0.05 ? 'rgba(' + lt.sunCol + ',' + (0.12 + 0.14 * sunIn).toFixed(3) + ')' : 'rgba(' + (lt.daylight > 0.2 ? gc : '120,130,180') + ',' + Math.max(0.06, ga * 0.6).toFixed(3) + ')';
     x.fillStyle = '#24160d'; x.fillRect(wl - 2, wt - 2, W0.w + 4, wh + 4);
     for (let yy = wt; yy < wt + wh; yy += 4) {

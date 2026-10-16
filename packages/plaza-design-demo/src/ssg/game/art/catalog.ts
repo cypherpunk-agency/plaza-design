@@ -27,7 +27,7 @@ export { drawCanalGlimpse, drawGroundSection } from "./architecture/cutaway";
 export { frameView, placed } from "./core/view";
 export { puddles, weatherFront, weatherMid, weatherSky, type PuddleSpec, type WeatherLook } from "./atmosphere/weather";
 export { drawPane, drawSky, glass, moonDisc, seaCols, skyCols, skyPos, sunPath, windowShaft, type PaneOpts, type SkyOpts } from "./environment/sky";
-export { addLight, castShadow, drawCasters, drawGrade, drawLights, drawShade, gradeOf, inShade, prepareLights, prepareShade, shadowsOn, type Caster, type SceneLight, type Shade, type ShadeSide } from "./atmosphere/lighting";
+export { addLight, castShadow, createLightingFrame, drawCasters, drawGrade, drawLights, drawShade, gradeOf, inShade, prepareShade, type LightingFrame, type ShadeFrame, type Caster, type SceneLight, type Shade, type ShadeSide } from "./atmosphere/lighting";
 
 export interface SetEntry {
   id: string;

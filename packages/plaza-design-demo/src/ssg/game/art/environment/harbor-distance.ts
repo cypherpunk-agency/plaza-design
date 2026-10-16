@@ -1,7 +1,6 @@
 /** Original port sky, horizon and water shared by both harbor scenes. */
 import { drawTowers, towers, rng, O, RED, GREEN } from '../core/primitives';
 import type { View } from '../core/view';
-import { light } from "../../world/light";
 import { seaCols, sunPath } from './sky';
 
 
@@ -82,7 +81,7 @@ export function drawHorizon(x: CanvasRenderingContext2D, v: View) {
 export function drawWater(x: CanvasRenderingContext2D, v: View) {
   const { y, t, gy } = v;
   // the water takes the sky of the moment (black at night, as it always was), and the sun's path lies on it
-  const L = light(), [c0, c1, c2] = seaCols(L), wg = x.createLinearGradient(0, y(HZ), 0, gy);
+  const L = v.lighting, [c0, c1, c2] = seaCols(L), wg = x.createLinearGradient(0, y(HZ), 0, gy);
   wg.addColorStop(0, c0); wg.addColorStop(0.35, c1); wg.addColorStop(1, c2);
   x.fillStyle = wg; x.fillRect(0, y(HZ), v.viewW, gy - y(HZ));
   sunPath(x, v, L, y(HZ), gy);

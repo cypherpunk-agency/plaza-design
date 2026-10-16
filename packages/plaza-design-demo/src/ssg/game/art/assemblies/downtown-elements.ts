@@ -17,7 +17,7 @@ const box=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 const raised=(v:View,h:number):View=>h===0?v:{...v,gy:v.gy-h,y:q=>v.y(q+h)};
 const kernel=new DowntownArtwork();
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
-function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties,s:Properties)=>Bounds,draw:Draw,visualFields:Record<string,Field>={}):Element {
+function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:Element['bounds'],draw:Draw,visualFields:Record<string,Field>={}):Element {
  return {type:'downtown.'+type,version:1,label,category,coordinates:'world',fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},right:{x:Number(p.width??0),h:0,role:'mount'},topCenter:{x:Number(p.width??0)/2,h:Number(p.height??0),role:'surface'}}),
   draw(x,v,p,s,_pass,at){kernel.set(x,raised(v,at.h));draw(x,v,p,s,at);}};
 }
@@ -64,5 +64,14 @@ export function validateDowntownDeviceSnapshot(value:Value):void {
 }
 for(const id of ['sign','box','till','relay','gate','fence','scan','cam3','billboard','dlv9','map','hover']) {
  const name='drawDevice'+id[0].toUpperCase()+id.slice(1),draw=devices[name as keyof typeof devices] as (x:CanvasRenderingContext2D,v:View,wx:number,state:devices.DowntownDeviceState)=>void;
- downtownElements.push(element('device-'+id,'Downtown '+id,'electronics',id==='hover'?{}:{spotY:num('Spot bottom'),spotWidth:num('Spot width',30,1),spotHeight:num('Spot height',40,1),...(id==='sign'?{mask}:{})},p=>({x:-n(p,'spotWidth')/2,h:n(p,'spotY')+n(p,'spotHeight'),w:n(p,'spotWidth'),tall:n(p,'spotHeight')}),(x,v,_p,s,at)=>draw(x,raised(v,at.h),id==='dlv9'?n(s,'position'):at.x,s.snapshot as unknown as devices.DowntownDeviceState),{snapshot:{kind:'json',label:'Live device snapshot',default:empty as unknown as Value,validate:validateDowntownDeviceSnapshot},...(id==='dlv9'?{position:num('Current route position')}: {})}));
+ downtownElements.push(element('device-'+id,'Downtown '+id,'electronics',id==='hover'?{}:{spotY:num('Spot bottom'),spotWidth:num('Spot width',30,1),spotHeight:num('Spot height',40,1),...(id==='sign'?{mask}:{})},(p,s,c)=>{
+  if(id==='hover'){
+   const spot=(s.snapshot as unknown as devices.DowntownDeviceState|undefined)?.hoverSpot;
+   if(!spot)return{x:0,h:0,w:0,tall:0};
+   // The hover kernel takes its world center from the live snapshot, not its instance.
+   return{x:spot.x-(c?.placement.x??0)-spot.w/2-3,h:spot.y+spot.h+3,w:spot.w+6,tall:spot.h+6};
+  }
+  const offset=id==='dlv9'&&c?Number(s.position)-c.placement.x:0;
+  return{x:offset-n(p,'spotWidth')/2,h:n(p,'spotY')+n(p,'spotHeight'),w:n(p,'spotWidth'),tall:n(p,'spotHeight')};
+ },(x,v,_p,s,at)=>draw(x,raised(v,at.h),id==='dlv9'?n(s,'position'):at.x,s.snapshot as unknown as devices.DowntownDeviceState),{snapshot:{kind:'json',label:'Live device snapshot',default:empty as unknown as Value,validate:validateDowntownDeviceSnapshot},...(id==='dlv9'?{position:num('Current route position')}: {})}));
 }

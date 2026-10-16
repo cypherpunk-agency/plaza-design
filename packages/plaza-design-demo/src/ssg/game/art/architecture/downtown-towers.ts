@@ -25,7 +25,7 @@
  */
 
 import { O, RED, rng } from '../core/primitives';
-import { windowLit } from "../../world/light";
+import { type Light, windowLit } from "../../world/light";
 
 export type Skin = 'concrete' | 'glass' | 'capsule' | 'panel' | 'brick';
 export type Crown = 'flat' | 'spire' | 'stepped' | 'slant' | 'antenna' | 'halo' | 'pyramid';
@@ -68,7 +68,7 @@ export interface Tower {
   shop?: boolean;
 }
 
-export interface TowerLook {
+interface TowerAppearance {
   /** Animation clock (frames): lights blink, neon flickers, tickers scroll, holo ads cycle. `still` holds them. */
   t: number;
   still?: boolean;
@@ -80,13 +80,15 @@ export interface TowerLook {
   /** Extra height drawn below the foot (screen units in this frame), so a tower never ends in mid-air. */
   below?: number;
   /** The lit windows follow the city clock (light.ts windowLit: on at dusk, off after midnight). Off: as seeded (the glide). */
-  clock?: boolean;
+
   /** A storey's height in the frame's units (default 9; 85 is true to the player's scale). */
   storey?: number;
   /** Haze over a far row, 0 .. 1 (its colour mixed toward `hazeCol`). */
   haze?: number;
   hazeCol?: string;
 }
+
+export type TowerLook = TowerAppearance & ({clock:true;lighting:Light}|{clock?:false;lighting?:never});
 
 /** Copy for the signs: dry, plain, the city's (ART-GUIDE §10). Products, services, the Registry. */
 export const SIGN_COPY = {
@@ -215,7 +217,7 @@ function inside(segs: [number, number, number, number][], fx: number, h: number)
 /** A window's light: seeded, a few blinking; on the city clock when `clock`. */
 function winOn(b: Tower, o: TowerLook, i: number, j: number, tick: number) {
   const v = hash(b.seed * 31 + i, j * 17 + 3);
-  const on = o.clock ? v < o.lit * 1.6 && windowLit(b.seed * 1009 + i * 31 + j) : v < o.lit || (v < o.lit + 0.03 && (tick + i + j) % 5 === 0);
+  const on = o.clock ? v < o.lit * 1.6 && windowLit(b.seed * 1009 + i * 31 + j, o.lighting) : v < o.lit || (v < o.lit + 0.03 && (tick + i + j) % 5 === 0);
   return on ? v : -1;
 }
 const warm = (v: number, o: TowerLook, a = 1) => 'rgba(255,' + (v < o.lit * 0.3 ? '217,165' : '170,90') + ',' + Math.min(1, o.glow * (0.55 + v) * a).toFixed(3) + ')';
@@ -232,7 +234,7 @@ function facade(x: CanvasRenderingContext2D, b: Tower, skin: Skin, o: TowerLook,
     const f0 = Math.max(0, Math.floor((lo - h0) / st)), f1 = Math.ceil((hi - h0) / st);
     for (let f = f0; f < f1; f++) {
       const fh = h0 + f * st; if (fh + st > h1) break;
-      const v = hash(b.seed + 7, f), lit = o.clock ? v < o.lit * 1.4 && windowLit(b.seed * 1009 + f * 31) : v < o.lit * 1.8;
+      const v = hash(b.seed + 7, f), lit = o.clock ? v < o.lit * 1.4 && windowLit(b.seed * 1009 + f * 31, o.lighting) : v < o.lit * 1.8;
       if (lit) { x.fillStyle = warm(v * 0.5, o, 0.55); x.fillRect(l + 2, y(fh + st - st * 0.2), w - 4, st * 0.62); }
       x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l + 1, y(fh + st * 0.2), w - 2, Math.max(1, st * 0.16));
     }

@@ -1,10 +1,12 @@
+import type{Light}from'../../world/light';
+import {frameView} from '../core/view';
 /** Meaningful cinematic pieces and the shared runtime/editor picture dispatcher. */
 import { ArtRegistry, resolveComposition, drawComposition, compositionAppearance, type Composition, type Element, type Properties } from '../core/composition';
 import { evaluateTimeline, type TimelineContext, type TimelineDocument, type TimelineFrame } from '../core/timeline';
 import type { CutView } from '../core/view';
 import { act2Frame } from './act2';
 import { flightFrame } from './taxi-picture';
-import { introFrame, IntroSeekSession } from './skyline';
+import { introFrame,type IntroOptions } from './skyline';
 import { skylinePartIds } from '../environment/skyline';
 import { cinematicGeometry } from './cinematic-metadata';
 
@@ -33,15 +35,16 @@ export const cinematicElements: Element[] = Object.entries(cinematicParts).flatM
   fields: fields(sequence, part),
   visualFields:visual(sequence,part), bounds: (props,state) => cinematicGeometry(sequence,part,props,state).bounds, anchors: (props,state) => cinematicGeometry(sequence,part,props,state).anchors,
   draw(ctx, view, props, state, _pass, placement) {
-    const cut = cutView(view.viewW, view.viewH, !!state.reduced), time = state.time as number;
-    const jobs = sequence === 'act2' ? act2Frame(ctx, cut, time, 16, { ...(part==='titles'?{titles:props as unknown as { actOne: string; found: string; actTwo: string; subtitle: string }}:{}),...(part==='sky'?{sky:props as unknown as {top:string;horizon:string}}:{}),...(part==='water'?{water:props.fill as string}:{}),...(part==='ferry'?{ferryPaint:props.paint as string}:{}),...(part==='spire'?{spire:props as unknown as {windows:number;edge:number;glow:boolean}}:{}) }) : sequence === 'taxi' ? flightFrame(ctx, view.viewW, view.viewH, time / (200 / 60), state.ambient as number, String(props.destination ?? ''),{...(part==='sky'?{sky:props as unknown as {top:string;middle:string;bottom:string}}:{}),...(part==='lights'?{lightSpeeds:[props.far,props.middle,props.near] as number[]}:{}),...(part==='towers'?{towerFill:props.fill as string}:{})}) : introFrame(ctx, cut, time, 26, { step: 0, cameraX: state.cameraX as number }).parts;
+    const cut = cutView(view.viewW, view.viewH, !!state.reduced,view.lighting), time = state.time as number;
+    const jobs = sequence === 'act2' ? act2Frame(ctx, cut, time, 16, { ...(part==='titles'?{titles:props as unknown as { actOne: string; found: string; actTwo: string; subtitle: string }}:{}),...(part==='sky'?{sky:props as unknown as {top:string;horizon:string}}:{}),...(part==='water'?{water:props.fill as string}:{}),...(part==='ferry'?{ferryPaint:props.paint as string}:{}),...(part==='spire'?{spire:props as unknown as {windows:number;edge:number;glow:boolean}}:{}) }) : sequence === 'taxi' ? flightFrame(ctx, view.viewW, view.viewH, time / (200 / 60), state.ambient as number, String(props.destination ?? ''),{...(part==='sky'?{sky:props as unknown as {top:string;middle:string;bottom:string}}:{}),...(part==='lights'?{lightSpeeds:[props.far,props.middle,props.near] as number[]}:{}),...(part==='towers'?{towerFill:props.fill as string}:{})}) : (()=>{throw new Error('Intro piece requires a prepared skyline session through the cinematic controller');})();
     ctx.save(); ctx.translate(placement.x, -placement.h); if (part === 'screen-fade') paintBlack(ctx, view.viewW, view.viewH, state.amount as number); else jobs.find(job => job.id === part)!.draw(); ctx.restore();
   },
 })));
 export const cinematicRegistry = new ArtRegistry(); cinematicElements.forEach(element => cinematicRegistry.register(element));
+function requireIntro(options:CinematicOptions):IntroOptions{if(!options.intro)throw new Error('Intro renderer requires a controller-prepared skyline session');return options.intro;}
 export interface CinematicDocuments { timeline: TimelineDocument; compositions: Record<string, Composition> }
-export interface CinematicOptions { composition?: Composition; timeline?: TimelineDocument; frame?: TimelineFrame; registry?: ArtRegistry; ambient?: number; progress?: number; destination?: string; seek?: IntroSeekSession; sequenceId?: string }
-export function cutView(W: number, H: number, reduced: boolean): CutView { const size = Math.max(10, Math.min(18, Math.round(H / 26))); return { viewW: W, viewH: H, barTop: Math.round(Math.max(16, H * 0.09)), barBottom: Math.round(Math.max(size * 3.6, H * 0.16)), reduced }; }
+export interface CinematicOptions { composition?: Composition; timeline?: TimelineDocument; frame?: TimelineFrame; registry?: ArtRegistry; ambient?: number; progress?: number; destination?: string; intro?:IntroOptions; sequenceId?: string }
+export function cutView(W: number, H: number, reduced:boolean,lighting:Light):CutView { const size = Math.max(10, Math.min(18, Math.round(H / 26))); return {lighting,viewW: W, viewH: H, barTop: Math.round(Math.max(16, H * 0.09)), barBottom: Math.round(Math.max(size * 3.6, H * 0.16)), reduced }; }
 const noProps = (props: Properties) => { if (Object.keys(props).length) throw new Error('This exact motion formula takes no parameters'); };
 const fade = (t: number, at: number, duration = 0.8) => Math.max(0, Math.min(1, (t - at) / duration));
 function paintBlack(ctx: CanvasRenderingContext2D, W: number, H: number, opacity: number) { if (opacity > 0) { ctx.fillStyle = 'rgba(0,0,0,' + Math.min(1, opacity) + ')'; ctx.fillRect(0, 0, W, H); } }
@@ -77,13 +80,13 @@ export function renderCinematicPicture(ctx: CanvasRenderingContext2D, view: CutV
   const skyProps=prop('sky'),waterProps=prop('water'),ferryProps=prop('ferry'),spireProps=prop('spire'),lightProps=prop('lights'),towerProps=prop('towers');
   const destInstance = nodes.find(n => n.type === 'sequence.taxi.destination'); const destination = destInstance?.props.destination ? String(destInstance.props.destination) : options.destination ?? '';
   const ambient = options.ambient ?? time * 60;
-  const jobs = id === 'intro' ? (options.seek ? options.seek.parts(ctx, view, time, sequence.duration, { cameraX: frame.camera.x, rain: state('rain').amount as number }) : introFrame(ctx, view, time, sequence.duration, { cameraX: frame.camera.x, rain: state('rain').amount as number }).parts)
+  const jobs = id === 'intro' ? (introFrame(ctx,view,time,sequence.duration,{...requireIntro(options),cameraX:frame.camera.x,rain:state('rain').amount as number}).parts)
     : id === 'act2' ? act2Frame(ctx, view, time, sequence.duration, { ferryProgress: state('ferry').amount as number, titles: titleProps as unknown as { actOne: string; found: string; actTwo: string; subtitle: string }, alpha: state('titles') as unknown as { one: number; found: number; two: number; subtitle: number },sky:skyProps as unknown as {top:string;horizon:string},water:waterProps.fill as string,ferryPaint:ferryProps.paint as string,spire:spireProps as unknown as {windows:number;edge:number;glow:boolean} })
     : flightFrame(ctx, view.viewW, view.viewH, options.progress ?? time / sequence.duration, ambient, destination, { cabX: state('cab').x as number, cabY: state('cab').y as number, fade: state('fade').amount as number,sky:skyProps as unknown as {top:string;middle:string;bottom:string},lightSpeeds:[lightProps.far??.6,lightProps.middle??1.8,lightProps.near??4.5] as number[],towerFill:towerProps.fill as string });
   const pieces = new Map(jobs.map(p => [p.id, p]));
   if (id !== 'taxi') pieces.set('screen-fade', { id: 'screen-fade', draw: () => paintBlack(ctx, view.viewW, view.viewH, state('screen-fade').amount as number) });
   const registry = options.registry ?? cinematicRegistry;
-  const nativeView = { viewW: view.viewW, viewH: view.viewH, cam: frame.camera.x, gy: 0, t: ambient, flags: {}, sx: (x: number) => x, y: (h: number) => -h };
+  const nativeView = { ...frameView(time*60,view.lighting), viewW: view.viewW, viewH: view.viewH, cam: frame.camera.x, gy: 0, t: ambient, flags: {}, sx: (x: number) => x, y: (h: number) => -h };
   const appearance = compositionAppearance(frame.composition, { visibility: frame.visibility, opacity: frame.opacity });
   const counts=new Map<string,number>();nodes.forEach(node=>counts.set(node.type,(counts.get(node.type)??0)+1));
   const cameraChanged = frame.camera.zoom !== 1 || id !== 'intro' && frame.camera.x !== 0 || frame.camera.h !== 0;
@@ -121,7 +124,7 @@ export function renderCinematicTransition(ctx: CanvasRenderingContext2D, view: C
   const timeline = options.timeline ?? documents.timeline, sequenceId = options.sequenceId ?? id, sequence = timeline.sequences.find(s => s.id === sequenceId)!;
   const composition = options.composition ?? documents.compositions[sequence.composition];
   const frame = options.frame ?? evaluateTimeline(timeline, sequenceId, time, cinematicTimelineContext(view, { timeline, compositions: { ...documents.compositions, [sequence.composition]: composition } }, options), { reduced: view.reduced });
-  const nativeView = { viewW: view.viewW, viewH: view.viewH, cam: 0, gy: 0, t: time * 60, flags: {}, sx: (x: number) => x, y: (h: number) => -h };
+  const nativeView = { ...frameView(time*60,view.lighting), viewW: view.viewW, viewH: view.viewH, cam: 0, gy: 0, t: time * 60, flags: {}, sx: (x: number) => x, y: (h: number) => -h };
   const appearance = compositionAppearance(frame.composition, { visibility: frame.visibility, opacity: frame.opacity });
   for (const resolved of resolveComposition(options.registry ?? cinematicRegistry, frame.composition, { view: nativeView, state: frame.state, reduced: view.reduced })) {
     const look = appearance.get(resolved.instance.id)!;

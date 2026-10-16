@@ -1,3 +1,5 @@
+import type{Light}from'../../../world/light';
+import type{OpeningActors}from'./poses';
 /**
  * The opening's picture (ROADMAP "The opening", storyboard frames 1–5): one shot from the title to
  * the tunnel, no cut. The title is the bar at the edge of the sea: a dawn over a glassy sea (the
@@ -81,21 +83,21 @@ const CLOUDS = (() => { const r = rng(5); return Array.from({ length: 9 }, () =>
 const STARS = (() => { const r = rng(11); return Array.from({ length: 60 }, () => [r(), r() * 0.45, 0.25 + r() * 0.5, r() * 6]); })();
 const DROPS = (() => { const r = rng(23); return Array.from({ length: 240 }, () => [r(), r(), 0.5 + r() * 0.5]); })();
 
-export interface GlideView { W: number; H: number; reduced: boolean }
+export interface GlideView { W: number; H: number; reduced:boolean;lighting:Light }
 
 /**
  * Draw the shot. `t`: seconds since the title came up (the sun rises until RISE, the water moves);
  * `tau`: seconds into the glide, or null on the title (the camera idles). A pure function of the
  * two: any (t, tau) draws the same frame (sudo's time control seeks on it).
  */
-export interface OpeningCamera { x?: number; h?: number; dark?: number; pieces?: PieceInputs }
+export interface OpeningCamera { x?: number; h?: number; dark?: number; pieces?:PieceInputs;actors?:OpeningActors }
 export interface OpeningPiece { id: string; space: 'base' | 'near'; draw(): void }
 
 /** Build exact native drawing jobs without painting or advancing gameplay. */
 export function openingFrame(x: CanvasRenderingContext2D, v: GlideView, t: number, tau: number | null, camera: OpeningCamera = {}) {
   const k = Math.abs(x.getTransform().a) || 1, raw = Math.min(v.H / 195, v.W / 420);
   const scale = Math.max(1, Math.round(raw * k)) / k;
-  return { ...frame(x, v.W / scale, v.H / scale, v.reduced, t, tau, camera), scale };
+  return { ...frame(x, v.W / scale, v.H / scale, v.reduced, t, tau, camera,v.lighting), scale };
 }
 
 /** Keep one native context across consecutive near-coast pieces. */
@@ -108,12 +110,12 @@ export function paintOpeningPieces(x: CanvasRenderingContext2D, parts: OpeningPi
   if (near) x.restore();
 }
 
-export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, tau: number | null) {
-  const f = openingFrame(x, v, t, tau);
+export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, tau:number|null,actors:OpeningActors) {
+  const f=openingFrame(x,v,t,tau,{actors});
   x.save(); x.scale(f.scale, f.scale); paintOpeningPieces(x, f.parts, f.drop); x.restore();
 }
 
-function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean, t: number, tau: number | null, options: OpeningCamera = {}) {
+function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean, t: number, tau: number | null, options: OpeningCamera,lighting:Light) {
   const parts: OpeningPiece[] = [];
   let space: 'base' | 'near' = 'base';
   const paint = (id: string, draw: () => void) => parts.push({ id, space, draw });
@@ -127,7 +129,7 @@ function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean
   const warm = warmth(t), up = sunUp(t);
   const sx = (X: number, p: number) => W / 2 + p * (g - X);
   // the drop after the train: first to LINE 0's bore, then on down to the canal (finale.ts's section, in view units under the street's edge)
-  const cv0: CoastView = { W, H, GY, hz, g, f, t, gt, still, warm, city, rain, sx: (X) => sx(X, 1), sunX: 0 };
+  const cv0: CoastView = {lighting,actors:options.actors??{}, W, H, GY, hz, g, f, t, gt, still, warm, city, rain, sx: (X) => sx(X, 1), sunX: 0 };
   const L = lines(cv0), top0 = L.ROAD1 + Math.round(5 * L.k);
   // the bore's middle 112 view units under the street's edge, the canal's waterline 310
   const drop1 = Math.max(0, top0 + 112 - H * 0.42), drop2 = Math.max(drop1, top0 + 310 - H * 0.62);

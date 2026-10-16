@@ -11,11 +11,14 @@ import { drawCityMap as referenceMap } from '@reference/citymap';
 import { art, drawComposition } from '@candidate/art';
 import { stool } from '@reference/scenes/build';
 import { drawFlight as referenceFlight } from '@reference/city';
-import { drawFlight as candidateFlight } from '@candidate/art/sequences/taxi-flight';
-import { drawGlide as candidateNativeGlide } from '@candidate/art/sequences/opening/glide';
+import { drawFlight as candidateFlight } from '@candidate/story/cutscenes/taxi';
+import { paintOpeningPieces } from '@candidate/art/sequences/opening/glide';
+import { nativeOpeningFrame } from '@candidate/story/title/render';
+import { light as selectedLight } from '@candidate/world/light';
 import { drawGlide as referenceNativeGlide } from '@reference/title/glide';
 import { createNativePreview } from '@candidate/authoring/native-preview';
 import { nativeSceneAdapters } from '@candidate/authoring/scene-adapters';
+import { hereClimate } from '@candidate/world/weather';
 import { renderDowntownPeople } from '@candidate/scenes/downtown/composition';
 import libraryDocument from '../../src/ssg/game/scenes/library/composition.json';
 import capsuleDocument from '../../src/ssg/game/scenes/capsule/composition.json';
@@ -88,8 +91,14 @@ function size(w, h) {
   g.viewW = w; g.viewH = h; g.gy = h - 54;
   host.style.width = `${w * 2}px`; host.style.height = `${h * 2}px`;
 }
+let capturedPixels;
+function snapshot() {
+  if (!capturedPixels) throw new Error('Render a fixture case before requesting its captured pixels');
+  return capturedPixels;
+}
 async function hash() {
   const pixels = g.x.getImageData(0, 0, g.canvas.width, g.canvas.height).data;
+  capturedPixels = { width:g.canvas.width, height:g.canvas.height, rgba:pixels };
   const digest = await crypto.subtle.digest('SHA-256', pixels);
   return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
 }
@@ -127,10 +136,15 @@ async function render(c) {
 window.fixture = {
   cases, scenes: Object.keys(SCENES), sequences: Object.keys(CUTSCENES), GLIDE, RISE,
   environment: () => ({ userAgent: navigator.userAgent, dpr: devicePixelRatio, fonts: document.fonts.status }),
+  diagnostics: () => ({baseClock:structuredClone(baseSave.clock),activeClock:structuredClone(g.save.clock),
+    city:{day:city.day,min:city.min,seed:city.seed,pinned:city.pinned},
+    canvas:{width:g.canvas.width,height:g.canvas.height,scale:g.k,viewW:g.viewW,viewH:g.viewH,cam:g.cam,gy:g.gy,
+      globalAlpha:g.x.globalAlpha,globalCompositeOperation:g.x.globalCompositeOperation,filter:g.x.filter},
+    captured:capturedPixels?{width:capturedPixels.width,height:capturedPixels.height}:null,
+    story:g.story,here:g.here,reduced:g.reduced,weatherOverride:weatherOverride?structuredClone(weatherOverride):null}),
   sequenceCases: [ { id: 'title', seconds: RISE }, { id: 'glide', seconds: GLIDE }, ...Object.values(CUTSCENES).map(s => ({ id: s.id, seconds: s.duration })) ],
-  render, png: () => g.canvas.toDataURL('image/png'),
-  async composer(c) {
-    if (c.weather) throw new Error('Composer differential uses native forecast; explicit weather is tested separately');
+  render, snapshot, png: () => g.canvas.toDataURL('image/png'),
+  async composer(c, capture = false) {
     await render(c);
     const actors = g.drawCharacters, prompts = g.drawPrompt, bubbles = g.drawBubble;
     g.drawCharacters = () => { if (c.scene === 'downtown') renderDowntownPeople(g.x, g.view()); };
@@ -139,10 +153,12 @@ window.fixture = {
       // Align both paths on the same readback backend before comparing native world frames.
       for (let i = 0; i < 4; i++) g.x.getImageData(0, 0, g.canvas.width, g.canvas.height);
       const presentation = SCENES[c.scene].presentationState?.capture();
-      g.drawWorld(); const game = await hash();
-      const bounds = nativePreview.render(g.canvas, { composition: previewDocuments[c.scene], time: c.phase / 60, reduced: !!c.reduced, overlays: false,
+      g.drawWorld(); const game = await hash(), beforeCapture = capture ? snapshot() : undefined;
+      const bounds = nativePreview.render(g.canvas, { composition: previewDocuments[c.scene], time: c.phase / 60, reduced: !!c.reduced, overlays: false, weather: weatherOverride ?? undefined, climate: hereClimate(),
         environment: { renderScale: 2, cameraX: c.cam, day: g.save.clock.day, minute: c.min ?? 580, seed: g.save.clock.seed, flags: JSON.stringify(g.save.flags), state: JSON.stringify(c.state ?? {}), ...(presentation ? { presentation: JSON.stringify(presentation) } : {}), hack: !!c.hack } });
-      return { id: c.id, game, composer: await hash(), instances: bounds.bounds.length };
+      const composer = await hash();
+      return { id: c.id, game, composer, instances: bounds.bounds.length,
+        ...(capture ? { beforeCapture, afterCapture:snapshot() } : {}) };
     } finally { g.drawCharacters = actors; g.drawPrompt = prompts; g.drawBubble = bubbles; }
   },
   async harborCraneCall(elapsed = 0) {
@@ -152,7 +168,7 @@ window.fixture = {
       cam: 520, phase: 137 + elapsed, min: 1200 });
     return { ...result, dialogue };
   },
-  async flight(frame, start = 0, w = 640, h = 360) {
+  async flight(frame, start = 0, w = 640, h = 360, capture = false) {
     const a = document.createElement('canvas'), b = document.createElement('canvas');
     a.width=b.width=w*2; a.height=b.height=h*2;
     const ax=a.getContext('2d'), bx=b.getContext('2d');
@@ -163,7 +179,8 @@ window.fixture = {
     const hashes = await Promise.all(pixels.map(async bytes => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('')));
     let differentPixels=0;for(let i=0;i<pixels[0].length;i+=4)if(pixels[0][i]!==pixels[1][i]||pixels[0][i+1]!==pixels[1][i+1]||pixels[0][i+2]!==pixels[1][i+2]||pixels[0][i+3]!==pixels[1][i+3])differentPixels++;
     return { id:`flight-${w}-${start}-${frame}`, original:hashes[0], candidate:hashes[1], differentPixels,
-      ...(frame%60===0||frame===200?{before:a.toDataURL(),after:b.toDataURL()}:{} ) };
+      ...(frame%60===0||frame===200?{before:a.toDataURL(),after:b.toDataURL()}:{} ),
+      ...(capture ? {beforeCapture:{width:w*2,height:h*2,rgba:pixels[0]},afterCapture:{width:w*2,height:h*2,rgba:pixels[1]}} : {}) };
   },
   compareMap() {
     const a = document.createElement('canvas'), b = document.createElement('canvas');a.width=b.width=1280;a.height=b.height=720;
@@ -212,7 +229,11 @@ window.fixture = {
     g.x.fillStyle = '#000'; g.x.fillRect(0, 0, 640, 360);
     const tau = id === 'glide' ? frame / 60 : null;
     const t = tau === null ? frame / 60 : RISE + tau;
-    (original ? referenceNativeGlide : candidateNativeGlide)(g.x, { W: 640, H: 360, reduced }, t, tau);
+    if (original) referenceNativeGlide(g.x, { W: 640, H: 360, reduced }, t, tau);
+    else {
+      const native = nativeOpeningFrame(g.x, { W: 640, H: 360, reduced, lighting: selectedLight() }, t, tau);
+      g.x.save(); g.x.scale(native.scale, native.scale); paintOpeningPieces(g.x, native.parts, native.drop); g.x.restore();
+    }
     return { id: `${id}-${frame}-${reduced}`, hash: await hash() };
   },
   async sequence(id, frame, reduced = false) {

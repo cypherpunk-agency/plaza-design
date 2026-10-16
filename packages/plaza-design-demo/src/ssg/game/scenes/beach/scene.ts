@@ -1,5 +1,6 @@
 import { beachComposition,beachGeometry,beachLayout,beachPlacement,beachWidth,bindBeachActors,drawBeachComposition } from './composition';
-import type { DrawView,SceneModel } from '../../engine/index';
+import type { SceneModel } from '../../engine/index';
+import type { View as DrawView } from '../../art/core/view';
 /**
  * The beach on the canvas: a real beach looking east over the sea (the sun rises out of it;
  * the sky and the light are the city clock's: sets/sky.ts, sets/lighting.ts), along the shore from the harbor. Sand

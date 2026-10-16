@@ -53,9 +53,26 @@ security puzzles, robot abilities or the full hacking UI into this slice.
 
 The [unified scene system plan](./SCENE-SYSTEM-PLAN.md) defines a separate engineering track:
 one artwork library, no scene-specific drawing in game.ts, serializable compositions and a
-local visual composer using the game renderer. It is planned, not implemented. Its S0–S7
-milestones and G1–G8 completion gates preserve current appearance; later harbor/tutorial prop
-redesign is separate. This track does not renumber or complete any story milestone below.
+local visual composer using the game renderer. S0–S7 and G1–G8 are complete in the isolated
+development checkout; main retains its earlier working checkpoint. The completion gates preserve
+current appearance; see [execution status](./SCENE-SYSTEM-STATUS.md) for evidence and open work.
+Later harbor/tutorial prop redesign is separate. This track does not renumber or complete any
+story milestone.
+
+After composer completion, the [follow-on engineering roadmap](./SCENE-SYSTEM-PLAN.md#follow-on-roadmap-asset-workbenches-and-scene-behavior)
+adds separately scoped stretch goals:
+
+| Milestone | Scope | Completion gate |
+| --- | --- | --- |
+| S8 | Shared asset browser and complex-composition inspector | F1: complete frozen catalog coverage, assembly inspection and usage navigation |
+| S9 | Humans, animals and robots: animation/action workbench | F2: supported state matrix, runtime parity and isolated deterministic playback |
+| S10 | Ground, flying and boat vehicle workbench | F3: supported vehicle/route/state matrix and runtime parity |
+| S11 | Signs, neon, screens and architectural assemblies | F4: catalog coverage and runtime-equivalent environment/state previews |
+| S12 | Read-only scripted event, trigger and connection inspector | F5: truthful coverage, real runtime references and no inspection side effects |
+| S13 | Bounded declarative behavior editing and sandbox preview | F6: validated rule round-trip, safe runtime semantics and protected source saving |
+
+These are planned, not implemented or added to the active goal. Viewing comes before editing;
+S13 requires an explicit supported-rule scope. Existing pixel-identity requirements continue.
 
 | Foundation | First needed | Scope |
 | --- | --- | --- |

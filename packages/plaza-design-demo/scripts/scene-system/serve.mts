@@ -8,6 +8,10 @@ const demo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const root = path.resolve(demo, '../..');
 const local = path.join(root, '.scene-system');
 const output = path.join(local, 'fixture');
+const portIndex = process.argv.indexOf('--port');
+const fixturePort = portIndex < 0 ? 4190 : Number(process.argv[portIndex + 1]);
+if (!Number.isInteger(fixturePort) || fixturePort < 1024 || fixturePort > 65535) throw new Error('Expected a valid loopback fixture port');
+const fixtureOrigin = `http://127.0.0.1:${fixturePort}`;
 fs.mkdirSync(output, { recursive: true });
 const seed = `let fixtureSeed=12345;window.__resetSeed=()=>fixtureSeed=12345;Math.random=()=>((fixtureSeed=Math.imul(fixtureSeed,1664525)+1013904223>>>0)/4294967296);Date.now=()=>1700000000000;window.requestAnimationFrame=()=>0;window.cancelAnimationFrame=()=>{};Object.defineProperty(performance,'now',{value:()=>1000});`;
 for (const mode of ['baseline', 'candidate']) {
@@ -25,10 +29,18 @@ for (const mode of ['baseline', 'candidate']) {
 let html = fs.readFileSync(path.join(demo, 'dist-homepage/index.html'), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
 html = html.replace('<html', '<html class="game-mode"');
 for (const mode of ['baseline', 'candidate']) fs.writeFileSync(path.join(output, `${mode}.html`), html.replace('</body>', `<script type="module" src="/${mode}.js"></script></body>`));
+fs.copyFileSync(path.join(demo,'scripts/scene-system/capture-artifacts.js'),path.join(output,'capture-artifacts.js'));
 if (!process.argv.includes('--build-only')) http.createServer(async (req, res) => {
-  const url = new URL(req.url!, 'http://127.0.0.1:4190');
+  const url = new URL(req.url!, fixtureOrigin);
+  if (req.method==='GET' && url.pathname.startsWith('/evidence/')) {
+    const name=url.pathname.slice('/evidence/'.length);
+    if(!/^[a-zA-Z0-9_.-]+$/.test(name)){res.writeHead(400).end();return;}
+    const file=path.join(local,'evidence',name);
+    if(!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404).end();return;}
+    res.setHeader('Content-Type',name.endsWith('.png')?'image/png':'application/json');res.end(fs.readFileSync(file));return;
+  }
   if (req.method === 'POST' && url.pathname === '/evidence') {
-    if (req.headers.origin !== 'http://127.0.0.1:4190') { res.writeHead(403).end('Origin rejected'); return; }
+    if (req.headers.origin !== fixtureOrigin) { res.writeHead(403).end('Origin rejected'); return; }
     const parts = []; let length = 0;
     for await (const chunk of req) { length += chunk.length; if (length > 40_000_000) { res.writeHead(413).end(); return; } parts.push(chunk); }
     const { name, data } = JSON.parse(Buffer.concat(parts).toString());
@@ -45,4 +57,4 @@ if (!process.argv.includes('--build-only')) http.createServer(async (req, res) =
   if (!file.startsWith(base + path.sep) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404).end(); return; }
   res.setHeader('Content-Type', file.endsWith('.js') ? 'text/javascript' : file.endsWith('.html') ? 'text/html' : 'application/octet-stream');
   res.end(fs.readFileSync(file));
-}).listen(4190, '127.0.0.1', () => console.log('Pixel fixture server http://127.0.0.1:4190/baseline.html'));
+}).listen(fixturePort, '127.0.0.1', () => console.log(`Pixel fixture server ${fixtureOrigin}/baseline.html`));

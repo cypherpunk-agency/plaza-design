@@ -1,15 +1,15 @@
 /** Local editor preview. Uses the shipping frame renderer with an isolated, non-persistent model. */
 import { art, compositionAppearance, resolveComposition, type Composition, type Environment, type Resolved } from '../art';
 import type { View } from '../art/core/view';
+import { frameView } from '../art/core/view';
 import { SceneModel } from '../engine/model';
 import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
 import { renderSceneFrame, type SceneFrame } from '../runtime/render-scene';
 import { city } from '../world/clock';
-import { lightAt, setLight } from '../world/light';
-import { prepareLights, prepareShade } from '../art/atmosphere/lighting';
+import { light, lightAt, setLight } from '../world/light';
 import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
-import { isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
+import { CLIMATE_IDS, isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
 import type { PreviewRequest, PreviewResult } from './app';
 import type { PlayerServices, PlayerState } from '../runtime/player';
 import { BASE_NODES } from '../runtime/save';
@@ -23,6 +23,14 @@ export interface NativeSceneAdapter {
 }
 export type NativeOptions = Pick<Environment, 'reduced'> & Partial<Pick<Environment, 'visibility' | 'opacity' | 'clips' | 'sequenceTime'>>;
 const number = (value: unknown, fallback: number) => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+/** Reject incomplete snapshots before any scene/controller work begins. */
+export function validatePreviewWeather(value: unknown): asserts value is Weather {
+  const levels = ['mix', 'cloud', 'rain', 'storm', 'fog', 'smog', 'heat', 'wet', 'wind'];
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid preview weather snapshot');
+  const record = value as Record<string, unknown>;
+  if (Object.keys(record).length !== levels.length + 2 || typeof record.kind !== 'string' || !isWeather(record.kind) || typeof record.from !== 'string' || !isWeather(record.from) ||
+      levels.some(key => !Object.prototype.hasOwnProperty.call(record, key) || typeof record[key] !== 'number' || !Number.isFinite(record[key]) || (record[key] as number) < 0 || (record[key] as number) > 1)) throw new Error('Invalid preview weather snapshot');
+}
 function object(input: string | number | boolean | undefined, name: string): Record<string, unknown> {
   if (input === undefined || input === '') return {};
   if (typeof input !== 'string') throw new Error(`${name}: expected a JSON object`);
@@ -77,10 +85,9 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const cam = request.frame?.camera.x ?? number(settings.cameraX, 0), cameraH = request.frame?.camera.h ?? number(settings.cameraH, 0);
       const flags = object(settings.flags, 'Flags');
       for (const v of Object.values(flags)) if (typeof v !== 'boolean') throw new Error('Flags must contain booleans');
-      const view: View = { viewW: width, viewH: height, t: request.time * 60, cam, gy: height - 54,
+      const view: View = { ...frameView(request.time * 60), viewW: width, viewH: height, cam, gy: height - 54,
         sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom), y: h => height - 54 - (h - cameraH) * zoom,
         flags: flags as Record<string, boolean> };
-      city.bind({ day: number(settings.day, 1), min: number(settings.minute, 580), seed: number(settings.seed, 3) });
       const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
       const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
@@ -95,15 +102,15 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       }
       const vision = settings.hack === true, engine: EngineDraw = { m: model, hover: typeof settings.hover === 'string' ? settings.hover || null : null, layer: 'all' };
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
-      const weather = () => weatherNow(sceneClimate(def.id));
+      const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
       renderSceneFrame({ context, scale: renderScale, view, scene: def, sceneId: def.id,
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
-        reduced: request.reduced, clock: request.time * 60, weather,
+        reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
         preparePresentation: () => def.preparePresentation?.(view, { ...engine, layer: vision && def.layers ? 'devices' : 'all' }),
         lighting(W: Weather | null) {
           const ambient = def.ambient ?? {}, outdoor = def.outdoor ?? !!(ambient.weather || ambient.sky);
-          const light = lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor);
-          setLight(light); prepareLights(def.lights); prepareShade(outdoor ? def.shade : undefined, def.width, light); return light;
+          const light = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor);
+          setLight(light); return light;
         }, skyTraffic: (ctx, view) => drawSkyShips(ctx, view, ships), ...adapter.frame?.(document, state, options),
       });
       const preparedEnvironment = def.visualEnvironment?.(view, engine) ?? adapter.environment?.(document, view, engine);
@@ -118,6 +125,10 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
   return { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult {
     const kind = request.environment.weather;
     if (kind !== undefined && kind !== 'forecast' && (typeof kind !== 'string' || !isWeather(kind))) throw new Error('Unknown preview weather');
-    return withSceneWeather(request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, request));
+    if (request.weather !== undefined) validatePreviewWeather(request.weather);
+    if (request.climate !== undefined && request.climate !== null && !CLIMATE_IDS.includes(request.climate)) throw new Error('Invalid preview reporting climate');
+    const beforeLight = light(), snapshot = request.weather ? Object.freeze({ ...request.weather }) : undefined;
+    try { return city.withSnapshot({ day: number(request.environment.day, 1), min: number(request.environment.minute, 580), seed: number(request.environment.seed, 3) }, () => withSceneWeather(request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, { ...request, weather: snapshot }), request.climate)); }
+    finally { setLight(beforeLight); }
   } };
 }

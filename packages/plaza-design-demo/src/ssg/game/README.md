@@ -70,20 +70,22 @@ separately; a complete player playthrough and comprehension assessment remain pe
 | File or directory | Current responsibility |
 | --- | --- |
 | `index.ts` | Homepage entry, URL shortcuts, touch controls |
-| `runtime/` | Main controller, audio, save/slots and actor simulation |
+| `runtime/` | Main controller, audio, save/slots, actor simulation and shared native frame orchestration |
 | `engine/` | Scene model/host, hacking UI, cables, guards, clocks, watchdogs and pausable scene time |
 | `data/` | Shared engine/logic/network data, types, scene-data registry and build-time validation |
 | `scenes/index.ts`, `scenes/kit.ts` | Scene registry and shared scene interface |
-| `scenes/<id>/` | Location definition, local rules and device data; remaining local drawing is being migrated |
-| `art/` | Shared code-rendered artwork, construction helpers, character appearance and composition contracts |
+| `scenes/<id>/` | Location definitions/rules, device data, composition JSON and adapters binding gameplay state to artwork |
+| `art/` | Code-rendered pieces and assemblies, character appearance, environmental effects, sequences and composition/timeline contracts |
+| `authoring/` | Local scene/animation editor, native preview adapters and validated source-save service |
 | `world/` | Geography, city time/weather/light and shared transport simulation |
 | `story/` | Contacts, opening progression, title/glide and cutscene controllers |
 | `ui/` | Menus, terminal, maps, developer controls, key bar and task guidance |
 | `docs/` | Design concepts, technical references and historical scene feedback |
 
 See [module organization](./docs/reference/MODULES.md) for logic ownership and dependency rules.
-The migration is in progress; the code map describes the current grouping, not completion of
-the artwork/composer plan. `SCENE-SYSTEM-STATUS.md` records remaining gates.
+All 19 registered scenes have composition adapters; opening, intro, Act II and taxi pictures
+also use composition documents. This coverage does not establish completion of the artwork/composer
+plan. `SCENE-SYSTEM-STATUS.md` records verified evidence and remaining gates.
 
 The enclosing `../render.tsx` supplies the static page and shared game styles.
 `../../../scripts/generate-demos.tsx` validates data and bundles the homepage; the generator
@@ -126,9 +128,13 @@ separate storage keys. This change does not reset saves or introduce a new save 
 ## Validation scope
 
 The local [scene and animation composer](./authoring/README.md) starts with
-`pnpm --filter plaza-design-demo compose-scenes`. Its preview uses the native game renderer;
-validated Save writes allowlisted composition/timeline source files. See the execution ledger
-for migration coverage and outstanding acceptance gates.
+`pnpm --filter plaza-design-demo compose-scenes` from the repository root. Open
+`http://127.0.0.1:4192`; its separate loopback save service uses port 4193. Stop both with Ctrl+C.
+Its preview uses the native game renderer and isolated models. Validated **Save to source** writes
+allowlisted composition/timeline JSON; rebuild the game to use saved edits in the homepage.
+The world/map panel inspects registry-derived places and links; geography and access rules remain
+code-owned. Restart the composer after renderer/schema changes. See its README and the execution
+ledger for controls, source-save constraints and outstanding acceptance gates.
 
 `pnpm build:homepage` checks game data and produces the playable page.
 `pnpm build:design-demo` runs TypeScript checking and builds the React showcase.

@@ -1,3 +1,5 @@
+import{paintOpeningActor,type OpeningActors}from'./poses';
+import type{Light}from'../../../world/light';
 /**
  * The glide's near coast (glide.ts), east of the city: ONE ground line from the title's beach to
  * the Galleria's plaza (town.ts takes over at Downtown's street). The strip under it changes material
@@ -17,7 +19,7 @@
  * frame clock `f` and the glide's clock `gt` (sudo can seek either).
  */
 
-import { drawCharacter, type Character } from "../../../runtime/characters";
+import type { Character } from "../../../runtime/characters";
 import { sign, text } from "../../core/primitives";
 import { drawBonfire, drawDjBooth, drawLounger } from "../../props/beach-party";
 import { drawStringLights, saltBack, saltCounter, saltLights, saltLime, saltShell, saltUnder } from "../../assemblies/beach-bar";
@@ -30,7 +32,7 @@ import { drawCraft } from "../../vehicles/air-traffic";
 import { frameView, placed } from "../../core/view";
 import { PLACES } from "./path";
 import type { Properties } from "../../core/composition";
-import { pieceNumber as pn, pieceString as ps, pieceActor, visiblePoint, viewportSpan, strictlyVisiblePoint, type PieceInputs, type PieceCull } from "./piece-inputs";
+import { pieceNumber as pn, pieceString as ps, visiblePoint, viewportSpan, strictlyVisiblePoint, type PieceInputs, type PieceCull } from "./piece-inputs";
 
 /** The scenes' sets at the near coast: a third of their size (the player, 48, is 16 view units). */
 export const S = 1 / 3;
@@ -38,6 +40,7 @@ export const S = 1 / 3;
 export const CRANE = S * 1.7;
 
 export interface CoastView {
+  lighting:Light;actors:OpeningActors;pose?:import('../../../runtime/characters').PreparedCharacter;
   W: number; H: number; GY: number; hz: number;
   /** The camera (west), the frame clock, title seconds, glide seconds. */
   g: number; f: number; t: number; gt: number;
@@ -216,7 +219,7 @@ export function drawCoastMid(x: CanvasRenderingContext2D, c: CoastView) {
   for (const w of PEOPLE) {
     const s = c.sx(w.X);
     if (!visiblePoint(c,s,60,60)) continue;
-    placed(x, R(s), lineY(L, c, w.line), S, () => drawCharacter(x, frameView(c.f), w.c));
+    placed(x, R(s), lineY(L, c, w.line), S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.actors['coast.person-'+PEOPLE.indexOf(w)],'coast.person-'+PEOPLE.indexOf(w)));
   }
   escalator(x, c, L);
 }
@@ -548,42 +551,57 @@ function buffer(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?:strin
 }
 
 /** The logistics hub at the quay's east end: a long shed, its roller doors, the drone port on its roof where the delivery stream starts (air.ts). */
-function hub(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
+function hub(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?:string) {
   const X0 = PLACES.hub - 60, X1 = PLACES.hub + 70;
   if (!seen(c, X0, X1, 40)) return;
   const a = R(c.sx(X1)), b = R(c.sx(X0)), top = L.BACK - 46;
-  x.fillStyle = '#241c22'; x.fillRect(a, top, b - a, L.BACK - top);
+  const part=(id:string,draw:()=>void)=>{if(!only||only===id)draw();};
+  part('shed',()=>{
+  x.fillStyle = ps(c.piece,'paint','#241c22'); x.fillRect(a, top, b - a, L.BACK - top);
   x.fillStyle = 'rgba(' + ORANGE + ',.45)'; x.fillRect(a, top, b - a, 1);
-  for (let i = 0; i < 4; i++) { const dx = a + 8 + i * ((b - a - 16) / 4); x.fillStyle = i === 1 ? 'rgba(255,214,150,.55)' : '#18121a'; x.fillRect(R(dx), L.BACK - 20, 22, 20); x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = L.BACK - 20; h < L.BACK; h += 3) x.fillRect(R(dx), h, 22, 1); }
+  });
+  for (let i = 0; i < 4; i++) { if(only&&only!=='door-'+i)continue;const dx = a + 8 + i * ((b - a - 16) / 4); x.fillStyle = ps(c.piece,'paint',i===1?'rgba(255,214,150,.55)':'#18121a'); x.fillRect(R(dx), L.BACK - 20, 22, 20); x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = L.BACK - 20; h < L.BACK; h += 3) x.fillRect(R(dx), h, 22, 1); }
+  part('sign',()=>{
   x.fillStyle = '#0d0705'; x.fillRect(a + 10, top + 6, 60, 9); x.strokeStyle = 'rgba(' + ORANGE + ',.55)'; x.lineWidth = 1; x.strokeRect(a + 10.5, top + 6.5, 59, 8);
-  text(x, 'LOGISTICS HUB 3', a + 40, top + 10.5, 'rgba(' + PAPER + ',.85)', 3.6, '600');
+  text(x, ps(c.piece,'text','LOGISTICS HUB 3'), a + 40, top + 10.5, 'rgba(' + PAPER + ',.85)', 3.6, '600');
+  });
+  part('drone-rack',()=>{
   // the drone port: racks on the roof, pads with their lights
   x.fillStyle = '#1a141a'; x.fillRect(a + 6, top - 6, b - a - 12, 6);
-  for (let i = 0; i < 5; i++) { const px = a + 14 + i * ((b - a - 28) / 4), on = c.still || Math.floor((c.f + i * 13) / 20) % 2 === 0; x.fillStyle = on ? 'rgba(255,190,60,.9)' : 'rgba(255,190,60,.3)'; x.fillRect(R(px), top - 8, 4, 1); }
+  });
+  for (let i = 0; i < 5; i++) { if(only&&only!=='pad-'+i)continue;const px = a + 14 + i * ((b - a - 28) / 4), on = c.still || Math.floor((c.f + pn(c.piece,'phase',i*13)) / 20) % 2 === 0; x.fillStyle = on ? 'rgba(255,190,60,.9)' : 'rgba(255,190,60,.3)'; x.fillRect(R(px), top - 8, 4, 1); }
 }
 
 /** The ship at the quay, behind it: a feeder's hull true to scale, 12 m boxes two high on deck, the bridge house aft with its lit windows. */
-function ship(x: CanvasRenderingContext2D, c: CoastView) {
+function ship(x: CanvasRenderingContext2D, c: CoastView, only?:string) {
   const X0 = 1380, X1 = 2180;
   if (!seen(c, X0, X1)) return;
   const a = R(c.sx(X1)), b = R(c.sx(X0)), top = c.GY - 40;
-  x.fillStyle = '#1c1220'; x.fillRect(a, top, b - a, c.GY - top);
+  const part=(id:string,draw:()=>void)=>{if(!only||only===id)draw();};
+  const h=R(c.sx(X1-50));
+  part('hull',()=>{
+  x.fillStyle = ps(c.piece,'paint','#1c1220'); x.fillRect(a, top, b - a, c.GY - top);
   x.beginPath(); x.moveTo(b, top); x.lineTo(b + 22, top - 8); x.lineTo(b + 10, c.GY); x.lineTo(b, c.GY); x.fill();
   x.fillStyle = 'rgba(200,60,60,.5)'; x.fillRect(a, c.GY - 6, b - a + 10, 2);
   x.fillStyle = 'rgba(255,170,120,.35)'; x.fillRect(a, top, b - a + 20, 1);
+  });
   // boxes on deck: rows of 40 ft boxes, two high, the containers set at the coast's scale
   for (let X = X0 + 30, i = 0; X < X1 - 130; X += 112, i++) {
-    if (hash(i * 3 + 1) < 0.5) continue;
+    if(only&&only!=='stack-'+i)continue; if (hash(i * 3 + 1) < 0.5) continue;
     const s = R(c.sx(X)), n = 1;
-    placed(x, s - R(BOX40.w * S), top, S, () => stack(x, frameView(c.f), 0, Array.from({ length: n }, (_, j) => B40((i * 3 + j) % PAL.length, 300 + i * 7 + j))));
+    placed(x, s - R(BOX40.w * S), top, S, () => stack(x, frameView(c.f,c.lighting), 0, (c.piece?.boxes as unknown as Crate[]|undefined)??Array.from({length:n},(_,j)=>B40((i*3+j)%PAL.length,300+i*7+j))));
   }
-  // the bridge house aft (west), its windows, the funnel, a mast
-  const h = R(c.sx(X1 - 50));
-  x.fillStyle = '#241828'; x.fillRect(h - 26, top - 66, 46, 66); x.fillRect(h - 30, top - 72, 54, 7);
+  part('bridge-house',()=>{
+  x.fillStyle = ps(c.piece,'paint','#241828'); x.fillRect(h - 26, top - 66, 46, 66); x.fillRect(h - 30, top - 72, 54, 7);
   x.fillStyle = 'rgba(255,214,150,.6)'; for (let r = 0; r < 5; r++) for (let q = 0; q < 5; q++) if (hash(r * 5 + q) > 0.35) x.fillRect(h - 22 + q * 8, top - 60 + r * 11, 5, 4);
-  x.fillStyle = '#3a1a1a'; x.fillRect(h + 6, top - 92, 12, 20); x.fillStyle = 'rgba(200,60,60,.6)'; x.fillRect(h + 6, top - 86, 12, 3);
+  });
+  part('funnel',()=>{
+  x.fillStyle = ps(c.piece,'paint','#3a1a1a'); x.fillRect(h + 6, top - 92, 12, 20); x.fillStyle = 'rgba(200,60,60,.6)'; x.fillRect(h + 6, top - 86, 12, 3);
+  });
+  part('mast',()=>{
   x.fillStyle = '#241828'; x.fillRect(h - 10, top - 104, 1, 32);
   x.fillStyle = c.still || Math.floor(c.f / 30) % 2 ? 'rgba(' + RED + ',.9)' : 'rgba(' + RED + ',.3)'; x.fillRect(h - 11, top - 106, 3, 2);
+  });
 }
 
 /** The harbor: the stacks, the cranes (STS-2 at work), the light masts, the port office. */
@@ -595,7 +613,7 @@ function harbor(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?: stri
     if (only && only !== 'stack-' + index) continue;
     const s = c.sx(pn(c.piece,"worldX",st.X));
     if (!visiblePoint(c,s,120,20)) continue;
-    placed(x, R(s), L.BACK, S, () => stack(x, frameView(c.f), 0, (c.piece?.boxes as unknown as Crate[] | undefined) ?? st.boxes));
+    placed(x, R(s), L.BACK, S, () => stack(x, frameView(c.f,c.lighting), 0, (c.piece?.boxes as unknown as Crate[] | undefined) ?? st.boxes));
   }
   for (const cr of CRANES) {
     if (only && only !== 'crane-' + cr.id) continue;
@@ -640,7 +658,7 @@ export function sts2Load(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
   x.strokeStyle = 'rgba(' + PAPER + ',.5)'; x.lineWidth = 1; x.beginPath(); x.moveTo(tx - 5.5, y(B.low) + 10); x.lineTo(tx - 5.5, y(h + 4)); x.moveTo(tx + 5.5, y(B.low) + 10); x.lineTo(tx + 5.5, y(h + 4)); x.stroke();
   x.fillStyle = '#2a160a'; x.fillRect(tx - half - 2, y(h + 4), LIFT.w + 4, 4);
   x.fillStyle = 'rgba(255,210,58,.7)'; x.fillRect(tx - half - 2, y(h + 4), 6, 4); x.fillRect(tx + half - 4, y(h + 4), 6, 4);
-  if (carry) container(x, frameView(c.f), tx - half, h - CHc, LIFT);
+  if (carry) container(x, frameView(c.f,c.lighting), tx - half, h - CHc, LIFT);
   x.fillStyle = '#140b06'; x.fillRect(tx - half + 10, y(B.low - 8), 24, 26); x.fillStyle = 'rgba(255,200,130,.35)'; x.fillRect(tx - half + 13, y(B.low - 12), 18, 12);
 }
 
@@ -672,71 +690,89 @@ function truckGate(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
 }
 
 /** The bay bridge: a low deck, a plain railing, a few lamps; short pylons only at its ends, so the water and the Spire stay open. */
-function bridge(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
+function bridge(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?:string) {
   const [X0, X1] = PLACES.bridge;
   if (!seen(c, X0 - 20, X1 + 20, 80)) return;
   const a = R(c.sx(X1)), b = R(c.sx(X0));
-  x.fillStyle = '#3a2a3a'; x.fillRect(Math.max(viewportSpan(c)[0]-2, a), c.GY - 5, Math.min(viewportSpan(c)[1]+2, b) - Math.max(viewportSpan(c)[0]-2, a), 1);
+  const part=(id:string,draw:()=>void)=>{if(!only||only===id)draw();};
+  part('rail',()=>{
+  x.fillStyle = ps(c.piece,'paint','#3a2a3a'); x.fillRect(Math.max(viewportSpan(c)[0]-2, a), c.GY - 5, Math.min(viewportSpan(c)[1]+2, b) - Math.max(viewportSpan(c)[0]-2, a), 1);
   for (let X = X0; X < X1; X += 10) { const s = R(c.sx(X)); if (strictlyVisiblePoint(c,s,2)) x.fillRect(s, c.GY - 5, 1, 5); }
-  for (const X of [X0 + 14, X1 - 14]) {
+  });
+  for(const[index,X]of[X0+14,X1-14].entries()){if(only&&only!=='signal-'+index)continue;
     const s = R(c.sx(X)); if (!visiblePoint(c,s,20,20)) continue;
     const top = c.GY - 46;
-    x.fillStyle = '#1e1222'; x.fillRect(s - 3, top, 6, c.GY - top); x.fillRect(s - 5, top, 10, 3);
+    x.fillStyle = ps(c.piece,'paint','#1e1222'); x.fillRect(s - 3, top, 6, c.GY - top); x.fillRect(s - 5, top, 10, 3);
     x.fillStyle = 'rgba(' + ORANGE + ',.35)'; x.fillRect(s + 2, top, 1, c.GY - top);
     x.fillStyle = c.still || Math.floor(c.f / 20) % 2 ? 'rgba(' + RED + ',1)' : 'rgba(' + RED + ',.3)'; x.fillRect(s - 1, top - 3, 3, 3);
   }
   // lamps, far apart
   for (let X = X0 + 80; X < X1 - 40; X += 115) {
-    const s = R(c.sx(X)); if (!visiblePoint(c,s,30,30)) continue;
-    const top = L.BACK - 36; x.fillStyle = '#0e080c'; x.fillRect(s, top, 2, L.BACK - top); x.fillRect(s - 6, top, 8, 2);
+    if(only&&only!=='lamp-'+Math.round((X-X0-80)/115))continue;const s=R(c.sx(X)); if (!visiblePoint(c,s,30,30)) continue;
+    const top = L.BACK - 36; x.fillStyle = ps(c.piece,'paint','#0e080c'); x.fillRect(s, top, 2, L.BACK - top); x.fillRect(s - 6, top, 8, 2);
     x.fillStyle = 'rgba(255,220,160,.95)'; x.fillRect(s - 6, top + 2, 4, 1);
     const gg = x.createRadialGradient(s - 4, top + 3, 1, s - 4, top + 3, 22); gg.addColorStop(0, 'rgba(255,210,150,.18)'); gg.addColorStop(1, 'rgba(255,210,150,0)'); x.fillStyle = gg; x.fillRect(s - 26, top - 18, 44, 44);
   }
 }
 
 /** The Galleria: its plinth on the plaza (shop windows, the doors with their ID gate, an ad screen), the terrace with its taxi pad, the dome on top. */
-function galleria(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
+function galleria(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?:string) {
   const [X0, X1] = PLACES.galleria;
   if (!seen(c, X0 - 30, X1 + 10, 160)) return;
   const a = R(c.sx(X1)), b = R(c.sx(X0)), top = L.BACK - 58, w = b - a;
-  placed(x, R((a + b) / 2), top - 6, 1.25, () => drawGalleriaDome(x, { fill: mixHex('#1a0e1e', '#3a2440', c.warm), lit: 1.5, label: false }));
-  x.fillStyle = '#2a1830'; x.fillRect(a, top, w, L.BACK - top + 1);
+  const part=(id:string,draw:()=>void)=>{if(!only||only===id)draw();};
+  part('dome',()=>{
+  placed(x, R((a + b) / 2), top - 6, 1.25, () => drawGalleriaDome(x, { fill: c.piece?.paintMode==='fixed'?ps(c.piece,'paint','#3a2440'):mixHex('#1a0e1e','#3a2440',c.warm), lit: pn(c.piece,'lit',1.5), label: false }));
+  });
+  part('plinth',()=>{
+  x.fillStyle = ps(c.piece,'paint','#2a1830'); x.fillRect(a, top, w, L.BACK - top + 1);
   x.fillStyle = 'rgba(255,190,110,.55)'; x.fillRect(a, top, w, 1);
+  });
+  part('terrace-rail',()=>{
   x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(a, top - 6, w, 1); for (let i = a; i < b; i += 6) x.fillRect(i, top - 6, 1, 6);
-  // the public taxi pad on its pylon at the plaza's east end, a taxi landing, waiting, leaving
-  taxiPad(x, c, L);
+  });
+  part('taxi-pad',()=>taxiPad(x,c,L,'pad'));part('taxi-cab',()=>taxiPad(x,c,L,'cab'));
   for (let i = 0; i < 9; i++) {
-    if (i === 4) continue;
+    if(i===4||only&&only!=='window-'+i)continue;
     const wx = a + 6 + i * ((w - 12) / 9), wy = top + 18;
-    x.fillStyle = 'rgba(255,200,140,.55)'; x.fillRect(R(wx), wy, 18, 22);
+    x.fillStyle = ps(c.piece,'light','rgba(255,200,140,.55)'); x.fillRect(R(wx), wy, 18, 22);
     x.fillStyle = 'rgba(' + ORANGE + ',.5)'; x.fillRect(R(wx), wy - 2, 18, 1);
     x.fillStyle = 'rgba(40,16,40,.6)'; x.fillRect(R(wx) + 4 + (i % 3) * 3, wy + 8, 3, 14); x.fillRect(R(wx) + 4 + (i % 3) * 3, wy + 5, 3, 3);
     if (i % 2) { x.fillStyle = 'rgba(40,16,40,.5)'; x.fillRect(R(wx) + 11, wy + 10, 4, 12); }
   }
+  part('entrance',()=>{
   const dx = R(a + w / 2 - 12);
-  x.fillStyle = 'rgba(255,230,190,.65)'; x.fillRect(dx, top + 16, 24, L.BACK - top - 16);
+  x.fillStyle = ps(c.piece,'light','rgba(255,230,190,.65)'); x.fillRect(dx, top + 16, 24, L.BACK - top - 16);
   x.fillStyle = 'rgba(40,20,30,.6)'; x.fillRect(dx + 11, top + 16, 2, L.BACK - top - 16);
   x.fillStyle = '#1a1018'; x.fillRect(dx - 6, L.BACK - 18, 4, 18);
   x.fillStyle = c.still || Math.floor(c.f / 30) % 3 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(dx - 5, L.BACK - 16, 2, 2);
-  placed(x, R(a + w / 2), top + 8, S, () => sign(x, c.f, 'GALLERIA', 0, 0, '255,190,110', { size: 13, phase: 40 }));
+  });
+  part('sign',()=>{
+  placed(x, R(a + w / 2), top + 8, S, () => sign(x, c.f, ps(c.piece,'text','GALLERIA'), 0, 0, '255,190,110', { size: 13, phase: 40 }));
+  });
+  part('advert',()=>{
   const ads = ['VERIFIED CUSTOMERS ONLY', 'SCORE 600+ · FREE PARKING', 'IDENTITY CHECK AT ENTRANCE'], m = c.still ? 0 : Math.floor(c.f / 200) % ads.length;
   x.fillStyle = '#0c0610'; x.fillRect(a + 4, top + 4, 50, 10); x.strokeStyle = 'rgba(' + ORANGE + ',.45)'; x.lineWidth = 1; x.strokeRect(a + 4.5, top + 4.5, 49, 9);
-  text(x, ads[m], a + 29, top + 9.5, 'rgba(' + PAPER + ',.85)', 3.4, '600');
-  for (const X of [2800, 3110]) { const s = R(c.sx(X)); if (!visiblePoint(c,s,20,20)) continue; x.fillStyle = '#3a2c3c'; x.fillRect(s - 6, L.BACK - 6, 12, 6); x.fillStyle = '#1e2a1a'; x.beginPath(); x.arc(s, L.BACK - 12, 7, 0, 7); x.fill(); x.fillStyle = '#2a3a22'; x.fillRect(s, L.BACK - 6, 1, 4); }
+  text(x, (ps(c.piece,'text','')||ads[m]), a + 29, top + 9.5, 'rgba(' + PAPER + ',.85)', 3.4, '600');
+  });
+  for(const[index,X]of[2800,3110].entries()){if(only&&only!=='planter-'+index)continue; const s = R(c.sx(X)); if (!visiblePoint(c,s,20,20)) continue; x.fillStyle = '#3a2c3c'; x.fillRect(s - 6, L.BACK - 6, 12, 6); x.fillStyle = '#1e2a1a'; x.beginPath(); x.arc(s, L.BACK - 12, 7, 0, 7); x.fill(); x.fillStyle = '#2a3a22'; x.fillRect(s, L.BACK - 6, 1, 4); }
 }
 
 /** The public taxi pad by the Galleria: a deck on a pylon, edge lights, the plate; a sky taxi comes down, waits, lifts off east. */
-function taxiPad(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
+function taxiPad(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?:'pad'|'cab') {
   const s = c.sx(2806);
   if (!visiblePoint(c,s,120,140)) return;
   const top = L.BACK - 70, on = c.still || Math.floor(c.f / 30) % 2 === 0;
+  if(only!=='cab'){
   x.fillStyle = '#1a1018'; x.fillRect(R(s) - 3, top, 6, L.BACK - top); x.fillRect(R(s) - 22, top, 44, 4);
   x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(R(s) - 22, top, 44, 1);
   x.fillStyle = on ? 'rgba(255,190,60,.95)' : 'rgba(255,190,60,.35)'; for (let k = 0; k < 5; k++) x.fillRect(R(s) - 22 + k * 10, top - 1, 3, 1);
   x.fillStyle = '#0d0705'; x.fillRect(R(s) - 14, top + 8, 28, 8); x.strokeStyle = 'rgba(255,190,60,.6)'; x.lineWidth = 1; x.strokeRect(R(s) - 13.5, top + 8.5, 27, 7);
-  text(x, 'TAXI · PUBLIC', R(s), top + 12, 'rgba(255,190,60,.9)', 2.8, '600');
+  text(x,ps(c.piece,'text','TAXI · PUBLIC'), R(s), top + 12, 'rgba(255,190,60,.9)', 2.8, '600');
+  }
+  if(only==='pad')return;
   // the taxi's cycle: in from the west, down onto the pad, a wait, up and away east
-  const cyc = c.still ? 0.45 : (c.f % 1500) / 1500, ease = (v: number) => v * v * (3 - 2 * v);
+  const cyc = c.still ? 0.45 : ((c.f+pn(c.piece,'phase',0))%pn(c.piece,'period',1500))/pn(c.piece,'period',1500), ease = (v: number) => v * v * (3 - 2 * v);
   let dx = 0, dy = 0, face: 1 | -1 = 1;
   if (cyc < 0.3) { const k = ease(cyc / 0.3); dx = -160 * (1 - k); dy = -70 * (1 - k); face = 1; }
   else if (cyc < 0.62) { dx = 0; dy = 0; }
@@ -746,7 +782,7 @@ function taxiPad(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
 }
 
 /** The escalator from the plaza up to the Galleria's terrace, people riding it up with their shopping. */
-const RIDERS_UP: Character[] = [
+export const RIDERS_UP: Character[] = [
   { seed: 4181, look: { garb: 'coat', hair: 'long', extras: ['bag'] }, x: 0, act: 'stand', facing: 1 },
   { seed: 4182, look: { garb: 'jacket', hair: 'cap' }, x: 0, act: 'phone', facing: 1 },
   { seed: 4183, look: { body: 'old', garb: 'coat', hair: 'brim', extras: ['bag'] }, x: 0, act: 'stand', facing: 1 },
@@ -759,7 +795,7 @@ function escalator(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
   x.strokeStyle = 'rgba(255,190,110,.6)'; x.lineWidth = 1; x.beginPath(); x.moveTo(s0, y0 - 6); x.lineTo(s1, y1 - 6); x.stroke();
   for (let i = 0; i < 3; i++) {
     const k = ((c.still ? 0.3 : c.f * 0.0025) + i / 3) % 1, px = lerp(s0, s1, k), py = lerp(y0, y1, k) - 2;
-    placed(x, R(px), R(py), S, () => drawCharacter(x, frameView(c.f), RIDERS_UP[i]));
+    placed(x, R(px), R(py), S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.actors['escalator.'+i],'escalator.'+i));
   }
 }
 
@@ -786,32 +822,36 @@ export interface CoastPiece { id: string; draw(): void }
 /** Independently editable library-backed furniture, machines, vegetation and actors. */
 export const pierPartIds=['piles','deck','rail','stairs','kiosk','bench-0','bench-1','lamp-0','lamp-1','lamp-2','string-0','string-1','lantern'];
 export const bufferPartIds=['fence','sign-0','sign-1','sign-2','camera','floodlight','car','gate'];
+export const hubPartIds=['shed',...Array.from({length:4},(_,i)=>'door-'+i),'sign','drone-rack',...Array.from({length:5},(_,i)=>'pad-'+i)];
+export const shipPartIds=['hull',...Array.from({length:6},(_,i)=>i).filter(i=>hash(i*3+1)>=.5).map(i=>'stack-'+i),'bridge-house','funnel','mast'];
+export const bridgePartIds=['rail','signal-0','signal-1','lamp-0','lamp-1','lamp-2'];
+export const galleriaPartIds=['dome','plinth','terrace-rail','taxi-pad','taxi-cab',...[0,1,2,3,5,6,7,8].map(i=>'window-'+i),'entrance','sign','advert','planter-0','planter-1'];
 export const coastPieceIds = [
-  'ship', 'ground', 'street-ground', ...['piles','deck','rail','stairs','kiosk','bench-0','bench-1','lamp-0','lamp-1','lamp-2','string-0','string-1','lantern'].map(id=>'pier-'+id), ...PALMS.flatMap((p, i) => p[1] === 'back' ? ['palm-' + i] : []),
-  ...saltPartIds.map(id=>'salt-'+id), 'lifeguard', 'inlet', ...['fence','sign-0','sign-1','sign-2','camera','floodlight','car','gate'].map(id=>'buffer-'+id), 'hub', ...STACKS.map((_, i) => 'stack-' + i), ...CRANES.map(cr => 'crane-' + cr.id), ...[1370, 1640, 1960, 2230].map(X => 'mast-' + X), 'truck-gate', 'bridge', 'galleria',
+  ...shipPartIds.map(id=>'ship-'+id), 'ground', 'street-ground', ...['piles','deck','rail','stairs','kiosk','bench-0','bench-1','lamp-0','lamp-1','lamp-2','string-0','string-1','lantern'].map(id=>'pier-'+id), ...PALMS.flatMap((p, i) => p[1] === 'back' ? ['palm-' + i] : []),
+  ...saltPartIds.map(id=>'salt-'+id), 'lifeguard', 'inlet', ...['fence','sign-0','sign-1','sign-2','camera','floodlight','car','gate'].map(id=>'buffer-'+id), ...hubPartIds.map(id=>'hub-'+id), ...STACKS.map((_, i) => 'stack-' + i), ...CRANES.map(cr => 'crane-' + cr.id), ...[1370, 1640, 1960, 2230].map(X => 'mast-' + X), 'truck-gate', ...bridgePartIds.map(id=>'bridge-'+id),...galleriaPartIds.map(id=>'galleria-'+id),
 ];
 export const coastMiddlePieceIds = ['dj', 'bonfire', ...LOUNGERS.map((_, i) => 'lounger-' + i), ...['straddle','reach-stacker','forklift','truck','tractor'].map(id => 'machine-' + id), ...PEOPLE.map((_, i) => 'person-' + i), 'escalator'];
 export const coastFrontPieceIds = PALMS.flatMap((p, i) => p[1] === 'front' ? ['palm-' + i] : []);
 export function coastPieces(x: CanvasRenderingContext2D, c: CoastView, afterGround?: (L: Lines) => void, inputs: PieceInputs = {}): CoastPiece[] {
   const L = lines(c); const cv=(id:string):CoastView=>inputs["coast."+id]?{...c,piece:inputs["coast."+id].props,cull:inputs["coast."+id].cull}:c;
   return [
-    { id: 'ship', draw: () => ship(x,cv('ship')) }, { id: 'ground', draw: () => ground(x,cv('ground'),L) }, { id: 'street-ground', draw: () => afterGround?.(L) }, ...pierPartIds.map(id=>({id:'pier-'+id,draw:()=>pier(x,cv('pier-'+id),L,id)})),
+    ...shipPartIds.map(id=>({id:'ship-'+id,draw:()=>ship(x,cv('ship-'+id),id)})), { id: 'ground', draw: () => ground(x,cv('ground'),L) }, { id: 'street-ground', draw: () => afterGround?.(L) }, ...pierPartIds.map(id=>({id:'pier-'+id,draw:()=>pier(x,cv('pier-'+id),L,id)})),
     ...PALMS.flatMap((p,i) => p[1] === 'back' ? [{ id:'palm-'+i, draw:()=>palms(x,cv('palm-'+i),L,'back',i) }] : []),
     ...saltPartIds.map(id=>({id:'salt-'+id,draw:()=>salt(x,cv('salt-'+id),L,id)})),
     ...(['lifeguard','inlet']as const).map(id=>({id,draw:()=>({lifeguard,inlet})[id](x,cv(id),L)})),
-    ...bufferPartIds.map(id=>({id:'buffer-'+id,draw:()=>buffer(x,cv('buffer-'+id),L,id)})),{id:'hub',draw:()=>hub(x,cv('hub'),L)},
+    ...bufferPartIds.map(id=>({id:'buffer-'+id,draw:()=>buffer(x,cv('buffer-'+id),L,id)})),...hubPartIds.map(id=>({id:'hub-'+id,draw:()=>hub(x,cv('hub-'+id),L,id)})),
     ...STACKS.map((_,i)=>({id:'stack-'+i,draw:()=>harbor(x,cv('stack-'+i),L,'stack-'+i)})),
     ...CRANES.map(cr=>({id:'crane-'+cr.id,draw:()=>harbor(x,cv('crane-'+cr.id),L,'crane-'+cr.id)})),
     ...[1370,1640,1960,2230].map(X=>({id:'mast-'+X,draw:()=>harbor(x,cv('mast-'+X),L,'mast-'+X)})),
-    {id:'truck-gate',draw:()=>truckGate(x,cv('truck-gate'),L)}, {id:'bridge',draw:()=>bridge(x,cv('bridge'),L)}, {id:'galleria',draw:()=>galleria(x,cv('galleria'),L)},
+    {id:'truck-gate',draw:()=>truckGate(x,cv('truck-gate'),L)}, ...bridgePartIds.map(id=>({id:'bridge-'+id,draw:()=>bridge(x,cv('bridge-'+id),L,id)})),...galleriaPartIds.map(id=>({id:'galleria-'+id,draw:()=>galleria(x,cv('galleria-'+id),L,id)})),
   ];
 }
 export function coastMiddlePieces(x: CanvasRenderingContext2D, c: CoastView, inputs: PieceInputs = {}): CoastPiece[] {
-  const L = lines(c);const cv=(id:string):CoastView=>inputs["coast-mid."+id]?{...c,piece:inputs["coast-mid."+id].props,cull:inputs["coast-mid."+id].cull}:c;
+  const L = lines(c);const cv=(id:string):CoastView=>inputs["coast-mid."+id]?{...c,piece:inputs["coast-mid."+id].props,cull:inputs["coast-mid."+id].cull,pose:inputs["coast-mid."+id].pose}:c;
   return [
     ...['dj','bonfire',...LOUNGERS.map((_,i)=>'lounger-'+i)].map(id=>({id,draw:()=>beach(x,cv(id),L,id)})),
     ...['straddle','reach-stacker','forklift','truck','tractor'].map(id=>({id:'machine-'+id,draw:()=>machines(x,cv('machine-'+id),L,id)})),
-    ...PEOPLE.map((w,i)=>({id:'person-'+i,draw:()=>{const p=cv('person-'+i),s=p.sx(pn(p.piece,'worldX',w.X));if(!visiblePoint(p,s,60))return;placed(x,R(s),lineY(L,p,w.line),S,()=>drawCharacter(x,frameView(p.f),pieceActor(w.c,p.piece)));}})),
+    ...PEOPLE.map((w,i)=>({id:'person-'+i,draw:()=>{const p=cv('person-'+i),s=p.sx(pn(p.piece,'worldX',w.X));if(!visiblePoint(p,s,60))return;placed(x,R(s),lineY(L,p,w.line),S,()=>paintOpeningActor(x,frameView(p.f,p.lighting),p.pose??p.actors['coast.person-'+i],'coast.person-'+i));}})),
     {id:'escalator',draw:()=>escalator(x,cv('escalator'),L)},
   ];
 }
@@ -819,9 +859,12 @@ export function coastFrontPieces(x: CanvasRenderingContext2D, c: CoastView, inpu
 
 
 /** Pure architectural/coastal kernels used by the same metadata measurement as the preview. */
-export const coastAssemblyKernels={salt,lifeguard,pier,inlet,buffer,hub,ship,truckGate,bridge,galleria};
+export const coastAssemblyKernels={salt,lifeguard,pier,inlet,buffer,hub,ship:(x:CanvasRenderingContext2D,c:CoastView,_L:Lines)=>ship(x,c),truckGate,bridge,galleria};
 
 
 
 export const coastDetailKernels:Record<string,(x:CanvasRenderingContext2D,c:CoastView,L:Lines)=>void>={};
 for(const[name,ids,draw]of[['salt',saltPartIds,salt],['pier',pierPartIds,pier],['buffer',bufferPartIds,buffer]]as const)for(const id of ids)coastDetailKernels[name+'-'+id]=(x,c,L)=>draw(x,c,L,id);
+
+for(const[name,ids,draw]of[['hub',hubPartIds,hub],['bridge',bridgePartIds,bridge],['galleria',galleriaPartIds,galleria]]as const)for(const id of ids)coastDetailKernels[name+'-'+id]=(x,c,L)=>draw(x,c,L,id);
+for(const id of shipPartIds)coastDetailKernels['ship-'+id]=(x,c)=>ship(x,c,id);

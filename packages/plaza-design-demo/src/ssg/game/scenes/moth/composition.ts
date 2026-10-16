@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Moth's named visual bindings and stable interaction markers. */
 import { art, drawComposition, resolveComposition, type Composition, type Environment, type Properties, type Value } from '../../art';
 import { mothVisualFields } from '../../art/assemblies/moth-elements';
@@ -18,7 +19,7 @@ export function validateMothComposition(input: unknown): Composition {
 }
 validateMothComposition(mothComposition);
 const defaultBindings = (): Record<string, Value> => Object.fromEntries(Object.entries(mothVisualFields).map(([k,f]) => ['moth.' + k, f.default]));
-const geometryView: View = { sx:x=>x, y:h=>-h, gy:0, cam:0, t:0, viewW:640, viewH:360, flags:{} };
+const geometryView: View = {...frameView(0), sx:x=>x, y:h=>-h, gy:0, cam:0, t:0, viewW:640, viewH:360, flags:{} };
 export function mothGeometry(doc: Composition = mothComposition) { return resolveComposition(mothArt, doc, { view:geometryView,state:{},reduced:false,bindings:defaultBindings() }); }
 export function mothPlacement(id:string, doc:Composition=mothComposition) { const row=mothGeometry(doc).find(row=>row.instance.id===id);if(!row)throw new Error('Unknown Moth instance '+id);return row.placement; }
 export const mothWidth=Number(mothGeometry().find(row=>row.instance.id==='shell')!.props.width);

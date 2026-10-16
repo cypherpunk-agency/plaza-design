@@ -33,10 +33,11 @@ const files=walk(root),findings=[],drawingOwners=[],imports=[],implicitLight=[],
 for(const p of files){
  const file=posix(p).slice(root.length+1),source=fs.readFileSync(p,'utf8'),sf=ts.createSourceFile(p,source,ts.ScriptTarget.Latest,true),art=file.startsWith('art/');
  const line=n=>sf.getLineAndCharacterOfPosition(n.getStart(sf)).line+1;
- const owner=n=>{let q=n.parent;while(q&&!ts.isFunctionLike(q))q=q.parent;return q?.name?.getText(sf)??(q?.parent&&ts.isVariableDeclaration(q.parent)?q.parent.name.getText(sf):'module/anonymous');};
+ const owner=n=>{let q=n.parent;while(q){if(ts.isFunctionLike(q)){if(q.name)return q.name.getText(sf);if(q.parent&&ts.isVariableDeclaration(q.parent))return q.parent.name.getText(sf);}q=q.parent;}return'module/anonymous';};
  const aliases=new Map();
  for(const n of sf.statements){
-  if(art&&ts.isVariableStatement(n)&&!(n.declarationList.flags&ts.NodeFlags.Const))for(const d of n.declarationList.declarations)globals.push({file,line:line(d),name:d.name.getText(sf),initializer:d.initializer?.getText(sf),status:'review mutable artwork state; not automatically an error or exemption'});
+  if(art&&ts.isVariableStatement(n)&&!(n.declarationList.flags&ts.NodeFlags.Const))for(const d of n.declarationList.declarations){const row={file,line:line(d),name:d.name.getText(sf),initializer:d.initializer?.getText(sf),status:'mutable artwork presentation state requires explicit controller ownership'};globals.push(row);findings.push({gate:'G2',...row,kind:'mutable-module-presentation-state'});}
+  if(art&&ts.isExportDeclaration(n)&&n.moduleSpecifier&&ts.isStringLiteral(n.moduleSpecifier)&&!n.isTypeOnly){const target=posix(path.normalize(path.join(path.dirname(file),n.moduleSpecifier.text)));if(!target.startsWith('art/')&&(!n.exportClause||!ts.isNamedExports(n.exportClause)||n.exportClause.elements.some(e=>!e.isTypeOnly)))findings.push({gate:'G2',file,line:line(n),kind:'external-art-reexport',module:n.moduleSpecifier.text});}
   if(!art||!ts.isImportDeclaration(n)||!ts.isStringLiteral(n.moduleSpecifier))continue;
   const module=n.moduleSpecifier.text,clause=n.importClause;
   if(!module.startsWith('.')||!clause)continue;
@@ -51,13 +52,15 @@ for(const p of files){
   }
  }
  function visit(n){
+  if(art&&ts.isPropertyAccessExpression(n)&&n.name.text==='flags')findings.push({gate:'G2',file,line:line(n),owner:owner(n),kind:'art-save-flags-read'});
   if(ts.isCallExpression(n)){
-   if(art&&ts.isIdentifier(n.expression)&&aliases.get(n.expression.text)==='windowLit'&&n.arguments.length<2){const row={file,line:line(n),owner:owner(n)};implicitLight.push(row);findings.push({gate:'G2',...row,kind:'implicit-global-window-light'});}
+   if(art&&ts.isIdentifier(n.expression)&&aliases.get(n.expression.text)==='windowLit'&&(n.arguments.length<2||n.arguments[1]?.getText(sf)==='undefined')){const row={file,line:line(n),owner:owner(n)};implicitLight.push(row);findings.push({gate:'G2',...row,kind:'implicit-global-window-light'});}
    if(ts.isPropertyAccessExpression(n.expression)&&methods.has(n.expression.name.text)){
     const receiver=n.expression.expression.getText(sf);
     // Array.fill and Popup.fill are not Canvas API calls. These exact receivers are inspected.
-    const nonCanvas=(file==='world/cityplan.ts'&&n.expression.name.text==='fill')||(file==='engine/popup.ts'&&receiver==='this'&&n.expression.name.text==='fill');
-    if(!nonCanvas){const row={file,line:line(n),owner:owner(n),operation:n.expression.name.text,classification:art?'world-library':interfaces[file]?'interface':'unclassified',destination:art?file:interfaces[file]??null};drawingOwners.push(row);if(row.classification==='unclassified')findings.push({gate:'G1/G2',...row,kind:'unclassified-inline-drawing'});}
+    const nonCanvas=(file==='world/cityplan.ts'&&n.expression.name.text==='fill'&&/^new (Float32Array|Uint8Array)\(/.test(receiver))||(file==='engine/popup.ts'&&receiver==='this'&&n.expression.name.text==='fill');
+    const gameUI=file!=='runtime/game.ts'||new Set(['drawPrompt','drawBubble','drawHud','drawEnd','drawBeat','drawSleep','drawMap']).has(owner(n));
+    if(!nonCanvas){const row={file,line:line(n),owner:owner(n),operation:n.expression.name.text,classification:art?'world-library':interfaces[file]&&gameUI?'interface':'unclassified',destination:art?file:interfaces[file]??null};drawingOwners.push(row);if(row.classification==='unclassified')findings.push({gate:'G1/G2',...row,kind:'unclassified-inline-drawing'});}
    }
   }
   ts.forEachChild(n,visit);
@@ -90,7 +93,9 @@ const destinations={
  'cutscenes/index.ts':['story/cutscenes/index.ts'],
 };
 const sceneArt={beach:'beach',capsule:'capsule-interior',downtown:'downtown',laundromat:'laundromat',library:'library',moth:'moth-interior',sandbox:'sandbox',stacks:'container-terminal',yard:'fixer-yard',harbor:'harbor-pier','harbor-shift':'dockwork',mall:'mall-details',market:'market-details',metro:'downtown-platform',shop:'corner-shop',train:'train-interior',warehouse:'warehouse'};
-const baselineFile='.scene-system/evidence/coverage-inventory.json';
+const argument=process.argv.indexOf('--baseline');
+const baselineFile=argument>=0?process.argv[argument+1]:'.scene-system/evidence/coverage-inventory.json';
+if(!baselineFile||!fs.existsSync(baselineFile))findings.push({gate:'G1',kind:'missing-original-inventory',file:baselineFile??null});
 const baseline=fs.existsSync(baselineFile)?JSON.parse(fs.readFileSync(baselineFile,'utf8')):[];
 const coverage=baseline.map(row=>{
  let targets=destinations[row.source];

@@ -5,7 +5,7 @@ import { SceneModel } from '../../src/ssg/game/engine/model';
 import { emptyData, NO_RULES } from '../../src/ssg/game/engine/host';
 import { newSave } from '../../src/ssg/game/runtime/save';
 import { city, TRAVEL } from '../../src/ssg/game/world/clock';
-import { taxiSequenceDuration } from '../../src/ssg/game/art/sequences/taxi-flight';
+import { taxiSequenceDuration } from '../../src/ssg/game/story/cutscenes/taxi';
 import { STANDS } from '../../src/ssg/game/world/city';
 
 function controller(destination?: { scene: string; entrance?: string }) {

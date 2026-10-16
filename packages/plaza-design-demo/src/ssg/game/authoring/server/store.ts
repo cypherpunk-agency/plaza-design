@@ -79,6 +79,10 @@ export class AuthoringStore {
   list() { return [...this.descriptors.keys()].map(id => this.read(id)); }
   /** Synchronous serialized transaction; all validation/conflict checks happen before mutation. */
   save(edits: Edit[]): SaveResult {
+    return this.commit(edits);
+  }
+  /** Recovery may retain original JSON formatting; this path is never accepted from HTTP edits. */
+  private commit(edits: Edit[], originalBytes?: ReadonlyMap<string, string>): SaveResult {
     if (!edits.length || edits.length > this.descriptors.size) throw new StoreError('invalid', 'Empty or oversized save');
     const unique = new Set<string>(), entries: Backup['entries'] = [];
     const prospective = new Map(this.list().map(doc => [doc.id, doc.value]));
@@ -86,7 +90,7 @@ export class AuthoringStore {
       if (!edit || typeof edit.id !== 'string' || typeof edit.revision !== 'string' || unique.has(edit.id)) throw new StoreError('invalid', 'Invalid/duplicate edit');
       unique.add(edit.id); const before = fs.readFileSync(this.file(edit.id), 'utf8');
       if (hash(before) !== edit.revision) throw new StoreError('conflict', `${edit.id}: source changed; reload or export pending edits`);
-      const after = encode(edit.value); const value = this.parse(edit.id, after);
+      const encoded = encode(edit.value), after = originalBytes?.get(edit.id) ?? encoded; const value = this.parse(edit.id, after);
       try { this.descriptors.get(edit.id)!.validateUpdate?.(JSON.parse(before), value); }
       catch (e) { throw new StoreError('invalid', `${edit.id}: ${e instanceof Error ? e.message : String(e)}`); }
       prospective.set(edit.id, value);
@@ -113,7 +117,9 @@ export class AuthoringStore {
     } catch (error) {
       // Restore only files replaced by this transaction. Prepared journal survives a failed rollback.
       try {
-        for (let i = 0; i < replaced; i++) this.replace(entries[i].id, entries[i].before);
+        const failures:string[]=[];
+        for(let i=0;i<replaced;i++){try{this.restoreOriginal(entries[i]);}catch(restoreError){failures.push(String(restoreError));}}
+        if(failures.length)throw new StoreError('conflict',failures.join('; '));
         backup.state = 'rolled-back'; this.writeBackup(backup);
       } catch (rollbackError) { throw new StoreError('io', `Save failed; recovery journal ${transaction} requires attention: ${String(rollbackError)}`); }
       if (error instanceof StoreError) throw error;
@@ -130,12 +136,19 @@ export class AuthoringStore {
       if (current.revision !== hash(e.after) || revisions[e.id] !== current.revision) throw new StoreError('conflict', `${e.id}: changed since transaction`);
       return { id: e.id, revision: current.revision, value: this.parse(e.id, e.before) };
     });
-    return this.save(edits);
+    return this.commit(edits, new Map(backup.entries.map(entry => [entry.id, entry.before])));
   }
   private writeNew(file: string, value: string) { const fd = fs.openSync(file, 'wx', 0o600); try { fs.writeFileSync(fd, value); fs.fsyncSync(fd); } finally { fs.closeSync(fd); } }
-  private replace(id: string, value: string) {
+  /** Rollback owns only the exact bytes written by this transaction, never a subsequent outside edit. */
+  private restoreOriginal(entry:Backup['entries'][number]){
+    const raw=fs.readFileSync(this.file(entry.id),'utf8');
+    if(raw===entry.before)return;
+    if(raw!==entry.after)throw new StoreError('conflict',`${entry.id}: rollback conflicts with outside edit`);
+    this.replace(entry.id,entry.before,entry.after);
+  }
+  private replace(id: string, value: string, expected?:string) {
     const file = this.file(id), temporary = path.join(path.dirname(file), `.${path.basename(file)}.${randomUUID()}.tmp`);
-    try { this.writeNew(temporary, value); this.file(id); fs.renameSync(temporary, file); } finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
+    try { this.writeNew(temporary,value);this.file(id);if(expected!==undefined&&fs.readFileSync(file,'utf8')!==expected)throw new StoreError('conflict',`${id}: changed during rollback`);fs.renameSync(temporary,file); } finally { if (fs.existsSync(temporary)) fs.unlinkSync(temporary); }
   }
   private historyFile(transaction: string) {
     if (!/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/.test(transaction)) throw new StoreError('path', 'Invalid transaction id');
@@ -159,7 +172,7 @@ export class AuthoringStore {
       const backup = this.backup(name.slice(0, -5)); if (backup.state !== 'prepared') continue;
       // A crash cannot overwrite subsequent outside edits. Refuse startup on ambiguous state.
       for (const e of backup.entries) { const raw = fs.readFileSync(this.file(e.id), 'utf8'); if (raw !== e.before && raw !== e.after) throw new StoreError('conflict', `${e.id}: interrupted save conflicts with outside edit`); }
-      for (const e of backup.entries) this.replace(e.id, e.before);
+      for(const e of backup.entries)this.restoreOriginal(e);
       backup.state = 'rolled-back'; this.writeBackup(backup);
     }
   }

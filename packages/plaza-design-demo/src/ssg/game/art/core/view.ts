@@ -4,7 +4,12 @@
  * it in local units: x to the right, heights up from the foot (0), so `y(h) = -h`.
  */
 
+import { lightAt, type Light } from '../../world/light';
+import { createLightingFrame, type LightingFrame } from '../atmosphere/lighting';
 export interface View {
+  /** Explicit frame inputs. World controllers replace them before painting. */
+  lighting: Light;
+  illumination: LightingFrame;
   /** World x to screen x; `parallax` < 1 for things further away, > 1 for the foreground. */
   sx: (wx: number, parallax?: number) => number;
   /** Height above the ground to screen y. */
@@ -20,8 +25,8 @@ export interface View {
 }
 
 /** A `View` for drawing in a set piece's own frame (after `translate` to its foot): no camera, nothing culled. */
-export function frameView(t: number): View {
-  return { sx: (wx) => Math.round(wx), y: (h) => -h, t, viewW: 1e5, viewH: 1e5, cam: 0, gy: 0, flags: {} };
+export function frameView(t: number, lighting: Light = lightAt(1, 580, 90, null)): View {
+  return { lighting, illumination: createLightingFrame(lighting), sx: (wx) => Math.round(wx), y: (h) => -h, t, viewW: 1e5, viewH: 1e5, cam: 0, gy: 0, flags: {} };
 }
 
 /** Run `draw` with the origin at (`sx`, `sy`) and everything scaled by `s`. */
@@ -35,6 +40,7 @@ export function placed(x: CanvasRenderingContext2D, sx: number, sy: number, s: n
 
 /** Viewport and motion preference for cinematic artwork. */
 export interface CutView {
+  lighting: Light;
   viewW: number;
   viewH: number;
   /** Height of the top and bottom letterbox bars: the picture lives between them. */

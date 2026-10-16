@@ -1,7 +1,6 @@
 /** Station artwork, parameterized by its layout. */
 import type { View } from '../core/view';
 import type { RiderKind } from '../characters/riders';
-import { light } from '../../world/light';
 import { seaCols, sunPath } from '../environment/sky';
 import { box, drawTowers, O, onScreen, RED, rng, towers } from '../core/primitives';
 import { DECK, exitPlate } from './station-platform';
@@ -28,7 +27,7 @@ function drawCrane(x:CanvasRenderingContext2D,v:View,cx:number,ch:number,ph:numb
     x.fillStyle = 'rgba(' + RED + ',' + (Math.sin(t * 0.04 + ph) > 0 ? 0.7 : 0.15) + ')'; x.fillRect(s - 7, hz - ch - 3, 3, 3);
    }
 function drawWater(x:CanvasRenderingContext2D,v:View){const {y,t}=v,hz=y(H.horizon);
-  const lt = light(), [c0, c1, c2] = seaCols(lt), wg = x.createLinearGradient(0, hz, 0, y(H.wall));
+  const lt = v.lighting, [c0, c1, c2] = seaCols(lt), wg = x.createLinearGradient(0, hz, 0, y(H.wall));
   wg.addColorStop(0, c0); wg.addColorStop(0.4, c1); wg.addColorStop(1, c2);
   x.fillStyle = wg; x.fillRect(0, hz, v.viewW, y(H.wall) - hz);
   sunPath(x, v, lt, hz, y(H.wall));

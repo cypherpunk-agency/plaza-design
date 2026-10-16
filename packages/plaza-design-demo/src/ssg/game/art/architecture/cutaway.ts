@@ -1,3 +1,5 @@
+import {paintOpeningActor}from'../sequences/opening/poses';
+import type{Light}from'../../world/light';
 /**
  * Set pieces (ART-GUIDE §12): the city cut open. When a picture goes under the street (the opening
  * glide follows LINE 0 down), the ground is drawn as a section:
@@ -15,7 +17,7 @@
  * (y = -h). Register: sets/index.ts (`cutaway`).
  */
 
-import { drawCharacter, type Character } from "../../runtime/characters";
+import type { PreparedCharacter, Character } from "../../runtime/characters";
 import { frameView } from "../core/view";
 
 const hash = (a: number, b: number) => { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
@@ -79,14 +81,14 @@ export function drawGroundSection(x: CanvasRenderingContext2D, a: number, b: num
 }
 
 /** Who is down there (characters.ts, at the player's scale): someone sitting in the boat, hood up. */
-const BOATER: Character = { seed: 7701, look: { body: 'slim', garb: 'coat', hair: 'hood', extras: [] }, x: 0, act: 'sit', facing: -1, h: 14 };
+export const BOATER: Character = { seed: 7701, look: { body: 'slim', garb: 'coat', hair: 'hood', extras: [] }, x: 0, act: 'sit', facing: -1, h: 14 };
 
 /**
  * The Undercity's canal, `w` wide: a brick vault on piers, dark water, a narrow boat at a ledge with
  * its lantern and someone in it. Origin at the waterline, left edge; `t` frames (the lantern
  * flickers, the water laps), `still` holds it.
  */
-export function drawCanalGlimpse(x: CanvasRenderingContext2D, w: number, o: { t: number; still?: boolean; boatX?: number }) {
+export function drawCanalGlimpse(x: CanvasRenderingContext2D, w: number, o: { t: number; still?: boolean; boatX?: number;boatPose:PreparedCharacter;lighting:Light }) {
   const y = (h: number) => -h, t = o.still ? 0 : o.t, vault = 300, bx = o.boatX ?? w * 0.42;
   // the vault: brick arches on piers, wet, dark
   x.fillStyle = '#1a1012'; x.fillRect(0, y(vault + 60), w, vault + 60);
@@ -110,7 +112,7 @@ export function drawCanalGlimpse(x: CanvasRenderingContext2D, w: number, o: { t:
   x.fillStyle = '#2a1a14'; x.beginPath(); x.moveTo(-150, y(18)); x.lineTo(150, y(18)); x.lineTo(130, y(-6)); x.lineTo(-136, y(-6)); x.closePath(); x.fill();
   x.fillStyle = 'rgba(255,190,120,.3)'; x.fillRect(-150, y(18), 300, 2);
   x.fillStyle = '#1a100c'; x.fillRect(96, y(150), 4, 136);
-  placed1(x, -40, y(4), () => drawCharacter(x, frameView(o.t), BOATER));
+  placed1(x, -40, y(4), () => paintOpeningActor(x,frameView(o.t,o.lighting),o.boatPose,'canal'));
   const fl = o.still ? 1 : 0.85 + 0.15 * Math.sin(t * 0.3) * Math.sin(t * 0.13);
   const lg = x.createRadialGradient(98, y(140), 2, 98, y(140), 220); lg.addColorStop(0, 'rgba(255,190,100,' + (0.45 * fl).toFixed(3) + ')'); lg.addColorStop(1, 'rgba(255,190,100,0)');
   x.fillStyle = lg; x.fillRect(-140, y(360), 480, 440);

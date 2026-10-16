@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Canonical train composition, geometry, immutable ride/rider frame and scene adapter. */
 import { art } from '../../art';
 import { drawComposition,resolveComposition,type Composition,type Environment,type Value } from '../../art/core/composition';
@@ -15,7 +16,7 @@ import { TRAIN_REGULARS } from './dialogue';
 import source from './composition.json';
 export type TrainRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>> & {visual?:TrainVisualState};
 export const trainMarkerPolicy={exitAxes:['x'] as const,description:'Exit triggers use horizontal geometry. Brake device and passenger markers follow their local composition placements.'};
-const geometryView:View={sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
+const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
 const required=new Map(source.instances.map(n=>[n.id,n.type]));
 function defaults(doc:Composition){const out:Record<string,Value>={};for(const n of doc.instances)for(const[k,b]of Object.entries(n.bindings??{}))out[b]=art.get(n.type).visualFields![k].default;return out;}
 export function trainGeometry(doc:Composition=trainComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(doc),reduced:false});}

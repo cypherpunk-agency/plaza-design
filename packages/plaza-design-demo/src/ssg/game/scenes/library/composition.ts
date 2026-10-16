@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Library-specific binding adapter. Compositions own placement; this module owns named runtime bindings. */
 import { drawComposition, resolveComposition, type Composition, type Environment, type Properties, type Value } from '../../art/core/composition';
 import type { View } from '../../art/core/view';
@@ -28,7 +29,7 @@ export function validateLibraryComposition(input: unknown): Composition {
   return doc;
 }
 validateLibraryComposition(libraryComposition);
-const geometryView: View = { sx: x => x, y: h => -h, gy: 0, t: 0, cam: 0, viewW: 960, viewH: 360, flags: {} };
+const geometryView: View = {...frameView(0), sx: x => x, y: h => -h, gy: 0, t: 0, cam: 0, viewW: 960, viewH: 360, flags: {} };
 function defaults(doc: Composition): Record<string, Value> {
   const result: Record<string, Value> = {};
   for (const instance of doc.instances) for (const [field, source] of Object.entries(instance.bindings ?? {})) result[source] = libraryArt.get(instance.type).visualFields![field].default;

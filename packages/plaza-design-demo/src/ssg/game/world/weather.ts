@@ -183,10 +183,12 @@ export function sceneClimate(scene: string): Climate | null {
 }
 
 /** Isolated authoring/fixture scope; public weather screens and scene effects read one weather. */
-export function withSceneWeather<T>(scene: string, kind: WeatherKind | null, render: () => T): T {
-  const climate = sceneClimate(scene); if (!climate) return render();
-  const previous = overrideOf(climate); setOverride(climate, kind);
-  try { return render(); } finally { setOverride(climate, previous); }
+export function withSceneWeather<T>(scene: string, kind: WeatherKind | null, render: () => T, reportingClimate: Climate | null = sceneClimate(scene)): T {
+  const climate = sceneClimate(scene), previousHere = here;
+  const previous = climate ? overrideOf(climate) : null;
+  if (climate) setOverride(climate, kind);
+  here = reportingClimate;
+  try { return render(); } finally { here = previousHere; if (climate) setOverride(climate, previous); }
 }
 
 /** The scene on screen (the game sets it), so a public screen can report "here". */

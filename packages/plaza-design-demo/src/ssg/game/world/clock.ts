@@ -101,6 +101,13 @@ export class CityClock {
 
   /** Use this save's clock (it is written in place: storing the save stores the clock). */
   bind(s: ClockSave) { this.s = s; }
+  /** Synchronous preview scope; restore the original save reference and controller settings. */
+  withSnapshot<T>(snapshot: ClockSave, render: () => T): T {
+    const previous = this.s, pinned = this.pinned, speed = this.speed;
+    this.s = { ...snapshot };
+    try { return render(); }
+    finally { this.s = previous; this.pinned = pinned; this.speed = speed; }
+  }
   get day() { return this.s.day; }
   get min() { return this.s.min; }
   get seed() { return this.s.seed; }

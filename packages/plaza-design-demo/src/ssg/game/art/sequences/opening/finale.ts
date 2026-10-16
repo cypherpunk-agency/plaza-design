@@ -1,3 +1,4 @@
+import{paintOpeningActor}from'./poses';
 /**
  * The glide's end (Tommi, 2026-10-15, second pass): LINE 0 has its own way and comes from somewhere,
  * and the ending opens the ground.
@@ -16,7 +17,7 @@
  * a function of the glide's clock `gt` and the frame clock (sudo seeks either).
  */
 
-import { drawCharacter, type Character } from "../../../runtime/characters";
+import type { Character } from "../../../runtime/characters";
 import { drawCanalGlimpse, drawGroundSection } from "../../architecture/cutaway";
 import { drawBore, drawTunnelPortal, drawViaduct, drawWallPortal, LINE0 } from "../../architecture/line0";
 import { drawMetroCar, METRO } from "../../vehicles/train-car";
@@ -41,7 +42,7 @@ export function railH(X: number) {
 export const noseAt = (gt: number) => PLACES.portal + TRAIN_V * (gt - NOSE_IN);
 
 /** Who waits at the Galleria's platform (at the player's scale). */
-const WAITING: { X: number; c: Character }[] = [
+export const WAITING: { X: number; c: Character }[] = [
   { X: 3092, c: { seed: 5101, look: { garb: 'coat', hair: 'bun', extras: ['bag'] }, x: 0, act: 'phone', facing: -1 } },
   { X: 3112, c: { seed: 5102, look: { body: 'tall', garb: 'suit', hair: 'short' }, x: 0, act: 'stand', facing: -1 } },
   { X: 3130, c: { seed: 5103, look: { body: 'kid', garb: 'tee', hair: 'cap' }, x: 0, act: 'stand', facing: 1 } },
@@ -92,7 +93,7 @@ function station(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
   x.fillStyle = '#050302'; x.fillRect(a + 8, d - 36, 22, 7);
   const blink = c.still || Math.floor(c.f / 40) % 2 === 0;
   x.save(); x.font = '600 2.6px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(' + PAPER + ',.9)'; x.fillText('DOWNTOWN', a + 19, d - 34.2); x.fillStyle = blink ? 'rgba(255,190,60,.95)' : 'rgba(255,190,60,.5)'; x.fillText('2 MIN', a + 19, d - 31.2); x.restore();
-  for (const w of WAITING) { const s = c.sx(w.X); placed(x, R(s), d, S, () => drawCharacter(x, frameView(c.f), w.c)); }
+  for (const w of WAITING) { const s = c.sx(w.X); placed(x, R(s), d, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.actors['line0.'+WAITING.indexOf(w)],'line0.'+WAITING.indexOf(w))); }
 }
 
 /** The three cars from the nose back along the line, each on the rail under both its bogies; `floor(X)` is the rail's screen y. */
@@ -136,7 +137,7 @@ export function drawUnder(x: CanvasRenderingContext2D, c: CoastView, L: Lines, d
     }
     // the Undercity's canal: a vaulted stretch of it, far below
     const ca = -CANAL[1] / S, cb = -CANAL[0] / S;
-    if (cb > a && ca < b) { x.save(); x.beginPath(); x.rect(ca, WATER - 420, cb - ca, DEPTH); x.clip(); x.translate(ca, WATER); drawCanalGlimpse(x, cb - ca, { t: c.f, still: c.still, boatX: (cb - ca) * 0.5 }); x.restore(); }
+    if (cb > a && ca < b) { x.save(); x.beginPath(); x.rect(ca, WATER - 420, cb - ca, DEPTH); x.clip(); x.translate(ca, WATER); drawCanalGlimpse(x, cb - ca, { t: c.f, still: c.still, boatX:(cb-ca)*.5,boatPose:c.actors.canal,lighting:c.lighting }); x.restore(); }
     // the dark under it all
     x.fillStyle = '#040203'; x.fillRect(a, DEPTH, b - a, 2000);
   });

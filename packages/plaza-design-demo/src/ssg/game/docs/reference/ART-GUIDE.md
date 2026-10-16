@@ -92,7 +92,8 @@ those colours mean "this is for you".
 - Neon reflects in the wet street directly below it.
 - Interiors behind glass are lit; exteriors at night are not, except where a
   light falls.
-- **Light follows the city clock** (TIME.md "Light"; `light.ts`, `sets/sky.ts`, `sets/lighting.ts`).
+- **Light follows the city clock** (TIME.md "Light"; `world/light.ts`,
+  `art/environment/sky.ts`, `art/atmosphere/lighting.ts`; paths are relative to the game root).
   A scene paints itself as it always did (the night look); the engine adds the hour on top. A
   scene declares, as data on its `SceneDef`:
   - `facing`: the compass direction the view looks (the sea is east, 90). It decides where the
@@ -102,10 +103,11 @@ those colours mean "this is for you".
     takes `seaCols` and `sunPath`.
   - `lights`: its lamps, lit windows, neon and screens (`SceneLight`: x, h, kind, col, r). They
     glow on the light layer, weak by day and full at night; lamps throw the night's shadows.
-    Something that moves adds its light per frame (`addLight`).
+    Something that moves adds its light to the supplied frame (`addLight(view, …)`).
   - `casters`: key props that cast a shadow (people, robots and animals do it themselves).
   - `shade`: the buildings between the street and the sun (`back`, `front`, with their gaps).
-  - Windows with a room light: ask `windowLit(seed)` (on at dusk, some off after midnight).
+  - Windows with a room light: ask `windowLit(seed, view.lighting)` (on at dusk, some off after
+    midnight). Use the selected frame inputs; painting must not read or install a global light frame.
 - Interiors are not graded; they get the outside through their windows (`drawPane`,
   `windowShaft`) and grade what the window shows (`drawGrade(…, true)` inside its clip).
 
@@ -177,7 +179,7 @@ character speaks only for itself.
   the view and near enough to show together with the player, the camera leans that way for about
   1.6 s, gently, then eases back to the player. Walking, a conversation, the deck or a panel cancel
   it; reduced motion has none; each thing's line draws the eye once a visit, and not more often
-  than every 5 s. Anything further only gets the edge arrow. (`game.ts`: `nudgeTo`, `NUDGE_*`.)
+  than every 5 s. Anything further only gets the edge arrow. (`runtime/game.ts`: `nudgeTo`, `NUDGE_*`.)
 - **Popups** (`engine/popup.ts`, `POPUP_PLACEMENT`): the plate ("5B", Tommi 2026-10-15). A thin
   cyan stalk grows straight up from the tapped device (which gets a ring) to a small plate with its
   name (orange on dark) in the caption lane, clear above the player and the scene. Its everyday
@@ -197,12 +199,25 @@ The same things show up in more than one place: the Spire and STS-2 in the openi
 at the harbor, LINE 0's cars in the glide, the train and the stations, Downtown before and
 after you are deleted. A change to one of them must reach every place it appears.
 
-- **A landmark or recurring prop is drawn by one function** in `sets/` (one file per thing:
-  `sets/spire.ts`, `sets/crane.ts`, `sets/train-car.ts`, …), taking position, scale, time and
-  a few options (lit, damaged, distance). Scenes and cutscenes call it; nobody copies its
-  drawing code. Seeded variety (the kits in `scenes/build.ts`, `characters.ts`) stays seeded.
-- **`sets/index.ts` is the register:** every set piece with a one-line description and the
-  scenes and cutscenes that use it. Add a user when you call one; `grep` its id to find them.
+- **Artwork belongs in `art/`, including pieces used once.** Reuse `art/architecture/spire.ts`,
+  `art/machinery/crane.ts`, `art/vehicles/train-car.ts` and the other subject libraries. Scenes
+  and sequences call the same kernels; do not copy drawing bodies into runtime or controllers.
+  Seeded variety in `art/assemblies/construction.ts` and `art/characters/appearance.ts` stays seeded.
+- **`art/index.ts` is the typed element registry; `art/catalog.ts` describes the catalog.**
+  Expose meaningful props, physical bounds, anchors and validated visual fields. Scene composition
+  JSON owns placements and attachments, while scene adapters own gameplay/state bindings. Distinct
+  furniture and machines should be selectable pieces; screws and individual pixels need not be.
+  Broad light washes/reflections may sit outside physical selection bounds. Viewport-dependent
+  geometry uses `BoundsContext` rather than a blind box shared by unrelated pieces.
+- **Animation uses the same artwork path.** `art/sequences/` contains the opening and cinematic
+  pieces; `story/title/` and `story/cutscenes/` supply prepared actors, timing and handoffs from their
+  composition/timeline JSON. Ordinary scene kernels receive time and environment in `View` and
+  immutable visual state from the adapter. Animation is not a reason to advance gameplay while
+  painting, measuring bounds or seeking in the editor.
+- The [local composer](../../authoring/README.md) previews scene and sequence source through their
+  shipping renderers. Before replacing a drawing implementation, preserve original pixels across
+  the relevant camera, time, environment, state and pass cases recorded in the scene-system plan.
+  An editor-visible element or passing build alone is not an appearance-preservation gate.
 - **A scene that changes with the story is one scene with states,** not a copy: Downtown
   before and after is `downtown` with a `before` state from a save flag; the train home and
   P14's train are the same train. The state switches lines, colours and what works, never the

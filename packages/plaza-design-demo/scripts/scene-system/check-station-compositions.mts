@@ -1,3 +1,4 @@
+import {referenceView} from './reference-view';
 import * as riders from '../../src/ssg/game/art/characters/riders';
 import { drawPlatformTrain } from '../../src/ssg/game/art/vehicles/platform-train';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import vm from 'node:vm';import ts from 'typescript';
@@ -27,7 +28,7 @@ function recording(){const ops:unknown[]=[],values:Record<string,unknown>={globa
 let cases=0;
 for(const[oldScene,adapter]of[[beforeG,G],[beforeH,H]] as const)for(const open of [false,true])for(const cam of [0,400,850])for(const gy of [170,280,440])for(const t of [0,137,700,1500]){
  line.lineOpen.harbor=open;
- const v:View={sx:(wx,p=1)=>Math.round(wx-cam*p),y:h=>gy-h,t,cam,gy,viewW:640,viewH:gy+80,flags:{'harbor:open':open}};
+ const v:View=referenceView({sx:(wx,p=1)=>Math.round(wx-cam*p),y:h=>gy-h,t,cam,gy,viewW:640,viewH:gy+80,flags:{'harbor:open':open}});
  const a=recording(),b=recording();oldScene.drawBackdrop(a.ctx,v);adapter.draw(b.ctx,v);
  if(json(a.ops)!==json(b.ops)){let first=0;while(json(a.ops[first])===json(b.ops[first]))first++;throw new Error(`${oldScene.id} open=${open} cam=${cam} gy=${gy} t=${t}: op ${first}/${a.ops.length}/${b.ops.length}: ${json(a.ops[first])} != ${json(b.ops[first])}`);}cases++;
 }

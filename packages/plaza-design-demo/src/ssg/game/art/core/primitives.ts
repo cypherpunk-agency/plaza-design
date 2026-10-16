@@ -130,7 +130,7 @@ export function drawTowers(x: CanvasRenderingContext2D, v: View, list: Tower[], 
       const off = top + k * b.h;
       if (off > v.viewH || off + b.h < 0) continue;
       // the windows follow the city's clock (light.ts windowLit): on one by one at dusk, some off after midnight
-      for (let i = 0; i < b.lit.length; i += 2) if (b.lit[i + 1] + k * b.h < h - 4 && windowLit(b.x * 31 + i + k * 7)) x.fillRect(sx + b.lit[i], off + b.lit[i + 1], win, win);
+      for (let i = 0; i < b.lit.length; i += 2) if (b.lit[i + 1] + k * b.h < h - 4 && windowLit(b.x * 31 + i + k * 7, v.lighting)) x.fillRect(sx + b.lit[i], off + b.lit[i + 1], win, win);
     }
   }
 }

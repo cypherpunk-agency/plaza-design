@@ -4,6 +4,7 @@ import { placed,type View } from '../core/view';
 import { menuBoard } from '../signage/screens';
 import { createBeachArtwork,type BeachLayout,type BeachVisualState } from './beach';
 import { saltUnder,saltBack,saltShell,saltCounter,saltLights } from './beach-bar';
+import {applyBeachMetadata} from './beach-metadata';
 const num=(label:string,value=0):Field=>({kind:'number',label,default:value,min:-1e12,max:1e12,step:1});
 const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
 const bool=(label:string,value=false):Field=>({kind:'boolean',label,default:value});
@@ -65,3 +66,4 @@ export const beachElements:Element[]=[
  element('post-gull','Gull on its pier post',{},ordinary('postGull','gull')),
  element('foreground','Near sand, water and lamp reflections',{},(x,v,_p,s,at)=>kernel(s,{shore:n(s,'shore')}).foreground(x,raised(v,at.h),state(s),n(s,'palette'),s.lampPositions as number[])),
 ];
+applyBeachMetadata(beachElements);

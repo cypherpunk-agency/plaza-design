@@ -27,7 +27,7 @@ async function start() {
       const world = snapshotWorld(refs, timelines.flatMap(sequence => sequence.handoff ? [{ id: sequence.id, ...sequence.handoff }] : []));
       return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines }), openScene, mapSession);
     },
-    motionTracks: sequences.motionTracks, timelineContext: sequences.timelineContext,
+    motionTracks: sequences.motionTracks,clips:sequences.clips, timelineContext: sequences.timelineContext,
     destinations: Object.fromEntries(Object.entries(SCENES).map(([scene, def]) => [scene, def.exits.map(exit => exit.id)])),
     initialEnvironment: { cameraX: 0, zoom: 1, day: 1, minute: 580, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' },
     environmentControls: [

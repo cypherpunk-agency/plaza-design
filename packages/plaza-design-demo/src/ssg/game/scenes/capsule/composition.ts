@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Capsule art bindings and interaction geometry. No drawing algorithms or simulation effects live here. */
 import { drawComposition, resolveComposition, type Composition, type Environment, type Properties, type Value } from '../../art/core/composition';
 import { capsuleVisualFields } from '../../art/assemblies/capsule-elements';
@@ -20,7 +21,7 @@ export function validateCapsuleComposition(input: unknown): Composition {
 }
 validateCapsuleComposition(capsuleComposition);
 const defaultBindings = (): Record<string, Value> => Object.fromEntries(Object.entries(capsuleVisualFields).map(([k, f]) => ['capsule.' + k, f.default]));
-const geometryView: View = { sx: x => x, y: h => -h, gy: 0, cam: 0, t: 0, viewW: 640, viewH: 360, flags: {} };
+const geometryView: View = {...frameView(0), sx: x => x, y: h => -h, gy: 0, cam: 0, t: 0, viewW: 640, viewH: 360, flags: {} };
 export function capsuleGeometry(doc: Composition = capsuleComposition) { return resolveComposition(capsuleArt, doc, { view: geometryView, state: {}, reduced: false, bindings: defaultBindings() }); }
 export function capsulePlacement(id: string, doc: Composition = capsuleComposition) { const row = capsuleGeometry(doc).find(row => row.instance.id === id); if (!row) throw new Error('Unknown capsule instance ' + id); return row.placement; }
 export const capsuleWidth = Number(capsuleGeometry().find(row => row.instance.id === 'shell')!.props.width);

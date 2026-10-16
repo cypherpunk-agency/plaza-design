@@ -1,6 +1,6 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { type View } from "../core/view";
-import { light,windowLit } from "../../world/light";
+import { windowLit } from "../../world/light";
 import { drawGrade } from "../atmosphere/lighting";
 import { box,C,GREEN,O,onScreen,PAPER,RED,rng,RUST,tell,text } from "../core/primitives";
 import { drawPane,windowShaft } from "../environment/sky";
@@ -45,13 +45,13 @@ function frontWindowBack(x: CanvasRenderingContext2D, v: View) {
   if (!onScreen(v, l, w)) return;
   x.save(); x.beginPath(); x.rect(l, top, w, h); x.clip();
   // the sky of the moment over the tenements (sets/sky.ts; the window looks south onto the market)
-  const lt = light();
+  const lt = v.lighting;
   drawPane(x, l, top, w, h, lt, { facing: LAUNDROMAT_FACING, seed: 23, towers: false, horizon: 0.08 });
   // the tenements across the market, their windows lit by the clock
   x.fillStyle = '#0c0705'; x.fillRect(l, top + 6, w, h);
   for (let yy = top + 10; yy < top + 44; yy += 8) for (let xx = l + 4; xx < l + w - 4; xx += 9) {
     const n = hash(xx * 3 + yy * 11);
-    x.fillStyle = n < 0.32 && windowLit(Math.round((xx - l) * 3 + (yy - top) * 11)) ? 'rgba(255,170,90,.35)' : 'rgba(' + RUST + ',.1)'; x.fillRect(xx, yy, 4, 4);
+    x.fillStyle = n < 0.32 && windowLit(Math.round((xx - l) * 3 + (yy - top) * 11), v.lighting) ? 'rgba(255,170,90,.35)' : 'rgba(' + RUST + ',.1)'; x.fillRect(xx, yy, 4, 4);
   }
   // the stalls opposite: striped awnings, strings of bulbs
   for (let i = 0; i < 4; i++) {
@@ -66,7 +66,7 @@ function frontWindowBack(x: CanvasRenderingContext2D, v: View) {
 function frontWindowFront(x: CanvasRenderingContext2D, v: View) {
   const { sx, y, t } = v, W = L.window, l = sx(W.x0), top = y(W.h1), w = W.x1 - W.x0, h = W.h1 - W.h0;
   if (!onScreen(v, l, w)) return;
-  const lt = light();
+  const lt = v.lighting;
   x.save(); x.beginPath(); x.rect(l, top, w, h); x.clip();
   // the market outside takes the hour's grade (sets/lighting.ts)
   drawGrade(x, v, lt, true);

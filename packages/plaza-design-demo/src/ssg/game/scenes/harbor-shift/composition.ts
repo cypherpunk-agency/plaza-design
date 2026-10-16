@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Authored night-shift layout and snapshots shared by shipping and the composer. */
 import { art } from '../../art';
 import { drawComposition,resolveComposition,type Composition,type Environment,type Value } from '../../art/core/composition';
@@ -7,7 +8,7 @@ import type { SceneDef,SceneUse } from '../kit';
 import { PAPER } from '../../art/core/primitives';
 import source from './composition.json';
 export type HarborShiftRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
-const geometryView:View={sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
+const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
 const required=new Map(source.instances.map(n=>[n.id,n.type]));
 const allowed=new Set(['actor.boss.pose','actor.mara.pose','shift.parcelPresent','shift.returned','shift.delivered','shift.casePresent','shift.trolleyX','shift.trolleyRestX','shift.released','shift.checked','shift.done',...['boss','parcel','mara','case','rack','trolley','clamp','checkout','statement'].map(id=>'cue.'+id)]);
 export function validateHarborShiftComposition(input:unknown):Composition{const doc=art.validate(input);if(doc.scene!=='harborShift')throw new Error('Expected harborShift composition');for(const[id,type]of required)if(doc.instances.find(n=>n.id===id)?.type!==type)throw new Error('harborShift: missing/changed instance '+id);for(const n of doc.instances)for(const value of Object.values(n.bindings??{}))if(!allowed.has(value))throw new Error(n.id+': unknown shift binding '+value);return doc;}

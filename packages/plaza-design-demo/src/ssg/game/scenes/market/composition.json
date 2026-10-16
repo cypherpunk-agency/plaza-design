@@ -1356,7 +1356,10 @@
         "h": 0
       },
       "order": 88,
-      "pass": "backdrop"
+      "pass": "backdrop",
+      "bindings": {
+        "open": "market.exitOpen"
+      }
     },
     {
       "id": "street-0",

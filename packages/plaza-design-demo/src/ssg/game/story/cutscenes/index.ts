@@ -1,3 +1,6 @@
+import{IntroPlaybackSession,IntroSeekSession}from'./skyline-session';
+const introPlayback=new IntroPlaybackSession();
+import{light,type Light}from'../../world/light';
 /**
  * Cutscenes: the registry and the player.
  *
@@ -29,7 +32,7 @@ const DATA: Record<string, CutsceneData> = Object.fromEntries(Object.entries(dat
 
 const DRAW = {
   /** The opening: the city with nobody in it. */
-  intro: (x: CanvasRenderingContext2D, v: CutView, t: number) => { renderCinematicPicture(x, v, cinematicDocuments, 'intro', t); },
+  intro: (x: CanvasRenderingContext2D, v: CutView, t: number) => { renderCinematicPicture(x,v,cinematicDocuments,'intro',t,{intro:introPlayback.prepare(t)}); },
   /** The end of Act I: the ferry leaves with Moth, the Spire across the bay, ACT II. */
   act2: (x: CanvasRenderingContext2D, v: CutView, t: number) => { renderCinematicPicture(x, v, cinematicDocuments, 'act2', t); },
 } satisfies Record<string, Cutscene['draw']>;
@@ -90,11 +93,11 @@ export class CutscenePlay {
   }
 
   /** Draw a frame into a context already scaled to world units. */
-  draw(x: CanvasRenderingContext2D, viewW: number, viewH: number) {
+  draw(x: CanvasRenderingContext2D, viewW: number, viewH:number,lighting:Light=light()) {
     const size = Math.max(10, Math.min(18, Math.round(viewH / 26)));
     const barTop = Math.round(Math.max(16, viewH * 0.09));
     const barBottom = Math.round(Math.max(size * 3.6, viewH * 0.16));
-    const view: CutView = { viewW, viewH, barTop, barBottom, reduced: this.opts.reduced };
+    const view: CutView = {lighting, viewW, viewH, barTop, barBottom, reduced: this.opts.reduced };
     const t = this.t, d = this.scene.duration;
 
     x.save();
@@ -184,13 +187,13 @@ export class CutscenePlay {
 }
 
 /** Composer and runtime use the same picture, letterbox, wrapping, typing and skip presentation. */
-export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H: number, id: 'intro' | 'act2', seconds: number, options: CinematicOptions & { reduced: boolean; touch?: boolean; timeline?: TimelineDocument; composition?: Composition }) {
+export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H: number, id: 'intro' | 'act2', seconds: number, options:CinematicOptions&{seek?:IntroSeekSession;reduced:boolean;lighting?:Light; touch?: boolean; timeline?: TimelineDocument; composition?: Composition }) {
   const timeline = options.timeline ?? cinematicDocuments.timeline, sequence = timeline.sequences.find(s => s.id === (options.sequenceId ?? id));
   if (!sequence) throw new Error(`Cutscene ${id}: missing timeline sequence`);
   const scene: Cutscene = { id, title: DATA[id].title, duration: sequence.duration, next: sequence.handoff?.scene ?? '', ownsFade: true,
     cards: sequence.text.map(card => ({ at: card.from, until: card.to, text: card.text, x: card.x, h: card.h })), beats: sequence.beats.map(beat => ({ at: beat.time, name: beat.id })),
-    draw: (ctx, view, time) => { renderCinematicPicture(ctx, view, cinematicDocuments, id, time, options); },
+    draw: (ctx, view, time) => { renderCinematicPicture(ctx,view,cinematicDocuments,id,time,{...options,...(id==='intro'?{intro:options.seek?options.seek.prepare(ctx,view,time,sequence.duration):introPlayback.prepare(time)}:{})}); },
     transition: (ctx, view, time) => renderCinematicTransition(ctx, view, cinematicDocuments, id, time, options),
   };
-  const player = new CutscenePlay(scene, { reduced: options.reduced, touch: options.touch ?? false }); player.t = Math.max(0, Math.min(sequence.duration, seconds)); player.draw(x, W, H);
+  const player = new CutscenePlay(scene, { reduced: options.reduced, touch: options.touch ?? false }); player.t = Math.max(0, Math.min(sequence.duration, seconds)); player.draw(x,W,H,options.lighting??light());
 }

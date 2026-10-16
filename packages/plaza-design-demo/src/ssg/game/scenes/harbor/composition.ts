@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Harbor authoring adapter: geometry and visual simulation resolve before artwork paints. */
 import { art } from '../../art';
 import { drawComposition,resolveComposition,type Composition,type Environment,type Value } from '../../art/core/composition';
@@ -10,7 +11,7 @@ import type { SceneDef } from '../kit';
 import source from './composition.json';
 export type HarborRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
 export const harborMarkerPolicy={exitAxes:['x'] as const,description:'Exits use horizontal triggers. Other interaction, light and shadow markers resolve their authored heights.'};
-const geometryView:View={sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
+const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
 const required=new Map(source.instances.map(n=>[n.id,n.type]));
 const actors=source.instances.filter(n=>n.type==='character.prepared').map(n=>String(n.props.actor));
 const bindings=new Set(['layout','visual','fishPose','teaPose','loads','stackOrigins','forkliftOrigin','archVisible','bondedVisible'].map(k=>'harbor.'+k).concat(actors.map(k=>'actor.'+k+'.pose'),['clip.hut','clip.crane0','clip.crane1']));

@@ -1,3 +1,4 @@
+import { frameView } from '../../art/core/view';
 /** Yard composition source, pure bindings, and the explicit legacy presentation controller. */
 import {art,drawComposition,resolveComposition,type Composition,type Environment,type Value} from '../../art';
 import {yardVisualFields} from '../../art/assemblies/yard-elements';
@@ -14,7 +15,7 @@ const required=['sky','side-walls','spawn','exit-downtown','passage','camera','c
 export function validateYardComposition(input:unknown):Composition{const doc=art.validate(input);if(doc.scene!=='yard')throw new Error('Expected yard composition');for(const id of required)if(!doc.instances.some(i=>i.id===id))throw new Error('Missing gameplay-bound Yard instance '+id);for(const i of doc.instances)for(const [k,v] of Object.entries(i.bindings??{}))if(v!=='yard.'+k||!(k in yardVisualFields))throw new Error(i.id+': unknown Yard visual binding '+v);return doc;}
 validateYardComposition(yardComposition);
 const defaults=()=>Object.fromEntries(Object.entries(yardVisualFields).map(([k,f])=>['yard.'+k,f.default]));
-const geometryView:View={sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
+const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
 export function yardGeometry(doc:Composition=yardComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(),reduced:false});}
 export function yardPlacement(id:string,doc:Composition=yardComposition){const row=yardGeometry(doc).find(r=>r.instance.id===id);if(!row)throw new Error('Unknown Yard instance '+id);return row.placement;}
 export function yardWidth(doc:Composition=yardComposition){return Number(yardGeometry(doc).find(r=>r.instance.id==='side-walls')!.props.width);}

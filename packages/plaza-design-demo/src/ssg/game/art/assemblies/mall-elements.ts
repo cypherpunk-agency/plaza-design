@@ -1,5 +1,6 @@
 import {screenBounds}from './static-bounds';
 import {stallBox}from './construction';
+import {mallTableStool}from './mall-table-stool';
 import type{Bounds}from '../core/composition';
 /** Named editable Galleria pieces, all rendered by shared composition. */
 import {createMallArtwork,type MallArtworkInputs}from './mall-details';
@@ -46,7 +47,7 @@ export const mallElements:Element[]=[{type:'mall.marker',version:1,label:'Mall g
 {type:'mall.ad',version:1,label:'Hanging advertisement',category:'Mall',coordinates:'world',fields:{width:num('Width',120),height:num('Height',50),parallax:num('Parallax',.85),seed:num('Seed',0),phase:num('Phase',0),period:num('Period',260),ads:{kind:'json',label:'Messages',default:[],validate:value=>{if(!Array.isArray(value)||value.some(row=>!Array.isArray(row)||row.some(v=>typeof v!=='string')))throw Error('Expected advertisement text rows');}}},parts:['backdrop'],bounds:p=>({x:0,h:Number(p.height),w:Number(p.width),tall:Number(p.height)}),anchors:()=>({origin:{x:0,h:0,role:'origin'}}),draw:(x,v,p,_s,_pass,at)=>adScreen(x,v,{x:at.x,h:at.h,w:Number(p.width),tall:Number(p.height),parallax:Number(p.parallax),seed:Number(p.seed),phase:Number(p.phase),period:Number(p.period),mount:'hang',...(Array.isArray(p.ads)&&p.ads.length?{ads:p.ads as string[][]}:{})})}
 ];
 
-const mallBoxes:Record<string,Bounds>={directory:{x:-27,h:76,w:54,tall:76},registry:{x:-48,h:112,w:96,tall:112},'escalator-sign':{x:-25,h:66,w:50,tall:66},table:{x:-31,h:26,w:62,tall:26},security:{x:0,h:66,w:100,tall:66},bench:{x:-26,h:14,w:52,tall:14},door:{x:-30,h:70,w:60,tall:70},camera:{x:-18,h:10,w:36,tall:18},'fountain-reflection':{x:-60,h:-3,w:120,tall:27},'pillar-reflection':{x:-14,h:-2,w:28,tall:30}};
+const mallBoxes:Record<string,Bounds>={directory:{x:-27,h:76,w:54,tall:76},registry:{x:-48,h:112,w:96,tall:112},'escalator-sign':{x:-25,h:66,w:50,tall:66},table:{x:-18,h:26,w:36,tall:26},security:{x:0,h:66,w:100,tall:66},bench:{x:-26,h:14,w:52,tall:14},door:{x:-30,h:70,w:60,tall:70},camera:{x:-18,h:10,w:36,tall:18},'fountain-reflection':{x:-60,h:-3,w:120,tall:27},'pillar-reflection':{x:-14,h:-2,w:28,tall:30}};
 const mallFields:Record<string,string[]>={'shop-interior':['width','shop','tint'],'shop-stock':['width','shop'],'shop-front':['width','shop','sign','tint','col'],'shop-reflection':['width','tint'],'escalator-back':['width'],'escalator-front':['width'],fountain:['width'],'deck-booth':['width'],'cases-booth':['width'],door:['label'],camera:['facing','phase'],ad:['width','height','parallax','seed','phase','period','ads']};
 for(const e of mallElements){const id=e.type.slice(5);if(id==='marker')continue;for(const key of Object.keys(e.fields))if(!(mallFields[id]??[]).includes(key))delete e.fields[key];if(mallBoxes[id])e.bounds=()=>mallBoxes[id];
  const origin={x:0,h:0,role:'origin' as const};e.anchors=()=>({origin});
@@ -76,3 +77,4 @@ for(const e of mallElements){const id=e.type.slice(5);if(id==='marker')continue;
  if(id==='foreground-pillar')e.bounds=(_p,_s,c)=>c?screenBounds(c,{x:c.view.sx(c.placement.x,1.35)-22,y:0,w:44,h:c.view.viewH},{x:-22,h:306,w:44,tall:360}):{x:-22,h:306,w:44,tall:360};
  if(id==='ad')e.bounds=p=>({x:-Number(p.width)/2-3,h:Number(p.height)+3,w:Number(p.width)+6,tall:Number(p.height)+6});
 }
+mallElements.push(mallTableStool);

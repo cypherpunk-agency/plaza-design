@@ -19,11 +19,11 @@
  *   shade across the floor and up the walls; whoever stands in one is drawn darker (the band is
  *   laid over them).
  *
- * Everything reads the frame's light (`light()`), so a scene only declares data. Phones: glows are
- * pre-rendered sprites (one per colour and size), shadows are single polygons.
+ * The caller supplies the frame's light and shadow inputs through View. Dynamic light additions
+ * belong only to that frame. Glows use cached sprites; shadows use single polygons.
  */
 
-import { light, smooth, windowLit, type Light } from "../../world/light";
+import { smooth, windowLit, type Light } from "../../world/light";
 import type { View } from "../core/view";
 
 // ---------- the grade ----------
@@ -51,7 +51,7 @@ export function gradeOf(l: Light): { lift: RGB; liftA: number; mul: RGB; mulA: n
  * The grade over the world drawn so far (the view's screen units). Outdoors only, unless `outside`:
  * an interior grades what its windows show (call it inside the window's clip).
  */
-export function drawGrade(x: CanvasRenderingContext2D, v: View, l: Light = light(), outside = false) {
+export function drawGrade(x: CanvasRenderingContext2D, v: View, l: Light = v.lighting, outside = false) {
   if (!l.outdoor && !outside) return;
   const g = gradeOf(l);
   x.save();
@@ -88,12 +88,8 @@ export interface SceneLight {
 const DEF_COL: Record<SceneLight['kind'], string> = { lamp: '255,214,150', window: '255,170,90', neon: '255,136,0', screen: '0,220,220', head: '255,240,210' };
 const DEF_R: Record<SceneLight['kind'], number> = { lamp: 64, window: 22, neon: 40, screen: 26, head: 90 };
 
-/** Moving lights for this frame (headlights, a torch): cleared after each draw. */
-let EXTRA: SceneLight[] = [];
-/** This frame's lamps (world x, head height), for night shadows. */
-let LAMPS: [number, number][] = [];
 /** Add a light for this frame only (a moving vehicle's headlights). */
-export const addLight = (l: SceneLight) => { EXTRA.push(l); };
+export const addLight = (view: View, source: SceneLight) => { view.illumination.extra.push(source); };
 
 const SPRITES = new Map<string, HTMLCanvasElement>();
 /** A soft round glow, `r` (rounded to 8) in colour `col`, pre-rendered once. */
@@ -109,17 +105,10 @@ function glowSprite(col: string, r: number): HTMLCanvasElement {
   return c;
 }
 
-/** Collect the scene's lamps for shadows (call before the scene's people are drawn). */
-export function prepareLights(list: readonly SceneLight[] | undefined) {
-  LAMPS = [];
-  EXTRA = [];
-  for (const s of list ?? []) if (s.kind === 'lamp') LAMPS.push([s.x, s.h]);
-}
-
 /** The light layer: every registered light, then this frame's extras; weak by day, full at night. */
-export function drawLights(x: CanvasRenderingContext2D, v: View, list: readonly SceneLight[] | undefined, l: Light = light()) {
-  const all = EXTRA.length ? [...(list ?? []), ...EXTRA] : list ?? [];
-  EXTRA = [];
+export function drawLights(x: CanvasRenderingContext2D, v: View, list: readonly SceneLight[] | undefined, l: Light = v.lighting) {
+  const all = v.illumination.extra.length ? [...(list ?? []), ...v.illumination.extra] : list ?? [];
+  v.illumination.extra = [];
   const k = l.outdoor ? l.lamps : 0.75;
   if (!all.length || k < 0.02) return;
   x.save();
@@ -168,21 +157,21 @@ function shadowStrength(l: Light) {
  * Draws the contact shadow always; the cast shadow outdoors in sun (or at night near a lamp).
  */
 export function castShadow(x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: number, foot = 0, par = 1, dim = 0) {
-  if (!SHADOWS) return;
-  const l = light(), sx = v.sx(wx, par), gy = Math.round(v.y(foot));
+  if (!v.illumination.shadows) return;
+  const l = v.lighting, sx = v.sx(wx, par), gy = Math.round(v.y(foot));
   if (sx < -300 || sx > v.viewW + 300) return;
   const k = 1 - dim * 0.7;
   const sunA = shadowStrength(l) * k;
-  if (sunA > 0.02 && foot < 60 && !(foot < 4 && inShade(wx))) {
+  if (sunA > 0.02 && foot < 60 && !(foot < 4 && inShade(wx, v.illumination.shade))) {
     const s = l.shadow, len = h * Math.min(s.len, 7);
     const dx = (s.dx / Math.max(0.001, s.len)) * len, dy = clamp((s.dy / Math.max(0.001, s.len)) * len * 0.08, -3, 8);
     const a = sunA * (1 - smooth(120, 300, Math.abs(dx)) * 0.45);
     x.fillStyle = 'rgba(8,4,16,' + a.toFixed(3) + ')';
     x.beginPath(); x.moveTo(R(sx - w / 2), gy); x.lineTo(R(sx + w / 2), gy); x.lineTo(R(sx + w / 2 + dx), R(gy + dy + 2)); x.lineTo(R(sx - w / 2 + dx), R(gy + dy + 2)); x.closePath(); x.fill();
-  } else if (l.outdoor && l.lamps > 0.5 && LAMPS.length && foot < 40) {
+  } else if (l.outdoor && l.lamps > 0.5 && v.illumination.lamps.length && foot < 40) {
     // at night: a short shadow away from the nearest lamp
     let best = 1e9, lx = 0;
-    for (const [px] of LAMPS) { const d = Math.abs(px - wx); if (d < best) { best = d; lx = px; } }
+    for (const [px] of v.illumination.lamps) { const d = Math.abs(px - wx); if (d < best) { best = d; lx = px; } }
     if (best < 110) {
       const dir = wx >= lx ? 1 : -1, len = clamp(best * 0.22, 3, 16), a = 0.38 * k * (1 - best / 110) * smooth(0.5, 0.9, l.lamps);
       x.fillStyle = 'rgba(6,3,12,' + a.toFixed(3) + ')';
@@ -194,10 +183,6 @@ export function castShadow(x: CanvasRenderingContext2D, v: View, wx: number, h: 
   x.fillStyle = 'rgba(8,4,16,' + ca.toFixed(3) + ')'; x.fillRect(R(sx - w / 2 - 1), gy, R(w + 2), 1);
   x.fillStyle = 'rgba(8,4,16,' + (ca * 0.5).toFixed(3) + ')'; x.fillRect(R(sx - w / 2 - 3), gy + 1, R(w + 6), 1);
 }
-
-let SHADOWS = false;
-/** The game turns shadows on while it draws a scene (cutscenes and the title draw people without them). */
-export const shadowsOn = (on: boolean) => { SHADOWS = on; };
 
 /** A key prop's shadow (`SceneDef.casters`): world x of its centre, height, width, feet height. */
 export interface Caster { x: number; h: number; w: number; foot?: number }
@@ -221,20 +206,25 @@ export interface Shade { back?: ShadeSide; front?: ShadeSide; depth?: number }
 
 interface Band { s0: number; s1: number; d0: number; d1: number; climb: number; drift: number; back: boolean; lit?: boolean }
 /** This frame's shade: the bands, their darkness, the floor's depth, and the shaded stretches of the play line (world x). */
-let SHADE: { bands: Band[]; a: number; D: number; line: [number, number][]; sun: string } = { bands: [], a: 0, D: 60, line: [], sun: '' };
+export interface ShadeFrame { bands: Band[]; a: number; D: number; line: [number, number][]; sun: string }
+export interface LightingFrame { lamps: [number, number][]; extra: SceneLight[]; shadows: boolean; shade: ShadeFrame }
+/** Frame-local drawing output collection; no player, scene-controller or persistent state. */
+export function createLightingFrame(light: Light, list: readonly SceneLight[] = [], shade?: Shade, width = 0, shadows = false): LightingFrame {
+  return { lamps: list.filter(source => source.kind === 'lamp').map(source => [source.x, source.h]), extra: [], shadows, shade: prepareShade(shade, width, light) };
+}
 
 /** Work out this frame's shade bands (call once a frame, before anything casts a shadow). */
-export function prepareShade(s: Shade | undefined, width: number, l: Light = light()) {
-  SHADE = { bands: [], a: 0, D: s?.depth ?? 60, line: [], sun: l.sunCol };
-  if (!s || !l.outdoor || l.direct < 0.05) return;
+export function prepareShade(s: Shade | undefined, width: number, l: Light): ShadeFrame {
+  const SHADE: ShadeFrame = { bands: [], a: 0, D: s?.depth ?? 60, line: [], sun: l.sunCol };
+  if (!s || !l.outdoor || l.direct < 0.05) return SHADE;
   const relR = (l.sunRel * Math.PI) / 180, cosr = Math.cos(relR), sinr = Math.sin(relR);
   const side = cosr > 0 ? s.front : s.back;
-  if (!side || Math.abs(cosr) < 0.08) return;
+  if (!side || Math.abs(cosr) < 0.08) return SHADE;
   const ang = Math.max(0.05, l.sun.el * 1.2), D = SHADE.D;
   // how far across the street the shade reaches (world units of depth)
   const reach = (side.h / Math.tan(ang)) * Math.abs(cosr);
   const a = (cosr > 0 ? 0.28 : 0.36) * l.direct * (1 - smooth(0.2, 0.7, l.cover));
-  if (a < 0.02 || reach < 4) return;
+  if (a < 0.02 || reach < 4) return SHADE;
   // sideways drift per unit of depth, away from the sun
   const drift = clamp(-sinr / Math.abs(cosr), -3, 3), back = cosr < 0;
   // the buildings are the spans between the gaps
@@ -257,13 +247,15 @@ export function prepareShade(s: Shade | undefined, width: number, l: Light = lig
     const d0 = back ? Math.max(0, D - reach) : 0, d1 = back ? D : Math.min(D, reach);
     SHADE.bands.push({ s0: g0, s1: g1, d0, d1, climb: back && reach > D ? side.h * (1 - D / reach) : 0, drift, back, lit: true });
   }
+  return SHADE;
 }
 
 /** Is the play line in shade at world x (no sun on it: no cast shadow there)? */
-export const inShade = (wx: number) => SHADE.line.some(([a, b]) => wx > a && wx < b);
+export const inShade = (wx: number, shade: ShadeFrame) => shade.line.some(([a, b]) => wx > a && wx < b);
 
 /** Bands of shade across the floor and up the walls (after the people and the player: it darkens them). */
 export function drawShade(x: CanvasRenderingContext2D, v: View) {
+  const SHADE = v.illumination.shade;
   const { bands, a, D } = SHADE;
   if (!bands.length) return;
   const floorH = v.viewH - v.y(0), gy = v.y(0), py = (d: number) => gy + (d / D) * floorH;
