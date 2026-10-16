@@ -11,13 +11,13 @@
  * way every scene's runtime starts clean from the loaded save.
  */
 
-import { SAVE_KEY, SUDO, type Save } from './level';
+import { SAVE_KEY, SHIFT_PROTOTYPE, SUDO, type Save } from './level';
 
 export const SLOT_COUNT = 3;
 /** Sudo mode keeps its own slots, like its own save. */
-export const slotKey = (n: number) => `access-denied-v3-${SUDO ? 'sudo-' : ''}slot-${n}`;
+export const slotKey = (n: number) => `access-denied-v3-${SHIFT_PROTOTYPE ? 'harbor-shift-' : SUDO ? 'sudo-' : ''}slot-${n}`;
 /** sessionStorage: a save to land in after the reload (LOAD GAME). */
-export const RESUME_KEY = 'access-denied-resume-v3';
+export const RESUME_KEY = SHIFT_PROTOTYPE ? 'access-denied-harbor-shift-resume-v1' : 'access-denied-resume-v3';
 
 export interface Slot {
   v: 2;

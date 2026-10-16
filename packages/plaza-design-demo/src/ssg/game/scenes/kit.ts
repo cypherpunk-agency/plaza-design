@@ -91,6 +91,8 @@ export interface SceneReadable { id: string; x: number; name: string; pages: str
  * presses E there and returns what is said (a bubble). It can spend tokens and set save flags.
  */
 export interface SceneUse {
+  /** Omit interactions outside their authored story stage. */
+  available?: (flags: Readonly<Record<string, boolean>>) => boolean;
   id: string;
   x: number;
   /** The E prompt ("[E] BUY FISH"); a `price` is added to it ("· 1 TOKEN · YOU HAVE 7"). */
@@ -149,6 +151,9 @@ export interface UseCtx {
 
 /** Everything the player can carry, by id, with its name (the HUD's short "+ name" line when it comes). */
 export const ITEMS = {
+  'shift.tag': 'work tag',
+  'shift.parcel': 'blue parcel',
+  'shift.case': 'empty transport case',
   fish: 'fish',
   tea: 'tea',
   basil: 'basil leaf',
@@ -171,6 +176,8 @@ export type ItemId = keyof typeof ITEMS;
  * own drawing. Which place it belongs to is the city's data (city.ts).
  */
 export interface SceneDef {
+  /** Story objective for scenes without hacking goals. */
+  objective?: (flags: Readonly<Record<string, boolean>>) => string;
   id: string;
   /** Shown in the HUD. */
   name: string;

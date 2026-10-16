@@ -26,7 +26,7 @@ import { Game } from './game';
 import { isSceneId } from './scenes';
 import { isCutsceneId } from './cutscenes';
 import { takeResume } from './slots';
-import { SUDO } from './level';
+import { SHIFT_PROTOTYPE, SUDO } from './level';
 
 export { runBoot };
 
@@ -37,7 +37,7 @@ const playScene = () => {
   try { return sceneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
 };
 /** A scene (or cutscene) id the game can start in; Downtown (and anything unknown) is undefined: the game decides. The sandbox only with `?sudo`. */
-const sceneParam = (z: string) => ((isSceneId(z) && z !== 'downtown' && (z !== 'sandbox' || SUDO)) || isCutsceneId(z) ? z : undefined);
+const sceneParam = (z: string) => ((isSceneId(z) && z !== 'downtown' && (z !== 'sandbox' || SUDO) && (z !== 'harborShift' || SHIFT_PROTOTYPE)) || isCutsceneId(z) ? z : undefined);
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
@@ -63,6 +63,7 @@ function touchControls(host: HTMLElement) {
     '<button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Escape" aria-label="Menu" class="small walk-only">MENU</button>' +
     '<button data-key="h" aria-label="Leave hack vision" class="vis-only">EXIT</button><button data-key="b" aria-label="The board" class="vis-only">BOARD</button>' +
     '<button data-key="l" aria-label="Logic parts" class="vis-only logic" data-logic>LOGIC</button><button data-key="n" aria-label="The net map" class="vis-only net">NET</button><button data-key="u" aria-label="Unfold every circuit" class="vis-only unfold">UNFOLD</button></div>';
+  if (SHIFT_PROTOTYPE) bar.querySelectorAll('[data-key="h"], [data-key=" "], [data-key="Enter"], .vis-only').forEach((el) => el.remove());
   bar.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     const key = b.dataset.key!;
     const down = (e: Event) => { e.preventDefault(); b.classList.add('down'); sendKey(key, 'keydown'); };
@@ -88,6 +89,7 @@ export interface AccessDeniedOpts {
 
 export function initAccessDenied(opts: AccessDeniedOpts) {
   const html = document.documentElement;
+  if (SHIFT_PROTOTYPE) html.classList.add('shift-prototype');
   const cta = document.getElementById('cta');
   const windowEl = document.querySelector('.demo-window') as HTMLElement | null;
   const header = document.querySelector('.plaza-window-header') as HTMLElement | null;

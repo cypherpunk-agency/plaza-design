@@ -597,6 +597,13 @@ function drawHut(x: CanvasRenderingContext2D, v: View) {
   box(x, hx + 60, y(38), 5, 4, '#c8b8a0'); void t;
 }
 
+/** Shared water and distant port for the working harbor and the shift prototype. */
+export function drawHarborDistance(x: CanvasRenderingContext2D, v: View) {
+  drawSkyDepth(x, v);
+  drawHorizon(x, v);
+  drawWater(x, v);
+}
+
 export const harbor: SceneDef = {
   id: 'harbor',
   name: 'Harbor',

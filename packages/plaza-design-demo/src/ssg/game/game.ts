@@ -14,6 +14,8 @@
  * is drawn at an integer pixel scale so the sprites stay crisp.
  */
 
+import { SHIFT_PROTOTYPE } from './level';
+import { shiftMinute, drawShiftWorker } from './scenes/harbor-shift';
 import { sound } from './audio';
 import { drawSprite, GLOW_THEM, GLOW_YOU, HULL, SPR, type Sprite } from './sprites';
 import { type LineKind, Terminal } from './terminal';
@@ -107,7 +109,7 @@ export class Game {
   private canvas: HTMLCanvasElement;
   private x: CanvasRenderingContext2D;
   private term: Terminal;
-  private save: Save = SUDO ? unlockAll(loadSave()) : loadSave();
+  private save: Save = SUDO && !SHIFT_PROTOTYPE ? unlockAll(loadSave()) : loadSave();
   private k = 2;
   private viewW = 640;
   private viewH = 320;
@@ -179,12 +181,12 @@ export class Game {
       hasSave: () => this.hasSave(),
       quit: () => host.onExit(),
       // the city map lives in the menu too (TAB and M still open it on a keyboard)
-      map: () => this.showMap(),
+      ...(!SHIFT_PROTOTYPE ? { map: () => this.showMap() } : {}),
       onClose: () => { this.syncEnginePause(); this.canvas.focus(); },
-      ...(SUDO ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
+      ...(SUDO && !SHIFT_PROTOTYPE ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
     }, this.touch);
     // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts); in a scene, the city clock's
-    if (SUDO) {
+    if (SUDO && !SHIFT_PROTOTYPE) {
       this.transport = new Transport(host.windowEl);
       this.clockBar = new ClockBar(host.windowEl, () => sceneClimate(this.here), () => this.syncClock(true));
     }
@@ -647,6 +649,7 @@ export class Game {
   }
 
   private openDeck() {
+    if (SHIFT_PROTOTYPE) return;
     if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
     const at = hackLocked(this.save.flags) ? null : this.termMachine();
     if (at) this.term.print('[' + (this.zh.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
@@ -662,6 +665,7 @@ export class Game {
   }
 
   private jump() {
+    if (SHIFT_PROTOTYPE) return;
     if (!this.save.jump) { this.flash('[ERR] legs.so not found'); sound.denied(); return; }
     if (!this.p.onGround) return;
     this.p.vy = 4.6;
@@ -688,6 +692,11 @@ export class Game {
    * until it hands over (`openingDone`): leave mid-glide and the old run is still there. Slots are untouched.
    */
   private newGame() {
+    if (SHIFT_PROTOTYPE) {
+      localStorage.removeItem(SAVE_KEY);
+      location.reload();
+      return;
+    }
     if (!this.opening) { this.showTitle(true); return; }
     this.opening.go();
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: the coast at sunrise, from the sea west to Downtown and LINE 0');
@@ -707,6 +716,7 @@ export class Game {
    * Pixel comes along where it follows you, or is at home; the first visit has the player say a few words.
    */
   private enter(id: SceneId, quiet = false, at?: string) {
+    if (SHIFT_PROTOTYPE) id = 'harborShift';
     const s: SceneDef = SCENES[id];
     this.zh.persist();
     this.hosts.forEach((h) => h.closeAll());
@@ -1512,6 +1522,7 @@ export class Game {
     const open = this.here === 'downtown' ? this.downtown.viewing : null;
     const jack = open ? this.downtown.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
+    if (SHIFT_PROTOTYPE) { drawShiftWorker(x, this.view(), p.x, p.face, p.moving, this.save.flags); return; }
     const sprite = jack ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
     if (!this.zh.visionOn) castShadow(x, this.view(), p.x, 42, 12, this.groundUnder(p.x, p.y));
     const box = drawSprite(x, sprite, this.sx(p.x), this.y(p.y), { glow: GLOW_YOU, flip: p.face < 0 });
@@ -1799,7 +1810,7 @@ export class Game {
     this.bubbleBox = { x: bx, y: by, w, h };
     x.fillStyle = '#000'; x.fillRect(bx, by, w, h);
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.strokeRect(bx + 1, by + 1, w - 2, h - 2); x.lineWidth = 1;
-    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : isBefore(this.save.flags) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
+    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : (SHIFT_PROTOTYPE || isBefore(this.save.flags)) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
     x.fillStyle = '#fff'; shownLines.forEach((l, i) => x.fillText(l, bx + 10, by + 30 + i * 13));
     if (b.chars >= full.length && Math.floor(this.t / 20) % 2) {
       x.beginPath(); x.moveTo(bx + w - 16, by + h - 10); x.lineTo(bx + w - 8, by + h - 10); x.lineTo(bx + w - 12, by + h - 5); x.closePath(); x.fill();
@@ -1825,7 +1836,7 @@ export class Game {
     }
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
-    const zh = this.zh.model.data.goals.length ? this.zh : null, story = pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
+    const zh = this.zh.model.data.goals.length ? this.zh : null, story = this.def.objective?.(this.save.flags) ?? pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
     if (story || zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + (story ?? zh!.objective()), 8, (y += 11)); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     const tl = this.termLine;
@@ -1888,7 +1899,7 @@ export class Game {
 
   private get story(): OpeningState { return openingState(this.save.flags); }
   /** Who you are in the HUD and your bubbles: a courier while you still exist, then your handle (or "ghost"). */
-  private get me() { return isBefore(this.save.flags) ? 'courier' : who(this.save); }
+  private get me() { if (SHIFT_PROTOTYPE) return 'worker'; return isBefore(this.save.flags) ? 'courier' : who(this.save); }
   /** The city clock, after the scene's name in the HUD (" · 21:40"; the opening's times are its pins). */
   private get clockText() { return ' · ' + city.text; }
 
@@ -2031,6 +2042,12 @@ export class Game {
    * morning after 09:40) from the train home until Moth's uplink.so; then it runs, from 09:42.
    */
   private pinStory() {
+    if (SHIFT_PROTOTYPE) {
+      this.save.clock.day = this.save.flags['shift:returned'] ? 2 : 1;
+      const at = shiftMinute(this.save.flags);
+      if (city.pinned !== at) city.pin(at);
+      return;
+    }
     const st = this.story;
     if (st === 'home' || st === 'flat' || st === 'deleted') {
       const at = parseHM(pick(OPENING_TIME, st, this.here) ?? '');
@@ -2278,7 +2295,7 @@ export class Game {
   private lifeTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
     for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
-    for (const u of s.uses ?? []) list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: this.useLabel(u), promptH: u.promptH ?? 70 });
+    for (const u of s.uses ?? []) if (!u.available || u.available(this.save.flags)) list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: this.useLabel(u), promptH: u.promptH ?? 70 });
     // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
     if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
     // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
@@ -2451,6 +2468,7 @@ export class Game {
 
   /** The city map on its own, just to look at (for a menu to call). Esc closes it. */
   showMap() {
+    if (SHIFT_PROTOTYPE) return;
     if (!this.running || this.flight || this.hop) return;
     this.keys.clear();
     this.bubble = null;

@@ -7,6 +7,7 @@
  * Styles live in render.tsx (`#key-bar`).
  */
 
+import { SHIFT_PROTOTYPE } from './level';
 import { sound } from './audio';
 
 /** Sends a key to the game, the same way a keyboard would. */
@@ -58,7 +59,7 @@ export class KeyBar {
       this.actions.appendChild(b);
       return b;
     };
-    this.walking.push(button('Tab', 'TAB', 'MAP'), button('Enter', 'ENTER', 'TERMINAL'));
+    if (!SHIFT_PROTOTYPE) this.walking.push(button('Tab', 'TAB', 'MAP'), button('Enter', 'ENTER', 'TERMINAL'));
     // sound has no key: this button and the pause menu
     this.soundBtn = button('', '', 'SOUND');
     this.soundBtn.onclick = () => { sound.toggle(); this.refocus(); };

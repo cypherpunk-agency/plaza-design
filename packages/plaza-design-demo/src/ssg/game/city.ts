@@ -100,6 +100,7 @@ export const SCENE_PLACE = {
   mall: 'mall',
   galleriaStation: 'station-galleria',
   harbor: 'harbor',
+  harborShift: 'harbor',
   // the stacks (terminal 2, P15) are a second scene of the harbor's place: a door from the pier, no map pin of their own
   stacks: 'harbor',
   warehouse: 'warehouse',

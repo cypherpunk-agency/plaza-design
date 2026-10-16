@@ -679,6 +679,13 @@ export const demoStyles = `
 
     /* HACK and BOARD over the canvas, in a scene on the hacking system (game/engine/host.ts) */
     /* The key bar: every key and what it does (game/keybar.ts); the scene's HACK/BOARD join it */
+    html.shift-prototype.game-mode .plaza-window-footer { min-height: 44px; z-index: 6; }
+    html.shift-prototype.game-mode .footer-terminal,
+    html.shift-prototype.game-mode .footer-prompt,
+    html.shift-prototype.game-mode .footer-input-area,
+    html.shift-prototype.game-mode .footer-send-btn,
+    html.shift-prototype.game-mode .header-online,
+    html.shift-prototype.game-mode .plaza-window-header > span:last-child { display: none !important; }
     #key-bar {
       position: absolute;
       top: calc(var(--game-top, 40px) + var(--spacing-2));

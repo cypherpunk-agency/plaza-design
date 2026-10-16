@@ -10,10 +10,12 @@ are deliverables, not dates; later story proposals remain provisional.
   specifies the proposed encounters, prerequisites, learning practice, interfaces, scene
   permissions, failure recovery and disposition of existing puzzles. This is a completed
   design deliverable, not evidence of player comprehension or implemented progression.
-- **Next: milestone 2, the harbor shift prototype.** Build only after a request to implement;
-  the current task consolidates documentation and completes milestone 1.
+- **Milestone 2: prototype implemented locally.** Launch `?play=harborShift`; see
+  [preview and validation notes](./README.md#harbor-shift-prototype-milestone-2). Boss, coworker,
+  deliveries, trolley/clamp, checkout and completion are present with isolated saves.
+  Pacing/comprehension review remains pending; milestone 3 integrates the commute and home.
 - The running game still uses the previous train-first opening and multi-district Act I.
-  The harbor shift, staged augmentation and body transitions are not implemented.
+  The harbor shift is available separately; staged augmentation and body transitions are not implemented.
 - Player testing and playthrough scope are to be discussed separately. No test session,
   regression-suite expansion, CI work or publication is implied by this roadmap.
 
@@ -22,7 +24,7 @@ are deliverables, not dates; later story proposals remain provisional.
 | Milestone | Deliverable | Completion criterion | Dependencies / status |
 | --- | --- | --- | --- |
 | 1. Design prologue and Act I | Scene matrix, teaching dependencies, access model, clinic route, puzzle dispositions | Every required ability has an introduction before use and independent practice before combinations; unresolved finale decisions isolated | Design pass complete; see linked plan |
-| 2. Harbor shift prototype | Small work area, boss, coworker, delivery, independent task, physical disruption, checkout | Complete miniature work story; teaches movement, interaction and carrying without hacking or real deadlines | M1; next implementation slice |
+| 2. Harbor shift prototype | Small work area, boss, coworker, delivery, independent task, physical disruption, checkout | Complete miniature work story; teaches movement, interaction and carrying without hacking or real deadlines | M1; prototype implemented, player review pending |
 | 3. Ordinary-life prologue | Glide lands at dusk harbor; night shift connects to dawn commute, Downtown and home/rest | Coherent shift-to-home experience with recurring people, working services and breathing room | M2 plus pacing review |
 | 4. Deletion and first agency | Morning denial, human help, ordinary clinic route, limited augmentation, first direct hack and independent application | Loss is legible; no clinic access deadlock; hacking improves a familiar circumstance | M3; use M1 working defaults |
 | 5. Foundational Downtown hacking | Guided wire, independent wire, cut/replace practice, clue guards, known connections | Each concept is rehearsed before combination; interfaces expand with actual need | M4 |
@@ -31,7 +33,7 @@ are deliverables, not dates; later story proposals remain provisional.
 | 8. Act II chapters | Selected district leads; separate lessons for logic, time, resources and security | Each chapter advances body recovery and teaches a manageable new concept | M7; bounded branching rather than all districts at once |
 | 9. Remote presence and Act III | Limited remote precursor in Act II, body-loss transition, network/ally play, resolution | Remote rules are understood before dependence on them; ending addresses personal and Registry stakes | Prototype remote play before writing/building full Act III |
 
-## Milestone 2 scope
+## Milestone 2 scope and delivery
 
 Use P1–P6 in the [scene plan](./PROLOGUE-ACT-I-PLAN.md). A work bay and connected checkout
 area can share existing harbor sets; no full district rebuild is required. Start directly at

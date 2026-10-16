@@ -31,6 +31,31 @@ Arrow keys walk, E interacts, H opens hack vision, B the board, Enter the termin
 city map, N the net map once `scan.so` is owned, and Escape closes overlays or opens the menu.
 Touch has on-screen controls and currently requires landscape orientation.
 
+## Harbor shift prototype (milestone 2)
+
+Open `http://127.0.0.1:4174/?play=harborShift` after the homepage build and local server above.
+This is a separate playable work bay, not the campaign opening. Walk with arrows/A/D, interact
+with E, and use E/Enter to advance dialogue. Item handovers use the existing contextual popup.
+
+The supervisor assigns a parcel for Mara; return her empty case, report back, release the
+loading trolley's clamp, park it, return the work tag and read the wage statement. The final
+objective reads SHIFT COMPLETE. There is no commute in this slice.
+
+The prototype has a separate autosave (`access-denied-harbor-shift-v1`), manual slots and
+resume key. Reload resumes task progress at the work-bay spawn. MENU → NEW GAME resets only
+this prototype's autosave; its manual slots remain. The campaign and sudo saves are unchanged.
+No hacking, map, terminal or jump controls are available in the prototype, including with sudo.
+
+Implemented with `scenes/harbor-shift.ts`, ordinary `SceneUse` interactions and carried items;
+no engine device data or rule contract is added. `SceneUse.available` stages interactions,
+`SceneDef.objective` supplies the goal. Time is pinned to completed story beats, and wages
+are granted once. The player and workers use the existing character kit; distant water,
+ships, containers and the crane reuse harbor sets.
+
+Validation: both builds and focused task-state checks (including serialised reloads, premature
+checkout, repeated handovers and one-time pay). Initial/completed browser states are inspected
+separately; a complete player playthrough and comprehension assessment remain pending.
+
 ## Code map
 
 | File or directory | Current responsibility |
