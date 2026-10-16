@@ -1,0 +1,1384 @@
+{
+  "version": 1,
+  "scene": "laundromat",
+  "instances": [
+    {
+      "id": "background",
+      "type": "laundromat.background",
+      "props": {
+        "width": 880,
+        "ceiling": 150
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "room",
+      "type": "laundromat.room",
+      "props": {
+        "width": 880,
+        "ceiling": 150
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "window",
+      "type": "laundromat.window-back",
+      "props": {
+        "width": 192,
+        "height": 84,
+        "facing": 180
+      },
+      "placement": {
+        "x": 640,
+        "h": 40
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "outside-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "outside-1"
+      },
+      "placement": {
+        "x": 600,
+        "h": 40
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.outside-1.pose",
+        "clip": "window.clip"
+      }
+    },
+    {
+      "id": "outside-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "outside-2"
+      },
+      "placement": {
+        "x": 900,
+        "h": 40
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.outside-2.pose",
+        "clip": "window.clip"
+      }
+    },
+    {
+      "id": "outside-3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "outside-3"
+      },
+      "placement": {
+        "x": 760,
+        "h": 40
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.outside-3.pose",
+        "clip": "window.clip"
+      }
+    },
+    {
+      "id": "window-front",
+      "type": "laundromat.window-front",
+      "props": {
+        "width": 192,
+        "height": 84,
+        "facing": 180
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "tube-0",
+      "type": "laundromat.tube",
+      "props": {
+        "index": 0
+      },
+      "placement": {
+        "x": 150,
+        "h": 148
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "tube-1",
+      "type": "laundromat.tube",
+      "props": {
+        "index": 1
+      },
+      "placement": {
+        "x": 380,
+        "h": 148
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "tube-2",
+      "type": "laundromat.tube",
+      "props": {
+        "index": 2
+      },
+      "placement": {
+        "x": 610,
+        "h": 148
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "tube-3",
+      "type": "laundromat.tube",
+      "props": {
+        "index": 3
+      },
+      "placement": {
+        "x": 800,
+        "h": 148
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "ticker",
+      "type": "laundromat.ticker",
+      "props": {
+        "width": 300
+      },
+      "placement": {
+        "x": 380,
+        "h": 106
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "tv",
+      "type": "laundromat.advert",
+      "props": {
+        "width": 70,
+        "height": 22
+      },
+      "placement": {
+        "x": 586,
+        "h": 100
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "camera",
+      "type": "laundromat.camera",
+      "props": {},
+      "placement": {
+        "x": 214,
+        "h": 110
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "dryer-0",
+      "type": "laundromat.dryer",
+      "props": {
+        "index": 0
+      },
+      "placement": {
+        "x": 290,
+        "h": 60
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "dryer-1",
+      "type": "laundromat.dryer",
+      "props": {
+        "index": 1
+      },
+      "placement": {
+        "x": 350,
+        "h": 60
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "dryer-2",
+      "type": "laundromat.dryer",
+      "props": {
+        "index": 2
+      },
+      "placement": {
+        "x": 410,
+        "h": 60
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "dryer-3",
+      "type": "laundromat.dryer",
+      "props": {
+        "index": 3
+      },
+      "placement": {
+        "x": 470,
+        "h": 60
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "door",
+      "type": "laundromat.door",
+      "props": {},
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "notice",
+      "type": "laundromat.notice",
+      "props": {},
+      "placement": {
+        "x": 74,
+        "h": 96
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "soap",
+      "type": "laundromat.soap",
+      "props": {},
+      "placement": {
+        "x": 124,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "clock",
+      "type": "laundromat.schedule",
+      "props": {},
+      "placement": {
+        "x": 178,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "conduits",
+      "type": "laundromat.conduits",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "washer1",
+      "type": "laundromat.washer",
+      "props": {
+        "index": 0
+      },
+      "placement": {
+        "x": 290,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "washer2",
+      "type": "laundromat.washer",
+      "props": {
+        "index": 1
+      },
+      "placement": {
+        "x": 350,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "washer3",
+      "type": "laundromat.washer",
+      "props": {
+        "index": 2
+      },
+      "placement": {
+        "x": 410,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "washer4",
+      "type": "laundromat.washer",
+      "props": {
+        "index": 3
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "washer-note-2",
+      "type": "laundromat.note",
+      "props": {
+        "first": "MINE",
+        "second": "SINCE TUE",
+        "tilt": -0.06
+      },
+      "placement": {
+        "x": 4,
+        "h": 60
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "washer2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "washer-note-4",
+      "type": "laundromat.note",
+      "props": {
+        "first": "WAKE ME",
+        "second": "AT DONE",
+        "tilt": 0.05
+      },
+      "placement": {
+        "x": -2,
+        "h": 60
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "washer4",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "breaker",
+      "type": "laundromat.breaker",
+      "props": {},
+      "placement": {
+        "x": 530,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "suds",
+      "type": "laundromat.suds",
+      "props": {},
+      "placement": {
+        "x": 586,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "folder",
+      "type": "character.prepared",
+      "props": {
+        "actor": "folder"
+      },
+      "placement": {
+        "x": 646,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.folder.pose"
+      }
+    },
+    {
+      "id": "table",
+      "type": "laundromat.table",
+      "props": {
+        "width": 60,
+        "height": 26
+      },
+      "placement": {
+        "x": 620,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "bench",
+      "type": "laundromat.bench",
+      "props": {
+        "width": 82,
+        "height": 10
+      },
+      "placement": {
+        "x": 690,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "socks",
+      "type": "laundromat.socks",
+      "props": {},
+      "placement": {
+        "x": 852,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "blue",
+      "type": "character.prepared",
+      "props": {
+        "actor": "blue"
+      },
+      "placement": {
+        "x": 232,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.blue.pose"
+      }
+    },
+    {
+      "id": "gran",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gran"
+      },
+      "placement": {
+        "x": 16,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bench",
+        "anchor": "seat"
+      },
+      "bindings": {
+        "pose": "actor.gran.pose"
+      }
+    },
+    {
+      "id": "sleeper",
+      "type": "character.prepared",
+      "props": {
+        "actor": "sleeper"
+      },
+      "placement": {
+        "x": 54,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bench",
+        "anchor": "seat"
+      },
+      "bindings": {
+        "pose": "actor.sleeper.pose"
+      }
+    },
+    {
+      "id": "cat",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cat"
+      },
+      "placement": {
+        "x": 166,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.cat.pose"
+      }
+    },
+    {
+      "id": "floor",
+      "type": "laundromat.floor",
+      "props": {
+        "width": 880
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "puddle",
+      "type": "laundromat.puddle",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "reflection",
+      "type": "laundromat.reflection",
+      "props": {},
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "drain",
+      "type": "laundromat.drain",
+      "props": {},
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "laundromat.hover",
+        "tripped": "laundromat.tripped",
+        "clear": "laundromat.clear",
+        "nextRunning": "laundromat.nextRunning",
+        "nextMs": "laundromat.nextMs",
+        "door3": "laundromat.door3",
+        "breakerX": "laundromat.breakerX",
+        "washerXs": "laundromat.washerXs",
+        "w1": "laundromat.w1",
+        "w2": "laundromat.w2",
+        "w3": "laundromat.w3",
+        "w4": "laundromat.w4",
+        "p1": "laundromat.p1",
+        "p2": "laundromat.p2",
+        "p3": "laundromat.p3",
+        "p4": "laundromat.p4"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 43,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-market",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "exit:market"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "door",
+        "anchor": "entrance"
+      }
+    },
+    {
+      "id": "device-clock",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "device:clock"
+      },
+      "placement": {
+        "x": 0,
+        "h": 58
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "clock",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-washer1",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "device:washer1"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "washer1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-washer2",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "device:washer2"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "washer2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-washer3",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "device:washer3"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "washer3",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-washer4",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "device:washer4"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "washer4",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-breaker",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "device:breaker"
+      },
+      "placement": {
+        "x": 0,
+        "h": 44
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "breaker",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-suds",
+      "type": "laundromat.marker",
+      "props": {
+        "role": "device:suds"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "suds",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

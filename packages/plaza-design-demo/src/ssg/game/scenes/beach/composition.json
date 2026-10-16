@@ -1,0 +1,2684 @@
+{
+  "version": 1,
+  "scene": "beach",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "beach.marker",
+      "props": {
+        "role": "scene",
+        "width": 1530
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "beach.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "edge-exit",
+      "type": "beach.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 44,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "horizon",
+      "type": "beach.marker",
+      "props": {
+        "role": "horizon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 122
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "waterline",
+      "type": "beach.marker",
+      "props": {
+        "role": "waterline"
+      },
+      "placement": {
+        "x": 0,
+        "h": 30
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shore-edge",
+      "type": "beach.marker",
+      "props": {
+        "role": "shore"
+      },
+      "placement": {
+        "x": 1096,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "sky",
+      "type": "beach.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "distant-city",
+      "type": "beach.city",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "sea",
+      "type": "beach.sea",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "buoy",
+      "type": "beach.buoy",
+      "props": {},
+      "placement": {
+        "x": 1210,
+        "h": 84
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "sea-surfer",
+      "type": "beach.surfing",
+      "props": {},
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "swimmer-0",
+      "type": "beach.swimmer",
+      "props": {
+        "depth": 0.55,
+        "phase": 0
+      },
+      "placement": {
+        "x": 610,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "swimmer-1",
+      "type": "beach.swimmer",
+      "props": {
+        "depth": 0.35,
+        "phase": 1
+      },
+      "placement": {
+        "x": 680,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "swimmer-2",
+      "type": "beach.swimmer",
+      "props": {
+        "depth": 0.6,
+        "phase": 2
+      },
+      "placement": {
+        "x": 740,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "swimmer-3",
+      "type": "beach.swimmer",
+      "props": {
+        "depth": 0.45,
+        "phase": 3
+      },
+      "placement": {
+        "x": 830,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "swimmer-4",
+      "type": "beach.swimmer",
+      "props": {
+        "depth": 0.5,
+        "phase": 4
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "swimmer-5",
+      "type": "beach.swimmer",
+      "props": {
+        "depth": 0.4,
+        "phase": 5
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "swimmer-6",
+      "type": "beach.swimmer",
+      "props": {
+        "depth": 0.6,
+        "phase": 6
+      },
+      "placement": {
+        "x": 1250,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "shore",
+      "type": "beach.shore",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "gulls",
+      "type": "beach.gulls",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "ashore-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "ashore-0"
+      },
+      "placement": {
+        "x": 610,
+        "h": 28
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.ashore-0.pose"
+      }
+    },
+    {
+      "id": "ashore-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "ashore-1"
+      },
+      "placement": {
+        "x": 680,
+        "h": 28
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.ashore-1.pose"
+      }
+    },
+    {
+      "id": "ashore-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "ashore-2"
+      },
+      "placement": {
+        "x": 740,
+        "h": 28
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.ashore-2.pose"
+      }
+    },
+    {
+      "id": "ashore-3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "ashore-3"
+      },
+      "placement": {
+        "x": 830,
+        "h": 28
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.ashore-3.pose"
+      }
+    },
+    {
+      "id": "ashore-4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "ashore-4"
+      },
+      "placement": {
+        "x": 960,
+        "h": 28
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.ashore-4.pose"
+      }
+    },
+    {
+      "id": "ashore-5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "ashore-5"
+      },
+      "placement": {
+        "x": 1180,
+        "h": 28
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.ashore-5.pose"
+      }
+    },
+    {
+      "id": "ashore-6",
+      "type": "character.prepared",
+      "props": {
+        "actor": "ashore-6"
+      },
+      "placement": {
+        "x": 1250,
+        "h": 28
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.ashore-6.pose"
+      }
+    },
+    {
+      "id": "stairs",
+      "type": "beach.stairs",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "stairs-exit",
+      "type": "beach.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 22,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stairs",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "boardwalk",
+      "type": "beach.boardwalk",
+      "props": {
+        "width": 206
+      },
+      "placement": {
+        "x": -10,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "notice",
+      "type": "beach.public-notice",
+      "props": {},
+      "placement": {
+        "x": 118,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "sunbed-0",
+      "type": "beach.sunbed",
+      "props": {
+        "index": 0,
+        "color": "#c83a2a",
+        "rentable": false
+      },
+      "placement": {
+        "x": 292,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "sunbed-1",
+      "type": "beach.sunbed",
+      "props": {
+        "index": 1,
+        "color": "#d8b040",
+        "rentable": false
+      },
+      "placement": {
+        "x": 334,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "sunbed-2",
+      "type": "beach.sunbed",
+      "props": {
+        "index": 2,
+        "color": "#3a6ad8",
+        "rentable": false
+      },
+      "placement": {
+        "x": 376,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "sunbed-3",
+      "type": "beach.sunbed",
+      "props": {
+        "index": 3,
+        "color": "#e8e0d0",
+        "rentable": true
+      },
+      "placement": {
+        "x": 418,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "sunbed-person-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "sunbed-person-0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 9
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.sunbed-person-0.pose"
+      },
+      "attach": {
+        "instance": "sunbed-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sunbed-person-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "sunbed-person-1"
+      },
+      "placement": {
+        "x": 0,
+        "h": 10
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.sunbed-person-1.pose"
+      },
+      "attach": {
+        "instance": "sunbed-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sunbather",
+      "type": "character.prepared",
+      "props": {
+        "actor": "sunbather"
+      },
+      "placement": {
+        "x": 0,
+        "h": 9
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.sunbather.pose"
+      },
+      "attach": {
+        "instance": "sunbed-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "kiosk",
+      "type": "beach.kiosk",
+      "props": {},
+      "placement": {
+        "x": 236,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "bar",
+      "type": "beach.bar-under",
+      "props": {
+        "width": 226
+      },
+      "placement": {
+        "x": 436,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "bar-back",
+      "type": "beach.bar-back",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "photo",
+      "type": "beach.bar-photo",
+      "props": {},
+      "placement": {
+        "x": 64,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "bartender",
+      "type": "beach.lime",
+      "props": {},
+      "placement": {
+        "x": 96,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "lime-talk",
+      "type": "beach.marker",
+      "props": {
+        "role": "person"
+      },
+      "placement": {
+        "x": 0,
+        "h": 4
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bartender",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bar-shell",
+      "type": "beach.bar-shell",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "bar-counter",
+      "type": "beach.bar-counter",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "menu",
+      "type": "beach.menu",
+      "props": {},
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "order",
+      "type": "beach.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 8,
+        "h": 70
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "menu",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stool-0",
+      "type": "beach.bar-stool",
+      "props": {},
+      "placement": {
+        "x": 64,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "stool-1",
+      "type": "beach.bar-stool",
+      "props": {},
+      "placement": {
+        "x": 124,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "stool-2",
+      "type": "beach.bar-stool",
+      "props": {},
+      "placement": {
+        "x": 164,
+        "h": 0
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "bar-lights",
+      "type": "beach.bar-lights",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "jukebox",
+      "type": "beach.jukebox",
+      "props": {},
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 52,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "mixer",
+      "type": "beach.mixer",
+      "props": {},
+      "placement": {
+        "x": 190,
+        "h": 0
+      },
+      "order": 53,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "drink",
+      "type": "beach.marker",
+      "props": {
+        "role": "drink"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 54,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stool-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "crab",
+      "type": "beach.crab",
+      "props": {},
+      "placement": {
+        "x": 694,
+        "h": 0
+      },
+      "order": 55,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "tower",
+      "type": "beach.tower",
+      "props": {},
+      "placement": {
+        "x": 770,
+        "h": 0
+      },
+      "order": 56,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "drone",
+      "type": "beach.drone",
+      "props": {},
+      "placement": {
+        "x": 28,
+        "h": 0
+      },
+      "order": 57,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "tower",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "guard",
+      "type": "character.prepared",
+      "props": {
+        "actor": "guard"
+      },
+      "placement": {
+        "x": -14,
+        "h": 62
+      },
+      "order": 58,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.guard.pose"
+      },
+      "attach": {
+        "instance": "tower",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "net",
+      "type": "beach.volleyball",
+      "props": {},
+      "placement": {
+        "x": 908,
+        "h": 0
+      },
+      "order": 59,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "castle",
+      "type": "beach.castle",
+      "props": {},
+      "placement": {
+        "x": 1004,
+        "h": 0
+      },
+      "order": 60,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "surfer-board",
+      "type": "beach.board",
+      "props": {},
+      "placement": {
+        "x": 12,
+        "h": 0
+      },
+      "order": 61,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "surfer",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "beachgoer-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "beachgoer-0"
+      },
+      "placement": {
+        "x": 936,
+        "h": 0
+      },
+      "order": 62,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.beachgoer-0.pose"
+      }
+    },
+    {
+      "id": "beachgoer-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "beachgoer-1"
+      },
+      "placement": {
+        "x": 966,
+        "h": 0
+      },
+      "order": 63,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.beachgoer-1.pose"
+      }
+    },
+    {
+      "id": "beachgoer-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "beachgoer-2"
+      },
+      "placement": {
+        "x": 852,
+        "h": 0
+      },
+      "order": 64,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.beachgoer-2.pose"
+      }
+    },
+    {
+      "id": "beachgoer-3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "beachgoer-3"
+      },
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 65,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.beachgoer-3.pose"
+      }
+    },
+    {
+      "id": "beachgoer-4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "beachgoer-4"
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 66,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.beachgoer-4.pose"
+      }
+    },
+    {
+      "id": "beachgoer-5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "beachgoer-5"
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 67,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.beachgoer-5.pose"
+      }
+    },
+    {
+      "id": "beachgoer-6",
+      "type": "character.prepared",
+      "props": {
+        "actor": "beachgoer-6"
+      },
+      "placement": {
+        "x": 290,
+        "h": 56
+      },
+      "order": 68,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.beachgoer-6.pose"
+      }
+    },
+    {
+      "id": "volley",
+      "type": "character.prepared",
+      "props": {
+        "actor": "volley"
+      },
+      "placement": {
+        "x": -30,
+        "h": 0
+      },
+      "order": 69,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.volley.pose"
+      },
+      "attach": {
+        "instance": "net",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "kid",
+      "type": "character.prepared",
+      "props": {
+        "actor": "kid"
+      },
+      "placement": {
+        "x": 18,
+        "h": 0
+      },
+      "order": 70,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.kid.pose"
+      },
+      "attach": {
+        "instance": "castle",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "surfer",
+      "type": "character.prepared",
+      "props": {
+        "actor": "surfer"
+      },
+      "placement": {
+        "x": 1066,
+        "h": 0
+      },
+      "order": 71,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.surfer.pose"
+      }
+    },
+    {
+      "id": "boat",
+      "type": "beach.boat",
+      "props": {},
+      "placement": {
+        "x": 1440,
+        "h": 0
+      },
+      "order": 72,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "pier",
+      "type": "beach.pier-deck",
+      "props": {
+        "width": 472,
+        "railingLength": 302
+      },
+      "placement": {
+        "x": 1078,
+        "h": 0
+      },
+      "order": 73,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "pier-lamp-0",
+      "type": "beach.pier-lamp",
+      "props": {},
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 74,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "pier-lamp-1",
+      "type": "beach.pier-lamp",
+      "props": {},
+      "placement": {
+        "x": 176,
+        "h": 0
+      },
+      "order": 75,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "pier-lamp-2",
+      "type": "beach.pier-lamp",
+      "props": {},
+      "placement": {
+        "x": 242,
+        "h": 0
+      },
+      "order": 76,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "pier-controller",
+      "type": "beach.pier-controller",
+      "props": {},
+      "placement": {
+        "x": 68,
+        "h": 0
+      },
+      "order": 77,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "berth-sign",
+      "type": "beach.berth-sign",
+      "props": {},
+      "placement": {
+        "x": 118,
+        "h": 0
+      },
+      "order": 78,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "fisher",
+      "type": "character.prepared",
+      "props": {
+        "actor": "fisher"
+      },
+      "placement": {
+        "x": 222,
+        "h": 8
+      },
+      "order": 79,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.fisher.pose"
+      },
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "fishing-rod",
+      "type": "beach.rod",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": -8
+      },
+      "order": 80,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "fisher",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "cat",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cat"
+      },
+      "placement": {
+        "x": 174,
+        "h": 0
+      },
+      "order": 81,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.cat.pose"
+      },
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gull",
+      "type": "beach.post-gull",
+      "props": {},
+      "placement": {
+        "x": 274,
+        "h": 0
+      },
+      "order": 82,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "foreground",
+      "type": "beach.foreground",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 83,
+      "pass": "backdrop",
+      "bindings": {
+        "palette": "beach.palette",
+        "horizon": "beach.horizon",
+        "waterline": "beach.waterline",
+        "rented": "beach.rented",
+        "billingPaused": "beach.billingPaused",
+        "billed": "beach.billed",
+        "freeDrink": "beach.freeDrink",
+        "danger": "beach.danger",
+        "lamps": "beach.lamps",
+        "gullShooed": "beach.gullShooed",
+        "hover": "beach.hover",
+        "barVisible": "beach.barVisible",
+        "barWidth": "beach.barWidth",
+        "towerVisible": "beach.towerVisible",
+        "pierVisible": "beach.pierVisible",
+        "boardwalkVisible": "beach.boardwalkVisible",
+        "drinkX": "beach.drinkX",
+        "shore": "beach.shore",
+        "lampPositions": "beach.lampPositions",
+        "drinkH": "beach.drinkH"
+      }
+    },
+    {
+      "id": "device-kiosk",
+      "type": "beach.marker",
+      "props": {
+        "role": "device",
+        "width": 30,
+        "height": 50
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 84,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "kiosk",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-jukebox",
+      "type": "beach.marker",
+      "props": {
+        "role": "device",
+        "width": 26,
+        "height": 44
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 85,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "jukebox",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-mixer",
+      "type": "beach.marker",
+      "props": {
+        "role": "device",
+        "width": 22,
+        "height": 26
+      },
+      "placement": {
+        "x": 0,
+        "h": 26
+      },
+      "order": 86,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "mixer",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-drone",
+      "type": "beach.marker",
+      "props": {
+        "role": "device",
+        "width": 32,
+        "height": 16
+      },
+      "placement": {
+        "x": 0,
+        "h": 112
+      },
+      "order": 87,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "drone",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-pier",
+      "type": "beach.marker",
+      "props": {
+        "role": "device",
+        "width": 22,
+        "height": 36
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 88,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier-controller",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-boat",
+      "type": "beach.marker",
+      "props": {
+        "role": "device",
+        "width": 120,
+        "height": 54
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 89,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "boat",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-bar-window",
+      "type": "beach.light",
+      "props": {
+        "kind": "window",
+        "radius": 40,
+        "width": 90,
+        "lightHeight": 24,
+        "alpha": 0.8
+      },
+      "placement": {
+        "x": 114,
+        "h": 92
+      },
+      "order": 90,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-salt-sign",
+      "type": "beach.light",
+      "props": {
+        "kind": "neon",
+        "radius": 50,
+        "color": "255,90,110"
+      },
+      "placement": {
+        "x": 124,
+        "h": 116
+      },
+      "order": 91,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-bar-left",
+      "type": "beach.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 46,
+        "color": "255,214,140"
+      },
+      "placement": {
+        "x": 34,
+        "h": 64
+      },
+      "order": 92,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-bar-right",
+      "type": "beach.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 46,
+        "color": "255,214,140"
+      },
+      "placement": {
+        "x": 204,
+        "h": 64
+      },
+      "order": 93,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-pier",
+      "type": "beach.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 52
+      },
+      "placement": {
+        "x": 0,
+        "h": 52
+      },
+      "order": 94,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pier-controller",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-boat",
+      "type": "beach.light",
+      "props": {
+        "kind": "neon",
+        "radius": 26,
+        "color": "255,170,90",
+        "alpha": 0.6
+      },
+      "placement": {
+        "x": 0,
+        "h": 30
+      },
+      "order": 95,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "boat",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-kiosk",
+      "type": "beach.marker",
+      "props": {
+        "role": "caster",
+        "width": 30
+      },
+      "placement": {
+        "x": 0,
+        "h": 76
+      },
+      "order": 96,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "kiosk",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-tower",
+      "type": "beach.marker",
+      "props": {
+        "role": "caster",
+        "width": 34
+      },
+      "placement": {
+        "x": 0,
+        "h": 110
+      },
+      "order": 97,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "tower",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-net",
+      "type": "beach.marker",
+      "props": {
+        "role": "caster",
+        "width": 4
+      },
+      "placement": {
+        "x": 0,
+        "h": 46
+      },
+      "order": 98,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "net",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-castle",
+      "type": "beach.marker",
+      "props": {
+        "role": "caster",
+        "width": 26
+      },
+      "placement": {
+        "x": 0,
+        "h": 14
+      },
+      "order": 99,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "castle",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-board",
+      "type": "beach.marker",
+      "props": {
+        "role": "caster",
+        "width": 6
+      },
+      "placement": {
+        "x": 0,
+        "h": 60
+      },
+      "order": 100,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "notice",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "scene": "sequence-intro",
+  "instances": [
+    {
+      "id": "fill",
+      "type": "sequence.intro.fill",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "sky",
+      "type": "sequence.intro.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ships-far",
+      "type": "sequence.intro.ships-far",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "sun",
+      "type": "sequence.intro.sun",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "far",
+      "type": "sequence.intro.far",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "mid",
+      "type": "sequence.intro.mid",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ships-near",
+      "type": "sequence.intro.ships-near",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "floor",
+      "type": "sequence.intro.floor",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "horizon",
+      "type": "sequence.intro.horizon",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "hero",
+      "type": "sequence.intro.hero",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop"
+    },
+    {
+      "id": "mast",
+      "type": "sequence.intro.mast",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop"
+    },
+    {
+      "id": "network",
+      "type": "sequence.intro.network",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "beacons",
+      "type": "sequence.intro.beacons",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop"
+    },
+    {
+      "id": "rain",
+      "type": "sequence.intro.rain",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop"
+    },
+    {
+      "id": "screen-fade",
+      "type": "sequence.intro.screen-fade",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop"
+    }
+  ]
+}

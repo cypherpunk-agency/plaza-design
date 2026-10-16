@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "scene": "sequence-taxi",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "sequence.taxi.sky",
+      "props": {
+        "top": "#02030a",
+        "middle": "#0a0403",
+        "bottom": "#170803"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "lights",
+      "type": "sequence.taxi.lights",
+      "props": {
+        "far": 0.6,
+        "middle": 1.8,
+        "near": 4.5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "towers",
+      "type": "sequence.taxi.towers",
+      "props": {
+        "fill": "#030100"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "cab",
+      "type": "sequence.taxi.cab",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "destination",
+      "type": "sequence.taxi.destination",
+      "props": {
+        "destination": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "fade",
+      "type": "sequence.taxi.fade",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    }
+  ]
+}

@@ -10,16 +10,17 @@ or "source of truth" language does not make a design immutable. The user's curre
 takes precedence. Investigate contradictions and update stale descriptions rather than
 silently restoring an obsolete design or automatically asking for permission.
 
-For story and teaching progression, read [PROGRESSION-CONCEPT.md](./PROGRESSION-CONCEPT.md).
+For story and teaching progression, read [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md).
 It records the newer direction and explicitly open proposals; it does not mean the redesign
 is implemented or authorize implementing all of it. Older act-order notes are historical context.
-Use ROADMAP.md for the active milestones and PROLOGUE-ACT-I-PLAN.md for the detailed first
+Use ROADMAP.md for the active milestones and docs/design/PROLOGUE-ACT-I-PLAN.md for the detailed first
 design pass. The prior roadmap is preserved under archive/ and is not the active build order.
 
 ## Keep changes coherent
 
-- For behavior, start with `game.ts`, the relevant scene and its `data/*.json`/rules.
-- Use GAME-DATA.md for the authoring format and ART-GUIDE.md for current visual intent.
+- For behavior, start with `runtime/game.ts`, the relevant `scenes/<id>/` package and its
+  `devices.json`/rules. Read `docs/reference/MODULES.md` for ownership and dependencies.
+- Use docs/reference/GAME-DATA.md for the authoring format and docs/reference/ART-GUIDE.md for current visual intent.
   Use ROADMAP.md to distinguish implemented work from proposed work, not to lock priorities.
 - Register new scenes/data and include their code contracts in the homepage generator's
   validation where applicable. The regular React demo build is not the game build.

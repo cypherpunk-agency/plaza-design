@@ -42,3 +42,9 @@ Thumbs.db
 
 # Homepage build (scripts/generate-demos.tsx)
 dist-homepage/
+
+# Local original-render snapshots and pixel evidence
+.scene-system/
+
+# Local source-edit recovery journal (never a player save)
+.authoring-history/

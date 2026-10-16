@@ -1,0 +1,849 @@
+{
+  "version": 1,
+  "scene": "harborShift",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "scene",
+        "width": 1180
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "dockwork.marker",
+      "props": {},
+      "placement": {
+        "x": 80,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "horizon",
+      "type": "dockwork.marker",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 84
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "distance",
+      "type": "dockwork.distance",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "gantry",
+      "type": "dockwork.distant-crane",
+      "props": {},
+      "placement": {
+        "x": 900,
+        "h": 40
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "night-container",
+      "type": "dockwork.distant-container",
+      "props": {},
+      "placement": {
+        "x": 370,
+        "h": 14
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ground",
+      "type": "dockwork.ground",
+      "props": {
+        "width": 1180
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "office",
+      "type": "dockwork.office",
+      "props": {},
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "boss",
+      "type": "character.prepared",
+      "props": {
+        "actor": "boss"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.boss.pose"
+      },
+      "attach": {
+        "instance": "office",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "office-counter",
+      "type": "dockwork.counter",
+      "props": {
+        "width": 50,
+        "height": 22,
+        "color": "#504332",
+        "edge": "#ae966a"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "office",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "dispatch-post",
+      "type": "dockwork.task-post",
+      "props": {
+        "label": "DISPATCH"
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop"
+    },
+    {
+      "id": "rack-post",
+      "type": "dockwork.task-post",
+      "props": {
+        "label": "CASE RETURNS"
+      },
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "receiving-post",
+      "type": "dockwork.task-post",
+      "props": {
+        "label": "RECEIVING"
+      },
+      "placement": {
+        "x": 580,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop"
+    },
+    {
+      "id": "checkout-post",
+      "type": "dockwork.task-post",
+      "props": {
+        "label": "CHECKOUT"
+      },
+      "placement": {
+        "x": 1020,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop"
+    },
+    {
+      "id": "dispatch-counter",
+      "type": "dockwork.counter",
+      "props": {
+        "width": 56,
+        "height": 20,
+        "color": "#574531",
+        "edge": "#b99b6b"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dispatch-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "parcel",
+      "type": "dockwork.parcel",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 20
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "shift.parcelPresent"
+      },
+      "attach": {
+        "instance": "dispatch-counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rack",
+      "type": "dockwork.rack",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "rack-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "returned-case",
+      "type": "dockwork.case",
+      "props": {
+        "width": 32,
+        "height": 14
+      },
+      "placement": {
+        "x": 0,
+        "h": 7
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "shift.returned"
+      },
+      "attach": {
+        "instance": "rack",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "mara",
+      "type": "character.prepared",
+      "props": {
+        "actor": "mara"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.mara.pose"
+      },
+      "attach": {
+        "instance": "receiving-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "receiving-counter",
+      "type": "dockwork.counter",
+      "props": {
+        "width": 92,
+        "height": 23,
+        "color": "#544332",
+        "edge": "#ae966a"
+      },
+      "placement": {
+        "x": 19,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "receiving-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "delivered-parcel",
+      "type": "dockwork.parcel",
+      "props": {},
+      "placement": {
+        "x": -28,
+        "h": 23
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "shift.delivered"
+      },
+      "attach": {
+        "instance": "receiving-counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "case",
+      "type": "dockwork.case",
+      "props": {},
+      "placement": {
+        "x": 31,
+        "h": 23
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "shift.casePresent"
+      },
+      "attach": {
+        "instance": "receiving-counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bay",
+      "type": "dockwork.bay",
+      "props": {},
+      "placement": {
+        "x": 880,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop"
+    },
+    {
+      "id": "trolley",
+      "type": "dockwork.trolley",
+      "props": {},
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "x": "shift.trolleyX"
+      }
+    },
+    {
+      "id": "release",
+      "type": "dockwork.release",
+      "props": {},
+      "placement": {
+        "x": 44,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "released": "shift.released"
+      },
+      "attach": {
+        "instance": "trolley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "clamp",
+      "type": "dockwork.clamp",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "released": "shift.released",
+        "trolleyX": "shift.trolleyX",
+        "restX": "shift.trolleyRestX"
+      },
+      "attach": {
+        "instance": "trolley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "checkout",
+      "type": "dockwork.checkout",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "checked": "shift.checked"
+      },
+      "attach": {
+        "instance": "checkout-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "statement",
+      "type": "dockwork.statement",
+      "props": {},
+      "placement": {
+        "x": 58,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "bindings": {
+        "checked": "shift.checked"
+      },
+      "attach": {
+        "instance": "checkout",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-boss",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.boss"
+      },
+      "attach": {
+        "instance": "boss",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-parcel",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": -20
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.parcel"
+      },
+      "attach": {
+        "instance": "parcel",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-mara",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.mara"
+      },
+      "attach": {
+        "instance": "mara",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-case",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 2,
+        "h": -23
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.case"
+      },
+      "attach": {
+        "instance": "case",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-rack",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.rack"
+      },
+      "attach": {
+        "instance": "rack",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-trolley",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.trolley"
+      },
+      "attach": {
+        "instance": "trolley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-clamp",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.clamp"
+      },
+      "attach": {
+        "instance": "release",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-checkout",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.checkout"
+      },
+      "attach": {
+        "instance": "checkout",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cue-statement",
+      "type": "dockwork.cue",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "bindings": {
+        "visible": "cue.statement"
+      },
+      "attach": {
+        "instance": "statement",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "complete",
+      "type": "dockwork.complete",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "bindings": {
+        "done": "shift.done"
+      },
+      "attach": {
+        "instance": "checkout",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "barrier-left",
+      "type": "dockwork.barrier",
+      "props": {},
+      "placement": {
+        "x": 22,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop"
+    },
+    {
+      "id": "barrier-right",
+      "type": "dockwork.barrier",
+      "props": {},
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop"
+    },
+    {
+      "id": "use-boss",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "boss",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-parcel",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dispatch-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-mara",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "mara",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-case",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 2,
+        "h": -23
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "case",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-rack",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "rack",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-trolley",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "trolley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-clamp",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "release",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-checkout",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "checkout",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-statement",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "statement",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-boss",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "light",
+        "width": 90
+      },
+      "placement": {
+        "x": 0,
+        "h": 84
+      },
+      "order": 49,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "boss",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-mara",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "light",
+        "width": 90
+      },
+      "placement": {
+        "x": 0,
+        "h": 84
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "mara",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-checkout",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "light",
+        "width": 90
+      },
+      "placement": {
+        "x": 0,
+        "h": 84
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "checkout",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

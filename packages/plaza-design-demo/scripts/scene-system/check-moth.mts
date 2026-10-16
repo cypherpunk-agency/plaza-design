@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { mothArt, mothComposition, mothDeviceData, mothEnvironment, mothGeometry, mothPlacement, validateMothComposition } from '../../src/ssg/game/scenes/moth/composition';
+import { resolveComposition, type Composition } from '../../src/ssg/game/art/core/composition';
+import type { SceneData } from '../../src/ssg/game/data/types';
+import type { SceneModel } from '../../src/ssg/game/engine/model';
+import devices from '../../src/ssg/game/scenes/moth/devices.json';
+const doc = validateMothComposition(JSON.parse(JSON.stringify(mothComposition)));
+assert.deepEqual(doc, mothComposition);
+assert.equal(doc.instances.length, 38);
+assert.deepEqual(mothDeviceData(devices as SceneData), devices, 'all seven original Moth device spots remain exact');
+assert.equal(mothPlacement('door').x, 30); assert.equal(mothPlacement('spawn').x, 52); assert.equal(mothPlacement('exit-door').x, 52);
+const edit = structuredClone(doc);
+edit.instances.find(i => i.id === 'desk')!.placement.x += 12;
+edit.instances.find(i => i.id === 'desk')!.placement.h += 6;
+const geometry = mothGeometry(edit);
+assert.deepEqual(geometry.filter(i => i.instance.type === 'moth.monitor').map(i => [i.placement.x, i.placement.h]), [[300,42],[322,40],[344,42]]);
+assert.equal(geometry.find(i => i.instance.id === 'chair')!.placement.x, 330);
+assert.equal(geometry.find(i => i.instance.id === 'desk-signal')!.placement.x, 284);
+assert.equal(geometry.find(i => i.instance.id === 'webcams')!.placement.h, 34);
+assert.deepEqual(mothDeviceData(devices as SceneData, edit).devices.find(i => i.id === 'desk')!.layout!.spot, { x:322, w:70, h:62, y:6 });
+assert.deepEqual(mothDeviceData(devices as SceneData, edit).devices.map(i => i.id), devices.devices.map(i => i.id));
+function rejects(change:(doc:Composition)=>void, pattern:RegExp) {
+  const bad=structuredClone(doc);change(bad);assert.throws(()=>validateMothComposition(bad),pattern);assert.deepEqual(doc,mothComposition);
+}
+rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='device-desk');},/Missing gameplay-bound/);
+rejects(d=>{d.instances.find(i=>i.id==='tank')!.bindings!.fed='moth.absent';},/unknown Moth binding/);
+const view={sx:(x:number)=>x,y:(h:number)=>300-h,gy:300,t:137,cam:0,viewW:640,viewH:360,flags:{}};
+let nextReads=0;
+const model={get:(key:string)=>({fed:true,fern:'wet',tape:0})[key as 'fed'|'fern'|'tape'],clocks:{next:(key:string)=>{assert.equal(key,'turntable.record');nextReads++;return{ms:1200};}}} as unknown as SceneModel;
+const env=mothEnvironment(edit,view,model,'tank'), rows=resolveComposition(mothArt,edit,env), tank=rows.find(i=>i.instance.id==='tank')!;
+assert.equal(tank.state.fed,true); assert.equal(tank.state.wet,true); assert.equal(tank.state.fresh,true); assert.equal(tank.state.playing,true); assert.equal(tank.state.nextMs,1200); assert.equal(tank.state.hover,'tank'); assert.equal(tank.state.deskHeight,34); assert.equal(nextReads,1);
+const shared=structuredClone(doc);shared.instances.push({id:'extra-stool',type:'furniture.stool',props:{seed:2},placement:{x:100,h:0},order:100,pass:'backdrop'});assert.doesNotThrow(()=>mothGeometry(validateMothComposition(shared)));
+console.log('Moth checks passed: 38-instance roundtrip; seven original device spots; desk/three-monitors/chair/shelf/webcams/marker attachment geometry; spawn/exit ids; record/fish/plant/tape snapshots; shared stool extension; invalid documents rejected without mutating source.');

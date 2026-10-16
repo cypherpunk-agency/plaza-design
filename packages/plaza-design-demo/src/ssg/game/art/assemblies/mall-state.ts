@@ -1,0 +1,9 @@
+/** Validated read-only visual state for the Galleria's adaptive storeys and daylight. */
+import type {Light}from '../../world/light';
+import {lightAt}from '../../world/light';
+import type {MallLayout}from './mall-details';
+import type {Value}from '../core/composition';
+export interface MallVisual{layout:MallLayout;levels:number[];light:Light}
+export const emptyMallVisual:MallVisual={layout:{width:2560,spawn:0,ceil:112,fascia:130,slab:144,rail:160,far0:176,step:86,storey:70,kiosk:0,registry:0,escalator:{x:0,w:160},escSign:0,fountain:{x:0,w:150},pillars:[],metro:0,roof:0,service:0},levels:[176,262],light:lightAt(1,0,180,null)};
+function shape(value:unknown,template:unknown,path:string):void{if(typeof template==='number'){if(typeof value!=='number'||!Number.isFinite(value))throw Error(path+': expected finite number');return;}if(typeof template==='string'||typeof template==='boolean'){if(typeof value!==typeof template)throw Error(path+': invalid scalar');return;}if(template===null){if(value!==null){shape(value,{kind:'',from:'',mix:0,cloud:0,rain:0,storm:0,fog:0,smog:0,heat:0,wet:0,wind:0},path);}return;}if(Array.isArray(template)){if(!Array.isArray(value)||value.some(v=>typeof v!=='number'||!Number.isFinite(v)))throw Error(path+': invalid number list');return;}if(!value||typeof value!=='object'||Array.isArray(value))throw Error(path+': expected object');const keys=Object.keys(template as object),v=value as Record<string,unknown>;if(Object.keys(v).length!==keys.length||keys.some(k=>!(k in v)))throw Error(path+': invalid keys');for(const k of keys)shape(v[k],(template as Record<string,unknown>)[k],path+'.'+k);}
+export const validateMallVisual=(value:Value)=>{shape(value,emptyMallVisual,'mall visual');const s=value as unknown as MallVisual;if(s.levels.length<2||s.layout.step<=0)throw Error('Mall requires at least two storeys and positive spacing');};

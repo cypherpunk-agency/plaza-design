@@ -15,7 +15,7 @@
  * Pure apart from timers: node can run it (see `now`).
  */
 
-import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from '../data';
+import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from "../data/index";
 import type {
   Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, MachineData, NetData, NetworkData, NounData, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave,
 } from '../data/types';

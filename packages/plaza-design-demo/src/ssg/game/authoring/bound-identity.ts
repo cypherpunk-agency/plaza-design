@@ -1,0 +1,15 @@
+/** The first composer edits presentation while keeping named runtime bindings intact. */
+import type { Composition, Instance } from '../art/core/composition';
+const flatten = (nodes: Instance[]): Instance[] => nodes.flatMap(node => [node, ...flatten(node.children ?? [])]);
+export function preserveBoundIdentity(before: unknown, after: unknown): void {
+  const previous = before as Composition, next = after as Composition;
+  const replacements = new Map(flatten(next.instances).map(node => [node.id, node]));
+  for (const node of flatten(previous.instances)) {
+    const bindings = Object.entries(node.bindings ?? {});
+    if (!bindings.length) continue;
+    const replacement = replacements.get(node.id), sources = replacement?.bindings ?? {};
+    if (!replacement || replacement.type !== node.type || Object.keys(sources).length !== bindings.length || bindings.some(([field, source]) => sources[field] !== source)) {
+      throw new Error(`${node.id}: preserve gameplay identity and bindings; only its local placement and appearance are editable`);
+    }
+  }
+}

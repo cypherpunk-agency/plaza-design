@@ -22,14 +22,14 @@
 
 import type { MachineData, SceneData, SceneSave } from '../data/types';
 import type { SceneDef, View } from '../scenes/kit';
-import type { LineKind } from '../terminal';
+import type { LineKind } from "../ui/terminal";
 import { type Line, type Spot, SceneModel } from './model';
 import { Panels } from './panels';
 import type { SceneRules } from './rules';
 import { type Box, Feedback, type PingKind, type Spot2D } from './feedback';
 import { Popup, type PopupAnchor, type PopupItem, type PopupRoom } from './popup';
 import { type Anchor, Schematic } from './schematic';
-import { ENGINE_PANEL_FNS } from './toys';
+import { ENGINE_PANEL_FNS } from "./toys/index";
 
 /**
  * Something to stand next to and press E on. `promptH`: how high its prompt hangs above the street;
@@ -663,5 +663,6 @@ export class SceneHost {
   }
 
   /** Draw the scene; in hack vision the game draws 'world', mutes it, then 'devices' (see `DrawLayer`). */
+  preparePresentation(v: View, layer: DrawLayer = 'all') { this.def.preparePresentation?.(v, { m: this.model, hover: this.hover, layer }); }
   draw(x: CanvasRenderingContext2D, v: View, layer: DrawLayer = 'all') { this.def.drawBackdrop(x, v, { m: this.model, hover: this.hover, layer }); }
 }

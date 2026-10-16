@@ -1,0 +1,722 @@
+{
+  "version": 1,
+  "scene": "shop",
+  "instances": [
+    {
+      "id": "clear",
+      "type": "shop.clear",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "wall",
+      "type": "shop.wall",
+      "props": {
+        "width": 900,
+        "ceiling": 160
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-slab",
+      "type": "shop.upstairs-slab",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 170
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-0",
+      "type": "shop.upstairs-room-0",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 170
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-1",
+      "type": "shop.upstairs-room-1",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 256
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-2",
+      "type": "shop.upstairs-room-2",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 342
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-3",
+      "type": "shop.upstairs-room-3",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 428
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-4",
+      "type": "shop.upstairs-room-4",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 514
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-5",
+      "type": "shop.upstairs-room-5",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 600
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-6",
+      "type": "shop.upstairs-room-6",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 686
+      },
+      "order": 9,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-room-7",
+      "type": "shop.upstairs-room-7",
+      "props": {
+        "width": 900,
+        "height": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 772
+      },
+      "order": 10,
+      "pass": "backdrop"
+    },
+    {
+      "id": "upstairs-pipes",
+      "type": "shop.upstairs-pipes",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "wall-edges",
+      "type": "shop.wall-edges",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tube-0",
+      "type": "shop.tube-0",
+      "props": {},
+      "placement": {
+        "x": 140,
+        "h": 158
+      },
+      "order": 13,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tube-1",
+      "type": "shop.tube-1",
+      "props": {},
+      "placement": {
+        "x": 400,
+        "h": 158
+      },
+      "order": 14,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tube-2",
+      "type": "shop.tube-2",
+      "props": {},
+      "placement": {
+        "x": 660,
+        "h": 158
+      },
+      "order": 15,
+      "pass": "backdrop"
+    },
+    {
+      "id": "window-back",
+      "type": "shop.window-back",
+      "props": {
+        "width": 80,
+        "height": 82
+      },
+      "placement": {
+        "x": 70,
+        "h": 34
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "lighting": "shop.lighting"
+      }
+    },
+    {
+      "id": "outside-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "outside-0"
+      },
+      "placement": {
+        "x": -30,
+        "h": 2
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.outside-0",
+        "clip": "shop.clip.outside-0"
+      },
+      "attach": {
+        "instance": "window-back",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "outside-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "outside-1"
+      },
+      "placement": {
+        "x": 230,
+        "h": 2
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.outside-1",
+        "clip": "shop.clip.outside-1"
+      },
+      "attach": {
+        "instance": "window-back",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "window-front",
+      "type": "shop.window-front",
+      "props": {
+        "width": 80,
+        "height": 82
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "lighting": "shop.lighting"
+      },
+      "attach": {
+        "instance": "window-back",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "door",
+      "type": "shop.door",
+      "props": {},
+      "placement": {
+        "x": 32,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop"
+    },
+    {
+      "id": "mirror",
+      "type": "shop.mirror",
+      "props": {},
+      "placement": {
+        "x": 166,
+        "h": 140
+      },
+      "order": 21,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ticker",
+      "type": "shop.ticker",
+      "props": {
+        "text": "ID REQUIRED FOR ALL PURCHASES   \u00ef\u00bf\u00bd   CASH TRANSACTIONS ARE LOGGED   \u00ef\u00bf\u00bd   SHOPLIFTING IS REPORTED TO THE REGISTRY   \u00ef\u00bf\u00bd   CURFEW 01:00"
+      },
+      "placement": {
+        "x": 330,
+        "h": 136
+      },
+      "order": 22,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shelf-0",
+      "type": "shop.shelf-0",
+      "props": {
+        "width": 92,
+        "height": 112,
+        "rows": 4,
+        "seed": 71,
+        "stock": "snacks"
+      },
+      "placement": {
+        "x": 182,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shelf-1",
+      "type": "shop.shelf-1",
+      "props": {
+        "width": 92,
+        "height": 112,
+        "rows": 4,
+        "seed": 72,
+        "stock": "noodles"
+      },
+      "placement": {
+        "x": 284,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shelf-2",
+      "type": "shop.shelf-2",
+      "props": {
+        "width": 92,
+        "height": 112,
+        "rows": 4,
+        "seed": 73,
+        "stock": "mixed"
+      },
+      "placement": {
+        "x": 386,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop"
+    },
+    {
+      "id": "limit",
+      "type": "shop.limit",
+      "props": {
+        "text": "LIMIT 3"
+      },
+      "placement": {
+        "x": 330,
+        "h": 124
+      },
+      "order": 26,
+      "pass": "backdrop"
+    },
+    {
+      "id": "vending",
+      "type": "shop.vending",
+      "props": {
+        "width": 38,
+        "height": 78,
+        "text": "THIRST"
+      },
+      "placement": {
+        "x": 500,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop"
+    },
+    {
+      "id": "fridge",
+      "type": "shop.fridge",
+      "props": {
+        "width": 108,
+        "height": 98,
+        "seed": 5,
+        "doors": 2
+      },
+      "placement": {
+        "x": 556,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop"
+    },
+    {
+      "id": "advert",
+      "type": "shop.advert",
+      "props": {},
+      "placement": {
+        "x": 610,
+        "h": 116
+      },
+      "order": 29,
+      "pass": "backdrop"
+    },
+    {
+      "id": "lottery",
+      "type": "shop.lottery",
+      "props": {},
+      "placement": {
+        "x": 120,
+        "h": 76
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cash-sign",
+      "type": "shop.cash-sign",
+      "props": {
+        "text": "CASH ONLY"
+      },
+      "placement": {
+        "x": 60,
+        "h": 126
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera",
+      "type": "shop.camera",
+      "props": {},
+      "placement": {
+        "x": 14,
+        "h": 134
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "keeper",
+      "type": "character.prepared",
+      "props": {
+        "actor": "keeper"
+      },
+      "placement": {
+        "x": 100,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.keeper"
+      },
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "counter",
+      "type": "shop.counter",
+      "props": {
+        "width": 170,
+        "height": 26
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop"
+    },
+    {
+      "id": "till",
+      "type": "shop.till",
+      "props": {},
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sweets",
+      "type": "shop.sweets",
+      "props": {},
+      "placement": {
+        "x": 56,
+        "h": 26
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "counter-label",
+      "type": "shop.counter-label",
+      "props": {
+        "text": "NO LOGS"
+      },
+      "placement": {
+        "x": 136,
+        "h": 13
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stickers",
+      "type": "shop.stickers",
+      "props": {},
+      "placement": {
+        "x": 80,
+        "h": 14
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "browser",
+      "type": "character.prepared",
+      "props": {
+        "actor": "browser"
+      },
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.browser"
+      }
+    },
+    {
+      "id": "person-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-1"
+      },
+      "placement": {
+        "x": 610,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.person-1"
+      }
+    },
+    {
+      "id": "cat",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cat"
+      },
+      "placement": {
+        "x": 84,
+        "h": 1
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.cat"
+      },
+      "attach": {
+        "instance": "fridge",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "stockbot",
+      "type": "character.prepared",
+      "props": {
+        "actor": "stockbot"
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.stockbot"
+      }
+    },
+    {
+      "id": "android",
+      "type": "character.prepared",
+      "props": {
+        "actor": "android"
+      },
+      "placement": {
+        "x": 688,
+        "h": 0
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.android"
+      }
+    },
+    {
+      "id": "crawler",
+      "type": "character.prepared",
+      "props": {
+        "actor": "crawler"
+      },
+      "placement": {
+        "x": 124,
+        "h": 133
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "shop.actor.crawler"
+      }
+    },
+    {
+      "id": "floor",
+      "type": "shop.floor",
+      "props": {
+        "width": 900
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop"
+    },
+    {
+      "id": "reflection",
+      "type": "shop.reflection",
+      "props": {},
+      "placement": {
+        "x": 556,
+        "h": -1
+      },
+      "order": 46,
+      "pass": "backdrop"
+    },
+    {
+      "id": "foreground",
+      "type": "shop.foreground",
+      "props": {},
+      "placement": {
+        "x": 250,
+        "h": -56,
+        "parallax": 1.25
+      },
+      "order": 47,
+      "pass": "foreground"
+    },
+    {
+      "id": "spawn",
+      "type": "shop.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 84,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop"
+    }
+  ]
+}

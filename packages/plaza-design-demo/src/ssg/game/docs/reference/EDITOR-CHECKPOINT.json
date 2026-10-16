@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-16",
+  "status": "working-checkpoint-goal-incomplete",
+  "baseCommit": "ecf0aad54b87bf72bdb1050cbebe6d516a233a24",
+  "publication": "main-only",
+  "editor": {
+    "command": "pnpm --filter plaza-design-demo compose-scenes",
+    "url": "http://127.0.0.1:4192",
+    "sceneCompositions": 19,
+    "sequenceCompositions": 4,
+    "timelineDocuments": 2,
+    "sourceSave": "revision-protected-loopback-only",
+    "map": "read-only-native-map-with-composition-navigation"
+  },
+  "evidence": {
+    "originalSceneCases": { "count": 489, "differences": 0, "manifest": "S5-main-editor-checkpoint-scenes-fixed-20261016.json" },
+    "animationFrames": { "count": 15308, "differences": 0, "manifest": "S5-salt-pier-buffer-full-parity-20261016.json", "bundleSha256": "cf0d184684bf12bffeb7f4ec7dd373a4582b1eb7ec7782e60895a340ffd70464" },
+    "nativePreviewCases": { "count": 372, "differences": 0, "manifest": "S6-nineteen-scenes-native-street-fixed-20261016.json", "scope": "direct-world-frames-with-shadows-disabled-on-both-sides" },
+    "worldMap": { "places": 17, "sceneOpenCallbacks": 37, "invalidReferencesRejected": 14, "browserStorageAndSourceUnchanged": true },
+    "localArchive": ".scene-system/evidence",
+    "note": "Original pixels, manifests and pinned bundles remain in the ignored local evidence archive. This summary does not claim final gates G1-G8."
+  },
+  "remaining": [
+    "Explicit lighting, shade, shadow and dynamic-lamp render context",
+    "Remaining large sequence assembly decomposition and metadata refinement",
+    "Full editor-operation and shadow-context acceptance",
+    "Final gate audit and documentation/evidence reconciliation"
+  ]
+}

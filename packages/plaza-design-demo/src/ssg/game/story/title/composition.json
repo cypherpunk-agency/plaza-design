@@ -1,0 +1,3012 @@
+{
+  "version": 1,
+  "scene": "sequence-opening",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "sequence.opening.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "sun",
+      "type": "sequence.opening.sun",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "far-shore",
+      "type": "sequence.opening.far-shore",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spire",
+      "type": "sequence.opening.spire",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "sea",
+      "type": "sequence.opening.sea",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "boats",
+      "type": "sequence.opening.boats",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "breakwater",
+      "type": "sequence.opening.breakwater",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "skyline",
+      "type": "sequence.opening.skyline",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "air",
+      "type": "sequence.opening.air",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "coast",
+      "type": "assembly.group",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "coast-ship",
+          "type": "sequence.opening.coast.ship",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.03225806451613,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-ground",
+          "type": "sequence.opening.coast.ground",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.064516129032258,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-street-ground",
+          "type": "sequence.opening.coast.street-ground",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.096774193548388,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-pier",
+          "type": "assembly.group",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.129032258064516,
+          "pass": "backdrop",
+          "children": [
+            {
+              "id": "coast-pier-piles",
+              "type": "sequence.opening.coast.pier-piles",
+              "props": {
+                "paint": "#0a0310"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.130032258064515,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-deck",
+              "type": "sequence.opening.coast.pier-deck",
+              "props": {
+                "paint": "#0a0310"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.131032258064517,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-rail",
+              "type": "sequence.opening.coast.pier-rail",
+              "props": {
+                "paint": "#0a0310"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.132032258064516,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-stairs",
+              "type": "sequence.opening.coast.pier-stairs",
+              "props": {
+                "paint": "#0a0310"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.133032258064516,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-kiosk",
+              "type": "sequence.opening.coast.pier-kiosk",
+              "props": {
+                "text": "BAIT · ICE · TEA"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.134032258064517,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-bench-0",
+              "type": "sequence.opening.coast.pier-bench-0",
+              "props": {
+                "paint": "#0a0310"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.135032258064516,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-bench-1",
+              "type": "sequence.opening.coast.pier-bench-1",
+              "props": {
+                "paint": "#0a0310"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.136032258064516,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-lamp-0",
+              "type": "sequence.opening.coast.pier-lamp-0",
+              "props": {
+                "paint": "#0a0310",
+                "light": "rgba(255,220,160,.95)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.137032258064515,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-lamp-1",
+              "type": "sequence.opening.coast.pier-lamp-1",
+              "props": {
+                "paint": "#0a0310",
+                "light": "rgba(255,220,160,.95)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.138032258064516,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-lamp-2",
+              "type": "sequence.opening.coast.pier-lamp-2",
+              "props": {
+                "paint": "#0a0310",
+                "light": "rgba(255,220,160,.95)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.139032258064516,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-string-0",
+              "type": "sequence.opening.coast.pier-string-0",
+              "props": {
+                "sag": 6,
+                "phase": 0
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.140032258064515,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-string-1",
+              "type": "sequence.opening.coast.pier-string-1",
+              "props": {
+                "sag": 6,
+                "phase": 1
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.141032258064516,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-pier-lantern",
+              "type": "sequence.opening.coast.pier-lantern",
+              "props": {
+                "paint": "#0a0310",
+                "light": "rgba(255,232,190,.95)"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.142032258064516,
+              "pass": "backdrop"
+            }
+          ]
+        },
+        {
+          "id": "coast-palm-1",
+          "type": "sequence.opening.coast.palm-1",
+          "props": {
+            "worldX": 90,
+            "height": 112,
+            "lean": 14,
+            "seed": 4,
+            "fill": "#0b0410"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.161290322580646,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-palm-2",
+          "type": "sequence.opening.coast.palm-2",
+          "props": {
+            "worldX": -76,
+            "height": 80,
+            "lean": -10,
+            "seed": 11,
+            "fill": "#0b0410"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.193548387096774,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-palm-4",
+          "type": "sequence.opening.coast.palm-4",
+          "props": {
+            "worldX": -262,
+            "height": 92,
+            "lean": -6,
+            "seed": 6,
+            "fill": "#0b0410"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.225806451612904,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-palm-5",
+          "type": "sequence.opening.coast.palm-5",
+          "props": {
+            "worldX": 338,
+            "height": 70,
+            "lean": 10,
+            "seed": 7,
+            "fill": "#0b0410"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.258064516129032,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-palm-6",
+          "type": "sequence.opening.coast.palm-6",
+          "props": {
+            "worldX": 452,
+            "height": 98,
+            "lean": -8,
+            "seed": 8,
+            "fill": "#0b0410"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.290322580645162,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-palm-7",
+          "type": "sequence.opening.coast.palm-7",
+          "props": {
+            "worldX": 662,
+            "height": 84,
+            "lean": 12,
+            "seed": 9,
+            "fill": "#0b0410"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.32258064516129,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-palm-8",
+          "type": "sequence.opening.coast.palm-8",
+          "props": {
+            "worldX": 735,
+            "height": 60,
+            "lean": -14,
+            "seed": 12,
+            "fill": "#0b0410"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.35483870967742,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-salt",
+          "type": "assembly.group",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.387096774193548,
+          "pass": "backdrop",
+          "children": [
+            {
+              "id": "coast-salt-under",
+              "type": "sequence.opening.coast.salt-under",
+              "props": {
+                "worldX": 196,
+                "width": 226
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.388096774193547,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-back",
+              "type": "sequence.opening.coast.salt-back",
+              "props": {
+                "worldX": 196,
+                "width": 226
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.389096774193549,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-lime",
+              "type": "sequence.opening.coast.salt-lime",
+              "props": {
+                "worldX": 196
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.390096774193548,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-shell",
+              "type": "sequence.opening.coast.salt-shell",
+              "props": {
+                "worldX": 196,
+                "width": 226,
+                "wear": 0.05
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.391096774193548,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-counter",
+              "type": "sequence.opening.coast.salt-counter",
+              "props": {
+                "worldX": 196,
+                "width": 226
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.392096774193549,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-stool-0",
+              "type": "sequence.opening.coast.salt-stool-0",
+              "props": {
+                "worldX": 196,
+                "seatX": 40,
+                "legPaint": "#5a3a24",
+                "seatPaint": "#8a5a3a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.393096774193548,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-stool-1",
+              "type": "sequence.opening.coast.salt-stool-1",
+              "props": {
+                "worldX": 196,
+                "seatX": 96,
+                "legPaint": "#5a3a24",
+                "seatPaint": "#8a5a3a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.394096774193548,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-stool-2",
+              "type": "sequence.opening.coast.salt-stool-2",
+              "props": {
+                "worldX": 196,
+                "seatX": 170,
+                "legPaint": "#5a3a24",
+                "seatPaint": "#8a5a3a"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.395096774193547,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-lights",
+              "type": "sequence.opening.coast.salt-lights",
+              "props": {
+                "worldX": 196,
+                "width": 226
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.396096774193548,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-salt-string",
+              "type": "sequence.opening.coast.salt-string",
+              "props": {
+                "worldX": 196,
+                "width": 226,
+                "sag": 12,
+                "phase": 3
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.397096774193548,
+              "pass": "backdrop"
+            }
+          ]
+        },
+        {
+          "id": "coast-lifeguard",
+          "type": "sequence.opening.coast.lifeguard",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.419354838709678,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-inlet",
+          "type": "sequence.opening.coast.inlet",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.451612903225806,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-buffer",
+          "type": "assembly.group",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.483870967741936,
+          "pass": "backdrop",
+          "children": [
+            {
+              "id": "coast-buffer-fence",
+              "type": "sequence.opening.coast.buffer-fence",
+              "props": {
+                "height": 26
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.484870967741935,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-buffer-sign-0",
+              "type": "sequence.opening.coast.buffer-sign-0",
+              "props": {
+                "text": "PORT AREA · NO ENTRY"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.485870967741937,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-buffer-sign-1",
+              "type": "sequence.opening.coast.buffer-sign-1",
+              "props": {
+                "text": "CAMERAS IN OPERATION"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.486870967741936,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-buffer-sign-2",
+              "type": "sequence.opening.coast.buffer-sign-2",
+              "props": {
+                "text": "TRESPASS IS LOGGED"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.487870967741936,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-buffer-camera",
+              "type": "sequence.opening.coast.buffer-camera",
+              "props": {},
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.488870967741937,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-buffer-floodlight",
+              "type": "sequence.opening.coast.buffer-floodlight",
+              "props": {},
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.489870967741936,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-buffer-car",
+              "type": "sequence.opening.coast.buffer-car",
+              "props": {
+                "paint": "#2a2224"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.490870967741936,
+              "pass": "backdrop"
+            },
+            {
+              "id": "coast-buffer-gate",
+              "type": "sequence.opening.coast.buffer-gate",
+              "props": {
+                "text": "TERMINAL 2 · STAFF"
+              },
+              "placement": {
+                "x": 0,
+                "h": 0
+              },
+              "order": 9.491870967741935,
+              "pass": "backdrop"
+            }
+          ]
+        },
+        {
+          "id": "coast-hub",
+          "type": "sequence.opening.coast.hub",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.516129032258064,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-stack-0",
+          "type": "sequence.opening.coast.stack-0",
+          "props": {
+            "worldX": 1390,
+            "boxes": [
+              {
+                "w": 320,
+                "h": 69,
+                "p": 0,
+                "seed": 81,
+                "code": "MRDU 220 1180"
+              },
+              {
+                "w": 160,
+                "h": 69,
+                "p": 6,
+                "seed": 85,
+                "dx": 30
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.548387096774194,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-stack-1",
+          "type": "sequence.opening.coast.stack-1",
+          "props": {
+            "worldX": 1630,
+            "boxes": [
+              {
+                "w": 320,
+                "h": 69,
+                "p": 7,
+                "seed": 87,
+                "code": "NRLU 404 0451"
+              },
+              {
+                "w": 320,
+                "h": 69,
+                "p": 6,
+                "seed": 88,
+                "dx": -12
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.580645161290322,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-stack-2",
+          "type": "sequence.opening.coast.stack-2",
+          "props": {
+            "worldX": 2010,
+            "boxes": [
+              {
+                "w": 320,
+                "h": 69,
+                "p": 2,
+                "seed": 86,
+                "code": "TDLU 404 7710"
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.612903225806452,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-stack-3",
+          "type": "sequence.opening.coast.stack-3",
+          "props": {
+            "worldX": 2190,
+            "boxes": [
+              {
+                "w": 160,
+                "h": 69,
+                "p": 4,
+                "seed": 98
+              },
+              {
+                "w": 160,
+                "h": 69,
+                "p": 1,
+                "seed": 99,
+                "dx": 6
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.64516129032258,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-crane-sts1",
+          "type": "sequence.opening.coast.crane-sts1",
+          "props": {
+            "worldX": 1470,
+            "variant": "sts1",
+            "boomUp": 1,
+            "phase": 0,
+            "paintMode": "dawn",
+            "paint": "#b4561c",
+            "lit": 0.5,
+            "rim": 0.55
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.67741935483871,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-crane-sts2",
+          "type": "sequence.opening.coast.crane-sts2",
+          "props": {
+            "worldX": 1800,
+            "variant": "sts2",
+            "boomUp": 0,
+            "phase": 1.3,
+            "paintMode": "dawn",
+            "paint": "#b4561c",
+            "lit": 0.5,
+            "rim": 0.55
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.709677419354838,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-crane-sts3",
+          "type": "sequence.opening.coast.crane-sts3",
+          "props": {
+            "worldX": 2120,
+            "variant": "sts3",
+            "boomUp": 0.94,
+            "phase": 2.1,
+            "paintMode": "dawn",
+            "paint": "#b4561c",
+            "lit": 0.5,
+            "rim": 0.55
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.741935483870968,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mast-1370",
+          "type": "sequence.opening.coast.mast-1370",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.774193548387096,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mast-1640",
+          "type": "sequence.opening.coast.mast-1640",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.806451612903226,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mast-1960",
+          "type": "sequence.opening.coast.mast-1960",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.838709677419354,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mast-2230",
+          "type": "sequence.opening.coast.mast-2230",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.870967741935484,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-truck-gate",
+          "type": "sequence.opening.coast.truck-gate",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.903225806451612,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-bridge",
+          "type": "sequence.opening.coast.bridge",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.935483870967742,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-galleria",
+          "type": "sequence.opening.coast.galleria",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 9.967741935483872,
+          "pass": "backdrop"
+        }
+      ]
+    },
+    {
+      "id": "town",
+      "type": "assembly.group",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "town-side-street-3420",
+          "type": "sequence.opening.town.side-street-3420",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.071428571428571,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-side-street-3720",
+          "type": "sequence.opening.town.side-street-3720",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.142857142857142,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-side-street-4130",
+          "type": "sequence.opening.town.side-street-4130",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.214285714285714,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-side-street-4480",
+          "type": "sequence.opening.town.side-street-4480",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.285714285714286,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-side-street-4800",
+          "type": "sequence.opening.town.side-street-4800",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.357142857142858,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-4700",
+          "type": "sequence.opening.town.tower-4700",
+          "props": {
+            "worldX": 3344,
+            "width": 587,
+            "height": 561,
+            "seed": 4700,
+            "skin": "brick",
+            "grime": 0.719221536351166,
+            "signs": [
+              {
+                "kind": "billboard",
+                "text": "KASHI PHARMA",
+                "col": "255,190,60",
+                "h": 476,
+                "at": 0.5006215706447188,
+                "dead": -1
+              },
+              {
+                "kind": "blade",
+                "text": "NUTRIPASTE",
+                "col": "170,130,255",
+                "h": 279,
+                "at": 0.3547710905349794,
+                "dead": -1
+              },
+              {
+                "kind": "blade",
+                "text": "KOBA SOY",
+                "col": "190,215,255",
+                "h": 276,
+                "at": 0.7603609396433471,
+                "dead": -1
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.428571428571429,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-4701",
+          "type": "sequence.opening.town.tower-4701",
+          "props": {
+            "worldX": 3545.6666666666665,
+            "width": 387,
+            "height": 561,
+            "seed": 4701,
+            "skin": "brick",
+            "grime": 0.49795953360768175,
+            "signs": [
+              {
+                "kind": "blade",
+                "text": "SLEEP 8H · 40C",
+                "col": "255,42,68",
+                "h": 130,
+                "at": 0.9632201646090535,
+                "dead": 8
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.5,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-4702",
+          "type": "sequence.opening.town.tower-4702",
+          "props": {
+            "worldX": 3748,
+            "width": 248,
+            "height": 476,
+            "seed": 4702,
+            "skin": "brick",
+            "grime": 0.8868955761316872,
+            "signs": [
+              {
+                "kind": "plate",
+                "text": "CREDIT 24H",
+                "col": "255,136,0",
+                "h": 263,
+                "at": 0.913983196159122,
+                "dead": 3
+              },
+              {
+                "kind": "blade",
+                "text": "PHARMACY · ID REQUIRED",
+                "col": "60,230,140",
+                "h": 133,
+                "at": 0.7213820301783265,
+                "dead": -1
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.571428571428571,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-4703",
+          "type": "sequence.opening.town.tower-4703",
+          "props": {
+            "worldX": 4158,
+            "width": 811,
+            "height": 3664,
+            "seed": 4703,
+            "skin": "glass",
+            "grime": 0.3924447016460905,
+            "signs": [
+              {
+                "kind": "blade",
+                "text": "OPEN",
+                "col": "60,230,140",
+                "h": 282,
+                "at": 0.5429698216735254,
+                "dead": -1
+              },
+              {
+                "kind": "ticker",
+                "text": "WATER RATION TODAY 40 L · CURFEW SECTOR 9 FROM 23:00 · LINE 0 RUNNING · ",
+                "col": "255,190,60",
+                "h": 306,
+                "at": 0.25344221536351164,
+                "dead": -1
+              },
+              {
+                "kind": "holo",
+                "text": "KOBA SOY|PROTEIN 31%",
+                "col": "190,215,255",
+                "h": 153,
+                "at": 0.46674382716049384,
+                "dead": -1
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.642857142857142,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-4704",
+          "type": "sequence.opening.town.tower-4704",
+          "props": {
+            "worldX": 4508,
+            "width": 339,
+            "height": 3270,
+            "seed": 4704,
+            "skin": "capsule",
+            "grime": 0.5319015775034294,
+            "signs": [
+              {
+                "kind": "blade",
+                "text": "REGISTRY",
+                "col": "190,215,255",
+                "h": 214,
+                "at": 0.9816486625514403,
+                "dead": -1
+              },
+              {
+                "kind": "billboard",
+                "text": "KASHI PHARMA",
+                "col": "190,215,255",
+                "h": 3185,
+                "at": 0.17935956790123456,
+                "dead": -1
+              },
+              {
+                "kind": "plate",
+                "text": "HOTEL",
+                "col": "255,190,60",
+                "h": 150,
+                "at": 0.8195173182441701,
+                "dead": -1
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.714285714285714,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-4705",
+          "type": "sequence.opening.town.tower-4705",
+          "props": {
+            "worldX": 4828,
+            "width": 584,
+            "height": 5735,
+            "seed": 4705,
+            "skin": "panel",
+            "grime": 0.03390174897119341,
+            "signs": [
+              {
+                "kind": "stack",
+                "text": "PHARMACY · ID REQUIRED",
+                "col": "60,230,140",
+                "h": 379,
+                "at": 0.7861668381344308,
+                "dead": -1
+              },
+              {
+                "kind": "plate",
+                "text": "PHARMACY · ID REQUIRED",
+                "col": "60,230,140",
+                "h": 356,
+                "at": 0.5045138888888889,
+                "dead": -1
+              },
+              {
+                "kind": "stack",
+                "text": "KARAOKE",
+                "col": "255,217,165",
+                "h": 387,
+                "at": 0.18170867626886145,
+                "dead": 0
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.785714285714286,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-4706",
+          "type": "sequence.opening.town.tower-4706",
+          "props": {
+            "worldX": 5033.666666666667,
+            "width": 495,
+            "height": 3040,
+            "seed": 4706,
+            "skin": "concrete",
+            "grime": 0.3975518689986282,
+            "signs": [
+              {
+                "kind": "billboard",
+                "text": "SCORE 712 · APPROVED",
+                "col": "170,130,255",
+                "h": 2955,
+                "at": 0.5296296296296297,
+                "dead": 0
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.857142857142858,
+          "pass": "backdrop"
+        },
+        {
+          "id": "town-tower-99001",
+          "type": "sequence.opening.town.tower-99001",
+          "props": {
+            "worldX": 3168,
+            "width": 486,
+            "height": 5600,
+            "seed": 99001,
+            "skin": "glass",
+            "grime": 0.3,
+            "signs": [
+              {
+                "kind": "ticker",
+                "text": "LINE 0 · CANYON BRANCH · NEXT: DOWNTOWN · MIND THE GAP · ",
+                "col": "255,136,0",
+                "h": 640
+              },
+              {
+                "kind": "blade",
+                "text": "REGISTRY",
+                "col": "255,42,68",
+                "h": 900,
+                "at": 0.9,
+                "dead": 4
+              }
+            ]
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 10.928571428571429,
+          "pass": "backdrop"
+        }
+      ]
+    },
+    {
+      "id": "air-canyon",
+      "type": "sequence.opening.air-canyon",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ring",
+      "type": "sequence.opening.ring",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop"
+    },
+    {
+      "id": "air-over",
+      "type": "sequence.opening.air-over",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop"
+    },
+    {
+      "id": "line0",
+      "type": "sequence.opening.line0",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop"
+    },
+    {
+      "id": "lamps",
+      "type": "assembly.group",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "lamps-lamp-3180",
+          "type": "sequence.opening.lamps.lamp-3180",
+          "props": {
+            "worldX": 3180,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.083333333333334,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-3330",
+          "type": "sequence.opening.lamps.lamp-3330",
+          "props": {
+            "worldX": 3330,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.166666666666666,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-3480",
+          "type": "sequence.opening.lamps.lamp-3480",
+          "props": {
+            "worldX": 3480,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.25,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-3640",
+          "type": "sequence.opening.lamps.lamp-3640",
+          "props": {
+            "worldX": 3640,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.333333333333334,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-3800",
+          "type": "sequence.opening.lamps.lamp-3800",
+          "props": {
+            "worldX": 3800,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.416666666666666,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-3950",
+          "type": "sequence.opening.lamps.lamp-3950",
+          "props": {
+            "worldX": 3950,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.5,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-4110",
+          "type": "sequence.opening.lamps.lamp-4110",
+          "props": {
+            "worldX": 4110,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.583333333333334,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-4270",
+          "type": "sequence.opening.lamps.lamp-4270",
+          "props": {
+            "worldX": 4270,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.666666666666666,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-4430",
+          "type": "sequence.opening.lamps.lamp-4430",
+          "props": {
+            "worldX": 4430,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.75,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-4590",
+          "type": "sequence.opening.lamps.lamp-4590",
+          "props": {
+            "worldX": 4590,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.833333333333334,
+          "pass": "backdrop"
+        },
+        {
+          "id": "lamps-lamp-4750",
+          "type": "sequence.opening.lamps.lamp-4750",
+          "props": {
+            "worldX": 4750,
+            "height": 46
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 15.916666666666666,
+          "pass": "backdrop"
+        }
+      ]
+    },
+    {
+      "id": "coast-mid",
+      "type": "assembly.group",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "coast-mid-dj",
+          "type": "sequence.opening.coast-mid.dj",
+          "props": {
+            "worldX": 100,
+            "beat": 16
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.015625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-bonfire",
+          "type": "sequence.opening.coast-mid.bonfire",
+          "props": {
+            "worldX": -42,
+            "size": 1
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.03125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-lounger-0",
+          "type": "sequence.opening.coast-mid.lounger-0",
+          "props": {
+            "worldX": -112,
+            "color": "#c83a2a",
+            "wear": 0.1,
+            "flip": false,
+            "parasol": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.046875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-lounger-1",
+          "type": "sequence.opening.coast-mid.lounger-1",
+          "props": {
+            "worldX": -152,
+            "color": "#d8b040",
+            "wear": 0.1,
+            "flip": false,
+            "parasol": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.0625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-lounger-2",
+          "type": "sequence.opening.coast-mid.lounger-2",
+          "props": {
+            "worldX": -300,
+            "color": "#3a6ad8",
+            "wear": 0.1,
+            "flip": true,
+            "parasol": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.078125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-lounger-3",
+          "type": "sequence.opening.coast-mid.lounger-3",
+          "props": {
+            "worldX": 262,
+            "color": "#e8e0d0",
+            "wear": 0.1,
+            "flip": true,
+            "parasol": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.09375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-machine-straddle",
+          "type": "sequence.opening.coast-mid.machine-straddle",
+          "props": {
+            "worldX": 1400,
+            "travel": 30,
+            "animate": true,
+            "lift": 0.5,
+            "load": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.109375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-machine-reach-stacker",
+          "type": "sequence.opening.coast-mid.machine-reach-stacker",
+          "props": {
+            "worldX": 1955,
+            "animate": true,
+            "reach": 0.5,
+            "load": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-machine-forklift",
+          "type": "sequence.opening.coast-mid.machine-forklift",
+          "props": {
+            "worldX": 1330,
+            "travel": 18,
+            "animate": true,
+            "lift": 0.5,
+            "load": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.140625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-machine-truck",
+          "type": "sequence.opening.coast-mid.machine-truck",
+          "props": {
+            "worldX": 1760,
+            "paint": "#2a4a6a",
+            "lights": false
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.15625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-machine-tractor",
+          "type": "sequence.opening.coast-mid.machine-tractor",
+          "props": {
+            "worldX": 1480,
+            "travel": 520,
+            "paint": "#c8a020",
+            "lights": true
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.171875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-0",
+          "type": "sequence.opening.coast-mid.person-0",
+          "props": {
+            "worldX": 147,
+            "seed": 4101,
+            "act": "lean",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.1875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-1",
+          "type": "sequence.opening.coast-mid.person-1",
+          "props": {
+            "worldX": 133,
+            "seed": 4102,
+            "act": "stand",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.203125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-2",
+          "type": "sequence.opening.coast-mid.person-2",
+          "props": {
+            "worldX": 82,
+            "seed": 4103,
+            "act": "dance",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.21875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-3",
+          "type": "sequence.opening.coast-mid.person-3",
+          "props": {
+            "worldX": 70,
+            "seed": 4104,
+            "act": "dance",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.234375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-4",
+          "type": "sequence.opening.coast-mid.person-4",
+          "props": {
+            "worldX": 58,
+            "seed": 4105,
+            "act": "dance",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.25,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-5",
+          "type": "sequence.opening.coast-mid.person-5",
+          "props": {
+            "worldX": 46,
+            "seed": 4106,
+            "act": "dance",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.265625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-6",
+          "type": "sequence.opening.coast-mid.person-6",
+          "props": {
+            "worldX": 34,
+            "seed": 4107,
+            "act": "dance",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.28125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-7",
+          "type": "sequence.opening.coast-mid.person-7",
+          "props": {
+            "worldX": 20,
+            "seed": 4108,
+            "act": "phone",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.296875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-8",
+          "type": "sequence.opening.coast-mid.person-8",
+          "props": {
+            "worldX": -20,
+            "seed": 4111,
+            "act": "sit",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.3125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-9",
+          "type": "sequence.opening.coast-mid.person-9",
+          "props": {
+            "worldX": -31,
+            "seed": 4112,
+            "act": "smoke",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.328125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-10",
+          "type": "sequence.opening.coast-mid.person-10",
+          "props": {
+            "worldX": -56,
+            "seed": 4113,
+            "act": "dance",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.34375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-11",
+          "type": "sequence.opening.coast-mid.person-11",
+          "props": {
+            "worldX": -66,
+            "seed": 4114,
+            "act": "sit",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.359375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-12",
+          "type": "sequence.opening.coast-mid.person-12",
+          "props": {
+            "worldX": -112,
+            "seed": 4115,
+            "act": "sleep",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-13",
+          "type": "sequence.opening.coast-mid.person-13",
+          "props": {
+            "worldX": -175,
+            "seed": 4116,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.25
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.390625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-14",
+          "type": "sequence.opening.coast-mid.person-14",
+          "props": {
+            "worldX": -118,
+            "seed": 4117,
+            "act": "stand",
+            "dim": 0.5,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.40625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-15",
+          "type": "sequence.opening.coast-mid.person-15",
+          "props": {
+            "worldX": -138,
+            "seed": 4118,
+            "act": "phone",
+            "dim": 0.5,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.421875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-16",
+          "type": "sequence.opening.coast-mid.person-16",
+          "props": {
+            "worldX": 300,
+            "seed": 4121,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.3
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.4375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-17",
+          "type": "sequence.opening.coast-mid.person-17",
+          "props": {
+            "worldX": 312,
+            "seed": 4122,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.3
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.453125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-18",
+          "type": "sequence.opening.coast-mid.person-18",
+          "props": {
+            "worldX": 380,
+            "seed": 3,
+            "act": "roll",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.46875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-19",
+          "type": "sequence.opening.coast-mid.person-19",
+          "props": {
+            "worldX": 560,
+            "seed": 4123,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.6
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.484375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-20",
+          "type": "sequence.opening.coast-mid.person-20",
+          "props": {
+            "worldX": 612,
+            "seed": 3,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.5,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-21",
+          "type": "sequence.opening.coast-mid.person-21",
+          "props": {
+            "worldX": 700,
+            "seed": 4124,
+            "act": "sit",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.515625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-22",
+          "type": "sequence.opening.coast-mid.person-22",
+          "props": {
+            "worldX": 452,
+            "seed": 4131,
+            "act": "stand",
+            "dim": 0.93,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.53125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-23",
+          "type": "sequence.opening.coast-mid.person-23",
+          "props": {
+            "worldX": 459,
+            "seed": 4132,
+            "act": "stand",
+            "dim": 0.93,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.546875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-24",
+          "type": "sequence.opening.coast-mid.person-24",
+          "props": {
+            "worldX": 520,
+            "seed": 4133,
+            "act": "dance",
+            "dim": 0.93,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.5625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-25",
+          "type": "sequence.opening.coast-mid.person-25",
+          "props": {
+            "worldX": 531,
+            "seed": 4134,
+            "act": "dance",
+            "dim": 0.93,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.578125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-26",
+          "type": "sequence.opening.coast-mid.person-26",
+          "props": {
+            "worldX": 590,
+            "seed": 4136,
+            "act": "phone",
+            "dim": 0.93,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.59375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-27",
+          "type": "sequence.opening.coast-mid.person-27",
+          "props": {
+            "worldX": 628,
+            "seed": 4137,
+            "act": "sit",
+            "dim": 0.93,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.609375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-28",
+          "type": "sequence.opening.coast-mid.person-28",
+          "props": {
+            "worldX": 792,
+            "seed": 4138,
+            "act": "sit",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-29",
+          "type": "sequence.opening.coast-mid.person-29",
+          "props": {
+            "worldX": 880,
+            "seed": 4139,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.32
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.640625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-30",
+          "type": "sequence.opening.coast-mid.person-30",
+          "props": {
+            "worldX": 1158,
+            "seed": 4140,
+            "act": "stand",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.65625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-31",
+          "type": "sequence.opening.coast-mid.person-31",
+          "props": {
+            "worldX": 1040,
+            "seed": 3,
+            "act": "sweep",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.671875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-32",
+          "type": "sequence.opening.coast-mid.person-32",
+          "props": {
+            "worldX": 1300,
+            "seed": 3,
+            "act": "carry",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.6875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-33",
+          "type": "sequence.opening.coast-mid.person-33",
+          "props": {
+            "worldX": 1420,
+            "seed": 4142,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.3
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.703125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-34",
+          "type": "sequence.opening.coast-mid.person-34",
+          "props": {
+            "worldX": 1690,
+            "seed": 4143,
+            "act": "stand",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.71875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-35",
+          "type": "sequence.opening.coast-mid.person-35",
+          "props": {
+            "worldX": 1748,
+            "seed": 4144,
+            "act": "phone",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.734375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-36",
+          "type": "sequence.opening.coast-mid.person-36",
+          "props": {
+            "worldX": 1960,
+            "seed": 4145,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.35
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.75,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-37",
+          "type": "sequence.opening.coast-mid.person-37",
+          "props": {
+            "worldX": 2140,
+            "seed": 4147,
+            "act": "smoke",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.765625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-38",
+          "type": "sequence.opening.coast-mid.person-38",
+          "props": {
+            "worldX": 2148,
+            "seed": 4148,
+            "act": "haggle",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.78125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-39",
+          "type": "sequence.opening.coast-mid.person-39",
+          "props": {
+            "worldX": 2262,
+            "seed": 3,
+            "act": "direct",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.796875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-40",
+          "type": "sequence.opening.coast-mid.person-40",
+          "props": {
+            "worldX": 2284,
+            "seed": 4141,
+            "act": "stand",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.8125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-41",
+          "type": "sequence.opening.coast-mid.person-41",
+          "props": {
+            "worldX": 2480,
+            "seed": 4151,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.7
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.828125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-42",
+          "type": "sequence.opening.coast-mid.person-42",
+          "props": {
+            "worldX": 2810,
+            "seed": 4161,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.3
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.84375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-43",
+          "type": "sequence.opening.coast-mid.person-43",
+          "props": {
+            "worldX": 2878,
+            "seed": 4162,
+            "act": "phone",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.859375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-44",
+          "type": "sequence.opening.coast-mid.person-44",
+          "props": {
+            "worldX": 2912,
+            "seed": 3,
+            "act": "patrol",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-45",
+          "type": "sequence.opening.coast-mid.person-45",
+          "props": {
+            "worldX": 2950,
+            "seed": 4163,
+            "act": "queue",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.890625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-46",
+          "type": "sequence.opening.coast-mid.person-46",
+          "props": {
+            "worldX": 2960,
+            "seed": 4164,
+            "act": "queue",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.90625,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-47",
+          "type": "sequence.opening.coast-mid.person-47",
+          "props": {
+            "worldX": 2970,
+            "seed": 4165,
+            "act": "queue",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.921875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-48",
+          "type": "sequence.opening.coast-mid.person-48",
+          "props": {
+            "worldX": 3018,
+            "seed": 3,
+            "act": "play",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.9375,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-49",
+          "type": "sequence.opening.coast-mid.person-49",
+          "props": {
+            "worldX": 3060,
+            "seed": 3,
+            "act": "sweep",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.953125,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-person-50",
+          "type": "sequence.opening.coast-mid.person-50",
+          "props": {
+            "worldX": 3100,
+            "seed": 4166,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.4
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.96875,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-mid-escalator",
+          "type": "sequence.opening.coast-mid.escalator",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 16.984375,
+          "pass": "backdrop"
+        }
+      ]
+    },
+    {
+      "id": "people",
+      "type": "assembly.group",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "people-person-0",
+          "type": "sequence.opening.people.person-0",
+          "props": {
+            "worldX": 3200,
+            "seed": 4171,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.3
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.066666666666666,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-1",
+          "type": "sequence.opening.people.person-1",
+          "props": {
+            "worldX": 3330,
+            "seed": 4172,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.4
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.133333333333333,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-2",
+          "type": "sequence.opening.people.person-2",
+          "props": {
+            "worldX": 3470,
+            "seed": 4173,
+            "act": "queue",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.2,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-3",
+          "type": "sequence.opening.people.person-3",
+          "props": {
+            "worldX": 3482,
+            "seed": 4174,
+            "act": "queue",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.266666666666666,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-4",
+          "type": "sequence.opening.people.person-4",
+          "props": {
+            "worldX": 3494,
+            "seed": 4176,
+            "act": "phone",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.333333333333332,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-5",
+          "type": "sequence.opening.people.person-5",
+          "props": {
+            "worldX": 3560,
+            "seed": 3,
+            "act": "scan",
+            "dim": 0,
+            "speed": 0.3
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.4,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-6",
+          "type": "sequence.opening.people.person-6",
+          "props": {
+            "worldX": 3700,
+            "seed": 3,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.466666666666665,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-7",
+          "type": "sequence.opening.people.person-7",
+          "props": {
+            "worldX": 3790,
+            "seed": 4175,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.25
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.533333333333335,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-8",
+          "type": "sequence.opening.people.person-8",
+          "props": {
+            "worldX": 3905,
+            "seed": 3,
+            "act": "roll",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.6,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-9",
+          "type": "sequence.opening.people.person-9",
+          "props": {
+            "worldX": 4050,
+            "seed": 9101,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.35
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.666666666666668,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-10",
+          "type": "sequence.opening.people.person-10",
+          "props": {
+            "worldX": 4160,
+            "seed": 9102,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.28
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.733333333333334,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-11",
+          "type": "sequence.opening.people.person-11",
+          "props": {
+            "worldX": 4250,
+            "seed": 9103,
+            "act": "stand",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.8,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-12",
+          "type": "sequence.opening.people.person-12",
+          "props": {
+            "worldX": 4390,
+            "seed": 9104,
+            "act": "walk",
+            "dim": 0,
+            "speed": 0.4
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.866666666666667,
+          "pass": "backdrop"
+        },
+        {
+          "id": "people-person-13",
+          "type": "sequence.opening.people.person-13",
+          "props": {
+            "worldX": 4470,
+            "seed": 3,
+            "act": "sweep",
+            "dim": 0,
+            "speed": 0
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 17.933333333333334,
+          "pass": "backdrop"
+        }
+      ]
+    },
+    {
+      "id": "traffic",
+      "type": "sequence.opening.traffic",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop"
+    },
+    {
+      "id": "coast-front",
+      "type": "assembly.group",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "coast-front-palm-0",
+          "type": "sequence.opening.coast-front.palm-0",
+          "props": {
+            "worldX": 238,
+            "height": 150,
+            "lean": 26,
+            "seed": 1,
+            "fill": "#07020a"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 19.333333333333332,
+          "pass": "backdrop"
+        },
+        {
+          "id": "coast-front-palm-3",
+          "type": "sequence.opening.coast-front.palm-3",
+          "props": {
+            "worldX": -196,
+            "height": 128,
+            "lean": -20,
+            "seed": 5,
+            "fill": "#07020a"
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 19.666666666666668,
+          "pass": "backdrop"
+        }
+      ]
+    },
+    {
+      "id": "under",
+      "type": "sequence.opening.under",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop"
+    },
+    {
+      "id": "foreground",
+      "type": "sequence.opening.foreground",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop"
+    },
+    {
+      "id": "rain",
+      "type": "sequence.opening.rain",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tunnel-fade",
+      "type": "sequence.opening.tunnel-fade",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop"
+    }
+  ]
+}

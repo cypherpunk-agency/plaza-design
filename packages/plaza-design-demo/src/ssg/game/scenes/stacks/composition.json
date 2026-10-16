@@ -1,0 +1,1488 @@
+{
+  "version": 1,
+  "scene": "stacks",
+  "instances": [
+    {
+      "id": "sky-glow",
+      "type": "terminal.sky-glow",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "far-band",
+      "type": "terminal.far-band",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "back-0-0",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 4,
+        "seed": 31,
+        "dx": 0,
+        "block": 0,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 8
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-0-1",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 7,
+        "seed": 32,
+        "dx": 0,
+        "block": 0,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 66
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-0-2",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 2,
+        "seed": 33,
+        "dx": 0,
+        "block": 0,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 124
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-1-0",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 3,
+        "seed": 34,
+        "dx": 0,
+        "block": 1,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 8
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-1-1",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 5,
+        "seed": 35,
+        "dx": 0,
+        "block": 1,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 66
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-1-2",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 0,
+        "seed": 36,
+        "dx": 0,
+        "block": 1,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 124
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-2-0",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 1,
+        "seed": 37,
+        "dx": 0,
+        "block": 2,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 8
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-2-1",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 6,
+        "seed": 38,
+        "dx": 0,
+        "block": 2,
+        "dim": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 66
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "garden-back",
+      "type": "terminal.garden",
+      "props": {},
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gantry-back",
+      "type": "terminal.gantry-back",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "gantry-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "quay-floor",
+      "type": "terminal.quay-floor",
+      "props": {},
+      "placement": {
+        "x": 1112,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "bridge",
+      "type": "terminal.bridge",
+      "props": {},
+      "placement": {
+        "x": 1572,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "ferry-hatch",
+      "type": "terminal.ferry-hatch",
+      "props": {},
+      "placement": {
+        "x": 1262,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "deck-lamp-0",
+      "type": "terminal.deck-lamp",
+      "props": {},
+      "placement": {
+        "x": 1250,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "deck-lamp-1",
+      "type": "terminal.deck-lamp",
+      "props": {},
+      "placement": {
+        "x": 1520,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "ferry-kiosk",
+      "type": "terminal.ferry-kiosk",
+      "props": {},
+      "placement": {
+        "x": 1214,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "bulwark",
+      "type": "terminal.bulwark",
+      "props": {},
+      "placement": {
+        "x": 1112,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "booth",
+      "type": "terminal.booth",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "board",
+      "type": "terminal.board",
+      "props": {},
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "lane",
+      "type": "terminal.lane",
+      "props": {},
+      "placement": {
+        "x": 214,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "gate-far",
+      "type": "terminal.thermal-gate",
+      "props": {
+        "part": "far"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "gate",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "trolley-cab",
+      "type": "terminal.trolley-cab",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "operator",
+      "type": "character.prepared",
+      "props": {
+        "actor": "operator"
+      },
+      "placement": {
+        "x": 0,
+        "h": 166
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.operator",
+        "clip": "terminal.clip.operator"
+      }
+    },
+    {
+      "id": "trolley-rig",
+      "type": "terminal.trolley-rig",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "carried-load",
+      "type": "terminal.carried-load",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "front-0-0",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 0,
+        "seed": 21,
+        "dx": 0,
+        "block": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-0-1",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 5,
+        "seed": 22,
+        "dx": -5,
+        "block": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 58
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bay-sign-0",
+      "type": "terminal.bay-sign",
+      "props": {
+        "letter": "A",
+        "block": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-1-0",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 2,
+        "seed": 23,
+        "dx": 0,
+        "block": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-1-1",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 1,
+        "seed": 24,
+        "dx": 6,
+        "block": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 58
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bay-sign-1",
+      "type": "terminal.bay-sign",
+      "props": {
+        "letter": "B",
+        "block": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-2-0",
+      "type": "terminal.container",
+      "props": {
+        "width": 128,
+        "paint": 6,
+        "seed": 25,
+        "dx": 0,
+        "block": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bay-sign-2",
+      "type": "terminal.bay-sign",
+      "props": {
+        "letter": "C",
+        "block": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "garden-front",
+      "type": "terminal.garden",
+      "props": {},
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "block-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "straddle",
+      "type": "terminal.straddle",
+      "props": {},
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "chassis",
+      "type": "terminal.chassis",
+      "props": {},
+      "placement": {
+        "x": 930,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "urn",
+      "type": "terminal.urn",
+      "props": {},
+      "placement": {
+        "x": 672,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "gantry-front",
+      "type": "terminal.gantry-front",
+      "props": {},
+      "placement": {
+        "x": 744,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "ladder-panel",
+      "type": "terminal.ladder-panel",
+      "props": {},
+      "placement": {
+        "x": 26,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "gantry-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "berth-ticker",
+      "type": "terminal.berth-ticker",
+      "props": {},
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "gantry-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "crane-outline",
+      "type": "terminal.crane-outline",
+      "props": {},
+      "placement": {
+        "x": 770,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "gate-near",
+      "type": "terminal.thermal-gate",
+      "props": {
+        "part": "near"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "gate",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera",
+      "type": "terminal.camera",
+      "props": {},
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "tea-note",
+      "type": "terminal.tea-note",
+      "props": {},
+      "placement": {
+        "x": 4,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "gantry-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "deck-reefer",
+      "type": "terminal.reefer",
+      "props": {},
+      "placement": {
+        "x": 1388,
+        "h": 0
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "reefer-cable",
+      "type": "terminal.reefer-cable",
+      "props": {},
+      "placement": {
+        "x": 64,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "deck-reefer",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "moth",
+      "type": "character.prepared",
+      "props": {
+        "actor": "moth"
+      },
+      "placement": {
+        "x": 116,
+        "h": 6
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.moth",
+        "clip": "terminal.clip.moth"
+      },
+      "attach": {
+        "instance": "deck-reefer",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reefer-outline",
+      "type": "terminal.reefer-outline",
+      "props": {},
+      "placement": {
+        "x": 64,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "deck-reefer",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "quiet-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "quiet-0"
+      },
+      "placement": {
+        "x": 704,
+        "h": 10
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.quiet-0",
+        "clip": "terminal.clip.quiet-0"
+      }
+    },
+    {
+      "id": "quiet-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "quiet-1"
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.quiet-1",
+        "clip": "terminal.clip.quiet-1"
+      }
+    },
+    {
+      "id": "quiet-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "quiet-2"
+      },
+      "placement": {
+        "x": 1170,
+        "h": 0
+      },
+      "order": 52,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.quiet-2",
+        "clip": "terminal.clip.quiet-2"
+      }
+    },
+    {
+      "id": "person-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-0"
+      },
+      "placement": {
+        "x": 108,
+        "h": 0
+      },
+      "order": 53,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-0",
+        "clip": "terminal.clip.person-0"
+      }
+    },
+    {
+      "id": "person-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-1"
+      },
+      "placement": {
+        "x": 1010,
+        "h": 0
+      },
+      "order": 54,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-1",
+        "clip": "terminal.clip.person-1"
+      }
+    },
+    {
+      "id": "person-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-2"
+      },
+      "placement": {
+        "x": 868,
+        "h": 0
+      },
+      "order": 55,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-2",
+        "clip": "terminal.clip.person-2"
+      }
+    },
+    {
+      "id": "person-3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-3"
+      },
+      "placement": {
+        "x": 1376,
+        "h": 0
+      },
+      "order": 56,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-3",
+        "clip": "terminal.clip.person-3"
+      }
+    },
+    {
+      "id": "person-4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-4"
+      },
+      "placement": {
+        "x": 300,
+        "h": 132
+      },
+      "order": 57,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-4",
+        "clip": "terminal.clip.person-4"
+      }
+    },
+    {
+      "id": "person-5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-5"
+      },
+      "placement": {
+        "x": 322,
+        "h": 116
+      },
+      "order": 58,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-5",
+        "clip": "terminal.clip.person-5"
+      }
+    },
+    {
+      "id": "person-6",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-6"
+      },
+      "placement": {
+        "x": 1196,
+        "h": 0
+      },
+      "order": 59,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-6",
+        "clip": "terminal.clip.person-6"
+      }
+    },
+    {
+      "id": "person-7",
+      "type": "character.prepared",
+      "props": {
+        "actor": "person-7"
+      },
+      "placement": {
+        "x": 196,
+        "h": 0
+      },
+      "order": 60,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "terminal.actor.person-7",
+        "clip": "terminal.clip.person-7"
+      }
+    },
+    {
+      "id": "watchdog",
+      "type": "terminal.watchdog",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 61,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "quay-face",
+      "type": "terminal.quay-face",
+      "props": {},
+      "placement": {
+        "x": 1112,
+        "h": 0
+      },
+      "order": 62,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "hull",
+      "type": "terminal.hull",
+      "props": {},
+      "placement": {
+        "x": 1118,
+        "h": 0
+      },
+      "order": 63,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "near-ripples",
+      "type": "terminal.near-ripples",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 64,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "gate-reflection",
+      "type": "terminal.gate-reflection",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 65,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      },
+      "attach": {
+        "instance": "gate",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bollard-0",
+      "type": "terminal.bollard",
+      "props": {},
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 66,
+      "pass": "foreground",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "bollard-1",
+      "type": "terminal.bollard",
+      "props": {},
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 67,
+      "pass": "foreground",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "bollard-2",
+      "type": "terminal.bollard",
+      "props": {},
+      "placement": {
+        "x": 1460,
+        "h": 0
+      },
+      "order": 68,
+      "pass": "foreground",
+      "bindings": {
+        "snapshot": "terminal.snapshot"
+      }
+    },
+    {
+      "id": "scene",
+      "type": "terminal.marker",
+      "props": {
+        "role": "scene",
+        "width": 1760,
+        "horizon": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 69,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "terminal.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 86,
+        "h": 0
+      },
+      "order": 70,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-harbor",
+      "type": "terminal.marker",
+      "props": {
+        "role": "exit-harbor"
+      },
+      "placement": {
+        "x": 34,
+        "h": 0
+      },
+      "order": 71,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-warehouse",
+      "type": "terminal.marker",
+      "props": {
+        "role": "exit-warehouse"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 72,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lane",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "block-0",
+      "type": "terminal.marker",
+      "props": {
+        "role": "block-0",
+        "tiers": 2
+      },
+      "placement": {
+        "x": 252,
+        "h": 0
+      },
+      "order": 73,
+      "pass": "backdrop"
+    },
+    {
+      "id": "block-1",
+      "type": "terminal.marker",
+      "props": {
+        "role": "block-1",
+        "tiers": 2
+      },
+      "placement": {
+        "x": 412,
+        "h": 0
+      },
+      "order": 74,
+      "pass": "backdrop"
+    },
+    {
+      "id": "block-2",
+      "type": "terminal.marker",
+      "props": {
+        "role": "block-2",
+        "tiers": 1
+      },
+      "placement": {
+        "x": 580,
+        "h": 0
+      },
+      "order": 75,
+      "pass": "backdrop"
+    },
+    {
+      "id": "gate",
+      "type": "terminal.marker",
+      "props": {
+        "role": "gate"
+      },
+      "placement": {
+        "x": 1064,
+        "h": 0
+      },
+      "order": 76,
+      "pass": "backdrop"
+    },
+    {
+      "id": "rule-rest",
+      "type": "terminal.marker",
+      "props": {
+        "role": "rule-rest"
+      },
+      "placement": {
+        "x": 256,
+        "h": 120
+      },
+      "order": 77,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "gantry-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rule-slot",
+      "type": "terminal.marker",
+      "props": {
+        "role": "rule-slot"
+      },
+      "placement": {
+        "x": 64,
+        "h": 58
+      },
+      "order": 78,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "block-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rule-chassis",
+      "type": "terminal.marker",
+      "props": {
+        "role": "rule-chassis"
+      },
+      "placement": {
+        "x": 0,
+        "h": 14
+      },
+      "order": 79,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "chassis",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rule-hatch",
+      "type": "terminal.marker",
+      "props": {
+        "role": "rule-hatch"
+      },
+      "placement": {
+        "x": 38,
+        "h": -64
+      },
+      "order": 80,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "ferry-hatch",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rule-deck",
+      "type": "terminal.marker",
+      "props": {
+        "role": "rule-deck"
+      },
+      "placement": {
+        "x": 64,
+        "h": 4
+      },
+      "order": 81,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "deck-reefer",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-sts2",
+      "type": "terminal.marker",
+      "props": {
+        "role": "device-sts2"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 82,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "ladder-panel",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-port",
+      "type": "terminal.marker",
+      "props": {
+        "role": "device-port"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 83,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "gate",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-ferry",
+      "type": "terminal.marker",
+      "props": {
+        "role": "device-ferry"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 84,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "ferry-kiosk",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-reefer",
+      "type": "terminal.marker",
+      "props": {
+        "role": "device-reefer"
+      },
+      "placement": {
+        "x": 64,
+        "h": 0
+      },
+      "order": 85,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "deck-reefer",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+/** Local editor preview. Uses the shipping frame renderer with an isolated, non-persistent model. */
+import { art, compositionAppearance, resolveComposition, type Composition, type Environment, type Resolved } from '../art';
+import type { View } from '../art/core/view';
+import { SceneModel } from '../engine/model';
+import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
+import type { SceneDef } from '../scenes/kit';
+import { renderSceneFrame, type SceneFrame } from '../runtime/render-scene';
+import { city } from '../world/clock';
+import { lightAt, setLight } from '../world/light';
+import { prepareLights, prepareShade } from '../art/atmosphere/lighting';
+import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
+import { isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
+import type { PreviewRequest, PreviewResult } from './app';
+import type { PlayerServices, PlayerState } from '../runtime/player';
+import { BASE_NODES } from '../runtime/save';
+import { drawSelectionOverlay } from './selection-overlay';
+
+export interface NativeSceneAdapter {
+  validate(value: unknown): Composition;
+  definition(document: Composition, state: Environment['state'], options: NativeOptions): SceneDef;
+  environment?(document: Composition, view: View, engine: EngineDraw): Environment;
+  frame?(document: Composition, state: Environment['state'], options: NativeOptions): Partial<Pick<SceneFrame, 'reflections' | 'city' | 'street' | 'actors' | 'roomWash' | 'skyTraffic'>>;
+}
+export type NativeOptions = Pick<Environment, 'reduced'> & Partial<Pick<Environment, 'visibility' | 'opacity' | 'clips' | 'sequenceTime'>>;
+const number = (value: unknown, fallback: number) => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+function object(input: string | number | boolean | undefined, name: string): Record<string, unknown> {
+  if (input === undefined || input === '') return {};
+  if (typeof input !== 'string') throw new Error(`${name}: expected a JSON object`);
+  const parsed: unknown = JSON.parse(input);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error(`${name}: expected a JSON object`);
+  for (const key of Object.keys(parsed)) if (['__proto__', 'prototype', 'constructor'].includes(key)) throw new Error(`${name}: invalid key`);
+  return parsed as Record<string, unknown>;
+}
+/** Bounds are expressed in native view pixels. World and local kernels use the same document geometry. */
+export function previewBounds(rows: Resolved[], view: View, options: NativeOptions, document?: Composition): PreviewResult {
+  const appearance = document ? compositionAppearance(document, options) : undefined;
+  const visible = rows.filter(row => appearance ? appearance.get(row.instance.id)!.visible && appearance.get(row.instance.id)!.opacity !== 0 : options.visibility?.[row.instance.id] !== false && options.opacity?.[row.instance.id] !== 0);
+  return {
+    bounds: visible.map(row => {
+      const b = row.element.bounds(row.props, row.state, { view, placement: row.placement }), p = row.placement;
+      const x1 = view.sx(p.x + b.x * p.scale * p.facing, p.parallax), x2 = view.sx(p.x + (b.x + b.w) * p.scale * p.facing, p.parallax);
+      const y1 = view.y(p.h + b.h * p.scale), y2 = view.y(p.h + (b.h - b.tall) * p.scale);
+      return { id: row.instance.id, x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1) };
+    }),
+    deltaToLocal(id, dx, dy) {
+      const row = rows.find(row => row.instance.id === id); if (!row) throw new Error('Missing selected instance');
+      const parentId = row.instance.attach?.instance ?? parentOf(rows, id);
+      const parent = parentId ? rows.find(row => row.instance.id === parentId) : undefined;
+      const parentScale = parent?.placement.scale ?? 1, parentFacing = parent?.placement.facing ?? 1;
+      const unitX = (view.sx(row.placement.x + 1000, row.placement.parallax) - view.sx(row.placement.x, row.placement.parallax)) / 1000;
+      const unitH = (view.y(row.placement.h + 1000) - view.y(row.placement.h)) / 1000;
+      if (!unitX || !unitH) throw new Error('Preview transform is not invertible');
+      return { x: dx / unitX / parentScale / parentFacing, h: dy / unitH / parentScale };
+    },
+  };
+}
+function parentOf(rows: Resolved[], id: string): string | undefined {
+  return rows.find(row => row.instance.children?.some(child => child.id === id))?.instance.id;
+}
+/** No Game construction, controller stepping, player-save reads or player-save writes occur here. */
+export function createNativePreview(adapters: Readonly<Record<string, NativeSceneAdapter>>) {
+  const ships = createSkyShips();
+  const render = (canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult => {
+      const adapter = adapters[request.composition.scene];
+      if (!adapter) throw new Error(`Native composition adapter is not available yet for ${request.composition.scene}`);
+      const document = adapter.validate(request.frame?.composition ?? request.composition), state = request.frame?.state ?? {};
+      const options: NativeOptions = { reduced: request.reduced, visibility: request.frame?.visibility, opacity: request.frame?.opacity, clips: request.frame?.clips, sequenceTime: request.time };
+      const def = adapter.definition(document, state, options), settings = request.environment;
+      if (settings.presentation !== undefined && settings.presentation !== '') {
+        if (!def.presentationState) throw new Error('This scene has no presentation controller state');
+        def.presentationState.restore(object(settings.presentation, 'Presentation state') as Parameters<typeof def.presentationState.restore>[0]);
+      }
+      const renderScale = number(settings.renderScale, 1);
+      if (renderScale <= 0) throw new Error('Render scale must be positive');
+      const width = canvas.width / renderScale, height = canvas.height / renderScale, zoom = request.frame?.camera.zoom ?? number(settings.zoom, 1);
+      if (zoom <= 0) throw new Error('Zoom must be positive');
+      const cam = request.frame?.camera.x ?? number(settings.cameraX, 0), cameraH = request.frame?.camera.h ?? number(settings.cameraH, 0);
+      const flags = object(settings.flags, 'Flags');
+      for (const v of Object.values(flags)) if (typeof v !== 'boolean') throw new Error('Flags must contain booleans');
+      const view: View = { viewW: width, viewH: height, t: request.time * 60, cam, gy: height - 54,
+        sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom), y: h => height - 54 - (h - cameraH) * zoom,
+        flags: flags as Record<string, boolean> };
+      city.bind({ day: number(settings.day, 1), min: number(settings.minute, 580), seed: number(settings.seed, 3) });
+      const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
+      const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
+      const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
+      const rules = typeof def.rules === 'function' ? def.rules(services) : def.rules ?? NO_RULES;
+      const model = new SceneModel({ say: forbidden, open: forbidden, changed() {} }, def.data ?? emptyData(def.id, def.name), rules);
+      const snapshot = object(settings.state, 'Scene state');
+      for (const [key, value] of Object.entries(snapshot)) {
+        if (!Object.prototype.hasOwnProperty.call(model.data.state, key)) throw new Error(`Unknown scene state: ${key}`);
+        const scalar = value === null || ['string', 'boolean', 'number'].includes(typeof value);
+        if (!scalar || (model.data.state[key] !== null && typeof value !== typeof model.data.state[key]) || (typeof value === 'number' && !Number.isFinite(value))) throw new Error(`Invalid scene state: ${key}`);
+        model.set(key, value as Parameters<SceneModel['set']>[1]);
+      }
+      const vision = settings.hack === true, engine: EngineDraw = { m: model, hover: typeof settings.hover === 'string' ? settings.hover || null : null, layer: 'all' };
+      const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
+      const weather = () => weatherNow(sceneClimate(def.id));
+      renderSceneFrame({ context, scale: renderScale, view, scene: def, sceneId: def.id,
+        host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
+        reduced: request.reduced, clock: request.time * 60, weather,
+        preparePresentation: () => def.preparePresentation?.(view, { ...engine, layer: vision && def.layers ? 'devices' : 'all' }),
+        lighting(W: Weather | null) {
+          const ambient = def.ambient ?? {}, outdoor = def.outdoor ?? !!(ambient.weather || ambient.sky);
+          const light = lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor);
+          setLight(light); prepareLights(def.lights); prepareShade(outdoor ? def.shade : undefined, def.width, light); return light;
+        }, skyTraffic: (ctx, view) => drawSkyShips(ctx, view, ships), ...adapter.frame?.(document, state, options),
+      });
+      const preparedEnvironment = def.visualEnvironment?.(view, engine) ?? adapter.environment?.(document, view, engine);
+      if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);
+      const env = { ...preparedEnvironment, ...options, state };
+      const bounds = previewBounds(resolveComposition(art, document, env), view, options, document);
+      const result: PreviewResult = { bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * renderScale, y: b.y * renderScale, width: b.width * renderScale, height: b.height * renderScale })),
+        deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / renderScale, dy / renderScale) };
+      if (request.overlays) drawSelectionOverlay(context, result, request.selectedId);
+      return result;
+  };
+  return { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult {
+    const kind = request.environment.weather;
+    if (kind !== undefined && kind !== 'forecast' && (typeof kind !== 'string' || !isWeather(kind))) throw new Error('Unknown preview weather');
+    return withSceneWeather(request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, request));
+  } };
+}

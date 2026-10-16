@@ -1,0 +1,2758 @@
+{
+  "version": 1,
+  "scene": "mall",
+  "instances": [
+    {
+      "id": "far-shell",
+      "type": "mall.far-shell",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "far-shops",
+      "type": "mall.far-shops",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "far-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-0"
+      },
+      "placement": {
+        "x": 2782.5194714043846,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-0",
+        "clip": "mall.clip.far-0"
+      }
+    },
+    {
+      "id": "far-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-1"
+      },
+      "placement": {
+        "x": 1628.1632044949397,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-1",
+        "clip": "mall.clip.far-1"
+      }
+    },
+    {
+      "id": "far-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-2"
+      },
+      "placement": {
+        "x": 1081.2935230235073,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-2",
+        "clip": "mall.clip.far-2"
+      }
+    },
+    {
+      "id": "far-3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-3"
+      },
+      "placement": {
+        "x": 274.1724003917409,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-3",
+        "clip": "mall.clip.far-3"
+      }
+    },
+    {
+      "id": "far-4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-4"
+      },
+      "placement": {
+        "x": 2544.162222111673,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-4",
+        "clip": "mall.clip.far-4"
+      }
+    },
+    {
+      "id": "far-5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-5"
+      },
+      "placement": {
+        "x": 137.5248369004227,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-5",
+        "clip": "mall.clip.far-5"
+      }
+    },
+    {
+      "id": "far-6",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-6"
+      },
+      "placement": {
+        "x": 811.0502819116462,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-6",
+        "clip": "mall.clip.far-6"
+      }
+    },
+    {
+      "id": "far-7",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-7"
+      },
+      "placement": {
+        "x": 2342.04123525044,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-7",
+        "clip": "mall.clip.far-7"
+      }
+    },
+    {
+      "id": "far-8",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-8"
+      },
+      "placement": {
+        "x": 1244.0781851970023,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-8",
+        "clip": "mall.clip.far-8"
+      }
+    },
+    {
+      "id": "far-9",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-9"
+      },
+      "placement": {
+        "x": 1894.4303026396924,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-9",
+        "clip": "mall.clip.far-9"
+      }
+    },
+    {
+      "id": "far-10",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-10"
+      },
+      "placement": {
+        "x": 2054.8648230521308,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-10",
+        "clip": "mall.clip.far-10"
+      }
+    },
+    {
+      "id": "far-11",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-11"
+      },
+      "placement": {
+        "x": 624.9513812013676,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-11",
+        "clip": "mall.clip.far-11"
+      }
+    },
+    {
+      "id": "far-12",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-12"
+      },
+      "placement": {
+        "x": 1462.1819317164748,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-12",
+        "clip": "mall.clip.far-12"
+      }
+    },
+    {
+      "id": "far-13",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-13"
+      },
+      "placement": {
+        "x": 742.4911405157723,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-13",
+        "clip": "mall.clip.far-13"
+      }
+    },
+    {
+      "id": "far-14",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-14"
+      },
+      "placement": {
+        "x": 1668.067361213298,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-14",
+        "clip": "mall.clip.far-14"
+      }
+    },
+    {
+      "id": "far-15",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-15"
+      },
+      "placement": {
+        "x": 2029.940379005829,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-15",
+        "clip": "mall.clip.far-15"
+      }
+    },
+    {
+      "id": "far-16",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-16"
+      },
+      "placement": {
+        "x": 1257.3880704852697,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-16",
+        "clip": "mall.clip.far-16"
+      }
+    },
+    {
+      "id": "far-17",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-17"
+      },
+      "placement": {
+        "x": 916.0256843157233,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-17",
+        "clip": "mall.clip.far-17"
+      }
+    },
+    {
+      "id": "far-18",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-18"
+      },
+      "placement": {
+        "x": 1427.3368375037503,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-18",
+        "clip": "mall.clip.far-18"
+      }
+    },
+    {
+      "id": "far-19",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-19"
+      },
+      "placement": {
+        "x": 453.7309802853181,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-19",
+        "clip": "mall.clip.far-19"
+      }
+    },
+    {
+      "id": "far-20",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-20"
+      },
+      "placement": {
+        "x": 874.9381062457982,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-20",
+        "clip": "mall.clip.far-20"
+      }
+    },
+    {
+      "id": "far-21",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-21"
+      },
+      "placement": {
+        "x": 1326.0240431996174,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-21",
+        "clip": "mall.clip.far-21"
+      }
+    },
+    {
+      "id": "far-22",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-22"
+      },
+      "placement": {
+        "x": 2669.407251276731,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-22",
+        "clip": "mall.clip.far-22"
+      }
+    },
+    {
+      "id": "far-23",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-23"
+      },
+      "placement": {
+        "x": 1832.2790116687675,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-23",
+        "clip": "mall.clip.far-23"
+      }
+    },
+    {
+      "id": "far-24",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-24"
+      },
+      "placement": {
+        "x": 771.6429038306898,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-24",
+        "clip": "mall.clip.far-24"
+      }
+    },
+    {
+      "id": "far-25",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-25"
+      },
+      "placement": {
+        "x": 2719.0427822149554,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-25",
+        "clip": "mall.clip.far-25"
+      }
+    },
+    {
+      "id": "far-26",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-26"
+      },
+      "placement": {
+        "x": 618.1038636332862,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-26",
+        "clip": "mall.clip.far-26"
+      }
+    },
+    {
+      "id": "far-27",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-27"
+      },
+      "placement": {
+        "x": 1579.7818158193406,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-27",
+        "clip": "mall.clip.far-27"
+      }
+    },
+    {
+      "id": "far-28",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-28"
+      },
+      "placement": {
+        "x": 208.08833581772092,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-28",
+        "clip": "mall.clip.far-28"
+      }
+    },
+    {
+      "id": "far-29",
+      "type": "character.prepared",
+      "props": {
+        "actor": "far-29"
+      },
+      "placement": {
+        "x": 2802.711573942896,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.far-29",
+        "clip": "mall.clip.far-29"
+      }
+    },
+    {
+      "id": "far-rails",
+      "type": "mall.far-rails",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "ad-1",
+      "type": "mall.ad",
+      "props": {
+        "width": 240,
+        "height": 84,
+        "ads": [
+          [
+            "MEMBER PRICES",
+            "VERIFIED IDENTITIES ONLY"
+          ],
+          [
+            "REGISTRY PREMIUM",
+            "SKIP EVERY QUEUE"
+          ],
+          [
+            "WELCOME BACK",
+            "IDENTITY NOT FOUND"
+          ],
+          [
+            "YOUR SCORE",
+            "YOUR PRICE"
+          ],
+          [
+            "GALLERIA",
+            "OPEN UNTIL 01:00"
+          ]
+        ],
+        "period": 300,
+        "seed": 1240
+      },
+      "placement": {
+        "x": 1240,
+        "h": 236
+      },
+      "order": 33,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ad-2",
+      "type": "mall.ad",
+      "props": {
+        "width": 120,
+        "height": 50,
+        "seed": 3,
+        "phase": 80
+      },
+      "placement": {
+        "x": 400,
+        "h": 230
+      },
+      "order": 34,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ad-3",
+      "type": "mall.ad",
+      "props": {
+        "width": 130,
+        "height": 52,
+        "ads": [
+          [
+            "FOOD COURT",
+            "OPEN"
+          ],
+          [
+            "LOITERING",
+            "IS MONITORED"
+          ],
+          [
+            "LOST CHILDREN",
+            "SECURITY DESK 2"
+          ]
+        ],
+        "phase": 160,
+        "seed": 2100
+      },
+      "placement": {
+        "x": 2100,
+        "h": 226
+      },
+      "order": 35,
+      "pass": "backdrop"
+    },
+    {
+      "id": "gallery-back",
+      "type": "mall.gallery-back",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "gallery-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-0"
+      },
+      "placement": {
+        "x": 2061.4818482480396,
+        "h": 144
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-0",
+        "clip": "mall.clip.gallery-0"
+      }
+    },
+    {
+      "id": "gallery-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-1"
+      },
+      "placement": {
+        "x": 2429.080113456156,
+        "h": 144
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-1",
+        "clip": "mall.clip.gallery-1"
+      }
+    },
+    {
+      "id": "gallery-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-2"
+      },
+      "placement": {
+        "x": 1541.7168082863634,
+        "h": 144
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-2",
+        "clip": "mall.clip.gallery-2"
+      }
+    },
+    {
+      "id": "gallery-3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-3"
+      },
+      "placement": {
+        "x": 984.6901667698705,
+        "h": 144
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-3",
+        "clip": "mall.clip.gallery-3"
+      }
+    },
+    {
+      "id": "gallery-4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-4"
+      },
+      "placement": {
+        "x": 249.71044340623098,
+        "h": 144
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-4",
+        "clip": "mall.clip.gallery-4"
+      }
+    },
+    {
+      "id": "gallery-5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-5"
+      },
+      "placement": {
+        "x": 1108.4825098554056,
+        "h": 144
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-5",
+        "clip": "mall.clip.gallery-5"
+      }
+    },
+    {
+      "id": "gallery-6",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-6"
+      },
+      "placement": {
+        "x": 1437.6474294521136,
+        "h": 144
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-6",
+        "clip": "mall.clip.gallery-6"
+      }
+    },
+    {
+      "id": "gallery-7",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-7"
+      },
+      "placement": {
+        "x": 1235.460296708839,
+        "h": 144
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-7",
+        "clip": "mall.clip.gallery-7"
+      }
+    },
+    {
+      "id": "gallery-8",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-8"
+      },
+      "placement": {
+        "x": 2186.005302651788,
+        "h": 144
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-8",
+        "clip": "mall.clip.gallery-8"
+      }
+    },
+    {
+      "id": "gallery-9",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gallery-9"
+      },
+      "placement": {
+        "x": 1997.8868069583023,
+        "h": 144
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.gallery-9",
+        "clip": "mall.clip.gallery-9"
+      }
+    },
+    {
+      "id": "gallery-front",
+      "type": "mall.gallery-front",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "ground-wall",
+      "type": "mall.ground-wall",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "metro",
+      "type": "mall.metro-door",
+      "props": {},
+      "placement": {
+        "x": 32,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "directory",
+      "type": "mall.directory",
+      "props": {},
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "implants",
+      "type": "mall.shop-interior",
+      "props": {
+        "width": 180,
+        "shop": "implants"
+      },
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "implants-stock",
+      "type": "mall.shop-stock",
+      "props": {
+        "width": 180,
+        "shop": "implants"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 52,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "implants",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "implantClerk",
+      "type": "character.prepared",
+      "props": {
+        "actor": "implantClerk"
+      },
+      "placement": {
+        "x": 134,
+        "h": 0
+      },
+      "order": 53,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "implants",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "mall.actor.implantClerk",
+        "clip": "mall.clip.implantClerk"
+      }
+    },
+    {
+      "id": "implants-front",
+      "type": "mall.shop-front",
+      "props": {
+        "width": 180,
+        "shop": "implants"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 54,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "implants",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pawn",
+      "type": "mall.shop-interior",
+      "props": {
+        "width": 180,
+        "shop": "pawn"
+      },
+      "placement": {
+        "x": 450,
+        "h": 0
+      },
+      "order": 55,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pawn-stock",
+      "type": "mall.shop-stock",
+      "props": {
+        "width": 180,
+        "shop": "pawn"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 56,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pawn",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pawnbroker",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pawnbroker"
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 57,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pawn",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "mall.actor.pawnbroker",
+        "clip": "mall.clip.pawnbroker"
+      }
+    },
+    {
+      "id": "pawn-front",
+      "type": "mall.shop-front",
+      "props": {
+        "width": 180,
+        "shop": "pawn"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 58,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pawn",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "florist",
+      "type": "mall.shop-interior",
+      "props": {
+        "width": 180,
+        "shop": "florist"
+      },
+      "placement": {
+        "x": 1220,
+        "h": 0
+      },
+      "order": 59,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "florist-stock",
+      "type": "mall.shop-stock",
+      "props": {
+        "width": 180,
+        "shop": "florist"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 60,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "florist",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "keeper-florist",
+      "type": "character.prepared",
+      "props": {
+        "actor": "florist"
+      },
+      "placement": {
+        "x": 132,
+        "h": 0
+      },
+      "order": 61,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "florist",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "mall.actor.florist",
+        "clip": "mall.clip.florist"
+      }
+    },
+    {
+      "id": "florist-front",
+      "type": "mall.shop-front",
+      "props": {
+        "width": 180,
+        "shop": "florist"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 62,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "florist",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "keys",
+      "type": "mall.shop-interior",
+      "props": {
+        "width": 150,
+        "shop": "keys"
+      },
+      "placement": {
+        "x": 1540,
+        "h": 0
+      },
+      "order": 63,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "keys-stock",
+      "type": "mall.shop-stock",
+      "props": {
+        "width": 150,
+        "shop": "keys"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 64,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "keys",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "keyCutter",
+      "type": "character.prepared",
+      "props": {
+        "actor": "keyCutter"
+      },
+      "placement": {
+        "x": 112,
+        "h": 0
+      },
+      "order": 65,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "keys",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "mall.actor.keyCutter",
+        "clip": "mall.clip.keyCutter"
+      }
+    },
+    {
+      "id": "keys-front",
+      "type": "mall.shop-front",
+      "props": {
+        "width": 150,
+        "shop": "keys"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 66,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "keys",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "noodles",
+      "type": "mall.shop-interior",
+      "props": {
+        "width": 140,
+        "shop": "noodles"
+      },
+      "placement": {
+        "x": 1830,
+        "h": 0
+      },
+      "order": 67,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "noodles-stock",
+      "type": "mall.shop-stock",
+      "props": {
+        "width": 140,
+        "shop": "noodles"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 68,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "noodles",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "cook-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cook-0"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 69,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "noodles",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "mall.actor.cook-0",
+        "clip": "mall.clip.cook-0"
+      }
+    },
+    {
+      "id": "noodles-front",
+      "type": "mall.shop-front",
+      "props": {
+        "width": 140,
+        "shop": "noodles"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 70,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "noodles",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "burger",
+      "type": "mall.shop-interior",
+      "props": {
+        "width": 140,
+        "shop": "burger"
+      },
+      "placement": {
+        "x": 1980,
+        "h": 0
+      },
+      "order": 71,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "burger-stock",
+      "type": "mall.shop-stock",
+      "props": {
+        "width": 140,
+        "shop": "burger"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 72,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "burger",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "cook-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cook-1"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 73,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "burger",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "mall.actor.cook-1",
+        "clip": "mall.clip.cook-1"
+      }
+    },
+    {
+      "id": "burger-front",
+      "type": "mall.shop-front",
+      "props": {
+        "width": 140,
+        "shop": "burger"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 74,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "burger",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "dumplings",
+      "type": "mall.shop-interior",
+      "props": {
+        "width": 140,
+        "shop": "dumplings"
+      },
+      "placement": {
+        "x": 2130,
+        "h": 0
+      },
+      "order": 75,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "dumplings-stock",
+      "type": "mall.shop-stock",
+      "props": {
+        "width": 140,
+        "shop": "dumplings"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 76,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dumplings",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "cook-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cook-2"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 77,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dumplings",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "mall.actor.cook-2",
+        "clip": "mall.clip.cook-2"
+      }
+    },
+    {
+      "id": "dumplings-front",
+      "type": "mall.shop-front",
+      "props": {
+        "width": 140,
+        "shop": "dumplings"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 78,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dumplings",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "food-sign",
+      "type": "mall.food-sign",
+      "props": {},
+      "placement": {
+        "x": 2050,
+        "h": 0
+      },
+      "order": 79,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "roof",
+      "type": "mall.door",
+      "props": {
+        "label": "SKY TAXI ^"
+      },
+      "placement": {
+        "x": 1740,
+        "h": 0
+      },
+      "order": 80,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "service",
+      "type": "mall.door",
+      "props": {
+        "label": "SERVICE >"
+      },
+      "placement": {
+        "x": 2510,
+        "h": 0
+      },
+      "order": 81,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pillar-0",
+      "type": "mall.pillar",
+      "props": {},
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 82,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pillar-1",
+      "type": "mall.pillar",
+      "props": {},
+      "placement": {
+        "x": 1790,
+        "h": 0
+      },
+      "order": 83,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pillar-2",
+      "type": "mall.pillar",
+      "props": {},
+      "placement": {
+        "x": 2390,
+        "h": 0
+      },
+      "order": 84,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "camera-0",
+      "type": "mall.camera",
+      "props": {
+        "facing": 1,
+        "phase": 4
+      },
+      "placement": {
+        "x": 392,
+        "h": 104
+      },
+      "order": 85,
+      "pass": "backdrop"
+    },
+    {
+      "id": "camera-1",
+      "type": "mall.camera",
+      "props": {
+        "facing": -1,
+        "phase": 22
+      },
+      "placement": {
+        "x": 1778,
+        "h": 104
+      },
+      "order": 86,
+      "pass": "backdrop"
+    },
+    {
+      "id": "camera-2",
+      "type": "mall.camera",
+      "props": {
+        "facing": -1,
+        "phase": 41
+      },
+      "placement": {
+        "x": 2376,
+        "h": 104
+      },
+      "order": 87,
+      "pass": "backdrop"
+    },
+    {
+      "id": "camera-3",
+      "type": "mall.camera",
+      "props": {
+        "facing": -1,
+        "phase": 17
+      },
+      "placement": {
+        "x": 1200,
+        "h": 126
+      },
+      "order": 88,
+      "pass": "backdrop"
+    },
+    {
+      "id": "registry",
+      "type": "mall.registry",
+      "props": {},
+      "placement": {
+        "x": 400,
+        "h": 0
+      },
+      "order": 89,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "escalator",
+      "type": "mall.escalator-back",
+      "props": {
+        "width": 160
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 90,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "rider-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "rider-0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 91,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.rider-0",
+        "clip": "mall.clip.rider-0"
+      }
+    },
+    {
+      "id": "rider-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "rider-1"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 92,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.rider-1",
+        "clip": "mall.clip.rider-1"
+      }
+    },
+    {
+      "id": "rider-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "rider-2"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 93,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.rider-2",
+        "clip": "mall.clip.rider-2"
+      }
+    },
+    {
+      "id": "escalator-front",
+      "type": "mall.escalator-front",
+      "props": {
+        "width": 160
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 94,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "escalator",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "escalator-sign",
+      "type": "mall.escalator-sign",
+      "props": {},
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 95,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "escalator",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "fountain",
+      "type": "mall.fountain",
+      "props": {
+        "width": 150
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 96,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "deck-booth",
+      "type": "mall.deck-booth",
+      "props": {
+        "width": 100
+      },
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 97,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot",
+        "vendorPose": "mall.vendor.deckTech"
+      }
+    },
+    {
+      "id": "cases-booth",
+      "type": "mall.cases-booth",
+      "props": {
+        "width": 68
+      },
+      "placement": {
+        "x": 1434,
+        "h": 0
+      },
+      "order": 98,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot",
+        "vendorPose": "mall.vendor.teen"
+      }
+    },
+    {
+      "id": "table-0",
+      "type": "mall.table",
+      "props": {},
+      "placement": {
+        "x": 1974,
+        "h": 0
+      },
+      "order": 99,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "table-1",
+      "type": "mall.table",
+      "props": {},
+      "placement": {
+        "x": 2134,
+        "h": 0
+      },
+      "order": 100,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "table-2",
+      "type": "mall.table",
+      "props": {},
+      "placement": {
+        "x": 2058,
+        "h": 0
+      },
+      "order": 101,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "security",
+      "type": "mall.security",
+      "props": {},
+      "placement": {
+        "x": 2270,
+        "h": 0
+      },
+      "order": 102,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "bench-0",
+      "type": "mall.bench",
+      "props": {},
+      "placement": {
+        "x": 580,
+        "h": 0
+      },
+      "order": 103,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "bench-1",
+      "type": "mall.bench",
+      "props": {},
+      "placement": {
+        "x": 1500,
+        "h": 0
+      },
+      "order": 104,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "floor-0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-0"
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 105,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-0",
+        "clip": "mall.clip.floor-0"
+      }
+    },
+    {
+      "id": "floor-1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-1"
+      },
+      "placement": {
+        "x": 230,
+        "h": 0
+      },
+      "order": 106,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-1",
+        "clip": "mall.clip.floor-1"
+      }
+    },
+    {
+      "id": "floor-2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-2"
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 107,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-2",
+        "clip": "mall.clip.floor-2"
+      }
+    },
+    {
+      "id": "floor-3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-3"
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 108,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-3",
+        "clip": "mall.clip.floor-3"
+      }
+    },
+    {
+      "id": "floor-4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-4"
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 109,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-4",
+        "clip": "mall.clip.floor-4"
+      }
+    },
+    {
+      "id": "floor-5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-5"
+      },
+      "placement": {
+        "x": 870,
+        "h": 0
+      },
+      "order": 110,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-5",
+        "clip": "mall.clip.floor-5"
+      }
+    },
+    {
+      "id": "floor-6",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-6"
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 111,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-6",
+        "clip": "mall.clip.floor-6"
+      }
+    },
+    {
+      "id": "floor-7",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-7"
+      },
+      "placement": {
+        "x": 860,
+        "h": 0
+      },
+      "order": 112,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-7",
+        "clip": "mall.clip.floor-7"
+      }
+    },
+    {
+      "id": "floor-8",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-8"
+      },
+      "placement": {
+        "x": 1196,
+        "h": 0
+      },
+      "order": 113,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-8",
+        "clip": "mall.clip.floor-8"
+      }
+    },
+    {
+      "id": "floor-9",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-9"
+      },
+      "placement": {
+        "x": 1270,
+        "h": 0
+      },
+      "order": 114,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-9",
+        "clip": "mall.clip.floor-9"
+      }
+    },
+    {
+      "id": "floor-10",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-10"
+      },
+      "placement": {
+        "x": 1420,
+        "h": 0
+      },
+      "order": 115,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-10",
+        "clip": "mall.clip.floor-10"
+      }
+    },
+    {
+      "id": "floor-11",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-11"
+      },
+      "placement": {
+        "x": 1560,
+        "h": 0
+      },
+      "order": 116,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-11",
+        "clip": "mall.clip.floor-11"
+      }
+    },
+    {
+      "id": "floor-12",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-12"
+      },
+      "placement": {
+        "x": 1700,
+        "h": 0
+      },
+      "order": 117,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-12",
+        "clip": "mall.clip.floor-12"
+      }
+    },
+    {
+      "id": "floor-13",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-13"
+      },
+      "placement": {
+        "x": 1950,
+        "h": 10
+      },
+      "order": 118,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-13",
+        "clip": "mall.clip.floor-13"
+      }
+    },
+    {
+      "id": "floor-14",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-14"
+      },
+      "placement": {
+        "x": 2110,
+        "h": 10
+      },
+      "order": 119,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-14",
+        "clip": "mall.clip.floor-14"
+      }
+    },
+    {
+      "id": "floor-15",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-15"
+      },
+      "placement": {
+        "x": 2238,
+        "h": 2
+      },
+      "order": 120,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-15",
+        "clip": "mall.clip.floor-15"
+      }
+    },
+    {
+      "id": "floor-16",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-16"
+      },
+      "placement": {
+        "x": 1840,
+        "h": 0
+      },
+      "order": 121,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-16",
+        "clip": "mall.clip.floor-16"
+      }
+    },
+    {
+      "id": "floor-17",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-17"
+      },
+      "placement": {
+        "x": 420,
+        "h": 118
+      },
+      "order": 122,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-17",
+        "clip": "mall.clip.floor-17"
+      }
+    },
+    {
+      "id": "floor-18",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-18"
+      },
+      "placement": {
+        "x": 1500,
+        "h": 0
+      },
+      "order": 123,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-18",
+        "clip": "mall.clip.floor-18"
+      }
+    },
+    {
+      "id": "floor-19",
+      "type": "character.prepared",
+      "props": {
+        "actor": "floor-19"
+      },
+      "placement": {
+        "x": 1980,
+        "h": 0
+      },
+      "order": 124,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.floor-19",
+        "clip": "mall.clip.floor-19"
+      }
+    },
+    {
+      "id": "kid",
+      "type": "character.prepared",
+      "props": {
+        "actor": "kid"
+      },
+      "placement": {
+        "x": 1012,
+        "h": 0
+      },
+      "order": 125,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.kid",
+        "clip": "mall.clip.kid"
+      }
+    },
+    {
+      "id": "diner",
+      "type": "character.prepared",
+      "props": {
+        "actor": "diner"
+      },
+      "placement": {
+        "x": 2080,
+        "h": 10
+      },
+      "order": 126,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.diner",
+        "clip": "mall.clip.diner"
+      }
+    },
+    {
+      "id": "securityPerson",
+      "type": "character.prepared",
+      "props": {
+        "actor": "securityPerson"
+      },
+      "placement": {
+        "x": 2320,
+        "h": 0
+      },
+      "order": 127,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.securityPerson",
+        "clip": "mall.clip.securityPerson"
+      }
+    },
+    {
+      "id": "dancer",
+      "type": "character.prepared",
+      "props": {
+        "actor": "dancer"
+      },
+      "placement": {
+        "x": 2432,
+        "h": 0
+      },
+      "order": 128,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.dancer",
+        "clip": "mall.clip.dancer"
+      }
+    },
+    {
+      "id": "pigeon",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pigeon"
+      },
+      "placement": {
+        "x": 2160,
+        "h": 0
+      },
+      "order": 129,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.pigeon",
+        "clip": "mall.clip.pigeon"
+      }
+    },
+    {
+      "id": "floor",
+      "type": "mall.floor",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 130,
+      "pass": "backdrop",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "implants-reflection",
+      "type": "mall.shop-reflection",
+      "props": {
+        "width": 180,
+        "tint": "230,235,255"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 131,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "implants",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pawn-reflection",
+      "type": "mall.shop-reflection",
+      "props": {
+        "width": 180,
+        "tint": "255,200,120"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 132,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pawn",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "florist-reflection",
+      "type": "mall.shop-reflection",
+      "props": {
+        "width": 180,
+        "tint": "210,240,190"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 133,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "florist",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "keys-reflection",
+      "type": "mall.shop-reflection",
+      "props": {
+        "width": 150,
+        "tint": "255,190,110"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 134,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "keys",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "noodles-reflection",
+      "type": "mall.shop-reflection",
+      "props": {
+        "width": 140,
+        "tint": "255,190,110"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 135,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "noodles",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "burger-reflection",
+      "type": "mall.shop-reflection",
+      "props": {
+        "width": 140,
+        "tint": "255,170,120"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 136,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "burger",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "dumplings-reflection",
+      "type": "mall.shop-reflection",
+      "props": {
+        "width": 140,
+        "tint": "255,210,140"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 137,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dumplings",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "fountain-reflection",
+      "type": "mall.fountain-reflection",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 138,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "fountain",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pillar-reflection-0",
+      "type": "mall.pillar-reflection",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 139,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pillar-0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pillar-reflection-1",
+      "type": "mall.pillar-reflection",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 140,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pillar-1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "pillar-reflection-2",
+      "type": "mall.pillar-reflection",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 141,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pillar-2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "foreground-pillar",
+      "type": "mall.foreground-pillar",
+      "props": {},
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 142,
+      "pass": "foreground",
+      "bindings": {
+        "snapshot": "mall.snapshot"
+      }
+    },
+    {
+      "id": "scene",
+      "type": "mall.marker",
+      "props": {
+        "role": "scene"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 143,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "mall.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 86,
+        "h": 0
+      },
+      "order": 144,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-metro",
+      "type": "mall.marker",
+      "props": {
+        "role": "exit-metro"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 145,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "metro",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-taxi",
+      "type": "mall.marker",
+      "props": {
+        "role": "exit-taxi"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 146,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-market",
+      "type": "mall.marker",
+      "props": {
+        "role": "exit-market"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 147,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "service",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "read-kiosk",
+      "type": "mall.marker",
+      "props": {
+        "role": "read-kiosk"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 148,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "directory",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "read-fountain",
+      "type": "mall.marker",
+      "props": {
+        "role": "read-fountain"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 149,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "fountain",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "read-escalator",
+      "type": "mall.marker",
+      "props": {
+        "role": "read-escalator"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 150,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "escalator-sign",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-kiosk",
+      "type": "mall.marker",
+      "props": {
+        "role": "use-kiosk"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 151,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "registry",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-implants",
+      "type": "mall.marker",
+      "props": {
+        "role": "use-implants"
+      },
+      "placement": {
+        "x": 92,
+        "h": 0
+      },
+      "order": 152,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "implants",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-pawn",
+      "type": "mall.marker",
+      "props": {
+        "role": "use-pawn"
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 153,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pawn",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-deck",
+      "type": "mall.marker",
+      "props": {
+        "role": "use-deck"
+      },
+      "placement": {
+        "x": 50,
+        "h": 0
+      },
+      "order": 154,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "deck-booth",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-florist",
+      "type": "mall.marker",
+      "props": {
+        "role": "use-florist"
+      },
+      "placement": {
+        "x": 80,
+        "h": 0
+      },
+      "order": 155,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "florist",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-keys",
+      "type": "mall.marker",
+      "props": {
+        "role": "use-keys"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 156,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "keys",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-order",
+      "type": "mall.marker",
+      "props": {
+        "role": "use-order"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 157,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "noodles",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

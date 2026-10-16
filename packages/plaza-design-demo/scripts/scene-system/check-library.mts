@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import { libraryArt, libraryComposition, libraryDeviceData, libraryEnvironment, libraryGeometry, libraryLayout, validateLibraryComposition, bindLibraryActors } from '../../src/ssg/game/scenes/library/composition';
+import { resolveComposition, type Composition } from '../../src/ssg/game/art/core/composition';
+import type { Character } from '../../src/ssg/game/runtime/characters';
+import type { EngineDraw } from '../../src/ssg/game/engine/host';
+import type { SceneData } from '../../src/ssg/game/data/types';
+import devices from '../../src/ssg/game/scenes/library/devices.json';
+
+const doc = validateLibraryComposition(JSON.parse(JSON.stringify(libraryComposition)));
+assert.deepEqual(doc, libraryComposition);
+assert.equal(doc.instances.length, 41);
+assert.deepEqual(libraryDeviceData(devices as SceneData), devices, 'shipping device geometry must remain exact');
+assert.equal(libraryLayout().spawn, 74);
+const changed = structuredClone(doc);
+changed.instances.find(i => i.id === 'counter')!.placement.x += 17;
+changed.instances.find(i => i.id === 'armchair-2')!.placement.x += 20;
+const geometry = libraryGeometry(changed);
+assert.equal(geometry.find(i => i.instance.id === 'printer')!.placement.x, 565);
+assert.equal(geometry.find(i => i.instance.id === 'printer')!.placement.h, 30);
+assert.equal(geometry.find(i => i.instance.id === 'knitter')!.placement.x, 764);
+const changedData = libraryDeviceData(devices as SceneData, changed);
+assert.deepEqual(changedData.devices.find(i => i.id === 'printer')!.layout!.spot, { x: 565, y: 28, w: 30, h: 22 });
+assert.equal(changedData.id, devices.id);
+assert.deepEqual(changedData.devices.map(i => i.id), devices.devices.map(i => i.id));
+assert.equal(libraryLayout(changed).door, libraryLayout().door);
+function rejects(edit: (doc: Composition) => void, pattern: RegExp) {
+  const bad = structuredClone(doc); edit(bad); assert.throws(() => validateLibraryComposition(bad), pattern);
+  assert.deepEqual(doc, libraryComposition);
+}
+rejects(d => { d.instances = d.instances.filter(i => i.id !== 'printer'); }, /Missing gameplay-bound/);
+rejects(d => { d.instances.find(i => i.id === 'reader')!.bindings!.online = 'absent'; }, /unknown library binding/);
+rejects(d => { d.instances.find(i => i.id === 'student')!.props.actor = 'absent'; }, /actor pose binding/);
+assert.throws(() => libraryArt.visualProperties('library.person', { pose: { visible: true, character: { x: 1 } } }), /Incomplete prepared character/);
+const actors: Record<string, Character> = Object.fromEntries(['shelfe','librarian','student','kid','sleeper','knitter','paper','cat'].map((id, seed) => [id, { x: 100, seed: seed + 1, act: 'stand' }]));
+actors.shelfe.range = [50, 150];
+bindLibraryActors(actors, changed);
+assert.equal(actors.knitter.x, 764);
+assert.deepEqual(actors.shelfe.range, [640, 740]);
+const view = { sx: (x: number) => x, y: (h: number) => 300 - h, gy: 300, t: 137, cam: 0, viewW: 640, viewH: 360, flags: {} };
+const engine = { hover: 'reader', m: { net: { get: () => 'connected' } }, layer: 'all' } as unknown as EngineDraw;
+const env = libraryEnvironment(changed, view, engine, actors), rows = resolveComposition(libraryArt, changed, env);
+assert.equal(rows.find(i => i.instance.id === 'reader')!.state.hover, true);
+assert.equal(rows.find(i => i.instance.id === 'reader')!.state.online, true);
+assert.equal(rows.find(i => i.instance.id === 'session')!.state.hover, false);
+assert.deepEqual(rows.find(i => i.instance.id === 'shelves')!.state.windows, [[648,712],[768,840],[892,940]]);
+console.log('Library checks passed: 41-instance JSON round trip; original device geometry; counter/printer and chair/resident attachments; actor range translation; named bindings; invalid documents/state rejected without mutating source.');

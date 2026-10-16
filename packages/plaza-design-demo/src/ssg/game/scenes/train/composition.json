@@ -1,0 +1,1976 @@
+{
+  "version": 1,
+  "scene": "train",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "train.marker",
+      "props": {
+        "role": "scene",
+        "width": 1200
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "train.marker",
+      "props": {},
+      "placement": {
+        "x": 780,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ceiling",
+      "type": "train.marker",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 166
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "roof",
+      "type": "train.marker",
+      "props": {
+        "role": "roof",
+        "cove": 14,
+        "shell": 12,
+        "wire": 66,
+        "messenger": 88
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "news",
+      "type": "train.marker",
+      "props": {
+        "role": "news",
+        "text": "REGISTRY AUDIT: 1,204 RECORDS RETIRED OVERNIGHT. NO ACTION NEEDED."
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "fill",
+      "type": "train.fill",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "wall",
+      "type": "train.wall",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "outside",
+      "type": "train.outside",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "window0",
+      "type": "train.windowFrame",
+      "props": {
+        "width": 100,
+        "h0": 52,
+        "h1": 128
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "window1",
+      "type": "train.windowFrame",
+      "props": {
+        "width": 100,
+        "h0": 52,
+        "h1": 128
+      },
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "window2",
+      "type": "train.windowFrame",
+      "props": {
+        "width": 100,
+        "h0": 52,
+        "h1": 128
+      },
+      "placement": {
+        "x": 460,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "window3",
+      "type": "train.windowFrame",
+      "props": {
+        "width": 100,
+        "h0": 52,
+        "h1": 128
+      },
+      "placement": {
+        "x": 590,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "window4",
+      "type": "train.windowFrame",
+      "props": {
+        "width": 100,
+        "h0": 52,
+        "h1": 128
+      },
+      "placement": {
+        "x": 860,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "window5",
+      "type": "train.windowFrame",
+      "props": {
+        "width": 100,
+        "h0": 52,
+        "h1": 128
+      },
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "roof-outside",
+      "type": "train.roofOutside",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "roof-shell",
+      "type": "train.roofShell",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "aircon0",
+      "type": "train.aircon",
+      "props": {},
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "aircon1",
+      "type": "train.aircon",
+      "props": {},
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "pantograph",
+      "type": "train.pantograph",
+      "props": {},
+      "placement": {
+        "x": 610,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "ceiling-light",
+      "type": "train.ceilingLight",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "ad0",
+      "type": "train.advert",
+      "props": {
+        "text": "REGISTRY PREMIUM · FASTER CHECKS",
+        "homeText": "YOUR COMMUTE, COUNTED · PREMIUM",
+        "index": 0
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "ad1",
+      "type": "train.advert",
+      "props": {
+        "text": "CAMERAS OPERATE IN THIS CAR",
+        "homeText": "LINE 0 NEWS",
+        "index": 1
+      },
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "ad2",
+      "type": "train.advert",
+      "props": {
+        "text": "NULLROUTE LOGISTICS · NO QUESTIONS",
+        "homeText": "SMILE · YOU ARE ON CAMERA",
+        "index": 2
+      },
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "ad-tell",
+      "type": "train.adTell",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "ad1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "camera0",
+      "type": "train.drawCam",
+      "props": {},
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "camera1",
+      "type": "train.drawCam",
+      "props": {},
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "line-map",
+      "type": "train.lineMap",
+      "props": {},
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "staff",
+      "type": "train.staffDoor",
+      "props": {},
+      "placement": {
+        "x": 32,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "gangway",
+      "type": "train.gangwayWall",
+      "props": {},
+      "placement": {
+        "x": 1130,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "gang-door",
+      "type": "train.gangwayDoor",
+      "props": {},
+      "placement": {
+        "x": 56,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "gangway",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "car-plate",
+      "type": "train.carPlate",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "gangway",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "brake",
+      "type": "train.brake",
+      "props": {},
+      "placement": {
+        "x": 10,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "gangway",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "registry-screen",
+      "type": "train.registryScreen",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "gangway",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "door0",
+      "type": "train.door",
+      "props": {},
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "door1",
+      "type": "train.door",
+      "props": {},
+      "placement": {
+        "x": 780,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-back0",
+      "type": "train.seatBack",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window0.width"
+      }
+    },
+    {
+      "id": "seat-back1",
+      "type": "train.seatBack",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window1.width"
+      }
+    },
+    {
+      "id": "seat-back2",
+      "type": "train.seatBack",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window2.width"
+      }
+    },
+    {
+      "id": "seat-back3",
+      "type": "train.seatBack",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window3",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window3.width"
+      }
+    },
+    {
+      "id": "seat-back4",
+      "type": "train.seatBack",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window4",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window4.width"
+      }
+    },
+    {
+      "id": "seat-back5",
+      "type": "train.seatBack",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window5",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window5.width"
+      }
+    },
+    {
+      "id": "seat-rider0-0",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 0,
+        "sit": true,
+        "actor": "seat-rider0-0"
+      },
+      "placement": {
+        "x": 25,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider0-1",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 1,
+        "sit": true,
+        "actor": "seat-rider0-1"
+      },
+      "placement": {
+        "x": 75,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider1-0",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 2,
+        "sit": true,
+        "actor": "seat-rider1-0"
+      },
+      "placement": {
+        "x": 25,
+        "h": 0
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider1-1",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 3,
+        "sit": true,
+        "actor": "seat-rider1-1"
+      },
+      "placement": {
+        "x": 75,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider2-0",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 4,
+        "sit": true,
+        "actor": "seat-rider2-0"
+      },
+      "placement": {
+        "x": 25,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider2-1",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 5,
+        "sit": true,
+        "actor": "seat-rider2-1"
+      },
+      "placement": {
+        "x": 75,
+        "h": 0
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider3-0",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 6,
+        "sit": true,
+        "actor": "seat-rider3-0"
+      },
+      "placement": {
+        "x": 25,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window3",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider3-1",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 7,
+        "sit": true,
+        "actor": "seat-rider3-1"
+      },
+      "placement": {
+        "x": 75,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window3",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider4-0",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 8,
+        "sit": true,
+        "actor": "seat-rider4-0"
+      },
+      "placement": {
+        "x": 25,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window4",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider4-1",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 9,
+        "sit": true,
+        "actor": "seat-rider4-1"
+      },
+      "placement": {
+        "x": 75,
+        "h": 0
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window4",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider5-0",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 10,
+        "sit": true,
+        "actor": "seat-rider5-0"
+      },
+      "placement": {
+        "x": 25,
+        "h": 0
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window5",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-rider5-1",
+      "type": "train.rider",
+      "props": {
+        "mode": "seat",
+        "slot": 11,
+        "sit": true,
+        "actor": "seat-rider5-1"
+      },
+      "placement": {
+        "x": 75,
+        "h": 0
+      },
+      "order": 52,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window5",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "standing-rider0",
+      "type": "train.rider",
+      "props": {
+        "mode": "standing",
+        "slot": 12,
+        "actor": "standing-rider0"
+      },
+      "placement": {
+        "x": 336,
+        "h": 0
+      },
+      "order": 53,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "standing-rider1",
+      "type": "train.rider",
+      "props": {
+        "mode": "standing",
+        "slot": 13,
+        "actor": "standing-rider1"
+      },
+      "placement": {
+        "x": 566,
+        "h": 0
+      },
+      "order": 54,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "standing-rider2",
+      "type": "train.rider",
+      "props": {
+        "mode": "standing",
+        "slot": 14,
+        "actor": "standing-rider2"
+      },
+      "placement": {
+        "x": 956,
+        "h": 0
+      },
+      "order": 55,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "suit",
+      "type": "train.rider",
+      "props": {
+        "mode": "regular",
+        "kind": "suit",
+        "sit": true,
+        "actor": "suit"
+      },
+      "placement": {
+        "x": 225,
+        "h": 0
+      },
+      "order": 56,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "courier",
+      "type": "train.rider",
+      "props": {
+        "mode": "regular",
+        "kind": "courier",
+        "sit": false,
+        "actor": "courier"
+      },
+      "placement": {
+        "x": 556,
+        "h": 0
+      },
+      "order": 57,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "elder",
+      "type": "train.rider",
+      "props": {
+        "mode": "regular",
+        "kind": "elder",
+        "sit": true,
+        "actor": "elder"
+      },
+      "placement": {
+        "x": 885,
+        "h": 0
+      },
+      "order": 58,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "punk",
+      "type": "train.rider",
+      "props": {
+        "mode": "regular",
+        "kind": "punk",
+        "sit": true,
+        "actor": "punk"
+      },
+      "placement": {
+        "x": 1015,
+        "h": 0
+      },
+      "order": 59,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "seat-front0",
+      "type": "train.seatFront",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 60,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window0.width"
+      }
+    },
+    {
+      "id": "seat-front1",
+      "type": "train.seatFront",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 61,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window1.width"
+      }
+    },
+    {
+      "id": "seat-front2",
+      "type": "train.seatFront",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 62,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window2.width"
+      }
+    },
+    {
+      "id": "seat-front3",
+      "type": "train.seatFront",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 63,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window3",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window3.width"
+      }
+    },
+    {
+      "id": "seat-front4",
+      "type": "train.seatFront",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 64,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window4",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window4.width"
+      }
+    },
+    {
+      "id": "seat-front5",
+      "type": "train.seatFront",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 65,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "window5",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame",
+        "width": "train.window5.width"
+      }
+    },
+    {
+      "id": "handrail",
+      "type": "train.handrail",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 134
+      },
+      "order": 66,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap0",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 67,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap1",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 68,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap2",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 69,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap3",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 70,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap4",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 71,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap5",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 210,
+        "h": 0
+      },
+      "order": 72,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap6",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 73,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap7",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 74,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap8",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 75,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap9",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 76,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap10",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 360,
+        "h": 0
+      },
+      "order": 77,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap11",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 390,
+        "h": 0
+      },
+      "order": 78,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap12",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 79,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap13",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 450,
+        "h": 0
+      },
+      "order": 80,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap14",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 480,
+        "h": 0
+      },
+      "order": 81,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap15",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 510,
+        "h": 0
+      },
+      "order": 82,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap16",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 540,
+        "h": 0
+      },
+      "order": 83,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap17",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 570,
+        "h": 0
+      },
+      "order": 84,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap18",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 85,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap19",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 630,
+        "h": 0
+      },
+      "order": 86,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap20",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 87,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap21",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 690,
+        "h": 0
+      },
+      "order": 88,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap22",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 89,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap23",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 750,
+        "h": 0
+      },
+      "order": 90,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap24",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 780,
+        "h": 0
+      },
+      "order": 91,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap25",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 810,
+        "h": 0
+      },
+      "order": 92,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap26",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 840,
+        "h": 0
+      },
+      "order": 93,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap27",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 870,
+        "h": 0
+      },
+      "order": 94,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap28",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 95,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap29",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 930,
+        "h": 0
+      },
+      "order": 96,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap30",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 97,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap31",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 98,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap32",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 1020,
+        "h": 0
+      },
+      "order": 99,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap33",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 1050,
+        "h": 0
+      },
+      "order": 100,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap34",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 101,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "strap35",
+      "type": "train.strap",
+      "props": {},
+      "placement": {
+        "x": 1110,
+        "h": 0
+      },
+      "order": 102,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "handrail",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "pole0",
+      "type": "train.drawPole",
+      "props": {},
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 103,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "pole1",
+      "type": "train.drawPole",
+      "props": {},
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 104,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "pole2",
+      "type": "train.drawPole",
+      "props": {},
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 105,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "pole3",
+      "type": "train.drawPole",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 106,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "pole4",
+      "type": "train.drawPole",
+      "props": {},
+      "placement": {
+        "x": 950,
+        "h": 0
+      },
+      "order": 107,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "floor",
+      "type": "train.floor",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 108,
+      "pass": "backdrop",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "front-pole0",
+      "type": "train.drawPole",
+      "props": {},
+      "placement": {
+        "x": 430,
+        "h": 0
+      },
+      "order": 109,
+      "pass": "foreground",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "front-pole1",
+      "type": "train.drawPole",
+      "props": {},
+      "placement": {
+        "x": 880,
+        "h": 0
+      },
+      "order": 110,
+      "pass": "foreground",
+      "bindings": {
+        "frame": "train.frame"
+      }
+    },
+    {
+      "id": "device-train",
+      "type": "train.marker",
+      "props": {
+        "role": "device",
+        "width": 26,
+        "height": 40
+      },
+      "placement": {
+        "x": 0,
+        "h": 22
+      },
+      "order": 111,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "brake",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

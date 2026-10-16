@@ -37,9 +37,10 @@ Open `http://127.0.0.1:4174/?play=harborShift` after the homepage build and loca
 This is a separate playable work bay, not the campaign opening. Walk with arrows/A/D, interact
 with E, and use E/Enter to advance dialogue. Item handovers use the existing contextual popup.
 
-New tasks appear in an upper-centre announcement after dialogue closes, then settle into a
-high-contrast CURRENT TASK card after three seconds. Click/tap the card (or focus it and press
-Enter/Space) to repeat a location ping; off-screen targets use the existing edge arrow.
+New tasks briefly show the pink GOAL text near the centre after dialogue closes. After two
+seconds it moves and shrinks into the original small HUD line beneath the scene name, over
+0.65 seconds. There is no persistent card or click hint. Contextual location pings remain;
+off-screen targets use the existing edge arrow.
 Automatic reminders wait for 20 seconds of inactivity, stop near the target, and never move
 the camera. The independent empty-case task skips its initial ping and waits 30 seconds for
 a reminder. The clamp is highlighted only after trying the blocked trolley. Menus pause the
@@ -54,7 +55,7 @@ resume key. Reload resumes task progress at the work-bay spawn. MENU → NEW GAM
 this prototype's autosave; its manual slots remain. The campaign and sudo saves are unchanged.
 No hacking, map, terminal or jump controls are available in the prototype, including with sudo.
 
-Implemented with `scenes/harbor-shift.ts`, ordinary `SceneUse` interactions and carried items;
+Implemented with `scenes/harbor-shift/index.ts`, ordinary `SceneUse` interactions and carried items;
 no engine device data or rule contract is added. `SceneUse.available` stages interactions,
 `SceneDef.objective` supplies the goal. Time is pinned to completed story beats, and wages
 are granted once. The player and workers use the existing character kit; distant water,
@@ -69,17 +70,20 @@ separately; a complete player playthrough and comprehension assessment remain pe
 | File or directory | Current responsibility |
 | --- | --- |
 | `index.ts` | Homepage entry, URL shortcuts, touch controls |
-| `game.ts` | Main controller: input, movement, overlays, travel and story transitions |
+| `runtime/` | Main controller, audio, save/slots and actor simulation |
 | `engine/` | Scene model/host, hacking UI, cables, guards, clocks, watchdogs and pausable scene time |
-| `data/` | JSON content, types, loading and build-time validation |
+| `data/` | Shared engine/logic/network data, types, scene-data registry and build-time validation |
 | `scenes/index.ts`, `scenes/kit.ts` | Scene registry and shared scene interface |
-| `capsule/`, `downtown/`, `yard/`, `moth/`, `library/`, `laundromat/`, `stacks/`, `beach/`, `sandbox/` | Location-specific rules and drawing |
-| `scenes/` | Other locations, metro simulation, shared building and screen kits |
-| `sets/`, `characters.ts`, `sprites.ts` | Reusable scenery and characters |
-| `city.ts`, `cityplan.ts`, `citymap.ts`, `netmap.ts` | City structure, maps and network discovery |
-| `clock.ts`, `weather.ts`, `light.ts` | City time, weather and lighting |
-| `title/`, `opening.ts`, `cutscenes/` | Title/glide, tutorial states and story presentations |
-| `level.ts`, `slots.ts`, `menu.ts`, `terminal.ts` | Player save, slots, menus and terminal |
+| `scenes/<id>/` | Location definition, local rules and device data; remaining local drawing is being migrated |
+| `art/` | Shared code-rendered artwork, construction helpers, character appearance and composition contracts |
+| `world/` | Geography, city time/weather/light and shared transport simulation |
+| `story/` | Contacts, opening progression, title/glide and cutscene controllers |
+| `ui/` | Menus, terminal, maps, developer controls, key bar and task guidance |
+| `docs/` | Design concepts, technical references and historical scene feedback |
+
+See [module organization](./docs/reference/MODULES.md) for logic ownership and dependency rules.
+The migration is in progress; the code map describes the current grouping, not completion of
+the artwork/composer plan. `SCENE-SYSTEM-STATUS.md` records remaining gates.
 
 The enclosing `../render.tsx` supplies the static page and shared game styles.
 `../../../scripts/generate-demos.tsx` validates data and bundles the homepage; the generator
@@ -93,17 +97,18 @@ the user's latest direction, not whichever old note sounds most authoritative.
 
 | Document | Use it for |
 | --- | --- |
-| [PROGRESSION-CONCEPT.md](./PROGRESSION-CONCEPT.md) | New story and learning direction: harbor prologue, Downtown Act I, later embodiment proposals; comparison with current material |
-| [PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md) | Milestone 1: encounter matrices, teaching dependencies, access and puzzle dispositions |
+| [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md) | New story and learning direction: harbor prologue, Downtown Act I, later embodiment proposals; comparison with current material |
+| [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md) | Milestone 1: encounter matrices, teaching dependencies, access and puzzle dispositions |
 | [ROADMAP.md](./ROADMAP.md) | Current implementation status and proposed next work |
-| [GAME-DATA.md](./GAME-DATA.md) | Technical authoring reference: data/code boundary, engine and saves |
-| [ART-GUIDE.md](./ART-GUIDE.md) | Working visual and readability principles |
-| [CITY.md](./CITY.md) | Current city structure and proposed places |
-| [NET.md](./NET.md) | Network mechanics, current implementation and future ideas |
-| [TIME.md](./TIME.md) | City time/weather/light design and implemented parts |
-| [PUZZLES.md](./PUZZLES.md) | Puzzle catalogue; distinguish implemented solutions from sketches |
-| [LEVELS.md](./LEVELS.md), [STORY.md](./STORY.md) | Story/level design, including historical proposals |
-| [SCENES.md](./SCENES.md) | Historical scene feedback and ideas for future locations |
+| [SCENE-SYSTEM-PLAN.md](./SCENE-SYSTEM-PLAN.md) | Executable artwork-library migration and visual composer plan, with appearance-preservation gates |
+| [GAME-DATA.md](./docs/reference/GAME-DATA.md) | Technical authoring reference: data/code boundary, engine and saves |
+| [ART-GUIDE.md](./docs/reference/ART-GUIDE.md) | Working visual and readability principles |
+| [CITY.md](./docs/reference/CITY.md) | Current city structure and proposed places |
+| [NET.md](./docs/reference/NET.md) | Network mechanics, current implementation and future ideas |
+| [TIME.md](./docs/reference/TIME.md) | City time/weather/light design and implemented parts |
+| [PUZZLES.md](./docs/reference/PUZZLES.md) | Puzzle catalogue; distinguish implemented solutions from sketches |
+| [LEVELS.md](./docs/design/LEVELS.md), [STORY.md](./docs/design/STORY.md) | Story/level design, including historical proposals |
+| [SCENES.md](./docs/history/SCENES.md) | Historical scene feedback and ideas for future locations |
 
 ## Pause and saves: current behavior
 
@@ -119,6 +124,11 @@ saved player position or train timestamp. Manual slots also retain their scene. 
 separate storage keys. This change does not reset saves or introduce a new save version.
 
 ## Validation scope
+
+The local [scene and animation composer](./authoring/README.md) starts with
+`pnpm --filter plaza-design-demo compose-scenes`. Its preview uses the native game renderer;
+validated Save writes allowlisted composition/timeline source files. See the execution ledger
+for migration coverage and outstanding acceptance gates.
 
 `pnpm build:homepage` checks game data and produces the playable page.
 `pnpm build:design-demo` runs TypeScript checking and builds the React showcase.

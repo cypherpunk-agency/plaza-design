@@ -1,20 +1,21 @@
 # ACCESS DENIED: roadmap
 
 Updated 2026-10-16. This is the active build sequence for the
-[progression concept](./PROGRESSION-CONCEPT.md). Everything remains in design. Milestones
+[progression concept](./docs/design/PROGRESSION-CONCEPT.md). Everything remains in design. Milestones
 are deliverables, not dates; later story proposals remain provisional.
 
 ## Current position
 
-- **Milestone 1: design pass complete.** [PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md)
+- **Milestone 1: design pass complete.** [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md)
   specifies the proposed encounters, prerequisites, learning practice, interfaces, scene
   permissions, failure recovery and disposition of existing puzzles. This is a completed
   design deliverable, not evidence of player comprehension or implemented progression.
 - **Milestone 2: prototype implemented locally.** Launch `?play=harborShift`; see
   [preview and validation notes](./README.md#harbor-shift-prototype-milestone-2). Boss, coworker,
   deliveries, trolley/clamp, checkout and completion are present with isolated saves.
-  First feedback iteration: task announcements, persistent clickable task card and contextual
-  pings are implemented locally; the independent return task has lighter guidance.
+  Feedback iteration: brief centre-to-HUD goal text and contextual pings are implemented;
+  the persistent task card was removed after player feedback. The independent return task
+  has lighter guidance.
   Pacing/comprehension review remains pending; milestone 3 integrates the commute and home.
 - The running game still uses the previous train-first opening and multi-district Act I.
   The harbor shift is available separately; staged augmentation and body transitions are not implemented.
@@ -37,7 +38,7 @@ are deliverables, not dates; later story proposals remain provisional.
 
 ## Milestone 2 scope and delivery
 
-Use P1–P6 in the [scene plan](./PROLOGUE-ACT-I-PLAN.md). A work bay and connected checkout
+Use P1–P6 in the [scene plan](./docs/design/PROLOGUE-ACT-I-PLAN.md). A work bay and connected checkout
 area can share existing harbor sets; no full district rebuild is required. Start directly at
 shift arrival during development. Retargeting the cinematic and integrating the commute
 belong to milestone 3.
@@ -49,6 +50,12 @@ Preserve the current story route while the prototype is isolated. Do not put new
 security puzzles, robot abilities or the full hacking UI into this slice.
 
 ## Engineering alongside the chapters
+
+The [unified scene system plan](./SCENE-SYSTEM-PLAN.md) defines a separate engineering track:
+one artwork library, no scene-specific drawing in game.ts, serializable compositions and a
+local visual composer using the game renderer. It is planned, not implemented. Its S0–S7
+milestones and G1–G8 completion gates preserve current appearance; later harbor/tutorial prop
+redesign is separate. This track does not renumber or complete any story milestone below.
 
 | Foundation | First needed | Scope |
 | --- | --- | --- |
@@ -83,7 +90,7 @@ replace an agreed playthrough or demonstrate that the learning curve works.
 The current game supplies the harbor/stacks art, train and stations, Downtown, Capsule 7B,
 library, yard, Moth's flat, other districts, everyday interactions, device engine, wiring,
 guards, logic, maps, time/weather and saves. Availability is not an obligation to expose all
-of it in Act I. The [puzzle disposition table](./PROLOGUE-ACT-I-PLAN.md#existing-puzzle-disposition)
+of it in Act I. The [puzzle disposition table](./docs/design/PROLOGUE-ACT-I-PLAN.md#existing-puzzle-disposition)
 assigns the old catalogue to this plan.
 
 Existing local reliability work pauses scene clocks and delayed actions with interruptions,
@@ -92,11 +99,11 @@ from the progression redesign; it does not provide resumable harbor tasks or exa
 
 ## Records and documentation roles
 
-- [PROGRESSION-CONCEPT.md](./PROGRESSION-CONCEPT.md): story direction, principles and open embodiment ideas.
-- [PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md): milestone 1 encounter plan and dependencies.
-- [PUZZLES.md](./PUZZLES.md): existing puzzle catalogue and implemented mechanics.
-- [GAME-DATA.md](./GAME-DATA.md): current authoring and engine behaviour.
-- [STORY.md](./STORY.md), [CITY.md](./CITY.md), [LEVELS.md](./LEVELS.md): reusable world/story material; older act orders are superseded by this roadmap.
+- [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md): story direction, principles and open embodiment ideas.
+- [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md): milestone 1 encounter plan and dependencies.
+- [PUZZLES.md](./docs/reference/PUZZLES.md): existing puzzle catalogue and implemented mechanics.
+- [GAME-DATA.md](./docs/reference/GAME-DATA.md): current authoring and engine behaviour.
+- [STORY.md](./docs/design/STORY.md), [CITY.md](./docs/reference/CITY.md), [LEVELS.md](./docs/design/LEVELS.md): reusable world/story material; older act orders are superseded by this roadmap.
 - [Archived previous roadmap](./archive/ROADMAP-BEFORE-PROGRESSION-2026-10-16.md): detailed earlier builds, glide notes and former act structure, preserved for reference.
 
 The archive preserves the old record; its checkmarks and dated decisions are not completion

@@ -1,0 +1,827 @@
+{
+  "version": 1,
+  "scene": "moth",
+  "instances": [
+    {
+      "id": "neighbors",
+      "type": "moth.neighbors",
+      "props": {
+        "width": 660,
+        "ceiling": 112
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "shell",
+      "type": "moth.shell",
+      "props": {
+        "width": 660,
+        "ceiling": 112
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "window",
+      "type": "moth.window",
+      "props": {
+        "width": 74,
+        "height": 58,
+        "facing": 270
+      },
+      "placement": {
+        "x": 442,
+        "h": 42
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "string-lights",
+      "type": "moth.string-lights",
+      "props": {},
+      "placement": {
+        "x": 372,
+        "h": 106
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "resident-panel",
+      "type": "moth.resident-panel",
+      "props": {},
+      "placement": {
+        "x": 96,
+        "h": 64
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "calendar",
+      "type": "moth.calendar",
+      "props": {},
+      "placement": {
+        "x": 248,
+        "h": 88
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "books",
+      "type": "moth.books",
+      "props": {},
+      "placement": {
+        "x": 528,
+        "h": 66
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "door",
+      "type": "moth.door",
+      "props": {},
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "mail",
+      "type": "moth.mail",
+      "props": {},
+      "placement": {
+        "x": 84,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "board",
+      "type": "moth.board",
+      "props": {
+        "width": 44,
+        "height": 34
+      },
+      "placement": {
+        "x": 150,
+        "h": 30
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "rod",
+      "type": "moth.rod",
+      "props": {},
+      "placement": {
+        "x": 178,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "guitar",
+      "type": "moth.guitar",
+      "props": {},
+      "placement": {
+        "x": 194,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "turntable",
+      "type": "moth.record-player",
+      "props": {},
+      "placement": {
+        "x": 222,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "rig-glow",
+      "type": "moth.rig-glow",
+      "props": {
+        "width": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "rig-shelf",
+      "type": "moth.rig-shelf",
+      "props": {
+        "width": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "desk",
+      "type": "moth.desk",
+      "props": {
+        "width": 76,
+        "height": 28
+      },
+      "placement": {
+        "x": 272,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "monitor-left",
+      "type": "moth.monitor",
+      "props": {
+        "width": 18,
+        "height": 14,
+        "kind": "log"
+      },
+      "placement": {
+        "x": 16,
+        "h": 8
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "monitor-center",
+      "type": "moth.monitor",
+      "props": {
+        "width": 24,
+        "height": 18,
+        "kind": "lock"
+      },
+      "placement": {
+        "x": 38,
+        "h": 6
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "monitor-right",
+      "type": "moth.monitor",
+      "props": {
+        "width": 18,
+        "height": 14,
+        "kind": "log"
+      },
+      "placement": {
+        "x": 60,
+        "h": 8
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "webcams",
+      "type": "moth.webcams",
+      "props": {
+        "width": 76
+      },
+      "placement": {
+        "x": 38,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "desk-items",
+      "type": "moth.desk-items",
+      "props": {
+        "width": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "chair",
+      "type": "moth.chair",
+      "props": {},
+      "placement": {
+        "x": 46,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "desk-signal",
+      "type": "moth.desk-signal",
+      "props": {
+        "width": 76
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "tank",
+      "type": "moth.tank",
+      "props": {
+        "width": 46,
+        "base": 22,
+        "height": 24
+      },
+      "placement": {
+        "x": 402,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "pot",
+      "type": "moth.smart-pot",
+      "props": {},
+      "placement": {
+        "x": 478,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "phone",
+      "type": "moth.phone",
+      "props": {},
+      "placement": {
+        "x": 548,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "sofa",
+      "type": "moth.sofa",
+      "props": {
+        "width": 64
+      },
+      "placement": {
+        "x": 586,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "takeaway",
+      "type": "moth.takeaway",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "sofa",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "flyer",
+      "type": "moth.flyer",
+      "props": {},
+      "placement": {
+        "x": 32,
+        "h": 84
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "sofa",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "moth.hover",
+        "playing": "moth.playing",
+        "nextMs": "moth.nextMs",
+        "fed": "moth.fed",
+        "wet": "moth.wet",
+        "fresh": "moth.fresh",
+        "deskHeight": "moth.deskHeight"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "moth.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "door",
+        "anchor": "entrance"
+      }
+    },
+    {
+      "id": "exit-door",
+      "type": "moth.marker",
+      "props": {
+        "role": "exit:door"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "door",
+        "anchor": "entrance"
+      }
+    },
+    {
+      "id": "device-mail",
+      "type": "moth.marker",
+      "props": {
+        "role": "device:mail"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "mail",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-board",
+      "type": "moth.marker",
+      "props": {
+        "role": "device:board"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "board",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-turntable",
+      "type": "moth.marker",
+      "props": {
+        "role": "device:turntable"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "turntable",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-desk",
+      "type": "moth.marker",
+      "props": {
+        "role": "device:desk"
+      },
+      "placement": {
+        "x": 38,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-tank",
+      "type": "moth.marker",
+      "props": {
+        "role": "device:tank"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "tank",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-pot",
+      "type": "moth.marker",
+      "props": {
+        "role": "device:pot"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pot",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-phone",
+      "type": "moth.marker",
+      "props": {
+        "role": "device:phone"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "phone",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

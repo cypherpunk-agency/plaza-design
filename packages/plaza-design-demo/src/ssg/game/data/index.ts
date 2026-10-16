@@ -10,16 +10,16 @@ import type { EngineData, KeyItem, LogicData, Loose, NetData, SceneData } from '
 import engineJson from './engine.json';
 import logicJson from './logic.json';
 import netJson from './net.json';
-import downtownJson from './downtown.json';
-import yardJson from './yard.json';
-import capsuleJson from './capsule.json';
-import mothJson from './moth.json';
-import beachJson from './beach.json';
-import trainJson from './train.json';
-import laundromatJson from './laundromat.json';
-import stacksJson from './stacks.json';
-import libraryJson from './library.json';
-import sandboxJson from './sandbox.json';
+import downtownJson from "../scenes/downtown/devices.json";
+import yardJson from "../scenes/yard/devices.json";
+import capsuleJson from "../scenes/capsule/devices.json";
+import mothJson from "../scenes/moth/devices.json";
+import beachJson from "../scenes/beach/devices.json";
+import trainJson from "../scenes/train/devices.json";
+import laundromatJson from "../scenes/laundromat/devices.json";
+import stacksJson from "../scenes/stacks/devices.json";
+import libraryJson from "../scenes/library/devices.json";
+import sandboxJson from "../scenes/sandbox/devices.json";
 
 const yard: Loose<SceneData> = yardJson;
 const capsule: Loose<SceneData> = capsuleJson;

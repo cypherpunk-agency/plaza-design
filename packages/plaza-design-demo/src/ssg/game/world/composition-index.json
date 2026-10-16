@@ -1,0 +1,2011 @@
+{
+  "version": 1,
+  "map": {
+    "width": 844,
+    "height": 390,
+    "geometry": {
+      "coast": [
+        [
+          700,
+          0
+        ],
+        [
+          690,
+          60
+        ],
+        [
+          660,
+          92
+        ],
+        [
+          650,
+          150
+        ],
+        [
+          700,
+          188
+        ],
+        [
+          740,
+          230
+        ],
+        [
+          736,
+          290
+        ],
+        [
+          760,
+          340
+        ],
+        [
+          790,
+          390
+        ]
+      ],
+      "island": {
+        "x": 770,
+        "y": 120,
+        "r": 26
+      },
+      "canal": [
+        [
+          0,
+          300
+        ],
+        [
+          90,
+          292
+        ],
+        [
+          160,
+          310
+        ],
+        [
+          230,
+          300
+        ],
+        [
+          300,
+          318
+        ],
+        [
+          390,
+          306
+        ],
+        [
+          470,
+          318
+        ],
+        [
+          540,
+          304
+        ],
+        [
+          600,
+          320
+        ],
+        [
+          660,
+          330
+        ],
+        [
+          720,
+          334
+        ],
+        [
+          800,
+          338
+        ]
+      ],
+      "canalWidth": 8,
+      "avenues": [
+        {
+          "pts": [
+            [
+              0,
+              236
+            ],
+            [
+              120,
+              230
+            ],
+            [
+              250,
+              226
+            ],
+            [
+              400,
+              228
+            ],
+            [
+              520,
+              224
+            ],
+            [
+              620,
+              206
+            ],
+            [
+              700,
+              196
+            ]
+          ],
+          "w": 5,
+          "name": "AVENUE 0"
+        },
+        {
+          "pts": [
+            [
+              318,
+              30
+            ],
+            [
+              322,
+              120
+            ],
+            [
+              330,
+              228
+            ],
+            [
+              338,
+              320
+            ],
+            [
+              346,
+              390
+            ]
+          ],
+          "w": 4,
+          "name": "REGISTRY ROAD"
+        },
+        {
+          "pts": [
+            [
+              130,
+              80
+            ],
+            [
+              190,
+              150
+            ],
+            [
+              228,
+              228
+            ],
+            [
+              246,
+              300
+            ],
+            [
+              250,
+              390
+            ]
+          ],
+          "w": 3,
+          "name": "OLD QUARTER LANE"
+        },
+        {
+          "pts": [
+            [
+              470,
+              20
+            ],
+            [
+              478,
+              120
+            ],
+            [
+              486,
+              228
+            ],
+            [
+              500,
+              300
+            ],
+            [
+              520,
+              380
+            ]
+          ],
+          "w": 4,
+          "name": "GALLERIA WAY"
+        },
+        {
+          "pts": [
+            [
+              330,
+              140
+            ],
+            [
+              420,
+              110
+            ],
+            [
+              520,
+              80
+            ],
+            [
+              620,
+              76
+            ],
+            [
+              680,
+              70
+            ]
+          ],
+          "w": 3,
+          "name": "SKYLINE DRIVE"
+        },
+        {
+          "pts": [
+            [
+              520,
+              226
+            ],
+            [
+              580,
+              270
+            ],
+            [
+              640,
+              300
+            ],
+            [
+              700,
+              330
+            ]
+          ],
+          "w": 3,
+          "name": "DOCK ROAD"
+        },
+        {
+          "pts": [
+            [
+              14,
+              132
+            ],
+            [
+              120,
+              114
+            ],
+            [
+              240,
+              98
+            ],
+            [
+              330,
+              104
+            ],
+            [
+              420,
+              92
+            ],
+            [
+              520,
+              66
+            ],
+            [
+              640,
+              52
+            ],
+            [
+              688,
+              46
+            ]
+          ],
+          "w": 6,
+          "name": "THE RING",
+          "ring": true
+        },
+        {
+          "pts": [
+            [
+              62,
+              124
+            ],
+            [
+              56,
+              96
+            ],
+            [
+              50,
+              70
+            ]
+          ],
+          "w": 3,
+          "name": "LAUNCH ROAD"
+        }
+      ],
+      "park": {
+        "x": 395,
+        "y": 205,
+        "rx": 12,
+        "ry": 9
+      },
+      "fence": [
+        6,
+        14,
+        96,
+        104
+      ]
+    },
+    "districts": [
+      {
+        "id": "downtown",
+        "name": "Downtown",
+        "short": "DOWNTOWN",
+        "stratum": "street",
+        "plan": {
+          "centre": [
+            395,
+            205
+          ],
+          "sep": 11,
+          "dens": 1,
+          "col": "255,136,0",
+          "frame": [
+            300,
+            132,
+            186,
+            140
+          ],
+          "label": [
+            392,
+            126
+          ],
+          "note": "WORKING CLASS · MIXED · RAIN"
+        }
+      },
+      {
+        "id": "oldq",
+        "name": "Old Quarter",
+        "short": "OLD QUARTER",
+        "stratum": "street",
+        "plan": {
+          "centre": [
+            300,
+            318
+          ],
+          "sep": 9,
+          "dens": 0.5,
+          "col": "214,150,96",
+          "frame": [
+            150,
+            282,
+            330,
+            84
+          ],
+          "label": [
+            318,
+            374
+          ],
+          "note": "OLD TOWN · THE CANAL · AGEING"
+        }
+      },
+      {
+        "id": "market",
+        "name": "Neon Market",
+        "short": "NEON MARKET",
+        "stratum": "street",
+        "plan": {
+          "centre": [
+            230,
+            236
+          ],
+          "sep": 9,
+          "dens": 0.6,
+          "col": "232,84,206",
+          "frame": [
+            168,
+            180,
+            134,
+            100
+          ],
+          "label": [
+            234,
+            176
+          ],
+          "note": "LOW INCOME · PACKED · LOW TECH"
+        }
+      },
+      {
+        "id": "galleria",
+        "name": "Galleria",
+        "short": "GALLERIA",
+        "stratum": "street",
+        "plan": {
+          "centre": [
+            560,
+            110
+          ],
+          "sep": 15,
+          "dens": 0.75,
+          "col": "96,206,222",
+          "frame": [
+            486,
+            44,
+            156,
+            136
+          ],
+          "label": [
+            560,
+            40
+          ],
+          "note": "MIDDLE CLASS AND UP · RETAIL"
+        }
+      },
+      {
+        "id": "harbor",
+        "name": "Harbor & Shore",
+        "short": "HARBOR",
+        "stratum": "street",
+        "plan": {
+          "centre": [
+            640,
+            290
+          ],
+          "sep": 17,
+          "dens": 0.45,
+          "col": "255,210,90",
+          "frame": [
+            560,
+            200,
+            214,
+            172
+          ],
+          "label": [
+            612,
+            206
+          ],
+          "note": "INDUSTRY · LEISURE · WATER"
+        }
+      },
+      {
+        "id": "spire",
+        "name": "The Spire / Plaza Central",
+        "short": "THE SPIRE",
+        "stratum": "overworld",
+        "plan": {
+          "centre": null,
+          "sep": 0,
+          "dens": 1,
+          "col": "170,225,235",
+          "frame": [
+            728,
+            70,
+            84,
+            84
+          ],
+          "label": [
+            770,
+            160
+          ],
+          "note": "RESTRICTED · HIGH TECH · FEW PEOPLE"
+        }
+      },
+      {
+        "id": "undercity",
+        "name": "Undercity",
+        "short": "UNDERCITY",
+        "stratum": "underworld",
+        "plan": {
+          "centre": null,
+          "sep": 0,
+          "dens": 0,
+          "col": "90,200,190",
+          "frame": [
+            60,
+            150,
+            680,
+            230
+          ],
+          "label": [
+            440,
+            352
+          ],
+          "note": "CANALS · SEWERS · UNREGISTERED"
+        }
+      },
+      {
+        "id": "fringe",
+        "name": "The Fringe",
+        "short": "THE FRINGE",
+        "stratum": "street",
+        "plan": {
+          "centre": [
+            90,
+            210
+          ],
+          "sep": 28,
+          "dens": 0.25,
+          "col": "120,120,134",
+          "frame": [
+            8,
+            124,
+            158,
+            250
+          ],
+          "label": [
+            86,
+            380
+          ],
+          "note": "AUTOMATED · NO RESIDENTS"
+        }
+      },
+      {
+        "id": "skyport",
+        "name": "Skyport and the Exclusion Zone",
+        "short": "SKYPORT",
+        "stratum": "street",
+        "plan": {
+          "centre": [
+            48,
+            62
+          ],
+          "sep": 34,
+          "dens": 0.15,
+          "col": "170,190,210",
+          "frame": [
+            6,
+            14,
+            96,
+            104
+          ],
+          "label": [
+            54,
+            10
+          ],
+          "note": "RESTRICTED · LAUNCHES · FENCED"
+        }
+      }
+    ],
+    "places": [
+      {
+        "id": "laundromat",
+        "name": "LAUNDROMAT",
+        "district": "market",
+        "entrance": "laundromat",
+        "at": "market",
+        "scenes": [
+          "laundromat"
+        ],
+        "mapPosition": [
+          215,
+          262
+        ]
+      },
+      {
+        "id": "market",
+        "name": "NEON MARKET",
+        "district": "market",
+        "entrance": "market",
+        "at": "downtown",
+        "scenes": [
+          "market"
+        ],
+        "mapPosition": [
+          250,
+          230
+        ]
+      },
+      {
+        "id": "shop",
+        "name": "CORNER SHOP",
+        "district": "downtown",
+        "entrance": "shop",
+        "scenes": [
+          "shop"
+        ],
+        "mapPosition": [
+          330,
+          228
+        ]
+      },
+      {
+        "id": "library",
+        "name": "PUBLIC LIBRARY",
+        "district": "downtown",
+        "entrance": "library",
+        "scenes": [
+          "library"
+        ],
+        "mapPosition": [
+          356,
+          196
+        ]
+      },
+      {
+        "id": "station-downtown",
+        "name": "DOWNTOWN METRO",
+        "district": "downtown",
+        "entrance": "metro",
+        "at": "downtown",
+        "scenes": [
+          "metro"
+        ],
+        "mapPosition": [
+          412,
+          228
+        ]
+      },
+      {
+        "id": "downtown",
+        "name": "DOWNTOWN",
+        "district": "downtown",
+        "entrance": "downtown",
+        "at": "metro",
+        "scenes": [
+          "downtown"
+        ],
+        "mapPosition": [
+          388,
+          236
+        ]
+      },
+      {
+        "id": "yard",
+        "name": "BACK YARD",
+        "district": "downtown",
+        "entrance": "yard",
+        "scenes": [
+          "yard"
+        ],
+        "mapPosition": [
+          420,
+          262
+        ]
+      },
+      {
+        "id": "capsule",
+        "name": "CAPSULE 7B",
+        "district": "downtown",
+        "entrance": "capsule",
+        "at": "door",
+        "scenes": [
+          "capsule"
+        ],
+        "mapPosition": [
+          440,
+          176
+        ]
+      },
+      {
+        "id": "moth",
+        "name": "MOTH'S PLACE",
+        "district": "downtown",
+        "entrance": "moth",
+        "at": "door",
+        "scenes": [
+          "moth"
+        ],
+        "mapPosition": [
+          372,
+          154
+        ]
+      },
+      {
+        "id": "station-galleria",
+        "name": "GALLERIA METRO",
+        "district": "galleria",
+        "entrance": "galleriaStation",
+        "at": "mall",
+        "scenes": [
+          "galleriaStation"
+        ],
+        "mapPosition": [
+          540,
+          150
+        ]
+      },
+      {
+        "id": "mall",
+        "name": "GALLERIA MALL",
+        "district": "galleria",
+        "entrance": "mall",
+        "scenes": [
+          "mall"
+        ],
+        "mapPosition": [
+          560,
+          110
+        ]
+      },
+      {
+        "id": "station-harbor",
+        "name": "HARBOR METRO",
+        "district": "harbor",
+        "entrance": "harborStation",
+        "at": "harbor",
+        "scenes": [
+          "harborStation"
+        ],
+        "mapPosition": [
+          610,
+          238
+        ]
+      },
+      {
+        "id": "harbor",
+        "name": "HARBOR",
+        "district": "harbor",
+        "entrance": "harbor",
+        "scenes": [
+          "harbor",
+          "harborShift",
+          "stacks"
+        ],
+        "mapPosition": [
+          646,
+          262
+        ]
+      },
+      {
+        "id": "warehouse",
+        "name": "WAREHOUSE 4",
+        "district": "harbor",
+        "entrance": "warehouse",
+        "at": "stacks",
+        "scenes": [
+          "warehouse"
+        ],
+        "mapPosition": [
+          650,
+          312
+        ]
+      },
+      {
+        "id": "beach",
+        "name": "BEACH",
+        "district": "harbor",
+        "entrance": "beach",
+        "at": "harbor",
+        "scenes": [
+          "beach"
+        ],
+        "mapPosition": [
+          730,
+          356
+        ]
+      },
+      {
+        "id": "line0",
+        "name": "LINE 0",
+        "district": null,
+        "entrance": "train",
+        "scenes": [
+          "train"
+        ],
+        "mapPosition": null
+      },
+      {
+        "id": "sandbox",
+        "name": "QA BAY 3",
+        "district": null,
+        "entrance": "sandbox",
+        "scenes": [
+          "sandbox"
+        ],
+        "mapPosition": null
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "id": "capsule",
+      "place": "capsule",
+      "composition": "capsule",
+      "exits": [
+        {
+          "id": "door",
+          "to": "downtown",
+          "at": "capsule",
+          "action": null,
+          "requires": null,
+          "sets": "pixel",
+          "needs": null,
+          "edge": null,
+          "engine": true,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "downtown",
+      "place": "downtown",
+      "composition": "downtown",
+      "exits": [
+        {
+          "id": "market",
+          "to": "market",
+          "at": "downtown",
+          "action": null,
+          "requires": "end",
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "shop",
+          "to": "shop",
+          "at": "downtown",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "library",
+          "to": "library",
+          "at": "downtown",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "yard",
+          "to": "yard",
+          "at": null,
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "capsule",
+          "to": "capsule",
+          "at": "door",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "metro",
+          "to": "metro",
+          "at": "downtown",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "moth",
+          "to": "moth",
+          "at": "door",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": {
+            "key": "moth.key",
+            "name": "DOOR",
+            "h": 52,
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH · AUTHORISED VISITORS: 0."
+            ]
+          },
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "taxi",
+          "to": "",
+          "at": null,
+          "action": "taxi",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "map",
+          "to": "",
+          "at": null,
+          "action": "map",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "library",
+      "place": "library",
+      "composition": "library",
+      "exits": [
+        {
+          "id": "downtown",
+          "to": "downtown",
+          "at": "library",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "yard",
+      "place": "yard",
+      "composition": "yard",
+      "exits": [
+        {
+          "id": "downtown",
+          "to": "downtown",
+          "at": "yard",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": "left",
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "moth",
+      "place": "moth",
+      "composition": "moth",
+      "exits": [
+        {
+          "id": "door",
+          "to": "downtown",
+          "at": "moth",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": true,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "beach",
+      "place": "beach",
+      "composition": "beach",
+      "exits": [
+        {
+          "id": "stairs",
+          "to": "harbor",
+          "at": null,
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": true,
+          "checkpoint": false
+        },
+        {
+          "id": "harbor",
+          "to": "harbor",
+          "at": "beach",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": "left",
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "harbor",
+      "place": "harbor",
+      "composition": "harbor",
+      "exits": [
+        {
+          "id": "metro",
+          "to": "harborStation",
+          "at": "harbor",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "taxi",
+          "to": "",
+          "at": null,
+          "action": "taxi",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "stacks",
+          "to": "stacks",
+          "at": "harbor",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "beach",
+          "to": "beach",
+          "at": "harbor",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": "right",
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "stacks",
+      "place": "harbor",
+      "composition": "stacks",
+      "exits": [
+        {
+          "id": "harbor",
+          "to": "harbor",
+          "at": "stacks",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "warehouse",
+          "to": "warehouse",
+          "at": "stacks",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "warehouse",
+      "place": "warehouse",
+      "composition": "warehouse",
+      "exits": [
+        {
+          "id": "stacks",
+          "to": "stacks",
+          "at": "warehouse",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "place": "market",
+      "composition": "market",
+      "exits": [
+        {
+          "id": "mall",
+          "to": "mall",
+          "at": "market",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "downtown",
+          "to": "downtown",
+          "at": "market",
+          "action": null,
+          "requires": "end",
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "laundromat",
+          "to": "laundromat",
+          "at": "market",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "laundromat",
+      "place": "laundromat",
+      "composition": "laundromat",
+      "exits": [
+        {
+          "id": "market",
+          "to": "market",
+          "at": "laundromat",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "shop",
+      "place": "shop",
+      "composition": "shop",
+      "exits": [
+        {
+          "id": "downtown",
+          "to": "downtown",
+          "at": "shop",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "mall",
+      "place": "mall",
+      "composition": "mall",
+      "exits": [
+        {
+          "id": "metro",
+          "to": "galleriaStation",
+          "at": "mall",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "taxi",
+          "to": "",
+          "at": null,
+          "action": "taxi",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "market",
+          "to": "market",
+          "at": "mall",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "metro",
+      "place": "station-downtown",
+      "composition": "metro",
+      "exits": [
+        {
+          "id": "downtown",
+          "to": "downtown",
+          "at": "metro",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": true
+        },
+        {
+          "id": "train",
+          "to": "",
+          "at": null,
+          "action": "board",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "citymap",
+          "to": "",
+          "at": null,
+          "action": "map",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "galleriaStation",
+      "place": "station-galleria",
+      "composition": "galleriaStation",
+      "exits": [
+        {
+          "id": "mall",
+          "to": "mall",
+          "at": "metro",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "train",
+          "to": "",
+          "at": null,
+          "action": "board",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "harborStation",
+      "place": "station-harbor",
+      "composition": "harborStation",
+      "exits": [
+        {
+          "id": "harbor",
+          "to": "harbor",
+          "at": "metro",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "train",
+          "to": "",
+          "at": null,
+          "action": "board",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "train",
+      "place": "line0",
+      "composition": "train",
+      "exits": [
+        {
+          "id": "line",
+          "to": "",
+          "at": null,
+          "action": "map",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "out",
+          "to": "",
+          "at": null,
+          "action": "out",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        },
+        {
+          "id": "out2",
+          "to": "",
+          "at": null,
+          "action": "out",
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "sandbox",
+      "place": "sandbox",
+      "composition": "sandbox",
+      "exits": [
+        {
+          "id": "out",
+          "to": "downtown",
+          "at": "metro",
+          "action": null,
+          "requires": null,
+          "sets": null,
+          "needs": null,
+          "edge": null,
+          "engine": false,
+          "checkpoint": false
+        }
+      ]
+    },
+    {
+      "id": "harborShift",
+      "place": "harbor",
+      "composition": "harborShift",
+      "exits": []
+    }
+  ],
+  "transport": {
+    "metro": {
+      "id": "line0",
+      "order": [
+        "downtown",
+        "galleria",
+        "harbor"
+      ],
+      "stations": [
+        {
+          "id": "downtown",
+          "name": "DOWNTOWN",
+          "scene": "metro",
+          "up": "downtown",
+          "mapPosition": [
+            412,
+            228
+          ]
+        },
+        {
+          "id": "galleria",
+          "name": "GALLERIA",
+          "scene": "galleriaStation",
+          "up": "mall",
+          "mapPosition": [
+            540,
+            150
+          ]
+        },
+        {
+          "id": "harbor",
+          "name": "HARBOR",
+          "scene": "harborStation",
+          "up": "harbor",
+          "mapPosition": [
+            610,
+            238
+          ]
+        }
+      ],
+      "path": [
+        [
+          412,
+          228
+        ],
+        [
+          412,
+          190
+        ],
+        [
+          452,
+          150
+        ],
+        [
+          540,
+          150
+        ],
+        [
+          580,
+          150
+        ],
+        [
+          610,
+          180
+        ],
+        [
+          610,
+          238
+        ],
+        [
+          590,
+          258
+        ],
+        [
+          432,
+          258
+        ],
+        [
+          412,
+          238
+        ]
+      ]
+    },
+    "taxi": [
+      {
+        "id": "downtown",
+        "name": "DOWNTOWN EAST",
+        "scene": "downtown",
+        "mapPosition": [
+          452,
+          206
+        ]
+      },
+      {
+        "id": "galleria",
+        "name": "GALLERIA ROOF",
+        "scene": "mall",
+        "mapPosition": [
+          574,
+          84
+        ]
+      },
+      {
+        "id": "harbor",
+        "name": "HARBOR PIER",
+        "scene": "harbor",
+        "mapPosition": [
+          690,
+          276
+        ]
+      }
+    ],
+    "plannedLines": [
+      {
+        "id": "line1",
+        "name": "LINE 1 · CANAL LINE",
+        "short": "L1",
+        "col": "0,200,200",
+        "width": 2.4,
+        "path": [
+          [
+            60,
+            270
+          ],
+          [
+            140,
+            270
+          ],
+          [
+            200,
+            290
+          ],
+          [
+            300,
+            290
+          ],
+          [
+            412,
+            290
+          ],
+          [
+            500,
+            290
+          ],
+          [
+            560,
+            300
+          ],
+          [
+            610,
+            300
+          ],
+          [
+            700,
+            320
+          ],
+          [
+            730,
+            346
+          ]
+        ],
+        "stops": [
+          {
+            "name": "FRINGE DEPOT",
+            "pt": [
+              60,
+              270
+            ],
+            "district": "fringe"
+          },
+          {
+            "name": "OLD QUARTER",
+            "pt": [
+              200,
+              290
+            ],
+            "district": "oldq"
+          },
+          {
+            "name": "CANAL STREET",
+            "pt": [
+              412,
+              290
+            ],
+            "district": "oldq"
+          },
+          {
+            "name": "HARBOR SHORE",
+            "pt": [
+              610,
+              300
+            ],
+            "district": "harbor"
+          },
+          {
+            "name": "BEACH",
+            "pt": [
+              730,
+              346
+            ],
+            "district": "harbor"
+          }
+        ]
+      },
+      {
+        "id": "bus7",
+        "name": "BUS 7",
+        "short": "BUS",
+        "col": "255,210,90",
+        "width": 1,
+        "dash": [
+          6,
+          3
+        ],
+        "path": [
+          [
+            250,
+            226
+          ],
+          [
+            330,
+            226
+          ],
+          [
+            412,
+            228
+          ],
+          [
+            478,
+            190
+          ],
+          [
+            540,
+            150
+          ]
+        ],
+        "stops": []
+      },
+      {
+        "id": "ferry",
+        "name": "FERRY",
+        "short": "FERRY",
+        "col": "160,200,255",
+        "width": 1,
+        "dash": [
+          2,
+          4
+        ],
+        "path": [
+          [
+            700,
+            300
+          ],
+          [
+            744,
+            220
+          ],
+          [
+            760,
+            150
+          ]
+        ],
+        "stops": []
+      }
+    ],
+    "links": [
+      {
+        "kind": "walk",
+        "name": "MARKET GATE",
+        "from": "downtown",
+        "to": "market",
+        "path": [
+          [
+            304,
+            229
+          ],
+          [
+            318,
+            229
+          ]
+        ],
+        "state": "gate",
+        "at": [
+          "downtown",
+          "market"
+        ]
+      },
+      {
+        "kind": "walk",
+        "name": "SHORE PATH",
+        "from": "harbor",
+        "to": "harbor",
+        "path": [
+          [
+            690,
+            286
+          ],
+          [
+            716,
+            320
+          ],
+          [
+            728,
+            350
+          ]
+        ],
+        "state": "open",
+        "at": [
+          "harbor",
+          "beach"
+        ]
+      },
+      {
+        "kind": "road",
+        "name": "ACCESS ROAD",
+        "from": "market",
+        "to": "fringe",
+        "path": [
+          [
+            170,
+            230
+          ],
+          [
+            150,
+            228
+          ]
+        ],
+        "state": "planned"
+      },
+      {
+        "kind": "elevator",
+        "name": "SKY ELEVATOR",
+        "from": "galleria",
+        "to": "spire",
+        "path": [
+          [
+            560,
+            110
+          ],
+          [
+            770,
+            120
+          ]
+        ],
+        "state": "planned"
+      },
+      {
+        "kind": "taxi",
+        "name": "SKY TAXI DEPOT",
+        "from": "downtown",
+        "to": "spire",
+        "path": [
+          [
+            452,
+            206
+          ],
+          [
+            770,
+            120
+          ]
+        ],
+        "state": "planned"
+      },
+      {
+        "kind": "bridge",
+        "name": "THE BRIDGE",
+        "from": "harbor",
+        "to": "spire",
+        "path": [
+          [
+            700,
+            200
+          ],
+          [
+            748,
+            136
+          ]
+        ],
+        "state": "planned"
+      },
+      {
+        "kind": "drain",
+        "name": "STORM DRAIN",
+        "from": "market",
+        "to": "undercity",
+        "path": [
+          [
+            250,
+            250
+          ],
+          [
+            250,
+            300
+          ]
+        ],
+        "state": "planned"
+      },
+      {
+        "kind": "tunnel",
+        "name": "SERVICE TUNNEL",
+        "from": "downtown",
+        "to": "undercity",
+        "path": [
+          [
+            412,
+            258
+          ],
+          [
+            412,
+            300
+          ]
+        ],
+        "state": "planned"
+      },
+      {
+        "kind": "canal",
+        "name": "CANAL OUTFALL",
+        "from": "harbor",
+        "to": "undercity",
+        "path": [
+          [
+            724,
+            322
+          ],
+          [
+            700,
+            330
+          ]
+        ],
+        "state": "planned"
+      },
+      {
+        "kind": "lift",
+        "name": "SERVICE LIFT",
+        "from": "spire",
+        "to": "undercity",
+        "path": [
+          [
+            770,
+            120
+          ],
+          [
+            740,
+            200
+          ]
+        ],
+        "state": "planned"
+      }
+    ]
+  },
+  "rules": {
+    "discovery": {
+      "districts": {
+        "fringe": {
+          "near": [
+            "market"
+          ]
+        },
+        "market": {
+          "near": [
+            "downtown",
+            "oldq"
+          ]
+        },
+        "downtown": {
+          "near": [
+            "market",
+            "galleria",
+            "oldq"
+          ]
+        },
+        "oldq": {
+          "near": [
+            "market",
+            "downtown"
+          ]
+        },
+        "galleria": {
+          "near": [
+            "downtown",
+            "harbor"
+          ]
+        },
+        "harbor": {
+          "near": [
+            "galleria"
+          ]
+        },
+        "spire": {
+          "near": [
+            "galleria",
+            "harbor"
+          ],
+          "landmark": true
+        },
+        "undercity": {
+          "near": []
+        },
+        "skyport": {
+          "near": [],
+          "landmark": true
+        }
+      },
+      "placesInView": {
+        "market": [
+          "downtown"
+        ],
+        "laundromat": [
+          "market"
+        ],
+        "shop": [
+          "downtown"
+        ],
+        "library": [
+          "downtown"
+        ],
+        "station-downtown": [
+          "downtown",
+          "train"
+        ],
+        "downtown": [
+          "capsule",
+          "metro",
+          "yard",
+          "shop",
+          "moth",
+          "library"
+        ],
+        "yard": [
+          "downtown"
+        ],
+        "capsule": [
+          "downtown"
+        ],
+        "moth": [
+          "downtown"
+        ],
+        "station-galleria": [
+          "mall",
+          "train"
+        ],
+        "mall": [
+          "galleriaStation"
+        ],
+        "station-harbor": [
+          "harbor",
+          "beach",
+          "train"
+        ],
+        "harbor": [
+          "harborStation",
+          "beach"
+        ],
+        "warehouse": [
+          "stacks"
+        ],
+        "beach": [
+          "harbor"
+        ]
+      }
+    },
+    "references": [
+      "districtStage",
+      "placeKnown",
+      "stationKnown",
+      "linkKnown",
+      "placeBlocked",
+      "harborOpen"
+    ]
+  },
+  "sequences": [
+    {
+      "id": "glide",
+      "scene": "train"
+    },
+    {
+      "id": "intro",
+      "scene": "capsule"
+    },
+    {
+      "id": "act2",
+      "scene": "stacks"
+    }
+  ]
+}

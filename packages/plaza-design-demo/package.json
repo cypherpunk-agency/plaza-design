@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "compose-scenes": "tsx scripts/scene-system/compose.mts",
     "generate-demos": "tsx scripts/generate-demos.tsx"
   },
   "dependencies": {

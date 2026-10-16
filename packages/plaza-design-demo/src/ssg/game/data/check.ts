@@ -14,7 +14,7 @@
 import type {
   Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
 } from './types';
-import { windowProblem } from '../clock';
+import { windowProblem } from "../world/clock";
 import { ITEMS } from '../scenes/kit';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */

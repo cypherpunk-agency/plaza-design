@@ -7,25 +7,26 @@
  * objects in each module; drawing is code.
  */
 
-import { beach } from '../beach';
-import { capsule } from '../capsule';
-import { downtown } from '../downtown';
-import { laundromat } from '../laundromat';
-import { library } from '../library';
-import { moth } from '../moth';
-import { stacks } from '../stacks';
-import { yard } from '../yard';
-import { sandbox } from '../sandbox';
-import { harborShift } from './harbor-shift';
-import { harbor } from './harbor';
+import { beach } from "./beach/index";
+import { capsule } from "./capsule/index";
+import { downtown } from "./downtown/index";
+import { laundromat } from "./laundromat/index";
+import { library } from "./library/index";
+import { moth } from "./moth/index";
+import { stacks } from "./stacks/index";
+import { yard } from "./yard/index";
+import { sandbox } from "./sandbox/index";
+import { harborShift } from "./harbor-shift/index";
+import { harbor } from "./harbor/index";
 import type { SceneDef } from './kit';
-import { mall } from './mall';
-import { market } from './market';
-import { metro } from './metro';
-import { shop } from './shop';
-import { galleriaStation, harborStation } from './stations';
-import { train } from './train';
-import { warehouse } from './warehouse';
+import { mall } from "./mall/index";
+import { market } from "./market/index";
+import { metro } from "./metro/index";
+import { shop } from "./shop/index";
+import { galleriaStation } from './galleriaStation/index';
+import { harborStation } from './harborStation/index';
+import { train } from "./train/index";
+import { warehouse } from "./warehouse/index";
 
 export type { ItemId, SceneDef, SceneExit, SceneReadable, SceneRest, SceneSaid, SceneUse, UseCtx, View as SceneView } from './kit';
 export { ITEMS, priceTag } from './kit';

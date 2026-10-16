@@ -1,0 +1,737 @@
+{
+  "version": 1,
+  "scene": "yard",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "yard.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer",
+        "night": "yard.night"
+      }
+    },
+    {
+      "id": "house-0",
+      "type": "yard.back-wall",
+      "props": {
+        "width": 142,
+        "roof": 20,
+        "brick": true,
+        "columns": [
+          22,
+          68,
+          114
+        ],
+        "from": 146,
+        "seed": 0
+      },
+      "placement": {
+        "x": 8,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "house-1",
+      "type": "yard.back-wall",
+      "props": {
+        "width": 100,
+        "roof": 30,
+        "brick": false,
+        "columns": [
+          28,
+          72
+        ],
+        "from": 90,
+        "seed": 1
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "house-2",
+      "type": "yard.back-wall",
+      "props": {
+        "width": 202,
+        "roof": 14,
+        "brick": true,
+        "columns": [
+          26,
+          64,
+          102,
+          140,
+          178
+        ],
+        "from": 140,
+        "seed": 2
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "house-3",
+      "type": "yard.back-wall",
+      "props": {
+        "width": 144,
+        "roof": 26,
+        "brick": false,
+        "columns": [
+          24,
+          62,
+          100
+        ],
+        "from": 90,
+        "seed": 3
+      },
+      "placement": {
+        "x": 452,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "house-4",
+      "type": "yard.back-wall",
+      "props": {
+        "width": 156,
+        "roof": 22,
+        "brick": true,
+        "columns": [
+          74,
+          110,
+          142
+        ],
+        "from": 90,
+        "seed": 4
+      },
+      "placement": {
+        "x": 596,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "roof-vent",
+      "type": "yard.roof-vent",
+      "props": {},
+      "placement": {
+        "x": 38,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "water-tank",
+      "type": "yard.water-tank",
+      "props": {},
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "chimney",
+      "type": "yard.chimney",
+      "props": {},
+      "placement": {
+        "x": 500,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "aerial",
+      "type": "yard.aerial",
+      "props": {},
+      "placement": {
+        "x": 690,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "drain-0",
+      "type": "yard.drainpipe",
+      "props": {},
+      "placement": {
+        "x": 147,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "drain-1",
+      "type": "yard.drainpipe",
+      "props": {},
+      "placement": {
+        "x": 594,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "passage",
+      "type": "yard.passage",
+      "props": {},
+      "placement": {
+        "x": 26,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "sign-wash",
+      "type": "yard.sign-wash",
+      "props": {},
+      "placement": {
+        "x": 78,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "fire-escape",
+      "type": "yard.fire-escape",
+      "props": {},
+      "placement": {
+        "x": 156,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "shutter",
+      "type": "yard.shutter",
+      "props": {},
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "ac-0",
+      "type": "yard.air-conditioner",
+      "props": {},
+      "placement": {
+        "x": 476,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "ac-1",
+      "type": "yard.air-conditioner",
+      "props": {},
+      "placement": {
+        "x": 552,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "ac-2",
+      "type": "yard.air-conditioner",
+      "props": {},
+      "placement": {
+        "x": 706,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "kitchen-window",
+      "type": "yard.kitchen-window",
+      "props": {},
+      "placement": {
+        "x": 214,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "broom",
+      "type": "yard.broom",
+      "props": {},
+      "placement": {
+        "x": 158,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "chair",
+      "type": "yard.chair",
+      "props": {},
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "spool-table",
+      "type": "yard.spool-table",
+      "props": {},
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "dumpster-lamp",
+      "type": "yard.dumpster-lamp",
+      "props": {},
+      "placement": {
+        "x": 731,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "dumpster",
+      "type": "yard.dumpster",
+      "props": {},
+      "placement": {
+        "x": 712,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "washing-line",
+      "type": "yard.washing-line",
+      "props": {},
+      "placement": {
+        "x": 466,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "side-walls",
+      "type": "yard.side-walls",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "yard-sign",
+      "type": "yard.yard-sign",
+      "props": {},
+      "placement": {
+        "x": 78,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "street-sign",
+      "type": "yard.street-sign",
+      "props": {},
+      "placement": {
+        "x": 26,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "A-3",
+      "type": "yard.crate",
+      "props": {
+        "label": "A-3"
+      },
+      "placement": {
+        "x": 290,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "B-5",
+      "type": "yard.crate",
+      "props": {
+        "label": "B-5"
+      },
+      "placement": {
+        "x": 350,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "C-7",
+      "type": "yard.crate",
+      "props": {
+        "label": "C-7"
+      },
+      "placement": {
+        "x": 410,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "fence",
+      "type": "yard.fence",
+      "props": {},
+      "placement": {
+        "x": 586,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "chute",
+      "type": "yard.chute",
+      "props": {},
+      "placement": {
+        "x": 452,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "camera",
+      "type": "yard.camera",
+      "props": {},
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer",
+        "highlight": "yard.highlight",
+        "pan": "yard.pan"
+      }
+    },
+    {
+      "id": "crane",
+      "type": "yard.crane",
+      "props": {},
+      "placement": {
+        "x": 262,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer",
+        "highlight": "yard.highlight",
+        "hookX": "yard.hookX",
+        "hookVisible": "yard.hookVisible"
+      }
+    },
+    {
+      "id": "hatch",
+      "type": "yard.hatch",
+      "props": {},
+      "placement": {
+        "x": 615,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer",
+        "highlight": "yard.highlight",
+        "gateOpen": "yard.gateOpen",
+        "gateAllowed": "yard.gateAllowed"
+      }
+    },
+    {
+      "id": "tray",
+      "type": "yard.tray",
+      "props": {},
+      "placement": {
+        "x": 668,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer"
+      }
+    },
+    {
+      "id": "parcel",
+      "type": "yard.parcel",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "bindings": {
+        "layer": "yard.layer",
+        "held": "yard.held",
+        "hookVisible": "yard.hookVisible",
+        "parcel": "yard.parcel"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "yard.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 48,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-downtown",
+      "type": "yard.marker",
+      "props": {
+        "role": "exit-downtown"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "spawn",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slot-home",
+      "type": "yard.marker",
+      "props": {
+        "role": "slot-home"
+      },
+      "placement": {
+        "x": 350,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop"
+    },
+    {
+      "id": "slot-chute",
+      "type": "yard.marker",
+      "props": {
+        "role": "slot-chute"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "chute",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-cam",
+      "type": "yard.marker",
+      "props": {
+        "role": "device-cam"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "camera",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-crane",
+      "type": "yard.marker",
+      "props": {
+        "role": "device-crane"
+      },
+      "placement": {
+        "x": 88,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-gate",
+      "type": "yard.marker",
+      "props": {
+        "role": "device-gate"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "hatch",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

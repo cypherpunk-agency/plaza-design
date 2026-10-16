@@ -1,4 +1,4 @@
-import { SHIFT_GUIDANCE_STYLES } from './game/shift-guidance';
+import { SHIFT_GUIDANCE_STYLES } from "./game/ui/shift-guidance";
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
 import { ENGINE_STYLES } from './game/engine/styles';

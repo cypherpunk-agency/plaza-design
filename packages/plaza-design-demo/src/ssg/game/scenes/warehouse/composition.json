@@ -1,0 +1,665 @@
+{
+  "version": 1,
+  "scene": "warehouse",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "warehouse.marker",
+      "props": {
+        "role": "scene",
+        "width": 900,
+        "facing": 270
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "warehouse.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 80,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "city",
+      "type": "warehouse.city",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "crane",
+      "type": "warehouse.crane",
+      "props": {},
+      "placement": {
+        "x": -200,
+        "h": 0,
+        "parallax": 0.3
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spire",
+      "type": "warehouse.spire",
+      "props": {},
+      "placement": {
+        "x": 980,
+        "h": 0,
+        "parallax": 0.1
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack-0",
+      "type": "warehouse.stack",
+      "props": {
+        "height": 60
+      },
+      "placement": {
+        "x": -120,
+        "h": 0,
+        "parallax": 0.6
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack-1",
+      "type": "warehouse.stack",
+      "props": {
+        "height": 80
+      },
+      "placement": {
+        "x": -50,
+        "h": 0,
+        "parallax": 0.6
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack-2",
+      "type": "warehouse.stack",
+      "props": {
+        "height": 100
+      },
+      "placement": {
+        "x": 20,
+        "h": 0,
+        "parallax": 0.6
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack-3",
+      "type": "warehouse.stack",
+      "props": {
+        "height": 60
+      },
+      "placement": {
+        "x": 90,
+        "h": 0,
+        "parallax": 0.6
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack-4",
+      "type": "warehouse.stack",
+      "props": {
+        "height": 80
+      },
+      "placement": {
+        "x": 160,
+        "h": 0,
+        "parallax": 0.6
+      },
+      "order": 9,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack-5",
+      "type": "warehouse.stack",
+      "props": {
+        "height": 100
+      },
+      "placement": {
+        "x": 230,
+        "h": 0,
+        "parallax": 0.6
+      },
+      "order": 10,
+      "pass": "backdrop"
+    },
+    {
+      "id": "wall",
+      "type": "warehouse.wall",
+      "props": {
+        "width": 740,
+        "height": 240
+      },
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "name",
+      "type": "warehouse.label",
+      "props": {
+        "text": "WAREHOUSE 4",
+        "color": "rgba(255,217,165,.5)",
+        "size": 16,
+        "weight": "700"
+      },
+      "placement": {
+        "x": 360,
+        "h": 196
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "old-name",
+      "type": "warehouse.label",
+      "props": {
+        "text": "T D  M R N",
+        "color": "rgba(255,217,165,.12)",
+        "size": 9,
+        "weight": "700"
+      },
+      "placement": {
+        "x": 360,
+        "h": 176
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "office",
+      "type": "warehouse.office",
+      "props": {},
+      "placement": {
+        "x": 560,
+        "h": 150
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "window-0",
+      "type": "warehouse.dark-window",
+      "props": {},
+      "placement": {
+        "x": 100,
+        "h": 150
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "window-1",
+      "type": "warehouse.dark-window",
+      "props": {},
+      "placement": {
+        "x": 220,
+        "h": 150
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "window-2",
+      "type": "warehouse.dark-window",
+      "props": {},
+      "placement": {
+        "x": 460,
+        "h": 150
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera-west",
+      "type": "warehouse.camera",
+      "props": {
+        "direction": 1,
+        "phase": 21
+      },
+      "placement": {
+        "x": 10,
+        "h": 120
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera-east",
+      "type": "warehouse.camera",
+      "props": {
+        "direction": -1,
+        "phase": 41
+      },
+      "placement": {
+        "x": 720,
+        "h": 120
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "wall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "passage",
+      "type": "warehouse.passage",
+      "props": {},
+      "placement": {
+        "x": 34,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop"
+    },
+    {
+      "id": "dock",
+      "type": "warehouse.dock",
+      "props": {
+        "width": 250,
+        "height": 16
+      },
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop"
+    },
+    {
+      "id": "roller-1",
+      "type": "warehouse.roller",
+      "props": {
+        "number": 1
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dock",
+        "anchor": "topLeft"
+      }
+    },
+    {
+      "id": "roller-2",
+      "type": "warehouse.roller",
+      "props": {
+        "number": 2
+      },
+      "placement": {
+        "x": 136,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dock",
+        "anchor": "topLeft"
+      }
+    },
+    {
+      "id": "door",
+      "type": "warehouse.door",
+      "props": {},
+      "placement": {
+        "x": 486,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop"
+    },
+    {
+      "id": "plaque",
+      "type": "warehouse.plaque",
+      "props": {},
+      "placement": {
+        "x": 546,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop"
+    },
+    {
+      "id": "notice",
+      "type": "warehouse.notice",
+      "props": {},
+      "placement": {
+        "x": 628,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop"
+    },
+    {
+      "id": "intake",
+      "type": "warehouse.ticker",
+      "props": {
+        "width": 110,
+        "text": "EVIDENCE CUSTODY · INTAKE 24 H · RELEASE: ON COMPLETION OF REVIEW · REVIEW: SCHEDULED",
+        "speed": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 92
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "door",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "van",
+      "type": "warehouse.van",
+      "props": {
+        "width": 120
+      },
+      "placement": {
+        "x": 740,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shoe",
+      "type": "warehouse.shoe",
+      "props": {},
+      "placement": {
+        "x": 836,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop"
+    },
+    {
+      "id": "mending-note",
+      "type": "warehouse.taped",
+      "props": {
+        "lines": [
+          "NETS MENDED",
+          "ASK INSIDE",
+          "(DON'T)"
+        ],
+        "tilt": 0.04
+      },
+      "placement": {
+        "x": 120,
+        "h": 60
+      },
+      "order": 30,
+      "pass": "backdrop"
+    },
+    {
+      "id": "crate",
+      "type": "warehouse.crate",
+      "props": {
+        "width": 20,
+        "height": 10
+      },
+      "placement": {
+        "x": 136,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop"
+    },
+    {
+      "id": "mender",
+      "type": "character.prepared",
+      "props": {
+        "actor": "mender"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crate",
+        "anchor": "seat"
+      },
+      "bindings": {
+        "pose": "actor.mender.pose"
+      }
+    },
+    {
+      "id": "gull",
+      "type": "character.prepared",
+      "props": {
+        "actor": "gull"
+      },
+      "placement": {
+        "x": 736,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.gull.pose"
+      }
+    },
+    {
+      "id": "pigeon",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pigeon"
+      },
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "dock",
+        "anchor": "topLeft"
+      },
+      "bindings": {
+        "pose": "actor.pigeon.pose"
+      }
+    },
+    {
+      "id": "mech",
+      "type": "character.prepared",
+      "props": {
+        "actor": "mech"
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.mech.pose"
+      }
+    },
+    {
+      "id": "entry-sign",
+      "type": "warehouse.neon",
+      "props": {
+        "text": "NO ENTRY",
+        "size": 7,
+        "phase": 12
+      },
+      "placement": {
+        "x": 0,
+        "h": 80
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "door",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "floor",
+      "type": "warehouse.floor",
+      "props": {
+        "from": 600,
+        "to": 820
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-stacks",
+      "type": "warehouse.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "passage",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "office-light",
+      "type": "warehouse.light",
+      "props": {
+        "kind": "window",
+        "width": 30,
+        "height": 22,
+        "radius": 28,
+        "color": "",
+        "alpha": -1
+      },
+      "placement": {
+        "x": 15,
+        "h": -10
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "office",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "door-light",
+      "type": "warehouse.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 40,
+        "color": "255,60,60",
+        "alpha": 0.7
+      },
+      "placement": {
+        "x": 0,
+        "h": 62
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "door",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "yard-light",
+      "type": "warehouse.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 46,
+        "color": "",
+        "alpha": -1
+      },
+      "placement": {
+        "x": 600,
+        "h": 110
+      },
+      "order": 41,
+      "pass": "backdrop"
+    },
+    {
+      "id": "van-shadow",
+      "type": "warehouse.caster",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "van",
+        "anchor": "shadow"
+      }
+    }
+  ]
+}

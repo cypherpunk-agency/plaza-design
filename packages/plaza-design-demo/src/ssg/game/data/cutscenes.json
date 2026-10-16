@@ -1,63 +1,12 @@
 {
   "intro": {
     "title": "ACCESS DENIED",
-    "duration": 26,
-    "next": "capsule",
-    "beats": [
-      { "at": 0, "name": "SKYLINE" },
-      { "at": 2.5, "name": "CARD 1" },
-      { "at": 10, "name": "CARD 2" },
-      { "at": 13.5, "name": "SHOWER" },
-      { "at": 17.5, "name": "CARD 3" },
-      { "at": 25.1, "name": "FADE OUT" }
-    ],
-    "cards": [
-      {
-        "at": 2.5,
-        "until": 9,
-        "text": "The city never logs off. Neither does the rain."
-      },
-      {
-        "at": 10,
-        "until": 16.5,
-        "text": "The Registry sees everyone. Every face, every door, every packet."
-      },
-      {
-        "at": 17.5,
-        "until": 24.5,
-        "text": "Almost everyone. No record, no face, one deck: you're a ghost."
-      }
-    ]
+    "timeline": "sequence-cinematics",
+    "sequence": "intro"
   },
   "act2": {
-    "title": "ACCESS DENIED · ACT II",
-    "duration": 16,
-    "next": "stacks",
-    "beats": [
-      { "at": 0, "name": "FERRY" },
-      { "at": 0.8, "name": "ACT I" },
-      { "at": 2.6, "name": "FOUND." },
-      { "at": 5.4, "name": "ACT I OUT" },
-      { "at": 6, "name": "ACT II" },
-      { "at": 7.6, "name": "SEVEN FRAGMENTS" },
-      { "at": 15.1, "name": "FADE OUT" }
-    ],
-    "cards": [
-      {
-        "at": 1.2,
-        "until": 5.6,
-        "text": "Night ferry 7 leaves berth 4 with twelve boxes. The Port Authority cleared eleven."
-      },
-      {
-        "at": 6.2,
-        "until": 10.6,
-        "text": "The list is in seven pieces. The Registry knows who has it."
-      },
-      {
-        "at": 11.2,
-        "until": 15.4,
-        "text": "Plaza Central. The Spire. The list's lock is on its antenna."
-      }
-    ]
+    "title": "ACCESS DENIED \u00c2\u00b7 ACT II",
+    "timeline": "sequence-cinematics",
+    "sequence": "act2"
   }
 }

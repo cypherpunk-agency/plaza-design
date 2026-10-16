@@ -1,10 +1,10 @@
 # Archived roadmap before progression consolidation
 
-Historical implementation and design record. Not the active build order. See [current roadmap](../ROADMAP.md) and [progression concept](../PROGRESSION-CONCEPT.md). Relative references in the preserved text refer to the parent game directory.
+Historical implementation and design record. Not the active build order. See [current roadmap](../ROADMAP.md) and [progression concept](../docs/design/PROGRESSION-CONCEPT.md). Relative references in the preserved text refer to the parent game directory.
 
 # ACCESS DENIED: roadmap
 
-> New design direction (2026-10-16): [PROGRESSION-CONCEPT.md](../PROGRESSION-CONCEPT.md). The harbor night-shift prologue and Downtown-centred Act I are not implemented. The opening and act sequences below record the previous iteration; their dated decisions do not override the newer concept.
+> New design direction (2026-10-16): [PROGRESSION-CONCEPT.md](../docs/design/PROGRESSION-CONCEPT.md). The harbor night-shift prologue and Downtown-centred Act I are not implemented. The opening and act sequences below record the previous iteration; their dated decisions do not override the newer concept.
 
 Working status and proposed sequencing, not a fixed plan. Everything is still being designed
 together; implemented does not mean final. Historical decisions and dated notes below remain

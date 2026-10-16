@@ -1,0 +1,967 @@
+{
+  "version": 1,
+  "scene": "galleriaStation",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "station.marker",
+      "props": {
+        "role": "scene",
+        "width": 1200
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "station.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 86,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "train-exit",
+      "type": "station.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 215,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "platform-train",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "background",
+      "type": "station.background",
+      "props": {
+        "fill": "#030201"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "wall",
+      "type": "station.galleria-wall",
+      "props": {
+        "height": 194
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "poster-0",
+      "type": "station.poster",
+      "props": {
+        "first": "NULL & VOID",
+        "second": "LEVEL 2",
+        "red": false
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "poster-1",
+      "type": "station.poster",
+      "props": {
+        "first": "MEMORY GARDEN",
+        "second": "LEVEL 1",
+        "red": false
+      },
+      "placement": {
+        "x": 530,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "poster-2",
+      "type": "station.poster",
+      "props": {
+        "first": "REGISTRY NOTICE",
+        "second": "LOITERING IS LOGGED",
+        "red": true
+      },
+      "placement": {
+        "x": 810,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "poster-3",
+      "type": "station.poster",
+      "props": {
+        "first": "SECOND SKIN",
+        "second": "LEVEL 3",
+        "red": false
+      },
+      "placement": {
+        "x": 1090,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "frieze",
+      "type": "station.frieze",
+      "props": {
+        "height": 22
+      },
+      "placement": {
+        "x": 0,
+        "h": 116
+      },
+      "order": 9,
+      "pass": "backdrop"
+    },
+    {
+      "id": "frieze-name-0",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 60,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-1",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 340,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-2",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 620,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-3",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 900,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-4",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 1180,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-5",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 1460,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-6",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 1740,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-7",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 2020,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-8",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 2300,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "frieze-name-9",
+      "type": "station.nameplate",
+      "props": {
+        "name": "GALLERIA",
+        "alpha": 0.75,
+        "hang": false
+      },
+      "placement": {
+        "x": 2580,
+        "h": -1,
+        "parallax": 0.9
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "frieze",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "track",
+      "type": "station.track-base",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop"
+    },
+    {
+      "id": "platform-train",
+      "type": "station.train",
+      "props": {},
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "bindings": {
+        "train": "transit.train"
+      }
+    },
+    {
+      "id": "track-edge",
+      "type": "station.track-edge",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop"
+    },
+    {
+      "id": "roof",
+      "type": "station.galleria-ceiling",
+      "props": {
+        "under": 176,
+        "top": 194
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": false
+      },
+      "placement": {
+        "x": 100,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-1",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": false
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-2",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": false
+      },
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-3",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": false
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-4",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": false
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-5",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": false
+      },
+      "placement": {
+        "x": 800,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-6",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": true
+      },
+      "placement": {
+        "x": 940,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-7",
+      "type": "station.strip-lamp",
+      "props": {
+        "flicker": false
+      },
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "column-0",
+      "type": "station.column",
+      "props": {},
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "column-1",
+      "type": "station.column",
+      "props": {},
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "column-2",
+      "type": "station.column",
+      "props": {},
+      "placement": {
+        "x": 1100,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "camera-0",
+      "type": "station.camera",
+      "props": {
+        "flip": false
+      },
+      "placement": {
+        "x": 12,
+        "h": -36
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "column-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera-1",
+      "type": "station.camera",
+      "props": {
+        "flip": true
+      },
+      "placement": {
+        "x": -12,
+        "h": -36
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "column-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "screen",
+      "type": "station.screen",
+      "props": {
+        "phase": 1
+      },
+      "placement": {
+        "x": 390,
+        "h": -64
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      },
+      "bindings": {
+        "roof": "architecture.roof"
+      }
+    },
+    {
+      "id": "board",
+      "type": "station.departures",
+      "props": {},
+      "placement": {
+        "x": 520,
+        "h": -64
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      },
+      "bindings": {
+        "roof": "architecture.roof",
+        "departure": "transit.departure"
+      }
+    },
+    {
+      "id": "linemap",
+      "type": "station.notice-stand",
+      "props": {
+        "width": 50,
+        "height": 30,
+        "first": "LINE",
+        "second": "MAP",
+        "phase": 2,
+        "red": false
+      },
+      "placement": {
+        "x": 1040,
+        "h": 72
+      },
+      "order": 39,
+      "pass": "backdrop"
+    },
+    {
+      "id": "bench0",
+      "type": "station.bench",
+      "props": {
+        "who": "elder"
+      },
+      "placement": {
+        "x": 620,
+        "h": 0
+      },
+      "order": 40,
+      "pass": "backdrop"
+    },
+    {
+      "id": "bench1",
+      "type": "station.bench",
+      "props": {
+        "who": ""
+      },
+      "placement": {
+        "x": 940,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop"
+    },
+    {
+      "id": "snacks",
+      "type": "station.snacks",
+      "props": {},
+      "placement": {
+        "x": 820,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop"
+    },
+    {
+      "id": "waiting-0",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.0"
+      }
+    },
+    {
+      "id": "waiting-1",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.1"
+      }
+    },
+    {
+      "id": "waiting-2",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.2"
+      }
+    },
+    {
+      "id": "waiting-3",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.3"
+      }
+    },
+    {
+      "id": "waiting-4",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.4"
+      }
+    },
+    {
+      "id": "street-exit",
+      "type": "station.escalator",
+      "props": {},
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "architecture.roof"
+      }
+    },
+    {
+      "id": "slab",
+      "type": "station.slab",
+      "props": {
+        "width": 1200,
+        "fill": "#0c0907"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop"
+    },
+    {
+      "id": "reflection-0",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-1",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-2",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 52,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-3",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 53,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-3",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-4",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 54,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-4",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-5",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 55,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-5",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-6",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 56,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-6",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-7",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.5,
+        "width": 20
+      },
+      "placement": {
+        "x": 0,
+        "h": -176
+      },
+      "order": 57,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-7",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "regular",
+      "type": "station.marker",
+      "props": {
+        "role": "readable"
+      },
+      "placement": {
+        "x": 8,
+        "h": 0
+      },
+      "order": 58,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bench0",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

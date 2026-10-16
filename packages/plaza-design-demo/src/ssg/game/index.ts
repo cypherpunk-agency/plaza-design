@@ -20,13 +20,13 @@
  * shortcuts check it and stay quiet.
  */
 
-import { sound } from './audio';
-import { runBoot } from './boot';
-import { Game } from './game';
-import { isSceneId } from './scenes';
-import { isCutsceneId } from './cutscenes';
-import { takeResume } from './slots';
-import { SHIFT_PROTOTYPE, SUDO } from './level';
+import { sound } from "./runtime/audio";
+import { runBoot } from "./ui/boot";
+import { Game } from "./runtime/game";
+import { isSceneId } from "./scenes/index";
+import { isCutsceneId } from "./story/cutscenes/index";
+import { takeResume } from "./runtime/slots";
+import { SHIFT_PROTOTYPE, SUDO } from './runtime/mode';
 
 export { runBoot };
 

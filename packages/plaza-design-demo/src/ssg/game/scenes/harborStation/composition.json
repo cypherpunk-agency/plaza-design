@@ -1,0 +1,737 @@
+{
+  "version": 1,
+  "scene": "harborStation",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "station.marker",
+      "props": {
+        "role": "scene",
+        "width": 1200
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "station.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 86,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "train-exit",
+      "type": "station.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 215,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "platform-train",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "horizon",
+      "type": "station.harbor-horizon",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 62
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "crane-0",
+      "type": "station.harbor-crane",
+      "props": {
+        "height": 150,
+        "phase": 0
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "horizon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "crane-1",
+      "type": "station.harbor-crane",
+      "props": {
+        "height": 180,
+        "phase": 1.7
+      },
+      "placement": {
+        "x": 620,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "horizon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "crane-2",
+      "type": "station.harbor-crane",
+      "props": {
+        "height": 160,
+        "phase": 3.1
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "horizon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "water",
+      "type": "station.harbor-water",
+      "props": {
+        "horizon": 62,
+        "wall": 26
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "track",
+      "type": "station.track-base",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "platform-train",
+      "type": "station.train",
+      "props": {},
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "train": "transit.train"
+      }
+    },
+    {
+      "id": "track-edge",
+      "type": "station.track-edge",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop"
+    },
+    {
+      "id": "roof",
+      "type": "station.harbor-canopy",
+      "props": {
+        "under": 158,
+        "top": 168,
+        "width": 1200
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "station.canopy-lamp",
+      "props": {},
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-1",
+      "type": "station.canopy-lamp",
+      "props": {},
+      "placement": {
+        "x": 360,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-2",
+      "type": "station.canopy-lamp",
+      "props": {},
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-3",
+      "type": "station.canopy-lamp",
+      "props": {},
+      "placement": {
+        "x": 840,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "lamp-4",
+      "type": "station.canopy-lamp",
+      "props": {},
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "column-0",
+      "type": "station.canopy-post",
+      "props": {},
+      "placement": {
+        "x": 280,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "column-1",
+      "type": "station.canopy-post",
+      "props": {},
+      "placement": {
+        "x": 680,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "column-2",
+      "type": "station.canopy-post",
+      "props": {},
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      }
+    },
+    {
+      "id": "camera-0",
+      "type": "station.camera",
+      "props": {
+        "flip": false
+      },
+      "placement": {
+        "x": 6,
+        "h": -26
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "column-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "screen",
+      "type": "station.screen",
+      "props": {
+        "phase": 2
+      },
+      "placement": {
+        "x": 860,
+        "h": -8
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      },
+      "bindings": {
+        "roof": "architecture.roof"
+      }
+    },
+    {
+      "id": "name-0",
+      "type": "station.nameplate",
+      "props": {
+        "name": "HARBOR",
+        "alpha": 0.92,
+        "hang": true
+      },
+      "placement": {
+        "x": 170,
+        "h": -18
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      },
+      "bindings": {
+        "roof": "architecture.roof"
+      }
+    },
+    {
+      "id": "name-1",
+      "type": "station.nameplate",
+      "props": {
+        "name": "HARBOR",
+        "alpha": 0.92,
+        "hang": true
+      },
+      "placement": {
+        "x": 900,
+        "h": -18
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      },
+      "bindings": {
+        "roof": "architecture.roof"
+      }
+    },
+    {
+      "id": "board",
+      "type": "station.departures",
+      "props": {},
+      "placement": {
+        "x": 520,
+        "h": -46
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "roof",
+        "anchor": "underside"
+      },
+      "bindings": {
+        "roof": "architecture.roof",
+        "departure": "transit.departure"
+      }
+    },
+    {
+      "id": "bench0",
+      "type": "station.bench",
+      "props": {
+        "who": ""
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop"
+    },
+    {
+      "id": "bench1",
+      "type": "station.bench",
+      "props": {
+        "who": "sleeper"
+      },
+      "placement": {
+        "x": 980,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop"
+    },
+    {
+      "id": "closed-notice-0",
+      "type": "station.closed-notice",
+      "props": {
+        "width": 70,
+        "height": 32,
+        "first": "STATION CLOSED",
+        "second": "BY ORDER · PA-7",
+        "phase": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": -62
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "column-0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "closed": "transit.closed"
+      }
+    },
+    {
+      "id": "closed-notice-1",
+      "type": "station.closed-notice",
+      "props": {
+        "width": 70,
+        "height": 32,
+        "first": "STATION CLOSED",
+        "second": "BY ORDER · PA-7",
+        "phase": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": -62
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "column-1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "closed": "transit.closed"
+      }
+    },
+    {
+      "id": "closed-notice-2",
+      "type": "station.closed-notice",
+      "props": {
+        "width": 70,
+        "height": 32,
+        "first": "STATION CLOSED",
+        "second": "BY ORDER · PA-7",
+        "phase": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": -62
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "column-2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "closed": "transit.closed"
+      }
+    },
+    {
+      "id": "waiting-0",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.0"
+      }
+    },
+    {
+      "id": "waiting-1",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.1"
+      }
+    },
+    {
+      "id": "waiting-2",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.2"
+      }
+    },
+    {
+      "id": "waiting-3",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.3"
+      }
+    },
+    {
+      "id": "waiting-4",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 1170,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.4"
+      }
+    },
+    {
+      "id": "checkpoint",
+      "type": "station.notice-stand",
+      "props": {
+        "width": 66,
+        "height": 32,
+        "first": "REGISTRY",
+        "second": "CHECKPOINT",
+        "phase": 3,
+        "red": true
+      },
+      "placement": {
+        "x": 150,
+        "h": 76
+      },
+      "order": 35,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tide",
+      "type": "station.notice-stand",
+      "props": {
+        "width": 52,
+        "height": 30,
+        "first": "TIDE",
+        "second": "TABLE",
+        "phase": 1,
+        "red": false
+      },
+      "placement": {
+        "x": 1120,
+        "h": 74
+      },
+      "order": 36,
+      "pass": "backdrop"
+    },
+    {
+      "id": "street-exit",
+      "type": "station.pier-gate",
+      "props": {},
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "bindings": {}
+    },
+    {
+      "id": "slab",
+      "type": "station.slab",
+      "props": {
+        "width": 1200,
+        "fill": "#0b0806"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop"
+    },
+    {
+      "id": "reflection-0",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.8,
+        "width": 16
+      },
+      "placement": {
+        "x": 0,
+        "h": -158
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-1",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.8,
+        "width": 16
+      },
+      "placement": {
+        "x": 0,
+        "h": -158
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-2",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.8,
+        "width": 16
+      },
+      "placement": {
+        "x": 0,
+        "h": -158
+      },
+      "order": 41,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-3",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.8,
+        "width": 16
+      },
+      "placement": {
+        "x": 0,
+        "h": -158
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-3",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "reflection-4",
+      "type": "station.reflection",
+      "props": {
+        "alpha": 0.8,
+        "width": 16
+      },
+      "placement": {
+        "x": 0,
+        "h": -158
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lamp-4",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "regular",
+      "type": "station.marker",
+      "props": {
+        "role": "readable"
+      },
+      "placement": {
+        "x": 8,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bench1",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

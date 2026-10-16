@@ -6,7 +6,7 @@
  * Pure: no DOM, so the build-time check and node scripts can import it.
  */
 
-import { ENGINE } from '../data';
+import { ENGINE } from "../data/index";
 import type { CodeContract } from '../data/check';
 import type { Value, SceneData } from '../data/types';
 import type { Ctx, Line, Spot, SceneModel } from './model';

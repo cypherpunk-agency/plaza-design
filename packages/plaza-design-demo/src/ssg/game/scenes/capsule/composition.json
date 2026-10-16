@@ -1,0 +1,710 @@
+{
+  "version": 1,
+  "scene": "capsule",
+  "instances": [
+    {
+      "id": "neighbors",
+      "type": "capsule.neighbors",
+      "props": {
+        "width": 520,
+        "ceiling": 104
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "shell",
+      "type": "capsule.shell",
+      "props": {
+        "width": 520,
+        "ceiling": 104
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "line-poster",
+      "type": "capsule.poster",
+      "props": {},
+      "placement": {
+        "x": 487,
+        "h": 86
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "blinds",
+      "type": "capsule.window",
+      "props": {
+        "width": 62,
+        "height": 54,
+        "facing": 90
+      },
+      "placement": {
+        "x": 262,
+        "h": 40
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "door",
+      "type": "capsule.door",
+      "props": {},
+      "placement": {
+        "x": 36,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "lock",
+      "type": "capsule.lock",
+      "props": {},
+      "placement": {
+        "x": 76,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "fridge",
+      "type": "capsule.fridge",
+      "props": {
+        "width": 30,
+        "height": 68
+      },
+      "placement": {
+        "x": 122,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "counter",
+      "type": "capsule.counter",
+      "props": {
+        "width": 72,
+        "height": 30
+      },
+      "placement": {
+        "x": 146,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "kettle",
+      "type": "capsule.kettle",
+      "props": {},
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "pc-light",
+      "type": "capsule.pc-light",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pc",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "desk",
+      "type": "capsule.desk",
+      "props": {
+        "width": 130,
+        "height": 30
+      },
+      "placement": {
+        "x": 326,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "stool",
+      "type": "capsule.stool",
+      "props": {},
+      "placement": {
+        "x": 26,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "pc",
+      "type": "capsule.pc",
+      "props": {},
+      "placement": {
+        "x": 26,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "plug",
+      "type": "capsule.plug",
+      "props": {},
+      "placement": {
+        "x": 396,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "router",
+      "type": "capsule.router",
+      "props": {},
+      "placement": {
+        "x": 112,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "desk",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "bed",
+      "type": "capsule.bed",
+      "props": {
+        "width": 50
+      },
+      "placement": {
+        "x": 462,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "capsule.hover",
+        "plugOn": "capsule.plugOn",
+        "up": "capsule.up",
+        "sun": "capsule.sun",
+        "open": "capsule.open",
+        "hot": "capsule.hot",
+        "temp": "capsule.temp",
+        "steam": "capsule.steam",
+        "pixelAt": "capsule.pixelAt",
+        "routerX": "capsule.routerX",
+        "deskRight": "capsule.deskRight",
+        "deskHeight": "capsule.deskHeight",
+        "sunFrom": "capsule.sunFrom",
+        "sunTo": "capsule.sunTo"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "capsule.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 466,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-door",
+      "type": "capsule.marker",
+      "props": {
+        "role": "exit:door"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "door",
+        "anchor": "entrance"
+      }
+    },
+    {
+      "id": "rest-bed",
+      "type": "capsule.marker",
+      "props": {
+        "role": "rest:bed"
+      },
+      "placement": {
+        "x": 34,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bed",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "pixel-bed",
+      "type": "capsule.marker",
+      "props": {
+        "role": "perch:bed"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bed",
+        "anchor": "mattress"
+      }
+    },
+    {
+      "id": "pixel-router",
+      "type": "capsule.marker",
+      "props": {
+        "role": "perch:router"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "router",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "sun-patch",
+      "type": "capsule.marker",
+      "props": {
+        "role": "sun-area",
+        "width": 72
+      },
+      "placement": {
+        "x": 264,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pixel-sun",
+      "type": "capsule.marker",
+      "props": {
+        "role": "perch:sun"
+      },
+      "placement": {
+        "x": 36,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "sun-patch",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-lock",
+      "type": "capsule.marker",
+      "props": {
+        "role": "device:lock"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "lock",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-fridge",
+      "type": "capsule.marker",
+      "props": {
+        "role": "device:fridge"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "fridge",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-kettle",
+      "type": "capsule.marker",
+      "props": {
+        "role": "device:kettle"
+      },
+      "placement": {
+        "x": 0,
+        "h": -30
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "kettle",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-blinds",
+      "type": "capsule.marker",
+      "props": {
+        "role": "device:blinds"
+      },
+      "placement": {
+        "x": 0,
+        "h": -40
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "blinds",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-pc",
+      "type": "capsule.marker",
+      "props": {
+        "role": "device:pc"
+      },
+      "placement": {
+        "x": 0,
+        "h": -30
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pc",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-plug",
+      "type": "capsule.marker",
+      "props": {
+        "role": "device:plug"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "plug",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-router",
+      "type": "capsule.marker",
+      "props": {
+        "role": "device:router"
+      },
+      "placement": {
+        "x": 0,
+        "h": -30
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "router",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

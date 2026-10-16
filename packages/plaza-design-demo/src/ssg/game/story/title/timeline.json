@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "sequences": [
+    {
+      "id": "title",
+      "duration": 7,
+      "composition": "sequence-opening",
+      "shots": [
+        {
+          "id": "continuous",
+          "from": 0,
+          "to": 7,
+          "camera": {
+            "x": 0,
+            "h": 0,
+            "zoom": 1
+          }
+        }
+      ],
+      "tracks": [],
+      "text": [],
+      "fades": [],
+      "beats": [
+        {
+          "id": "NIGHT",
+          "time": 0
+        },
+        {
+          "id": "WATERLINE",
+          "time": 2.2
+        },
+        {
+          "id": "SETTLED",
+          "time": 6.5
+        }
+      ]
+    },
+    {
+      "id": "rise",
+      "duration": 7,
+      "composition": "sequence-opening",
+      "shots": [
+        {
+          "id": "continuous",
+          "from": 0,
+          "to": 7,
+          "camera": {
+            "x": 0,
+            "h": 0,
+            "zoom": 1
+          }
+        }
+      ],
+      "tracks": [],
+      "text": [],
+      "fades": [],
+      "beats": [
+        {
+          "id": "NIGHT",
+          "time": 0
+        },
+        {
+          "id": "WATERLINE",
+          "time": 2.2
+        },
+        {
+          "id": "SETTLED",
+          "time": 6.5
+        }
+      ]
+    },
+    {
+      "id": "glide",
+      "duration": 78.5,
+      "composition": "sequence-opening",
+      "shots": [
+        {
+          "id": "continuous",
+          "from": 0,
+          "to": 78.5,
+          "camera": {
+            "x": 0,
+            "h": 0,
+            "zoom": 1
+          }
+        }
+      ],
+      "tracks": [
+        {
+          "id": "camera-west",
+          "target": {
+            "kind": "camera",
+            "property": "x"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 0
+            }
+          ],
+          "motion": {
+            "type": "opening.glide-distance",
+            "props": {}
+          }
+        },
+        {
+          "id": "camera-drop",
+          "target": {
+            "kind": "camera",
+            "property": "h"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 0
+            }
+          ],
+          "motion": {
+            "type": "opening.drop",
+            "props": {}
+          }
+        },
+        {
+          "id": "tunnel-dark",
+          "target": {
+            "kind": "state",
+            "instance": "tunnel-fade",
+            "property": "dark"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 0
+            }
+          ],
+          "motion": {
+            "type": "opening.tunnel-dark",
+            "props": {}
+          }
+        }
+      ],
+      "text": [],
+      "fades": [],
+      "beats": [
+        {
+          "id": "BEACH",
+          "time": 0
+        },
+        {
+          "id": "PIER",
+          "time": 10.4
+        },
+        {
+          "id": "INLET",
+          "time": 17.1
+        },
+        {
+          "id": "HARBOR",
+          "time": 27.3
+        },
+        {
+          "id": "SPIRE",
+          "time": 44.4
+        },
+        {
+          "id": "GALLERIA",
+          "time": 54.8
+        },
+        {
+          "id": "DOWNTOWN",
+          "time": 61.5
+        },
+        {
+          "id": "LINE 0",
+          "time": 62.4
+        },
+        {
+          "id": "UNDER",
+          "time": 73
+        }
+      ],
+      "handoff": {
+        "scene": "train"
+      }
+    }
+  ]
+}

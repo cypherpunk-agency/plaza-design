@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {stacksComposition,validateStacksComposition,stacksDeviceData,terminalRuleGeometry,terminalLayout,stacksGeometry} from '../../src/ssg/game/scenes/stacks/composition';
+import {stacksScene,stacksFrameEnvironment} from '../../src/ssg/game/scenes/stacks';
+import {trolley,scanMs,X,H,KIND} from '../../src/ssg/game/scenes/stacks/rules';
+import {validateTerminalVisual,type TerminalVisual} from '../../src/ssg/game/art/assemblies/terminal-state';
+import type {EngineDraw} from '../../src/ssg/game/engine/host';
+import type {SceneData} from '../../src/ssg/game/data/types';
+import type {Value} from '../../src/ssg/game/art';
+import devices from '../../src/ssg/game/scenes/stacks/devices.json';
+const doc=validateStacksComposition(structuredClone(stacksComposition));assert.deepEqual(doc,stacksComposition);assert.deepEqual(stacksDeviceData(devices as SceneData),devices);assert.deepEqual(terminalRuleGeometry(),{X,H});assert.equal(terminalLayout().blocks[1].x,412);
+const edit=structuredClone(doc);edit.instances.find(i=>i.id==='gate')!.placement.x+=20;edit.instances.find(i=>i.id==='urn')!.placement.x+=8;edit.instances.find(i=>i.id==='rule-slot')!.placement.x+=40;assert.equal(terminalRuleGeometry(edit).X.gate,1084);assert.equal(stacksScene(edit).uses![0].x,680);assert.equal(stacksDeviceData(devices as SceneData,edit).devices.find(d=>d.id==='port')!.layout!.spot!.x,1084);
+const values:Record<string,unknown>={boxAt:'ferry',departed:false,loaded:3};const model={get:(k:string)=>values[k],scratch:{liftT0:0,liftKind:KIND.box,liftX:1000},now:()=>1700,frozen:()=>true,watchdogs:()=>[{at:null,from:'port',to:'sts2',progress:.5}]};const engine={m:model,hover:'port',layer:'all'} as unknown as EngineDraw;
+const view={sx:(x:number,p=1)=>Math.round(x-600*p),y:(h:number)=>300-h,gy:300,t:137,cam:600,viewW:640,viewH:360,flags:{}};
+const env=stacksFrameEnvironment(view,engine,edit),snapshot=env.bindings!['terminal.snapshot'] as unknown as TerminalVisual;validateTerminalVisual(snapshot as unknown as Value);assert.deepEqual(snapshot.trolley,trolley(model as never,terminalRuleGeometry(edit)));assert.equal(snapshot.portFrozen,true);assert.equal(snapshot.scratch.liftT0,0);assert.equal(snapshot.geometry.X.slot,516);assert.deepEqual(env.bindings!['terminal.clip.operator'],[view.sx(snapshot.trolley.x)-45,view.y(196)+4,20,22]);assert.equal(scanMs(KIND.box,terminalRuleGeometry(edit))!==scanMs(KIND.box),true);assert.equal(stacksGeometry().filter(r=>r.instance.type==='terminal.container').length,13);
+const malformed=structuredClone(snapshot);malformed.trolley.h=NaN;assert.throws(()=>validateTerminalVisual(malformed as unknown as Value),/trolley/);const missing=structuredClone(doc);missing.instances=missing.instances.filter(i=>i.id!=='gate');assert.throws(()=>validateStacksComposition(missing),/missing attachment|Missing gameplay/);
+const operator=env.bindings!['terminal.actor.operator'] as unknown as {visible:boolean;character:{x:number;h:number}};
+assert.equal(operator.character.h,166,'operator retains original cab elevation');assert.equal(operator.character.x,snapshot.trolley.x-35);
+console.log('Stacks checks passed:source roundtrip;4original device spots;rule X/H geometry parity and editable scan route;native targets;immutable typed trolley/watchdog/light/scratch snapshot;operator clip;individual13 cargo containers;invalid state rejected.');

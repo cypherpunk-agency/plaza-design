@@ -1,0 +1,1057 @@
+{
+  "version": 1,
+  "scene": "metro",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "metro.marker",
+      "props": {
+        "role": "scene",
+        "width": 1300
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "metro.marker",
+      "props": {},
+      "placement": {
+        "x": 86,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "horizon",
+      "type": "metro.marker",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 16
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "canopy",
+      "type": "metro.marker",
+      "props": {
+        "role": "canopy"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "city-fill",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "fill"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-sky",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "sky"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-ships-far",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "ships-far"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-sun",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "sun"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-far",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "far"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-mid",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "mid"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-ships-near",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "ships-near"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-floor",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "floor"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-horizon",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "horizon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-hero",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "hero"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-mast",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "mast"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-network",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "network"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-beacons",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "beacons"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-rain",
+      "type": "metro.skyline-part",
+      "props": {
+        "part": "rain"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "bindings": {
+        "city": "metro.city"
+      }
+    },
+    {
+      "id": "city-wash",
+      "type": "metro.city-wash",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "daylight": "metro.daylight",
+        "truss": "metro.truss"
+      }
+    },
+    {
+      "id": "roof-wash",
+      "type": "metro.city-wash",
+      "props": {
+        "roofOnly": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "bindings": {
+        "daylight": "metro.daylight",
+        "truss": "metro.truss"
+      }
+    },
+    {
+      "id": "far-rail",
+      "type": "metro.far-rail",
+      "props": {
+        "deck": 14
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop"
+    },
+    {
+      "id": "track",
+      "type": "metro.track-base",
+      "props": {
+        "deck": 14
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop"
+    },
+    {
+      "id": "platform-train",
+      "type": "station.train",
+      "props": {},
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "train": "transit.train"
+      }
+    },
+    {
+      "id": "track-edge",
+      "type": "metro.track-edge",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop"
+    },
+    {
+      "id": "canopy-shell",
+      "type": "metro.canopy",
+      "props": {
+        "width": 1300,
+        "under": 168,
+        "fascia": 178,
+        "truss": 196
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lamp0",
+      "type": "metro.lamp",
+      "props": {},
+      "placement": {
+        "x": 100,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lamp1",
+      "type": "metro.lamp",
+      "props": {},
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lamp2",
+      "type": "metro.lamp",
+      "props": {},
+      "placement": {
+        "x": 500,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lamp3",
+      "type": "metro.lamp",
+      "props": {},
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lamp4",
+      "type": "metro.lamp",
+      "props": {},
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lamp5",
+      "type": "metro.lamp",
+      "props": {},
+      "placement": {
+        "x": 1100,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lamp6",
+      "type": "metro.lamp",
+      "props": {},
+      "placement": {
+        "x": 1300,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "pillar0",
+      "type": "metro.pillar",
+      "props": {
+        "camera": true
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "pillar1",
+      "type": "metro.pillar",
+      "props": {
+        "camera": false
+      },
+      "placement": {
+        "x": 730,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "pillar2",
+      "type": "metro.pillar",
+      "props": {
+        "camera": false
+      },
+      "placement": {
+        "x": 1130,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sign0",
+      "type": "metro.sign",
+      "props": {},
+      "placement": {
+        "x": 118,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sign1",
+      "type": "metro.sign",
+      "props": {},
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roofLocal"
+      },
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "map",
+      "type": "metro.notice",
+      "props": {
+        "first": "LINE",
+        "second": "MAP",
+        "phase": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 78
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pillar1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "poster",
+      "type": "metro.notice",
+      "props": {
+        "first": "ADS",
+        "phase": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 78
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "pillar2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "board",
+      "type": "station.departures",
+      "props": {},
+      "placement": {
+        "x": 540,
+        "h": 112
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roof",
+        "departure": "transit.departure"
+      }
+    },
+    {
+      "id": "screen",
+      "type": "station.screen",
+      "props": {},
+      "placement": {
+        "x": 850,
+        "h": 160
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "bindings": {
+        "roof": "metro.roof"
+      }
+    },
+    {
+      "id": "bench0",
+      "type": "station.bench",
+      "props": {
+        "who": "paper"
+      },
+      "placement": {
+        "x": 930,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop"
+    },
+    {
+      "id": "regular",
+      "type": "metro.marker",
+      "props": {
+        "role": "readable"
+      },
+      "placement": {
+        "x": 8,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bench0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bench1",
+      "type": "station.bench",
+      "props": {},
+      "placement": {
+        "x": 1235,
+        "h": 0
+      },
+      "order": 43,
+      "pass": "backdrop"
+    },
+    {
+      "id": "waiting0",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 460,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.0"
+      }
+    },
+    {
+      "id": "waiting1",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.1"
+      }
+    },
+    {
+      "id": "waiting2",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.2"
+      }
+    },
+    {
+      "id": "waiting3",
+      "type": "station.waiting-passenger",
+      "props": {},
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "transit.waiting.3"
+      }
+    },
+    {
+      "id": "below",
+      "type": "metro.below",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pier0",
+      "type": "metro.pier",
+      "props": {},
+      "placement": {
+        "x": -100,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pier1",
+      "type": "metro.pier",
+      "props": {},
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 50,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pier2",
+      "type": "metro.pier",
+      "props": {},
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 51,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pier3",
+      "type": "metro.pier",
+      "props": {},
+      "placement": {
+        "x": 680,
+        "h": 0
+      },
+      "order": 52,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pier4",
+      "type": "metro.pier",
+      "props": {},
+      "placement": {
+        "x": 940,
+        "h": 0
+      },
+      "order": 53,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pier5",
+      "type": "metro.pier",
+      "props": {},
+      "placement": {
+        "x": 1200,
+        "h": 0
+      },
+      "order": 54,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pier6",
+      "type": "metro.pier",
+      "props": {},
+      "placement": {
+        "x": 1460,
+        "h": 0
+      },
+      "order": 55,
+      "pass": "backdrop"
+    },
+    {
+      "id": "girder",
+      "type": "metro.girder",
+      "props": {
+        "width": 1300
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 56,
+      "pass": "backdrop"
+    },
+    {
+      "id": "slab",
+      "type": "metro.slab",
+      "props": {
+        "width": 1300
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 57,
+      "pass": "backdrop"
+    },
+    {
+      "id": "citymap",
+      "type": "metro.city-map",
+      "props": {},
+      "placement": {
+        "x": 210,
+        "h": 0
+      },
+      "order": 58,
+      "pass": "backdrop"
+    },
+    {
+      "id": "downtown",
+      "type": "metro.stairs",
+      "props": {},
+      "placement": {
+        "x": 32,
+        "h": 0
+      },
+      "order": 59,
+      "pass": "backdrop"
+    },
+    {
+      "id": "turnstile",
+      "type": "metro.turnstile",
+      "props": {},
+      "placement": {
+        "x": 96,
+        "h": 0
+      },
+      "order": 60,
+      "pass": "backdrop"
+    },
+    {
+      "id": "train-exit",
+      "type": "metro.marker",
+      "props": {
+        "role": "train-exit"
+      },
+      "placement": {
+        "x": 215,
+        "h": 0
+      },
+      "order": 61,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "platform-train",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light0",
+      "type": "metro.marker",
+      "props": {
+        "role": "light",
+        "width": 60
+      },
+      "placement": {
+        "x": 100,
+        "h": 164
+      },
+      "order": 62,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light1",
+      "type": "metro.marker",
+      "props": {
+        "role": "light",
+        "width": 60
+      },
+      "placement": {
+        "x": 300,
+        "h": 164
+      },
+      "order": 63,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light2",
+      "type": "metro.marker",
+      "props": {
+        "role": "light",
+        "width": 60
+      },
+      "placement": {
+        "x": 500,
+        "h": 164
+      },
+      "order": 64,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light3",
+      "type": "metro.marker",
+      "props": {
+        "role": "light",
+        "width": 60
+      },
+      "placement": {
+        "x": 700,
+        "h": 164
+      },
+      "order": 65,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light4",
+      "type": "metro.marker",
+      "props": {
+        "role": "light",
+        "width": 60
+      },
+      "placement": {
+        "x": 900,
+        "h": 164
+      },
+      "order": 66,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light5",
+      "type": "metro.marker",
+      "props": {
+        "role": "light",
+        "width": 60
+      },
+      "placement": {
+        "x": 1100,
+        "h": 164
+      },
+      "order": 67,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light6",
+      "type": "metro.marker",
+      "props": {
+        "role": "light",
+        "width": 60
+      },
+      "placement": {
+        "x": 1300,
+        "h": 164
+      },
+      "order": 68,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "canopy",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

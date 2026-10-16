@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "scene": "sequence-act2",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "sequence.act2.sky",
+      "props": {
+        "top": "#02030a",
+        "horizon": "#170803"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "city",
+      "type": "sequence.act2.city",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spire",
+      "type": "sequence.act2.spire",
+      "props": {
+        "windows": 1.6,
+        "edge": 0.18,
+        "glow": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "water",
+      "type": "sequence.act2.water",
+      "props": {
+        "fill": "#01040a"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ferry",
+      "type": "sequence.act2.ferry",
+      "props": {
+        "paint": "#0a0504"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "titles",
+      "type": "sequence.act2.titles",
+      "props": {
+        "actOne": "ACT I · WHERE IS MOTH?",
+        "found": "FOUND.",
+        "actTwo": "ACT II",
+        "subtitle": "SEVEN FRAGMENTS"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "screen-fade",
+      "type": "sequence.act2.screen-fade",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop"
+    }
+  ]
+}

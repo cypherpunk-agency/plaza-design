@@ -1,0 +1,2899 @@
+{
+  "version": 1,
+  "scene": "harbor",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "harbor.marker",
+      "props": {
+        "role": "scene",
+        "width": 2480
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "harbor.marker",
+      "props": {},
+      "placement": {
+        "x": 76,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "horizon-height",
+      "type": "harbor.marker",
+      "props": {
+        "role": "horizon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 84
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "farSky",
+      "type": "harbor.farSky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "horizon",
+      "type": "harbor.horizon",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "water",
+      "type": "harbor.water",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "flyingGulls",
+      "type": "harbor.flyingGulls",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "lamp-boat",
+      "type": "harbor.drawLampBoat",
+      "props": {},
+      "placement": {
+        "x": 1650,
+        "h": 56
+      },
+      "order": 7,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "night-ferry",
+      "type": "harbor.drawFerry",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 34
+      },
+      "order": 8,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "patrol",
+      "type": "harbor.drawPatrol",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 46
+      },
+      "order": 9,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "pier-slab",
+      "type": "harbor.pierSlab",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "hut",
+      "type": "harbor.hutBack",
+      "props": {
+        "width": 74,
+        "height": 72
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "watchman",
+      "type": "character.prepared",
+      "props": {
+        "actor": "watchman"
+      },
+      "placement": {
+        "x": 56,
+        "h": 30
+      },
+      "order": 12,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "hut",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.watchman.pose",
+        "clip": "clip.hut"
+      }
+    },
+    {
+      "id": "hut-front",
+      "type": "harbor.hutFront",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "hut",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "metro",
+      "type": "harbor.metroDoor",
+      "props": {},
+      "placement": {
+        "x": 26,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "notice",
+      "type": "harbor.noticePost",
+      "props": {},
+      "placement": {
+        "x": 118,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane0",
+      "type": "harbor.craneFrame",
+      "props": {
+        "index": 0,
+        "gantry": "sts1",
+        "phase": 0
+      },
+      "placement": {
+        "x": 780,
+        "h": 0
+      },
+      "order": 16,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane0-cab-back",
+      "type": "harbor.craneCabBack",
+      "props": {
+        "index": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 17,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "operator0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "operator0"
+      },
+      "placement": {
+        "x": -31,
+        "h": 158
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.operator0.pose",
+        "clip": "clip.crane0"
+      }
+    },
+    {
+      "id": "crane0-cab-front",
+      "type": "harbor.craneCabFront",
+      "props": {
+        "index": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane0-cables",
+      "type": "harbor.craneCables",
+      "props": {
+        "index": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane0-load",
+      "type": "harbor.craneLoad",
+      "props": {
+        "index": 0,
+        "width": 128,
+        "paint": 0,
+        "seed": 13,
+        "code": "NRLU 118 0207",
+        "label": "IN TRANSIT"
+      },
+      "placement": {
+        "x": -64,
+        "h": -58
+      },
+      "order": 21,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane0-light",
+      "type": "harbor.craneLight",
+      "props": {
+        "index": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane1",
+      "type": "harbor.craneFrame",
+      "props": {
+        "index": 1,
+        "gantry": "sts3",
+        "phase": 2.1
+      },
+      "placement": {
+        "x": 1880,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane1-cab-back",
+      "type": "harbor.craneCabBack",
+      "props": {
+        "index": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "operator1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "operator1"
+      },
+      "placement": {
+        "x": -31,
+        "h": 158
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.operator1.pose",
+        "clip": "clip.crane1"
+      }
+    },
+    {
+      "id": "crane1-cab-front",
+      "type": "harbor.craneCabFront",
+      "props": {
+        "index": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane1-cables",
+      "type": "harbor.craneCables",
+      "props": {
+        "index": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane1-load",
+      "type": "harbor.craneLoad",
+      "props": {
+        "index": 1,
+        "width": 128,
+        "paint": 2,
+        "seed": 14,
+        "code": "KSNU 909 1200",
+        "label": "IN TRANSIT"
+      },
+      "placement": {
+        "x": -64,
+        "h": -58
+      },
+      "order": 28,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "crane1-light",
+      "type": "harbor.craneLight",
+      "props": {
+        "index": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack0",
+      "type": "harbor.marker",
+      "props": {
+        "role": "stack",
+        "width": 128,
+        "height": 139.20000000000002
+      },
+      "placement": {
+        "x": 390,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack0-box0",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 0,
+        "seed": 1,
+        "code": "MRDU 118 2207",
+        "label": "MERIDIAN BULK",
+        "cullStack": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack0-box1",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 5,
+        "seed": 2,
+        "code": "PLZU 300 1981",
+        "label": "PLAZA HOLDINGS FREIGHT",
+        "cullStack": 0
+      },
+      "placement": {
+        "x": -6,
+        "h": 58
+      },
+      "order": 32,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack0-box2",
+      "type": "harbor.container",
+      "props": {
+        "width": 66,
+        "height": 58,
+        "paint": 3,
+        "seed": 3,
+        "code": "TDLU 771",
+        "label": "",
+        "cullStack": 0
+      },
+      "placement": {
+        "x": 28,
+        "h": 116
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack0",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack1",
+      "type": "harbor.marker",
+      "props": {
+        "role": "stack",
+        "width": 128,
+        "height": 92.80000000000001
+      },
+      "placement": {
+        "x": 524,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack1-box0",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 2,
+        "seed": 4,
+        "code": "KSNU 552 9014",
+        "label": "CONTENTS: UNDECLARED",
+        "cullStack": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack1-box1",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 1,
+        "seed": 5,
+        "code": "NRLU 220 3310",
+        "label": "NULLROUTE LOGISTICS",
+        "cullStack": 1
+      },
+      "placement": {
+        "x": 5,
+        "h": 58
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack1",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack2",
+      "type": "harbor.marker",
+      "props": {
+        "role": "stack",
+        "width": 128,
+        "height": 139.20000000000002
+      },
+      "placement": {
+        "x": 1660,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack2-box0",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 6,
+        "seed": 6,
+        "code": "NRLU 404 0415",
+        "label": "NULLROUTE LOGISTICS",
+        "cullStack": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack2-box1",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 4,
+        "seed": 7,
+        "code": "HLXU 090 6620",
+        "label": "THIS SIDE UP",
+        "cullStack": 2
+      },
+      "placement": {
+        "x": -4,
+        "h": 58
+      },
+      "order": 39,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack2-box2",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 7,
+        "seed": 8,
+        "code": "CSQU 314 1592",
+        "label": "HOLD FOR CUSTOMS",
+        "cullStack": 2
+      },
+      "placement": {
+        "x": 3,
+        "h": 116
+      },
+      "order": 40,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack2",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack3",
+      "type": "harbor.marker",
+      "props": {
+        "role": "stack",
+        "width": 128,
+        "height": 92.80000000000001
+      },
+      "placement": {
+        "x": 2000,
+        "h": 0
+      },
+      "order": 41,
+      "pass": "backdrop"
+    },
+    {
+      "id": "stack3-box0",
+      "type": "harbor.container",
+      "props": {
+        "width": 66,
+        "height": 58,
+        "paint": 2,
+        "seed": 9,
+        "code": "BRNU 007",
+        "label": "",
+        "cullStack": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 42,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack3",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "stack3-box1",
+      "type": "harbor.container",
+      "props": {
+        "width": 66,
+        "height": 58,
+        "paint": 0,
+        "seed": 10,
+        "code": "MRDU 440",
+        "label": "",
+        "cullStack": 3
+      },
+      "placement": {
+        "x": 3,
+        "h": 58
+      },
+      "order": 43,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack3",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "arch",
+      "type": "harbor.marker",
+      "props": {
+        "width": 150,
+        "height": 100,
+        "role": "arch"
+      },
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 44,
+      "pass": "backdrop"
+    },
+    {
+      "id": "arch-chassis",
+      "type": "harbor.archChassis",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 45,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "arch",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin",
+        "archVisible": "harbor.archVisible",
+        "bondedVisible": "harbor.bondedVisible"
+      }
+    },
+    {
+      "id": "arch-cargo",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 3,
+        "seed": 12,
+        "code": "TDLU 771 0890",
+        "label": "MERIDIAN BULK",
+        "cullRegion": "arch"
+      },
+      "placement": {
+        "x": 11,
+        "h": 14
+      },
+      "order": 46,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "arch",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin",
+        "archVisible": "harbor.archVisible",
+        "bondedVisible": "harbor.bondedVisible"
+      }
+    },
+    {
+      "id": "arch-scan",
+      "type": "harbor.archScan",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 47,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "arch",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin",
+        "archVisible": "harbor.archVisible",
+        "bondedVisible": "harbor.bondedVisible"
+      }
+    },
+    {
+      "id": "arch-portal",
+      "type": "harbor.archPortal",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 48,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "arch",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin",
+        "archVisible": "harbor.archVisible",
+        "bondedVisible": "harbor.bondedVisible"
+      }
+    },
+    {
+      "id": "podium",
+      "type": "harbor.podium",
+      "props": {},
+      "placement": {
+        "x": 352,
+        "h": 0
+      },
+      "order": 49,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "manifest",
+      "type": "harbor.manifest",
+      "props": {},
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "call-box",
+      "type": "harbor.callBox",
+      "props": {},
+      "placement": {
+        "x": 688,
+        "h": 0
+      },
+      "order": 51,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "fish",
+      "type": "harbor.fishStall",
+      "props": {
+        "width": 112
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 52,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "fish-use",
+      "type": "harbor.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 53,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "fish",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "drinks",
+      "type": "harbor.teaStall",
+      "props": {
+        "width": 96
+      },
+      "placement": {
+        "x": 1032,
+        "h": 0
+      },
+      "order": 54,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "drink-use",
+      "type": "harbor.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 50,
+        "h": 0
+      },
+      "order": 55,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "drinks",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "crates",
+      "type": "harbor.crates",
+      "props": {},
+      "placement": {
+        "x": 1112,
+        "h": 0
+      },
+      "order": 56,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "den",
+      "type": "harbor.denInside",
+      "props": {},
+      "placement": {
+        "x": 1200,
+        "h": 0
+      },
+      "order": 57,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "den-person0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "den-person0"
+      },
+      "placement": {
+        "x": 34,
+        "h": 14
+      },
+      "order": 58,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "den",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.den-person0.pose"
+      }
+    },
+    {
+      "id": "den-person1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "den-person1"
+      },
+      "placement": {
+        "x": 96,
+        "h": 14
+      },
+      "order": 59,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "den",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.den-person1.pose"
+      }
+    },
+    {
+      "id": "denTable",
+      "type": "harbor.denTable",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 60,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "den",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "denDoors",
+      "type": "harbor.denDoors",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 61,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "den",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "denLamp",
+      "type": "harbor.denLamp",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 62,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "den",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bonded",
+      "type": "harbor.marker",
+      "props": {
+        "width": 222,
+        "role": "bonded"
+      },
+      "placement": {
+        "x": 1418,
+        "h": 0
+      },
+      "order": 63,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ghost-container0",
+      "type": "harbor.container",
+      "props": {
+        "width": 128,
+        "height": 58,
+        "paint": 5,
+        "seed": 11,
+        "code": "PLZU 610 0002",
+        "cullRegion": "bonded"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 64,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "ghost",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin",
+        "archVisible": "harbor.archVisible",
+        "bondedVisible": "harbor.bondedVisible"
+      }
+    },
+    {
+      "id": "ghost-container1",
+      "type": "harbor.container",
+      "props": {
+        "width": 66,
+        "height": 58,
+        "paint": 3,
+        "seed": 15,
+        "code": "TDLU 112",
+        "cullRegion": "bonded"
+      },
+      "placement": {
+        "x": 12,
+        "h": 58
+      },
+      "order": 65,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "ghost",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin",
+        "archVisible": "harbor.archVisible",
+        "bondedVisible": "harbor.bondedVisible"
+      }
+    },
+    {
+      "id": "ghost",
+      "type": "harbor.marker",
+      "props": {
+        "role": "ghost"
+      },
+      "placement": {
+        "x": 66,
+        "h": 0
+      },
+      "order": 66,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bonded",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bonded-gate",
+      "type": "harbor.marker",
+      "props": {
+        "role": "gate"
+      },
+      "placement": {
+        "x": 12,
+        "h": 0
+      },
+      "order": 67,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bonded",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "ghost-mark",
+      "type": "harbor.ghostMark",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 68,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bonded",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bonded-fence",
+      "type": "harbor.bondedFence",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 69,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bonded",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "forklift",
+      "type": "harbor.forkliftBody",
+      "props": {
+        "travel": 200
+      },
+      "placement": {
+        "x": 1600,
+        "h": 0
+      },
+      "order": 70,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "driver",
+      "type": "character.prepared",
+      "props": {
+        "actor": "driver"
+      },
+      "placement": {
+        "x": -4,
+        "h": 12
+      },
+      "order": 71,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "forklift",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.driver.pose"
+      }
+    },
+    {
+      "id": "forklift-roof",
+      "type": "harbor.forkliftRoof",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 72,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "forklift",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bollard0",
+      "type": "harbor.bollard",
+      "props": {},
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 73,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bollard1",
+      "type": "harbor.bollard",
+      "props": {},
+      "placement": {
+        "x": 664,
+        "h": 0
+      },
+      "order": 74,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bollard2",
+      "type": "harbor.bollard",
+      "props": {},
+      "placement": {
+        "x": 1176,
+        "h": 0
+      },
+      "order": 75,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bollard3",
+      "type": "harbor.bollard",
+      "props": {},
+      "placement": {
+        "x": 1396,
+        "h": 0
+      },
+      "order": 76,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bollard4",
+      "type": "harbor.bollard",
+      "props": {},
+      "placement": {
+        "x": 1660,
+        "h": 0
+      },
+      "order": 77,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bollard5",
+      "type": "harbor.bollard",
+      "props": {},
+      "placement": {
+        "x": 2210,
+        "h": 0
+      },
+      "order": 78,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bollard6",
+      "type": "harbor.bollard",
+      "props": {},
+      "placement": {
+        "x": 2350,
+        "h": 0
+      },
+      "order": 79,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "rod0",
+      "type": "harbor.rod",
+      "props": {
+        "reach": 70
+      },
+      "placement": {
+        "x": 2128,
+        "h": 22
+      },
+      "order": 80,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "rod1",
+      "type": "harbor.rod",
+      "props": {
+        "reach": 84
+      },
+      "placement": {
+        "x": 2172,
+        "h": 30
+      },
+      "order": 81,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "fishing-box",
+      "type": "harbor.fishingBox",
+      "props": {},
+      "placement": {
+        "x": 2112,
+        "h": 0
+      },
+      "order": 82,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "terminal",
+      "type": "harbor.drawTerminalGate",
+      "props": {},
+      "placement": {
+        "x": 2092,
+        "h": 0
+      },
+      "order": 83,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "berth",
+      "type": "harbor.berthSign",
+      "props": {},
+      "placement": {
+        "x": 1975,
+        "h": 0
+      },
+      "order": 84,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "taxi",
+      "type": "harbor.taxi",
+      "props": {},
+      "placement": {
+        "x": 2280,
+        "h": 0
+      },
+      "order": 85,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "ferry",
+      "type": "harbor.ferryNotice",
+      "props": {},
+      "placement": {
+        "x": 2370,
+        "h": 0
+      },
+      "order": 86,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "rails",
+      "type": "harbor.rails",
+      "props": {},
+      "placement": {
+        "x": 2396,
+        "h": 0
+      },
+      "order": 87,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "beacon",
+      "type": "harbor.beacon",
+      "props": {},
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 88,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "rails",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "pier-person0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person0"
+      },
+      "placement": {
+        "x": 806,
+        "h": 0
+      },
+      "order": 89,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person0.pose"
+      }
+    },
+    {
+      "id": "pier-person1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person1"
+      },
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 90,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person1.pose"
+      }
+    },
+    {
+      "id": "pier-person2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person2"
+      },
+      "placement": {
+        "x": 1128,
+        "h": 18
+      },
+      "order": 91,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person2.pose"
+      }
+    },
+    {
+      "id": "pier-person3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person3"
+      },
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 92,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person3.pose"
+      }
+    },
+    {
+      "id": "pier-person4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person4"
+      },
+      "placement": {
+        "x": 1250,
+        "h": 0
+      },
+      "order": 93,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person4.pose"
+      }
+    },
+    {
+      "id": "pier-person5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person5"
+      },
+      "placement": {
+        "x": 2118,
+        "h": 8
+      },
+      "order": 94,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person5.pose"
+      }
+    },
+    {
+      "id": "pier-person6",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person6"
+      },
+      "placement": {
+        "x": 236,
+        "h": 78
+      },
+      "order": 95,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person6.pose"
+      }
+    },
+    {
+      "id": "pier-person7",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person7"
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 96,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person7.pose"
+      }
+    },
+    {
+      "id": "pier-person8",
+      "type": "character.prepared",
+      "props": {
+        "actor": "pier-person8"
+      },
+      "placement": {
+        "x": 2040,
+        "h": 0
+      },
+      "order": 97,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.pier-person8.pose"
+      }
+    },
+    {
+      "id": "guard",
+      "type": "character.prepared",
+      "props": {
+        "actor": "guard"
+      },
+      "placement": {
+        "x": 1452,
+        "h": 0
+      },
+      "order": 98,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.guard.pose"
+      }
+    },
+    {
+      "id": "customs",
+      "type": "character.prepared",
+      "props": {
+        "actor": "customs"
+      },
+      "placement": {
+        "x": 336,
+        "h": 0
+      },
+      "order": 99,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.customs.pose"
+      }
+    },
+    {
+      "id": "docker",
+      "type": "character.prepared",
+      "props": {
+        "actor": "docker"
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 100,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.docker.pose"
+      }
+    },
+    {
+      "id": "tide",
+      "type": "character.prepared",
+      "props": {
+        "actor": "tide"
+      },
+      "placement": {
+        "x": 1374,
+        "h": 0
+      },
+      "order": 101,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.tide.pose"
+      }
+    },
+    {
+      "id": "fisher",
+      "type": "character.prepared",
+      "props": {
+        "actor": "fisher"
+      },
+      "placement": {
+        "x": 2160,
+        "h": 0
+      },
+      "order": 102,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.fisher.pose"
+      }
+    },
+    {
+      "id": "jogger",
+      "type": "character.prepared",
+      "props": {
+        "actor": "jogger"
+      },
+      "placement": {
+        "x": 1500,
+        "h": 0
+      },
+      "order": 103,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.jogger.pose"
+      }
+    },
+    {
+      "id": "bird0",
+      "type": "character.prepared",
+      "props": {
+        "actor": "bird0"
+      },
+      "placement": {
+        "x": 430,
+        "h": 174
+      },
+      "order": 104,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.bird0.pose"
+      }
+    },
+    {
+      "id": "bird1",
+      "type": "character.prepared",
+      "props": {
+        "actor": "bird1"
+      },
+      "placement": {
+        "x": 1730,
+        "h": 174
+      },
+      "order": 105,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.bird1.pose"
+      }
+    },
+    {
+      "id": "bird2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "bird2"
+      },
+      "placement": {
+        "x": 1660,
+        "h": 12
+      },
+      "order": 106,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.bird2.pose"
+      }
+    },
+    {
+      "id": "bird3",
+      "type": "character.prepared",
+      "props": {
+        "actor": "bird3"
+      },
+      "placement": {
+        "x": 2420,
+        "h": 25
+      },
+      "order": 107,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.bird3.pose"
+      }
+    },
+    {
+      "id": "bird4",
+      "type": "character.prepared",
+      "props": {
+        "actor": "bird4"
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 108,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.bird4.pose"
+      }
+    },
+    {
+      "id": "bird5",
+      "type": "character.prepared",
+      "props": {
+        "actor": "bird5"
+      },
+      "placement": {
+        "x": 480,
+        "h": 0
+      },
+      "order": 109,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.bird5.pose"
+      }
+    },
+    {
+      "id": "cat",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cat"
+      },
+      "placement": {
+        "x": 2212,
+        "h": 12
+      },
+      "order": 110,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.cat.pose"
+      }
+    },
+    {
+      "id": "camera",
+      "type": "harbor.portCamera",
+      "props": {},
+      "placement": {
+        "x": 156,
+        "h": 136
+      },
+      "order": 111,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "drone-gull",
+      "type": "harbor.droneGull",
+      "props": {},
+      "placement": {
+        "x": 1460,
+        "h": 128
+      },
+      "order": 112,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "near-water",
+      "type": "harbor.nearWater",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 113,
+      "pass": "backdrop",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "front-bollard0",
+      "type": "harbor.frontBollard",
+      "props": {},
+      "placement": {
+        "x": 360,
+        "h": 0
+      },
+      "order": 114,
+      "pass": "foreground",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "front-bollard1",
+      "type": "harbor.frontBollard",
+      "props": {},
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 115,
+      "pass": "foreground",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "front-bollard2",
+      "type": "harbor.frontBollard",
+      "props": {},
+      "placement": {
+        "x": 1900,
+        "h": 0
+      },
+      "order": 116,
+      "pass": "foreground",
+      "bindings": {
+        "layout": "harbor.layout",
+        "visual": "harbor.visual",
+        "fishPose": "harbor.fishPose",
+        "teaPose": "harbor.teaPose",
+        "loads": "harbor.loads",
+        "stackOrigins": "harbor.stackOrigins",
+        "forkliftOrigin": "harbor.forkliftOrigin"
+      }
+    },
+    {
+      "id": "bribe-use",
+      "type": "harbor.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 34,
+        "h": 0
+      },
+      "order": 117,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bonded",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "ghost-use",
+      "type": "harbor.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 142,
+        "h": 0
+      },
+      "order": 118,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "bonded",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cat-use",
+      "type": "harbor.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 119,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "cat",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "beach-exit",
+      "type": "harbor.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 2450,
+        "h": 0
+      },
+      "order": 120,
+      "pass": "backdrop"
+    },
+    {
+      "id": "light0",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "lamp",
+        "r": 80,
+        "color": "255,217,165",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 150
+      },
+      "order": 121,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light1",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "lamp",
+        "r": 80,
+        "color": "255,217,165",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 150
+      },
+      "order": 122,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "crane1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light2",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "lamp",
+        "r": 50,
+        "color": "255,200,130",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 56,
+        "h": 60
+      },
+      "order": 123,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "fish",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light3",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "lamp",
+        "r": 50,
+        "color": "",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 48,
+        "h": 60
+      },
+      "order": 124,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "drinks",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light4",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "neon",
+        "r": 60,
+        "color": "255,180,100",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 40,
+        "h": 30
+      },
+      "order": 125,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "den",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light5",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "window",
+        "r": 26,
+        "color": "",
+        "width": 30,
+        "lightHeight": 20
+      },
+      "placement": {
+        "x": 37,
+        "h": 50
+      },
+      "order": 126,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "hut",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light6",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "neon",
+        "r": 30,
+        "color": "255,42,68",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 40
+      },
+      "order": 127,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "beacon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-stack0",
+      "type": "harbor.marker",
+      "props": {
+        "role": "caster",
+        "width": 128
+      },
+      "placement": {
+        "x": 64,
+        "h": 139.20000000000002
+      },
+      "order": 128,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-stack1",
+      "type": "harbor.marker",
+      "props": {
+        "role": "caster",
+        "width": 128
+      },
+      "placement": {
+        "x": 64,
+        "h": 92.80000000000001
+      },
+      "order": 129,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-stack2",
+      "type": "harbor.marker",
+      "props": {
+        "role": "caster",
+        "width": 128
+      },
+      "placement": {
+        "x": 64,
+        "h": 139.20000000000002
+      },
+      "order": 130,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-stack3",
+      "type": "harbor.marker",
+      "props": {
+        "role": "caster",
+        "width": 128
+      },
+      "placement": {
+        "x": 64,
+        "h": 92.80000000000001
+      },
+      "order": 131,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "stack3",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-arch",
+      "type": "harbor.marker",
+      "props": {
+        "role": "caster",
+        "width": 16
+      },
+      "placement": {
+        "x": 75,
+        "h": 100
+      },
+      "order": 132,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "arch",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-hut",
+      "type": "harbor.marker",
+      "props": {
+        "role": "caster",
+        "width": 74
+      },
+      "placement": {
+        "x": 37,
+        "h": 72
+      },
+      "order": 133,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "hut",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "shade0",
+      "type": "harbor.marker",
+      "props": {
+        "role": "shade-gap",
+        "width": 80
+      },
+      "placement": {
+        "x": 640,
+        "h": 150
+      },
+      "order": 134,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shade1",
+      "type": "harbor.marker",
+      "props": {
+        "role": "shade-gap",
+        "width": 80
+      },
+      "placement": {
+        "x": 1300,
+        "h": 150
+      },
+      "order": 135,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shade2",
+      "type": "harbor.marker",
+      "props": {
+        "role": "shade-gap",
+        "width": 100
+      },
+      "placement": {
+        "x": 2100,
+        "h": 150
+      },
+      "order": 136,
+      "pass": "backdrop"
+    },
+    {
+      "id": "fishSeller",
+      "type": "harbor.marker",
+      "props": {
+        "role": "vendor"
+      },
+      "placement": {
+        "x": 58,
+        "h": 2
+      },
+      "order": 137,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "fish",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "teaMan",
+      "type": "harbor.marker",
+      "props": {
+        "role": "vendor"
+      },
+      "placement": {
+        "x": 48,
+        "h": 0
+      },
+      "order": 138,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "drinks",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

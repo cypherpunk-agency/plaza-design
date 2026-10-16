@@ -1,0 +1,615 @@
+{
+  "version": 1,
+  "scene": "library",
+  "instances": [
+    {
+      "id": "spawn",
+      "type": "library.spawn-marker",
+      "props": {},
+      "placement": {
+        "x": 74,
+        "h": 0
+      },
+      "order": -1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "room",
+      "type": "library.room",
+      "props": {
+        "width": 960,
+        "ceiling": 176,
+        "wallBand": 380
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "window-1",
+      "type": "library.window",
+      "props": {
+        "width": 64,
+        "facing": 270
+      },
+      "placement": {
+        "x": 648,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "window-2",
+      "type": "library.window",
+      "props": {
+        "width": 72,
+        "facing": 270
+      },
+      "placement": {
+        "x": 768,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop"
+    },
+    {
+      "id": "window-3",
+      "type": "library.window",
+      "props": {
+        "width": 48,
+        "facing": 270
+      },
+      "placement": {
+        "x": 892,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop"
+    },
+    {
+      "id": "shelves",
+      "type": "library.shelves",
+      "props": {
+        "width": 580
+      },
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop",
+      "bindings": {
+        "windows": "architecture.windows"
+      }
+    },
+    {
+      "id": "gallery",
+      "type": "library.gallery",
+      "props": {
+        "width": 580,
+        "ceiling": 176
+      },
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "ceiling",
+      "type": "library.ceiling",
+      "props": {
+        "width": 960,
+        "ceiling": 176
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "registry-strip",
+      "type": "library.ticker",
+      "props": {
+        "width": 280,
+        "text": "QUIET PLEASE   ·   CONVERSATIONS ARE TRANSCRIBED   ·   PUBLIC TERMINALS: 30 MIN PER VERIFIED IDENTITY   ·   UNVERIFIED PERSONS MAY SIT   ·   SOFTWARE LENDING SUSPENDED PENDING RETURNS",
+        "speed": 0.35
+      },
+      "placement": {
+        "x": 230,
+        "h": 140
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "registry-camera",
+      "type": "library.camera",
+      "props": {
+        "phase": 3,
+        "direction": -1
+      },
+      "placement": {
+        "x": 400,
+        "h": 150
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "wall-clock",
+      "type": "library.clock",
+      "props": {},
+      "placement": {
+        "x": 500,
+        "h": 84
+      },
+      "order": 9,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pendant-1",
+      "type": "library.pendant",
+      "props": {
+        "ceiling": 176,
+        "flicker": false
+      },
+      "placement": {
+        "x": 200,
+        "h": 120
+      },
+      "order": 10,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pendant-2",
+      "type": "library.pendant",
+      "props": {
+        "ceiling": 176,
+        "flicker": true
+      },
+      "placement": {
+        "x": 330,
+        "h": 124
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pendant-3",
+      "type": "library.pendant",
+      "props": {
+        "ceiling": 176,
+        "flicker": false
+      },
+      "placement": {
+        "x": 500,
+        "h": 122
+      },
+      "order": 12,
+      "pass": "backdrop"
+    },
+    {
+      "id": "pendant-4",
+      "type": "library.pendant",
+      "props": {
+        "ceiling": 176,
+        "flicker": false
+      },
+      "placement": {
+        "x": 760,
+        "h": 126
+      },
+      "order": 13,
+      "pass": "backdrop"
+    },
+    {
+      "id": "downtown-door",
+      "type": "library.door",
+      "props": {
+        "label": "< DOWNTOWN"
+      },
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop"
+    },
+    {
+      "id": "notice",
+      "type": "library.notice",
+      "props": {},
+      "placement": {
+        "x": 106,
+        "h": 98
+      },
+      "order": 15,
+      "pass": "backdrop"
+    },
+    {
+      "id": "free-terminal-note",
+      "type": "library.note",
+      "props": {
+        "first": "T3: FREE",
+        "second": "CARD ONLY",
+        "tilt": 0.05
+      },
+      "placement": {
+        "x": 372,
+        "h": 50
+      },
+      "order": 16,
+      "pass": "backdrop"
+    },
+    {
+      "id": "printer-note",
+      "type": "library.note",
+      "props": {
+        "first": "DO NOT",
+        "second": "CANCEL",
+        "tilt": -0.07
+      },
+      "placement": {
+        "x": 518,
+        "h": 52
+      },
+      "order": 17,
+      "pass": "backdrop"
+    },
+    {
+      "id": "session",
+      "type": "library.session-timer",
+      "props": {},
+      "placement": {
+        "x": 290,
+        "h": 84
+      },
+      "order": 18,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "device.session.hover"
+      }
+    },
+    {
+      "id": "terminal-1",
+      "type": "library.terminal",
+      "props": {
+        "index": 0,
+        "seatOffset": -16
+      },
+      "placement": {
+        "x": 244,
+        "h": 0
+      },
+      "order": 19,
+      "pass": "backdrop"
+    },
+    {
+      "id": "terminal-2",
+      "type": "library.terminal",
+      "props": {
+        "index": 1,
+        "seatOffset": -16
+      },
+      "placement": {
+        "x": 304,
+        "h": 0
+      },
+      "order": 20,
+      "pass": "backdrop"
+    },
+    {
+      "id": "terminal-3",
+      "type": "library.terminal",
+      "props": {
+        "index": 2,
+        "seatOffset": -16
+      },
+      "placement": {
+        "x": 364,
+        "h": 0
+      },
+      "order": 21,
+      "pass": "backdrop"
+    },
+    {
+      "id": "reader",
+      "type": "library.card-reader",
+      "props": {},
+      "placement": {
+        "x": 168,
+        "h": 0
+      },
+      "order": 22,
+      "pass": "backdrop",
+      "bindings": {
+        "hover": "device.reader.hover",
+        "online": "catalog.connected"
+      }
+    },
+    {
+      "id": "shelfe",
+      "type": "library.person",
+      "props": {
+        "actor": "shelfe"
+      },
+      "placement": {
+        "x": 690,
+        "h": 0
+      },
+      "order": 23,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.shelfe.pose"
+      }
+    },
+    {
+      "id": "counter",
+      "type": "library.counter",
+      "props": {
+        "width": 140,
+        "height": 28
+      },
+      "placement": {
+        "x": 432,
+        "h": 0
+      },
+      "order": 24,
+      "pass": "backdrop"
+    },
+    {
+      "id": "librarian",
+      "type": "library.person",
+      "props": {
+        "actor": "librarian"
+      },
+      "placement": {
+        "x": 418,
+        "h": 0
+      },
+      "order": 25,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.librarian.pose"
+      }
+    },
+    {
+      "id": "printer",
+      "type": "library.printer",
+      "props": {},
+      "placement": {
+        "x": 116,
+        "h": 0
+      },
+      "order": 26,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "counter",
+        "anchor": "top"
+      },
+      "bindings": {
+        "hover": "device.printer.hover"
+      }
+    },
+    {
+      "id": "reference-book",
+      "type": "library.reference-book",
+      "props": {},
+      "placement": {
+        "x": 614,
+        "h": 0
+      },
+      "order": 27,
+      "pass": "backdrop"
+    },
+    {
+      "id": "radiator",
+      "type": "library.radiator",
+      "props": {
+        "width": 66,
+        "height": 20
+      },
+      "placement": {
+        "x": 770,
+        "h": 0
+      },
+      "order": 28,
+      "pass": "backdrop"
+    },
+    {
+      "id": "armchair-1",
+      "type": "library.armchair",
+      "props": {
+        "seed": 0
+      },
+      "placement": {
+        "x": 680,
+        "h": 0
+      },
+      "order": 29,
+      "pass": "backdrop"
+    },
+    {
+      "id": "armchair-2",
+      "type": "library.armchair",
+      "props": {
+        "seed": 1
+      },
+      "placement": {
+        "x": 744,
+        "h": 0
+      },
+      "order": 30,
+      "pass": "backdrop"
+    },
+    {
+      "id": "armchair-3",
+      "type": "library.armchair",
+      "props": {
+        "seed": 2
+      },
+      "placement": {
+        "x": 872,
+        "h": 0
+      },
+      "order": 31,
+      "pass": "backdrop"
+    },
+    {
+      "id": "armchair-4",
+      "type": "library.armchair",
+      "props": {
+        "seed": 3
+      },
+      "placement": {
+        "x": 924,
+        "h": 0
+      },
+      "order": 32,
+      "pass": "backdrop"
+    },
+    {
+      "id": "student",
+      "type": "library.person",
+      "props": {
+        "actor": "student"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 33,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.student.pose"
+      },
+      "attach": {
+        "instance": "terminal-1",
+        "anchor": "seat"
+      }
+    },
+    {
+      "id": "kid",
+      "type": "library.person",
+      "props": {
+        "actor": "kid"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.kid.pose"
+      },
+      "attach": {
+        "instance": "terminal-2",
+        "anchor": "seat"
+      }
+    },
+    {
+      "id": "sleeper",
+      "type": "library.person",
+      "props": {
+        "actor": "sleeper"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 35,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.sleeper.pose"
+      },
+      "attach": {
+        "instance": "armchair-1",
+        "anchor": "seat"
+      }
+    },
+    {
+      "id": "knitter",
+      "type": "library.person",
+      "props": {
+        "actor": "knitter"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 36,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.knitter.pose"
+      },
+      "attach": {
+        "instance": "armchair-2",
+        "anchor": "seat"
+      }
+    },
+    {
+      "id": "paper",
+      "type": "library.person",
+      "props": {
+        "actor": "paper"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 37,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.paper.pose"
+      },
+      "attach": {
+        "instance": "armchair-3",
+        "anchor": "seat"
+      }
+    },
+    {
+      "id": "cat",
+      "type": "library.person",
+      "props": {
+        "actor": "cat"
+      },
+      "placement": {
+        "x": 36,
+        "h": 0
+      },
+      "order": 38,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "actor.cat.pose"
+      },
+      "attach": {
+        "instance": "radiator",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "floor",
+      "type": "library.floor",
+      "props": {
+        "width": 960,
+        "runnerFrom": 140,
+        "runnerTo": 600
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 39,
+      "pass": "backdrop"
+    }
+  ]
+}
