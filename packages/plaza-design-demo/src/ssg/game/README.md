@@ -37,6 +37,14 @@ Open `http://127.0.0.1:4174/?play=harborShift` after the homepage build and loca
 This is a separate playable work bay, not the campaign opening. Walk with arrows/A/D, interact
 with E, and use E/Enter to advance dialogue. Item handovers use the existing contextual popup.
 
+New tasks appear in an upper-centre announcement after dialogue closes, then settle into a
+high-contrast CURRENT TASK card after three seconds. Click/tap the card (or focus it and press
+Enter/Space) to repeat a location ping; off-screen targets use the existing edge arrow.
+Automatic reminders wait for 20 seconds of inactivity, stop near the target, and never move
+the camera. The independent empty-case task skips its initial ping and waits 30 seconds for
+a reminder. The clamp is highlighted only after trying the blocked trolley. Menus pause the
+announcement, dialogue/popups hide it, and reduced motion uses a fade instead of travel.
+
 The supervisor assigns a parcel for Mara; return her empty case, report back, release the
 loading trolley's clamp, park it, return the work tag and read the wage statement. The final
 objective reads SHIFT COMPLETE. There is no commute in this slice.

@@ -14,6 +14,7 @@
  * is drawn at an integer pixel scale so the sprites stay crisp.
  */
 
+import { ShiftGuidance } from './shift-guidance';
 import { SHIFT_PROTOTYPE } from './level';
 import { shiftMinute, drawShiftWorker } from './scenes/harbor-shift';
 import { sound } from './audio';
@@ -132,6 +133,7 @@ export class Game {
   private here: SceneId = 'downtown';
   /** Every key and what it does, along the top. */
   private keyBar: KeyBar;
+  private shiftGuidance?: ShiftGuidance;
   /** Every scene on the engine, hosted the first time it is needed (`hostOf`), with its part of the save. */
   private hosts = new Map<SceneId, SceneHost>();
   /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
@@ -169,6 +171,11 @@ export class Game {
     this.term.onClose = () => this.canvas.focus();
 
     this.keyBar = new KeyBar(host.windowEl, () => this.canvas.focus());
+    if (SHIFT_PROTOTYPE) this.shiftGuidance = new ShiftGuidance(host.windowEl, this.reduced, wx => {
+      this.zh.clearPing('goal');
+      this.goalAt = wx;
+      if (wx !== null) this.zh.ping('goal', 'look');
+    });
     // the fixer's parcel holds Moth's key chip and uplink.so: a save that took it before they were in it gets them now
     if (this.hostOf('yard').model.get('parcelAt') === 'taken') PARCEL.forEach((k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); });
     // Downtown keeps most of its progress in the save's own fields: its devices agree with them
@@ -485,6 +492,7 @@ export class Game {
 
   stop() {
     this.running = false;
+    this.shiftGuidance?.hide();
     this.syncEnginePause();
     this.endTitle();
     document.documentElement.classList.remove('game-map', 'hack-ok', 'hack-on', 'logic-open', 'unfold-on');
@@ -576,6 +584,10 @@ export class Game {
     if (this.clockRuns()) city.tick(dt / 60);
     this.syncClock();
     this.update(dt);
+    this.shiftGuidance?.update(this.save.flags, dt / 60,
+      !!this.bubble || !!this.zh.popupOpen || !!this.zh.overlayOpen,
+      this.p.moving, this.p.x,
+      this.keyBar.root.getBoundingClientRect().bottom - this.host.windowEl.getBoundingClientRect().top + 42);
     this.checkGain();
     this.draw();
     this.followHost();
@@ -684,6 +696,7 @@ export class Game {
     this.zh.persist();
     storeSave(this.save);
     this.menu.show();
+    this.shiftGuidance?.hide();
     this.syncEnginePause();
   }
 
@@ -1837,7 +1850,7 @@ export class Game {
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
     const zh = this.zh.model.data.goals.length ? this.zh : null, story = this.def.objective?.(this.save.flags) ?? pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
-    if (story || zh) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + (story ?? zh!.objective()), 8, (y += 11)); }
+    if (!SHIFT_PROTOTYPE && (story || zh)) { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + (story ?? zh!.objective()), 8, (y += 11)); }
     // the keys and what they do: the key bar along the top (keybar.ts)
     const tl = this.termLine;
     if (tl && this.t < tl.until && !this.term.focused) {

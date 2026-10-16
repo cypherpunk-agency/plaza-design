@@ -319,6 +319,11 @@ export class Feedback {
   get boxes(): Box[] { return this.caps.filter((c) => c.box).map((c) => c.box!); }
 
   /** Leaving the scene: nothing lingers. */
+  clearPing(from: string) {
+    this.pings.filter(p => p.from === from).forEach(p => p.el.remove());
+    this.pings = this.pings.filter(p => p.from !== from);
+  }
+
   clear() {
     this.caps.forEach((c) => { c.el?.remove(); c.lead?.remove(); }); this.pings.forEach((p) => p.el.remove());
     this.caps = []; this.queue = []; this.pings = []; this.lane = NaN;

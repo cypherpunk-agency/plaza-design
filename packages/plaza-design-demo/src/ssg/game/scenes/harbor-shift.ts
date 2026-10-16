@@ -22,11 +22,27 @@ export function shiftGoal(f: Flags): string {
   if (!f[SHIFT.case]) return 'Take the empty case from the receiving counter';
   if (!f[SHIFT.returned]) return 'Return the empty case to its rack';
   if (!f[SHIFT.trolley]) return 'Report back to the supervisor';
+  if (f[SHIFT.inspected] && !f[SHIFT.released]) return 'Release the red wheel clamp beside the trolley';
   if (!f[SHIFT.released]) return 'Move the trolley to the marked loading bay';
   if (!f[SHIFT.parked]) return 'Push the released trolley into the loading bay';
   if (!f[SHIFT.checked]) return 'Return your work tag at CHECKOUT';
   if (!f[SHIFT.done]) return 'Read your wage statement';
   return 'SHIFT COMPLETE · Your work is done. Take a breath.';
+}
+
+/** Attention follows the task, without revealing the clamp before its discovery. */
+export function shiftAttention(f: Flags): { x: number; gentle?: boolean } | null {
+  if (!f[SHIFT.assigned]) return { x: L.boss };
+  if (!f[SHIFT.parcel]) return { x: L.parcel };
+  if (!f[SHIFT.delivered]) return { x: L.coworker };
+  if (!f[SHIFT.case]) return { x: L.coworker + 52, gentle: true };
+  if (!f[SHIFT.returned]) return { x: L.rack, gentle: true };
+  if (!f[SHIFT.trolley]) return { x: L.boss };
+  if (!f[SHIFT.released]) return { x: f[SHIFT.inspected] ? L.trolley + 44 : L.trolley };
+  if (!f[SHIFT.parked]) return { x: L.trolley };
+  if (!f[SHIFT.checked]) return { x: L.checkout };
+  if (!f[SHIFT.done]) return { x: L.checkout + 58 };
+  return null;
 }
 
 /** Authored time, never a deadline. The commute will belong to milestone 3. */

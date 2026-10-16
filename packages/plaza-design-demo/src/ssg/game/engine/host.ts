@@ -320,6 +320,7 @@ export class SceneHost {
   react(from: string, l: Line) { this.say(l, from); }
 
   /** A ping where something of this scene is (a device, one of its targets, or what `where` knows); an edge arrow when it is off the view. */
+  clearPing(from: string) { this.fx.clearPing(from); }
   ping(from: string, kind: PingKind = 'look') { if (this.active) this.fx.ping(from, kind, this.locate); }
 
   /**

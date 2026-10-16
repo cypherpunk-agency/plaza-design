@@ -1,3 +1,4 @@
+import { SHIFT_GUIDANCE_STYLES } from './game/shift-guidance';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
 import { ENGINE_STYLES } from './game/engine/styles';
@@ -759,6 +760,7 @@ export const demoStyles = `
 ${ENGINE_STYLES}
 ${POPUP_STYLES}
 ${FEEDBACK_STYLES}
+    ${SHIFT_GUIDANCE_STYLES}
 
 
     /* ACCESS DENIED pause menu (game/menu.ts): a black CRT panel over the paused game */

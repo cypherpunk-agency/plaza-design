@@ -13,6 +13,8 @@ are deliverables, not dates; later story proposals remain provisional.
 - **Milestone 2: prototype implemented locally.** Launch `?play=harborShift`; see
   [preview and validation notes](./README.md#harbor-shift-prototype-milestone-2). Boss, coworker,
   deliveries, trolley/clamp, checkout and completion are present with isolated saves.
+  First feedback iteration: task announcements, persistent clickable task card and contextual
+  pings are implemented locally; the independent return task has lighter guidance.
   Pacing/comprehension review remains pending; milestone 3 integrates the commute and home.
 - The running game still uses the previous train-first opening and multi-district Act I.
   The harbor shift is available separately; staged augmentation and body transitions are not implemented.
