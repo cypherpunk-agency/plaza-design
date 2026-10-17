@@ -1,6 +1,8 @@
 # Unified artwork library, scene composer and animated scene composer
 
 Status: S0-S7/G1-G8 and the authorized S8-S13/F1-F6 stretch goal are complete within their frozen inventories. Updated 2026-10-16.
+Follow-up (2026-10-17): [GAME-EDITOR-PLAN.md](./GAME-EDITOR-PLAN.md) lifts this plan's rule, story and world
+editing exclusions for a new full-game-editor track. The completed work and its evidence stand.
 This is a separate engineering track alongside ROADMAP.md. It does not implement or renumber
 story milestones. Execution was subsequently authorized as a persistent goal; publication is
 excluded. Verified batches and remaining work are recorded in SCENE-SYSTEM-STATUS.md.

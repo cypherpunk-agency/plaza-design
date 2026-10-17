@@ -103,6 +103,7 @@ the user's latest direction, not whichever old note sounds most authoritative.
 | [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md) | Milestone 1: encounter matrices, teaching dependencies, access and puzzle dispositions |
 | [ROADMAP.md](./ROADMAP.md) | Current implementation status and proposed next work |
 | [SCENE-SYSTEM-PLAN.md](./SCENE-SYSTEM-PLAN.md) | Executable artwork-library migration and visual composer plan, with appearance-preservation gates |
+| [GAME-EDITOR-PLAN.md](./GAME-EDITOR-PLAN.md) | Approved direction from composer to full game editor: play mode, data-driven scenes, logic, story and world authoring |
 | [GAME-DATA.md](./docs/reference/GAME-DATA.md) | Technical authoring reference: data/code boundary, engine and saves |
 | [ART-GUIDE.md](./docs/reference/ART-GUIDE.md) | Working visual and readability principles |
 | [CITY.md](./docs/reference/CITY.md) | Current city structure and proposed places |

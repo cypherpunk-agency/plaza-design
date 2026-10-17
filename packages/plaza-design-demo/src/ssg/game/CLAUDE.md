@@ -29,8 +29,9 @@ design pass. The prior roadmap is preserved under archive/ and is not the active
   `pnpm --filter plaza-design-demo compose-scenes` (repository root; UI 4192, save service 4193).
   Saved composition/timeline JSON and the scoped Sandbox behavior document are game source,
   not player saves. Workbench viewing is read-only; behavior edits must stay within the frozen
-  `authoring/inventories/S13.json` contract and existing protected Save. Restart after code/schema
-  changes and rebuild the homepage after saving source edits.
+  `authoring/inventories/S13.json` contract and existing protected Save until a phase of
+  `GAME-EDITOR-PLAN.md` (the approved full-game-editor direction) defines a wider scope. Restart
+  after code/schema changes and rebuild the homepage after saving source edits.
 - The homepage build also emits the static public `/editor/`. Keep its snapshots/read-only
   source viewer and edit downloads independent of the loopback source-write service. Never
   publish that service or its session credentials. Portable edit bundles use the existing

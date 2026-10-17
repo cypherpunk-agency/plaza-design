@@ -57,7 +57,8 @@ local visual composer using the game renderer. S0–S7 and G1–G8 are complete 
 development checkout; main retains its earlier working checkpoint. The completion gates preserve
 current appearance; see [execution status](./SCENE-SYSTEM-STATUS.md) for evidence and open work.
 Later harbor/tutorial prop redesign is separate. This track does not renumber or complete any
-story milestone.
+story milestone. The follow-up [game editor plan](./GAME-EDITOR-PLAN.md) (approved 2026-10-17, not
+yet started) extends the editor towards play mode and data-driven scenes, logic, story and world.
 
 After composer completion, the [follow-on engineering roadmap](./SCENE-SYSTEM-PLAN.md#follow-on-roadmap-asset-workbenches-and-scene-behavior)
 adds separately scoped stretch goals:

@@ -66,6 +66,8 @@ without touching player saves. Global Undo/Redo and validated import/export use 
 document. Save writes only this allowed source through the existing conflict-protected service;
 Reload source discards its pending draft. Arbitrary code, rewards, other scene rules and map or
 transport editing remain outside this editor's scope.
+These are the current limits; [GAME-EDITOR-PLAN.md](../GAME-EDITOR-PLAN.md) records the approved
+direction for widening them.
 
 Compositions and timelines currently use schema version 1, the initial document format.
 There is no earlier serialized format to migrate. Imports reject unsupported versions rather
