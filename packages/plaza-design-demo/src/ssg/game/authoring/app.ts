@@ -149,7 +149,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const panelSwitch = element('div', 'panel-switch'); panelSwitch.setAttribute('role', 'group'); panelSwitch.setAttribute('aria-label', 'Editor panel');
   const tools = element('nav', 'tools'); tools.setAttribute('aria-label', 'Editor tools');
   const compact = window.matchMedia('(max-width: 760px)');
-  let worldOpen = !compact.matches, catalogOpen = false, environmentOpen = false;
+  let worldOpen = !compact.matches, catalogOpen = false, layersOpen = true, environmentOpen = false;
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
   for (const [panel, text] of [['layers', 'Layers'], ['properties', 'Properties']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
@@ -276,15 +276,15 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       }, assetSession);
     }
     if (config.worldPanel) { const details = element('details', 'world'); details.open = worldOpen; details.ontoggle = () => { worldOpen = details.open; }; details.append(element('summary', '', 'World and scenes · read-only')); worldHost = element('div'); details.append(worldHost); left.append(details); cleanupWorld = config.worldPanel(worldHost, openScene, model.list()); }
-    left.append(element('h2', '', 'Artwork layers'));
+    const layers = element('details', 'layers'); layers.open = layersOpen; layers.ontoggle = () => { layersOpen = layers.open; }; layers.append(element('summary', '', 'Artwork layers')); left.append(layers);
     const doc = compositionDocument();
     if (doc) {
       const list = element('ul', 'hierarchy');
       for (const { node, depth } of flatten(doc.value as Composition)) { const item = element('li'); const pick = button(node.id, () => { selectedId = node.id; if (compact.matches) showPanel('properties'); refreshRight(); refreshLeft(); void draw(); }, `${node.type} · ${node.pass} · order ${node.order}`); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId)); item.append(pick); list.append(item); }
-      left.append(list); const row = element('div', 'row'); const duplicate = button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), remove = button('Delete', () => run(() => { model.remove(doc.id, selectedId); selectedId = ''; })); duplicate.disabled = remove.disabled = !selected(); row.append(duplicate, remove); left.append(row);
+      layers.append(list); const row = element('div', 'row'); const duplicate = button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), remove = button('Delete', () => run(() => { model.remove(doc.id, selectedId); selectedId = ''; })); duplicate.disabled = remove.disabled = !selected(); row.append(duplicate, remove); layers.append(row);
       const details = element('details'); details.open = catalogOpen; details.ontoggle = () => { catalogOpen = details.open; }; details.append(element('summary', '', 'Artwork catalog'));
       const catalog = element('div', 'catalog-list'); for (const entry of config.registry.catalog()) { const add = button(`+ ${entry.label}`, () => run(() => selectedId = model.add(doc.id, entry.type)), `${entry.category}: ${entry.type}`); catalog.append(add); } details.append(catalog); left.append(details);
-    } else left.append(element('p', 'muted', 'Select a composition or a timeline with a composition reference.'));
+    } else layers.append(element('p', 'muted', 'Select a composition or a timeline with a composition reference.'));
   }
   function numberInput(value: number, apply: (n: number) => void, min?: number, step = 'any') { const input = element('input'); input.type = 'number'; input.step = step; if (min !== undefined) input.min = String(min); input.value = String(value); input.onchange = () => { const number = Number(input.value); if (!Number.isFinite(number) || min !== undefined && number < min) { notice('Enter a finite number within the field range.', true); return; } apply(number); }; return input; }
   function fieldInput(field: Field, value: Value, apply: (v: Value) => void): HTMLElement {
