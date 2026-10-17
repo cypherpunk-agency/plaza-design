@@ -27,7 +27,7 @@ export interface ComposerConfig {
   initialEnvironment?: Record<string, string | number | boolean>; environmentControls?: EnvironmentControl[];
   worldPanel?(host: HTMLElement, openScene: (scene: string) => void, documents: EditorDocument[]): void | (() => void);
   assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
-  workbenches?: { id: string; title: string; documentDependent?: boolean; documentIds?: string[]; authoring?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }[];
+  workbenches?: { id: string; title: string; label?: string; documentDependent?: boolean; documentIds?: string[]; authoring?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }[];
 }
 interface Snapshot { id: string; value: unknown }
 interface Command { label: string; before: Snapshot[]; after: Snapshot[] }
@@ -146,7 +146,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const options = element('div', 'preview-options'), stage = element('div', 'preview-stage'), canvas = element('canvas'), previewError = element('div', 'preview-error');
   canvas.width = config.viewport?.width ?? 960; canvas.height = config.viewport?.height ?? 540; canvas.setAttribute('aria-label', 'Game renderer preview. Select artwork to edit.'); canvas.tabIndex = 0; previewError.hidden = true;
   const timelineHost = element('section', 'timeline'); timelineHost.setAttribute('aria-label', 'Animation timeline');
-  stage.append(canvas, previewError); center.append(options, stage, timelineHost); workspace.append(left, center, right); root.append(header, status, workspace); host.append(root);
+  const panelSwitch = element('div', 'panel-switch'); panelSwitch.setAttribute('role', 'group'); panelSwitch.setAttribute('aria-label', 'Editor panel');
+  const tools = element('nav', 'tools'); tools.setAttribute('aria-label', 'Editor tools');
+  const compact = window.matchMedia('(max-width: 760px)');
+  let worldOpen = !compact.matches, catalogOpen = false, environmentOpen = false;
+  const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
+  for (const [panel, text] of [['layers', 'Layers'], ['properties', 'Properties']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
+  canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
+  stage.append(canvas, previewError); center.append(options, stage, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
   let currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
   let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
   let dragging: { before: Composition; pending: Composition; x: number; y: number; id: string; delta: PreviewResult['deltaToLocal'] } | undefined;
@@ -154,12 +161,20 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const environment: Record<string, string | number | boolean> = { cameraX: 0, zoom: 1, ...config.initialEnvironment };
   let cleanupWorld: void | (() => void), worldHost: HTMLElement | undefined;
   let cleanupAssets: void | (() => void); const assetSession: AssetBrowserSession = {};
-  const assetHost = element('details', 'asset-browser'); assetHost.append(element('summary', '', 'Asset browser · read-only')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
+  const assetHost = element('details', 'asset-browser tool-panel'); assetHost.dataset.tool = 'assets'; assetHost.append(element('summary', '', 'Asset browser · read-only')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
   const workbenches = (config.workbenches ?? []).map(workbench => {
-    const details = element('details', 'workbench-screen'), panel = element('section'); details.dataset.workbench = workbench.id; details.append(element('summary', '', workbench.title), panel); root.insertBefore(details, workspace);
+    const details = element('details', 'workbench-screen tool-panel'), panel = element('section'); details.dataset.workbench = details.dataset.tool = workbench.id; details.append(element('summary', '', workbench.title), panel); root.insertBefore(details, workspace);
     return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '' };
   });
-  const openInstance = (document: string, instance: string) => { currentId = document; selectedId = instance; playing = false; syncSequence(); refresh(); };
+  const panels = [...(config.assetPreview ? [{ details: assetHost, label: 'Assets', title: 'Asset browser · read-only' }] : []), ...workbenches.map(item => ({ details: item.details, label: item.config.label ?? item.config.title.split(' · ')[0], title: item.config.title }))];
+  const showScene = () => panels.forEach(item => item.details.open = false);
+  const refreshTools = () => {
+    const active = panels.find(item => item.details.open); root.dataset.tool = active?.details.dataset.tool ?? 'scene';
+    for (const tab of tools.children) tab.setAttribute('aria-pressed', String((tab as HTMLElement).dataset.tool === root.dataset.tool));
+  };
+  const sceneTab = button('Scene', showScene, 'Scene and timeline editor'); sceneTab.dataset.tool = 'scene'; tools.append(sceneTab);
+  for (const item of panels) { const tab = button(item.label, () => { item.details.open = true; }, item.title); tab.dataset.tool = item.details.dataset.tool; tools.append(tab); }
+  const openInstance = (document: string, instance: string) => { currentId = document; selectedId = instance; playing = false; syncSequence(); showScene(); showPanel('properties'); refresh(); };
   const refreshWorkbench = (item: typeof workbenches[number], changed = false) => {
     const documents = model.list(), relevant = item.config.documentIds ? documents.filter(doc => item.config.documentIds!.includes(doc.id)) : documents;
     const version = item.config.documentDependent ? JSON.stringify(relevant) : '';
@@ -177,8 +192,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       catch (error) { item.panel.replaceChildren(element('p', 'error', `Workbench unavailable: ${message(error)}`)); }
     }
   };
-  workbenches.forEach(item => item.details.ontoggle = () => { if (item.details.open) { assetHost.open = false; workbenches.filter(other => other !== item).forEach(other => other.details.open = false); } refreshWorkbench(item); });
-  assetHost.ontoggle = () => { if (assetHost.open) workbenches.forEach(item => item.details.open = false); };
+  workbenches.forEach(item => item.details.ontoggle = () => { if (item.details.open) { assetHost.open = false; workbenches.filter(other => other !== item).forEach(other => other.details.open = false); } refreshWorkbench(item); refreshTools(); });
+  assetHost.ontoggle = () => { if (assetHost.open) workbenches.forEach(item => item.details.open = false); refreshTools(); };
+  refreshTools();
   const notice = (text: string, error = false) => { status.textContent = text; status.className = 'status' + (error ? ' error' : ''); };
   const run = (action: () => void) => { try { action(); refresh(); } catch (e) { notice(message(e), true); } };
   const current = () => currentId ? model.get(currentId) : undefined;
@@ -199,7 +215,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     try {
       const documents = config.api ? await api('/documents') as EditorDocument[] : copy(config.documents ?? []); model.load(documents);
       if (!documents.some(d => d.id === currentId)) currentId = documents.find(d => d.kind === 'composition')?.id ?? documents[0]?.id ?? '';
-      selectedId = ''; syncSequence(); refresh(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : 'Published snapshot loaded. Edit in this browser, then Download edits to keep your work. Downloads do not change the published game.' : 'No authoring documents are available.');
+      selectedId = ''; syncSequence(); refresh(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
     } catch (e) { notice(`Could not load authoring documents: ${message(e)}`, true); }
   }
   async function save() {
@@ -219,33 +235,36 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   function syncSequence() { const doc = currentTimeline(); if (!doc?.sequences.some(s => s.id === sequenceId)) sequenceId = doc?.sequences[0]?.id ?? ''; const seq = sequence(); time = Math.min(time, seq?.duration ?? time); loopFrom = 0; loopTo = seq?.duration ?? 0; }
   function openDocument(id: string) { currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }
-  function openScene(scene: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) openDocument(doc.id); else notice(`Scene ${scene} has no editable composition in this session.`, true); }
+  function openScene(scene: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { showScene(); openDocument(doc.id); } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
   function refreshHeader() {
-    header.replaceChildren(element('strong', '', 'Scene composer'));
-    const docs = model.list(); const chooser = select(docs.map(d => ({ value: d.id, label: `${model.dirty(d.id) ? '● ' : ''}${d.kind}: ${d.id}` })), currentId, openDocument); chooser.setAttribute('aria-label', 'Authoring document'); header.append(chooser);
-    const dirty = element('span', model.dirty() ? 'dirty' : 'muted', model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(dirty);
-    const saveButton = button(saving ? 'Saving…' : config.api ? 'Save to source' : 'Download edits', () => void save()); saveButton.disabled = saving || !model.dirty(); header.append(saveButton);
-    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; header.append(undo, redo);
-    header.append(button(config.api ? 'Reload source' : 'Reset edits', () => { if (!model.dirty() || window.confirm('Discard unsaved edits and reload the source snapshot? Download or export first to keep them.')) void load(); }));
+    const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand);
+    const actions = element('div', 'actions'), menu = element('details', 'menu'), menuItems = element('div', 'menu-items'); menu.append(element('summary', '', 'More'), menuItems);
+    const docs = model.list(); const chooser = select(docs.map(d => ({ value: d.id, label: `${model.dirty(d.id) ? '● ' : ''}${d.kind}: ${d.id}` })), currentId, openDocument); chooser.setAttribute('aria-label', 'Authoring document'); chooser.className = 'document-picker'; header.append(chooser);
+    const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(dirty, actions);
+    const saveButton = button(saving ? 'Saving…' : config.api ? 'Save to source' : 'Download edits', () => void save()); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
+    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; actions.append(undo, redo, saveButton, menu);
+    menuItems.append(button(config.api ? 'Reload source' : 'Reset edits', () => { if (!model.dirty() || window.confirm('Discard unsaved edits and reload the source snapshot? Download or export first to keep them.')) void load(); }));
     const bundleFile = element('input'); bundleFile.type = 'file'; bundleFile.accept = 'application/json,.json'; bundleFile.hidden = true; bundleFile.setAttribute('aria-label', 'Import downloaded edits');
     bundleFile.onchange = async () => { const file = bundleFile.files?.[0]; if (!file) return; try { if (file.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const changes = readDocumentBundle(JSON.parse(await file.text()), model.list()); run(() => { model.importDocuments(changes); syncSequence(); }); } catch (error) { notice(`Import failed: ${message(error)}`, true); } finally { bundleFile.value = ''; } };
-    header.append(button('Import edits', () => bundleFile.click()), bundleFile);
-    header.append(button('Export JSON', () => { const doc = current(); if (!doc) return; const url = URL.createObjectURL(new Blob([JSON.stringify(doc.value, null, 2) + '\n'], { type: 'application/json' })); const link = element('a'); link.href = url; link.download = doc.id + '.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }));
+    menuItems.append(button('Import edits', () => bundleFile.click()), bundleFile);
+    menuItems.append(button('Export JSON', () => { const doc = current(); if (!doc) return; const url = URL.createObjectURL(new Blob([JSON.stringify(doc.value, null, 2) + '\n'], { type: 'application/json' })); const link = element('a'); link.href = url; link.download = doc.id + '.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }));
     const file = element('input'); file.type = 'file'; file.accept = '.json,application/json'; file.hidden = true;
     file.onchange = async () => { const selectedFile = file.files?.[0]; if (!selectedFile) return; try { if (selectedFile.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const value: unknown = JSON.parse(await selectedFile.text()); run(() => { const doc = current(); if (!doc || doc.kind === 'world') throw new Error('Select a composition or timeline document to import'); model.edit(doc.id, 'Import document', () => value); syncSequence(); }); } catch (e) { notice(`Import failed: ${message(e)}`, true); } };
-    const importButton = button('Import JSON', () => file.click()); importButton.disabled = current()?.kind === 'world'; header.append(importButton, file);
+    const importButton = button('Import JSON', () => file.click()); importButton.disabled = current()?.kind === 'world'; menuItems.append(importButton, file);
   }
   function refreshOptions() {
-    options.replaceChildren();
-    const check = (text: string, value: boolean, change: (v: boolean) => void) => { const input = element('input'); input.type = 'checkbox'; input.checked = value; input.onchange = () => { change(input.checked); void draw(); }; options.append(label(text, input)); };
+    const quick = element('div', 'quick'), settings = element('details', 'environment'), grid = element('div', 'environment-grid');
+    settings.open = environmentOpen; settings.ontoggle = () => { environmentOpen = settings.open; };
+    settings.append(element('summary', '', 'Preview environment'), grid); options.replaceChildren(quick, settings);
+    const check = (text: string, value: boolean, change: (v: boolean) => void) => { const input = element('input'); input.type = 'checkbox'; input.checked = value; input.onchange = () => { change(input.checked); void draw(); }; quick.append(label(text, input)); };
     check('Selection overlays', overlays, v => overlays = v); check('Reduced motion', reduced, v => reduced = v);
-    const snapInput = element('input'); snapInput.type = 'number'; snapInput.min = '0'; snapInput.step = '1'; snapInput.value = String(snap); snapInput.style.width = '55px'; snapInput.onchange = () => { const v = Number(snapInput.value); if (Number.isFinite(v) && v >= 0) snap = v; }; options.append(label('Snap', snapInput));
+    const snapInput = element('input'); snapInput.type = 'number'; snapInput.min = '0'; snapInput.step = '1'; snapInput.value = String(snap); snapInput.onchange = () => { const v = Number(snapInput.value); if (Number.isFinite(v) && v >= 0) snap = v; }; quick.append(label('Snap', snapInput));
+    if (current()?.kind === 'composition') { const input = element('input'); input.type = 'number'; input.min = '0'; input.step = '0.0166666667'; input.value = time.toFixed(3); input.onchange = () => { const v = Number(input.value); if (Number.isFinite(v) && v >= 0) { time = v; void draw(); } }; const frames = element('div', 'frame-step'); frames.append(button('−1 frame', () => { time = Math.max(0, time - 1 / 60); refreshOptions(); void draw(); }), button('+1 frame', () => { time += 1 / 60; refreshOptions(); void draw(); })); quick.append(label('Preview seconds', input), frames); }
     const controls: EnvironmentControl[] = config.environmentControls ?? [{ key: 'cameraX', label: 'Camera X', kind: 'number', step: 10 }, { key: 'zoom', label: 'Zoom', kind: 'number', min: 0.1, max: 8, step: 0.1 }];
     for (const control of controls) {
-      if (control.kind === 'select') options.append(label(control.label, select((control.options ?? []).map(v => ({ value: v, label: v })), String(environment[control.key] ?? ''), value => { environment[control.key] = value; void draw(); })));
-      else { const input = element('input'); input.type = control.kind === 'boolean' ? 'checkbox' : control.kind === 'text' ? 'text' : 'number'; input.style.width = control.kind === 'text' ? '180px' : '85px'; input.checked = !!environment[control.key]; input.value = String(environment[control.key] ?? (control.kind === 'text' ? '' : 0)); if (control.min !== undefined) input.min = String(control.min); if (control.max !== undefined) input.max = String(control.max); if (control.step !== undefined) input.step = String(control.step); input.onchange = () => { const value = control.kind === 'boolean' ? input.checked : control.kind === 'text' ? input.value : Number(input.value); if (typeof value === 'number' && !Number.isFinite(value)) return; environment[control.key] = value; void draw(); }; options.append(label(control.label, input)); }
+      if (control.kind === 'select') grid.append(label(control.label, select((control.options ?? []).map(v => ({ value: v, label: v })), String(environment[control.key] ?? ''), value => { environment[control.key] = value; void draw(); })));
+      else { const input = element('input'); input.type = control.kind === 'boolean' ? 'checkbox' : control.kind === 'text' ? 'text' : 'number'; input.checked = !!environment[control.key]; input.value = String(environment[control.key] ?? (control.kind === 'text' ? '' : 0)); if (control.min !== undefined) input.min = String(control.min); if (control.max !== undefined) input.max = String(control.max); if (control.step !== undefined) input.step = String(control.step); input.onchange = () => { const value = control.kind === 'boolean' ? input.checked : control.kind === 'text' ? input.value : Number(input.value); if (typeof value === 'number' && !Number.isFinite(value)) return; environment[control.key] = value; void draw(); }; const row = label(control.label, input); if (control.kind === 'text') row.classList.add('wide'); grid.append(row); }
     }
-    if (current()?.kind === 'composition') { const input = element('input'); input.type = 'number'; input.min = '0'; input.step = '0.0166666667'; input.value = time.toFixed(3); input.style.width = '85px'; input.onchange = () => { const v = Number(input.value); if (Number.isFinite(v) && v >= 0) { time = v; void draw(); } }; options.append(label('Preview seconds', input), button('−1 frame', () => { time = Math.max(0, time - 1 / 60); refreshOptions(); void draw(); }), button('+1 frame', () => { time += 1 / 60; refreshOptions(); void draw(); })); }
   }
   function refreshLeft() {
     cleanupWorld?.(); cleanupWorld = undefined; cleanupAssets?.(); cleanupAssets = undefined; left.replaceChildren();
@@ -256,15 +275,15 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         preview: (canvas, entry, usage, zoom) => config.assetPreview!(canvas, entry, usage, model.list(), { time, reduced, environment: { ...environment, renderScale: zoom } }),
       }, assetSession);
     }
-    if (config.worldPanel) { const details = element('details'); details.open = true; details.append(element('summary', '', 'World and scenes · read-only')); worldHost = element('div'); details.append(worldHost); left.append(details); cleanupWorld = config.worldPanel(worldHost, openScene, model.list()); }
-    left.append(element('h2', '', 'Artwork hierarchy'));
+    if (config.worldPanel) { const details = element('details', 'world'); details.open = worldOpen; details.ontoggle = () => { worldOpen = details.open; }; details.append(element('summary', '', 'World and scenes · read-only')); worldHost = element('div'); details.append(worldHost); left.append(details); cleanupWorld = config.worldPanel(worldHost, openScene, model.list()); }
+    left.append(element('h2', '', 'Artwork layers'));
     const doc = compositionDocument();
     if (doc) {
       const list = element('ul', 'hierarchy');
-      for (const { node, depth } of flatten(doc.value as Composition)) { const item = element('li'); const pick = button(node.id, () => { selectedId = node.id; refreshRight(); refreshLeft(); void draw(); }, `${node.type} · ${node.pass} · order ${node.order}`); pick.style.paddingLeft = `${7 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId)); item.append(pick); list.append(item); }
+      for (const { node, depth } of flatten(doc.value as Composition)) { const item = element('li'); const pick = button(node.id, () => { selectedId = node.id; if (compact.matches) showPanel('properties'); refreshRight(); refreshLeft(); void draw(); }, `${node.type} · ${node.pass} · order ${node.order}`); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId)); item.append(pick); list.append(item); }
       left.append(list); const row = element('div', 'row'); const duplicate = button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), remove = button('Delete', () => run(() => { model.remove(doc.id, selectedId); selectedId = ''; })); duplicate.disabled = remove.disabled = !selected(); row.append(duplicate, remove); left.append(row);
-      const details = element('details'); details.append(element('summary', '', 'Artwork catalog'));
-      const catalog = element('div', 'catalog-list'); for (const entry of config.registry.catalog()) { const add = button(`+ ${entry.label}`, () => run(() => selectedId = model.add(doc.id, entry.type)), `${entry.category}: ${entry.type}`); add.style.display = 'block'; add.style.width = '100%'; add.style.textAlign = 'left'; catalog.append(add); } details.append(catalog); left.append(details);
+      const details = element('details'); details.open = catalogOpen; details.ontoggle = () => { catalogOpen = details.open; }; details.append(element('summary', '', 'Artwork catalog'));
+      const catalog = element('div', 'catalog-list'); for (const entry of config.registry.catalog()) { const add = button(`+ ${entry.label}`, () => run(() => selectedId = model.add(doc.id, entry.type)), `${entry.category}: ${entry.type}`); catalog.append(add); } details.append(catalog); left.append(details);
     } else left.append(element('p', 'muted', 'Select a composition or a timeline with a composition reference.'));
   }
   function numberInput(value: number, apply: (n: number) => void, min?: number, step = 'any') { const input = element('input'); input.type = 'number'; input.step = step; if (min !== undefined) input.min = String(min); input.value = String(value); input.onchange = () => { const number = Number(input.value); if (!Number.isFinite(number) || min !== undefined && number < min) { notice('Enter a finite number within the field range.', true); return; } apply(number); }; return input; }
@@ -397,9 +416,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     else if (event.key.toLowerCase() === 'z') { event.preventDefault(); run(() => event.shiftKey ? model.redo() : model.undo()); }
     else if (event.key.toLowerCase() === 'y') { event.preventDefault(); run(() => model.redo()); }
   };
-  window.addEventListener('beforeunload', unload); root.addEventListener('keydown', keyboard);
+  const closeMenu = (event: Event) => { const menu = header.querySelector<HTMLDetailsElement>('details.menu'); if (menu?.open && (!menu.contains(event.target as Node) || (event.target as HTMLElement).closest('.menu-items button'))) menu.open = false; };
+  const keepPanelShape = () => { if (!compact.matches) worldOpen = true; };
+  window.addEventListener('beforeunload', unload); root.addEventListener('keydown', keyboard); document.addEventListener('click', closeMenu); compact.addEventListener('change', keepPanelShape);
   let previous = performance.now(), frameId = 0;
   const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous = now; const seq = sequence(); if (playing && seq) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); } } updateTime(); void draw(); } frameId = requestAnimationFrame(tick); };
   frameId = requestAnimationFrame(tick); void load();
-  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); root.remove(); } };
+  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); document.removeEventListener('click', closeMenu); compact.removeEventListener('change', keepPanelShape); root.remove(); } };
 }

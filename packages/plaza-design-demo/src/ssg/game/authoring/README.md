@@ -30,7 +30,13 @@ documents and the scoped Sandbox behavior document. S0-S7/G1-G8 acceptance is co
 workbenches to the same shell; individual acceptance and limits are recorded in the
 [stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
 
-The S8 read-only asset browser is now available above the scene workspace. Search by type,
+The shell has a top bar (document, Undo/Redo, Download edits or Save to source, and a **More**
+menu for import/export/reset) and a tab row: **Scene** is the composer; Assets, Characters,
+Vehicles, Signs & light, Events and Behavior each replace the workspace while open. Under 760px
+the editor becomes one column with a sticky preview and a Layers/Properties switch; preview
+environment fixtures sit in a collapsible **Preview environment** section.
+
+The S8 read-only asset browser is the **Assets** tab. Search by type,
 name or tag, filter families, inspect embedded library components, and choose a real source
 usage for its isolated prepared preview. Preview zoom does not edit the asset. **Open instance**
 selects its exact source placement in the ordinary composer. Metadata distinguishes defaults

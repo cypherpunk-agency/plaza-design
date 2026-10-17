@@ -39,15 +39,15 @@ async function start() {
     assetPreview: createAssetPreview(art, native),
     validateDocument(document) { if (document.kind === 'behavior') { if (document.id !== 'sandbox-behavior') throw new Error('Unsupported behavior document'); validateSandboxBehavior(document.value); } },
     workbenches: [
-      { id: 'characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
-      { id: 'vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
-      { id: 'signage', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
+      { id: 'characters', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
+      { id: 'vehicles', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
+      { id: 'signage', label: 'Signs & light', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
         panel.classList.add('signage-workbench');
         return mountSignageWorkbench(panel, { registry: art, documents: context.documents,
           openUsage: usage => context.openInstance(usage.document, usage.instance), renderNative: native.render, renderSequence: sequences.render,
         });
       } },
-      { id: 'events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
+      { id: 'events', label: 'Events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
         const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
         const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
           if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
@@ -59,7 +59,7 @@ async function start() {
           onOpenSource: reference => { void viewer.open(reference); },
         }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
       } },
-      { id: 'behavior', title: 'Sandbox behavior authoring · scoped source edits', authoring: true, documentDependent: true, documentIds: ['sandbox-behavior'], mount(panel, context) {
+      { id: 'behavior', label: 'Behavior', title: 'Sandbox behavior authoring · scoped source edits', authoring: true, documentDependent: true, documentIds: ['sandbox-behavior'], mount(panel, context) {
         const api = context.authoring!;
         return mountBehaviorWorkbench(panel, { document: () => api.get('sandbox-behavior').value as SceneData,
           onEdit: (value, label) => api.edit('sandbox-behavior', label, value), undo: api.undo, redo: api.redo, save: api.save, reload: api.reload,
