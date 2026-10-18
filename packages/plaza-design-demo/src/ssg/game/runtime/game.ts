@@ -580,6 +580,10 @@ export class Game {
     const px = cssH * dpr, phone = cssH < 420;
     let k = phone ? Math.max(1, Math.floor(px / 230)) : Math.max(1, Math.round(px / 300));
     if (!phone && k > 1 && px / k < 240) k--;
+    // Squarish and tall windows: aim for MIN_VIEW_W of street across (Tommi, 2026-10-18). The scale
+    // steps down instead, and the spare height shows above the street, but not past MAX_VIEW_H
+    // (at a coarse scale one step can halve everything: 1000 × 1000 at 1x keeps 2, not 1).
+    while (k > 1 && this.canvas.width / k < MIN_VIEW_W && px / (k - 1) <= MAX_VIEW_H) k--;
     // A place narrower than the view (a flat, the yard) is shown closer, so it fills the width,
     // as long as enough height stays in view for its rooms and signs.
     const fit = Math.floor(this.canvas.width / (this.levelW + 24));
@@ -2331,6 +2335,10 @@ const NUDGE_HOLD = 96, NUDGE_EASE = 0.045, NUDGE_MARGIN = 36, NUDGE_GAP = 300;
 
 /** Hack vision zooms out at least this far, even where the scene already fits the view (room over its devices for the circuits). */
 const VISION_ZOOM_MIN = 0.7;
+/** The least street the view shows across (world units); a squarish window drops a scale step to keep it. */
+const MIN_VIEW_W = 460;
+/** …but never by making the view taller than this (world units). */
+const MAX_VIEW_H = 440;
 
 /** How often the clock's progress is written to the save while it runs (frames, ~10 s). */
 const CLOCK_SAVE = 600;

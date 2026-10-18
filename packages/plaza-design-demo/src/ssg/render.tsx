@@ -747,6 +747,9 @@ export const demoStyles = `
     .cam-btns { position: absolute; right: var(--spacing-2); top: 50%; transform: translateY(-50%); display: grid; gap: var(--spacing-2); }
 
     .hack-panel-body.dlg { align-content: end; }
+    /* a conversation keeps the scene in view: only the bottom, behind the box, is shaded */
+    .hack-panel:has(> .hack-panel-body.dlg) { background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.6)); }
+    html.game-mode:has(.hack-panel:not([hidden]) > .hack-panel-body.dlg) #key-bar { display: none; }
     .dlg-box { display: grid; gap: var(--spacing-2); max-width: 640px; padding: var(--spacing-2) var(--spacing-3); background: #000; border: 2px solid #fff; }
     .dlg-name { font-size: var(--text-xs); letter-spacing: 0.12em; color: rgb(255, 136, 0); }
     .dlg-text { margin: 0; font-size: var(--text-sm); color: #fff; }
