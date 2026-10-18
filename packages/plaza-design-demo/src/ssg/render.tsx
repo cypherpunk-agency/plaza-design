@@ -205,9 +205,9 @@ export const demoStyles = `
       display: none;
     }
 
-    html.game-mode #cta,
-    html.game-mode #cta .cta-label {
-      visibility: hidden;
+    /* display, not visibility: the hidden button still painted over the game (2026-10-18) */
+    html.game-mode #cta {
+      display: none;
     }
 
     #game-canvas {
