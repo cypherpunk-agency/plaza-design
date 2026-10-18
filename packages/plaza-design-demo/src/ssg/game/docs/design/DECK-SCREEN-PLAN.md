@@ -16,9 +16,9 @@ This revises two recorded decisions:
 | Decision | Where | Becomes |
 |---|---|---|
 | No inventory screen; what you carry shows only where it is used (2026-10-15) | GAME-DATA.md, "What you carry shows where it is used" and "Using what you carry" | Items **still** show at their point of use (popup chips, prices). The deck's CARRY tab adds a place to *check* what you have; it never becomes the place you *use* things. |
-| Objectives carry no hints ("No hints for now") | GAME-DATA.md "Decided"; `GoalData` in data/types.ts | Goals and scenes may author hints (see **Hints**). The fixer's paid hints (`save.hints`, level.ts `HINTS`) stay what they are: a purchase, not a free hint. |
+| Objectives carry no hints ("No hints for now") | GAME-DATA.md "Decided"; `GoalData` in data/types.ts | The game gets a channel for showing hints (see **Hints**); which goals or places use it is decided later. The fixer's paid hints (`save.hints`, level.ts `HINTS`) stay what they are: a purchase, not a free hint. |
 
-When this is built, both GAME-DATA.md passages and the `GoalData` comment are rewritten to match.
+When this is built, the GAME-DATA.md passages (and, once goals use hints, the `GoalData` comment) are rewritten to match.
 
 ## The deck
 
@@ -59,7 +59,7 @@ Mouse and touch tap tabs and rows.
 
 | # | Tab | Shows | Built from |
 |---|---|---|---|
-| 1 | **JOBS** | The current goal; the latest hint for it; goals done in this place; earlier places, folded. | Today's GOAL line source (`def.objective`, the opening's goals, `zh.objective()`, `libraryGoal`), plus the goal list in each scene's data. |
+| 1 | **JOBS** | The current goal; the latest hint shown; goals done in this place; earlier places, folded. | Today's GOAL line source (`def.objective`, the opening's goals, `zh.objective()`, `libraryGoal`), plus the goal list in each scene's data. |
 | 2 | **CARRY** | Tokens first; then items with counts; key chips; modules and programs. Each row says in one line where it is used, once you know. | `save.tokens`, `save.items` (names: `ITEMS`, scenes/kit.ts), `save.keyring`, `save.modules`, `save.programs`. Modules and programs keep their full view in hack vision's LOGIC drawer; CARRY only lists them. |
 | 3 | **CONTROLS** | Every key and what it does, grouped: walking, talking, hacking, the deck. Keys you have not unlocked yet (SPACE jump before legs.so; N before scan.so) are not listed. | The labels in ui/keybar.ts, moved here. |
 | 4 | **SYSTEM** | RESUME, MAP, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE; LEVELS in sudo. | ui/menu.ts `mainItems`, unchanged in content. |
@@ -85,32 +85,38 @@ The empty strip at the top becomes the **hint lane**.
 
 The touch bar's MENU button (ui/touch-controls.ts, `data-key="Escape"`) becomes the deck button.
 On touch the terminal already covers the whole game area (`#term.deck`, render.tsx), so the two
-could merge: a fifth tab, TERM, opened directly by the `>_` button. Open question 2.
+merge (decided 2026-10-18): on touch the deck gets a fifth tab, **TERM**, and the `>_` button opens
+the deck on it. Desktop keeps Enter for the inline terminal and four tabs.
 
 Phones have no visible status line, so the token balance lives in CARRY and in point-of-sale
 prices, nowhere else.
 
 ## Hints
 
-One system with three sources. A hint is a short line of text with an id.
+The hint system is a **mechanic for showing hints**: a channel any part of the game can send a line
+to. It does not decide *when* players get help; that is authored where a hint is used (a scene's
+code or data, a goal, a control), and is a separate design question.
 
-| Source | Shown when | Authored in |
-|---|---|---|
-| **Controls** | The first time a control matters: "← → WALK · SHIFT RUN" at the start of a run; "E USE" the first time something usable is in reach; hack vision's keys the first time you open it; "ESC DECK" after the first goal appears. Each disappears for good once you have done it. | Code: a short list beside CONTROLS. |
-| **Level** | On entering a scene, or on reaching a spot in it (`at` x, like an exit). | The scene's data: a `hints` list in its JSON. |
-| **Goal** | When a goal becomes current, optionally after a delay or after N failed tries. | The goal's data: `GoalData.hint`. |
+A hint is `{ id, text }`, sent with `hint(id, text)` from game code (and later from data steps).
 
 **Where:** the hint lane, the top band where the key bar is now; one line, left-aligned under the
-scene title. One hint at a time; a queue; each stays for a few seconds and fades.
+scene title, above the caption lane (ART-GUIDE §11).
 
-**Once:** shown hint ids are kept in the save (`seenHints: string[]`; not `save.hints`, which
-counts the fixer's paid hints). A level or goal hint shows once per run; a control hint shows
-until done.
+**One at a time:** hints queue; each stays a few seconds (longer for longer text) and fades; the
+next follows. A cutscene, the deck or the map holds the queue until play resumes.
 
-**Kept:** the latest goal hint stays readable in JOBS under its goal, so a missed hint is not lost.
+**Once:** shown ids are kept in the save (`seenHints: string[]`; not `save.hints`, which counts the
+fixer's paid hints). Sending an id already seen does nothing, unless the sender asks to repeat.
+A sender can also withdraw a queued or showing hint (`hint.clear(id)`), so a control hint
+("← → WALK") disappears the moment you walk.
+
+**Kept:** the latest hint stays readable in JOBS, so a missed one is not lost.
 
 **Tone:** hints are world text, so they are dry and plain: "THE COUNTER SELLS. THE DESK SETS THE
 RULES." No jokes; the characters keep those.
+
+**First users** (to prove the mechanic, not a policy): the controls the key bar teaches today
+(walk / run, use, hack vision's keys, ESC for the deck). They replace the key bar's labels.
 
 ## Build order (when approved)
 
@@ -118,15 +124,21 @@ RULES." No jokes; the characters keep those.
 2. CONTROLS; strip the key bar to the scene's buttons.
 3. CARRY.
 4. JOBS, from the existing goal sources.
-5. Hints: control hints first, then `GoalData.hint`, then scene `hints`.
+5. The hint mechanic, with the control hints as its first users.
 6. Rewrite the GAME-DATA.md passages and the keybar/menu file comments.
 
 Each step is a playable state; nothing in a save changes meaning (`deckTab` and `seenHints` are
 optional, older saves start with JOBS and no hints seen).
 
+## Decided (2026-10-18, Tommi)
+
+1. **CARRY lists only what you hold.** Used-up items are gone, as in the world.
+2. **Touch: the terminal becomes a fifth tab, TERM**, opened directly by `>_`. Desktop keeps Enter.
+3. **HACK / BOARD stay in the top strip** for now; they show only where there is something to hack.
+4. **Hints are a mechanic first.** When and why a player gets a hint (goals, failures, places) is
+   authored per use and designed later; `GoalData.hint` and scene `hints` lists are not part of
+   this plan.
+
 ## Open questions
 
-1. Should CARRY show items you *had* (used up) greyed, or only what you hold?
-2. Touch: is the terminal a fifth tab, or stays its own full screen behind `>_`?
-3. HACK / BOARD buttons: stay in the top strip, move to the deck, or go to keys only?
-4. Should a goal hint wait for failure (N wrong tries, time spent) or show at once?
+None yet.
