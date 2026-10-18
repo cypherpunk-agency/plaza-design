@@ -1,13 +1,16 @@
 /**
- * The pause menu: a black CRT panel over the paused game. Also the title screen's menu
+ * The deck: a black CRT panel over the paused game, with tabs along its top (DECK_TABS; only
+ * SYSTEM so far, see docs/design/DECK-SCREEN-PLAN.md). It opens on the tab last open (`save.deckTab`).
+ * SYSTEM is the former pause menu. Also the title screen's menu
  * (`showTitle`): the same panel, see-through, over the opening's sunrise (title/), with NEW GAME,
  * CONTINUE, LOAD GAME; NEW GAME fades it out while the shot starts moving.
  *
  * Esc opens it (game.ts decides when: overlays, bubbles and schematics close
- * first). RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
+ * first). SYSTEM: RESUME, SAVE GAME, LOAD GAME, NEW GAME, SOUND, QUIT TO HOMEPAGE.
  * In sudo mode (`?sudo`) LEVELS comes second: every scene and cutscene.
  * MAP opens the city map (it also lives in the world: TAB or M on your deck, map boards).
  * Arrows or W/S move, Enter/E/Space select, Esc goes back a screen or resumes;
+ * ← → or 1–9 switch tabs (on a tab's first screen, not inside save slots or a question);
  * mouse and touch pick items directly. Styles: #game-menu in render.tsx.
  *
  * Colours follow the art guide: cyan for what you can select, green for a
@@ -44,6 +47,9 @@ type Tone = 'go' | 'ok' | 'bad' | 'dim';
 /** Milliseconds after the title menu comes up in which choosing does nothing. */
 const POP_GRACE = 450;
 interface Item { label: string; meta?: string; tone?: Tone; run: () => void }
+/** The deck's tabs, in order. JOBS, CARRY and CONTROLS join here (DECK-SCREEN-PLAN.md). */
+const DECK_TABS = [{ id: 'system', label: 'SYSTEM' }] as const;
+type TabId = (typeof DECK_TABS)[number]['id'];
 
 export class Menu {
   open = false;
@@ -51,6 +57,11 @@ export class Menu {
   private sub: HTMLElement;
   private list: HTMLElement;
   private msg: HTMLElement;
+  private heading: HTMLElement;
+  private tabsEl: HTMLElement;
+  private keysEl: HTMLElement;
+  private touch: boolean;
+  private tab: TabId = DECK_TABS[0].id;
   private items: Item[] = [];
   private sel = 0;
   /** What Esc does on the current screen; null on the main screen (resume). */
@@ -70,12 +81,21 @@ export class Menu {
     root.setAttribute('aria-labelledby', 'gm-title');
     root.innerHTML =
       '<div class="gm-crt"><h2 class="gm-title" id="gm-title">ACCESS DENIED</h2>' +
-      '<div class="gm-sub"></div><div class="gm-list" role="menu"></div>' +
+      '<div class="gm-tabs" role="tablist"></div><div class="gm-sub"></div><div class="gm-list" role="menu"></div>' +
       '<p class="gm-msg" aria-live="polite"></p>' +
-      '<div class="gm-keys">' + (touch ? 'TAP TO CHOOSE' : '&uarr;&darr; MOVE · ENTER SELECT · ESC BACK') + '</div></div>';
+      '<div class="gm-keys"></div></div>';
     this.sub = root.querySelector('.gm-sub')!;
     this.list = root.querySelector('.gm-list')!;
     this.msg = root.querySelector('.gm-msg')!;
+    this.heading = root.querySelector('.gm-title')!;
+    this.tabsEl = root.querySelector('.gm-tabs')!;
+    this.tabsEl.hidden = true;
+    this.keysEl = root.querySelector('.gm-keys')!;
+    this.touch = touch;
+    this.tabsEl.addEventListener('click', (e) => {
+      const t = (e.target as HTMLElement | null)?.closest<HTMLElement>('.gm-tab');
+      if (t) this.openTab(t.dataset.tab as TabId);
+    });
 
     const itemOf = (e: Event) => (e.target as HTMLElement | null)?.closest<HTMLElement>('.gm-item');
     this.list.addEventListener('pointermove', (e) => {
@@ -106,7 +126,10 @@ export class Menu {
     void this.root.offsetWidth; // restart the CRT power-on
     this.root.classList.add('gm-on');
     sound.open();
-    this.main(0);
+    this.heading.textContent = 'DECK';
+    this.keysEl.textContent = this.touch ? 'TAP TO CHOOSE' : '← → TABS · ↑↓ MOVE · ENTER SELECT · ESC BACK';
+    const last = this.hooks.save().deckTab;
+    this.openTab(DECK_TABS.some((t) => t.id === last) ? (last as TabId) : DECK_TABS[0].id, false);
   }
 
   /** The title screen: the menu over the opening's sunrise. `pop`: it pops in (the sun has just settled). */
@@ -120,6 +143,9 @@ export class Menu {
     this.open = true;
     this.root.hidden = false;
     document.documentElement.classList.add('game-menu');
+    this.heading.textContent = 'ACCESS DENIED';
+    this.keysEl.textContent = this.touch ? 'TAP TO CHOOSE' : '↑↓ MOVE · ENTER SELECT · ESC BACK';
+    this.tabsEl.hidden = true;
     this.main(0);
   }
 
@@ -149,8 +175,38 @@ export class Menu {
     if (k === 'ArrowUp' || k === 'w' || k === 'W' || (k === 'Tab' && e.shiftKey)) this.move(-1);
     else if (k === 'ArrowDown' || k === 's' || k === 'S' || k === 'Tab') this.move(1);
     else if (e.repeat) return;
+    else if (!this.title && !this.back && (k === 'ArrowLeft' || k === 'ArrowRight')) this.stepTab(k === 'ArrowLeft' ? -1 : 1);
+    else if (!this.title && !this.back && /^[1-9]$/.test(k) && DECK_TABS[+k - 1]) this.openTab(DECK_TABS[+k - 1].id);
     else if (k === 'Enter' || k === ' ' || k === 'e' || k === 'E') this.activate();
     else if (k === 'Escape') this.escape();
+  }
+
+  // ---------- tabs ----------
+
+  /** Show a tab of the deck on its first screen, and remember it for the next Esc. */
+  private openTab(id: TabId, click = true) {
+    if (click && id !== this.tab) sound.tick();
+    this.tab = id;
+    this.hooks.save().deckTab = id;
+    this.tabsEl.hidden = false;
+    this.tabsEl.textContent = '';
+    DECK_TABS.forEach((t, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'gm-tab' + (t.id === id ? ' on' : '');
+      b.dataset.tab = t.id;
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(t.id === id));
+      b.textContent = (i + 1) + ' ' + t.label;
+      this.tabsEl.appendChild(b);
+    });
+    // one tab so far: SYSTEM (the former pause menu)
+    this.main(0);
+  }
+
+  private stepTab(d: number) {
+    const i = DECK_TABS.findIndex((t) => t.id === this.tab);
+    this.openTab(DECK_TABS[(i + d + DECK_TABS.length) % DECK_TABS.length].id);
   }
 
   // ---------- screens ----------

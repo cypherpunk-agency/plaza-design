@@ -613,7 +613,7 @@ export class Game {
     this.clockBar?.show(!this.opening && !this.cut && !this.menu.open && !this.term.focused);
     // The title and the glide: their own picture, with the title's menu over it.
     if (this.opening) { this.stepOpening(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
-    // The pause menu: the world holds still under it (the last frame stays on the canvas).
+    // The deck: the world holds still under it (the last frame stays on the canvas).
     if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
     if (this.levelW !== this.fitW) this.onResize(); // a new place: fit the view to it
@@ -681,7 +681,7 @@ export class Game {
     if (k === 'Escape') {
       if (this.bubble) { this.bubble = null; return; }
       if (zh && zh.visionOn) { zh.toggleVision(); return; }
-      // Nothing left to close: the pause menu (QUIT TO HOMEPAGE leaves the game).
+      // Nothing left to close: the deck, on its last tab (SYSTEM: QUIT TO HOMEPAGE leaves the game).
       this.openMenu();
       return;
     }
@@ -735,7 +735,7 @@ export class Game {
     sound.jump();
   }
 
-  // ---------- pause menu (menu.ts) ----------
+  // ---------- the deck (menu.ts; SYSTEM is the former pause menu) ----------
 
   private menu: Menu;
 

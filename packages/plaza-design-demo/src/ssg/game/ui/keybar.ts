@@ -22,7 +22,7 @@ export class KeyBar {
   private actions: HTMLDivElement;
   private soundBtn: HTMLButtonElement;
   private jump: HTMLSpanElement;
-  /** What each mode shows: walking (walk, run, jump, use; MAP, TERMINAL, SOUND, MENU) or hack vision (pan, zoom, reset). */
+  /** What each mode shows: walking (walk, run, jump, use; MAP, TERMINAL, SOUND, DECK) or hack vision (pan, zoom, reset). */
   private walking: HTMLElement[] = [];
   private visionHints: HTMLElement[] = [];
   private vision: boolean | null = null;
@@ -60,10 +60,10 @@ export class KeyBar {
       return b;
     };
     if (!SHIFT_PROTOTYPE) this.walking.push(button('Tab', 'TAB', 'MAP'), button('Enter', 'ENTER', 'TERMINAL'));
-    // sound has no key: this button and the pause menu
+    // sound has no key: this button and the deck's SYSTEM tab
     this.soundBtn = button('', '', 'SOUND');
     this.soundBtn.onclick = () => { sound.toggle(); this.refocus(); };
-    this.walking.push(this.soundBtn, button('Escape', 'ESC', 'MENU'));
+    this.walking.push(this.soundBtn, button('Escape', 'ESC', 'DECK'));
     this.root.append(this.moves, this.actions);
     host.appendChild(this.root);
     this.sync(false, false);

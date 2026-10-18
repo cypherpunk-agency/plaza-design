@@ -35,6 +35,8 @@ export interface Save {
   items: Record<string, number>;
   /** Time played in ms (the pause menu's save slots show it). Older saves: missing, counts from 0. */
   playMs?: number;
+  /** The deck tab Esc opens on (ui/menu.ts `DECK_TABS`): the one last open. Older saves: missing, the first tab. */
+  deckTab?: string;
   /** The city clock (clock.ts): day, minute of the day, the weather's seed. Older saves: day 1, 09:40, seed 1. */
   clock: ClockSave;
 }

@@ -123,7 +123,7 @@ the user's latest direction, not whichever old note sounds most authoritative.
 | [NET.md](./docs/reference/NET.md) | Network mechanics, current implementation and future ideas |
 | [GAMEPLAY-SYSTEM.md](./docs/reference/GAMEPLAY-SYSTEM.md) | Implemented command/event/conversation pilot, harbor compatibility and isolated Gameplay editor lab |
 | [HACKING-SYSTEM-REVIEW.md](./docs/reference/HACKING-SYSTEM-REVIEW.md) | Source review of hacking/wiring/network boundaries, confirmed probes and proposed consolidation |
-| [DECK-SCREEN-PLAN.md](./docs/design/DECK-SCREEN-PLAN.md) | Proposed Esc deck (jobs, carry, controls, system) replacing the pause menu and key bar, and one hint system; [mockup](./docs/design/deck-mockup.html) |
+| [DECK-SCREEN-PLAN.md](./docs/design/DECK-SCREEN-PLAN.md) | Esc deck (built: SYSTEM; proposed: jobs, carry, controls) replacing the pause menu and key bar, and one hint system; [mockup](./docs/design/deck-mockup.html) |
 | [PERFORMANCE-HARNESS-PLAN.md](./docs/design/PERFORMANCE-HARNESS-PLAN.md) | Proposed live-game, native-render and simulation measurements, milestones and appearance-preservation gates |
 | [TIME.md](./docs/reference/TIME.md) | City time/weather/light design and implemented parts |
 | [PUZZLES.md](./docs/reference/PUZZLES.md) | Puzzle catalogue; distinguish implemented solutions from sketches |
@@ -132,7 +132,7 @@ the user's latest direction, not whichever old note sounds most authoritative.
 
 ## Pause and saves: current behavior
 
-The pause menu, city/net maps, title, cutscenes and leaving the game hold puzzle scene time
+The deck (Esc; it replaced the pause menu), city/net maps, title, cutscenes and leaving the game hold puzzle scene time
 and delayed actions. Wiring in hack vision/the board stays live. Wall-clock lockouts keep
 expiring while paused or away. The city clock has its own additional pauses (dialogue panels,
 lock toys and travel/wait transitions); see TIME.md.

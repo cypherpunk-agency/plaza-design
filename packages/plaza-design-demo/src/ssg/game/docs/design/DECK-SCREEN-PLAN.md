@@ -1,6 +1,6 @@
 # ACCESS DENIED: the deck screen and hints (proposal)
 
-Status: **proposal, nothing built** (Tommi, 2026-10-18). Mockup: [deck-mockup.html](./deck-mockup.html)
+Status: **step 1 built** (the Esc deck with SYSTEM; 2026-10-18); steps 2–6 proposed. Mockup: [deck-mockup.html](./deck-mockup.html)
 (open it in a browser; ← → or 1–4 switch tabs).
 
 The game is growing RPG parts: things you carry, money, goals that pile up, more keys. Today none
@@ -120,7 +120,8 @@ RULES." No jokes; the characters keep those.
 
 ## Build order (when approved)
 
-1. The deck panel with SYSTEM only, opened by Esc, replacing the pause menu; `deckTab` in the save.
+1. **Built.** The deck panel with SYSTEM only, opened by Esc, replacing the pause menu; `deckTab`
+   in the save (ui/menu.ts `DECK_TABS`; the key bar and touch buttons say DECK).
 2. CONTROLS; strip the key bar to the scene's buttons.
 3. CARRY.
 4. JOBS, from the existing goal sources.
