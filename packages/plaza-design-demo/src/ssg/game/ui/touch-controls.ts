@@ -6,7 +6,7 @@ const sendKey = (key: string, type: 'keydown' | 'keyup') => window.dispatchEvent
 /**
  * On-screen controls for touch screens: they press the same keys a keyboard does. One bar along the
  * bottom, by mode (the game sets `html.hack-on`, `html.hack-ok`; render.tsx shows what fits):
- * walking, the arrows left and HACK, JMP, ACT, MENU right (the map is in the menu); hack vision,
+ * walking, the arrows left and HACK, JMP, ACT, >_, DECK right (the map is in the deck's SYSTEM tab); hack vision,
  * no arrows and EXIT, BOARD, LOGIC, NET (once scan.so is yours: `html.net-ok`), UNFOLD. HACK only once hacking is yours here.
  */
 export function touchControls(host: HTMLElement) {
@@ -16,7 +16,7 @@ export function touchControls(host: HTMLElement) {
     '<div class="pad"><button data-key="ArrowLeft" aria-label="Walk left">&#9664;</button><button data-key="ArrowRight" aria-label="Walk right">&#9654;</button></div>' +
     '<div class="pad"><button data-key="h" aria-label="Hack vision" class="walk-only hack">HACK</button>' +
     '<button data-key=" " aria-label="Jump" class="walk-only">JMP</button><button data-key="e" aria-label="Talk or jack in" class="walk-only">ACT</button>' +
-    '<button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Escape" aria-label="Menu" class="small walk-only">MENU</button>' +
+    '<button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Escape" aria-label="Deck" class="small walk-only">DECK</button>' +
     '<button data-key="h" aria-label="Leave hack vision" class="vis-only">EXIT</button><button data-key="b" aria-label="The board" class="vis-only">BOARD</button>' +
     '<button data-key="l" aria-label="Logic parts" class="vis-only logic" data-logic>LOGIC</button><button data-key="n" aria-label="The net map" class="vis-only net">NET</button><button data-key="u" aria-label="Unfold every circuit" class="vis-only unfold">UNFOLD</button></div>';
   if (SHIFT_PROTOTYPE) bar.querySelectorAll('[data-key="h"], [data-key=" "], [data-key="Enter"], .vis-only').forEach((el) => el.remove());

@@ -55,7 +55,8 @@ type ExitRule,type OpeningState,type PingTarget,
 import { Opening } from "../story/title/index";
 import { drawCityMap,mapKey,mapPointer,openMap,type MapAct,type MapState,type MapView } from "../ui/citymap";
 import { KeyBar } from "../ui/keybar";
-import { Menu } from "../ui/menu";
+import { Hints } from "../ui/hints";
+import { Menu, type DeckData } from "../ui/menu";
 import { drawNetMap,netKey,netPointer,openNet,type MachineState,type NetAct,type NetState,type NetView } from "../ui/netmap";
 import { ShiftGuidance } from "../ui/shift-guidance";
 import { levels,startLevel,SUDO,unlockAll } from "../ui/sudo";
@@ -145,6 +146,8 @@ export class Game {
   private here: SceneId = 'downtown';
   /** Every key and what it does, along the top. */
   private keyBar: KeyBar;
+  /** The hint lane under the scene title (ui/hints.ts); control hints are sent from `controlHints`. */
+  private hints = new Hints(() => (this.save.seenHints ??= []));
   private shiftGuidance?: ShiftGuidance;
   /** Every scene on the engine, hosted the first time it is needed (`hostOf`), with its part of the save. */
   private hosts = new Map<SceneId, SceneHost>();
@@ -201,7 +204,7 @@ export class Game {
     });
     this.term.onClose = () => this.canvas.focus();
 
-    this.keyBar = new KeyBar(host.windowEl, () => this.canvas.focus());
+    this.keyBar = new KeyBar(host.windowEl);
     if (SHIFT_PROTOTYPE) this.shiftGuidance = new ShiftGuidance(host.windowEl, this.reduced, wx => {
       this.zh.clearPing('goal');
       this.goalAt = wx;
@@ -222,6 +225,8 @@ export class Game {
       ...(!SHIFT_PROTOTYPE ? { map: () => this.showMap() } : {}),
       onClose: () => { this.syncEnginePause(); this.canvas.focus(); },
       ...(SUDO && !SHIFT_PROTOTYPE ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
+      // the deck's JOBS, CARRY, CONTROLS (and TERM on touch); the Shift prototype keeps SYSTEM only
+      ...(!SHIFT_PROTOTYPE ? { deck: this.deckData() } : {}),
     }, this.touch);
     // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts); in a scene, the city clock's
     if (SUDO && !SHIFT_PROTOTYPE) {
@@ -580,6 +585,10 @@ export class Game {
     const px = cssH * dpr, phone = cssH < 420;
     let k = phone ? Math.max(1, Math.floor(px / 230)) : Math.max(1, Math.round(px / 300));
     if (!phone && k > 1 && px / k < 240) k--;
+    // Squarish and tall windows: aim for MIN_VIEW_W of street across (Tommi, 2026-10-18). The scale
+    // steps down instead, and the spare height shows above the street, but not past MAX_VIEW_H
+    // (at a coarse scale one step can halve everything: 1000 × 1000 at 1x keeps 2, not 1).
+    while (k > 1 && this.canvas.width / k < MIN_VIEW_W && px / (k - 1) <= MAX_VIEW_H) k--;
     // A place narrower than the view (a flat, the yard) is shown closer, so it fills the width,
     // as long as enough height stays in view for its rooms and signs.
     const fit = Math.floor(this.canvas.width / (this.levelW + 24));
@@ -609,7 +618,7 @@ export class Game {
     this.clockBar?.show(!this.opening && !this.cut && !this.menu.open && !this.term.focused);
     // The title and the glide: their own picture, with the title's menu over it.
     if (this.opening) { this.stepOpening(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
-    // The pause menu: the world holds still under it (the last frame stays on the canvas).
+    // The deck: the world holds still under it (the last frame stays on the canvas).
     if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
     if (this.levelW !== this.fitW) this.onResize(); // a new place: fit the view to it
@@ -677,7 +686,7 @@ export class Game {
     if (k === 'Escape') {
       if (this.bubble) { this.bubble = null; return; }
       if (zh && zh.visionOn) { zh.toggleVision(); return; }
-      // Nothing left to close: the pause menu (QUIT TO HOMEPAGE leaves the game).
+      // Nothing left to close: the deck, on its last tab (SYSTEM: QUIT TO HOMEPAGE leaves the game).
       this.openMenu();
       return;
     }
@@ -731,7 +740,7 @@ export class Game {
     sound.jump();
   }
 
-  // ---------- pause menu (menu.ts) ----------
+  // ---------- the deck (menu.ts; SYSTEM is the former pause menu) ----------
 
   private menu: Menu;
 
@@ -739,6 +748,7 @@ export class Game {
   private openMenu() {
     this.keys.clear();
     this.p.moving = false;
+    this.hints.done('ctl.deck');
     this.zh.persist();
     storeSave(this.save);
     this.menu.show();
@@ -959,6 +969,7 @@ export class Game {
   }
 
   private interact() {
+    this.hints.done('ctl.use');
     const b = this.bubble;
     if (b) {
       const full = b.pages[b.page].length;
@@ -1316,12 +1327,12 @@ export class Game {
   }
 
   /**
-   * The bars follow the mode (render.tsx): walking (arrows; HACK, JMP, ACT, MENU) or hack vision
+   * The bars follow the mode (render.tsx): walking (arrows; HACK, JMP, ACT, DECK) or hack vision
    * (EXIT, BOARD, LOGIC, UNFOLD), as classes on the page; HACK only once hacking is yours here.
    */
   private syncModeUi() {
     const zh = this.zh, on = zh.visionOn;
-    this.keyBar.sync(this.save.jump, on);
+    this.controlHints(on);
     const net = this.netOk, ping = net && !this.save.flags[NET_OPENED];
     const key = [on, zh.hackable, zh.logicOpen, zh.unfoldAll, net, ping].join();
     if (key === this.modeKey) return;
@@ -1412,6 +1423,13 @@ export class Game {
       const g = this.gain;
       if (g && this.t < g.until) { x.fillStyle = 'rgba(34,197,94,' + Math.min(1, (g.until - this.t) / 30) * 0.95 + ')'; x.fillText(g.text, 8, (y += 11)); }
     }
+    // the hint lane (ui/hints.ts): one line at a time, on a dark strip so it reads over any scene
+    const hint = this.hints.step();
+    if (hint) {
+      y += 11;
+      x.fillStyle = 'rgba(0,0,0,' + 0.6 * hint.alpha + ')'; x.fillRect(6, y - 8, x.measureText(hint.text).width + 4, 11);
+      x.fillStyle = 'rgba(255,217,165,' + 0.95 * hint.alpha + ')'; x.fillText(hint.text, 8, y);
+    }
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
     const zh = this.zh.model.data.goals.length ? this.zh : null, story = this.def.objective?.(this.save.flags) ?? pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
@@ -1438,7 +1456,7 @@ export class Game {
   /**
    * What hack vision's LOGIC drawer lists: modules, programs and the key chips that do something.
    * Not tokens and not what you carry (Tommi, 2026-10-15): those show where they are used (a price
-   * on the prompt, "show the maglev pass" in the brake's popup).
+   * on the prompt, "show the maglev pass" in the brake's popup) and in the deck's CARRY tab.
    */
   private owned(): [string, string] {
     const s = this.save;
@@ -1446,6 +1464,68 @@ export class Game {
     const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
     return [own, keys.length ? 'KEYS ' + keys.join(' ') : ''];
   }
+  // ---------- the deck's tabs and the control hints ----------
+
+  /** The current goal as the HUD shows it (the scene's, the opening's, the library's, or the data's next). */
+  private goalText(): string | null {
+    const zh = this.zh.model.data.goals.length ? this.zh : null;
+    return this.def.objective?.(this.save.flags) ?? pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal() ?? (zh ? zh.objective() : null);
+  }
+
+  /** What the deck's JOBS, CARRY, CONTROLS (and TERM on touch) tabs read (ui/menu.ts). */
+  private deckData(): DeckData {
+    return {
+      jobs: () => {
+        const m = this.zh.model;
+        return { now: this.goalText(), hint: this.hints.latest, done: m.data.goals.filter((g) => m.goals.has(g.id)).map((g) => g.text) };
+      },
+      carry: () => {
+        const s = this.save;
+        return {
+          tokens: s.tokens,
+          items: Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]): [string, number] => [ITEMS[id as ItemId] ?? id, n]),
+          keys: s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => k!.label),
+          modules: ownedModules(s),
+          programs: s.programs,
+        };
+      },
+      controls: () => this.controls(),
+      ...(this.touch ? { terminal: () => this.openDeck() } : {}),
+    };
+  }
+
+  /** Every key that is yours now, grouped (the deck's CONTROLS tab). Touch names its buttons instead. */
+  private controls(): [string, [string, string][]][] {
+    const t = this.touch, jump = this.save.jump;
+    const walk: [string, string][] = t
+      ? [['◀ ▶', 'walk'], ...(jump ? [['JMP', 'jump'] as [string, string]] : []), ['ACT', 'use what shows [E]; go on talking']]
+      : [['← → · A D', 'walk'], ['SHIFT', 'run'], ...(jump ? [['SPACE', 'jump'] as [string, string]] : []), ['E', 'use what shows [E]'], ['ENTER · SPACE', 'go on talking']];
+    const deck: [string, string][] = t
+      ? [['DECK', 'this deck'], ['>_', 'terminal']]
+      : [['ESC', 'this deck; first closes what is open'], ['ENTER', 'terminal'], ['TAB · M', 'city map'], ...(this.netOk ? [['N', 'net map'] as [string, string]] : [])];
+    const hack: [string, string][] = t
+      ? [['HACK', 'hack vision'], ['BOARD', 'the board'], ['LOGIC', 'logic parts (in vision)'], ['UNFOLD', 'every circuit (in vision)'], ['DRAG · PINCH', 'pan · zoom (in vision)']]
+      : [['H', 'hack vision'], ['B', 'the board'], ['L', 'logic drawer (in vision)'], ['U', 'every circuit unfolded (in vision)'], ['DRAG · WHEEL · 0', 'pan · zoom · reset (in vision)']];
+    return [['WALKING', walk], ['THE DECK', deck], ...(this.zh.hackable ? [['HACKING', hack] as [string, [string, string][]]] : [])];
+  }
+
+  /**
+   * The controls, taught once in the hint lane (what the key bar's labels used to say): walking, then
+   * using, then the deck; hack vision's keys the first time it is open. Each stays until you have done it.
+   * Touch buttons are labelled, so touch only gets the deck and hack vision.
+   */
+  private controlHints(vision: boolean) {
+    const h = this.hints;
+    if (this.p.moving) h.done('ctl.walk');
+    if (!this.touch) {
+      if (!h.has('ctl.walk')) h.show('ctl.walk', '← → WALK · SHIFT RUN', { sticky: true });
+      else if (!h.has('ctl.use')) h.show('ctl.use', 'E USES WHAT SHOWS [E]', { sticky: true });
+    }
+    if ((this.touch || h.has('ctl.use')) && !h.has('ctl.deck')) h.show('ctl.deck', (this.touch ? 'DECK' : 'ESC') + ' OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS', { sticky: true });
+    if (vision) h.show('ctl.vision', this.touch ? 'DRAG PANS · PINCH ZOOMS · EXIT LEAVES' : 'DRAG PANS · WHEEL ZOOMS · 0 RESETS · ESC LEAVES', { sticky: true, first: true });
+    else if (h.pending('ctl.vision')) h.done('ctl.vision');
+  }
+
   private ownLine() { const [own, more] = this.owned(); return more ? own + ' · ' + more : own; }
 
   /** What you own, as a set of words, to see what came (or went) since the last frame. */
@@ -2331,6 +2411,10 @@ const NUDGE_HOLD = 96, NUDGE_EASE = 0.045, NUDGE_MARGIN = 36, NUDGE_GAP = 300;
 
 /** Hack vision zooms out at least this far, even where the scene already fits the view (room over its devices for the circuits). */
 const VISION_ZOOM_MIN = 0.7;
+/** The least street the view shows across (world units); a squarish window drops a scale step to keep it. */
+const MIN_VIEW_W = 460;
+/** …but never by making the view taller than this (world units). */
+const MAX_VIEW_H = 440;
 
 /** How often the clock's progress is written to the save while it runs (frames, ~10 s). */
 const CLOCK_SAVE = 600;

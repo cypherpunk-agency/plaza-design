@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deck screen mockup</title>
+<!-- Proposal mockup for DECK-SCREEN-PLAN.md. Static: nothing here is game code. -->
+<style>
+  :root {
+    --orange: rgb(255, 136, 0);
+    --cyan: #22d3ee;
+    --magenta: rgb(255, 61, 242);
+    --green: #22c55e;
+    --red: #ef4444;
+    --body: #ffd9a5;
+    --faint: rgba(255, 217, 165, 0.45);
+    --line: #5a2f00;
+    --font: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: #0a0500; color: var(--body); font: 13px/1.5 var(--font); display: grid; place-items: center; padding: 16px; }
+  .window { width: min(960px, 100%); border: 2px solid var(--orange); background: #000; }
+  .bar { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 11px; letter-spacing: 0.08em; }
+  .bar b { color: var(--orange); font-weight: 600; }
+  .stage { position: relative; aspect-ratio: 16 / 9; overflow: hidden;
+    background:
+      linear-gradient(to bottom, rgba(0,0,0,.25), rgba(0,0,0,.25)),
+      repeating-linear-gradient(90deg, #1a0d02 0 46px, #120900 46px 52px),
+      linear-gradient(#140a01 70%, #2a1205 70% 72%, #0d0702 72%); }
+  .hint-lane { position: absolute; left: 12px; top: 10px; font-size: 10px; color: var(--orange); letter-spacing: .06em; }
+  .hint-lane .hint { display: block; margin-top: 4px; color: var(--body); background: rgba(0,0,0,.6); padding: 1px 6px; width: max-content; max-width: 90%; }
+  .deck { position: absolute; inset: 64px 8% 4%; background: rgba(0, 0, 0, 0.94); border: 2px solid var(--orange); display: grid; grid-template-rows: auto auto 1fr auto; }
+  .deck-head { display: flex; justify-content: space-between; padding: 8px 14px; font-size: 11px; letter-spacing: .1em; color: var(--orange); border-bottom: 1px solid var(--line); }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tab { flex: 1; padding: 8px 6px; background: none; border: 0; border-right: 1px solid var(--line); color: var(--faint); font: 600 12px var(--font); letter-spacing: .12em; cursor: pointer; }
+  .tab:last-child { border-right: 0; }
+  .tab kbd { font: inherit; font-size: 10px; opacity: .7; margin-right: 6px; }
+  .tab[aria-selected="true"] { color: #000; background: var(--orange); }
+  .tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+  .page { padding: 12px 16px; overflow: auto; }
+  .page[hidden] { display: none; }
+  h3 { margin: 12px 0 4px; font-size: 10px; letter-spacing: .14em; color: var(--faint); font-weight: 600; }
+  h3:first-child { margin-top: 0; }
+  .goal { color: var(--magenta); }
+  .hint-kept { color: var(--body); padding-left: 14px; border-left: 2px solid var(--line); margin: 4px 0 0 2px; }
+  .done { color: var(--faint); text-decoration: line-through; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 2px 0; }
+  .row .where { color: var(--faint); font-size: 11px; grid-column: 1 / -1; margin-top: -2px; }
+  .tokens { font-size: 20px; color: var(--green); font-weight: 600; }
+  .chip { color: var(--cyan); }
+  .keys { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; }
+  .keys kbd { font: inherit; color: var(--cyan); border: 1px solid #0d4a52; padding: 0 4px; }
+  .menu { list-style: none; margin: 0; padding: 0; }
+  .menu li { padding: 3px 0; color: var(--cyan); }
+  .menu li::before { content: "  "; white-space: pre; }
+  .menu li.sel::before { content: "> "; color: var(--orange); }
+  .menu li.bad { color: var(--red); }
+  .menu .meta { color: var(--faint); margin-left: 10px; font-size: 11px; }
+  .foot { padding: 6px 14px; border-top: 1px solid var(--line); font-size: 10px; color: var(--faint); letter-spacing: .08em; }
+  .notes { width: min(960px, 100%); margin-top: 12px; font-size: 11px; color: var(--faint); }
+  @media (max-width: 640px) {
+    .stage { aspect-ratio: auto; height: 560px; }
+    .deck { inset: 8px; }
+    .tab kbd { display: none; }
+  }
+</style>
+</head>
+<body>
+<div>
+  <div class="window">
+    <div class="bar"><span><b>TEST DISTRICT · COUNTER</b> · 09:58 · TESTER</span><span>ESC closes the deck</span></div>
+    <div class="stage">
+      <div class="hint-lane">TEST DISTRICT · COUNTER · 09:58
+        <span class="hint">HINT LANE · THE COUNTER SELLS. THE DESK SETS THE RULES.</span>
+      </div>
+      <div class="deck" role="dialog" aria-label="Deck">
+        <div class="deck-head"><span>DECK · TESTER</span><span>COUNTER · PAUSED · DAY 1 · 09:58</span></div>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="0"><kbd>1</kbd>JOBS</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="1"><kbd>2</kbd>CARRY</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="2"><kbd>3</kbd>CONTROLS</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="3"><kbd>4</kbd>SYSTEM</button>
+        </div>
+
+        <section class="page" role="tabpanel">
+          <h3>NOW</h3>
+          <div class="goal">GOAL · Buy one item at the counter.</div>
+          <div class="hint-kept">The counter quotes a price. The desk decides whether that price is honest.</div>
+          <h3>DONE HERE</h3>
+          <div class="done">Find the Test Desk.</div>
+          <div class="done">Read the quote.</div>
+          <h3>EARLIER</h3>
+          <div>TEST DESK · 3 goals done ▸</div>
+        </section>
+
+        <section class="page" role="tabpanel" hidden>
+          <h3>TOKENS</h3>
+          <div class="tokens">8 TOKENS</div>
+          <h3>ITEMS</h3>
+          <div class="row"><span>noodle cup</span><span>× 1</span><span class="where">The counter takes it back.</span></div>
+          <div class="row"><span>soap</span><span>× 2</span><span class="where">Used at: laundromat washer.</span></div>
+          <div class="row"><span>blank chip</span><span>× 1</span><span class="where">Use not known yet.</span></div>
+          <h3>KEYRING</h3>
+          <div class="row"><span class="chip">DESK-PIN</span><span>key chip</span></div>
+          <h3>MODULES · PROGRAMS</h3>
+          <div class="row"><span class="chip">timer.so · switch.so</span><span>LOGIC drawer</span></div>
+        </section>
+
+        <section class="page" role="tabpanel" hidden>
+          <h3>WALKING</h3>
+          <div class="keys"><kbd>← →</kbd><span>walk</span><kbd>SHIFT</kbd><span>run</span><kbd>E</kbd><span>use what is in reach</span></div>
+          <h3>THE DECK</h3>
+          <div class="keys"><kbd>ESC</kbd><span>this deck (last tab) · closes what is open first</span><kbd>ENTER</kbd><span>terminal</span><kbd>TAB · M</kbd><span>city map</span></div>
+          <h3>HACKING</h3>
+          <div class="keys"><kbd>H</kbd><span>hack vision</span><kbd>B</kbd><span>board</span><kbd>L</kbd><span>logic drawer (in vision)</span><kbd>DRAG · WHEEL</kbd><span>pan · zoom (in vision)</span></div>
+        </section>
+
+        <section class="page" role="tabpanel" hidden>
+          <ul class="menu">
+            <li class="sel">RESUME</li>
+            <li>MAP</li>
+            <li>SAVE GAME</li>
+            <li>LOAD GAME</li>
+            <li class="bad">NEW GAME</li>
+            <li>SOUND: ON</li>
+            <li>QUIT TO HOMEPAGE</li>
+          </ul>
+        </section>
+
+        <div class="foot">← → TABS · 1–4 JUMP · ↑↓ MOVE · ENTER SELECT · ESC CLOSE</div>
+      </div>
+    </div>
+  </div>
+  <p class="notes">Mockup for DECK-SCREEN-PLAN.md. The street behind is a placeholder; the top-left lines show the hint lane where the key bar is today.</p>
+</div>
+<script>
+  const tabs = [...document.querySelectorAll('.tab')], pages = [...document.querySelectorAll('.page')];
+  const show = (i) => { tabs.forEach((t, n) => t.setAttribute('aria-selected', String(n === i))); pages.forEach((p, n) => { p.hidden = n !== i; }); };
+  let cur = 0;
+  tabs.forEach((t, n) => t.addEventListener('click', () => show(cur = n)));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') show(cur = (cur + 1) % 4);
+    else if (e.key === 'ArrowLeft') show(cur = (cur + 3) % 4);
+    else if (/^[1-4]$/.test(e.key)) show(cur = +e.key - 1);
+  });
+</script>
+</body>
+</html>

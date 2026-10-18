@@ -27,8 +27,10 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
   things**); `foundIn` names that scene, and the check holds the two together. `switch.so` is
   found in MOTH-PC's drawer in Moth's place (`foundIn: "moth"`, P09).
 - **Yard progress is saved**, in the same save as Downtown: `save.scenes.yard` (see **Saves**).
-- **No hints in the yard for now.** Goals stay (the GOAL line in the HUD); Downtown's fixer
-  hints are untouched.
+- **No authored hints in the yard yet.** Goals stay (the GOAL line in the HUD; the deck's JOBS
+  tab). The game has a hint lane now (ui/hints.ts, 2026-10-18), used so far only for control
+  hints; when a goal or place gives a hint is a separate design question. Downtown's fixer hints
+  are untouched.
 - **Fan-out:** one event can feed several cables (a breaker trip stops every washer). `connect`
   replaces only a cable between the same event and noun; `emit` fires all of them.
 - **Combining clues:** both ways: drag one fragment chip onto another on the keyring, or type
@@ -211,12 +213,15 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   which flag is the scene's code (`washer.take`: `maglev.pass`, `p13`). Using an item up is a data
   step now (`take`, see **Using what you carry**); handing one out is not yet (`give` stays keyring,
   modules, tokens); if items get handed out from data often, `give` can learn them.
-- **What you carry shows where it is used** (Tommi, 2026-10-15): no inventory screen, no HELD line.
+- **What you carry shows where it is used** (Tommi, 2026-10-15; revised 2026-10-18): no HELD line
+  on screen; the deck's CARRY tab (Esc) lists what you hold, so you can check, but you use things
+  where they are used.
   Which thing takes which item, its popup words and what happens: **data** for devices (`items` on a
   device, `take` step), **code-side data** for a scene's code uses (`SceneUse.items`, `price`, `act`,
   scenes/kit.ts). The popup's "items first, three at most" rule and the dashed chip: **code**
-  (`SceneHost.popupItems`, `MAX_EVERYDAY`; game.ts `useLife`). Tokens show only where you pay
-  (`priceTag`: uses' `price`, the taxi stand, the fixer's hint, a `{tokens}` in a popup label).
+  (`SceneHost.popupItems`, `MAX_EVERYDAY`; game.ts `useLife`). On screen, tokens show only where
+  you pay (`priceTag`: uses' `price`, the taxi stand, the fixer's hint, a `{tokens}` in a popup
+  label); the balance is in the deck's CARRY tab.
 - The laundromat (P13): the washers, breaker, schedule and SUDS are **data** (`laundromat.json`); a
   cycle's timing, the trip and the jacket are **code** (`laundromat/rules.ts`, `washer.run` /
   `washer.stop` / `washer.take`, the breaker's self-reset in `tick`, `door3` derived). A running
@@ -396,11 +401,12 @@ do with the thing without hacking anything, then `⌁ jack in` for a computer, t
 
 ## Using what you carry
 
-There is no inventory screen (Tommi, 2026-10-15). What you carry (the save's `items`: the maglev
-pass, soap, a cup of tea; ids in `ITEMS`, scenes/kit.ts) appears **at the moment and place it is
-used**: as an everyday action in the popup of the thing that takes it, only while you hold one.
-Keys and modules stay where they were (key chips at guards and seals, modules and programs in hack
-vision's LOGIC drawer).
+What you carry (the save's `items`: the maglev pass, soap, a cup of tea; ids in `ITEMS`,
+scenes/kit.ts) appears **at the moment and place it is used**: as an everyday action in the popup
+of the thing that takes it, only while you hold one. Keys and modules stay where they were (key
+chips at guards and seals, modules and programs in hack vision's LOGIC drawer). Since 2026-10-18
+the deck's CARRY tab (Esc) also lists tokens, items, key chips, modules and programs, to check what
+you hold (docs/design/DECK-SCREEN-PLAN.md); nothing is used from there.
 
 A device says what it takes with `items`:
 
@@ -831,9 +837,9 @@ A stored save missing a field gets it from a new game (`modules`, an empty `keyr
 **Items** (2026-10-15): things you carry that are not keyring chips (the harbor's fish and tea, the
 mall's basil leaf and blank chip, the corner shop's goods). A scene's `use` reads them through
 `UseCtx`: `has(id, n)`, `take(id, n)` (true and taken, or false and nothing), `add(id, n)`. The ids
-and their names are **code** (`ITEMS`, scenes/kit.ts). Nothing lists them (no inventory, no HUD
-line): a short green `+ name` line shows when one comes, and they appear where they are used (see
-**Using what you carry**). The terminal's `whoami` still lists tokens and modules, on purpose (a deliberate command).
+and their names are **code** (`ITEMS`, scenes/kit.ts). No HUD line lists them: a short green
+`+ name` line shows when one comes, they appear where they are used (see **Using what you
+carry**), and the deck's CARRY tab lists what you hold. The terminal's `whoami` still lists tokens and modules, on purpose (a deliberate command).
 Empty engine fields are left out, so the yard's save looks as before. The yard writes
 its part a moment after things go quiet, when you leave it, when the game stops and when the
 page is hidden (`pagehide`); while trace or a lockout moves it also writes every 2 s at most.
