@@ -1,6 +1,8 @@
-# ACCESS DENIED: the deck screen and hints (proposal)
+# ACCESS DENIED: the deck screen and hints
 
-Status: **step 1 built** (the Esc deck with SYSTEM; 2026-10-18); steps 2–6 proposed. Mockup: [deck-mockup.html](./deck-mockup.html)
+Status: **built** (2026-10-18): the Esc deck with JOBS, CARRY, CONTROLS, SYSTEM (and TERM on
+touch), the slimmed key bar, and the hint lane with control hints. Code: ui/menu.ts, ui/hints.ts,
+ui/keybar.ts, game.ts (`deckData`, `controls`, `controlHints`, `goalText`). Mockup: [deck-mockup.html](./deck-mockup.html)
 (open it in a browser; ← → or 1–4 switch tabs).
 
 The game is growing RPG parts: things you carry, money, goals that pile up, more keys. Today none
@@ -118,15 +120,19 @@ RULES." No jokes; the characters keep those.
 **First users** (to prove the mechanic, not a policy): the controls the key bar teaches today
 (walk / run, use, hack vision's keys, ESC for the deck). They replace the key bar's labels.
 
-## Build order (when approved)
+## Build order (all built 2026-10-18)
 
-1. **Built.** The deck panel with SYSTEM only, opened by Esc, replacing the pause menu; `deckTab`
+1. The deck panel with SYSTEM only, opened by Esc, replacing the pause menu; `deckTab`
    in the save (ui/menu.ts `DECK_TABS`; the key bar and touch buttons say DECK).
 2. CONTROLS; strip the key bar to the scene's buttons.
 3. CARRY.
 4. JOBS, from the existing goal sources.
 5. The hint mechanic, with the control hints as its first users.
 6. Rewrite the GAME-DATA.md passages and the keybar/menu file comments.
+
+As built: TERM (touch) hands over to the touch terminal rather than drawing it inside the deck;
+JOBS lists goals done in this place from the scene's data goals; JOBS keeps the latest *timed*
+hint (control hints are what CONTROLS lists).
 
 Each step is a playable state; nothing in a save changes meaning (`deckTab` and `seenHints` are
 optional, older saves start with JOBS and no hints seen).

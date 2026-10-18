@@ -90,7 +90,7 @@ See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for sco
 | `authoring/` | Local scene/animation editor, native preview adapters and validated source-save service |
 | `world/` | Geography, city time/weather/light and shared transport simulation |
 | `story/` | Contacts, opening progression, title/glide and cutscene controllers |
-| `ui/` | Menus, terminal, maps, developer controls, key bar and task guidance |
+| `ui/` | The deck (menu.ts), hint lane, terminal, maps, developer controls, key bar and task guidance |
 | `docs/` | Design concepts, technical references and historical scene feedback |
 
 See [module organization](./docs/reference/MODULES.md) for logic ownership and dependency rules.
@@ -123,7 +123,7 @@ the user's latest direction, not whichever old note sounds most authoritative.
 | [NET.md](./docs/reference/NET.md) | Network mechanics, current implementation and future ideas |
 | [GAMEPLAY-SYSTEM.md](./docs/reference/GAMEPLAY-SYSTEM.md) | Implemented command/event/conversation pilot, harbor compatibility and isolated Gameplay editor lab |
 | [HACKING-SYSTEM-REVIEW.md](./docs/reference/HACKING-SYSTEM-REVIEW.md) | Source review of hacking/wiring/network boundaries, confirmed probes and proposed consolidation |
-| [DECK-SCREEN-PLAN.md](./docs/design/DECK-SCREEN-PLAN.md) | Esc deck (built: SYSTEM; proposed: jobs, carry, controls) replacing the pause menu and key bar, and one hint system; [mockup](./docs/design/deck-mockup.html) |
+| [DECK-SCREEN-PLAN.md](./docs/design/DECK-SCREEN-PLAN.md) | The Esc deck (jobs, carry, controls, system; built) replacing the pause menu and key bar, and one hint system; [mockup](./docs/design/deck-mockup.html) |
 | [PERFORMANCE-HARNESS-PLAN.md](./docs/design/PERFORMANCE-HARNESS-PLAN.md) | Proposed live-game, native-render and simulation measurements, milestones and appearance-preservation gates |
 | [TIME.md](./docs/reference/TIME.md) | City time/weather/light design and implemented parts |
 | [PUZZLES.md](./docs/reference/PUZZLES.md) | Puzzle catalogue; distinguish implemented solutions from sketches |

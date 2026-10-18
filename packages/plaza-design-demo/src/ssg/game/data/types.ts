@@ -320,7 +320,7 @@ export interface DialogueData {
   free?: { match: string; goto: string; miss: string; retry: string; retryGoto: string };
 }
 
-/** An objective, in order. (No hints for now: see GAME-DATA.md, "Decided".) */
+/** An objective, in order. (No authored hints yet: the hint lane exists, see ui/hints.ts and GAME-DATA.md, "Decided".) */
 export interface GoalData { id: string; text: string }
 
 /** What a `rule` chip does to a fragment dropped on it (or it on a fragment). Joining two fragments needs no rule. */

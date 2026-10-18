@@ -6,7 +6,7 @@ const sendKey = (key: string, type: 'keydown' | 'keyup') => window.dispatchEvent
 /**
  * On-screen controls for touch screens: they press the same keys a keyboard does. One bar along the
  * bottom, by mode (the game sets `html.hack-on`, `html.hack-ok`; render.tsx shows what fits):
- * walking, the arrows left and HACK, JMP, ACT, MENU right (the map is in the menu); hack vision,
+ * walking, the arrows left and HACK, JMP, ACT, >_, DECK right (the map is in the deck's SYSTEM tab); hack vision,
  * no arrows and EXIT, BOARD, LOGIC, NET (once scan.so is yours: `html.net-ok`), UNFOLD. HACK only once hacking is yours here.
  */
 export function touchControls(host: HTMLElement) {

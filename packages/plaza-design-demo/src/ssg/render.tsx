@@ -704,17 +704,11 @@ export const demoStyles = `
     html.game-mode #key-bar { display: flex; }
     html.game-mode.cutscene #key-bar,
     html.game-mode.game-menu #key-bar { display: none; }
-    #key-bar .kb-moves,
-    #key-bar .kb-actions { display: flex; flex-wrap: wrap; gap: var(--spacing-2); align-items: center; }
-    #key-bar .kb-actions { justify-content: flex-end; pointer-events: auto; }
-    #key-bar .kb-hint { font-size: 10px; color: rgba(255, 217, 165, 0.75); background: rgba(0, 0, 0, 0.55); padding: 1px 5px; }
-    #key-bar .kb-hint[hidden] { display: none; }
-    #key-bar kbd { font: inherit; color: var(--color-accent-400); border: var(--border-thin) solid #0d4a52; padding: 0 3px; margin-right: 2px; }
+    #key-bar .kb-actions { display: flex; flex-wrap: wrap; gap: var(--spacing-2); align-items: center; margin-left: auto; justify-content: flex-end; pointer-events: auto; }
     #key-bar .hack-btn { background: rgba(0, 0, 0, 0.65); }
     #key-bar .hack-btn.on { color: var(--color-success); border-color: var(--color-success); }
     #key-bar #scene-btns { position: static; }
     #key-bar #scene-btns .hack-btn.on { color: #000; background: rgb(255, 61, 242); border-color: rgb(255, 61, 242); }
-    html.touch #key-bar .kb-moves { display: none; }
 
     #scene-btns {
       position: absolute;
@@ -837,6 +831,21 @@ ${FEEDBACK_STYLES}
     #game-menu .gm-tabs[hidden] { display: none; }
     #game-menu .gm-tab { flex: 1; padding: 4px 6px; background: transparent; border: 0; font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: rgba(255, 217, 165, 0.45); cursor: pointer; }
     #game-menu .gm-tab.on { color: #000; background: rgb(255, 136, 0); }
+    /* An information tab (JOBS, CARRY, CONTROLS): headings and rows, nothing to select */
+    #game-menu .gm-page { display: grid; gap: 2px; align-content: start; min-height: 9em; }
+    #game-menu .gm-page[hidden] { display: none; }
+    #game-menu .gm-head { margin: var(--spacing-2) 0 0; font-size: 9px; font-weight: 600; letter-spacing: 0.16em; color: rgba(255, 217, 165, 0.45); }
+    #game-menu .gm-head:first-child { margin-top: 0; }
+    #game-menu .gm-row { display: flex; justify-content: space-between; gap: var(--spacing-3); font-size: 12px; color: rgba(255, 217, 165, 0.9); }
+    #game-menu .gm-row-meta { color: rgba(255, 217, 165, 0.5); text-align: right; }
+    #game-menu .gm-row.gm-goal { color: rgb(255, 61, 242); }
+    #game-menu .gm-row.gm-hint { color: rgba(255, 217, 165, 0.9); padding-left: var(--spacing-2); border-left: 2px solid rgba(255, 136, 0, 0.4); }
+    #game-menu .gm-row.gm-done { color: rgba(255, 217, 165, 0.4); }
+    #game-menu .gm-row.gm-tokens { font-size: 18px; font-weight: 600; color: rgb(34, 197, 94); }
+    #game-menu .gm-row.gm-chip { color: rgb(0, 255, 255); }
+    #game-menu .gm-row.gm-key { justify-content: flex-start; }
+    #game-menu .gm-row.gm-key > span:first-child { min-width: 9em; color: rgb(0, 255, 255); }
+    #game-menu .gm-row.gm-key .gm-row-meta { text-align: left; color: rgba(255, 217, 165, 0.8); }
     #game-menu .gm-sub.gm-ask { font-size: 11px; letter-spacing: 0.06em; }
     #game-menu .gm-sub.gm-bad { color: rgb(255, 90, 110); }
     #game-menu .gm-sub.gm-go { color: rgb(0, 255, 255); }

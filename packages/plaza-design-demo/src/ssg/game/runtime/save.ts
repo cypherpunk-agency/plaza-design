@@ -37,6 +37,8 @@ export interface Save {
   playMs?: number;
   /** The deck tab Esc opens on (ui/menu.ts `DECK_TABS`): the one last open. Older saves: missing, the first tab. */
   deckTab?: string;
+  /** Hint ids already shown (timed hints) or done (control hints): each shows once per run (ui/hints.ts). */
+  seenHints?: string[];
   /** The city clock (clock.ts): day, minute of the day, the weather's seed. Older saves: day 1, 09:40, seed 1. */
   clock: ClockSave;
 }
