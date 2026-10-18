@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { Modal, Panel } from 'plaza-react-components';
 import { generateHexData } from '../../plaza';
 import './GalleryDemo.css';
 
 export function GalleryDemo() {
   const [evolutionGlitching, setEvolutionGlitching] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showReactModal, setShowReactModal] = useState(false);
   const [modalVariant, setModalVariant] = useState<'default' | 'danger' | 'success'>('default');
   const hexRef = useRef<HTMLDivElement>(null);
 
@@ -234,6 +236,13 @@ export function GalleryDemo() {
 
         <div className="gallery-grid">
           <div className="gallery-item">
+            <span className="gallery-item__label">React &lt;Modal&gt;</span>
+            <button className="plaza-btn plaza-btn--sm" onClick={() => setShowReactModal(true)}>
+              OPEN
+            </button>
+          </div>
+
+          <div className="gallery-item">
             <span className="gallery-item__label">Default Modal</span>
             <button className="plaza-btn plaza-btn--sm" onClick={() => openModal('default')}>
               OPEN
@@ -281,6 +290,29 @@ export function GalleryDemo() {
               <div><span className="text-ambient-amber">ROUTE</span>.RPC... <span className="text-dim-red">500</span></div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Panel Section */}
+      <section className="gallery-section">
+        <h2 className="gallery-section__title">Panels</h2>
+        <p className="gallery-section__desc">
+          Content sections following the three-tier hierarchy: subtle (decorative), default (secondary), highlight (primary).
+        </p>
+
+        <div className="gallery-grid">
+          <Panel variant="subtle">
+            <div className="text-xs uppercase tracking-wider">Subtle</div>
+            <p>Decorative. Muted border, no glow.</p>
+          </Panel>
+          <Panel>
+            <div className="text-xs uppercase tracking-wider">Default</div>
+            <p>Secondary. Standard border, subtle glow.</p>
+          </Panel>
+          <Panel variant="highlight">
+            <div className="text-xs uppercase tracking-wider">Highlight</div>
+            <p>Primary. Strong border, medium glow.</p>
+          </Panel>
         </div>
       </section>
 
@@ -541,6 +573,15 @@ export function GalleryDemo() {
           </div>
         </div>
       </section>
+
+      <Modal
+        isOpen={showReactModal}
+        onClose={() => setShowReactModal(false)}
+        title="REACT MODAL"
+        className="plaza-modal--sm"
+      >
+        <p>Rendered by the plaza-react-components &lt;Modal&gt; component.</p>
+      </Modal>
 
       {/* Modal Portal */}
       {showModal && (
