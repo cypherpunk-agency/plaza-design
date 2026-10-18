@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "flags": [
+    "library:renewed"
+  ],
+  "items": [],
+  "events": [],
+  "commands": {},
+  "reactions": [],
+  "conversations": {
+    "catalog": {
+      "entry": [
+        {
+          "node": "start"
+        }
+      ],
+      "nodes": {
+        "start": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "CATALOG. I have catalogued everything in this building: forty-one chairs, two radiators, eleven regulars. You are not in me. That has never happened."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "I need a terminal.",
+              "next": "terminal"
+            },
+            {
+              "id": "choice-2",
+              "label": "What can I borrow?",
+              "next": "borrow"
+            },
+            {
+              "id": "choice-3",
+              "label": "Is that a cat?",
+              "next": "cat"
+            }
+          ],
+          "redirect": [
+            {
+              "when": {
+                "flag": "library:renewed"
+              },
+              "node": "start.variant-0"
+            }
+          ]
+        },
+        "start.variant-0": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "scan.so is renewed and on your device. I have catalogued you as BORROWER. It is the first thing you have been in a while, I expect."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "It is.",
+              "next": "bye"
+            },
+            {
+              "id": "choice-2",
+              "label": "What else is in here?",
+              "next": "more"
+            }
+          ]
+        },
+        "terminal": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "Terminals are for verified identities. Thirty minutes each, per day. I do not make the rules. I file them."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "borrow": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "Books: no. They are digitized, and the copies are licensed to nobody. Chairs: yes, but chairs are not lent. They are sat in. Software: one item. scan.so. On loan. Overdue."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Since when?",
+              "next": "since"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "since": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "Four thousand and eighteen days. I send the printer an overdue notice every morning. The printer is still printing the first one."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Who has it?",
+              "next": "who"
+            }
+          ]
+        },
+        "who": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "Staff. Staff are listed by card number, and I may not tell you which. It is on the notice. The notice is in the printer's queue. The printer is on this network. So, somehow, are you."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Thanks.",
+              "next": "bye"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "cat": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "There is no cat in the catalog. The cat is not a holding. The cat is a regular."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Fair.",
+              "next": "start"
+            }
+          ]
+        },
+        "more": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "The heating. It is on the network too. I am not supposed to know where. Everyone else here does."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Thanks.",
+              "next": "bye"
+            }
+          ]
+        },
+        "bye": {
+          "speaker": "CATALOG · library daemon",
+          "pages": [
+            "Quiet, please. Conversations are transcribed. Mine are filed."
+          ]
+        }
+      }
+    }
+  }
+}

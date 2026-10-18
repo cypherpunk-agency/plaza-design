@@ -1,3 +1,6 @@
+import {attachNativeGameplay} from './gameplay/native-bindings';
+import type {GameplaySession} from './gameplay/session';
+import type {ConversationSession} from './gameplay/conversation';
 /**
  * A scene on screen: its model, the schematic overlay, hack vision, its panels,
  * the HACK and BOARD buttons, and its part of the save. One class for every
@@ -59,6 +62,8 @@ export const NO_RULES: SceneRules = { effects: {} };
 
 /** How a scene reaches the game's save. */
 export interface SceneStore {
+  gameplay?:()=>GameplaySession|undefined;
+  conversation?:(id:string)=>ConversationSession|undefined;
   /** Logic modules the player owns. */
   modules: () => string[];
   /** Keyring item ids the player holds. */
@@ -190,6 +195,7 @@ export class SceneHost {
       program: store?.program,
       controlled: store?.controlled,
     }, def.data ?? emptyData(def.id, def.name), rules);
+    const shared=store?.gameplay?.();if(shared?.definition.native)attachNativeGameplay(this.model,shared);
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
@@ -197,7 +203,7 @@ export class SceneHost {
     this.popup = new Popup(host);
     this.fx = new Feedback(host);
     this.popup.onClose = () => { this.chosen = null; this.onClose(); };
-    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.panels });
+    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.panels },store?.conversation);
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
     this.vision.onPlace = (id) => { this.place(id); this.refollow(); this.dirty(); };
@@ -438,6 +444,8 @@ export class SceneHost {
 
   get overlayOpen() { return this.schem.isOpen || this.panels.isOpen; }
   /** A full-screen panel is up: talking to a daemon, or a lock toy (the city clock stops; the board does not stop it). */
+  presentConversation(session:ConversationSession){this.popup.close();this.panels.presentConversation(session);}
+  get conversationFrame(){return this.panels.conversationFrame;}
   get panelOpen() { return this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
   closeAll() { this.popup.close(); this.fx.clear(); this.panels.close(); this.schem.close(); this.vision.close(); }

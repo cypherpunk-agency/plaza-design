@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "id": "shop",
+  "name": "TEST DISTRICT - COUNTER",
+  "intro": [
+    "A counter where every transaction can be inspected. Stock and conversations remember your visits.",
+    "Use the counter to buy. The door returns to the Test Desk, where you can change the scenario."
+  ],
+  "uses": [
+    {
+      "id": "buy",
+      "name": "TEST VENDOR",
+      "label": "[E] BUY",
+      "cycle": true,
+      "routes": [
+        {
+          "command": "demo.buy",
+          "pages": [
+            "One BLUE. Check the inventory and balance."
+          ],
+          "failure": [
+            "The actual charge could not be paid, stock is unavailable, or the transaction was refused. Nothing changed."
+          ]
+        },
+        {
+          "command": "demo.buy",
+          "pages": [
+            "One crisps. Check the inventory and balance."
+          ],
+          "failure": [
+            "The actual charge could not be paid, stock is unavailable, or the transaction was refused. Nothing changed."
+          ]
+        },
+        {
+          "command": "demo.buy",
+          "pages": [
+            "One noodle cup. Check the inventory and balance."
+          ],
+          "failure": [
+            "The actual charge could not be paid, stock is unavailable, or the transaction was refused. Nothing changed."
+          ]
+        },
+        {
+          "command": "demo.buy",
+          "pages": [
+            "One gum. Check the inventory and balance."
+          ],
+          "failure": [
+            "The actual charge could not be paid, stock is unavailable, or the transaction was refused. Nothing changed."
+          ]
+        }
+      ],
+      "purchase": "demo.goods",
+      "cycleState": "demo.rotation"
+    }
+  ],
+  "readables": [
+    {
+      "id": "shelf",
+      "name": "SHELF LABEL",
+      "pages": [
+        "BASE PRICE: 2 TOKENS.",
+        "Discounts and explicit hidden fees are set at the Test Desk. Reload remembers this district only."
+      ]
+    },
+    {
+      "id": "vend",
+      "name": "THIRST.EXE",
+      "pages": [
+        "ACCEPTS TOKENS. CHANGE NOT GIVEN.",
+        "SCREEN: OUT OF ORDER. DISPENSING NORMALLY."
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "keeper",
+      "name": "SHOPKEEPER",
+      "talk": [
+        [
+          "The quote and charge share a base price. The Test Desk can change the rules."
+        ],
+        [
+          "I remember you. My stock remembers your purchases, too."
+        ]
+      ]
+    },
+    {
+      "id": "browser",
+      "name": "CUSTOMER",
+      "talk": [
+        [
+          "They moved the cheap noodles to the top shelf.",
+          "Top shelf is for people with legs.so. I have the free legs."
+        ],
+        [
+          "I come in to read the labels. It is warmer than the library and the library closed."
+        ]
+      ]
+    },
+    {
+      "id": "android",
+      "name": "CUSTOMER",
+      "talk": [
+        [
+          "Batteries. Two packs. Do not make it weird."
+        ],
+        [
+          "People ask what I do for fun. I queue. I am very good at it. I have never once been served first."
+        ]
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "downtown",
+      "to": "library",
+      "at": "downtown",
+      "label": "[E] TEST DESK"
+    }
+  ]
+}

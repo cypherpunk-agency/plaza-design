@@ -193,6 +193,11 @@ export class SceneModel {
   /** Devices the player is looking into right now (the host sets it: a device's schematic). */
   viewing = new Set<string>();
   private time = new SceneTime();
+  private inspecting=false;
+  private recent:Readonly<SceneTrace>[]=[];
+  enableInspection(){this.inspecting=true;}
+  inspect(){return structuredClone({state:this.state,goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.kind==='CLOCK').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,kind:n.kind,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
+
   /** Scene time: held while paused. A focused check can swap it. */
   now: () => number = () => this.time.now();
   /** The wall clock, for lockouts that must run on while the game is closed. A test can swap it. */
@@ -242,6 +247,7 @@ export class SceneModel {
   /** Back to how the scene file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
     this.epoch++;
+    this.recent=[];
     this.time.clear();
     this.clocks.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
@@ -278,9 +284,9 @@ export class SceneModel {
   setPaused(on: boolean) { this.time.pause(on); }
 
   /** Delayed scene action: pauses with the scene, cancelled by reset or restore. */
-  later(ms: number, fn: () => void) {
+  later(ms: number, fn: () => void, detail?:unknown) {
     const e = this.epoch;
-    this.time.later(ms, () => { if (e === this.epoch) fn(); });
+    this.time.later(ms, () => { if (e === this.epoch) fn(); },detail);
   }
 
   /** A scene state key (for effects and the scene). */
@@ -318,11 +324,34 @@ export class SceneModel {
   }
 
   private observe(phase: SceneTrace['phase'], context: Ctx, detail: unknown) {
-    if (!this.hooks.observe) return;
+    if (!this.hooks.observe&&!this.inspecting) return;
     try {
       const freeze = (v: unknown): unknown => { if (v && typeof v === 'object') { Object.values(v).forEach(freeze); Object.freeze(v); } return v; };
-      this.hooks.observe(freeze(JSON.parse(JSON.stringify({ phase, context, detail }))) as SceneTrace);
+      const event=freeze(JSON.parse(JSON.stringify({phase,context,detail}))) as SceneTrace;if(this.inspecting){this.recent.push(event);if(this.recent.length>128)this.recent.shift();}this.hooks.observe?.(event);
     } catch { /* Diagnostics must never alter gameplay, including observer failures. */ }
+  }
+  /** Scoped shared operation adapter; absent for unmigrated verbs. */
+  gameplay?: (context:Ctx)=>{result:import('./gameplay/types').GameplayResult;line:Line}|undefined;
+  gameplayEligibility?:(context:Ctx)=>import('./gameplay/types').GameplayResult|undefined;
+  /** Pure reach/permission preflight. Signals intentionally bypass manual locks and sectors. */
+  eligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
+    const native=this.nativeEligibility(dev,noun,verb,bySignal);if(!native.ok)return native;
+    const shared=this.gameplayEligibility?.({dev,noun,verb,bySignal});return shared??native;
+  }
+  nativeEligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
+    const n=this.noun(dev+'.'+noun);if(!n)return{ok:false,reason:'unknown-noun'};
+    if(!n.verbs.includes(verb))return{ok:false,reason:'unknown-verb'};
+    if(n.kind!=='WATCH'&&this.frozen(dev))return{ok:false,reason:'watchdog'};
+    if(!bySignal&&this.lockLeft(dev))return{ok:false,reason:'lockout'};
+    if(!bySignal&&n.sector&&this.sealed(dev,n.sector))return{ok:false,reason:'sealed'};
+    return{ok:true};
+  }
+  wireEligibility(from:string,to:string,verb:string):{ok:true}|{ok:false;reason:string}{
+    const i=from.lastIndexOf(':'),n=this.noun(from.slice(0,i)),target=this.noun(to);
+    if(i<1||!n?.events?.includes(from.slice(i+1)))return{ok:false,reason:'unknown-event'};
+    if(!target?.verbs.includes(verb))return{ok:false,reason:'unknown-verb'};
+    if(this.links.some(l=>l.fixed&&l.from===from&&l.to===to))return{ok:false,reason:'fixed'};
+    return{ok:true};
   }
   act(dev: string, noun: string, verb: string, bySignal = false) {
     const context = { dev, noun, verb, bySignal };
@@ -334,15 +363,18 @@ export class SceneModel {
   private actAs(dev: string, noun: string, verb: string, bySignal: boolean) {
     const n = this.noun(dev + '.' + noun);
     // [watchdog] a frozen device refuses every verb, and a signal into it is dropped (its own watchdog noun still answers)
-    if (n && n.kind !== 'WATCH' && this.frozen(dev)) { this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
+    if (n && n.kind !== 'WATCH' && this.frozen(dev)) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'watchdog available',matches:false});this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
     if (!bySignal) {
       const d = this.devices.get(dev), left = this.lockLeft(dev);
-      if (d && left) { this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
+      if (d && left) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'device lock expired',matches:false,remainingMs:left});this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
       this.touched.set(dev, this.now());
       if (n?.sector && this.sealed(dev, n.sector)) { this.sayLine(this.trySeal(dev, n.sector)); this.changed(); return; }
     }
-    const line = n?.run(verb, bySignal);
-    if (line) this.sayLine(line);
+    if(!n?.verbs.includes(verb)){this.observe('condition',{dev,noun,verb,bySignal},{condition:'known verb',matches:false});return;}
+    const shared=this.gameplay?.({dev,noun,verb,bySignal});
+    if(shared)this.observe('action',{dev,noun,verb,bySignal},{shared:true,result:shared.result});
+    const line = shared ? shared.line : n.run(verb, bySignal);
+    if (line){this.sayLine(line);this.observe('result',{dev,noun,verb,bySignal},{response:line});}
     this.changed();
   }
 
@@ -391,13 +423,14 @@ export class SceneModel {
     out.forEach((l) => this.live.add(l));
     this.hooks.changed();
     this.later(500, () => { out.forEach((l) => this.live.delete(l)); this.hooks.changed(); });
-    out.forEach((l) => this.later(150, () => { const [d, n] = split(l.to); this.act(d, n, l.verb, true); }));
+    out.forEach((l) => this.later(150, () => { const [d, n] = split(l.to); this.act(d, n, l.verb, true); },{kind:'signal',from:key,to:l.to,verb:l.verb}));
   }
 
   connect(from: string, to: string, verb: string): Line {
     // [fixed cables] a conduit between the same two cannot be replaced
     const fixed = this.links.find((l) => l.fixed && l.from === from && l.to === to);
     if (fixed) return this.line('wire.fixed', { from: fixed.from, to: fixed.to, verb: fixed.verb });
+    const eligible=this.wireEligibility(from,to,verb);if(!eligible.ok)return['wire '+from+' '+to,'CONNECTION REFUSED: '+eligible.reason+'.','err'];
     this.links = this.links.filter((l) => !(l.from === from && l.to === to));
     this.links.push({ from, to, verb });
     this.changed();

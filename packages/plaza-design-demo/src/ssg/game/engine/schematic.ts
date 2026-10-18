@@ -1,3 +1,4 @@
+import { gameStorage } from '../runtime/storage';
 /**
  * The schematic: a device in the middle, its nouns branching out. Tap a noun
  * and its verbs open beside it; tap the device and all of them open.
@@ -74,8 +75,8 @@ const BOARD_NET: P[] = [{ x: 0.5, y: 0.6 }, { x: 0.28, y: 0.62 }, { x: 0.72, y: 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
   const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e;
 }
-function readUnfold() { try { return localStorage.getItem(UNFOLD_KEY) === '1'; } catch { return false; } }
-function writeUnfold(on: boolean) { try { localStorage.setItem(UNFOLD_KEY, on ? '1' : '0'); } catch { /* private mode: not remembered */ } }
+function readUnfold() { try { return gameStorage.getItem(UNFOLD_KEY) === '1'; } catch { return false; } }
+function writeUnfold(on: boolean) { try { gameStorage.setItem(UNFOLD_KEY, on ? '1' : '0'); } catch { /* private mode: not remembered */ } }
 
 export class Schematic {
   readonly root: HTMLDivElement;

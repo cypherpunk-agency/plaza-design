@@ -1,3 +1,4 @@
+import { gameStorage } from '../runtime/storage';
 /**
  * CRT boot: the first thing every visitor sees. The monitor powers on, a few
  * lines of boot text scroll, then the landing page appears. It gets shorter the
@@ -21,8 +22,8 @@ const LINES = [
 
 function visits(): number {
   try {
-    const n = Number(localStorage.getItem('ad-visits') || '0') + 1;
-    localStorage.setItem('ad-visits', String(n));
+    const n = Number(gameStorage.getItem('ad-visits') || '0') + 1;
+    gameStorage.setItem('ad-visits', String(n));
     return n;
   } catch { return 1; }
 }

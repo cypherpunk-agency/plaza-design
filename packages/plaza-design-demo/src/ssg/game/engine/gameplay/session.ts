@@ -1,0 +1,69 @@
+import {resolveValues,validValue} from './state';
+import {applyPurchase,purchaseQuote} from './commerce';
+import type {StateValue} from './types';
+import type { Condition, GameplayDefinition, GameplayEvent, GameplayResult, GameplayState, Source, StatePort } from './types';
+import { matches, validateGameplay } from './validation';
+export function cloneState(state: GameplayState): GameplayState { return { flags:{...state.flags},items:{...state.items},tokens:state.tokens,...(state.values?{values:{...state.values}}:{}) }; }
+function freeze<T>(value:T):Readonly<T>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;}
+/** One command and its authored reactions either all commit or change nothing. No timers/storage/DOM. */
+export class GameplaySession {
+  authorize?:(id:string,source:Source)=>import('./types').Eligibility;
+  readonly definition: Readonly<GameplayDefinition>;
+  private temporary:Record<string,StateValue>={};
+  private active=false;
+  private disposed=false;
+  private listeners=new Set<(event:Readonly<GameplayEvent>)=>void>();
+  private history:Readonly<GameplayEvent>[]=[];
+  constructor(definition:unknown,private port:StatePort,private afterCommit:()=>void=()=>{}){this.definition=freeze(validateGameplay(definition));}
+  state(){const state=cloneState(this.port.read());if(this.definition.state)state.values=resolveValues(this.definition,state,this.temporary);return state;}
+  quote(id:string){return purchaseQuote(this.definition,id,this.state());}
+  matches(condition?:Condition){return matches(condition,this.state());}
+  events(){return [...this.history];}
+  clearHistory(){this.history=[];}
+  observe(listener:(event:Readonly<GameplayEvent>)=>void){if(this.disposed)throw new Error('Gameplay session disposed');this.listeners.add(listener);return()=>{this.listeners.delete(listener);};}
+  eligibility(id:string,source:Source):GameplayResult{return this.dispatchMany([id],source,undefined,true);}
+  dispatch(id:string,source:Source):GameplayResult{return this.dispatchMany([id],source);}
+  /** One transition may combine its choice and explicit node-entry commands atomically. */
+  dispatchMany(ids:readonly string[],source:Source,continuation?:(state:GameplayState)=>string[],preview=false):GameplayResult{
+    if((!ids.length&&!continuation)||ids.length>64)return{ok:false,reason:'budget'};
+    if(this.disposed)return{ok:false,reason:'disposed'};
+    if(this.active)return{ok:false,reason:'busy'};
+    this.active=true;
+    try{
+      const draft=this.state(),events:GameplayEvent[]=[],queue:{id:string;source:Source;cause?:string}[]=ids.map(id=>({id,source}));
+      let commands=0,actions=0,continued=false;
+      for(let i=0;i<queue.length||(continuation&&!continued);i++){
+        if(i===queue.length){continued=true;let next:string[];try{next=continuation!(cloneState(draft));}catch{return{ok:false,reason:'budget'};}if(next.length>64)return{ok:false,reason:'budget'};queue.push(...next.map(id=>({id,source})));if(i===queue.length)break;}
+        if(++commands>64)return{ok:false,reason:'budget'};
+        const task=queue[i],command=Object.prototype.hasOwnProperty.call(this.definition.commands,task.id)?this.definition.commands[task.id]:undefined;
+        if(!command)return{ok:false,reason:'unknown-command'};
+        if(!command.sources.includes(task.source))return{ok:false,reason:'forbidden'};
+        const allowed=this.authorize?.(task.id,task.source);if(allowed&&!allowed.ok)return allowed;
+        if(!matches(command.when,draft))return{ok:false,reason:'conditions'};
+        const emitted:string[]=[];
+        for(const action of command.actions){
+          if(++actions>512)return{ok:false,reason:'budget'};
+          if('state'in action){const d=this.definition.state![action.state],next='set'in action?action.set:Number(draft.values![action.state])+action.add;if(!validValue(d,next))return{ok:false,reason:'resources'};draft.values![action.state]=next;}
+          else if('purchase'in action){if(!applyPurchase(this.definition,action.purchase,draft))return{ok:false,reason:'resources'};}
+          else if('flag'in action)draft.flags[action.flag]=action.value;
+          else if('item'in action){const n=(draft.items[action.item]??0)+action.add;if(!Number.isSafeInteger(n)||n<0||n>1_000_000)return{ok:false,reason:'resources'};if(n)draft.items[action.item]=n;else delete draft.items[action.item];}
+          else if('tokens'in action){draft.tokens+=action.tokens;if(!Number.isSafeInteger(draft.tokens)||draft.tokens<0||draft.tokens>1_000_000)return{ok:false,reason:'resources'};}
+          else{if(events.length>=128)return{ok:false,reason:'budget'};events.push({id:action.emit,command:task.id,source:task.source,...(task.cause?{cause:task.cause}:{})});emitted.push(action.emit);}
+        }
+        for(const event of emitted)for(const reaction of this.definition.reactions)if(reaction.event===event){if(queue.length>=256)return{ok:false,reason:'budget'};queue.push({id:reaction.command,source:'system',cause:event});}
+      }
+      for(const[id,d]of Object.entries(this.definition.state??{}))if(!validValue(d,draft.values?.[id]))return{ok:false,reason:'resources'};
+      if(preview)return{ok:true,events:Object.freeze(events.map(event=>freeze(event)))};
+      if(commands===0)return{ok:true,events:Object.freeze([])};
+      const persisted=cloneState(draft),temporary={...this.temporary};for(const[id,d]of Object.entries(this.definition.state??{}))if(d.lifetime!=='save'){if(d.lifetime==='session')temporary[id]=draft.values![id];delete persisted.values![id];}
+      try{this.port.write(persisted,events);this.temporary=temporary;}catch{return{ok:false,reason:'commit'};}
+      const published=events.map(event=>freeze(event));
+      this.history.push(...published);this.history=this.history.slice(-128);
+      // Notifications see committed state. Diagnostic failures and reentrant dispatch cannot affect it.
+      try{this.afterCommit();}catch{/* Presentation/persistence failures are separate from committed state. */}
+      for(const event of published)for(const listener of [...this.listeners])try{listener(event);}catch{/* observer isolation */}
+      return{ok:true,events:Object.freeze(published)};
+    }finally{this.active=false;}
+  }
+  dispose(){this.disposed=true;this.listeners.clear();this.history=[];}
+}

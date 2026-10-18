@@ -1,3 +1,6 @@
+import {nativeGameplayScenes} from './native-gameplay-scenes';
+import {gameplayScenes} from './gameplay-scenes';
+import {validatePlayFixtures,validateFixtureBounds} from './play-fixtures';
 /** Explicit source allowlist shared by the local launcher and focused save checks. */
 import { art, type Composition } from '../art';
 import { validateTimeline } from '../art/core/timeline';
@@ -23,6 +26,9 @@ const sceneComposition = (scene: string, value: unknown) => {
   return doc;
 };
 export const sourceDocuments: DocumentDescriptor[] = [
+  ...nativeGameplayScenes.map(s=>({id:s.gameplayId,file:s.file,kind:'gameplay' as const,validate:s.validateGameplay})),
+  ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
+  {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures},
   { id: 'sandbox-behavior', file: 'scenes/sandbox/devices.json', kind: 'behavior', validate: validateSandboxBehavior, validateUpdate: preserveSandboxBehavior },
   ...scenes.map(scene => ({ id: scene, file: `scenes/${scene === 'harborShift' ? 'harbor-shift' : scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: preserveBoundIdentity })),
   ...Object.entries(sequenceFiles).map(([id, file]) => ({ id, file, kind: 'composition' as const, validateUpdate: preserveBoundIdentity, validate(value: unknown) { const doc = art.validate(value); if (doc.scene !== id) throw new Error(`Sequence identity must remain ${id}`); return doc; } })),
@@ -39,6 +45,8 @@ export function validateSourceDocuments(documents: ReadonlyMap<string, unknown>)
     descriptor.validate(documents.get(descriptor.id));
     if (descriptor.kind === 'composition') compositions[descriptor.id] = documents.get(descriptor.id) as Composition;
   }
+  for(const s of gameplayScenes)s.validateScene(documents.get(s.prefix+'-scene'),s.validateGameplay(documents.get(s.gameplayId)));
+  validateFixtureBounds(validatePlayFixtures(documents.get('play-fixtures')),Object.fromEntries(['harborShift','sandbox','shop','library','laundromat','market','beach'].map(id=>[id,nativeSceneAdapters[id].definition(compositions[id],{},{reduced:false}).width])));
   const context = createSequenceValidationContext(art, compositions, destinations);
   for (const [id] of Object.entries(timelineFiles)) validateTimeline(documents.get(id), context);
   for (const id of documents.keys()) if (!sourceDocuments.some(d => d.id === id)) throw new Error(`Unknown source document: ${id}`);

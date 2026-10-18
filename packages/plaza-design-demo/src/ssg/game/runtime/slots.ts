@@ -1,3 +1,4 @@
+import { gameStorage, gameSessionStorage, reloadRuntime } from './storage';
 /**
  * Save slots for the pause menu (menu.ts).
  *
@@ -11,14 +12,14 @@
  * way every scene's runtime starts clean from the loaded save.
  */
 
-import { SAVE_KEY, SHIFT_PROTOTYPE, SUDO } from "./mode";
+import { SAVE_KEY, SHIFT_PROTOTYPE, SUDO,DEMO_MODE } from "./mode";
 import { type Save } from "./save";
 
 export const SLOT_COUNT = 3;
 /** Sudo mode keeps its own slots, like its own save. */
-export const slotKey = (n: number) => `access-denied-v3-${SHIFT_PROTOTYPE ? 'harbor-shift-' : SUDO ? 'sudo-' : ''}slot-${n}`;
+export const slotKey = (n: number) => `access-denied-v3-${DEMO_MODE ? 'demo-' : SHIFT_PROTOTYPE ? 'harbor-shift-' : SUDO ? 'sudo-' : ''}slot-${n}`;
 /** sessionStorage: a save to land in after the reload (LOAD GAME). */
-export const RESUME_KEY = SHIFT_PROTOTYPE ? 'access-denied-harbor-shift-resume-v1' : 'access-denied-resume-v3';
+export const RESUME_KEY = DEMO_MODE ? 'access-denied-demo-resume-v1' : SHIFT_PROTOTYPE ? 'access-denied-harbor-shift-resume-v1' : 'access-denied-resume-v3';
 
 export interface Slot {
   v: 2;
@@ -36,7 +37,7 @@ export interface Slot {
 
 export function readSlot(n: number): Slot | null {
   try {
-    const raw = localStorage.getItem(slotKey(n));
+    const raw = gameStorage.getItem(slotKey(n));
     if (!raw) return null;
     const s = JSON.parse(raw) as Slot;
     if (!s || typeof s !== 'object' || !s.save || typeof s.save !== 'object') return null;
@@ -53,7 +54,7 @@ export function writeSlot(n: number, save: Save, scene: string, sceneName: strin
     playMs: save.playMs ?? 0,
     save: JSON.parse(JSON.stringify(save)),
   };
-  try { localStorage.setItem(slotKey(n), JSON.stringify(slot)); return true; } catch { return false; }
+  try { gameStorage.setItem(slotKey(n), JSON.stringify(slot)); return true; } catch { return false; }
 }
 
 /** "DOWNTOWN · ghost · 2026-10-14 21:03 · 1:07" for the slot list. */
@@ -67,28 +68,28 @@ export function slotLine(s: Slot): string {
 /** LOAD GAME: reload the page and land in the slot's scene with the slot's save. */
 export function resumeInto(slot: Slot) {
   try {
-    sessionStorage.setItem(RESUME_KEY, JSON.stringify({ scene: slot.scene, save: slot.save }));
-    location.reload();
+    gameSessionStorage.setItem(RESUME_KEY, JSON.stringify({ scene: slot.scene, save: slot.save }));
+    reloadRuntime();
   } catch {
     // No sessionStorage: write the save now and come back through ?play.
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(slot.save)); } catch { /* nothing to do */ }
-    location.search = '?play' + (slot.scene && slot.scene !== 'downtown' ? '=' + encodeURIComponent(slot.scene) : '') + (SUDO ? '&sudo' : '');
+    try { gameStorage.setItem(SAVE_KEY, JSON.stringify(slot.save)); } catch { /* nothing to do */ }
+    location.search = DEMO_MODE?'?demo':'?play' + (slot.scene && slot.scene !== 'downtown' ? '=' + encodeURIComponent(slot.scene) : '') + (SUDO ? '&sudo' : '');
   }
 }
 
 /** Is a LOAD GAME reload waiting (boot.ts skips the boot then)? */
 export function resumePending(): boolean {
-  try { return !!sessionStorage.getItem(RESUME_KEY); } catch { return false; }
+  try { return !!gameSessionStorage.getItem(RESUME_KEY); } catch { return false; }
 }
 
 /** After a LOAD GAME reload: put the slot's save in place as the autosave and return its scene. Once. */
 export function takeResume(): string | null {
   try {
-    const raw = sessionStorage.getItem(RESUME_KEY);
+    const raw = gameSessionStorage.getItem(RESUME_KEY);
     if (!raw) return null;
-    sessionStorage.removeItem(RESUME_KEY);
+    gameSessionStorage.removeItem(RESUME_KEY);
     const r = JSON.parse(raw) as { scene?: string; save?: Save };
-    if (r.save && typeof r.save === 'object') localStorage.setItem(SAVE_KEY, JSON.stringify(r.save));
+    if (r.save && typeof r.save === 'object') gameStorage.setItem(SAVE_KEY, JSON.stringify(r.save));
     return typeof r.scene === 'string' ? r.scene : 'downtown';
   } catch { return null; }
 }

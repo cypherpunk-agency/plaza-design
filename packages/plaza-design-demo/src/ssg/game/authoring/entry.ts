@@ -1,95 +1,225 @@
+import {nativeGameplayScene,nativeGameplayScenes} from './native-gameplay-scenes';
+import {gameplayScenes,gameplayScene,authoredDocumentIds} from './gameplay-scenes';
+
+import {mountRegisteredGameplay} from './registered-gameplay';
+
+import {mountSceneAuthoring} from './scene-authoring';
+
+
+import {validatePlayFixtures,validateFixtureBounds} from './play-fixtures';
+
+import { mountPlayWorkbench } from './play-workbench';
+
 /** Shared browser entry: local protected source editing or public static snapshot/downloads. */
+
 import { art, type Composition } from '../art';
+
 import { mountComposer, type ComposerConfig, type EditorDocument } from './app';
+
 import { createNativePreview } from './native-preview';
+
 import { nativeSceneAdapters } from './scene-adapters';
+
 import { createSequencePreview } from './sequence-preview';
+
 import { WEATHER_KINDS } from '../world/weather';
+
 import { SCENES } from '../scenes';
+
 import { snapshotWorld, validateWorldDocument } from '../world/document';
+
 import type { TimelineDocument } from '../art/core/timeline';
+
 import { mountWorldPanel, type WorldPanelSession } from './world-panel';
+
 import { createAssetPreview } from './asset-preview';
+
 import { mountCharacterWorkbench } from './character-workbench';
+
 import { mountVehicleWorkbench } from './vehicle-workbench';
+
 import { validateSandboxBehavior } from './behavior-validation';
+
 import { mountEventInspector } from './event-inspector';
+
 import { mountSourceViewer } from './source-viewer';
+
 import { mountBehaviorWorkbench } from './behavior-authoring';
+
+
+
 import type { SceneData } from '../data';
+
 import { mountSignageWorkbench } from './signage-workbench';
 
+
+
 async function start() {
+
   const host = document.getElementById('composer'); if (!host) throw new Error('Missing editor host');
+
   const publicEditor = document.documentElement.dataset.editorMode === 'public';
+
   let api: ComposerConfig['api'], documents: EditorDocument[] | undefined;
+
   let sourceSnapshot: Promise<Record<string, string>> | undefined;
+
   if (publicEditor) {
+
     const response = await fetch('./documents.json', { credentials: 'omit' }); if (!response.ok) throw new Error('Published editor documents are unavailable');
+
     documents = await response.json() as EditorDocument[];
+
   } else {
+
     const response = await fetch('/bootstrap', { credentials: 'omit' }); if (!response.ok) throw new Error('Local editor session is unavailable');
+
     api = (await response.json() as { api: ComposerConfig['api'] }).api;
+
   }
+
   await Promise.all([400, 500, 600, 700].map(weight => document.fonts.load(`${weight} 16px "IBM Plex Mono"`)));
+
   await document.fonts.ready;
+
   const native = createNativePreview(nativeSceneAdapters), sequences = createSequencePreview(art);
+
   const mapSession: WorldPanelSession = {};
+
+  const playSelection:{fixture?:string;device?:string}={};
+
+  const demoSelection:{fixture?:string;device?:string}={};
+  const logicSelection:{scene?:string;use?:string}={},gameplaySelection:{scene?:string}={};
+
   mountComposer(host, { registry: art, api, documents, viewport: { width: 960, height: 540 },
+
     assetPreview: createAssetPreview(art, native),
-    validateDocument(document) { if (document.kind === 'behavior') { if (document.id !== 'sandbox-behavior') throw new Error('Unsupported behavior document'); validateSandboxBehavior(document.value); } },
-    workbenches: [
-      { id: 'characters', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
-      { id: 'vehicles', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
-      { id: 'signage', label: 'Signs & light', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
-        panel.classList.add('signage-workbench');
-        return mountSignageWorkbench(panel, { registry: art, documents: context.documents,
-          openUsage: usage => context.openInstance(usage.document, usage.instance), renderNative: native.render, renderSequence: sequences.render,
-        });
-      } },
-      { id: 'events', label: 'Events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
-        const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
-        const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
-          if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
-          const snapshot = await sourceSnapshot; if (signal.aborted) throw new Error('Source selection changed');
-          if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
-          return { file, text: snapshot[file] };
-        } } : {}), dispose = mountEventInspector(graph, { documents: context.documents,
-          onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as Composition).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
-          onOpenSource: reference => { void viewer.open(reference); },
-        }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
-      } },
-      { id: 'behavior', label: 'Behavior', title: 'Sandbox behavior authoring · scoped source edits', authoring: true, documentDependent: true, documentIds: ['sandbox-behavior'], mount(panel, context) {
-        const api = context.authoring!;
-        return mountBehaviorWorkbench(panel, { document: () => api.get('sandbox-behavior').value as SceneData,
-          onEdit: (value, label) => api.edit('sandbox-behavior', label, value), undo: api.undo, redo: api.redo, save: api.save, reload: api.reload,
-          dirty: () => api.dirty('sandbox-behavior'), revision: () => api.get('sandbox-behavior').revision,
-          saveLabel: publicEditor ? 'Download edits' : 'Save',
-        });
-      } },
-    ],
-    preview: { render: (canvas, request) => sequences.render(canvas, request) ?? native.render(canvas, request) },
-    worldPanel(panel, openScene, documents) {
-      const compositions = Object.fromEntries(documents.filter(doc => doc.kind === 'composition').map(doc => [doc.id, doc.value as Composition]));
-      const timelines = documents.filter(doc => doc.kind === 'timeline').flatMap(doc => (doc.value as TimelineDocument).sequences);
-      const refs = Object.fromEntries(Object.entries(compositions).filter(([, doc]) => Object.prototype.hasOwnProperty.call(SCENES, doc.scene)).map(([id, doc]) => [doc.scene, id]));
-      const world = snapshotWorld(refs, timelines.flatMap(sequence => sequence.handoff ? [{ id: sequence.id, ...sequence.handoff }] : []));
-      return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines }), openScene, mapSession);
+
+    validateDocument(document,documents) {
+
+      if(document.kind==='scene'){const s=gameplayScene(document.id);s.validateScene(document.value,s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value));}
+
+      if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');validateFixtureBounds(validatePlayFixtures(document.value),Object.fromEntries(['harborShift','sandbox','shop','library','laundromat','market','beach'].map(id=>[id,nativeSceneAdapters[id].definition(documents.find(d=>d.id===id)!.value as Composition,{},{reduced:false}).width])));}
+
+      if (document.kind === 'behavior') { if (document.id !== 'sandbox-behavior') throw new Error('Unsupported behavior document'); validateSandboxBehavior(document.value); }
+
+      if (document.kind === 'gameplay') (nativeGameplayScene(document.id)??gameplayScene(document.id)).validateGameplay(document.value);
+
     },
-    motionTracks: sequences.motionTracks,clips:sequences.clips, timelineContext: sequences.timelineContext,
-    destinations: Object.fromEntries(Object.entries(SCENES).map(([scene, def]) => [scene, def.exits.map(exit => exit.id)])),
-    initialEnvironment: { cameraX: 0, zoom: 1, day: 1, minute: 580, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' },
-    environmentControls: [
-      { key: 'cameraX', label: 'Camera X', kind: 'number', step: 20 }, { key: 'cameraH', label: 'Camera height', kind: 'number', step: 10 },
-      { key: 'zoom', label: 'Zoom', kind: 'number', min: .1, max: 8, step: .1 },
-      { key: 'day', label: 'City day', kind: 'number', min: 1, step: 1 }, { key: 'minute', label: 'City minute', kind: 'number', min: 0, max: 1439, step: 10 },
-      { key: 'seed', label: 'Weather seed', kind: 'number', min: 0, step: 1 }, { key: 'weather', label: 'Weather', kind: 'select', options: ['forecast', ...WEATHER_KINDS] },
-      { key: 'hack', label: 'Hack vision', kind: 'boolean' }, { key: 'hover', label: 'Hovered device id', kind: 'text' },
-      { key: 'flags', label: 'Story flags (JSON)', kind: 'text' }, { key: 'state', label: 'Device state (JSON)', kind: 'text' },
-      { key: 'presentation', label: 'Presentation controller (JSON, optional)', kind: 'text' },
-      { key: 'sequence', label: 'Opening sequence', kind: 'select', options: ['title', 'rise', 'glide'] },
-      { key: 'titleOffset', label: 'Title clock offset', kind: 'number', min: 0, step: 1 },
+
+    workbenches: [
+      {id:'demo-world',selectDocument:false,label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,documentIds:['play-fixtures','shop','library','sandbox','demo-counter-scene','demo-desk-scene','demo-counter-gameplay','demo-workshop-gameplay'],mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true)},
+
+      {id:'play',label:'Play',title:'Play · pending scenes and reusable fixtures',authoring:true,documentDependent:true,primaryDocumentId:'play-fixtures',documentIds:['play-fixtures','sandbox','sandbox-behavior',...gameplayScenes.map(s=>s.id),...nativeGameplayScenes.map(s=>s.id),...nativeGameplayScenes.map(s=>s.gameplayId),...authoredDocumentIds],mount:(host,context)=>mountPlayWorkbench(host,context,playSelection)},
+
+      {id:'scene-logic',label:'Scene logic',title:'Scene logic: interactions, dialogue and presentation',authoring:true,documentDependent:true,get primaryDocumentId(){return gameplayScene(logicSelection.scene??'harborShift').prefix+'-scene';},primaryDocumentIds:gameplayScenes.map(s=>s.prefix+'-scene'),onDocumentSelected(id){const next=gameplayScene(id).id;if(logicSelection.scene!==next)logicSelection.use=undefined;logicSelection.scene=next;},documentIds:authoredDocumentIds,mount:(host,context)=>mountSceneAuthoring(host,context,logicSelection)},
+
+      {get primaryDocumentId(){return (nativeGameplayScene(gameplaySelection.scene??'')??gameplayScene(gameplaySelection.scene??'harborShift')).gameplayId;},primaryDocumentIds:[...gameplayScenes,...nativeGameplayScenes].map(s=>s.gameplayId),onDocumentSelected(id){gameplaySelection.scene=(nativeGameplayScene(id)??gameplayScene(id)).id;},id:'gameplay',label:'Gameplay',title:'Gameplay · commands and conditions',authoring:true,documentDependent:true,documentIds:[...authoredDocumentIds,...nativeGameplayScenes.map(s=>s.gameplayId)],mount:(host,context)=>mountRegisteredGameplay(host,context,gameplaySelection,publicEditor)},
+
+      { id: 'characters', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
+
+      { id: 'vehicles', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
+
+      { id: 'signage', label: 'Signs & light', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
+
+        panel.classList.add('signage-workbench');
+
+        return mountSignageWorkbench(panel, { registry: art, documents: context.documents,
+
+          openUsage: usage => context.openInstance(usage.document, usage.instance), renderNative: native.render, renderSequence: sequences.render,
+
+        });
+
+      } },
+
+      { id: 'events', label: 'Events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
+
+        const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
+
+        const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
+
+          if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
+
+          const snapshot = await sourceSnapshot; if (signal.aborted) throw new Error('Source selection changed');
+
+          if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
+
+          return { file, text: snapshot[file] };
+
+        } } : {}), dispose = mountEventInspector(graph, { documents: context.documents,
+
+          onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as Composition).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
+
+          onOpenSource: reference => { void viewer.open(reference); },
+
+        }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
+
+      } },
+
+      { id: 'behavior', label: 'Behavior', title: 'Sandbox behavior authoring · scoped source edits', authoring: true, documentDependent: true, documentIds: ['sandbox-behavior'], mount(panel, context) {
+
+        const api = context.authoring!;
+
+        return mountBehaviorWorkbench(panel, { document: () => api.get('sandbox-behavior').value as SceneData,
+
+          onEdit: (value, label) => api.edit('sandbox-behavior', label, value), undo: api.undo, redo: api.redo, save: api.save, reload: api.reload,
+
+          dirty: () => api.dirty('sandbox-behavior'), revision: () => api.get('sandbox-behavior').revision,
+
+          saveLabel: publicEditor ? 'Download edits' : 'Save',
+
+        });
+
+      } },
+
     ],
+
+    preview: { render: (canvas, request) => sequences.render(canvas, request) ?? native.render(canvas, request) },
+
+    worldPanel(panel, openScene, documents) {
+
+      const compositions = Object.fromEntries(documents.filter(doc => doc.kind === 'composition').map(doc => [doc.id, doc.value as Composition]));
+
+      const timelines = documents.filter(doc => doc.kind === 'timeline').flatMap(doc => (doc.value as TimelineDocument).sequences);
+
+      const refs = Object.fromEntries(Object.entries(compositions).filter(([, doc]) => Object.prototype.hasOwnProperty.call(SCENES, doc.scene)).map(([id, doc]) => [doc.scene, id]));
+
+      const world = snapshotWorld(refs, timelines.flatMap(sequence => sequence.handoff ? [{ id: sequence.id, ...sequence.handoff }] : []));
+
+      return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines }), openScene, mapSession);
+
+    },
+
+    motionTracks: sequences.motionTracks,clips:sequences.clips, timelineContext: sequences.timelineContext,
+
+    destinations: Object.fromEntries(Object.entries(SCENES).map(([scene, def]) => [scene, def.exits.map(exit => exit.id)])),
+
+    initialEnvironment: { cameraX: 0, zoom: 1, day: 1, minute: 580, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' },
+
+    environmentControls: [
+
+      { key: 'cameraX', label: 'Camera X', kind: 'number', step: 20 }, { key: 'cameraH', label: 'Camera height', kind: 'number', step: 10 },
+
+      { key: 'zoom', label: 'Zoom', kind: 'number', min: .1, max: 8, step: .1 },
+
+      { key: 'day', label: 'City day', kind: 'number', min: 1, step: 1 }, { key: 'minute', label: 'City minute', kind: 'number', min: 0, max: 1439, step: 10 },
+
+      { key: 'seed', label: 'Weather seed', kind: 'number', min: 0, step: 1 }, { key: 'weather', label: 'Weather', kind: 'select', options: ['forecast', ...WEATHER_KINDS] },
+
+      { key: 'hack', label: 'Hack vision', kind: 'boolean' }, { key: 'hover', label: 'Hovered device id', kind: 'text' },
+
+      { key: 'flags', label: 'Story flags (JSON)', kind: 'text' }, { key: 'state', label: 'Device state (JSON)', kind: 'text' },
+
+      { key: 'presentation', label: 'Presentation controller (JSON, optional)', kind: 'text' },
+
+      { key: 'sequence', label: 'Opening sequence', kind: 'select', options: ['title', 'rise', 'glide'] },
+
+      { key: 'titleOffset', label: 'Title clock offset', kind: 'number', min: 0, step: 1 },
+
+    ],
+
   });
+
 }
+
 void start().catch(error => { const host = document.getElementById('composer'); if (host) { const message = document.createElement('p'); message.id = 'boot-error'; message.textContent = `Composer could not start: ${error instanceof Error ? error.message : String(error)}`; host.replaceChildren(message); } });

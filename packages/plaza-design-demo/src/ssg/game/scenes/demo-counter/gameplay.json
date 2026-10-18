@@ -1,0 +1,303 @@
+{
+  "version": 1,
+  "flags": [
+    "demo.discount",
+    "demo.fee"
+  ],
+  "items": [
+    "blue",
+    "crisps",
+    "noodlecup",
+    "gum"
+  ],
+  "events": [
+    "demo.purchased"
+  ],
+  "state": {
+    "demo.rotation": {
+      "owner": "demo",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 3,
+      "lifetime": "save"
+    },
+    "demo.stock": {
+      "owner": "demo",
+      "type": "number",
+      "default": 8,
+      "min": 0,
+      "max": 100,
+      "lifetime": "save"
+    }
+  },
+  "purchases": {
+    "demo.goods": {
+      "basePrice": 2,
+      "rotation": {
+        "state": "demo.rotation",
+        "items": [
+          "blue",
+          "crisps",
+          "noodlecup",
+          "gum"
+        ]
+      },
+      "modifiers": [
+        {
+          "id": "discount",
+          "when": {
+            "flag": "demo.discount"
+          },
+          "amount": -1,
+          "scope": "both"
+        },
+        {
+          "id": "hidden-fee",
+          "when": {
+            "flag": "demo.fee"
+          },
+          "amount": 2,
+          "scope": "charge"
+        }
+      ],
+      "stock": "demo.stock"
+    }
+  },
+  "commands": {
+    "demo.buy": {
+      "sources": [
+        "interaction",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "purchase": "demo.goods"
+        },
+        {
+          "emit": "demo.purchased"
+        }
+      ]
+    },
+    "demo.credit": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "tokens": 10
+        }
+      ]
+    },
+    "demo.discount-on": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "demo.discount",
+          "value": true
+        }
+      ]
+    },
+    "demo.fee-on": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "demo.fee",
+          "value": true
+        }
+      ]
+    },
+    "demo.normal": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "demo.discount",
+          "value": false
+        },
+        {
+          "flag": "demo.fee",
+          "value": false
+        }
+      ]
+    },
+    "demo.refill": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "demo.stock",
+          "set": 8
+        }
+      ]
+    },
+    "demo.empty": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "demo.stock",
+          "set": 0
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "demo.desk": {
+      "entry": [
+        {
+          "node": "desk"
+        }
+      ],
+      "nodes": {
+        "desk": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "Choose a scenario. A discount changes quote and charge. A hidden fee changes only the charge. Those are explicit model settings, not separate demo code."
+          ],
+          "choices": [
+            {
+              "id": "normal",
+              "label": "Normal price",
+              "command": "demo.normal",
+              "next": "normal"
+            },
+            {
+              "id": "discount",
+              "label": "Enable discount",
+              "command": "demo.discount-on",
+              "next": "discount"
+            },
+            {
+              "id": "fee",
+              "label": "Enable hidden fee",
+              "command": "demo.fee-on",
+              "next": "fee"
+            },
+            {
+              "id": "credit",
+              "label": "Add 10 test tokens",
+              "command": "demo.credit",
+              "next": "credit"
+            },
+            {
+              "id": "buy",
+              "label": "Buy here through conversation",
+              "command": "demo.buy",
+              "next": "bought"
+            },
+            {
+              "id": "cancel",
+              "label": "Leave unchanged",
+              "next": "bye"
+            },
+            {
+              "id": "refill",
+              "label": "Refill stock to eight",
+              "command": "demo.refill",
+              "next": "stock"
+            },
+            {
+              "id": "empty",
+              "label": "Set stock to zero",
+              "command": "demo.empty",
+              "next": "stock"
+            }
+          ]
+        },
+        "normal": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "Normal pricing restored."
+          ],
+          "choices": [
+            {
+              "id": "back",
+              "label": "Back",
+              "next": "desk"
+            }
+          ]
+        },
+        "discount": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "Discount enabled. Quote and charge both decrease by one."
+          ],
+          "choices": [
+            {
+              "id": "back",
+              "label": "Back",
+              "next": "desk"
+            }
+          ]
+        },
+        "fee": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "Hidden fee enabled. The charge increases by two; the displayed quote does not."
+          ],
+          "choices": [
+            {
+              "id": "back",
+              "label": "Back",
+              "next": "desk"
+            }
+          ]
+        },
+        "credit": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "Ten test tokens credited."
+          ],
+          "choices": [
+            {
+              "id": "back",
+              "label": "Back",
+              "next": "desk"
+            }
+          ]
+        },
+        "bought": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "The same purchase command charged you, delivered the next good and advanced stock."
+          ],
+          "choices": [
+            {
+              "id": "back",
+              "label": "Back",
+              "next": "desk"
+            }
+          ]
+        },
+        "bye": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "No changes. You can close this conversation."
+          ]
+        },
+        "stock": {
+          "speaker": "TEST DESK",
+          "pages": [
+            "Stock changed through a shared command. An empty purchase must refuse without charging or advancing rotation."
+          ],
+          "choices": [
+            {
+              "id": "back",
+              "label": "Back",
+              "next": "desk"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

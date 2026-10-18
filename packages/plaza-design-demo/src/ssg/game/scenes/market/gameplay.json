@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [],
+  "commands": {
+    "market.fortune.0": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.fortune",
+        "is": 0
+      },
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "market.fortune",
+          "set": 1
+        }
+      ]
+    },
+    "market.fortune.1": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.fortune",
+        "is": 1
+      },
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "market.fortune",
+          "set": 2
+        }
+      ]
+    },
+    "market.fortune.2": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.fortune",
+        "is": 2
+      },
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "market.fortune",
+          "set": 3
+        }
+      ]
+    },
+    "market.fortune.3": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.fortune",
+        "is": 3
+      },
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "market.fortune",
+          "set": 4
+        }
+      ]
+    },
+    "market.fortune.4": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.fortune",
+        "is": 4
+      },
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "market.fortune",
+          "set": 0
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {},
+  "state": {
+    "market.fortune": {
+      "owner": "market",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 4
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "id": "library",
+  "name": "TEST DISTRICT - DESK",
+  "intro": [
+    "Welcome to the Test District. This is a separate saved world built from the same scenes, engine and editor as the game.",
+    "Go to the counter through the door. Use the Test Desk at the empty chair for prices, balance, branching dialogue and an atomic conversation purchase."
+  ],
+  "uses": [
+    {
+      "id": "chair",
+      "name": "TEST DESK",
+      "label": "[E] TEST DESK",
+      "routes": [
+        {
+          "conversation": "demo.desk"
+        }
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "notice",
+      "name": "NOTICE BOARD",
+      "pages": [
+        "TEST DISTRICT: separate autosave and manual slots.",
+        "MENU - NEW GAME resets this demo autosave. Campaign progress is untouched."
+      ]
+    },
+    {
+      "id": "terminal3",
+      "name": "TERMINAL 3",
+      "pages": [
+        "PRESENT CARD AT THE READER.",
+        "IDENTITY: NOT PRESENTED. SESSION: 00:00 OF 30:00."
+      ]
+    },
+    {
+      "id": "book",
+      "name": "REFERENCE ONLY",
+      "pages": [
+        "A paper book, chained to its stand. The title has worn off the spine.",
+        "A bus ticket marks page 212. Yesterday it was page 211."
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "shelfe",
+      "name": "SHELF-E",
+      "talk": [
+        [
+          "First circuit. Talk to me again: I cycle through two responses and remember my position."
+        ],
+        [
+          "Second circuit. My next response returns to the first."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "librarian",
+      "name": "LIBRARIAN",
+      "talk": [
+        [
+          "This district uses the real gameplay engine. The empty chair is the Test Desk."
+        ],
+        [
+          "You have visited me before. My conversation progress survives a reload."
+        ]
+      ]
+    },
+    {
+      "id": "student",
+      "name": "TERMINAL 1",
+      "talk": [
+        [
+          "This district uses the real gameplay engine. The empty chair is the Test Desk."
+        ],
+        [
+          "You have visited me before. My conversation progress survives a reload."
+        ]
+      ]
+    },
+    {
+      "id": "kid",
+      "name": "TERMINAL 2",
+      "talk": [
+        [
+          "This district uses the real gameplay engine. The empty chair is the Test Desk."
+        ],
+        [
+          "You have visited me before. My conversation progress survives a reload."
+        ]
+      ]
+    },
+    {
+      "id": "sleeper",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "This district uses the real gameplay engine. The empty chair is the Test Desk."
+        ],
+        [
+          "You have visited me before. My conversation progress survives a reload."
+        ]
+      ]
+    },
+    {
+      "id": "knitter",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "This district uses the real gameplay engine. The empty chair is the Test Desk."
+        ],
+        [
+          "You have visited me before. My conversation progress survives a reload."
+        ]
+      ]
+    },
+    {
+      "id": "paper",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "This district uses the real gameplay engine. The empty chair is the Test Desk."
+        ],
+        [
+          "You have visited me before. My conversation progress survives a reload."
+        ]
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "downtown",
+      "to": "shop",
+      "at": "downtown",
+      "label": "[E] COUNTER"
+    }
+  ]
+}

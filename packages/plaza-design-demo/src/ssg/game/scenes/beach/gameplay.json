@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [
+    "beach.poured",
+    "beach.freeGranted"
+  ],
+  "commands": {
+    "beach.meter.run": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "beach.billing",
+          "set": "run"
+        }
+      ]
+    },
+    "beach.meter.pause": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "beach.billing",
+          "set": "pause"
+        }
+      ]
+    },
+    "beach.pour": {
+      "sources": [
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "beach.freeDrink",
+          "set": true
+        },
+        {
+          "emit": "beach.poured"
+        },
+        {
+          "emit": "beach.freeGranted"
+        }
+      ]
+    },
+    "beach.pour.repeat": {
+      "sources": [
+        "signal"
+      ],
+      "actions": [
+        {
+          "emit": "beach.poured"
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {},
+  "state": {
+    "beach.billing": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "enum",
+      "default": "run",
+      "options": [
+        "run",
+        "pause"
+      ]
+    },
+    "beach.freeDrink": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "native": {
+    "state": {
+      "beach.billing": "billing",
+      "beach.freeDrink": "freeDrink"
+    },
+    "verbs": [
+      {
+        "device": "kiosk",
+        "noun": "meter",
+        "verb": "run",
+        "cases": [
+          {
+            "command": "beach.meter.run",
+            "say": [
+              "{via}use meter --run",
+              "METER: billing resumed. thank you for your patience.",
+              "dim"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "kiosk",
+        "noun": "meter",
+        "verb": "pause",
+        "cases": [
+          {
+            "command": "beach.meter.pause",
+            "say": [
+              "{via}use meter --pause",
+              "METER: billing paused. maintenance mode. the kiosk's screen keeps smiling.",
+              "ok"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "mixer",
+        "noun": "pump",
+        "verb": "pour",
+        "cases": [
+          {
+            "when": {
+              "state": "beach.freeDrink",
+              "is": true
+            },
+            "command": "beach.pour.repeat",
+            "say": [
+              "signal → pump --pour",
+              "the mixer pours another on the beat. LIME moves it out of your reach. \"one. the machine and I agreed on one.\"",
+              "dim"
+            ]
+          },
+          {
+            "command": "beach.pour",
+            "say": [
+              "signal → pump --pour",
+              "the mixer pours a SALT SPECIAL on the beat. nobody ordered it. LIME slides it over: \"the machine insists. who am I to argue with the machine.\"",
+              "ok"
+            ]
+          }
+        ],
+        "denied": [
+          "use pump --pour",
+          "MIXER: manual pour disabled. pours on an order from the till.",
+          "err"
+        ]
+      }
+    ],
+    "events": {
+      "beach.poured": "mixer.pump:poured"
+    },
+    "goals": {
+      "beach.freeGranted": "free"
+    },
+    "wires": [
+      {
+        "id": "party",
+        "from": "jukebox.songs:played",
+        "to": "mixer.lights",
+        "verb": "flash"
+      },
+      {
+        "id": "pier.on",
+        "from": "pier.clock:on",
+        "to": "pier.lamps",
+        "verb": "on"
+      },
+      {
+        "id": "pier.off",
+        "from": "pier.clock:off",
+        "to": "pier.lamps",
+        "verb": "off"
+      }
+    ]
+  }
+}

@@ -13,8 +13,11 @@ silently restoring an obsolete design or automatically asking for permission.
 For story and teaching progression, read [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md).
 It records the newer direction and explicitly open proposals; it does not mean the redesign
 is implemented or authorize implementing all of it. Older act-order notes are historical context.
-Use ROADMAP.md for the active milestones and docs/design/PROLOGUE-ACT-I-PLAN.md for the detailed first
-design pass. The prior roadmap is preserved under archive/ and is not the active build order.
+Use ROADMAP.md as the single active priority/status overview; story M1-M9 retain their IDs and
+shared engine/authoring/demo work uses ENG IDs. GAMEPLAY-ENGINE-PLAN.md defines finite execution
+gates; GAMEPLAY-ENGINE-STATUS.md records selected scope and evidence. GAME-EDITOR-PLAN.md supplies
+supporting requirements rather than competing priorities. Use docs/design/PROLOGUE-ACT-I-PLAN.md for
+the detailed first design pass. The prior roadmap is preserved under archive/ and is not the active build order.
 
 ## Keep changes coherent
 
@@ -27,11 +30,24 @@ design pass. The prior roadmap is preserved under archive/ and is not the active
   reading or changing a global light/shadow frame.
 - Read `authoring/README.md` before composer work. Its local launcher is
   `pnpm --filter plaza-design-demo compose-scenes` (repository root; UI 4192, save service 4193).
-  Saved composition/timeline JSON and the scoped Sandbox behavior document are game source,
+  Saved composition/timeline JSON, the scoped Sandbox behavior document and Harbor Shift's
+  `gameplay.json`/`scene.json` plus registered `authoring/play-fixtures.json` are game source,
   not player saves. Workbench viewing is read-only; behavior edits must stay within the frozen
   `authoring/inventories/S13.json` contract and existing protected Save until a phase of
   `GAME-EDITOR-PLAN.md` (the approved full-game-editor direction) defines a wider scope. Restart
   after code/schema changes and rebuild the homepage after saving source edits.
+  The Gameplay workbench may edit the registered `harbor-shift-gameplay` document through
+  `validateShiftGameplay`; retain its protected IDs and invocation permissions. Its laboratory
+  executes pending documents without accessing player storage. Shop, Library and Laundromat also have explicitly registered scene/gameplay documents in
+  `authoring/gameplay-scenes.ts`; their validators protect existing IDs and invocation permissions.
+  The Test District registers demo-counter-scene, demo-desk-scene and their single shared
+  demo-counter-gameplay document; validators preserve role bindings and permissions. Other gameplay
+  files are not implicitly editable. Scene logic may edit `harbor-shift-scene` through `validateShiftScene`;
+  Play fixture edits use `validatePlayFixtures`. Both use protected Save/history/bundles.
+  The Play tab runs the real Harbor Shift, Sandbox, Shop, Library or Laundromat Game from pending snapshots
+  in a disposable opaque-origin iframe. Keep its storage private through `runtime/storage.ts`;
+  do not give the frame same-origin privileges or a source-service credential. Stop/reset/tab
+  closure must destroy its realm. Test-only input hooks belong only in focused fixture scripts.
 - The homepage build also emits the static public `/editor/`. Keep its snapshots/read-only
   source viewer and edit downloads independent of the loopback source-write service. Never
   publish that service or its session credentials. Portable edit bundles use the existing
@@ -43,6 +59,16 @@ design pass. The prior roadmap is preserved under archive/ and is not the active
   Use ROADMAP.md to distinguish implemented work from proposed work, not to lock priorities.
 - Register new scenes/data and include their code contracts in the homepage generator's
   validation where applicable. The regular React demo build is not the game build.
+- Shared saved values live in optional Save.gameplay; preserve unrelated values and native scene
+  snapshots. Purchases own their quote/charge definitions. Migrated chatter uses the shared
+  conversation runner with explicit progress/entry commands; painting a frame must never give rewards.
+  /?demo has separate autosave/slot/resume keys; editor Demo world retains opaque private Play.
+- ENG-04 native bindings are registered only for Beach and the demo Workshop; Market has a shared
+  paid fortune sequence. See ENG-04-PLAN.md for exact verbs/exclusions. Native state keeps one owner
+  in SceneSave via nativeStatePort; committed event metadata carries native goal changes atomically.
+  Bindings and source wires use protected validators in native-gameplay-scenes.ts. Do not attach
+  native bindings to other gameplay documents implicitly. Eligibility must remain pure, and dialogue
+  commands must respect native lock/seal/watchdog rules. Existing signal time stays authoritative.
 - Keep player progress compatible unless the user requests a reset/version change. Validate
   saved scene ids before entering them and keep a fallback for older saves.
 - Scene clocks, watchdogs and delayed signals/actions share pausable scene time. Lockout

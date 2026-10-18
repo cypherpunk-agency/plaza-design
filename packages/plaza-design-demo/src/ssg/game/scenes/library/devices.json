@@ -161,26 +161,7 @@
   "keyring": [
     { "id": "card.0013", "kind": "fragment", "label": "staff card 0013", "text": "0013" }
   ],
-  "dialogue": {
-    "catalog": {
-      "speaker": "CATALOG · library daemon",
-      "start": "start",
-      "sayCmd": "say \"{line}\" > catalog",
-      "nodes": {
-        "start": [
-          { "if": "renewed", "text": "scan.so is renewed and on your device. I have catalogued you as BORROWER. It is the first thing you have been in a while, I expect.", "choices": [["It is.", "bye"], ["What else is in here?", "more"]] },
-          { "text": "CATALOG. I have catalogued everything in this building: forty-one chairs, two radiators, eleven regulars. You are not in me. That has never happened.", "choices": [["I need a terminal.", "terminal"], ["What can I borrow?", "borrow"], ["Is that a cat?", "cat"]] }
-        ],
-        "terminal": { "text": "Terminals are for verified identities. Thirty minutes each, per day. I do not make the rules. I file them.", "choices": [["Let me start over.", "start"]] },
-        "borrow": { "text": "Books: no. They are digitized, and the copies are licensed to nobody. Chairs: yes, but chairs are not lent. They are sat in. Software: one item. scan.so. On loan. Overdue.", "choices": [["Since when?", "since"], ["Let me start over.", "start"]] },
-        "since": { "text": "Four thousand and eighteen days. I send the printer an overdue notice every morning. The printer is still printing the first one.", "choices": [["Who has it?", "who"]] },
-        "who": { "text": "Staff. Staff are listed by card number, and I may not tell you which. It is on the notice. The notice is in the printer's queue. The printer is on this network. So, somehow, are you.", "choices": [["Thanks.", "bye"], ["Let me start over.", "start"]] },
-        "cat": { "text": "There is no cat in the catalog. The cat is not a holding. The cat is a regular.", "choices": [["Fair.", "start"]] },
-        "more": { "text": "The heating. It is on the network too. I am not supposed to know where. Everyone else here does.", "choices": [["Thanks.", "bye"]] },
-        "bye": { "text": "Quiet, please. Conversations are transcribed. Mine are filed." }
-      }
-    }
-  },
+  "dialogue": {},
   "goals": [
     { "id": "lan", "text": "the card reader talks to the library's network: get on it" },
     { "id": "notice", "text": "find out who borrowed the software" },

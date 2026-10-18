@@ -1,9 +1,27 @@
 # Game editor plan: from scene composer to full game editor
 
-Status: proposed direction, approved 2026-10-17. No phase is implemented yet.
-This is a separate engineering track. It builds on the completed
-[scene system](./SCENE-SYSTEM-PLAN.md) and does not renumber story milestones in
-[ROADMAP.md](./ROADMAP.md).
+Status: direction approved 2026-10-17. The shared-gameplay pilot and four-part Harbor Shift/Sandbox milestone are implemented: selected-scene Play, authored starting fixtures, native inspection and a Harbor scene-document pilot. Shop, Library and Laundromat now also use registered scene/gameplay documents, typed authoring and isolated Play. ENG-02/03 adds persistent commerce, shared conversation paths and a two-area Test District with editor preview. The broader editor phases below remain an evolving roadmap.
+This is a supporting requirements and execution-reference document, not an independent priority list.
+[ROADMAP.md](./ROADMAP.md) owns delivery order; [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md)
+incorporates the shared systems, authoring and demo-world gates. Existing phase numbers below remain
+reference labels. Completed [scene-system](./SCENE-SYSTEM-PLAN.md) evidence and story M1-M9 stand.
+
+## Reconciliation with the consolidated roadmap (2026-10-18)
+
+| Historical editor phase | Current destination |
+| --- | --- |
+| 0 Groundwork | Existing pilot plus ENG-01 reconciliation and ENG-02 state declarations |
+| 1 Play | Existing five-scene private Play retained; demo/feature coverage extended per ENG delivery |
+| 2 Content model | Partial implementation retained; ENG-02 commerce, ENG-03 dialogue, ENG-04 interactions and ENG-05 objectives/access |
+| 3 Registration | ENG-08 declared bindings and manifests |
+| 4 Tools | Delivered with each ENG mechanic rather than postponed until the whole model is complete |
+| 5 World/story | ENG-05/06/07 and actual dependencies of story M3-M9 |
+| 6 Packs | Deferred open product decision; no current implementation goal |
+
+The current next work is the parent roadmap's ENG-01 through ENG-03 sequence, subject to the recorded
+execution scope. Each feature requires real-runtime demo coverage before broad scene migration.
+Shared contracts already exist: extend them with persistent state/purchases and unified dialogue;
+do not repeat the completed pilot or treat the phase list as a competing build order.
 
 ## Goal
 
@@ -86,7 +104,32 @@ features remain viewers or narrow exceptions like S13.
 - **Code:** genuinely new mechanics only (a new lock toy, the crane simulation), exposed as new
   blocks or element types.
 
-## Phases
+### Implemented shared-gameplay pilot (2026-10-17)
+
+The subsequent mechanics discussion adds a common command/event boundary for interactions,
+conversation choices and native hacking signals. See [GAMEPLAY-SYSTEM.md](./docs/reference/GAMEPLAY-SYSTEM.md).
+It implements validated conditions/actions, atomic reactions, invocation permissions, bounded
+execution and a conversation runner. Harbor Shift uses its legacy flags/items through this
+foundation; its ordinary presentation and artwork are preserved. An isolated **Gameplay** editor
+tab exercises explicit choices and a native wired delivery terminal using the same operation.
+
+This is a prerequisite/pilot contribution, not completion of Phase 1 Game play mode or Phase 2's
+scene-document migration. The follow-up authoring milestone registers `harbor-shift-gameplay`
+as a `gameplay` document and adds typed dialogue/choice/condition/action/reaction controls.
+Pending edits drive the same isolated native laboratory; global history, portable bundles and
+the protected local service handle import/save/reload. Existing pilot IDs and invocation
+permissions are validated against a code-owned contract. S13's inventory remains unchanged.
+Specialized device controllers, network/access rules and async timing retain their current
+implementation until explicitly migrated.
+
+Authoring acceptance: edited assignment text/choices, conditions, item actions and event wiring
+were exercised through ordinary and native wired delivery. Model and actual-browser undo/redo,
+download/import, invalid import rejection and zero player-storage access passed. Protected
+source Save/reload/native execution, token enforcement, revision conflicts and grouped invalid
+save rollback passed against temporary copies of the real source allowlist. Default harbor
+behavior and appearance remain separate preservation checks; this does not start a campaign playthrough.
+
+## Original editor phase requirements (reference, not independent priorities)
 
 Sizes are relative (S/M/L). Each phase ends with the listed acceptance checks.
 
@@ -98,6 +141,114 @@ Sizes are relative (S/M/L). Each phase ends with the listed acceptance checks.
   It replaces running scripts one by one. It is not a game regression suite (see Verification).
 
 Acceptance: identical public-editor browser check and build check results before and after.
+
+### Implemented Harbor Shift Play slice (2026-10-18)
+
+The **Play** tab constructs the real `Game` with validated copies of the pending Harbor Shift
+composition and gameplay documents. Movement, conversations, carried-item handover, objectives,
+pings and drawing use shipping code. The existing ordinary-game conversation adapter retains its
+automatic assignment continuation; explicit choice presentation is still exercised in the Gameplay lab.
+The inspector shows detached player/save, objective, dialogue/pause/popup and committed event snapshots.
+
+An opaque-origin iframe (`sandbox="allow-scripts"`, without same-origin access) owns the runtime,
+world globals, clocks, timers, audio, inputs and memory-only save/slot adapters. Stop, reset and
+leaving the tab destroy that frame; every fresh Play starts a new save with weather seed 3.
+Slot resume requests restart the private frame. The game never reads or writes player storage.
+Native scene-time versus wall-time behavior remains unchanged within a session. Pending source
+is immutable during Play and undo/redo/import appear on the next launch. Local and static public
+packaging use hashed frame/script files, the shipping CSS/tokens and binary-loaded game fonts.
+
+Focused browser acceptance passed pending spawn/placement, dialogue and item action edits, real
+movement/pickup/handover, objective/event updates, reset/replay, repeated mount destruction,
+source-document preservation and undo/redo, with zero native storage accesses in editor and frame.
+Protected local editor launch passed its real CSP; shared storage checks cover both native-default
+and editor-memory save/slot/resume/reset paths. Harbor effective drawing-command checks pass;
+this is not a full campaign playthrough or a new whole-game pixel corpus.
+
+The follow-up four-part milestone completes selected-scene launch for **Harbor Shift and Sandbox**,
+typed reusable starting fixtures, and live native device/trace inspection. It also adds Harbor's
+scene-document pilot. This does not migrate every scene or claim all of Phase 2 is complete.
+
+### Implemented combined follow-up (2026-10-18)
+
+- **Scene selection:** Play launches Harbor Shift or Sandbox. Both use pending compositions;
+  Harbor additionally consumes pending gameplay/scene data; Sandbox consumes pending validated
+  S13 behavior data through its native scene factory. Runtime wire edits stay private to Play.
+- **Starting fixtures:** `authoring/play-fixtures.json` (`play-fixtures`, kind `fixtures`) supplies
+  reusable profiles. Typed controls cover declared flags, inventory, tokens, logic modules,
+  programs, keyring, primitive native scene state, day/minute/seed, weather, spawn, and story/fixed/
+  running city clocks. Duplicate/delete, editor history, portable bundles and protected Save all
+  use the existing source pipeline. Every fresh Play/reset reenters the selected fixture.
+- **Native inspection:** select a device to see current nouns/verbs, state/goals, links, trace,
+  lockouts, watchdogs, clock beats, pending native signals/callbacks and remaining times, and a
+  bounded action/condition/result history. Failed conditions show their actual evaluated result.
+  Inspection is enabled only in editor frames and returns copies. Scene time pauses with menus;
+  wall-clock locks retain native behavior. No new signal semantics or action evaluator is introduced.
+- **Harbor scene pilot:** `scenes/harbor-shift/scene.json` (`harbor-shift-scene`, kind `scene`)
+  owns name/arrival, ordered objectives/guidance/time, interaction availability, command/response
+  branches, conversations and carried-item routes. **Scene logic** edits these through typed
+  controls. A reusable compiler connects them to the same gameplay session; spatial anchors,
+  actor artwork, specialized controllers and existing stable interaction IDs remain code-owned.
+  Permission/reference checks reject privileged commands, unknown symbols and missing fallbacks.
+
+Acceptance passed: 1,100 captured pre-migration objective/attention/time/visibility/interaction/
+message/state/event cases; Harbor effective drawing-command comparisons (including 36 Shift
+frames); grouped scene/fixture source save/reload/undo/conflict and invalid transaction rollback;
+actual typed UI and download/import; real Harbor pickup; native Sandbox hacking/wiring, paused
+signal delivery and failed conditions; fixture reset and source preservation; zero parent/frame
+native storage calls. `scripts/scene-system/fixtures/harbor-scene-before.json.gz` preserves the
+legacy behavior baseline (raw SHA-256 `b6250c5abac33c037b9e2045f80cec27e2d70b46a93781886173b2424144cf33`).
+These are focused milestone checks, not a campaign playthrough, a new whole-game pixel corpus,
+or performance evidence. Remaining work includes other scene migration, a complete flag registry,
+exits/people authoring, generic conversation presentation and broader typed subsystem blocks.
+
+### Historical three-scene migration batch (2026-10-18, before ENG-02/03)
+
+After inspecting the candidates together, Shop, Library and Laundromat were migrated in parallel
+against one shared contract. Market and Beach remain later work because they combine more
+transient counters, dynamic pricing, timed billing and animation effects.
+
+- **Shop:** four rotating purchase outcomes, atomic token/item/flag commands, original failed-payment
+  dialogue, NPC dialogue, two readables and the Downtown exit presentation.
+- **Library:** seven speakers with native ordered dialogue, three readables, chair interaction,
+  plain exit and the existing touch-specific arrival hint. No artificial resource commands.
+- **Laundromat:** soap purchase, four speakers, two readables and Market exit presentation;
+  washer/breaker/timing/reward controllers remain native.
+- **Shared contract:** optional objective/time sections; prices and action labels; successful-outcome
+  rotation with an explicit cursor port; typed readable, speaker and plain-exit content. Geometry,
+  actor appearance/order and specialized mechanics remain code-owned adapters.
+- **Editor:** the explicit migrated-scene registry feeds source validation, Scene logic, Gameplay
+  selection and five-scene Play. There are 35 editable source documents. All six new documents
+  participate in existing history, portable bundles and protected grouped Save.
+- **Compatibility:** native NPC dialogue advances and then repeats its last set; it is not converted
+  into persistent conversation rewards. Shop retains its original module-lifetime purchase cursor,
+  including across factory calls; failures do not advance it. Existing saves need no version change.
+
+Focused acceptance: three scene-specific gameplay checks; existing Shop/Library/Laundromat artwork
+checks; Harbor's 1,100-case parity check; batch pending-factory/history/bundle/fixture and protected
+Save/reload/rejection/undo checks; static public packaging and both application builds. Browser
+inspection exercises pending Shop purchase text with real input, five-scene Play and typed authoring.
+This is not a campaign playthrough or a new full-game pixel baseline.
+
+Remaining: generic instance/binding declarations and data-only registration, unrestricted device
+and world editing, other scene migrations, general conversation presentation, and the performance
+harness. Phase 2 and Phase 3 are not complete merely because four scenes have documents.
+
+### ENG-02/03 follow-up (2026-10-18)
+
+The shared foundation now includes typed persistent state, transactional purchase definitions,
+explicit pricing modifiers, persistent actor dialogue compiled to one runner, and shared device
+conversation presentation for Library catalog. Shop's previous transient rotation is superseded by
+saved rotation. NPC final-repeat/cycle is explicit. The native Library dialogue projection is
+read-only compatibility data generated from one shared text source.
+
+The Test District has two native-artwork areas and one shared gameplay definition. `/?demo` uses
+separate persistent demo save/slot/resume keys; Demo world previews pending source in disposable
+Play. It exposes minimum, failure and combination scenarios with a coverage catalogue. Gameplay
+and Scene logic author the new definitions; the inspector reports resolved state and prices.
+The source registry now has 38 documents. No generic scene registration or campaign migration is
+implied by role overrides. The engine ledger records technical gates and pending user feedback;
+17 conversation paths are migrated and 49 legacy paths remain explicitly inventoried.
 
 ### Phase 1: play mode (M)
 
@@ -184,7 +335,7 @@ Acceptance: travel, discovery and access behave identically; old saves load or m
    their interactions.
 4. Downtown, the opening and the train, which carry the most special cases.
 
-Port one scene at a time. A scene that cannot be expressed keeps its code hooks and is listed,
+Migrate bounded batches after inspecting their mechanics together and establishing a shared contract. Independent scene adapters can be implemented in parallel; shared engine/editor contracts have one owner. Verify each scene separately. A scene that cannot be expressed keeps its code hooks and is listed,
 rather than getting a weakened replacement.
 
 ## Invariants
@@ -211,3 +362,13 @@ this plan does not itself start them.
 - **Block sprawl:** keep blocks few, typed and inspectable so they don't become a scripting
   language through the back door.
 - **Save compatibility** when flags and objectives move into data.
+
+
+## ENG-04 delivery cross-reference, 2026-10-18
+
+[ENG-04-PLAN.md](./ENG-04-PLAN.md) bounds the native device/interaction/wiring extension;
+[ENG-04-STATUS.md](./ENG-04-STATUS.md) records acceptance. Gameplay now includes protected
+Market, Beach and Test Workshop sources, typed native bindings/initial wires and live eligibility
+inspection. Native Play adds Market/Beach; Demo world adds the connected Workshop. The source
+registry has 41 documents. This does not complete generic scene registration, world authoring,
+clock/lifecycle unification or all remaining gameplay migrations. Parent priority remains ROADMAP.

@@ -16,8 +16,13 @@ import { laundromatComposition,laundromatDeviceData,laundromatGeometry,laundroma
 
 import { LAUNDROMAT } from "../../data/index";
 import type { SceneDef } from "../kit";
+import {applyScenePresentation,compileSceneDocument} from '../../engine/gameplay/scene-document';
+import type {SceneDocument} from '../../engine/gameplay/scene-document';
+import type {GameplayDefinition} from '../../engine/gameplay/types';
+import {LAUNDROMAT_GAMEPLAY,LAUNDROMAT_SCENE,validateLaundromatGameplay,validateLaundromatScene} from './scene-document';
+export {LAUNDROMAT_GAMEPLAY,LAUNDROMAT_SCENE,validateLaundromatGameplay,validateLaundromatScene} from './scene-document';
 import { LAUNDROMAT_RULES } from './rules';
-import { drawLaundromat, L, LAUNDROMAT_W, PEOPLE, laundromatPeople } from './scene';
+import { drawLaundromat, L, LAUNDROMAT_W, PEOPLE, laundromatPeople,laundromatRenderActors,laundromatFrameEnvironment } from './scene';
 
 export { LAUNDROMAT_RULES, MAGLEV_PASS, P13_FLAG, RIGHT_GLOVE } from './rules';
 
@@ -30,35 +35,27 @@ const baseLaundromat: SceneDef = {
   width: LAUNDROMAT_W,
   spawn: L.spawn,
   exits: [{ id: 'market', x: L.door, to: 'market', at: 'laundromat', label: '[E] MARKET', promptH: 82 }],
-  intro: [
-    'Washer 3. Moth\'s jacket is in there, behind the glass, one cycle from done.',
-    'Every machine is waiting for something. So is everyone sitting here.',
-  ],
+  intro: LAUNDROMAT_SCENE.intro,
   pixel: 'along',
   data: LAUNDROMAT,
   rules: LAUNDROMAT_RULES,
   drawBackdrop: drawLaundromat,
   people: PEOPLE,
   readables: [
-    { id: 'notice', x: L.notice, name: 'REGISTRY NOTICE', promptH: 104, pages: [
-      'LAUNDRY LEFT OVER 72 HOURS IS RECORDED AS ABANDONED PROPERTY.',
-      'ABANDONED PROPERTY IS SCANNED FOR IDENTITY AND FORWARDED TO THE REGISTRY.',
-    ] },
-    { id: 'socks', x: L.socks, name: 'LOST SOCKS', promptH: 116, pages: [
-      'A board of single socks, pinned up by FOLD-O. Under a grey one, a note: "Owner may claim by describing the other one."',
-      'Under it, another hand: "it was grey." Under that, FOLD-O\'s neat print: "nice try."',
-    ] },
+    {id:'notice',x:L.notice,name:'REGISTRY NOTICE',promptH:104,pages:[]},
+    {id:'socks',x:L.socks,name:'LOST SOCKS',promptH:116,pages:[]},
   ],
-  uses: [
-    { id: 'soap', x: L.soap, label: '[E] SOAP', price: 1, name: 'SOAP DISPENSER', promptH: 92, h: 76, use: (c) => {
-      if (!c.pay(1)) return ['INSERT 1 TOKEN.', 'NO TOKEN DETECTED. NO SOAP DISPENSED. ATTEMPT LOGGED.'];
-      c.add('soap');
-      return ['1 SACHET DISPENSED. SCENT: STANDARD.', 'PURCHASE LOGGED TO YOUR IDENTITY. IDENTITY NOT FOUND. PURCHASE LOGGED ANYWAY.'];
-    } },
-  ],
+  uses: [{id:'soap',x:L.soap,label:'[E] SOAP',name:'SOAP DISPENSER',promptH:92,h:76,use:()=>{throw new Error('Laundromat soap requires its authored gameplay route');}}],
 };
 
 export { drawLaundromat,laundromatFrameEnvironment } from './scene';
 export { laundromatComposition,laundromatArt,validateLaundromatComposition } from './composition';
-export function laundromatScene(document:Composition=laundromatComposition,state:Environment['state']={},options:LaundromatRenderOptions={}):SceneDef{const doc=validateLaundromatComposition(document),L=laundromatLayout(doc),rows=laundromatGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!;return {...baseLaundromat,width:Number(get('room').props.width),facing:Number(get('window').props.facing),spawn:L.spawn,data:laundromatDeviceData(LAUNDROMAT,doc),people:laundromatPeople(doc),exits:baseLaundromat.exits.map(e=>({...e,x:get('exit-market').placement.x})),readables:baseLaundromat.readables!.map(r=>({...r,x:r.id==='notice'?L.notice:L.socks,promptH:(r.promptH??0)+get(r.id).placement.h-(r.id==='notice'?96:0)})),uses:baseLaundromat.uses!.map(u=>({...u,x:L.soap,h:(u.h??0)+get('soap').placement.h,promptH:(u.promptH??0)+get('soap').placement.h})),drawBackdrop:(ctx,v,e)=>drawLaundromat(ctx,v,e,doc,state,options)};}
+export function laundromatScene(document:Composition=laundromatComposition,state:Environment['state']={},options:LaundromatRenderOptions={},sceneDocument:SceneDocument=LAUNDROMAT_SCENE,gameplay:GameplayDefinition=LAUNDROMAT_GAMEPLAY):SceneDef{
+  const doc=validateLaundromatComposition(document),L=laundromatLayout(doc),rows=laundromatGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!;
+  const logic=validateLaundromatScene(sceneDocument,validateLaundromatGameplay(gameplay));
+  const compiled=compileSceneDocument(logic,{soap:L.soap},()=>{throw new Error('Unexpected laundromat conversation');});
+  const scene:SceneDef={...baseLaundromat,gameplay,width:Number(get('room').props.width),facing:Number(get('window').props.facing),spawn:L.spawn,data:laundromatDeviceData(LAUNDROMAT,doc),people:laundromatPeople(doc),exits:baseLaundromat.exits.map(e=>({...e,x:get('exit-market').placement.x})),readables:baseLaundromat.readables!.map(r=>({...r,x:r.id==='notice'?L.notice:L.socks,promptH:(r.promptH??0)+get(r.id).placement.h-(r.id==='notice'?96:0)})),uses:compiled.uses.map(u=>({...u,h:76+get('soap').placement.h,promptH:92+get('soap').placement.h})),drawBackdrop:(ctx,v,e)=>drawLaundromat(ctx,v,e,doc,state,options)};
+  const authored=applyScenePresentation(scene,logic),renderActors=laundromatRenderActors(authored.people!);
+  return {...authored,drawBackdrop:(ctx,v,e)=>drawLaundromat(ctx,v,e,doc,state,options,renderActors),visualEnvironment:(v,e)=>laundromatFrameEnvironment(v,e,doc,renderActors)};
+}
 export const laundromat=laundromatScene();

@@ -9,7 +9,7 @@ import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type Asse
 import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 
-export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior'; revision: string; value: unknown }
+export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures'; revision: string; value: unknown }
 export interface PreviewRequest { composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number }
@@ -27,7 +27,7 @@ export interface ComposerConfig {
   initialEnvironment?: Record<string, string | number | boolean>; environmentControls?: EnvironmentControl[];
   worldPanel?(host: HTMLElement, openScene: (scene: string) => void, documents: EditorDocument[]): void | (() => void);
   assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
-  workbenches?: { id: string; title: string; label?: string; documentDependent?: boolean; documentIds?: string[]; authoring?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }[];
+  workbenches?: { id: string; title: string; label?: string; documentDependent?: boolean; documentIds?: string[]; selectDocument?:boolean;primaryDocumentId?:string;primaryDocumentIds?:string[];onDocumentSelected?(id:string):void; authoring?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }[];
 }
 interface Snapshot { id: string; value: unknown }
 interface Command { label: string; before: Snapshot[]; after: Snapshot[] }
@@ -60,7 +60,7 @@ export class ComposerModel {
     for (const doc of documents.values()) if (doc.kind === 'timeline') validateTimeline(doc.value, ctx);
     const all = [...documents.values()];
     for (const doc of all) {
-      if (doc.kind === 'behavior' && !this.validateDocument) throw new Error('Behavior documents require their registered validator');
+      if ((['behavior','gameplay','scene','fixtures'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
       this.validateDocument?.(doc, all);
     }
   }
@@ -173,7 +173,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     for (const tab of tools.children) tab.setAttribute('aria-pressed', String((tab as HTMLElement).dataset.tool === root.dataset.tool));
   };
   const sceneTab = button('Scene', showScene, 'Scene and timeline editor'); sceneTab.dataset.tool = 'scene'; tools.append(sceneTab);
-  for (const item of panels) { const tab = button(item.label, () => { item.details.open = true; }, item.title); tab.dataset.tool = item.details.dataset.tool; tools.append(tab); }
+  for (const item of panels) {
+    const tab = button(item.label, () => {
+      const config=workbenches.find(workbench=>workbench.details===item.details)?.config;
+      const document=config?.selectDocument===false?undefined:model.list().find(doc=>config?.primaryDocumentId?doc.id===config.primaryDocumentId:['gameplay','scene','fixtures'].includes(doc.kind)&&config?.documentIds?.includes(doc.id));
+      if(document)openDocument(document.id);else item.details.open = true;
+    }, item.title);
+    tab.dataset.tool = item.details.dataset.tool; tools.append(tab);
+  }
   const openInstance = (document: string, instance: string) => { currentId = document; selectedId = instance; playing = false; syncSequence(); showScene(); showPanel('properties'); refresh(); };
   const refreshWorkbench = (item: typeof workbenches[number], changed = false) => {
     const documents = model.list(), relevant = item.config.documentIds ? documents.filter(doc => item.config.documentIds!.includes(doc.id)) : documents;
@@ -187,7 +194,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       item.documentsVersion = version;
       try { item.dispose = item.config.mount(item.panel, { documents, openScene, openInstance,
         ...(item.config.authoring ? { authoring: { get: (id: string) => model.get(id), edit: (id: string, label: string, value: unknown) => run(() => model.edit(id, label, () => value)),
-          undo: () => run(() => model.undo()), redo: () => run(() => model.redo()), save, reload: load, dirty: (id: string) => model.dirty(id) } } : {}),
+          undo: () => run(() => model.undo()), redo: () => run(() => model.redo()), save,
+          reload: async () => { if (!model.dirty() || window.confirm('Discard all unsaved edits and reload source? Download or export first to keep them.')) await load(); },
+          dirty: (id: string) => model.dirty(id) } } : {}),
       }); }
       catch (error) { item.panel.replaceChildren(element('p', 'error', `Workbench unavailable: ${message(error)}`)); }
     }
@@ -234,7 +243,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     finally { saving = false; refresh(); }
   }
   function syncSequence() { const doc = currentTimeline(); if (!doc?.sequences.some(s => s.id === sequenceId)) sequenceId = doc?.sequences[0]?.id ?? ''; const seq = sequence(); time = Math.min(time, seq?.duration ?? time); loopFrom = 0; loopTo = seq?.duration ?? 0; }
-  function openDocument(id: string) { currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }
+  function openDocument(id: string) {
+    currentId = id; selectedId = ''; playing = false; time = 0; syncSequence();
+    if(['gameplay','scene','fixtures'].includes(current()?.kind??'')){const workbench=workbenches.find(item=>item.config.primaryDocumentId===id||item.config.primaryDocumentIds?.includes(id))??workbenches.find(item=>item.config.documentIds?.includes(id));if(workbench){workbench.config.onDocumentSelected?.(id);workbench.details.open=true;workbench.dispose?.();workbench.dispose=undefined;}}
+    refresh();
+  }
   function openScene(scene: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { showScene(); openDocument(doc.id); } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
   function refreshHeader() {
     const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand);
@@ -249,7 +262,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     menuItems.append(button('Import edits', () => bundleFile.click()), bundleFile);
     menuItems.append(button('Export JSON', () => { const doc = current(); if (!doc) return; const url = URL.createObjectURL(new Blob([JSON.stringify(doc.value, null, 2) + '\n'], { type: 'application/json' })); const link = element('a'); link.href = url; link.download = doc.id + '.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }));
     const file = element('input'); file.type = 'file'; file.accept = '.json,application/json'; file.hidden = true;
-    file.onchange = async () => { const selectedFile = file.files?.[0]; if (!selectedFile) return; try { if (selectedFile.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const value: unknown = JSON.parse(await selectedFile.text()); run(() => { const doc = current(); if (!doc || doc.kind === 'world') throw new Error('Select a composition or timeline document to import'); model.edit(doc.id, 'Import document', () => value); syncSequence(); }); } catch (e) { notice(`Import failed: ${message(e)}`, true); } };
+    file.onchange = async () => { const selectedFile = file.files?.[0]; if (!selectedFile) return; try { if (selectedFile.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const value: unknown = JSON.parse(await selectedFile.text()); run(() => { const doc = current(); if (!doc || doc.kind === 'world') throw new Error('Select an editable document to import'); model.edit(doc.id, 'Import document', () => value); syncSequence(); }); } catch (e) { notice(`Import failed: ${message(e)}`, true); } };
     const importButton = button('Import JSON', () => file.click()); importButton.disabled = current()?.kind === 'world'; menuItems.append(importButton, file);
   }
   function refreshOptions() {

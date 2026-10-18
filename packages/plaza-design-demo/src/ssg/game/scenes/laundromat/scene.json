@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "id": "laundromat",
+  "name": "the laundromat",
+  "intro": [
+    "Washer 3. Moth's jacket is in there, behind the glass, one cycle from done.",
+    "Every machine is waiting for something. So is everyone sitting here."
+  ],
+  "uses": [
+    {
+      "id": "soap",
+      "name": "SOAP DISPENSER",
+      "label": "[E] SOAP",
+      "routes": [
+        {
+          "command": "laundromat.buy-soap",
+          "pages": [
+            "1 SACHET DISPENSED. SCENT: STANDARD.",
+            "PURCHASE LOGGED TO YOUR IDENTITY. IDENTITY NOT FOUND. PURCHASE LOGGED ANYWAY."
+          ],
+          "failure": [
+            "INSERT 1 TOKEN.",
+            "NO TOKEN DETECTED. NO SOAP DISPENSED. ATTEMPT LOGGED."
+          ]
+        }
+      ],
+      "purchase": "laundromat.soap"
+    }
+  ],
+  "readables": [
+    {
+      "id": "notice",
+      "name": "REGISTRY NOTICE",
+      "pages": [
+        "LAUNDRY LEFT OVER 72 HOURS IS RECORDED AS ABANDONED PROPERTY.",
+        "ABANDONED PROPERTY IS SCANNED FOR IDENTITY AND FORWARDED TO THE REGISTRY."
+      ]
+    },
+    {
+      "id": "socks",
+      "name": "LOST SOCKS",
+      "pages": [
+        "A board of single socks, pinned up by FOLD-O. Under a grey one, a note: \"Owner may claim by describing the other one.\"",
+        "Under it, another hand: \"it was grey.\" Under that, FOLD-O's neat print: \"nice try.\""
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "blue",
+      "name": "WAITING",
+      "talk": [
+        [
+          "Washer 1 is mine. Six shirts. All of them.",
+          "This is my seventh. It is not a shirt. It is a towel with ambition."
+        ],
+        [
+          "Every slot the lights dip, three machines start, the breaker gives up and we all start over.",
+          "I have watched it eleven times. It is the most reliable thing in my life."
+        ],
+        [
+          "If you sort that breaker out, mine are the blue ones. Not that I am asking. I am asking."
+        ]
+      ]
+    },
+    {
+      "id": "folder",
+      "name": "FOLD-O",
+      "talk": [
+        [
+          "I fold. Forty-one thousand shirts so far. Nobody has ever folded me.",
+          "I do not mind. I would not fit in a drawer."
+        ],
+        [
+          "Nothing has come out of a washer since Tuesday. I have refolded this towel two hundred times.",
+          "It is the best-folded towel in the district. Possibly the city."
+        ],
+        [
+          "Socks I do not fold. Socks I pair. Most days I fail.",
+          "The board by the window is my failures. I pinned them up. It helps."
+        ]
+      ]
+    },
+    {
+      "id": "gran",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "Washer 2 is mine. Since Tuesday.",
+          "At my age you stop waiting for things to finish. You just visit them."
+        ],
+        [
+          "The jacket in 3? A young person brought it in. Paid nine cycles, said nobody searches a wash, and ran.",
+          "I said nobody searches me either, dear. Nobody listened to that either."
+        ],
+        [
+          "SUDS starts the paid one when a machine finishes. That is the whole trouble. Nothing in here finishes.",
+          "Except me, eventually. Do not look like that, it is a joke. Mostly."
+        ]
+      ]
+    },
+    {
+      "id": "sleeper",
+      "name": "NIGHT SHIFT",
+      "talk": [
+        [
+          "Zzz...",
+          "...if four finishes, wake me. If four does not finish, also do not wake me."
+        ],
+        [
+          "...I work nights. I wash days. I sleep in between. Here.",
+          "...nobody verifies a bench..."
+        ]
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "market",
+      "to": "market",
+      "at": "laundromat",
+      "label": "[E] MARKET"
+    }
+  ]
+}

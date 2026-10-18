@@ -1,3 +1,4 @@
+import {MARKET_GAMEPLAY} from './gameplay';
 import type { Composition,Environment } from '../../art';
 import type { View } from '../../art/core/view';
 import type { EngineDraw } from '../../engine/host';
@@ -161,7 +162,7 @@ const ALL: Character[] = [cook, fishmonger, fixer2, sleeper, ...STREET];
 
 // ---------- things to do ----------
 
-let haggle = 0, fortunes = 0;
+let haggle = 0;
 const FORTUNES = [
   ['FORTUNE UNIT 9 SEES... a stranger. You are in a market. That was not hard.'],
   ['FORTUNE UNIT 9 SEES... a friend who is not fishing. A boat that knows where.', 'That will be all. FORTUNE UNIT 9 does not do follow-up questions.'],
@@ -185,8 +186,9 @@ const USES: SceneUse[] = [
     return ['Pleasure. It is a smart umbrella: it opens once you accept its terms.', 'Forty pages. Read them under a roof.'];
   } },
   { id: 'fortune', x: 1208, label: '[E] FORTUNE', price: 1, name: 'FORTUNE UNIT 9', promptH: 98, use: (c) => {
-    if (!c.pay(1)) return ['FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.', 'IT CAN SEE YOUR BALANCE. IT IS ZERO.'];
-    return FORTUNES[fortunes++ % FORTUNES.length];
+    const cursor=Number(c.gameplay!.state().values!['market.fortune']);
+    if (!c.gameplay!.dispatch('market.fortune.'+cursor,'interaction').ok) return ['FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.', 'IT CAN SEE YOUR BALANCE. IT IS ZERO.'];
+    return FORTUNES[cursor];
   } },
 ];
 
@@ -199,6 +201,7 @@ export function drawMarket(ctx:CanvasRenderingContext2D,view:View,_engine:Engine
 export function drawMarketFront(ctx:CanvasRenderingContext2D,view:View,doc:Composition=marketComposition,state:Environment['state']={},options:MarketRenderOptions={}){drawMarketForeground(ctx,view,actors,doc,state,options);}
 
 const base: SceneDef = {
+  gameplay:MARKET_GAMEPLAY,
   id: 'market',
   name: 'Street Market',
   // facing (light.ts): you look north up the market lane: the sun is always behind you; the buildings behind throw their shade
@@ -230,5 +233,5 @@ const base: SceneDef = {
   drawFront: (x,v)=>drawMarketFront(x,v),
 };
 
-export function marketScene(document:Composition=marketComposition,state:Environment['state']={},options:MarketRenderOptions={}):SceneDef{const doc=validateMarketComposition(document),rows=marketGeometry(doc),p=(id:string)=>marketPlacement(id,doc);return{...base,width:Number(rows.find(r=>r.instance.id==='scene')!.props.width),spawn:p('spawn').x,people:marketPeople(actors,peopleIds,doc),exits:base.exits.map(e=>({...e,x:p('exit-'+e.id).x})),readables:base.readables!.map(r=>({...r,x:p(r.id==='rules'?'rules':'read-'+r.id).x})),uses:base.uses!.map(u=>({...u,x:p('use-'+u.id).x})),rests:base.rests!.map(r=>({...r,x:p(r.id).x})),lights:marketStalls(doc).filter(s=>s.light&&s.light!=='none').map(s=>({x:s.x+s.w/2,h:s.elevation+64,kind:'lamp' as const,r:54,col:s.light==='tube'?'235,240,255':'255,200,120'})),drawBackdrop:(x,v,e)=>drawMarket(x,v,e,doc,state,options),drawFront:(x,v)=>drawMarketFront(x,v,doc,state,options),visualEnvironment:(v,e)=>marketFrameEnvironment(v,e,doc)};}
+export function marketScene(document:Composition=marketComposition,state:Environment['state']={},options:MarketRenderOptions={},gameplay=MARKET_GAMEPLAY):SceneDef{const doc=validateMarketComposition(document),rows=marketGeometry(doc),p=(id:string)=>marketPlacement(id,doc);return{...base,gameplay,width:Number(rows.find(r=>r.instance.id==='scene')!.props.width),spawn:p('spawn').x,people:marketPeople(actors,peopleIds,doc),exits:base.exits.map(e=>({...e,x:p('exit-'+e.id).x})),readables:base.readables!.map(r=>({...r,x:p(r.id==='rules'?'rules':'read-'+r.id).x})),uses:base.uses!.map(u=>({...u,x:p('use-'+u.id).x})),rests:base.rests!.map(r=>({...r,x:p(r.id).x})),lights:marketStalls(doc).filter(s=>s.light&&s.light!=='none').map(s=>({x:s.x+s.w/2,h:s.elevation+64,kind:'lamp' as const,r:54,col:s.light==='tube'?'235,240,255':'255,200,120'})),drawBackdrop:(x,v,e)=>drawMarket(x,v,e,doc,state,options),drawFront:(x,v)=>drawMarketFront(x,v,doc,state,options),visualEnvironment:(v,e)=>marketFrameEnvironment(v,e,doc)};}
 export const market=marketScene();

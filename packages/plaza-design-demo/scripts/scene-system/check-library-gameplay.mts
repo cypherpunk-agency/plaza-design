@@ -1,0 +1,51 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {libraryScene} from '../../src/ssg/game/scenes/library/index';
+import {libraryComposition} from '../../src/ssg/game/scenes/library/composition';
+import {LIBRARY_GAMEPLAY,LIBRARY_SCENE,validateLibraryGameplay,validateLibraryScene} from '../../src/ssg/game/scenes/library/scene-document';
+import {LIBRARY_RULES} from '../../src/ssg/game/scenes/library/rules';
+import {PEOPLE,libraryFrameEnvironment} from '../../src/ssg/game/scenes/library/scene';
+import {frameView} from '../../src/ssg/game/art/core/view';
+import {light} from '../../src/ssg/game/world/light';
+import type {EngineDraw} from '../../src/ssg/game/engine/host';
+import {talkTo} from '../../src/ssg/game/runtime/characters';
+import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
+import type {UseCtx} from '../../src/ssg/game/scenes/kit';
+const legacy=JSON.parse(fs.readFileSync(new URL('./fixtures/library-before.json',import.meta.url),'utf8'));
+const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(key,value)=>key==='conversation'?undefined:value));
+const scene=libraryScene();
+for(const key of ['id','name','width','spawn','people','readables','exits','data'] as const)assert.deepEqual(plain(scene[key]),legacy[key],key+' parity');
+assert.equal(scene.rules,LIBRARY_RULES);
+assert.equal(scene.objective,undefined);assert.equal(scene.storyMinute,undefined);
+assert.equal(typeof scene.intro,'function');
+assert.deepEqual((scene.intro as Function)(false),legacy.intro[0]);
+assert.deepEqual((scene.intro as Function)(true),legacy.intro[1]);
+let state={flags:{'unrelated:kept':true},items:{'shift.tag':1},tokens:13},writes=0;
+const session=new GameplaySession(LIBRARY_GAMEPLAY,{read:()=>state,write:next=>{writes++;state=next as typeof state;}});
+const before=structuredClone(state),ctx={gameplay:session,flags:state.flags,tokens:state.tokens} as UseCtx;
+for(const use of scene.uses!){const expected=legacy.uses.find((row:any)=>row.id===use.id);assert.deepEqual(plain({...use,pages:use.use(ctx)}),expected);}
+assert.deepEqual(state,before);assert.equal(writes,0);assert.deepEqual(session.events(),[]);session.dispose();
+for(const person of scene.people!.filter(person=>person.talk)){
+ const expected=legacy.people.find((row:any)=>row.id===person.id);
+ for(let i=0;i<expected.talk.length+3;i++)assert.deepEqual(talkTo(person),{name:expected.name,pages:expected.talk[Math.min(i,expected.talk.length-1)]});
+}
+// Rebuilding a scene supplies fresh actor identities and preserves legacy restart behavior.
+for(const person of libraryScene().people!.filter(person=>person.talk))assert.deepEqual(talkTo(person).pages,legacy.people.find((row:any)=>row.id===person.id).talk[0]);
+const pending=structuredClone(LIBRARY_SCENE);
+pending.people![0].talk[0]=['Pending robot dialogue'];pending.readables![0].pages=['Pending notice'];pending.uses[0].routes[0].pages=['Pending chair'];pending.exits![0].label='[E] PENDING EXIT';
+const edited=libraryScene(libraryComposition,{}, {},pending);
+assert.deepEqual(talkTo(edited.people![0]).pages,['Pending robot dialogue']);assert.deepEqual(edited.readables![0].pages,['Pending notice']);assert.deepEqual(edited.uses![0].use(ctx),['Pending chair']);assert.equal(edited.exits[0].label,'[E] PENDING EXIT');
+assert.deepEqual(plain(edited.data),legacy.data);
+const view={...frameView(0,light()),sx:(x:number)=>x,y:(h:number)=>280-h,t:10,cam:0,gy:280,viewW:960,viewH:360,flags:{}};
+const engine={hover:null,m:{net:new Map()}} as unknown as EngineDraw;
+assert.ok(PEOPLE.find(person=>person.id==='librarian')!.talk,'Default render-bound librarian retains the hint mark');
+const defaultPose=libraryFrameEnvironment(view,engine).bindings['actor.librarian.pose'] as any;
+assert.ok(defaultPose.character.key&&defaultPose.character.talk,'Prepared default hint mark prerequisites');
+const pendingPose=edited.visualEnvironment!(view,engine).bindings['actor.shelfe.pose'] as any;
+assert.deepEqual(pendingPose.character.talk,[['Pending robot dialogue'],...pending.people![0].talk.slice(1)],'Pending dialogue reaches the exact actors prepared for painting');
+for(const change of [
+ (d:any)=>d.people.reverse(),(d:any)=>d.readables.pop(),(d:any)=>d.exits[0].to='shop',
+ (d:any)=>d.id='shop',(d:any)=>d.time=[{minute:400}],(d:any)=>d.uses[0].routes[0].command='grant',
+]){const bad=structuredClone(LIBRARY_SCENE);change(bad);assert.throws(()=>validateLibraryScene(bad));}
+assert.throws(()=>validateLibraryGameplay({...LIBRARY_GAMEPLAY,commands:{grant:{sources:['interaction'],actions:[{tokens:1}]}}}));
+console.log('Library authored scene: legacy content/geometry/device parity, transient dialogue, pure chair/resources, pending bindings and protected contracts passed.');

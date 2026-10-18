@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "flags": [
+    "shop:bought"
+  ],
+  "items": [
+    "blue",
+    "crisps",
+    "noodlecup",
+    "gum"
+  ],
+  "events": [],
+  "commands": {
+    "shop.buy-blue": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "purchase": "shop.goods"
+        },
+        {
+          "flag": "shop:bought",
+          "value": true
+        }
+      ]
+    },
+    "shop.buy-crisps": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "purchase": "shop.goods"
+        },
+        {
+          "flag": "shop:bought",
+          "value": true
+        }
+      ]
+    },
+    "shop.buy-noodlecup": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "purchase": "shop.goods"
+        },
+        {
+          "flag": "shop:bought",
+          "value": true
+        }
+      ]
+    },
+    "shop.buy-gum": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "purchase": "shop.goods"
+        },
+        {
+          "flag": "shop:bought",
+          "value": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {},
+  "state": {
+    "shop.rotation": {
+      "owner": "shop",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 3
+    }
+  },
+  "purchases": {
+    "shop.goods": {
+      "basePrice": 1,
+      "rotation": {
+        "state": "shop.rotation",
+        "items": [
+          "blue",
+          "crisps",
+          "noodlecup",
+          "gum"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "id": "shop",
+  "name": "Corner Shop",
+  "intro": [
+    "A corner shop. The kind that never closes and never has change."
+  ],
+  "uses": [
+    {
+      "id": "buy",
+      "name": "SHOPKEEPER",
+      "label": "[E] BUY",
+      "cycle": true,
+      "routes": [
+        {
+          "command": "shop.buy-blue",
+          "pages": [
+            "One BLUE. The flavour is blue. Nobody knows more than that.",
+            "It tastes like the colour. Don't think about it."
+          ],
+          "failure": [
+            "One token. You have none. I can do nothing for you, at no charge.",
+            "Credit? This is a corner shop, not a bank. Banks have better locks."
+          ]
+        },
+        {
+          "command": "shop.buy-crisps",
+          "pages": [
+            "Crisps, salt and vinegar. The vinegar is synthetic. The salt is from the harbor.",
+            "Don't ask the harbor."
+          ],
+          "failure": [
+            "One token. You have none. I can do nothing for you, at no charge.",
+            "Credit? This is a corner shop, not a bank. Banks have better locks."
+          ]
+        },
+        {
+          "command": "shop.buy-noodlecup",
+          "pages": [
+            "Noodle cup. Three for three tokens, one for one.",
+            "The maths is the only honest thing in this shop."
+          ],
+          "failure": [
+            "One token. You have none. I can do nothing for you, at no charge.",
+            "Credit? This is a corner shop, not a bank. Banks have better locks."
+          ]
+        },
+        {
+          "command": "shop.buy-gum",
+          "pages": [
+            "Gum. The last pack.",
+            "It has been the last pack since I opened."
+          ],
+          "failure": [
+            "One token. You have none. I can do nothing for you, at no charge.",
+            "Credit? This is a corner shop, not a bank. Banks have better locks."
+          ]
+        }
+      ],
+      "purchase": "shop.goods",
+      "cycleState": "shop.rotation"
+    }
+  ],
+  "readables": [
+    {
+      "id": "shelf",
+      "name": "SHELF LABEL",
+      "pages": [
+        "NOODLE CUPS · LIMIT 3 PER CUSTOMER.",
+        "PURCHASES OVER LIMIT ARE REPORTED."
+      ]
+    },
+    {
+      "id": "vend",
+      "name": "THIRST.EXE",
+      "pages": [
+        "ACCEPTS TOKENS. CHANGE NOT GIVEN.",
+        "SCREEN: OUT OF ORDER. DISPENSING NORMALLY."
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "keeper",
+      "name": "SHOPKEEPER",
+      "talk": [
+        [
+          "We're open.",
+          "We're always open. The sticker says 24/7. I wanted 24/7/365.25. The printer said no."
+        ],
+        [
+          "The camera? The Registry insists. It films the till.",
+          "The till has nothing to hide. The till has nothing at all, most nights."
+        ],
+        [
+          "Buy something or keep the cat company. The cat charges less."
+        ]
+      ]
+    },
+    {
+      "id": "browser",
+      "name": "CUSTOMER",
+      "talk": [
+        [
+          "They moved the cheap noodles to the top shelf.",
+          "Top shelf is for people with legs.so. I have the free legs."
+        ],
+        [
+          "I come in to read the labels. It is warmer than the library and the library closed."
+        ]
+      ]
+    },
+    {
+      "id": "android",
+      "name": "CUSTOMER",
+      "talk": [
+        [
+          "Batteries. Two packs. Do not make it weird."
+        ],
+        [
+          "People ask what I do for fun. I queue. I am very good at it. I have never once been served first."
+        ]
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "downtown",
+      "to": "downtown",
+      "at": "shop",
+      "label": "[E] DOWNTOWN"
+    }
+  ]
+}

@@ -13,6 +13,8 @@
  * off) lead up to the promenade and the harbor.
  */
 
+import {BEACH_GAMEPLAY} from './gameplay';
+import {nativeDeviceData} from '../../engine/gameplay/native-bindings';
 import { BEACH } from "../../data/index";
 import type { SceneDef } from "../kit";
 import { BEACH_RULES } from './rules';
@@ -25,6 +27,7 @@ export { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W } from './scene';
 
 /** The beach, complete: data, rules, drawing, its life and the ways out. */
 const base: SceneDef = {
+  gameplay:BEACH_GAMEPLAY,
   id: 'beach',
   name: 'the beach',
   width: BEACH_W,
@@ -83,10 +86,10 @@ const base: SceneDef = {
 };
 
 /** Canonical shipping/composer definition. Physical markers use the same resolved geometry. */
-export function beachScene(document:Composition=beachComposition,state:Environment['state']={},options:BeachRenderOptions={}):SceneDef{
+export function beachScene(document:Composition=beachComposition,state:Environment['state']={},options:BeachRenderOptions={},gameplay=BEACH_GAMEPLAY):SceneDef{
  const doc=validateBeachComposition(document),rows=beachGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,at=(id:string)=>get(id).placement,l=beachLayout(doc);
  const people=PEOPLE.map(actor=>{const id=Object.keys(BEACH_ACTORS).find(id=>BEACH_ACTORS[id]===actor)!;const p=at(id);return{...actor,x:p.x,h:p.h};});
- return{...base,width:Number(get('scene').props.width),spawn:at('spawn').x,data:beachDeviceData(BEACH,doc),lights:beachLights(doc),casters:beachCasters(doc),people,
+ return{...base,width:Number(get('scene').props.width),spawn:at('spawn').x,gameplay,data:nativeDeviceData(beachDeviceData(BEACH,doc),gameplay),lights:beachLights(doc),casters:beachCasters(doc),people,
  exits:base.exits.map(e=>({...e,x:e.id==='stairs'?l.stairs:at('edge-exit').x})),
  readables:base.readables?.map(r=>({...r,x:l.board,h:at('notice').h,promptH:(r.promptH??0)+at('notice').h})),
  uses:base.uses?.map(u=>{const id=u.id==='order'?'order':u.id,p=at(id);return{...u,x:p.x,h:u.id==='order'?p.h:(u.h??0)+p.h,promptH:(u.promptH??0)+p.h-(u.id==='order'?70:0)};}),

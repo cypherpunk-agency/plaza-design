@@ -1,3 +1,5 @@
+import {ConversationSession} from '../engine/gameplay/conversation';
+import type {GameplaySession} from '../engine/gameplay/session';
 import { drawCharacterFrame, BODIES, type Full, rnd, pick, lookFrom, type Legs, type Arms, CRITTERS, type Bot, type BotLook, BOT, CRITTER_BOT, type BotFull, botFrom, botKind, faceAt, psOf } from "../art/characters/appearance";
 export { lookFrom, shade, drawPortrait } from "../art/characters/appearance";
 export type { Bot, Face, BotLook } from "../art/characters/appearance";
@@ -95,6 +97,8 @@ export interface Look {
 }
 
 export interface Character {
+  /** Compiled shared conversation ID; talk remains native visual metadata. */
+  conversation?:string;
   /** Needed for talk (the engine's target id). */
   id?: string;
   seed?: number;
@@ -306,7 +310,8 @@ export function botReact(p: Character, next = false): { label: string; name: str
 
 const SAID = new Map<Character, number>();
 /** The pages a person says now: one set, or the next of several (the last repeats). */
-export function talkTo(p: Character): { name: string; pages: string[] } {
+export function talkTo(p: Character,gameplay?:GameplaySession): { name: string; pages: string[] } {
+  if(p.conversation&&gameplay){const session=new ConversationSession(gameplay,p.conversation);try{const f=session.frame();return{name:f.speaker,pages:f.pages};}finally{session.close();}}
   const T = p.talk ?? [];
   const name = p.name ?? 'STRANGER';
   // a line for now, or for this weather, first

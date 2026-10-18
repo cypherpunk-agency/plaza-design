@@ -10,7 +10,7 @@ export class ShiftGuidance {
   private target: ReturnType<typeof shiftAttention> = null;
   private blocked = true;
 
-  constructor(host: HTMLElement, private reduced: boolean, private ping: (x: number | null) => void) {
+  constructor(host: HTMLElement, private reduced: boolean, private ping: (x: number | null) => void, private attention = shiftAttention, private objective = shiftGoal) {
     this.live.className = 'shift-task-live';
     this.live.setAttribute('role', 'status');
     this.live.setAttribute('aria-live', 'polite');
@@ -21,10 +21,10 @@ export class ShiftGuidance {
   hide() { this.blocked = true; this.ping(null); }
 
   update(flags: Readonly<Record<string, boolean>>, dt: number, busy: boolean, moving: boolean, px: number) {
-    const goal = shiftGoal(flags);
-    if (goal !== this.goal) {
+    const goal = this.objective(flags), target=this.attention(flags);
+    if (goal !== this.goal || target?.x!==this.target?.x || !!target?.gentle!==!!this.target?.gentle) {
       this.goal = goal; this.age = 0; this.idle = 0; this.settled = false;
-      this.target = shiftAttention(flags);
+      this.target = target;
       this.ping(null);
     }
     this.blocked = busy;

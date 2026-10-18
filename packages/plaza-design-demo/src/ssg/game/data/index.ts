@@ -1,3 +1,6 @@
+import libraryGameplay from '../scenes/library/gameplay.json';
+import {nativeDialogue} from '../engine/gameplay/native-dialogue';
+import {validateGameplay} from '../engine/gameplay/validation';
 /**
  * The game's data files, bundled into the page by esbuild (no fetches: the
  * page runs under `default-src 'self'` and should work from one file).
@@ -58,7 +61,7 @@ const stacks: Loose<SceneData> = stacksJson;
 export const STACKS = stacks as SceneData;
 
 /** The public library (P16 Long overdue): the card reader, the session timer, the printer, the LIBRARY LAN's nodes, scan.so. */
-const library: Loose<SceneData> = libraryJson;
+const library: Loose<SceneData> = {...libraryJson,dialogue:{catalog:nativeDialogue(validateGameplay(libraryGameplay),'catalog',{'library:renewed':'renewed'},'say "{line}" > catalog')}};
 export const LIBRARY = library as SceneData;
 
 /** The sandbox (sudo only): REGISTRY QA BAY 3, one bench per engine feature. */

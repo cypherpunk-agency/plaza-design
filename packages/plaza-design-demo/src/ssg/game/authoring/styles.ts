@@ -10,6 +10,13 @@ export const composerStyles = `
 .scene-composer h2{font:600 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:16px 0 8px}.scene-composer aside>h2:first-child{margin-top:4px}
 .scene-composer h3{font:600 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 6px}.scene-composer p{margin:5px 0}.scene-composer .muted{color:var(--muted)}
 .scene-composer details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}.scene-composer summary{cursor:pointer;color:var(--accent);font-family:var(--mono);font-size:12px;padding:2px 0}
+.scene-composer .gameplay-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.scene-composer .gameplay-layout>section{min-width:0}.scene-composer .gameplay-layout pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.scene-composer .gameplay-fields{display:grid;gap:8px;padding:8px 0}.scene-composer .gameplay-fields label{display:grid;gap:4px;min-width:0}
+.scene-composer .gameplay-fields input,.scene-composer .gameplay-fields select,.scene-composer .gameplay-fields textarea{width:100%;max-width:100%}
+.scene-composer .gameplay-fields textarea{min-height:100px;resize:vertical}.scene-composer .gameplay-condition{min-width:0;border:1px solid var(--line);border-radius:4px;display:grid;gap:6px}
+.scene-composer .gameplay-editor .row,.scene-composer .gameplay-lab>div{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:1000px){.scene-composer .gameplay-layout{grid-template-columns:minmax(0,1fr)}}
 
 /* Top bar */
 .scene-composer>header{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}

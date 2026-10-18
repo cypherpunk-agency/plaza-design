@@ -1,0 +1,18 @@
+/** Small isolated native hacking fixture: the same operation as Mara's ordinary item handover. */
+import type { SceneData } from '../../data/types';
+import type { SceneRules } from '../rules';
+import type { GameplaySession } from './session';
+export const DELIVERY_TERMINAL:SceneData={
+  id:'delivery-pilot',name:'Delivery terminal pilot',state:{},tuning:{},dialogue:{},goals:[],texts:{},
+  devices:[
+    {id:'scanner',name:'PARCEL SCANNER',look:'An event source. Its cable requests delivery.',status:'parcel → terminal',nouns:[{id:'parcel',kind:'SENSE',verbs:['scan'],events:['detected'],on:{scan:{do:[{emit:'detected'}]}}}]},
+    {id:'terminal',name:'DELIVERY TERMINAL',look:'The same transfer operation as the receiving clerk.',status:'requires an assignment and a carried parcel',nouns:[{id:'delivery',kind:'ACT',verbs:['deliver'],events:['accepted','denied'],on:{deliver:{do:[{effect:'delivery.request'}]}}}]}
+  ],cables:[{id:'delivery-request',from:'scanner.parcel:detected',to:'terminal.delivery',verb:'deliver'}]
+};
+export function deliveryTerminalRules(gameplay:GameplaySession):SceneRules{return{
+  effects:{'delivery.request':(world,context)=>{
+    const result=gameplay.dispatch('shift.deliver',context.bySignal?'signal':'interaction');
+    world.emit(result.ok?'accepted':'denied');
+    return['use delivery --deliver',result.ok?'DELIVERY REGISTERED.':`DELIVERY REFUSED: ${result.reason}.`,result.ok?'ok':'err'];
+  }}
+};}

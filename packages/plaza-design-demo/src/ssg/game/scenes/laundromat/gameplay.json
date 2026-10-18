@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [
+    "soap"
+  ],
+  "events": [],
+  "commands": {
+    "laundromat.buy-soap": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "purchase": "laundromat.soap"
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {},
+  "purchases": {
+    "laundromat.soap": {
+      "basePrice": 1,
+      "goods": [
+        {
+          "item": "soap",
+          "quantity": 1
+        }
+      ]
+    }
+  }
+}

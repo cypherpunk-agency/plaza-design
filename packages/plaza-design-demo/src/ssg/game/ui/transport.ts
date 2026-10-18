@@ -1,3 +1,4 @@
+import { gameStorage } from '../runtime/storage';
 /**
  * Sudo's time control (`?sudo` only): a thin transport bar along the bottom edge while a timed
  * picture plays (the title's sunrise, the glide, every cutscene), so a moment can be named exactly.
@@ -91,9 +92,9 @@ export class Transport {
     });
     this.els.fold.addEventListener('click', () => {
       const folded = root.classList.toggle('st-folded');
-      try { localStorage.setItem(FOLD_KEY, folded ? '1' : ''); } catch { /* no storage */ }
+      try { gameStorage.setItem(FOLD_KEY, folded ? '1' : ''); } catch { /* no storage */ }
     });
-    try { if (localStorage.getItem(FOLD_KEY)) root.classList.add('st-folded'); } catch { /* no storage */ }
+    try { if (gameStorage.getItem(FOLD_KEY)) root.classList.add('st-folded'); } catch { /* no storage */ }
     const track = this.els.track;
     const seekAt = (e: PointerEvent) => {
       if (!this.tl) return;
@@ -249,9 +250,9 @@ export class ClockBar {
     });
     q('.st-fold').addEventListener('click', () => {
       const folded = root.classList.toggle('st-folded');
-      try { localStorage.setItem(CLOCK_FOLD_KEY, folded ? '1' : '0'); } catch { /* no storage */ }
+      try { gameStorage.setItem(CLOCK_FOLD_KEY, folded ? '1' : '0'); } catch { /* no storage */ }
     });
-    try { if (localStorage.getItem(CLOCK_FOLD_KEY) !== '0') root.classList.add('st-folded'); } catch { root.classList.add('st-folded'); }
+    try { if (gameStorage.getItem(CLOCK_FOLD_KEY) !== '0') root.classList.add('st-folded'); } catch { root.classList.add('st-folded'); }
     host.appendChild(root);
   }
 

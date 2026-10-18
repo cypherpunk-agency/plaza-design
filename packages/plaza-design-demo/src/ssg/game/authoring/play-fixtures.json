@@ -1,0 +1,233 @@
+{
+
+  "version": 1,
+
+  "fixtures": [
+
+    {
+
+      "id": "harbor-start",
+
+      "name": "Harbor Shift · start",
+
+      "scene": "harborShift",
+
+      "flags": {},
+
+      "items": {},
+
+      "tokens": 0,
+
+      "modules": [
+
+        "timer.so"
+
+      ],
+
+      "programs": [],
+
+      "keyring": [],
+
+      "state": {},
+
+      "day": 1,
+
+      "minute": 1120,
+
+      "seed": 3,
+
+      "weather": "forecast",
+
+      "clock": "story",
+
+      "spawn": null
+
+    },
+
+    {
+
+      "id": "sandbox-start",
+
+      "name": "Sandbox · QA start",
+
+      "scene": "sandbox",
+
+      "flags": {},
+
+      "items": {},
+
+      "tokens": 5,
+
+      "modules": [
+
+        "timer.so",
+
+        "switch.so"
+
+      ],
+
+      "programs": [
+
+        "scan.so"
+
+      ],
+
+      "keyring": [],
+
+      "state": {},
+
+      "day": 1,
+
+      "minute": 580,
+
+      "seed": 3,
+
+      "weather": "forecast",
+
+      "clock": "fixed",
+
+      "spawn": null
+
+    },
+
+    {
+
+      "id": "shop-start",
+
+      "name": "Shop · start",
+
+      "scene": "shop",
+
+      "flags": {},
+
+      "items": {},
+
+      "tokens": 5,
+
+      "modules": [
+
+        "timer.so",
+
+        "switch.so"
+
+      ],
+
+      "programs": [
+
+        "scan.so"
+
+      ],
+
+      "keyring": [],
+
+      "state": {},
+
+      "day": 1,
+
+      "minute": 580,
+
+      "seed": 3,
+
+      "weather": "forecast",
+
+      "clock": "fixed",
+
+      "spawn": null
+
+    },
+
+    {
+
+      "id": "library-start",
+
+      "name": "Library · start",
+
+      "scene": "library",
+
+      "flags": {},
+
+      "items": {},
+
+      "tokens": 5,
+
+      "modules": [
+
+        "timer.so",
+
+        "switch.so"
+
+      ],
+
+      "programs": [
+
+        "scan.so"
+
+      ],
+
+      "keyring": [],
+
+      "state": {},
+
+      "day": 1,
+
+      "minute": 580,
+
+      "seed": 3,
+
+      "weather": "forecast",
+
+      "clock": "fixed",
+
+      "spawn": null
+
+    },
+
+    {
+
+      "id": "laundromat-start",
+
+      "name": "Laundromat · start",
+
+      "scene": "laundromat",
+
+      "flags": {},
+
+      "items": {},
+
+      "tokens": 5,
+
+      "modules": [
+
+        "timer.so",
+
+        "switch.so"
+
+      ],
+
+      "programs": [
+
+        "scan.so"
+
+      ],
+
+      "keyring": [],
+
+      "state": {},
+
+      "day": 1,
+
+      "minute": 580,
+
+      "seed": 3,
+
+      "weather": "forecast",
+
+      "clock": "fixed",
+
+      "spawn": null
+
+    }
+
+  ]
+
+}

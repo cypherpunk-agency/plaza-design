@@ -15,6 +15,8 @@
  */
 
 import type { Character } from "../runtime/characters";
+import type { GameplayDefinition } from '../engine/gameplay/types';
+import type { GameplaySession } from '../engine/gameplay/session';
 import type { Perch } from "../runtime/companion";
 import type { SceneData } from '../data/types';
 import type { PlayerServices } from '../runtime/player';
@@ -95,7 +97,7 @@ export interface SceneUse {
    * What it costs now, in tokens (0 or none: nothing to pay this time; the florist charges only once
    * you ask). Tokens show only where you pay (Tommi, 2026-10-15): on the prompt and the popup.
    */
-  price?: number | ((flags: Readonly<Record<string, boolean>>) => number);
+  price?: number | ((flags: Readonly<Record<string, boolean>>,gameplay?:GameplaySession) => number);
   /** Its words in the popup, when it opens one (what you carry is offered): default the label, lower case. */
   act?: string;
   /**
@@ -108,7 +110,7 @@ export interface SceneUse {
 }
 
 /** What a use says: lines in its own name, or another speaker's. */
-export type SceneSaid = string[] | { name: string; pages: string[] };
+export type SceneSaid = string[] | { name: string; pages: string[];conversation?:string };
 
 /** Something you carry, used on a scene's use (the tea at the crane's call box). */
 export interface SceneItemUse { item: ItemId; label: string; use: (c: UseCtx) => SceneSaid }
@@ -118,6 +120,8 @@ export const priceTag = (n: number, have: number) => n + ' TOKEN' + (n === 1 ? '
 
 /** What a scene's `use` gets: the player's tokens and flags, and a way to pay. */
 export interface UseCtx {
+  /** Scoped command/event session, where the scene opts into shared gameplay. */
+  gameplay?: GameplaySession;
   tokens: number;
   /** Takes n tokens if the player has them (true), else nothing (false). */
   pay: (n: number) => boolean;
@@ -166,7 +170,13 @@ export type ItemId = keyof typeof ITEMS;
  * own drawing. Which place it belongs to is the city's data (city.ts).
  */
 export interface SceneDef {
+  /** Validated shared commands, events and conversations; independent of artwork/device documents. */
+  gameplay?: GameplayDefinition;
+  /** Read-only native state aliases, until their device subsystem is migrated. */
+  gameplayReads?:Record<string,string>;
   /** Story objective for scenes without hacking goals. */
+  attention?: (flags:Readonly<Record<string,boolean>>)=>{x:number;gentle?:boolean}|null;
+  storyMinute?: (flags:Readonly<Record<string,boolean>>)=>number;
   objective?: (flags: Readonly<Record<string, boolean>>) => string;
   id: string;
   /** Shown in the HUD. */

@@ -1,13 +1,16 @@
+import { gameStorage } from './storage';
 /** Extracted save responsibilities; function bodies and stored identifiers are preserved. */
 import type { SceneSave } from '../data/types';
 import { type ClockSave, newClock, fixClock } from "../world/clock";
 import { START_MODULES } from '../data/index';
-import { SAVE_KEY } from './mode';
+import { SAVE_KEY,DEMO_MODE } from './mode';
 
 
 // ---------- save state ----------
 
 export interface Save {
+  /** Qualified shared gameplay state, separate from native scene-device snapshots. */
+  gameplay?:Record<string,import('../engine/gameplay/types').StateValue>;
   /** Last scene for Continue; absent in older v3 saves. Validated against SCENES on resume. */
   scene?: string;
   handle: string;
@@ -40,14 +43,14 @@ export interface Save {
 /** A fresh player save; the title/glide hands it to the train-home opening. */
 
 export function newSave(): Save {
-  return { handle: '', tokens: 0, jump: false, modules: [...START_MODULES], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: {}, hints: {}, scenes: {}, clock: newClock() };
+  return { ...(DEMO_MODE?{scene:'library'}:{}),handle: DEMO_MODE?'TESTER':'', tokens: DEMO_MODE?8:0, jump: false, modules: [...START_MODULES,...(DEMO_MODE?['switch.so']:[])], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: DEMO_MODE?{arrived:true,schematics:true}:{}, hints: {}, scenes: {}, clock: newClock() };
 }
 
 
 /** A stored save, with anything missing filled in from a new game. */
 export function loadSave(): Save {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = gameStorage.getItem(SAVE_KEY);
     if (raw) {
       const s: Save = { ...newSave(), ...JSON.parse(raw) };
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
@@ -57,7 +60,10 @@ export function loadSave(): Save {
       if (!s.items || typeof s.items !== 'object' || Array.isArray(s.items)) s.items = {};
       s.items = Object.fromEntries(Object.entries(s.items).filter(([, n]) => Number.isInteger(n) && n > 0));
       // a save from before the city clock (TIME.md): day 1, 09:40
+      if(!s.gameplay||typeof s.gameplay!=='object'||Array.isArray(s.gameplay))s.gameplay={};
+      s.gameplay=Object.fromEntries(Object.entries(s.gameplay).filter(([k,v])=>!['__proto__','constructor','prototype'].includes(k)&&(typeof v==='boolean'||typeof v==='string'&&v.length<=2000||typeof v==='number'&&Number.isSafeInteger(v))));
       s.clock = fixClock(JSON.parse(raw).clock);
+      if(DEMO_MODE&&!s.modules.includes('switch.so'))s.modules.push('switch.so');
       return s;
     }
   } catch { /* private window or blocked storage: start fresh */ }
@@ -70,7 +76,7 @@ export const ownedModules = (s: Save) => [...(s.jump ? ['legs.so'] : []), ...s.m
 
 
 export function storeSave(s: Save) {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch { /* not persisted */ }
+  try { gameStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch { /* not persisted */ }
 }
 
 

@@ -5,6 +5,10 @@ shipping renderer or expose it through production routing. The service does not
 discover files or accept client paths: its launcher must supply every editable
 document explicitly. It edits existing JSON source documents only.
 
+The allowlist includes the Harbor Shift `gameplay` document. Its closed schema and stable
+ID/invocation-permission contract are validated before source replacement, just like other
+documents. This adds no new endpoint, client-supplied path, or public write capability.
+
 ## Start from the editor launcher
 
 ```ts
@@ -211,3 +215,10 @@ history, and undo after Save marks the document dirty. Reload warns before
 discarding pending changes. Import replaces the selected document only after
 validation; Export downloads the pending document, including unsaved work.
 Navigation away from a dirty editor uses the browser's unsaved-change prompt.
+
+
+The registered Harbor `scene.json` and `authoring/play-fixtures.json` use the same grouped Save,
+revision and journal protections as artwork, gameplay and scoped behavior. Prospective source-set
+validation cross-checks the Harbor scene against pending gameplay. Neither document may contain
+executable code. The public editor only downloads them. Play runtime snapshots and wire changes
+are private session state and are never source-save inputs.

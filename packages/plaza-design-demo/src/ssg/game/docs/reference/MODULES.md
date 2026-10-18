@@ -30,6 +30,21 @@ scene: `scenes/stacks/rules.ts`, for example, decides what loading that ferry me
 Cross-location timetables belong in `world/transport/`; campaign progression belongs in
 `story/`. Do not put unrelated logic in a generic helpers directory.
 
+`engine/gameplay/` owns the shared command/event/conversation pilot. Scene-owned gameplay
+documents define operations; `runtime/game.ts` supplies their player-state ports. Native
+device rules may call the same commands through explicit adapters. The isolated editor
+Gameplay laboratory demonstrates this without extending S13 source editing. See
+[GAMEPLAY-SYSTEM.md](./GAMEPLAY-SYSTEM.md) for implemented scope and limitations.
+
+`authoring/play-workbench.ts` owns the editor's disposable sandboxed Game frame;
+`play-frame.ts` constructs Harbor Shift or Sandbox from pending immutable content and authored
+`play-fixtures`. `scene-authoring.ts` edits the Harbor scene document compiled by
+`engine/gameplay/scene-document.ts`. Native inspection exposes bounded evaluator history and
+read-only timer/signal/clock/device snapshots; it is enabled only for editor Game hosts. The
+`runtime/storage.ts` boundary selects private memory in that realm and native storage in
+shipping pages. `ui/touch-controls.ts` is shared by the homepage and Play entry. Runtime state
+inspection returns copies; it does not expose control hooks or mutate source documents.
+
 `scenes/kit.ts` defines the shared scene contract. Rule factories receive the neutral
 `runtime/player.ts` services contract; they do not import Downtown's implementation or the
 Game class. The runtime connects those services to the current save and presentation.

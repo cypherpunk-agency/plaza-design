@@ -1,8 +1,31 @@
 # ACCESS DENIED: roadmap
 
-Updated 2026-10-16. This is the active build sequence for the
-[progression concept](./docs/design/PROGRESSION-CONCEPT.md). Everything remains in design. Milestones
-are deliverables, not dates; later story proposals remain provisional.
+Updated 2026-10-18. This is the single priority and status overview for the game, its gameplay
+systems, authoring tools and demo world. Detailed plans inherit priorities from here.
+Everything remains in design. Milestones are deliverables, not dates; later story proposals remain provisional.
+Story M1-M9 retain their existing identities. Completed artwork S0-S13 gates are not reopened or renumbered.
+
+## Current delivery order
+
+1. **ENG-01: technically complete. Roadmap reconciliation and finite contracts.** Consolidate existing evidence and
+   specify the agreed extensions to the working command/event/conversation pilot. Do not rebuild it.
+2. **ENG-02: technically complete. Persistent commerce and the demo-world foundation.** Extend saved state, unify prices
+   and purchases, expose authoring, prove the mechanic in the demo district, then update Shop and
+   Laundromat. Demo acceptance precedes broad scene migration.
+3. **ENG-03: technically complete within its named corpus. Unified conversations.** Consolidate NPC, device and shared conversation behavior,
+   expose the editor and demo scenarios, then migrate the explicitly listed representative paths.
+4. **ENG-04: technically complete within its named corpus.** Shared native device bindings,
+   eligibility, typed wiring and the connected Test Workshop; scoped Market fortune and Beach
+   meter/mixer migration. [Frozen scope](./ENG-04-PLAN.md), [evidence](./ENG-04-STATUS.md).
+5. **Next: ENG-05**, with its corpus and detailed gates to be specified before implementation.
+   ENG-01 through ENG-03 evidence is in [the execution ledger](./GAMEPLAY-ENGINE-STATUS.md).
+   Demo feedback remains pending; 49 legacy conversation paths and bot reactions remain inventoried.
+   The current run is authorized through ENG-04.
+   Listing later work is not authorization to execute or publish it.
+
+The experience checkpoint remains **M2 pacing review**, followed by **M3 ordinary-life prologue**.
+Story design can continue in parallel; M3 needs only its actual dependencies, not a finished engine.
+A campaign playthrough, CI/regression expansion and publication remain separately scoped.
 
 ## Current position
 
@@ -49,31 +72,44 @@ instructions; fictional productivity pressure must not punish player learning sp
 Preserve the current story route while the prototype is isolated. Do not put new mechanics,
 security puzzles, robot abilities or the full hacking UI into this slice.
 
-## Engineering alongside the chapters
+## Shared engineering deliveries
 
-The [unified scene system plan](./SCENE-SYSTEM-PLAN.md) defines a separate engineering track:
-one artwork library, no scene-specific drawing in game.ts, serializable compositions and a
-local visual composer using the game renderer. S0–S7 and G1–G8 are complete in the isolated
-development checkout; main retains its earlier working checkpoint. The completion gates preserve
-current appearance; see [execution status](./SCENE-SYSTEM-STATUS.md) for evidence and open work.
-Later harbor/tutorial prop redesign is separate. This track does not renumber or complete any
-story milestone. The follow-up [game editor plan](./GAME-EDITOR-PLAN.md) (approved 2026-10-17, not
-yet started) extends the editor towards play mode and data-driven scenes, logic, story and world.
+Detailed scope and finite goal conditions: [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md).
+Current gate evidence: [GAMEPLAY-ENGINE-STATUS.md](./GAMEPLAY-ENGINE-STATUS.md).
 
-After composer completion, the [follow-on engineering roadmap](./SCENE-SYSTEM-PLAN.md#follow-on-roadmap-asset-workbenches-and-scene-behavior)
-adds separately scoped stretch goals:
-
-| Milestone | Scope | Completion gate |
+| ID | Complete delivery across systems, authoring, demo and game | Dependency / story use |
 | --- | --- | --- |
-| S8 | Shared asset browser and complex-composition inspector | F1: complete frozen catalog coverage, assembly inspection and usage navigation |
-| S9 | Humans, animals and robots: animation/action workbench | F2: supported state matrix, runtime parity and isolated deterministic playback |
-| S10 | Ground, flying and boat vehicle workbench | F3: supported vehicle/route/state matrix and runtime parity |
-| S11 | Signs, neon, screens and architectural assemblies | F4: catalog coverage and runtime-equivalent environment/state previews |
-| S12 | Read-only scripted event, trigger and connection inspector | F5: truthful coverage, real runtime references and no inspection side effects |
-| S13 | Bounded declarative behavior editing and sandbox preview | F6: validated rule round-trip, safe runtime semantics and protected source saving |
+| ENG-01 | Reconciled plans, baseline inventory, contract extensions and preservation/change ledger | Technically complete locally; builds on existing pilot |
+| ENG-02 | Persistent typed state, purchase/price definitions, editor, demo shop, Shop/Laundromat migration | Technically complete locally; demo feedback pending; reusable for M3 |
+| ENG-03 | One conversation runner/model, authoring, demo conversations, representative NPC/device/Harbor migration | Technically complete for 17 scoped paths; remaining legacy corpus deferred; supports M3-M4 |
+| ENG-04 | Common interaction/device operations and eligibility; typed wiring; workshop; bounded Market/Beach migration | Technically complete locally for named corpus; demo feedback pending; supports M4-M5 |
+| ENG-05 | Objectives/guidance, capability lookup and world access; demo mission; Harbor/Downtown integration | ENG-04; supports M3-M6 as required |
+| ENG-06 | Clock/lifecycle contracts and performance harness; timing/environment demos; scoped puzzle alignment | ENG-04; scope dependencies per feature, supports M3/M8 |
+| ENG-07 | Remote entity identity, discovery/reach/connection semantics; network demo and puzzle integration | ENG-04/05/06; foundations for M8-M9, not Act III implementation |
+| ENG-08 | Declared bindings, manifests and generic scene creation; editor-built demo; remaining scoped migrations | Established ENG contracts; supports all chapters |
 
-These are planned, not implemented or added to the active goal. Viewing comes before editing;
-S13 requires an explicit supported-rule scope. Existing pixel-identity requirements continue.
+Each delivery follows **need -> system -> authoring -> demo -> scoped game migration -> feedback**.
+The demo uses the real runtime, model and renderer. Feedback may remain explicitly pending after
+technical gates pass; never claim observed comprehension from implementation checks.
+
+### Existing work retained
+
+| Existing identifier | Reconciled status | Continuing role |
+| --- | --- | --- |
+| Story M1 | Design pass complete | Encounter/teaching plan; not player validation |
+| Story M2 | Prototype implemented; pacing review pending | Harbor reference scene; no automatic M3 completion |
+| Artwork S0-S7 / G1-G8 | Completed within recorded inventories | Artwork/composition/render foundation; preserve evidence |
+| Workbenches S8-S13 / F1-F6 | Completed within recorded inventories | Viewers, inspector and bounded Sandbox authoring; wider editing is new scope |
+| Editor phases 0-1 | Substantial implemented slices: isolated Play, fixtures, native inspection | Existing capabilities reused; outstanding acceptance stays explicit |
+| Editor phase 2 | Partial: Harbor, Shop, Library and Laundromat documents and shared gameplay | Extended by ENG-01/02/03/04/05; no restart |
+| Editor phases 3-5 | Broader binding/registration, tools and world work remains | Executed through ENG-04 through ENG-08, not a separate priority queue |
+| Editor phase 6 | Custom packs/player distribution undecided | Deferred; not required for internal authoring |
+| Performance proposal | Plan exists; harness not implemented | Detailed work under ENG-06; measurement before optimization |
+
+[SCENE-SYSTEM-PLAN.md](./SCENE-SYSTEM-PLAN.md) and its ledgers preserve completed artwork/workbench
+scope. [GAME-EDITOR-PLAN.md](./GAME-EDITOR-PLAN.md) retains detailed editor requirements and historical
+phase labels. Neither is an independent active roadmap. Engineering implementation status is local
+source status; do not infer main, production or deployed versions without checking them.
 
 | Foundation | First needed | Scope |
 | --- | --- | --- |
@@ -113,10 +149,12 @@ assigns the old catalogue to this plan.
 
 Existing local reliability work pauses scene clocks and delayed actions with interruptions,
 blocks movement/time under NET, and restores a valid saved scene on Continue. It is separate
-from the progression redesign; it does not provide resumable harbor tasks or exact-position saves.
+from the progression redesign; Harbor now has resumable task state through its separate prototype save; exact-position campaign resume remains outside that work.
 
 ## Records and documentation roles
 
+- [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md): execution contracts and acceptance gates for ENG deliveries.
+- [GAMEPLAY-ENGINE-STATUS.md](./GAMEPLAY-ENGINE-STATUS.md): current evidence, failures, exceptions and feedback.
 - [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md): story direction, principles and open embodiment ideas.
 - [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md): milestone 1 encounter plan and dependencies.
 - [PUZZLES.md](./docs/reference/PUZZLES.md): existing puzzle catalogue and implemented mechanics.

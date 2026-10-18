@@ -1,9 +1,14 @@
+import {DEMO_MODE} from './mode';
+import {nativeStatePort} from '../engine/gameplay/native-bindings';
+import {ConversationSession} from '../engine/gameplay/conversation';
+import { gameStorage, reloadRuntime } from './storage';
 import { drawCapsuleWash } from '../art/atmosphere/capsule-wash';
 import { drawDockworker } from '../art/characters/dockworker';
 import { prepareDockworker } from './dockworker';
 import { drawPlayer } from '../art/characters/player';
 import { createSkyShips,drawSkyShips,type Ship } from '../art/environment/sky-ships';
 import { renderSceneFrame } from './render-scene';
+import { GameplaySession } from '../engine/gameplay/session';
 import { clearWorld } from '../art/core/canvas';
 /**
  * ACCESS DENIED, the game: input, movement, camera and drawing. Every place is
@@ -34,7 +39,7 @@ import { CAPSULE_SPAWN } from "../scenes/capsule/index";
 import { fixerPrice,fixerTalk,npcTalk } from "../scenes/downtown/dialogue";
 import { reconcile,sceneShell,syncGoals } from "../scenes/downtown/index";
 import { NPCS,SPAWN_X,STALL } from "../scenes/downtown/layout";
-import { shiftCarry,shiftMinute } from "../scenes/harbor-shift/index";
+import { shiftAttention,shiftCarry,shiftMinute } from "../scenes/harbor-shift/index";
 import { isSceneId,ITEMS,priceTag,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type SceneView,type UseCtx } from "../scenes/index";
 import { PARCEL } from "../scenes/yard/index";
 import { messagesOf,unread } from "../story/contacts";
@@ -73,7 +78,7 @@ import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from 
 import { sound } from './audio';
 import { botReact,characterHeight,characterX,isBot,isHere,talkTo } from './characters';
 import { Companion,WARM } from './companion';
-import { SAVE_KEY,SHIFT_PROTOTYPE } from "./mode";
+import { EDITOR_PLAY,SAVE_KEY,SHIFT_PROTOTYPE } from "./mode";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 
 /** What petting a scene's cat, or shooing its pigeon, gets you. */
@@ -143,6 +148,25 @@ export class Game {
   private shiftGuidance?: ShiftGuidance;
   /** Every scene on the engine, hosted the first time it is needed (`hostOf`), with its part of the save. */
   private hosts = new Map<SceneId, SceneHost>();
+  private gameplaySessions = new Map<SceneId, GameplaySession>();
+  private gameplayFor(id:SceneId):GameplaySession|undefined {
+    const definition=(this.content[id] ?? SCENES[id]).gameplay;
+    if(!definition)return undefined;
+    let session=this.gameplaySessions.get(id);
+    if(!session){
+      const port:import('../engine/gameplay/types').StatePort={
+        read:()=>({flags:{...this.save.flags,...Object.fromEntries(Object.entries((this.content[id]??SCENES[id]).gameplayReads??{}).map(([flag,key])=>[flag,!!(this.hosts.get(id)?.model.value(key)??this.save.scenes[id]?.state?.[key])]))},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay}),
+        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;this.save.gameplay=state.values;for(const flag of Object.keys((this.content[id]??SCENES[id]).gameplayReads??{}))delete this.save.flags[flag];},
+      };
+      const model=()=>{const m=this.hosts.get(id)?.model;if(!m)throw new Error('Native scene not ready');return m;};
+      session=new GameplaySession(definition,definition.native?nativeStatePort(definition,port,model):port,()=>{
+        if(definition.native){const m=model(),snapshot=m.snapshot(),board=this.save.scenes[id]?.board;this.save.scenes[id]={...snapshot,...(board?{board}:{})};m.changed();}
+        storeSave(this.save);this.syncHud();
+      });
+      this.gameplaySessions.set(id,session);
+    }
+    return session;
+  }
   /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
   private pixel = new Companion();
   private started = false;
@@ -158,7 +182,7 @@ export class Game {
   private netView: NetView | null = null;
   private netBack = false;
 
-  constructor(private host: GameHost) {
+  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private restricted=false) {
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'game-canvas';
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: Downtown');
@@ -182,7 +206,7 @@ export class Game {
       this.zh.clearPing('goal');
       this.goalAt = wx;
       if (wx !== null) this.zh.ping('goal', 'look');
-    });
+    }, flags=>this.def.attention?this.def.attention(flags):shiftAttention(flags,this.def.uses), flags=>this.def.objective?.(flags)??'');
     // the fixer's parcel holds Moth's key chip and uplink.so: a save that took it before they were in it gets them now
     if (this.hostOf('yard').model.get('parcelAt') === 'taken') PARCEL.forEach((k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); });
     // Downtown keeps most of its progress in the save's own fields: its devices agree with them
@@ -239,7 +263,7 @@ export class Game {
   private hostOf(id: SceneId): SceneHost {
     const had = this.hosts.get(id);
     if (had) return had;
-    const def: SceneDef = SCENES[id];
+    const def: SceneDef = this.content[id] ?? SCENES[id];
     const print = def.buzz ? (text: string, kind?: LineKind) => this.buzzPrint(text, kind) : (text: string, kind?: LineKind) => this.term.print(text, kind);
     const rules = typeof def.rules === 'function' ? def.rules({
       save: () => this.save,
@@ -253,6 +277,8 @@ export class Game {
       sceneState: (scene, key) => this.hosts.get(scene as SceneId)?.model.get(key) ?? this.save.scenes[scene]?.state?.[key],
     }) : def.rules ?? NO_RULES;
     const zh = new SceneHost(this.host.windowEl, print, {
+      gameplay:()=>this.gameplayFor(id),
+      conversation:(conversationId)=>{const session=this.gameplayFor(id);return session?.definition.conversations[conversationId]?new ConversationSession(session,conversationId):undefined;},
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
@@ -296,6 +322,7 @@ export class Game {
     zh.netOk = () => this.netOk;
     zh.netNew = () => !this.save.flags[NET_OPENED];
     zh.onNet = () => this.showNet();
+    if(EDITOR_PLAY)zh.model.enableInspection();
     this.hosts.set(id, zh);
     zh.setPaused(this.enginesPaused);
     // each scene host has its own HACK/BOARD strip, in the key bar; only the current scene's shows
@@ -310,7 +337,7 @@ export class Game {
   }
 
   /** The scene the player is in: its definition, and its host on the engine. */
-  private get def(): SceneDef { return SCENES[this.here]; }
+  private get def(): SceneDef { return this.content[this.here] ?? SCENES[this.here]; }
   private get zh(): SceneHost { return this.hostOf(this.here); }
   /** Downtown's host: its goals follow the save's own fields. */
   private get downtown(): SceneHost { return this.hostOf('downtown'); }
@@ -360,6 +387,7 @@ export class Game {
    */
   private continueGame(scene: SceneId | undefined, first: boolean) {
     this.endTitle();
+    if(DEMO_MODE)scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:'library');
     this.started = true;
     const resume = !scene && first ? openingResume(this.save.flags) : null;
     if (!scene && first && this.save.scene && isSceneId(this.save.scene) && (this.save.scene !== 'sandbox' || SUDO)) scene = this.save.scene;
@@ -378,7 +406,7 @@ export class Game {
   /** Is there a run to continue: a stored save that has been played? */
   private hasSave() {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      const raw = gameStorage.getItem(SAVE_KEY);
       if (!raw) return false;
       const s = JSON.parse(raw) as Partial<Save>;
       return (s.playMs ?? 0) > 0 || Object.keys(s.flags ?? {}).length > 0;
@@ -493,8 +521,24 @@ export class Game {
     this.hosts.forEach((h) => h.show(h === here));
   }
 
+  checkpoint(){this.hosts.forEach(host=>host.persist());storeSave(this.save);}
+
+  /** Detached diagnostics for editor inspection; no mutable runtime references. */
+  inspect() {
+    const shared=this.gameplayFor(this.here);
+    return structuredClone({scene:this.here, player:{x:this.p.x,y:this.p.y}, save:this.save,
+      engine:EDITOR_PLAY?this.zh.model.inspect():undefined,
+      gameplay:shared?{state:shared.state(),purchases:Object.fromEntries(Object.keys(shared.definition.purchases??{}).map(id=>[id,shared.quote(id)]))}:null,conversation:this.zh.conversationFrame,
+      environment:{weather:this.weatherHere().kind,clock:this.editorClock},
+      objective:this.def.objective?.(this.save.flags), paused:this.enginesPaused,
+      dialogue:this.bubble?{speaker:this.bubble.name,pages:this.bubble.pages,page:this.bubble.page}:null, popup:this.zh.popupOpen,
+      events:[...this.gameplaySessions].flatMap(([scene,session])=>session.events().map(event=>({scene,...event}))) });
+  }
+
   stop() {
     this.running = false;
+    this.gameplaySessions.forEach(session=>session.dispose());
+    this.gameplaySessions.clear();
     this.shiftGuidance?.hide();
     this.syncEnginePause();
     this.endTitle();
@@ -707,9 +751,9 @@ export class Game {
    * until it hands over (`openingDone`): leave mid-glide and the old run is still there. Slots are untouched.
    */
   private newGame() {
-    if (SHIFT_PROTOTYPE) {
-      localStorage.removeItem(SAVE_KEY);
-      location.reload();
+    if (EDITOR_PLAY || SHIFT_PROTOTYPE||DEMO_MODE) {
+      gameStorage.removeItem(SAVE_KEY);
+      reloadRuntime();
       return;
     }
     if (!this.opening) { this.showTitle(true); return; }
@@ -731,8 +775,9 @@ export class Game {
    * Pixel comes along where it follows you, or is at home; the first visit has the player say a few words.
    */
   private enter(id: SceneId, quiet = false, at?: string) {
+    if((DEMO_MODE||this.restricted)&&!this.content[id]){this.flash('This route is outside the Test District.');return;}
     if (SHIFT_PROTOTYPE) id = 'harborShift';
-    const s: SceneDef = SCENES[id];
+    const s: SceneDef = this.content[id] ?? SCENES[id];
     this.zh.persist();
     this.hosts.forEach((h) => h.closeAll());
     this.bubble = null;
@@ -1579,9 +1624,10 @@ export class Game {
    * morning after 09:40) from the train home until Moth's uplink.so; then it runs, from 09:42.
    */
   private pinStory() {
+    if(EDITOR_PLAY&&this.editorClock!=='story'){if(this.editorClock==='fixed')city.pin(this.save.clock.min);return;}
     if (SHIFT_PROTOTYPE) {
       this.save.clock.day = this.save.flags['shift:returned'] ? 2 : 1;
-      const at = shiftMinute(this.save.flags);
+      const at = this.def.storyMinute?.(this.save.flags) ?? shiftMinute(this.save.flags);
       if (city.pinned !== at) city.pin(at);
       return;
     }
@@ -1869,7 +1915,8 @@ export class Game {
       return;
     }
     if (kind === 'talk') {
-      const p = s.people!.find((z) => z.id === id)!, said = talkTo(p);
+      const p = s.people!.find((z) => z.id === id)!, said = talkTo(p,this.gameplayFor(this.here));
+      storeSave(this.save);
       this.say(said.name, said.pages, characterX(p, this.t), characterHeight(p) - 10);
       return;
     }
@@ -1892,14 +1939,16 @@ export class Game {
   }
 
   /** What a use costs now (0: nothing to pay this time). */
-  private usePrice(u: SceneUse) { return typeof u.price === 'function' ? u.price(this.save.flags) : u.price ?? 0; }
+  private usePrice(u: SceneUse) { return typeof u.price === 'function' ? u.price(this.save.flags,this.gameplayFor(this.here)) : u.price ?? 0; }
   /** A use's E prompt: its price and what you have, only when there is something to pay. */
   private useLabel(u: SceneUse) { const n = this.usePrice(u); return n ? u.label + ' · ' + priceTag(n, this.save.tokens) : u.label; }
 
   /** Run a use (or what it does with something you carry), say what comes of it, write the save. */
   private runUse(u: SceneUse, fn: (c: UseCtx) => SceneSaid) {
     const save = this.save;
+    const gameplay=this.gameplayFor(this.here),tokensBefore=save.tokens;
     const out = fn({
+      gameplay,
       tokens: save.tokens,
       pay: (n) => { if (save.tokens < n) return false; save.tokens -= n; this.flash('-' + n + ' token' + (n === 1 ? '' : 's')); return true; },
       give: (n) => { save.tokens += n; this.flash('+' + n + ' token' + (n === 1 ? '' : 's')); },
@@ -1915,9 +1964,12 @@ export class Game {
       },
       add: (item, n = 1) => { save.items[item] = (save.items[item] ?? 0) + n; },
     });
+    const tokenDelta=save.tokens-tokensBefore;
+    if(gameplay&&tokenDelta)this.flash((tokenDelta>0?'+':'')+tokenDelta+' token'+(Math.abs(tokenDelta)===1?'':'s'));
     storeSave(save);
     this.syncHud();
     const said = Array.isArray(out) ? { name: u.name, pages: out } : out;
+    if(said.conversation){if(!gameplay)throw new Error('Conversation requires gameplay session');this.zh.presentConversation(new ConversationSession(gameplay,said.conversation));return;}
     if (said.pages.length) this.say(said.name, said.pages, u.x, u.h ?? 60);
   }
 

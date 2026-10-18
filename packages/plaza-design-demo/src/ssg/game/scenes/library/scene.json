@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "id": "library",
+  "name": "the public library",
+  "intro": [
+    "The public library. Warm. Somebody is paying for the heating, and it is not anybody here.",
+    "Terminals over there. Thirty minutes each, for people who exist.",
+    "H shows how the room is wired."
+  ],
+  "uses": [
+    {
+      "id": "chair",
+      "name": "YOU",
+      "label": "[E] SIT DOWN",
+      "routes": [
+        {
+          "pages": [
+            "I sit for a minute. The radiator ticks. Nobody verifies anything.",
+            "It is the warmest I have been since Tuesday."
+          ]
+        }
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "notice",
+      "name": "NOTICE BOARD",
+      "pages": [
+        "PUBLIC LIBRARY · DOWNTOWN BRANCH. COLLECTION DIGITIZED 2049. BUILDING RETAINED FOR SEATING.",
+        "PUBLIC TERMINALS: 30 MINUTES PER VERIFIED IDENTITY PER DAY. UNUSED MINUTES ARE NOT CARRIED OVER.",
+        "SOFTWARE LENDING: SUSPENDED PENDING RETURNS."
+      ]
+    },
+    {
+      "id": "terminal3",
+      "name": "TERMINAL 3",
+      "pages": [
+        "PRESENT CARD AT THE READER.",
+        "IDENTITY: NOT PRESENTED. SESSION: 00:00 OF 30:00."
+      ]
+    },
+    {
+      "id": "book",
+      "name": "REFERENCE ONLY",
+      "pages": [
+        "A paper book, chained to its stand. The title has worn off the spine.",
+        "A bus ticket marks page 212. Yesterday it was page 211."
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "shelfe",
+      "name": "SHELF-E",
+      "talk": [
+        [
+          "Re-shelving. One book. Correct place: everywhere."
+        ],
+        [
+          "Shelf 14 is empty. Shelf 15 is empty. I keep them in order."
+        ]
+      ]
+    },
+    {
+      "id": "librarian",
+      "name": "LIBRARIAN",
+      "talk": [
+        [
+          "Welcome to the public library. The books are on the cloud. The chairs are here.",
+          "People come for the chairs. And the radiators. Mostly the radiators."
+        ],
+        [
+          "No card? Then you are not in the system, and I cannot lend you anything.",
+          "I can lend you a chair. Chairs are not in the system. I checked."
+        ],
+        [
+          "That printer has been printing the same overdue notice for eleven years.",
+          "Staff's. Nobody can cancel it. The staff left. The notice stayed. Like the rest of us."
+        ],
+        [
+          "If something comes back to this library after eleven years, I will not ask where it has been.",
+          "I will stamp it. I have been waiting to stamp something since 2049."
+        ]
+      ]
+    },
+    {
+      "id": "student",
+      "name": "TERMINAL 1",
+      "talk": [
+        [
+          "Twelve minutes left. I am writing a thesis on why we need more than thirty minutes.",
+          "Eleven."
+        ],
+        [
+          "Do not stand behind me. I think the timer counts people who stand behind me.",
+          "I have not checked. No time."
+        ]
+      ]
+    },
+    {
+      "id": "kid",
+      "name": "TERMINAL 2",
+      "talk": [
+        [
+          "Three minutes. I am on level nine.",
+          "If you do not talk to me I can finish level nine."
+        ],
+        [
+          "My mum is verified. I am her thirty minutes. She is at work. Do not tell the timer."
+        ]
+      ]
+    },
+    {
+      "id": "sleeper",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "...not asleep. Reading. With my eyes closed. It saves the eyes."
+        ],
+        [
+          "Forty years I came here for the books. Now I come for the chair.",
+          "The chair is better. The chair never ended badly."
+        ]
+      ]
+    },
+    {
+      "id": "knitter",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "I come for the radiator. Do not tell the radiator."
+        ],
+        [
+          "It is a scarf. For the radiator. It gets cold in February. Everything does."
+        ],
+        [
+          "The heating has been over budget every February since they digitized the books.",
+          "Nobody turns it down. The committee would never allow it. We are the committee."
+        ]
+      ]
+    },
+    {
+      "id": "paper",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "The last paper newspaper. I am reading it slowly.",
+          "If you only read this one, nothing new has happened since. It is very restful."
+        ]
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "downtown",
+      "to": "downtown",
+      "at": "library",
+      "label": "[E] DOWNTOWN"
+    }
+  ]
+}

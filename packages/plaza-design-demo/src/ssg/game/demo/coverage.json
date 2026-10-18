@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "scope": [
+    "ENG-02",
+    "ENG-03",
+    "ENG-04"
+  ],
+  "runtime": "Game",
+  "areas": {
+    "library": "Test Desk",
+    "shop": "Counter",
+    "sandbox": "Test Workshop"
+  },
+  "features": [
+    {
+      "id": "state.saved",
+      "authoring": "Gameplay state defaults / private Play inspector",
+      "minimal": "demo.rotation",
+      "failure": "failed buy preserves cursor",
+      "combined": "navigation and reload after purchase",
+      "game": [
+        "shop"
+      ]
+    },
+    {
+      "id": "commerce.purchase",
+      "authoring": "Gameplay purchase definitions",
+      "minimal": "counter buy",
+      "failure": "insufficient funds and empty stock",
+      "combined": "same demo.buy command from conversation",
+      "game": [
+        "shop",
+        "laundromat"
+      ]
+    },
+    {
+      "id": "commerce.price",
+      "authoring": "Gameplay base price and modifiers",
+      "minimal": "base quote equals charge",
+      "failure": "actual charge exceeds balance",
+      "combined": "discount plus explicit hidden fee",
+      "game": [
+        "shop",
+        "laundromat"
+      ]
+    },
+    {
+      "id": "conversation.sequence",
+      "authoring": "Scene logic actor dialogue",
+      "minimal": "talk to test librarian twice",
+      "failure": "reload retains progress; final lines repeat",
+      "combined": "persistent purchase and actor state",
+      "game": [
+        "shop",
+        "library",
+        "laundromat"
+      ]
+    },
+    {
+      "id": "conversation.choice",
+      "authoring": "Gameplay nodes/choices/conditions/entry commands",
+      "minimal": "Test Desk choices",
+      "failure": "refused conversation purchase leaves state/node unchanged",
+      "combined": "buy/refill/discount through same commands",
+      "game": [
+        "harborShift",
+        "library:catalog"
+      ]
+    },
+    {
+      "id": "device.shared-operation",
+      "authoring": "Gameplay native device bindings / Play diagnostics",
+      "minimal": "lamp on/off by ordinary use or native verb",
+      "failure": "revoke hatch permit, request open, preserve state and events",
+      "combined": "same hatch command from controls and signals",
+      "game": [
+        "beach:kiosk.meter",
+        "beach:mixer.pump"
+      ]
+    },
+    {
+      "id": "wiring.native",
+      "authoring": "Gameplay native wiring / hack vision",
+      "minimal": "sensor motion to lamp on, 150ms",
+      "failure": "invalid endpoint refuses; fixed conduit cannot be cut",
+      "combined": "pressure plate to timer to switch to hatch to fan; switch off/on",
+      "game": [
+        "beach"
+      ]
+    },
+    {
+      "id": "interaction.paid-sequence",
+      "authoring": "Gameplay commands/state / native Play",
+      "minimal": "Market fortune charges one token",
+      "failure": "no tokens preserves cursor and resources",
+      "combined": "reload and reconstruct scene then receive next fortune",
+      "game": [
+        "market"
+      ]
+    }
+  ]
+}

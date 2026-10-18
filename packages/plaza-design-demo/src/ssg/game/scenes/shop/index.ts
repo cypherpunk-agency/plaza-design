@@ -1,3 +1,5 @@
+import {validateGameplay} from '../../engine/gameplay/validation';
+import {validateSceneDocument} from '../../engine/gameplay/scene-document';
 import {shopDefaultLayout} from '../../art/assemblies/shop-elements';
 import {shopComposition,shopPlacement,shopWidth,shopGeometry,validateShopComposition,bindShopActors,shopEnvironment,drawShopComposition,drawShopForeground,type ShopRenderOptions} from './composition';
 /**
@@ -18,7 +20,10 @@ import type {Composition,Environment} from '../../art/core/composition';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../../engine/host';
 import { type Character } from "../../runtime/characters";
-import { type ItemId,type SceneDef,type SceneUse } from "../kit";
+import { type SceneDef } from "../kit";
+import {compileSceneDocument,applyScenePresentation,type SceneDocument} from '../../engine/gameplay/scene-document';
+import type {GameplayDefinition} from '../../engine/gameplay/types';
+import {SHOP_GAMEPLAY,SHOP_SCENE,validateShopGameplay,validateShopScene} from './scene-document';
 
 /** Layout: positions in world units, heights up from the floor. */
 const L = shopDefaultLayout;
@@ -27,24 +32,14 @@ const L = shopDefaultLayout;
 
 // ---------- people ----------
 
-const keeper: Character = { id: 'keeper', seed: 5101, look: { body: 'avg', hair: 'short', garb: 'jacket', extras: ['glasses'], top: '#6a2a3e' }, x: L.keeper, act: 'vend', facing: -1, name: 'SHOPKEEPER', talk: [
-  ['We\'re open.', 'We\'re always open. The sticker says 24/7. I wanted 24/7/365.25. The printer said no.'],
-  ['The camera? The Registry insists. It films the till.', 'The till has nothing to hide. The till has nothing at all, most nights.'],
-  ['Buy something or keep the cat company. The cat charges less.'],
-] };
+const keeper: Character = { id: 'keeper', seed: 5101, look: { body: 'avg', hair: 'short', garb: 'jacket', extras: ['glasses'], top: '#6a2a3e' }, x: L.keeper, act: 'vend', facing: -1, ...SHOP_SCENE.people!.find(p=>p.id==='keeper') };
 const PEOPLE: Character[] = [
-  { id: 'browser', seed: 5102, x: 200, act: 'walk', range: [200, 450], speed: 0.18, look: { body: 'tall', extras: ['phone', 'backpack'] }, name: 'CUSTOMER', talk: [
-    ['They moved the cheap noodles to the top shelf.', 'Top shelf is for people with legs.so. I have the free legs.'],
-    ['I come in to read the labels. It is warmer than the library and the library closed.'],
-  ] },
+  { id: 'browser', seed: 5102, x: 200, act: 'walk', range: [200, 450], speed: 0.18, look: { body: 'tall', extras: ['phone', 'backpack'] }, ...SHOP_SCENE.people!.find(p=>p.id==='browser') },
   { seed: 5103, x: 610, act: 'stand', facing: -1, look: { body: 'short', garb: 'coat', hair: 'beanie', extras: ['bag'] } },
   { look: 'cat', seed: 4, x: 640, h: 99, act: 'sit', facing: -1 },
   // the robots: a stock unit restocking the shelves, an android buying batteries, a crawler on the ceiling fixing the light by the window
   { look: { bot: 'servbot', v: 0 }, seed: 5105, x: 470, act: 'carry', range: [470, 300], speed: 0.16 },
-  { id: 'android', seed: 5106, look: 'android', x: 688, act: 'queue', facing: 1, name: 'CUSTOMER', talk: [
-    ['Batteries. Two packs. Do not make it weird.'],
-    ['People ask what I do for fun. I queue. I am very good at it. I have never once been served first.'],
-  ] },
+  { id: 'android', seed: 5106, look: 'android', x: 688, act: 'queue', facing: 1, ...SHOP_SCENE.people!.find(p=>p.id==='android') },
   { look: 'crawler', seed: 5107, x: 124, h: 133, act: 'weld', facing: 1 },
 ];
 
@@ -56,22 +51,6 @@ const OUTSIDE: Character[] = [
 
 // ---------- buying ----------
 
-let bought = 0;
-const GOODS = [
-  ['One BLUE. The flavour is blue. Nobody knows more than that.', 'It tastes like the colour. Don\'t think about it.'],
-  ['Crisps, salt and vinegar. The vinegar is synthetic. The salt is from the harbor.', 'Don\'t ask the harbor.'],
-  ['Noodle cup. Three for three tokens, one for one.', 'The maths is the only honest thing in this shop.'],
-  ['Gum. The last pack.', 'It has been the last pack since I opened.'],
-];
-/** What each of GOODS puts in your hands. */
-const GOOD_ITEMS: ItemId[] = ['blue', 'crisps', 'noodlecup', 'gum'];
-const USES: SceneUse[] = [
-  { id: 'buy', x: shopPlacement('till').x, label: '[E] BUY', price: 1, name: 'SHOPKEEPER', promptH: shopPlacement('till').h+62, use: (c) => {
-    if (!c.pay(1)) return ['One token. You have none. I can do nothing for you, at no charge.', 'Credit? This is a corner shop, not a bank. Banks have better locks.'];
-    c.set('shop:bought'); c.add(GOOD_ITEMS[bought % GOOD_ITEMS.length]);
-    return GOODS[bought++ % GOODS.length];
-  } },
-];
 
 /** Per upper room: boxes [x, w, h] on the floor, windows [x, lit], a bulb x. Laid out once, for 8 floors. */
 
@@ -93,19 +72,19 @@ export function shopFrameEnvironment(view:View,_engine?:EngineDraw,doc=shopCompo
 
 const base: SceneDef = {
   id: 'shop',
-  name: 'Corner Shop',
+  name: SHOP_SCENE.name,
   // facing (light.ts): on the street's east side: its window looks west across Downtown's street
   facing: 270,
   width: shopWidth(),
   spawn: shopPlacement('spawn').x,
-  intro: ['A corner shop. The kind that never closes and never has change.'],
-  exits: [{ id: 'downtown', x: shopPlacement('door').x, to: 'downtown', at: 'shop', label: '[E] DOWNTOWN', promptH: shopPlacement('door').h+82 }],
+  intro: SHOP_SCENE.intro,
+  exits: [{ id: 'downtown', x: shopPlacement('door').x, to: 'downtown', at: 'shop', label: SHOP_SCENE.exits![0].label, promptH: shopPlacement('door').h+82 }],
   readables: [
-    { id: 'shelf', x: shopPlacement('limit').x, name: 'SHELF LABEL', promptH: shopPlacement('limit').h+26, pages: ['NOODLE CUPS · LIMIT 3 PER CUSTOMER.', 'PURCHASES OVER LIMIT ARE REPORTED.'] },
-    { id: 'vend', x: shopPlacement('vending').x+Number(shopComposition.instances.find(i=>i.id==='vending')!.props.width)/2, name: 'THIRST.EXE', promptH: shopPlacement('vending').h+Number(shopComposition.instances.find(i=>i.id==='vending')!.props.height)+16, pages: ['ACCEPTS TOKENS. CHANGE NOT GIVEN.', 'SCREEN: OUT OF ORDER. DISPENSING NORMALLY.'] },
+    { id: 'shelf', x: shopPlacement('limit').x, name: SHOP_SCENE.readables![0].name, promptH: shopPlacement('limit').h+26, pages: SHOP_SCENE.readables![0].pages },
+    { id: 'vend', x: shopPlacement('vending').x+Number(shopComposition.instances.find(i=>i.id==='vending')!.props.width)/2, name: SHOP_SCENE.readables![1].name, promptH: shopPlacement('vending').h+Number(shopComposition.instances.find(i=>i.id==='vending')!.props.height)+16, pages: SHOP_SCENE.readables![1].pages },
   ],
   people: [keeper, ...PEOPLE],
-  uses: USES,
+
 
   drawBackdrop: (x,v)=>drawShopComposition(x,v,shopActors),
 
@@ -113,18 +92,22 @@ const base: SceneDef = {
 };
 
 /** Same source, actor snapshots and native drawing path for shipping and edited previews. */
-export function shopScene(document:Composition=shopComposition,state:Environment['state']={},options:ShopRenderOptions={}):SceneDef{
+export function shopSceneDefinition(document:Composition=shopComposition,state:Environment['state']={},options:ShopRenderOptions={},content:SceneDocument=SHOP_SCENE,gameplay:GameplayDefinition=SHOP_GAMEPLAY):SceneDef{
+  const source=validateSceneDocument(content,validateGameplay(gameplay));
   const doc=validateShopComposition(document),actors:Record<string,Character>=structuredClone(actorTemplates);
+  for(const person of source.people??[]){actors[person.id].name=person.name;actors[person.id].talk=structuredClone(person.talk);}
   bindShopActors(actors,doc);
   const rows=shopGeometry(doc),point=(id:string)=>shopPlacement(id,doc),props=(id:string)=>rows.find(r=>r.instance.id===id)!.props;
-  return {...base,width:shopWidth(doc),spawn:point('spawn').x,
+  const compiled=compileSceneDocument(source,{buy:point('till').x},()=>{throw new Error('Shop purchases do not use conversations');});
+  return applyScenePresentation({...base,width:shopWidth(doc),spawn:point('spawn').x,gameplay,
     exits:base.exits.map(e=>({...e,x:point('door').x,promptH:point('door').h+82})),
     readables:base.readables!.map(r=>r.id==='shelf'?{...r,x:point('limit').x,promptH:point('limit').h+26}:{...r,x:point('vending').x+Number(props('vending').width)/2,promptH:point('vending').h+Number(props('vending').height)+16}),
-    uses:base.uses!.map(u=>({...u,x:point('till').x,promptH:point('till').h+62})),
+    uses:compiled.uses.map(u=>({...u,promptH:point('till').h+62})),
     people:['keeper','browser','person-1','cat','stockbot','android','crawler'].map(id=>actors[id]),
     drawBackdrop:(x,v)=>drawShopComposition(x,v,actors,doc,state,options),
     drawFront:(x,v)=>drawShopForeground(x,v,actors,doc,state,options),
     visualEnvironment:(view)=>shopEnvironment(view,actors,doc),
-  };
+  },source);
 }
+export function shopScene(document:Composition=shopComposition,state:Environment['state']={},options:ShopRenderOptions={},content:SceneDocument=SHOP_SCENE,gameplay:GameplayDefinition=SHOP_GAMEPLAY):SceneDef{return shopSceneDefinition(document,state,options,validateShopScene(content,validateShopGameplay(gameplay)),gameplay);}
 export const shop=shopScene();

@@ -65,6 +65,17 @@ Validation: both builds and focused task-state checks (including serialised relo
 checkout, repeated handovers and one-time pay). Initial/completed browser states are inspected
 separately; a complete player playthrough and comprehension assessment remain pending.
 
+## Test District
+
+After the homepage build, open `http://127.0.0.1:4174/?demo` using the static server above.
+This separate saved demo world connects a Test Desk, Counter and Test Workshop using the same engine and artwork
+as the game. Try conversation choices, persistent stock/rotation and normal/discount/deceptive
+pricing. Near the Desk entrance, take the Workshop route. Its board near the entrance offers hatch
+permission controls; the first two benches demonstrate direct use, cables and chains. H opens hacking;
+L offers timer and switch parts. MENU -> NEW GAME resets only the demo autosave. Demo slots and resume are separate too.
+The editor's Demo world tab previews pending definitions with disposable private progress.
+See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for scope and limitations.
+
 ## Code map
 
 | File or directory | Current responsibility |
@@ -101,13 +112,18 @@ the user's latest direction, not whichever old note sounds most authoritative.
 | --- | --- |
 | [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md) | New story and learning direction: harbor prologue, Downtown Act I, later embodiment proposals; comparison with current material |
 | [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md) | Milestone 1: encounter matrices, teaching dependencies, access and puzzle dispositions |
-| [ROADMAP.md](./ROADMAP.md) | Current implementation status and proposed next work |
+| [ROADMAP.md](./ROADMAP.md) | Single project priority/status overview, preserving story M1-M9 and engineering ENG IDs |
+| [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md) | Shared engine, authoring, demo-world and migration execution gates |
+| [GAMEPLAY-ENGINE-STATUS.md](./GAMEPLAY-ENGINE-STATUS.md) | Current goal scope, gate evidence, exceptions and pending feedback |
 | [SCENE-SYSTEM-PLAN.md](./SCENE-SYSTEM-PLAN.md) | Executable artwork-library migration and visual composer plan, with appearance-preservation gates |
 | [GAME-EDITOR-PLAN.md](./GAME-EDITOR-PLAN.md) | Approved direction from composer to full game editor: play mode, data-driven scenes, logic, story and world authoring |
 | [GAME-DATA.md](./docs/reference/GAME-DATA.md) | Technical authoring reference: data/code boundary, engine and saves |
 | [ART-GUIDE.md](./docs/reference/ART-GUIDE.md) | Working visual and readability principles |
 | [CITY.md](./docs/reference/CITY.md) | Current city structure and proposed places |
 | [NET.md](./docs/reference/NET.md) | Network mechanics, current implementation and future ideas |
+| [GAMEPLAY-SYSTEM.md](./docs/reference/GAMEPLAY-SYSTEM.md) | Implemented command/event/conversation pilot, harbor compatibility and isolated Gameplay editor lab |
+| [HACKING-SYSTEM-REVIEW.md](./docs/reference/HACKING-SYSTEM-REVIEW.md) | Source review of hacking/wiring/network boundaries, confirmed probes and proposed consolidation |
+| [PERFORMANCE-HARNESS-PLAN.md](./docs/design/PERFORMANCE-HARNESS-PLAN.md) | Proposed live-game, native-render and simulation measurements, milestones and appearance-preservation gates |
 | [TIME.md](./docs/reference/TIME.md) | City time/weather/light design and implemented parts |
 | [PUZZLES.md](./docs/reference/PUZZLES.md) | Puzzle catalogue; distinguish implemented solutions from sketches |
 | [LEVELS.md](./docs/design/LEVELS.md), [STORY.md](./docs/design/STORY.md) | Story/level design, including historical proposals |
@@ -136,9 +152,12 @@ The local [scene and animation composer](./authoring/README.md) starts with
 `pnpm --filter plaza-design-demo compose-scenes` from the repository root. Open
 `http://127.0.0.1:4192`; its separate loopback save service uses port 4193. Stop both with Ctrl+C.
 Its preview uses the native game renderer and isolated models. Validated **Save to source** writes
-allowlisted composition/timeline JSON and the narrowly validated Sandbox behavior document;
+allowlisted composition/timeline JSON, the narrowly validated Sandbox behavior document and
+Harbor Shift gameplay/scene documents (dialogue, objectives, guidance and ordinary interactions),
+and reusable Play fixtures;
 rebuild the game to use saved edits in the homepage. Asset, character, vehicle, signage and
-event-inspection panels are read-only. See the [stretch evidence ledger](./docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md)
+event-inspection asset panels are read-only. Play runs Harbor Shift or Sandbox from pending
+source with typed starting fixtures and live native device/signal/condition inspection. See the [stretch evidence ledger](./docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md)
 for their frozen support inventories and acceptance limits.
 The world/map panel inspects registry-derived places and links; geography and access rules remain
 code-owned. Restart the composer after renderer/schema changes. See its README and the execution

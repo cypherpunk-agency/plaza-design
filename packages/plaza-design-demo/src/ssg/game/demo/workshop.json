@@ -1,0 +1,411 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [
+    "workshop.opened"
+  ],
+  "commands": {
+    "workshop.lamp.on": {
+      "sources": [
+        "interaction",
+        "signal",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.lampOn",
+          "set": true
+        }
+      ]
+    },
+    "workshop.lamp.off": {
+      "sources": [
+        "interaction",
+        "signal",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.lampOn",
+          "set": false
+        }
+      ]
+    },
+    "workshop.hatch.open.repeat": {
+      "sources": [
+        "interaction",
+        "signal",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.hatchOpen",
+          "set": true
+        }
+      ],
+      "when": {
+        "state": "workshop.permit",
+        "is": true
+      }
+    },
+    "workshop.hatch.open": {
+      "sources": [
+        "interaction",
+        "signal",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.hatchOpen",
+          "set": true
+        },
+        {
+          "emit": "workshop.opened"
+        }
+      ],
+      "when": {
+        "state": "workshop.permit",
+        "is": true
+      }
+    },
+    "workshop.hatch.shut": {
+      "sources": [
+        "interaction",
+        "signal",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.hatchOpen",
+          "set": false
+        }
+      ]
+    },
+    "workshop.fan.spin": {
+      "sources": [
+        "interaction",
+        "signal",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.fanOn",
+          "set": true
+        }
+      ]
+    },
+    "workshop.fan.stop": {
+      "sources": [
+        "interaction",
+        "signal",
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.fanOn",
+          "set": false
+        }
+      ]
+    },
+    "workshop.permit.allow": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.permit",
+          "set": true
+        }
+      ]
+    },
+    "workshop.permit.deny": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "workshop.permit",
+          "set": false
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "workshop.operator": {
+      "entry": [
+        {
+          "node": "controls"
+        }
+      ],
+      "nodes": {
+        "controls": {
+          "speaker": "WORKSHOP CONTROLS",
+          "pages": [
+            "Physical use, dialogue choices and signals share device commands. Try revoking the hatch permit, then requesting open: the refused operation must leave the hatch and fan unchanged. Restore permission to continue."
+          ],
+          "choices": [
+            {
+              "id": "allow",
+              "label": "Allow hatch operation",
+              "command": "workshop.permit.allow",
+              "next": "controls"
+            },
+            {
+              "id": "deny",
+              "label": "Revoke hatch permission",
+              "command": "workshop.permit.deny",
+              "next": "controls"
+            },
+            {
+              "id": "open",
+              "label": "Open hatch",
+              "command": "workshop.hatch.open",
+              "next": "controls"
+            },
+            {
+              "id": "shut",
+              "label": "Shut hatch",
+              "command": "workshop.hatch.shut",
+              "next": "controls"
+            },
+            {
+              "id": "lamp",
+              "label": "Light the lamp",
+              "command": "workshop.lamp.on",
+              "next": "controls"
+            },
+            {
+              "id": "leave",
+              "label": "Leave controls",
+              "next": "done"
+            }
+          ]
+        },
+        "done": {
+          "speaker": "WORKSHOP CONTROLS",
+          "pages": [
+            "Try H to inspect devices and wire the pressure plate through a timer and switch."
+          ]
+        }
+      }
+    }
+  },
+  "state": {
+    "workshop.lampOn": {
+      "owner": "workshop",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "workshop.hatchOpen": {
+      "owner": "workshop",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "workshop.fanOn": {
+      "owner": "workshop",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "workshop.permit": {
+      "owner": "workshop",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "native": {
+    "state": {
+      "workshop.lampOn": "lampOn",
+      "workshop.hatchOpen": "hatchOpen",
+      "workshop.fanOn": "fanOn"
+    },
+    "verbs": [
+      {
+        "device": "lamp",
+        "noun": "lamp",
+        "verb": "on",
+        "cases": [
+          {
+            "command": "workshop.lamp.on",
+            "say": [
+              "{via}use lamp --on",
+              "LAMP: on.",
+              "ok"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "lamp",
+        "noun": "lamp",
+        "verb": "off",
+        "cases": [
+          {
+            "command": "workshop.lamp.off",
+            "say": [
+              "{via}use lamp --off",
+              "LAMP: off.",
+              "dim"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "hatch",
+        "noun": "hatch",
+        "verb": "open",
+        "cases": [
+          {
+            "command": "workshop.hatch.open.repeat",
+            "say": [
+              "{via}use hatch --open",
+              "HATCH: already open.",
+              "dim"
+            ],
+            "when": {
+              "state": "workshop.hatchOpen",
+              "is": true
+            }
+          },
+          {
+            "command": "workshop.hatch.open",
+            "say": [
+              "{via}use hatch --open",
+              "HATCH: open.",
+              "ok"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "hatch",
+        "noun": "hatch",
+        "verb": "shut",
+        "cases": [
+          {
+            "command": "workshop.hatch.shut",
+            "say": [
+              "{via}use hatch --shut",
+              "HATCH: shut.",
+              "dim"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "fan",
+        "noun": "fan",
+        "verb": "spin",
+        "cases": [
+          {
+            "command": "workshop.fan.spin",
+            "say": [
+              "{via}use fan --spin",
+              "FAN: turning.",
+              "ok"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "fan",
+        "noun": "fan",
+        "verb": "stop",
+        "cases": [
+          {
+            "command": "workshop.fan.stop",
+            "say": [
+              "{via}use fan --stop",
+              "FAN: stopped.",
+              "dim"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": {
+      "workshop.opened": "hatch.hatch:opened"
+    },
+    "goals": {},
+    "wires": [
+      {
+        "id": "sbx.motion",
+        "from": "sensor.eye:motion",
+        "to": "lamp.lamp",
+        "verb": "on"
+      },
+      {
+        "id": "sbx.fan.beacon",
+        "from": "button.button:pressed",
+        "to": "beacon.beacon",
+        "verb": "on"
+      },
+      {
+        "id": "sbx.fan.horn",
+        "from": "button.button:pressed",
+        "to": "horn.horn",
+        "verb": "buzz"
+      },
+      {
+        "id": "sbx.fan.counter",
+        "from": "button.button:pressed",
+        "to": "counter.count",
+        "verb": "count",
+        "fixed": true
+      },
+      {
+        "id": "sbx.hatch.fan",
+        "from": "hatch.hatch:opened",
+        "to": "fan.fan",
+        "verb": "spin"
+      },
+      {
+        "id": "sbx.rec",
+        "from": "recorder.log:entry",
+        "to": "recorder.reel",
+        "verb": "store"
+      },
+      {
+        "id": "sbx.red",
+        "from": "rgb.red:pressed",
+        "to": "cabinet.seq",
+        "verb": "red"
+      },
+      {
+        "id": "sbx.green",
+        "from": "rgb.green:pressed",
+        "to": "cabinet.seq",
+        "verb": "green"
+      },
+      {
+        "id": "sbx.blue",
+        "from": "rgb.blue:pressed",
+        "to": "cabinet.seq",
+        "verb": "blue"
+      },
+      {
+        "id": "sbx.audit",
+        "from": "audit.log:entry",
+        "to": "spool.reel",
+        "verb": "store"
+      },
+      {
+        "id": "sbx.bell",
+        "from": "qasrv.ping:pinged",
+        "to": "bell.bell",
+        "verb": "ring"
+      },
+      {
+        "id": "sbx.print",
+        "from": "qaprn.job:queued",
+        "to": "printer.feed",
+        "verb": "print"
+      }
+    ]
+  }
+}
