@@ -173,7 +173,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
   for (const [panel, text] of [['layers', 'Layers'], ['properties', 'Properties']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
-  stage.append(canvas, hoverBox); stageWrap.append(stage, viewportTools, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
+  stage.append(canvas); stageWrap.append(stage, hoverBox, viewportTools, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
   let currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
   let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
   /** Editor-only framing: renderScale zoom, native camera pan and a crop to the artwork's height. Never saved. */
@@ -518,9 +518,12 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   function placeHover() {
     const box = hoverId && hoverId !== selectedId ? preview?.bounds.find(b => b.id === hoverId) : undefined; hoverBox.hidden = !box; if (!box) return;
-    const scale = canvas.clientWidth / canvas.width, node = compositionDocument() && flatten(compositionDocument()!.value as Composition).find(x => x.node.id === box.id)?.node;
-    Object.assign(hoverBox.style, { left: `${canvas.offsetLeft + box.x * scale}px`, top: `${canvas.offsetTop + box.y * scale}px`, width: `${box.width * scale}px`, height: `${box.height * scale}px` });
+    // The overlay lives outside the scrolling stage so it can never add scrollbars; the frame clips it.
+    const frame = stageWrap.getBoundingClientRect(), at = canvas.getBoundingClientRect(), scale = at.width / canvas.width, node = compositionDocument() && flatten(compositionDocument()!.value as Composition).find(x => x.node.id === box.id)?.node;
+    const left = at.left - frame.left + box.x * scale, top = at.top - frame.top + box.y * scale;
+    Object.assign(hoverBox.style, { left: `${left}px`, top: `${top}px`, width: `${box.width * scale}px`, height: `${box.height * scale}px` });
     hoverBox.dataset.label = node ? `${node.id} · ${config.registry.get(node.type).label}` : box.id;
+    hoverBox.toggleAttribute('data-below', top < 22); hoverBox.toggleAttribute('data-right', left > frame.width * .6);
   }
   function zoomTo(next: number, anchor?: { clientX: number; clientY: number }) {
     if (!zoomable()) return; const previous = viewZoom; viewZoom = Math.round(Math.min(8, Math.max(.5, next)) * 100) / 100; if (viewZoom === previous) return;
@@ -565,6 +568,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (!dragging) return; const pending = dragging.pending, unchanged = equal(pending, dragging.before); dragging = undefined; if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); if (!unchanged) run(() => model.edit(compositionDocument()!.id, 'Drag artwork', () => pending));
   };
   canvas.onpointercancel = event => { touches.delete(event.pointerId); pinch = undefined; panning = undefined; delete canvas.dataset.panning; dragging = undefined; void draw(); };
+  stage.addEventListener('scroll', () => placeHover(), { passive: true });
   canvas.onpointerleave = () => { if (hoverId) { hoverId = ''; placeHover(); } };
   canvas.addEventListener('wheel', event => {
     if (!zoomable()) return;
