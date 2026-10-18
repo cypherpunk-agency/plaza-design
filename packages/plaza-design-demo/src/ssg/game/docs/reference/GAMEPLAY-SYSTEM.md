@@ -125,7 +125,7 @@ Each accepted edit restarts the lab against the pending definition. Undo/redo an
 import/export use ComposerModel's atomic history. Public Download edits includes the gameplay
 document in the existing version-1 envelope; older clients without this document reject it as
 unknown rather than applying it. The snapshot now contains 38 documents; S13's scope is unchanged.
-The local **Save gameplay to source** uses the existing origin/token/revision-protected service
+The header's local **Save to source** (formerly a separate Save gameplay button) uses the existing origin/token/revision-protected service
 and writes only the allowlisted `scenes/harbor-shift/gameplay.json`. Reload discards pending edits
 after confirmation. Saving source takes effect in the game after rebuilding the homepage.
 The lab remains distinct from **Play**, which runs the actual Harbor Shift, Sandbox, Shop, Library or Laundromat `Game`

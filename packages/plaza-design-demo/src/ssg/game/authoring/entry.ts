@@ -6,7 +6,7 @@ import {mountRegisteredGameplay} from './registered-gameplay';
 import {mountSceneAuthoring} from './scene-authoring';
 
 
-import {validatePlayFixtures,validateFixtureBounds} from './play-fixtures';
+import {validatePlayFixtures,validateFixtureBounds,playScenes} from './play-fixtures';
 
 import { mountPlayWorkbench } from './play-workbench';
 
@@ -24,7 +24,7 @@ import { createSequencePreview } from './sequence-preview';
 
 import { WEATHER_KINDS } from '../world/weather';
 
-import { SCENES } from '../scenes';
+import { SCENES, isSceneId, sceneTitle } from '../scenes';
 
 import { snapshotWorld, validateWorldDocument } from '../world/document';
 
@@ -86,12 +86,16 @@ async function start() {
 
   const mapSession: WorldPanelSession = {};
 
-  const playSelection:{fixture?:string;device?:string}={};
+  const playSelection:{fixture?:string;device?:string;scene?:string}={};
 
   const demoSelection:{fixture?:string;device?:string}={};
-  const logicSelection:{scene?:string;use?:string}={},gameplaySelection:{scene?:string}={};
+  const logicSelection:{scene?:string;use?:string;fixed?:boolean}={fixed:true},gameplaySelection:{scene?:string;fixed?:boolean}={fixed:true};
+  // Demo-only variants (Test District) stay in Labs; the scene modes cover the story scenes.
+  const logicScenes:string[]=gameplayScenes.filter(s=>!s.id.startsWith('demo')).map(s=>s.id),commandScenes:string[]=[...logicScenes,...nativeGameplayScenes.filter(s=>!s.id.startsWith('demo')).map(s=>s.id)];
 
   mountComposer(host, { registry: art, api, documents, viewport: { width: 960, height: 540 },
+    sceneLabel: scene => isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene.startsWith('sequence-') ? 'Sequence · ' + scene.slice('sequence-'.length) : scene,
+    sceneDocuments: scene => [...(logicScenes.includes(scene) ? [gameplayScene(scene).prefix + '-scene', gameplayScene(scene).gameplayId] : []), ...(nativeGameplayScene(scene) ? [nativeGameplayScene(scene)!.gameplayId] : []), ...(scene === 'sandbox' ? ['sandbox-behavior'] : [])],
 
     assetPreview: createAssetPreview(art, native),
 
@@ -108,19 +112,36 @@ async function start() {
     },
 
     workbenches: [
-      {id:'demo-world',selectDocument:false,label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,documentIds:['play-fixtures','shop','library','sandbox','demo-counter-scene','demo-desk-scene','demo-counter-gameplay','demo-workshop-gameplay'],mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true)},
+      {id:'scene-logic',area:'scene',mode:'logic',label:'Interactions & story',title:'Scene logic: interactions, objectives, dialogue and presentation',authoring:true,documentDependent:true,documentIds:authoredDocumentIds,
+        supports:scene=>logicScenes.includes(scene),showScene(scene){if(logicSelection.scene!==scene)logicSelection.use=undefined;logicSelection.scene=scene;},
+        unsupported:'This scene’s interactions, objectives and dialogue are still defined in code. They become editable once the scene is migrated to scene documents.',
+        get primaryDocumentId(){return gameplayScene(logicSelection.scene??'harborShift').prefix+'-scene';},mount:(host,context)=>mountSceneAuthoring(host,context,logicSelection)},
+      {id:'gameplay',area:'scene',mode:'logic',label:'Commands & dialogue',title:'Gameplay · commands, conditions and conversations',authoring:true,documentDependent:true,documentIds:[...authoredDocumentIds,...nativeGameplayScenes.map(s=>s.gameplayId)],
+        supports:scene=>commandScenes.includes(scene),showScene(scene){gameplaySelection.scene=scene;},
+        unsupported:'This scene has no gameplay document yet. Its commands are still defined in code.',
+        get primaryDocumentId(){return (nativeGameplayScene(gameplaySelection.scene??'')??gameplayScene(gameplaySelection.scene??'harborShift')).gameplayId;},mount:(host,context)=>mountRegisteredGameplay(host,context,gameplaySelection,publicEditor)},
+      { id: 'events', area: 'scene', mode: 'wiring', label: 'Events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
+        const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
+        const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
+          if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
+          const snapshot = await sourceSnapshot; if (signal.aborted) throw new Error('Source selection changed');
+          if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
+          return { file, text: snapshot[file] };
+        } } : {}), dispose = mountEventInspector(graph, { documents: context.documents, initialScene: context.scene,
+          onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as Composition).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
+          onOpenSource: reference => { void viewer.open(reference); },
+        }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
+      } },
+      {id:'play',area:'scene',mode:'play',label:'Play',title:'Play · pending scene from a starting state',authoring:true,documentDependent:true,primaryDocumentId:'play-fixtures',
+        supports:scene=>(playScenes as readonly string[]).includes(scene),showScene(scene){playSelection.scene=scene;},
+        unsupported:'Play runs scenes whose starting state can be set up in the editor. This scene is not one of them yet; play it in the game build instead.',
+        documentIds:['play-fixtures','sandbox','sandbox-behavior',...gameplayScenes.map(s=>s.id),...nativeGameplayScenes.map(s=>s.id),...nativeGameplayScenes.map(s=>s.gameplayId),...authoredDocumentIds],mount:(host,context)=>mountPlayWorkbench(host,context,playSelection)},
+      {id:'demo-world',area:'labs',label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,documentIds:['play-fixtures','shop','library','sandbox','demo-counter-scene','demo-desk-scene','demo-counter-gameplay','demo-workshop-gameplay'],mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true)},
+      { id: 'characters', area: 'library', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
 
-      {id:'play',label:'Play',title:'Play · pending scenes and reusable fixtures',authoring:true,documentDependent:true,primaryDocumentId:'play-fixtures',documentIds:['play-fixtures','sandbox','sandbox-behavior',...gameplayScenes.map(s=>s.id),...nativeGameplayScenes.map(s=>s.id),...nativeGameplayScenes.map(s=>s.gameplayId),...authoredDocumentIds],mount:(host,context)=>mountPlayWorkbench(host,context,playSelection)},
+      { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
 
-      {id:'scene-logic',label:'Scene logic',title:'Scene logic: interactions, dialogue and presentation',authoring:true,documentDependent:true,get primaryDocumentId(){return gameplayScene(logicSelection.scene??'harborShift').prefix+'-scene';},primaryDocumentIds:gameplayScenes.map(s=>s.prefix+'-scene'),onDocumentSelected(id){const next=gameplayScene(id).id;if(logicSelection.scene!==next)logicSelection.use=undefined;logicSelection.scene=next;},documentIds:authoredDocumentIds,mount:(host,context)=>mountSceneAuthoring(host,context,logicSelection)},
-
-      {get primaryDocumentId(){return (nativeGameplayScene(gameplaySelection.scene??'')??gameplayScene(gameplaySelection.scene??'harborShift')).gameplayId;},primaryDocumentIds:[...gameplayScenes,...nativeGameplayScenes].map(s=>s.gameplayId),onDocumentSelected(id){gameplaySelection.scene=(nativeGameplayScene(id)??gameplayScene(id)).id;},id:'gameplay',label:'Gameplay',title:'Gameplay · commands and conditions',authoring:true,documentDependent:true,documentIds:[...authoredDocumentIds,...nativeGameplayScenes.map(s=>s.gameplayId)],mount:(host,context)=>mountRegisteredGameplay(host,context,gameplaySelection,publicEditor)},
-
-      { id: 'characters', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
-
-      { id: 'vehicles', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
-
-      { id: 'signage', label: 'Signs & light', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
+      { id: 'signage', area: 'library', label: 'Signs & light', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
 
         panel.classList.add('signage-workbench');
 
@@ -132,37 +153,13 @@ async function start() {
 
       } },
 
-      { id: 'events', label: 'Events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
-
-        const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
-
-        const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
-
-          if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
-
-          const snapshot = await sourceSnapshot; if (signal.aborted) throw new Error('Source selection changed');
-
-          if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
-
-          return { file, text: snapshot[file] };
-
-        } } : {}), dispose = mountEventInspector(graph, { documents: context.documents,
-
-          onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as Composition).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
-
-          onOpenSource: reference => { void viewer.open(reference); },
-
-        }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
-
-      } },
-
-      { id: 'behavior', label: 'Behavior', title: 'Sandbox behavior authoring · scoped source edits', authoring: true, documentDependent: true, documentIds: ['sandbox-behavior'], mount(panel, context) {
+      { id: 'behavior', area: 'labs', label: 'Sandbox behavior', title: 'Sandbox behavior authoring · scoped source edits', authoring: true, documentDependent: true, documentIds: ['sandbox-behavior'], mount(panel, context) {
 
         const api = context.authoring!;
 
         return mountBehaviorWorkbench(panel, { document: () => api.get('sandbox-behavior').value as SceneData,
 
-          onEdit: (value, label) => api.edit('sandbox-behavior', label, value), undo: api.undo, redo: api.redo, save: api.save, reload: api.reload,
+          onEdit: (value, label) => api.edit('sandbox-behavior', label, value),
 
           dirty: () => api.dirty('sandbox-behavior'), revision: () => api.get('sandbox-behavior').revision,
 
@@ -176,7 +173,7 @@ async function start() {
 
     preview: { render: (canvas, request) => sequences.render(canvas, request) ?? native.render(canvas, request) },
 
-    worldPanel(panel, openScene, documents) {
+    worldPanel(panel, openScene, documents, scene) {
 
       const compositions = Object.fromEntries(documents.filter(doc => doc.kind === 'composition').map(doc => [doc.id, doc.value as Composition]));
 
@@ -186,7 +183,7 @@ async function start() {
 
       const world = snapshotWorld(refs, timelines.flatMap(sequence => sequence.handoff ? [{ id: sequence.id, ...sequence.handoff }] : []));
 
-      return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines }), openScene, mapSession);
+      return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines }), openScene, mapSession, scene);
 
     },
 

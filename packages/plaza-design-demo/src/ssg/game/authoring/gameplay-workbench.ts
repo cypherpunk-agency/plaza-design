@@ -13,7 +13,8 @@ export function mountGameplayWorkbench(host:HTMLElement,options?:GameplayAuthori
   state.setAttribute('aria-label','Pilot state');events.setAttribute('aria-label','Committed gameplay events');status.setAttribute('role','status');
   const layout=document.createElement('div');layout.className='gameplay-layout';
   const editorHost=document.createElement('section'),labHost=document.createElement('section');labHost.className='gameplay-lab';
-  layout.append(editorHost,labHost);root.append(title,description,layout);labHost.append(tools,dialogue,operations,circuits,status,state,events);host.replaceChildren(root);
+  layout.append(editorHost,labHost);root.append(title,description,layout);const debug=document.createElement('details'),debugTitle=document.createElement('summary');debugTitle.textContent='Debug · laboratory state and committed events (JSON)';debug.className='debug-drawer';debug.append(debugTitle,state,events);
+  labHost.append(tools,dialogue,operations,circuits,status,debug);host.replaceChildren(root);
   const editor=options?mountGameplayAuthoring(editorHost,options):undefined;
   editorHost.hidden=!options;
   function button(parent:HTMLElement,label:string,run:()=>void){const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{if(disposed)return;try{run();}catch(error){status.textContent=error instanceof Error?error.message:String(error);}render();};parent.append(b);return b;}

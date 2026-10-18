@@ -4,7 +4,9 @@ import type { WorldDocument } from '../world/document';
 import type { SceneId } from '../scenes';
 
 export interface WorldPanelSession { place?: WorldPlaceInspection['place']['id']; preview?: Partial<WorldMapPreviewState> }
-export function mountWorldPanel(host: HTMLElement, document: WorldDocument, openScene: (id: string) => void, session: WorldPanelSession = {}): () => void {
+export function mountWorldPanel(host: HTMLElement, document: WorldDocument, openScene: (id: string) => void, session: WorldPanelSession = {}, scene?: string): () => void {
+  // The editor's current scene decides which place is inspected; the picker remains for browsing.
+  const home = scene ? document.map.places.find(p => (p.scenes as readonly string[]).includes(scene)) : undefined; if (home) session.place = home.id;
   const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) => {
     const result = window.document.createElement(tag); if (text !== undefined) result.textContent = text; return result;
   };
@@ -39,7 +41,7 @@ export function mountWorldPanel(host: HTMLElement, document: WorldDocument, open
   }
   const time = node('input'); time.type = 'number'; time.min = '0'; time.step = '1'; time.value = String(preview.getPreview().time); time.style.width = '65px';
   time.onchange = () => { const value = Number(time.value); if (Number.isFinite(value) && value >= 0) preview.setPreview({ time: value }); }; label('Map frame', time);
-  const status = node('p', 'Geography, transport, access rules and destinations are read-only. Opening a scene only selects its composition.');
+  const status = node('p', 'Geography, transport and access rules are read-only. Opening a place switches the editor to its scene.');
   host.replaceChildren(status, controls, canvas, details);
   const coordinates = (event: PointerEvent) => { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; };
   canvas.onpointermove = event => { const p = coordinates(event); canvas.style.cursor = preview.pointer(p.x, p.y, false) ? 'pointer' : 'default'; };

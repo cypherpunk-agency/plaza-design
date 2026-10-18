@@ -54,10 +54,8 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     if(!doc.conversations[conversation])conversation=Object.keys(doc.conversations)[0];
     const dialogue=doc.conversations[conversation];if(dialogue&&!dialogue.nodes[node])node=Object.keys(dialogue.nodes)[0];
     if(!doc.commands[command])command=Object.keys(doc.commands)[0];
-    root.replaceChildren();root.append(element('h3','Author gameplay'),element('p','Pending edits use the shared document history. Each accepted change restarts the laboratory with the edited definition.'));
-    const toolbar=element('div');toolbar.className='row';root.append(toolbar);
-    button(toolbar,'Undo gameplay edit',options.undo);button(toolbar,'Redo gameplay edit',options.redo);button(toolbar,options.saveLabel,options.save);button(toolbar,'Reload gameplay source',options.reload);
-    toolbar.append(element('span',options.dirty()?'Unsaved gameplay changes':'Gameplay matches source'));root.append(error);
+    root.replaceChildren();root.append(element('p','Edits join the editor history; Undo, Redo and Save are in the header.'));
+    root.append(error);
     const form=new TypedForm(report);
     for(const[id,d]of Object.entries(doc.state??{})){const box=section(root,'State '+id,true);box.append(element('p',d.owner+' / '+d.lifetime+' / '+d.type));if(d.type==='number')form.number(box,'State '+id+' default',Number(d.default),value=>edit('Edit state default',g=>{g.state![id].default=value;}),d.min??-1000000,d.max??1000000);else if(d.type==='boolean')form.check(box,'State '+id+' default',Boolean(d.default),value=>edit('Edit state default',g=>{g.state![id].default=value;}));else form.select(box,'State '+id+' default',d.options!,String(d.default),value=>edit('Edit state default',g=>{g.state![id].default=value;}));}
     for(const[id,p]of Object.entries(doc.purchases??{})){const box=section(root,'Purchase '+id);form.number(box,'Purchase '+id+' base price',p.basePrice,value=>edit('Edit purchase price',d=>{d.purchases![id].basePrice=value;}));box.append(element('p','Quote and charge share this base. Explicit modifiers may change either. Goods: '+(p.rotation?.items??p.goods?.map(g=>g.item+' x'+g.quantity)??[]).join(', ')));

@@ -1,9 +1,12 @@
 import type {Condition,GameplayDefinition} from '../engine/gameplay/types';
 /** Small shared typed controls. Edits always pass the caller's document validator. */
 export class TypedForm {
+ /** Shared start of field names inside one detail panel: hidden from the visible label, kept in the accessible name. */
+ prefix?:string|RegExp;
  constructor(private report:(e:unknown)=>void){}
+ visible(name:string){const p=this.prefix,short=p instanceof RegExp?name.replace(p,'')||name:p&&name.startsWith(p)&&name.length>p.length?name.slice(p.length):name;return short.charAt(0).toUpperCase()+short.slice(1);}
  run(fn:()=>void){try{fn();}catch(e){this.report(e);}}
- field(parent:HTMLElement,name:string,control:HTMLElement){const label=document.createElement('label');label.textContent=name+' ';control.setAttribute('aria-label',name);label.append(control);parent.append(label);return control;}
+ field(parent:HTMLElement,name:string,control:HTMLElement){const label=document.createElement('label');label.textContent=this.visible(name)+' ';control.setAttribute('aria-label',name);label.append(control);parent.append(label);return control;}
  text(parent:HTMLElement,name:string,value:string,edit:(v:string)=>void,multiline=false){const input=document.createElement(multiline?'textarea':'input');input.value=value;input.onchange=()=>this.run(()=>edit(input.value));this.field(parent,name,input);}
  number(parent:HTMLElement,name:string,value:number,edit:(v:number)=>void,min=0,max=1000000){const input=document.createElement('input');input.type='number';input.min=String(min);input.max=String(max);input.step='1';input.value=String(value);input.onchange=()=>this.run(()=>{const n=Number(input.value);if(!Number.isSafeInteger(n)||n<min||n>max)throw new Error('Whole number outside field range');edit(n);});this.field(parent,name,input);}
  select(parent:HTMLElement,name:string,values:readonly string[],value:string,edit:(v:string)=>void){const input=document.createElement('select');for(const v of values){const o=document.createElement('option');o.value=v;o.textContent=v||'(none)';input.append(o);}input.value=value;input.onchange=()=>this.run(()=>edit(input.value));this.field(parent,name,input);}
@@ -11,7 +14,7 @@ export class TypedForm {
  button(parent:HTMLElement,label:string,run:()=>void,disabled=false){const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;b.onclick=()=>this.run(run);parent.append(b);}
  section(parent:HTMLElement,title:string){const d=document.createElement('details');d.open=true;const s=document.createElement('summary');s.textContent=title;d.append(s);const body=document.createElement('div');body.className='gameplay-fields';d.append(body);parent.append(d);return body;}
  condition(parent:HTMLElement,name:string,value:Condition|undefined,edit:(v:Condition|undefined)=>void,doc:GameplayDefinition,flagsOnly=false,depth=0){
-  const group=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent=name;group.append(legend);parent.append(group);
+  const group=document.createElement('fieldset'),legend=document.createElement('legend');group.className='gameplay-condition';group.setAttribute('aria-label',name);legend.textContent=this.visible(name);group.append(legend);parent.append(group);
   const stateIds=Object.keys(doc.state??{});
   const kind=!value?'always':'state'in value?'state':'flag'in value?'flag':'item'in value?'item':'tokensAtLeast'in value?'tokens':'all'in value?'all':'any'in value?'any':'not';
   const leaf:Condition=doc.flags.length?{flag:doc.flags[0]}:!flagsOnly?{tokensAtLeast:0}:{all:[]};

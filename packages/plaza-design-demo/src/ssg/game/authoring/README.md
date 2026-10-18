@@ -32,13 +32,47 @@ reusable Play fixtures
 workbenches to the same shell; individual acceptance and limits are recorded in the
 [stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
 
-The shell has a top bar (document, Undo/Redo, Download edits or Save to source, and a **More**
-menu for import/export/reset) and a tab row: **Scene** is the composer; Assets, Characters,
-Vehicles, Signs & light, Events and Behavior each replace the workspace while open. Under 760px
-the editor becomes one column with a sticky preview and a Layers/Properties switch; preview
-environment fixtures sit in a collapsible **Preview environment** section.
+The editor is organised around scenes. The top bar has the **scene picker** (places, then
+sequences and timelines; ● marks unsaved edits in a scene's composition or its scene/gameplay
+documents), one Undo/Redo, Download edits or Save to source, and a **More** menu for
+import/export/reset. Export/Import JSON act on the document the open panel edits. Every edit,
+in any panel, joins the same history and is saved by the same button.
 
-The S8 read-only asset browser is the **Assets** tab. Search by type,
+The tab row has four modes of the selected scene, then two areas that stand apart:
+
+- **Layout** is the composer: preview, grouped layer list, properties, timeline.
+- **Logic** has *Interactions & story* (the scene document) and *Commands & dialogue* (the
+  gameplay document). It shows Harbor Shift, Shop, Library and Laundromat; Commands also covers
+  Market and Beach.
+- **Wiring** is the read-only event inspector, opened on the selected scene.
+- **Play** runs the selected scene from one of its starting states.
+- **Assets** holds the read-only viewers: Artwork, Characters, Vehicles, Signs & light.
+- **Labs** holds developer test beds outside the scene workflow: Demo world and Sandbox behavior.
+
+A mode the selected scene cannot use yet shows why, with links to the scenes it supports;
+it never switches scenes on its own. The left panel's **City map** follows the selected scene;
+opening a place from it switches the editor to that scene.
+
+The preview is cropped to the artwork's height (**Crop**), zooms with Ctrl/⌘+wheel, pinch or the
+−/+ buttons (**Fit** resets), and pans by dragging or with Shift+wheel. Zoom renders natively
+rather than scaling pixels. Horizontal panning moves the native camera; vertical framing uses the
+cropped canvas and scrolling, because scene backdrops anchor to the floor. Clicking selects the
+smallest artwork under the pointer, with a minimum target size, and hovering names it. Only the
+selected artwork can be dragged; pressing anything else selects it on release and pans while
+moving. Arrow keys nudge the selection (Shift for 10, otherwise the snap step); Escape clears it;
++, − and 0 zoom; F fits. None of this framing is saved.
+
+The layer list groups top-level artwork by kind (people, vehicles, lights, signs, props,
+architecture, markers, groups), with nested artwork under its parent. **Order** shows document
+order instead, and the filter matches id, type or label. Kinds are inferred from type, label and
+catalog category in `layer-roles.ts` and are not written to compositions. **Add artwork** groups
+the catalog by category.
+
+Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and a
+Layers/Properties switch. Preview environment fixtures sit in a collapsible **Preview
+environment** section.
+
+The S8 read-only asset browser is **Assets › Artwork**. Search by type,
 name or tag, filter families, inspect embedded library components, and choose a real source
 usage for its isolated prepared preview. Preview zoom does not edit the asset. **Open instance**
 selects its exact source placement in the ordinary composer. Metadata distinguishes defaults
@@ -62,10 +96,11 @@ isolated laboratory against that document; Undo/Redo and import use the same his
 Talk to the supervisor, accept or decline, collect a parcel, then hand it over normally or
 deliver it through an actual native signal cable. Advance the private clock to observe the
 150 ms delivery, cut/reconnect, reset, and inspect committed events. The lab does not read/write
-player storage. Download/import edits work publicly; **Save gameplay to source** uses the local
-protected service. Rebuild the homepage after saving to use the changed gameplay in the game.
-The separate **Play** tab runs the actual Harbor Shift, Sandbox, Shop, Library or Laundromat game using pending source.
-Choose a scene and reusable fixture, then Play, Stop or Reset play; leaving the tab stops its
+player storage. Download/import edits work publicly; the header's **Save to source** uses the local
+protected service. Laboratory state and committed events sit in a collapsed debug section. Rebuild the homepage after saving to use the changed gameplay in the game.
+The **Play** mode runs the actual Harbor Shift, Sandbox, Shop, Library, Laundromat, Market or Beach game using pending source.
+It plays the scene chosen in the header. Choose one of that scene's reusable fixtures (or create
+one if it has none), then Play, Stop or Reset play; leaving the tab stops its
 sandboxed realm. Keyboard and existing landscape touch controls are shared with the game.
 **Starting state** exposes typed flags, inventory, tokens, modules, programs, keyring, native
 scene state, city day/minute/seed, weather and optional spawn. Story clock follows scene
@@ -73,7 +108,7 @@ milestones; fixed/running clocks use the fixture's city time. Duplicate/delete p
 Undo/Redo, download/import and local Save apply to `play-fixtures` like other source documents.
 Selected profiles and the starting-state disclosure survive edits. Restart Play for source changes.
 
-The live inspector includes player/save, objectives, speech, pause/popup and committed events;
+The live inspector, in a collapsed debug section under the game, includes player/save, objectives, speech, pause/popup and committed events;
 select a native device for nouns/verbs, state/goals, cables, clock beats, pending signals and
 callbacks, lockouts, trace/watchdog state, recent evaluated actions and failed conditions.
 Play keeps its save slots and reloads private in memory; Stop destroys the runtime, including
@@ -82,7 +117,10 @@ Harbor uses pending composition/gameplay/scene data; Sandbox uses pending compos
 validated scoped behavior document. The regular Harbor conversation adapter retains automatic
 acceptance; explicit dialogue choices remain available in the Gameplay lab.
 
-**Scene logic** edits Harbor Shift's `harbor-shift-scene`: arrival text, ordered objectives,
+**Logic › Interactions & story** lists the scene's parts (arrival, story clock, objectives,
+interactions, people, readables, exits) on the left and edits one at a time on the right. Field
+names keep their full accessible names (for example "Objective 2 text"); the visible label drops
+the shared prefix. It edits Harbor Shift's `harbor-shift-scene`: arrival text, ordered objectives,
 attention targets/urgency, story times, interaction availability, command/conversation routes,
 success/failure text and carried-item interactions. IDs/geometry/art stay within the existing
 Harbor composition contract. Conditions, references and command invocation permissions are
@@ -170,8 +208,8 @@ named beats or handoffs into player progress. Source-save and full editor-operat
 are tracked separately from artwork pixel comparisons.
 Follow the execution ledger for verified behavior and outstanding goal gates.
 
-Scene logic and Gameplay each have a scene selector for the four migrated scenes. Selecting a
-registered scene/gameplay document in the top document menu opens its matching workbench.
+Interactions & story and Commands & dialogue follow the header's scene picker; scene and
+gameplay documents are no longer listed in it.
 Shop rotates successful purchases using the existing transient cursor. Its displayed price is
 prompt metadata; edit actual token actions/conditions under Gameplay. NPC dialogue retains native
 sequential/final-repeat behavior. Only Harbor has the special delivery laboratory; test other
