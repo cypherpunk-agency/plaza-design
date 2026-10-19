@@ -36,6 +36,10 @@ export interface AssetBrowserOptions {
   registry: ArtRegistry; documents: EditorDocument[];
   openUsage(usage: AssetUsage): void;
   preview(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, zoom: number): Promise<string | AssetPreviewReport> | string | AssetPreviewReport;
+  /** Picture tiles for the list; without it the list is plain names. */
+  thumbnail?(entry: AssetEntry): HTMLCanvasElement;
+  /** Adds the piece to the scene open in the editor (label names that scene). */
+  useInScene?: { label: string; run(entry: AssetEntry): void };
 }
 export interface AssetBrowserSession { query?: string; family?: string; selected?: string; usage?: string; zoom?: number }
 /** No model edit/save API is accepted by this panel. All preview changes are temporary. */
@@ -55,6 +59,8 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   function inspect(entry: AssetEntry) {
     if (session.selected !== entry.id) session.usage = undefined;
     session.selected = entry.id; inspector.replaceChildren(el('h3', entry.label), el('code', entry.id), el('p', `Tags: ${entry.tags.join(', ')}`));
+    if (options.useInScene) { const use = button(options.useInScene.label, () => options.useInScene!.run(entry)); use.className = 'primary'; inspector.append(use); }
+    for (const card of list.children) (card as HTMLElement).setAttribute('aria-pressed', String((card as HTMLElement).dataset.asset === entry.id));
     const definition = options.registry.get(entry.id), detail = el('pre');
     detail.style.whiteSpace = 'pre-wrap';
     detail.textContent = JSON.stringify({ preview: entry.preview, coordinates: definition.coordinates ?? 'local', parts: definition.parts,
@@ -89,7 +95,12 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   function refresh() {
     session.query = search.value; session.family = family.value;
     const filtered = filterAssets(entries, search.value, family.value); count.textContent = `${filtered.length} / ${entries.length} registered assets`; list.replaceChildren();
-    for (const entry of filtered) { const pick = button(entry.label, () => inspect(entry)); pick.style.display = 'block'; pick.style.width = '100%'; pick.title = `${entry.id} · ${entry.preview}`; list.append(pick); }
+    list.classList.toggle('asset-grid', !!options.thumbnail);
+    for (const entry of filtered) {
+      const pick = button('', () => inspect(entry)); pick.dataset.asset = entry.id; pick.title = `${entry.id} · ${entry.preview}`; pick.setAttribute('aria-pressed', String(entry.id === session.selected));
+      if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', entry.label)); } else { pick.textContent = entry.label; pick.style.display = 'block'; pick.style.width = '100%'; }
+      list.append(pick);
+    }
     const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
     const embedded = SETS.filter(set => (!family.value || family.value === '__embedded__' || set.file.split('/')[1] === family.value) && terms.every(term => `${set.id} ${set.file} ${set.what}`.toLowerCase().includes(term)));
     sets.replaceChildren(el('summary', `Embedded library components (${embedded.length} / ${SETS.length})`));

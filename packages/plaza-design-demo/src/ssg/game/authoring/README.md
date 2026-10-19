@@ -52,44 +52,73 @@ documents), one Undo/Redo, Download edits or Save to source, and a **More** menu
 import/export/reset. Export/Import JSON act on the document the open panel edits. Every edit,
 in any panel, joins the same history and is saved by the same button.
 
-The tab row has four modes of the selected scene, then two areas that stand apart:
+The tab row has three views of the selected scene, then three areas that are not tied to a scene:
 
-- **Layout** is the composer: preview, grouped layer list, properties, timeline.
-- **Logic** has *Interactions & story* (the scene document) and *Commands & dialogue* (the
-  gameplay document). Its supported scenes follow the registered content list above; Commands also
-  covers the native Beach device slice. *Devices* edits native parameters and creates native nouns/seals.
-- **Wiring** offers writable *Starting cables* and the read-only *Events* inspector for the selected scene.
-- **Play** runs the selected scene from one of its starting states.
-- **Assets** holds Artwork/Characters/Vehicles/Signs viewers plus editable City & travel and Bot dialogue.
+- **Scene** is the editor: an outline on the left, the preview with its toolbar in the middle, and
+  an inspector on the right. Select artwork to edit it; with nothing selected the inspector shows the
+  scene's own settings (arrival, environment, companion, actors, content bindings, goals and time).
+- **Logic** lists all of the scene's logic at once: *Interactions & story* (the scene document),
+  *Commands & dialogue* (the gameplay document), *Devices* (native parameters, nouns and seals), then
+  the wiring panels *Starting cables* and the read-only *Events* inspector. Its supported scenes follow
+  the registered content list above; Commands also covers the native Beach device slice.
+- **Play** runs the selected scene from one of its starting states; the game view comes first.
+- **Library** holds the artwork explorer and the Characters/Vehicles/Signs viewers.
+- **World** holds what is shared between scenes: the **City map** (opening a place switches the
+  editor to that scene), Game opening, Companion dialogue, Networks, Scenes, City & travel and
+  Bot dialogue.
 - **Labs** holds developer test beds outside the scene workflow: Demo world and the manifest pilot.
 
-A mode the selected scene cannot use yet shows why, with links to the scenes it supports;
-it never switches scenes on its own. The left panel's **City map** follows the selected scene;
-opening a place from it switches the editor to that scene.
+A view the selected scene cannot use yet shows why, with links to the scenes it supports;
+it never switches scenes on its own. Long typed forms start with their sections collapsed; a
+section's open state is kept while the panel stays mounted.
+
+**Inspector.** For selected artwork the inspector has tabs. *Appearance* edits position, look
+fields, attachment and shows read-only gameplay bindings. *Behaviour* shows only the scene-logic
+entries that point at that artwork: actors (by `actors[].instance` or an `actor.<id>.*` binding),
+the people entry of the same id, manifest-bound interactions, readables, exits and rests, and
+presentation cues that target it. Artwork bound to a device (`device.<id>.*`) also gets *Device*
+(that device's nouns, verbs and parameters) and *Wiring* (starting cables to and from it). These
+are the same typed editors as in Logic, mounted in a focused mode
+(`mountSceneAuthoring` `focus`, `mountDeviceAuthoring` `focused`), so every edit goes through the
+same validators and history. The mapping lives in `entry.ts` (`inspectorSections`); the composer
+only knows `ComposerConfig.inspector`. Scenes whose logic is still code-defined say so.
+
+**Toolbar.** *＋ Add artwork* (or A) opens a searchable picture grid of every registered piece,
+with pieces already in the scene first. The new piece is measured off-screen once and placed at the
+centre of the view on the floor, then selected. *▶ Animate* (or Space) runs the scene's ambient
+animation clock without playing the game; ⟲ returns to the first frame. *Preview* sets time of day
+(Morning/Noon/Evening/Night), weather and hack vision; everything else (city day and minute, weather
+seed, story flags, device state, presentation controller, reduced motion, camera fields) sits under
+*More preview settings*. *Grid* sets the drag and nudge snap. *▶ Play scene* opens Play and starts
+it. Preview settings are never saved.
 
 The preview is cropped to the artwork's height (**Crop**), zooms with Ctrl/⌘+wheel, pinch or the
 −/+ buttons (**Fit** resets), and pans by dragging or with Shift+wheel. Zoom renders natively
 rather than scaling pixels. Horizontal panning moves the native camera; vertical framing uses the
 cropped canvas and scrolling, because scene backdrops anchor to the floor. Clicking selects the
-smallest artwork under the pointer, with a minimum target size, and hovering names it. Only the
-selected artwork can be dragged; pressing anything else selects it on release and pans while
-moving. Arrow keys nudge the selection (Shift for 10, otherwise the snap step); Escape clears it;
-+, − and 0 zoom; F fits. None of this framing is saved.
+smallest artwork under the pointer, with a minimum target size, and hovering names it; hovering a
+row in the outline outlines the same artwork. Clicking empty space, in the scene or in the dark
+area around it, deselects. Only the selected artwork can be dragged; pressing anything else selects
+it on release and pans while moving. Arrow keys nudge the selection (Shift for 10, otherwise the
+grid step); Delete removes it; Escape clears it; +, − and 0 zoom; F fits. None of this framing is saved.
 
-The layer list groups top-level artwork by kind (people, vehicles, lights, signs, props,
+The outline groups top-level artwork by kind (people, vehicles, lights, signs, props,
 architecture, markers, groups), with nested artwork under its parent. **Order** shows document
 order instead, and the filter matches id, type or label. Kinds are inferred from type, label and
-catalog category in `layer-roles.ts` and are not written to compositions. **Add artwork** groups
-the catalog by category.
+catalog category in `layer-roles.ts` and are not written to compositions.
 
-Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and a
-Layers/Properties switch. Preview environment fixtures sit in a collapsible **Preview
-environment** section.
+Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and an
+Outline/Inspector switch; the Add picker covers the screen.
 
-The S8 read-only asset browser is **Assets › Artwork**. Search by type,
+In editor Play the game's *Review shortcuts* panel starts collapsed so it does not cover the scene;
+`/?demo` keeps it open.
+
+The S8 read-only asset browser is **Library › Artwork**: a grid of thumbnails drawn by the
+same isolated preview (world-coordinate pieces use their first scene usage). Search by type,
 name or tag, filter families, inspect embedded library components, and choose a real source
 usage for its isolated prepared preview. Preview zoom does not edit the asset. **Open instance**
-selects its exact source placement in the ordinary composer. Metadata distinguishes defaults
+selects its exact source placement in the ordinary composer; **Add to …** places the piece in
+the open scene. Metadata distinguishes defaults
 from resolved transforms/visibility/anchors. Cinematic-only pieces open their native sequence
 context; conditional or non-painting pieces report invisible snapshots. See the
 [stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
@@ -284,9 +313,9 @@ normal depth and right-facing placement; decorative artwork remains transformabl
 The same factory supports the scene catalogue below. Full actor appearance/scheduling, specialized
 controllers and native entity migrations remain open for the existing 19 scenes.
 
-**Assets → Scenes** creates a new ordinary scene without a TypeScript registration. Choose an ID,
+**World → Scenes** creates a new ordinary scene without a TypeScript registration. Choose an ID,
 name and existing city place. Creation adds its scene, composition, gameplay, starting fixture and
-place membership as one undoable transaction; the new scene opens in Layout. Logic uses the same
+place membership as one undoable transaction; the new scene opens in Scene. Logic uses the same
 Content & bindings and Commands & dialogue editors. Play uses its own scene ID and a complete pending
 scene registry, so routes can reach other edited rooms. The map inspector lists the room within its
 chosen place. Scene removal also removes its starting fixtures and membership atomically; incoming
@@ -399,7 +428,7 @@ semantics stay separate. See `check-metro-snapshots` and `check-metro-fixture-sa
 Logic -> Devices exposes the existing native parameters for Capsule, Yard, Downtown, Moth, Beach,
 Laundromat, Library, Stacks and Train. Select a device or Scene settings, then a noun/field group.
 Existing fields use typed text/number/checkbox controls; new STORE nouns, read verbs, events and
-state/emit/registered-effect/trace actions can be added. Placement remains in Layout. Shared-bound
+state/emit/registered-effect/trace actions can be added. Placement remains in the Scene view. Shared-bound
 verb actions remain in Commands & dialogue. Original controller-bound IDs/kinds are protected by
 an immutable-derived identity contract, while newly added ordinary nouns can be removed after Save.
 
@@ -465,7 +494,7 @@ Content & bindings owns width/spawn/use/readable/rest/exit bindings in these fou
 Use existing artwork anchors and finite offsets for content placement and text heights. Library’s
 Terminal 3 uses the terminal’s seat anchor plus offsets, preserving its existing prompt position
 when its chair-offset property changes. Add/remove/rebind uses, readables, rests and exits through
-this panel. Removing content keeps artwork; remove artwork in Layout after its references move.
+this panel. Removing content keeps artwork; remove artwork in the Scene view after its references move.
 Pending preview, Play, source Save and bundles resolve the same pending source documents.
 
 Goals & time creates/removes objectives and story-clock milestones in registered manifest scenes.
@@ -518,7 +547,7 @@ follow links to the same actor objects before rendering or gameplay, with no per
 ### Stable actor interaction order
 
 Logic -> Actors -> Actor earlier/later changes interaction priority in Shop,Library,Laundromat and
-Warehouse. Artwork drawing order remains in Layout. Original actor/target/band identities remain
+Warehouse. Artwork drawing order remains in the Scene view. Original actor/target/band identities remain
 protected during this migration; original array order is no longer a save-compatibility requirement.
 
 Actor source reaction keys are explicit compatibility identities for the original world actors.

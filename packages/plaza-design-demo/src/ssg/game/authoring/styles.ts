@@ -49,7 +49,7 @@ export const composerStyles = `
 .scene-composer:not([data-tool=scene]) .workspace{display:none}
 
 /* Workspace */
-.scene-composer .workspace{flex:1;min-height:0;display:grid;grid-template-columns:250px minmax(0,1fr) 290px;grid-template-areas:'left center right'}
+.scene-composer .workspace{flex:1;min-height:0;display:grid;grid-template-columns:240px minmax(0,1fr) 340px;grid-template-areas:'left center right'}
 .scene-composer .preview-column{grid-area:center;min-width:0;min-height:0;display:flex;flex-direction:column}
 .scene-composer .workspace>aside{padding:10px 12px;overflow:auto;background:var(--panel);min-height:0}.scene-composer .workspace>aside:first-of-type{grid-area:left;border-right:1px solid var(--line)}.scene-composer .workspace>aside:last-of-type{grid-area:right;border-left:1px solid var(--line)}
 .scene-composer .panel-switch{display:none}
@@ -72,6 +72,39 @@ export const composerStyles = `
 .scene-composer .preview-error{position:absolute;inset:20px auto auto 20px;max-width:85%;padding:10px;background:#3a1f2c;color:#ffc0c0;white-space:pre-wrap}.scene-composer .preview-error[hidden]{display:none}
 .scene-composer .timeline{border-top:1px solid var(--line);padding:9px 12px;max-height:40%;overflow:auto;background:var(--panel)}.scene-composer .timeline:empty{display:none}.scene-composer .timeline input[type=range]{flex:1;min-width:100px}.scene-composer .timeline .time{font-variant-numeric:tabular-nums;white-space:nowrap}.scene-composer .timeline-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
+/* Scene toolbar */
+.scene-composer .scene-toolbar{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:6px 10px}
+.scene-composer .toolbar-group{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0;max-width:100%}.scene-composer .toolbar-label{color:var(--muted);font-size:12px;margin-right:2px}
+.scene-composer .scene-toolbar .time{font:12px/1 var(--mono);color:var(--muted);min-width:44px;text-align:right;font-variant-numeric:tabular-nums}
+.scene-composer .scene-toolbar select{font-size:12px;max-width:100%}
+.scene-composer .toggle[aria-pressed=true],.scene-composer .scene-toolbar button[aria-pressed=true]{color:var(--accent);border-color:var(--accent);background:#173238}
+.scene-composer .segmented button[aria-pressed=true]{background:#173238}
+.scene-composer .play-button{margin-left:auto;border-color:var(--accent);color:var(--accent)}
+.scene-composer .more-menu{position:relative;border:0;margin:0;padding:0}.scene-composer .more-menu>summary{list-style:none;color:var(--ink);font:12px/1.45 system-ui,sans-serif;border:1px solid var(--line);background:var(--raised);border-radius:4px;padding:5px 10px;min-height:30px;display:flex;align-items:center}.scene-composer .more-menu>summary::-webkit-details-marker{display:none}.scene-composer .more-menu>summary::after{content:'▾';margin-left:6px;color:var(--muted)}.scene-composer .more-menu[open]>summary{border-color:var(--accent)}
+.scene-composer .more-panel{position:absolute;left:0;top:calc(100% + 4px);z-index:20;width:min(380px,80vw);max-height:60vh;overflow:auto;padding:8px 12px;background:var(--raised);border:1px solid var(--line-strong);border-radius:6px;box-shadow:0 10px 30px #0009}
+.scene-composer .more-panel label>input:not([type=checkbox]),.scene-composer .more-panel label>select{width:170px}.scene-composer .more-panel label.wide{flex-wrap:wrap}.scene-composer .more-panel label.wide>input{width:100%}
+
+/* Add picker and artwork tiles */
+.scene-composer .add-picker{position:absolute;inset:10px;z-index:6;display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:#0f1620f5;border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 14px 40px #000c}.scene-composer .add-picker[hidden]{display:none}
+.scene-composer .picker-head{display:flex;align-items:center;gap:8px}.scene-composer .picker-head input[type=search]{flex:1}.scene-composer .picker-head strong{font:600 12px var(--mono);color:var(--accent);white-space:nowrap}
+.scene-composer .picker-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-auto-rows:max-content;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;align-content:start}
+.scene-composer .asset-card{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:6px;white-space:normal;text-align:left;background:var(--field);min-height:0}.scene-composer .asset-card span{font-size:12px;line-height:1.3;overflow-wrap:anywhere}.scene-composer .asset-card small{color:var(--accent);font-size:10px}
+.scene-composer .asset-card[aria-pressed=true]{border-color:var(--accent);background:#173238}
+.scene-composer canvas.asset-thumb{width:100%;height:84px;flex:none;object-fit:contain;background:#05080c;border-radius:3px;image-rendering:pixelated}.scene-composer canvas.asset-thumb[data-empty]{background:repeating-linear-gradient(45deg,#0a0f15 0 6px,#0d141c 6px 12px)}
+.scene-composer .asset-grid{display:grid;grid-auto-rows:max-content;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;align-content:start}
+.scene-composer .asset-browser-grid:has(.asset-grid){grid-template-columns:minmax(0,1fr) minmax(320px,38%)}.scene-composer .asset-browser-grid:has(.asset-grid) .catalog-list{max-height:calc(100vh - 260px)}
+.scene-composer .asset-browser-grid .primary{margin:6px 0 10px}
+
+/* Inspector */
+.scene-composer .inspector-head h2{font:600 13px/1.3 var(--mono);text-transform:none;letter-spacing:0;color:var(--ink);margin:2px 0 2px;overflow-wrap:anywhere}.scene-composer .inspector-head .row{margin-top:8px}
+.scene-composer .inspector-tabs{display:flex;gap:2px;margin:10px -12px 0;padding:0 8px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.scene-composer .inspector-tabs button{flex:none;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);padding:6px 10px;font-family:var(--mono);font-size:12px}.scene-composer .inspector-tabs button[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent)}
+.scene-composer .inspector-body>p:first-child{margin-top:10px}
+.scene-composer .inspector-part>summary,.scene-composer .inspector-section>summary{font-size:12px}
+.scene-composer .inspector-mount .logic-detail{max-width:none}.scene-composer .inspector-mount .logic-detail label,.scene-composer .inspector-mount .gameplay-fields label{display:grid;gap:4px;justify-content:stretch}.scene-composer .inspector-mount label>input:not([type=checkbox]),.scene-composer .inspector-mount label>select,.scene-composer .inspector-mount textarea{width:100%}
+.scene-composer .inspector-mount label:has(>input[type=checkbox]){display:flex;justify-content:start}
+.scene-composer .world-map canvas{max-width:1100px}
+
 /* Forms and lists */
 .scene-composer .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0}.scene-composer .row>*{flex:1}.scene-composer .row>button{flex:0 1 auto}
 .scene-composer label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:5px 0}.scene-composer label>span{color:var(--muted)}.scene-composer label>input:not([type=checkbox]),.scene-composer label>select{width:130px}.scene-composer label>input[type=checkbox]{margin-right:auto}
@@ -91,7 +124,7 @@ export const composerStyles = `
 .scene-composer .asset-browser-grid{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;padding:4px 0}.scene-composer .asset-browser-grid input,.scene-composer .asset-browser-grid select{width:100%;margin:4px 0}.scene-composer .asset-browser-grid .catalog-list{max-height:55vh}.scene-composer .asset-browser-grid canvas{background:#05080c;max-width:960px;width:100%}.scene-composer .asset-browser-grid pre{font:12px/1.5 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap}.scene-composer .asset-browser-grid section{min-width:0}
 .scene-composer .character-workbench>div,.scene-composer .vehicle-workbench>section>div{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.scene-composer .character-workbench label,.scene-composer .vehicle-workbench label{justify-content:start}.scene-composer .character-workbench canvas{width:min(100%,calc(48vh * 16 / 9))!important}.scene-composer .vehicle-workbench canvas{max-width:900px;width:100%}.scene-composer .workbench-screen canvas{background:#05080c}.scene-composer .workbench-screen pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 var(--mono)}
 
-@media(max-width:1100px){.scene-composer .workspace{grid-template-columns:210px minmax(0,1fr) 250px}.scene-composer label{flex-wrap:wrap}.scene-composer aside label>input:not([type=checkbox]),.scene-composer aside label>select{width:100%}.scene-composer .timeline-grid{grid-template-columns:1fr}.scene-composer .state{display:none}}
+@media(max-width:1100px){.scene-composer .workspace{grid-template-columns:200px minmax(0,1fr) 290px}.scene-composer label{flex-wrap:wrap}.scene-composer aside label>input:not([type=checkbox]),.scene-composer aside label>select{width:100%}.scene-composer .timeline-grid{grid-template-columns:1fr}.scene-composer .state{display:none}}
 
 /* Phone and narrow tablet: one column, sticky preview, Layers/Properties switch */
 @media(max-width:760px){
@@ -124,7 +157,8 @@ export const composerStyles = `
   .scene-composer .hierarchy button{min-height:40px;font-size:13px}
   .scene-composer .tool-panel{overflow:visible}.scene-composer .tool-panel>section,.scene-composer .tool-panel>div{padding:10px 12px}
   .scene-composer .workbench-screen :has(>canvas){display:flex;flex-direction:column;align-items:stretch}.scene-composer .workbench-screen :has(>canvas)>canvas{order:-1;position:sticky;top:0;z-index:2;margin-bottom:8px;box-shadow:0 6px 12px #000a}
-  .scene-composer .asset-browser-grid{grid-template-columns:1fr}.scene-composer .asset-browser-grid .catalog-list{max-height:40vh}
+  .scene-composer .asset-browser-grid,.scene-composer .asset-browser-grid:has(.asset-grid){grid-template-columns:1fr}.scene-composer .asset-browser-grid .catalog-list{max-height:40vh}
+  .scene-composer .add-picker{position:fixed;inset:0;z-index:50;border-radius:0}.scene-composer .play-button{margin-left:0}
   .scene-composer .timeline-grid{grid-template-columns:1fr}
 }
 `;
