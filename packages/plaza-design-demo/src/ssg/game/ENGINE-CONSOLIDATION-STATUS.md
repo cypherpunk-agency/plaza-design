@@ -2,9 +2,10 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Latest pushed checkpoint: `edc6007` on main and production (atomic push verified).
-Both production deployments succeeded (homepage39314631594,design39314631485);
-main build39314631529 also succeeded. Public editor HTTP200 serves CI artifact app-S47IROS6.js.
+Latest pushed checkpoint: `dbf8dec` on main and production (atomic push verified).
+Both production deployments succeeded (homepage39325203351,design39325203238);
+main build39325203514 also succeeded. Public editor HTTP200 serves CI artifact app-W6BHBFEY.js,
+matching the production job; native runtime remains play-4XJMVNIS.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
 173 zero-difference raster cases and all19 actual packaged-editor Play/Stop checks PASS.
@@ -2212,6 +2213,58 @@ Opening workflows passed again after integration at `.scene-system/opening-workf
 The integrated c58679885211 raster checkpoint passed all173 cases with zero differing pixels
 or render errors, archived in `.scene-system/all-game-pixel-check/evidence/`.
 A subsequent public-entry-only change disables HTTP caching of stable documents/sources URLs;
-the previously failing public editor loads successfully after that change. Current source
-839777ab5e10 has both builds and TypeScript passing; its all-scene Play and six-workload
-acceptance are being collected independently. No whole-goal gate is promoted by these slices.
+the previously failing public editor loads successfully after that change. Source839777ab5e10
+has both builds and TypeScript passing; all19 native Play/Stop and the six-workload/three-repeat
+suite PASS. Checkpoint C records the formatting-only publication identity separately. G6 is
+signed at that checkpoint; full scene/editor/lifecycle/removal gates remain open.
+
+## Camera and visual source continuation
+
+Yard/Downtown camera bindings and Moth/Beach procedural-picture state/value/clock inputs now
+have finite typed source controls, actual native consumers and atomic validation. Optional
+removal stays removed; fixed Moth/Beach state floors are deleted. Both builds,120 original
+visual snapshots,60 immutable Beach drawing comparisons,512 Beach workflow histories and the
+173-case browser raster check PASS at source50dca405499f. Actual packaged Moth/Beach native
+Play/Stop also PASS. Scope and Save/fresh-import/Undo artifacts:
+docs/reference/CAMERA-VISUAL-SOURCE-AUTHORING.md. This continuation is local after dbf8dec.
+Yard/Downtown world-picture inputs and the final controller/scene acceptance inventory remain open.
+
+## Yard and Downtown picture continuation
+
+Yard now reads state/query/deadline/slot/anchor/place/easing parameters from its registered
+source controller. The slide picture reads the same shared deadline definition and progress
+stamp as the executing program. Typed slot creation and artwork rebinding are integrated.
+Historical required-picture IDs are removed; real controller/manifest references validate
+dependencies. Yard artwork is marked presentation-only, and unused fixed tray/exit exports
+are removed. `.scene-system/yard-controller-source-moaari` verifies replacing/deleting the old
+tray, matching elevated pickup metadata, native motion and shared deadline progress, strict
+reference rejection, pending/history/bundle/protected Save/fresh shipping and byte Undo.
+The 864 immutable grab/drop cases and33 timing histories and native pose checks also PASS.
+
+Downtown picture state/truthy reads, lock comparison, trace device, sign duration and pulse
+target now have typed source bindings inside the existing motion controller. Billboard and
+camera pictures consume one camera-feed binding, avoiding duplicate feed predicates.
+`.scene-system/downtown-visual-source-4C1rXK` verifies actual drawing changes, shared trace/event
+execution, optional removal, strict references and the same Save/fresh-import/Undo path.
+143 frozen Canvas-command comparisons and actual Game DLV/END/lifecycle checks PASS.
+Old composition test fixtures now use current source actors and supply both documented
+reference/current pulse stamps; no original expected artwork or source capture was changed.
+
+These changes are local after dbf8dec. A further source scan found remaining direct picture
+inputs in Laundromat and Sandbox, plus Market's fixed exit-open flag. Those are the next bounded
+binding migrations before the final integrated browser/coverage audit. Capsule's temperature/
+steam reads are outputs of its retained registered physical algorithm, not ordinary quest state.
+
+## 2026-10-20 integrated picture-input checkpoint D
+
+Source `55ba9a26bd958a15be6df6146568aa24802a6d8ed08c6ced86b33c866ee080d4`:
+TypeScript and both builds PASS; all173 browser raster comparisons have zero differences;
+all19 actual packaged native Play/Stop checks PASS with no console errors.
+See [checkpoint D](./docs/reference/ENGINE-CHECKPOINT-2026-10-20-D.md) for artifacts and exact scope.
+Laundromat/Sandbox typed picture inputs now survive actual forms, pending runtime, bundle,
+protected Save, fresh shipping import and byte Undo (`laundry-sandbox-picture-source-C7Hykt`).
+Market typed visual flag and reference-preserving former-wall removal pass (`run-iSFwKV`).
+109 Sandbox ordinary cases, 2592 washer deadline cases plus28 timelines and24 breaker cases match
+immutable outcomes. G4/G8/G9/G10/G12 advance in scope; their whole-goal gates remain open.
+Remaining: full matrix/inventory reconciliation, remaining native geometry/content dependencies,
+world/network/lifecycle/current persistence and final removal/handoff acceptance.

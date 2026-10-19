@@ -1,3 +1,4 @@
+import {mothVisualSnapshot} from '../../engine/controllers/visual';
 import {actorPresentationDefaults,actorPresentationBindings,validateActorPresentationNode} from '../../engine/gameplay/actor-presentation';
 import {compileSceneActors} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
@@ -35,8 +36,8 @@ export function mothDeviceData(source:SceneData,doc:Composition=mothComposition,
 }
 export type MothRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
 export function mothEnvironment(doc:Composition,view:View,model:SceneModel,hover:string|null,actors:Readonly<Record<string,Character>>=compileSceneActors(sceneSource as unknown as SceneDocument,mothGeometry(doc))):Environment {
-  const desk=mothGeometry(doc).find(row=>row.instance.id==='desk')!,next=model.clocks.next('turntable.record');
-  const values:Properties={hover:hover??'',playing:!!next,nextMs:next?.ms??0,fed:!!model.get('fed'),wet:model.get('fern')==='wet',fresh:model.get('tape')===0,deskHeight:desk.placement.h+Number(desk.props.height)};
+  const desk=mothGeometry(doc).find(row=>row.instance.id==='desk')!;
+  const values:Properties={hover:hover??'',...mothVisualSnapshot(model),deskHeight:desk.placement.h+Number(desk.props.height)};
   return {view,state:{},reduced:false,bindings:{...Object.fromEntries(Object.entries(values).map(([k,v])=>['moth.'+k,v])),...actorPresentationBindings('moth',actors,view.t)}};
 }
 export function drawMothComposition(ctx:CanvasRenderingContext2D,view:View,model:SceneModel,hover:string|null,doc:Composition=mothComposition,state:Environment['state']={},options:MothRenderOptions={},actors?:Readonly<Record<string,Character>>) {

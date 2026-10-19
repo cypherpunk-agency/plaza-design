@@ -1,3 +1,5 @@
+import {yardController} from '../../engine/controllers/yard';
+import {validateYardControllerGeometry} from './composition';
 import type {NativeTargetValidationContext} from '../../engine/gameplay/native-targets';
 import {compileSceneActors} from '../../engine/gameplay/actors';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
@@ -54,8 +56,10 @@ const base: Omit<SceneDef,'width'|'spawn'|'exits'> = {
 
 /** The frame controller owns pose history; painting and bounds consume its immutable snapshot. */
 export function yardScene(document:Composition=yardComposition,state:Environment['state']={},options:YardRenderOptions={},sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay,validationContext?:NativeTargetValidationContext,deviceSource:SceneData=YARD):SceneDef{
- const doc=validateYardComposition(document),controller=createYardPresentationState(doc),tray=yardPlacement('tray',doc).x;
+ const doc=validateYardComposition(document),config=yardController(deviceSource),controller=createYardPresentationState(doc,config??null),tray=config?yardPlacement(config.anchors.tray,doc):{x:0,h:0};
+ validateYardControllerGeometry(yardController(deviceSource),doc);
  const authored=content.validateScene(sceneDocument,gameplay,validationContext),actors=compileSceneActors(authored,yardGeometry(doc));
+ if(!config&&authored.nativeTargets?.some(t=>t.anchor==='tray'))throw Error('Yard tray target requires its controller artwork binding');
  const compiled=compileManifestDocument(authored,yardGeometry(doc),(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true});
  let prepared:YardVisual|undefined;
  return{...base,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:projectNativeDeviceData(yardDeviceData({...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource)},doc,authored),gameplay),
@@ -63,10 +67,10 @@ export function yardScene(document:Composition=yardComposition,state:Environment
    if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!['hookX','hookVisible'].includes(k))||typeof value.hookX!=='number'||!Number.isFinite(value.hookX)||typeof value.hookVisible!=='boolean')throw new Error('Invalid Yard presentation state');
    controller.hookX=value.hookX;controller.hookVisible=value.hookVisible;prepared=undefined;
   }},
-  preparePresentation:(_view,engine)=>{prepared=prepareYardFrame(controller,engine,doc);},
-  visualEnvironment:(view,engine)=>yardEnvironment(view,{...(prepared??yardVisualSnapshot(controller,engine,doc)),layer:engine.layer},doc,actors),
-  drawBackdrop:(x,v,e)=>drawYardComposition(x,v,{...(prepared??yardVisualSnapshot(controller,e,doc)),layer:e.layer},doc,state,options,actors),
-  ...compileNativeTargets(authored,{tray:{x:tray}},content.nativeTargetBindings),
+  preparePresentation:(_view,engine)=>{prepared=prepareYardFrame(controller,engine,doc,gameplay);},
+  visualEnvironment:(view,engine)=>yardEnvironment(view,{...(prepared??yardVisualSnapshot(controller,engine,doc,gameplay)),layer:engine.layer},doc,actors),
+  drawBackdrop:(x,v,e)=>drawYardComposition(x,v,{...(prepared??yardVisualSnapshot(controller,e,doc,gameplay)),layer:e.layer},doc,state,options,actors),
+  ...compileNativeTargets(authored,{tray:{x:tray.x,h:tray.h}},content.nativeTargetBindings),
  };
 }
 export const yard=yardScene();

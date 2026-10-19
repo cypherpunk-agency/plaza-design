@@ -118,7 +118,7 @@ export function downtownRules(p: PlayerServices): SceneRules {
     },
     needs: {
       devices:[],
-      state: [{key:'feed',type:'string'}],
+      state: [],
       texts: {
         'joke.0': 'label', 'joke.1': 'label', 'joke.2': 'label',
 

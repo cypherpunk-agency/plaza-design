@@ -8,6 +8,7 @@ import { drawStreetCameraFeed } from '../../art/assemblies/street-camera-feed';
  */
 
 import { button, el, type PanelFn } from "../../engine/panels";
+import {cameraFeed,cameraLoop} from '../../engine/controllers/camera-bindings';
 
 
 
@@ -45,7 +46,7 @@ export const cam3Panel: PanelFn = ({ body, m, say, frame }) => {
       say(m.line(('cam.tag.' + k.id) in m.texts ? 'cam.tag.' + k.id : 'cam.tag.ok', { id: k.id }));
     }),
     // the same as the lens's `loop` verb: its `frame` event goes wherever it is wired
-    button(m.label('cam.loop'), 'hack-btn', () => m.act('cam3', 'lens', 'loop')),
+    ...(m.data.camera?.bindings?.loop?[button(m.label('cam.loop'), 'hack-btn', () => cameraLoop(m))]:[]),
   );
   let fitted = false;
   frame((t) => {
@@ -54,7 +55,7 @@ export const cam3Panel: PanelFn = ({ body, m, say, frame }) => {
     g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height);
     g.setTransform(s * zoom, 0, 0, s * zoom, ox + s * (160 - focus.x * zoom), oy + s * (75 - focus.y * zoom));
     g.save(); g.beginPath(); g.rect(0, 0, W, H); g.clip();
-    drawStreetCameraFeed(g, things, t, m.get('feed') === 'cam3', tags);
+    drawStreetCameraFeed(g, things, t, cameraFeed(m), tags);
     g.textAlign = 'left';
     g.fillStyle = 'rgba(0,255,255,.04)'; for (let y = 0; y < H; y += 2) g.fillRect(0, y, W, 1);
     g.restore();

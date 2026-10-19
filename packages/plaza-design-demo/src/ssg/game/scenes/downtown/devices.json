@@ -1489,7 +1489,18 @@
         "h": 42,
         "label": "YARD"
       }
-    ]
+    ],
+    "bindings": {
+      "feed": {
+        "state": "feed",
+        "equals": "cam3"
+      },
+      "loop": {
+        "device": "cam3",
+        "noun": "lens",
+        "verb": "loop"
+      }
+    }
   },
   "dialogue": {},
   "goals": [
@@ -1711,6 +1722,25 @@
     "state": {
       "at": "dlvAt"
     },
-    "speedTuning": "dlvSpeed"
+    "speedTuning": "dlvSpeed",
+    "visual": {
+      "state": {
+        "lock": "lock",
+        "scanned": "scanned"
+      },
+      "controlled": {
+        "box": "controlled2F",
+        "relay": "controlled31",
+        "other": "till"
+      },
+      "gateHeld": "end",
+      "traceDevice": "relay",
+      "sign": {
+        "tuning": "signTestMs",
+        "target": "sign"
+      },
+      "lockOpenValue": "open",
+      "feedFromCamera": true
+    }
   }
 }

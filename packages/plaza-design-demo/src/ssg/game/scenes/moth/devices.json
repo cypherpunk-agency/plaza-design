@@ -344,5 +344,22 @@
         "goal": "journal"
       }
     ]
+  },
+  "controller": {
+    "kind": "moth",
+    "version": 1,
+    "state": {
+      "fed": "fed",
+      "fern": "fern",
+      "tape": "tape"
+    },
+    "values": {
+      "wet": "wet",
+      "fresh": 0
+    },
+    "record": {
+      "device": "turntable",
+      "noun": "record"
+    }
   }
 }

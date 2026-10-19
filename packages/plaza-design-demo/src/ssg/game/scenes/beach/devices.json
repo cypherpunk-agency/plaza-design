@@ -734,5 +734,22 @@
       "up the stairs to the promenade, and the harbor.",
       "dim"
     ]
+  },
+  "controller": {
+    "kind": "beach",
+    "version": 1,
+    "state": {
+      "rented": "rented",
+      "billing": "billing",
+      "billed": "billed",
+      "freeDrink": "freeDrink",
+      "flag": "flag",
+      "lamps": "lamps"
+    },
+    "values": {
+      "billingPaused": "pause",
+      "danger": "danger",
+      "lampsOn": "on"
+    }
   }
 }

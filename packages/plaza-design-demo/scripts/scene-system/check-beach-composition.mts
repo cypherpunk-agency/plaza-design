@@ -26,7 +26,7 @@ Object.defineProperty(globalThis,'document',{value:{createElement:()=>({width:0,
 let cases=0;
 for(const cam of [0,300,750,1100,1500])for(const gy of [170,280])for(const t of [0,137,710])for(const danger of [false,true]){
  const v:View=referenceView({sx:(wx,p=1)=>Math.round(wx-cam*p),y:h=>gy-h,t,cam,gy,viewW:640,viewH:gy+80,flags:{}});
- const data:Record<string,unknown>={flag:danger?'danger':'clear',rented:danger,billing:danger?'pause':'run',billed:17,freeDrink:danger,lamps:danger?'off':'on'};const m={get:(k:string)=>data[k]} as SceneModel;
+ const data:Record<string,unknown>={flag:danger?'danger':'clear',rented:danger,billing:danger?'pause':'run',billed:17,freeDrink:danger,lamps:danger?'off':'on'};const m={data:BEACH,get:(k:string)=>data[k]} as unknown as SceneModel;
  const old=recording(),now=recording();original.drawBeach(old.ctx,m,v,'mixer');drawBeachComposition(now.ctx,v,m,'mixer',BEACH_ACTORS,GULL);
  if(json(old.ops)!==json(now.ops)){let first=0;while(json(old.ops[first])===json(now.ops[first]))first++;throw new Error(`cam${cam} gy${gy} t${t} danger${danger}: op${first}/${old.ops.length}/${now.ops.length}: ${json(old.ops[first])} != ${json(now.ops[first])}`);}cases++;
 }

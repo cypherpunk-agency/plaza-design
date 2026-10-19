@@ -1,3 +1,4 @@
+import {downtownVisualSnapshot} from '../../engine/controllers/downtown-visual';
 import {downtownController} from '../../engine/controllers/motion';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import {validateActorPresentationNode} from '../../engine/gameplay/actor-presentation';
@@ -80,7 +81,7 @@ export function downtownEnvironment(doc:Composition,view:View,input:DowntownRend
  const model=input.model;
  for(const id of ['sign','box','till','relay','gate','fence','scan','cam3','billboard','dlv9','map','hover']){
   const snapshot:DowntownDeviceState={...empty};
-  if(model){snapshot.controlled=!!model.value(id==='box'?'controlled2F':id==='relay'?'controlled31':'till');snapshot.gateHeld=!!model.value('end');snapshot.lock=String(model.get('lock'));snapshot.scanned=!!model.get('scanned');snapshot.feed=String(model.get('feed'));snapshot.dlvAt=String(model.get(downtownController(model.data).state.at));snapshot.trace=model.traceOf('relay');snapshot.signTestMs=model.data.tuning.signTestMs??3000;snapshot.signSince=model.now()-(model.scratch['pulse.sign']??-1e9);snapshot.visible=input.dlv!==null;
+  if(model){Object.assign(snapshot,downtownVisualSnapshot(model,id));snapshot.dlvAt=String(model.get(downtownController(model.data).state.at));snapshot.visible=input.dlv!==null;
    if(id==='hover'&&input.hover){const spot=model.spots().find(p=>p.id===input.hover);if(spot)snapshot.hoverSpot={x:spot.x,y:spot.y,w:spot.w,h:spot.h};}
   }
   bindings['device.'+id+'.snapshot']=snapshot as unknown as Value;

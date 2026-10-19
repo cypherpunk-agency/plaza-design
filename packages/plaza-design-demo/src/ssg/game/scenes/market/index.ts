@@ -27,6 +27,6 @@ export function marketScene(document:Composition=marketComposition,state:Environ
   intro:content.introTouch?(touch:boolean)=>[...(touch?content.introTouch!:content.intro)]:content.intro.length?[...content.intro]:undefined,
   gameplay:withSceneConversations(gameplay,content),people:content.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
   lights:marketStalls(doc).filter(s=>s.light&&s.light!=='none').map(s=>({x:s.x+s.w/2,h:s.elevation+64,kind:'lamp' as const,r:54,col:s.light==='tube'?'235,240,255':'255,200,120'})),
-  drawBackdrop:(x,v)=>drawMarketComposition(x,v,actors,doc,state,options),drawFront:(x,v)=>drawMarketForeground(x,v,actors,doc,state,options),visualEnvironment:v=>marketEnvironment(v,actors,doc)};
+  drawBackdrop:(x,v)=>drawMarketComposition(x,v,actors,doc,state,options,content.presentation??null),drawFront:(x,v)=>drawMarketForeground(x,v,actors,doc,state,options,content.presentation??null),visualEnvironment:v=>marketEnvironment(v,actors,doc,content.presentation??null)};
 }
 export const market=marketScene();

@@ -27,7 +27,7 @@ const noLegacyMarker=structuredClone(doc);noLegacyMarker.instances=noLegacyMarke
 rejects(d=>{d.instances.find(i=>i.id==='tank')!.bindings!.fed='moth.absent';},/unknown moth binding/i);
 const view={sx:(x:number)=>x,y:(h:number)=>300-h,gy:300,t:137,cam:0,viewW:640,viewH:360,flags:{}};
 let nextReads=0;
-const model={get:(key:string)=>({fed:true,fern:'wet',tape:0})[key as 'fed'|'fern'|'tape'],clocks:{next:(key:string)=>{assert.equal(key,'turntable.record');nextReads++;return{ms:1200};}}} as unknown as SceneModel;
+const model={data:devices,get:(key:string)=>({fed:true,fern:'wet',tape:0})[key as 'fed'|'fern'|'tape'],clocks:{next:(key:string)=>{assert.equal(key,'turntable.record');nextReads++;return{ms:1200};}}} as unknown as SceneModel;
 const env=mothEnvironment(edit,view,model,'tank'), rows=resolveComposition(mothArt,edit,env), tank=rows.find(i=>i.instance.id==='tank')!;
 assert.equal(tank.state.fed,true); assert.equal(tank.state.wet,true); assert.equal(tank.state.fresh,true); assert.equal(tank.state.playing,true); assert.equal(tank.state.nextMs,1200); assert.equal(tank.state.hover,'tank'); assert.equal(tank.state.deskHeight,34); assert.equal(nextReads,1);
 const shared=structuredClone(doc);shared.instances.push({id:'extra-stool',type:'furniture.stool',props:{seed:2},placement:{x:100,h:0},order:100,pass:'backdrop'});assert.doesNotThrow(()=>mothGeometry(validateMothComposition(shared)));

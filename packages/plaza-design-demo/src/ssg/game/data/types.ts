@@ -377,7 +377,7 @@ export interface SceneData {
   /** A workbench that turns two parts into a logic part. Later. */
   bench?: { parts: string[]; recipes: RecipeData[] };
   /** The yard's CAM-1 feed (read by the yard's camera panel). */
-  camera?: { crates: CrateData[]; actions?:Partial<Record<'inspectOwned'|'tagOwned',string>> };
+  camera?: { crates: CrateData[]; actions?:Partial<Record<'inspectOwned'|'tagOwned',string>>; bindings?:import('../engine/controllers/camera-bindings').CameraBindings };
   dialogue: Record<string, DialogueData>;
   goals: GoalData[];
   /** Lines and labels the code asks for by key. The engine's own (engine.json) can be overridden here. */

@@ -16,6 +16,6 @@ export const LAUNDROMAT_RULES: SceneRules = {
   effects: {},
   needs: {
     devices:[],
-    state: [{key:'w1',type:'string'},{key:'w2',type:'string'},{key:'w3',type:'string'},{key:'w4',type:'string'},{key:'breaker',type:'string'}],
+    state: [],
   },
 };

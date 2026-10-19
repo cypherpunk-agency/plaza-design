@@ -9,7 +9,7 @@
     {
       "id": "haggle",
       "name": "UMBRELLA SELLER",
-      "label": "[E] HAGGLE \u00b7 UMBRELLA",
+      "label": "[E] HAGGLE · UMBRELLA",
       "purchase": "market.umbrella",
       "routes": [
         {
@@ -254,7 +254,7 @@
       "id": "sims",
       "name": "SIM CARDS",
       "pages": [
-        "PREPAID SIM \u00b7 ACTIVATION 3 MIN.",
+        "PREPAID SIM · ACTIVATION 3 MIN.",
         "ALL SIMS ARE REGISTERED AT SALE. REGISTERED TO WHOM IS NOT STATED."
       ]
     },
@@ -262,7 +262,7 @@
       "id": "rules",
       "name": "MARKET RULES",
       "pages": [
-        "TRADING HOURS 18:00\u201304:00. ALL TRANSACTIONS ARE LOGGED.",
+        "TRADING HOURS 18:00–04:00. ALL TRANSACTIONS ARE LOGGED.",
         "NO PHOTOGRAPHY. REGISTRY CAMERAS EXEMPT."
       ]
     },
@@ -280,13 +280,13 @@
       "id": "mall",
       "to": "mall",
       "at": "market",
-      "label": "[E] SERVICE DOOR \u00b7 MALL"
+      "label": "[E] SERVICE DOOR · MALL"
     },
     {
       "id": "downtown",
       "to": "downtown",
       "at": "market",
-      "label": "[E] GATE \u00b7 DOWNTOWN",
+      "label": "[E] GATE · DOWNTOWN",
       "requires": "end"
     },
     {
@@ -1346,5 +1346,11 @@
   },
   "companion": {
     "mode": "off"
+  },
+  "presentation": {
+    "kind": "market",
+    "flags": {
+      "exitOpen": "end"
+    }
   }
 }

@@ -736,5 +736,45 @@
     "name.washer2": "WASHER 2",
     "name.washer3": "WASHER 3",
     "name.washer4": "WASHER 4"
+  },
+  "controller": {
+    "kind": "laundromat",
+    "version": 1,
+    "state": {
+      "breaker": "breaker",
+      "w1": "w1",
+      "w2": "w2",
+      "w3": "w3",
+      "w4": "w4"
+    },
+    "reads": {
+      "waiting": "laundromat.waiting",
+      "door3": "laundromat.door3"
+    },
+    "clock": {
+      "device": "clock",
+      "noun": "clock"
+    },
+    "deadlines": {
+      "w1": "laundromat.washer1",
+      "w2": "laundromat.washer2",
+      "w3": "laundromat.washer3",
+      "w4": "laundromat.washer4"
+    },
+    "geometry": {
+      "window": "window",
+      "breaker": "breaker",
+      "w1": "washer1",
+      "w2": "washer2",
+      "w3": "washer3",
+      "w4": "washer4"
+    },
+    "values": {
+      "tripped": "tripped",
+      "running": "running",
+      "done": "done",
+      "open": "open",
+      "empty": "empty"
+    }
   }
 }

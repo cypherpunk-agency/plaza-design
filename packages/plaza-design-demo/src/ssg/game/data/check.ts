@@ -1,4 +1,5 @@
 import {stateRequirementProblems,type StateRequirement} from './state-requirements';
+import {cameraBindingProblems} from '../engine/controllers/camera-bindings';
 import {controllerProblems} from '../engine/controllers';
 import {observationProblems,observationAliases} from '../engine/native-observations';
 /**
@@ -626,7 +627,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
   nodes.forEach((n) => c.nodeIds.add(n.id));
   const { err, keys, dupes, line } = c;
 
-  errs.push(...controllerProblems(z,world.netNodes));
+  errs.push(...controllerProblems(z,world.netNodes,code.derived));
   const observationErrors=observationProblems(z,code.derived,{nodes:world.netNodes,keys:new Set(world.keyring.keys())});
   errs.push(...observationErrors);
   if(z.observations&&!observationErrors.length)for(const row of z.observations.goals)c.cond(row.when,env.known,'observations goal '+row.goal);
@@ -769,7 +770,8 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
 
   // ---------- camera (the yard's CAM-1) ----------
   if (z.camera) {
-    if(Object.keys(z.camera).some(k=>!['crates','actions'].includes(k)))err('camera','unknown field');
+    if(Object.keys(z.camera).some(k=>!['crates','actions','bindings'].includes(k)))err('camera','unknown field');
+    for(const problem of cameraBindingProblems(z))err('camera',problem);
     if(z.camera.actions!==undefined){const actions=z.camera.actions;if(!actions||typeof actions!=='object'||Array.isArray(actions)||Object.keys(actions).some(k=>!['inspectOwned','tagOwned'].includes(k))||Object.values(actions).some(v=>typeof v!=='string'||!v||v.length>128||['__proto__','constructor','prototype'].includes(v)))err('camera.actions','registered camera action names and command IDs required');}
     z.camera.crates.forEach((cr, i) => keys(cr, 'crate', `camera.crates[${i}]`));
     dupes(z.camera.crates.map((cr) => cr.id), 'camera.crates', 'crate');

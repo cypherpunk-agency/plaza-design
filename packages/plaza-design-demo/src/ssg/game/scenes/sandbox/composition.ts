@@ -1,3 +1,4 @@
+import {sandboxModelSnapshot} from '../../engine/controllers/sandbox';
 import {sandboxPieceDefinitions} from '../../art/assemblies/sandbox-elements';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import {mutableActorArtwork} from '../../engine/gameplay/native-actor-bindings';
@@ -13,7 +14,6 @@ import { city,hm } from '../../world/clock';
 import { sceneClimate,screenLine,weatherNow } from '../../world/weather';
 import type { EngineDraw } from '../../engine/host';
 import type { SceneData } from '../../data/types';
-import { pulse } from './rules';
 import document from './composition.json';
 export const sandboxArt=art;
 export const sandboxComposition=art.validate(document);
@@ -27,19 +27,11 @@ export function sandboxStations(doc:Composition=sandboxComposition):Station[]{co
 export function sandboxLayout(doc:Composition=sandboxComposition):SandboxLayout{const rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,x=(id:string)=>get(id).placement.x,w=get('window');return{door:x('door'),spawn:x('spawn'),plan:x('plan'),reset:x('reset'),dispenser:x('chip-dispenser'),radiator:x('radiator'),bench:x('wait-bench'),window:{x0:w.placement.x,x1:w.placement.x+Number(w.props.width),h0:w.placement.h,h1:w.placement.h+Number(w.props.height)},end:x('end-wall')};}
 export const sandboxWidth=Number(sandboxGeometry().find(r=>r.instance.id==='hall')!.props.width);
 export function sandboxDeviceData(source:SceneData,doc:Composition=sandboxComposition,scene?:Pick<SceneDocument,'manifest'>):SceneData{const result=structuredClone(source),rows=sandboxGeometry(doc);for(const device of result.devices){if(scene?.manifest?.devices?.[device.id]||!device.layout?.spot)continue;const row=rows.find(r=>r.instance.id===device.id);if(!row)continue;const spot=device.layout.spot;spot.x=row.placement.x;if(spot.y!==undefined||row.placement.h!==0)spot.y=row.placement.h;if(typeof row.props.width==='number')spot.w=row.props.width*row.placement.scale;if(typeof row.props.height==='number')spot.h=row.props.height*row.placement.scale;}return result;}
-const valueKeys=["lampOn","memo","phase","recOn","beaconOn","count","hatchOpen","fanOn","loginOk","ringsOpen","cipherOpen","cryptexOpen","morseOpen","mains","auditOn","stamped","belt","cups","paid","nightLight","ventOpen"];
-const pulseKeys=["sensor","button","horn","counter","plate","cutter","bell","printer","stamp","siren","coffee.cup","reader","till","rgb.red","rgb.green","rgb.blue"];
 function daylight(minute:number){const h=minute/60;if(h<5||h>=20)return 0;if(h<8)return(h-5)/3;if(h<17)return 1;return 1-(h-17)/3;}
 export type SandboxRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
 export function sandboxEnvironment(doc:Composition,view:View,engine:EngineDraw,actors:Readonly<Record<string,Character>>):Environment{
- const rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,m=engine.m,wx=weatherNow(sceneClimate('sandbox')),w=get('window'),next=m.clocks.next('metronome.beat');
- const snapshot:SandboxSnapshot=structuredClone(emptySandboxSnapshot);
- for(const key of valueKeys){const value=m.get(key);if(value!==undefined)snapshot.values[key]=value as Value;}
- const night=m.value('night');if(night!==undefined)snapshot.derived.night=night as Value;
- const net=m.net.get('qasrv');if(net!==undefined)snapshot.net.qasrv=net;
- snapshot.clocks['metronome.beat']=next?{ms:next.ms}:null;
- for(const key of pulseKeys)snapshot.pulses[key]=pulse(m,key);
- snapshot.frozen=m.data.devices.filter(d=>m.frozen(d.id)).map(d=>d.id);snapshot.opened=[...m.opened];snapshot.links=m.links.map(link=>({from:link.from}));snapshot.traces.audit=m.traceOf('audit');snapshot.lockouts.audit=m.lockLeft('audit');snapshot.lockouts['login.login']=m.lockLeft('login.login');
+ const rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,m=engine.m,wx=weatherNow(sceneClimate('sandbox')),w=get('window');
+ const snapshot:SandboxSnapshot={...structuredClone(emptySandboxSnapshot),...sandboxModelSnapshot(m)};
  for(const row of rows){const piece=sandboxPieceDefinitions.find(piece=>piece.device&&row.instance.type==='sandbox.'+piece.id);if(piece?.device)snapshot.spots[piece.device]={x:row.placement.x,y:row.placement.h,w:Number(row.props.width),h:Number(row.props.height)};}
  snapshot.minute=city.min;snapshot.daylight=daylight(city.min);snapshot.forecast=screenLine(sceneClimate('sandbox'));snapshot.hourLabel=hm(city.min);
  snapshot.weather={cloud:wx.cloud,smog:wx.smog,rain:wx.rain,storm:wx.storm,fog:wx.fog,heat:wx.heat,wind:wx.wind};

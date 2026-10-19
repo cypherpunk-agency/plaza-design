@@ -1,6 +1,6 @@
 # ACCESS DENIED: roadmap
 
-Updated 2026-10-19. This is the single priority and status overview for the game, its gameplay
+Updated 2026-10-20. This is the single priority and status overview for the game, its gameplay
 systems, authoring tools and demo world. Detailed plans inherit priorities from here.
 Everything remains in design. Milestones are deliverables, not dates; later story proposals remain provisional.
 Story M1-M9 retain their existing identities. Completed artwork S0-S13 gates are not reopened or renumbered.
@@ -10,6 +10,16 @@ Story M1-M9 retain their existing identities. Completed artwork S0-S13 gates are
 There is one roadmap, with engine, authoring and experience delivered together as needed.
 Story M1–M9 and completed artwork/workbench S0–S13 keep their existing IDs.
 
+### Integrated checkpoint D, 2026-10-20
+
+Typed source picture inputs now cover cameras, Moth/Beach, Yard cargo, Downtown indicators,
+Market visual flags, Laundromat and Sandbox. Both builds, all173 immutable browser pixel
+comparisons and all19 actual editor native Play/Stop checks pass. Protected Save/fresh-import
+and default-outcome evidence is in [checkpoint D](./docs/reference/ENGINE-CHECKPOINT-2026-10-20-D.md).
+The overall goal remains active: finish the all19 inventory/matrix and remaining geometry,
+world/network/lifecycle/current-format persistence and removal acceptance. G1/G2/G3/G6 are signed;
+this checkpoint does not claim the other gates complete.
+
 ### Active goal checkpoint, 2026-10-19
 
 User correction: old-save-format compatibility is not requested. Remove it as an acceptance
@@ -17,7 +27,9 @@ requirement; do not add compatibility layers or scene-specific state bridges. On
 game state and shared actions are the target. Current-format persistence and gameplay/visual
 preservation remain required. See the correction at the top of ENGINE-CONSOLIDATION-GOAL.md.
 
-Latest published checkpoint:edc6007 on main and production; both production deployments succeeded.
+Latest published checkpoint:dbf8dec on main and production; both production deployments succeeded.
+Checkpoint C has 173 zero-difference raster cases, all19 native editor Play/Stop checks and the
+six-workload/three-repeat performance suite; see docs/reference/ENGINE-CHECKPOINT-2026-10-19-C.md.
 Checkpoint B has both builds,173 zero-difference raster cases and all19 actual native editor
 Play/Stop checks at source0928013b951c. Exact scope:docs/reference/ENGINE-CHECKPOINT-2026-10-19-B.md.
 The following paragraphs retain the earlier ad90b79 checkpoint history.
