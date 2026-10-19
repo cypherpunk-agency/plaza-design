@@ -3,7 +3,7 @@ import {compileSceneActors} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import type {Composition} from '../../art/core/composition';
 import {content} from './scene-document';
-import { beachComposition,beachGeometry,beachWidth,drawBeachComposition } from './composition';
+import { beachComposition,beachGeometry,drawBeachComposition } from './composition';
 import type { SceneModel } from '../../engine/index';
 import type { View as DrawView } from '../../art/core/view';
 /**
@@ -32,11 +32,9 @@ import type { View as DrawView } from '../../art/core/view';
 
 import { type Character } from "../../runtime/characters";
 
-/** The beach: the promenade, the sand, then the pier out to Moth's boat. */
-export const BEACH_W = beachWidth;
 /** Where you land coming down the stairs from the harbor (and walking in from its edge). */
 const ordinaryGeometry=manifestGeometry(content.scene,beachGeometry(),['exits'],{groundExits:false});
-export const BEACH_EDGE_X=ordinaryGeometry.bindings.exits.harbor?.x??ordinaryGeometry.spawn;
+export const BEACH_EDGE_X=ordinaryGeometry.artwork.stairs?.placement.x??ordinaryGeometry.spawn;
 export const BEACH_SPAWN=ordinaryGeometry.spawn;
 
 /** Native body identities and animation behavior now compile from editable scene source. */

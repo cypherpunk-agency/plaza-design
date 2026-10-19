@@ -636,6 +636,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"horizon": "horizon", "waterline": "waterline", "bar": "bar", "pier": "pier", "boardwalk": "boardwalk", "tower": "tower", "drink": "drink", "shore": "shore-edge", "stairs": "stairs-exit"},
     "version": 1,
     "width": {
       "instance": "scene",

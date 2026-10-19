@@ -88,3 +88,28 @@ Library and Warehouse native Play/Stop PASS, no warning/error logs. The Moth ins
 all three artwork-role controls are confirmed reachable in the actual browser UI.
 Local package app-ODSCT226.js / play-UYS3YGBM.js / play-b173443a513df86c.html.
 This bounded checkpoint does not sign the remaining all-game gates.
+
+## Beach geometry, 2026-10-20
+
+Beach now uses the same nine typed role bindings for horizon, waterline, bar/pier/boardwalk sightlines,
+tower, drink, shore and the stairs interaction. Its former blanket required-prop map is removed;
+actual manifest, attachment, actor and role references still validate. Optional absent bar input is
+invisible with zero width, with no original-ID fallback. Stairs require a valid physical role anchor.
+Removed unused shipping layout/width helpers; original kernel layout exists only in its test fixture.
+The retained edge helper reads the current stairs role rather than an obsolete exit ID.
+
+`check-artwork-role-source.mts` PASS: `.scene-system/artwork-role-source-d2f0nS` (earlier eKlKT8).
+The actual Scene controls rebind all9 roles and the dependent exit. Old horizon/waterline/shore/stairs/
+bar instances are removed after child and exit rebinding; native environment values, real elevated
+stairs and exit match new inputs. Explicit bar removal, atomic bad edits, grouped source history,
+bundle, protected Save, fresh shipping import (including the edge helper) and byte Undo pass.
+`check-beach-composition.mts` retains all60 original command comparisons and101 independent pieces;
+`check-beach-live-workflows.mts` retains512 original timing/outcome cases. TypeScript and both builds
+pass. Source `5f5cb79b3c7c980eddb9a9ba1285b6ce5894f8972f55ac810c6aee89343f1671` passes173/173 browser
+raster comparisons with zero differences/max delta/errors. Actual packaged Beach Play/Stop passes,
+no warning/error logs. Local app-HIGWCLLU.js / play-VMODMF2A.js / play-c89cdd77a3900670.html.
+
+Beach still has native actor-role identity branches (`lime-talk`, `ashore-*`); these are explicitly
+remaining work, not hidden by the geometry proof. Move their configurable role references into the
+existing scene presentation source with typed actor selectors and atomic actor-removal cleanup.
+The danger predicate remains the one existing source-controlled Beach visual state read.

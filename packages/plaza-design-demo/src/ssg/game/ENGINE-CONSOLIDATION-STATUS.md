@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `11fe1c8` on main and production (atomic push).
-Production homepage/design jobs39337433892/39337433936 and main build39337433809 succeeded.
+Last verified deployment: `bb9db7c` on main and production; remote hashes verified.
+Production homepage/design jobs39339247808/39339247868 and main build39339247462 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2342,3 +2342,17 @@ Moth Scene inspector exposes width binding and all three artwork-role selectors.
 Play evidence remains bound to source759699b704f1; do not relabel it as latest-source evidence.
 See ARTWORK-ROLE-AUTHORING.md. Whole-goal gates remain open; remaining geometry contracts and the
 all19 inventory/lifecycle/current-save/world/network/removal audit still need completion.
+
+## 2026-10-20 Beach geometry role checkpoint
+
+Nine shared typed artwork roles replace Beach's blanket prop identity/type floor. New source
+references drive horizon/water, sightlines, drink/shore and the real elevated stairs. Existing
+exit/attachment/actor refs remain strict. Optional absent bar input disables its visibility/width
+without restoring old IDs. Unused shipping layout/width helpers removed; retained edge helper
+reads the current stairs role. Actual form/Save/fresh shipping/Undo proof `artwork-role-source-d2f0nS`
+passes after deleting former geometry and rebinding the real dependent exit. Original Beach60
+Canvas-command and512 model/session history cases pass, as do tsc and both builds. Source5f5cb79b3c7c
+has173/173 zero-difference/error browser raster cases and actual native Beach Play/Stop, no warnings.
+See ARTWORK-ROLE-AUTHORING.md for exact scope. Beach's fixed bartender/ashore actor-role branches are
+still open; expose their references through shared scene presentation rather than claiming scene
+completeness from geometry alone. All remaining whole-goal gates stay open.
