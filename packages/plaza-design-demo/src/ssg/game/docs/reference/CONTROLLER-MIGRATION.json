@@ -67,7 +67,7 @@
       ],
       "nativePrimitive": "Existing title/cutscene timelines/compositions and runtime story transitions.",
       "preservationLifecycle": [
-        "Keep existing old-save resume and interrupted transition semantics.",
+        "Keep current-format resume and interrupted transition semantics; historic save compatibility is outside scope.",
         "Keep pause/reduced-motion/time-unit policy explicit.",
         "Drawing callbacks alone are not missing gameplay controllers."
       ]

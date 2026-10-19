@@ -1,9 +1,6 @@
 {
   "id": "train",
   "name": "Metro car",
-  "state": {
-    "pulls": 0
-  },
   "tuning": {},
   "devices": [
     {

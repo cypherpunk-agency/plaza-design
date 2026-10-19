@@ -5,7 +5,7 @@ import {pathToFileURL} from 'node:url';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
-import {attachNativeGameplay,nativeStatePort} from '../../src/ssg/game/engine/gameplay/native-bindings';
+import {attachNativeGameplay} from '../../src/ssg/game/engine/gameplay/native-bindings';import {fixtureGameplayPort} from './model-gameplay-fixture.mts';
 import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
 import type {GameplayDefinition,GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 import {mountGameplayAuthoring} from '../../src/ssg/game/authoring/gameplay-authoring';
@@ -18,7 +18,7 @@ function create(shared:boolean,plugOn:boolean){
  const model=new SceneModel({say:(line,from)=>lines.push({line,from}),open:()=>{},changed:()=>{}},data,shared?scene.rules!:oldRules);
  model.set('plugOn',plugOn);
  let state:GameplayState={flags:{},items:{},tokens:0};
- if(shared){const port=nativeStatePort(definition,{read:()=>state,write:s=>{state=s;}},()=>model);attachNativeGameplay(model,new GameplaySession(definition,port));}
+ if(shared){const port=fixtureGameplayPort(definition,{read:()=>state,write:s=>{state=s;}},()=>model);attachNativeGameplay(model,new GameplaySession(definition,port));}
  return{model,lines,state:()=>state};
 }
 let cases=0;

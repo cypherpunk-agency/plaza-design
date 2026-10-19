@@ -14,7 +14,9 @@
     "sandbox.pulse.reader",
     "sandbox.pulse.reader.slot",
     "sandbox.pulse.till",
-    "sandbox.pulse.till.drawer"
+    "sandbox.pulse.till.drawer",
+    "sandbox.night.off",
+    "sandbox.vent.shut"
   ],
   "commands": {
     "sandbox.dispense": {
@@ -151,6 +153,34 @@
         },
         {
           "emit": "sandbox.pulse.till.drawer"
+        }
+      ]
+    },
+    "sandbox.night.off": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.nightLight",
+          "set": false
+        },
+        {
+          "emit": "sandbox.night.off"
+        }
+      ]
+    },
+    "sandbox.vent.shut": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.ventOpen",
+          "set": false
+        },
+        {
+          "emit": "sandbox.vent.shut"
         }
       ]
     }
@@ -363,17 +393,108 @@
       "default": 0,
       "min": -9007199254740991,
       "max": 9007199254740991
+    },
+    "sandbox.nightLight": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.ventOpen": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.memo": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "sandbox.phase": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "string",
+      "default": "tick"
+    },
+    "sandbox.recOn": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": true
+    },
+    "sandbox.beaconOn": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.hatchOpen": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.fanOn": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.loginOk": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.ringsOpen": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.cipherOpen": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.cryptexOpen": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.morseOpen": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.mains": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.auditOn": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": true
+    },
+    "sandbox.belt": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": true
     }
   },
   "native": {
-    "state": {
-      "sandbox.lampOn": "lampOn",
-      "sandbox.count": "count",
-      "sandbox.stamped": "stamped",
-      "sandbox.cups": "cups",
-      "sandbox.chips": "chips",
-      "sandbox.paid": "paid"
-    },
     "verbs": [
       {
         "device": "counter",
@@ -521,6 +642,62 @@
       "sandbox.pulse.till.drawer": {
         "kind": "pulse",
         "target": "till.drawer"
+      }
+    },
+    "triggers": {
+      "sandbox.daylight": {
+        "when": {
+          "all": [
+            {
+              "state": "sandbox.nightLight",
+              "is": true
+            },
+            {
+              "time": {
+                "from": "06:00",
+                "to": "18:00"
+              }
+            }
+          ]
+        },
+        "command": "sandbox.night.off"
+      },
+      "sandbox.weather": {
+        "when": {
+          "all": [
+            {
+              "state": "sandbox.ventOpen",
+              "is": true
+            },
+            {
+              "weather": [
+                "rain",
+                "storm",
+                "smog"
+              ]
+            }
+          ]
+        },
+        "command": "sandbox.vent.shut"
+      }
+    },
+    "replies": {
+      "sandbox.night.off": {
+        "from": "nightlight",
+        "say": [
+          "photocell",
+          "NIGHT LIGHT: daylight. off by itself.",
+          "dim"
+        ]
+      },
+      "sandbox.vent.shut": {
+        "from": "vent",
+        "say": [
+          "vent",
+          "VENT: {world:weather} detected. shut by itself.",
+          "dim"
+        ],
+        "template": true
       }
     }
   }

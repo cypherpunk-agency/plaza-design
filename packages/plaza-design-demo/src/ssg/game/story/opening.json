@@ -1,5 +1,12 @@
 {
   "version": 1,
+  "PHASE_RULES": [
+    {"when": {"any": [{"flag": "opening:home", "is": false}, {"flag": "opening:jacked"}]}, "phase": "free"},
+    {"when": {"flag": "opening:uplink"}, "phase": "uplinked"},
+    {"when": {"flag": "opening:slept"}, "phase": "deleted"},
+    {"when": {"flag": "opening:flat"}, "phase": "flat"},
+    {"phase": "home"}
+  ],
   "OPENING": {
     "home": "opening:home",
     "street": "opening:street",

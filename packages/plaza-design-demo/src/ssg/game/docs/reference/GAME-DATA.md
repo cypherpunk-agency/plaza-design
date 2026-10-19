@@ -26,7 +26,10 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
   A new game owns `timer.so`. A scene hands a module out with a `give` step (see **Giving
   things**); `foundIn` names that scene, and the check holds the two together. `switch.so` is
   found in MOTH-PC's drawer in Moth's place (`foundIn: "moth"`, P09).
-- **Yard progress is saved**, in the same save as Downtown: `save.scenes.yard` (see **Saves**).
+- **One scalar source and save owner.** `gameplay.state` declares defaults/types;
+  device sources omit scene scalar defaults. `Save.gameplay` contains owner
+  blocks shared by native models and commands (`gameplay.yard.found`, for example).
+  `save.scenes.yard` stores engine progress such as goals, cables and board state.
 - **No authored hints in the yard yet.** Goals stay (the GOAL line in the HUD; the deck's JOBS
   tab). The game has a hint lane now (ui/hints.ts, 2026-10-18), used so far only for control
   hints; when a goal or place gives a hint is a separate design question. Downtown's fixer hints
@@ -812,10 +815,10 @@ programs: string[]           // programs owned: ["scan.so"]
 nets: string[]               // networks found (net.json ids): the net map draws them
 keyring: string[]            // keyring item ids, and made fragments as `join(a,b)`
 items: { [id]: number }      // what you carry, bought or given: { fish: 2, tea: 1 } (ids: scenes/kit.ts ITEMS)
-scenes: { [id]: SceneSave }    // each scene's progress, by scene id
+gameplay?: { [owner]: { [localKey]: boolean | number | string | null } } // common scalar blocks
+scenes: { [id]: SceneSave }    // engine progress, by scene id
 
 interface SceneSave {
-  state: { found, armAt, held, parcel, parcelAt, gateAllowed, pan }   // the scene's state keys, settled
   goals: string[]                                   // goal ids reached
   links: { from, to, verb }[]                       // every cable (pre-wired ones you cut are missing)
   logic: { id, kind, state?, at? }[]                // placed parts: timer1, switch1 (+ its on/off, + where it floats in hack vision)

@@ -81,13 +81,13 @@ export const ENGINE_EFFECTS: Record<string, Effect> = {
 };
 
 /** What the build checks a scene file against: the scene's code plus the engine. */
-export function contractOf(r: SceneRules,routes:readonly {device:string;noun:string;verb:string}[] = []): CodeContract {
+export function contractOf(r: SceneRules,routes:readonly {device:string;noun:string;verb:string}[] = [],queries:readonly string[]=[]): CodeContract {
   return {
     nativeVerbs:routes.map(r=>r.device+'.'+r.noun+':'+r.verb),
     effects: [...Object.keys(ENGINE_EFFECTS), ...Object.keys(r.effects)],
     panels: [...ENGINE_PANELS, ...(r.panels ?? [])],
     state: r.needs?.state ?? [],
-    derived: Object.keys(r.derived ?? {}),
+    derived: [...new Set([...Object.keys(r.derived ?? {}),...queries])],
     goals: r.needs?.goals ?? [],
     texts: { ...ENGINE_TEXTS, ...(r.needs?.texts ?? {}) },
   };

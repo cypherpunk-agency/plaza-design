@@ -6,15 +6,14 @@
  * - `sbx.pulse`: a thing reacted (a horn buzzed, a bell rang): the drawing
  *   flashes it for `pulseMs` (`pulse(m, key)`), nothing is stored;
  * Counter, stamp, brew, reader and till operations are shared commands in gameplay.json.
- * - time and weather that act by themselves (the tick): the night light goes
- *   off at 06:00, the window vent shuts when rain, storm or smog come;
+ * Time and weather reactions use source-owned live condition triggers and replies.
  * - `night` (derived): 18:00–06:00 on the city clock, for the drawing and status.
  *
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
 import type { SceneData, Value } from "../../data/types";
-import type { Effect, SceneRules, World } from "../../engine/rules";
+import type { Effect, SceneRules } from "../../engine/rules";
 import type { Ctx, SceneModel } from "../../engine/model";
 
 /** The carried item the chip reader eats (scenes/kit.ts `ITEMS`); the dispenser beside it hands them out. */
@@ -31,30 +30,19 @@ export function pulse(m: SceneModel, key: string): number {
 const mark = (m: SceneModel, c: Ctx) => { m.scratch['pulse.' + c.dev] = m.scratch['pulse.' + c.dev + '.' + c.noun] = m.now(); };
 /** 18:00–06:00 on the city clock (`hour` is a city key every scene reads). */
 const isNight = (m: SceneModel) => { const h = Number(m.value('hour') ?? 12); return h >= 18 || h < 6; };
-const SHUTS = ['rain', 'storm', 'smog'];
 
 const EFFECTS: Record<string, Effect> = {
   'sbx.pulse': (w, c) => { mark(w.m, c); w.changed(); },
 
 };
 
-function tick(w: World) {
-  const m = w.m;
-  // the night light: 18:00–06:00 only; daylight switches it off
-  if (m.get('nightLight') && !isNight(m)) { m.set('nightLight', false); w.say(w.line('night.off'), 'nightlight'); w.changed(); }
-  // the vent shuts itself when the weather turns
-  const weather = String(m.value('weather') ?? 'clear');
-  if (m.get('ventOpen') && SHUTS.includes(weather)) { m.set('ventOpen', false); w.say(w.line('vent.shut'), 'vent'); w.changed(); }
-}
-
 export const SANDBOX_RULES: SceneRules = {
   effects: EFFECTS,
   derived: { night: (m): Value => isNight(m) },
-  tick,
   needs: {
-    state: ['count', 'stamped', 'cups', 'chips', 'paid', 'nightLight', 'ventOpen'],
+    state: ['count', 'stamped', 'cups', 'chips', 'paid'],
     texts: {
-      'night.off': 'line', 'vent.shut': 'line', 'reset.ok': 'line', 'prompt.reset': 'label',
+      'reset.ok': 'line', 'prompt.reset': 'label',
     },
   },
   /** Controller tuning; the original feature inventory is verified against the frozen baseline. */

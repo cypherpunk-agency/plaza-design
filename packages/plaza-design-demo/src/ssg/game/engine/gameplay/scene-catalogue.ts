@@ -1,5 +1,5 @@
-import {emptyData} from '../empty-data';
-import type {SceneData} from '../../data/types';
+import {projectSceneState,type SceneDeviceSource} from './scene-state';
+import {emptyDeviceSource} from '../empty-data';
 import type {EngineNetworkContext} from '../network-context';
 import {validateDeviceDocument} from './device-source-validation';
 import {projectDeviceBindings} from './device-bindings';
@@ -9,7 +9,7 @@ import type {GameplayDefinition} from './types';
 import type {SceneDocument} from './scene-document';
 import {validateGameplay} from './validation';
 import {declaredScene,validateDeclaredScene,validateDeclaredDestinations} from './declared-scene';
-export interface AuthoredScene {composition:Composition;scene:SceneDocument;gameplay:GameplayDefinition;devices?:SceneData}
+export interface AuthoredScene {composition:Composition;scene:SceneDocument;gameplay:GameplayDefinition;devices?:SceneDeviceSource}
 export interface SceneCatalogue {version:1;scenes:AuthoredScene[]}
 export const authoredDocumentId=(scene:string,part:'composition'|'scene'|'gameplay'|'devices')=>'authored.'+scene+(part==='composition'?'':'-'+part);
 const fields=(value:unknown,keys:string[],required=keys)=>{if(!value||typeof value!=='object'||Array.isArray(value)||Object.getPrototypeOf(value)!==Object.prototype||Object.keys(value).some(k=>!keys.includes(k))||required.some(k=>!Object.prototype.hasOwnProperty.call(value,k)))throw new Error('Invalid authored scene catalogue fields');};
@@ -20,7 +20,7 @@ export function validateSceneCatalogue(value:unknown,native:Readonly<Record<stri
  const ids=new Set<string>(),scenes=source.scenes.map(entry=>{fields(entry,['composition','scene','gameplay','devices'],['composition','scene','gameplay']);const gameplay=validateGameplay(entry.gameplay);
   const {scene,composition,rows,width}=validateDeclaredScene(entry.scene,entry.composition,gameplay),id=scene.id;
   if(!/^[a-z][a-z0-9-]{0,47}$/.test(id)||['constructor','prototype','__proto__'].includes(id)||id.startsWith('sequence-')||Object.prototype.hasOwnProperty.call(native,id)||ids.has(id)||composition.scene!==id)throw new Error('Invalid, reserved or duplicate authored scene ID: '+id);
-  const devices=validateDeviceDocument(id,entry.devices??emptyData(id,scene.name),{gameplay,network});projectDeviceBindings(scene,rows,devices,width);
+  const devices=validateDeviceDocument(id,entry.devices??emptyDeviceSource(id,scene.name),{gameplay,network});projectDeviceBindings(scene,rows,projectSceneState(devices,gameplay),width);
   ids.add(id);return{composition,scene,gameplay,...(entry.devices!==undefined?{devices}:{})};
  });
  const destinations=Object.fromEntries([...Object.entries(native).map(([id,s])=>[id,s.exits.map(e=>e.id)]),...scenes.map(s=>[s.scene.id,(s.scene.exits??[]).map(e=>e.id)])]);

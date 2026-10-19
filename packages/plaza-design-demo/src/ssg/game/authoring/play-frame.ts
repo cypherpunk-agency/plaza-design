@@ -52,7 +52,7 @@ window.addEventListener('message', async event => {
     await document.fonts.ready;
     if(memory)restorePrivateStorage(memory);
     const freshStart=!gameStorage.getItem(SAVE_KEY);
-    if(freshStart){const fresh=fixtureSave(f,Object.keys(registry??{}));if(scene.data&&Object.keys(f.state).length)fresh.scenes[f.scene]={state:{...scene.data.state,...f.state},goals:[],links:scene.data.cables.map(c=>({from:c.from,to:c.to,verb:c.verb})),logic:[]};gameStorage.setItem(SAVE_KEY,JSON.stringify(fresh));}
+    if(freshStart){const fresh=fixtureSave(f,Object.keys(registry??{}));if(scene.data&&Object.keys(f.state).length)fresh.gameplay={[f.scene]:{...scene.data.state,...f.state}};gameStorage.setItem(SAVE_KEY,JSON.stringify(fresh));}
     document.documentElement.classList.add('game-mode');if(f.scene==='harborShift')document.documentElement.classList.add('shift-prototype');
     document.body.innerHTML='<section class="demo-window"><header hidden></header><footer hidden></footer><div id="input-host"></div></section>';
     const windowEl=document.querySelector<HTMLElement>('.demo-window')!;

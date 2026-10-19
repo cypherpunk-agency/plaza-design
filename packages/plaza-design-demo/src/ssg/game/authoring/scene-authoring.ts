@@ -1,3 +1,6 @@
+import {emptyDeviceSource} from '../engine/empty-data';
+import {projectSceneState} from '../engine/gameplay/scene-state';
+import {deviceSourceIdentity} from './device-document-ids';
 import {renderSceneCompanion} from './scene-companion-authoring';
 import {COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import {SCENES} from '../scenes';
@@ -42,7 +45,7 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
   form.objectiveIds=d.objectives?.map(o=>o.id)??[];
   const entries:Entry[]=[];
   entries.push({key:'environment',group:'Scene',label:'Environment',render:h=>{note(h,'These overrides control the same native lighting and weather in the game and preview. Omitted values follow the registered artwork or controller.');renderSceneEnvironment(form,h,d.environment,(label,change)=>edit(label,d=>{change(d.environment??={});}),refresh,d.id);}});
-  if(d.manifest)entries.push({key:'companion',group:'Scene',label:'Companion',render:h=>{const rows=manifestCompositionRows(api.get(selected().prefix).value as Composition),deviceId=d.id==='sandbox'?'sandbox-behavior':d.id+'-devices',native=context.documents.some(row=>row.id===deviceId)?api.get(deviceId).value as import('../data').SceneData:SCENES[d.id]?.data,library=context.documents.some(row=>row.id==='companion-gameplay')?api.get('companion-gameplay').value as import('../engine/gameplay/types').GameplayDefinition:COMPANION_GAMEPLAY;renderSceneCompanion(form,h,d,rows,Object.entries(native?.state??{}).filter(([,v])=>typeof v==='string').map(([k])=>k),Object.keys({...library.conversations,...g.conversations}),g,edit,refresh);}});
+  if(d.manifest)entries.push({key:'companion',group:'Scene',label:'Companion',render:h=>{const rows=manifestCompositionRows(api.get(selected().prefix).value as Composition),deviceId=deviceSourceIdentity(d.id).devices,native=projectSceneState(context.documents.some(row=>row.id===deviceId)?api.get(deviceId).value as import('../data').SceneData:SCENES[d.id]?.data??emptyDeviceSource(d.id,d.name),g),library=context.documents.some(row=>row.id==='companion-gameplay')?api.get('companion-gameplay').value as import('../engine/gameplay/types').GameplayDefinition:COMPANION_GAMEPLAY;renderSceneCompanion(form,h,d,rows,Object.entries(native?.state??{}).filter(([,v])=>typeof v==='string').map(([k])=>k),Object.keys({...library.conversations,...g.conversations}),g,edit,refresh);}});
   const mutableActors=!!actorBindingController(d.id)?.mutable&&!!api.editDocuments;
   if(mutableActors)entries.push({key:'actor-collection',group:'Scene',label:'Actor collection',render:h=>{let id='actor-1',n=1;while(d.actors?.some(a=>a.id===id))id='actor-'+(++n);let family='human',x=180,height=0,dialogue=true;
    note(h,'Create the actor and its artwork together. Position can be changed here, in Layout or by attaching its placement to an artwork anchor.');

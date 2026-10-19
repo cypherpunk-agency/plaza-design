@@ -16,8 +16,8 @@ support optional manual/signal source selection and explicit `say:null` for sile
 is identical for eligibility and dispatch; watchdog/lock/seal checks still precede command execution.
 The final fallback must cover both sources. Typed authoring exposes source selection and silence.
 
-The native `plugOn` key remains the sole saved owner. The command bridge does not persist a second
-copy. The actual immutable-original and current SceneModels agree for on/off initial states, both
+At this checkpoint, the native `plugOn` key remains the sole saved owner. The command bridge does not persist a second
+copy. Removing that bridge in favor of the common state owner is the next state migration. The actual immutable-original and current SceneModels agree for on/off initial states, both
 input sources, repeated actions, exact replies/speakers/silence and restored saved state.
 
 Evidence: `check-capsule-shared-off.mts`; `check-capsule-controller.mts` (1,728 unchanged simulation
@@ -31,14 +31,14 @@ goal decisions and companion delayed decisions still need shared lifecycle/event
 
 | Area | Ordinary behavior to move | Calculation to retain |
 | --- | --- | --- |
-| Sandbox | Counters, stamp/brew, chip consumption, till rewards, environmental reactions | Cosmetic pulse rendering |
-| Beach | Rent/start/end decisions, billing, insufficient-funds termination | Existing physical presentation |
-| Laundromat | Start/stop permissions, completion/reward, overload/reset workflow | Animation and any continuous machine calculations |
+| Sandbox | Counter/resource commands and ordered environmental reactions migrated; verify common state cutover | Cosmetic pulse rendering |
+| Beach | Rent/end/billing/danger-clear workflows migrated; verify common state cutover | Existing physical presentation |
+| Laundromat | Start/stop permissions, completion/reward, overload workflow remain; breaker reset migrated | Animation and any continuous machine calculations |
 | Downtown | Ownership, install/rewards, till, gate and peer outcomes | Delivery interpolation and scanner geometry |
-| Yard | Grab/drop permissions and resulting state; discovery reward | Crane/parcel movement and collision |
-| Stacks | Discovery/rewards, watchdog reset/consequence | Trolley/lift trajectories and thermal calculation |
+| Yard | Grab/drop permissions and resulting state remain; camera discovery migrated | Crane/parcel movement and collision |
+| Stacks | Scope discovery migrated; loading/rewards, watchdog reset/consequence remain | Trolley/lift trajectories and thermal calculation |
 | Train | Pass/door permissions, refusal alternation, harbor unlock and siding goal | Travel/braking/siding geometry and rider motion |
-| Harbor Shift | Conversation routing, automatic accept/replacement-tag decisions | Existing staging/animation |
+| Harbor Shift | Supervisor conversation and acceptance/tag decisions migrated; verify full lifecycle and common state integration | Existing staging/animation |
 | Capsule | Door-change reaction, goals and delayed ordinary choices | Temperature integration and companion movement |
 | Opening | Flag/reward/phase orchestration currently in Game and opening model | Cinematic playback and camera motion |
 
@@ -53,6 +53,12 @@ read-only simulation projections, state comparison where required, guarded-noun 
 narrow operations against existing saved owners. Cosmetic events may request presentation changes;
 they must not become hidden gameplay state transitions.
 
-Sandbox is the next bounded migration. It needs post-commit response templates through the existing
-text renderer and typed committed-event pulse bindings using the native scene clock. Preserve pulse
-timing under pause/reduced motion; do not substitute an unrelated animation clock.
+Completed bounded slices now include Sandbox post-commit response templates and cosmetic pulses,
+Beach live intervals, Harbor Shift conversation entry refusal handling, Train door permission cases,
+Laundromat breaker reset and Yard/Stacks camera discovery commands. Their focused reports are not
+whole-scene acceptance. Shared conditions/actions, scene callbacks and serialization still need one
+common state owner; the state bridge is not an acceptable final architecture.
+
+The next ordinary workflow contract needs cancelable scene-clock deadlines, readable counts and
+tuning values, and existing player inventory/keyring rewards. These are shared operations, not
+washer-specific native effects. Preserve off-screen progress, overload timing and exact replies.

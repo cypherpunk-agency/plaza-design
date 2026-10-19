@@ -3,6 +3,8 @@ import { art, compositionAppearance, resolveComposition, type Composition, type 
 import type { View } from '../art/core/view';
 import { frameView } from '../art/core/view';
 import { SceneModel } from '../engine/model';
+import {readQuery} from '../engine/gameplay/queries';
+import {resolveValues} from '../engine/gameplay/state';
 import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
 import { renderSceneFrame, type SceneFrame } from '../runtime/render-scene';
@@ -106,6 +108,13 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
         const scalar = value === null || ['string', 'boolean', 'number'].includes(typeof value);
         if (!scalar || (model.data.state[key] !== null && typeof value !== typeof model.data.state[key]) || (typeof value === 'number' && !Number.isFinite(value))) throw new Error(`Invalid scene state: ${key}`);
         model.set(key, value as Parameters<SceneModel['set']>[1]);
+      }
+      // Inspection uses the shipping read evaluator over its isolated state. It never installs
+      // command/timer hooks or advances simulation, and calculated values have no saved owner.
+      if(def.gameplay?.queries){
+        const definition=def.gameplay,ids=new Set(Object.keys(definition.queries??{}));model.gameplayQueryIds=ids;
+        model.gameplayQuery=id=>{if(!ids.has(id))return undefined;const state={flags:flags as Record<string,boolean>,items:{},tokens:player.tokens,values:{[def.id]:model.state},world:{day:city.day,minute:city.min,weather:(request.weather??weatherNow(sceneClimate(def.id))).kind}};
+          return readQuery(id,{...state,values:resolveValues(definition,state)},{definition,tuning:model.data.tuning,labels:model.texts});};
       }
       const vision = settings.hack === true, engine: EngineDraw = { m: model, hover: typeof settings.hover === 'string' ? settings.hover || null : null, layer: 'all' };
       // A complete editor frame starts from native canvas defaults, including inherited

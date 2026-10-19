@@ -3,6 +3,26 @@
 Implemented pilot, 2026-10-17; persistent commerce and scoped conversation consolidation, 2026-10-18. This is a foundation, not completion of the full game editor.
 The existing device evaluator, render pipeline and player-save format remain in use.
 
+## Current scalar ownership (2026-10-19)
+
+`gameplay.state` is the sole schema/default source for scene scalar values.
+Public IDs split at their final dot into owner and local key. Runtime
+`GameplayState.values` and persisted `Save.gameplay` contain owner blocks, for
+example `{yard: {found: false, held: null}}`. SceneModel and shared commands
+reference the same live scene block. `projectSceneState` supplies the local
+schema/default view used by native rules and source validation; raw device
+sources do not contain a duplicate `state` record.
+
+`nativeGameplayPort` only overlays readonly observations and applies committed
+native goal effects. It transfers no scalar values. `native.state` and
+`nativeStatePort` have been removed. Engine `SceneSave` contains cables, goals,
+trace, locks, board and other engine progress, not scene scalar copies. A model
+diagnostic snapshot may include a settled scalar view; the runtime serializer
+keeps that in the common owner block and removes it from the engine save.
+
+The dated implementation/evidence sections below describe earlier snapshots
+where explicitly identified; they do not add an old-format compatibility gate.
+
 ## Model
 
 An interaction, conversation choice or native signal requests a **command**. The command
@@ -322,12 +342,12 @@ status ledger for exact runs and browser evidence. No campaign playthrough or pe
 ## ENG-04: native device boundary
 
 See [scope and gates](../../ENG-04-PLAN.md) and [execution evidence](../../ENG-04-STATUS.md).
-`GameplayDefinition.native` declares native state aliases, ordered verb-to-command routes,
-committed event/goal projections and authored initial wires. `nativeStatePort` projects native
-values into typed command drafts and commits them back to the same SceneSave owner. It removes
-these aliases from Save.gameplay; non-native shared values and unrelated native keys survive.
-StatePort.write receives the transaction's committed event list so native goals are applied with
-state/resources before notification or persistence. Painting and eligibility do not grant rewards.
+`GameplayDefinition.native` declares ordered verb-to-command routes, readonly
+observation bindings, committed event/goal projections, presentation cues,
+live workflows and authored initial wires. Scene scalar writes use common owner
+blocks, never alias mappings. `nativeGameplayPort` applies native goals from the
+committed event list before notification/persistence and overlays readonly
+observations. Painting and eligibility do not grant rewards.
 
 `attachNativeGameplay` binds the existing SceneModel to a GameplaySession. Bound verbs bypass their
 legacy native steps; unmigrated verbs retain them. The session's native authorization guard also
@@ -402,7 +422,7 @@ Panels resolve explicit or default conversation IDs through the same Conversatio
 
 `native.reads` declares read-only truthiness bindings to live native state (or an explicitly
 registered derived value). They are not copied into the save and cannot be assigned by commands.
-`native.state` aliases writable state to its original SceneSave owner. Omitting `native.wires`
+Writable scalar state uses canonical shared declarations and the live common owner block. Omitting `native.wires`
 preserves another subsystem's cable source; an explicit empty list owns and removes defaults.
 
 `handoffs` binds a committed shared event to an existing cinematic and/or delayed system commands.

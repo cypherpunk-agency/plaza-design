@@ -7,7 +7,9 @@
   "items": [
     "soap"
   ],
-  "events": [],
+  "events": [
+    "laundromat.breaker.reset"
+  ],
   "commands": {
     "laundromat.buy-soap": {
       "sources": [
@@ -16,6 +18,20 @@
       "actions": [
         {
           "purchase": "laundromat.soap"
+        }
+      ]
+    },
+    "laundromat.breaker.reset": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.breaker",
+          "set": "on"
+        },
+        {
+          "emit": "laundromat.breaker.reset"
         }
       ]
     }
@@ -317,13 +333,218 @@
     }
   },
   "native": {
-    "state": {},
     "reads": {
       "laundromat:jacket": "jacket",
       "laundromat:tripped": "trips"
     },
     "verbs": [],
     "events": {},
-    "goals": {}
+    "goals": {},
+    "intervals": {
+      "laundromat.breaker": {
+        "kind": "liveInterval",
+        "elapsed": "tripped",
+        "duration": {
+          "tuning": "resetMs"
+        },
+        "active": {
+          "state": "laundromat.breaker",
+          "is": "tripped"
+        },
+        "inactive": "hold",
+        "due": [
+          {
+            "command": "laundromat.breaker.reset"
+          }
+        ]
+      }
+    },
+    "replies": {
+      "laundromat.breaker.reset": {
+        "from": "breaker",
+        "say": [
+          "",
+          "BREAKER: reset. 0 of 2 running.",
+          "dim"
+        ]
+      }
+    }
+  },
+  "state": {
+    "laundromat.breaker": {
+      "owner": "laundromat",
+      "lifetime": "save",
+      "type": "string",
+      "default": "on"
+    },
+    "laundromat.w1": {
+      "owner": "laundromat",
+      "lifetime": "save",
+      "type": "string",
+      "default": "idle"
+    },
+    "laundromat.w2": {
+      "owner": "laundromat",
+      "lifetime": "save",
+      "type": "string",
+      "default": "idle"
+    },
+    "laundromat.w3": {
+      "owner": "laundromat",
+      "lifetime": "save",
+      "type": "string",
+      "default": "idle"
+    },
+    "laundromat.w4": {
+      "owner": "laundromat",
+      "lifetime": "save",
+      "type": "string",
+      "default": "idle"
+    },
+    "laundromat.trips": {
+      "owner": "laundromat",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "laundromat.jacket": {
+      "owner": "laundromat",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "queries": {
+    "laundromat.running": {
+      "kind": "count",
+      "conditions": [
+        {
+          "state": "laundromat.w1",
+          "is": "running"
+        },
+        {
+          "state": "laundromat.w2",
+          "is": "running"
+        },
+        {
+          "state": "laundromat.w3",
+          "is": "running"
+        },
+        {
+          "state": "laundromat.w4",
+          "is": "running"
+        }
+      ]
+    },
+    "laundromat.waiting": {
+      "kind": "count",
+      "conditions": [
+        {
+          "not": {
+            "state": "laundromat.w1",
+            "is": "done"
+          }
+        },
+        {
+          "not": {
+            "state": "laundromat.w2",
+            "is": "done"
+          }
+        },
+        {
+          "not": {
+            "state": "laundromat.w3",
+            "is": "done"
+          }
+        },
+        {
+          "not": {
+            "state": "laundromat.w4",
+            "is": "done"
+          }
+        }
+      ]
+    },
+    "laundromat.door3": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "state": "laundromat.jacket",
+            "is": true
+          },
+          "value": {
+            "literal": "empty"
+          }
+        },
+        {
+          "when": {
+            "not": {
+              "state": "laundromat.w3",
+              "is": "done"
+            }
+          },
+          "value": {
+            "literal": "locked"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "laundromat.waiting"
+              },
+              "op": "gt",
+              "right": {
+                "literal": 0
+              }
+            }
+          },
+          "value": {
+            "literal": "held"
+          }
+        },
+        {
+          "value": {
+            "literal": "open"
+          }
+        }
+      ]
+    },
+    "laundromat.cycleMs": {
+      "kind": "tuning",
+      "key": "cycleMs"
+    },
+    "laundromat.maxRunning": {
+      "kind": "tuning",
+      "key": "maxRunning"
+    },
+    "laundromat.cycleSeconds": {
+      "kind": "duration",
+      "value": {
+        "query": "laundromat.cycleMs"
+      },
+      "unit": "seconds",
+      "round": "nearest"
+    },
+    "laundromat.name.washer1": {
+      "kind": "label",
+      "key": "name.washer1"
+    },
+    "laundromat.name.washer2": {
+      "kind": "label",
+      "key": "name.washer2"
+    },
+    "laundromat.name.washer3": {
+      "kind": "label",
+      "key": "name.washer3"
+    },
+    "laundromat.name.washer4": {
+      "kind": "label",
+      "key": "name.washer4"
+    }
   }
 }

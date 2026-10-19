@@ -2,6 +2,7 @@ import {TypedForm} from './typed-form';
 import type {WorkbenchContext,WorkbenchHandle} from './app';
 import {validateOpeningSource,type OpeningSource,type OpeningState} from '../story/opening-source';
 import {pendingRegistry} from './pending-registry';
+import type {GameplayDefinition} from '../engine/gameplay/types';
 export interface OpeningHomeDraft {scene:string;jackDevice:string;kind:'rest'|'use'|'exit';anchorId:string;offsetX:number}
 /** One typed transaction moves the registered home roles; unrelated authored scene content stays explicit. */
 export function relocateOpeningHome(source:OpeningSource,draft:OpeningHomeDraft):OpeningSource{
@@ -14,13 +15,28 @@ export function relocateOpeningHome(source:OpeningSource,draft:OpeningHomeDraft)
 export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle{
  const api=context.authoring!,error=document.createElement('p'),body=document.createElement('div');error.setAttribute('role','alert');host.replaceChildren(error,body);let disposed=false,category='Controller',phase:OpeningState='home';const newScenes:Record<string,string>={};let homeDraft:OpeningHomeDraft|undefined;const targetDrafts=new Map<string,{kind:'rest'|'use'|'exit';id:string;offsetX:number}>();
  const form=new TypedForm(e=>{error.textContent=String(e);}),phases=['home','flat','deleted','uplinked','free'] as const;
- const groups:Record<string,string[]>={Controller:['CONTROLLER'],Phases:['PHASES','OPENING','OPENING_LEVELS'],Timing:['IDLE_PING','HOME_RUN','TURNSTILE','SLEEP','MORNING'],Intros:['OPENING_INTRO'],Goals:['OPENING_GOAL'],Dialogue:['OPENING_LINES'],Interactions:['OPENING_EVERYDAY'],Exits:['OPENING_EXITS'],Targets:['OPENING_TARGETS'],Guidance:['OPENING_PINGS'],Clock:['OPENING_TIME'],Messages:['WAKE_LINES','MOTH_MESSAGE','UPLINK_LINES','UPLINK_KEY'],Deck:['DECK_BEFORE']};
+ const groups:Record<string,string[]>={Controller:['CONTROLLER'],Phases:['PHASE_RULES','PHASES','OPENING','OPENING_LEVELS'],Timing:['IDLE_PING','HOME_RUN','TURNSTILE','SLEEP','MORNING'],Intros:['OPENING_INTRO'],Goals:['OPENING_GOAL'],Dialogue:['OPENING_LINES'],Interactions:['OPENING_EVERYDAY'],Exits:['OPENING_EXITS'],Targets:['OPENING_TARGETS'],Guidance:['OPENING_PINGS'],Clock:['OPENING_TIME'],Messages:['WAKE_LINES','MOTH_MESSAGE','UPLINK_LINES','UPLINK_KEY'],Deck:['DECK_BEFORE']};
  const read=()=>validateOpeningSource(api.get('opening-story').value),at=(d:any,path:(string|number)[])=>path.reduce((r,k)=>r[k],d);
  function edit(label:string,change:(d:OpeningSource)=>void){const d=read();change(d);api.edit('opening-story',label,d);render();}
  const set=(path:(string|number)[],value:unknown)=>edit('Edit opening '+path.join('/'),d=>{if(path.join('/')==='CONTROLLER/sleep/target'){const before=d.CONTROLLER.sleep.target,next=String(value);for(const rows of Object.values(d.OPENING_TARGETS)){for(const ref of Object.keys(rows??{})){const[scene,id]=ref.split('/');if(id!==before||next===before)continue;const renamed=scene+'/'+next;if(renamed in rows!)throw new Error('A story target already owns '+renamed);rows![renamed]=rows![ref];delete rows![ref];}}for(const rows of Object.values(d.OPENING_PINGS))for(const ping of Object.values(rows??{}))if('story'in ping&&ping.story===before)ping.story=next;d.CONTROLLER.sleep.target=next;}else at(d,path.slice(0,-1))[path.at(-1)!]=value;});
  const remove=(path:(string|number)[])=>edit('Remove opening '+path.join('/'),d=>{const owner=at(d,path.slice(0,-1));if(Array.isArray(owner))owner.splice(Number(path.at(-1)),1);else delete owner[path.at(-1)!];});
  function line(parent:HTMLElement,value:any[],path:(string|number)[]){const name=path.join(' ');form.text(parent,name+' input',value[0],v=>set([...path,0],v));form.text(parent,name+' response',value[1],v=>set([...path,1],v),true);form.select(parent,name+' tone',['','ok','err','dim'],value[2]??'',v=>edit('Edit opening line tone',d=>{const l=at(d,path);if(v)l[2]=v;else l.length=2;}));}
  function walk(parent:HTMLElement,value:any,path:(string|number)[]){const name=path.join(' '),key=path.at(-1);
+  if(path[0]==='PHASE_RULES'&&path.length===1){
+   const d=read(),doc:GameplayDefinition={version:1,flags:Object.values(d.OPENING),items:[],events:[],commands:{},reactions:[],conversations:{}};
+   d.PHASE_RULES.forEach((row,i)=>{
+    const fallback=row.when===undefined,box=form.section(parent,'Phase rule '+(i+1)+(fallback?' fallback':''));
+    form.select(box,'Phase rule '+(i+1)+' phase',phases,row.phase,v=>set(['PHASE_RULES',i,'phase'],v));
+    if(!fallback){
+     form.condition(box,'Phase rule '+(i+1)+' condition',row.when,v=>set(['PHASE_RULES',i,'when'],v),doc,true,1);
+     const move=(offset:number)=>edit('Move opening phase rule',d=>{const[row]=d.PHASE_RULES.splice(i,1);d.PHASE_RULES.splice(i+offset,0,row);});
+     form.button(box,'Move phase rule '+(i+1)+' up',()=>move(-1),i===0);
+     form.button(box,'Move phase rule '+(i+1)+' down',()=>move(1),i>=d.PHASE_RULES.length-2);
+     form.button(box,'Remove phase rule '+(i+1),()=>remove(['PHASE_RULES',i]));
+    }
+   });
+   form.button(parent,'Add opening phase rule',()=>edit('Add opening phase rule',d=>{d.PHASE_RULES.splice(d.PHASE_RULES.length-1,0,{when:{flag:d.OPENING.home},phase:'home'});}),d.PHASE_RULES.length>=32);return;
+  }
   if(path[0]==='OPENING'||path[0]==='PHASES'&&path.at(-1)==='before'||path.join('/')==='CONTROLLER/homeRun/scene'){const p=document.createElement('p');p.textContent=name+': '+String(value)+(path[0]==='OPENING'?' (saved identity)':' (native phase role)');parent.append(p);return;}
   if(path.join('/')==='CONTROLLER/home'){
    const d=read(),target=d.OPENING_TARGETS.flat![value.scene+'/'+d.CONTROLLER.sleep.target],binding=target.bind;

@@ -17,6 +17,6 @@ export function pendingNetworkContext(documents:ReadonlyMap<string,unknown>){
 }
 export function validatePendingNetwork(documents:ReadonlyMap<string,unknown>,registry:Record<string,SceneDef>){
  const scenes=Object.values(registry).filter((s):s is SceneDef&{data:SceneData}=>!!s.data);
- const net=validateNetworkSource(documents.get('network')??NET,scenes.map(scene=>{const rules=deviceRules(scene);return{data:scene.data,code:contractOf(rules,scene.gameplay?.native?.verbs),extra:rules.check};}));
+ const net=validateNetworkSource(documents.get('network')??NET,scenes.map(scene=>{const rules=deviceRules(scene);return{data:scene.data,code:contractOf(rules,scene.gameplay?.native?.verbs,Object.keys(scene.gameplay?.queries??{})),extra:rules.check};}));
  return createNetworkContext(net,scenes.map(scene=>scene.data));
 }

@@ -10,8 +10,8 @@ import { SAVE_KEY,DEMO_MODE } from './mode';
 // ---------- save state ----------
 
 export interface Save {
-  /** Qualified shared gameplay state, separate from native scene-device snapshots. */
-  gameplay?:Record<string,import('../engine/gameplay/types').StateValue>;
+  /** Common scalar owner blocks shared by gameplay commands and scene models. */
+  gameplay?:import('../engine/gameplay/types').StateValues;
   /** Last scene for Continue; absent in older v3 saves. Validated against SCENES on resume. */
   scene?: string;
   handle: string;
@@ -65,7 +65,8 @@ export function loadSave(): Save {
       s.items = Object.fromEntries(Object.entries(s.items).filter(([, n]) => Number.isInteger(n) && n > 0));
       // a save from before the city clock (TIME.md): day 1, 09:40
       if(!s.gameplay||typeof s.gameplay!=='object'||Array.isArray(s.gameplay))s.gameplay={};
-      s.gameplay=Object.fromEntries(Object.entries(s.gameplay).filter(([k,v])=>!['__proto__','constructor','prototype'].includes(k)&&(typeof v==='boolean'||typeof v==='string'&&v.length<=2000||typeof v==='number'&&Number.isSafeInteger(v))));
+      const safe=(k:string)=>!['__proto__','constructor','prototype'].includes(k);
+      s.gameplay=Object.fromEntries(Object.entries(s.gameplay).filter(([owner,block])=>safe(owner)&&block&&typeof block==='object'&&!Array.isArray(block)).map(([owner,block])=>[owner,Object.fromEntries(Object.entries(block).filter(([k,v])=>safe(k)&&(v===null||typeof v==='boolean'||typeof v==='string'&&v.length<=2000||typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<=Number.MAX_SAFE_INTEGER)))]));
       s.clock = fixClock(JSON.parse(raw).clock);
       if(DEMO_MODE&&!s.modules.includes('switch.so'))s.modules.push('switch.so');
       return s;
@@ -79,9 +80,9 @@ export function loadSave(): Save {
 export const ownedModules = (s: Save) => [...(s.jump ? ['legs.so'] : []), ...s.modules];
 
 
-export function storeSave(s: Save) {
+export function storeSave(s: Save,prepare?:(save:Save)=>Save) {
   const total=perfBegin('save.total');
-  try {let span=perfBegin('save.stringify');let raw:string;try{raw=JSON.stringify(s);}finally{perfEnd(span);}
+  try {let span=perfBegin('save.stringify');let raw:string;try{raw=JSON.stringify(prepare?prepare(s):s);}finally{perfEnd(span);}
     span=perfBegin('save.write');try{gameStorage.setItem(SAVE_KEY,raw);}finally{perfEnd(span);}
   } catch { /* not persisted */ }finally{perfEnd(total);}
 }

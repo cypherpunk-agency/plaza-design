@@ -1,6 +1,5 @@
 import {renderGameplayText,type GameplayTextContext} from './text-template';
 import { GameplaySession } from './session';
-import {matches} from './validation';
 import type { ConversationNode,ConversationChoice, GameplayResult,GameplayState } from './types';
 export interface ConversationFrame extends Omit<ConversationNode,'choices'>{acceptsText?:true;choices?:(ConversationChoice&{echo?:false})[]}
 /** Frames/closing are pure. Explicit onEnter runs once per actual entry, atomically with a choice. */
@@ -15,12 +14,12 @@ export class ConversationSession {
     if(!Object.prototype.hasOwnProperty.call(conversations,id))throw new Error('Unknown conversation '+id);
     this.definition=conversations[id];this.node=this.resolve(this.definition.entry.find(entry=>gameplay.matches(entry.when))!.node);const entry=this.definition.nodes[this.node];if(entry.onEnter&&!gameplay.dispatch(entry.onEnter,'conversation').ok){if(!entry.onEnterFailure)throw new Error('Conversation entry command refused');this.node=entry.onEnterFailure;}
   }
-  private resolve(id:string,state?:GameplayState):string{const seen=new Set<string>();for(let i=0;i<32;i++){if(seen.has(id))throw new Error('Conversation redirect cycle');seen.add(id);const next=this.definition.nodes[id].redirect?.find(r=>state?matches(r.when,state):this.gameplay.matches(r.when));if(!next)return id;id=next.node;}throw new Error('Conversation redirect budget');}
+  private resolve(id:string,state?:GameplayState):string{const seen=new Set<string>();for(let i=0;i<32;i++){if(seen.has(id))throw new Error('Conversation redirect cycle');seen.add(id);const next=this.definition.nodes[id].redirect?.find(r=>state?this.gameplay.matchesState(r.when,state):this.gameplay.matches(r.when));if(!next)return id;id=next.node;}throw new Error('Conversation redirect budget');}
   frame():ConversationFrame{
     if(this.closed)throw new Error('Conversation closed');
     const node=this.definition.nodes[this.node];
     if(this.freeMiss){const free=this.definition.free!;return{speaker:node.speaker,pages:[free.miss],choices:[{id:'free-input-retry',label:free.retry,next:free.retryNext,echo:false}]};}
-    return{speaker:node.speaker,pages:node.template?renderGameplayText(node.pages,this.gameplay.state(),this.context):[...node.pages],...(node.template?{template:true as const}:{}),...(node.completion?{completion:{...node.completion}}:{}),choices:node.choices?.filter(choice=>this.gameplay.matches(choice.when)).map(choice=>({...choice})),...(this.definition.free&&node.choices?{acceptsText:true as const}:{})};
+    return{speaker:node.speaker,pages:node.template?renderGameplayText(node.pages,this.gameplay.state(),this.context,this.gameplay.queryContext()):[...node.pages],...(node.template?{template:true as const}:{}),...(node.completion?{completion:{...node.completion}}:{}),choices:node.choices?.filter(choice=>this.gameplay.matches(choice.when)).map(choice=>({...choice})),...(this.definition.free&&node.choices?{acceptsText:true as const}:{})};
   }
   choose(id:string):GameplayResult{
     if(this.closed)return{ok:false,reason:'disposed'};

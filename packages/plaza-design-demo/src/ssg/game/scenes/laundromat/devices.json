@@ -1,15 +1,6 @@
 {
   "id": "laundromat",
   "name": "the laundromat",
-  "state": {
-    "w1": "idle",
-    "w2": "idle",
-    "w3": "idle",
-    "w4": "idle",
-    "breaker": "on",
-    "trips": 0,
-    "jacket": false
-  },
   "tuning": {
     "cycleMs": 5000,
     "resetMs": 3000,
@@ -360,7 +351,7 @@
       ],
       "status": [
         {
-          "if": "door3=locked",
+          "if": "laundromat.door3=locked",
           "then": "door locked · 1 cycle left · 1 jacket (prepaid)"
         },
         {
@@ -368,15 +359,15 @@
           "then": " · WASHING"
         },
         {
-          "if": "door3=held",
-          "then": "cycle complete · door held · {waiting} waiting"
+          "if": "laundromat.door3=held",
+          "then": "cycle complete · door held · {laundromat.waiting} waiting"
         },
         {
-          "if": "door3=open",
+          "if": "laundromat.door3=open",
           "then": "DOOR OPEN · 1 jacket"
         },
         {
-          "if": "door3=empty",
+          "if": "laundromat.door3=empty",
           "then": "door open · empty"
         }
       ],
@@ -448,7 +439,7 @@
           "on": {
             "open": [
               {
-                "if": "door3=empty",
+                "if": "laundromat.door3=empty",
                 "say": [
                   "open door",
                   "empty. it smells of fabric conditioner and solder.",
@@ -456,7 +447,7 @@
                 ]
               },
               {
-                "if": "door3=open",
+                "if": "laundromat.door3=open",
                 "do": [
                   {
                     "effect": "washer.take"
@@ -464,10 +455,10 @@
                 ]
               },
               {
-                "if": "door3=held",
+                "if": "laundromat.door3=held",
                 "say": [
                   "open door",
-                  "door held. house rule 4: doors open when the queue is clear. {waiting} still waiting.",
+                  "door held. house rule 4: doors open when the queue is clear. {laundromat.waiting} still waiting.",
                   "err"
                 ]
               },
@@ -618,7 +609,7 @@
       "status": [
         {
           "if": "breaker=on",
-          "then": "ON · {running} of 2 running"
+          "then": "ON · {laundromat.running} of 2 running"
         },
         {
           "if": "breaker=tripped",
@@ -655,7 +646,7 @@
             "read": {
               "say": [
                 "cat load",
-                "BREAKER · CIRCUIT 1 · {running} of 2 running. above 2 it trips and stops every washer. trips today: {trips}."
+                "BREAKER · CIRCUIT 1 · {laundromat.running} of 2 running. above 2 it trips and stops every washer. trips today: {trips}."
               ]
             },
             "reset": [
@@ -663,7 +654,7 @@
                 "if": "breaker=on",
                 "say": [
                   "use load --reset",
-                  "BREAKER: already on. {running} of 2 running.",
+                  "BREAKER: already on. {laundromat.running} of 2 running.",
                   "dim"
                 ]
               },
@@ -703,11 +694,11 @@
       ],
       "status": [
         {
-          "if": "waiting",
-          "then": "QUEUE: {waiting} WAITING"
+          "if": "laundromat.waiting",
+          "then": "QUEUE: {laundromat.waiting} WAITING"
         },
         {
-          "if": "!waiting",
+          "if": "!laundromat.waiting",
           "then": "QUEUE CLEAR"
         }
       ],
@@ -908,11 +899,6 @@
       "",
       "BREAKER: {n} machines on circuit 1. tripped. every washer stopped.",
       "err"
-    ],
-    "breaker.auto": [
-      "",
-      "BREAKER: reset. 0 of 2 running.",
-      "dim"
     ],
     "jacket.take": [
       "open door",

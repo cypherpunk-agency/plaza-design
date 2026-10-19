@@ -2,9 +2,10 @@
 
 Counter count, stamp, coffee brew, chip insertion and till payment now execute through
 `scenes/sandbox/gameplay.json`: shared commands own increments, item consumption, token
-charges, conditions and responses. `native.state` maps directly to the existing native
-save keys `count`, `stamped`, `cups`, `chips` and `paid`. There is no second persisted
-counter owner. The five old effect bodies, their device `on` routes and their seven
+charges, conditions and responses. Qualified `sandbox.*` declarations own the
+scalar defaults; `Save.gameplay.sandbox` is the common live/persisted block shared
+by native model reads and command drafts. Device sources and engine scene saves
+do not duplicate these scalars. The five old effect bodies, their device `on` routes and their seven
 duplicate response texts have been deleted.
 
 Two small shared binding capabilities preserve presentation:
@@ -23,7 +24,8 @@ Event renaming also updates presentation bindings. Source and prospective native
 validation reject unknown template fields, pulse events, targets and unsupported kinds.
 
 Numeric declarations may explicitly use safe-integer minimum/maximum bounds. Action
-increments, token/item quantities and dispatch budgets retain their existing limits.
+state increments follow declaration bounds and finite/integer semantics; token/item
+quantities and dispatch budgets retain their separate limits.
 This preserves negative and greater-than-one-million native counters without clamping
 or resetting them. Boundary: the historical native effect accepts injected fractional,
 nonfinite and unsafe numeric counters; the shared numeric state contract rejects those.
@@ -31,7 +33,7 @@ Shipping defaults and increment-only paths produce integers. This migration does
 claim compatibility for manually altered fractional/nonfinite/unsafe counters, or an
 increment beyond `Number.MAX_SAFE_INTEGER`.
 
-`check-sandbox-ordinary.mts` compares 109 real model/session cases against immutable
+The historical `check-sandbox-ordinary.mts` run captured 109 model/session cases against immutable
 original code: both manual and signal execution, resource success/refusal, repeated
 actions, replies, native saves, pulse timestamps/fades/pause and reset/reload. It also
 checks numeric boundaries, unchanged transaction limits, source validation, removed
@@ -40,5 +42,7 @@ Sandbox composition/content checks remain in place; only these five intentional
 source-layout changes are excluded from structural equality, with runtime parity
 checked separately against the original implementation.
 
-Still outstanding: Sandbox's daylight/weather reactions remain ordinary native rules.
-Other `sbx.pulse` callbacks remain cosmetic adapters for unmigrated device actions.
+Sandbox daylight/weather reactions now use source-owned live condition triggers;
+see `scenes/sandbox/LIVE-CONDITIONS-MIGRATION.md`. Other `sbx.pulse` callbacks
+remain cosmetic adapters. Current state source/editor/Save evidence is in
+`check-scene-state-source.mts` and `check-scene-state-source-save.mts`.

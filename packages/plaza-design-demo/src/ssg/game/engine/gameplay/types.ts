@@ -1,14 +1,18 @@
+import type {NativeLiveCondition} from './native-live-conditions';
+import type {QueryDefinition,ScalarRead} from './queries';
 import type {TimeWindow} from '../../data/types';
 import type {WeatherKind} from '../../world/weather';
 /** Shared gameplay contracts. Documents describe operations; they never contain executable code. */
 export type Source = 'interaction' | 'conversation' | 'signal' | 'system';
-export type StateValue=boolean|number|string;
-export interface StateDeclaration {owner:string;lifetime:'save'|'session'|'interaction';type:'boolean'|'number'|'enum'|'string';maxLength?:number;default:StateValue;min?:number;max?:number;options?:string[]}
+export type StateValue=boolean|number|string|null;
+export type StateValues=Record<string,Record<string,StateValue>>;
+export interface StateDeclaration {owner:string;lifetime:'save'|'session'|'interaction';type:'boolean'|'number'|'enum'|'string';maxLength?:number;nullable?:boolean;integer?:boolean;default:StateValue;min?:number;max?:number;options?:string[]}
 export interface PurchaseDefinition {service?:true;basePrice:number;when?:Condition;goods?:{item:string;quantity:number}[];rotation?:{state:string;items:string[]};stock?:string;modifiers?:{id:string;when?:Condition;amount:number;scope:'both'|'quote'|'charge'}[]}
 export interface GameplayPlayerContext {readonly handle:string;readonly jump:boolean;readonly controlled:readonly string[];readonly keyring:readonly string[]}
 export type PlayerCondition={field:'handle';is:string}|{field:'jump';is:boolean}|{collection:'controlled'|'keyring';contains?:string};
-export interface GameplayState { player?:Readonly<GameplayPlayerContext>;objective?:string; world?:Readonly<{day:number;minute:number;weather:WeatherKind}>; values?:Record<string,StateValue>;flags: Record<string, boolean>; items: Record<string, number>; tokens: number }
+export interface GameplayState { player?:Readonly<GameplayPlayerContext>;objective?:string; world?:Readonly<{day:number;minute:number;weather:WeatherKind}>; values?:StateValues;flags: Record<string, boolean>; items: Record<string, number>; tokens: number }
 export type Condition =
+  | {compare:{left:ScalarRead;op:'eq'|'ne'|'lt'|'lte'|'gt'|'gte';right:ScalarRead}}
   | {player:PlayerCondition}
   | {objective:string}
   | { time:TimeWindow }
@@ -47,6 +51,8 @@ export interface GameplayDefinition {
   /** Committed events request existing cinematics and scene-clock system commands. */
   handoffs?:{event:string;cutscene?:string;after?:{ms:number;command:string}[]}[];
   state?:Record<string,StateDeclaration>;
+  /** Pure reads derived from the current draft and its source; never persisted. */
+  queries?:Record<string,QueryDefinition>;
   purchases?:Record<string,PurchaseDefinition>;
   flags: string[];
   items: string[];
@@ -59,13 +65,13 @@ export interface GameplayDefinition {
 export interface NativeBindings {
   /** Read-only live truthiness; never persisted as a second flag. */
   reads?:Record<string,string>;
-  state:Record<string,string>;
   verbs:{device:string;noun:string;verb:string;denied?:[string,string,('ok'|'err'|'dim')?];cases:{when?:Condition;sources?:('interaction'|'signal')[];command:string;template?:true;say:[string,string,('ok'|'err'|'dim')?]|null}[]}[];
   events:Record<string,string>;
   goals:Record<string,string>;
   /** Committed cosmetic stamps on the native scene clock; never saved gameplay state. */
   presentation?:Record<string,{kind:'pulse';target:string}>;
   /** Ordinary workflows consume the existing live scene tick, never a second scheduler. */
+  triggers?:Record<string,NativeLiveCondition>;
   intervals?:Record<string,{kind:'liveInterval';elapsed:string;duration:{tuning:string};active:Condition;inactive:'hold'|'reset';resetOn?:string[];due:{when?:Condition;command:string}[]}>;
   /** Committed outcomes speak through the existing native device caption/history path. */
   replies?:Record<string,{from:string;say:[string,string,('ok'|'err'|'dim')?];template?:true}>;

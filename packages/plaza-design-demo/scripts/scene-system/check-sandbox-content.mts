@@ -24,7 +24,7 @@ for(const actor of scene.people!.filter(p=>p.conversation)){const original=old.p
 for(const weather of ['clear','rain','storm'] as const)for(const minute of [240,720,1200]){
  const state:GameplayState={flags:{},items:{},tokens:0,world:{day:1,minute,weather}},session=new GameplaySession(scene.gameplay!,{read:()=>state,write:s=>Object.assign(state,s)}),tech=old.people.find((p:any)=>p.id==='tech');
  const variant=tech.lines.find((l:any)=>(!l.weather||l.weather.includes(weather))&&(!l.when||inWindow(l.when,1,minute)));
- const talk=new ConversationSession(session,'talk.sandbox.tech');assert.deepEqual(talk.frame().pages,variant?.pages??tech.talk[0]);talk.close();assert.equal(Number(session.state().values?.['talk.sandbox.tech.cursor']??0),variant?0:1);
+ const talk=new ConversationSession(session,'talk.sandbox.tech');assert.deepEqual(talk.frame().pages,variant?.pages??tech.talk[0]);talk.close();assert.equal(Number(session.state().values?.['talk.sandbox.tech']?.cursor??0),variant?0:1);
 }
 function resetRun(def:typeof scene){const lines:unknown[]=[],inventory={blankchip:3},m=new SceneModel({say:l=>lines.push(l),changed:()=>{},open:()=>{},carry:(id,n)=>inventory[id as 'blankchip']+=n},def.data!,def.rules as any);let leaked=false;m.set('lampOn',true);m.goal('first');m.cut(m.links[0]);m.later(200,()=>{leaked=true;});const targets=def.targets!(m);def.use!('reset',m,l=>lines.push(l));m.tick(300);return {targets,lines,save:m.snapshot(),inventory,leaked,pending:m.inspect().time.pending};}
 const clockDescriptor=Object.getOwnPropertyDescriptor(performance,'now');Object.defineProperty(performance,'now',{configurable:true,value:()=>1000});

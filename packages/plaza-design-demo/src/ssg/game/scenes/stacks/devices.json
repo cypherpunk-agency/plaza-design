@@ -1,15 +1,6 @@
 {
   "id": "stacks",
   "name": "the stacks",
-  "state": {
-    "found": false,
-    "box": "B-6",
-    "boxAt": "stack",
-    "alarms": 0,
-    "loaded": 0,
-    "talked": false,
-    "departed": false
-  },
   "tuning": {
     "tamperTrace": 30
   },
@@ -614,7 +605,10 @@
         "h": 16,
         "label": "CSQU 161 8033"
       }
-    ]
+    ],
+    "actions": {
+      "tagOwned": "stacks.camera.discover"
+    }
   },
   "dialogue": {},
   "goals": [
@@ -723,6 +717,11 @@
       "tag",
       "slot {id} tagged: NRLU 404 0451. STS-2 takes it on the next clearance.",
       "ok"
+    ],
+    "scope.tag.refused": [
+      "tag",
+      "TAG REFUSED: {reason}.",
+      "err"
     ],
     "scope.tag.done": [
       "tag",

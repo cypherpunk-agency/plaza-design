@@ -19,7 +19,7 @@ import {readObservation} from './native-observations';
 
 import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from "../data/index";
 import type {
-  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, MachineData, NetData, NetworkData, NounData, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave,
+  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, MachineData, NetData, NetworkData, NounData, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
 // [the net] networks and what you reach from where you are plugged in (NET.md)
@@ -235,7 +235,7 @@ export class SceneModel {
   /** Bumped by reset and restore: timers started before it never fire. */
   private epoch = 0;
 
-  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING) {
+  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>) {
     this.texts = { ...ENGINE.texts, ...data.texts };
     this.nets = net.networks ?? [];
     this.programList = net.programs ?? [];
@@ -244,7 +244,9 @@ export class SceneModel {
     this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
     this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
     this.clocks = new Clocks(() => this.now());
+    const initial={...ownedState};if(ownedState)this.state=ownedState;
     this.init();
+    for(const key of Object.keys(this.data.state))if(Object.prototype.hasOwnProperty.call(initial,key))this.state[key]=initial[key];
   }
 
   /** Back to how the scene file starts it: its own cables, no parts, no goals, nothing opened. */
@@ -257,7 +259,8 @@ export class SceneModel {
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
-    this.state = { ...this.data.state };
+    for(const key of Object.keys(this.state))delete this.state[key];
+    Object.assign(this.state,this.data.state);
     this.data.devices.forEach((d) => this.devices.set(d.id, this.build(d, d.id)));
     this.links = [];
     this.wire();
@@ -295,7 +298,7 @@ export class SceneModel {
 
   /** A scene state key (for effects and the scene). */
   get(key: string): Value { return this.state[key]; }
-  set(key: string, v: Value) { if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);this.state[key] = v; }
+  set(key: string, v: Value) { if(this.gameplayQueryIds?.has(key))throw Error('Gameplay query is read-only: '+key);if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);this.state[key] = v; }
   /** A state key, a derived value (`gateOpen`) or `signal`, as conditions read them. */
   value(key: string): Value | undefined { return this.read(key, this.ctx('')); }
   noun(key: string) { const [d, n] = split(key); return this.devices.get(d)?.nouns.find((x) => x.id === n); }
@@ -352,7 +355,12 @@ export class SceneModel {
   /** Scoped shared operation adapter; absent for unmigrated verbs. */
   gameplay?: (context:Ctx)=>{result:import('./gameplay/types').GameplayResult;line:Line|null}|undefined;
   gameplayEligibility?:(context:Ctx)=>import('./gameplay/types').GameplayResult|undefined;
+  gameplayQueryIds?:ReadonlySet<string>;
+  gameplayQuery?:(id:string)=>Value|undefined;
   gameplayTick?:(dt:number,cause:(run:()=>void)=>void)=>void;
+  /** Registered panel inputs dispatch ordinary shared commands; panels own only hit testing. */
+  gameplayCommand?:(id:string)=>import('./gameplay/types').GameplayResult;
+  runCommand(id:string):import('./gameplay/types').GameplayResult{return this.gameplayCommand?.(id)??{ok:false,reason:'unknown-command'};}
   /** Native committed device replies retain the existing receipt, caption and history owner. */
   reply(line:Line,from:string){return this.sayLine(line,from);}
   /** Pure reach/permission preflight. Signals intentionally bypass manual locks and sectors. */
@@ -1058,7 +1066,7 @@ export class SceneModel {
   // ---------- saving ----------
 
   /** The scene's progress for the save, settled: nothing in flight. Trace and lockouts stay (reloading is not a way out). */
-  snapshot(): SceneSave {
+  snapshot(): SceneSnapshot {
     const state: Record<string, Value> = {};
     for (const k of Object.keys(this.data.state)) state[k] = this.state[k];
     this.rules.settle?.(state);
@@ -1067,7 +1075,7 @@ export class SceneModel {
       const kind = d.id.replace(/\d+$/, ''), own = this.local.get(d.id), at = this.logicAt.get(d.id);
       return { id: d.id, kind, ...(own ? { state: { ...own } } : {}), ...(at ? { at: { x: at.x, h: at.h } } : {}) };
     });
-    const z: SceneSave = { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
+    const z: SceneSnapshot = { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
     const local = devs.filter((d) => !d.logic && this.local.has(d.id)).map((d) => [d.id, { ...this.local.get(d.id)! }]);
     if (local.length) z.local = Object.fromEntries(local);
     if (this.opened.size) z.open = [...this.opened];
@@ -1093,7 +1101,7 @@ export class SceneModel {
    * a part kind, a sector, a cable to a noun that is gone) is dropped, not trusted.
    * Placed parts come back even if their module is no longer owned.
    */
-  restore(s: SceneSave) {
+  restore(s: SceneSnapshot) {
     this.init();
     for (const [k, v] of Object.entries(s.state ?? {})) if (k in this.data.state) this.state[k] = v;
     this.rules.settle?.(this.state);
@@ -1313,6 +1321,7 @@ export class SceneModel {
     const own = this.local.get(c.dev);
     if (own && key in own) return own[key];
     if (key === 'signal') return c.bySignal;
+    const query=this.gameplayQuery?.(key);if(query!==undefined)return query;
     const derived = this.rules.derived?.[key];
     if (derived) return derived(this);
     const observed=Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key)?this.data.observations!.aliases[key]:undefined;
@@ -1327,6 +1336,7 @@ export class SceneModel {
   within(w?: TimeWindow) { return now(w); }
 
   private write(key: string, v: Value, dev = '') {
+    if(this.gameplayQueryIds?.has(key))throw Error('Gameplay query is read-only: '+key);
     if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);
     const own = this.local.get(dev);
     if (own && key in own) own[key] = v;

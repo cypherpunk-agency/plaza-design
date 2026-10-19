@@ -1,15 +1,6 @@
 {
   "id": "yard",
   "name": "back yard",
-  "state": {
-    "found": false,
-    "armAt": "home",
-    "held": null,
-    "parcel": "C-7",
-    "parcelAt": "C-7",
-    "gateAllowed": false,
-    "pan": 0
-  },
   "tuning": {
     "gateOpenMs": 1000,
     "slideMs": 2500,
@@ -374,7 +365,10 @@
         "h": 30,
         "label": "TO: YOU · FRAGILE"
       }
-    ]
+    ],
+    "actions": {
+      "inspectOwned": "yard.camera.discover"
+    }
   },
   "dialogue": {},
   "goals": [

@@ -229,13 +229,27 @@
       "lifetime": "save",
       "type": "boolean",
       "default": false
+    },
+    "capsule.sun": {
+      "owner": "capsule",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "capsule.pixelAt": {
+      "owner": "capsule",
+      "lifetime": "save",
+      "type": "string",
+      "default": "bed"
+    },
+    "capsule.rent": {
+      "owner": "capsule",
+      "lifetime": "save",
+      "type": "string",
+      "default": "pending"
     }
   },
   "native": {
-    "state": {
-      "capsule.doorOpen": "doorOpen",
-      "capsule.plugOn": "plugOn"
-    },
     "verbs": [
       {
         "device": "plug",

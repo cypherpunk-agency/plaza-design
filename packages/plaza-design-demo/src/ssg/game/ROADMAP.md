@@ -287,3 +287,18 @@ Beach billing/rental/danger workflows now use shared commands and typed live int
 uses common state/player facts/authored objectives, with its special adapter removed. Both builds,
 ENG04,current-save/context regressions and173raster comparisons PASS. This is an intermediate
 publication, not completion of remaining native state/controller migrations or final goal gates.
+
+Published checkpoint28888d6 is now on both main and production. Follow-through moves ordinary
+controller decisions into shared commands (Sandbox environmental reactions, Laundromat breaker
+reset and Yard/Stacks discovery have focused parity evidence) and removes the split state-owner
+bridge. Shared declarations will own scalar defaults/types; scene simulation and shared actions
+will use the same mutable state blocks. Normal current-format Save/load remains required; no
+historical save compatibility layer is planned. Complete the remaining workflows, full editor
+coverage and final source-bound acceptance before marking the all-game goal complete.
+
+The common state owner and shared state-source editor are now implemented across all19 scenes;
+alias maps and the temporary scalar store are removed. Laundromat read-only queries and opening
+phase rules are authored source. Both builds, focused behavior/persistence/editor checks, all19
+native Play startups and the173-case raster repeat pass at source2b006c0. See the execution status
+for scoped evidence and the retained first-run two-pixel map discrepancy. Next: washer deadlines/
+rewards, Capsule ordinary choices/edge/goal timing, remaining scene decisions and final acceptance.

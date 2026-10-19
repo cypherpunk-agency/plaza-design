@@ -11,7 +11,8 @@
     "tea"
   ],
   "events": [
-    "stacks.moth.recruited"
+    "stacks.moth.recruited",
+    "stacks.camera.found"
   ],
   "commands": {
     "stacks.pour": {
@@ -73,6 +74,20 @@
         {
           "state": "stacks.departed",
           "set": true
+        }
+      ]
+    },
+    "stacks.camera.discover": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "stacks.found",
+          "set": true
+        },
+        {
+          "emit": "stacks.camera.found"
         }
       ]
     }
@@ -385,14 +400,39 @@
         "ferry"
       ],
       "default": "stack"
+    },
+    "stacks.found": {
+      "owner": "stacks",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "stacks.box": {
+      "owner": "stacks",
+      "lifetime": "save",
+      "type": "string",
+      "default": "B-6"
+    },
+    "stacks.alarms": {
+      "owner": "stacks",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "stacks.loaded": {
+      "owner": "stacks",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
     }
   },
   "native": {
-    "state": {
-      "stacks.talked": "talked",
-      "stacks.departed": "departed",
-      "stacks.boxAt": "boxAt"
-    },
     "reads": {
       "stacks:alarms": "alarms",
       "stacks:spratFed": "spratFed"
@@ -400,7 +440,8 @@
     "verbs": [],
     "events": {},
     "goals": {
-      "stacks.moth.recruited": "moth"
+      "stacks.moth.recruited": "moth",
+      "stacks.camera.found": "find"
     }
   },
   "handoffs": [

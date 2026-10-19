@@ -26,6 +26,8 @@ import { readSlot, resumeInto, SLOT_COUNT, slotLine, writeSlot } from "../runtim
 export interface MenuHooks {
   /** The current save, settled and written (the menu copies it into a slot). */
   save(): Save;
+  /** Settled persistence copy, without changing the live save used by the menu. */
+  saveSnapshot?():Save;
   /** Where the player is, for a slot: id to load into, name to show. */
   scene(): { id: string; name: string };
   /** NEW GAME, confirmed: the opening's glide, then a fresh save on the train home. */
@@ -370,7 +372,7 @@ export class Menu {
 
   private store(n: number) {
     const z = this.hooks.scene();
-    const ok = writeSlot(n, this.hooks.save(), z.id, z.name);
+    const ok = writeSlot(n, this.hooks.saveSnapshot?.()??this.hooks.save(), z.id, z.name);
     if (ok) sound.granted(); else sound.denied();
     this.slots('save', n - 1, ok ? ['SAVED TO SLOT ' + n + '.', 'ok'] : ['SAVE FAILED: THIS BROWSER BLOCKS STORAGE.', 'bad']);
   }

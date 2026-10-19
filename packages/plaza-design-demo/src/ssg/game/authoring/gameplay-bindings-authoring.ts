@@ -1,10 +1,12 @@
+import {renderGameplayQueriesAuthoring} from './gameplay-queries-authoring';
+import {renderStateDeclarationsAuthoring} from './state-declarations-authoring';
 import {renderNativeWorkflowAuthoring} from './native-workflows-authoring';
 import type {SceneData} from '../data/types';
-import type {GameplayDefinition,NativeBindings,StateDeclaration,Source} from '../engine/gameplay/types';
+import type {GameplayDefinition,NativeBindings,Source} from '../engine/gameplay/types';
 import {nativeVocabulary} from '../engine/gameplay/native-bindings';
 import {TypedForm} from './typed-form';
 export interface GameplayBindingControls {data?:SceneData;derived?:readonly string[];edit(label:string,change:(d:GameplayDefinition)=>void):void;section(parent:HTMLElement,title:string,collapsed?:boolean):HTMLElement;form:TypedForm;draft:Record<string,string>;refresh():void}
-const native=(d:GameplayDefinition):NativeBindings=>d.native??={state:{},verbs:[],events:{},goals:{}};
+const native=(d:GameplayDefinition):NativeBindings=>d.native??={verbs:[],events:{},goals:{}};
 const next=(ids:readonly string[],prefix:string)=>{let i=1;while(ids.includes(prefix+i))i++;return prefix+i;};
 /** Rename a declared shared ID and its typed references together, then let the source validator enforce native requirements. */
 export function renameGameplayVocabulary(d:GameplayDefinition,kind:'flags'|'items'|'events',before:string,after:string){
@@ -14,31 +16,15 @@ export function renameGameplayVocabulary(d:GameplayDefinition,kind:'flags'|'item
  for(const c of Object.values(d.conversations)){for(const entry of c.entry)condition(entry.when);for(const node of Object.values(c.nodes)){for(const redirect of node.redirect??[])condition(redirect.when);for(const choice of node.choices??[])condition(choice.when);}}
  for(const purchase of Object.values(d.purchases??{})){condition(purchase.when);for(const modifier of purchase.modifiers??[])condition(modifier.when);if(kind==='items'){for(const goods of purchase.goods??[])if(goods.item===before)goods.item=after;if(purchase.rotation)purchase.rotation.items=purchase.rotation.items.map(id=>id===before?after:id);}}
  if(d.native){for(const route of d.native.verbs)for(const c of route.cases)condition(c.when);for(const map of kind==='flags'?[d.native.reads]:kind==='events'?[d.native.events,d.native.goals,d.native.presentation,d.native.replies]:[]){if(map&&before in map){map[after]=map[before];delete map[before];}}}
+ if(d.native)for(const row of Object.values(d.native.triggers??{}))condition(row.when);
  if(d.native)for(const row of Object.values(d.native.intervals??{})){condition(row.active);for(const c of row.due)condition(c.when);if(kind==='events'&&row.resetOn)row.resetOn=row.resetOn.map(id=>id===before?after:id);}
+ for(const query of Object.values(d.queries??{})){if(query.kind==='count')query.conditions.forEach(condition);else if(query.kind==='select')query.cases.forEach(row=>condition(row.when));}
  if(kind==='events'){for(const r of d.reactions)if(r.event===before)r.event=after;for(const h of d.handoffs??[])if(h.event===before)h.event=after;}
 }
 /** Typed edits go through the exact source validator supplied to the real gameplay workbench. */
 export function renderGameplayBindingsAuthoring(parent:HTMLElement,doc:GameplayDefinition,ui:GameplayBindingControls){
  const{data,form,section,edit,draft}=ui;
- const scalar=(host:HTMLElement,name:string,d:StateDeclaration,change:(d:StateDeclaration)=>void)=>{
-  if(d.type==='boolean')form.check(host,name+' default',Boolean(d.default),v=>change({...d,default:v}));
-  else if(d.type==='number'){form.number(host,name+' default',Number(d.default),v=>change({...d,default:v}),d.min??-1000000,d.max??1000000);form.number(host,name+' minimum',d.min??-1000000,v=>change({...d,min:v}),Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER);form.number(host,name+' maximum',d.max??1000000,v=>change({...d,max:v}),Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER);}
-  else if(d.type==='string'){form.text(host,name+' default',String(d.default),v=>change({...d,default:v}));form.number(host,name+' maximum length',d.maxLength??2000,v=>change({...d,maxLength:v}),1,2000);}
-  else{form.text(host,name+' options',d.options!.join('\n'),v=>change({...d,options:v.split(/\r?\n/).map(v=>v.trim()).filter(Boolean)}),true);form.select(host,name+' default',d.options!,String(d.default),v=>change({...d,default:v}));}
- };
- const schema=section(parent,'State declarations',true);
- for(const[id,d]of Object.entries(doc.state??{})){
-  const box=section(schema,'State '+id,true),bound=doc.native?.state[id],name='State '+id;
-  if(bound){const note=document.createElement('p');note.textContent='Owned by device state '+bound+'. Default: '+JSON.stringify(data?.state[bound])+'. Edit the device state in Devices; this declaration does not own a second default.';box.append(note);form.button(box,'Unbind '+name,()=>edit('Unbind native state',g=>{delete g.native!.state[id];}));}
-  else{
-   form.select(box,name+' lifetime',['save','session','interaction'],d.lifetime,v=>edit('Edit state lifetime',g=>{g.state![id].lifetime=v as StateDeclaration['lifetime'];}));
-   form.select(box,name+' type',['boolean','number','enum','string'],d.type,v=>edit('Edit state type',g=>{g.state![id]={owner:d.owner,lifetime:d.lifetime,type:v as StateDeclaration['type'],default:v==='boolean'?false:v==='number'?0:v==='enum'?'value':'',...(v==='enum'?{options:['value']}:{} )};}));
-   scalar(box,name,d,value=>edit('Edit state declaration',g=>{g.state![id]=value;}));
-  }
-  form.button(box,'Remove '+name,()=>edit('Remove state declaration',g=>{delete g.state![id];if(g.native)delete g.native.state[id];}));
- }
- form.text(schema,'New state owner',draft.owner??'scene',v=>{draft.owner=v;});form.text(schema,'New state local ID',draft.state??'',v=>{draft.state=v;});
- form.button(schema,'Add shared state',()=>edit('Add shared state',g=>{const owner=draft.owner??'scene',id=owner+'.'+(draft.state??'');if(g.state?.[id])throw new Error('State already exists: '+id);g.state??={};g.state[id]={owner,type:'boolean',lifetime:'save',default:false};}));
+ renderStateDeclarationsAuthoring(parent,doc,ui);renderGameplayQueriesAuthoring(parent,doc,ui);
  const ids=section(parent,'Shared command and vocabulary IDs',true);
  for(const key of ['flags','items','events'] as const){const box=section(ids,key);for(const id of doc[key]){form.text(box,key+' '+id,id,value=>edit('Rename '+key,g=>{renameGameplayVocabulary(g,key,id,value);}));form.button(box,'Remove '+key+' '+id,()=>edit('Remove '+key,g=>{g[key]=g[key].filter(x=>x!==id);}));}form.text(box,'New '+key+' ID',draft[key]??'',v=>{draft[key]=v;});form.button(box,'Add '+key+' ID',()=>edit('Add '+key,g=>{g[key].push(draft[key]??'');}));}
  form.text(ids,'New command ID',draft.command??'',v=>{draft.command=v;});form.select(ids,'New command source',['interaction','conversation','signal','system'],draft.source??'interaction',v=>{draft.source=v;});
@@ -47,10 +33,6 @@ export function renderGameplayBindingsAuthoring(parent:HTMLElement,doc:GameplayD
  if(!data)return;
  const box=section(parent,'Native device bindings'),vocabulary=nativeVocabulary(data),events=vocabulary.flatMap(n=>n.events.map(e=>n.key+':'+e)),targets=vocabulary.filter(n=>n.verbs.length),routeNouns=[...data.devices,...data.nodes??[]].flatMap(d=>d.nouns.filter(n=>['ACT','SENSE','STORE'].includes(n.kind)&&n.verbs?.length).map(n=>({device:d.id,noun:n.id,key:d.id+'.'+n.id,verbs:n.verbs!})));
  if(!doc.native){form.button(box,'Enable shared device bridge',()=>edit('Enable shared device bridge',g=>{native(g);}));return;}
- const stateBox=section(box,'Native state bindings',true),stateKeys=Object.keys(data.state).filter(key=>['boolean','number','string'].includes(typeof data.state[key]));
- form.text(stateBox,'Mapped state owner',draft.mapOwner??'scene',v=>{draft.mapOwner=v;});form.text(stateBox,'Mapped state local ID',draft.mapState??'',v=>{draft.mapState=v;});form.select(stateBox,'Mapped native state key',['',...stateKeys],draft.mapKey??'',v=>{draft.mapKey=v;});
- form.button(stateBox,'Bind native state',()=>edit('Bind native state',g=>{const key=draft.mapKey??'',owner=draft.mapOwner??'scene',id=owner+'.'+(draft.mapState??''),value=data.state[key];if(!stateKeys.includes(key))throw new Error('Select a native state key');if(Object.values(native(g).state).includes(key))throw new Error('Native state already has a shared owner');if(g.state?.[id])throw new Error('State ID already exists');g.state??={};const type=typeof value as 'number'|'string'|'boolean';g.state[id]={owner,lifetime:'save',type,default:value as number|string|boolean};g.native!.state[id]=key;}));
- for(const[id,key]of Object.entries(doc.native.state)){const row=section(stateBox,'Binding '+id,true);form.select(row,'Binding '+id+' key',stateKeys,key,value=>edit('Rebind native state',g=>{const current=g.state![id],nativeValue=data.state[value];if(Object.entries(g.native!.state).some(([other,k])=>other!==id&&k===value))throw new Error('Native state already has a shared owner');g.native!.state[id]=value;g.state![id]={owner:current.owner,lifetime:'save',type:typeof nativeValue as 'number'|'string'|'boolean',default:nativeValue as number|string|boolean};}));}
  for(const kind of ['reads','events','goals']as const){const mapping=section(box,'Native '+kind,true),entries=doc.native[kind]??{},allowed=kind==='reads'?doc.flags:doc.events,values=kind==='reads'?Array.from(new Set([...Object.keys(data.state),...Object.keys(data.observations?.aliases??{}),...ui.derived??[],...Object.values(doc.native.reads??{})])):kind==='events'?events:data.goals.map(g=>g.id);
   for(const[id,value]of Object.entries(entries)){form.select(mapping,'Native '+kind+' '+id,values,value,next=>edit('Edit native '+kind,g=>{native(g)[kind]![id]=next;}));form.button(mapping,'Remove native '+kind+' '+id,()=>edit('Remove native '+kind,g=>{delete native(g)[kind]![id];}));}
   form.select(mapping,'New native '+kind+' ID',['',...allowed.filter(id=>!(id in entries))],draft[kind+'ID']??'',v=>{draft[kind+'ID']=v;});form.select(mapping,'New native '+kind+' target',['',...values],draft[kind+'Value']??'',v=>{draft[kind+'Value']=v;});form.button(mapping,'Add native '+kind,()=>edit('Add native '+kind,g=>{const id=draft[kind+'ID']??'',value=draft[kind+'Value']??'';if(!allowed.includes(id)||!values.includes(value))throw new Error('Select a declared ID and native target');native(g)[kind]??={};native(g)[kind]![id]=value;}));
