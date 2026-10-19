@@ -1,3 +1,4 @@
+import {stateRequirementProblems,type StateRequirement} from './state-requirements';
 import {controllerProblems} from '../engine/controllers';
 import {observationProblems,observationAliases} from '../engine/native-observations';
 /**
@@ -21,6 +22,8 @@ import { ITEMS } from '../scenes/kit';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
 export interface CodeContract {
+  /** Current registered primitive roles; ordinary source endpoints are not historical requirements. */
+  devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;kind?:Kind;events?:readonly string[]}[]}[];
   /** Verbs implemented by validated shared native routes, rather than legacy on steps. */
   nativeVerbs?: string[];
   /** Named effects implemented in code. */
@@ -28,7 +31,7 @@ export interface CodeContract {
   /** Panels the data may open. */
   panels: string[];
   /** State keys the code relies on: the scene's `state` must give each a starting value. */
-  state: string[];
+  state: readonly StateRequirement[];
   /** Read-only values the code computes, usable in conditions and templates. */
   derived: string[];
   /** Goal ids the code ticks itself. */
@@ -639,7 +642,8 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
   keys(z, 'scene', '');
 
   // ---------- state ----------
-  for (const k of code.state) if (!(k in z.state)) err('state', `missing "${k}" (the code needs a starting value)`);
+  for(const role of code.devices??[]){const d=[...z.devices,...(z.nodes??[])].find(d=>d.id===role.id);if(!d){err('devices',`missing primitive device "${role.id}"`);continue;}if(role.spot&&!d.layout?.spot)err('devices',`primitive device "${role.id}" needs world spot geometry`);for(const requirement of role.nouns??[]){const noun=d.nouns.find(n=>n.id===requirement.id);if(!noun||requirement.kind&&noun.kind!==requirement.kind)err('devices',`missing/changed primitive noun "${role.id}.${requirement.id}"`);for(const event of requirement.events??[])if(!noun?.events?.includes(event))err('devices',`missing primitive event "${role.id}.${requirement.id}:${event}"`);}}
+  for(const problem of stateRequirementProblems(code.state,z.state,z.id))err('state',problem);
   for (const k of code.derived) if (k in z.state) err('state', `"${k}" is computed by the code; it cannot be a state key too`);
 
   // ---------- texts (the engine's, overridable, and the scene's own) ----------

@@ -5,7 +5,7 @@ import {validateSceneCatalogue} from '../engine/gameplay/scene-catalogue';
 /** Native and newly authored routes share the same prospective destination identities. */
 function nativeDestinations(documents:ReadonlyMap<string,unknown>){
  return Object.fromEntries(Object.entries(NATIVE_SCENES).map(([id,scene])=>{
-  const entry=gameplayScenes.find(s=>s.id===id),doc=entry?.validateScene(documents.get(entry.prefix+'-scene'),entry.validateGameplay(documents.get(entry.gameplayId)));
+  const entry=gameplayScenes.find(s=>s.id===id),doc=entry?.validateScene(documents.get(entry.prefix+'-scene'),entry.validateGameplay(documents.get(entry.gameplayId)),{phase:'structural'});
   return [id,(doc?.exits??scene.exits).map(e=>e.id)];
  }));
 }

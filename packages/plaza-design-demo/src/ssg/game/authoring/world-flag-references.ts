@@ -1,0 +1,13 @@
+import type {GameplayDefinition} from '../engine/gameplay/types';
+import {renameGameplayVocabulary} from './gameplay-bindings-authoring';
+/** The city references existing ordinary writable flags; it never owns their values. */
+export function sharedWorldFlags(scenes:Readonly<Record<string,{gameplay?:Pick<GameplayDefinition,'flags'|'native'>}>>){return new Set(Object.values(scenes).flatMap(scene=>(scene.gameplay?.flags??[]).filter(flag=>!Object.prototype.hasOwnProperty.call(scene.gameplay?.native?.reads??{},flag))));}
+/** One prospective edit renames source declarations and references, never a player's saved state. */
+export function renameWorldFlagDocuments(documents:ReadonlyMap<string,unknown>,before:string,after:string){
+ if(!/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(after)||['constructor','prototype','__proto__'].includes(after)||before===after)throw Error('Choose a different bounded flag ID');
+ const changes:{id:string;value:unknown}[]=[];let declarations=0;
+ function gameplay(value:unknown){const d=value as GameplayDefinition;if(d?.version!==1||!d.commands||!Array.isArray(d.flags)||!Array.isArray(d.items)||!Array.isArray(d.events))return;if(d.flags.includes(after))throw Error('Flag ID already exists: '+after);if(d.flags.includes(before)){if(Object.prototype.hasOwnProperty.call(d.native?.reads??{},before))throw Error('A world flag cannot rename a readonly native observation');renameGameplayVocabulary(d,'flags',before,after);declarations++;}}
+ function references(value:unknown){if(!value||typeof value!=='object')return;const row=value as Record<string,any>;for(const key of['flag','requires','sets','unlockFlag','whenFlag'])if(row[key]===before)row[key]=after;if(row.flags&&typeof row.flags==='object'&&!Array.isArray(row.flags)&&typeof row.flags[before]==='boolean'){if(Object.prototype.hasOwnProperty.call(row.flags,after))throw Error('Fixture flag ID already exists');row.flags[after]=row.flags[before];delete row.flags[before];}for(const child of Object.values(row))references(child);}
+ for(const[id,original]of documents){if(id.startsWith('authored.'))continue;const value=structuredClone(original)as any;gameplay(value);if(id==='authored-scenes')for(const entry of value.scenes??[])gameplay(entry.gameplay);references(value);if(id==='city-source'){if(value.HARBOR_FLAG!==before)throw Error('World flag reference changed during edit');value.HARBOR_FLAG=after;}if(JSON.stringify(value)!==JSON.stringify(original))changes.push({id,value});}
+ if(!declarations)throw Error('World flag has no shared source declaration');return changes;
+}

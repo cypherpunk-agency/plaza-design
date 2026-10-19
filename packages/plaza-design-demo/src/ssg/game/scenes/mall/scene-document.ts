@@ -2,13 +2,12 @@ import source from './scene.json';
 import gameplay from './gameplay.json';
 import {validateGameplay} from '../../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../../engine/gameplay/scene-document';
-import {inheritSceneDefaults} from '../../engine/gameplay/manifest-content';
 import {protectActorIdentity} from '../../engine/gameplay/actors';
 import type {GameplayDefinition} from '../../engine/gameplay/types';
 export const validateMallGameplay=(value:unknown)=>validateGameplay(value);
 export const MALL_GAMEPLAY=validateMallGameplay(gameplay);
 export const mallBindingGroups=['uses','readables','rests','exits'] as const;
-export const mallSource=(value:SceneDocument)=>inheritSceneDefaults(value,source as unknown as SceneDocument,mallBindingGroups);
+export const mallSource=(value:SceneDocument)=>structuredClone(value);
 export function validateMallScene(value:unknown,g:GameplayDefinition=MALL_GAMEPLAY){
  const doc=validateSceneDocument(mallSource(value as SceneDocument),g,{actors:true,manifest:true});
  if(doc.id!=='mall')throw new Error('Mall source identity must remain mall');

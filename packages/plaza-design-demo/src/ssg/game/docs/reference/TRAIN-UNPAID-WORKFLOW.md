@@ -34,9 +34,10 @@ including negative and fractional counters with safe increment results, retain
 original behavior. No numeric safety policy or save compatibility layer was
 introduced.
 
-This is a partial Train migration. Paid brake physics and paid wording, position
-and halt/resume reporting, door physical operations and the world-owned harbor
-flag remain native. No outcome interpreter or new physical simulation was added.
+This is a partial Train migration. Paid brake physics and paid wording and position reporting remain native.
+The subsequent live-source slice moved halt/resume replies and the ordinary
+harbor flag write into source; see `TRAIN-LIVE-SOURCE-WORKFLOWS.md`. Door physics
+remains native. No outcome interpreter or new physical simulation was added.
 
 `check-train-command-steps.mts` covers 840 immutable phase/halt/pass/count/manual
 and signal histories, pure eligibility, refusal ordering, invalid source

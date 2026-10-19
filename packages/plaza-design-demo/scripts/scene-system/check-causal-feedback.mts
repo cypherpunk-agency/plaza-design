@@ -1,3 +1,4 @@
+import {attachGameplayHandoffs} from '../../src/ssg/game/engine/gameplay/handoffs';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {Game} from '../../src/ssg/game/runtime/game';
 import {newSave} from '../../src/ssg/game/runtime/save';
@@ -27,7 +28,7 @@ function advance(ms:number){const end=clock+ms;for(;;){const entry=[...timers].f
 const history:{line:Line;receipt:FeedbackReceipt}[]=[],host:any={active:false,echo:false,def:{id:'causal'},schem:{note(){}},vision:{note(){}},locate:()=>null,print(){},store:{feedbackCue:sound.feedback}};
 host.say=(SceneHost.prototype as any).say;
 function hooks(){return{feedbackScope:'causal',say:(line:Line,from?:string,receipt?:FeedbackReceipt)=>{history.push({line,receipt:receipt!});host.say(line,from,receipt);},changed(){},open(){}};}
-function attach(m:SceneModel,save:any){const game:any=Object.create(Game.prototype);game.save=save;game.content={downtown:SCENES.downtown};game.hosts=new Map([['downtown',{model:m}]]);game.gameplaySessions=new Map();game.sceneDefinition=()=>SCENES.downtown;game.syncHud=()=>{};game.persistSave=()=>{};const session=game.gameplayFor('downtown',m);attachNativeGameplay(m,session);return session;}
+function attach(m:SceneModel,save:any,end:()=>void=()=>{}){const game:any=Object.create(Game.prototype);game.save=save;game.content={downtown:SCENES.downtown};game.hosts=new Map([['downtown',{model:m}]]);game.gameplaySessions=new Map();game.sceneDefinition=()=>SCENES.downtown;game.syncHud=()=>{};game.persistSave=()=>{};const session=game.gameplayFor('downtown',m);attachNativeGameplay(m,session);attachGameplayHandoffs(session,{schedule:(ms,run,canceled,detail)=>m.later(ms,run,detail,canceled),cutscene(){},presentation:end});return session;}
 try{
  sound.toggle();notes.length=0;
  const shared:Line=['','Same response.','ok'],data:SceneData={id:'causal',name:'Causal',state:{},tuning:{},cables:[],goals:[],texts:{},devices:[{id:'device',name:'DEVICE',look:'',nouns:[{id:'act',kind:'ACT',verbs:['go'],on:{go:{do:[{effect:'burst'}]}}}]}]};
@@ -55,7 +56,7 @@ try{
  function run(Model:any,makeRules:any){
   clock=0;const shared=Model===SceneModel,save:any=Object.assign(newSave(),{handle:'ghost',tokens:0}),events:unknown[]=[],checkpoints:unknown[]=[];
   const m=new Model({say:(line:Line,from?:string)=>events.push(['say',structuredClone(line),from]),changed(){},open(){}},shared?downtown:originalData,makeRules({save:()=>save,persist(){},nodes:()=>42,granted(){},end:()=>events.push(['end'])}),undefined,undefined,undefined,shared?(save.gameplay??={}).downtown??={}:undefined,shared?SCENES.downtown.gameplay:undefined);
-  const session=shared?attach(m,save):undefined,emit=m.emit.bind(m);m.emit=(id:string)=>{events.push(['emit',id,m.now()]);emit(id);};
+  const session=shared?attach(m,save,()=>events.push(['end'])):undefined,emit=m.emit.bind(m);m.emit=(id:string)=>{events.push(['emit',id,m.now()]);emit(id);};
   const capture=()=>checkpoints.push(structuredClone({save:{tokens:save.tokens,jump:save.jump,controlled:save.controlled,flags:save.flags},state:m.state,goals:[...m.goals],events}));
   m.guess('box','login','wrong');capture();m.guess('box','login','vrify');capture();
   m.act('box','legs.so','install');capture();

@@ -2,8 +2,12 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Latest published checkpoint: `ee8cc6a` on main and production; subsequent work below is unpublished.
+Latest published checkpoint: `ad90b79` on main and production; both production deployments succeeded.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
+Current local checkpoint B is integration-verified at source `0928013b951c`: both builds,
+173 zero-difference raster cases and all19 actual packaged-editor Play/Stop checks PASS.
+See docs/reference/ENGINE-CHECKPOINT-2026-10-19-B.md for the bounded evidence and remaining work.
+This does not promote the remaining whole-goal acceptance gates.
 
 Starting main: `31616f6d45adf2238ceccd9ca69f8a49e08450f3`, plus preserved pre-existing local work.
 Source baseline: `4d646c8add7a13b4687bd85fc5dae517376df47234666623351896bf974dc805`.
@@ -14,7 +18,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
-| G0 | IN PROGRESS | Immutable source inventory captured; exact producer/controller cases and pixel/outcome fixtures still required |
+| G0 | IN PROGRESS | Immutable451-file capture verified; original game-subtree dirty diff reconstructed with explicit historical timing limits. BASELINE-RECONCILIATION.md records recovered evidence; final inventory reconciliation remains open |
 | G1 | PASS | Retired producer/source routing audit and actual Game/Host/Panels/Schematic/history/causal checks; exact scope and source identity in docs/reference/COMMUNICATION-ACCEPTANCE.md |
 | G2 | PASS | Actual readable-clock, reduced-motion/covered-screen, bounded priority/cancellation/guidance and on/off-screen device checks; COMMUNICATION-ACCEPTANCE.md |
 | G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
@@ -2040,3 +2044,93 @@ Integrated checkpoint ready for publication,2026-10-19:
 - G1/G2/G3 now PASS from explicit source/callsite/corpus audit and focused actual-runtime tests;
   docs/reference/COMMUNICATION-ACCEPTANCE.md records exact scope. Starting inventory bookkeeping,
   full authoring/world/controller/lifecycle/preservation/removal and performance gates remain open.
+- Published as ad90b797a9ac67f7205e39dd9c40c0d237810be4 to main and production; both remote
+  SHAs verified. Production design39303802957 and homepage39303803148 deployments succeeded;
+  main homepage39303803044 succeeded. Publication is a checkpoint,not full goal completion.
+
+Next unpublished consolidation:
+- Downtown started/scan/door/completion/finale commands and END handoff are source-owned.115
+  immutable histories with200 sampled trajectory frames each PASS,including outward completion,
+  current-lock changes after the door sample and already-end no extra goal. Actual Game/Host END,
+  typed conditions/inputs/caption edits,paired Save/fresh shipping/Undo:1tboUF Registry evidence.
+- Stacks alarm/return/state/status text use source commands and select queries.288 histories and21
+  return timelines with101 frames each PASS; exact1900ms return and visible alarm timestamp retained.
+  Extra commit redraws are explicit (old597/current643 across288 histories). Source Save/Undo:
+  stacks-permission-save-MLxxpj. Lift-start,scan and watchdog/circuit/trace remain native.
+- Explicit native `{query:id}` tokens use the existing query reader and reject dangling references
+  in prospective text/status/captions. Unqualified legacy placeholders retain their semantics.
+- Train halt/resume/location wording and harbor flag now use source inputs/commands and labels;
+  188 immutable live histories,672 door and840 unpaid histories PASS. World-role renaming uses actual
+  declared flags; Play fixtures use actual pending flags/keys/programs,without old-name aliases.
+  Typed/grouped Save/pending/fresh shipping/Undo:train-live-save-xBgoWH. Paid response selection remains.
+- Interaction authoring adds outcome/carried-item CRUD/reorder,guarded rotation and purchase binding.
+  Typed pending runtime/quote/purchase,history/bundle/protected Save/fresh registry/Undo PASS:
+  interaction-crud-9qeVL6. Exit requirements now resolve pending Network metadata; actual Game access,
+  typed picker,new-scene contexts,fixture vocabulary,atomic rejection and paired Save/fresh import/
+  byteUndo PASS:pending-exit-keys-A0PjhW. Current catalogue check:run-CcvvJX; Network Save:run-XiUt29.
+- Full source-bound build/raster/editor integration for this new batch remains pending.
+
+Additional unpublished editor proofs,2026-10-19:
+- Native target metadata in Capsule,Beach,Sandbox,Moth,Yard now validates against actual pending
+  devices/gameplay/network at assembled-reference validation. Actual typed/runtime checks in all5,
+  paired16-document protected Save,bundle,fresh shipping import and byteUndo PASS:
+  native-target-context-save-eage0B. Target collection/route CRUD remains separate work.
+- Presentation cue collection add/remove and event/artwork rebinding use the registered scene's
+  readonly presentation vocabulary. Actual typed controls,committed Game event/native art reaction,
+  duplicate/missing target refusal,history/bundle/Save/fresh shipping/byteUndo PASS:
+  presentation-cue-crud-5Q7PHv. No new renderer or persistent cue owner.
+- Pending exit-key proof rerun after metadata integration PASS:pending-exit-keys-rLJmn1.
+  City typed controls,Opening source Save(run-vWnM76),Cinematic pending Save(run-QGT4v4) and
+  world/map19scene/17place/14invalid-reference/37open-callback checks PASS. Full G11 remains open;
+  City/Metro grouped Save currently expose a Yard dialogue-assembly regression in the next device
+  editing slice. Repair is assigned before integration; do not count those failed runs as evidence.
+
+Follow-up editor/runtime verification:
+- Yard dialogue assembly repaired from the actual shared conversation source,without weakening
+  validation. City source Save(run-Xn1tcT) and Metro source Save(run-QsiVgK) now PASS. Metro's old
+  fixture supplies an actual SceneModel for Train source labels instead of an empty object.
+- Native target CRUD is proved in all5 registered-capability scenes,including a completely blank
+  target collection,actual Host routing,typed conditional routes/steps and15-document Save/fresh
+  shipping imports/byteUndo:native-target-crud-save-phqjxa. Blank source exposed and removed the
+  obsolete Yard PARCEL export/Game startup historic reward repair; no compatibility replacement.
+- Beach/Yard endpoint editing:beach-yard-endpoint-crud-VAWkr2. Library ordinary device rebind/delete,
+  actual model/frame/action,network dangling-reference rejection and Save/fresh shipping/byteUndo:
+  library-endpoint-crud-9nhnuv. Its original puzzle reward layout is content,not a native permission.
+- Train endpoint editing:train-endpoint-crud-7W4fU2. Only the actual native position/brake roles and
+  emitted tunnel/siding/stopped events are intrinsically required; the old geometry marker and
+  ordinary nouns are editable. Actual bound-world geometry,typed controls,Save/fresh shipping/Undo
+  PASS. Existing Library geometry/content and general19-device-source checks PASS.
+- Shared transactional wire/trace actions and Stacks repair use the existing canonical Model owners,
+  one ephemeral per-dispatch draft and the existing commit interpreter. Rollback,eligibility,staged
+  reads/locks,currentSave/reload and typed ordinary-catalogue Save/fresh import/Undo PASS:
+  scene-domains-save-bD4ELU. Stacks480 watchdog histories and source action edits:
+  stacks-permission-save-9e3YN1. Full integrated preservation for this batch remains pending.
+- All10 former native device-floor inventories are now declared; central historic ID/noun/state
+  floors and ID-filtered geometry are removed. The unused device-contracts JSON/capture generator
+  are deleted. General19 source checks prove native spot projection does not overwrite authored
+  device content. Default10 schema/projection/original-cable checks PASS after replacing their
+  obsolete "first original node is always mandatory" assertion with actual primitive requirements.
+  Capsule/Sandbox final endpoint/rebound Save proofs:lepyU3 andwJ63aU. Stacks final proof:TriYhO,
+  including renamed circuit alarm reaching the actual native flash. Full G10 remains open.
+- check-session-commit-disposal.mts first reproduced stale notifications after synchronous disposal.
+  Session notification delivery now respects disposal and immediate unsubscription; handoffs cannot
+  schedule new delayed work after their takeover disposes the owner.20 repeated cases,grants/domain
+  notices,committed-state retention and afterCommit disposal PASS. Existing100-cycle shared handoff
+  and domain atomicity checks PASS. This is focused G5 progress,not complete lifecycle acceptance.
+- Read-only G11 audit found one concrete remaining ownership gap: map admission/gate paint still
+  used flags.end after the corresponding authored exit requirement changed. The pending-world fix
+  is in progress; world/story acceptance must not be signed from startup-only evidence.
+- Map access now uses authored City policies referencing actual scene exits. Game/preview resolve
+  normal flags and keys through the same access helpers; quick travel and gate paint use the same
+  policy. Focused typed/runtime/renderer/bundle/Save/fresh/Undo proof:world-access-policy-yOnbB3.
+  Original City access/knowledge/map-action checks PASS. Final G11 source-bound signoff is pending.
+- Fully editable native contracts no longer require all historical vocabulary,state declarations,
+  command permissions or fixed source cables. Actual registered scalar inputs and current graph
+  references remain strict. Library renewal state/read/status/action/conversation replacement,
+  typed permission checks and source Save/fresh/Undo PASS:editable-native-contract-L25yhP.
+  Remaining scene-specific purchase/conversation/HarborShift floors are explicitly still open.
+- Obsolete source default inheritance is removed. Optional actor reaction/appearance overrides,
+  companion and environment settings stay removed; incomplete manifests/actors reject. Typed
+  controls and actual native/sourceSave/fresh import/Undo:source-removal-SeWPuh. Default17 bot
+  identities/reorder progress and native Library actor Save(run-ELXSim) PASS. This changes explicit
+  source editing behavior; default shipping scene documents retain their original identities.

@@ -18,7 +18,6 @@
 
 import * as defaultCity from '../../world/city';
 import type {CityModel} from '../../world/city';
-import type { SceneData } from "../../data/types";
 import type { Effect, SceneRules, World } from "../../engine/rules";
 import * as defaultMetro from '../../world/transport/line';
 import type {LineSystem} from '../../world/transport/line';
@@ -27,19 +26,19 @@ import type {LineSystem} from '../../world/transport/line';
 export const PASS = 'maglev.pass';
 
 export function createTrainRules(metro:LineSystem=defaultMetro,city:CityModel=defaultCity):SceneRules {
- const {HARBOR_FLAG,LINE,STATIONS}=city;
+ const {LINE,STATIONS}=city;
  const {between,BRAKE,brakeRide,LOOP,ride,rideAtSiding,rideDoors,rideNext,rideStop,rideStopsAt,SEG,sidingAlong,TUNNEL_IN}=metro;
-/** Where along the loop a stop happened, in words for the halt line. */
-function whereWords(pos: number): string {
+/** Physical region only; wording belongs to source labels. */
+function region(pos: number): string {
   // the stretches train.ts lays along the loop (a district reaches 900 either side of its stop)
   const u = ((pos % LOOP) + LOOP) % LOOP;
-  if (u >= TUNNEL_IN && u < 2 * SEG - TUNNEL_IN) return 'in the tunnel under the mall';
-  if (u >= SEG + 900 && u < 2 * SEG - 900) return 'on the bridge, over black water';
-  if (u >= 2 * SEG - 900 && u < 2 * SEG + 900) return 'among the containers';
-  if (u >= 2 * SEG + 900 && u < 3 * SEG - 900) return 'between two towers';
-  if (u >= 900 && u < SEG - 900) return 'on the viaduct, over the roofs';
-  if (u >= SEG - 900 && u < SEG + 900) return 'by the mall\'s glass front';
-  return 'over Downtown\'s streets';
+  if (u >= TUNNEL_IN && u < 2 * SEG - TUNNEL_IN) return 'tunnel';
+  if (u >= SEG + 900 && u < 2 * SEG - 900) return 'bridge';
+  if (u >= 2 * SEG - 900 && u < 2 * SEG + 900) return 'containers';
+  if (u >= 2 * SEG + 900 && u < 3 * SEG - 900) return 'towers';
+  if (u >= 900 && u < SEG - 900) return 'viaduct';
+  if (u >= SEG - 900 && u < SEG + 900) return 'mall';
+  return 'downtown';
 }
 
 /** Phases as numbers, for the tick to notice a change (scratch holds numbers only). */
@@ -49,24 +48,16 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
 
 
   const effects: Record<string, Effect> = {
-    'train.position': (w) => {
-      const km = (ride.pos / 1000).toFixed(1);
-      if (!between()) return w.line('pos.station', { stop: STATIONS[rideStop()].name, doors: ride.open > 0.5 ? 'open' : 'shut' });
-      const vars = { from: STATIONS[rideStop()].name, to: STATIONS[rideNext()].name, km };
-      return w.line(ride.phase === 'halted' ? 'pos.halted' : 'pos.between', vars);
-    },
     'train.brake': (w) => {
       const r = brakeRide();
-      if (r === 'standing') return w.line('brake.standing');
-      if (r === 'braking') return w.line('brake.already');
-      w.changed();
-      return w.line('brake.pulled');
+      // The physical operation owns acceptance and its redraw. Source cases own replies.
+      if (r === 'track' || r === 'siding') w.changed();
     },
     // Permission cases, goal and reply belong to the shared source evaluator.
-    // This remaining operation owns only physical transport and the editable city flag.
+    // Physical opening reports a milestone; the shared command owns the city flag.
     'train.doors': (w) => {
       rideDoors(true);
-      w.m.flag(HARBOR_FLAG);
+      w.input('train.doors.opened');
     },
     'train.lock': () => { rideDoors(false); },
   };
@@ -83,42 +74,47 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
     const ph = PH[ride.phase], was = s.phase;
     if (was === PH.braking && ph === PH.halted) {
       m.emit('train.brake:stopped');
-      w.say(ride.halt === 'siding' ? w.line('halt.siding') : w.line('halt.track', { where: whereWords(ride.pos) }), 'train');
+      w.input('train.halted');
       w.changed();
-    } else if (was === PH.halted && (ph === PH.resuming || ph === PH.running)) { w.say(w.line('resume'), 'train'); w.changed(); }
+    } else if (was === PH.halted && (ph === PH.resuming || ph === PH.running)) { w.input('train.resumed'); w.changed(); }
     if (was !== ph) w.changed();
     s.phase = ph;
   }
 
   return {
     effects,
+    inputs:['train.halted','train.resumed','train.doors.opened'],
     tick,
     derived: {
       /** Physical observations; permissions remain editable native source cases. */
       trainBetween: () => between(),
+      trainAtStation: () => !between(),
+      trainStopName: () => STATIONS[rideStop()].name,
+      trainNextName: () => STATIONS[rideNext()].name,
+      trainKilometres: () => (ride.pos / 1000).toFixed(1),
+      trainDoorsOpen: () => ride.open > 0.5,
+      trainStanding: () => ride.phase !== 'running' && ride.phase !== 'resuming' && ride.phase !== 'braking',
+      trainBraking: () => ride.phase === 'braking',
+      trainCanBrake: () => ride.phase === 'running' || ride.phase === 'resuming',
       trainHalted: () => ride.phase === 'halted',
       trainAtSiding: () => rideAtSiding(),
+      trainHaltSiding: () => ride.halt === 'siding',
+      haltWhere: m => m.label('halt.where.'+region(ride.pos)),
       /** The status line: where the train is. */
-      where: () => rideAtSiding() ? 'STOPPED · NOT A STATION'
-        : ride.phase === 'halted' ? 'EMERGENCY STOP'
-        : between() ? 'NEXT: ' + STATIONS[LINE[ride.to]].name
-        : 'AT ' + STATIONS[rideStop()].name,
+      where: m => rideAtSiding() ? m.label('status.siding')
+        : ride.phase === 'halted' ? m.label('status.halted')
+        : between() ? m.label('status.next',{stop:STATIONS[LINE[ride.to]].name})
+        : m.label('status.station',{stop:STATIONS[rideStop()].name}),
     },
     needs: {
+      devices:[{id:'train',nouns:[{id:'position',kind:'SENSE',events:['tunnel','harbor siding']},{id:'brake',kind:'ACT',events:['stopped']}]}],
       texts: {
-        'pos.station': 'line', 'pos.between': 'line', 'pos.halted': 'line',
-        'brake.standing': 'line', 'brake.already': 'line', 'brake.pulled': 'line',
-        'halt.track': 'line', 'halt.siding': 'line', 'resume': 'line',
+        'halt.where.tunnel':'label','halt.where.bridge':'label','halt.where.containers':'label','halt.where.towers':'label',
+        'halt.where.viaduct':'label','halt.where.mall':'label','halt.where.downtown':'label',
+        'status.siding':'label','status.halted':'label','status.next':'label','status.station':'label',
       },
     },
-    /** Controller dependencies: the siding and stopped events. Default cables are authored. */
-    check: (z: SceneData) => {
-      const errs: string[] = [];
-      const t = z.devices.find((d) => d.id === 'train'), noun = (id: string) => t?.nouns.find((n) => n.id === id);
-      if (!noun('position')?.events?.includes('harbor siding')) errs.push('devices[train] › position: needs the event "harbor siding" (P14)');
-      if (!noun('brake')?.events?.includes('stopped')) errs.push('devices[train] › brake: needs the event "stopped" (P14)');
-      return errs;
-    },
+
   };
 }
 

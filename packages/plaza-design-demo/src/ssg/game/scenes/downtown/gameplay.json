@@ -5,7 +5,9 @@
     "metFixer",
     "greeted",
     "gloves",
-    "till"
+    "till",
+    "downtown.dlv.through",
+    "downtown.dlv.inside"
   ],
   "items": [],
   "events": [
@@ -20,7 +22,13 @@
     "downtown.billboard.ad.next",
     "downtown.billboard.trended",
     "downtown.box.peer",
-    "downtown.sign.test"
+    "downtown.sign.test",
+    "downtown.dlv.scanned",
+    "downtown.dlv.passed",
+    "downtown.dlv.bonk",
+    "downtown.dlv.finished",
+    "downtown.end.present",
+    "downtown.dlv.passed.reply"
   ],
   "commands": {
     "downtown.fixer.first": {
@@ -1938,6 +1946,104 @@
           }
         }
       ]
+    },
+    "downtown.dlv.started": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.dlvFrom",
+          "set": {
+            "state": "downtown.dlvAt"
+          }
+        },
+        {
+          "state": "downtown.dlvAt",
+          "set": "driving"
+        }
+      ]
+    },
+    "downtown.dlv.scanned": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.scanned",
+          "set": true
+        },
+        {
+          "emit": "downtown.dlv.scanned"
+        }
+      ]
+    },
+    "downtown.dlv.passed": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.dlv.passed"
+        },
+        {
+          "emit": "downtown.dlv.passed.reply"
+        }
+      ]
+    },
+    "downtown.dlv.bonk": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.dlv.bonk"
+        }
+      ]
+    },
+    "downtown.dlv.completed": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.scanned",
+          "set": false
+        },
+        {
+          "state": "downtown.dlvAt",
+          "set": {
+            "query": "downtown.dlv.destination"
+          }
+        }
+      ]
+    },
+    "downtown.dlv.finished": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.scanned",
+          "set": false
+        },
+        {
+          "state": "downtown.dlvAt",
+          "set": {
+            "query": "downtown.dlv.destination"
+          }
+        },
+        {
+          "flag": "end",
+          "value": true
+        },
+        {
+          "emit": "downtown.dlv.finished"
+        },
+        {
+          "emit": "downtown.end.present"
+        }
+      ]
     }
   },
   "reactions": [],
@@ -2992,6 +3098,43 @@
           }
         }
       ]
+    },
+    "downtown.dlv.passage": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "state": "downtown.lock",
+            "is": "open"
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "downtown.dlv.destination": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "flag": "downtown.dlv.inside"
+          },
+          "value": {
+            "literal": "market"
+          }
+        },
+        {
+          "value": {
+            "literal": "gate"
+          }
+        }
+      ]
     }
   },
   "native": {
@@ -3090,11 +3233,14 @@
       }
     ],
     "events": {
-      "downtown.billboard.ad.next": "billboard.ads:next"
+      "downtown.billboard.ad.next": "billboard.ads:next",
+      "downtown.dlv.scanned": "gate.scanner:matched",
+      "downtown.dlv.passed": "gate.door:passed"
     },
     "goals": {
       "downtown.till.paid": "till",
-      "downtown.legs.installed": "install"
+      "downtown.legs.installed": "install",
+      "downtown.dlv.finished": "gate"
     },
     "inputs": {
       "downtown.box.control": {
@@ -3146,6 +3292,71 @@
             "command": "downtown.relay.control.known"
           }
         ]
+      },
+      "downtown.dlv.started": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "downtown.dlv.started"
+          }
+        ]
+      },
+      "downtown.dlv.scanned": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "downtown.dlv.scanned"
+          }
+        ]
+      },
+      "downtown.dlv.door": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "when": {
+              "flag": "downtown.dlv.through"
+            },
+            "command": "downtown.dlv.passed"
+          },
+          {
+            "command": "downtown.dlv.bonk"
+          }
+        ]
+      },
+      "downtown.dlv.completed": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "when": {
+              "all": [
+                {
+                  "flag": "downtown.dlv.through"
+                },
+                {
+                  "state": "downtown.lock",
+                  "is": "open"
+                },
+                {
+                  "not": {
+                    "flag": "end"
+                  }
+                }
+              ]
+            },
+            "command": "downtown.dlv.finished"
+          },
+          {
+            "command": "downtown.dlv.completed"
+          }
+        ]
       }
     },
     "replies": {
@@ -3177,6 +3388,24 @@
         "from": "till",
         "say": {
           "text": "peer.box"
+        }
+      },
+      "downtown.dlv.bonk": {
+        "from": "gate",
+        "say": {
+          "text": "dlv.bonk"
+        }
+      },
+      "downtown.dlv.finished": {
+        "from": "gate",
+        "say": {
+          "text": "gate.end"
+        }
+      },
+      "downtown.dlv.passed.reply": {
+        "from": "gate",
+        "say": {
+          "text": "dlv.passed"
         }
       }
     },
@@ -3244,6 +3473,16 @@
         "kind": "pulse",
         "target": "sign"
       }
+    },
+    "reads": {
+      "downtown.dlv.through": "dlvThrough",
+      "downtown.dlv.inside": "dlvInside"
     }
-  }
+  },
+  "handoffs": [
+    {
+      "event": "downtown.end.present",
+      "presentation": "end"
+    }
+  ]
 }

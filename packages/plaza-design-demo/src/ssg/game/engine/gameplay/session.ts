@@ -1,3 +1,4 @@
+import type {GameplayDomainTransaction,DomainNotice} from '../scene-domains';
 import {readQuery,scalarRead,type GameplayReadContext} from './queries';
 import {currentObjective,type ObjectiveDefinition} from './objectives';
 import {resolveValues,validValue,validStateNumber,stateValue,setStateValue,cloneValues} from './state';
@@ -8,6 +9,8 @@ export function cloneState(state: GameplayState): GameplayState { return { ...(s
 function freeze<T>(value:T):Readonly<T>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;}
 /** One command and its authored reactions either all commit or change nothing. No timers/storage/DOM. */
 export class GameplaySession {
+  /** Installed once the actual local model exists; disposal removes that same capability. */
+  domain?:()=>GameplayDomainTransaction;
   readContext?:()=>Omit<GameplayReadContext,'definition'|'queryPath'>;
   private transactionContext?:GameplayReadContext;
   queryContext():GameplayReadContext{return this.transactionContext??{...this.readContext?.(),definition:this.definition};}
@@ -18,7 +21,7 @@ export class GameplaySession {
   controlledKnown?:(id:string)=>boolean;
   private grantListeners=new Set<(grant:Readonly<GameplayGrant>)=>void>();
   observeGrants(listener:(grant:Readonly<GameplayGrant>)=>void){if(this.disposed)throw new Error('Gameplay session disposed');this.grantListeners.add(listener);return()=>{this.grantListeners.delete(listener);};}
-  authorize?:(id:string,source:Source)=>import('./types').Eligibility;
+  authorize?:(id:string,source:Source,domain?:GameplayDomainTransaction)=>import('./types').Eligibility;
   readonly definition: Readonly<GameplayDefinition>;
   private active=false;
   private disposed=false;
@@ -43,8 +46,8 @@ export class GameplaySession {
     this.active=true;
     try{
       this.transactionContext={...this.readContext?.(),definition:this.definition};
-      const draft=this.state(),events:GameplayEvent[]=[],notifications:({event:GameplayEvent}|{grant:GameplayGrant})[]=[],queue:{id:string;source:Source;cause?:string}[]=ids.map(id=>({id,source}));
-      let commands=0,actions=0,continued=false;
+      const draft=this.state(),events:GameplayEvent[]=[],notifications:({event:GameplayEvent}|{grant:GameplayGrant}|{domain:DomainNotice})[]=[],queue:{id:string;source:Source;cause?:string}[]=ids.map(id=>({id,source}));
+      let commands=0,actions=0,continued=false,domain:GameplayDomainTransaction|undefined;
       for(let i=0;i<queue.length||(continuation&&!continued);i++){
         if(i===queue.length){this.refreshObjective(draft);continued=true;let next:string[];try{next=continuation!(cloneState(draft));}catch{return{ok:false,reason:'budget'};}if(next.length>64)return{ok:false,reason:'budget'};queue.push(...next.map(id=>({id,source})));if(i===queue.length)break;}
         if(++commands>64)return{ok:false,reason:'budget'};
@@ -52,13 +55,20 @@ export class GameplaySession {
         const task=queue[i],command=Object.prototype.hasOwnProperty.call(this.definition.commands,task.id)?this.definition.commands[task.id]:undefined;
         if(!command)return{ok:false,reason:'unknown-command'};
         if(!command.sources.includes(task.source))return{ok:false,reason:'forbidden'};
-        const allowed=this.authorize?.(task.id,task.source);if(allowed&&!allowed.ok)return allowed;
+        const allowed=this.authorize?.(task.id,task.source,domain);if(allowed&&!allowed.ok)return allowed;
         if(!this.matchesState(command.when,draft))return{ok:false,reason:'conditions'};
         const emitted:string[]=[];
         for(const action of command.actions){
           this.refreshObjective(draft);
           if(++actions>512)return{ok:false,reason:'budget'};
-          if('grant'in action){const grant=action.grant,player=draft.player;if(!player)return{ok:false,reason:'resources'};const origin={command:task.id,source:task.source,...(task.cause?{cause:task.cause}:{})};
+          if('wire'in action||'trace'in action){
+            if(!domain){if(!this.domain)return{ok:false,reason:'resources'};domain=this.domain();}
+            const delta='trace'in action?(typeof action.trace.add==='number'?action.trace.add:scalarRead(action.trace.add,draft,this.queryContext())):undefined;
+            if('trace'in action&&(typeof delta!=='number'||!Number.isFinite(delta)))return{ok:false,reason:'resources'};
+            const outcome=domain.reduce(action,delta as number|undefined);if(!outcome.ok)return outcome;
+            Object.assign(this.transactionContext!,domain.context());notifications.push(...domain.takeNotices().map(notice=>({domain:notice})));
+          }
+          else if('grant'in action){const grant=action.grant,player=draft.player;if(!player)return{ok:false,reason:'resources'};const origin={command:task.id,source:task.source,...(task.cause?{cause:task.cause}:{})};
             if('keyring'in grant){const id=grant.keyring;if(!Array.isArray(player.keyring)||!this.keyringKnown?.(id))return{ok:false,reason:'resources'};if(!player.keyring.includes(id)){draft.player={...player,keyring:[...player.keyring,id]};notifications.push({grant:{kind:'keyring',id,...origin}});}}
             else if('ability'in grant){if(typeof player.jump!=='boolean')return{ok:false,reason:'resources'};if(!player.jump){draft.player={...player,jump:true};notifications.push({grant:{kind:'ability',id:'jump',...origin}});}}
             else{const id=typeof grant.controlled==='string'?grant.controlled:scalarRead(grant.controlled,draft,this.queryContext());if(typeof id!=='string'||!Array.isArray(player.controlled)||!this.controlledKnown?.(id))return{ok:false,reason:'resources'};if(!player.controlled.includes(id)){draft.player={...player,controlled:[...player.controlled,id]};notifications.push({grant:{kind:'controlled',id,...origin}});}}
@@ -78,11 +88,21 @@ export class GameplaySession {
       if(commands===0)return{ok:true,events:Object.freeze([])};
       const persisted=cloneState(draft);
       try{this.port.write(persisted,events);}catch{return{ok:false,reason:'commit'};}
+      // Prepared canonical assignments contain no callbacks or failure points.
+      domain?.commit();
       const published=events.map(event=>freeze(event));
-      this.history.push(...published);this.history=this.history.slice(-128);
+      if(!this.disposed){this.history.push(...published);this.history=this.history.slice(-128);}
       // Notifications see committed state. Diagnostic failures and reentrant dispatch cannot affect it.
-      try{this.afterCommit();}catch{/* Presentation/persistence failures are separate from committed state. */}
-      for(const notification of notifications){if('event'in notification){for(const listener of [...this.listeners])try{listener(freeze(notification.event));}catch{/* observer isolation */}}else for(const listener of [...this.grantListeners])try{listener(freeze(notification.grant));}catch{/* observer isolation */}}
+      if(!this.disposed)try{this.afterCommit();}catch{/* Presentation/persistence failures are separate from committed state. */}
+      for(const notification of notifications){
+        if(this.disposed)break;
+        if('event'in notification){
+          for(const listener of [...this.listeners]){if(this.disposed)break;if(!this.listeners.has(listener))continue;try{listener(freeze(notification.event));}catch{/* observer isolation */}}
+        }else if('grant'in notification){
+          for(const listener of [...this.grantListeners]){if(this.disposed)break;if(!this.grantListeners.has(listener))continue;try{listener(freeze(notification.grant));}catch{/* observer isolation */}}
+        }else try{domain!.notify(notification.domain);}catch{/* committed mechanical/presentation notification isolation */}
+      }
+      if(domain&&!this.disposed)try{domain.refresh();}catch{/* committed refresh isolation */}
       return{ok:true,events:Object.freeze(published)};
     }finally{this.transactionContext=undefined;this.active=false;}
   }

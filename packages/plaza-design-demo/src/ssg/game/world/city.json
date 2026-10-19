@@ -65,7 +65,8 @@
       "at": "market",
       "scenes": [
         "laundromat"
-      ]
+      ],
+      "access": "market-gate"
     },
     {
       "id": "market",
@@ -75,7 +76,8 @@
       "at": "downtown",
       "scenes": [
         "market"
-      ]
+      ],
+      "access": "market-gate"
     },
     {
       "id": "shop",
@@ -769,7 +771,8 @@
       "at": [
         "downtown",
         "market"
-      ]
+      ],
+      "access": "market-gate"
     },
     {
       "kind": "walk",
@@ -1049,6 +1052,15 @@
     "siding": {
       "scene": "harbor",
       "entrance": "metro"
+    }
+  },
+  "ACCESS": {
+    "market-gate": {
+      "exit": {
+        "scene": "downtown",
+        "id": "market"
+      },
+      "reason": "THE MARKET GATE IS SHUT"
     }
   }
 }

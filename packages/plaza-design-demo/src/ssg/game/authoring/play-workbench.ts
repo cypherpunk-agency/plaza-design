@@ -1,6 +1,6 @@
 import {PlayStartup,playStartupWaitingMessage} from './play-startup';
 import {createPendingCity} from './pending-city';
-import {validatePendingFixtures} from './pending-fixtures';
+import {validatePendingFixtures,pendingFixtureVocabulary} from './pending-fixtures';
 import {deviceSceneIds,deviceDocumentId} from './device-sources';
 import {metroStartingState,metroStartingStates,type MetroStartingState} from './metro-starting-state';
 import {type Station} from '../world/city';
@@ -67,9 +67,10 @@ export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,sel
    form.text(metroPanel,'Metro announcement',r.say,value=>change('Edit starting metro announcement',s=>{s.ride.say=value;}));
    for(const station of city.LINE){if(station!=='harbor')form.check(metroPanel,'Metro stop '+station,snapshot.lineOpen[station],value=>change('Edit starting metro access',s=>{s.lineOpen[station]=value;}));form.decimal(metroPanel,'Metro platform shift '+station,snapshot.shift[station],value=>change('Edit starting platform phase',s=>{s.shift[station]=value;}),0,metroSource.timetable.loop-.000001);}
   }
-  const flags=form.section(details,'Flags');for(const id of fixtureFlags)form.check(flags,id,!!f.flags[id],value=>edit('Edit fixture flag',f=>{f.flags[id]=value;}));
+  const fixtureDocuments=currentDocuments(),vocabulary=Object.keys(NATIVE_SCENES).every(id=>fixtureDocuments.has(id))?pendingFixtureVocabulary(fixtureDocuments):undefined;
+  const flags=form.section(details,'Flags');for(const id of vocabulary?[...vocabulary.flags]:fixtureFlags)form.check(flags,id,!!f.flags[id],value=>edit('Edit fixture flag',f=>{f.flags[id]=value;}));
   const items=form.section(details,'Inventory');for(const id of Object.keys(ITEMS))form.number(items,id,f.items[id]??0,value=>edit('Edit fixture inventory',f=>{if(value)f.items[id]=value;else delete f.items[id];}));
-  for(const [key,ids]of [['modules',fixtureModules],['programs',fixturePrograms],['keyring',fixtureKeys]] as const){const section=form.section(details,key);for(const id of ids)form.check(section,id,f[key].includes(id),value=>edit('Edit fixture '+key,f=>{f[key]=value?[...f[key],id]:f[key].filter(v=>v!==id);}));}
+  for(const [key,ids]of [['modules',fixtureModules],['programs',vocabulary?[...vocabulary.programs]:fixturePrograms],['keyring',vocabulary?[...vocabulary.keyring]:fixtureKeys]] as const){const section=form.section(details,key);for(const id of ids)form.check(section,id,f[key].includes(id),value=>edit('Edit fixture '+key,f=>{f[key]=value?[...f[key],id]:f[key].filter(v=>v!==id);}));}
   if(SCENES[f.scene]?.data){const section=form.section(details,'Native scene state');for(const [key,defaultValue]of Object.entries(SCENES[f.scene].data!.state)){const value=f.state[key]??defaultValue;if(typeof value==='boolean')form.check(section,'State '+key,value,value=>edit('Edit fixture scene state',f=>{f.state[key]=value;}));else if(typeof value==='number')form.decimal(section,'State '+key,value,value=>edit('Edit fixture scene state',f=>{f.state[key]=value;}),-1000000);else form.text(section,'State '+key,String(value),value=>edit('Edit fixture scene state',f=>{f.state[key]=value;}));}}
  }
  function diagnostics(){if(!last)return;const {engine:runtime,...state}=last;inspect.textContent=JSON.stringify(state,null,2);if(!runtime){engine.textContent='';return;}

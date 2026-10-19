@@ -1,3 +1,4 @@
+import {wireConnectEligibility,captureDomains,reduceWireConnect,reduceWireCut,reduceTraceAdd,reduceTraceKick,type SceneDomains,type DomainNotice,type GameplayDomainTransaction} from './scene-domains';
 import {registryLabels} from './gameplay/rewards';
 import {compileCheckpoint} from './gameplay/checkpoint';
 import type {GameplayDefinition} from './gameplay/types';
@@ -389,11 +390,7 @@ export class SceneModel {
     return{ok:true};
   }
   wireEligibility(from:string,to:string,verb:string):{ok:true}|{ok:false;reason:string}{
-    const i=from.lastIndexOf(':'),n=this.noun(from.slice(0,i)),target=this.noun(to);
-    if(i<1||!n?.events?.includes(from.slice(i+1)))return{ok:false,reason:'unknown-event'};
-    if(!target?.verbs.includes(verb))return{ok:false,reason:'unknown-verb'};
-    if(this.links.some(l=>l.fixed&&l.from===from&&l.to===to))return{ok:false,reason:'fixed'};
-    return{ok:true};
+    const result=wireConnectEligibility(this.links,from,to,this.domainEndpoints(from,to,verb));return result.ok?{ok:true}:{ok:false,reason:result.reason};
   }
   act(dev: string, noun: string, verb: string, bySignal = false) {
     const context = { dev, noun, verb, bySignal };
@@ -471,13 +468,9 @@ export class SceneModel {
   }
 
   connect(from: string, to: string, verb: string): Line {
-    // [fixed cables] a conduit between the same two cannot be replaced
-    const fixed = this.links.find((l) => l.fixed && l.from === from && l.to === to);
-    if (fixed) return this.line('wire.fixed', { from: fixed.from, to: fixed.to, verb: fixed.verb });
-    const eligible=this.wireEligibility(from,to,verb);if(!eligible.ok)return['wire '+from+' '+to,'CONNECTION REFUSED: '+eligible.reason+'.','err'];
-    this.links = this.links.filter((l) => !(l.from === from && l.to === to));
-    this.links.push({ from, to, verb });
-    this.changed();
+    const result=reduceWireConnect(this.captureDomainState(),from,to,verb,this.domainEndpoints(from,to,verb));
+    if(!result.ok){if(result.reason==='fixed'){const fixed=result.link!;return this.line('wire.fixed',{from:fixed.from,to:fixed.to,verb:fixed.verb});}return['wire '+from+' '+to,'CONNECTION REFUSED: '+result.reason+'.','err'];}
+    this.applyDomainState(result.state);this.changed();
     return this.line('wire.connect', {
       from, to, verb, verbCmd: verb.replace(/\s/g, ''),
       event: split(from)[1].replace(':', ' '), toNoun: split(to)[1],
@@ -486,12 +479,9 @@ export class SceneModel {
 
   /** Cut a cable, the player's or a pre-wired one. */
   cut(link: Link): Line {
-    // [fixed cables] refuse; a pre-wired cable you cut stays cut in the save (by its id)
-    if (link.fixed) return this.line('wire.fixed', { from: link.from, to: link.to, verb: link.verb });
-    if (link.wired) this.cuts.add(link.wired);
-    this.links = this.links.filter((l) => l !== link);
-    this.live.delete(link);
-    this.changed();
+    const result=reduceWireCut(this.captureDomainState(),link);
+    if(!result.ok)return this.line('wire.fixed',{from:link.from,to:link.to,verb:link.verb});
+    this.applyDomainState(result.state);this.changed();
     return this.line('wire.cut', { from: link.from, to: link.to });
   }
 
@@ -936,20 +926,35 @@ export class SceneModel {
 
   /** Raise (or lower) a device's trace; a full one kicks. */
   addTrace(dev: string, by: number) {
-    if (!this.devices.has(dev)) return;
-    const t = clamp(this.traceOf(dev) + by);
-    this.trace.set(dev, t);
-    if (t >= 100) this.kick(dev);
+    const result=reduceTraceAdd(this.captureDomainState(),dev,by,this.traceDomainMeta(dev));
+    if(!result.ok)return;this.applyDomainState(result.state);result.notices.forEach(n=>this.notifyDomain(n));
   }
 
   private kick(dev: string) {
-    const d = this.devices.get(dev)!;
-    const ms = Math.max(0, ...this.logsOf(dev).map((n) => n.log!.lockMs ?? LOG_LOCK_MS)) || LOG_LOCK_MS;
-    this.lock(dev, ms);
-    this.trace.set(dev, 0);
-    this.viewing.delete(dev); this.touched.delete(dev);
-    this.sayLine(this.line('trace.kick', { device: d.name, sec: secs(ms) }), dev);
-    this.hooks.kick?.(dev);
+    const meta=this.traceDomainMeta(dev),result=reduceTraceKick(this.captureDomainState(),dev,meta.span,meta.wallNow);
+    if(!result.ok)return;this.applyDomainState(result.state);result.notices.forEach(n=>this.notifyDomain(n));
+  }
+  private captureDomainState():SceneDomains{return captureDomains({links:this.links,live:this.live,cuts:this.cuts,trace:this.trace,locks:this.locks,spans:this.spans,viewing:this.viewing,touched:this.touched});}
+  private applyDomainState(state:SceneDomains){this.links=state.links;this.live=state.live;this.cuts=state.cuts;this.trace=state.trace;this.locks=state.locks;this.spans=state.spans;this.viewing=state.viewing;this.touched=state.touched;}
+  private traceDomainMeta(dev:string){return{exists:this.devices.has(dev),span:Math.max(0,...this.logsOf(dev).map(n=>n.log!.lockMs??LOG_LOCK_MS))||LOG_LOCK_MS,wallNow:this.wall()};}
+  private domainEndpoints(from:string,to:string,verb:string){const i=from.lastIndexOf(':'),n=this.noun(from.slice(0,i));return{event:i>0&&!!n?.events?.includes(from.slice(i+1)),verb:!!this.noun(to)?.verbs.includes(verb)};}
+  private notifyDomain(notice:DomainNotice){
+    this.later(notice.span+50,()=>this.changed());
+    this.sayLine(this.line('trace.kick',{device:this.devices.get(notice.device)!.name,sec:secs(notice.span)}),notice.device);
+    this.hooks.kick?.(notice.device);
+  }
+  /** One temporary draft for a synchronous shared command transaction, never another saved owner. */
+  beginDomainTransaction():GameplayDomainTransaction{
+    let draft=this.captureDomainState(),notices:DomainNotice[]=[];
+    return{
+      context:()=>({cables:draft.links}),
+      reduce:(action,delta)=>{
+        const result='wire'in action?action.wire.op==='connect'?reduceWireConnect(draft,action.wire.from,action.wire.to,action.wire.verb,this.domainEndpoints(action.wire.from,action.wire.to,action.wire.verb)):(()=>{const link=draft.links.find(l=>l.from===action.wire.from&&l.to===action.wire.to);return link?reduceWireCut(draft,link):{ok:false as const,reason:'resources' as const};})():reduceTraceAdd(draft,action.trace.device,delta!,this.traceDomainMeta(action.trace.device));
+        if(!result.ok)return{ok:false,reason:result.reason};draft=result.state;notices.push(...result.notices);return{ok:true};
+      },
+      authorizeRoute:c=>{const native=this.nativeEligibility(c.dev,c.noun,c.verb,c.bySignal);if(!native.ok)return native;return !c.bySignal&&(draft.locks.get(c.dev)??0)>this.wall()?{ok:false,reason:'lockout'}:{ok:true};},
+      commit:()=>this.applyDomainState(draft),takeNotices:()=>{const out=notices;notices=[];return out;},notify:n=>this.withCue(()=>this.notifyDomain(n),true),refresh:()=>this.changed(),
+    };
   }
 
   // ---------- the net ----------
@@ -1374,7 +1379,9 @@ export class SceneModel {
   }
 
   private fmt(s: string, c: Ctx, vars?: Vars) {
-    return s.replace(/\{([\w.-]+)\}/g, (m, k: string) => {
+    return s.replace(/\{(query:[\w.:-]+|[\w.-]+)\}/g, (m, k: string) => {
+      // Explicit shared query reads never fall through to native context/vars.
+      if (k.startsWith('query:')) { const v=this.gameplayQuery?.(k.slice(6)); return v===undefined?m:String(v); }
       if (vars && k in vars) return String(vars[k]);
       if (k === 'verb') return c.verb;
       if (k === 'via') return c.bySignal ? 'signal → ' : '';

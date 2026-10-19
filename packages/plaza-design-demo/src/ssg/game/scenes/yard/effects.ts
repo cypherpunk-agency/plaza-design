@@ -10,7 +10,8 @@ export const YARD_RULES: SceneRules = {
   effects: {},
   panels: ['camera'],
   needs: {
-    state: ['found', 'armAt', 'held', 'parcel', 'parcelAt', 'gateAllowed', 'pan'],
+    devices:[],
+    state: [{key:'armAt',type:'string'},{key:'parcel',type:'string'},{key:'parcelAt',type:'string'},{key:'gateAllowed',type:'boolean'},{key:'pan',type:'number'}],
     goals: ['find', 'chute', 'talk', 'gate', 'take'],
     texts: {
       'parcel.take': 'line',

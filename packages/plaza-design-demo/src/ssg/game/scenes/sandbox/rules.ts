@@ -39,12 +39,7 @@ const EFFECTS: Record<string, Effect> = {
 export const SANDBOX_RULES: SceneRules = {
   effects: EFFECTS,
   derived: { night: (m): Value => isNight(m) },
-  needs: {
-    state: ['count', 'stamped', 'cups', 'chips', 'paid'],
-    texts: {
-      'reset.ok': 'line', 'prompt.reset': 'label',
-    },
-  },
+  needs: {devices:[],state:[{key:'lampOn',type:'boolean'},{key:'memo',type:'number'},{key:'phase',type:'string'},{key:'recOn',type:'boolean'},{key:'beaconOn',type:'boolean'},{key:'count',type:'number'},{key:'hatchOpen',type:'boolean'},{key:'fanOn',type:'boolean'},{key:'loginOk',type:'boolean'},{key:'ringsOpen',type:'boolean'},{key:'cipherOpen',type:'boolean'},{key:'cryptexOpen',type:'boolean'},{key:'morseOpen',type:'boolean'},{key:'mains',type:'boolean'},{key:'auditOn',type:'boolean'},{key:'stamped',type:'number'},{key:'belt',type:'boolean'},{key:'cups',type:'number'},{key:'paid',type:'number'},{key:'nightLight',type:'boolean'},{key:'ventOpen',type:'boolean'}]},
   /** Controller tuning; the original feature inventory is verified against the frozen baseline. */
   check: (z: SceneData) => typeof z.tuning.pulseMs==='number'?[]:['tuning.pulseMs: missing (the drawing reads it)'],
 };

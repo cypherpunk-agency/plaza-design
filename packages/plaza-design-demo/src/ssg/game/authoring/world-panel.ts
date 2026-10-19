@@ -37,8 +37,15 @@ export function mountWorldPanel(host: HTMLElement, document: WorldDocument, open
   layer.onchange = () => preview.setPreview({ layer: layer.value as ReturnType<typeof preview.getPreview>['layer'] }); label('Layer', layer);
   const discovered = node('input'); discovered.type = 'checkbox'; discovered.checked = preview.getPreview().seenSceneIds === 'all';
   discovered.onchange = () => preview.setPreview({ seenSceneIds: discovered.checked ? 'all' : ['downtown' as SceneId] }); label('All places discovered in preview', discovered);
-  for (const [key, title] of [['gateOpen', 'Preview market gate open'], ['harborOpen', 'Preview harbor open'], ['reduced', 'Map reduced motion'], ['flat', 'Flat map']] as const) {
+  for (const [key, title] of [['harborOpen', 'Preview harbor open'], ['reduced', 'Map reduced motion'], ['flat', 'Flat map']] as const) {
     const input = node('input'); input.type = 'checkbox'; input.checked = preview.getPreview()[key]; input.onchange = () => preview.setPreview({ [key]: input.checked }); label(title, input);
+  }
+  // Preview conditions use the same exit flags/keys, never a separate gate-open override.
+  for(const flag of new Set(document.scenes.flatMap(s=>s.exits.flatMap(e=>e.requires?[e.requires]:[])))){
+    const input=node('input');input.type='checkbox';input.checked=!!preview.getPreview().flags[flag];input.onchange=()=>preview.setPreview({flags:{...preview.getPreview().flags,[flag]:input.checked}});label('Preview flag '+flag,input);
+  }
+  for(const key of new Set(document.scenes.flatMap(s=>s.exits.flatMap(e=>e.needs?[e.needs.key]:[])))){
+    const input=node('input');input.type='checkbox';input.checked=preview.getPreview().keyring.includes(key);input.onchange=()=>{const keys=preview.getPreview().keyring;preview.setPreview({keyring:input.checked?[...keys,key]:keys.filter(k=>k!==key)});};label('Preview key '+key,input);
   }
   const time = node('input'); time.type = 'number'; time.min = '0'; time.step = '1'; time.value = String(preview.getPreview().time); time.style.width = '65px';
   time.onchange = () => { const value = Number(time.value); if (Number.isFinite(value) && value >= 0) preview.setPreview({ time: value }); }; label('Map frame', time);

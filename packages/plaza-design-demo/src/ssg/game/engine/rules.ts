@@ -1,3 +1,4 @@
+import type {StateRequirement} from '../data/state-requirements';
 import type {FeedbackReceipt} from './feedback-receipt';
 /**
  * What a scene's code provides to the engine, next to its data file: the named
@@ -9,7 +10,7 @@ import type {FeedbackReceipt} from './feedback-receipt';
 
 import { ENGINE } from "../data/index";
 import type { CodeContract } from '../data/check';
-import type { Value, SceneData } from '../data/types';
+import type { Value, SceneData, Kind } from '../data/types';
 import type { Ctx, Line, Spot, SceneModel } from './model';
 
 export type Vars = Record<string, string | number>;
@@ -43,7 +44,7 @@ export interface SceneRules {
   /** Read-only values computed in code, usable in conditions and templates (`gateOpen`). */
   derived?: Record<string, (m: SceneModel) => Value>;
   /** What the code relies on: state keys, goals it ticks, text keys it asks for. */
-  needs?: { state?: string[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
+  needs?: { devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;kind?:Kind;events?:readonly string[]}[]}[]; state?: readonly StateRequirement[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
   /** Extra checks only this scene's code knows (a crate the parcel sits in). One message per problem. */
   check?: (z: SceneData) => string[];
   /**
@@ -84,6 +85,7 @@ export const ENGINE_EFFECTS: Record<string, Effect> = {
 /** What the build checks a scene file against: the scene's code plus the engine. */
 export function contractOf(r: SceneRules,routes:readonly {device:string;noun:string;verb:string}[] = [],queries:readonly string[]=[]): CodeContract {
   return {
+    devices:r.needs?.devices,
     nativeVerbs:routes.map(r=>r.device+'.'+r.noun+':'+r.verb),
     effects: [...Object.keys(ENGINE_EFFECTS), ...Object.keys(r.effects)],
     panels: [...ENGINE_PANELS, ...(r.panels ?? [])],

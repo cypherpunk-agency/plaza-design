@@ -1,9 +1,7 @@
-import {inheritSceneDefaults} from '../../engine/gameplay/manifest-content';
 import {protectActorIdentity} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import {validateNativeContract} from '../../engine/gameplay/native-contract';
 import {LIBRARY} from '../../data';
-import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
 import source from './scene.json';
 import gameplaySource from './gameplay.json';
 import {validateSceneDocument} from '../../engine/gameplay/scene-document';
@@ -12,13 +10,12 @@ import type {GameplayDefinition} from '../../engine/gameplay/types';
 /** Preserve registered native ownership while ordinary shared gameplay remains authorable. */
 export function validateLibraryGameplay(value:unknown):GameplayDefinition {
   const doc=validateNativeContract(value,gameplaySource,LIBRARY,{allowNewContent:true,allowNewVocabulary:true,allowBindingEdits:true});
-  nativeDialogue(doc,'catalog',{'library:renewed':'renewed'},'say "{line}" > catalog');
   return doc;
 }
 export const LIBRARY_GAMEPLAY=validateLibraryGameplay(gameplaySource);
 export const libraryBindingGroups=['uses','readables','rests','exits'] as const;
-/** Old bundles inherit the canonical bindings; newly added content supplies explicit bindings. */
-export function librarySource(value:SceneDocument):SceneDocument {return inheritSceneDefaults(value,source as unknown as SceneDocument,libraryBindingGroups);}
+/** Source documents own every binding; incomplete documents reject rather than restoring defaults. */
+export function librarySource(value:SceneDocument):SceneDocument {return structuredClone(value);}
 export function validateLibraryScene(value:unknown,gameplay:GameplayDefinition=LIBRARY_GAMEPLAY){
   const doc=validateSceneDocument(librarySource(value as SceneDocument),validateLibraryGameplay(gameplay),{actors:true,manifest:true});
   protectActorIdentity(doc.actors!,source.actors,{reorder:true,entities:true});

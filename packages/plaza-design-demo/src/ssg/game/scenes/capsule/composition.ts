@@ -15,9 +15,8 @@ import document from './composition.json';
 import { art } from '../../art';
 export const capsuleArt = art;
 export const capsuleComposition = capsuleArt.validate(document);
-const deviceIds = ['lock','fridge','kettle','blinds','pc','plug','router'];
 const flatten=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
-const required = ['neighbors','shell','door','bed','desk','counter','sun-patch', ...deviceIds, ...deviceIds.map(id => 'device-' + id)];
+const required = ['shell','door','desk','sun-patch','blinds','router'];
 export function validateCapsuleComposition(input: unknown): Composition {
   const doc = capsuleArt.validate(input);
   if (doc.scene !== 'capsule') throw new Error('Expected capsule composition');
@@ -31,12 +30,12 @@ const geometryView: View = {...frameView(0), sx: x => x, y: h => -h, gy: 0, cam:
 export function capsuleGeometry(doc: Composition = capsuleComposition) { return resolveComposition(capsuleArt, doc, { view: geometryView, state: {}, reduced: false, bindings: defaultBindings(doc) }); }
 export function capsulePlacement(id: string, doc: Composition = capsuleComposition) { const row = capsuleGeometry(doc).find(row => row.instance.id === id); if (!row) throw new Error('Unknown capsule instance ' + id); return row.placement; }
 export const capsuleWidth = Number(capsuleGeometry().find(row => row.instance.id === 'shell')!.props.width);
-export function capsuleDeviceData(source: SceneData, doc: Composition = capsuleComposition): SceneData {
+export function capsuleDeviceData(source: SceneData, doc: Composition = capsuleComposition,scene?:Pick<SceneDocument,'manifest'>): SceneData {
   const result = structuredClone(source), geometry = capsuleGeometry(doc);
-  for (const id of deviceIds) {
-    const placement = geometry.find(row => row.instance.id === 'device-' + id)!.placement;
-    const spot = result.devices.find(device => device.id === id)!.layout!.spot!;
-    spot.x = placement.x;
+  for (const device of result.devices) {
+    if(scene?.manifest?.devices?.[device.id]||!device.layout?.spot)continue;
+    const marker=geometry.find(row=>row.instance.id==='device-'+device.id);if(!marker)continue;
+    const spot=device.layout.spot,placement=marker.placement;spot.x=placement.x;
     if (spot.y !== undefined || placement.h !== 0) spot.y = placement.h;
   }
   return result;

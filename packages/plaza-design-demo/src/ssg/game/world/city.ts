@@ -1,6 +1,7 @@
 import {harborTransportPermission} from './access';
 import {validateCitySource,type CitySourceContext} from './city-source';
 import citySource from './city.json';
+import type {AccessResult} from '../engine/gameplay/access';
 import {nativeAccess} from '../engine/gameplay/access';
 
 /**
@@ -52,7 +53,7 @@ export type DistrictId = "downtown" | "oldq" | "market" | "galleria" | "harbor" 
  * LINE 0's car, which runs between the street districts. `entrance` is the scene
  * quick travel lands in, at its exit `at` (none: its spawn).
  */
-export interface PlaceData { id: string; name: string; district: DistrictId | null; entrance: SceneId; at?: string }
+export interface PlaceData { access?: string; id: string; name: string; district: DistrictId | null; entrance: SceneId; at?: string }
 
 export type PlaceId = string;
 
@@ -106,12 +107,12 @@ export interface MapLine { id: string; name: string; short: string; col: string;
 /**
  * The ways between districts, other than LINE 0 and the taxis between stands (drawn from
  * STATIONS and STANDS): `path` on the plan, from → to. `state`: 'open' (you can use it),
- * 'gate' (the market gate: open once Downtown is cleared), 'planned' (CITY.md has it, the game
+ * 'gate' (a gate whose access policy resolves its authored exit), 'planned' (CITY.md has it, the game
  * not yet: not on the map at all). `at`: the scenes it is in plain view from (`linkKnown`).
  */
 export type LinkKind = 'walk' | 'road' | 'elevator' | 'taxi' | 'bridge' | 'drain' | 'tunnel' | 'canal' | 'lift';
 
-export interface MapLink { kind: LinkKind; name: string; from: DistrictId; to: DistrictId; path: [number, number][]; state: 'open' | 'gate' | 'planned'; at?: SceneId[] }
+export interface MapLink { kind: LinkKind; name: string; from: DistrictId; to: DistrictId; path: [number, number][]; state: 'open' | 'gate' | 'planned'; at?: SceneId[]; access?: string }
 
 
 // ---------- quick travel ----------
@@ -141,14 +142,15 @@ export interface TravelState {
   /** While riding: the stop the train stands at or last left, the next one, and how far along it is (0..1). */
   ride: { from: Station; to: Station; f: number } | null;
   seen: (id: SceneId) => boolean;
-  gateOpen: boolean;
+  /** Resolves the actual authored exit against this run's flags and keys. Missing capability denies policies. */
+  readonly exitAccess?: (scene: string, id: string) => AccessResult;
   /** The harbor lock is off (P14 solved): `harborOpen`. */
   harborOpen: boolean;
 }
 
 /** Authored world values; scene exits remain owned by their scene documents. */
 export interface CitySource {
- version:2;DISTRICTS:District[];PLACES:Place[];START_SCENE:SceneId;
+ version:2;ACCESS:Record<string,{exit:{scene:string;id:string};reason:string}>;DISTRICTS:District[];PLACES:Place[];START_SCENE:SceneId;
  LINE:Station[];STATIONS:Record<Station,{name:string;scene:SceneId;up:SceneId;at?:string}>;
  TRANSPORT:{boarding:{scene:SceneId;entrance?:string};siding:{scene:SceneId;entrance?:string}};
  HARBOR_FLAG:string;SIDING_OUT:string[];DRIVER_HARBOR:string[];
@@ -161,6 +163,7 @@ export interface CitySource {
 /** Independent world registries; default consumers keep the established named API. */
 export function createCityModel(input:CitySource,context?:CitySourceContext){
  const data=validateCitySource(input,context);
+ const ACCESS=data.ACCESS;
 
 
 /**
@@ -364,20 +367,29 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
  const stationKnown = (s: Station, seen: (id: SceneId) => boolean) => seen(STATIONS[s].scene) || seen(STATIONS[s].up);
 
 
+/** One source policy is shared by admission and gate presentation; unresolved owners fail closed. */
+ function accessPolicy(id:string|undefined,st:TravelState):AccessResult {
+  if(id===undefined)return {ok:true};
+  const policy=data.ACCESS[id];
+  if(!policy)return nativeAccess([{allowed:false,reason:'ACCESS POLICY UNAVAILABLE'}]);
+  const result=st.exitAccess?.(policy.exit.scene,policy.exit.id);
+  return result?.ok?result:nativeAccess([{allowed:false,reason:policy.reason}]);
+ }
+
 /** Why you cannot quick-travel to a place right now ('' if you can). */
  function placeBlocked(p: Place, st: TravelState): string {
-  const harbor=harborTransportPermission(p.district??'',st.harborOpen||placeOf(st.scene).district==='harbor');
+  const harbor=harborTransportPermission(p.district??'',st.harborOpen||placeOf(st.scene).district==='harbor'),policy=accessPolicy(p.access,st);
   const access=nativeAccess([
     {allowed:seenPlace(p,st.seen),reason:'NOT VISITED YET'},
     {allowed:!p.scenes.includes(st.scene),reason:'YOU ARE HERE'},
-    {allowed:p.district!=='market'||st.gateOpen,reason:'THE MARKET GATE IS SHUT'},
+    {allowed:policy.ok,reason:policy.ok?'':policy.reason},
     {allowed:harbor.ok,reason:harbor.ok?'':harbor.reason},
     {allowed:!st.ride||st.ride.f<=0,reason:'NOT FROM A MOVING METRO · GET OFF FIRST'},
   ]);
   return access.ok?'':access.reason;
 }
- return {DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,placeBlocked};
+ return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
 }
 export type CityModel=ReturnType<typeof createCityModel>;
 const shippingCity=createCityModel(citySource as unknown as CitySource);
-export const {DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,placeBlocked}=shippingCity;
+export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;

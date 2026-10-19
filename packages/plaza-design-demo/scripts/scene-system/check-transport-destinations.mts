@@ -7,6 +7,7 @@ import {SCENES} from '../../src/ssg/game/scenes';
 import {Game} from '../../src/ssg/game/runtime/game';
 import {taxiSequenceDuration} from '../../src/ssg/game/story/cutscenes/taxi';
 const context={scenes:SCENES},legacy=JSON.parse(fs.readFileSync('scripts/scene-system/fixtures/city-baseline.json','utf8'));
+legacy.ACCESS=structuredClone(source.ACCESS);for(const p of legacy.PLACES)if(p.district==='market')p.access='market-gate';for(const l of legacy.LINKS)if(l.state==='gate')l.access='market-gate';
 assert.equal(legacy.version,1);assert.deepEqual(validateCitySource(legacy,context),source,'v1 upgrades every implicit native arrival to explicit v2 source');
 const pending=validateCitySource(source,context);pending.TRANSPORT.boarding={scene:'capsule',entrance:'door'};pending.TRANSPORT.siding={scene:'yard',entrance:'downtown'};
 pending.STATIONS.downtown.scene='capsule';pending.STATIONS.downtown.at='door';pending.STANDS.downtown.scene='yard';pending.STANDS.downtown.at='downtown';

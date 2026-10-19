@@ -64,7 +64,7 @@ export function validateDowntownDeviceSnapshot(value:Value):void {
 }
 for(const id of ['sign','box','till','relay','gate','fence','scan','cam3','billboard','dlv9','map','hover']) {
  const name='drawDevice'+id[0].toUpperCase()+id.slice(1),draw=devices[name as keyof typeof devices] as (x:CanvasRenderingContext2D,v:View,wx:number,state:devices.DowntownDeviceState)=>void;
- downtownElements.push(element('device-'+id,'Downtown '+id,'electronics',id==='hover'?{}:{spotY:num('Spot bottom'),spotWidth:num('Spot width',30,1),spotHeight:num('Spot height',40,1),...(id==='sign'?{mask}:{})},(p,s,c)=>{
+ downtownElements.push({...element('device-'+id,'Downtown '+id,'electronics',id==='hover'?{}:{spotY:num('Spot bottom'),spotWidth:num('Spot width',30,1),spotHeight:num('Spot height',40,1),...(id==='sign'?{mask}:{})},(p,s,c)=>{
   if(id==='hover'){
    const spot=(s.snapshot as unknown as devices.DowntownDeviceState|undefined)?.hoverSpot;
    if(!spot)return{x:0,h:0,w:0,tall:0};
@@ -73,5 +73,5 @@ for(const id of ['sign','box','till','relay','gate','fence','scan','cam3','billb
   }
   const offset=id==='dlv9'&&c?Number(s.position)-c.placement.x:0;
   return{x:offset-n(p,'spotWidth')/2,h:n(p,'spotY')+n(p,'spotHeight'),w:n(p,'spotWidth'),tall:n(p,'spotHeight')};
- },(x,v,_p,s,at)=>draw(x,raised(v,at.h),id==='dlv9'?n(s,'position'):at.x,s.snapshot as unknown as devices.DowntownDeviceState),{snapshot:{kind:'json',label:'Live device snapshot',default:empty as unknown as Value,validate:validateDowntownDeviceSnapshot},...(id==='dlv9'?{position:num('Current route position')}: {})}));
+ },(x,v,_p,s,at)=>draw(x,raised(v,at.h),id==='dlv9'?n(s,'position'):at.x,s.snapshot as unknown as devices.DowntownDeviceState),{snapshot:{kind:'json',label:'Live device snapshot',default:empty as unknown as Value,validate:validateDowntownDeviceSnapshot},...(id==='dlv9'?{position:num('Current route position')}: {})}),bindingIdentity:'presentation'});
 }

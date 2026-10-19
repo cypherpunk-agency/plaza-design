@@ -26,7 +26,7 @@ bundle never includes the local write service, credentials or a filesystem endpo
 
 The selector includes all 19 scene compositions, four sequence compositions, two timeline
 documents. Tool panels also use ten native device sources, city/metro/bot sources, reusable Play
-fixtures and registered scene/gameplay documents. Current packaging: 97 source documents / 131 source references. Scene-content registration
+fixtures and registered scene/gameplay documents. Current packaging: 97 source documents / 128 source references. Scene-content registration
 covers Harbor Shift, Shop, Library, Laundromat, Warehouse, Mall, Market, Stacks, Metro, Galleria Station,
 Harbor Station, Train, Capsule, Yard, Moth, Sandbox, Beach, Harbor and Downtown. All 19 now have source registrations;
 Downtown's people and ordinary content now use shared source; remaining runtime story and native controller decisions are unfinished. Engine targets expose visibility, labels,
@@ -35,6 +35,13 @@ This is not full entity/controller/world authoring: creation/deletion and
 several native controller contracts remain migration work. All 19 native scenes have private Play
 fixture support; an unmigrated scene's Play does not imply editable content. See
 [the active execution ledger](../ENGINE-CONSOLIDATION-STATUS.md).
+
+Native device editing now checks actual controller/source dependencies rather than protecting
+every original device or noun. Native targets and presentation cues support collection editing
+within their registered capabilities. The actor inspector also exposes reaction and appearance
+overrides; deleting optional source settings keeps them deleted. World access policies bind map
+admission and gate visuals to actual scene-exit permissions. These changes have focused source
+Save/native runtime evidence; full all-scene controller and removal acceptance remains open.
 
 Historical S0–S13 evidence remains in [the scene-system ledger](../SCENE-SYSTEM-STATUS.md) and
 [stretch evidence](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).

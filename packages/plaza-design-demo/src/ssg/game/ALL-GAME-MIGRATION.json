@@ -122,6 +122,12 @@
           ],
           "sourceSave": ".scene-system/capsule-router-online-save-8LHluu",
           "scope": "Physical boot/reboot timers report a declared milestone; source owns readiness and online caption. Original state/timers/caption time/native event and goal order preserved; extra redraw notification documented. Thermal simulation retained; full-scene gates remain open."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-capsule-sandbox-endpoint-crud.mts",
+          "artifact": ".scene-system/capsule-sandbox-endpoint-crud-lepyU3/evidence.json",
+          "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
         }
       }
     },
@@ -262,6 +268,18 @@
             "check-causal-feedback.mts"
           ],
           "scope": "Source DLV refusal cases retain mechanical direction endpoints; source pulse/grant/text owns sign testing. Immutable DLV and sign histories preserve state, captions, events and timing. Final DLV scan/door/completion/finale tails remain native; whole-scene gates remain open."
+        },
+        "deliverySourceCheckpoint": {
+          "status": "PASS",
+          "cases": 115,
+          "trajectoryFramesPerCase": 200,
+          "checks": [
+            "check-downtown-dlv-sign.mts",
+            "check-downtown-dlv-host.mts",
+            "check-downtown-registry-save.mts"
+          ],
+          "sourceSave": ".scene-system/downtown-registry-save-1tboUF",
+          "scope": "Started/scan/passage/completion/finale decisions and END handoff are source-owned; original trajectories, inward/outward completion, live lock recheck, captions/events/goals and actual Game takeover preserved. Extra commit redraw/persist notifications explicit; final full-scene acceptance remains open."
         }
       }
     },
@@ -391,6 +409,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-library-endpoint-crud.mts",
+          "artifact": ".scene-system/library-endpoint-crud-9nhnuv/evidence.json",
+          "scope": "No intrinsic endpoint roles; actual source graph, network and manifest references remain strict. Typed rebind/delete, runtime action/frame, bundle/Save/fresh shipping/byte Undo. Full scene integration gates remain open."
+        },
+        "editableNativeContractCheckpoint": {
+          "status": "PASS",
+          "check": "check-editable-native-contract.mts",
+          "artifact": ".scene-system/editable-native-contract-L25yhP/evidence.json",
+          "scope": "Typed original orphan vocabulary/state removal and permission changes, actual Library renewal/state/read/status/action/graph replacement, protected Save/fresh shipping/byte Undo. Remaining custom scene floors not included."
         }
       }
     },
@@ -523,6 +553,12 @@
           ],
           "sourceSave": ".scene-system/yard-full-save-sHAgNB/evidence.json",
           "scope": "Grab/drop, hatch expiry and parcel outcomes now use shared source commands, queries and deadlines; native movement/collision retained. Final whole-scene gates remain open."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-beach-yard-endpoint-crud.mts",
+          "artifact": ".scene-system/beach-yard-endpoint-crud-VAWkr2/evidence.json",
+          "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
         }
       }
     },
@@ -628,6 +664,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-moth-laundromat-endpoint-crud.mts",
+          "artifact": ".scene-system/moth-laundromat-endpoint-crud-Sn9hTC/evidence.json",
+          "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
         }
       }
     },
@@ -734,6 +776,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-beach-yard-endpoint-crud.mts",
+          "artifact": ".scene-system/beach-yard-endpoint-crud-VAWkr2/evidence.json",
+          "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
         }
       }
     },
@@ -949,6 +997,24 @@
           ],
           "sourceSave": ".scene-system/stacks-permission-save-9X8ytj",
           "scope": "Guard permissions and physical landing milestones now dispatch source rewards/replies at the original timing. Sixteen additional redraw notifications across 288 histories are explicit; final alarm/watchdog/trace and whole-scene gates remain open."
+        },
+        "returnStatusSourceCheckpoint": {
+          "status": "PASS",
+          "cases": 288,
+          "returnTimelines": 21,
+          "trajectoryFramesPerTimeline": 101,
+          "checks": [
+            "check-stacks-source-permissions.mts",
+            "check-stacks-source-permission-save.mts"
+          ],
+          "sourceSave": ".scene-system/stacks-permission-save-MLxxpj",
+          "scope": "Source alarm policy/return rewards/status queries with explicit validated query tokens;1900ms physical return and exact visible pulse timestamps preserved. Old/current redraw597/643 explicit; lift start/scan/watchdog/circuit/trace and full-scene gates remain open."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-stacks-primitive-roles.mts",
+          "artifact": ".scene-system/stacks-roles-save-TriYhO/evidence.json",
+          "scope": "Actual primitive scanner/warm dependency, typed rebind/remove, source alarm rename and native flash, grouped Save/fresh shipping/byte Undo. Full scene integration remains open."
         }
       }
     },
@@ -1271,6 +1337,12 @@
           "casesAcrossFourScenes": 274,
           "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
           "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-moth-laundromat-endpoint-crud.mts",
+          "artifact": ".scene-system/moth-laundromat-endpoint-crud-Sn9hTC/evidence.json",
+          "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
         }
       }
     },
@@ -1852,6 +1924,34 @@
           ],
           "sourceSave": ".scene-system/train-command-save-YKg6rr/evidence.json",
           "scope": "Unpaid count and refusal through exclusive ordinary source command step; negative/fractional JS remainder and actual source permissions. Existing MAX_SAFE overflow refuses atomically and is an explicit boundary difference. Paid physics/wording, halt and harbor flag remain native; whole-scene gates remain open."
+        },
+        "liveSourceCheckpoint": {
+          "status": "PASS",
+          "cases": 188,
+          "checks": [
+            "check-train-live-workflows.mts",
+            "check-train-live-save.mts"
+          ],
+          "sourceSave": ".scene-system/train-live-save-xBgoWH/evidence.json",
+          "scope": "Halt/resume text and harbor flag use source inputs/commands; current world flag/fixture metadata validates against pending sources. Actual stopped event/caption/cable delay and current state preserved. Paid brake result/position response branching and whole-scene gates remain open."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-train-endpoint-crud.mts",
+          "artifact": ".scene-system/train-endpoint-crud-7W4fU2/evidence.json",
+          "scope": "Retained train.position SENSE and train.brake ACT plus native emitted events; optional original marker and ordinary nouns authorable. Typed controls, bound-world geometry, bundle/Save/fresh shipping/byte Undo. Full scene integration gates remain open."
+        },
+        "paidBrakeCheckpoint": {
+          "status": "PASS",
+          "check": "check-train-paid-brake-save.mts",
+          "artifact": ".scene-system/train-paid-brake-save-qxesTb/evidence.json",
+          "scope": "Source paid response selection, physical braking retained, 630 immutable histories and actual typed/pending/Save/fresh shipping/byte Undo."
+        },
+        "positionCheckpoint": {
+          "status": "PASS",
+          "check": "check-train-position-save.mts",
+          "artifact": ".scene-system/train-position-save-HYDoK2/evidence.json",
+          "scope": "Source response selection/templates/door labels, unchanged physical display observations and 1516 immutable histories; actual typed/bundle/Save/fresh shipping/byte Undo."
         }
       }
     },
@@ -1951,6 +2051,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "endpointAuthoringCheckpoint": {
+          "status": "PASS",
+          "check": "check-capsule-sandbox-endpoint-crud.mts",
+          "artifact": ".scene-system/capsule-sandbox-endpoint-crud-lepyU3/evidence.json",
+          "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
         }
       }
     },

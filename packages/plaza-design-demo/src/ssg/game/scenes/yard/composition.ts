@@ -17,7 +17,7 @@ import document from './composition.json';
 export const yardArt=art;
 export const yardComposition=art.validate(document);
 const flatten=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
-const required=['sky','side-walls','passage','camera','crane','hatch','tray','chute','parcel','A-3','B-5','C-7','slot-home','slot-chute','device-cam','device-crane','device-gate'];
+const required=['sky','side-walls','passage','camera','crane','hatch','tray','chute','parcel','A-3','B-5','C-7','slot-home','slot-chute'];
 export function validateYardComposition(input:unknown):Composition{const doc=art.validate(input);if(doc.scene!=='yard')throw new Error('Expected yard composition');for(const id of required)if(!flatten(doc.instances).some(i=>i.id===id))throw new Error('Missing gameplay-bound Yard instance '+id);for(const i of flatten(doc.instances)){if(i.type==='character.prepared'){validateActorPresentationNode('yard',i);continue;}for(const[k,v]of Object.entries(i.bindings??{}))if(v!=='yard.'+k||!(k in yardVisualFields))throw new Error(i.id+': unknown Yard visual binding '+v);}return doc;}
 validateYardComposition(yardComposition);
 const defaults=(doc:Composition)=>({...Object.fromEntries(Object.entries(yardVisualFields).map(([k,f])=>['yard.'+k,f.default])),...actorPresentationDefaults('yard',doc)});
@@ -25,7 +25,7 @@ const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:64
 export function yardGeometry(doc:Composition=yardComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(doc),reduced:false});}
 export function yardPlacement(id:string,doc:Composition=yardComposition){const row=yardGeometry(doc).find(r=>r.instance.id===id);if(!row)throw new Error('Unknown Yard instance '+id);return row.placement;}
 export function yardWidth(doc:Composition=yardComposition){return Number(yardGeometry(doc).find(r=>r.instance.id==='side-walls')!.props.width);}
-export function yardDeviceData(source:SceneData,doc:Composition=yardComposition):SceneData{const result=structuredClone(source);for(const id of ['cam','crane','gate']){const p=yardPlacement('device-'+id,doc),spot=result.devices.find(d=>d.id===id)!.layout!.spot!;spot.x=p.x;if(spot.y!==undefined||p.h!==0)spot.y=p.h;}return result;}
+export function yardDeviceData(source:SceneData,doc:Composition=yardComposition,scene?:Pick<SceneDocument,'manifest'>):SceneData{const result=structuredClone(source),rows=yardGeometry(doc);for(const d of result.devices){if(scene?.manifest?.devices?.[d.id])continue;const p=rows.find(row=>row.instance.id==='device-'+d.id)?.placement,spot=d.layout?.spot;if(!p||!spot)continue;spot.x=p.x;if(spot.y!==undefined||p.h!==0)spot.y=p.h;}return result;}
 export interface YardPresentationState {hookX:number;hookVisible:boolean}
 export const createYardPresentationState=(doc:Composition=yardComposition):YardPresentationState=>({hookX:yardPlacement('slot-home',doc).x,hookVisible:true});
 export function yardSlots(doc:Composition=yardComposition):Record<string,number>{return Object.fromEntries(['home','A-3','B-5','C-7','chute'].map(id=>[id,yardPlacement(id==='home'?'slot-home':id==='chute'?'slot-chute':id,doc).x]));}

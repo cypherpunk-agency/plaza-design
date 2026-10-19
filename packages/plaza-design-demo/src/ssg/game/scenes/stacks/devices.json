@@ -22,7 +22,7 @@
         }
       ],
       "status": [
-        "{crane}",
+        "{query:crane}",
         {
           "if": "found",
           "then": " · tagged: slot {box}"
@@ -226,11 +226,21 @@
                 "say": "alarm.test"
               },
               {
+                "if": "!boxAt=air",
                 "do": [
                   {
-                    "effect": "port.alarm"
+                    "command": "stacks.alarm.empty"
                   }
-                ]
+                ],
+                "say": "alarm.empty"
+              },
+              {
+                "do": [
+                  {
+                    "effect": "port.return"
+                  }
+                ],
+                "say": "alarm.box"
               }
             ]
           }
@@ -254,7 +264,7 @@
         }
       ],
       "status": [
-        "{ferryStatus}"
+        "{query:ferryStatus}"
       ],
       "layout": {
         "spot": {

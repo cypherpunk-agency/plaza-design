@@ -19,7 +19,7 @@ function kernel(L = layout(), extra: Partial<Omit<ArtworkInputs, 'L'>> = {}) {
 }
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
 function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
-  return { type: 'moth.' + id, version: 1, label, category, coordinates: 'world', fields, visualFields: mothVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x,v,p,s,_pass,at) => draw(x,v,p,s,at) };
+  return { type: 'moth.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', fields, visualFields: mothVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x,v,p,s,_pass,at) => draw(x,v,p,s,at) };
 }
 const visual = (state: Properties) => state as unknown as MothVisualState;
 const box = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });

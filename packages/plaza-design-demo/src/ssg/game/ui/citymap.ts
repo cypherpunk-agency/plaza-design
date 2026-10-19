@@ -1003,7 +1003,7 @@ function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
     if (l.state === 'gate') {
       const [a, b] = V((l.path[0][0] + l.path[1][0]) / 2, (l.path[0][1] + l.path[1][1]) / 2), s = Math.max(3, c.s * 4);
       x.fillStyle = '#060404'; x.fillRect(Math.round(a - s / 2) - 1, Math.round(b - s * 1.4) - 1, Math.round(s) + 2, Math.round(s * 2.8) + 2);
-      x.fillStyle = st.gateOpen ? 'rgba(' + GREEN + ',.95)' : 'rgba(' + RED + ',.9)'; x.fillRect(Math.round(a - s / 2), Math.round(b - s * 1.4), Math.round(s), Math.round(s * 2.8));
+      x.fillStyle = world.accessPolicy(l.access,st).ok ? 'rgba(' + GREEN + ',.95)' : 'rgba(' + RED + ',.9)'; x.fillRect(Math.round(a - s / 2), Math.round(b - s * 1.4), Math.round(s), Math.round(s * 2.8));
     } else path(l.path, 'rgba(' + PAPER + ',.55)', 1.2, [3, 2]);
   }
 
@@ -1045,7 +1045,7 @@ function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
       if ((l.from !== did && l.to !== did) || l.from === l.to || !linkKnown(l, st.seen)) continue;
       const [lx, ly] = l.path[Math.floor(l.path.length / 2)], [va, vb] = V(lx, ly);
       if (!inBox(L.focus, va, vb)) continue;
-      plate(x, l.name + (l.state === 'gate' ? (st.gateOpen ? ' · OPEN' : ' · SHUT') : ''), va, vb + 12, 'rgba(' + PAPER + ',.85)', 7);
+      plate(x, l.name + (l.state === 'gate' ? (world.accessPolicy(l.access,st).ok ? ' · OPEN' : ' · SHUT') : ''), va, vb + 12, 'rgba(' + PAPER + ',.85)', 7);
     }
   }
   x.restore();

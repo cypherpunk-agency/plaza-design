@@ -1,6 +1,8 @@
 import {projectSceneState,type SceneDeviceSource} from './scene-state';
 import {emptyDeviceSource} from '../empty-data';
 import type {EngineNetworkContext} from '../network-context';
+import {defaultNetworkContext} from '../network-context';
+import {validateExitKeyReferences} from '../../world/access';
 import {validateDeviceDocument} from './device-source-validation';
 import {projectDeviceBindings} from './device-bindings';
 import {art,type Composition} from '../../art';
@@ -24,7 +26,8 @@ export function validateSceneCatalogue(value:unknown,native:Readonly<Record<stri
   ids.add(id);return{composition,scene,gameplay,...(entry.devices!==undefined?{devices}:{})};
  });
  const destinations=Object.fromEntries([...Object.entries(native).map(([id,s])=>[id,s.exits.map(e=>e.id)]),...scenes.map(s=>[s.scene.id,(s.scene.exits??[]).map(e=>e.id)])]);
- for(const entry of scenes)validateDeclaredDestinations(entry.scene,destinations);
+ const keys=network?.keyring??new Map([...defaultNetworkContext.keyring,...scenes.flatMap(entry=>(entry.devices?.keyring??[]).map(key=>[key.id,key] as const))]);
+ for(const entry of scenes){validateDeclaredDestinations(entry.scene,destinations);validateExitKeyReferences(entry.scene,keys);}
  return{version:1,scenes};
 }
 /** Builds an independent runtime registry; editor sessions never mutate shipping globals. */

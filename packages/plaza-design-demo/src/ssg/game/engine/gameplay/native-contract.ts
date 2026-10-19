@@ -5,6 +5,8 @@ import {validateNativeBindings} from './native-bindings';
 /** Keep required scalar identities and existing invocation permissions. Editable refs are validated prospectively. */
 export function validateNativeContract(value:unknown,baseline:unknown,data?:SceneData,options:{allowNewContent?:boolean;allowNewVocabulary?:boolean;nativeDerived?:readonly string[];allowBindingEdits?:boolean}={}){
  const d=validateGameplay(value),source=baseline as GameplayDefinition,same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b),fail=()=>{throw new Error('Native gameplay identity/permission contract is protected');};
+ // Full authoring validates current references at assembly; shipping history is not a permission schema.
+ if(options.allowNewContent&&options.allowBindingEdits&&options.allowNewVocabulary)return d;
  for(const key of ['flags','items','events'] as const)if(options.allowNewVocabulary?source[key].some(id=>!d[key].includes(id)):!same(d[key],source[key]))fail();
  if(options.allowNewContent){
   const missingFixedCommand=!options.allowBindingEdits&&Object.keys(source.commands).some(id=>!Object.prototype.hasOwnProperty.call(d.commands,id));

@@ -61,8 +61,9 @@ export function compileActors(value:readonly ActorDefinition[],placements:Return
 
 /** Preserve native entity identities independently of their editable interaction order. */
 export function protectActorIdentity(actual:readonly ActorDefinition[],expected:readonly {id:string;instance:string;target?:string;reaction?:string;bakeSeed?:number;band:string}[],options:{reorder?:boolean;entities?:boolean}={}):void{
+ if(!Array.isArray(actual))fail('registered actors require source definitions');
  const identity=(a:{id:string;instance:string;target?:string;reaction?:string;bakeSeed?:number;band:string})=>[a.id,a.instance,a.target,a.band,a.reaction,a.bakeSeed];
- if(options.entities){for(const a of actual){const previous=expected.find(e=>e.id===a.id);if(previous&&(a.reaction!==previous.reaction||a.bakeSeed!==previous.bakeSeed||previous.target!==undefined&&a.target!==previous.target||previous.target===undefined&&a.target!==undefined&&a.target!==a.id))fail('native actor save identity is protected');}return;}
+ if(options.entities){for(const a of actual){const previous=expected.find(e=>e.id===a.id);if(previous&&(previous.target!==undefined&&a.target!==previous.target||previous.target===undefined&&a.target!==undefined&&a.target!==a.id))fail('native actor interaction identity is protected');}return;}
  const ordered=options.reorder?expected.map(e=>actual.find(a=>a.id===e.id)):actual;
  if(actual.length!==expected.length||ordered.some(a=>!a)||JSON.stringify((ordered as ActorDefinition[]).map(identity))!==JSON.stringify(expected.map(identity)))fail('native actor identities are protected');
 }

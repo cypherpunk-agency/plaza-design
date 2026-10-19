@@ -1,3 +1,4 @@
+import {sceneExitAccess} from '../world/access';
 import * as defaultCity from '../world/city';
 import type {CityModel} from '../world/city';
 import {createCityMap} from '../ui/citymap';
@@ -16,7 +17,7 @@ export interface WorldMapPreviewState {
   reduced: boolean;
   layer: Layer;
   flat: boolean;
-  gateOpen: boolean;
+  keyring: readonly string[];
   harborOpen: boolean;
   tokens: number;
   ride: TravelState['ride'];
@@ -56,7 +57,8 @@ function checked(value: WorldMapPreviewState,sceneIds:readonly string[]): WorldM
   if (value.seenSceneIds !== 'all' && (!Array.isArray(value.seenSceneIds) || value.seenSceneIds.some(id=>!sceneIds.includes(id)))) throw new Error('map.preview.seenSceneIds: unknown scene');
   if(!value.flags || typeof value.flags !== 'object' || Array.isArray(value.flags)) throw new Error('map.preview.flags: expected a boolean flag object');
   for (const [key,v] of Object.entries(value.flags)) if(typeof v !== 'boolean' || ['__proto__','prototype','constructor'].includes(key)) throw new Error(`map.preview.flags.${key}: expected a boolean flag`);
-  for (const key of ['reduced','flat','gateOpen','harborOpen','touch'] as const) if(typeof value[key] !== 'boolean') throw new Error(`map.preview.${key}: expected boolean`);
+  for (const key of ['reduced','flat','harborOpen','touch'] as const) if(typeof value[key] !== 'boolean') throw new Error(`map.preview.${key}: expected boolean`);
+  if(!Array.isArray(value.keyring)||value.keyring.length>512||value.keyring.some(k=>typeof k!=='string'||!k||k.length>128))throw Error('map.preview.keyring: expected bounded key IDs');
   finite(value.time,'time');finite(value.tokens,'tokens');finite(value.tapMin,'tapMin',1);
   if(value.ride) {
     if(!STAND_IDS.includes(value.ride.from)||!STAND_IDS.includes(value.ride.to)) throw new Error('map.preview.ride: unknown station');
@@ -81,7 +83,7 @@ export class WorldMapPreview {
     if(!context) throw new Error('map.canvas: a 2D canvas is required');
     this.renderer=createCityMap(this.world);this.context=context;this.document=structuredClone(options.document);
     this.width=options.canvas.width;this.height=options.canvas.height;
-    this.preview=checked({scene:'downtown',seenSceneIds:'all',flags:{},time:0,reduced:false,layer:'street',flat:false,gateOpen:false,harborOpen:false,tokens:0,ride:null,touch:false,tapMin:22,...options.preview},this.document.scenes.map(s=>s.id));
+    this.preview=checked({scene:'downtown',seenSceneIds:'all',flags:{},time:0,reduced:false,layer:'street',flat:false,keyring:[],harborOpen:false,tokens:0,ride:null,touch:false,tapMin:22,...options.preview},this.document.scenes.map(s=>s.id));
     this.map=this.makeMap();
   }
   private makeMap(): MapState {
@@ -91,7 +93,7 @@ export class WorldMapPreview {
     view.layer=p.layer;view.flat=p.flat;
     view.district=p.layer==='below' ? this.world.DISTRICTS.findIndex(d=>d.id==='undercity') : this.world.DISTRICTS.findIndex(d=>d.id===(this.world.placeOf(p.scene).district ?? (p.ride ? this.world.placeOf(this.stationScene(p.ride.from)).district : 'downtown')));
     if(view.district<0) view.district=0;
-    return {view,rememberPreferences:false,scene:p.scene,ride:p.ride ? {...p.ride}:null,seen:id=>seen.has(id),flag:key=>Object.prototype.hasOwnProperty.call(p.flags,key)&&p.flags[key],gateOpen:p.gateOpen,harborOpen:p.harborOpen,tokens:p.tokens,t:p.time,reduced:p.reduced,touch:p.touch,tapMin:p.tapMin,avoid:null};
+    return {view,rememberPreferences:false,scene:p.scene,ride:p.ride ? {...p.ride}:null,seen:id=>seen.has(id),flag:key=>Object.prototype.hasOwnProperty.call(p.flags,key)&&p.flags[key],exitAccess:(scene,id)=>{const e=this.document.scenes.find(s=>s.id===scene)?.exits.find(e=>e.id===id);return sceneExitAccess(e?{requires:e.requires??undefined,needs:e.needs??undefined}:undefined,p.flags,p.keyring);},harborOpen:p.harborOpen,tokens:p.tokens,t:p.time,reduced:p.reduced,touch:p.touch,tapMin:p.tapMin,avoid:null};
   }
   private stationScene(id: Station): SceneId {
     return this.document.transport.metro.stations.find(s=>s.id===id)!.scene;

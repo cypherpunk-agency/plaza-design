@@ -1,3 +1,4 @@
+import type {DomainAction} from '../scene-domains';
 import type {NativeInput} from './native-inputs';
 import type {NativeDeadline} from './native-deadlines';
 import type {NativeLiveCondition,NativeWorkflowPhase} from './native-live-conditions';
@@ -26,6 +27,7 @@ export type Condition =
   | { tokensAtLeast: number }
   | { all: Condition[] } | { any: Condition[] } | { not: Condition };
 export type GameplayAction =
+  | DomainAction
   | {grant:{keyring:string}|{ability:'jump'}|{controlled:string|ScalarRead}}
   | {state:string;set:StateValue|ScalarRead}
   | {state:string;add:number|ScalarRead}
@@ -94,7 +96,7 @@ export type GameplayGrant={command:string;source:Source;cause?:string}&({kind:'k
 export interface GameplayEvent { id: string; command: string; source: Source; cause?: string }
 export type GameplayResult =
   | { ok: true; events: readonly Readonly<GameplayEvent>[] }
-  | { ok: false; reason: 'unknown-command' | 'forbidden' | 'conditions' | 'resources' | 'budget' | 'busy' | 'disposed' | 'commit' | 'lockout' | 'sealed' | 'watchdog' | 'unknown-noun' | 'unknown-verb' };
+  | { ok: false; reason: 'fixed' | 'unknown-event' | 'unknown-command' | 'forbidden' | 'conditions' | 'resources' | 'budget' | 'busy' | 'disposed' | 'commit' | 'lockout' | 'sealed' | 'watchdog' | 'unknown-noun' | 'unknown-verb' };
 export type Eligibility={ok:true}|Extract<GameplayResult,{ok:false}>;
 /** write must replace the state atomically. Notifications/persistence belong in afterCommit. */
 export interface StatePort { read(): GameplayState; write(state: GameplayState,events?:readonly GameplayEvent[]): void }

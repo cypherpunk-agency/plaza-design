@@ -1,10 +1,24 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "harbor:open",
+    "train:haltSiding",
+    "train:brakeStanding",
+    "train:brakeAlready",
+    "train:brakeReady",
+    "train:positionStation",
+    "train:positionHalted",
+    "train:positionBetween",
+    "train:positionDoorsOpen"
+  ],
   "items": [
     "maglev.pass"
   ],
-  "events": [],
+  "events": [
+    "train.halt.siding",
+    "train.halt.track",
+    "train.resume"
+  ],
   "commands": {
     "train.unpaid.even": {
       "sources": [
@@ -69,6 +83,47 @@
         {
           "state": "train.pulls",
           "add": 1
+        }
+      ]
+    },
+    "train.halt.siding": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "train.halt.siding"
+        }
+      ]
+    },
+    "train.halt.track": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "train.halt.track"
+        }
+      ]
+    },
+    "train.resume": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "train.resume"
+        }
+      ]
+    },
+    "train.harbor.unlock": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "harbor:open",
+          "value": true
         }
       ]
     }
@@ -184,6 +239,258 @@
           }
         }
       ]
+    },
+    "train.paidStanding": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "compare": {
+                  "left": {
+                    "query": "train.paid"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": true
+                  }
+                }
+              },
+              {
+                "flag": "train:brakeStanding"
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.paidAlready": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "compare": {
+                  "left": {
+                    "query": "train.paid"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": true
+                  }
+                }
+              },
+              {
+                "flag": "train:brakeAlready"
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.paidReady": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "compare": {
+                  "left": {
+                    "query": "train.paid"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": true
+                  }
+                }
+              },
+              {
+                "flag": "train:brakeReady"
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.positionStation": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "flag": "train:positionStation"
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.positionHalted": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "flag": "train:positionHalted"
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.positionBetween": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "flag": "train:positionBetween"
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.positionDoorOpenLabel": {
+      "kind": "label",
+      "key": "position.doors.open"
+    },
+    "train.positionDoorShutLabel": {
+      "kind": "label",
+      "key": "position.doors.shut"
+    },
+    "train.positionDoors": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "flag": "train:positionDoorsOpen"
+          },
+          "value": {
+            "query": "train.positionDoorOpenLabel"
+          }
+        },
+        {
+          "value": {
+            "query": "train.positionDoorShutLabel"
+          }
+        }
+      ]
+    }
+  },
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "train:haltSiding": "trainHaltSiding",
+      "train:brakeStanding": "trainStanding",
+      "train:brakeAlready": "trainBraking",
+      "train:brakeReady": "trainCanBrake",
+      "train:positionStation": "trainAtStation",
+      "train:positionHalted": "trainHalted",
+      "train:positionBetween": "trainBetween",
+      "train:positionDoorsOpen": "trainDoorsOpen"
+    },
+    "inputs": {
+      "train.halted": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "when": {
+              "flag": "train:haltSiding"
+            },
+            "command": "train.halt.siding"
+          },
+          {
+            "command": "train.halt.track"
+          }
+        ]
+      },
+      "train.resumed": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "train.resume"
+          }
+        ]
+      },
+      "train.doors.opened": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "train.harbor.unlock"
+          }
+        ]
+      }
+    },
+    "replies": {
+      "train.halt.siding": {
+        "from": "train",
+        "say": {
+          "text": "halt.siding"
+        }
+      },
+      "train.halt.track": {
+        "from": "train",
+        "say": {
+          "text": "halt.track"
+        }
+      },
+      "train.resume": {
+        "from": "train",
+        "say": {
+          "text": "resume"
+        }
+      }
     }
   }
 }

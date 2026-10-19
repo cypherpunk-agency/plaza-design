@@ -34,7 +34,7 @@ function element(name: string, label: string, category: string, fields: Record<s
 }
 const rectangle = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });
 const hoverFields = { hover: bool('Pointer over device') };
-const hover = (e: Element): Element => ({ ...e, visualFields: hoverFields });
+const hover = (e: Element): Element => ({ ...e, bindingIdentity:'presentation', visualFields: hoverFields });
 const windowSpans = (state: Properties): [number, number][] => (state.windows ?? []) as [number, number][];
 export const libraryElements: Element[] = [
   { ...element('spawn-marker', 'Library entrance position', 'markers', {}, () => ({ x: -4, h: 8, w: 8, tall: 8 }), () => {}), parts: [] },

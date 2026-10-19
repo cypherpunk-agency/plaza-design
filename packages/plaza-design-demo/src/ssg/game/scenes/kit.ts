@@ -179,6 +179,8 @@ export type ItemId = keyof typeof ITEMS;
  * own drawing. Which place it belongs to is the city's data (city.ts).
  */
 export interface SceneDef {
+  readonly nativeTargetBindings?:import('../engine/gameplay/native-targets').NativeTargetBindings;
+  readonly presentationTargets?:readonly string[];
   /** Bind world controllers once per game; source definitions remain immutable. */
   bindWorld?(services:{city:CityModel;metro:LineSystem}):SceneDef;
   /** Registered cosmetic event binding; receives the same frame clock as artwork. */

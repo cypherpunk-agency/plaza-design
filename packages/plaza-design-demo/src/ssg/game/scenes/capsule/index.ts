@@ -1,3 +1,7 @@
+import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
+import {projectSceneState} from '../../engine/gameplay/scene-state';
+import type {SceneData} from '../../data/types';
+import type {NativeTargetValidationContext} from '../../engine/gameplay/native-targets';
 import {compileSceneActors} from '../../engine/gameplay/actors';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
 import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
@@ -41,12 +45,12 @@ const baseCapsule: Omit<SceneDef,'width'|'spawn'|'exits'> = {
 };
 
 /** Canonical source-derived flat, including Pixel perches and physical device markers. */
-export function capsuleScene(document: Composition = capsuleComposition, state: Environment['state'] = {}, options: CapsuleRenderOptions = {},sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay): SceneDef {
+export function capsuleScene(document: Composition = capsuleComposition, state: Environment['state'] = {}, options: CapsuleRenderOptions = {},sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay,validationContext?:NativeTargetValidationContext,deviceSource:SceneData=CAPSULE): SceneDef {
   const doc=validateCapsuleComposition(document),geometry=capsuleGeometry(doc),byId=(id:string)=>geometry.find(row=>row.instance.id===id)!,door=byId('door').placement;
-  const authored=content.validateScene(sceneDocument,gameplay),actors=compileSceneActors(authored,geometry);
+  const authored=content.validateScene(sceneDocument,gameplay,validationContext),actors=compileSceneActors(authored,geometry);
  const compiled=compileManifestDocument(authored,geometry,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true});
-  return {...baseCapsule,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),facing:Number(byId('blinds').props.facing),data:projectNativeDeviceData(capsuleDeviceData(CAPSULE,doc),gameplay),
-    ...compileNativeTargets(authored,{door}),
+  return {...baseCapsule,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),facing:Number(byId('blinds').props.facing),data:projectNativeDeviceData(capsuleDeviceData(projectSceneState({...deviceSource,dialogue:{concierge:nativeDialogue(gameplay,'concierge')}},gameplay),doc,authored),gameplay),
+    ...compileNativeTargets(authored,{door},content.nativeTargetBindings),
     visualEnvironment:(view,engine)=>capsuleEnvironment(doc,view,engine.m,engine.hover,actors),
     drawBackdrop:(ctx,view,engine)=>drawCapsuleComposition(ctx,view,engine.m,engine.hover,doc,state,options,actors),
   };

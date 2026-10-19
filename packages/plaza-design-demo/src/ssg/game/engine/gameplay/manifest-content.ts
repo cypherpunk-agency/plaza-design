@@ -23,17 +23,3 @@ export function removeManifestContent(doc:SceneDocument,group:ManifestGroup,id:s
  if(group!=='uses'&&!rows.length)delete doc[group];
  if(group==='uses')for(const objective of doc.objectives??[])if(objective.target===id)delete objective.target;
 }
-
-/** Backward-compatible source migration, shared by native scenes; never invent bindings for new IDs. */
-export function inheritSceneDefaults(value:SceneDocument,baseline:Pick<SceneDocument,'manifest'|'actors'|'environment'|'companion'>,groups:readonly ManifestGroup[]):SceneDocument{
- const doc=structuredClone(value);
- if(doc.companion===undefined&&baseline.companion!==undefined)doc.companion=structuredClone(baseline.companion);
- if(doc.environment===undefined&&baseline.environment!==undefined)doc.environment=structuredClone(baseline.environment);
- if(doc.actors===undefined&&baseline.actors!==undefined)doc.actors=structuredClone(baseline.actors);
- if(Array.isArray(doc.actors)&&baseline.actors)for(const actor of doc.actors){if(actor){const original=baseline.actors.find(a=>a.id===actor.id);if(actor.reaction===undefined&&original?.reaction!==undefined)actor.reaction=original.reaction;if(actor.bakeSeed===undefined&&original?.bakeSeed!==undefined)actor.bakeSeed=original.bakeSeed;}}
- if(doc.manifest===undefined){if(!baseline.manifest)throw new Error('Scene requires canonical manifest defaults');const manifest=structuredClone(baseline.manifest);
-  for(const group of groups){const previous=manifest[group]??{};manifest[group]=Object.fromEntries((doc[group]??[]).map(row=>{const target=previous[row.id];if(!target)throw new Error('New content requires an artwork binding: '+row.id);return[row.id,target];}));}
-  doc.manifest=manifest;
- }
- return doc;
-}

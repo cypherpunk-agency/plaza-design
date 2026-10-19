@@ -1,9 +1,10 @@
+import type {NativeTargetValidationContext} from '../engine/gameplay/native-targets';
 import {authoredDocumentId,type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {declaredScene} from '../engine/gameplay/declared-scene';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
 import type {Composition,Environment} from '../art';
-import {CAPSULE,YARD,LIBRARY,LAUNDROMAT,STACKS} from '../data';
+import {CAPSULE,YARD,LIBRARY,LAUNDROMAT,STACKS,type SceneData} from '../data';
 import {downtownScene} from '../scenes/downtown';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
 import {harborScene} from '../scenes/harbor';
@@ -50,32 +51,43 @@ import {validateLibraryScene,validateLibraryGameplay} from '../scenes/library/sc
 import {laundromatScene} from '../scenes/laundromat';
 import {validateLaundromatScene,validateLaundromatGameplay} from '../scenes/laundromat/scene-document';
 const marketAuthoredScene=(...args:Parameters<typeof warehouseScene>)=>marketScene(args[0],args[1],args[2],args[4],args[3]);
-const sandboxAuthoredScene=(...args:Parameters<typeof warehouseScene>)=>sandboxScene(args[0],args[1],args[2],undefined,args[3],args[4]);
-const beachAuthoredScene=(...args:Parameters<typeof warehouseScene>)=>beachScene(args[0],args[1],args[2],args[4],args[3]);
+const sandboxAuthoredScene=(...args:[...Parameters<typeof warehouseScene>,NativeTargetValidationContext?])=>sandboxScene(args[0],args[1],args[2],undefined,args[3],args[4],args[5]);
+const beachAuthoredScene=(...args:[...Parameters<typeof warehouseScene>,NativeTargetValidationContext?])=>beachScene(args[0],args[1],args[2],args[4],args[3],args[5]);
 const downtownAuthoredScene=(...args:Parameters<typeof warehouseScene>)=>downtownScene(args[0],undefined,args[2],args[3],args[4]);
+type DeviceSourceArguments=[...Parameters<typeof warehouseScene>,SceneData?,NativeTargetValidationContext?];
+const capsuleWithDevices=(...args:DeviceSourceArguments)=>capsuleScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
+const sandboxWithDevices=(...args:DeviceSourceArguments)=>sandboxScene(args[0],args[1],args[2],args[5],args[3],args[4],args[6]);
+const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
+const beachWithDevices=(...args:DeviceSourceArguments)=>beachScene(args[0],args[1],args[2],args[4],args[3],args[6],args[5]);
+const yardWithDevices=(...args:DeviceSourceArguments)=>yardScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
+const libraryWithDevices=(...args:DeviceSourceArguments)=>libraryScene(args[0],args[1],args[2],args[3],args[4],args[5]);
+const mothWithDevices=(...args:DeviceSourceArguments)=>mothScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
+const laundromatWithDevices=(...args:DeviceSourceArguments)=>laundromatScene(args[0],args[1],args[2],args[3],args[4],args[5]);
+const stacksWithDevices=(...args:DeviceSourceArguments)=>stacksScene(args[0],args[1],args[2],args[3],args[4],args[5]);
+const trainWithDevices=(...args:DeviceSourceArguments)=>trainScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const definitions=[
- {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene},
+ {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
  {id:'harbor',prefix:'harbor',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:harborContent.validateScene,validateGameplay:harborContent.validateGameplay,definition:harborScene},
- {id:'beach',prefix:'beach',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateBeachScene,validateGameplay:validateBeachGameplay,definition:beachAuthoredScene},
- {id:'sandbox',prefix:'sandbox',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:sandboxContent.validateScene,validateGameplay:sandboxContent.validateGameplay,definition:sandboxAuthoredScene},
- {id:'capsule',prefix:'capsule',bindingGroups:['uses','readables','rests','exits'] as const,data:CAPSULE,validateScene:capsuleContent.validateScene,validateGameplay:capsuleContent.validateGameplay,definition:capsuleScene},
- {id:'yard',prefix:'yard',bindingGroups:['uses','readables','rests','exits'] as const,data:YARD,validateScene:yardContent.validateScene,validateGameplay:yardContent.validateGameplay,definition:yardScene},
- {id:'moth',prefix:'moth',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:mothContent.validateScene,validateGameplay:mothContent.validateGameplay,definition:mothScene},
+ {id:'beach',prefix:'beach',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateBeachScene,validateGameplay:validateBeachGameplay,definition:beachAuthoredScene,definitionWithDevices:beachWithDevices},
+ {id:'sandbox',prefix:'sandbox',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:sandboxContent.validateScene,validateGameplay:sandboxContent.validateGameplay,definition:sandboxAuthoredScene,definitionWithDevices:sandboxWithDevices},
+ {id:'capsule',prefix:'capsule',bindingGroups:['uses','readables','rests','exits'] as const,data:CAPSULE,validateScene:capsuleContent.validateScene,validateGameplay:capsuleContent.validateGameplay,definition:capsuleScene,definitionWithDevices:capsuleWithDevices},
+ {id:'yard',prefix:'yard',bindingGroups:['uses','readables','rests','exits'] as const,data:YARD,validateScene:yardContent.validateScene,validateGameplay:yardContent.validateGameplay,definition:yardScene,definitionWithDevices:yardWithDevices},
+ {id:'moth',prefix:'moth',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:mothContent.validateScene,validateGameplay:mothContent.validateGameplay,definition:mothScene,definitionWithDevices:mothWithDevices},
 
  {id:'market',prefix:'market',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMarketScene,validateGameplay:validateMarketGameplay,definition:marketAuthoredScene},
- {id:'stacks',prefix:'stacks',bindingGroups:['uses','readables','rests','exits'] as const,data:STACKS,validateScene:stacksContent.validateScene,validateGameplay:stacksContent.validateGameplay,definition:stacksScene},
+ {id:'stacks',prefix:'stacks',bindingGroups:['uses','readables','rests','exits'] as const,data:STACKS,validateScene:stacksContent.validateScene,validateGameplay:stacksContent.validateGameplay,definition:stacksScene,definitionWithDevices:stacksWithDevices},
  {id:'metro',prefix:'metro',validateScene:metroContent.validateScene,validateGameplay:metroContent.validateGameplay,definition:metroAuthoredScene},
  {id:'galleriaStation',prefix:'galleriaStation',validateScene:galleriaStationContent.validateScene,validateGameplay:galleriaStationContent.validateGameplay,definition:galleriaStationScene},
  {id:'harborStation',prefix:'harborStation',validateScene:harborStationContent.validateScene,validateGameplay:harborStationContent.validateGameplay,definition:harborStationScene},
- {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene},
+ {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene,definitionWithDevices:trainWithDevices},
 
  {id:'mall',prefix:'mall',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMallScene,validateGameplay:validateMallGameplay,definition:mallScene},
  {id:'warehouse',prefix:'warehouse',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateWarehouseScene,validateGameplay:validateWarehouseGameplay,definition:warehouseScene},
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},
  {id:'harborShift',prefix:'harbor-shift',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateShiftScene,validateGameplay:validateShiftGameplay,definition:harborShiftScene},
  {id:'shop',prefix:'shop',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateShopScene,validateGameplay:validateShopGameplay,definition:shopScene},
- {id:'library',prefix:'library',bindingGroups:['uses','readables','rests','exits'] as const,data:LIBRARY,validateScene:validateLibraryScene,validateGameplay:validateLibraryGameplay,definition:libraryScene},
- {id:'laundromat',prefix:'laundromat',bindingGroups:['uses','readables','rests','exits'] as const,data:LAUNDROMAT,validateScene:validateLaundromatScene,validateGameplay:validateLaundromatGameplay,definition:laundromatScene},
+ {id:'library',prefix:'library',bindingGroups:['uses','readables','rests','exits'] as const,data:LIBRARY,validateScene:validateLibraryScene,validateGameplay:validateLibraryGameplay,definition:libraryScene,definitionWithDevices:libraryWithDevices},
+ {id:'laundromat',prefix:'laundromat',bindingGroups:['uses','readables','rests','exits'] as const,data:LAUNDROMAT,validateScene:validateLaundromatScene,validateGameplay:validateLaundromatGameplay,definition:laundromatScene,definitionWithDevices:laundromatWithDevices},
  {id:'demoCounter',prefix:'demo-counter',validateScene:(v:unknown,g?:import('../engine/gameplay/types').GameplayDefinition)=>{const d=validateDemoScene(v,g);if(d.id!=='shop')throw new Error('Demo counter identity');return d;},validateGameplay:validateDemoGameplay,definition:demoCounterScene},
  {id:'demoDesk',prefix:'demo-desk',gameplayId:'demo-counter-gameplay',validateScene:(v:unknown,g?:import('../engine/gameplay/types').GameplayDefinition)=>{const d=validateDemoScene(v,g);if(d.id!=='library')throw new Error('Demo desk identity');return d;},validateGameplay:validateDemoGameplay,definition:demoDeskScene},
 ] as const;

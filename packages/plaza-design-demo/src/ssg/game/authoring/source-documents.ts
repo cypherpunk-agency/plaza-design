@@ -42,6 +42,12 @@ const sceneComposition = (scene: string, value: unknown) => {
   if (doc.scene !== scene) throw new Error(`Scene identity must remain ${scene}`);
   return doc;
 };
+const validatePendingSceneContent=(registration:(typeof gameplayScenes)[number],value:unknown,documents:ReadonlyMap<string,unknown>)=>{
+ const gameplay=registration.validateGameplay(documents.get(registration.gameplayId));
+ if((value as import('../engine/gameplay/scene-document').SceneDocument)?.nativeTargets===undefined)return registration.validateScene(value,gameplay);
+ const identity=deviceSourceIdentity(registration.id),network=pendingNetworkContext(documents),scene=pendingScene(registration.id,documents.get(identity.composition),{sceneDocument:value,gameplay,devices:documents.get(identity.devices)},network);
+ return registration.validateScene(value,gameplay,{phase:'assembled',data:scene.data!,network});
+};
 export const sourceDocuments: DocumentDescriptor[] = [
   {id:'companion-gameplay',file:'engine/gameplay/companion-gameplay.json',kind:'gameplay',validate:validateCompanionGameplay},
   {id:'opening-story',file:'story/opening.json',kind:'gameplay',validate:validateOpeningSource,validateContext:(value,documents)=>pendingOpeningStory(new Map([...documents,['opening-story',value]])).source},
@@ -52,7 +58,7 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},
   {id:'bot-reactions',file:'engine/gameplay/bot-reactions.json',kind:'conversations',validate:validateBotReactions},
   ...nativeGameplayScenes.filter(s=>!gameplayScenes.some(g=>g.gameplayId===s.gameplayId)).map(s=>({id:s.gameplayId,file:s.file,kind:'gameplay' as const,validate:s.validateGameplay})),
-  ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene,validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>s.validateScene(value,s.validateGameplay(documents.get(s.gameplayId)))},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
+  ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene,validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>validatePendingSceneContent(s,value,documents)},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
   {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents),validateMetroSource(documents.get('metro-source')))},
   ...scenes.map(scene => ({ id: scene, file: `scenes/${scene === 'harborShift' ? 'harbor-shift' : scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art) })),
   ...Object.entries(sequenceFiles).map(([id, file]) => ({ id, file, kind: 'composition' as const, validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art), validate(value: unknown) { const doc = art.validate(value); if (doc.scene !== id) throw new Error(`Sequence identity must remain ${id}`); return doc; } })),
@@ -72,7 +78,7 @@ export function validateSourceDocuments(documents: ReadonlyMap<string, unknown>)
     if(descriptor.validateContext)descriptor.validateContext(documents.get(descriptor.id),documents);else descriptor.validate(documents.get(descriptor.id));
     if (descriptor.kind === 'composition') compositions[descriptor.id] = documents.get(descriptor.id) as Composition;
   }
-  for(const s of gameplayScenes)s.validateScene(documents.get(s.prefix+'-scene'),s.validateGameplay(documents.get(s.gameplayId)));
+  for(const s of gameplayScenes)validatePendingSceneContent(s,documents.get(s.prefix+'-scene'),documents);
   validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents),validateMetroSource(documents.get('metro-source')));
   const context = createSequenceValidationContext(art, compositions, pendingDestinations(documents));
   for (const [id] of Object.entries(timelineFiles)) validateTimeline(documents.get(id), context);

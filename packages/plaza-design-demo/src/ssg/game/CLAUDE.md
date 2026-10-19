@@ -34,8 +34,11 @@ the detailed first design pass. The prior roadmap is preserved under archive/ an
   source, not player saves. ENGINE-CONSOLIDATION-GOAL.md expands the earlier Sandbox/ENG-04 pilot
   to all 19 existing scenes and ordinary authored scene creation. Earlier frozen pilot inventories
   describe their historical scopes, not a present restriction on the authorized goal.
-  Use registered prospective validators and shared typed controls; preserve existing identities and
-  invocation permissions while supporting required creation, removal and rebinding. Pending documents
+  Use registered prospective validators and shared typed controls; preserve default identities and
+  invocation behavior while supporting required creation, removal and rebinding. Authors can edit
+  ordinary source permissions after validation; actual physical-input origins, system-only workflows,
+  locks, seals and watchdog authorization remain enforced. Do not protect every historical vocabulary
+  or state ID merely because it appeared in the original document. Pending documents
   must drive the actual runtime rather than a parallel editor evaluator. Restart after code/schema
   changes and rebuild the homepage after source edits.
   The scene-centered Layout/Logic/Wiring/Play editor runs pending native Game scenes in disposable
@@ -62,7 +65,7 @@ the detailed first design pass. The prior roadmap is preserved under archive/ an
   and native simulation mutate the same common state blocks; no scalar alias map or save-owner bridge.
   Current Save serializes settled copies without mutating live state. Read-only queries use the common
   evaluator and never acquire saved values. Committed event metadata carries native goal changes.
-  Bindings and source wires use protected validators in native-gameplay-scenes.ts. Eligibility must remain pure, and dialogue
+  Bindings and source wires validate against the prospective graph and registered native dependencies. Eligibility must remain pure, and dialogue
   commands must respect native lock/seal/watchdog rules. Existing signal time stays authoritative.
 - Preserve normal current-format progress and validate saved scene IDs before entering them.
   The user explicitly excluded historic save-format compatibility; do not add codecs, migration
@@ -110,7 +113,7 @@ scene-centered UI. ENGINE-CONSOLIDATION-STATUS.md and ALL-GAME-MIGRATION.json di
 registration, actual editable behavior and preservation evidence. Do not call an opaque native
 content wrapper or read-only source panel full authoring. Immutable original source is under
 .scene-system/all-game-baseline-2026-10-18 at the repository root; never overwrite it.
-Scene content registration currently covers all 19 scenes; native Play fixtures cover all 19. Ordinary
+Scene content registration currently covers all 19 scenes; the private Play fixture generator supports all 19. Ordinary
 entity creation/deletion, world/controller contracts and some device dialogue remain unfinished.
 Shared conditions now support pure time-window/weather reads through GameplayState.world. Game
 supplies live context; missing context remains unknown under negation and cannot grant permission.
@@ -127,7 +130,9 @@ Private Play uses authoring/pending-scene.ts to assemble pending content and beh
 Source descriptors may supply validateContext for references into companion documents. Protected
 Save/read/reload and recovery validate paired snapshots; never validate a pending scene against
 its compiled original gameplay document when a prospective companion is available. Native action
-permissions remain protected. Scene cues are cosmetic committed-event frame stamps, never rewards.
+authorization remains enforced at execution. Optional source fields must stay removed; do not
+restore canonical actors, manifests, reaction IDs or configuration for incomplete older bundles.
+Required current fields reject when missing. Scene cues are cosmetic committed-event frame stamps, never rewards.
 Beach uses the same shared native event observer for the gull animation and keeps its existing frame
 clock; templates are explicit, read-only tokens/item/state fields, validated before execution.
 

@@ -30,8 +30,11 @@ for(const id of ['warehouse','shop','library','laundromat','sandbox','stacks','b
  for(const actor of source.actors!)delete actor.follow;
  for(const actor of [...source.actors!])removeSceneActor(source,composition,actor.id);
 }
-validateSourceDocuments(emptyDocuments);
 const emptyRegistry=pendingRegistry(emptyDocuments);
+assert.throws(()=>validateSourceDocuments(emptyDocuments),'actor removal must address actual opening line references');
+const opening=emptyDocuments.get('opening-story') as any;
+for(const entries of Object.values(opening.OPENING_LINES) as Record<string,unknown>[])for(const ref of Object.keys(entries)){const [scene,id]=ref.split('/'),def=emptyRegistry[scene];const entities=[...def.people??[],...def.uses??[],...def.readables??[],...def.exits,...def.data?.devices??[],...def.data?.nodes??[]];if(!entities.some(e=>e.id===id))delete entries[ref];}
+validateSourceDocuments(emptyDocuments);
 for(const id of ['warehouse','shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','harborShift','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'])assert.equal((emptyRegistry[id].people??[]).length,0);
 const mutate=(fn:(s:SceneDocument,c:Composition)=>void,id='warehouse')=>{const s=model.get(prefix(id)+'-scene').value as SceneDocument,c=model.get(id).value as Composition;fn(s,c);model.importDocuments([{id:prefix(id)+'-scene',value:s},{id,value:c}]);};
 const native=()=>pendingRegistry(new Map(model.list().map(d=>[d.id,d.value]))).warehouse;
@@ -83,7 +86,7 @@ for(const invalid of [
  (s:SceneDocument,c:Composition)=>bindSceneActor(s,c,'new-resident','missing'),
  (s:SceneDocument,c:Composition)=>bindSceneActor(s,c,'new-resident',s.actors!.find(a=>a.id==='new-resident')!.instance),
  (s:SceneDocument,c:Composition)=>bindSceneActor(s,c,'new-resident','dock','missing'),
- (s:SceneDocument,c:Composition)=>{s.actors!.find(a=>a.id==='mech')!.reaction='changed';},
+ (s:SceneDocument,c:Composition)=>{s.actors!.find(a=>a.id==='mech')!.reaction='invalid reaction!';},
  (s:SceneDocument,c:Composition)=>{c.instances=c.instances.filter(a=>a.id!==s.actors!.find(a=>a.id==='new-resident')!.instance);},
  (s:SceneDocument,c:Composition)=>addSceneActor(s,c,'new-resident',{}),
 ]){assert.throws(()=>mutate(invalid));assert.deepEqual(model.edits(),before);}

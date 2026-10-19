@@ -3,9 +3,10 @@
  * everything is data/stacks.json on the engine: STS-2, the Port Authority's
  * thermal gate and its alarm cable, the night ferry, the reefer with Moth in
  * it, the Registry's watchdog walking port → crane → ferry, and Moth's talk.
- * Source Case lists own lift/alarm manual refusals and busy eligibility. A
- * source select query supplies the finite regular/reefer trajectory kind.
- * Remaining native work still includes the ordinary callback/watchdog tails
+ * Source Case lists own lift/alarm refusals, busy eligibility and empty/airborne
+ * alarm policy. Shared milestone commands own alarm counts and return outcomes;
+ * source queries own status wording and the finite regular/reefer trajectory kind.
+ * Remaining native work still includes the ordinary lift-start/scan tails
  * listed in STACKS-ORDINARY-MIGRATION.md; this file is not fully consolidated.
  *
  * The trajectory mechanics:
@@ -22,9 +23,9 @@
  *   nothing leaves it (the engine's freeze), so the warm is lost: the clever way.
  * - `port.alarm`: sounds; with 0451 in the air, the lift is aborted and the box
  *   returned to its slot.
- * - the watchdog's check (`tick`): whenever it sits on PORT AUTHORITY it puts a cut
- *   alarm cable back and logs the tamper (trace). So the cut has to be made while
- *   it is away, and hold until the lift: the direct way.
+ * - the source watchdog trigger restores a cut alarm cable and records trace
+ *   through shared domain actions while PORT AUTHORITY is frozen. The cut must
+ *   therefore be made while it is away and hold until the lift.
  * - `moth.end`: the end of Act I. Flags `act1:done`, `heard:spire` (the Spire is
  *   named on the map) and `contact:moth` (Moth on your deck), the ACT II card,
  *   and NIGHT FERRY 7 leaves with Moth (`departed`; NIGHT FERRY 8 takes the berth and the
@@ -118,10 +119,6 @@ export function trolley(m: SceneModel,geometry:TerminalGeometry={X,H}): { x: num
 
 /** Is the crane busy (a lift or a return in progress)? */
 const busy = (m: SceneModel) => m.scratch.liftT0 !== undefined || m.scratch.retT0 !== undefined;
-/** The alarm cable: the gate's warm to the alarm. The watchdog checks it on every visit. */
-const ALARM = { from: 'port.scanner:warm', to: 'port.alarm', verb: 'sound' };
-const alarmWired = (m: SceneModel) => m.links.some((l) => l.from === ALARM.from && l.to === ALARM.to && l.verb === ALARM.verb);
-
 /** A lift's ticket: an alarm or a reload makes a lift in flight forget to land. */
 let ticket = 0;
 
@@ -158,23 +155,20 @@ const {X}=geometry;
     },
 
     /** The alarm: by hand a test; with 0451 in the air, the lift is aborted and the box goes back. */
-    'port.alarm': (w) => {
+    'port.return': (w) => {
       const m = w.m, s = m.scratch;
-      s.alarm = m.now();
-      if (m.get('boxAt') !== 'air') { w.changed(); return w.line('alarm.empty'); }
-      m.set('alarms', Number(m.get('alarms') ?? 0) + 1);
       // abort: the box goes back into its slot from wherever it is
       s.retX = trolley(m,geometry).x; s.retT0 = m.now(); delete s.liftT0; s.ticket = ++ticket;
       const t = s.ticket;
+      // Physical trajectory is valid before a source commit can request a redraw.
+      w.input('stacks.crane.return.started');
       m.later(RETURN_MS, () => {
         if (s.ticket !== t) return;
         delete s.retT0; s.restX = X.slot;
-        m.set('boxAt', 'stack');
-        w.say(w.line('box.back'), 'sts2');
+        w.input('stacks.crane.returned');
         w.changed();
       });
       w.changed();
-      return w.line('alarm.box');
     },
 
 
@@ -182,20 +176,13 @@ const {X}=geometry;
 
   function tick(w: World) {
     const m = w.m, s = m.scratch;
-    // the watchdog's visit: it puts a cut alarm cable back, and logs the tamper
-    if (m.frozen('port') && !alarmWired(m)) {
-      m.connect(ALARM.from, ALARM.to, ALARM.verb);
-      m.addTrace('port', w.tune('tamperTrace'));
-      w.say(w.line('watchdog.restore'), 'port');
-      w.changed();
-    }
     // the crane's moving: redraw is the game's; the status line wants a refresh when a lift ends
     if (s.cold !== undefined && m.now() - s.cold > 1200) { delete s.cold; w.changed(); }
   }
 
   return {
     effects,
-    inputs:['stacks.crane.landed'],
+    inputs:['stacks.crane.landed','stacks.crane.return.started','stacks.crane.returned'],
     panels: ['scope'],
     derived: {
       /** Physical trajectory occupancy; source cases own permission/refusal policy. */
@@ -203,12 +190,8 @@ const {X}=geometry;
       reeferTrajectory: (m) => m.scratch.liftKind===KIND.box,
       /** Moth's question has an answer: did you feed Sprat (Moth's place, the feeder)? */
       spratFed: () => !!player.sceneState?.('moth', 'fed'),
-      /** STS-2's status: what the trolley is doing. */
-      /** The ferry's status line: 7 waiting for 0451, 7 full, or 8 loading once 7 has gone. */
-      ferryStatus: (m) => m.get('departed') ? 'NIGHT FERRY 8 · LOADING · DEPARTS WHEN FULL'
-        : m.get('boxAt') === 'ferry' ? 'NIGHT FERRY 7 · CARGO 12 OF 12 · CLEARED TO DEPART'
-        : 'NIGHT FERRY 7 · CARGO 11 OF 12 · AWAITING NRLU 404 0451',
-      crane: (m) => busy(m) ? (m.scratch.retT0 !== undefined ? 'returning a box' : 'lifting') : 'waiting for clearance',
+      portFrozen: (m) => m.frozen('port'),
+      craneReturning: (m) => m.scratch.retT0 !== undefined,
     },
     tick,
     place: (m: SceneModel, home: Spot) => {
@@ -216,25 +199,21 @@ const {X}=geometry;
       return home;
     },
     needs: {
-      state: ['found', 'box', 'boxAt', 'alarms', 'loaded', 'talked', 'departed'],
-      goals: ['find', 'moth'],
+      devices:[{id:'port',nouns:[{id:'scanner',kind:'SENSE',events:['warm']}]}],
+      state: [{key:'box',type:'string'},{key:'boxAt',type:'string'},{key:'departed',type:'boolean'},{key:'found',type:'boolean'},{key:'loaded',type:'number'}],
       texts: {
         'lift.box': 'line',
-        'scan.warm': 'line', 'box.back': 'line',
-        'alarm.empty': 'line', 'alarm.box': 'line',
-        'watchdog.restore': 'line',
+        'scan.warm': 'line',
         // the scope (scope.ts)
         'scope.zoom': 'label', 'scope.tag': 'label', 'scope.hud': 'label', 'scope.aim': 'label', 'scope.on': 'label',
         'scope.zoom.ground': 'line', 'scope.zoom.box': 'line', 'scope.zoom.found': 'line', 'scope.zoom.out': 'line',
         'scope.tag.none': 'line', 'scope.tag.wrong': 'line', 'scope.tag.ok': 'line', 'scope.tag.refused': 'line', 'scope.tag.done': 'line',
       },
     },
-    /** Controller dependencies: watchdog coverage, cargo identity and tuning. */
+    /** The physical scope identifies the cargo slot; watchdog topology is authored. */
     check: (z: SceneData) => {
       const errs: string[] = [];
-      for (const d of ['port', 'sts2', 'ferry']) if (!z.watchdog?.route.includes(d)) errs.push(`watchdog: its route must visit ${d} (P15)`);
       if (!z.camera?.crates.some((k) => k.id === z.state.box && k.label === 'NRLU 404 0451')) errs.push('camera.crates: state.box must be the slot that holds NRLU 404 0451 (P15)');
-      if (typeof z.tuning.tamperTrace !== 'number') errs.push('tuning.tamperTrace: missing (the watchdog\'s check reads it)');
       return errs;
     },
   };

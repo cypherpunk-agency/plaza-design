@@ -30,7 +30,7 @@ import capsuleGameplay from '../scenes/capsule/gameplay.json';
 import {projectNativeDeviceData} from '../engine/gameplay/native-bindings';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import libraryGameplay from '../scenes/library/gameplay.json';
-import {nativeDialogue} from '../engine/gameplay/native-dialogue';
+import {nativeDialogue,nativeDeviceDialogues} from '../engine/gameplay/native-dialogue';
 import {validateGameplay} from '../engine/gameplay/validation';
 /**
  * The game's data files, bundled into the page by esbuild (no fetches: the
@@ -98,7 +98,7 @@ const stacks: Loose<SceneData> = {...projectSceneState(stacksJson as unknown as 
 export const STACKS = stacks as SceneData;
 
 /** The public library (P16 Long overdue): the card reader, the session timer, the printer, the LIBRARY LAN's nodes, scan.so. */
-const library: Loose<SceneData> = {...projectSceneState(libraryJson as unknown as SceneData,validateGameplay(libraryGameplay)),dialogue:{catalog:nativeDialogue(validateGameplay(libraryGameplay),'catalog',{'library:renewed':'renewed'},'say "{line}" > catalog')}};
+const library: Loose<SceneData> = {...projectSceneState(libraryJson as unknown as SceneData,validateGameplay(libraryGameplay)),dialogue:nativeDeviceDialogues(validateGameplay(libraryGameplay),libraryJson as unknown as SceneData)};
 export const LIBRARY = library as SceneData;
 
 /** The sandbox (sudo only): REGISTRY QA BAY 3, one bench per engine feature. */

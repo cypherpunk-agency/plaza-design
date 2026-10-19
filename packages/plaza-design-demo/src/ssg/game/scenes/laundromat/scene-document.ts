@@ -1,4 +1,3 @@
-import {inheritSceneDefaults} from '../../engine/gameplay/manifest-content';
 import {protectActorIdentity} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import {validateNativeContract} from '../../engine/gameplay/native-contract';
@@ -18,7 +17,7 @@ export function validateLaundromatGameplay(value:unknown){
 }
 export const LAUNDROMAT_GAMEPLAY=validateLaundromatGameplay(gameplaySource);
 export const laundromatBindingGroups=['uses','readables','rests','exits'] as const;
-export function laundromatSource(value:SceneDocument):SceneDocument{return inheritSceneDefaults(value,sceneSource as unknown as SceneDocument,laundromatBindingGroups);}
+export function laundromatSource(value:SceneDocument):SceneDocument{return structuredClone(value);}
 /** Ordinary content is source owned; native actor identities and original purchase ownership remain stable. */
 export function validateLaundromatScene(value:unknown,gameplay:GameplayDefinition=LAUNDROMAT_GAMEPLAY){
   const doc=validateSceneDocument(laundromatSource(value as SceneDocument),gameplay,{actors:true,manifest:true});

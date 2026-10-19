@@ -1,6 +1,6 @@
 import {validateNativeCommandSteps} from './native-command-steps';
 import engineSource from '../../data/engine.json';
-import {validateNativeSayShape,validateNativeSaySources,nativeSayKey,nativeSourceLine} from './native-text-source';
+import {validateNativeTextQueries,validateNativeSayShape,validateNativeSaySources,nativeSayKey,nativeSourceLine} from './native-text-source';
 import {validateNativeInputsShape,validateNativeInputSources,dispatchNativeInput} from './native-inputs';
 import {validateCheckpointOwner} from './checkpoint-source';
 import {clearNativeLiveConditions} from './native-live-conditions';
@@ -36,10 +36,15 @@ export function validateNativeShape(d:GameplayDefinition,condition:(v:unknown)=>
 function noun(data:SceneData,key:string){const i=key.indexOf('.');return [...data.devices,...(data.nodes??[])].find(d=>d.id===key.slice(0,i))?.nouns.find(n=>n.id===key.slice(i+1));}
 export function nativeVocabulary(data:SceneData){return [...data.devices,...(data.nodes??[])].flatMap(d=>[...d.nouns.map(n=>({key:d.id+'.'+n.id,verbs:[...(n.clock?['start','stop']:[]),...(n.link?['scan',...Array.from(new Set([...(n.link.reach??[]),...(n.link.known??[])])).map(id=>'connect '+id)]:[]),...(n.verbs??[])],events:n.events??[]})),...(d.sectors??[]).filter(s=>'sequence'in s.seal).map(s=>({key:d.id+'.'+s.id,verbs:'sequence'in s.seal?s.seal.sequence:[],events:[]})),...((data.watchdog?.route??[]).includes(d.id)?[{key:d.id+'.watchdog',verbs:[],events:['arrives','leaves']}]:[])]);}
 export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[],physical:readonly string[]=[]):GameplayDefinition {
- validateNativeInputSources(d,data,physical);validateNativeCommandSteps(d,data);
+ validateNativeInputSources(d,data,physical);validateNativeCommandSteps(d,data);validateNativeTextQueries(d,data);
  validateGameplayQuerySources(d,{...data,texts:{...engineSource.texts,...data.texts}as unknown as SceneData['texts']});
  validateCheckpointOwner(d,data.id);
  for(const command of Object.values(data.camera?.actions??{}))if(!d.commands[command]?.sources.includes('interaction'))fail('camera interaction command '+command);
+ const vocab=nativeVocabulary(data);
+ for(const command of Object.values(d.commands))for(const action of command.actions){
+  if('wire'in action){const w=action.wire,at=w.from.lastIndexOf(':'),event=vocab.find(n=>n.key===w.from.slice(0,at));if(!event?.events.includes(w.from.slice(at+1))||!vocab.some(n=>n.key===w.to))fail('wire action endpoint');if(w.op==='connect'&&!vocab.find(n=>n.key===w.to)?.verbs.includes(w.verb))fail('wire action verb');}
+  if('trace'in action&&![...data.devices,...data.nodes??[]].some(dev=>dev.id===action.trace.device))fail('trace action device');
+ }
  const b=d.native;if(!b)return d;for(const key of Object.values(b.reads??{}))if(!Object.prototype.hasOwnProperty.call(data.state,key)&&!derived.includes(key)&&!Object.prototype.hasOwnProperty.call(data.observations?.aliases??{},key))fail('native read '+key);
  for(const r of b.verbs){for(const c of r.cases)validateNativeSaySources(c.say,{...engineSource.texts,...data.texts}as unknown as SceneData['texts']);const n=noun(data,r.device+'.'+r.noun);if(!n?.verbs?.includes(r.verb)||!['ACT','SENSE','STORE'].includes(n.kind))fail('unsupported native verb');}
  const vocabulary=nativeVocabulary(data),event=(key:string)=>{const i=key.lastIndexOf(':');return i>0&&!!vocabulary.find(n=>n.key===key.slice(0,i))?.events.includes(key.slice(i+1));};
@@ -64,6 +69,7 @@ export function nativeRoute(d:GameplayDefinition,c:Pick<Ctx,'dev'|'noun'|'verb'>
 export function attachNativeGameplay(model:SceneModel,session:GameplaySession){
  model.installGameplaySource(session.definition as GameplayDefinition);
  validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}),model.rules.inputs);
+ const domain=()=>model.beginDomainTransaction();session.domain=domain;session.onDispose(()=>{if(session.domain===domain)session.domain=undefined;});
  const queryIds=new Set(Object.keys(session.definition.queries??{})),readContext=()=>({tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates}),query=(id:string)=>queryIds.has(id)?session.query(id):undefined;session.readContext=readContext;model.gameplayQuery=query;model.gameplayQueryIds=queryIds;
  session.onDispose(()=>{if(session.readContext===readContext)session.readContext=undefined;if(model.gameplayQuery===query)model.gameplayQuery=undefined;if(model.gameplayQueryIds===queryIds)model.gameplayQueryIds=undefined;});
  const input=(id:string,origin:import('./native-inputs').NativeInputOrigin)=>dispatchNativeInput(model,session,id,origin);model.gameplayInput=input;session.onDispose(()=>{if(model.gameplayInput===input)model.gameplayInput=undefined;});
@@ -72,7 +78,7 @@ export function attachNativeGameplay(model:SceneModel,session:GameplaySession){
  const step=(c:Ctx,id:string,preview:boolean)=>{const native=model.nativeEligibility(c.dev,c.noun,c.verb,c.bySignal);return native.ok?(preview?session.eligibility(id,c.bySignal?'signal':'interaction'):session.dispatch(id,c.bySignal?'signal':'interaction')):native;};model.gameplayStep=step;session.onDispose(()=>{if(model.gameplayStep===step)model.gameplayStep=undefined;});
  const command=(id:string)=>session.dispatch(id,'interaction');model.gameplayCommand=command;
  session.onDispose(()=>{if(model.gameplayCommand===command)model.gameplayCommand=undefined;});
- const previousAuthorize=session.authorize,authorize:NonNullable<GameplaySession['authorize']>=(id,source)=>{for(const r of session.definition.native?.verbs??[])if(r.cases.some(c=>c.command===id)){const result=model.nativeEligibility(r.device,r.noun,r.verb,source==='signal');if(!result.ok)return result;}return{ok:true};};session.authorize=authorize;
+ const previousAuthorize=session.authorize,authorize:NonNullable<GameplaySession['authorize']>=(id,source,domain)=>{for(const r of session.definition.native?.verbs??[])if(r.cases.some(c=>c.command===id)){const result=domain?domain.authorizeRoute({dev:r.device,noun:r.noun,verb:r.verb,bySignal:source==='signal'}):model.nativeEligibility(r.device,r.noun,r.verb,source==='signal');if(!result.ok)return result;}return{ok:true};};session.authorize=authorize;
  session.onDispose(()=>{if(session.authorize===authorize)session.authorize=previousAuthorize;});
  const deadlines=nativeDeadlines(model,session);
  const unsubscribe=session.observe(e=>{deadlines.event(e.id);nativeWorkflowEvent(model,session,e.id);const pulse=session.definition.native?.presentation?.[e.id];if(pulse)model.scratch['pulse.'+pulse.target]=model.now();const event=session.definition.native?.events[e.id];if(event)model.emit(event);});

@@ -6,7 +6,10 @@
     "contact:moth",
     "stacks:alarms",
     "stacks:spratFed",
-    "stacks:reeferTrajectory"
+    "stacks:reeferTrajectory",
+    "stacks:craneBusy",
+    "stacks:craneReturning",
+    "stacks:portFrozen"
   ],
   "items": [
     "tea"
@@ -14,7 +17,10 @@
   "events": [
     "stacks.moth.recruited",
     "stacks.camera.found",
-    "stacks.crane.landed.reefer"
+    "stacks.crane.landed.reefer",
+    "stacks.alarm.pulse",
+    "stacks.crane.returned",
+    "stacks.watchdog.restored"
   ],
   "commands": {
     "stacks.pour": {
@@ -126,6 +132,71 @@
         {
           "state": "stacks.loaded",
           "add": 1
+        }
+      ]
+    },
+    "stacks.alarm.empty": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "emit": "stacks.alarm.pulse"
+        }
+      ]
+    },
+    "stacks.crane.return.started": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "stacks.alarms",
+          "add": 1
+        },
+        {
+          "emit": "stacks.alarm.pulse"
+        }
+      ]
+    },
+    "stacks.crane.returned": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "stacks.boxAt",
+          "set": "stack"
+        },
+        {
+          "emit": "stacks.crane.returned"
+        }
+      ]
+    },
+    "stacks.watchdog.restore": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "wire": {
+            "op": "connect",
+            "from": "port.scanner:warm",
+            "to": "port.alarm",
+            "verb": "sound"
+          }
+        },
+        {
+          "trace": {
+            "device": "port",
+            "add": {
+              "query": "stacks.tamperTrace"
+            }
+          }
+        },
+        {
+          "emit": "stacks.watchdog.restored"
         }
       ]
     }
@@ -474,7 +545,10 @@
     "reads": {
       "stacks:alarms": "alarms",
       "stacks:spratFed": "spratFed",
-      "stacks:reeferTrajectory": "reeferTrajectory"
+      "stacks:reeferTrajectory": "reeferTrajectory",
+      "stacks:craneBusy": "craneBusy",
+      "stacks:craneReturning": "craneReturning",
+      "stacks:portFrozen": "portFrozen"
     },
     "verbs": [],
     "events": {},
@@ -491,6 +565,18 @@
           "NRLU 404 0451: set down on NIGHT FERRY 7, deck slot 12, shore power on. from inside: three long knocks.",
           "ok"
         ]
+      },
+      "stacks.crane.returned": {
+        "from": "sts2",
+        "say": {
+          "text": "box.back"
+        }
+      },
+      "stacks.watchdog.restored": {
+        "from": "port",
+        "say": {
+          "text": "watchdog.restore"
+        }
       }
     },
     "inputs": {
@@ -509,6 +595,56 @@
             "command": "stacks.crane.land.regular"
           }
         ]
+      },
+      "stacks.crane.return.started": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "stacks.crane.return.started"
+          }
+        ]
+      },
+      "stacks.crane.returned": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "stacks.crane.returned"
+          }
+        ]
+      }
+    },
+    "presentation": {
+      "stacks.alarm.pulse": {
+        "kind": "pulse",
+        "target": "port.alarm"
+      }
+    },
+    "triggers": {
+      "stacks.watchdog.restore": {
+        "phase": "beforeNative",
+        "when": {
+          "all": [
+            {
+              "flag": "stacks:portFrozen"
+            },
+            {
+              "compare": {
+                "left": {
+                  "query": "stacks.alarmWired"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": false
+                }
+              }
+            }
+          ]
+        },
+        "command": "stacks.watchdog.restore"
       }
     }
   },
@@ -560,6 +696,70 @@
           }
         }
       ]
+    },
+    "crane": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "flag": "stacks:craneReturning"
+          },
+          "value": {
+            "literal": "returning a box"
+          }
+        },
+        {
+          "when": {
+            "flag": "stacks:craneBusy"
+          },
+          "value": {
+            "literal": "lifting"
+          }
+        },
+        {
+          "value": {
+            "literal": "waiting for clearance"
+          }
+        }
+      ]
+    },
+    "ferryStatus": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "state": "stacks.departed",
+            "is": true
+          },
+          "value": {
+            "literal": "NIGHT FERRY 8 · LOADING · DEPARTS WHEN FULL"
+          }
+        },
+        {
+          "when": {
+            "state": "stacks.boxAt",
+            "is": "ferry"
+          },
+          "value": {
+            "literal": "NIGHT FERRY 7 · CARGO 12 OF 12 · CLEARED TO DEPART"
+          }
+        },
+        {
+          "value": {
+            "literal": "NIGHT FERRY 7 · CARGO 11 OF 12 · AWAITING NRLU 404 0451"
+          }
+        }
+      ]
+    },
+    "stacks.alarmWired": {
+      "kind": "wirePresent",
+      "from": "port.scanner:warm",
+      "to": "port.alarm",
+      "verb": "sound"
+    },
+    "stacks.tamperTrace": {
+      "kind": "tuning",
+      "key": "tamperTrace"
     }
   }
 }

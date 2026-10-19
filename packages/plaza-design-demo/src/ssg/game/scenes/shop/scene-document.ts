@@ -1,4 +1,3 @@
-import {inheritSceneDefaults} from '../../engine/gameplay/manifest-content';
 import {protectActorIdentity} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import gameplaySource from './gameplay.json';
@@ -17,8 +16,8 @@ export function validateShopGameplay(value:unknown){
 }
 export const SHOP_GAMEPLAY=validateShopGameplay(gameplaySource);
 export const shopBindingGroups=['uses','readables','rests','exits'] as const;
-/** Legacy source bundles inherit the canonical bindings; new content supplies its own bindings. */
-export function shopManifest(value:SceneDocument):SceneDocument{return inheritSceneDefaults(value,sceneSource as unknown as SceneDocument,shopBindingGroups);}
+/** Content and placement bindings are owned by the current source document. */
+export function shopManifest(value:SceneDocument):SceneDocument{return structuredClone(value);}
 /** Preserve the original purchase contract while ordinary content uses authored geometry. */
 export function validateShopScene(value:unknown,gameplay:GameplayDefinition=SHOP_GAMEPLAY){
   const doc=validateSceneDocument(shopManifest(value as SceneDocument),validateShopGameplay(gameplay),{manifest:true,actors:true});

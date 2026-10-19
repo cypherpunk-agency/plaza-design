@@ -75,13 +75,27 @@
             "harbor siding"
           ],
           "on": {
-            "read": {
-              "do": [
-                {
-                  "effect": "train.position"
-                }
-              ]
-            }
+            "read": [
+              {
+                "if": "train.positionStation",
+                "say": "pos.station"
+              },
+              {
+                "if": "train.positionHalted",
+                "say": "pos.halted"
+              },
+              {
+                "if": "train.positionBetween",
+                "say": "pos.between"
+              },
+              {
+                "say": [
+                  "cat position",
+                  "POSITION: physical observation unavailable.",
+                  "err"
+                ]
+              }
+            ]
           }
         },
         {
@@ -144,12 +158,31 @@
                 "say": "brake.queued"
               },
               {
-                "if": "train.paid",
+                "if": "train.paidStanding",
                 "do": [
                   {
                     "effect": "train.brake"
                   }
-                ]
+                ],
+                "say": "brake.standing"
+              },
+              {
+                "if": "train.paidAlready",
+                "do": [
+                  {
+                    "effect": "train.brake"
+                  }
+                ],
+                "say": "brake.already"
+              },
+              {
+                "if": "train.paidReady",
+                "do": [
+                  {
+                    "effect": "train.brake"
+                  }
+                ],
+                "say": "brake.pulled"
               },
               {
                 "say": [
@@ -236,15 +269,15 @@
     "goals.done": "the doors open on a platform that is on no map. a stair goes up. the harbor is open now.",
     "pos.station": [
       "cat position",
-      "standing at {stop}. doors {doors}."
+      "standing at {trainStopName}. doors {query:train.positionDoors}."
     ],
     "pos.between": [
       "cat position",
-      "between {from} and {to}. track km {km}."
+      "between {trainStopName} and {trainNextName}. track km {trainKilometres}."
     ],
     "pos.halted": [
       "cat position",
-      "stopped between {from} and {to}. track km {km}. not a station."
+      "stopped between {trainStopName} and {trainNextName}. track km {trainKilometres}. not a station."
     ],
     "brake.notyours": [
       "{via}use brake --pull",
@@ -278,7 +311,7 @@
     ],
     "halt.track": [
       "train",
-      "the train stops {where}. the lights flicker. nobody looks up.",
+      "the train stops {haltWhere}. the lights flicker. nobody looks up.",
       "dim"
     ],
     "halt.siding": [
@@ -320,6 +353,19 @@
       "{via}use doors --open",
       "DOORS: open. an old platform, a service stair up. the emergency registration is closed: #0451 · resolved.",
       "ok"
-    ]
+    ],
+    "halt.where.tunnel": "in the tunnel under the mall",
+    "halt.where.bridge": "on the bridge, over black water",
+    "halt.where.containers": "among the containers",
+    "halt.where.towers": "between two towers",
+    "halt.where.viaduct": "on the viaduct, over the roofs",
+    "halt.where.mall": "by the mall's glass front",
+    "halt.where.downtown": "over Downtown's streets",
+    "status.siding": "STOPPED · NOT A STATION",
+    "status.halted": "EMERGENCY STOP",
+    "status.next": "NEXT: {stop}",
+    "status.station": "AT {stop}",
+    "position.doors.open": "open",
+    "position.doors.shut": "shut"
   }
 }

@@ -1,3 +1,4 @@
+import {pendingFixtureVocabulary} from './pending-fixtures';
 import {pendingOpeningStory} from './pending-opening';
 import {validateCompanionGameplay} from '../engine/gameplay/companion-conversations';
 import {validatePendingNetwork} from './pending-network';
@@ -40,7 +41,8 @@ window.addEventListener('message', async event => {
     const sequenceValues=sourceDocuments?new Map<string,unknown>(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value])):undefined;
     const sequences=sequenceValues?createRuntimeSequenceDocuments(sequenceValues,createSequenceValidationContext(art,Object.fromEntries([...sequenceValues].filter(([id])=>['sequence-opening','sequence-intro','sequence-act2','sequence-taxi'].includes(id))) as Record<string,Composition>,pendingDestinations(sequenceValues))):undefined;
     const registry=sourceDocuments?pendingRegistry(new Map(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value]))):undefined;
-    const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,Object.keys(registry??{})).fixtures[0];
+    const fixtureVocabulary=sequenceValues&&registry?pendingFixtureVocabulary(sequenceValues,registry):undefined;
+    const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,Object.keys(registry??{}),fixtureVocabulary).fixtures[0];
     if(district&&!['shop','library','sandbox'].includes(f.scene))throw new Error('Demo entry outside district');
     const districtContent=district?demoContent(district):undefined;
     if(manifest&&f.scene!=='shop')throw new Error('Invalid manifest pilot role');
@@ -52,7 +54,7 @@ window.addEventListener('message', async event => {
     await document.fonts.ready;
     if(memory)restorePrivateStorage(memory);
     const freshStart=!gameStorage.getItem(SAVE_KEY);
-    if(freshStart){const fresh=fixtureSave(f,Object.keys(registry??{}));if(scene.data&&Object.keys(f.state).length)fresh.gameplay={[f.scene]:{...scene.data.state,...f.state}};gameStorage.setItem(SAVE_KEY,JSON.stringify(fresh));}
+    if(freshStart){const fresh=fixtureSave(f,Object.keys(registry??{}),fixtureVocabulary);if(scene.data&&Object.keys(f.state).length)fresh.gameplay={[f.scene]:{...scene.data.state,...f.state}};gameStorage.setItem(SAVE_KEY,JSON.stringify(fresh));}
     document.documentElement.classList.add('game-mode');if(f.scene==='harborShift')document.documentElement.classList.add('shift-prototype');
     document.body.innerHTML='<section class="demo-window"><header hidden></header><footer hidden></footer><div id="input-host"></div></section>';
     const windowEl=document.querySelector<HTMLElement>('.demo-window')!;

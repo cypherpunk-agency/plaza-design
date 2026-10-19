@@ -1,3 +1,4 @@
+import type {SceneData} from '../../data/types';
 import type {GameplayDefinition,NativeSay} from './types';
 import type {GameplaySession} from './session';
 import type {SceneModel,Ctx} from '../model';
@@ -21,3 +22,18 @@ export function nativeSayKey(value:Exclude<NativeSay,null|unknown[]>,session:Gam
 }
 /** Native formatting receives the real noun/verb/signal context after the commit. */
 export function nativeSourceLine(key:string,model:SceneModel,context:Ctx){return model.lineFor(key,context);}
+
+/** Explicit query tokens are references; ordinary native placeholders keep their existing semantics. */
+export function validateNativeTextQueries(definition:GameplayDefinition,data:SceneData){
+ const seen=new WeakSet<object>();
+ function visit(value:unknown){
+  if(typeof value==='string'){for(const token of value.matchAll(/\{query:([^{}]*)\}/g))if(!own(definition.queries??{},token[1]))fail('query reference '+token[1]);return;}
+  if(!value||typeof value!=='object'||seen.has(value))return;
+  seen.add(value);for(const child of Object.values(value))visit(child);
+ }
+ // Scene text includes labels, status fragments, inline action captions and descriptions.
+ visit(data);
+ // Bound verb/committed replies can also own inline native-format lines.
+ for(const route of definition.native?.verbs??[]){visit(route.denied);for(const row of route.cases)if(!row.template)visit(row.say);}
+ for(const reply of Object.values(definition.native?.replies??{}))for(const row of 'cases'in reply?reply.cases:[reply])if(!row.template)visit(row.say);
+}

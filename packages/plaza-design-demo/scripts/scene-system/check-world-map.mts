@@ -69,7 +69,7 @@ assert.throws(()=>view.setPreview({time:NaN}),/map\.preview\.time/);
 assert.throws(()=>view.setPreview({scene:'missing' as SceneId}),/unknown scene/);
 assert.equal(serializeWorldDocument(doc,context),before,'preview mutated world source');
 // Default shipping map preference behavior remains enabled.
-const native:MapState={view:openMap('view','downtown',null),scene:'downtown',ride:null,seen:()=>true,flag:()=>true,gateOpen:true,harborOpen:true,tokens:1,t:0,reduced:true,touch:false,tapMin:22,avoid:null};
+const native:MapState={view:openMap('view','downtown',null),scene:'downtown',ride:null,seen:()=>true,flag:()=>true,exitAccess:()=>({ok:true}),harborOpen:true,tokens:1,t:0,reduced:true,touch:false,tapMin:22,avoid:null};
 mapKey(native,'3');assert.equal(openMap('view','downtown',null).layer,'above');
 mapKey(native,nativeBefore.flat?'t':'1');
 const root=path.resolve('../..');

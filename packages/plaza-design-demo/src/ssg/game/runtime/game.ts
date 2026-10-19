@@ -11,7 +11,7 @@ import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
 import {BOT_REACTIONS,withBotConversations,botVoice,botConversationId,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
 import {perfBegin,perfEnd,perfSample} from './diagnostics/performance';
 import {mountPerformancePanel} from './diagnostics/performance-panel';
-import {capabilityView,exitVisibility,exitPermission,harborTransportPermission} from '../world/access';
+import {capabilityView,sceneExitAccess,exitVisibility,exitPermission,harborTransportPermission} from '../world/access';
 import {mountReviewNavigator} from '../demo/review-navigator';
 import {reviewStations} from '../demo/review-stations';
 import {DEMO_MODE} from './mode';
@@ -50,10 +50,9 @@ import { type MachineData,type NetworkData } from "../data/index";
 import { MAX_EVERYDAY } from "../engine/host";
 import { CITY,NO_RULES,SceneHost } from "../engine/index";
 import type { PopupItem } from "../engine/popup";
-import { reconcile,sceneShell,syncGoals } from "../scenes/downtown/index";
+import { sceneShell,syncGoals } from "../scenes/downtown/index";
 import { shiftAttention,shiftCarry,shiftMinute } from "../scenes/harbor-shift/index";
 import { isSceneId,ITEMS,priceTag,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type SceneView,type UseCtx } from "../scenes/index";
-import { PARCEL } from "../scenes/yard/index";
 import { messagesOf,unread } from "../story/contacts";
 import { createCutscenes,CutscenePlay,isCutsceneId,type CutsceneId } from "../story/cutscenes/index";
 import {openingStoryModel,pick,type ExitRule,type OpeningState,type PingTarget} from '../story/opening';
@@ -247,10 +246,6 @@ export class Game {
       this.goalAt = wx;
       if (wx !== null) this.zh.ping('goal', 'look');
     }, flags=>this.def.attention?this.def.attention(flags,this.gameplayFor(this.here)?.state()):SHIFT_PROTOTYPE?shiftAttention(flags,this.def.uses):null, flags=>this.def.objective?.(flags,this.gameplayFor(this.here)?.state())??'');
-    // the fixer's parcel holds Moth's key chip and uplink.so: a save that took it before they were in it gets them now
-    if (this.hostOf('yard').model.get('parcelAt') === 'taken') PARCEL.forEach((k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); });
-    // Downtown keeps most of its progress in the save's own fields: its devices agree with them
-    reconcile(this.downtown.model, this.save);
     this.menu = new Menu(host.windowEl, {
       save: () => this.save,
       saveSnapshot:()=>this.prepareSave(this.save),
@@ -545,11 +540,10 @@ export class Game {
     this.hints.sceneChanged();sound.cancelFeedback();
     this.save = SUDO ? unlockAll(newSave()) : newSave();
     city.bind(this.save.clock);
-    // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
+    // Every scene starts a first visit in the new save.
     this.save.gameplay={};
     this.hosts.forEach((h,id)=>{this.save.gameplay![id]=h.model.state;});
     this.hosts.forEach((h) => h.reset());
-    reconcile(this.downtown.model, this.save);
     this.persistSave();
     this.syncHud();
     this.started = true;
@@ -2265,7 +2259,7 @@ export class Game {
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
       avoid: this.mapAvoid(),
       ride: this.here === 'train' ? { from: this.metro.rideStop(), to: this.metro.rideNext(), f: this.metro.rideRun() } : null,
-      seen: (z) => !!this.save.flags[this.world.seenFlag(z)], flag: (f) => !!this.save.flags[f], gateOpen: !!this.save.flags.end, harborOpen: this.world.harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
+      seen: (z) => !!this.save.flags[this.world.seenFlag(z)], flag: (f) => !!this.save.flags[f], exitAccess:(scene,id)=>sceneExitAccess(this.hasScene(scene)?this.sceneDefinition(scene).exits.find(e=>e.id===id):undefined,this.save.flags,this.save.keyring), harborOpen: this.world.harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
     };
   }
 

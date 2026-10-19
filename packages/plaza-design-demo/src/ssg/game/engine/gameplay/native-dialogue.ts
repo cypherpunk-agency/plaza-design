@@ -1,3 +1,4 @@
+import type {SceneData} from '../../data/types';
 import {stateAddress} from './state';
 import type {GameplayDefinition,ConversationNode,Condition} from './types';
 import type {Action,DialogueData,DialogueNode} from '../../data/types';
@@ -12,4 +13,9 @@ export function nativeDialogue(def:GameplayDefinition,id:string,bindings:Record<
  const choices=new Set(Object.values(c.nodes).flatMap(n=>n.choices?.map(choice=>choice.next)??[]));
  const nodes:DialogueData['nodes']={};for(const[id,n]of Object.entries(c.nodes)){if(hidden.has(id)&&!choices.has(id))continue;const variants=(n.redirect??[]).map(r=>({...convert(c.nodes[r.node]),if:condition(r.when)}));nodes[id]=variants.length?[...variants,convert(n)]:convert(n);}
  const free=c.free;return{speaker:c.nodes[c.entry[0].node].speaker,start:c.entry[0].node,sayCmd:c.sayCommand??sayCmd??'',nodes,...(free?{free:{match:free.containsAny.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),goto:free.next,miss:free.miss,retry:free.retry,retryGoto:free.retryNext}}:{})};
+}
+
+/** Only current device talk actions require a native metadata projection. */
+export function nativeDeviceDialogues(def:GameplayDefinition,data:SceneData):SceneData['dialogue']{
+ const ids=new Set<string>();const walk=(value:unknown,fallback:string):void=>{if(!value||typeof value!=='object')return;if(Array.isArray(value)){value.forEach(v=>walk(v,fallback));return;}const row=value as Record<string,unknown>;if(row.open==='talk')ids.add(typeof row.with==='string'?row.with:fallback);for(const child of Object.values(row))walk(child,fallback);};for(const device of [...data.devices,...data.nodes??[]])walk(device,device.id);return Object.fromEntries([...ids].map(id=>[id,nativeDialogue(def,id)]));
 }

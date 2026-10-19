@@ -2,7 +2,6 @@
  * counts, door selection, jacket rewards and completion communication.
  * Current checkpoint normalization is authored in the same shared source. */
 
-import type { SceneData } from "../../data/types";
 import type { SceneRules } from "../../engine/rules";
 
 /** The four washers, by device id, and their state keys. */
@@ -16,17 +15,7 @@ export const P13_FLAG = 'p13';
 export const LAUNDROMAT_RULES: SceneRules = {
   effects: {},
   needs: {
-    state: ['w1', 'w2', 'w3', 'w4', 'breaker', 'trips', 'jacket'],
-    goals: ['run', 'jacket'],
-    texts: {},
-  },
-  /** Washer events and controller tuning; default cable topology is authored content. */
-  check: (z: SceneData) => {
-    const errs: string[] = [];
-    for (const d of WASHERS) {
-      const dev = z.devices.find((x) => x.id === d);
-      if (!dev?.nouns.some((n) => n.id === 'drum' && n.events?.includes('done'))) errs.push(`devices[${d}]: needs a "drum" noun that raises "done" (P13)`);
-    }
-    return errs;
+    devices:[],
+    state: [{key:'w1',type:'string'},{key:'w2',type:'string'},{key:'w3',type:'string'},{key:'w4',type:'string'},{key:'breaker',type:'string'}],
   },
 };

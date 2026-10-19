@@ -43,6 +43,7 @@ export function mountDeviceAuthoring(host:HTMLElement,context:WorkbenchContext,s
    if(key==='events')form.button(section,'Add event to '+name,()=>edit('Add device event',d=>{const events=get(d,path) as string[];let i=1;while(events.includes('event-'+i))i++;events.push('event-'+i);}));
    return;
   }
+  if(value.open==='talk')form.select(parent,name+' dialogue',['',...Object.keys((api.get(ids.gameplay).value as GameplayDefinition).conversations)],value.with??'',v=>edit('Rebind native conversation',d=>{const action=get(d,path);if(v)action.with=v;else delete action.with;}));
   const nativeCase=path.at(-2)==='on'||typeof path.at(-1)==='number'&&path.at(-3)==='on';
   if(nativeCase){form.text(parent,name+' condition',value.if??'',v=>edit('Edit native case condition',d=>{const row=get(d,path);if(v.trim())row.if=v.trim();else delete row.if;}));if(path.at(-2)==='on')form.button(parent,'Add case to '+name,()=>edit('Expand native case list',d=>{const owner=get(d,path.slice(0,-1)),current=owner[key];owner[key]=[{if:'signal',do:[],say:['','Nothing happens yet.']},current];}));}
   if(path.includes('on')&&('say'in value||'do'in value)&&!('do'in value))form.button(parent,'Add action to '+name,()=>edit('Add native action',d=>{const state=Object.keys(localState())[0];if(!state)throw Error('Declare native state first');get(d,path).do=[{set:state,to:localState()[state]}];}));

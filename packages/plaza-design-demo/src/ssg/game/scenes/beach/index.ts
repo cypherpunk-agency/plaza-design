@@ -1,3 +1,4 @@
+import type {NativeTargetValidationContext} from '../../engine/gameplay/native-targets';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
 import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
 import {content} from './scene-document';
@@ -21,6 +22,8 @@ import {PresentationSignals} from '../../engine/gameplay/presentation-signals';
 
 import {BEACH_GAMEPLAY} from './gameplay';
 import {projectNativeDeviceData} from '../../engine/gameplay/native-bindings';
+import {projectSceneState} from '../../engine/gameplay/scene-state';
+import type {SceneData} from '../../data/types';
 import { BEACH } from "../../data/index";
 import type { SceneDef } from "../kit";
 import { BEACH_RULES } from './rules';
@@ -32,14 +35,14 @@ export { BEACH_RULES } from './rules';
 export { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W } from './scene';
 
 /** Canonical shipping/composer definition. Physical markers use the same resolved geometry. */
-export function beachScene(document:Composition=beachComposition,state:Environment['state']={},options:BeachRenderOptions={},gameplay=BEACH_GAMEPLAY,sceneDocument:SceneDocument=content.scene):SceneDef{
+export function beachScene(document:Composition=beachComposition,state:Environment['state']={},options:BeachRenderOptions={},gameplay=BEACH_GAMEPLAY,sceneDocument:SceneDocument=content.scene,validationContext?:NativeTargetValidationContext,deviceSource:SceneData=BEACH):SceneDef{
  const doc=validateBeachComposition(document),rows=beachGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,at=(id:string)=>get(id).placement;
- const authored=content.validateScene(sceneDocument,gameplay),signals=new PresentationSignals(authored.cues??[],{gullShooed:-1e9}),gull={get shooed(){return signals.read('gullShooed');}};
+ const authored=content.validateScene(sceneDocument,gameplay,validationContext),signals=new PresentationSignals(authored.cues??[],{gullShooed:-1e9}),gull={get shooed(){return signals.read('gullShooed');}};
  const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,omitGroundRestHeight:true}),actors=beachActors(doc,authored);
- return{id:'beach',name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],rules:BEACH_RULES,
+ return{presentationTargets:content.presentationTargets,id:'beach',name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],rules:BEACH_RULES,
  ...compiled.content,people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),gameplay:withSceneConversations(gameplay,authored),gameplayEvent:signals.event,presentationState:signals,
- data:projectNativeDeviceData(beachDeviceData(BEACH,doc),gameplay),lights:beachLights(doc),casters:beachCasters(doc),
- ...compileNativeTargets(authored,{'stairs-exit':at('stairs-exit')}),
+ data:projectNativeDeviceData(beachDeviceData(projectSceneState(deviceSource,gameplay),doc,authored),gameplay),lights:beachLights(doc),casters:beachCasters(doc),
+ ...compileNativeTargets(authored,{'stairs-exit':at('stairs-exit')},content.nativeTargetBindings),
  drawBackdrop:(ctx,v,e)=>drawBeachComposition(ctx,v,e.m,e.hover,actors,gull,doc,state,options),
  visualEnvironment:(v,e)=>beachEnvironment(doc,v,e.m,e.hover,actors,gull),
  };

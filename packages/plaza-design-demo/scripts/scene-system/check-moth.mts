@@ -22,8 +22,9 @@ assert.deepEqual(mothDeviceData(devices as SceneData, edit).devices.map(i => i.i
 function rejects(change:(doc:Composition)=>void, pattern:RegExp) {
   const bad=structuredClone(doc);change(bad);assert.throws(()=>validateMothComposition(bad),pattern);assert.deepEqual(doc,mothComposition);
 }
-rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='device-desk');},/Missing gameplay-bound/);
-rejects(d=>{d.instances.find(i=>i.id==='tank')!.bindings!.fed='moth.absent';},/unknown Moth binding/);
+rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='desk');for(const row of d.instances)if(row.attach?.instance==='desk')row.attach={instance:'window',anchor:'origin'};},/Missing gameplay-bound/);
+const noLegacyMarker=structuredClone(doc);noLegacyMarker.instances=noLegacyMarker.instances.filter(i=>i.id!=='device-desk');assert.doesNotThrow(()=>validateMothComposition(noLegacyMarker),'device source geometry can replace an old marker; the physical desk picture remains required');
+rejects(d=>{d.instances.find(i=>i.id==='tank')!.bindings!.fed='moth.absent';},/unknown moth binding/i);
 const view={sx:(x:number)=>x,y:(h:number)=>300-h,gy:300,t:137,cam:0,viewW:640,viewH:360,flags:{}};
 let nextReads=0;
 const model={get:(key:string)=>({fed:true,fern:'wet',tape:0})[key as 'fed'|'fern'|'tape'],clocks:{next:(key:string)=>{assert.equal(key,'turntable.record');nextReads++;return{ms:1200};}}} as unknown as SceneModel;

@@ -29,9 +29,10 @@ function rejects(edit: (doc: Composition) => void, pattern: RegExp) {
   const bad = structuredClone(doc); edit(bad); assert.throws(() => validateLibraryComposition(bad), pattern);
   assert.deepEqual(doc, libraryComposition);
 }
-rejects(d => { d.instances = d.instances.filter(i => i.id !== 'printer'); }, /Missing gameplay-bound/);
+const withoutPrinter=structuredClone(doc);withoutPrinter.instances=withoutPrinter.instances.filter(i=>i.id!=='printer');assert.doesNotThrow(()=>validateLibraryComposition(withoutPrinter));assert.deepEqual(libraryDeviceData(devices as SceneData,withoutPrinter).devices.find(d=>d.id==='printer')!.layout!.spot,devices.devices.find(d=>d.id==='printer')!.layout!.spot,'unbound device retains its explicit source coordinates without the original picture');
+rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='room');},/Missing gameplay-bound/);
 rejects(d => { d.instances.find(i => i.id === 'reader')!.bindings!.online = 'absent'; }, /unknown library binding/);
-rejects(d => { d.instances.find(i => i.id === 'student')!.props.actor = 'absent'; }, /actor pose binding/);
+rejects(d => { d.instances.find(i => i.id === 'student')!.bindings!.pose = 'absent'; }, /unknown library binding/);
 assert.throws(() => libraryArt.visualProperties('library.person', { pose: { visible: true, character: { x: 1 } } }), /Incomplete prepared character/);
 let actors: Record<string, Character> = Object.fromEntries(['shelfe','librarian','student','kid','sleeper','knitter','paper','cat'].map((id, seed) => [id, { x: 100, seed: seed + 1, act: 'stand' }]));
 actors.shelfe.range = [50, 150];

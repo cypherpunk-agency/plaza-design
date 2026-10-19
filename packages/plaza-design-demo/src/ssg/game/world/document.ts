@@ -59,7 +59,7 @@ function connections(scene: SceneDef) {
 }
 /** Adapt existing registries; local x/h/attachment markers belong in scene compositions, never here. */
 export function snapshotWorld(sceneCompositions: Readonly<Record<string,string>>, sequences: readonly WorldSequenceReference[] = [],world:CityModel=defaultCity,registry:Readonly<Record<string,SceneDef>>=SCENES) {
-  const {DISTRICTS,DISTRICT_MAP,DISTRICT_REVEAL,LINE,LINES_PLANNED,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_IN_VIEW,PLACE_MAP,PLACES,SCENE_PLACE,STANDS,STAND_IDS,STATIONS,STATION_MAP}=world;
+  const {ACCESS,DISTRICTS,DISTRICT_MAP,DISTRICT_REVEAL,LINE,LINES_PLANNED,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_IN_VIEW,PLACE_MAP,PLACES,SCENE_PLACE,STANDS,STAND_IDS,STATIONS,STATION_MAP}=world;
   for (const id of Object.keys(sceneCompositions)) if (!own(registry,id)) fail(`world.scenes.${id}`, 'unknown scene');
   for (const id of Object.keys(registry)) if (!own(sceneCompositions,id) || !sceneCompositions[id]) fail(`world.scenes.${id}.composition`, 'a real composition reference is required');
   return structuredClone({
@@ -77,6 +77,7 @@ export function snapshotWorld(sceneCompositions: Readonly<Record<string,string>>
       plannedLines:LINES_PLANNED,links:LINKS,
     },
     rules:{
+      accessPolicies:ACCESS,
       discovery:{districts:DISTRICT_REVEAL,placesInView:PLACE_IN_VIEW},
       references:['districtStage','placeKnown','stationKnown','linkKnown','placeBlocked','harborOpen'],
     },

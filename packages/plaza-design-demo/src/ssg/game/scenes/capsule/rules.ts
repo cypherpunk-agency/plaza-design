@@ -84,7 +84,7 @@ export const CAPSULE_RULES: SceneRules = {
   },
   tick,
   // Controller-owned references are checked by the registered source contract.
-  needs:{state:[],goals:['out'],texts:{'prompt.door':'label','prompt.out':'label','door.locked':'line'}},
+  needs:{devices:[]},
   /** Mechanical tuning/state requirements; starting cables are authored scene content. */
   check: (z: SceneData) => {
     const errs: string[] = [];

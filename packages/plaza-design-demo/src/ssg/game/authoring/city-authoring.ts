@@ -1,3 +1,5 @@
+import {pendingRegistry} from './pending-registry';
+import {sharedWorldFlags,renameWorldFlagDocuments} from './world-flag-references';
 import {SCENES} from '../scenes';
 import {TypedForm} from './typed-form';
 import type {WorkbenchContext,WorkbenchHandle} from './app';
@@ -6,7 +8,7 @@ import {validatePendingCity} from './pending-city';
 import {validateMetroSource,type MetroSource} from '../world/transport/metro-source';
 /** Typed edits use ordinary history, bundle and protected grouped source Save. */
 export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle{
- const api=context.authoring!;let disposed=false;
+ const api=context.authoring!;let disposed=false,flagDraft='';
  const error=document.createElement('p');error.setAttribute('role','alert');
  const form=new TypedForm(e=>{error.textContent=String(e);});
  function edit(label:string,change:(source:CitySource)=>void){const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));change(d);api.edit('city-source',label,d);}
@@ -21,7 +23,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
   if(typeof value==='boolean'){form.check(parent,name,value,v=>change(path,v));return;}
   if(typeof value==='number'){form.decimal(parent,name,value,v=>change(path,v),-1000000,1000000);return;}
   if(typeof value==='string'){
-   const options=key==='stratum'?['overworld','street','underworld']:key==='kind'?['walk','road','elevator','taxi','bridge','drain','tunnel','canal','lift']:key==='state'?['open','gate','planned']:['district','from','to'].includes(key)&&path[0]!=='TRANSPORT'?districts:['scene','up'].includes(key)?scenes:undefined;
+   const options=key==='access'?Object.keys(d.ACCESS):key==='stratum'?['overworld','street','underworld']:key==='kind'?['walk','road','elevator','taxi','bridge','drain','tunnel','canal','lift']:key==='state'?['open','gate','planned']:['district','from','to'].includes(key)&&path[0]!=='TRANSPORT'?districts:['scene','up'].includes(key)?scenes:undefined;
    if(key==='id'){const text=document.createElement('p');text.textContent=name+': '+value;parent.append(text);}else if(options)form.select(parent,name,options,value,v=>change(path,v));else form.text(parent,name,value,v=>change(path,v),value.length>100);return;
   }
   if(Array.isArray(value)){
@@ -34,8 +36,9 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
   if(path[0]==='DISTRICT_MAP'&&path.length===2&&value.centre!==null)form.check(parent,name+' centre configured',true,on=>{if(!on)change([...path,'centre'],null);});
   if(path[0]==='DISTRICT_REVEAL'&&path.length===2&&value.landmark===undefined)form.check(parent,name+' landmark',false,on=>{if(on)change([...path,'landmark'],true);});
   if(path[0]==='LINES_PLANNED'&&path.length===2&&!value.dash)form.button(parent,'Add '+name+' dash',()=>change([...path,'dash'],[4,4]));
+  if(path[0]==='LINKS'&&path.length===2){form.select(parent,name+' access policy',['',...Object.keys(d.ACCESS)],value.access??'',v=>edit('Bind map link access',d=>{const link=get(d,path);if(v)link.access=v;else delete link.access;}));}
   if(path[0]==='LINKS'&&path.length===2&&!value.at)form.button(parent,'Add '+name+' scene visibility',()=>change([...path,'at'],[]));
-  for(const[k,v]of Object.entries(value)){const row=typeof v==='object'&&v!==null?form.section(parent,name+' '+k):parent;topology(row,v,[...path,k],d);}
+  for(const[k,v]of Object.entries(value)){if(k==='access'&&path[0]==='LINKS')continue;const row=typeof v==='object'&&v!==null?form.section(parent,name+' '+k):parent;topology(row,v,[...path,k],d);}
  }
  function render(){if(disposed)return;const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));host.replaceChildren(error);
   const travel=form.section(host,'Travel');
@@ -47,13 +50,28 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
    form.text(section,'District '+district.id+' short name',district.short,name=>edit('Edit district short name',d=>{d.DISTRICTS.find(v=>v.id===district.id)!.short=name;}));
   }
   for(const place of d.PLACES){const section=form.section(host,'Place · '+place.id);
+   form.select(section,'Place '+place.id+' access policy',['',...Object.keys(d.ACCESS)],place.access??'',v=>edit('Bind place access',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;if(v)p.access=v;else delete p.access;}));
    form.text(section,'Place '+place.id+' name',place.name,name=>edit('Edit place name',d=>{d.PLACES.find(p=>p.id===place.id)!.name=name;}));
    form.select(section,'Place '+place.id+' entrance',place.scenes,place.entrance,scene=>edit('Edit place entrance',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;p.entrance=scene as typeof p.entrance;delete p.at;}));
    form.select(section,'Place '+place.id+' arrival exit',['',...prospective()[place.entrance].exits.map(e=>e.id)],place.at??'',at=>edit('Edit place arrival',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;if(at)p.at=at;else delete p.at;}));
   }
   for(const id of d.STAND_IDS){const section=form.section(host,'Taxi · '+id);form.text(section,'Taxi '+id+' name',d.STANDS[id].name,name=>edit('Edit taxi stand name',d=>{d.STANDS[id].name=name;}));}
   const refs=prospective(),sceneIds=Object.keys(refs),districtIds=d.DISTRICTS.map(v=>v.id);
-  form.text(travel,'Harbor access flag',d.HARBOR_FLAG,v=>edit('Edit harbor access flag',d=>{d.HARBOR_FLAG=v;}));
+  const policies=form.section(host,'Access policies');
+  for(const[id,policy]of Object.entries(d.ACCESS)){
+   const section=form.section(policies,'Access '+id);
+   form.select(section,'Access '+id+' scene',sceneIds,policy.exit.scene,v=>edit('Rebind access owner scene',d=>{const exits=refs[v].exits;if(!exits.length)throw Error('Access owner must have an exit');d.ACCESS[id].exit={scene:v,id:exits[0].id};}));
+   form.select(section,'Access '+id+' exit',refs[policy.exit.scene].exits.map(e=>e.id),policy.exit.id,v=>edit('Rebind access owner exit',d=>{d.ACCESS[id].exit.id=v;}));
+   form.text(section,'Access '+id+' refusal',policy.reason,v=>edit('Edit access refusal',d=>{d.ACCESS[id].reason=v;}));
+   form.button(section,'Remove access '+id,()=>edit('Remove unused access policy',d=>{delete d.ACCESS[id];}),d.PLACES.some(p=>p.access===id)||d.LINKS.some(l=>l.access===id));
+  }
+  let policyId='';form.text(policies,'New access policy ID','',v=>{policyId=v;});
+  form.button(policies,'Add access policy',()=>edit('Create exit access policy',d=>{if(Object.prototype.hasOwnProperty.call(d.ACCESS,policyId))throw Error('Access policy already exists');const scene=sceneIds.find(id=>refs[id].exits.length);if(!scene)throw Error('No exit access owners');d.ACCESS[policyId]={exit:{scene,id:refs[scene].exits[0].id},reason:'ACCESS DENIED'};}));
+  const flagDocuments=()=>new Map(context.documents.map(d=>[d.id,api.get(d.id).value]));
+  form.select(travel,'Harbor access flag',[...sharedWorldFlags(pendingRegistry(flagDocuments()))],d.HARBOR_FLAG,v=>edit('Rebind harbor access flag',d=>{d.HARBOR_FLAG=v;}));
+  form.text(travel,'Rename harbor access flag to',flagDraft,v=>{flagDraft=v;});
+  form.button(travel,'Rename harbor access flag across sources',()=>{if(!api.editDocuments)throw Error('Grouped source editing is unavailable');api.editDocuments(renameWorldFlagDocuments(flagDocuments(),d.HARBOR_FLAG,flagDraft),'Rename shared harbor access flag');},!api.editDocuments);
+
   for(const kind of ['boarding','siding']as const){const target=d.TRANSPORT[kind],section=form.section(travel,'Transport '+kind);form.select(section,'Transport '+kind+' scene',sceneIds,target.scene,v=>edit('Rebind transport scene',d=>{d.TRANSPORT[kind].scene=v as typeof target.scene;delete d.TRANSPORT[kind].entrance;}));form.select(section,'Transport '+kind+' entrance',['',...refs[target.scene].exits.map(e=>e.id)],target.entrance??'',v=>edit('Rebind transport entrance',d=>{if(v)d.TRANSPORT[kind].entrance=v;else delete d.TRANSPORT[kind].entrance;}));}
   for(const key of ['SIDING_OUT','DRIVER_HARBOR','DRIVER_BROKE']as const){const section=form.section(travel,key);d[key].forEach((page,i)=>{form.text(section,key+' page '+i,page,v=>edit('Edit transport dialogue',d=>{d[key][i]=v;}),true);form.button(section,'Remove '+key+' page '+i,()=>edit('Remove transport dialogue',d=>{d[key].splice(i,1);}),d[key].length===1);});form.button(section,'Add '+key+' page',()=>edit('Add transport dialogue',d=>{d[key].push('New transport line.');}));}
   for(const district of d.DISTRICTS){const section=form.section(host,'District geography '+district.id);form.select(section,'District '+district.id+' stratum',['overworld','street','underworld'],district.stratum,v=>edit('Edit district stratum',d=>{d.DISTRICTS.find(x=>x.id===district.id)!.stratum=v as typeof district.stratum;}));}

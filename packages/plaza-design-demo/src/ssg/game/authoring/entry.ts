@@ -139,7 +139,7 @@ async function start() {
       if(document.kind==='conversations'){if(document.id!=='bot-reactions')throw new Error('Unsupported conversation library');validateBotReactions(document.value);}
       if(document.id==='demo-manifest-scene'){const declared=validateManifestSources(documents.find(d=>d.id==='demo-manifest')!.value,document.value,documents.find(d=>d.id==='demo-manifest-gameplay')!.value);validateDeclaredDestinations(declared.scene,pendingDestinations(new Map(documents.map(d=>[d.id,d.value]))));}
 
-      if(document.kind==='scene'){const s=gameplayScene(document.id);s.validateScene(document.value,s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value));}
+      if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=new Map(documents.map(d=>[d.id,d.value])),identity=deviceSourceIdentity(s.id),network=pendingNetworkContext(values),scene=pendingScene(s.id,values.get(identity.composition),{sceneDocument:document.value,gameplay,devices:values.get(identity.devices)},network);s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);}
 
       if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=new Map(documents.map(d=>[d.id,d.value]));validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot),validateMetroSource(snapshot.get('metro-source')));}
 

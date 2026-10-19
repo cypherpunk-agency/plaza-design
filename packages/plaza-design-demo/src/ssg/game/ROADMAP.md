@@ -17,10 +17,10 @@ requirement; do not add compatibility layers or scene-specific state bridges. On
 game state and shared actions are the target. Current-format persistence and gameplay/visual
 preservation remain required. See the correction at the top of ENGINE-CONSOLIDATION-GOAL.md.
 
-Latest published checkpoint:ee8cc6a on main and production; both production deployments succeeded.
+Latest published checkpoint:ad90b79 on main and production; both production deployments succeeded.
 All19 scenes have source-backed ordinary content/actors and editable device sources. Scalar state
 has one common Save.gameplay owner; alias maps and the native state bridge are removed. All19
-built-editor native startups/Stop cleanup and173 raster comparisons passed at source294b0d4656d4,
+built-editor native startups/Stop cleanup and173 raster comparisons passed at source377ff1fccc6c,
 with zero differing pixels/errors. See ENGINE-CONSOLIDATION-STATUS.md for exact artifacts.
 
 That published batch includes source queries/triggers/intervals for Capsule door/goals/Pixel decisions;
@@ -30,7 +30,7 @@ values. All4 native settle callbacks are removed in favor of source-owned copied
 commands using the same interpreter. Focused immutable behavior and typed/pending/sourceSave/fresh
 import/Undo checks pass. It also includes the first Yard drop and Stacks lift/controller slices.
 
-Current unpublished batch: Yard's full grab/drop/hatch/parcel logic is now source-owned (864 original
+The new published batch includes Yard's full source-owned grab/drop/hatch/parcel logic (864 original
 cases and33 timing histories); native Yard gameplay effects/derived callbacks are removed. Stacks
 landing outcomes use shared physical-milestone inputs, with288 exact state/trajectory/caption-time/
 goal histories. Guard-success inputs provide the same source command entrypoint with explicit origin
@@ -41,11 +41,16 @@ billboard callbacks and lamp/status queries are source-owned, with128 original b
 and128 published feedback comparisons. Train unpaid refusals/counters use shared source commands
 (840 histories), while paid physics and harbor unlock remain pending. Native session disposal now
 releases its owned model callbacks. Capsule online feedback, Downtown refusal/sign presentation and
-the existing END-screen handoff are under integration; final build/raster/editor evidence is pending.
+the existing END-screen handoff are integrated. Both builds,173 raster cases and all19 actual
+packaged-editor Play/Stop checks pass. Current unpublished work covers Downtown delivery completion/
+finale,Train halt/resume/harbor flag,Stacks return/status,interaction and presentation-cue editing,
+pending exit keys and actual pending native-target metadata. Shared wiring/trace actions and removal
+of unnecessary device-editing restrictions are in progress. This batch still needs integrated builds,
+visual preservation and built-editor verification; it is not yet the published version.
 
 Remaining: other inventoried ordinary controller/reward/story branches, complete all-scene typed
 authoring/lifecycle acceptance, six measured workloads and cleanup. No old-format compatibility work
-is planned. The current unpublished batch still needs integrated build/raster/editor evidence.
+is planned. Every further implementation batch needs its own integrated preservation evidence.
 The per-scene matrix remains conservative and has not yet reconciled every focused evidence entry;
 NOT RUN entries must not be interpreted as a claim that no underlying implementation exists.
 G1 communication routing, G2 attention/timing and G3 conversations now PASS at source377ff1fccc6c;

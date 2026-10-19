@@ -1,4 +1,3 @@
-import {inheritSceneDefaults} from '../../engine/gameplay/manifest-content';
 import {protectActorIdentity} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import scene from './scene.json';
@@ -9,7 +8,7 @@ import type {GameplayDefinition} from '../../engine/gameplay/types';
 export const validateWarehouseGameplay=(value:unknown)=>validateGameplay(value);
 export const WAREHOUSE_GAMEPLAY=validateWarehouseGameplay(gameplay);
 export const warehouseBindingGroups=['uses','readables','rests','exits'] as const;
-export function warehouseSource(value:SceneDocument):SceneDocument{return inheritSceneDefaults(value,scene as unknown as SceneDocument,warehouseBindingGroups);}
+export function warehouseSource(value:SceneDocument):SceneDocument{return structuredClone(value);}
 export function validateWarehouseScene(value:unknown,g:GameplayDefinition=WAREHOUSE_GAMEPLAY){
  const doc=validateSceneDocument(warehouseSource(value as SceneDocument),g,{actors:true,manifest:true});
  if(doc.id!=='warehouse')throw new Error('Warehouse source identity must remain warehouse');

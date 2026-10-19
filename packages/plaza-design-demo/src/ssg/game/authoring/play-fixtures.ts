@@ -22,6 +22,7 @@ export type PlayScene=typeof playScenes[number];
 export interface PlayFixture {metro?:MetroSnapshot;id:string;name:string;scene:PlayScene;flags:Record<string,boolean>;items:Record<string,number>;tokens:number;modules:string[];programs:string[];keyring:string[];state:Record<string,string|number|boolean>;day:number;minute:number;seed:number;weather:'forecast'|WeatherKind;clock:'story'|'fixed'|'running';spawn:number|null}
 
 export interface PlayFixtures {version:1;fixtures:PlayFixture[]}
+export interface PlayFixtureVocabulary {flags:ReadonlySet<string>;programs:ReadonlySet<string>;keyring:ReadonlySet<string>}
 
 /** Prospective composition bounds are checked in both editor history and grouped source saves. */
 
@@ -31,7 +32,7 @@ export const fixtureFlags=Array.from(new Set([...SHIFT_GAMEPLAY.flags,...Object.
 
 export const fixtureModules=LOGIC.modules.map(m=>m.id),fixturePrograms=(NET.programs??[]).map(p=>p.id),fixtureKeys=[...KEYRING.keys()];
 
-export function validatePlayFixtures(value:unknown,single=false,additionalScenes:readonly string[]=[]):PlayFixtures {
+export function validatePlayFixtures(value:unknown,single=false,additionalScenes:readonly string[]=[],vocabulary?:PlayFixtureVocabulary):PlayFixtures {
 
  const fail=(message:string):never=>{throw new Error('Invalid Play fixtures: '+message);};
 
@@ -48,13 +49,13 @@ export function validatePlayFixtures(value:unknown,single=false,additionalScenes
  for(const f of doc.fixtures){if(Object.keys(record(f)).filter(k=>k!=='metro').sort().join()!==fields)fail('unsupported/missing fields');if(typeof f.id!=='string'||! /^[a-z][a-z0-9-]{0,63}$/.test(f.id)||ids.has(f.id))fail('fixture ID');ids.add(f.id);if(typeof f.name!=='string'||!f.name.trim()||f.name.length>120)fail('name');if(!playScenes.includes(f.scene)&&!additionalScenes.includes(f.scene))fail('scene');integer(f.tokens,0,1000000);integer(f.day,1,10000);integer(f.minute,0,1439);integer(f.seed,0,2147483647);if(f.spawn!==null){if(!Number.isFinite(f.spawn)||f.spawn<12||f.spawn>100000)fail('spawn');}if(!['story','fixed','running'].includes(f.clock)||!['forecast',...WEATHER_KINDS].includes(f.weather))fail('clock/weather');
 
   if(f.metro!==undefined)validateMetroSnapshot(f.metro);
-  for(const[k,v]of Object.entries(record(f.flags)))if(!fixtureFlags.includes(k)||typeof v!=='boolean')fail('flag');
+  for(const[k,v]of Object.entries(record(f.flags)))if(!(vocabulary?vocabulary.flags.has(k):fixtureFlags.includes(k))||typeof v!=='boolean')fail('flag');
 
   for(const[k,v]of Object.entries(record(f.items))){if(!Object.prototype.hasOwnProperty.call(ITEMS,k))fail('item');integer(v,0,1000000);}
 
   for(const[k,v]of Object.entries(record(f.state))){const initial=SCENES[f.scene]?.data?.state;if(!initial||!Object.prototype.hasOwnProperty.call(initial,k)||typeof v!==typeof initial[k]||typeof v==='number'&&(!Number.isFinite(v)||Math.abs(v)>1000000)||typeof v==='string'&&v.length>500)fail('native scene state');}
 
-  for(const[name,allowed]of [['modules',fixtureModules],['programs',fixturePrograms],['keyring',fixtureKeys]] as const){const list=f[name];if(!Array.isArray(list)||new Set(list).size!==list.length||list.some(v=>!allowed.includes(v)))fail(name);}
+  for(const[name,allowed]of [['modules',fixtureModules],['programs',fixturePrograms],['keyring',fixtureKeys]] as const){const list=f[name];if(!Array.isArray(list)||new Set(list).size!==list.length||list.some(v=>!(name==='modules'?fixtureModules.includes(v):vocabulary?vocabulary[name].has(v):allowed.includes(v))))fail(name);}
 
  }
 
@@ -64,7 +65,7 @@ export function validatePlayFixtures(value:unknown,single=false,additionalScenes
 
 }
 
-export function fixtureSave(fixture:PlayFixture,additionalScenes:readonly string[]=[]):Save {const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,additionalScenes).fixtures[0],save=newSave();save.scene=f.scene;save.flags={...f.flags};save.items={...f.items};save.tokens=f.tokens;save.modules=[...f.modules];save.programs=[...f.programs];save.keyring=[...f.keyring];save.clock={day:f.day,min:f.minute,seed:f.seed};return save;}
+export function fixtureSave(fixture:PlayFixture,additionalScenes:readonly string[]=[],vocabulary?:PlayFixtureVocabulary):Save {const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,additionalScenes,vocabulary).fixtures[0],save=newSave();save.scene=f.scene;save.flags={...f.flags};save.items={...f.items};save.tokens=f.tokens;save.modules=[...f.modules];save.programs=[...f.programs];save.keyring=[...f.keyring];save.clock={day:f.day,min:f.minute,seed:f.seed};return save;}
 
 
 

@@ -13,9 +13,8 @@ import type { SceneData } from '../../data/types';
 import document from './composition.json';
 export const mothArt = art;
 export const mothComposition = mothArt.validate(document);
-const deviceIds = ['mail','board','turntable','desk','tank','pot','phone'];
 const flatten=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
-const required = ['neighbors','shell','window','door', ...deviceIds, ...deviceIds.map(id => 'device-' + id)];
+const required = ['neighbors','shell','window','door','desk'];
 export function validateMothComposition(input: unknown): Composition {
   const doc = mothArt.validate(input);
   if (doc.scene !== 'moth') throw new Error('Expected moth composition');
@@ -29,9 +28,9 @@ const geometryView: View = {...frameView(0), sx:x=>x, y:h=>-h, gy:0, cam:0, t:0,
 export function mothGeometry(doc: Composition = mothComposition) { return resolveComposition(mothArt, doc, { view:geometryView,state:{},reduced:false,bindings:defaultBindings(doc) }); }
 export function mothPlacement(id:string, doc:Composition=mothComposition) { const row=mothGeometry(doc).find(row=>row.instance.id===id);if(!row)throw new Error('Unknown Moth instance '+id);return row.placement; }
 export const mothWidth=Number(mothGeometry().find(row=>row.instance.id==='shell')!.props.width);
-export function mothDeviceData(source:SceneData,doc:Composition=mothComposition):SceneData {
+export function mothDeviceData(source:SceneData,doc:Composition=mothComposition,scene?:Pick<SceneDocument,'manifest'>):SceneData {
   const result=structuredClone(source),geometry=mothGeometry(doc);
-  for(const id of deviceIds){ const p=geometry.find(row=>row.instance.id==='device-'+id)!.placement, spot=result.devices.find(device=>device.id===id)!.layout!.spot!;spot.x=p.x;if(spot.y!==undefined||p.h!==0)spot.y=p.h; }
+  for(const device of result.devices){if(scene?.manifest?.devices?.[device.id])continue;const p=geometry.find(row=>row.instance.id==='device-'+device.id)?.placement,spot=device.layout?.spot;if(!p||!spot)continue;spot.x=p.x;if(spot.y!==undefined||p.h!==0)spot.y=p.h;}
   return result;
 }
 export type MothRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;

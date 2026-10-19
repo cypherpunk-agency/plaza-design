@@ -8,6 +8,10 @@ import type {SceneDef} from '../../scenes/kit';
 import type {SceneDocument} from './scene-document';
 import type {GameplayDefinition} from './types';
 import {projectSceneState} from './scene-state';
+import type {EngineNetworkContext} from '../network-context';
+export interface NativeTargetBindings {readonly anchors:readonly string[];readonly reset:boolean}
+export type NativeTargetValidator=((doc:SceneDocument,gameplay?:GameplayDefinition,context?:NativeTargetValidationContext)=>void)&{readonly bindings:NativeTargetBindings};
+export type NativeTargetValidationContext={phase:'structural'}|{phase:'assembled';data:SceneData;network:EngineNetworkContext};
 
 export type NativeTargetStep={do:Action[]}|{say:LineRef}|{exit:string}|{reset:true};
 export interface NativeTargetDocument {
@@ -23,15 +27,20 @@ const rows=(v:unknown,max=32):Record<string,unknown>[]=>{
 const fields=(o:Record<string,unknown>,allowed:string[],required:string[])=>{if(Object.keys(o).some(k=>!allowed.includes(k))||required.some(k=>!(k in o)))fail('unexpected or missing field');};
 const text=(v:unknown)=>{if(typeof v!=='string'||!v.trim()||v.length>2000)fail('bounded text required');};
 const ordered=(r:Record<string,unknown>[])=>{if(r.at(-1)!.if!==undefined||r.slice(0,-1).some(x=>x.if===undefined))fail('exactly one final fallback required');};
-export function nativeTargetValidator(data:SceneData,rules:SceneRules,anchors:readonly string[],permissions:{reset?:boolean}={}){
- return (doc:SceneDocument,gameplay?:GameplayDefinition)=>{
+export function nativeTargetValidator(data:SceneData,rules:SceneRules,anchors:readonly string[],permissions:{reset?:boolean}={}):NativeTargetValidator{
+ const bindings:NativeTargetBindings=Object.freeze({anchors:Object.freeze([...anchors]),reset:permissions.reset===true});
+ const validate=(doc:SceneDocument,gameplay?:GameplayDefinition,context?:NativeTargetValidationContext)=>{
   if(doc.nativeTargets===undefined)return;
-  const targets=rows(doc.nativeTargets),ids=new Set<string>(),cases:{if?:Cond;do?:Action[];say?:LineRef}[]=[];
-  const label=(v:unknown)=>{text(v);if(typeof ({...ENGINE.texts,...data.texts})[String(v)]!=='string')fail('unknown label '+v);};
+  const current=context?.phase==='assembled'?context.data:data;
+  if(current.id!==data.id||doc.id!==data.id)fail('scene context identity');
+  if(!Array.isArray(doc.nativeTargets)||doc.nativeTargets.length>32)fail('bounded target list required');
+  const targets=doc.nativeTargets.length?rows(doc.nativeTargets):[],ids=new Set<string>(),cases:{if?:Cond;do?:Action[];say?:LineRef}[]=[];
+  const label=(v:unknown)=>{text(v);if(context?.phase!=='structural'&&typeof ({...ENGINE.texts,...current.texts})[String(v)]!=='string')fail('unknown label '+v);};
   for(const t of targets){
    fields(t,['id','anchor','promptH','if','labels','routes'],['id','anchor','promptH','labels','routes']);text(t.id);text(t.anchor);
    if(ids.has(String(t.id)))fail('duplicate id');ids.add(String(t.id));
-   if(!anchors.includes(String(t.anchor)))fail('unknown placement anchor '+t.anchor);
+   if(context?.phase!=='structural'&&[...current.devices,...(current.nodes??[])].some(d=>d.id===t.id))fail('target identity conflicts with device '+t.id);
+   if(!bindings.anchors.includes(String(t.anchor)))fail('unknown placement anchor '+t.anchor);
    if(typeof t.promptH!=='number'||!Number.isFinite(t.promptH)||t.promptH<0||t.promptH>10000)fail('prompt height');
    if(t.if!==undefined)cases.push({if:t.if as Cond});
    const labels=rows(t.labels);ordered(labels);
@@ -44,19 +53,24 @@ export function nativeTargetValidator(data:SceneData,rules:SceneRules,anchors:re
      if('do'in s){const actions=rows(s.do,64);cases.push({do:actions as Action[]});}
      else if('say'in s)cases.push({say:s.say as LineRef});
      else if('exit'in s){if(typeof s.exit!=='string'||!doc.exits?.some(e=>e.id===s.exit&&e.engine))fail('engine exit reference');if(i!==steps.length-1)fail('exit must be final');}
-     else if('reset'in s){if(s.reset!==true||!permissions.reset)fail('reset permission');}
+     else if('reset'in s){if(s.reset!==true||!bindings.reset)fail('reset permission');}
      else fail('unknown operation');
     });
    }
   }
-  const errors=checkSceneInteractionRows(gameplay?projectSceneState(data,gameplay):data,contractOf(rules,gameplay?.native?.verbs,Object.keys(gameplay?.queries??{})),{engine:ENGINE,logic:LOGIC,net:NET,keyring:KEYRING},cases);
+  if(context?.phase==='structural')return;
+  const network=context?.phase==='assembled'?context.network:{net:NET,keyring:KEYRING};
+  const errors=checkSceneInteractionRows(gameplay?projectSceneState(current,gameplay):current,contractOf(rules,gameplay?.native?.verbs,Object.keys(gameplay?.queries??{})),{engine:ENGINE,logic:LOGIC,net:network.net,keyring:network.keyring},cases);
   if(errors.length)fail(errors.join('\n'));
  };
+ return Object.assign(validate,{bindings});
 }
-export function compileNativeTargets(doc:SceneDocument,placements:Readonly<Record<string,{x:number;h?:number}>>):Pick<SceneDef,'targets'|'use'>{
+export function compileNativeTargets(doc:SceneDocument,placements:Readonly<Record<string,{x:number;h?:number}>>,bindings?:NativeTargetBindings):Pick<SceneDef,'targets'|'use'|'nativeTargetBindings'>{
+ if(bindings&&bindings.anchors.some(anchor=>!placements[anchor]))throw new Error('Registered target capability requires its placement');
  const rows=doc.nativeTargets??[];
  for(const t of rows)if(!placements[t.anchor])throw new Error('Missing engine target placement '+t.anchor);
  return {
+  ...(bindings?{nativeTargetBindings:bindings}:{}),
   targets:m=>rows.filter(t=>t.if===undefined||m.cond(t.if)).map(t=>({id:t.id,x:placements[t.anchor].x,promptH:t.promptH+(placements[t.anchor].h??0),label:m.label(t.labels.find(l=>l.if===undefined||m.cond(l.if))!.text)})),
   use:(id,m,say)=>{
    const t=rows.find(t=>t.id===id);if(!t||t.if!==undefined&&!m.cond(t.if))return;
