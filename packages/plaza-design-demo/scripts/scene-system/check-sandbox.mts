@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { sandboxArt,sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxLayout,sandboxStations,validateSandboxComposition } from '../../src/ssg/game/scenes/sandbox/composition';
+import { sandboxArt,sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxStations,validateSandboxComposition } from '../../src/ssg/game/scenes/sandbox/composition';
 import { sandboxScene,sandboxFrameEnvironment } from '../../src/ssg/game/scenes/sandbox';
 import { SandboxViewState,validateSandboxSnapshot,type SandboxSnapshot } from '../../src/ssg/game/art/assemblies/sandbox-state';
 import { resolveComposition,type Composition,type Value } from '../../src/ssg/game/art';
@@ -10,6 +10,8 @@ import { createSandboxArtwork } from '../../src/ssg/game/art/assemblies/sandbox'
 import { emptySandboxSnapshot } from '../../src/ssg/game/art/assemblies/sandbox-state';
 import { box,onScreen,O,PAPER } from '../../src/ssg/game/art/core/primitives';
 import type { View } from '../../src/ssg/game/art/core/view';
+// Frozen picture-kernel fixture parameters; not a shipping scene configuration.
+function sandboxLayout(doc:Composition=sandboxComposition):import('../../src/ssg/game/art/assemblies/sandbox').SandboxLayout{const rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,x=(id:string)=>get(id).placement.x,w=get('window');return{door:x('door'),spawn:x('spawn'),plan:x('plan'),reset:x('reset'),dispenser:x('chip-dispenser'),radiator:x('radiator'),bench:x('wait-bench'),window:{x0:w.placement.x,x1:w.placement.x+Number(w.props.width),h0:w.placement.h,h1:w.placement.h+Number(w.props.height)},end:x('end-wall')};}
 const doc=validateSandboxComposition(JSON.parse(JSON.stringify(sandboxComposition)));
 assert.deepEqual(doc,sandboxComposition);assert.equal(doc.instances.length,155);
 assert.deepEqual(sandboxDeviceData(devices as SceneData),devices,'all37 original physical device spots remain exact');
@@ -29,6 +31,7 @@ validateSandboxSnapshot(state as unknown as Value);assert.equal(state.values.lam
 const readOnly=new SandboxViewState(state);assert.equal(readOnly.opened.has('cabinet/keyed'),true);assert.equal(readOnly.frozen('stamp'),true);assert.equal(readOnly.net.get('qasrv'),'connected');assert.equal('act' in readOnly,false);assert.equal('set' in readOnly,false);assert.equal('later' in readOnly,false);assert.deepEqual(model.scratch,{'pulse.sensor':550});
 assert.deepEqual(rows.find(r=>r.instance.id==='outside')!.state.clip,[252,148,260,122]);
 const malformed=structuredClone(state);malformed.weather.wind=NaN;assert.throws(()=>validateSandboxSnapshot(malformed as unknown as Value),/weather/);
+const nested=structuredClone(doc),nestedLamp=nested.instances.find(i=>i.id==='lamp')!;nested.instances=nested.instances.filter(i=>i!==nestedLamp);(nested.instances.find(i=>i.id==='workbench-1')!.children??=[]).push(nestedLamp);assert.doesNotThrow(()=>validateSandboxComposition(nested));const nestedEnv=sandboxFrameEnvironment(view,engine,nested);assert.equal((resolveComposition(sandboxArt,nested,nestedEnv).find(r=>r.instance.id==='lamp')!.state.snapshot as unknown as SandboxSnapshot).values.lampOn,true);
 const shared=structuredClone(doc);shared.instances.push({id:'extra-stool',type:'furniture.stool',props:{seed:1},placement:{x:100,h:0},order:1000,pass:'backdrop'});assert.doesNotThrow(()=>sandboxScene(shared));
 assert.equal(sandboxGeometry(edit).find(r=>r.instance.id==='sensor')!.placement.h,32);
 

@@ -1,7 +1,7 @@
 import {compileSceneActors} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import {content} from './scene-document';
-import { drawSandboxComposition,sandboxComposition,sandboxEnvironment,sandboxGeometry,sandboxLayout,sandboxStations,sandboxWidth,type SandboxRenderOptions } from './composition';
+import { drawSandboxComposition,sandboxComposition,sandboxEnvironment,sandboxGeometry,type SandboxRenderOptions } from './composition';
 import type { Composition,Environment } from '../../art/core/composition';
 import type { View } from '../../art/core/view';
 import type { EngineDraw } from '../../engine/host';
@@ -24,14 +24,6 @@ import type { EngineDraw } from '../../engine/host';
  */
 
 import { type Character } from "../../runtime/characters";
-
-export const SANDBOX_W = sandboxWidth;
-
-/** Where things are that are not devices (world x). The devices stand at their `layout.spot` in sandbox.json. */
-export const SB = sandboxLayout();
-
-/** The stations, left to right: their span, title and what they test (the plate on the wall says both). */
-export const STATIONS = sandboxStations();
 
 /** Source bodies and artwork compile to the same native objects used for drawing and interaction. */
 export function sandboxActors(doc:Composition=sandboxComposition,source:SceneDocument=content.scene):Record<string,Character>{return compileSceneActors(source,sandboxGeometry(doc));}

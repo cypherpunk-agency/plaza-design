@@ -2,10 +2,9 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Latest pushed checkpoint: `dbf8dec` on main and production (atomic push verified).
-Both production deployments succeeded (homepage39325203351,design39325203238);
-main build39325203514 also succeeded. Public editor HTTP200 serves CI artifact app-W6BHBFEY.js,
-matching the production job; native runtime remains play-4XJMVNIS.js.
+Last verified deployment: `3d6e21b` on main and production (atomic push and remote hashes verified).
+Production homepage39335599546 and design39335599631 deployments succeeded;
+main homepage39335599757 build also succeeded. Public editor HTTP200 serves app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
 173 zero-difference raster cases and all19 actual packaged-editor Play/Stop checks PASS.
@@ -2268,3 +2267,27 @@ Market typed visual flag and reference-preserving former-wall removal pass (`run
 immutable outcomes. G4/G8/G9/G10/G12 advance in scope; their whole-goal gates remain open.
 Remaining: full matrix/inventory reconciliation, remaining native geometry/content dependencies,
 world/network/lifecycle/current persistence and final removal/handoff acceptance.
+
+## 2026-10-20 Sandbox artwork geometry follow-through
+
+Typed Sandbox window/reset roles and station zone/sign/card bindings now replace fixed-ID
+geometry floors. Window clipping/visibility and station labels use current bindings; the actual
+reset interaction follows elevation. The former reset artwork can be deleted after reassignment.
+Clearing controller geometry requires removing its dependent reset target atomically; absent
+roles do not restore the original IDs. Target creation disables when no anchor is available.
+Unused shipping SB/STATIONS/width/layout exports removed; legacy kernel fixture parameters
+now live only in the existing test. Nested artwork also receives validated visual bindings.
+
+`check-laundry-sandbox-picture-source.mts`: PASS, artifact
+`.scene-system/laundry-sandbox-picture-source-1trIMk`; actual typed geometry plus native target,
+clip and label assertions, bundle/protected Save/fresh shipping/byte Undo. Package tsc, both
+builds, check-sandbox (including nested picture), 109 Sandbox ordinary cases and all five native
+target CRUD/form cases PASS. Source `2eaee9414bcf3f988730765ecf579ca0b62d408eac2fe3edb3282edb23dc444b`
+passes all173 browser raster comparisons with zero differences/errors. Actual current-package
+Sandbox native Play/Stop passes with no warning/error logs. Publication status is reported separately from this local evidence.
+
+The remaining geometry audit found fixed-ID floors in Capsule, Moth, Beach, Library, Warehouse,
+Downtown, Stacks, Harbor/Shift, Mall, Shop and transit compositions. These are not all removable
+scenery: some feed width, shade, clipping, covers, physical anchors or actor parents. Replace
+those real dependencies with typed source roles before removing floors. Do not merely delete
+validation or introduce another runtime state owner. Whole-goal gates remain open.

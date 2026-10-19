@@ -3288,6 +3288,59 @@
       "noun": "login"
     },
     "auditEvent": "audit.log:entry",
-    "pulseTuning": "pulseMs"
+    "pulseTuning": "pulseMs",
+    "geometry": {"reset":"reset","window":"window"},
+    "stations": [
+      {
+        "zone": "zone-1",
+        "sign": "station-sign-1",
+        "card": "card1"
+      },
+      {
+        "zone": "zone-2",
+        "sign": "station-sign-2",
+        "card": "card2"
+      },
+      {
+        "zone": "zone-3",
+        "sign": "station-sign-3",
+        "card": "card3"
+      },
+      {
+        "zone": "zone-4",
+        "sign": "station-sign-4",
+        "card": "card4"
+      },
+      {
+        "zone": "zone-5",
+        "sign": "station-sign-5",
+        "card": "card5"
+      },
+      {
+        "zone": "zone-6",
+        "sign": "station-sign-6",
+        "card": "card6"
+      },
+      {
+        "zone": "zone-7",
+        "sign": "station-sign-7",
+        "card": "card7"
+      },
+      {
+        "zone": "zone-8",
+        "sign": "station-sign-8",
+        "card": "card8"
+      },
+      {
+        "zone": "zone-9",
+        "sign": "station-sign-9",
+        "card": "card9"
+      },
+      {
+        "zone": "zone-10",
+        "sign": "station-sign-10",
+        "card": "card10"
+      }
+    ]
   }
 }

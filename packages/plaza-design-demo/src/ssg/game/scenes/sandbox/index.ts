@@ -1,3 +1,4 @@
+import {sandboxController} from '../../engine/controllers/sandbox';
 import {projectSceneState} from '../../engine/gameplay/scene-state';
 import type {NativeTargetValidationContext} from '../../engine/gameplay/native-targets';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
@@ -9,7 +10,7 @@ import {compileNativeTargets} from '../../engine/gameplay/native-targets';
 import type {GameplayDefinition} from '../../engine/gameplay/types';
 import type {SceneData} from '../../data';
 import type { Composition,Environment } from '../../art/core/composition';
-import { sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxStations,validateSandboxComposition,type SandboxRenderOptions } from './composition';
+import { sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxStations,validateSandboxGeometry,validateSandboxComposition,type SandboxRenderOptions } from './composition';
 /**
  * The sandbox: REGISTRY QA BAY 3, a test hall for the engine, outside the
  * story. Sudo only (`?sudo`: LEVELS › SANDBOX, or `?sudo&play=sandbox`); it is
@@ -35,11 +36,13 @@ export { SANDBOX_RULES } from './rules';
 export {drawSandbox,sandboxFrameEnvironment} from './scene';
 export {sandboxArt,sandboxComposition,validateSandboxComposition} from './composition';
 export function sandboxScene(document:Composition=sandboxComposition,state:Environment['state']={},options:SandboxRenderOptions={},data:SceneData=SANDBOX,sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay,validationContext?:NativeTargetValidationContext):SceneDef{
- const doc=validateSandboxComposition(document),stations=sandboxStations(doc),rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,authored=content.validateScene(sceneDocument,gameplay,validationContext);
+ const doc=validateSandboxComposition(document),controller=sandboxController(data),stations=sandboxStations(doc,controller??null),rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,authored=content.validateScene(sceneDocument,gameplay,validationContext);
+ validateSandboxGeometry(data,doc);
+ const reset=controller?.geometry.reset?get(controller.geometry.reset):undefined;if(authored.nativeTargets?.some(t=>t.anchor==='reset')&&!reset)throw Error('Sandbox reset target requires a current artwork binding');
  const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,omitGroundRestHeight:true}),actors=sandboxActors(doc,authored);
  return {id:'sandbox',name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],rules:SANDBOX_RULES,gameplay:withSceneConversations(gameplay,authored),...compiled.content,people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:sandboxDeviceData(projectSceneState({...data,dialogue:nativeDeviceDialogues(gameplay,data)},gameplay),doc,authored),
-  readables:compiled.content.readables?.map(r=>{const st=r.id.startsWith('card')?stations[Number(r.id.slice(4))-1]:undefined;return {...r,...(st&&r.name===content.scene.readables!.find(v=>v.id===r.id)?.name?{name:'BAY 3·'+String(st.n).padStart(2,'0')+' · '+st.title}:{})};}),
-  ...compileNativeTargets(authored,{reset:get('reset').placement},content.nativeTargetBindings),
+  readables:compiled.content.readables?.map(r=>{const binding=authored.manifest?.readables?.[r.id],instance=typeof binding==='string'?binding:binding?.instance,index=controller?.stations.findIndex(st=>st.card!==undefined&&st.card===instance)??-1,st=stations[index];return {...r,...(st&&r.name===content.scene.readables!.find(v=>v.id===r.id)?.name?{name:'BAY 3·'+String(st.n).padStart(2,'0')+' · '+st.title}:{})};}),
+  ...compileNativeTargets(authored,{...(reset?{reset:reset.placement}:{})},{reset:content.nativeTargetBindings?.reset===true,anchors:reset?['reset']:[]}),
   drawBackdrop:(ctx,v,e)=>drawSandbox(ctx,v,e,doc,state,options,actors),visualEnvironment:(v,e)=>sandboxFrameEnvironment(v,e,doc,actors),
  };
 }
