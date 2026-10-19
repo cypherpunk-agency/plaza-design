@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `2bda43c` on main and production.
-Production homepage/design jobs39341311709/39341311754 and main build39341311403 succeeded.
+Last verified deployment: `ed91680` on main and production.
+Production/main homepage jobs39343069196/39343069161 and design job39343069066 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2371,3 +2371,21 @@ Sourcea7aee7d9c0d0 passes173/173 browser raster comparisons with zero difference
 tsc, actual Beach Play/Stop and actual actor-role inspector controls. No whole-goal gate promotion.
 See SCENE-PRESENTATION-ACTORS.md; next Shop's geometry/clipping and actor-role inputs, then remaining
 native consumers and the final all19 acceptance inventory/lifecycle/current-state/world/removal audit.
+
+## 2026-10-20 Shop geometry and actor roles
+
+Shop window clipping/counter sightlines now resolve shared typed artwork roles; keeper/outside
+membership uses source actor references. No former geometry or actor IDs/prefixes select behavior.
+Shared actor creation/duplication emits the optional registered clip binding, so new outside actors
+receive the same clipping as shipping actors. All shop art kernels are presentation-only consumers;
+real manifest/actor/attachment references still validate before replacement or deletion.
+
+Actual Scene forms, duplicate/removal, scaled replacement window clipping, culling, deletion of
+former window/counter, explicit optional absence, invalid-edit atomicity, portable bundle, protected
+Save/fresh shipping import and byte Undo PASS: `shop-actor-role-source-p3asuo`.
+Default Shop four Canvas-command comparisons, twelve cyclic purchases and36 refusal/no-mutation
+cases PASS. TypeScript and both builds PASS. Source04c1aa71e826 has173/173 browser pixel comparisons
+with zero differences/errors, independently verified. Actual packaged Shop native Play/Stop and
+geometry/actor inspector controls PASS without warning/error logs. Package app-KDYDPDLP.js /
+play-QWKO4ICL.js / play-a92368162884aec8.html. All19 actor helper regression PASS (`actor-entities/run-v1pQT7`); all19 actual packaged
+editor Play/Stop PASS with no warning/error logs (`editor-native-play-04c1aa71-20261020.json`). Whole-goal gates remain open; this is bounded Shop evidence, not all-scene signoff.

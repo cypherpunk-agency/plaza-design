@@ -1,3 +1,4 @@
+import {scenePresentationRoles,scenePresentationActorRoles} from '../engine/gameplay/scene-presentation';
 import {renderScenePresentation} from './scene-presentation-authoring';
 import {pendingScene} from './pending-scene';
 import {emptyDeviceSource} from '../engine/empty-data';
@@ -52,7 +53,7 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
   const keys=[...pendingNetworkContext(new Map(context.documents.filter(row=>!row.id.startsWith('authored.')).map(row=>[row.id,api.get(row.id).value]))).keyring.keys()];
   const entries:Entry[]=[];
   entries.push({key:'environment',group:'Scene',label:'Environment',render:h=>{note(h,'These overrides control the same native lighting and weather in the game and preview. Omitted values follow the registered artwork or controller.');renderSceneEnvironment(form,h,d.environment,(label,change)=>edit(label,d=>{change(d.environment??={});}),refresh,d.id);}});
-  if(['harborShift','market','beach'].includes(d.id))entries.push({key:'presentation',group:'Scene',label:d.id==='beach'?'Actor presentation':'Visual flag bindings',render:h=>renderScenePresentation(form,h,d,g,edit,refresh)});
+  if(Object.prototype.hasOwnProperty.call(scenePresentationRoles,d.id))entries.push({key:'presentation',group:'Scene',label:scenePresentationActorRoles[d.id as keyof typeof scenePresentationRoles]?'Actor presentation':'Visual flag bindings',render:h=>renderScenePresentation(form,h,d,g,edit,refresh)});
   if(d.manifest)entries.push({key:'companion',group:'Scene',label:'Companion',render:h=>{const rows=manifestCompositionRows(api.get(selected().prefix).value as Composition),deviceId=deviceSourceIdentity(d.id).devices,native=projectSceneState(context.documents.some(row=>row.id===deviceId)?api.get(deviceId).value as import('../data').SceneData:SCENES[d.id]?.data??emptyDeviceSource(d.id,d.name),g),library=context.documents.some(row=>row.id==='companion-gameplay')?api.get('companion-gameplay').value as import('../engine/gameplay/types').GameplayDefinition:COMPANION_GAMEPLAY;renderSceneCompanion(form,h,d,rows,Object.entries(native?.state??{}).filter(([,v])=>typeof v==='string').map(([k])=>k),Object.keys({...library.conversations,...g.conversations}),g,edit,refresh);}});
   const mutableActors=!!actorBindingController(d.id)?.mutable&&!!api.editDocuments;
   if(mutableActors)entries.push({key:'actor-collection',group:'Scene',label:'Actor collection',render:h=>{let id='actor-1',n=1;while(d.actors?.some(a=>a.id===id))id='actor-'+(++n);let family='human',x=180,height=0,dialogue=true;

@@ -2,10 +2,10 @@ import type {GameplayDefinition} from './types';
 /** Registered visual roles. These refs read authored flags and actor identities; they neither decide nor store gameplay. */
 export const shiftPresentationRoles=['parcel','delivered','case','returned','parked','released','checked','done'] as const;
 export type ShiftPresentationRole=typeof shiftPresentationRoles[number];
-export const scenePresentationRoles={harborShift:shiftPresentationRoles,market:['exitOpen'],beach:[]} as const;
+export const scenePresentationRoles={harborShift:shiftPresentationRoles,market:['exitOpen'],beach:[],shop:[]} as const;
 export type ScenePresentationRole=ShiftPresentationRole|'exitOpen';
-export type ScenePresentationActorRole='bartender'|'ashore';
-export const scenePresentationActorRoles:Readonly<Partial<Record<keyof typeof scenePresentationRoles,Readonly<Partial<Record<ScenePresentationActorRole,'one'|'many'>>>>>>={beach:{bartender:'one',ashore:'many'}};
+export type ScenePresentationActorRole='bartender'|'ashore'|'keeper'|'outside';
+export const scenePresentationActorRoles:Readonly<Partial<Record<keyof typeof scenePresentationRoles,Readonly<Partial<Record<ScenePresentationActorRole,'one'|'many'>>>>>>={beach:{bartender:'one',ashore:'many'},shop:{keeper:'one',outside:'many'}};
 export interface ScenePresentation {kind:keyof typeof scenePresentationRoles;flags:Partial<Record<ScenePresentationRole,string>>;actors?:Partial<Record<ScenePresentationActorRole,string|string[]>>}
 export function validateScenePresentation(value:unknown,id:string,gameplay:GameplayDefinition,actorIds:readonly string[]=[]):void{
  const fail=():never=>{throw Error('Invalid registered scene presentation');};

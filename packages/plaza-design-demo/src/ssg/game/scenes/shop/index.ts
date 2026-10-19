@@ -38,9 +38,9 @@ export function shopSceneDefinition(document:Composition=shopComposition,state:E
   return {id:'shop',name:source.name,intro:source.introTouch?(touch:boolean)=>[...(touch?source.introTouch!:source.intro)]:source.intro.length?[...source.intro]:undefined,
     ...compiled.content,gameplay:withSceneConversations(gameplay,source),
     people:source.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
-    drawBackdrop:(x,v)=>drawShopComposition(x,v,actors,doc,state,options),
-    drawFront:(x,v)=>drawShopForeground(x,v,actors,doc,state,options),
-    visualEnvironment:(view)=>shopEnvironment(view,actors,doc),
+    drawBackdrop:(x,v)=>drawShopComposition(x,v,actors,doc,state,options,source),
+    drawFront:(x,v)=>drawShopForeground(x,v,actors,doc,state,options,source),
+    visualEnvironment:(view)=>shopEnvironment(view,actors,doc,source),
   };
 }
 export function shopScene(document:Composition=shopComposition,state:Environment['state']={},options:ShopRenderOptions={},content:SceneDocument=SHOP_SCENE,gameplay:GameplayDefinition=SHOP_GAMEPLAY):SceneDef{return shopSceneDefinition(document,state,options,validateShopScene(content,validateShopGameplay(gameplay)),gameplay);}

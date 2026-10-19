@@ -40,3 +40,21 @@ Commands run from packages/plaza-design-demo:
 Next apply these same stateless artwork and actor-reference contracts to other native identity-based
 consumers, starting with Shop's window/counter and keeper/outside group. Audit actor artwork binding
 helpers alongside consumers so a new actor ID receives the same clipping capability as an old one.
+
+## Shop continuation
+
+Shop now uses keeper (single actor) and outside (actor group) through the same inspector/CRUD
+contract. The optional window/counter artwork roles drive scaled native clipping and offscreen
+culling. Missing roles do not restore canonical artwork. New and duplicated Shop actors receive
+registered clip bindings; only outside members use the clipping rectangle. Clearing an old outside
+actor's membership immediately removes its clip and cull policy, irrespective of its ID.
+The old window/counter may be removed after actual dependent artwork has been reanchored.
+Shop lighting kernels are registered presentation-only consumers; no game logic is unlocked by
+removing them. The common manifest/source validators retain real references.
+
+check-shop-source-roles.mts PASS (`shop-actor-role-source-p3asuo`) covers actual typed controls,
+replacement/removal, scaled clips, source singleton/group reassignment, invalid refs/dimensions,
+optional absence, model history, bundles, protected Save, fresh shipping import and byte Undo.
+Original Shop drawing/purchase/refusal checks and both builds PASS. Source04c1aa71e826 passes
+173 browser raster comparisons with zero differences/errors and actual packaged Shop Play/Stop.
+Next native identity consumers include Mall's adaptive floors, escalator riders and booth actors.
