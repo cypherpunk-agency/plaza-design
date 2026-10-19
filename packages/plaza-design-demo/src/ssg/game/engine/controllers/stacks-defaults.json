@@ -1,0 +1,19 @@
+{
+  "kind": "stacks",
+  "version": 1,
+  "lift": {
+    "overMs": 700,
+    "hoistMs": 600,
+    "travelMs": 1600,
+    "lowerMs": 500
+  },
+  "returnMs": 1900,
+  "scannerDevice": "port",
+  "state": {
+    "boxAt": "boxAt",
+    "departed": "departed",
+    "box": "box",
+    "loaded": "loaded",
+    "found": "found"
+  }
+}

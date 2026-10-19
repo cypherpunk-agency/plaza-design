@@ -79,7 +79,7 @@ export class Panels {
   // ---------- talking: permission, not answers ----------
 
   talk(who?: string) {
-    const target=who??Object.keys(this.m.data.dialogue)[0];const session=target?this.conversation?.(target):undefined;if(session){const template=session.sayCommand??this.m.data.dialogue[target]?.sayCmd;this.presentConversation(session,template?label=>this.say([template.replace('{line}',label),'','dim']):undefined);return;}
+    const target=who??Object.keys(this.m.data.dialogue)[0];const session=target?this.conversation?.(target):undefined;if(session){const template=session.sayCommand;this.presentConversation(session,template?label=>this.say([template.replace('{line}',label),'','dim']):undefined);return;}
     if(target&&this.m.data.dialogue[target])throw new Error('Conversation not registered: '+target);
   }
 }

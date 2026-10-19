@@ -30,7 +30,7 @@ import capsuleGameplay from '../scenes/capsule/gameplay.json';
 import {projectNativeDeviceData} from '../engine/gameplay/native-bindings';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import libraryGameplay from '../scenes/library/gameplay.json';
-import {nativeDialogue,nativeDeviceDialogues} from '../engine/gameplay/native-dialogue';
+import {nativeDeviceDialogues} from '../engine/gameplay/native-dialogue';
 import {validateGameplay} from '../engine/gameplay/validation';
 /**
  * The game's data files, bundled into the page by esbuild (no fetches: the
@@ -58,13 +58,13 @@ import sandboxJson from "../scenes/sandbox/devices.json";
 /** Initial catalog projection; complete native refs validate with the actual rules in scene assembly. */
 const catalogDeviceData=(data:SceneData,gameplay:GameplayDefinition)=>projectNativeDeviceData(projectSceneState(data,gameplay),gameplay);
 const yardDefinition=validateGameplay(yardGameplay);
-const yard: Loose<SceneData> = catalogDeviceData({...yardJson,dialogue:{hinge:nativeDialogue(yardDefinition,'hinge')}} as unknown as SceneData,yardDefinition);
+const yard: Loose<SceneData> = catalogDeviceData({...yardJson,dialogue:nativeDeviceDialogues(yardDefinition,yardJson as unknown as SceneData)} as unknown as SceneData,yardDefinition);
 const capsuleDefinition=validateGameplay(capsuleGameplay);
-const capsule: Loose<SceneData> = catalogDeviceData({...capsuleJson,dialogue:{concierge:nativeDialogue(capsuleDefinition,'concierge')}} as unknown as SceneData,capsuleDefinition);
-const moth: Loose<SceneData> = projectSceneState(mothJson as unknown as SceneData,validateGameplay(mothGameplay));
-const beach: Loose<SceneData> = catalogDeviceData(beachJson as unknown as SceneData,validateGameplay(beachGameplay));
+const capsule: Loose<SceneData> = catalogDeviceData({...capsuleJson,dialogue:nativeDeviceDialogues(capsuleDefinition,capsuleJson as unknown as SceneData)} as unknown as SceneData,capsuleDefinition);
+const moth: Loose<SceneData> = projectSceneState({...mothJson,dialogue:nativeDeviceDialogues(validateGameplay(mothGameplay),mothJson as unknown as SceneData)} as unknown as SceneData,validateGameplay(mothGameplay));
+const beach: Loose<SceneData> = catalogDeviceData({...beachJson,dialogue:nativeDeviceDialogues(validateGameplay(beachGameplay),beachJson as unknown as SceneData)} as unknown as SceneData,validateGameplay(beachGameplay));
 const laundromatDefinition=validateGameplay(laundromatGameplay);
-const laundromat: Loose<SceneData> = {...projectSceneState(laundromatJson as unknown as SceneData,laundromatDefinition),dialogue:{suds:nativeDialogue(laundromatDefinition,'suds')}};
+const laundromat: Loose<SceneData> = {...projectSceneState(laundromatJson as unknown as SceneData,laundromatDefinition),dialogue:nativeDeviceDialogues(laundromatDefinition,laundromatJson as unknown as SceneData)};
 const downtown: Loose<SceneData> = projectSceneState(downtownJson as unknown as SceneData,validateGameplay(downtownGameplay));
 const logic: Loose<LogicData> = logicJson;
 const net: Loose<NetData> = netJson;
@@ -94,7 +94,7 @@ export const TRAIN = train as SceneData;
 
 /** The stacks at the harbor (P15 NRLU 404 0451, the end of Act I): STS-2, the thermal gate, the night ferry, the reefer, the watchdog. */
 const stacksDefinition=validateGameplay(stacksGameplay);
-const stacks: Loose<SceneData> = {...projectSceneState(stacksJson as unknown as SceneData,stacksDefinition),dialogue:{moth:nativeDialogue(stacksDefinition,'moth',{},undefined,{entryActions:false})}};
+const stacks: Loose<SceneData> = {...projectSceneState(stacksJson as unknown as SceneData,stacksDefinition),dialogue:nativeDeviceDialogues(stacksDefinition,stacksJson as unknown as SceneData,{entryActions:false})};
 export const STACKS = stacks as SceneData;
 
 /** The public library (P16 Long overdue): the card reader, the session timer, the printer, the LIBRARY LAN's nodes, scan.so. */
@@ -103,7 +103,7 @@ export const LIBRARY = library as SceneData;
 
 /** The sandbox (sudo only): REGISTRY QA BAY 3, one bench per engine feature. */
 const sandboxDefinition=validateGameplay(sandboxGameplay);
-const sandbox: Loose<SceneData> = {...projectSceneState(sandboxJson as unknown as SceneData,sandboxDefinition),dialogue:{unit7:nativeDialogue(sandboxDefinition,'unit7')}};
+const sandbox: Loose<SceneData> = {...projectSceneState(sandboxJson as unknown as SceneData,sandboxDefinition),dialogue:nativeDeviceDialogues(sandboxDefinition,sandboxJson as unknown as SceneData)};
 export const SANDBOX = sandbox as SceneData;
 
 /** Canonical device catalogs include every native scene and data-only authored scene sources. */

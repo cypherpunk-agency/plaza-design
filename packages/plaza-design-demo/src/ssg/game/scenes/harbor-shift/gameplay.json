@@ -608,6 +608,26 @@
         },
         {
           "when": {
+            "all": [
+              {
+                "flag": "shift:done"
+              },
+              {
+                "flag": "shift:checked",
+                "is": false
+              },
+              {
+                "not": {
+                  "item": "shift.tag",
+                  "atLeast": 1
+                }
+              }
+            ]
+          },
+          "node": "off-duty-reissue"
+        },
+        {
+          "when": {
             "flag": "shift:done"
           },
           "node": "off-duty"
@@ -682,6 +702,14 @@
           "pages": [
             "The assignment could not be registered. Please try again."
           ]
+        },
+        "off-duty-reissue": {
+          "speaker": "SUPERVISOR",
+          "pages": [
+            "You are off the clock. I am contractually unable to notice you."
+          ],
+          "onEnter": "shift.reissue-tag",
+          "onEnterFailure": "off-duty"
         }
       }
     }

@@ -1,3 +1,5 @@
+import {concreteStateValue} from '../engine/gameplay/state';
+import {fixtureStateDeclarations} from './play-fixtures';
 import {PlayStartup,playStartupWaitingMessage} from './play-startup';
 import {createPendingCity} from './pending-city';
 import {validatePendingFixtures,pendingFixtureVocabulary} from './pending-fixtures';
@@ -13,7 +15,7 @@ import type {PrivateStorageSnapshot} from '../runtime/storage';
 import {TypedForm} from './typed-form';
 import {validatePlayFixtures,fixtureFlags,fixtureModules,fixturePrograms,fixtureKeys,playScenes,defaultPlayFixture,type PlayScene,type PlayFixture} from './play-fixtures';
 import {ITEMS} from '../scenes/kit';
-import {SCENES,NATIVE_SCENES} from '../scenes';
+import {NATIVE_SCENES} from '../scenes';
 import {WEATHER_KINDS} from '../world/weather';
 import {gameplayScenes} from './gameplay-scenes';
 declare const EDITOR_PLAY_ENTRY:string;
@@ -71,7 +73,8 @@ export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,sel
   const flags=form.section(details,'Flags');for(const id of vocabulary?[...vocabulary.flags]:fixtureFlags)form.check(flags,id,!!f.flags[id],value=>edit('Edit fixture flag',f=>{f.flags[id]=value;}));
   const items=form.section(details,'Inventory');for(const id of Object.keys(ITEMS))form.number(items,id,f.items[id]??0,value=>edit('Edit fixture inventory',f=>{if(value)f.items[id]=value;else delete f.items[id];}));
   for(const [key,ids]of [['modules',fixtureModules],['programs',vocabulary?[...vocabulary.programs]:fixturePrograms],['keyring',vocabulary?[...vocabulary.keyring]:fixtureKeys]] as const){const section=form.section(details,key);for(const id of ids)form.check(section,id,f[key].includes(id),value=>edit('Edit fixture '+key,f=>{f[key]=value?[...f[key],id]:f[key].filter(v=>v!==id);}));}
-  if(SCENES[f.scene]?.data){const section=form.section(details,'Native scene state');for(const [key,defaultValue]of Object.entries(SCENES[f.scene].data!.state)){const value=f.state[key]??defaultValue;if(typeof value==='boolean')form.check(section,'State '+key,value,value=>edit('Edit fixture scene state',f=>{f.state[key]=value;}));else if(typeof value==='number')form.decimal(section,'State '+key,value,value=>edit('Edit fixture scene state',f=>{f.state[key]=value;}),-1000000);else form.text(section,'State '+key,String(value),value=>edit('Edit fixture scene state',f=>{f.state[key]=value;}));}}
+  const declarations=fixtureStateDeclarations(f.scene,vocabulary);if(Object.keys(declarations).length){const section=form.section(details,'Scene state');for(const[key,d]of Object.entries(declarations)){const value=Object.prototype.hasOwnProperty.call(f.state,key)?f.state[key]:d.default;const set=(value:import('../engine/gameplay/types').StateValue)=>edit('Edit fixture scene state',f=>{f.state[key]=value;});if(d.nullable)form.check(section,'State '+key+' is null',value===null,on=>set(on?null:concreteStateValue(d)));if(value===null)continue;if(d.type==='boolean')form.check(section,'State '+key,value as boolean,set);else if(d.type==='number'){const control=d.integer===false?form.decimal.bind(form):form.number.bind(form);control(section,'State '+key,value as number,set,d.min??-1000000,d.max??1000000);}else if(d.type==='enum')form.select(section,'State '+key,d.options!,String(value),set);else form.text(section,'State '+key,String(value),set);}}
+
  }
  function diagnostics(){if(!last)return;const {engine:runtime,...state}=last;inspect.textContent=JSON.stringify(state,null,2);if(!runtime){engine.textContent='';return;}
   const ids=runtime.devices.map((d:any)=>d.id),signature=ids.join('|');if(signature!==deviceSignature){deviceSignature=signature;devices.replaceChildren();if(!ids.includes(selection.device))selection.device=ids[0];form.select(devices,'Inspect device',['',...ids],selection.device??'',id=>{selection.device=id;diagnostics();});}

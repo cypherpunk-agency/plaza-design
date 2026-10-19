@@ -128,6 +128,15 @@
                 "say": "lift.busy"
               },
               {
+                "if": "stacks.liftKind=2",
+                "do": [
+                  {
+                    "effect": "sts2.lift"
+                  }
+                ],
+                "say": "lift.box"
+              },
+              {
                 "do": [
                   {
                     "effect": "sts2.lift"
@@ -749,5 +758,24 @@
       "0451 is not in its slot any more.",
       "dim"
     ]
+  },
+  "controller": {
+    "kind": "stacks",
+    "version": 1,
+    "lift": {
+      "overMs": 700,
+      "hoistMs": 600,
+      "travelMs": 1600,
+      "lowerMs": 500
+    },
+    "returnMs": 1900,
+    "scannerDevice": "port",
+    "state": {
+      "boxAt": "boxAt",
+      "departed": "departed",
+      "box": "box",
+      "loaded": "loaded",
+      "found": "found"
+    }
   }
 }

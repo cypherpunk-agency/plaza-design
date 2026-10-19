@@ -2,9 +2,11 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Latest published checkpoint: `ad90b79` on main and production; both production deployments succeeded.
+Latest pushed checkpoint: `edc6007` on main and production (atomic push verified).
+Both production deployments succeeded (homepage39314631594,design39314631485);
+main build39314631529 also succeeded. Public editor HTTP200 serves CI artifact app-S47IROS6.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
-Current local checkpoint B is integration-verified at source `0928013b951c`: both builds,
+Checkpoint B is integration-verified at source `0928013b951c`: both builds,
 173 zero-difference raster cases and all19 actual packaged-editor Play/Stop checks PASS.
 See docs/reference/ENGINE-CHECKPOINT-2026-10-19-B.md for the bounded evidence and remaining work.
 This does not promote the remaining whole-goal acceptance gates.
@@ -24,7 +26,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
 | G4 | IN PROGRESS | Contextual source Save/history/bundles/recovery and bot source checks pass; full authoring/isolation acceptance pending |
 | G5 | IN PROGRESS | Shared handoff reset/restore/disposal checks pass; whole-runtime lifecycle inventory/cases pending |
-| G6 | IN PROGRESS | Historical recordings remain source-bound to earlier checkpoints. Current six-workload suite fails replacement-frame startup even without a Game; no current complete baseline or optimization claim. PERFORMANCE-STARTUP-DIAGNOSIS.md records the controls |
+| G6 | PASS | Source839777ab5e10: all six workloads, three eligible repeats each, raw samples/environment/calibration and independent summary validation; top-three exclusive contributor inspection, no optimization retained. See PERFORMANCE-CHECKPOINT-2026-10-19-C.md. Earlier failed Chrome diagnostics remain immutable |
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
 | G8 | IN PROGRESS | 19/19 ordinary manifests and actor collections now support source CRUD/rebinding/Save; new ordinary catalogue scenes run without TS registration. Native controllers/world/network/story and integrated acceptance remain |
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
@@ -2134,3 +2136,82 @@ Follow-up editor/runtime verification:
   controls and actual native/sourceSave/fresh import/Undo:source-removal-SeWPuh. Default17 bot
   identities/reorder progress and native Library actor Save(run-ELXSim) PASS. This changes explicit
   source editing behavior; default shipping scene documents retain their original identities.
+
+## Market source dependencies after checkpoint B
+
+Market no longer restores `end` or floors the old cook cursor. Actual typed deletion, coherent
+exit/cursor rebinding, pending conversation progress, grouped Save/fresh source/history/bundle/Undo
+PASS in `.scene-system/market-editable/run-6me5KT`. Original14 interaction cases,20 NPC page cases
+and64 paint transcripts pass. See docs/reference/MARKET-EDITABLE-STATE.md for exact scope.
+This is local post-edc6007 work; no whole-scene gate is promoted.
+
+## Opening milestone shared commands after checkpoint B
+
+Six source milestone bindings now dispatch shared system commands against the common Game port;
+the old direct flag/keyring writes and standalone UPLINK_KEY field are removed. Typed nested
+command/reward/condition editing, command rebinding/removal, actual Game behavior, event handoffs,
+private instance separation, bundle/history/protectedSave/fresh shipping/byteUndo PASS in
+`.scene-system/opening-workflows-CtaNY0`. Default42 controller/timing/paint comparisons and64
+phase/resume histories pass. See docs/reference/OPENING-WORKFLOWS.md for precise remaining scope.
+No full gate promotion; this source follows published edc6007 and needs integrated preservation.
+
+## Shared commerce authoring after checkpoint B
+
+Laundromat no longer requires the original soap purchase/command/use binding or SUDS graph ID.
+The real typed purchase editor now adds/copies/removes purchases, goods and rotation entries.
+`.scene-system/laundromat-source-policies-WCTcFY` proves typed commerce/daemon rebinding and full
+ordinary-graph removal, pending native behavior, guarded resource outcomes, bundle/history,
+two protected Saves, fresh shipping imports and byte Undo. Default75 soap cases,2592 washer
+cases/28 timelines,24 breaker cases and576 jacket cases pass unchanged.
+
+Shop removes only historical catalogue/command/route/rotation floors; shipping JSON is unchanged.
+`.scene-system/shop-source-owned-dWvbk7` proves48 immutable histories with12 attempts each,
+actual typed replacement and complete deletion, conditional nonrotating routes, quote/charge,
+refusal/persisted rotation, pending/bundle/history/protected Save/fresh shipping/byte Undo.
+Neither slice promotes whole-scene or whole-editor acceptance; dynamic native dialogue and
+remaining common conversation structure controls are subsequent work.
+
+## Harbor Shift source freedom and retained presentation primitive
+
+Historical vocabulary/graph/accept-choice floors and the mounted synthetic Harbor lab were
+removed. Registered scene gameplay now uses the normal shared typed editor and native Play.
+Typed presentation flag roles and independent source day rules drive actual artwork/carry and
+Game clock; absent mappings/time/day stay absent instead of restoring canonical defaults.
+Source Save proof `.scene-system/shift-editable-save-5cRNld` includes actual typed graph/choice/
+command removal and rebinding, pending execution, bundle/history, atomic invalid references,
+fresh shipping Game day/clock behavior and byte Undo. Default2048 carry/objective/time/day cases,
+768 visual snapshots,48 actual Game interactions and1100 immutable pilot cases PASS.
+A source-only off-duty reissue condition fixes an original migration omission found in case326;
+the original baseline is unchanged. See docs/reference/HARBOR-SHIFT-AUTHORING.md.
+All of this remains local after edc6007 and requires a new integrated preservation checkpoint.
+
+Opening source Save also PASSes independently at `.scene-system/opening-story-save/run-nb5a0Y`.
+The current progress verifier reports19 registered scenes,97 documents,58 source actor bindings,
+17 bot bindings and zero legacy conversation rows; it correctly reports fullGoalComplete:false.
+
+## Further source-authoring verification
+
+Native dialogue metadata now projects currently declared graphs in source order, with actual
+device bindings validated against the shared conversation runner. Historical graph names no
+longer constrain six native scene factories. Typed node copy/rename/remove and redirect/entry
+controls are integrated. `check-native-dialogue-source.mts` PASS at
+`.scene-system/native-dialogue-source-X88l8o`; all eight frozen metadata/default regressions and
+the conversation-structure check also PASS. Poisoned display metadata cannot execute rewards
+or replace shared-session dialogue behavior.
+
+Play fixture state now uses prospective declarations, including newly authored ordinary scenes,
+nullable/decimal/enum values and bounds. No historical state keys are appended to explicitly
+empty pending vocabularies. `.scene-system/pending-fixture-state-nLLFAP` records typed controls,
+atomic reference failures, grouped Save, fresh shipping Game state and byte Undo.
+
+Motion-controller configuration and ordinary Stacks lift/scanner replies passed typed editing,
+Save/fresh-import and default preservation checks. See docs/reference/MOTION-SOURCE-AUTHORING.md
+and `.scene-system/motion-controller-source-MdU0mF/evidence.json`.
+Opening workflows passed again after integration at `.scene-system/opening-workflows-MsuG1Z`.
+
+The integrated c58679885211 raster checkpoint passed all173 cases with zero differing pixels
+or render errors, archived in `.scene-system/all-game-pixel-check/evidence/`.
+A subsequent public-entry-only change disables HTTP caching of stable documents/sources URLs;
+the previously failing public editor loads successfully after that change. Current source
+839777ab5e10 has both builds and TypeScript passing; its all-scene Play and six-workload
+acceptance are being collected independently. No whole-goal gate is promoted by these slices.

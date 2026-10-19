@@ -1,10 +1,10 @@
 /** Isolated shared-gameplay laboratory. No Game construction, browser storage or global clock changes. */
-import { GameplaySession, cloneState } from '../engine/gameplay/session';
-import { ConversationSession } from '../engine/gameplay/conversation';
-import { DELIVERY_TERMINAL,deliveryTerminalRules } from '../engine/gameplay/delivery-terminal';
-import { SceneModel,type Line } from '../engine/model';
-import { SHIFT_GAMEPLAY } from '../scenes/harbor-shift/gameplay';
-import type { GameplayState } from '../engine/gameplay/types';
+import { GameplaySession, cloneState } from '../../src/ssg/game/engine/gameplay/session';
+import { ConversationSession } from '../../src/ssg/game/engine/gameplay/conversation';
+import { DELIVERY_TERMINAL,deliveryTerminalRules } from './shift-delivery-fixture.mts';
+import { SceneModel,type Line } from '../../src/ssg/game/engine/model';
+import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
+import type { GameplayState } from '../../src/ssg/game/engine/gameplay/types';
 export function createGameplayPilot(initial:GameplayState={flags:{},items:{},tokens:0},definition:unknown=SHIFT_GAMEPLAY){
   const baseline=cloneState(initial);
   let state=cloneState(baseline),time=0,serial=0,disposed=false;

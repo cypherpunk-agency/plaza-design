@@ -1,3 +1,4 @@
+import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import type {NativeTargetValidationContext} from '../../engine/gameplay/native-targets';
 import {compileSceneActors} from '../../engine/gameplay/actors';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
@@ -47,7 +48,7 @@ export function mothScene(document: Composition = mothComposition, state: Enviro
   const doc=validateMothComposition(document),geometry=mothGeometry(doc),byId=(id:string)=>geometry.find(row=>row.instance.id===id)!,door=byId('door').placement;
   const authored=content.validateScene(sceneDocument,gameplay,validationContext),actors=compileSceneActors(authored,geometry);
  const compiled=compileManifestDocument(authored,geometry,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true});
-  return {...baseMoth,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),facing:Number(byId('window').props.facing),data:mothDeviceData(projectSceneState(deviceSource,gameplay),doc,authored),
+  return {...baseMoth,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),facing:Number(byId('window').props.facing),data:mothDeviceData(projectSceneState({...deviceSource,dialogue:nativeDeviceDialogues(gameplay,deviceSource)},gameplay),doc,authored),
     ...compileNativeTargets(authored,{door},content.nativeTargetBindings),
     visualEnvironment:(view,engine)=>mothEnvironment(doc,view,engine.m,engine.hover,actors),
     drawBackdrop:(ctx,view,engine)=>drawMothComposition(ctx,view,engine.m,engine.hover,doc,state,options,actors),

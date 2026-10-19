@@ -1206,6 +1206,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "stateSourceReplacement": {
+          "status": "PASS",
+          "check": "check-market-editable.mts",
+          "artifact": ".scene-system/market-editable/run-6me5KT",
+          "scope": "coherent exit flag and cook cursor rebind; typed orphan flag/state deletion, pending conversation progress, history/bundle/Save/fresh import/byte Undo; not full-scene acceptance"
         }
       }
     },
@@ -1343,6 +1349,12 @@
           "check": "check-moth-laundromat-endpoint-crud.mts",
           "artifact": ".scene-system/moth-laundromat-endpoint-crud-Sn9hTC/evidence.json",
           "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
+        },
+        "commerceDialogueSourceReplacement": {
+          "status": "PASS",
+          "check": "check-laundromat-source-policies.mts",
+          "artifact": ".scene-system/laundromat-source-policies-WCTcFY",
+          "scope": "typed soap purchase/command/route and daemon graph rebinding/removal, common resources/native behavior, history/bundle/two Saves/fresh shipping/byte Undo; not full scene or current helper acceptance"
         }
       }
     },
@@ -1456,6 +1468,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "commerceSourceReplacement": {
+          "status": "PASS",
+          "check": "check-shop-source-owned.mts",
+          "artifact": ".scene-system/shop-source-owned-dWvbk7",
+          "scope": "typed catalogue/purchase/command/route/cursor replacement and complete deletion, actual pending outcome, source Save/fresh shipping/history/bundle/byte Undo; default48x12 outcome histories; not full-scene acceptance"
         }
       }
     },

@@ -1,0 +1,15 @@
+{
+  "kind": "downtown",
+  "version": 1,
+  "outside": 22,
+  "inside": 70,
+  "signalMs": 450,
+  "devices": {
+    "gate": "gate",
+    "vehicle": "dlv9"
+  },
+  "state": {
+    "at": "dlvAt"
+  },
+  "speedTuning": "dlvSpeed"
+}

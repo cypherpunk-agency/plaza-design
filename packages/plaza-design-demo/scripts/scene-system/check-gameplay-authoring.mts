@@ -10,7 +10,7 @@ import { startAuthoringServer } from '../../src/ssg/game/authoring/server/http';
 import { createDocumentBundle,readDocumentBundle } from '../../src/ssg/game/authoring/document-bundle';
 import { validateShiftGameplay } from '../../src/ssg/game/scenes/harbor-shift/gameplay-contract';
 import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
-import { createGameplayPilot } from '../../src/ssg/game/authoring/gameplay-pilot-session';
+import { createGameplayPilot } from './shift-pilot-fixture.mts';
 import type { GameplayDefinition } from '../../src/ssg/game/engine/gameplay/types';
 const id='harbor-shift-gameplay';
 const descriptor=sourceDocuments.find(d=>d.id===id)!;assert.equal(descriptor.kind,'gameplay');
@@ -31,11 +31,11 @@ model.undo();assert.deepEqual(model.get(id).value,original);assert.equal(model.d
 const bundle=createDocumentBundle(model.edits(),model.list());assert.equal(bundle.documents[0].kind,'gameplay');
 const receiver=new ComposerModel(art,{},validate);receiver.load([{id,kind:'gameplay',revision:'receiving-source',value:original}]);
 receiver.importDocuments(readDocumentBundle(JSON.stringify(bundle),receiver.list()));assert.deepEqual(receiver.get(id).value,edited);assert.equal(receiver.get(id).revision,'receiving-source');receiver.undo();assert.deepEqual(receiver.get(id).value,original);receiver.redo();
-const before=receiver.list(),invalid=structuredClone(edited);invalid.commands['shift.credit-wages'].sources.push('signal');
-assert.throws(()=>receiver.edit(id,'Widen reward permission',()=>invalid),/protected/);assert.deepEqual(receiver.list(),before);
-assert.throws(()=>receiver.importDocuments([{id,value:invalid}]),/protected/);assert.deepEqual(receiver.list(),before);
-const missing=structuredClone(edited);delete missing.commands['shift.deliver'];assert.throws(()=>validateShiftGameplay(missing));
-const duplicate=structuredClone(edited);duplicate.reactions.push(duplicate.reactions[0]);assert.throws(()=>validateShiftGameplay(duplicate),/Duplicate/);
+const before=receiver.list(),invalid=structuredClone(edited);invalid.commands['shift.credit-wages'].when={flag:'missing'};
+assert.throws(()=>receiver.edit(id,'Break condition reference',()=>invalid),/unknown reference/);assert.deepEqual(receiver.list(),before);
+assert.throws(()=>receiver.importDocuments([{id,value:invalid}]),/unknown reference/);assert.deepEqual(receiver.list(),before);
+const missing=structuredClone(edited);delete missing.commands['shift.deliver'];assert.doesNotThrow(()=>validateShiftGameplay(missing),'cross-document interaction refs validate at assembly');
+const duplicate=structuredClone(edited);duplicate.reactions.push(duplicate.reactions[0]);assert.doesNotThrow(()=>validateShiftGameplay(duplicate),'same shared reaction semantics as all scenes');
 function exercise(definition:GameplayDefinition,signal:boolean){
  const pilot=createGameplayPilot(undefined,definition);
  try{
@@ -72,11 +72,11 @@ try{
    assert.equal((await fetch(api.url+'/save',{method:'POST',headers,body})).status,409,'stale browser save conflicts');
    const after=await(await fetch(api.url+'/documents/'+id,{headers})).json() as {revision:string;value:GameplayDefinition};
    const p=createGameplayPilot(undefined,after.value);assert.equal(p.talk('supervisor').frame().pages[0],'Protected HTTP save round trip.');p.dispose();
-   assert.equal((await fetch(api.url+'/save',{method:'POST',headers,body:JSON.stringify({edits:[{id,revision:after.revision,value:invalid}]})})).status,422,'permission widening rejected by HTTP service');
+   assert.equal((await fetch(api.url+'/save',{method:'POST',headers,body:JSON.stringify({edits:[{id,revision:after.revision,value:invalid}]})})).status,422,'dangling flag rejected by HTTP service');
    assert.deepEqual(store.read(id).value,httpEdit);
-   console.log('Protected gameplay HTTP PASS: token enforcement, Save→GET reload→native conversation, stale revision 409 and invalid permission 422.');
+   console.log('Protected gameplay HTTP PASS: token enforcement, Save→GET reload→native conversation, stale revision 409 and invalid reference 422.');
   }finally{await api.close();}
  }
  assert.equal(fs.readFileSync(path.join(game,descriptor.file),'utf8'),sourceBefore,'repository source preserved');
- console.log('Gameplay authoring PASS: actual ComposerModel undo/redo and atomic import, protected IDs/permissions, pending native ordinary/wired parity, source save/reload/conflict/group rollback/source undo-redo.');
+ console.log('Gameplay authoring PASS: actual ComposerModel undo/redo and atomic import, strict actual references, pending native ordinary/wired parity, source save/reload/conflict/group rollback/source undo-redo.');
 }finally{const resolved=fs.realpathSync(root),allowed=fs.realpathSync(scratch);assert.ok(resolved.startsWith(allowed+path.sep));fs.rmSync(resolved,{recursive:true,force:true});}

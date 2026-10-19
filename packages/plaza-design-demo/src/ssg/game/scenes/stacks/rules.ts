@@ -1,3 +1,5 @@
+import {stacksController} from '../../engine/controllers/motion';
+export const stacksState=(m:SceneModel,key:keyof import('../../engine/controllers/motion').StacksController['state'])=>m.get(stacksController(m.data).state[key]);
 /**
  * The stacks' code side (P15 NRLU 404 0451, the end of Act I). Almost
  * everything is data/stacks.json on the engine: STS-2, the Port Authority's
@@ -69,10 +71,7 @@ export const X = {
 export const H = { carry: 120, chassis: 14, slot: 58, deck: 4, hold: -64 };
 
 /** A lift's timeline (ms from the cable): the trolley moves over, lowers and hoists, travels, lowers. */
-const T = { over: 700, hoist: 600, travel: 1600, lower: 500 };
-const SET_MS = T.over + T.hoist + T.travel + T.lower;
-/** After an alarm: the box goes back along the boom and down into its slot. */
-const RETURN_MS = 1900;
+const timeline=(data?:Pick<SceneData,'controller'>)=>{const c=stacksController(data??{});return{over:c.lift.overMs,hoist:c.lift.hoistMs,travel:c.lift.travelMs,lower:c.lift.lowerMs};};
 
 /** What the trolley carries: nothing, a regular box, or 0451. */
 export const KIND = { none: 0, regular: 1, box: 2 } as const;
@@ -85,7 +84,8 @@ const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
 const route = (kind:number, geometry:TerminalGeometry={X,H}) => {const {X,H}=geometry;return kind===KIND.box?{from:X.slot,to:X.deck,low:H.slot,end:H.deck}:{from:X.chassis,to:X.hatch,low:H.chassis,end:H.hold};};
 
 /** The trolley's x and its box's bottom height `ms` into a lift that started with the trolley at `x0`. */
-function liftAt(kind: number, x0: number, ms: number, geometry:TerminalGeometry={X,H}) {
+function liftAt(kind: number, x0: number, ms: number, geometry:TerminalGeometry={X,H},data?:Pick<SceneData,'controller'>) {
+  const T=timeline(data);
   const {H}=geometry,r = route(kind,geometry);
   if (ms < T.over) return { x: lerp(x0, r.from, ease(ms / T.over)), h: H.carry, load: false };
   let u = ms - T.over;
@@ -99,19 +99,19 @@ function liftAt(kind: number, x0: number, ms: number, geometry:TerminalGeometry=
 }
 
 /** ms into a lift at which its box crosses the thermal gate. */
-export const scanMs = (kind: number, geometry:TerminalGeometry={X,H}) => { const {X}=geometry,r = route(kind,geometry); return T.over + T.hoist + T.travel * (X.gate - r.from) / (r.to - r.from); };
+export const scanMs = (kind: number, geometry:TerminalGeometry={X,H},data?:Pick<SceneData,'controller'>) => { const T=timeline(data),{X}=geometry,r = route(kind,geometry); return T.over + T.hoist + T.travel * (X.gate - r.from) / (r.to - r.from); };
 
 /** Where the trolley is now, and what hangs under it: `h` is the bottom of the box (or the empty spreader). */
 export function trolley(m: SceneModel,geometry:TerminalGeometry={X,H}): { x: number; h: number; carry: number } {
   const {X,H}=geometry,s = m.scratch, now = m.now();
   if (s.retT0 !== undefined) {
-    const u = now - s.retT0, k = u / RETURN_MS;
+    const u = now - s.retT0, k = u / stacksController(m.data).returnMs;
     if (k < 0.7) return { x: lerp(s.retX, X.slot, ease(k / 0.7)), h: H.carry, carry: KIND.box };
     if (k < 1) return { x: X.slot, h: lerp(H.carry, H.slot, ease((k - 0.7) / 0.3)), carry: KIND.box };
     return { x: X.slot, h: H.carry, carry: KIND.none };
   }
   if (s.liftT0 !== undefined) {
-    const p = liftAt(s.liftKind, s.liftX, now - s.liftT0,geometry);
+    const p = liftAt(s.liftKind, s.liftX, now - s.liftT0,geometry,m.data);
     return { x: p.x, h: p.h, carry: p.load ? s.liftKind : KIND.none };
   }
   return { x: s.restX ?? X.rest, h: H.carry, carry: KIND.none };
@@ -132,26 +132,24 @@ const {X}=geometry;
       if (kind !== KIND.box && kind !== KIND.regular) throw new Error('STS-2 requires source liftKind 1 or 2');
       const t = ++ticket, s = m.scratch;
       s.liftT0 = m.now(); s.liftKind = kind; s.liftX = trolley(m,geometry).x; s.ticket = t;
-      if (kind === KIND.box) m.set('boxAt', 'air');
-      w.emit('lifted');
+      w.input('stacks.crane.started');
       // the gate: the box passes through the thermal scan
-      m.later(scanMs(kind,geometry), () => {
+      m.later(scanMs(kind,geometry,m.data), () => {
         if (s.ticket !== t) return;
         if (kind === KIND.regular) { s.cold = m.now(); w.changed(); return; }
         s.warm = m.now();
         // a frozen gate still sees it; it just cannot tell anyone (the engine says so: watchdog.mute)
-        if (!m.frozen('port')) w.say(w.line('scan.warm'), 'port');
-        m.emit('port.scanner:warm');
+        w.input('stacks.crane.scanned');
         w.changed();
       });
-      m.later(SET_MS, () => {
+      m.later(Object.values(timeline(m.data)).reduce((sum,ms)=>sum+ms,0), () => {
         if (s.ticket !== t) return;
         delete s.liftT0; s.restX = route(kind,geometry).to;
         w.input('stacks.crane.landed');
         w.changed();
       });
       w.changed();
-      return kind === KIND.box ? w.line('lift.box') : null;
+
     },
 
     /** The alarm: by hand a test; with 0451 in the air, the lift is aborted and the box goes back. */
@@ -162,7 +160,7 @@ const {X}=geometry;
       const t = s.ticket;
       // Physical trajectory is valid before a source commit can request a redraw.
       w.input('stacks.crane.return.started');
-      m.later(RETURN_MS, () => {
+      m.later(stacksController(m.data).returnMs, () => {
         if (s.ticket !== t) return;
         delete s.retT0; s.restX = X.slot;
         w.input('stacks.crane.returned');
@@ -182,7 +180,7 @@ const {X}=geometry;
 
   return {
     effects,
-    inputs:['stacks.crane.landed','stacks.crane.return.started','stacks.crane.returned'],
+    inputs:['stacks.crane.started','stacks.crane.scanned','stacks.crane.landed','stacks.crane.return.started','stacks.crane.returned'],
     panels: ['scope'],
     derived: {
       /** Physical trajectory occupancy; source cases own permission/refusal policy. */
@@ -190,20 +188,18 @@ const {X}=geometry;
       reeferTrajectory: (m) => m.scratch.liftKind===KIND.box,
       /** Moth's question has an answer: did you feed Sprat (Moth's place, the feeder)? */
       spratFed: () => !!player.sceneState?.('moth', 'fed'),
-      portFrozen: (m) => m.frozen('port'),
+      portFrozen: (m) => m.frozen(stacksController(m.data).scannerDevice),
       craneReturning: (m) => m.scratch.retT0 !== undefined,
     },
     tick,
     place: (m: SceneModel, home: Spot) => {
-      if (home.id === 'reefer') return m.get('boxAt') === 'ferry' && !m.get('departed') ? home : null;
+      if (home.id === 'reefer') return stacksState(m,'boxAt') === 'ferry' && !stacksState(m,'departed') ? home : null;
       return home;
     },
     needs: {
-      devices:[{id:'port',nouns:[{id:'scanner',kind:'SENSE',events:['warm']}]}],
-      state: [{key:'box',type:'string'},{key:'boxAt',type:'string'},{key:'departed',type:'boolean'},{key:'found',type:'boolean'},{key:'loaded',type:'number'}],
+      devices:[],
       texts: {
-        'lift.box': 'line',
-        'scan.warm': 'line',
+
         // the scope (scope.ts)
         'scope.zoom': 'label', 'scope.tag': 'label', 'scope.hud': 'label', 'scope.aim': 'label', 'scope.on': 'label',
         'scope.zoom.ground': 'line', 'scope.zoom.box': 'line', 'scope.zoom.found': 'line', 'scope.zoom.out': 'line',
@@ -213,7 +209,7 @@ const {X}=geometry;
     /** The physical scope identifies the cargo slot; watchdog topology is authored. */
     check: (z: SceneData) => {
       const errs: string[] = [];
-      if (!z.camera?.crates.some((k) => k.id === z.state.box && k.label === 'NRLU 404 0451')) errs.push('camera.crates: state.box must be the slot that holds NRLU 404 0451 (P15)');
+      if (!z.camera?.crates.some((k) => k.id === z.state[stacksController(z).state.box])) errs.push('camera.crates: state.box must be the slot that holds NRLU 404 0451 (P15)');
       return errs;
     },
   };

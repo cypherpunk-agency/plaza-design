@@ -27,7 +27,8 @@ for(let turn=0;turn<12;turn++){
 session.dispose();
 const edited=structuredClone(SHOP_SCENE);edited.name='Local shop';edited.people![0].talk=[['Edited keeper']];edited.readables![0].pages=['Edited shelf'];edited.exits![0].label='[E] HOME';
 const pending=shopScene(undefined,{}, {},edited);assert.equal(pending.name,'Local shop');assert.deepEqual(pending.people![0].talk,[['Edited keeper']]);assert.deepEqual(pending.readables![0].pages,['Edited shelf']);assert.equal(pending.exits[0].label,'[E] HOME');assert.equal(pending.exits[0].x,a.exits[0].x);assert.equal(pending.people![0].look&&JSON.stringify(pending.people![0].look),JSON.stringify(a.people![0].look));
-for(const mutate of [(d:any)=>{d.people[0].id='unbound';},(d:any)=>{d.uses[0].routes.reverse();},(d:any)=>{d.uses[0].cycle=false;}]){const bad=structuredClone(SHOP_SCENE);mutate(bad);assert.throws(()=>validateShopScene(bad));}
-const bad=structuredClone(SHOP_GAMEPLAY);bad.commands['shop.buy-blue'].sources=['signal'];assert.throws(()=>validateShopGameplay(bad));
+const reordered=structuredClone(SHOP_SCENE);reordered.uses[0].routes.reverse();assert.doesNotThrow(()=>validateShopScene(reordered),'authored route order is editable');
+for(const mutate of [(d:any)=>{d.people[0].id='unbound';},(d:any)=>{d.uses[0].cycle=false;}]){const bad=structuredClone(SHOP_SCENE);mutate(bad);assert.throws(()=>validateShopScene(bad));}
+const bad=structuredClone(SHOP_GAMEPLAY);bad.commands['shop.buy-blue'].sources=['signal'];assert.doesNotThrow(()=>validateShopGameplay(bad));assert.throws(()=>validateShopScene(SHOP_SCENE,bad),/interaction command permission/,'current routes still require interaction permission');
 assert.equal(a.rules,undefined);assert.equal(a.data,undefined);
-console.log('Shop preserves legacy actors/geometry/prompts, 12 cyclic purchases across factories, 36 failed attempts with no mutation, and protected typed presentation/gameplay contracts.');
+console.log('Shop preserves legacy actors/geometry/prompts, 12 cyclic purchases across factories, 36 failed attempts with no mutation, and current typed presentation/gameplay references.');

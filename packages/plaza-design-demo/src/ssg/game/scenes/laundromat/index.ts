@@ -1,4 +1,4 @@
-import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
+import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import {projectSceneState} from '../../engine/gameplay/scene-state';
 import type {SceneData} from '../../data/types';
 import type { Composition,Environment } from '../../art/core/composition';
@@ -38,7 +38,7 @@ export function laundromatScene(document:Composition=laundromatComposition,state
   const compiled=compileManifestDocument(logic,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:laundromatBindingGroups,groundExits:false});
   return {id:'laundromat',name:logic.name,facing:Number(get('window').props.facing),...compiled.content,
    intro:logic.introTouch?(touch:boolean)=>[...(touch?logic.introTouch!:logic.intro)]:logic.intro.length?[...logic.intro]:undefined,
-   gameplay:withSceneConversations(gameplay,logic),data:laundromatDeviceData({...projectSceneState(deviceSource,gameplay),dialogue:{suds:nativeDialogue(gameplay,'suds')}},doc,logic),rules:LAUNDROMAT_RULES,
+   gameplay:withSceneConversations(gameplay,logic),data:laundromatDeviceData({...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource)},doc,logic),rules:LAUNDROMAT_RULES,
    people:logic.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
    drawBackdrop:(ctx,v,e)=>drawLaundromat(ctx,v,e,doc,state,options,actors),visualEnvironment:(v,e)=>laundromatFrameEnvironment(v,e,doc,actors)};
 

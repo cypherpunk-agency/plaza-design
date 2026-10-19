@@ -1,3 +1,4 @@
+import {validateOpeningSource} from '../story/opening-source';
 import {pendingRegistry} from './pending-registry';
 import {sharedWorldFlags,renameWorldFlagDocuments} from './world-flag-references';
 import {SCENES} from '../scenes';
@@ -68,7 +69,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
   let policyId='';form.text(policies,'New access policy ID','',v=>{policyId=v;});
   form.button(policies,'Add access policy',()=>edit('Create exit access policy',d=>{if(Object.prototype.hasOwnProperty.call(d.ACCESS,policyId))throw Error('Access policy already exists');const scene=sceneIds.find(id=>refs[id].exits.length);if(!scene)throw Error('No exit access owners');d.ACCESS[policyId]={exit:{scene,id:refs[scene].exits[0].id},reason:'ACCESS DENIED'};}));
   const flagDocuments=()=>new Map(context.documents.map(d=>[d.id,api.get(d.id).value]));
-  form.select(travel,'Harbor access flag',[...sharedWorldFlags(pendingRegistry(flagDocuments()))],d.HARBOR_FLAG,v=>edit('Rebind harbor access flag',d=>{d.HARBOR_FLAG=v;}));
+  form.select(travel,'Harbor access flag',[...sharedWorldFlags(pendingRegistry(flagDocuments()),validateOpeningSource(flagDocuments().get('opening-story')).GAMEPLAY)],d.HARBOR_FLAG,v=>edit('Rebind harbor access flag',d=>{d.HARBOR_FLAG=v;}));
   form.text(travel,'Rename harbor access flag to',flagDraft,v=>{flagDraft=v;});
   form.button(travel,'Rename harbor access flag across sources',()=>{if(!api.editDocuments)throw Error('Grouped source editing is unavailable');api.editDocuments(renameWorldFlagDocuments(flagDocuments(),d.HARBOR_FLAG,flagDraft),'Rename shared harbor access flag');},!api.editDocuments);
 

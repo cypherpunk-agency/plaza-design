@@ -772,7 +772,6 @@
     "→ uplink.so",
     "uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely."
   ],
-  "UPLINK_KEY": "uplink",
   "DECK_BEFORE": {
     "files": {
       "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
@@ -1006,5 +1005,101 @@
       "completedGoal": "door",
       "line": "the public library, down the street: scan.so (Moth's tip)"
     }
+  },
+  "GAMEPLAY": {
+    "version": 1,
+    "flags": [
+      "opening:home",
+      "opening:street",
+      "opening:flat",
+      "opening:slept",
+      "opening:uplink",
+      "opening:jacked"
+    ],
+    "items": [],
+    "events": [],
+    "commands": {
+      "opening.home": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "opening:home",
+            "value": true
+          }
+        ]
+      },
+      "opening.street": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "opening:street",
+            "value": true
+          }
+        ]
+      },
+      "opening.flat": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "opening:flat",
+            "value": true
+          }
+        ]
+      },
+      "opening.slept": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "opening:slept",
+            "value": true
+          }
+        ]
+      },
+      "opening.uplink": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "opening:uplink",
+            "value": true
+          },
+          {
+            "grant": {
+              "keyring": "uplink"
+            }
+          }
+        ]
+      },
+      "opening.jacked": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "opening:jacked",
+            "value": true
+          }
+        ]
+      }
+    },
+    "reactions": [],
+    "conversations": {}
+  },
+  "WORKFLOWS": {
+    "home": "opening.home",
+    "street": "opening.street",
+    "flat": "opening.flat",
+    "slept": "opening.slept",
+    "uplink": "opening.uplink",
+    "jacked": "opening.jacked"
   }
 }

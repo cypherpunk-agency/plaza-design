@@ -1697,5 +1697,20 @@
       "use tubes --test",
       "V ok · E dead · R ok · I ok · F ok · Y ok. tube 2 of 6: dead. repair ticket open since installation."
     ]
+  },
+  "controller": {
+    "kind": "downtown",
+    "version": 1,
+    "outside": 22,
+    "inside": 70,
+    "signalMs": 450,
+    "devices": {
+      "gate": "gate",
+      "vehicle": "dlv9"
+    },
+    "state": {
+      "at": "dlvAt"
+    },
+    "speedTuning": "dlvSpeed"
   }
 }

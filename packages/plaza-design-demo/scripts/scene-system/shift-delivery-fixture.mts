@@ -1,7 +1,7 @@
 /** Small isolated native hacking fixture: the same operation as Mara's ordinary item handover. */
-import type { SceneData } from '../../data/types';
-import type { SceneRules } from '../rules';
-import type { GameplaySession } from './session';
+import type { SceneData } from '../../src/ssg/game/data/types';
+import type { SceneRules } from '../../src/ssg/game/engine/rules';
+import type { GameplaySession } from '../../src/ssg/game/engine/gameplay/session';
 export const DELIVERY_TERMINAL:SceneData={
   id:'delivery-pilot',name:'Delivery terminal pilot',state:{},tuning:{},dialogue:{},goals:[],texts:{},
   devices:[

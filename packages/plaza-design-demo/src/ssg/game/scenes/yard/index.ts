@@ -4,7 +4,7 @@ import {withSceneConversations} from '../../engine/gameplay/scene-conversations'
 import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
 import {projectNativeDeviceData} from '../../engine/gameplay/native-bindings';
 import {projectSceneState} from '../../engine/gameplay/scene-state';
-import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
+import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import type {SceneData} from '../../data/types';
 import {content} from './scene-document';
 import {type SceneDocument} from '../../engine/gameplay/scene-document';
@@ -58,7 +58,7 @@ export function yardScene(document:Composition=yardComposition,state:Environment
  const authored=content.validateScene(sceneDocument,gameplay,validationContext),actors=compileSceneActors(authored,yardGeometry(doc));
  const compiled=compileManifestDocument(authored,yardGeometry(doc),(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true});
  let prepared:YardVisual|undefined;
- return{...base,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:projectNativeDeviceData(yardDeviceData({...projectSceneState(deviceSource,gameplay),dialogue:{hinge:nativeDialogue(gameplay,'hinge')}},doc,authored),gameplay),
+ return{...base,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:projectNativeDeviceData(yardDeviceData({...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource)},doc,authored),gameplay),
   presentationState:{capture:()=>({...controller}),restore(value){
    if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!['hookX','hookVisible'].includes(k))||typeof value.hookX!=='number'||!Number.isFinite(value.hookX)||typeof value.hookVisible!=='boolean')throw new Error('Invalid Yard presentation state');
    controller.hookX=value.hookX;controller.hookVisible=value.hookVisible;prepared=undefined;

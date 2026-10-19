@@ -25,7 +25,7 @@ function realm(scene:string){
 }
 function parentActivation(w:Workload){return new Promise<{owner:'parent';parentTrusted:boolean;childTrusted:false}>(resolve=>{const button=document.createElement('button');button.textContent='Begin '+w.id+' workload';button.onclick=event=>{const activation={owner:'parent' as const,parentTrusted:event.isTrusted,childTrusted:false as const};button.remove();resolve(activation);};stage.append(button);});}
 
-async function archive(report:PerformanceReport){const response=await fetch('/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(report)});if(!response.ok)throw new Error(await response.text());const saved=await response.json();if(saved.quality.status==='INVALID')throw new Error('Invalid recording archived at '+saved.file+': '+saved.quality.issues.join(', '));return saved.file as string;}
+async function archive(report:PerformanceReport){const response=await fetch('/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(report)});if(!response.ok)throw new Error(await response.text());const saved=await response.json();if(saved.quality.status==='INVALID')throw new Error('Invalid recording archived at '+saved.file+': '+saved.quality.issues.join(', '));return saved as {file:string;quality:{status:string;baselineIssues:string[];scheduling?:{activePlayRatio:number;frameCpuRatio:number;unadvancedWallMs:number}}};}
 async function run(w:Workload,repeat:number,smoke:boolean){
  if(w.id==='private-play'){
   const calibration=calibratePerformance(),visibility=[{at:performance.now(),hidden:document.hidden}],recorder=new PerformanceRecorder({source,scenario:w.id+'/run-'+repeat,capacity,environment:{workload:w,smoke,userAgent:navigator.userAgent,viewport:[...viewport],dpr:devicePixelRatio,cpu:'unavailable',gpu:'unavailable',refreshRate:'unavailable',calibration,visibility,cache:'fresh iframe realm; browser process/cache may be warm'}}),cycles=[];
@@ -40,7 +40,7 @@ async function suite(smoke:boolean,selected?:{id:string;repeat:number}){
   status.textContent=(smoke?'Fixture validation':'Measuring')+' · '+w.id+' · '+repeat+'/'+(smoke?1:repetitions);
   const report=await run(w,repeat,smoke);if(localStorage.getItem(sentinel)!==source)throw new Error('Parent storage changed');
   if(report.source!==source||report.overflow||report.incomplete||report.invalidEnds)throw new Error('Incomplete/corrupt recording: '+report.scenario);
-  const file=await archive(report),row=document.createElement('li');row.textContent=report.scenario+' · '+report.samples.length+' samples · '+file;results.append(row);await new Promise(resolve=>setTimeout(resolve,500));
+  const saved=await archive(report),row=document.createElement('li');row.textContent=report.scenario+' · '+report.samples.length+' samples · '+saved.quality.status+' · '+saved.file;const q=saved.quality.scheduling;if(q)row.textContent+=' · active/wall '+q.activePlayRatio.toFixed(4)+' · frame CPU/wall '+q.frameCpuRatio.toFixed(4)+' · unadvanced '+q.unadvancedWallMs.toFixed(1)+'ms';results.append(row);if(saved.quality.status==='INELIGIBLE')throw new Error('Diagnostic archived, baseline ineligible: '+saved.quality.baselineIssues.join(', '));await new Promise(resolve=>setTimeout(resolve,500));
  }status.textContent=smoke?'Fixture validation complete · not performance baselines':selected?'Selected repeat archived':'All six workloads archived · three repeats each';
  }catch(e){status.textContent='Stopped: '+String(e);}finally{localStorage.removeItem(sentinel);busy=false;}
 }

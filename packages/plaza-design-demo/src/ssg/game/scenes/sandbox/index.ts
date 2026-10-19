@@ -1,7 +1,7 @@
 import {projectSceneState} from '../../engine/gameplay/scene-state';
 import type {NativeTargetValidationContext} from '../../engine/gameplay/native-targets';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
-import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
+import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import {content} from './scene-document';
 import {type SceneDocument} from '../../engine/gameplay/scene-document';
 import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
@@ -37,7 +37,7 @@ export {sandboxArt,sandboxComposition,validateSandboxComposition} from './compos
 export function sandboxScene(document:Composition=sandboxComposition,state:Environment['state']={},options:SandboxRenderOptions={},data:SceneData=SANDBOX,sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay,validationContext?:NativeTargetValidationContext):SceneDef{
  const doc=validateSandboxComposition(document),stations=sandboxStations(doc),rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,authored=content.validateScene(sceneDocument,gameplay,validationContext);
  const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,omitGroundRestHeight:true}),actors=sandboxActors(doc,authored);
- return {id:'sandbox',name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],rules:SANDBOX_RULES,gameplay:withSceneConversations(gameplay,authored),...compiled.content,people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:sandboxDeviceData(projectSceneState({...data,dialogue:{unit7:nativeDialogue(gameplay,'unit7')}},gameplay),doc,authored),
+ return {id:'sandbox',name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],rules:SANDBOX_RULES,gameplay:withSceneConversations(gameplay,authored),...compiled.content,people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:sandboxDeviceData(projectSceneState({...data,dialogue:nativeDeviceDialogues(gameplay,data)},gameplay),doc,authored),
   readables:compiled.content.readables?.map(r=>{const st=r.id.startsWith('card')?stations[Number(r.id.slice(4))-1]:undefined;return {...r,...(st&&r.name===content.scene.readables!.find(v=>v.id===r.id)?.name?{name:'BAY 3·'+String(st.n).padStart(2,'0')+' · '+st.title}:{})};}),
   ...compileNativeTargets(authored,{reset:get('reset').placement},content.nativeTargetBindings),
   drawBackdrop:(ctx,v,e)=>drawSandbox(ctx,v,e,doc,state,options,actors),visualEnvironment:(v,e)=>sandboxFrameEnvironment(v,e,doc,actors),
