@@ -31,7 +31,7 @@ export const deviceDocumentId=(scene:string)=>deviceSourceIdentity(scene).device
 export {deviceSourceIdentity} from './device-document-ids';
 export const deviceRules=sceneRuleContract;
 export function validateDeviceSource(id:string,value:unknown,scene:SceneDef=SCENES[id as keyof typeof SCENES],net:NetData=NET,keyring:ReadonlyMap<string,KeyItem>=KEYRING):SceneData{
- if(!scene||scene.id!==id)throw Error('Unsupported device source '+id);const rules=deviceRules(scene),data=validateDeviceDocument(id,value,{rules,gameplay:scene.gameplay,network:{net,keyring},dialogue:scene.data?.dialogue,defaultObservations:scene.data?.observations});if(data.observations===undefined&&scene.data?.observations!==undefined)data.observations=structuredClone(scene.data.observations);
+ if(!scene||scene.id!==id)throw Error('Unsupported device source '+id);const rules=deviceRules(scene),data=validateDeviceDocument(id,value,{rules,gameplay:scene.gameplay,network:{net,keyring},dialogue:scene.data?.dialogue});
  const materialized=projectSceneState(data,scene.gameplay??{});
  if(scene.gameplay?.native?.wires!==undefined&&data.cables?.length)throw Error('Starting cables belong to this scene’s shared gameplay source');
  for(const[key,v]of Object.entries(data.tuning??{})){if(typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>1000000||key.endsWith('Ms')&&v<=0||key.endsWith('PerS')&&v<0||key==='dlvSpeed'&&v<=0||key==='drawerTokens'&&(!Number.isInteger(v)||v<0)||key==='maxRunning'&&(!Number.isInteger(v)||v<1||v>4)||key==='tamperTrace'&&(v<0||v>100))throw Error('Invalid controller tuning '+key);}

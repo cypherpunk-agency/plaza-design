@@ -23,7 +23,6 @@ export function validateLibraryComposition(input: unknown): Composition {
     for (const [field,source] of Object.entries(instance.bindings ?? {})) if (!(instance.type==='library.person'&&field==='pose'&&mutableActorArtwork('library',instance))&&!sources.has(source)) throw new Error(instance.id + ': unknown library binding ' + source);
     if (instance.type === 'library.person' && !mutableActorArtwork('library',instance)) throw new Error(instance.id + ': missing actor pose binding');
   }
-  for (const id of ['room']) if (!doc.instances.some(i => i.id === id)) throw new Error('Missing gameplay-bound library instance: ' + id);
   return doc;
 }
 validateLibraryComposition(libraryComposition);
@@ -52,7 +51,7 @@ const value = (input: unknown): Value => input as Value;
 export function libraryEnvironment(doc: Composition, view: View, engine: EngineDraw, actors: Readonly<Record<string, Character>>): Environment {
   const bindings = defaults(doc);
   for (const id of deviceIds) bindings['device.' + id + '.hover'] = engine.hover === id;
-  bindings['catalog.connected'] = engine.m.net.get('catalog') === 'connected';
+  bindings['catalog.connected'] = !!engine.m.value('catalogConnected');
   const geometry = resolveComposition(libraryArt, doc, { view, state: {}, bindings, reduced: false });
   bindings['architecture.windows'] = geometry.filter(row => row.instance.type === 'library.window').map(row => [row.placement.x, row.placement.x + Number(row.props.width)]);
   for (const row of geometry.filter(row => row.instance.type === 'library.person')) {

@@ -38,7 +38,7 @@ export function librarySceneDefinition(document: Composition = libraryCompositio
   const commands=validateGameplay(gameplay),content=validateSceneDocument(librarySource(sceneDocument),commands,{actors:true,manifest:true});
   const compiled=compileManifestDocument(content,geometry,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:libraryBindingGroups,groundExits:false});
   const actors=libraryActors(doc,content);
-  return {id:'library',name:content.name,facing:Number(geometry.find(row=>row.instance.type==='library.window')!.props.facing),
+  return {id:'library',name:content.name,facing:Number(compiled.geometry.artwork.orientation?.props.facing??0),
     ...compiled.content,gameplay:withSceneConversations(commands,content),
     data:commands.native?libraryDeviceData({...deviceSource,dialogue:nativeDeviceDialogues(commands,deviceSource)},doc,content):undefined,rules:commands.native?LIBRARY_RULES:undefined,
     people:content.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),

@@ -1,9 +1,11 @@
+import {mothScene} from '../../src/ssg/game/scenes/moth';
 import assert from 'node:assert/strict';
-import { mothArt, mothComposition, mothDeviceData, mothEnvironment, mothGeometry, mothPlacement, validateMothComposition } from '../../src/ssg/game/scenes/moth/composition';
+import { mothArt, mothComposition, mothDeviceData, mothEnvironment, mothGeometry, validateMothComposition } from '../../src/ssg/game/scenes/moth/composition';
 import { resolveComposition, type Composition } from '../../src/ssg/game/art/core/composition';
 import type { SceneData } from '../../src/ssg/game/data/types';
 import type { SceneModel } from '../../src/ssg/game/engine/model';
 import devices from '../../src/ssg/game/scenes/moth/devices.json';
+const mothPlacement=(id:string)=>mothGeometry().find(r=>r.instance.id===id)!.placement;
 const doc = validateMothComposition(JSON.parse(JSON.stringify(mothComposition)));
 assert.deepEqual(doc, mothComposition);
 assert.equal(doc.instances.length, 38);
@@ -22,8 +24,8 @@ assert.deepEqual(mothDeviceData(devices as SceneData, edit).devices.map(i => i.i
 function rejects(change:(doc:Composition)=>void, pattern:RegExp) {
   const bad=structuredClone(doc);change(bad);assert.throws(()=>validateMothComposition(bad),pattern);assert.deepEqual(doc,mothComposition);
 }
-rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='desk');for(const row of d.instances)if(row.attach?.instance==='desk')row.attach={instance:'window',anchor:'origin'};},/Missing gameplay-bound/);
-const noLegacyMarker=structuredClone(doc);noLegacyMarker.instances=noLegacyMarker.instances.filter(i=>i.id!=='device-desk');assert.doesNotThrow(()=>validateMothComposition(noLegacyMarker),'device source geometry can replace an old marker; the physical desk picture remains required');
+const noDesk=structuredClone(doc);noDesk.instances=noDesk.instances.filter(i=>i.id!=='desk');for(const row of noDesk.instances)if(row.attach?.instance==='desk')row.attach={instance:'window',anchor:'origin'};assert.doesNotThrow(()=>validateMothComposition(noDesk));assert.throws(()=>mothScene(noDesk),/artwork role|actor/i);
+const noLegacyMarker=structuredClone(doc);noLegacyMarker.instances=noLegacyMarker.instances.filter(i=>i.id!=='device-desk');assert.doesNotThrow(()=>validateMothComposition(noLegacyMarker),'device source geometry can replace an old marker; current picture dependencies validate independently');
 rejects(d=>{d.instances.find(i=>i.id==='tank')!.bindings!.fed='moth.absent';},/unknown moth binding/i);
 const view={sx:(x:number)=>x,y:(h:number)=>300-h,gy:300,t:137,cam:0,viewW:640,viewH:360,flags:{}};
 let nextReads=0;

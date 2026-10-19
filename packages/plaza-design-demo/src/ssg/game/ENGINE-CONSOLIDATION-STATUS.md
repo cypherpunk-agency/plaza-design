@@ -2,9 +2,9 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `a6ba427` on main and production; both remote hashes verified.
-Production homepage/design jobs39336688893/39336688999 and main build39336688789 succeeded.
-Previous checkpoint3d6e21b was also verified live against its successful CI artifact app-AEG6ZUR2.js.
+Last verified deployment: `11fe1c8` on main and production (atomic push).
+Production homepage/design jobs39337433892/39337433936 and main build39337433809 succeeded.
+Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
 173 zero-difference raster cases and all19 actual packaged-editor Play/Stop checks PASS.
@@ -2305,3 +2305,40 @@ repairing obsolete raw-source equality expectations. Both builds and tsc PASS. S
 passes all173 browser raster cases with zero differences/errors and actual native Warehouse
 Play/Stop, no warning/error logs. See docs/reference/ARTWORK-ROLE-AUTHORING.md.
 Whole-goal acceptance remains open; apply the shared contract to remaining real geometry floors.
+
+## 2026-10-20 Library / observation cleanup integrated checkpoint
+
+Library orientation now uses the shared registered artwork-role contract. Its picture reads the
+same catalogConnected observation as authored native behavior, so rebinding the observed node
+changes the actual indicator without a second node predicate. The historical room-ID floor is
+removed; actual width/attachment/actor references remain checked. Removed canonical observation
+backfills in both source validation layers and the redundant Sandbox raw-dialogue normalization.
+Absent optional data stays absent; actual dependent references reject rather than resurrecting
+shipping definitions. No historic save conversion or new saved owner was added.
+
+Actual mounted Scene/Device controls, pending native picture outputs, bundles, protected Save,
+fresh shipping import and byte Undo PASS: `artwork-role-source-koAtFX` (also earlier BhMebC/J50aTN).
+Library default geometry/bindings/gameplay checks PASS. Native observation checks PASS128 original
+cases plus actual typed operations, absence/no-backfill and current-source collision checks;
+Sandbox ordinary109 cases PASS. Package tsc and both builds PASS.
+Source `759699b704f147207a2868596cd327ac977e81c842342433a203fe997275b5d3` passes all173
+browser raster rows with zero differing pixels/max delta/errors, independently verified.
+All19 actual native packaged-editor Play/Stop checks PASS with no warning/error logs;
+`.scene-system/evidence/editor-native-play-759699b7-20261020.json` records exact package identity.
+Default command/core behavior gates are bounded here; remaining all-game gates remain open.
+
+## 2026-10-20 Moth artwork-role continuation
+
+Moth's orientation, desk surface and native door now resolve shared typed manifest roles.
+Former fixed-ID floors, static width/door/facing helpers and the redundant base definition are
+removed. Actual source replacements can delete the old desk/door after reanchoring children;
+real elevated target and desk height follow the new artwork. Interaction roles reject unsupported
+transforms/depth and out-of-scene anchors; valid choices are filtered in the actual inspector.
+`artwork-role-source-Ct9TGB` proves the three-scene typed form/native/bundle/Save/fresh import/Undo
+flow and invalid-edit atomicity. Moth defaults, ten interior outcomes/current-format reloads,
+TypeScript and both builds PASS. Latest source67428f2c6ed0 has173/173 zero-difference/error browser
+raster cases and actual Moth/Library/Warehouse native Play/Stop, no warning/error logs. Actual
+Moth Scene inspector exposes width binding and all three artwork-role selectors. Earlier all19
+Play evidence remains bound to source759699b704f1; do not relabel it as latest-source evidence.
+See ARTWORK-ROLE-AUTHORING.md. Whole-goal gates remain open; remaining geometry contracts and the
+all19 inventory/lifecycle/current-save/world/network/removal audit still need completion.

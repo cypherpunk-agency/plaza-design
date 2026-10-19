@@ -30,7 +30,7 @@ function rejects(edit: (doc: Composition) => void, pattern: RegExp) {
   assert.deepEqual(doc, libraryComposition);
 }
 const withoutPrinter=structuredClone(doc);withoutPrinter.instances=withoutPrinter.instances.filter(i=>i.id!=='printer');assert.doesNotThrow(()=>validateLibraryComposition(withoutPrinter));assert.deepEqual(libraryDeviceData(devices as SceneData,withoutPrinter).devices.find(d=>d.id==='printer')!.layout!.spot,devices.devices.find(d=>d.id==='printer')!.layout!.spot,'unbound device retains its explicit source coordinates without the original picture');
-rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='room');},/Missing gameplay-bound/);
+const withoutRoom=structuredClone(doc);withoutRoom.instances=withoutRoom.instances.filter(i=>i.id!=='room');assert.doesNotThrow(()=>validateLibraryComposition(withoutRoom));assert.throws(()=>libraryScene(withoutRoom),/Missing manifest artwork/);
 rejects(d => { d.instances.find(i => i.id === 'reader')!.bindings!.online = 'absent'; }, /unknown library binding/);
 rejects(d => { d.instances.find(i => i.id === 'student')!.bindings!.pose = 'absent'; }, /unknown library binding/);
 assert.throws(() => libraryArt.visualProperties('library.person', { pose: { visible: true, character: { x: 1 } } }), /Incomplete prepared character/);
@@ -40,7 +40,7 @@ actors=compileActors(Object.entries(actors).map(([id,p])=>({id,instance:id,band:
 assert.equal(actors.knitter.x, 764);
 assert.deepEqual(actors.shelfe.range, [640, 740]);
 const view = { sx: (x: number) => x, y: (h: number) => 300 - h, gy: 300, t: 137, cam: 0, viewW: 640, viewH: 360, flags: {} };
-const engine = { hover: 'reader', m: { net: { get: () => 'connected' } }, layer: 'all' } as unknown as EngineDraw;
+const engine = { hover: 'reader', m: { value: (key:string) => key==='catalogConnected' }, layer: 'all' } as unknown as EngineDraw;
 const env = libraryEnvironment(changed, view, engine, actors), rows = resolveComposition(libraryArt, changed, env);
 assert.equal(rows.find(i => i.instance.id === 'reader')!.state.hover, true);
 assert.equal(rows.find(i => i.instance.id === 'reader')!.state.online, true);

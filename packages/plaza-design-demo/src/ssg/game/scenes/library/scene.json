@@ -311,6 +311,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"orientation":"window-1"},
     "version": 1,
     "width": {
       "instance": "room",

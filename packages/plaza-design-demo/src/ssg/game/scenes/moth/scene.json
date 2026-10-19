@@ -42,6 +42,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"orientation":"window","deskSurface":"desk","door":"door"},
     "version": 1,
     "width": {
       "instance": "shell",
