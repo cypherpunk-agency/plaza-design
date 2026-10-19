@@ -1,6 +1,9 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "market:umbrella",
+    "end"
+  ],
   "items": [],
   "events": [],
   "commands": {
@@ -14,7 +17,7 @@
       },
       "actions": [
         {
-          "tokens": -1
+          "purchase": "market.fortune"
         },
         {
           "state": "market.fortune",
@@ -32,7 +35,7 @@
       },
       "actions": [
         {
-          "tokens": -1
+          "purchase": "market.fortune"
         },
         {
           "state": "market.fortune",
@@ -50,7 +53,7 @@
       },
       "actions": [
         {
-          "tokens": -1
+          "purchase": "market.fortune"
         },
         {
           "state": "market.fortune",
@@ -68,7 +71,7 @@
       },
       "actions": [
         {
-          "tokens": -1
+          "purchase": "market.fortune"
         },
         {
           "state": "market.fortune",
@@ -86,17 +89,347 @@
       },
       "actions": [
         {
-          "tokens": -1
+          "purchase": "market.fortune"
         },
         {
           "state": "market.fortune",
           "set": 0
         }
       ]
+    },
+    "talk.market.cook.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.cook.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.market.cook.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.cook.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.market.fish.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.fish.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.market.fish.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.fish.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.market.fish.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.fish.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.market.repair.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.repair.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.market.repair.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.repair.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.market.sleeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.sleeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.market.sleeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.market.sleeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "market.haggle.0": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.haggle",
+        "is": 0
+      },
+      "actions": [
+        {
+          "state": "market.haggle",
+          "set": 1
+        }
+      ]
+    },
+    "market.haggle.1": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.haggle",
+        "is": 1
+      },
+      "actions": [
+        {
+          "state": "market.haggle",
+          "set": 2
+        }
+      ]
+    },
+    "market.haggle.2": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.haggle",
+        "is": 2
+      },
+      "actions": [
+        {
+          "state": "market.haggle",
+          "set": 3
+        }
+      ]
+    },
+    "market.haggle.3": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "market.haggle",
+        "is": 3
+      },
+      "actions": [
+        {
+          "state": "market.haggle",
+          "set": 4
+        }
+      ]
+    },
+    "market.umbrella.buy": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "all": [
+          {
+            "state": "market.haggle",
+            "is": 4
+          },
+          {
+            "not": {
+              "flag": "market:umbrella"
+            }
+          },
+          {
+            "tokensAtLeast": 1
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "market.umbrella"
+        },
+        {
+          "flag": "market:umbrella",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
-  "conversations": {},
+  "conversations": {
+    "talk.market.cook": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.market.cook.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "NOODLE COOK",
+          "pages": [
+            "Noodles. Two tokens. \"Other\" is one.",
+            "The inspector asked what is in them. I said other. He wrote it down. Now it is on the menu."
+          ],
+          "onEnter": "talk.market.cook.advance-0"
+        },
+        "visit-1": {
+          "speaker": "NOODLE COOK",
+          "pages": [
+            "Still deciding? The noodles are not."
+          ],
+          "onEnter": "talk.market.cook.advance-1"
+        }
+      }
+    },
+    "talk.market.fish": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.market.fish.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.market.fish.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "FISHMONGER",
+          "pages": [
+            "Fresh today. Which today, I did not say.",
+            "You are the friend. The quiet one, Moth, said a friend might come asking.",
+            "Moth bought line and hooks off me last week. Said they were not for fish.",
+            "Then asked which pier the Registry boats skip. I sell fish. I said the harbor has a lot of piers."
+          ],
+          "onEnter": "talk.market.fish.advance-0"
+        },
+        "visit-1": {
+          "speaker": "FISHMONGER",
+          "pages": [
+            "Moth paid cash. Nobody pays cash. Cash is for people who do not want to be remembered."
+          ],
+          "onEnter": "talk.market.fish.advance-1"
+        },
+        "visit-2": {
+          "speaker": "FISHMONGER",
+          "pages": [
+            "Buy a fish or go stand in someone else's rain."
+          ],
+          "onEnter": "talk.market.fish.advance-2"
+        }
+      }
+    },
+    "talk.market.repair": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.market.repair.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REPAIRS",
+          "pages": [
+            "I fix anything with a screw in it.",
+            "Not the Registry. That one is working as intended."
+          ],
+          "onEnter": "talk.market.repair.advance-0"
+        },
+        "visit-1": {
+          "speaker": "REPAIRS",
+          "pages": [
+            "Your deck? Nice. Do not let me see the inside, I will want it."
+          ],
+          "onEnter": "talk.market.repair.advance-1"
+        }
+      }
+    },
+    "talk.market.sleeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.market.sleeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "FIRMWARE VENDOR",
+          "pages": [
+            "Zzz...",
+            "(The note on the counter says BACK IN 5 MIN. The tape has gone yellow.)"
+          ],
+          "onEnter": "talk.market.sleeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "FIRMWARE VENDOR",
+          "pages": [
+            "...not buying, not selling, not awake..."
+          ],
+          "onEnter": "talk.market.sleeper.advance-1"
+        }
+      }
+    }
+  },
   "state": {
     "market.fortune": {
       "owner": "market",
@@ -105,6 +438,86 @@
       "default": 0,
       "min": 0,
       "max": 4
+    },
+    "talk.market.cook.cursor": {
+      "owner": "talk.market.cook",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.market.fish.cursor": {
+      "owner": "talk.market.fish",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.market.repair.cursor": {
+      "owner": "talk.market.repair",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.market.sleeper.cursor": {
+      "owner": "talk.market.sleeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "market.haggle": {
+      "owner": "market",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 4
+    }
+  },
+  "purchases": {
+    "market.umbrella": {
+      "service": true,
+      "basePrice": 1,
+      "modifiers": [
+        {
+          "id": "still-haggling-or-owned",
+          "amount": -1,
+          "scope": "both",
+          "when": {
+            "any": [
+              {
+                "flag": "market:umbrella"
+              },
+              {
+                "state": "market.haggle",
+                "is": 0
+              },
+              {
+                "state": "market.haggle",
+                "is": 1
+              },
+              {
+                "state": "market.haggle",
+                "is": 2
+              },
+              {
+                "state": "market.haggle",
+                "is": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "market.fortune": {
+      "service": true,
+      "basePrice": 1
     }
   }
 }

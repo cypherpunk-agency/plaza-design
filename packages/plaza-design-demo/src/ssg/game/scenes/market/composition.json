@@ -2202,6 +2202,186 @@
         "instance": "stall-4",
         "anchor": "origin"
       }
+    },
+    {
+      "id": "actor-cook",
+      "type": "character.prepared",
+      "props": {
+        "actor": "cook"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-0",
+        "anchor": "vendor"
+      },
+      "order": 68.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.cook"
+      }
+    },
+    {
+      "id": "actor-simVendor",
+      "type": "character.prepared",
+      "props": {
+        "actor": "simVendor"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-1",
+        "anchor": "vendor"
+      },
+      "order": 69.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.simVendor"
+      }
+    },
+    {
+      "id": "actor-brolly",
+      "type": "character.prepared",
+      "props": {
+        "actor": "brolly"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-2",
+        "anchor": "vendor"
+      },
+      "order": 70.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.brolly"
+      }
+    },
+    {
+      "id": "actor-fruitVendor",
+      "type": "character.prepared",
+      "props": {
+        "actor": "fruitVendor"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-3",
+        "anchor": "vendor"
+      },
+      "order": 71.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.fruitVendor"
+      }
+    },
+    {
+      "id": "actor-implantVendor",
+      "type": "character.prepared",
+      "props": {
+        "actor": "implantVendor"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-4",
+        "anchor": "vendor"
+      },
+      "order": 72.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.implantVendor"
+      }
+    },
+    {
+      "id": "actor-fishmonger",
+      "type": "character.prepared",
+      "props": {
+        "actor": "fishmonger"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-5",
+        "anchor": "vendor"
+      },
+      "order": 73.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.fishmonger"
+      }
+    },
+    {
+      "id": "actor-fixer2",
+      "type": "character.prepared",
+      "props": {
+        "actor": "fixer2"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-6",
+        "anchor": "vendor"
+      },
+      "order": 74.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.fixer2"
+      }
+    },
+    {
+      "id": "actor-dumplingCook",
+      "type": "character.prepared",
+      "props": {
+        "actor": "dumplingCook"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "stall-7",
+        "anchor": "vendor"
+      },
+      "order": 75.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.dumplingCook"
+      }
+    },
+    {
+      "id": "actor-fortuneBot",
+      "type": "character.prepared",
+      "props": {
+        "actor": "fortuneBot"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "attach": {
+        "instance": "fortune",
+        "anchor": "vendor"
+      },
+      "order": 78.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "market.actor.fortuneBot"
+      }
     }
   ]
 }

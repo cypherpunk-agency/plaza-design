@@ -58,6 +58,8 @@ export interface Element {
   type: string; version: 1; label: string; category: string;
   fields: Record<string, Field>;
   visualFields?: Record<string, Field>;
+  /** Presentation bindings carry no instance-owned simulation state. Native validators still protect required artwork. */
+  bindingIdentity?: 'fixed' | 'presentation';
   validateVisual?: (state: Properties) => void;
   /** World kernels use explicit placement and retain the native viewport and canvas state. */
   coordinates?: 'local' | 'world';

@@ -1,3 +1,4 @@
+import type {DeviceAcknowledgment} from './device-acknowledgment';
 /**
  * Feedback in the world: UI never covers a consequence (ART-GUIDE.md §11).
  *
@@ -127,8 +128,8 @@ export function leaderPath(q: Box, thing: Box, others: Box[]): [number, number][
 const SVG = 'http://www.w3.org/2000/svg';
 
 /** A line waiting or showing. `shown`/`until`: when it came in and when it starts to fade (ms); `next`: new text, swapping in. */
-interface Caption { from: string; text: string; kind: PingKind; el?: HTMLDivElement; lead?: SVGSVGElement; shown: number; until: number; fading: boolean; box?: Box; next?: { text: string; kind: PingKind; at: number } }
-interface Ping { from: string; el: HTMLDivElement; born: number; life: number; edge: boolean }
+interface Caption { ack?:DeviceAcknowledgment;locate?:Locate;from: string; text: string; kind: PingKind; el?: HTMLDivElement; lead?: SVGSVGElement; shown: number; until: number; fading: boolean; box?: Box; next?: { text: string; kind: PingKind; at: number } }
+interface Ping { from: string; kind:PingKind; el: HTMLDivElement; born: number; life: number; edge: boolean }
 
 function el(cls: string, text?: string) { const e = document.createElement('div'); e.className = cls; if (text != null) e.textContent = text; return e; }
 const tone = (k: PingKind) => (k === 'look' ? 'paper' : k);
@@ -140,6 +141,7 @@ export class Feedback {
   private queue: Caption[] = [];
   private pings: Ping[] = [];
   private lastShown = -Infinity;
+  private pinned?:Caption;
   /** The lane's bottom (px), eased as the view changes; NaN until the first frame with captions. */
   private lane = NaN;
   private hard: Box[] = [];
@@ -172,7 +174,7 @@ export class Feedback {
     return this.laneOver([], 18, W, H);
   }
 
-  constructor(host: HTMLElement) {
+  constructor(host: HTMLElement,private now:()=>number=()=>performance.now()) {
     this.layer = el('fx-layer');
     this.layer.setAttribute('aria-live', 'polite');
     host.appendChild(this.layer);
@@ -187,41 +189,57 @@ export class Feedback {
    */
   caption(from: string, text: string, tone: string | undefined, locate: Locate) {
     const kind: PingKind = tone === 'ok' ? 'ok' : tone === 'err' ? 'err' : 'look';
+    const currentTime=this.now();for(const c of [...this.caps])if(c.from===from&&!c.ack&&currentTime>c.until+FADE_MS)this.drop(c);
+    const existing=this.caps.find(c=>c.from===from&&!c.ack&&!c.fading);
+    const latest=existing?.next??existing;
+    if((latest&&latest.text===text&&latest.kind===kind)||this.queue.some(c=>c.from===from&&!c.ack&&c.text===text&&c.kind===kind))return;
     this.ping(from, kind, locate);
     if (!locate(from)) return;
-    const now = performance.now();
+    const now = this.now();
     // the same thing speaking again: its caption says the new line, in place
-    const showing = this.caps.find((c) => c.from === from && !c.fading);
+    const showing = this.caps.find((c) => c.from === from && !c.ack && !c.fading);
     if (showing) { showing.next = { text, kind, at: now }; showing.el?.classList.add('swap'); showing.until = now + SWAP_OUT_MS + readMs(text); return; }
-    const waiting = this.queue.find((c) => c.from === from);
+    const waiting = this.queue.find((c) => c.from === from && !c.ack);
     if (waiting) { waiting.text = text; waiting.kind = kind; if (kind === 'err') this.jump(waiting); return; }
     const c: Caption = { from, text, kind, shown: 0, until: 0, fading: false };
     if (kind === 'err') this.jump(c); else this.queue.push(c);
     // a long queue: the oldest waiting keep their first sentence; a very long one drops the oldest
-    if (this.queue.length > LONG_QUEUE) this.queue.slice(0, this.queue.length - LONG_QUEUE).forEach((q) => { q.text = summary(q.text); });
-    while (this.queue.length > MAX_QUEUE) { const i = this.queue.findIndex((q) => q.kind !== 'err'); this.queue.splice(i < 0 ? 0 : i, 1); }
+    if (this.queue.length > LONG_QUEUE) this.queue.filter(q=>!q.ack).slice(0, this.queue.length - LONG_QUEUE).forEach((q) => { q.text = summary(q.text); });
+    while(this.queue.filter(q=>!q.ack).length>MAX_QUEUE){let i=this.queue.findIndex(q=>!q.ack&&q.kind!=='err');if(i<0)i=this.queue.findIndex(q=>!q.ack);this.queue.splice(i,1);}
     this.update(locate);
   }
 
   /** A red line goes before every other waiting line (after earlier red ones), and hurries the oldest one showing. */
   private jump(c: Caption) {
     this.queue = this.queue.filter((q) => q !== c);
-    const i = this.queue.findIndex((q) => q.kind !== 'err');
+    const i = this.queue.findIndex((q) => !q.ack&&q.kind !== 'err');
     this.queue.splice(i < 0 ? this.queue.length : i, 0, c);
-    const now = performance.now(), old = this.caps.find((s) => s.kind !== 'err' && !s.fading);
+    const now = this.now(), old = this.caps.find((s) => !s.ack && s.kind !== 'err' && !s.fading);
     if (old && this.caps.length >= MAX_SHOWN) old.until = Math.min(old.until, Math.max(old.shown + 900, now));
   }
+
+  /** A pinned response owns its delivery identity; ordinary replies from the same source cannot replace it. */
+  acknowledge(delivery:DeviceAcknowledgment,locate:Locate,anchor:Locate=locate){
+    if(this.pinned?.ack!==delivery){if(this.pinned){const previous=this.pinned.ack!;previous.cancel('replaced');this.releaseAcknowledgment(previous);}this.pinned={from:delivery.request.from,text:'',kind:delivery.request.tone==='err'?'err':delivery.request.tone==='ok'?'ok':'look',shown:0,until:Infinity,fading:false,ack:delivery,locate:anchor};
+      if(this.caps.length>=MAX_SHOWN){const old=this.caps.find(c=>!c.ack);if(old){this.drop(old);old.el=undefined;old.lead=undefined;this.queue.unshift(old);}}
+      this.queue.unshift(this.pinned);
+    }
+    const c=this.pinned;c.text=delivery.request.speaker+': '+delivery.text;c.next=undefined;c.fading=false;delivery.presented(false);if(c.el)this.retext(c,c.text,c.kind);this.update(locate);
+  }
+  releaseAcknowledgment(delivery:DeviceAcknowledgment){const c=this.pinned;if(!c||c.ack!==delivery)return;delivery.presented(false);this.drop(c);this.queue=this.queue.filter(q=>q!==c);this.pinned=undefined;}
+  private spot(c:Caption,locate:Locate){return(c.locate??locate)(c.from);}
+  private acknowledgmentButton(c:Caption){if(!c.ack||!c.el)return;const arrow=document.createElement('span');arrow.className='fx-ack-edge';arrow.setAttribute('aria-hidden','true');arrow.hidden=true;c.el.appendChild(arrow);const button=document.createElement('button');button.type='button';button.className='fx-ack-continue';button.textContent=c.ack.finalPage?'[E] CONTINUE':'[E] NEXT';button.setAttribute('aria-label',c.ack.finalPage?'Acknowledge device response':'Next device response page');const page=c.ack.page,advance=()=>{if(c.ack?.page===page)c.ack.advance();};button.onclick=e=>{e.preventDefault();e.stopPropagation();advance();};button.onkeydown=e=>{if(['Enter',' ','e','E'].includes(e.key)){e.preventDefault();e.stopPropagation();if(!e.repeat)advance();}};c.el.classList.add('fx-ack');c.el.appendChild(button);}
 
   /** The new words, once the old ones are out (`swap`): the box takes their size and is placed again. */
   private retext(c: Caption, text: string, kind: PingKind) {
     c.text = text; c.kind = kind; c.next = undefined;
-    if (c.el) { c.el.textContent = text; c.el.className = 'fx-cap ' + tone(kind); }
+    if (c.el) { c.el.textContent = text; c.el.className = 'fx-cap ' + tone(kind); this.acknowledgmentButton(c); }
     c.lead?.setAttribute('class', 'fx-lead ' + tone(kind));
   }
 
   /** A caption's elements: the box and its leader (an SVG polyline, so it can bend). */
   private make(c: Caption) {
-    c.el = el('fx-cap ' + tone(c.kind), c.text);
+    c.el = el('fx-cap ' + tone(c.kind), c.text);this.acknowledgmentButton(c);
     c.lead = document.createElementNS(SVG, 'svg');
     c.lead.setAttribute('class', 'fx-lead ' + tone(c.kind));
     c.lead.appendChild(document.createElementNS(SVG, 'polyline'));
@@ -233,10 +251,15 @@ export class Feedback {
     const at = locate(from);
     if (!at) return;
     const edge = at.off !== 0;
+    // One ring/arrow per source. Repeated signals never restart its readable lifetime.
+    const existing=this.pings.find(p=>p.from===from);
+    if(existing&&this.now()-existing.born<=existing.life&&existing.kind===kind&&existing.edge===edge)return;
+    if(existing)this.clearPing(from);
+    if(this.pings.length>=16){const rank=(kind:PingKind)=>kind==='err'?2:kind==='ok'?1:0;const low=Math.min(...this.pings.map(p=>rank(p.kind)));if(rank(kind)<low)return;const i=this.pings.findIndex(p=>rank(p.kind)===low),old=this.pings.splice(i,1)[0];old.el.remove();}
     const e = el('fx-ping ' + kind + (edge ? ' edge ' + (at.off < 0 ? 'left' : 'right') : ''));
     if (edge) e.textContent = at.off < 0 ? '◀' : '▶';
     this.layer.appendChild(e);
-    this.pings.push({ from, el: e, born: performance.now(), life: edge ? EDGE_MS : RING_MS, edge });
+    this.pings.push({ from, kind, el: e, born: this.now(), life: edge ? EDGE_MS : RING_MS, edge });
     this.update(locate);
   }
 
@@ -253,9 +276,10 @@ export class Feedback {
     if (yieldTo) this.yieldTo = yieldTo;
     if (!this.caps.length && !this.pings.length && !this.queue.length) { this.lane = NaN; return; }
     // on a phone the touch buttons lie over the bottom of the view: arrows stay above them
-    const now = performance.now(), { W, H } = this.view();
+    const now = this.now(), { W, H } = this.view();
     for (const p of [...this.pings]) {
       const at = locate(p.from);
+      if(at){p.edge=at.off!==0;p.life=p.edge?EDGE_MS:RING_MS;const cls='fx-ping '+p.kind+(p.edge?' edge '+(at.off<0?'left':'right'):'');if(p.el.className!==cls){p.el.className=cls;p.el.textContent=p.edge?(at.off<0?'◀':'▶'):'';}}
       if (!at || now - p.born > p.life) { p.el.remove(); this.pings = this.pings.filter((x) => x !== p); continue; }
       if (p.edge) {
         const y = Math.max(this.top + 12, Math.min(H - 24, at.y));
@@ -268,24 +292,26 @@ export class Feedback {
     // retire: fade when its time is up, gone after the fade (or when its thing is gone); a fading
     // caption still holds its place until it is gone
     for (const c of [...this.caps]) {
-      if (!locate(c.from) || now > c.until + FADE_MS) { this.drop(c); continue; }
+      if(c.ack){c.ack.presented(false);if(!c.ack.pending)this.releaseAcknowledgment(c.ack);continue;}
+      if (!this.spot(c,locate) || now > c.until + FADE_MS) { this.drop(c); continue; }
       if (c.next && now - c.next.at >= SWAP_OUT_MS) this.retext(c, c.next.text, c.next.kind);
       if (!c.fading && !c.next && now > c.until) { c.fading = true; c.el!.classList.add('out'); c.lead!.classList.add('out'); }
     }
-    this.queue = this.queue.filter((c) => !!locate(c.from));
+    this.queue = this.queue.filter((c) => !!c.ack||!!this.spot(c,locate));
     // let the next one in when there is room (it may still go back to wait: see the placing below)
     const fresh = new Set<Caption>();
-    while (this.queue.length && this.caps.length < MAX_SHOWN && now - this.lastShown >= STAGGER_MS) {
+    while (this.queue.length && this.caps.length < MAX_SHOWN && (!!this.queue[0].ack||now - this.lastShown >= STAGGER_MS)) {
       const c = this.queue.shift()!;
       this.make(c);
-      c.shown = now; c.until = now + readMs(c.text); this.lastShown = now;
+      c.shown = now; c.until = c.ack?Infinity:now + readMs(c.text); this.lastShown = now;
       this.caps.push(c); fresh.add(c);
     }
     if (!this.caps.length) return;
+    this.caps.sort((a,b)=>Number(!!b.ack)-Number(!!a.ack));
     // the lane: its bottom a gap over the tallest thing on screen that matters (devices, people, the
     // player, the things the captions talk about), never under the HUD; eased, so it does not jump
     const lo = this.top + EDGE, hi = H - EDGE;
-    const things = this.caps.map((c) => locate(c.from)).filter((a): a is Spot2D => !!a && !a.off).map(boxOf);
+    const things = this.caps.map((c) => this.spot(c,locate)).filter((a): a is Spot2D => !!a && !a.off).map(boxOf);
     const h0 = Math.max(...this.caps.map((c) => c.el!.offsetHeight), 18);
     const want = this.laneOver(things, h0, W, H);
     this.lane = Number.isNaN(this.lane) ? want : this.lane + (want - this.lane) * 0.2;
@@ -294,11 +320,12 @@ export class Feedback {
     // oldest first, so a caption that is there stays put and the newcomer finds room beside it
     const placed: Box[] = [], leads: { c: Caption; q: Box; thing: Box }[] = [];
     for (const c of [...this.caps]) {
-      const at = locate(c.from)!, e = c.el!, w = e.offsetWidth, h = e.offsetHeight;
+      const at=this.spot(c,locate),e=c.el!;if(!at){if(c.ack){e.hidden=true;c.lead!.setAttribute('hidden','');c.box=undefined;}continue;}const w=e.offsetWidth,h=e.offsetHeight;
       const off = at.off !== 0, thing = off ? null : boxOf(at);
       const cx = off ? (at.off < 0 ? EDGE + 28 + w / 2 : W - EDGE - 28 - w / 2) : at.x;
       const soft = this.soft.filter((s) => !thing || area(s, thing) < (thing.r - thing.l) * (thing.b - thing.t) * 0.8);
       const { box: q, free } = placeInLane(w, h, cx, thing, this.lane, placed, hardAll, soft, W, lo, hi);
+      if(c.ack){const arrow=e.querySelector<HTMLElement>('.fx-ack-edge');if(arrow){arrow.className='fx-ack-edge'+(at.off<0?' left':at.off>0?' right':'');arrow.textContent=at.off<0?' ◀':at.off>0?' ▶':'';arrow.hidden=!off;}e.hidden=!free;c.lead!.toggleAttribute('hidden',!free||off);c.ack.presented(free&&w>0&&h>0);const button=e.querySelector('button');if(button)button.disabled=!c.ack.ready;if(!free){c.box=undefined;continue;}}
       // a newcomer with no free spot waits (at the front of the queue): nothing ever lands on another box
       if (!free && fresh.has(c)) { this.drop(c); c.el = undefined; c.lead = undefined; this.queue.unshift(c); this.lastShown = -Infinity; continue; }
       placed.push(q); c.box = q;
@@ -324,9 +351,10 @@ export class Feedback {
     this.pings = this.pings.filter(p => p.from !== from);
   }
 
-  clear() {
+  clear(preserveAcknowledgment=false) {
+    const pinned=preserveAcknowledgment?this.pinned:undefined;if(!preserveAcknowledgment)this.pinned?.ack?.cancel('dismissed');
     this.caps.forEach((c) => { c.el?.remove(); c.lead?.remove(); }); this.pings.forEach((p) => p.el.remove());
-    this.caps = []; this.queue = []; this.pings = []; this.lane = NaN;
+    this.caps = []; this.queue = pinned?[pinned]:[];this.pings = [];this.pinned=pinned;if(pinned){pinned.el=undefined;pinned.lead=undefined;pinned.ack?.presented(false);}this.lane = NaN;this.lastShown=-Infinity;
   }
 }
 
@@ -357,6 +385,8 @@ export const FEEDBACK_STYLES = `
       transition: opacity ${SWAP_IN_MS}ms ease;
     }
 
+    .fx-cap.fx-ack{pointer-events:auto;}
+    .fx-ack-continue{display:block;margin-top:8px;padding:2px 6px;color:inherit;border:1px solid currentColor;background:transparent;font:inherit;cursor:pointer;}
     .fx-cap.ok { color: var(--color-success); border-color: rgba(34, 197, 94, 0.7); }
     .fx-cap.err { color: var(--color-error); border-color: rgba(255, 42, 68, 0.7); }
     .fx-lead { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; fill: none; stroke: rgba(255, 217, 165, 0.55); stroke-width: 1; animation: fx-in 0.25s ease both; transition: opacity ${FADE_MS}ms ease; }

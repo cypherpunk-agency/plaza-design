@@ -24,7 +24,8 @@
           ]
         }
       ],
-      "purchase": "laundromat.soap"
+      "purchase": "laundromat.soap",
+      "speakerKind": "device"
     }
   ],
   "readables": [
@@ -121,5 +122,188 @@
       "at": "laundromat",
       "label": "[E] MARKET"
     }
-  ]
+  ],
+  "actors": [
+    {
+      "seed": 6201,
+      "act": "walk",
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.35,
+      "speed": 0.35,
+      "look": {
+        "extras": [
+          "umbrella"
+        ]
+      },
+      "id": "outside-1",
+      "instance": "outside-1",
+      "band": "background",
+      "height": "artwork",
+      "range": 300
+    },
+    {
+      "seed": 6202,
+      "act": "walk",
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.35,
+      "speed": 0.28,
+      "id": "outside-2",
+      "instance": "outside-2",
+      "band": "background",
+      "height": "artwork",
+      "range": -320
+    },
+    {
+      "seed": 6203,
+      "act": "haggle",
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.6,
+      "parallax": 0.35,
+      "id": "outside-3",
+      "instance": "outside-3",
+      "band": "background",
+      "height": "artwork"
+    },
+    {
+      "seed": 6101,
+      "look": {
+        "body": "slim",
+        "garb": "tee",
+        "hair": "cap",
+        "extras": [
+          "phone",
+          "backpack"
+        ],
+        "top": "#b8a68a"
+      },
+      "act": "phone",
+      "facing": 1,
+      "id": "blue",
+      "instance": "blue",
+      "band": "world",
+      "target": "blue",
+      "reaction": "blue"
+    },
+    {
+      "seed": 6104,
+      "look": {
+        "bot": "servbot",
+        "paint": "#8a8478",
+        "v": 0
+      },
+      "act": "vend",
+      "facing": 1,
+      "id": "folder",
+      "instance": "folder",
+      "band": "world",
+      "target": "folder",
+      "reaction": "folder"
+    },
+    {
+      "key": true,
+      "seed": 6102,
+      "look": {
+        "body": "old",
+        "garb": "coat",
+        "hair": "scarf",
+        "extras": [
+          "bag"
+        ],
+        "top": "#6a2a3e",
+        "acc": "#d8b040"
+      },
+      "act": "sit",
+      "facing": -1,
+      "id": "gran",
+      "instance": "gran",
+      "band": "world",
+      "target": "gran",
+      "height": "artwork",
+      "reaction": "gran"
+    },
+    {
+      "seed": 6103,
+      "look": {
+        "body": "wide",
+        "garb": "hivis",
+        "hair": "short",
+        "extras": []
+      },
+      "act": "sleep",
+      "id": "sleeper",
+      "instance": "sleeper",
+      "band": "world",
+      "target": "sleeper",
+      "height": "artwork",
+      "reaction": "sleeper"
+    },
+    {
+      "look": "cat",
+      "seed": 7,
+      "act": "sit",
+      "facing": -1,
+      "id": "cat",
+      "instance": "cat",
+      "band": "world",
+      "height": "artwork",
+      "reaction": "slot-4"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "room",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "soap": {
+        "instance": "soap",
+        "promptH": 92,
+        "responseH": 76
+      }
+    },
+    "readables": {
+      "notice": {
+        "instance": "notice",
+        "promptH": 8
+      },
+      "socks": {
+        "instance": "socks",
+        "promptH": 116
+      }
+    },
+    "rests": {},
+    "exits": {
+      "market": {
+        "instance": "exit-market",
+        "promptH": 82
+      }
+    }
+  },
+  "environment": {},
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    }
+  }
 }

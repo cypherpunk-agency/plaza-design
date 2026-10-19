@@ -167,9 +167,10 @@
       "label": "[E] TALK TO SUPERVISOR",
       "routes": [
         {
-          "conversation": "supervisor"
+          "conversation": "supervisor-shift"
         }
-      ]
+      ],
+      "conversationPresentation": "bubble"
     },
     {
       "id": "parcel",
@@ -248,7 +249,8 @@
             }
           ]
         }
-      ]
+      ],
+      "conversationPresentation": "bubble"
     },
     {
       "id": "case",
@@ -500,5 +502,123 @@
         "is": true
       }
     }
-  ]
+  ],
+  "actors": [
+    {
+      "id": "boss",
+      "instance": "boss",
+      "band": "background",
+      "seed": 7301,
+      "look": {
+        "body": "wide",
+        "garb": "jacket",
+        "hair": "cap",
+        "top": "#827144",
+        "extras": [
+          "phone"
+        ]
+      },
+      "act": "stand",
+      "facing": 1
+    },
+    {
+      "id": "mara",
+      "instance": "mara",
+      "band": "background",
+      "seed": 7302,
+      "look": {
+        "body": "tall",
+        "garb": "hivis",
+        "hair": "bun",
+        "top": "#b5903a"
+      },
+      "act": "vend",
+      "facing": -1
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "boss": {
+        "instance": "use-boss",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "parcel": {
+        "instance": "use-parcel",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "mara": {
+        "instance": "use-mara",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "case": {
+        "instance": "use-case",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "rack": {
+        "instance": "use-rack",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "trolley": {
+        "instance": "use-trolley",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "clamp": {
+        "instance": "use-clamp",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "checkout": {
+        "instance": "use-checkout",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      },
+      "statement": {
+        "instance": "use-statement",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 0,
+        "promptAboveFloor": true
+      }
+    },
+    "readables": {},
+    "rests": {},
+    "exits": {}
+  },
+  "environment": {
+    "ambient": {
+      "sky": true
+    },
+    "facing": 90
+  },
+  "companion": {
+    "mode": "off"
+  }
 }

@@ -4,7 +4,9 @@
 this document does not claim current FPS, measured bottlenecks or completed milestones.
 Related [system review](../reference/HACKING-SYSTEM-REVIEW.md).
 Priority and status now belong to [ROADMAP.md](../../ROADMAP.md), ENG-06. This document supplies
-detailed measurement requirements, not a separate active roadmap. No harness is claimed implemented.
+detailed measurement requirements, not a separate active roadmap. The bounded opt-in recorder/report
+slice is implemented (ENG-05-08-STATUS.md); reproducible workload baselines and measured optimization
+remain open. The next bounded proposal is ENGINE-CONSOLIDATION-GOAL.md (ENG-06 continuation).
 
 ## Outcome
 
@@ -166,3 +168,13 @@ telemetry. Do not mark completion because a dashboard exists or average FPS impr
 Before implementation, choose target device(s)/performance budget and review the short
 scenario scope with the user, respecting the existing playthrough/automation discussion.
 Implementation can begin with P1 without committing to renderer or gameplay redesigns.
+
+
+## Implemented measurement subset (2026-10-18)
+
+The feedback-ready package implements opt-in bounded CPU spans, scene owner tags, RAF gaps, host/save
+work, browser calibration, source/environment metadata and local JSON export/reporting. This is a
+measurement-only subset of P1/P5, not completion of P1–P5 or an optimization result. Reproducible
+render/simulation lanes, reviewed baselines, trace diagnosis and measured optimizations remain open.
+See [the recording workflow](../reference/PERFORMANCE-RECORDING.md) and
+[package evidence](../../ENG-05-08-STATUS.md).

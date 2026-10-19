@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "dialogue": {
+    "speaker": "HINGE · hatch daemon",
+    "start": "start",
+    "sayCmd": "say \"{line}\" > hinge",
+    "nodes": {
+      "start": [
+        {
+          "if": "gateAllowed",
+          "text": "Signals: allowed. One second per ping. Do not make me regret this.",
+          "choices": [
+            [
+              "Thanks, HINGE.",
+              "bye"
+            ]
+          ]
+        },
+        {
+          "text": "State your business. Briefly. I have been a hatch for eleven years.",
+          "choices": [
+            [
+              "I have a parcel coming.",
+              "parcel"
+            ],
+            [
+              "Can you open, please?",
+              "please"
+            ],
+            [
+              "Open.",
+              "blunt"
+            ]
+          ]
+        }
+      ],
+      "parcel": {
+        "text": "Parcels. Always parcels. I do not watch chutes. I have standards.",
+        "choices": [
+          [
+            "What if something pinged you?",
+            "ping"
+          ],
+          [
+            "Never mind.",
+            "start"
+          ]
+        ]
+      },
+      "ping": {
+        "text": "A signal? Hm. Automation. Very modern. Fine: one ping, I open for one second. I will not wait.",
+        "choices": [
+          [
+            "Deal.",
+            "deal"
+          ]
+        ]
+      },
+      "please": {
+        "text": "Manners. Rare. But I do not open for people. I open for reasons.",
+        "choices": [
+          [
+            "The reason is a parcel.",
+            "parcel"
+          ]
+        ]
+      },
+      "blunt": {
+        "text": "Bold. No.",
+        "choices": [
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "deal": {
+        "text": "Noted. Signals allowed. Timing is your problem.",
+        "do": [
+          {
+            "set": "gateAllowed",
+            "to": true
+          },
+          {
+            "goal": "talk"
+          }
+        ]
+      },
+      "bye": {
+        "text": "Hmph."
+      }
+    },
+    "free": {
+      "match": "wire|ping|signal|automat",
+      "goto": "ping",
+      "miss": "HINGE does not parse that. HINGE does not want to.",
+      "retry": "Try again.",
+      "retryGoto": "start"
+    }
+  },
+  "cables": [],
+  "initialState": {
+    "found": false,
+    "armAt": "home",
+    "held": null,
+    "parcel": "C-7",
+    "parcelAt": "C-7",
+    "gateAllowed": false,
+    "pan": 0
+  }
+}

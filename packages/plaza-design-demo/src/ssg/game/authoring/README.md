@@ -1,7 +1,8 @@
 # Scene and animation composer
 
-Public editor: **https://cypherpunk.agency/editor/**. It includes the scene/timeline editor,
-asset and animation workbenches, event/source inspector and scoped Sandbox behavior lab.
+Public editor address: **https://cypherpunk.agency/editor/**. This checkout contains the
+scene/timeline editor, native device/connection authoring, asset viewers and event/source inspector.
+Local goal changes require separate publication before they appear on the public site.
 Edits stay in your browser session; **Download edits** saves a portable JSON bundle and
 **Import edits** restores it in either the public or local composer, as one undoable operation.
 **Export JSON** still downloads the selected individual source document. Download before
@@ -24,13 +25,26 @@ allowlisted read-only source text. The game page does not import it, and the pub
 bundle never includes the local write service, credentials or a filesystem endpoint.
 
 The selector includes all 19 scene compositions, four sequence compositions, two timeline
-documents, the scoped Sandbox behavior document, Harbor Shift, Shop, Library and Laundromat gameplay/scene documents and
-reusable Play fixtures
-(41 source documents in total, including ENG-04 Market, Beach and Test Workshop gameplay). S0-S7/G1-G8 acceptance is complete; see
-[the execution ledger](../SCENE-SYSTEM-STATUS.md) and
-[evidence/reproduction guide](../docs/reference/SCENE-SYSTEM-EVIDENCE.md). S8-S13 adds focused
-workbenches to the same shell; individual acceptance and limits are recorded in the
-[stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
+documents. Tool panels also use ten native device sources, city/metro/bot sources, reusable Play
+fixtures and registered scene/gameplay documents. Current packaging: 85 source documents / 121 source references. Scene-content registration
+covers Harbor Shift, Shop, Library, Laundromat, Warehouse, Mall, Market, Stacks, Metro, Galleria Station,
+Harbor Station, Train, Capsule, Yard, Moth, Sandbox, Beach, Harbor and Downtown. All 19 now have source registrations;
+Downtown’s custom runtime story/people and native controller contracts remain unfinished. Engine targets expose visibility, labels,
+responses, native action fields and exit routing in Logic. Touch-specific arrival pages are editable.
+This is not full entity/controller/world authoring: creation/deletion and
+several native controller contracts remain migration work. All 19 native scenes have private Play
+fixture support; an unmigrated scene's Play does not imply editable content. See
+[the active execution ledger](../ENGINE-CONSOLIDATION-STATUS.md).
+
+Historical S0–S13 evidence remains in [the scene-system ledger](../SCENE-SYSTEM-STATUS.md) and
+[stretch evidence](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
+
+All19 native scenes now expose ordinary source bindings and actor collections in Logic. There are
+287 original source actor bodies; empty Capsule,Yard and Moth collections support actor creation too.
+Actor removal previews bound content removal and decorative attachment detachment; spawn,width,
+follower and controller dependencies must remain valid. Logic → Environment edits fixed atmosphere
+settings; geometry-derived facing,horizon,shade and weather covers remain in their named Layout
+artwork. Complete specialized controller/world/network/story authoring remains in progress.
 
 The editor is organised around scenes. The top bar has the **scene picker** (places, then
 sequences and timelines; ● marks unsaved edits in a scene's composition or its scene/gameplay
@@ -42,12 +56,12 @@ The tab row has four modes of the selected scene, then two areas that stand apar
 
 - **Layout** is the composer: preview, grouped layer list, properties, timeline.
 - **Logic** has *Interactions & story* (the scene document) and *Commands & dialogue* (the
-  gameplay document). It shows Harbor Shift, Shop, Library and Laundromat; Commands also covers
-  Market and Beach.
-- **Wiring** is the read-only event inspector, opened on the selected scene.
+  gameplay document). Its supported scenes follow the registered content list above; Commands also
+  covers the native Beach device slice. *Devices* edits native parameters and creates native nouns/seals.
+- **Wiring** offers writable *Starting cables* and the read-only *Events* inspector for the selected scene.
 - **Play** runs the selected scene from one of its starting states.
-- **Assets** holds the read-only viewers: Artwork, Characters, Vehicles, Signs & light.
-- **Labs** holds developer test beds outside the scene workflow: Demo world and Sandbox behavior.
+- **Assets** holds Artwork/Characters/Vehicles/Signs viewers plus editable City & travel and Bot dialogue.
+- **Labs** holds developer test beds outside the scene workflow: Demo world and the manifest pilot.
 
 A mode the selected scene cannot use yet shows why, with links to the scenes it supports;
 it never switches scenes on its own. The left panel's **City map** follows the selected scene;
@@ -114,7 +128,7 @@ callbacks, lockouts, trace/watchdog state, recent evaluated actions and failed c
 Play keeps its save slots and reloads private in memory; Stop destroys the runtime, including
 world clocks, delayed callbacks, input and audio. Runtime wiring never writes authoring source.
 Harbor uses pending composition/gameplay/scene data; Sandbox uses pending composition and its
-validated scoped behavior document. The regular Harbor conversation adapter retains automatic
+validated general device document (its historical ID remains sandbox-behavior). The regular Harbor conversation adapter retains automatic
 acceptance; explicit dialogue choices remain available in the Gameplay lab.
 
 **Logic › Interactions & story** lists the scene's parts (arrival, story clock, objectives,
@@ -133,8 +147,9 @@ edits initial event/target/verb connections using native endpoint choices. Fixed
 state ownership and command permissions stay protected. These source edits restart with Play;
 rewiring during play changes only private player progress. **Events** resolves Beach's migrated verbs
 and pending initial wires to their shared source rather than presenting legacy steps as active.
-**Demo world** includes the Sandbox-based Workshop using its own gameplay source; ordinary Sandbox
-and its frozen S13 behavior editing scope are unchanged.
+**Demo world** uses compact plain review areas with direct shortcuts, in-place permission controls and an optional guidance task at the counter. Its Sandbox-based device example has its own gameplay source; ordinary Sandbox
+uses the same Devices/Starting cables authoring as the other native scenes. The former S13
+subset is retained only as regression fixtures under scripts/scene-system/legacy-s13.
 See [the gameplay system](../docs/reference/GAMEPLAY-SYSTEM.md) and [ENG-04 scope](../ENG-04-PLAN.md)
 for contracts and focused checks.
 
@@ -143,16 +158,13 @@ triggers, conditions, actions and connections; select a node to inspect its data
 or placement, or read the whitelisted literal source. Opaque controller code is labeled explicitly.
 Conditions without a matching captured runtime context remain unbound rather than being guessed.
 
-Behavior authoring is limited to the frozen Sandbox inventory in
-`inventories/S13.json`: five nouns, ten handlers, four state keys and two signal connections.
-Select a noun and verb, edit supported typed cases/actions/replies, then run the native sandbox
-with its trace and controlled signal queue. Reset, advance time or capture/reenter a lab save
-without touching player saves. Global Undo/Redo and validated import/export use the same pending
-document. Save writes only this allowed source through the existing conflict-protected service;
-Reload source discards its pending draft. Arbitrary code, rewards, other scene rules and map or
-transport editing remain outside this editor's scope.
-These are the current limits; [GAME-EDITOR-PLAN.md](../GAME-EDITOR-PLAN.md) records the approved
-direction for widening them.
+Native device authoring uses SceneData and the existing engine checker for all ten device scenes.
+The old five-noun Sandbox lab is retired; its historical ID/kind still imports through the general
+source path. Logic -> Devices creates STORE/SENSE/ACT/DAEMON/CLOCK/LINK/LOG/password GUARD and four
+toy GUARD variants, plus key/guard/sequence/condition sectors with ordinary content. Original
+controller-bound IDs/kinds remain protected. All fields, new nouns/seals and authored starting
+cables use normal history, bundles, protected Save and native preview/Play. General entity/scene
+creation, network authoring and broader controller hooks remain unfinished; see the execution ledger.
 
 Compositions and timelines currently use schema version 1, the initial document format.
 There is no earlier serialized format to migrate. Imports reject unsupported versions rather
@@ -245,3 +257,288 @@ supported. The added demo profile can be created when opening Demo world if abse
 The Library catalog uses the shared conversation runner and one shared text source. Its native
 panel remains its presenter. The finite migration corpus and remaining legacy adapters are listed
 in docs/reference/CONVERSATION-MIGRATION.json; not all game dialogue is claimed migrated.
+
+
+## Feedback-ready package
+
+Scene logic exposes authored access requirements alongside objectives: shared conditions, an optional
+interaction-command eligibility reference, refusal text and visibility while refused. A command
+reference reuses its pure eligibility query; it does not copy its resource/permission logic. Private
+Play state includes capability lookup and exit/interaction eligibility results.
+
+Market Gameplay now includes cook, fishmonger, repair vendor and sleeper conversations. Their source
+text lives in shared conversation nodes; ordinary Market Play uses those pending nodes. Review
+shortcuts jump to each actor. The all-game continuation below supersedes the earlier adapter counts.
+
+**Manifest pilot** uses `demo-manifest` composition with its scene and gameplay documents.
+Select it in the scene selector: Layout adds existing artwork, Logic → Interactions & story →
+Content & bindings adds/removes ordinary interactions, people, readables, resting places and exits,
+and Play runs that pending snapshot in the existing isolated Shop role. The Labs shortcut remains.
+A person binds to an “Authored person, animal or robot” artwork instance. Body kind, seeded appearance,
+activity, pixel size and brightness use the existing character renderer; dialogue uses the shared
+persistent conversation compiler. Exits select a registered scene and optional arrival anchor.
+Every content entry has one composition binding. Removal keeps its artwork; Layout can remove artwork
+after content is rebound or removed. Dangling bindings, mismatched body artwork and missing exit
+scenes/arrivals fail before edits or Save commit. Actor bindings currently require unit scale,
+normal depth and right-facing placement; decorative artwork remains transformable.
+The same factory supports the scene catalogue below. Full actor appearance/scheduling, specialized
+controllers and native entity migrations remain open for the existing 19 scenes.
+
+**Assets → Scenes** creates a new ordinary scene without a TypeScript registration. Choose an ID,
+name and existing city place. Creation adds its scene, composition, gameplay, starting fixture and
+place membership as one undoable transaction; the new scene opens in Layout. Logic uses the same
+Content & bindings and Commands & dialogue editors. Play uses its own scene ID and a complete pending
+scene registry, so routes can reach other edited rooms. The map inspector lists the room within its
+chosen place. Scene removal also removes its starting fixtures and membership atomically; incoming
+routes, a selected city start or a place entrance must be reassigned first.
+
+`scenes/authored.json` owns the collection. Logical `authored.ID`, `authored.ID-scene` and
+`authored.ID-gameplay` documents are projections, not extra files or content copies. History and
+bundles store the owner; grouped local Save also includes fixture/city edits. The local file service
+retains its fixed allowlist. Native IDs cannot be shadowed, unknown routes fail before writes, and
+private Play registries never mutate shipping globals. New scenes currently use the existing review-room
+interior by default; full environment/controller authoring and original native migrations remain open.
+The shipping catalogue is empty, preserving all original 19 scene defaults.
+
+**Native Corner Shop bindings** now use the same manifest compiler as catalogue scenes. In
+Logic → Content & bindings, add/remove/rebind ordinary uses, readables, resting places and exits.
+Bindings select an artwork instance, optional registered anchor, offsets and text heights. Width
+follows the wall artwork's width property. The vending readable uses its size-derived “use” anchor.
+Layout can remove old ordinary props after their bindings are removed or reassigned; incoming scene
+routes still need valid arrival anchors. Actor and structural dependencies remain protected.
+
+Old Shop scene bundles without a manifest inherit the canonical bindings. Existing purchase IDs,
+permissions, saved rotation and goods remain compatible. New shared flags/events/state/commands and
+conversations can be added; the original purchase keeps its single charge/goods owner. Explicit
+content prompt/response heights override a binding's text-height defaults. Preview, fixture bounds,
+private Play and Save all compile the same complete pending documents. Native actor appearance and
+schedule definitions remain a separate migration; this is not full Shop or all-scene completion.
+
+Scene schema version 1 gains optional access/manifest fields; old documents remain valid. Manifest
+fields require the explicitly registered declared-scene adapter. Older demo/Market gameplay bundles
+with the previous protected vocabulary reject atomically with reload/reapply guidance. Existing
+player saves and compatible composition-only bundles do not require a reset.
+
+For CPU diagnostics, append `?perf` to the editor URL; private Play then offers the same opt-in
+local recorder. See [performance recording](../docs/reference/PERFORMANCE-RECORDING.md). Normal editor
+and game sessions do not mount those controls.
+
+Scene content can bind a cosmetic presentation cue to a committed gameplay event. Beach’s gull
+uses this to stamp its original artwork frame clock; refused/previewed commands do not animate
+it. Explicit response templates read `{tokens}`, `{item:ID}` and `{state:ID}` from shared state.
+Companion scene/gameplay source documents validate together when saving, reading and recovering
+an interrupted transaction, so a new command and its route can be authored atomically.
+
+
+## Shared bot dialogue (all-game continuation)
+
+Assets -> Bot dialogue edits the source `engine/gameplay/bot-reactions.json` using typed names,
+interaction prompts and reply/page lists. It is a registered `conversations` document, rather than
+an artwork definition or a game-scene document. Header history, portable bundles, local protected
+Save and public download use the same document paths as other authoring work.
+
+Speak next reply runs the production ConversationSession in isolated preview state; refreshing the
+form never advances it. Reset preview progress affects only that preview. Private Play receives
+pending bot source too. The game compiles these templates with the same persistent cycling compiler
+as NPC chatter, retaining original names/serials/prompts/text. Named actors use their explicit ID;
+unnamed existing actors use their scene's stable legacy slot identity. New entity authoring still
+needs the remaining stable-ID/creation work before reorder/add/delete acceptance can close G10.
+
+Focused checks: check-bot-conversations and check-bot-source-save. Registered campaign actors no
+longer use the old character-local counters or the separate device-dialogue evaluator. This does
+not claim that Downtown story scripts, controllers or the full editor migration are complete.
+
+
+### City source authoring (partial world integration)
+
+`world/city.json` is the canonical city registry source. Assets -> City & travel edits fares,
+quick-travel duration, initial scene, district/place/stand names and place arrival anchors through
+normal pending history, bundles and protected grouped Save. Arrivals validate against prospective
+scene documents. The map navigator and private Play consume independent pending world instances.
+`world/document.ts` remains a derived cross-reference index; do not edit it as a second source.
+
+`check-city-source` compares the immutable original model, traced geography and map input;
+`check-city-source-save` covers history/bundle/Save/reload, pending map inspection, actual Game
+fare admission and arrival rejection. Metro timetable/ride isolation and complete geographic/
+route authoring remain unfinished; source registration does not certify those capabilities.
+
+
+### Metro timing and isolated sessions
+
+City & travel also edits `world/transport/metro.json`: platform timetable and station offsets,
+ride phases, closed-station run multiplier, emergency braking and halt durations. These are
+transport source documents with strict validation and the same history/bundle/Save path.
+`createLineSystem(city, metroSource)` owns each Game's mutable ride/platform state. Transit scene
+factories bind it through `SceneDef.bindWorld`; TRAIN rules and rendering share that instance.
+Layout preview receives pending source documents and binds the same scene factories.
+
+`check-metro-sessions` compares original movement/platform behavior and isolation;
+`check-metro-source-save` verifies actual pending Game execution after source Save/reload.
+Controller snapshot/restore and authored in-flight starting states remain outstanding.
+
+
+### In-flight metro fixtures
+
+Play -> Starting state supports an optional validated metro snapshot, including station route,
+phase, distance, speed, door/halt state and platform shifts. Existing fixtures without this field
+keep their old behavior. Train has four ready starting fixtures: departure, approaching the
+hidden siding, stopped at the siding and siding doors released. Typed presets can also create
+braking and track-stop states. Use current metro as starting state captures private Play's
+controller into normal pending history; Undo restores it. Native scene-state fields are available
+for every registered scene with device data.
+
+`createLineSystem().capture/restore/reset` owns controller state. Restore validates completely
+before mutation and preserves references held by bound rules. Fixture snapshots validate against
+prospective world route/timing in both ComposerModel and grouped Save. They are not new player
+Save or slot fields. Private restart preserves them only for retained autosaves; reset/slot-load
+semantics stay separate. See `check-metro-snapshots` and `check-metro-fixture-save` for evidence.
+
+
+### Device configuration and authored starting cables
+
+Logic -> Devices exposes the existing native parameters for Capsule, Yard, Downtown, Moth, Beach,
+Laundromat, Library, Stacks and Train. Select a device or Scene settings, then a noun/field group.
+Existing fields use typed text/number/checkbox controls; new STORE nouns, read verbs, events and
+state/emit/registered-effect/trace actions can be added. Placement remains in Layout. Shared-bound
+verb actions remain in Commands & dialogue. Original controller-bound IDs/kinds are protected by
+an immutable-derived identity contract, while newly added ordinary nouns can be removed after Save.
+
+Wiring -> Starting cables edits the scene's authored defaults. Shared gameplay native.wires owns
+these when declared; otherwise devices.json owns them. There is no second stored cable copy.
+Fixed conduits remain read-only for now. Player cuts/rewires belong to private Play/player saves.
+Intentional cable edits are validated structurally; original default cable preservation has a
+separate immutable-baseline test. Pending data reaches the same scene geometry adapter, SceneModel
+and native controller, including after Train world binding.
+
+Focused checks: check-device-source-baselines (nine exact default projections/original cables),
+check-device-source-save (nine grouped source saves/factories, new noun/event, actual delayed TRAIN
+signal and source/history isolation). Full optional-field creation and general device creation/
+removal/rebinding and all-controller/network authoring remain unfinished. Sandbox now uses this same path.
+
+
+### Native block and seal creation
+
+All ten native device scenes, including Sandbox, now use Logic -> Devices / Wiring -> Starting
+cables. Sandbox retains its historical sandbox-behavior ID/kind for bundle compatibility. The
+separate limited Sandbox Lab is retired; its regression helpers live under scripts/scene-system/
+legacy-s13 and are not editor/runtime paths.
+
+Choose a native noun template and optional ID, then Add native noun. Templates include eight
+engine classes and four guard toys. Choose a seal template and Add sealed sector to create the
+sector plus its stored content atomically. Noun sector assigns content; removal detaches content
+before deleting an ordinary sector. Renaming a native verb updates the handler key in one edit.
+Original controller-bound IDs/kinds remain protected until their migration/rebinding support exists.
+
+Events uses pending validated device sources and points shared device conversations and cables
+to their actual source documents. It does not evaluate conditions or execute callbacks. The
+broader actor/bot/story graph and general entity/scene creation remain unfinished.
+
+Checks: check-native-blocks (160 schema cases and real native runtime mechanisms),
+check-native-block-save (general Sandbox creation/history/Save/Events/native delayed signal),
+check-device-source-save (ten grouped device sources), and check-event-inspector (pure graph and
+source references). See the execution ledger for scoped browser/raster evidence and remaining gates.
+
+### Native actor bodies (Corner Shop, Library, Laundromat and Warehouse)
+
+Logic -> Interactions & story -> Actors exposes all nine Shop bodies, including background walkers, eight Library bodies, eight Laundromat bodies and four Warehouse bodies.
+Layout owns their positions; actor tuple travel endpoints are offsets from that artwork position.
+Controls cover seeded human appearance/extras/colors, animal/robot family, robot variant/colors/wear/
+face, native action, travel extent/endpoints, speed, facing, pixel size, dimming, parallax, height,
+following/gap, emphasis and city-clock windows/day filters. Dialogue remains in People and the shared
+conversation source. No additional animation or schedule runner is introduced.
+
+The same scene.json actors feed preview, private Play and protected source Save. Original identities,
+target bindings and bands are protected during this first migration to preserve bot save keys.
+Older Shop, Library, Laundromat and Warehouse source documents inherit canonical original actor definitions. Actor creation/removal,
+general actor rebinding and native clipping/controller configuration remain goal work. Private Play
+JSON diagnostics expose actual world actor body values and current schedule visibility.
+
+Library attachments still follow their furniture: moving an armchair moves its seated resident.
+Its actor source retains each original explicit/automatic height and seeded appearance. Following
+is rebound after dialogue presentation merges so the renderer and interaction targets share the
+same final actor objects. Source Save/history/bundle tests cover a moved chair, changed resident and
+SHELF-E appearance/movement, schedules and a following cat.
+
+### Native ordinary content (Shop, Library, Laundromat and Warehouse)
+
+Content & bindings owns width/spawn/use/readable/rest/exit bindings in these four migrated native scenes.
+Use existing artwork anchors and finite offsets for content placement and text heights. Library’s
+Terminal 3 uses the terminal’s seat anchor plus offsets, preserving its existing prompt position
+when its chair-offset property changes. Add/remove/rebind uses, readables, rests and exits through
+this panel. Removing content keeps artwork; remove artwork in Layout after its references move.
+Pending preview, Play, source Save and bundles resolve the same pending source documents.
+
+Goals & time creates/removes objectives and story-clock milestones in registered manifest scenes.
+Their dedicated detail entries edit text, targets, conditions and minutes. The final entry is an
+unconditional fallback; new conditional entries insert before it. Removing the fallback promotes
+the preceding entry. New conditions start as all-of-zero (always); author the desired flag condition.
+Removing all entries restores the scene’s default goal/time policy. Arrival can enable separate touch
+pages. Library’s existing native LAN/catalog permissions and source-owned actor identities remain
+protected, while ordinary shared commands, events, flags, state and conversations can be added.
+
+Laundromat now uses the same body compiler and manifest bindings, including its outside walkers.
+Its original soap purchase and native SUDS ownership remain protected while ordinary content and
+shared gameplay vocabulary can be extended. The washer state machine and its render snapshot remain
+registered native controller code; their full controller/lifecycle authoring is still goal work.
+
+Registered artwork can declare bindingIdentity=presentation when its named visual inputs carry no
+instance-owned simulation state. This is trusted implementation metadata, never an editable document
+permission. The composer and source Save then allow deleting that consumer, subject to native scene,
+attachment and pending content-reference validation. Retained bound instances keep their exact binding
+identity. Laundromat's snapshot consumers use this contract; original required washer/device/actor/
+window/controller instances and types remain protected. The Save regression verifies optional soap/
+notice/sock/door removal after rebind, plus rejection of controller deletion/replacement, retained
+binding substitution and an attempted permission forged in document data.
+
+The actual Layout Delete/Duplicate actions use the same presentation-ownership rule as imports and
+protected Save. Duplicating snapshot-consuming artwork creates artwork only; it does not create a
+second device/controller. Retained original bound instances still cannot silently change bindings.
+
+Private Play installs error reporting before bundled module initialization. Errors reach the editor
+and dispose the frame; opaque-origin browser errors may be reported only as Script error. A loading
+watchdog now reports that the game is still loading after 15 seconds and keeps its frame alive. It
+can subsequently become Playing, or the user can Stop. A real 18-second script-delay fixture verified
+both phases on the same frame and disposal on Stop; an injected initialization failure verified error
+reporting and frame removal. Harness: .scene-system/delayed-play-check/serve.py (4207 delay,4208 fault).
+
+Warehouse uses the same source actor/content/milestone controls. Its patrol, dock attachments, lights,
+van caster and wall shadow retain their original defaults. The old Warehouse layout projection is now
+a paint-comparison fixture under scripts/scene-system, not a shipping gameplay path. The native scene
+still owns ambient/shadow preparation; complete environment authoring remains goal work.
+
+The common response-height binding can enable responseAboveFloor (typed control: response override
+above floor only). It requires a numeric response height; at floor level the override is omitted so
+the regular default applies. Above the floor the offset is added to the resolved anchor height.
+Warehouse’s original door uses offset0 with this policy: default response height at floor level,
+response at the door elevation when raised. Existing numeric response-height bindings are unchanged.
+
+All four native actor migrations use compileSceneActors. It binds source bodies, dialogue IDs and
+follow links to the same actor objects before rendering or gameplay, with no per-scene merge runner.
+
+### Stable actor interaction order
+
+Logic -> Actors -> Actor earlier/later changes interaction priority in Shop,Library,Laundromat and
+Warehouse. Artwork drawing order remains in Layout. Original actor/target/band identities remain
+protected during this migration; original array order is no longer a save-compatibility requirement.
+
+Actor source reaction keys are explicit compatibility identities for the original world actors.
+They retain the existing bot slot/name cursor keys. Native Character metadata remains unchanged:
+runtime identity is held outside its enumerable fields, and reconstructed when source compiles.
+Missing reaction fields in older source bundles are restored by canonical actor ID, independently
+of the supplied order. New generic source actors default to an actor-ID namespace instead of a slot.
+Malformed/colliding identities and edits to original reaction keys are rejected. Entity creation/
+removal/rebinding and the remaining native-scene migrations are still goal work.
+
+Private Play now appends its sandboxed frame before assigning an absolute game URL, with explicit
+loading=eager. The sandbox, source validation and private storage boundaries remain unchanged. An
+observed non-navigating about:blank frame prompted this change; three native reorder/start/stop cycles
+subsequently passed. This is scoped navigation/lifecycle evidence, not the complete all-scene audit.
+
+
+Native actor collections in Shop, Library, Laundromat, Warehouse and Sandbox are editable under
+**Logic → Interactions & story → Actor collection**. Create actors there so their body, artwork
+and optional conversation are saved together. Select an actor for Duplicate/Remove, conversation
+ownership, placement parent/anchor/offsets and world/background participation. Layout controls its
+placement and drawing order; actor list order controls interaction priority. Clear follower or other
+source references before removing their target. Original surviving actors retain old save identities.
+Other native scenes still need this migration; this is not full19-scene editor acceptance.

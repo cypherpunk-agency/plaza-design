@@ -661,11 +661,8 @@
     },
     {
       "id": "seat-rider0-0",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 0,
-        "sit": true,
         "actor": "seat-rider0-0"
       },
       "placement": {
@@ -679,16 +676,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider0-0.pose"
       }
     },
     {
       "id": "seat-rider0-1",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 1,
-        "sit": true,
         "actor": "seat-rider0-1"
       },
       "placement": {
@@ -702,16 +696,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider0-1.pose"
       }
     },
     {
       "id": "seat-rider1-0",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 2,
-        "sit": true,
         "actor": "seat-rider1-0"
       },
       "placement": {
@@ -725,16 +716,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider1-0.pose"
       }
     },
     {
       "id": "seat-rider1-1",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 3,
-        "sit": true,
         "actor": "seat-rider1-1"
       },
       "placement": {
@@ -748,16 +736,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider1-1.pose"
       }
     },
     {
       "id": "seat-rider2-0",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 4,
-        "sit": true,
         "actor": "seat-rider2-0"
       },
       "placement": {
@@ -771,16 +756,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider2-0.pose"
       }
     },
     {
       "id": "seat-rider2-1",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 5,
-        "sit": true,
         "actor": "seat-rider2-1"
       },
       "placement": {
@@ -794,16 +776,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider2-1.pose"
       }
     },
     {
       "id": "seat-rider3-0",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 6,
-        "sit": true,
         "actor": "seat-rider3-0"
       },
       "placement": {
@@ -817,16 +796,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider3-0.pose"
       }
     },
     {
       "id": "seat-rider3-1",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 7,
-        "sit": true,
         "actor": "seat-rider3-1"
       },
       "placement": {
@@ -840,16 +816,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider3-1.pose"
       }
     },
     {
       "id": "seat-rider4-0",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 8,
-        "sit": true,
         "actor": "seat-rider4-0"
       },
       "placement": {
@@ -863,16 +836,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider4-0.pose"
       }
     },
     {
       "id": "seat-rider4-1",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 9,
-        "sit": true,
         "actor": "seat-rider4-1"
       },
       "placement": {
@@ -886,16 +856,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider4-1.pose"
       }
     },
     {
       "id": "seat-rider5-0",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 10,
-        "sit": true,
         "actor": "seat-rider5-0"
       },
       "placement": {
@@ -909,16 +876,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider5-0.pose"
       }
     },
     {
       "id": "seat-rider5-1",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "seat",
-        "slot": 11,
-        "sit": true,
         "actor": "seat-rider5-1"
       },
       "placement": {
@@ -932,15 +896,13 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.seat-rider5-1.pose"
       }
     },
     {
       "id": "standing-rider0",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "standing",
-        "slot": 12,
         "actor": "standing-rider0"
       },
       "placement": {
@@ -950,15 +912,13 @@
       "order": 53,
       "pass": "backdrop",
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.standing-rider0.pose"
       }
     },
     {
       "id": "standing-rider1",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "standing",
-        "slot": 13,
         "actor": "standing-rider1"
       },
       "placement": {
@@ -968,15 +928,13 @@
       "order": 54,
       "pass": "backdrop",
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.standing-rider1.pose"
       }
     },
     {
       "id": "standing-rider2",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "standing",
-        "slot": 14,
         "actor": "standing-rider2"
       },
       "placement": {
@@ -986,16 +944,13 @@
       "order": 55,
       "pass": "backdrop",
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.standing-rider2.pose"
       }
     },
     {
       "id": "suit",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "regular",
-        "kind": "suit",
-        "sit": true,
         "actor": "suit"
       },
       "placement": {
@@ -1005,16 +960,13 @@
       "order": 56,
       "pass": "backdrop",
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.suit.pose"
       }
     },
     {
       "id": "courier",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "regular",
-        "kind": "courier",
-        "sit": false,
         "actor": "courier"
       },
       "placement": {
@@ -1024,16 +976,13 @@
       "order": 57,
       "pass": "backdrop",
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.courier.pose"
       }
     },
     {
       "id": "elder",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "regular",
-        "kind": "elder",
-        "sit": true,
         "actor": "elder"
       },
       "placement": {
@@ -1043,16 +992,13 @@
       "order": 58,
       "pass": "backdrop",
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.elder.pose"
       }
     },
     {
       "id": "punk",
-      "type": "train.rider",
+      "type": "actor.prepared",
       "props": {
-        "mode": "regular",
-        "kind": "punk",
-        "sit": true,
         "actor": "punk"
       },
       "placement": {
@@ -1062,7 +1008,7 @@
       "order": 59,
       "pass": "backdrop",
       "bindings": {
-        "frame": "train.frame"
+        "pose": "actor.punk.pose"
       }
     },
     {

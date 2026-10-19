@@ -1,42 +1,54 @@
-/**
- * The city's street plan (CITY.md, "The map"): the coast, the Spire's island, the canal, the
- * avenues, and one continuous street network traced through a direction field. Pure geometry, no
- * drawing: citymap.ts draws it. Plan units (city.ts `MAP_W` × `MAP_H`): x east, y south; the sea
- * lies east of the coast.
- *
- * How the streets are made (`plan()`, once, lazily, the same every time: no randomness but a hash):
- * - A **direction field** flows over the whole city: a sum of doubled-angle vectors, one term per
- *   district's character (Downtown a gently warped grid with a ring round Circle Park, the market's
- *   skew, the Galleria planned on a diagonal, streets following the shore and the canal, the Fringe
- *   loose, the Skyport a military grid).
- * - The canal's embankments and the avenues go in first. Then streets are traced from seeds (nearest
- *   Downtown first), along the field (family 0) and across it (family 1), stopping at water or when
- *   they come too close to a street of their own family (a spatial hash; `sep` per district).
- * - **No dead ends**: each end carries on, bending with the field, until it meets another street,
- *   the shore or the canal's bank (or it is left as it was if it meets nothing).
- * - Streets are smoothed (Chaikin, twice). Streets never cross water; only the avenues cross the
- *   canal, on bridges.
- * - Towers stand back from the streets, fewer and bigger, their height by the district's density.
- *
- * `planProblems()` is part of the build's data check: every place on the map stands on land in its
- * own district and inside its district's frame.
- */
+import * as defaultCity from './city';
+import type {CityModel} from './city';
+import type {DistrictId} from './city';
 
-import { DISTRICT_MAP, DISTRICTS, MAP_H, MAP_W, PAD_MAP, PLACE_MAP, PLACES, STAND_IDS, STATION_MAP, STATIONS, placeOf, type DistrictId } from './city';
 
 export type Pt = [number, number];
 
-/** The shore, north to south; the sea lies east of it. */
-export const COAST: Pt[] = [[700, 0], [690, 60], [660, 92], [650, 150], [700, 188], [740, 230], [736, 290], [760, 340], [790, 390]];
-/** The Spire's island in the bay. */
-export const ISLE = { x: 770, y: 120, r: 26 };
-/** The canal, from the west into the bay, and its width. */
-export const CANAL: Pt[] = [[0, 300], [90, 292], [160, 310], [230, 300], [300, 318], [390, 306], [470, 318], [540, 304], [600, 320], [660, 330], [720, 334], [800, 338]];
-export const CANAL_W = 8;
 
 /** The avenues: long, continuous, curving through the districts. `ring`: the highway. */
 export interface Avenue { pts: Pt[]; w: number; name: string; ring?: boolean }
-export const AVENUES: Avenue[] = [
+
+
+/** A street: its points, its district (where it was seeded), its width. `bank`: an embankment along the canal. */
+export interface Street { pts: Pt[]; d: DistrictId; w: number; bank?: boolean }
+
+/** A tower's footprint: centre, the angle it is turned to, its size, district and a hash (its height and windows). */
+export interface Tower { x: number; y: number; th: number; s: number; d: DistrictId; k: number }
+
+/** An avenue cut into one piece per district it runs through (so each piece can be drawn as that district is known). */
+export interface AvenuePiece { pts: Pt[]; w: number; d: DistrictId; ring: boolean; name: string }
+
+/** Where an avenue crosses the canal: a bridge's railing posts (point, the avenue's normal, half its width). */
+export interface Bridge { x: number; y: number; nx: number; ny: number; hw: number; d: DistrictId }
+
+export interface Plan {
+  streets: Street[];
+  towers: Tower[];
+  avenues: AvenuePiece[];
+  bridges: Bridge[];
+  /** The plan in cells of `cell` units: each cell's district (its index in DISTRICTS, +1), 0 for water. */
+  cells: Uint8Array; cell: number; cols: number; rows: number;
+  /** How long the trace took (ms), for the curious. */
+  ms: number;
+}
+/** Instance-owned lookup/caches; the shipping facade uses unchanged default inputs. */
+export function createCityPlan(world:CityModel=defaultCity){
+ const {DISTRICT_MAP,DISTRICTS,MAP_H,MAP_W,PAD_MAP,PLACE_MAP,PLACES,STAND_IDS,STATION_MAP,STATIONS,placeOf}=world;
+
+
+/** The shore, north to south; the sea lies east of it. */
+ const COAST: Pt[] = [[700, 0], [690, 60], [660, 92], [650, 150], [700, 188], [740, 230], [736, 290], [760, 340], [790, 390]];
+
+/** The Spire's island in the bay. */
+ const ISLE = { x: 770, y: 120, r: 26 };
+
+/** The canal, from the west into the bay, and its width. */
+ const CANAL: Pt[] = [[0, 300], [90, 292], [160, 310], [230, 300], [300, 318], [390, 306], [470, 318], [540, 304], [600, 320], [660, 330], [720, 334], [800, 338]];
+
+ const CANAL_W = 8;
+
+ const AVENUES: Avenue[] = [
   { pts: [[0, 236], [120, 230], [250, 226], [400, 228], [520, 224], [620, 206], [700, 196]], w: 5, name: 'AVENUE 0' },
   { pts: [[318, 30], [322, 120], [330, 228], [338, 320], [346, 390]], w: 4, name: 'REGISTRY ROAD' },
   { pts: [[130, 80], [190, 150], [228, 228], [246, 300], [250, 390]], w: 3, name: 'OLD QUARTER LANE' },
@@ -46,21 +58,25 @@ export const AVENUES: Avenue[] = [
   { pts: [[14, 132], [120, 114], [240, 98], [330, 104], [420, 92], [520, 66], [640, 52], [688, 46]], w: 6, name: 'THE RING', ring: true },
   { pts: [[62, 124], [56, 96], [50, 70]], w: 3, name: 'LAUNCH ROAD' },
 ];
+
 /** Circle Park, Downtown's roundabout. */
-export const PARK = { x: 395, y: 205, rx: 12, ry: 9 };
+ const PARK = { x: 395, y: 205, rx: 12, ry: 9 };
+
 /** The Skyport's fence (x, y, w, h). */
-export const FENCE: [number, number, number, number] = [6, 14, 96, 104];
+ const FENCE: [number, number, number, number] = [6, 14, 96, 104];
+
 
 /** The shore's x at a plan y. */
-export function coastX(y: number) {
+ function coastX(y: number) {
   for (let i = 1; i < COAST.length; i++) {
     const [x0, y0] = COAST[i - 1], [x1, y1] = COAST[i];
     if (y >= y0 && y <= y1) return x0 + ((x1 - x0) * (y - y0)) / (y1 - y0);
   }
   return 790;
 }
+
 /** How far a point is from the canal's middle line. */
-export function canalDist(px: number, py: number) {
+ function canalDist(px: number, py: number) {
   let best = 1e9;
   for (let i = 0; i < CANAL.length - 1; i++) {
     const [a, b] = CANAL[i], [c, d] = CANAL[i + 1], dx = c - a, dy = d - b;
@@ -70,15 +86,19 @@ export function canalDist(px: number, py: number) {
   }
   return Math.sqrt(best);
 }
+
 /** Dry land of the city (not the sea, not the canal, not the island). */
-export const onLand = (px: number, py: number) => px > 3 && py > 3 && py < MAP_H - 3 && px < coastX(py) - 3 && canalDist(px, py) > CANAL_W / 2 + 1.5;
-export const onIsle = (px: number, py: number) => Math.hypot(px - ISLE.x, py - ISLE.y) <= ISLE.r;
+ const onLand = (px: number, py: number) => px > 3 && py > 3 && py < MAP_H - 3 && px < coastX(py) - 3 && canalDist(px, py) > CANAL_W / 2 + 1.5;
+
+ const onIsle = (px: number, py: number) => Math.hypot(px - ISLE.x, py - ISLE.y) <= ISLE.r;
+
 
 /** The districts with streets of their own (a centre on the plan). */
 const GROUND = DISTRICTS.map((d) => d.id).filter((d) => DISTRICT_MAP[d].centre) as DistrictId[];
 
+
 /** The district a point of the plan belongs to: the island is the Spire's, the land is shared out to the nearest centre. */
-export function districtAt(px: number, py: number): DistrictId {
+ function districtAt(px: number, py: number): DistrictId {
   if (onIsle(px, py)) return 'spire';
   let best: DistrictId = 'downtown', bd = 1e9;
   for (const k of GROUND) {
@@ -87,6 +107,7 @@ export function districtAt(px: number, py: number): DistrictId {
   }
   return best;
 }
+
 /** How far apart the streets run here: each district's `sep`, blended softly between centres. */
 function sepAt(px: number, py: number) {
   let s = 0, w = 0;
@@ -97,13 +118,15 @@ function sepAt(px: number, py: number) {
   return w ? s / w : 14;
 }
 
+
 /** A hash of a number to 0..1 (integer arithmetic, so every browser traces the same streets). */
-export function hash(n: number) {
+ function hash(n: number) {
   let h = Math.imul(Math.round(n * 1024) ^ 0x2c1b3c6d, 0x297a2d39);
   h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
   h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
+
 
 /** The direction field: the angle streets run along at a point (the cross streets run at right angles to it). */
 function fieldAt(px: number, py: number) {
@@ -122,31 +145,15 @@ function fieldAt(px: number, py: number) {
   return Math.atan2(s, c) / 2;
 }
 
-/** A street: its points, its district (where it was seeded), its width. `bank`: an embankment along the canal. */
-export interface Street { pts: Pt[]; d: DistrictId; w: number; bank?: boolean }
-/** A tower's footprint: centre, the angle it is turned to, its size, district and a hash (its height and windows). */
-export interface Tower { x: number; y: number; th: number; s: number; d: DistrictId; k: number }
-/** An avenue cut into one piece per district it runs through (so each piece can be drawn as that district is known). */
-export interface AvenuePiece { pts: Pt[]; w: number; d: DistrictId; ring: boolean; name: string }
-/** Where an avenue crosses the canal: a bridge's railing posts (point, the avenue's normal, half its width). */
-export interface Bridge { x: number; y: number; nx: number; ny: number; hw: number; d: DistrictId }
-export interface Plan {
-  streets: Street[];
-  towers: Tower[];
-  avenues: AvenuePiece[];
-  bridges: Bridge[];
-  /** The plan in cells of `cell` units: each cell's district (its index in DISTRICTS, +1), 0 for water. */
-  cells: Uint8Array; cell: number; cols: number; rows: number;
-  /** How long the trace took (ms), for the curious. */
-  ms: number;
-}
 
 let PLAN: Plan | null = null;
 
+
 /** The street plan, traced on first use and kept. */
-export function plan(): Plan {
+ function plan(): Plan {
   return (PLAN ??= build());
 }
+
 
 function build(): Plan {
   const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
@@ -331,8 +338,9 @@ function build(): Plan {
   return { streets, towers, avenues, bridges, cells, cell: CELL, cols, rows, ms };
 }
 
+
 /** What the build checks of the plan: every place, station and pad on land, in its own district, inside its frame. */
-export function planProblems(): string[] {
+ function planProblems(): string[] {
   const out: string[] = [];
   const at = (what: string, pt: [number, number], d: DistrictId | null) => {
     if (!onLand(pt[0], pt[1])) out.push(`${what} at ${pt.join(',')} is not on land (the sea or the canal)`);
@@ -347,3 +355,7 @@ export function planProblems(): string[] {
   for (const s of STAND_IDS) at(`pad "${s}"`, PAD_MAP[s], null);
   return out;
 }
+ return {COAST,ISLE,CANAL,CANAL_W,AVENUES,PARK,FENCE,coastX,canalDist,onLand,onIsle,districtAt,hash,plan,planProblems};
+}
+const shipping=createCityPlan();
+export const {COAST,ISLE,CANAL,CANAL_W,AVENUES,PARK,FENCE,coastX,canalDist,onLand,onIsle,districtAt,hash,plan,planProblems}=shipping;

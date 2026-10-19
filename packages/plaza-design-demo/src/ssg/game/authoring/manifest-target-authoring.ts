@@ -1,0 +1,12 @@
+import type {Resolved} from '../art';
+import {targetInstance,type ManifestTarget} from '../engine/gameplay/manifest-contract';
+import type {TypedForm} from './typed-form';
+/** Typed point/anchor controls shared by native and catalogue scenes. */
+export function renderManifestTarget(form:TypedForm,host:HTMLElement,label:string,target:ManifestTarget,rows:readonly Resolved[],change:(target:ManifestTarget)=>void,instances=rows.map(r=>r.instance.id),textHeights:'both'|'prompt'|'none'='both'){
+ const object=()=>typeof target==='string'?{instance:target}:structuredClone(target),row=rows.find(r=>r.instance.id===targetInstance(target));
+ form.select(host,label+' instance',instances,targetInstance(target),instance=>{if(typeof target==='string'){change(instance);return;}const next=object(),replacement=rows.find(r=>r.instance.id===instance);next.instance=instance;if(next.anchor&&!replacement?.element.anchors(replacement.props,replacement.state)[next.anchor])delete next.anchor;change(next);});
+ const anchors=row?Object.keys(row.element.anchors(row.props,row.state)):[];
+ form.select(host,label+' anchor',['',...anchors],typeof target==='string'?'':target.anchor??'',anchor=>{const next=object();if(anchor)next.anchor=anchor;else delete next.anchor;change(next);});
+ for(const key of ['x','h'] as const)form.decimal(host,label+(key==='x'?' horizontal offset':' height offset'),object()[key]??0,value=>{const next=object();if(value)next[key]=value;else delete next[key];change(next);},-10000,10000);
+ for(const key of ['promptH','responseH'] as const){if(textHeights==='none'||key==='responseH'&&textHeights==='prompt')continue;const name=key==='promptH'?'prompt height':'response height',value=object()[key];form.check(host,label+' custom '+name,value!==undefined,on=>{const next=object();if(on)next[key]=60;else{delete next[key];if(key==='responseH')delete next.responseAboveFloor;else delete next.promptAboveFloor;}change(next);});if(value!==undefined)form.decimal(host,label+' '+name,value,value=>{const next=object();next[key]=value;change(next);},-10000,10000);if(key==='promptH'&&value!==undefined)form.check(host,label+' prompt override above floor only',!!object().promptAboveFloor,on=>{const next=object();if(on)next.promptAboveFloor=true;else delete next.promptAboveFloor;change(next);});if(key==='responseH'&&value!==undefined)form.check(host,label+' response override above floor only',!!object().responseAboveFloor,on=>{const next=object();if(on)next.responseAboveFloor=true;else delete next.responseAboveFloor;change(next);});}
+}

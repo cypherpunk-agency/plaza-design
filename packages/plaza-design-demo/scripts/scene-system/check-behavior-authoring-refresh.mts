@@ -1,8 +1,8 @@
 /** Focused mounted-handle lifetime proof; DOM paint is separately exercised in browser. */
 import assert from 'node:assert/strict';
 import {SANDBOX} from '../../src/ssg/game/data';
-import {cloneBehavior,behaviorNoun} from '../../src/ssg/game/authoring/behavior-validation';
-import {mountBehaviorWorkbench,type BehaviorWorkbenchHandle} from '../../src/ssg/game/authoring/behavior-authoring';
+import {cloneBehavior,behaviorNoun} from './legacy-s13/behavior-validation';
+import {mountBehaviorWorkbench,type BehaviorWorkbenchHandle} from './legacy-s13/behavior-authoring';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 class Node {children:Node[]=[];attrs:Record<string,string>={};value='';textContent='';parent?:Node;onchange?:()=>void;onclick?:()=>void;append(...nodes:(Node|string)[]){for(const n of nodes){const node=typeof n==='string'?new Node():n;node.parent=this;this.children.push(node);}}replaceChildren(...nodes:Node[]){this.children=[];this.append(...nodes);}setAttribute(k:string,v:string){this.attrs[k]=v;}remove(){if(this.parent)this.parent.children=this.parent.children.filter(c=>c!==this);}}
 Object.assign(globalThis,{document:{createElement:()=>new Node(),createTextNode:(text:string)=>{const n=new Node();n.textContent=text;return n;}}});

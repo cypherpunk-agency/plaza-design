@@ -1,6 +1,13 @@
+import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
+import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
+import {content} from './scene-document';
+import {type SceneDocument} from '../../engine/gameplay/scene-document';
+import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
+import {compileNativeTargets} from '../../engine/gameplay/native-targets';
+import type {GameplayDefinition} from '../../engine/gameplay/types';
 import type {SceneData} from '../../data';
 import type { Composition,Environment } from '../../art/core/composition';
-import { sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxLayout,sandboxStations,validateSandboxComposition,type SandboxRenderOptions } from './composition';
+import { sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxStations,validateSandboxComposition,type SandboxRenderOptions } from './composition';
 /**
  * The sandbox: REGISTRY QA BAY 3, a test hall for the engine, outside the
  * story. Sudo only (`?sudo`: LEVELS › SANDBOX, or `?sudo&play=sandbox`); it is
@@ -17,77 +24,21 @@ import { sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxLayout,sand
  */
 
 import { SANDBOX } from "../../data/index";
-import type { SceneDef, SceneReadable } from "../kit";
-import { SANDBOX_RULES, CHIP } from './rules';
-import { drawSandbox, PEOPLE, SANDBOX_W, SB, STATIONS, sandboxPeople } from './scene';
+import type { SceneDef } from "../kit";
+import { SANDBOX_RULES } from './rules';
+import { drawSandbox,sandboxActors,sandboxFrameEnvironment } from './scene';
 
 export { SANDBOX_RULES } from './rules';
 
-/** How to test each station: the card at its foot (E). Dry: it is a Registry test plan. */
-const CARDS: Record<number, string[]> = {
-  1: ['NOUN KINDS. ONE DEVICE PER KIND, LEFT TO RIGHT: SENSE (MOTION SENSOR), ACT (TEST LAMP), STORE (MEMO SCREEN), LINK (WALL PORT), DAEMON (UNIT 7), CLOCK (METRONOME), LOG (TAPE RECORDER).',
-    'TEST: TAP EACH. WAVE AT THE SENSOR: ITS PRE-WIRED CABLE SWITCHES THE LAMP. TALK TO UNIT 7. STOP THE METRONOME IN HACK VIEW. OPEN THE RECORDER AND WATCH ITS TRACE.'],
-  2: ['CABLES. THE TEST BUTTON FANS OUT: ONE EVENT, THREE CABLES (BEACON, HORN, COUNTER). THE COUNTER\'S IS A FIXED CONDUIT: IT CANNOT BE CUT.',
-    'CHAIN: WIRE PLATE → TIMER (WAIT 2 S) → SWITCH (ON, PASS) → HATCH OPEN. THE HATCH IS PRE-WIRED TO THE FAN. TIMER AND SWITCH ARE IN THE LOGIC DRAWER.'],
-  3: ['GUARDS. QA LOGIN: PASSWORD, 2 TRIES, LOCKS 5 S, A NEAR MISS ("bay3"). THE STICKY NOTE PUTS BOTH ON YOUR KEYRING.',
-    'ONE GUARD PER LOCK TOY: SHIELD LOCKER (RINGS), CIPHER BOX (SHIFT 3), CRYPTEX CASE (A 4-LETTER WORD), MORSE LAMP (OK). PROBE EACH IN HACK VIEW. EACH TAG HAS THE ANSWER.'],
-  4: ['SEALED SECTORS. SECURE CABINET: DRAWER A, KEY SEAL (CUT A KEY CHIP AT THE CUTTER, DROP IT ON THE DRAWER). DRAWER B, SEQUENCE SEAL: RED, GREEN, BLUE ON THE PANEL, BY CABLE, WITHIN 3 S.',
-    'DRAWER C, CONDITION SEAL: OPENS WHILE THE MAINS LEVER IS UP. OPENED SECTORS ARE SAVED; RESET BAY 3 SHUTS THEM.'],
-  5: ['TRACE. THE AUDIT DESK LOGS YOU AT 20% A SECOND WHILE YOU ARE INSIDE IT. A WRONG PASSWORD ADDS 30%. AT 100% YOU ARE OUT AND IT LOCKS FOR 8 S. THE METER ON THE WALL SHOWS IT.',
-    'WAYS OUT: CUT ITS CABLE TO THE SPOOL, SWITCH ITS LOG OFF, OR LOG IN ("auditor") AND WIPE IT FROM ROOT.'],
-  6: ['THE NET. THE NET JACK IS ON THE TEST LAN. IT KNOWS QA-SRV 01; A SCAN FINDS QA-PRN 2. QA-VAULT IS ONE HOP ON, THROUGH QA-SRV 01\'S OWN LINK.',
-    'PING QA-SRV 01: ITS CABLE RINGS THE BELL. PRINT ON QA-PRN 2: THE LABEL PRINTER PRINTS. THE TEST LAN IS ONLY REACHABLE FROM THIS BAY.'],
-  7: ['WATCHDOG. QA-WD WALKS STAMP PRESS → CONVEYOR → SIREN: 3.5 S ON EACH, 1.5 S BETWEEN. THE ONE IT SITS ON IS FROZEN: NO VERBS, NO SIGNALS. THE RED LAMP OVER A DEVICE SAYS WHERE IT IS.',
-    'EACH OF THE THREE HAS A WATCHDOG NOUN: WIRE ITS "leaves" TO SOMETHING TO ACT WHILE IT IS AWAY.'],
-  8: ['EVERYDAY USE. THE COFFEE MACHINE HAS THE FULL POPUP: THREE EVERYDAY ACTIONS, JACK IN, HACK IT.',
-    'ITEMS: TAKE A BLANK CHIP FROM THE DISPENSER (YOU CARRY IT: HELD), INSERT IT AT THE CHIP READER. TOKENS: THE TEST TILL TAKES ONE PER PAYMENT.'],
-  9: ['PEOPLE, ROBOTS, ANIMALS. TALK TO THE QA LEAD AND THE NIGHT TECH (THE TECH ANSWERS DIFFERENTLY BY NIGHT AND IN RAIN). TALK TO TEST UNIT 0 WHILE IT WORKS. PET THE CAT.'],
-  10: ['TIME AND WEATHER. THE NIGHT LIGHT IS PERMITTED 18:00–06:00 ONLY, AND GOES OFF BY ITSELF AT DAYBREAK. THE VENT REFUSES RAIN, STORM AND SMOG, AND SHUTS ITSELF WHEN THEY COME.',
-    'THE WEATHER SENSOR READS THE DISTRICT\'S WEATHER. SIT ON THE BENCH TO WAIT UNTIL LATER. SUDO\'S TIME CONTROL AND WEATHER OVERRIDE WORK HERE.'],
-};
-
-const cards: SceneReadable[] = STATIONS.map((s) => ({
-  id: 'card' + s.n, x: s.sign, name: 'BAY 3·' + String(s.n).padStart(2, '0') + ' · ' + s.title, label: '[E] TEST CARD', promptH: 66, pages: CARDS[s.n],
-}));
-
-/** The bay, complete: data, rules, drawing, its people, the test cards, the reset console. */
-const baseSandbox: SceneDef = {
-  id: 'sandbox',
-  name: 'the sandbox',
-  width: SANDBOX_W,
-  spawn: SB.spawn,
-  exits: [{ id: 'out', x: SB.door, to: 'downtown', at: 'metro', label: '[E] EXIT', promptH: 82 }],
-  intro: [
-    'REGISTRY QA BAY 3. Every device in here is under test.',
-    'One bench per thing the system can do. The console by the door puts it all back.',
-  ],
-  data: SANDBOX,
-  rules: SANDBOX_RULES,
-  drawBackdrop: drawSandbox,
-  people: PEOPLE,
-  readables: [
-    { id: 'plan', x: SB.plan, name: 'TEST PLAN · BAY 3', promptH: 104, pages: [
-      'BAY 3 · DEVICES UNDER TEST. STATIONS 01–10, LEFT TO RIGHT: NOUN KINDS, CABLES, GUARDS, SEALED SECTORS, TRACE, THE NET, WATCHDOG, EVERYDAY USE, PEOPLE, TIME AND WEATHER.',
-      'EACH STATION HAS A TEST CARD. RESET BAY 3 RETURNS EVERY DEVICE TO ITS FIRST STATE. TESTERS ARE NOT RESET.',
-    ] },
-    ...cards,
-  ],
-  uses: [
-    { id: 'chips', x: SB.dispenser, label: '[E] TAKE A BLANK CHIP', name: 'BLANK CHIPS', promptH: 100, h: 80, use: (c) => {
-      c.add(CHIP);
-      return ['ONE BLANK CHIP DISPENSED. FREE OF CHARGE. LOGGED.', 'FOR THE CHIP READER, NEXT TO IT.'];
-    } },
-  ],
-  rests: [{ id: 'bench', x: SB.bench, kind: 'bench', promptH: 52 }],
-  targets: (m) => [{ id: 'reset', x: SB.reset, label: m.label('prompt.reset'), promptH: 66 }],
-  use: (id, m, say) => {
-    if (id !== 'reset') return;
-    m.reset();
-    say(m.line('reset.ok'));
-  },
-};
-
 export {drawSandbox,sandboxFrameEnvironment} from './scene';
 export {sandboxArt,sandboxComposition,validateSandboxComposition} from './composition';
-export function sandboxScene(document:Composition=sandboxComposition,state:Environment['state']={},options:SandboxRenderOptions={},data:SceneData=SANDBOX):SceneDef{const doc=validateSandboxComposition(document),SB=sandboxLayout(doc),stations=sandboxStations(doc),rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!;return {...baseSandbox,width:Number(get('hall').props.width),spawn:SB.spawn,data:sandboxDeviceData(data,doc),people:sandboxPeople(doc),exits:baseSandbox.exits.map(exit=>({...exit,x:get('exit-out').placement.x})),readables:baseSandbox.readables!.map(r=>{const p=get(r.id).placement,st=r.id.startsWith('card')?stations[Number(r.id.slice(4))-1]:undefined;return{...r,x:p.x,promptH:(r.promptH??0)+p.h-(r.id==='plan'?98:0),...(st?{name:'BAY 3·'+String(st.n).padStart(2,'0')+' · '+st.title}:{})};}),uses:baseSandbox.uses!.map(u=>({...u,x:SB.dispenser,h:(u.h??0)+get('chip-dispenser').placement.h,promptH:(u.promptH??0)+get('chip-dispenser').placement.h})),rests:baseSandbox.rests!.map(r=>({...r,x:SB.bench,promptH:(r.promptH??0)+get('wait-bench').placement.h})),targets:model=>[{id:'reset',x:SB.reset,label:model.label('prompt.reset'),promptH:66+get('reset').placement.h}],drawBackdrop:(ctx,v,e)=>drawSandbox(ctx,v,e,doc,state,options)};}
+export function sandboxScene(document:Composition=sandboxComposition,state:Environment['state']={},options:SandboxRenderOptions={},data:SceneData=SANDBOX,sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay):SceneDef{
+ const doc=validateSandboxComposition(document),stations=sandboxStations(doc),rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,authored=content.validateScene(sceneDocument,gameplay);
+ const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,omitGroundRestHeight:true}),actors=sandboxActors(doc,authored);
+ return {id:'sandbox',name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],rules:SANDBOX_RULES,gameplay:withSceneConversations(gameplay,authored),...compiled.content,people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:sandboxDeviceData({...data,dialogue:{unit7:nativeDialogue(gameplay,'unit7')}},doc),
+  readables:compiled.content.readables?.map(r=>{const st=r.id.startsWith('card')?stations[Number(r.id.slice(4))-1]:undefined;return {...r,...(st&&r.name===content.scene.readables!.find(v=>v.id===r.id)?.name?{name:'BAY 3·'+String(st.n).padStart(2,'0')+' · '+st.title}:{})};}),
+  ...compileNativeTargets(authored,{reset:get('reset').placement}),
+  drawBackdrop:(ctx,v,e)=>drawSandbox(ctx,v,e,doc,state,options,actors),visualEnvironment:(v,e)=>sandboxFrameEnvironment(v,e,doc,actors),
+ };
+}
 export const sandbox=sandboxScene();

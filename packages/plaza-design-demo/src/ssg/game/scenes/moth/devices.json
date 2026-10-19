@@ -306,5 +306,49 @@
     "notes.read": ["cat notes.txt", "\"notes to self. 1) the record loops every 2 s, the song takes longer than that. one song at a time or it talks over itself. 2) SWITCH: a door for signals. open it when the dog leaves. shut it behind the first song. 3) timers: one beat is 1 s. 4) water Fern.\""],
     "photos.read": ["cat photos", "photos/: \"SPRAT, day 1. (he's a fish. he's fine.)\" · \"karaoke, the usual booth. our song: HIGH, LOW, MIDDLE. yes, the title is the tune. you sang it wrong.\" · \"you, asleep at the noodle stall. the fixer charged you rent.\""],
     "journal.read": ["cat journal.txt", "journal, last entry: \"found something in the Registry I wasn't meant to. a list. you're on it. so am I, now. going where the Registry doesn't look: the water. your pass is in my jacket. the jacket's in washer 3 at the market laundromat. nobody searches a wash cycle. follow the trains. —M\"", "ok"]
+  },
+  "observations": {
+    "aliases": {
+      "uplink": {
+        "kind": "keyHeld",
+        "key": "uplink"
+      },
+      "journalOpen": {
+        "kind": "sectorOpen",
+        "node": "mothpc",
+        "sector": "journal"
+      },
+      "friendnetConnected": {
+        "kind": "nodeConnected",
+        "node": "friendnet"
+      },
+      "mothpcConnected": {
+        "kind": "nodeConnected",
+        "node": "mothpc"
+      },
+      "drawerOpen": {
+        "kind": "sectorOpen",
+        "node": "mothpc",
+        "sector": "drawer"
+      }
+    },
+    "goals": [
+      {
+        "when": "friendnetConnected",
+        "goal": "friendnet"
+      },
+      {
+        "when": "mothpcConnected",
+        "goal": "mothpc"
+      },
+      {
+        "when": "drawerOpen",
+        "goal": "drawer"
+      },
+      {
+        "when": "journalOpen",
+        "goal": "journal"
+      }
+    ]
   }
 }

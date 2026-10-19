@@ -178,20 +178,7 @@ const {X}=geometry;
       return w.line('alarm.box');
     },
 
-    /** The end of Act I: Moth on your deck, the Spire named, the ACT II card, the ferry leaves. */
-    'moth.end': (w) => {
-      const m = w.m;
-      if (m.get('talked')) return null;
-      m.set('talked', true);
-      w.goal('moth');
-      m.flag(ACT1_FLAG); m.flag(SPIRE_FLAG); m.flag(CONTACT_FLAG);
-      player.persist();
-      // the card plays once the talk is closed; when it is over, the ferry has gone
-      player.cutscene?.(ACT2_CUT);
-      m.later(1500, () => { m.set('departed', true); w.changed(); });
-      w.changed();
-      return null;
-    },
+
   };
 
   function tick(w: World) {
@@ -243,11 +230,9 @@ const {X}=geometry;
         'scope.tag.none': 'line', 'scope.tag.wrong': 'line', 'scope.tag.ok': 'line', 'scope.tag.done': 'line',
       },
     },
-    /** P15's own: the alarm cable and the clearance cable from the start, the watchdog on port, crane and ferry, 0451 among the boxes. */
+    /** Controller dependencies: watchdog coverage, cargo identity and tuning. */
     check: (z: SceneData) => {
       const errs: string[] = [];
-      if (!z.cables.some((c) => c.from === ALARM.from && c.to === ALARM.to && c.verb === ALARM.verb && !c.fixed)) errs.push('cables: the alarm cable port.scanner:warm → port.alarm sound must be there from the start, cuttable (P15)');
-      if (!z.cables.some((c) => c.to === 'sts2.spreader' && c.verb === 'lift' && c.from.endsWith('.watchdog:leaves'))) errs.push('cables: STS-2 lifts on the Registry\'s clearance: a pre-wired "<device>.watchdog:leaves → sts2.spreader lift" (P15)');
       for (const d of ['port', 'sts2', 'ferry']) if (!z.watchdog?.route.includes(d)) errs.push(`watchdog: its route must visit ${d} (P15)`);
       if (!z.camera?.crates.some((k) => k.id === z.state.box && k.label === 'NRLU 404 0451')) errs.push('camera.crates: state.box must be the slot that holds NRLU 404 0451 (P15)');
       if (typeof z.tuning.tamperTrace !== 'number') errs.push('tuning.tamperTrace: missing (the watchdog\'s check reads it)');

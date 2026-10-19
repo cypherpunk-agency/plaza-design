@@ -1,6 +1,11 @@
+import {validateMetroSnapshot,type MetroSnapshot} from '../world/transport/metro-snapshot';
+import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
+import * as defaultCity from '../world/city';
+import type {CityModel} from '../world/city';
+import {SCENES,type SceneId} from '../scenes';
 import {ITEMS} from '../scenes/kit';
 
-import {LOGIC,NET,KEYRING,SANDBOX} from '../data';
+import {LOGIC,NET,KEYRING} from '../data';
 
 import {OPENING} from '../story/opening';
 
@@ -10,11 +15,11 @@ import {WEATHER_KINDS,type WeatherKind} from '../world/weather';
 
 import {newSave,type Save} from '../runtime/save';
 
-export const playScenes=['harborShift','sandbox','shop','library','laundromat','market','beach'] as const;
+export const playScenes=Object.keys(SCENES) as SceneId[];
 
 export type PlayScene=typeof playScenes[number];
 
-export interface PlayFixture {id:string;name:string;scene:PlayScene;flags:Record<string,boolean>;items:Record<string,number>;tokens:number;modules:string[];programs:string[];keyring:string[];state:Record<string,string|number|boolean>;day:number;minute:number;seed:number;weather:'forecast'|WeatherKind;clock:'story'|'fixed'|'running';spawn:number|null}
+export interface PlayFixture {metro?:MetroSnapshot;id:string;name:string;scene:PlayScene;flags:Record<string,boolean>;items:Record<string,number>;tokens:number;modules:string[];programs:string[];keyring:string[];state:Record<string,string|number|boolean>;day:number;minute:number;seed:number;weather:'forecast'|WeatherKind;clock:'story'|'fixed'|'running';spawn:number|null}
 
 export interface PlayFixtures {version:1;fixtures:PlayFixture[]}
 
@@ -22,11 +27,11 @@ export interface PlayFixtures {version:1;fixtures:PlayFixture[]}
 
 export function validateFixtureBounds(doc:PlayFixtures,widths:Readonly<Record<string,number>>){for(const f of doc.fixtures)if(f.spawn!==null&&(!Number.isFinite(widths[f.scene])||f.spawn>widths[f.scene]-12))throw new Error('Play fixture '+f.id+': starting X is outside the pending scene');return doc;}
 
-export const fixtureFlags=[...SHIFT_GAMEPLAY.flags,...Object.values(OPENING),'shop:bought'];
+export const fixtureFlags=Array.from(new Set([...SHIFT_GAMEPLAY.flags,...Object.values(OPENING),...Object.values(SCENES).flatMap(s=>s.gameplay?.flags??[]),...Object.values(SCENES).flatMap(s=>s.exits.flatMap(e=>[...(e.requires?[e.requires]:[]),...(e.sets?[e.sets]:[])])),defaultCity.HARBOR_FLAG,'shop:bought','end','pixel']));
 
 export const fixtureModules=LOGIC.modules.map(m=>m.id),fixturePrograms=(NET.programs??[]).map(p=>p.id),fixtureKeys=[...KEYRING.keys()];
 
-export function validatePlayFixtures(value:unknown,single=false):PlayFixtures {
+export function validatePlayFixtures(value:unknown,single=false,additionalScenes:readonly string[]=[]):PlayFixtures {
 
  const fail=(message:string):never=>{throw new Error('Invalid Play fixtures: '+message);};
 
@@ -40,13 +45,14 @@ export function validatePlayFixtures(value:unknown,single=false):PlayFixtures {
 
  const integer=(n:unknown,min:number,max:number)=>{if(!Number.isSafeInteger(n)||Number(n)<min||Number(n)>max)fail('integer range');};
 
- for(const f of doc.fixtures){if(Object.keys(record(f)).sort().join()!==fields)fail('unsupported/missing fields');if(typeof f.id!=='string'||! /^[a-z][a-z0-9-]{0,63}$/.test(f.id)||ids.has(f.id))fail('fixture ID');ids.add(f.id);if(typeof f.name!=='string'||!f.name.trim()||f.name.length>120)fail('name');if(!playScenes.includes(f.scene))fail('scene');integer(f.tokens,0,1000000);integer(f.day,1,10000);integer(f.minute,0,1439);integer(f.seed,0,2147483647);if(f.spawn!==null){if(!Number.isFinite(f.spawn)||f.spawn<12||f.spawn>100000)fail('spawn');}if(!['story','fixed','running'].includes(f.clock)||!['forecast',...WEATHER_KINDS].includes(f.weather))fail('clock/weather');
+ for(const f of doc.fixtures){if(Object.keys(record(f)).filter(k=>k!=='metro').sort().join()!==fields)fail('unsupported/missing fields');if(typeof f.id!=='string'||! /^[a-z][a-z0-9-]{0,63}$/.test(f.id)||ids.has(f.id))fail('fixture ID');ids.add(f.id);if(typeof f.name!=='string'||!f.name.trim()||f.name.length>120)fail('name');if(!playScenes.includes(f.scene)&&!additionalScenes.includes(f.scene))fail('scene');integer(f.tokens,0,1000000);integer(f.day,1,10000);integer(f.minute,0,1439);integer(f.seed,0,2147483647);if(f.spawn!==null){if(!Number.isFinite(f.spawn)||f.spawn<12||f.spawn>100000)fail('spawn');}if(!['story','fixed','running'].includes(f.clock)||!['forecast',...WEATHER_KINDS].includes(f.weather))fail('clock/weather');
 
+  if(f.metro!==undefined)validateMetroSnapshot(f.metro);
   for(const[k,v]of Object.entries(record(f.flags)))if(!fixtureFlags.includes(k)||typeof v!=='boolean')fail('flag');
 
   for(const[k,v]of Object.entries(record(f.items))){if(!Object.prototype.hasOwnProperty.call(ITEMS,k))fail('item');integer(v,0,1000000);}
 
-  for(const[k,v]of Object.entries(record(f.state))){if(f.scene!=='sandbox'||!Object.prototype.hasOwnProperty.call(SANDBOX.state,k)||typeof v!==typeof SANDBOX.state[k]||typeof v==='number'&&(!Number.isFinite(v)||Math.abs(v)>1000000)||typeof v==='string'&&v.length>500)fail('native scene state');}
+  for(const[k,v]of Object.entries(record(f.state))){const initial=SCENES[f.scene]?.data?.state;if(!initial||!Object.prototype.hasOwnProperty.call(initial,k)||typeof v!==typeof initial[k]||typeof v==='number'&&(!Number.isFinite(v)||Math.abs(v)>1000000)||typeof v==='string'&&v.length>500)fail('native scene state');}
 
   for(const[name,allowed]of [['modules',fixtureModules],['programs',fixturePrograms],['keyring',fixtureKeys]] as const){const list=f[name];if(!Array.isArray(list)||new Set(list).size!==list.length||list.some(v=>!allowed.includes(v)))fail(name);}
 
@@ -58,10 +64,13 @@ export function validatePlayFixtures(value:unknown,single=false):PlayFixtures {
 
 }
 
-export function fixtureSave(fixture:PlayFixture):Save {const f=validatePlayFixtures({version:1,fixtures:[fixture]},true).fixtures[0],save=newSave();save.scene=f.scene;save.flags={...f.flags};save.items={...f.items};save.tokens=f.tokens;save.modules=[...f.modules];save.programs=[...f.programs];save.keyring=[...f.keyring];save.clock={day:f.day,min:f.minute,seed:f.seed};return save;}
+export function fixtureSave(fixture:PlayFixture,additionalScenes:readonly string[]=[]):Save {const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,additionalScenes).fixtures[0],save=newSave();save.scene=f.scene;save.flags={...f.flags};save.items={...f.items};save.tokens=f.tokens;save.modules=[...f.modules];save.programs=[...f.programs];save.keyring=[...f.keyring];save.clock={day:f.day,min:f.minute,seed:f.seed};return save;}
 
 
 
 /** Also supplies defaults when an older portable bundle contains only the original two scenes. */
 
-export function defaultPlayFixture(scene:PlayScene):PlayFixture {return {id:scene==='harborShift'?'harbor-start':scene+'-start',name:scene==='harborShift'?'Harbor Shift · start':scene==='sandbox'?'Sandbox · QA start':scene[0].toUpperCase()+scene.slice(1)+' · start',scene,flags:{},items:{},tokens:scene==='harborShift'?0:5,modules:scene==='harborShift'?['timer.so']:['timer.so','switch.so'],programs:scene==='harborShift'?[]:['scan.so'],keyring:[],state:{},day:1,minute:scene==='harborShift'?1120:580,seed:3,weather:'forecast',clock:scene==='harborShift'?'story':'fixed',spawn:null};}
+export function defaultPlayFixture(scene:PlayScene):PlayFixture {return {id:scene==='harborShift'?'harbor-start':scene.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'-start',name:scene==='harborShift'?'Harbor Shift · start':scene==='sandbox'?'Sandbox · QA start':scene[0].toUpperCase()+scene.slice(1)+' · start',scene,flags:{},items:{},tokens:scene==='harborShift'?0:5,modules:scene==='harborShift'?['timer.so']:['timer.so','switch.so'],programs:scene==='harborShift'?[]:['scan.so'],keyring:[],state:{},day:1,minute:scene==='harborShift'?1120:580,seed:3,weather:'forecast',clock:scene==='harborShift'?'story':'fixed',spawn:null};}
+
+/** Route and phase-offset validation uses the complete prospective world/transport source. */
+export function validateFixtureMetro(doc:PlayFixtures,world:CityModel=defaultCity,source:MetroSource=METRO_SOURCE){for(const f of doc.fixtures)if(f.metro)validateMetroSnapshot(f.metro,{line:world.LINE,source});return doc;}

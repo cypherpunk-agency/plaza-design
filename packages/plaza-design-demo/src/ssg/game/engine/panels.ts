@@ -1,4 +1,4 @@
-import type {ConversationSession} from './gameplay/conversation';
+import type {ConversationSession,ConversationFrame} from './gameplay/conversation';
 /**
  * A scene's full-screen moments: talking to a daemon (the engine's `talk`,
  * any dialogue in the scene file), and whatever panels the scene's view adds
@@ -6,7 +6,6 @@ import type {ConversationSession} from './gameplay/conversation';
  * Styles live in render.tsx (`.hack-panel`, `.cam-*`, `.dlg-*`).
  */
 
-import type { DialogueNode } from '../data/types';
 import type { Line, SceneModel } from './model';
 
 export function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
@@ -38,7 +37,7 @@ export class Panels {
   private talking?:ConversationSession;
   onClose: () => void = () => {};
 
-  constructor(host: HTMLElement, private m: SceneModel, private say: (l: Line) => void, private own: Record<string, PanelFn> = {},private conversation?:(id:string)=>ConversationSession|undefined) {
+  constructor(host: HTMLElement, private m: SceneModel, private say: (l: Line) => void, private own: Record<string, PanelFn> = {},private conversation?:(id:string)=>ConversationSession|undefined,private history?:(speaker:string,pages:readonly string[])=>void,private completed?:(cue:NonNullable<ConversationFrame['completion']>)=>void) {
     this.root = el('div', 'hack-panel'); this.root.hidden = true;
     this.body = el('div', 'hack-panel-body');
     this.root.append(button(m.label('ui.close'), 'hack-btn hack-panel-close', () => this.close()), this.body);
@@ -66,47 +65,21 @@ export class Panels {
   /** Branching and simple dialogue use the same runner; this adapter only paints panel controls. */
   presentConversation(session:ConversationSession,onChoice?:(label:string)=>void){
     this.talking?.close();this.show('dlg');this.talking=session;const box=el('div','dlg-box');this.body.append(box);
-    const render=()=>{const f=session.frame();box.replaceChildren(el('b','dlg-name',f.speaker),el('p','dlg-text',f.pages.join('\n')));const choices=el('div','dlg-choices');box.append(choices);for(const choice of f.choices??[])choices.append(button(choice.label,'dlg-choice',()=>{const result=session.choose(choice.id);if(result.ok)onChoice?.(choice.label);if(result.ok)render();else choices.append(el('p','error','Operation refused: '+result.reason));}));if(!f.choices?.length)choices.append(button(this.m.label('talk.unplug'),'dlg-choice',()=>this.close()));};render();
+    const render=()=>{
+      const f=session.frame();this.history?.(f.speaker,f.pages);box.replaceChildren(el('b','dlg-name',f.speaker),el('p','dlg-text',f.pages.join('\n')));const choices=el('div','dlg-choices');box.append(choices);
+      for(const choice of f.choices??[])choices.append(button(choice.label,'dlg-choice',()=>{const result=session.choose(choice.id);if(result.ok&&choice.echo!==false)onChoice?.(choice.label);if(result.ok)render();else choices.append(el('p','error','Operation refused: '+result.reason));}));
+      if(f.acceptsText)choices.append(button(this.m.label('talk.other'),'dlg-choice dlg-kb',()=>{
+        const input=el('input','dlg-input');input.maxLength=2000;input.placeholder=this.m.label('talk.placeholder');input.setAttribute('aria-label',this.m.label('talk.aria',{speaker:f.speaker}));choices.replaceChildren(input);input.focus();
+        input.addEventListener('keydown',event=>{event.stopPropagation();if(event.key!=='Enter'||!input.value.trim())return;const text=input.value.trim(),result=session.submit(text);if(result.ok){onChoice?.(text);render();}else choices.append(el('p','error','Operation refused: '+result.reason));});
+      }));
+      if(!f.choices?.length&&!f.acceptsText)choices.append(button(this.m.label('talk.unplug'),'dlg-choice',()=>{if(this.talking!==session||this.root.hidden)return;const cue=f.completion;this.close();if(cue)this.completed?.(cue);}));
+    };render();
   }
 
   // ---------- talking: permission, not answers ----------
 
   talk(who?: string) {
-    const session=who?this.conversation?.(who):undefined;if(session){const template=this.m.data.dialogue[who!]?.sayCmd;this.presentConversation(session,template?label=>this.say([template.replace('{line}',label),'','dim']):undefined);return;}
-    const D = this.m.data.dialogue[who ?? Object.keys(this.m.data.dialogue)[0]];
-    if (!D) return;
-    this.show('dlg');
-    const box = el('div', 'dlg-box');
-    this.body.appendChild(box);
-    const sayLine = (line: string) => this.say([D.sayCmd.replace('{line}', line), '', 'dim']);
-    /** A node's first variant whose `if` holds; its steps run as it is shown. */
-    const pick = (id: string): DialogueNode => {
-      const n = [D.nodes[id]].flat().find((v) => (!v.if || this.m.cond(v.if)) && this.m.within(v.when))!;
-      if (n.do) this.m.apply(n.do);
-      return n;
-    };
-    const show = (id: string) => {
-      const { text, choices } = pick(id);
-      box.textContent = '';
-      box.append(el('b', 'dlg-name', D.speaker), el('p', 'dlg-text', text));
-      const ch = el('div', 'dlg-choices'); box.appendChild(ch);
-      if (!choices) { ch.appendChild(button(this.m.label('talk.unplug'), 'dlg-choice', () => this.close())); return; }
-      choices.forEach(([line, next]) => ch.appendChild(button(line, 'dlg-choice', () => { sayLine(line); show(next); })));
-      const free = D.free;
-      if (!free) return;
-      ch.appendChild(button(this.m.label('talk.other'), 'dlg-choice dlg-kb', () => {
-        ch.textContent = '';
-        const inp = el('input', 'dlg-input'); inp.placeholder = this.m.label('talk.placeholder'); inp.setAttribute('aria-label', this.m.label('talk.aria', { speaker: D.speaker }));
-        ch.appendChild(inp); inp.focus();
-        inp.addEventListener('keydown', (e) => {
-          e.stopPropagation();
-          if (e.key !== 'Enter' || !inp.value.trim()) return;
-          const line = inp.value.trim(); sayLine(line);
-          if (new RegExp(free.match, 'i').test(line)) show(free.goto);
-          else { box.querySelector('.dlg-text')!.textContent = free.miss; ch.textContent = ''; ch.appendChild(button(free.retry, 'dlg-choice', () => show(free.retryGoto))); }
-        });
-      }));
-    };
-    show(D.start);
+    const target=who??Object.keys(this.m.data.dialogue)[0];const session=target?this.conversation?.(target):undefined;if(session){const template=session.sayCommand??this.m.data.dialogue[target]?.sayCmd;this.presentConversation(session,template?label=>this.say([template.replace('{line}',label),'','dim']):undefined);return;}
+    if(target&&this.m.data.dialogue[target])throw new Error('Conversation not registered: '+target);
   }
 }

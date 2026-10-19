@@ -1,0 +1,713 @@
+{
+  "version": 1,
+  "id": "beach",
+  "name": "the beach",
+  "intro": [
+    "A beach. A real one: sand, sea, a sunset nobody is charging for. Yet.",
+    "SALT, the bar on stilts, is open. And at the end of the pier there's a boat. Moth's status said \"gone fishing\"."
+  ],
+  "exits": [
+    {
+      "id": "stairs",
+      "to": "harbor",
+      "label": "",
+      "engine": true
+    },
+    {
+      "id": "harbor",
+      "to": "harbor",
+      "at": "beach",
+      "label": "< HARBOR",
+      "edge": "left"
+    }
+  ],
+  "readables": [
+    {
+      "id": "notice",
+      "name": "PUBLIC BEACH",
+      "pages": [
+        "PUBLIC BEACH. OPEN TO VERIFIED PERSONS 06:00\u201322:00.",
+        "TOWELS MUST DISPLAY A VALID ID. SAND IS MUNICIPAL PROPERTY. DO NOT REMOVE.",
+        "UNVERIFIED BATHERS: SECTOR 4 (THE ROCKS). SWIMMING BEYOND THE BUOY IS NOT RECORDED AND NOT ADVISED."
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "lime",
+      "name": "LIME",
+      "talk": [
+        [
+          "Welcome to SALT. I'm LIME. I pour, I listen, I don't keep logs. Officially.",
+          "You've got the face of someone looking for someone. Everyone at a beach bar has that face. Yours is worse."
+        ],
+        [
+          "Moth? Third stool, every evening for a month. Water with a slice of me in it. Tipped in jokes.",
+          "I don't run on jokes. I kept them anyway."
+        ],
+        [
+          "That boat at the end of the pier is Moth's. Three days, nobody aboard. The harbour stuck a notice on it.",
+          "Leave it locked for now. Moth said someone would come. Didn't say when. I assumed someone taller."
+        ],
+        [
+          "The photo behind the gin? Moth. The night they fixed my jukebox without asking. Said I looked 'nearly human'.",
+          "I'm still deciding if that was a compliment. I've been deciding for a year."
+        ],
+        [
+          "My opinion of Moth: talks too fast, eats too little, rewires things that are not theirs. Ten out of ten. Would serve again.",
+          "Drinks are two tokens. The jukebox is free. The jukebox and the mixer get along too well, if you ask me. Nobody asks me."
+        ]
+      ]
+    },
+    {
+      "id": "guard",
+      "name": "LIFEGUARD",
+      "talk": [
+        [
+          "I'm paid to watch the water. The drone is paid to watch me. Nobody's paid to watch the drone.",
+          "If the flag goes red, everyone is out. The drone decides. Last week it decided a jellyfish was a shark. Then a cloud."
+        ],
+        [
+          "The drone says danger, I blow the whistle. Thirty years of training. I blow the whistle."
+        ]
+      ]
+    },
+    {
+      "id": "sunbather",
+      "name": "SUNBATHER",
+      "talk": [
+        [
+          "I rented this sunbed for ten minutes. That was three hours ago.",
+          "I'm not getting up. If I get up, I have to look at the bill."
+        ],
+        [
+          "Still here. Still not looking."
+        ]
+      ]
+    },
+    {
+      "id": "volley",
+      "name": "VOLLEYBALL",
+      "talk": [
+        [
+          "We need a fourth. You any good? No? Perfect. Neither are we.",
+          "The net's municipal. We pay by the point. We stopped keeping score."
+        ]
+      ]
+    },
+    {
+      "id": "kid",
+      "name": "KID",
+      "talk": [
+        [
+          "It's a Registry office. That's the queue. Those are the people in the queue.",
+          "When the tide comes in, it gets deleted. That is how it works, my mum said."
+        ],
+        [
+          "You can be in the queue if you want. You have to wait, though. That is the rule."
+        ]
+      ]
+    },
+    {
+      "id": "surfer",
+      "name": "SURFER",
+      "talk": [
+        [
+          "Waves are good today. Waves are free. Don't tell anyone, they'll put a meter on them."
+        ],
+        [
+          "See the buoy? Edge of the swim zone. Past it the Registry stops counting you. Feels great. Briefly."
+        ]
+      ]
+    },
+    {
+      "id": "fisher",
+      "name": "OLD MAN",
+      "talk": [
+        [
+          "Fifty years I've fished off this pier. Caught a fish twice. Same fish.",
+          "That boat at the end? Kid with a hood and a laptop. Said 'gone fishing'. Never saw a rod come out. Good. Fish deserve a break."
+        ],
+        [
+          "Three days ago they tied it up and walked off along the shore. Did not look back. Looked at the water a lot."
+        ]
+      ]
+    }
+  ],
+  "uses": [
+    {
+      "id": "order",
+      "name": "LIME",
+      "label": "[E] ORDER",
+      "purchase": "beach.order",
+      "routes": [
+        {
+          "command": "beach.order",
+          "template": true,
+          "pages": [
+            "One SALT SPECIAL. Mostly lime. Do not tell the lime.",
+            "Moth's usual was water with a slice of me in it. Cheaper. Moth was always cheaper."
+          ],
+          "failure": [
+            "Two tokens. You have {tokens}. I would lend you one, but I remember everything.",
+            "The jukebox is free. Just saying. Nobody listens to the bartender."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gull",
+      "name": "GULL",
+      "label": "[E] SHOO",
+      "cycle": true,
+      "cycleState": "beach.gull.cursor",
+      "routes": [
+        {
+          "command": "beach.gull.0",
+          "pages": [
+            "The gull looks at your hands, finds no chips, and leaves in disgust."
+          ]
+        },
+        {
+          "command": "beach.gull.1",
+          "pages": [
+            "The gull circles once and lands back on its post. It was always going to come back."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crab",
+      "name": "CRAB",
+      "label": "[E] POKE",
+      "cycle": true,
+      "cycleState": "beach.crab.cursor",
+      "routes": [
+        {
+          "command": "beach.crab.0",
+          "pages": [
+            "The crab raises one claw. You lower your hand. Fair."
+          ]
+        },
+        {
+          "command": "beach.crab.1",
+          "pages": [
+            "The crab walks off sideways, which is the only way it knows, then comes back the same way."
+          ]
+        }
+      ]
+    }
+  ],
+  "cues": [
+    {
+      "event": "beach.gull.shooed",
+      "target": "gullShooed"
+    }
+  ],
+  "nativeTargets": [
+    {
+      "id": "stairs",
+      "anchor": "stairs-exit",
+      "promptH": 116,
+      "labels": [
+        {
+          "text": "prompt.out"
+        }
+      ],
+      "routes": [
+        {
+          "steps": [
+            {
+              "say": "stairs.out"
+            },
+            {
+              "exit": "stairs"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "actors": [
+    {
+      "id": "lime-talk",
+      "instance": "lime-talk",
+      "target": "lime",
+      "reaction": "lime",
+      "band": "world",
+      "key": true,
+      "seed": 7001,
+      "height": "artwork"
+    },
+    {
+      "id": "guard",
+      "instance": "guard",
+      "target": "guard",
+      "reaction": "guard",
+      "band": "world",
+      "seed": 7002,
+      "look": {
+        "body": "avg",
+        "hair": "cap",
+        "garb": "tee",
+        "extras": [
+          "glasses"
+        ],
+        "top": "#a83a2a",
+        "acc": "#c83a2a"
+      },
+      "act": "sit",
+      "facing": 1,
+      "height": "artwork"
+    },
+    {
+      "id": "sunbather",
+      "instance": "sunbather",
+      "target": "sunbather",
+      "reaction": "sunbather",
+      "band": "world",
+      "seed": 7003,
+      "look": {
+        "body": "wide",
+        "hair": "short",
+        "garb": "tee",
+        "extras": [
+          "glasses"
+        ],
+        "top": "#d86a2a"
+      },
+      "act": "sleep",
+      "height": "artwork"
+    },
+    {
+      "id": "volley",
+      "instance": "volley",
+      "target": "volley",
+      "reaction": "volley",
+      "band": "world",
+      "seed": 7004,
+      "look": {
+        "body": "slim",
+        "hair": "bun",
+        "garb": "tee",
+        "extras": [],
+        "top": "#d8b040"
+      },
+      "act": "dance",
+      "facing": 1,
+      "height": "artwork"
+    },
+    {
+      "id": "kid",
+      "instance": "kid",
+      "target": "kid",
+      "reaction": "kid",
+      "band": "world",
+      "seed": 7005,
+      "look": {
+        "body": "kid",
+        "hair": "cap",
+        "garb": "tee",
+        "extras": [],
+        "top": "#3a6ad8",
+        "acc": "#d8b040"
+      },
+      "act": "sit",
+      "facing": -1,
+      "height": "artwork"
+    },
+    {
+      "id": "surfer",
+      "instance": "surfer",
+      "target": "surfer",
+      "reaction": "surfer",
+      "band": "world",
+      "seed": 7006,
+      "look": {
+        "body": "tall",
+        "hair": "long",
+        "garb": "tee",
+        "extras": [],
+        "hairCol": "#c8b040",
+        "top": "#2e4a5e"
+      },
+      "act": "stand",
+      "facing": -1,
+      "height": "artwork"
+    },
+    {
+      "id": "fisher",
+      "instance": "fisher",
+      "target": "fisher",
+      "reaction": "fisher",
+      "band": "world",
+      "seed": 7007,
+      "look": {
+        "body": "old",
+        "hair": "brim",
+        "garb": "coat",
+        "extras": [],
+        "top": "#4e5e3a"
+      },
+      "act": "sit",
+      "facing": 1,
+      "height": "artwork"
+    },
+    {
+      "id": "cat",
+      "instance": "cat",
+      "reaction": "slot-7",
+      "band": "world",
+      "look": "cat",
+      "seed": 2,
+      "act": "sit",
+      "height": "artwork"
+    },
+    {
+      "id": "sunbed-person-0",
+      "instance": "sunbed-person-0",
+      "reaction": "actor.sunbed-person-0",
+      "band": "background",
+      "seed": 7101,
+      "look": {
+        "body": "slim",
+        "hair": "long",
+        "garb": "dress",
+        "extras": [
+          "glasses"
+        ],
+        "top": "#c83a8a"
+      },
+      "act": "sleep",
+      "height": "artwork"
+    },
+    {
+      "id": "sunbed-person-1",
+      "instance": "sunbed-person-1",
+      "reaction": "actor.sunbed-person-1",
+      "band": "background",
+      "seed": 7102,
+      "look": {
+        "body": "avg",
+        "hair": "brim",
+        "garb": "tee",
+        "extras": [
+          "phone"
+        ],
+        "top": "#e8e0d0"
+      },
+      "act": "sit",
+      "facing": 1,
+      "height": "artwork"
+    },
+    {
+      "id": "beachgoer-0",
+      "instance": "beachgoer-0",
+      "reaction": "actor.beachgoer-0",
+      "band": "background",
+      "seed": 7110,
+      "look": {
+        "body": "avg",
+        "hair": "short",
+        "garb": "tee",
+        "extras": [],
+        "top": "#7ab83a"
+      },
+      "act": "dance",
+      "facing": -1
+    },
+    {
+      "id": "beachgoer-1",
+      "instance": "beachgoer-1",
+      "reaction": "actor.beachgoer-1",
+      "band": "background",
+      "seed": 7111,
+      "look": {
+        "body": "tall",
+        "hair": "mohawk",
+        "garb": "tee",
+        "extras": [],
+        "top": "#c83a2a"
+      },
+      "act": "dance",
+      "facing": -1
+    },
+    {
+      "id": "beachgoer-2",
+      "instance": "beachgoer-2",
+      "reaction": "actor.beachgoer-2",
+      "band": "background",
+      "seed": 7112,
+      "look": {
+        "body": "short",
+        "hair": "beanie",
+        "garb": "tee",
+        "extras": [],
+        "top": "#46506e"
+      },
+      "act": "dance",
+      "facing": 1
+    },
+    {
+      "id": "beachgoer-3",
+      "instance": "beachgoer-3",
+      "reaction": "actor.beachgoer-3",
+      "band": "background",
+      "seed": 7113,
+      "look": {
+        "body": "kid",
+        "hair": "long",
+        "garb": "tee",
+        "extras": [],
+        "top": "#e85a6a"
+      },
+      "act": "sit",
+      "facing": 1
+    },
+    {
+      "id": "beachgoer-4",
+      "instance": "beachgoer-4",
+      "reaction": "actor.beachgoer-4",
+      "band": "background",
+      "seed": 7114,
+      "look": {
+        "body": "old",
+        "hair": "bald",
+        "garb": "tee",
+        "extras": [
+          "cane"
+        ],
+        "top": "#b8a68a"
+      },
+      "act": "walk",
+      "speed": 0.18,
+      "range": [
+        0,
+        400
+      ]
+    },
+    {
+      "id": "beachgoer-5",
+      "instance": "beachgoer-5",
+      "reaction": "actor.beachgoer-5",
+      "band": "background",
+      "seed": 7115,
+      "look": {
+        "body": "avg",
+        "hair": "bun",
+        "garb": "jacket",
+        "extras": [
+          "bag"
+        ]
+      },
+      "act": "walk",
+      "speed": 0.26,
+      "range": [
+        -40,
+        440
+      ]
+    },
+    {
+      "id": "beachgoer-6",
+      "instance": "beachgoer-6",
+      "reaction": "actor.beachgoer-6",
+      "band": "background",
+      "look": "drone",
+      "act": "scan",
+      "speed": 0.2,
+      "height": "artwork",
+      "range": [
+        -8,
+        140
+      ],
+      "bakeSeed": 2033
+    },
+    {
+      "id": "ashore-0",
+      "instance": "ashore-0",
+      "reaction": "actor.ashore-0",
+      "band": "background",
+      "seed": 7200,
+      "look": {
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "phone",
+      "ps": 2,
+      "dim": 0.25,
+      "facing": -1,
+      "height": "artwork"
+    },
+    {
+      "id": "ashore-1",
+      "instance": "ashore-1",
+      "reaction": "actor.ashore-1",
+      "band": "background",
+      "seed": 7201,
+      "look": {
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "stand",
+      "ps": 2,
+      "dim": 0.25,
+      "facing": 1,
+      "height": "artwork"
+    },
+    {
+      "id": "ashore-2",
+      "instance": "ashore-2",
+      "reaction": "actor.ashore-2",
+      "band": "background",
+      "seed": 7202,
+      "look": {
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "stand",
+      "ps": 2,
+      "dim": 0.25,
+      "facing": -1,
+      "height": "artwork"
+    },
+    {
+      "id": "ashore-3",
+      "instance": "ashore-3",
+      "reaction": "actor.ashore-3",
+      "band": "background",
+      "seed": 7203,
+      "look": {
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "phone",
+      "ps": 2,
+      "dim": 0.25,
+      "facing": 1,
+      "height": "artwork"
+    },
+    {
+      "id": "ashore-4",
+      "instance": "ashore-4",
+      "reaction": "actor.ashore-4",
+      "band": "background",
+      "seed": 7204,
+      "look": {
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "stand",
+      "ps": 2,
+      "dim": 0.25,
+      "facing": -1,
+      "height": "artwork"
+    },
+    {
+      "id": "ashore-5",
+      "instance": "ashore-5",
+      "reaction": "actor.ashore-5",
+      "band": "background",
+      "seed": 7205,
+      "look": {
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "stand",
+      "ps": 2,
+      "dim": 0.25,
+      "facing": 1,
+      "height": "artwork"
+    },
+    {
+      "id": "ashore-6",
+      "instance": "ashore-6",
+      "reaction": "actor.ashore-6",
+      "band": "background",
+      "seed": 7206,
+      "look": {
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "phone",
+      "ps": 2,
+      "dim": 0.25,
+      "facing": -1,
+      "height": "artwork"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "order": {
+        "instance": "order",
+        "promptH": 0,
+        "responseH": 0
+      },
+      "gull": {
+        "instance": "gull",
+        "promptH": 62,
+        "responseH": 50
+      },
+      "crab": {
+        "instance": "crab",
+        "promptH": 24,
+        "responseH": 16
+      }
+    },
+    "readables": {
+      "notice": {
+        "instance": "notice",
+        "promptH": 102,
+        "responseH": 0
+      }
+    },
+    "rests": {},
+    "exits": {
+      "stairs": "stairs-exit",
+      "harbor": "edge-exit"
+    }
+  },
+  "environment": {
+    "ambient": {
+      "weather": true
+    },
+    "facing": 90,
+    "keepFace": true
+  },
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    },
+    "warm": [
+      {
+        "id": "jukebox",
+        "point": {
+          "instance": "jukebox",
+          "h": 44
+        },
+        "rest": "sleep"
+      }
+    ]
+  }
+}

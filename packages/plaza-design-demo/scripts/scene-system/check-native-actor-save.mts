@@ -1,0 +1,35 @@
+import {moveSceneActor} from '../../src/ssg/game/engine/gameplay/actors';
+import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
+import {art,type Composition} from '../../src/ssg/game/art';
+import {SCENES} from '../../src/ssg/game/scenes';
+import {libraryScene} from '../../src/ssg/game/scenes/library';
+import {LIBRARY_SCENE,validateLibraryScene} from '../../src/ssg/game/scenes/library/scene-document';
+import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
+import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
+import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
+import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
+const root=path.resolve('src/ssg/game'),documents=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:JSON.parse(fs.readFileSync(path.join(root,d.file),'utf8'))}));
+const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
+const validate=(d:any,docs:any[])=>{if(d.id==='library-scene')validateSourceDocuments(new Map(docs.map(row=>[row.id,row.value])));};
+const make=()=>{const m=new ComposerModel(art,context,validate);m.load(documents);return m;};
+assert.throws(()=>validateLibraryScene({...LIBRARY_SCENE,actors:null}));
+const model=make(),composition=model.get('library').value as Composition,scene=structuredClone(LIBRARY_SCENE);
+composition.instances.find(i=>i.id==='armchair-2')!.placement.x+=20;
+const knitter=scene.actors!.find(a=>a.id==='knitter')!;knitter.look={body:'old',hair:'bun',garb:'coat',top:'#123456'};knitter.when={from:'18:00',to:'06:00',days:['odd']};
+const shelf=scene.actors!.find(a=>a.id==='shelfe')!;shelf.look={bot:'servbot',paint:'#456789',v:2,wear:.5};shelf.range=[-20,100];shelf.speed=.6;
+moveSceneActor(scene,'knitter',-1);
+const cat=scene.actors!.find(a=>a.id==='cat')!;cat.follow='knitter';cat.gap=24;
+model.importDocuments([{id:'library',value:composition},{id:'library-scene',value:scene}]);
+const inspect=(native:ReturnType<typeof libraryScene>)=>{assert.equal(native.people![4].id,'knitter');const knitter=native.people!.find(p=>p.id==='knitter')!,shelf=native.people!.find(p=>p.id==='shelfe')!;assert.equal(knitter.x,764);assert.deepEqual(knitter.look,{body:'old',hair:'bun',garb:'coat',top:'#123456'});assert.deepEqual(knitter.when,{from:'18:00',to:'06:00',days:['odd']});assert.deepEqual(shelf.range,[670,790]);assert.equal(shelf.speed,.6);assert.deepEqual(shelf.look,{bot:'servbot',paint:'#456789',v:2,wear:.5});assert.equal(native.people!.at(-1)!.follow,knitter);assert.equal(native.people!.at(-1)!.gap,24);return true;};
+inspect(pendingRegistry(new Map(model.list().map(d=>[d.id,d.value]))).library);
+const edits=structuredClone(model.edits());for(const mutate of [(d:any)=>d.actors[0].look={bot:'bad'},(d:any)=>d.actors[0].follow='missing',(d:any)=>d.actors[0].when={from:'18:00',to:'18:00'},(d:any)=>d.actors[0].reaction='changed']){const bad=structuredClone(scene);mutate(bad);assert.throws(()=>model.importDocuments([{id:'library-scene',value:bad}]));assert.deepEqual(model.edits(),edits);}
+const legacy=structuredClone(LIBRARY_SCENE);delete legacy.actors;assert.deepEqual(libraryScene(undefined,{},{},legacy).people,libraryScene().people);
+const receiver=make();receiver.importDocuments(readDocumentBundle(createDocumentBundle(model.edits(),model.list()),receiver.list()));inspect(pendingRegistry(new Map(receiver.list().map(d=>[d.id,d.value]))).library);model.undo();assert(!model.dirty());model.redo();assert.deepEqual(model.edits(),edits);
+const scratch=path.resolve('../../.scene-system/native-actor-save');fs.mkdirSync(scratch,{recursive:true});const dir=fs.mkdtempSync(path.join(scratch,'run-'));for(const d of sourceDocuments){const dest=path.join(dir,d.file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(path.join(root,d.file),dest);}
+const store=new AuthoringStore({root:dir,documents:sourceDocuments,validateAll:validateSourceDocuments}),originals=Object.fromEntries(['library','library-scene'].map(id=>[id,fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8')]));
+const saved=store.save(model.edits().map(e=>({...e,revision:store.read(e.id).revision})));inspect(libraryScene(store.read('library').value as Composition,{},{},store.read('library-scene').value as any));
+const before=store.list(),bad=structuredClone(scene);bad.actors![0].follow='missing';assert.throws(()=>store.save([{id:'library-scene',revision:store.read('library-scene').revision,value:bad}]));assert.deepEqual(store.list(),before);
+store.undo(saved.transaction,Object.fromEntries(saved.documents.map(d=>[d.id,d.revision])));for(const[id,bytes]of Object.entries(originals))assert.equal(fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8'),bytes);
+fs.writeFileSync(path.join(dir,'evidence.json'),JSON.stringify({status:'PASS',scene:'library',documents:2,sourceTransaction:saved.transaction,checks:['appearance','relative movement','attached artwork','follow links','schedule','legacy defaults','history','bundle','protected Save','native reload','exact byte Undo','atomic rejection']},null,2)+'\n');console.log('Native actor Save PASS: Library shared bodies, attached placement, human/robot appearance, motion, schedule and follow; grouped history/bundle/source Save/native reload/exact byte Undo. Evidence: '+dir);

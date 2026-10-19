@@ -1,3 +1,9 @@
+import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
+import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
+import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
+import {content} from './scene-document';
+import {type SceneDocument} from '../../engine/gameplay/scene-document';
+import type {GameplayDefinition} from '../../engine/gameplay/types';
 /**
  * The stacks (story Level 7, P15 NRLU 404 0451, the end of Act I): terminal 2
  * behind the harbor pier, a scene of the harbor's place (city.ts). Container
@@ -11,13 +17,12 @@
  * and the lane to warehouse 4 (scenes/warehouse.ts).
  */
 
-import { STACKS_HZ } from './scene';
 import { STACKS } from "../../data/index";
 import type { SceneDef } from "../kit";
 import { stacksRulesFor } from './rules';
 import { scopePanel } from './scope';
-import { drawStacks, drawStacksFront, L, PEOPLE, STACKS_W,stacksPeople } from './scene';
-import {stacksComposition,validateStacksComposition,stacksDeviceData,stacksGeometry,stacksPlacement,terminalRuleGeometry,type StacksRenderOptions} from './composition';
+import { drawStacks, drawStacksFront, stacksActors,stacksFrameEnvironment } from './scene';
+import {stacksComposition,validateStacksComposition,stacksDeviceData,stacksGeometry,terminalRuleGeometry,type StacksRenderOptions} from './composition';
 import type {Composition,Environment} from '../../art';
 export {drawStacks,drawStacksFront,stacksFrameEnvironment} from './scene';
 export {stacksArt,stacksComposition,validateStacksComposition} from './composition';
@@ -25,46 +30,27 @@ export {stacksArt,stacksComposition,validateStacksComposition} from './compositi
 export { ACT1_FLAG, ACT2_CUT, CONTACT_FLAG, SPIRE_FLAG, STACKS_RULES_SHAPE } from './rules';
 
 /** The tea urn on its crate by block C: what the night shift runs on. */
-const URN_X = 672;
 
-const base: SceneDef = {
+
+const base: Omit<SceneDef,'width'|'spawn'|'exits'> = {
   id: 'stacks',
-  name: 'the stacks',
+  name: content.scene.name,
   // facing (light.ts): terminal 2 looks east over the bay (the Spire out on the water)
-  facing: 90,
-  width: STACKS_W,
-  spawn: L.spawn,
-  ambient: { sky: true, weather: true },
-  horizon: STACKS_HZ,
-  exits: [
-    { id: 'harbor', x: L.gate, to: 'harbor', at: 'stacks', label: '[E] PIER', promptH: 82 },
-    { id: 'warehouse', x: L.lane, to: 'warehouse', at: 'stacks', label: '[E] WAREHOUSE 4', promptH: 92 },
-  ],
-  intro: [
-    'Terminal 2, berth 4. A crane, a gate, a ferry waiting for one box.',
-    'Somewhere in these stacks is a container the yard system lost. I would bet my deck it has Moth\'s number on it.',
-  ],
-  pixel: 'along',
+
+
+
+  intro: content.scene.intro,
   data: STACKS,
   rules: (player) => stacksRulesFor(player),
   panels: { scope: scopePanel },
   drawBackdrop: drawStacks,
   drawFront: (x,v)=>drawStacksFront(x,v),
-  people: PEOPLE,
-  readables: [
-    { id: 'notice', x: L.notice, name: 'PORT AUTHORITY', promptH: 86, pages: [
-      'TERMINAL 2 · ALL OUTBOUND CARGO PASSES THE THERMAL GATE AT BERTH 4.',
-      'A CONTAINER WARMER THAN ITS LABEL IS HELD FOR INSPECTION. PERSONS FOUND IN CARGO ARE RETURNED TO THEIR REGISTERED ADDRESS. PERSONS WITHOUT ONE ARE RETURNED TO THE REGISTRY.',
-    ] },
-  ],
-  uses: [
-    { id: 'urn', x: URN_X, label: '[E] TEA URN', name: 'TEA URN', promptH: 52, use: (c) => {
-      if (c.has('tea')) return ['(A note on the urn: ONE CUP EACH. YOU KNOW WHO YOU ARE.)', 'You do know who you are. You already have a cup.'];
-      c.add('tea');
-      return ['(You pour a paper cup of black tea from the night shift\'s urn. Nobody stops you. Nobody sees you. Those are the same thing now.)'];
-    } },
-  ],
+
 };
 
-export function stacksScene(document:Composition=stacksComposition,state:Environment['state']={},options:StacksRenderOptions={}):SceneDef{const doc=validateStacksComposition(document),rows=stacksGeometry(doc),scene=rows.find(r=>r.instance.id==='scene')!;return{...base,width:Number(scene.props.width),horizon:Number(scene.props.horizon),spawn:stacksPlacement('spawn',doc).x,data:stacksDeviceData(STACKS,doc),rules:player=>stacksRulesFor(player,terminalRuleGeometry(doc)),people:stacksPeople(doc),exits:base.exits.map(exit=>({...exit,x:stacksPlacement('exit-'+exit.id,doc).x})),readables:base.readables!.map(r=>({...r,x:stacksPlacement('board',doc).x})),uses:base.uses!.map(u=>({...u,x:stacksPlacement('urn',doc).x})),drawBackdrop:(x,v,e)=>drawStacks(x,v,e,doc,state,options),drawFront:(x,v)=>drawStacksFront(x,v,doc,state,options)};}
+export function stacksScene(document:Composition=stacksComposition,state:Environment['state']={},options:StacksRenderOptions={},sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay):SceneDef{
+ const doc=validateStacksComposition(document),rows=stacksGeometry(doc),scene=rows.find(r=>r.instance.id==='scene')!,authored=content.validateScene(sceneDocument,gameplay);
+ const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true}),actors=stacksActors(doc,authored);
+ return {...base,gameplay:withSceneConversations(gameplay,authored),...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],horizon:Number(scene.props.horizon),data:stacksDeviceData({...STACKS,dialogue:{moth:nativeDialogue(gameplay,'moth',{},undefined,{entryActions:false})}},doc),rules:player=>stacksRulesFor(player,terminalRuleGeometry(doc)),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),visualEnvironment:(v,e)=>stacksFrameEnvironment(v,e,doc,actors),drawBackdrop:(x,v,e)=>drawStacks(x,v,e,doc,state,options,actors),drawFront:(x,v)=>drawStacksFront(x,v,doc,state,options)};
+}
 export const stacks=stacksScene();

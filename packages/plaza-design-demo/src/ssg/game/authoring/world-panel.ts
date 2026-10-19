@@ -1,10 +1,11 @@
+import type {CityModel} from '../world/city';
 /** Local read-only world navigation. Selection opens source compositions without entering the game. */
 import { createWorldMapPreview, type WorldPlaceInspection, type WorldMapPreviewState } from './world-map';
 import type { WorldDocument } from '../world/document';
 import type { SceneId } from '../scenes';
 
 export interface WorldPanelSession { place?: WorldPlaceInspection['place']['id']; preview?: Partial<WorldMapPreviewState> }
-export function mountWorldPanel(host: HTMLElement, document: WorldDocument, openScene: (id: string) => void, session: WorldPanelSession = {}, scene?: string): () => void {
+export function mountWorldPanel(host: HTMLElement, document: WorldDocument, openScene: (id: string) => void, session: WorldPanelSession = {}, scene?: string,world?:CityModel): () => void {
   // The editor's current scene decides which place is inspected; the picker remains for browsing.
   const home = scene ? document.map.places.find(p => (p.scenes as readonly string[]).includes(scene)) : undefined; if (home) session.place = home.id;
   const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) => {
@@ -22,7 +23,7 @@ export function mountWorldPanel(host: HTMLElement, document: WorldDocument, open
     const transport = node('pre', JSON.stringify(selection.transport, null, 2)); transport.style.whiteSpace = 'pre-wrap';
     const metadata = node('details'); metadata.append(node('summary', 'Transport connections'), transport); details.append(metadata);
   };
-  const preview = createWorldMapPreview({ canvas, document, preview: session.preview, onSelection: inspect, onOpenScene: scene => openScene(scene),
+  const preview = createWorldMapPreview({world, canvas, document, preview: session.preview, onSelection: inspect, onOpenScene: scene => openScene(scene),
     drawBackground(context, width, height) { context.fillStyle = '#030201'; context.fillRect(0, 0, width, height); },
   });
   const label = (text: string, input: HTMLElement) => { const wrap = node('label', text + ' '); wrap.append(input); controls.append(wrap); };

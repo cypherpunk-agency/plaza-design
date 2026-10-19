@@ -1,0 +1,393 @@
+{
+  "version": 1,
+  "flags": [
+    "harbor:fish",
+    "harbor:tea",
+    "harbor:crane",
+    "harbor:bribed",
+    "harbor:ghostmark",
+    "harbor:cat"
+  ],
+  "items": [
+    "fish",
+    "tea"
+  ],
+  "events": [
+    "harbor.crane.tea"
+  ],
+  "state": {
+    "harbor.fish.cursor": {
+      "owner": "harbor.fish",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "harbor.tea.cursor": {
+      "owner": "harbor.tea",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "harbor.bribe.asked": {
+      "owner": "harbor.bribe",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "harbor.crane.first": {
+      "owner": "harbor.crane",
+      "lifetime": "session",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "purchases": {
+    "harbor.fish": {
+      "basePrice": 1,
+      "goods": [
+        {
+          "item": "fish",
+          "quantity": 1
+        }
+      ]
+    },
+    "harbor.tea": {
+      "basePrice": 1,
+      "goods": [
+        {
+          "item": "tea",
+          "quantity": 1
+        }
+      ]
+    },
+    "harbor.bribe": {
+      "service": true,
+      "basePrice": 3,
+      "modifiers": [
+        {
+          "id": "harbor.bribe.introduction-or-owned",
+          "when": {
+            "any": [
+              {
+                "flag": "harbor:bribed"
+              },
+              {
+                "state": "harbor.bribe.asked",
+                "is": false
+              }
+            ]
+          },
+          "amount": -3,
+          "scope": "both"
+        }
+      ]
+    }
+  },
+  "commands": {
+    "harbor.fish.0": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "harbor.fish.cursor",
+        "is": 0
+      },
+      "actions": [
+        {
+          "purchase": "harbor.fish"
+        },
+        {
+          "flag": "harbor:fish",
+          "value": true
+        },
+        {
+          "state": "harbor.fish.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "harbor.fish.1": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "harbor.fish.cursor",
+        "is": 1
+      },
+      "actions": [
+        {
+          "purchase": "harbor.fish"
+        },
+        {
+          "flag": "harbor:fish",
+          "value": true
+        },
+        {
+          "state": "harbor.fish.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "harbor.fish.2": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "harbor.fish.cursor",
+        "is": 2
+      },
+      "actions": [
+        {
+          "purchase": "harbor.fish"
+        },
+        {
+          "flag": "harbor:fish",
+          "value": true
+        },
+        {
+          "state": "harbor.fish.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "harbor.tea.0": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "harbor.tea.cursor",
+        "is": 0
+      },
+      "actions": [
+        {
+          "purchase": "harbor.tea"
+        },
+        {
+          "flag": "harbor:tea",
+          "value": true
+        },
+        {
+          "state": "harbor.tea.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "harbor.tea.1": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "harbor.tea.cursor",
+        "is": 1
+      },
+      "actions": [
+        {
+          "purchase": "harbor.tea"
+        },
+        {
+          "flag": "harbor:tea",
+          "value": true
+        },
+        {
+          "state": "harbor.tea.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "harbor.tea.2": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "state": "harbor.tea.cursor",
+        "is": 2
+      },
+      "actions": [
+        {
+          "purchase": "harbor.tea"
+        },
+        {
+          "flag": "harbor:tea",
+          "value": true
+        },
+        {
+          "state": "harbor.tea.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "harbor.tea.wet": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "weather": [
+          "rain",
+          "storm"
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "harbor.tea"
+        },
+        {
+          "flag": "harbor:tea",
+          "value": true
+        }
+      ]
+    },
+    "harbor.crane.first": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "all": [
+          {
+            "item": "tea",
+            "atLeast": 1
+          },
+          {
+            "state": "harbor.crane.first",
+            "is": true
+          }
+        ]
+      },
+      "actions": [
+        {
+          "item": "tea",
+          "add": -1
+        },
+        {
+          "tokens": 1
+        },
+        {
+          "flag": "harbor:crane",
+          "value": true
+        },
+        {
+          "state": "harbor.crane.first",
+          "set": false
+        },
+        {
+          "emit": "harbor.crane.tea"
+        }
+      ]
+    },
+    "harbor.crane.repeat": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "all": [
+          {
+            "item": "tea",
+            "atLeast": 1
+          },
+          {
+            "state": "harbor.crane.first",
+            "is": false
+          }
+        ]
+      },
+      "actions": [
+        {
+          "item": "tea",
+          "add": -1
+        },
+        {
+          "emit": "harbor.crane.tea"
+        }
+      ]
+    },
+    "harbor.bribe.ask": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "all": [
+          {
+            "state": "harbor.bribe.asked",
+            "is": false
+          },
+          {
+            "not": {
+              "flag": "harbor:bribed"
+            }
+          }
+        ]
+      },
+      "actions": [
+        {
+          "state": "harbor.bribe.asked",
+          "set": true
+        }
+      ]
+    },
+    "harbor.bribe.pay": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "all": [
+          {
+            "state": "harbor.bribe.asked",
+            "is": true
+          },
+          {
+            "not": {
+              "flag": "harbor:bribed"
+            }
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "harbor.bribe"
+        },
+        {
+          "flag": "harbor:bribed",
+          "value": true
+        }
+      ]
+    },
+    "harbor.mark": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "flag": "harbor:bribed"
+      },
+      "actions": [
+        {
+          "flag": "harbor:ghostmark",
+          "value": true
+        }
+      ]
+    },
+    "harbor.cat.feed": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "item": "fish",
+        "atLeast": 1
+      },
+      "actions": [
+        {
+          "item": "fish",
+          "add": -1
+        },
+        {
+          "flag": "harbor:cat",
+          "value": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {}
+}

@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "dialogue": {
+    "speaker": "MOTH · the intercom of NRLU 404 0451",
+    "start": "start",
+    "sayCmd": "say \"{line}\" > reefer",
+    "nodes": {
+      "start": [
+        {
+          "if": "talked",
+          "text": "(The intercom hisses. The ferry is out of range. Moth is on your deck now.)"
+        },
+        {
+          "if": "boxAt=stack",
+          "text": "(Static. Then, from somewhere in block B, two knocks. Then nothing. The thermal gate is listening, and so is whoever knocked.)",
+          "choices": [
+            [
+              "Knock twice on the panel.",
+              "knock"
+            ],
+            [
+              "Leave it.",
+              "quiet"
+            ]
+          ]
+        },
+        {
+          "if": "boxAt=air",
+          "text": "(The intercom is all wind and winch.)"
+        },
+        {
+          "if": "spratFed",
+          "text": "Took you long enough. Did you feed Sprat?",
+          "choices": [
+            [
+              "I fed Sprat.",
+              "fed"
+            ],
+            [
+              "Hello to you too.",
+              "hello"
+            ]
+          ]
+        },
+        {
+          "text": "Took you long enough. Did you feed Sprat?",
+          "choices": [
+            [
+              "Sprat is... fine.",
+              "notfed"
+            ],
+            [
+              "Hello to you too.",
+              "hello"
+            ]
+          ]
+        }
+      ],
+      "knock": {
+        "text": "(Two knocks back. A pause. Then one, slow. Moth's knock: wait.)"
+      },
+      "quiet": {
+        "text": "(The reefer hums. Its label says 4°C. It is not 4°C in there.)"
+      },
+      "fed": {
+        "text": "You did? He'll act like you didn't. He holds a grudge like a much bigger fish.",
+        "choices": [
+          [
+            "Moth. What happened to me?",
+            "deleted"
+          ]
+        ]
+      },
+      "notfed": {
+        "text": "You didn't. I can hear it in your voice. It's fine. He's a fish. He'll turn it into a story about how he survived.",
+        "choices": [
+          [
+            "Moth. What happened to me?",
+            "deleted"
+          ]
+        ]
+      },
+      "hello": {
+        "text": "Hello. Sorry. Two days in a fridge set to warm. Manners go first. Then the left foot.",
+        "choices": [
+          [
+            "Moth. What happened to me?",
+            "deleted"
+          ]
+        ]
+      },
+      "deleted": [
+        {
+          "if": "alarms",
+          "text": "First: that alarm. Subtle. I bit my own sleeve. Second: you. Your door says rent: pending, the street looks through you, the turnstiles think about it. That's not a glitch. You were deleted. On purpose.",
+          "choices": [
+            [
+              "On purpose? By who?",
+              "list"
+            ]
+          ]
+        },
+        {
+          "text": "Your door says rent: pending. The street looks through you. The turnstiles think about it. That's not a glitch, and it's not your rent. You were deleted. On purpose.",
+          "choices": [
+            [
+              "On purpose? By who?",
+              "list"
+            ]
+          ]
+        }
+      ],
+      "list": {
+        "text": "The Registry. Tuesday, 03:12, one batch: you and four hundred and six others. I was inside on a boring job, address records, and there was a list. Signed, dated, approved. Your name on it, spelt right for once.",
+        "choices": [
+          [
+            "What did you do?",
+            "took"
+          ]
+        ]
+      },
+      "took": {
+        "text": "I took it. Badly. Registry files don't leave in one piece: it came apart into seven root fragments, and each one went back to wherever its key lives. The relay on Downtown's roof had one. You've been carrying a piece of this since before you knew.",
+        "choices": [
+          [
+            "And the Registry?",
+            "knows"
+          ]
+        ]
+      },
+      "knows": {
+        "text": "Knows I have it. That's why I'm in a fridge, and why their dog walks this quay. They don't need the list back. They need me. Then you, because you came looking.",
+        "choices": [
+          [
+            "Where does it end?",
+            "spire"
+          ]
+        ]
+      },
+      "spire": {
+        "text": "Up. The antenna on Plaza Central, top of the Spire. The list's lock is up there. Put the seven pieces back in and everyone on it comes back. You included. Probably. I didn't read the manual. I stole it.",
+        "choices": [
+          [
+            "And you?",
+            "deck"
+          ]
+        ]
+      },
+      "deck": {
+        "text": "The ferry leaves when it's full, and I'm the last box. Out on the water their gates only scan fish. I'll be on your deck: messages, when there's signal. I find out where the pieces are. You go and get them. You were always better with doors.",
+        "choices": [
+          [
+            "Don't go dark again.",
+            "end"
+          ],
+          [
+            "Moth. Thank you.",
+            "end"
+          ]
+        ]
+      },
+      "end": {
+        "text": "No promises. I'm a moth. Go on. And feed Sprat.",
+        "do": [
+          {
+            "effect": "moth.end"
+          }
+        ]
+      }
+    }
+  },
+  "cables": [
+    {
+      "id": "alarm",
+      "from": "port.scanner:warm",
+      "to": "port.alarm",
+      "verb": "sound"
+    },
+    {
+      "id": "clearance",
+      "from": "ferry.watchdog:leaves",
+      "to": "sts2.spreader",
+      "verb": "lift"
+    }
+  ],
+  "initialState": {
+    "found": false,
+    "box": "B-6",
+    "boxAt": "stack",
+    "alarms": 0,
+    "loaded": 0,
+    "talked": false,
+    "departed": false
+  }
+}

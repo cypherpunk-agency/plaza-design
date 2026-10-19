@@ -19,7 +19,6 @@ export function publicEditorSnapshot(){
  const reader=new SourceReader(game,sourceDocuments.map(document=>document.file));
  const documents:LoadedDocument[]=sourceDocuments.map(descriptor=>{
   const raw=reader.read(descriptor.file).text,value:unknown=JSON.parse(raw);
-  descriptor.validate(value);
   return{id:descriptor.id,kind:descriptor.kind,revision:sha(raw),value};
  });
  validateSourceDocuments(new Map(documents.map(document=>[document.id,document.value])));

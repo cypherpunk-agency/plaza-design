@@ -1,0 +1,1350 @@
+{
+  "version": 1,
+  "id": "market",
+  "name": "Street Market",
+  "intro": [
+    "The night market. Cash, noise and nobody looking up."
+  ],
+  "uses": [
+    {
+      "id": "haggle",
+      "name": "UMBRELLA SELLER",
+      "label": "[E] HAGGLE \u00b7 UMBRELLA",
+      "purchase": "market.umbrella",
+      "routes": [
+        {
+          "pages": [
+            "You already have one of mine. It works. Mostly.",
+            "If it asks for an update, say no."
+          ],
+          "when": {
+            "flag": "market:umbrella"
+          }
+        },
+        {
+          "pages": [
+            "Umbrella? Nine tokens.",
+            "Look up. The sky does my advertising."
+          ],
+          "command": "market.haggle.0",
+          "when": {
+            "state": "market.haggle",
+            "is": 0
+          }
+        },
+        {
+          "pages": [
+            "Seven. Because you have an honest face. Unregistered, but honest."
+          ],
+          "command": "market.haggle.1",
+          "when": {
+            "state": "market.haggle",
+            "is": 1
+          }
+        },
+        {
+          "pages": [
+            "Four. I have children to feed.",
+            "(The kid at the fruit stall waves at him. He does not wave back.)"
+          ],
+          "command": "market.haggle.2",
+          "when": {
+            "state": "market.haggle",
+            "is": 2
+          }
+        },
+        {
+          "pages": [
+            "ONE token. Final. You are robbing me in front of the cameras.",
+            "Haggle again to pay."
+          ],
+          "command": "market.haggle.3",
+          "when": {
+            "state": "market.haggle",
+            "is": 3
+          }
+        },
+        {
+          "pages": [
+            "Pleasure. It is a smart umbrella: it opens once you accept its terms.",
+            "Forty pages. Read them under a roof."
+          ],
+          "command": "market.umbrella.buy",
+          "failure": [
+            "No tokens? Then that was haggling for the exercise.",
+            "Come back with one. The rain will wait. It always waits."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fortune",
+      "name": "FORTUNE UNIT 9",
+      "label": "[E] FORTUNE",
+      "purchase": "market.fortune",
+      "cycle": true,
+      "cycleState": "market.fortune",
+      "routes": [
+        {
+          "pages": [
+            "FORTUNE UNIT 9 SEES... a stranger. You are in a market. That was not hard."
+          ],
+          "command": "market.fortune.0",
+          "failure": [
+            "FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.",
+            "IT CAN SEE YOUR BALANCE. IT IS ZERO."
+          ]
+        },
+        {
+          "pages": [
+            "FORTUNE UNIT 9 SEES... a friend who is not fishing. A boat that knows where.",
+            "That will be all. FORTUNE UNIT 9 does not do follow-up questions."
+          ],
+          "command": "market.fortune.1",
+          "failure": [
+            "FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.",
+            "IT CAN SEE YOUR BALANCE. IT IS ZERO."
+          ]
+        },
+        {
+          "pages": [
+            "FORTUNE UNIT 9 SEES... a door that opens. Do not trust the door."
+          ],
+          "command": "market.fortune.2",
+          "failure": [
+            "FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.",
+            "IT CAN SEE YOUR BALANCE. IT IS ZERO."
+          ]
+        },
+        {
+          "pages": [
+            "FORTUNE UNIT 9 SEES... your credit score rising.",
+            "Correction: someone else's. FORTUNE UNIT 9 regrets the error."
+          ],
+          "command": "market.fortune.3",
+          "failure": [
+            "FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.",
+            "IT CAN SEE YOUR BALANCE. IT IS ZERO."
+          ]
+        },
+        {
+          "pages": [
+            "FORTUNE UNIT 9 SEES... rain. FORTUNE UNIT 9 is never wrong about rain."
+          ],
+          "command": "market.fortune.4",
+          "failure": [
+            "FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.",
+            "IT CAN SEE YOUR BALANCE. IT IS ZERO."
+          ]
+        }
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "cook",
+      "name": "NOODLE COOK",
+      "conversation": "talk.market.cook"
+    },
+    {
+      "id": "fish",
+      "name": "FISHMONGER",
+      "conversation": "talk.market.fish"
+    },
+    {
+      "id": "repair",
+      "name": "REPAIRS",
+      "conversation": "talk.market.repair"
+    },
+    {
+      "id": "sleeper",
+      "name": "FIRMWARE VENDOR",
+      "conversation": "talk.market.sleeper"
+    },
+    {
+      "id": "regular",
+      "name": "REGULAR",
+      "talk": [
+        [
+          "Twenty years I have eaten here.",
+          "The recipe changed forty times. The price only ever changed one way."
+        ],
+        [
+          "Do not take that stool. It reports to the Registry.",
+          "...I am joking. The stool is freelance."
+        ]
+      ]
+    },
+    {
+      "id": "kid",
+      "name": "KID",
+      "talk": [
+        [
+          "I am not stealing. I am testing their security.",
+          "Report: there is none."
+        ],
+        [
+          "You did not see anything. I saw you, though. Two tokens and I forget your face.",
+          "The cameras charge more."
+        ]
+      ]
+    },
+    {
+      "id": "queue",
+      "name": "IN THE QUEUE",
+      "talk": [
+        [
+          "The queue is sorted by credit score.",
+          "I was first when I got here. That was two hours ago."
+        ],
+        [
+          "Someone with a 900 just walked in and got served before he was hungry."
+        ]
+      ]
+    },
+    {
+      "id": "busker",
+      "name": "BUSKER",
+      "talk": [
+        [
+          "This one is called Rain On Tin. I wrote it on tin. In the rain.",
+          "Tips are optional. Eye contact is mandatory."
+        ],
+        [
+          "I used to play the mall. Then the mall got a playlist.",
+          "The playlist does not take requests either, but it does not pretend to."
+        ],
+        [
+          "Still here? That makes you my audience. Congratulations. There is no prize."
+        ]
+      ]
+    },
+    {
+      "id": "marshal",
+      "name": "QUEUE MARSHAL",
+      "talk": [
+        [
+          "Wait for green. Green is coming.",
+          "Green has been coming since I was installed."
+        ],
+        [
+          "Your score is not my business. It is my whole job, but it is not my business."
+        ]
+      ]
+    },
+    {
+      "id": "oldunit",
+      "name": "OLD UNIT",
+      "talk": [
+        [
+          "...hello. Do you have a spare servo? A bolt? Half a bolt?",
+          "I sorted parcels for nineteen years. Then they sorted me."
+        ],
+        [
+          "The new model does my job and sings. I did not know the job needed singing."
+        ],
+        [
+          "Do not worry about me. My warranty ran out. My optimism did not. That one is a bug."
+        ]
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "sims",
+      "name": "SIM CARDS",
+      "pages": [
+        "PREPAID SIM \u00b7 ACTIVATION 3 MIN.",
+        "ALL SIMS ARE REGISTERED AT SALE. REGISTERED TO WHOM IS NOT STATED."
+      ]
+    },
+    {
+      "id": "rules",
+      "name": "MARKET RULES",
+      "pages": [
+        "TRADING HOURS 18:00\u201304:00. ALL TRANSACTIONS ARE LOGGED.",
+        "NO PHOTOGRAPHY. REGISTRY CAMERAS EXEMPT."
+      ]
+    },
+    {
+      "id": "implants",
+      "name": "USED IMPLANTS",
+      "pages": [
+        "CERTIFIED PRE-OWNED.",
+        "ORIGIN OF STOCK NOT DISCLOSED."
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "mall",
+      "to": "mall",
+      "at": "market",
+      "label": "[E] SERVICE DOOR \u00b7 MALL"
+    },
+    {
+      "id": "downtown",
+      "to": "downtown",
+      "at": "market",
+      "label": "[E] GATE \u00b7 DOWNTOWN",
+      "requires": "end"
+    },
+    {
+      "id": "laundromat",
+      "to": "laundromat",
+      "at": "market",
+      "label": "[E] LAUNDROMAT"
+    }
+  ],
+  "actors": [
+    {
+      "seed": 4101,
+      "look": {
+        "body": "wide",
+        "garb": "apron",
+        "hair": "scarf",
+        "extras": []
+      },
+      "act": "vend",
+      "id": "cook",
+      "instance": "actor-cook",
+      "band": "world",
+      "target": "cook",
+      "height": "artwork",
+      "reaction": "cook"
+    },
+    {
+      "key": true,
+      "seed": 4106,
+      "look": {
+        "body": "tall",
+        "hair": "beanie",
+        "garb": "apron",
+        "extras": []
+      },
+      "act": "vend",
+      "id": "fishmonger",
+      "instance": "actor-fishmonger",
+      "band": "world",
+      "target": "fish",
+      "height": "artwork",
+      "reaction": "fish"
+    },
+    {
+      "seed": 4108,
+      "look": {
+        "body": "wide",
+        "hair": "short",
+        "garb": "hivis",
+        "extras": [
+          "cyberarm",
+          "glasses"
+        ]
+      },
+      "act": "vend",
+      "id": "fixer2",
+      "instance": "actor-fixer2",
+      "band": "world",
+      "target": "repair",
+      "height": "artwork",
+      "reaction": "repair"
+    },
+    {
+      "seed": 4110,
+      "look": {
+        "body": "tall",
+        "hair": "long",
+        "garb": "jacket",
+        "extras": [
+          "headphones"
+        ]
+      },
+      "act": "sleep",
+      "id": "sleeper",
+      "instance": "sleeper",
+      "band": "world",
+      "target": "sleeper",
+      "height": "artwork",
+      "reaction": "sleeper"
+    },
+    {
+      "look": "pigeon",
+      "act": "stand",
+      "id": "street-0",
+      "instance": "street-0",
+      "band": "world",
+      "reaction": "slot-4",
+      "bakeSeed": 1655
+    },
+    {
+      "look": "pigeon",
+      "act": "walk",
+      "range": 30,
+      "id": "street-1",
+      "instance": "street-1",
+      "band": "world",
+      "reaction": "slot-5",
+      "bakeSeed": 1837
+    },
+    {
+      "look": "pigeon",
+      "seed": 9,
+      "act": "stand",
+      "id": "street-2",
+      "instance": "street-2",
+      "band": "world",
+      "reaction": "slot-6"
+    },
+    {
+      "seed": 4201,
+      "look": {
+        "body": "old",
+        "hair": "brim",
+        "garb": "coat",
+        "extras": []
+      },
+      "act": "sit",
+      "facing": -1,
+      "id": "street-3",
+      "instance": "street-3",
+      "band": "world",
+      "target": "regular",
+      "height": "artwork",
+      "reaction": "regular"
+    },
+    {
+      "seed": 4202,
+      "act": "phone",
+      "facing": -1,
+      "look": {
+        "extras": [
+          "phone",
+          "backpack"
+        ]
+      },
+      "id": "street-4",
+      "instance": "street-4",
+      "band": "world",
+      "reaction": "slot-8"
+    },
+    {
+      "seed": 4203,
+      "act": "walk",
+      "range": [
+        0,
+        -140
+      ],
+      "look": {
+        "extras": [
+          "umbrella"
+        ]
+      },
+      "id": "street-5",
+      "instance": "street-5",
+      "band": "world",
+      "reaction": "slot-9"
+    },
+    {
+      "seed": 4204,
+      "act": "haggle",
+      "facing": -1,
+      "look": {
+        "body": "avg",
+        "garb": "dress",
+        "extras": [
+          "bag"
+        ]
+      },
+      "id": "street-6",
+      "instance": "street-6",
+      "band": "world",
+      "reaction": "slot-10"
+    },
+    {
+      "seed": 4205,
+      "look": {
+        "body": "kid",
+        "hair": "cap",
+        "garb": "tee",
+        "extras": []
+      },
+      "act": "steal",
+      "range": [
+        0,
+        -52
+      ],
+      "speed": 0.45,
+      "id": "street-7",
+      "instance": "street-7",
+      "band": "world",
+      "target": "kid",
+      "reaction": "kid"
+    },
+    {
+      "look": "drone",
+      "act": "scan",
+      "id": "street-8",
+      "instance": "street-8",
+      "band": "world",
+      "height": "artwork",
+      "reaction": "slot-12",
+      "bakeSeed": 6737
+    },
+    {
+      "seed": 4206,
+      "act": "stand",
+      "facing": 1,
+      "look": {
+        "body": "avg",
+        "hair": "hood",
+        "garb": "jacket",
+        "extras": []
+      },
+      "id": "street-9",
+      "instance": "street-9",
+      "band": "world",
+      "reaction": "slot-13"
+    },
+    {
+      "look": "cat",
+      "seed": 2,
+      "act": "sit",
+      "facing": -1,
+      "id": "street-10",
+      "instance": "street-10",
+      "band": "world",
+      "reaction": "slot-14"
+    },
+    {
+      "look": "courier",
+      "act": "walk",
+      "range": [
+        0,
+        600
+      ],
+      "speed": 0.5,
+      "id": "street-11",
+      "instance": "street-11",
+      "band": "world",
+      "reaction": "slot-15",
+      "bakeSeed": 4623
+    },
+    {
+      "seed": 4207,
+      "act": "argue",
+      "facing": 1,
+      "look": {
+        "body": "tall",
+        "garb": "coat",
+        "hair": "long"
+      },
+      "id": "street-12",
+      "instance": "street-12",
+      "band": "world",
+      "reaction": "slot-16"
+    },
+    {
+      "seed": 4208,
+      "act": "argue",
+      "facing": -1,
+      "look": {
+        "body": "short",
+        "garb": "jacket",
+        "hair": "mohawk",
+        "extras": [
+          "mask"
+        ]
+      },
+      "id": "street-13",
+      "instance": "street-13",
+      "band": "world",
+      "reaction": "slot-17"
+    },
+    {
+      "seed": 4209,
+      "act": "queue",
+      "facing": -1,
+      "look": {
+        "extras": [
+          "phone"
+        ]
+      },
+      "id": "street-14",
+      "instance": "street-14",
+      "band": "world",
+      "reaction": "slot-18"
+    },
+    {
+      "seed": 4210,
+      "act": "queue",
+      "facing": -1,
+      "look": {
+        "body": "wide",
+        "garb": "hivis",
+        "hair": "helmet",
+        "extras": []
+      },
+      "id": "street-15",
+      "instance": "street-15",
+      "band": "world",
+      "target": "queue",
+      "reaction": "queue"
+    },
+    {
+      "seed": 4211,
+      "act": "queue",
+      "facing": -1,
+      "look": {
+        "body": "kid",
+        "extras": []
+      },
+      "id": "street-16",
+      "instance": "street-16",
+      "band": "world",
+      "reaction": "slot-20"
+    },
+    {
+      "seed": 4212,
+      "act": "queue",
+      "facing": -1,
+      "look": {
+        "body": "old",
+        "extras": [
+          "cane"
+        ]
+      },
+      "id": "street-17",
+      "instance": "street-17",
+      "band": "world",
+      "reaction": "slot-21"
+    },
+    {
+      "look": "cleaner",
+      "act": "walk",
+      "range": [
+        0,
+        80
+      ],
+      "id": "street-18",
+      "instance": "street-18",
+      "band": "world",
+      "reaction": "slot-22",
+      "bakeSeed": 13303
+    },
+    {
+      "seed": 4213,
+      "act": "lean",
+      "facing": -1,
+      "look": {
+        "garb": "jacket",
+        "hair": "short",
+        "extras": []
+      },
+      "id": "street-19",
+      "instance": "street-19",
+      "band": "world",
+      "reaction": "slot-23"
+    },
+    {
+      "seed": 4214,
+      "act": "walk",
+      "range": [
+        40,
+        520
+      ],
+      "look": {
+        "extras": [
+          "bag"
+        ]
+      },
+      "id": "street-20",
+      "instance": "street-20",
+      "band": "world",
+      "reaction": "slot-24"
+    },
+    {
+      "seed": 4230,
+      "look": {
+        "body": "wide",
+        "garb": "suit",
+        "hair": "bald",
+        "extras": [
+          "glasses"
+        ]
+      },
+      "act": "walk",
+      "range": [
+        0,
+        340
+      ],
+      "speed": 0.24,
+      "id": "street-21",
+      "instance": "street-21",
+      "band": "world",
+      "reaction": "slot-25"
+    },
+    {
+      "seed": 4215,
+      "act": "walk",
+      "range": [
+        0,
+        420
+      ],
+      "id": "street-22",
+      "instance": "street-22",
+      "band": "world",
+      "reaction": "slot-26"
+    },
+    {
+      "look": "sweeper",
+      "seed": 4301,
+      "act": "sweep",
+      "range": [
+        0,
+        72
+      ],
+      "id": "street-23",
+      "instance": "street-23",
+      "band": "world",
+      "reaction": "slot-27"
+    },
+    {
+      "look": {
+        "bot": "valet",
+        "v": 1
+      },
+      "seed": 4302,
+      "gap": 16,
+      "id": "street-24",
+      "instance": "street-24",
+      "band": "world",
+      "follow": "street-21",
+      "reaction": "slot-28"
+    },
+    {
+      "look": "porter",
+      "seed": 4303,
+      "gap": 20,
+      "id": "street-25",
+      "instance": "street-25",
+      "band": "world",
+      "follow": "street-20",
+      "reaction": "slot-29"
+    },
+    {
+      "look": "mech",
+      "seed": 4304,
+      "act": "patrol",
+      "range": [
+        0,
+        280
+      ],
+      "id": "street-26",
+      "instance": "street-26",
+      "band": "world",
+      "reaction": "slot-30"
+    },
+    {
+      "look": "loader",
+      "seed": 4305,
+      "act": "carry",
+      "range": [
+        10,
+        -110
+      ],
+      "id": "street-27",
+      "instance": "street-27",
+      "band": "world",
+      "reaction": "slot-31"
+    },
+    {
+      "look": "litterbot",
+      "seed": 4306,
+      "act": "roll",
+      "range": [
+        0,
+        -120
+      ],
+      "id": "street-28",
+      "instance": "street-28",
+      "band": "world",
+      "reaction": "slot-32"
+    },
+    {
+      "look": "deliverybot",
+      "seed": 4307,
+      "act": "roll",
+      "range": [
+        0,
+        330
+      ],
+      "id": "street-29",
+      "instance": "street-29",
+      "band": "world",
+      "reaction": "slot-33"
+    },
+    {
+      "seed": 4308,
+      "look": {
+        "bot": "busker",
+        "v": 0
+      },
+      "act": "play",
+      "facing": 1,
+      "id": "street-30",
+      "instance": "street-30",
+      "band": "world",
+      "target": "busker",
+      "reaction": "busker"
+    },
+    {
+      "seed": 4309,
+      "look": "marshal",
+      "act": "direct",
+      "facing": -1,
+      "id": "street-31",
+      "instance": "street-31",
+      "band": "world",
+      "target": "marshal",
+      "reaction": "marshal"
+    },
+    {
+      "seed": 4310,
+      "look": "wreck",
+      "act": "slump",
+      "facing": -1,
+      "id": "street-32",
+      "instance": "street-32",
+      "band": "world",
+      "target": "oldunit",
+      "reaction": "oldunit"
+    },
+    {
+      "look": "crawler",
+      "seed": 4311,
+      "act": "weld",
+      "facing": -1,
+      "id": "street-33",
+      "instance": "street-33",
+      "band": "world",
+      "height": "artwork",
+      "reaction": "slot-37"
+    },
+    {
+      "look": "flyerdrone",
+      "seed": 4312,
+      "act": "hover",
+      "range": [
+        0,
+        160
+      ],
+      "id": "street-34",
+      "instance": "street-34",
+      "band": "world",
+      "height": "artwork",
+      "reaction": "slot-38"
+    },
+    {
+      "look": "cargodrone",
+      "seed": 4313,
+      "act": "hover",
+      "range": [
+        0,
+        2500
+      ],
+      "speed": 0.4,
+      "id": "street-35",
+      "instance": "street-35",
+      "band": "world",
+      "height": "artwork",
+      "reaction": "slot-39"
+    },
+    {
+      "look": "minidrone",
+      "seed": 4314,
+      "act": "hover",
+      "range": [
+        0,
+        -1000
+      ],
+      "speed": 0.6,
+      "id": "street-36",
+      "instance": "street-36",
+      "band": "world",
+      "height": "artwork",
+      "reaction": "slot-40"
+    },
+    {
+      "seed": 4102,
+      "look": {
+        "body": "slim",
+        "hair": "mohawk",
+        "garb": "jacket",
+        "extras": [
+          "visor",
+          "cyberarm"
+        ]
+      },
+      "act": "phone",
+      "id": "simVendor",
+      "instance": "actor-simVendor",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.simVendor"
+    },
+    {
+      "seed": 4103,
+      "look": {
+        "body": "tall",
+        "hair": "cap",
+        "garb": "coat",
+        "extras": []
+      },
+      "act": "vend",
+      "facing": 1,
+      "id": "brolly",
+      "instance": "actor-brolly",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.brolly"
+    },
+    {
+      "seed": 4104,
+      "look": {
+        "body": "tall",
+        "hair": "bun",
+        "garb": "apron",
+        "extras": [
+          "glasses"
+        ],
+        "hairCol": "#d8d2c6"
+      },
+      "act": "haggle",
+      "facing": 1,
+      "id": "fruitVendor",
+      "instance": "actor-fruitVendor",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.fruitVendor"
+    },
+    {
+      "seed": 4105,
+      "look": {
+        "body": "tall",
+        "hair": "bald",
+        "garb": "suit",
+        "extras": [
+          "cyberarm",
+          "visor"
+        ]
+      },
+      "act": "vend",
+      "id": "implantVendor",
+      "instance": "actor-implantVendor",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.implantVendor"
+    },
+    {
+      "seed": 4107,
+      "look": {
+        "bot": "servbot",
+        "paint": "#54406a",
+        "v": 1
+      },
+      "act": "blink",
+      "facing": -1,
+      "id": "fortuneBot",
+      "instance": "actor-fortuneBot",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.fortuneBot"
+    },
+    {
+      "seed": 4109,
+      "look": {
+        "body": "avg",
+        "hair": "brim",
+        "garb": "apron",
+        "extras": [
+          "mask"
+        ]
+      },
+      "act": "vend",
+      "id": "dumplingCook",
+      "instance": "actor-dumplingCook",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.dumplingCook"
+    },
+    {
+      "seed": 1767,
+      "look": "flyerdrone",
+      "act": "hover",
+      "range": 167.54462523737206,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-0",
+      "instance": "back-0",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-0"
+    },
+    {
+      "seed": 1774,
+      "act": "walk",
+      "range": -338.13211660745185,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-1",
+      "instance": "back-1",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-1"
+    },
+    {
+      "seed": 1781,
+      "look": "flyerdrone",
+      "act": "hover",
+      "range": -128.37247409316362,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-2",
+      "instance": "back-2",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-2"
+    },
+    {
+      "seed": 1788,
+      "act": "smoke",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-3",
+      "instance": "back-3",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-3"
+    },
+    {
+      "seed": 1795,
+      "act": "walk",
+      "range": 165.74265756911723,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-4",
+      "instance": "back-4",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-4"
+    },
+    {
+      "seed": 1802,
+      "look": "minidrone",
+      "act": "hover",
+      "range": 370.24092288233385,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-5",
+      "instance": "back-5",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-5"
+    },
+    {
+      "seed": 1809,
+      "look": "minidrone",
+      "act": "hover",
+      "range": -367.0955875921508,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-6",
+      "instance": "back-6",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-6"
+    },
+    {
+      "seed": 1816,
+      "look": "android",
+      "act": "walk",
+      "range": -267.6718714217059,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-7",
+      "instance": "back-7",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-7"
+    },
+    {
+      "seed": 1823,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-8",
+      "instance": "back-8",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-8"
+    },
+    {
+      "seed": 1830,
+      "act": "phone",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-9",
+      "instance": "back-9",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-9"
+    },
+    {
+      "seed": 1837,
+      "act": "smoke",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-10",
+      "instance": "back-10",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-10"
+    },
+    {
+      "seed": 1844,
+      "look": "marshal",
+      "act": "direct",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-11",
+      "instance": "back-11",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-11"
+    },
+    {
+      "seed": 1851,
+      "act": "phone",
+      "range": 0,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-12",
+      "instance": "back-12",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-12"
+    },
+    {
+      "seed": 1858,
+      "act": "walk",
+      "range": -374.01120141801016,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-13",
+      "instance": "back-13",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-13"
+    },
+    {
+      "seed": 1865,
+      "act": "walk",
+      "range": -147.75088242616079,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-14",
+      "instance": "back-14",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-14"
+    },
+    {
+      "seed": 1872,
+      "act": "phone",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.9,
+      "id": "back-15",
+      "instance": "back-15",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.back-15"
+    },
+    {
+      "seed": 1829,
+      "act": "walk",
+      "range": -400.7918050702623,
+      "facing": -1,
+      "ps": 5,
+      "dim": 0.78,
+      "parallax": 1.3,
+      "id": "near-0",
+      "instance": "near-0",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.near-0"
+    },
+    {
+      "seed": 1836,
+      "act": "walk",
+      "range": -261.5753487691169,
+      "facing": -1,
+      "ps": 5,
+      "dim": 0.78,
+      "parallax": 1.3,
+      "id": "near-1",
+      "instance": "near-1",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.near-1"
+    },
+    {
+      "seed": 1843,
+      "act": "walk",
+      "range": 197.0872977455553,
+      "facing": -1,
+      "ps": 5,
+      "dim": 0.78,
+      "parallax": 1.3,
+      "id": "near-2",
+      "instance": "near-2",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.near-2"
+    },
+    {
+      "seed": 1850,
+      "act": "walk",
+      "range": 184.8301901132009,
+      "facing": 1,
+      "ps": 5,
+      "dim": 0.78,
+      "parallax": 1.3,
+      "id": "near-3",
+      "instance": "near-3",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.near-3"
+    }
+  ],
+  "rests": [
+    {
+      "id": "stool",
+      "kind": "stool"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "haggle": {
+        "instance": "use-haggle",
+        "promptH": 70
+      },
+      "fortune": {
+        "instance": "use-fortune",
+        "promptH": 98
+      }
+    },
+    "readables": {
+      "sims": {
+        "instance": "read-sims",
+        "promptH": 128
+      },
+      "rules": {
+        "instance": "rules",
+        "promptH": 84
+      },
+      "implants": {
+        "instance": "read-implants",
+        "promptH": 128
+      }
+    },
+    "rests": {
+      "stool": {
+        "instance": "stool",
+        "promptH": 50
+      }
+    },
+    "exits": {
+      "mall": {
+        "instance": "exit-mall",
+        "promptH": 82
+      },
+      "downtown": {
+        "instance": "exit-downtown",
+        "promptH": 82
+      },
+      "laundromat": {
+        "instance": "exit-laundromat",
+        "promptH": 92
+      }
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "weather": true
+    },
+    "facing": 0,
+    "shade": {
+      "back": {
+        "h": 170,
+        "gaps": [
+          [
+            560,
+            610
+          ],
+          [
+            1440,
+            1490
+          ]
+        ]
+      }
+    }
+  },
+  "companion": {
+    "mode": "off"
+  }
+}

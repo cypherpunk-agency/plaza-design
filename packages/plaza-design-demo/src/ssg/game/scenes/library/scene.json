@@ -27,7 +27,7 @@
       "id": "notice",
       "name": "NOTICE BOARD",
       "pages": [
-        "PUBLIC LIBRARY · DOWNTOWN BRANCH. COLLECTION DIGITIZED 2049. BUILDING RETAINED FOR SEATING.",
+        "PUBLIC LIBRARY \u00b7 DOWNTOWN BRANCH. COLLECTION DIGITIZED 2049. BUILDING RETAINED FOR SEATING.",
         "PUBLIC TERMINALS: 30 MINUTES PER VERIFIED IDENTITY PER DAY. UNUSED MINUTES ARE NOT CARRIED OVER.",
         "SOFTWARE LENDING: SUSPENDED PENDING RETURNS."
       ]
@@ -158,5 +158,217 @@
       "at": "library",
       "label": "[E] DOWNTOWN"
     }
-  ]
+  ],
+  "actors": [
+    {
+      "seed": 7107,
+      "look": {
+        "bot": "servbot",
+        "paint": "#8a7a5a",
+        "v": 0
+      },
+      "act": "roll",
+      "range": [
+        -50,
+        240
+      ],
+      "id": "shelfe",
+      "instance": "shelfe",
+      "band": "world",
+      "target": "shelfe",
+      "reaction": "shelfe"
+    },
+    {
+      "key": true,
+      "seed": 7101,
+      "look": {
+        "body": "avg",
+        "garb": "coat",
+        "hair": "bun",
+        "extras": [
+          "glasses"
+        ],
+        "top": "#4e5e3a",
+        "hairCol": "#d8d2c6"
+      },
+      "act": "stand",
+      "facing": -1,
+      "id": "librarian",
+      "instance": "librarian",
+      "band": "world",
+      "target": "librarian",
+      "reaction": "librarian"
+    },
+    {
+      "seed": 7102,
+      "look": {
+        "body": "slim",
+        "garb": "jacket",
+        "hair": "long",
+        "extras": [
+          "headphones",
+          "backpack"
+        ],
+        "top": "#46506e"
+      },
+      "act": "sit",
+      "facing": 1,
+      "id": "student",
+      "instance": "student",
+      "band": "world",
+      "target": "student",
+      "height": "artwork",
+      "reaction": "student"
+    },
+    {
+      "seed": 7103,
+      "look": {
+        "body": "kid",
+        "garb": "tee",
+        "hair": "cap",
+        "extras": [],
+        "top": "#a84a3a"
+      },
+      "act": "sit",
+      "facing": 1,
+      "id": "kid",
+      "instance": "kid",
+      "band": "world",
+      "target": "kid",
+      "height": "artwork",
+      "reaction": "kid"
+    },
+    {
+      "seed": 7104,
+      "look": {
+        "body": "old",
+        "garb": "coat",
+        "hair": "brim",
+        "extras": [
+          "cane"
+        ],
+        "top": "#6a4a3a"
+      },
+      "act": "sit",
+      "facing": 1,
+      "id": "sleeper",
+      "instance": "sleeper",
+      "band": "world",
+      "target": "sleeper",
+      "height": "artwork",
+      "reaction": "sleeper"
+    },
+    {
+      "seed": 7105,
+      "look": {
+        "body": "old",
+        "garb": "dress",
+        "hair": "scarf",
+        "extras": [
+          "bag"
+        ],
+        "top": "#7a4e7a",
+        "acc": "#d8b040"
+      },
+      "act": "sit",
+      "facing": 1,
+      "id": "knitter",
+      "instance": "knitter",
+      "band": "world",
+      "target": "knitter",
+      "height": "artwork",
+      "reaction": "knitter"
+    },
+    {
+      "seed": 7106,
+      "look": {
+        "body": "wide",
+        "garb": "suit",
+        "hair": "bald",
+        "extras": [
+          "glasses"
+        ]
+      },
+      "act": "sit",
+      "facing": -1,
+      "id": "paper",
+      "instance": "paper",
+      "band": "world",
+      "target": "paper",
+      "height": "artwork",
+      "reaction": "paper"
+    },
+    {
+      "look": "cat",
+      "seed": 11,
+      "act": "sleep",
+      "facing": -1,
+      "id": "cat",
+      "instance": "cat",
+      "band": "world",
+      "height": "artwork",
+      "reaction": "slot-7"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "room",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "chair": {
+        "instance": "armchair-4",
+        "promptH": 40,
+        "responseH": 20
+      }
+    },
+    "readables": {
+      "notice": {
+        "instance": "notice",
+        "promptH": 12
+      },
+      "terminal3": {
+        "instance": "terminal-3",
+        "anchor": "seat",
+        "x": 6,
+        "h": -12,
+        "promptH": 62
+      },
+      "book": {
+        "instance": "reference-book",
+        "promptH": 64
+      }
+    },
+    "rests": {},
+    "exits": {
+      "downtown": {
+        "instance": "downtown-door",
+        "promptH": 82
+      }
+    }
+  },
+  "environment": {},
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import type {StateDeclaration,StateValue,GameplayDefinition,GameplayState} from './types';
 export function validValue(d:StateDeclaration,v:unknown):v is StateValue {
  if(d.type==='boolean')return typeof v==='boolean';
+ if(d.type==='string')return typeof v==='string'&&v.length<=(d.maxLength??2000);
  if(d.type==='enum')return typeof v==='string'&&!!d.options?.includes(v);
  return typeof v==='number'&&Number.isSafeInteger(v)&&v>=(d.min??-1000000)&&v<=(d.max??1000000);
 }

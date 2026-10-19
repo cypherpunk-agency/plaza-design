@@ -1,0 +1,2600 @@
+{
+  "version": 1,
+  "flags": [
+    "end",
+    "metFixer",
+    "greeted",
+    "gloves",
+    "till"
+  ],
+  "items": [],
+  "events": [
+    "downtown.fixer.hint.paid"
+  ],
+  "commands": {
+    "downtown.fixer.first": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "metFixer",
+          "value": true
+        }
+      ]
+    },
+    "downtown.fixer.greet": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "greeted",
+          "value": true
+        }
+      ]
+    },
+    "downtown.fixer.gloves": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "gloves",
+          "value": true
+        }
+      ]
+    },
+    "downtown.fixer.box-hint-0": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "box"
+              },
+              {
+                "state": "downtown.hints.box",
+                "is": 0
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.box",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.box-hint-1": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "box"
+              },
+              {
+                "state": "downtown.hints.box",
+                "is": 1
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.box",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.install-hint-0": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "install"
+              },
+              {
+                "state": "downtown.hints.install",
+                "is": 0
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.install",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.install-hint-1": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "install"
+              },
+              {
+                "state": "downtown.hints.install",
+                "is": 1
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.install",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.relay-hint-0": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "relay"
+              },
+              {
+                "state": "downtown.hints.relay",
+                "is": 0
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.relay",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.relay-hint-1": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "relay"
+              },
+              {
+                "state": "downtown.hints.relay",
+                "is": 1
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.relay",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.gate-hint-0": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "gate"
+              },
+              {
+                "state": "downtown.hints.gate",
+                "is": 0
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.gate",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.gate-hint-1": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "gate"
+              },
+              {
+                "state": "downtown.hints.gate",
+                "is": 1
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.gate",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    },
+    "downtown.fixer.gate-hint-2": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "flag": "metFixer",
+                "is": true
+              },
+              {
+                "flag": "greeted",
+                "is": true
+              },
+              {
+                "not": {
+                  "objective": "handle"
+                }
+              },
+              {
+                "not": {
+                  "objective": "till"
+                }
+              },
+              {
+                "not": {
+                  "all": [
+                    {
+                      "all": [
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.left"
+                          }
+                        },
+                        {
+                          "player": {
+                            "collection": "keyring",
+                            "contains": "glove.right"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "flag": "gloves",
+                      "is": false
+                    }
+                  ]
+                }
+              },
+              {
+                "any": [
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "box"
+                      },
+                      {
+                        "state": "downtown.hints.box",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "install"
+                      },
+                      {
+                        "state": "downtown.hints.install",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "relay"
+                      },
+                      {
+                        "state": "downtown.hints.relay",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 0
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 1
+                      }
+                    ]
+                  },
+                  {
+                    "all": [
+                      {
+                        "objective": "gate"
+                      },
+                      {
+                        "state": "downtown.hints.gate",
+                        "is": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "objective": "gate"
+              },
+              {
+                "state": "downtown.hints.gate",
+                "is": 2
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "purchase": "downtown.fixer.hint"
+        },
+        {
+          "state": "downtown.hints.gate",
+          "add": 1
+        },
+        {
+          "emit": "downtown.fixer.hint.paid"
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "talk.downtown.fixer": {
+      "entry": [
+        {
+          "when": {
+            "flag": "metFixer",
+            "is": false
+          },
+          "node": "first"
+        },
+        {
+          "when": {
+            "objective": "handle"
+          },
+          "node": "handle"
+        },
+        {
+          "when": {
+            "flag": "greeted",
+            "is": false
+          },
+          "node": "greet"
+        },
+        {
+          "when": {
+            "objective": "till"
+          },
+          "node": "till"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "player": {
+                      "collection": "keyring",
+                      "contains": "glove.left"
+                    }
+                  },
+                  {
+                    "player": {
+                      "collection": "keyring",
+                      "contains": "glove.right"
+                    }
+                  }
+                ]
+              },
+              {
+                "flag": "gloves",
+                "is": false
+              }
+            ]
+          },
+          "node": "gloves"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "box"
+                  },
+                  {
+                    "state": "downtown.hints.box",
+                    "is": 0
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "box-hint-0"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "box"
+                  },
+                  {
+                    "state": "downtown.hints.box",
+                    "is": 1
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "box-hint-1"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "objective": "box"
+              },
+              {
+                "not": {
+                  "any": [
+                    {
+                      "state": "downtown.hints.box",
+                      "is": 0
+                    },
+                    {
+                      "state": "downtown.hints.box",
+                      "is": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "node": "box-exhausted"
+        },
+        {
+          "when": {
+            "objective": "box"
+          },
+          "node": "box-broke"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "install"
+                  },
+                  {
+                    "state": "downtown.hints.install",
+                    "is": 0
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "install-hint-0"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "install"
+                  },
+                  {
+                    "state": "downtown.hints.install",
+                    "is": 1
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "install-hint-1"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "objective": "install"
+              },
+              {
+                "not": {
+                  "any": [
+                    {
+                      "state": "downtown.hints.install",
+                      "is": 0
+                    },
+                    {
+                      "state": "downtown.hints.install",
+                      "is": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "node": "install-exhausted"
+        },
+        {
+          "when": {
+            "objective": "install"
+          },
+          "node": "install-broke"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "relay"
+                  },
+                  {
+                    "state": "downtown.hints.relay",
+                    "is": 0
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "relay-hint-0"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "relay"
+                  },
+                  {
+                    "state": "downtown.hints.relay",
+                    "is": 1
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "relay-hint-1"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "objective": "relay"
+              },
+              {
+                "not": {
+                  "any": [
+                    {
+                      "state": "downtown.hints.relay",
+                      "is": 0
+                    },
+                    {
+                      "state": "downtown.hints.relay",
+                      "is": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "node": "relay-exhausted"
+        },
+        {
+          "when": {
+            "objective": "relay"
+          },
+          "node": "relay-broke"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "gate"
+                  },
+                  {
+                    "state": "downtown.hints.gate",
+                    "is": 0
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "gate-hint-0"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "gate"
+                  },
+                  {
+                    "state": "downtown.hints.gate",
+                    "is": 1
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "gate-hint-1"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "all": [
+                  {
+                    "objective": "gate"
+                  },
+                  {
+                    "state": "downtown.hints.gate",
+                    "is": 2
+                  }
+                ]
+              },
+              {
+                "tokensAtLeast": 1
+              }
+            ]
+          },
+          "node": "gate-hint-2"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "objective": "gate"
+              },
+              {
+                "not": {
+                  "any": [
+                    {
+                      "state": "downtown.hints.gate",
+                      "is": 0
+                    },
+                    {
+                      "state": "downtown.hints.gate",
+                      "is": 1
+                    },
+                    {
+                      "state": "downtown.hints.gate",
+                      "is": 2
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "node": "gate-exhausted"
+        },
+        {
+          "when": {
+            "objective": "gate"
+          },
+          "node": "gate-broke"
+        },
+        {
+          "node": "done"
+        }
+      ],
+      "nodes": {
+        "first": {
+          "speaker": "FIXER",
+          "pages": [
+            "Another ghost. Sit.",
+            "Noodles are free for the dead.",
+            "Registry pulled your key? Then nobody on this street sees you.",
+            "Got a name, ghost? Your deck has a keyboard. Type it."
+          ],
+          "onEnter": "downtown.fixer.first",
+          "completion": {
+            "terminalPrefill": "set handle "
+          }
+        },
+        "handle": {
+          "speaker": "FIXER",
+          "pages": [
+            "Name first. Your deck, the keyboard: set handle, then the name."
+          ],
+          "completion": {
+            "terminalPrefill": "set handle "
+          }
+        },
+        "greet": {
+          "speaker": "FIXER",
+          "pages": [
+            "{player:name}. Fine name for a nobody.",
+            "House rule: hints cost a bowl. Answers aren't on the menu.",
+            "You're broke, though. And my till still runs on factory settings. Don't tell anyone."
+          ],
+          "template": true,
+          "onEnter": "downtown.fixer.greet"
+        },
+        "till": {
+          "speaker": "FIXER",
+          "pages": [
+            "The till is right there. Factory settings. Every manual prints them."
+          ]
+        },
+        "gloves": {
+          "speaker": "FIXER",
+          "pages": [
+            "Two gloves. Left and right. Let me see.",
+            "Moth's gloves. Moth loses one of everything.",
+            "Keys, gloves, sleep, flats. Never a friend, though. Eat something."
+          ],
+          "onEnter": "downtown.fixer.gloves"
+        },
+        "box-hint-0": {
+          "speaker": "FIXER",
+          "pages": [
+            "That junction box under the VERIFY sign belongs to the Registry. Older than you.",
+            "One bowl. Here:",
+            "Signs on this street never fully light. Read what the one above the box really says."
+          ],
+          "onEnter": "downtown.fixer.box-hint-0"
+        },
+        "box-hint-1": {
+          "speaker": "FIXER",
+          "pages": [
+            "That junction box under the VERIFY sign belongs to the Registry. Older than you.",
+            "One bowl. Here:",
+            "The box only takes maintenance logins. It says so itself, if you ask it to list its files."
+          ],
+          "onEnter": "downtown.fixer.box-hint-1"
+        },
+        "box-exhausted": {
+          "speaker": "FIXER",
+          "pages": [
+            "That junction box under the VERIFY sign belongs to the Registry. Older than you.",
+            "That's all I know. The rest is yours."
+          ]
+        },
+        "box-broke": {
+          "speaker": "FIXER",
+          "pages": [
+            "That junction box under the VERIFY sign belongs to the Registry. Older than you.",
+            "No tokens, no hints. Noodles aren't free twice."
+          ]
+        },
+        "install-hint-0": {
+          "speaker": "FIXER",
+          "pages": [
+            "The box went dark. Half the street noticed. Use what you took.",
+            "One bowl. Here:",
+            "Found something on that box? Modules don't install themselves."
+          ],
+          "onEnter": "downtown.fixer.install-hint-0"
+        },
+        "install-hint-1": {
+          "speaker": "FIXER",
+          "pages": [
+            "The box went dark. Half the street noticed. Use what you took.",
+            "One bowl. Here:",
+            "Go back to the box. What does it list now that it trusts you?"
+          ],
+          "onEnter": "downtown.fixer.install-hint-1"
+        },
+        "install-exhausted": {
+          "speaker": "FIXER",
+          "pages": [
+            "The box went dark. Half the street noticed. Use what you took.",
+            "That's all I know. The rest is yours."
+          ]
+        },
+        "install-broke": {
+          "speaker": "FIXER",
+          "pages": [
+            "The box went dark. Half the street noticed. Use what you took.",
+            "No tokens, no hints. Noodles aren't free twice."
+          ]
+        },
+        "relay-hint-0": {
+          "speaker": "FIXER",
+          "pages": [
+            "Legs. Good. Rooftops are where the Registry forgot to look.",
+            "One bowl. Here:",
+            "Admins write everything down. Read their notes."
+          ],
+          "onEnter": "downtown.fixer.relay-hint-0"
+        },
+        "relay-hint-1": {
+          "speaker": "FIXER",
+          "pages": [
+            "Legs. Good. Rooftops are where the Registry forgot to look.",
+            "One bowl. Here:",
+            "Rotation policies are lazy. Same password, different direction."
+          ],
+          "onEnter": "downtown.fixer.relay-hint-1"
+        },
+        "relay-exhausted": {
+          "speaker": "FIXER",
+          "pages": [
+            "Legs. Good. Rooftops are where the Registry forgot to look.",
+            "That's all I know. The rest is yours."
+          ]
+        },
+        "relay-broke": {
+          "speaker": "FIXER",
+          "pages": [
+            "Legs. Good. Rooftops are where the Registry forgot to look.",
+            "No tokens, no hints. Noodles aren't free twice."
+          ]
+        },
+        "gate-hint-0": {
+          "speaker": "FIXER",
+          "pages": [
+            "The Market is west. Their gate wants a scanner signature. That's tomorrow's problem.",
+            "One bowl. Here:",
+            "The gate wants a scanner signature. Nobody on this street has one. Nobody human."
+          ],
+          "onEnter": "downtown.fixer.gate-hint-0"
+        },
+        "gate-hint-1": {
+          "speaker": "FIXER",
+          "pages": [
+            "The Market is west. Their gate wants a scanner signature. That's tomorrow's problem.",
+            "One bowl. Here:",
+            "Robots get their routes from DISPATCH. DISPATCH hides behind shields. Shields come down outside in."
+          ],
+          "onEnter": "downtown.fixer.gate-hint-1"
+        },
+        "gate-hint-2": {
+          "speaker": "FIXER",
+          "pages": [
+            "The Market is west. Their gate wants a scanner signature. That's tomorrow's problem.",
+            "One bowl. Here:",
+            "That gate shuts behind everything that goes through. Something tells it to. Read its wiring."
+          ],
+          "onEnter": "downtown.fixer.gate-hint-2"
+        },
+        "gate-exhausted": {
+          "speaker": "FIXER",
+          "pages": [
+            "The Market is west. Their gate wants a scanner signature. That's tomorrow's problem.",
+            "That's all I know. The rest is yours."
+          ]
+        },
+        "gate-broke": {
+          "speaker": "FIXER",
+          "pages": [
+            "The Market is west. Their gate wants a scanner signature. That's tomorrow's problem.",
+            "No tokens, no hints. Noodles aren't free twice."
+          ]
+        },
+        "done": {
+          "speaker": "FIXER",
+          "pages": [
+            "A delivery robot. Of course. Nobody checks the help.",
+            "That's all I know. The rest is yours."
+          ]
+        }
+      }
+    },
+    "talk.downtown.hood": {
+      "entry": [
+        {
+          "when": {
+            "player": {
+              "collection": "controlled",
+              "contains": "0x3C"
+            }
+          },
+          "node": "pigeon"
+        },
+        {
+          "when": {
+            "player": {
+              "collection": "controlled"
+            }
+          },
+          "node": "after"
+        },
+        {
+          "node": "before"
+        }
+      ],
+      "nodes": {
+        "before": {
+          "speaker": "HOODED STRANGER",
+          "pages": [
+            "Not authenticated. Not my problem."
+          ]
+        },
+        "after": {
+          "speaker": "HOODED STRANGER",
+          "pages": [
+            "A box on this street went dark.",
+            "Registry is sending a van. Wasn't you, right?"
+          ]
+        },
+        "pigeon": {
+          "speaker": "HOODED STRANGER",
+          "pages": [
+            "Billboard's showing a pigeon.",
+            "Best thing it ever ran."
+          ]
+        }
+      }
+    },
+    "talk.downtown.umbrella": {
+      "entry": [
+        {
+          "when": {
+            "player": {
+              "collection": "controlled"
+            }
+          },
+          "node": "after"
+        },
+        {
+          "node": "before"
+        }
+      ],
+      "nodes": {
+        "before": {
+          "speaker": "UMBRELLA",
+          "pages": [
+            "I don't see you. That's the deal.",
+            "Unless you're selling Registry Premium. Terms: forever. Cancellation: see Terms. I read them twice."
+          ]
+        },
+        "after": {
+          "speaker": "UMBRELLA",
+          "pages": [
+            "Still nobody. A louder nobody, though."
+          ]
+        }
+      }
+    },
+    "talk.downtown.hat": {
+      "entry": [
+        {
+          "when": {
+            "player": {
+              "collection": "controlled"
+            }
+          },
+          "node": "after"
+        },
+        {
+          "node": "before"
+        }
+      ],
+      "nodes": {
+        "before": {
+          "speaker": "MAN IN A HAT",
+          "pages": [
+            "Keep walking, ghost."
+          ]
+        },
+        "after": {
+          "speaker": "MAN IN A HAT",
+          "pages": [
+            "Heard the noodle guy talks to ghosts now.",
+            "Bad for business. His, not mine."
+          ]
+        }
+      }
+    },
+    "talk.downtown.unknown": {
+      "entry": [
+        {
+          "when": {
+            "player": {
+              "collection": "controlled"
+            }
+          },
+          "node": "after"
+        },
+        {
+          "node": "before"
+        }
+      ],
+      "nodes": {
+        "before": {
+          "speaker": "STRANGER",
+          "pages": [
+            "..."
+          ]
+        },
+        "after": {
+          "speaker": "STRANGER",
+          "pages": [
+            "..."
+          ]
+        }
+      }
+    }
+  },
+  "state": {
+    "downtown.hints.box": {
+      "owner": "downtown.hints",
+      "type": "number",
+      "lifetime": "save",
+      "default": 0,
+      "min": 0,
+      "max": 1000000
+    },
+    "downtown.hints.install": {
+      "owner": "downtown.hints",
+      "type": "number",
+      "lifetime": "save",
+      "default": 0,
+      "min": 0,
+      "max": 1000000
+    },
+    "downtown.hints.relay": {
+      "owner": "downtown.hints",
+      "type": "number",
+      "lifetime": "save",
+      "default": 0,
+      "min": 0,
+      "max": 1000000
+    },
+    "downtown.hints.gate": {
+      "owner": "downtown.hints",
+      "type": "number",
+      "lifetime": "save",
+      "default": 0,
+      "min": 0,
+      "max": 1000000
+    }
+  },
+  "purchases": {
+    "downtown.fixer.hint": {
+      "service": true,
+      "basePrice": 1,
+      "modifiers": [
+        {
+          "id": "not-a-paid-hint",
+          "when": {
+            "not": {
+              "all": [
+                {
+                  "flag": "metFixer",
+                  "is": true
+                },
+                {
+                  "flag": "greeted",
+                  "is": true
+                },
+                {
+                  "not": {
+                    "objective": "handle"
+                  }
+                },
+                {
+                  "not": {
+                    "objective": "till"
+                  }
+                },
+                {
+                  "not": {
+                    "all": [
+                      {
+                        "all": [
+                          {
+                            "player": {
+                              "collection": "keyring",
+                              "contains": "glove.left"
+                            }
+                          },
+                          {
+                            "player": {
+                              "collection": "keyring",
+                              "contains": "glove.right"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "flag": "gloves",
+                        "is": false
+                      }
+                    ]
+                  }
+                },
+                {
+                  "any": [
+                    {
+                      "all": [
+                        {
+                          "objective": "box"
+                        },
+                        {
+                          "state": "downtown.hints.box",
+                          "is": 0
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "box"
+                        },
+                        {
+                          "state": "downtown.hints.box",
+                          "is": 1
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "install"
+                        },
+                        {
+                          "state": "downtown.hints.install",
+                          "is": 0
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "install"
+                        },
+                        {
+                          "state": "downtown.hints.install",
+                          "is": 1
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "relay"
+                        },
+                        {
+                          "state": "downtown.hints.relay",
+                          "is": 0
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "relay"
+                        },
+                        {
+                          "state": "downtown.hints.relay",
+                          "is": 1
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "gate"
+                        },
+                        {
+                          "state": "downtown.hints.gate",
+                          "is": 0
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "gate"
+                        },
+                        {
+                          "state": "downtown.hints.gate",
+                          "is": 1
+                        }
+                      ]
+                    },
+                    {
+                      "all": [
+                        {
+                          "objective": "gate"
+                        },
+                        {
+                          "state": "downtown.hints.gate",
+                          "is": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "amount": -1,
+          "scope": "both"
+        }
+      ]
+    }
+  }
+}

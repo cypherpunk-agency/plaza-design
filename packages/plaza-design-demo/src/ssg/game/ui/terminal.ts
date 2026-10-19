@@ -101,15 +101,16 @@ export class Terminal {
     this.input.setSelectionRange(text.length, text.length);
   }
 
-  print(text: string, kind: LineKind = 'out') {
+  print(text: string, kind: LineKind = 'out', notify=true,receipt?:import('../engine/feedback-receipt').FeedbackReceipt) {
     for (const line of text.split('\n')) {
       const div = document.createElement('div');
       div.className = 'term-line term-' + kind;
       div.textContent = line;
+      if(receipt){div.setAttribute?.('data-feedback-id',receipt.id);div.setAttribute?.('data-feedback-source',receipt.source);}
       this.out.appendChild(div);
     }
     while (this.out.childElementCount > 200) this.out.firstElementChild?.remove();
-    this.onLine?.(text, kind);
+    if(notify)this.onLine?.(text, kind);
     if (this.touch) this.refresh();
     this.scroll();
   }

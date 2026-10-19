@@ -12,13 +12,13 @@ const n=(p:Properties,k:string)=>Number(p[k]);
 const origin:Anchor={x:0,h:0,role:'origin'};
 const raised=(v:View,h:number):View=>h===0?v:({...v,gy:v.gy-h,y:value=>v.y(value+h)});
 export const sandboxVisualFields:Record<string,Field>={snapshot:{kind:'json',label:'QA visual snapshot',default:emptySandboxSnapshot as unknown as Value,validate:validateSandboxSnapshot}};
-function layout():SandboxLayout{return{door:0,spawn:0,plan:0,reset:0,lead:0,dispenser:0,tech:0,radiator:0,bench:0,window:{x0:0,x1:260,h0:30,h1:152},end:0};}
+function layout():SandboxLayout{return{door:0,spawn:0,plan:0,reset:0,dispenser:0,radiator:0,bench:0,window:{x0:0,x1:260,h0:30,h1:152},end:0};}
 type Kernels=ReturnType<typeof createSandboxArtwork>;
 const cache=new Map<string,{inputs:ArtworkInputs;art:Kernels}>();
 function kernel(snapshot:SandboxSnapshot,extra:Partial<Omit<ArtworkInputs,'visual'>>={}){const config={SB:layout(),STATIONS:[],SANDBOX_W:3740,...extra},key=JSON.stringify(config);let had=cache.get(key);if(!had){const inputs={...config,visual:snapshot};had={inputs,art:createSandboxArtwork(inputs)};if(cache.size>=2048)cache.clear();cache.set(key,had);}had.inputs.visual=snapshot;return had.art;}
 const visual=(s:Properties)=>s.snapshot as unknown as SandboxSnapshot;
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:SandboxSnapshot,at:Required<Placement>)=>void;
-function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'sandbox.'+id,version:1,label,category,coordinates:'world',fields,visualFields:sandboxVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,visual(s),at)};}
+function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'sandbox.'+id,bindingIdentity:'presentation',version:1,label,category,coordinates:'world',fields,visualFields:sandboxVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,visual(s),at)};}
 const box=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 export const sandboxPieceDefinitions: {id:string;method:keyof Kernels;device?:string}[]=[
   {

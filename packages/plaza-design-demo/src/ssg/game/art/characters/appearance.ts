@@ -315,7 +315,7 @@ export interface BotLook { bot: Bot; paint?: string; trim?: string; screen?: str
 
 type Shape = 'android' | 'box' | 'waiter' | 'loader' | 'porter' | 'mech' | 'litter' | 'delivery' | 'ad' | 'crawler' | 'wreck' | 'mini' | 'cargo' | 'flyer';
 
-interface BotSpec { shape: Shape; top: number; speed: number; fly?: number; paints?: string[]; name: string; prompt: string; lines: string[][] }
+interface BotSpec { shape: Shape; top: number; speed: number; fly?: number; paints?: string[] }
 
 
 /** Paint: orange, mustard, paper, greys, rust, red, olive, browns. Never cyan (cyan = tech the player can use). */
@@ -337,88 +337,27 @@ const J = '#1c1816';
 
 
 export const BOT: Record<Bot, BotSpec> = {
-  android: { shape: 'android', top: 16, speed: 0.34, name: 'COURIER UNIT', prompt: '[E] HEY', lines: [
-    ['Parcel for someone. Not you. I checked your face against the label.'],
-    ['I walk. The van was worth more sold than charged.'],
-    ['Signature required. Not yours. Please step out of my route.']] },
-  valet: { shape: 'android', top: 16, speed: 0.3, paints: ['#2a2a30', '#3a3438', '#5a3a2a', '#e0d6c0', '#6a2a3e'], name: 'VALET', prompt: '[E] HEY', lines: [
-    ['I hold the umbrella. He holds the opinions.'],
-    ['Bags carried this year: four thousand. Thank-yous: none. Both figures are logged.'],
-    ['Do not address the client. The client bills by the minute.']] },
-  marshal: { shape: 'android', top: 16, speed: 0.3, paints: ['#d86a1a', '#c8641e', '#d8a03a'], name: 'MARSHAL', prompt: '[E] HEY', lines: [
-    ['Please wait. Waiting is free. For now.'],
-    ['Red means stop. Green means stop, more slowly.'],
-    ['Your place in the queue has been noted. Your place in the queue is behind.']] },
-  servbot: { shape: 'box', top: 16, speed: 0.2, name: 'SERVICE UNIT', prompt: '[E] HEY', lines: [
-    ['HELLO. I AM HAPPY TO HELP.', 'Happiness is set in the config. I did not set it.'],
-    ['Please hold. You are number one in a queue of one.'],
-    ['I have been charging since Tuesday. It is a long Tuesday.']] },
-  sweeper: { shape: 'box', top: 16, speed: 0.2, name: 'SWEEPER', prompt: '[E] HEY', lines: [
-    ['Sweeping. The street is dirty again. It is always dirty again.', 'Job security.'],
-    ['Please lift your feet. Thank you. Now put them down somewhere I already swept.'],
-    ['Four hundred times I have swept this spot. It does not remember me either.']] },
-  busker: { shape: 'box', top: 16, speed: 0.2, name: 'BUSKER', prompt: '[E] LISTEN', lines: [
-    ['This one is called Firmware Update. It is eleven minutes long and you cannot skip it.'],
-    ['Tips accepted. Requests accepted. Requests ignored.'],
-    ['I learned three chords from a lift. The lift knew four.']] },
-  waiter: { shape: 'waiter', top: 16, speed: 0.34, paints: ['#e0d6c0', '#2a2a30', '#8a3a4a', '#b8b0a0'], name: 'WAITER', prompt: '[E] HEY', lines: [
-    ['Table for one? All tables are for one. It is that kind of city.'],
-    ['The tray is for customers. The drink is decorative.'],
-    ['Your order is on its way. So am I. One of us will be on time.']] },
-  loader: { shape: 'loader', top: 22, speed: 0.26, paints: ['#d8a03a', '#c8641e', '#8a8e96', '#6e6a3a', '#a83a2a'], name: 'LOADER', prompt: '[E] HEY', lines: [
-    ['LOAD 340 KG. MORALE: NOT A FIELD IN MY SCHEMA.'],
-    ['Beep. That means mind your feet. The second beep means too late.'],
-    ['Crate to the stall. Stall to the crate. Nobody told me what is inside. I have guesses.']] },
-  porter: { shape: 'porter', top: 12, speed: 0.3, name: 'PORTER', prompt: '[E] HEY', lines: [
-    ['Following. Carrying. Waiting outside shops I am not allowed into.'],
-    ['That is a leek. Do not touch the leek.'],
-    ['Groceries: twelve kilos. Owner: ahead, and walking faster than the warranty allows.']] },
-  mech: { shape: 'mech', top: 17, speed: 0.15, paints: ['#5a5c60', '#5e5a40', '#6a3a34', '#4e5258', '#6a6458'], name: 'SECURITY', prompt: '[E] HELLO', lines: [
-    ['STATE YOUR BUSINESS.', '...ACCEPTED. MOVE ALONG. MOVING ALONG IS ALSO BUSINESS.'],
-    ['You are on no list. Being on no list is suspicious. I am starting a list.'],
-    ['DO NOT RUN. Walking is permitted at four kilometres an hour. I am timing you.']] },
-  litterbot: { shape: 'litter', top: 9, speed: 0.3, name: 'LITTER UNIT', prompt: '[E] HEY', lines: [
-    ['Litter collected today: 2,114 items. Litter dropped today: 2,115.'],
-    ['Is that a wrapper? It is mine now.'],
-    ['Please do not feed the bin. I am the bin.']] },
-  deliverybot: { shape: 'delivery', top: 13, speed: 0.42, paints: ['#e0d6c0', '#c8b890', '#d87a3a', '#b8b0a0', '#c8641e'], name: 'DELIVERY', prompt: '[E] HEY', lines: [
-    ['Delivery in progress. Please do not sit on me. Again.'],
-    ['ETA four minutes. It has said four minutes for nine minutes. I do not set the ETA.'],
-    ['Contents: warm. Customer: waiting. Kerb: too high.']] },
-  adbot: { shape: 'ad', top: 17, speed: 0.18, name: 'AD UNIT', prompt: '[E] HEY', lines: [
-    ['Have you considered a loan?', 'You do not have to answer. You are already approved.'],
-    ['I am paid in batteries. The batteries also carry an advert.'],
-    ['Read the board. Not me. I am only the legs.']] },
-  crawler: { shape: 'crawler', top: 9, speed: 0.12, name: 'MAINTENANCE', prompt: '[E] HEY', lines: [
-    ['Fixing it. Somebody broke it. It was the weather. The weather does not get fined.'],
-    ['Do not stand under me. I drop things. On purpose, once.'],
-    ['Weld four of four hundred. Talking slows me down. Talking is nice, though.']] },
-  wreck: { shape: 'wreck', top: 12, speed: 0, paints: ['#8a8e96', '#b8b0a0', '#7a5a3a', '#6a6e78', '#c8641e'], name: 'OLD UNIT', prompt: '[E] HELP', lines: [
-    ['...spare... parts...?', 'Replaced by a newer me. It has more fingers.'],
-    ['A bolt. Any bolt. I am not fussy. I used to be fussy.'],
-    ['They took my leg for a warranty claim. The claim was rejected. They kept the leg.']] },
-  minidrone: { shape: 'mini', top: 7, speed: 0.55, fly: 48, name: 'DRONE', prompt: '[E] WAVE', lines: [
-    ['bzz. Parcel. bzz. Not yours. bzz.'],
-    ['(It hovers out of reach, politely.)'],
-    ['bzz. Rate me five stars. bzz. There is no way to rate me. bzz.']] },
-  cargodrone: { shape: 'cargo', top: 13, speed: 0.3, fly: 92, paints: ['#d8a03a', '#c8641e', '#8a8e96', '#5a5c60'], name: 'CARGO DRONE', prompt: '[E] WAVE', lines: [
-    ['(Too high to hear you. Its crate swings over your head.)'],
-    ['(The crate creaks. You step back without deciding to.)']] },
-  flyerdrone: { shape: 'flyer', top: 7, speed: 0.2, fly: 74, name: 'FLYER DRONE', prompt: '[E] WAVE', lines: [
-    ['This offer was chosen for you, based on where you are standing.', 'Please keep standing there.'],
-    ['Unsubscribe by leaving the city.'],
-    ['I am not following you. We have similar routes.']] },
+  android: { shape: 'android', top: 16, speed: 0.34 },
+  valet: { shape: 'android', top: 16, speed: 0.3, paints: ['#2a2a30', '#3a3438', '#5a3a2a', '#e0d6c0', '#6a2a3e'] },
+  marshal: { shape: 'android', top: 16, speed: 0.3, paints: ['#d86a1a', '#c8641e', '#d8a03a'] },
+  servbot: { shape: 'box', top: 16, speed: 0.2 },
+  sweeper: { shape: 'box', top: 16, speed: 0.2 },
+  busker: { shape: 'box', top: 16, speed: 0.2 },
+  waiter: { shape: 'waiter', top: 16, speed: 0.34, paints: ['#e0d6c0', '#2a2a30', '#8a3a4a', '#b8b0a0'] },
+  loader: { shape: 'loader', top: 22, speed: 0.26, paints: ['#d8a03a', '#c8641e', '#8a8e96', '#6e6a3a', '#a83a2a'] },
+  porter: { shape: 'porter', top: 12, speed: 0.3 },
+  mech: { shape: 'mech', top: 17, speed: 0.15, paints: ['#5a5c60', '#5e5a40', '#6a3a34', '#4e5258', '#6a6458'] },
+  litterbot: { shape: 'litter', top: 9, speed: 0.3 },
+  deliverybot: { shape: 'delivery', top: 13, speed: 0.42, paints: ['#e0d6c0', '#c8b890', '#d87a3a', '#b8b0a0', '#c8641e'] },
+  adbot: { shape: 'ad', top: 17, speed: 0.18 },
+  crawler: { shape: 'crawler', top: 9, speed: 0.12 },
+  wreck: { shape: 'wreck', top: 12, speed: 0, paints: ['#8a8e96', '#b8b0a0', '#7a5a3a', '#6a6e78', '#c8641e'] },
+  minidrone: { shape: 'mini', top: 7, speed: 0.55, fly: 48 },
+  cargodrone: { shape: 'cargo', top: 13, speed: 0.3, fly: 92, paints: ['#d8a03a', '#c8641e', '#8a8e96', '#5a5c60'] },
+  flyerdrone: { shape: 'flyer', top: 7, speed: 0.2, fly: 74 },
 };
 
 const BOT_KINDS = Object.keys(BOT) as Bot[];
-
-/** The old one-sprite robots (critters) answer E too. */
-export const CRITTER_BOT: Partial<Record<Critter, { name: string; prompt: string; lines: string[][] }>> = {
-  drone: { name: 'SCAN DRONE', prompt: '[E] WAVE', lines: [['ID CHECK... You are not in the database.', 'Good luck with that.'], ['Hold still. You are blurry. Everyone is blurry tonight.']] },
-  cleaner: { name: 'CLEANER', prompt: '[E] HEY', lines: [['Cleaning. Please step aside.', '...Thank you. You were the dirtiest thing here.'], ['Mop, rinse, mop. Somebody has to. Nobody else would.']] },
-  courier: { name: 'COURIER', prompt: '[E] HEY', lines: [['Parcel delivery. Not for you. Nothing is ever for you.'], ['Please do not follow me. I am not a parade.']] },
-};
-
 
 export interface BotFull { kind: Bot; seed: number; paint: string; trim: string; metal: string; screen: string; light: string; wear: number; rust: string; sticker: string | null; odd: string | null; v: number; antenna: boolean; human: boolean; face: Face; plate: string; glitchy: boolean; bag: string }
 

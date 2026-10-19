@@ -1,3 +1,20 @@
+import authoredDeviceSource from '../scenes/authored.json';
+import harborDeviceJson from '../scenes/harbor/devices.json';
+import warehouseDeviceJson from '../scenes/warehouse/devices.json';
+import marketDeviceJson from '../scenes/market/devices.json';
+import shopDeviceJson from '../scenes/shop/devices.json';
+import mallDeviceJson from '../scenes/mall/devices.json';
+import metroDeviceJson from '../scenes/metro/devices.json';
+import galleriaStationDeviceJson from '../scenes/galleriaStation/devices.json';
+import harborStationDeviceJson from '../scenes/harborStation/devices.json';
+import harborShiftDeviceJson from '../scenes/harbor-shift/devices.json';
+import beachGameplay from '../scenes/beach/gameplay.json';
+import stacksGameplay from '../scenes/stacks/gameplay.json';
+import laundromatGameplay from '../scenes/laundromat/gameplay.json';
+import yardGameplay from '../scenes/yard/gameplay.json';
+import sandboxGameplay from '../scenes/sandbox/gameplay.json';
+import capsuleGameplay from '../scenes/capsule/gameplay.json';
+import {nativeDeviceData} from '../engine/gameplay/native-bindings';
 import libraryGameplay from '../scenes/library/gameplay.json';
 import {nativeDialogue} from '../engine/gameplay/native-dialogue';
 import {validateGameplay} from '../engine/gameplay/validation';
@@ -24,11 +41,14 @@ import stacksJson from "../scenes/stacks/devices.json";
 import libraryJson from "../scenes/library/devices.json";
 import sandboxJson from "../scenes/sandbox/devices.json";
 
-const yard: Loose<SceneData> = yardJson;
-const capsule: Loose<SceneData> = capsuleJson;
+const yardDefinition=validateGameplay(yardGameplay);
+const yard: Loose<SceneData> = nativeDeviceData({...yardJson,dialogue:{hinge:nativeDialogue(yardDefinition,'hinge')}} as unknown as SceneData,yardDefinition);
+const capsuleDefinition=validateGameplay(capsuleGameplay);
+const capsule: Loose<SceneData> = nativeDeviceData({...capsuleJson,dialogue:{concierge:nativeDialogue(capsuleDefinition,'concierge')}} as unknown as SceneData,capsuleDefinition);
 const moth: Loose<SceneData> = mothJson;
-const beach: Loose<SceneData> = beachJson;
-const laundromat: Loose<SceneData> = laundromatJson;
+const beach: Loose<SceneData> = nativeDeviceData(beachJson as unknown as SceneData,validateGameplay(beachGameplay));
+const laundromatDefinition=validateGameplay(laundromatGameplay);
+const laundromat: Loose<SceneData> = {...laundromatJson,dialogue:{suds:nativeDialogue(laundromatDefinition,'suds')}};
 const downtown: Loose<SceneData> = downtownJson;
 const logic: Loose<LogicData> = logicJson;
 const net: Loose<NetData> = netJson;
@@ -57,7 +77,8 @@ const train: Loose<SceneData> = trainJson;
 export const TRAIN = train as SceneData;
 
 /** The stacks at the harbor (P15 NRLU 404 0451, the end of Act I): STS-2, the thermal gate, the night ferry, the reefer, the watchdog. */
-const stacks: Loose<SceneData> = stacksJson;
+const stacksDefinition=validateGameplay(stacksGameplay);
+const stacks: Loose<SceneData> = {...stacksJson,dialogue:{moth:nativeDialogue(stacksDefinition,'moth',{},undefined,{entryActions:false})}};
 export const STACKS = stacks as SceneData;
 
 /** The public library (P16 Long overdue): the card reader, the session timer, the printer, the LIBRARY LAN's nodes, scan.so. */
@@ -65,12 +86,16 @@ const library: Loose<SceneData> = {...libraryJson,dialogue:{catalog:nativeDialog
 export const LIBRARY = library as SceneData;
 
 /** The sandbox (sudo only): REGISTRY QA BAY 3, one bench per engine feature. */
-const sandbox: Loose<SceneData> = sandboxJson;
+const sandboxDefinition=validateGameplay(sandboxGameplay);
+const sandbox: Loose<SceneData> = {...sandboxJson,dialogue:{unit7:nativeDialogue(sandboxDefinition,'unit7')}};
 export const SANDBOX = sandbox as SceneData;
 
-/** Every scene file, by scene id. A new scene is one import and one line here. */
+/** Canonical device catalogs include every native scene and data-only authored scene sources. */
 export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH, laundromat: LAUNDROMAT,
-  train: TRAIN, stacks: STACKS, library: LIBRARY, sandbox: SANDBOX };
+  train: TRAIN, stacks: STACKS, library: LIBRARY, sandbox: SANDBOX,
+  harbor: harborDeviceJson as unknown as SceneData, warehouse: warehouseDeviceJson as unknown as SceneData, market: marketDeviceJson as unknown as SceneData, shop: shopDeviceJson as unknown as SceneData, mall: mallDeviceJson as unknown as SceneData, metro: metroDeviceJson as unknown as SceneData, galleriaStation: galleriaStationDeviceJson as unknown as SceneData, harborStation: harborStationDeviceJson as unknown as SceneData, harborShift: harborShiftDeviceJson as unknown as SceneData,
+  ...Object.fromEntries((authoredDeviceSource.scenes as {scene:{id:string};devices?:SceneData}[]).flatMap(entry=>entry.devices?[[entry.scene.id,entry.devices]]:[])),
+};
 
 /** The logic modules (TIMER, SWITCH), shared by every scene. Checked like a scene. */
 export const LOGIC = logic as LogicData;

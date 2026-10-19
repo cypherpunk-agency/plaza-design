@@ -1755,8 +1755,14 @@
       "id": "table-0-stool-left",
       "type": "mall.table-stool",
       "props": {},
-      "placement": { "x": -24, "h": 0 },
-      "attach": { "instance": "table-0", "anchor": "origin" },
+      "placement": {
+        "x": -24,
+        "h": 0
+      },
+      "attach": {
+        "instance": "table-0",
+        "anchor": "origin"
+      },
       "order": 98.98,
       "pass": "backdrop"
     },
@@ -1764,8 +1770,14 @@
       "id": "table-0-stool-right",
       "type": "mall.table-stool",
       "props": {},
-      "placement": { "x": 24, "h": 0 },
-      "attach": { "instance": "table-0", "anchor": "origin" },
+      "placement": {
+        "x": 24,
+        "h": 0
+      },
+      "attach": {
+        "instance": "table-0",
+        "anchor": "origin"
+      },
       "order": 98.99,
       "pass": "backdrop"
     },
@@ -1787,8 +1799,14 @@
       "id": "table-1-stool-left",
       "type": "mall.table-stool",
       "props": {},
-      "placement": { "x": -24, "h": 0 },
-      "attach": { "instance": "table-1", "anchor": "origin" },
+      "placement": {
+        "x": -24,
+        "h": 0
+      },
+      "attach": {
+        "instance": "table-1",
+        "anchor": "origin"
+      },
       "order": 99.98,
       "pass": "backdrop"
     },
@@ -1796,8 +1814,14 @@
       "id": "table-1-stool-right",
       "type": "mall.table-stool",
       "props": {},
-      "placement": { "x": 24, "h": 0 },
-      "attach": { "instance": "table-1", "anchor": "origin" },
+      "placement": {
+        "x": 24,
+        "h": 0
+      },
+      "attach": {
+        "instance": "table-1",
+        "anchor": "origin"
+      },
       "order": 99.99,
       "pass": "backdrop"
     },
@@ -1819,8 +1843,14 @@
       "id": "table-2-stool-left",
       "type": "mall.table-stool",
       "props": {},
-      "placement": { "x": -24, "h": 0 },
-      "attach": { "instance": "table-2", "anchor": "origin" },
+      "placement": {
+        "x": -24,
+        "h": 0
+      },
+      "attach": {
+        "instance": "table-2",
+        "anchor": "origin"
+      },
       "order": 100.98,
       "pass": "backdrop"
     },
@@ -1828,8 +1858,14 @@
       "id": "table-2-stool-right",
       "type": "mall.table-stool",
       "props": {},
-      "placement": { "x": 24, "h": 0 },
-      "attach": { "instance": "table-2", "anchor": "origin" },
+      "placement": {
+        "x": 24,
+        "h": 0
+      },
+      "attach": {
+        "instance": "table-2",
+        "anchor": "origin"
+      },
       "order": 100.99,
       "pass": "backdrop"
     },
@@ -2806,6 +2842,46 @@
       "attach": {
         "instance": "noodles",
         "anchor": "origin"
+      }
+    },
+    {
+      "id": "actor-deckTech",
+      "type": "character.prepared",
+      "props": {
+        "actor": "deckTech"
+      },
+      "placement": {
+        "x": 50,
+        "h": 0
+      },
+      "attach": {
+        "instance": "deck-booth",
+        "anchor": "origin"
+      },
+      "order": 97.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.deckTech"
+      }
+    },
+    {
+      "id": "actor-teen",
+      "type": "character.prepared",
+      "props": {
+        "actor": "teen"
+      },
+      "placement": {
+        "x": 34,
+        "h": 0
+      },
+      "attach": {
+        "instance": "cases-booth",
+        "anchor": "origin"
+      },
+      "order": 98.1,
+      "pass": "backdrop",
+      "bindings": {
+        "pose": "mall.actor.teen"
       }
     }
   ]

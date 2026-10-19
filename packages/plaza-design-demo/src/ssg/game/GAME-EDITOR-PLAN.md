@@ -18,10 +18,18 @@ reference labels. Completed [scene-system](./SCENE-SYSTEM-PLAN.md) evidence and 
 | 5 World/story | ENG-05/06/07 and actual dependencies of story M3-M9 |
 | 6 Packs | Deferred open product decision; no current implementation goal |
 
-The current next work is the parent roadmap's ENG-01 through ENG-03 sequence, subject to the recorded
-execution scope. Each feature requires real-runtime demo coverage before broad scene migration.
-Shared contracts already exist: extend them with persistent state/purchases and unified dialogue;
-do not repeat the completed pilot or treat the phase list as a competing build order.
+ENG-01–04 have bounded technical evidence. The subsequent feedback-ready package extends objective/access
+authoring, private inspection and a declared-scene pilot; see [its scope](./ENG-05-08-PACKAGE.md).
+The parent roadmap retains priority ownership. Broad world registration and custom packs remain later work.
+
+## Authorized all-game consolidation (2026-10-18)
+
+[ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md) supersedes the smaller proposal:
+all 19 existing scenes, full typed editor support, shared content/device/controller/world/network
+contracts and removal of replaced paths. G0–G13 are mandatory. The user authorized execution;
+full editor UI integration is included, preserving the latest scene-centered rework. Deferred hooks
+or opaque legacy content wrappers do not satisfy completion. Historical completed scopes remain
+valid evidence but are not claims that all-game migration is already done.
 
 ## Goal
 

@@ -11,7 +11,7 @@ const bool=(label:string,value=false):Field=>({kind:'boolean',label,default:valu
 const n=(p:Properties,k:string)=>Number(p[k]);
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
 const origin={x:0,h:0,role:'origin' as const};
-function E(type:string,label:string,fields:Record<string,Field>,draw:Draw,visualFields:Record<string,Field>={}):Element{return{type:'dockwork.'+type,version:1,label,category:'harbor work',coordinates:'world',fields,visualFields,parts:['backdrop'],bounds:p=>({x:-Number(p.width??80)/2,h:Number(p.height??90),w:Number(p.width??80),tall:Number(p.height??90)}),anchors:()=>({origin}),draw(x,v,p,s,_pass,at){const h=at.h,V=h===0?v:{...v,gy:v.gy-h,y:(q:number)=>v.y(q+h)};draw(x,V,p,s,at);}};}
+function E(type:string,label:string,fields:Record<string,Field>,draw:Draw,visualFields:Record<string,Field>={}):Element{return{type:'dockwork.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor work',coordinates:'world',fields,visualFields,parts:['backdrop'],bounds:p=>({x:-Number(p.width??80)/2,h:Number(p.height??90),w:Number(p.width??80),tall:Number(p.height??90)}),anchors:()=>({origin}),draw(x,v,p,s,_pass,at){const h=at.h,V=h===0?v:{...v,gy:v.gy-h,y:(q:number)=>v.y(q+h)};draw(x,V,p,s,at);}};}
 const marker=E('marker','Work task marker',{role:str('Role'),width:num('Width'),height:num('Height')},()=>{});
 const raised=(v:View,h:number)=>h===0?v:{...v,gy:v.gy-h,y:(q:number)=>v.y(q+h)};
 export const dockworkElements:Element[]=[marker,

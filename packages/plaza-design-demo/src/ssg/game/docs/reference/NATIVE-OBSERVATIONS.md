@@ -1,0 +1,13 @@
+# Native observations
+
+`SceneData.observations` declares read-only aliases and idempotent goal observations over the existing native model. Moth and Library use this source in their `devices.json`; their former custom goal ticks and Moth derived mappings are removed. Puzzle guard/seal/reward checks remain native.
+
+An alias is one of `{kind:"nodeConnected",node}`, `{kind:"sectorOpen",node,sector}` or `{kind:"keyHeld",key}`. Goal rows contain `{when,goal}`. `when` uses the existing native condition grammar (`alias`, `!alias`, `alias=value`), evaluator and state lookups. Two conditions can award the same goal. The model checks these rows at the existing live native tick position; inactive scenes do not acquire goals. It uses the existing idempotent `goal()` method. No alias value, timer, polling loop or separate state store is saved.
+
+Aliases are available through the same native reads used by conditions, templates and shared gameplay read bindings. They cannot shadow scene/device/node state, native derived names, city keys or builtins. Source actions cannot write them. Strict schemas reject unexpected fields, unknown kinds, dangling nodes/sectors/keys/goals and invalid conditions. Pending validation accepts explicit prospective network and key catalogs, rather than mutating the shipping catalog.
+
+The device editor's Scene settings has an Observations section with typed kind/node/sector/key controls, alias CRUD and goal condition/target controls. Edits use the ordinary atomic source transaction. Renaming updates observation goal conditions; other native conditions/templates retain their explicit references, so removing/renaming an alias still used there is rejected until those references are edited too.
+
+For old editor sources omitting the entire section, device-source validation inherits the canonical scene's observations. Explicit empty configuration is honored and must still satisfy the native content's dependencies. Player saves require no migration: network connections, open sectors, keys and native goals retain their existing owners and load rules.
+
+Verification: `check-native-observations.mts` compares 128 immutable-original combinations of network/opened-sector/keyring state and active/inactive tick/repeat/save/reload behavior, plus reference/collision/read-only guards, prospective catalogs and actual typed-form callbacks. `check-native-observation-save.mts` covers grouped history/bundle/protected Save, pending native execution, a fresh saved-JSON ESM graph, atomic invalid-reference rejection and exact-byte Undo. Evidence: `.scene-system/native-observation-save/run-tlVllF`. Package TypeScript and all ten native device-source baseline projections pass. Broader controller/world/story completion is not claimed.

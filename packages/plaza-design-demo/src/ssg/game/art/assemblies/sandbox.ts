@@ -3,8 +3,8 @@ import { sandboxPulse as pulse,SandboxViewState,type SandboxSnapshot } from './s
 import { box,C,drawTowers,GREEN,notice,O,onScreen,PAPER,RED,rng,RUST,tell,text,towers } from "../core/primitives";
 import { type View } from "../core/view";
 import { taped,YELLOW } from "../signage/screens";
-export interface SandboxLayout {door:number;spawn:number;plan:number;reset:number;lead:number;dispenser:number;tech:number;radiator:number;bench:number;window:{x0:number;x1:number;h0:number;h1:number};end:number}
-export interface Station {n:number;x0:number;x1:number;sign:number;title:string;sub:string}
+export interface SandboxLayout {door:number;spawn:number;plan:number;reset:number;dispenser:number;radiator:number;bench:number;window:{x0:number;x1:number;h0:number;h1:number};end:number}
+export interface Station {n:number;x0:number;x1:number;sign?:number;title:string;sub:string}
 export interface ArtworkInputs {SANDBOX_W:number;STATIONS:Station[];SB:SandboxLayout;visual:SandboxSnapshot;originX?:number;ceiling?:number;decorX?:number}
 export function createSandboxArtwork(inputs: ArtworkInputs) {
 const {SANDBOX_W,SB}=inputs;
@@ -100,7 +100,7 @@ function stationSign(x:CanvasRenderingContext2D,v:View,st:Station){const cx=v.sx
 }
 function stationCard(x:CanvasRenderingContext2D,v:View,st:Station){const cx=v.sx((st.x0+st.x1)/2);if(!onScreen(v,cx-200,400))return;
     // the readable test card at its foot (E there for how to test it)
-    const sx = v.sx(st.sign);
+    const sx = v.sx(st.sign??(st.x0+st.x1)/2);
     box(x, sx - 9, v.y(52), 18, 22, '#1a120b', rgba(O, 0.7));
     box(x, sx - 7, v.y(50), 14, 18, rgba(PAPER, 0.75));
     for (let k = 0; k < 4; k++) { x.fillStyle = 'rgba(40,24,12,.7)'; x.fillRect(sx - 5, v.y(46 - k * 4), k === 3 ? 6 : 10, 1); }

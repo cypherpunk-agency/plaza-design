@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "id": "moth",
+  "name": "Moth's place",
+  "intro": [
+    "Moth's place. Lights on, record playing, nobody home.",
+    "Takeaway boxes, a thirsty plant, a fish. Moth left in a hurry. Or Moth always lives like this. Both, probably.",
+    "Moth's computer is the way in. It always is."
+  ],
+  "uses": [],
+  "exits": [
+    {
+      "id": "door",
+      "to": "downtown",
+      "at": "moth",
+      "label": "",
+      "engine": true
+    }
+  ],
+  "nativeTargets": [
+    {
+      "id": "door",
+      "anchor": "door",
+      "promptH": 88,
+      "labels": [
+        {
+          "text": "prompt.out"
+        }
+      ],
+      "routes": [
+        {
+          "steps": [
+            {
+              "say": "door.out"
+            },
+            {
+              "exit": "door"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "shell",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {},
+    "readables": {},
+    "rests": {},
+    "exits": {
+      "door": "exit-door"
+    }
+  },
+  "actors": [],
+  "environment": {},
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    },
+    "warm": [
+      {
+        "id": "tank",
+        "point": {
+          "instance": "tank",
+          "h": 50
+        },
+        "rest": "sleep"
+      }
+    ]
+  }
+}

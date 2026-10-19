@@ -14,6 +14,7 @@ function controller(destination?: { scene: string; entrance?: string }) {
   const arrivals: unknown[][] = [];
   const model = new SceneModel({ say() {}, open() {}, changed() {} }, emptyData('downtown', 'fixture'), NO_RULES);
   game.opening = { handoff: destination };
+  game.hints={sceneChanged(){}};game.content={};
   game.endTitle = () => { game.opening = null; };
   game.term = { close() {}, clear() {} }; game.hosts = new Map(); game.hostOf = () => ({ model }); game.syncHud = () => {};
   game.enter = (...args: unknown[]) => arrivals.push(args);

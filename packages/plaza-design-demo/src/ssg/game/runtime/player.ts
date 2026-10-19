@@ -1,3 +1,4 @@
+import type {FeedbackReceipt} from '../engine/feedback-receipt';
 /** Shared services available to scene rules. No dependency on any scene. */
 /** The parts of the game's save Downtown reads and writes (runtime/save.ts `Save`). */
 export interface PlayerState {
@@ -16,7 +17,7 @@ export interface PlayerServices {
   /** NODES: how many run outside the Registry (yours count). */
   nodes: () => number;
   /** The ACCESS GRANTED chime. */
-  granted: () => void;
+  granted: (receipt?:FeedbackReceipt) => void;
   /** Downtown is cleared: the end screen. */
   end: () => void;
   /**

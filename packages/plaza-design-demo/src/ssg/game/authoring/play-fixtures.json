@@ -1,233 +1,363 @@
 {
-
   "version": 1,
-
   "fixtures": [
-
     {
-
       "id": "harbor-start",
-
       "name": "Harbor Shift · start",
-
       "scene": "harborShift",
-
       "flags": {},
-
       "items": {},
-
       "tokens": 0,
-
       "modules": [
-
         "timer.so"
-
       ],
-
       "programs": [],
-
       "keyring": [],
-
       "state": {},
-
       "day": 1,
-
       "minute": 1120,
-
       "seed": 3,
-
       "weather": "forecast",
-
       "clock": "story",
-
       "spawn": null
-
     },
-
     {
-
       "id": "sandbox-start",
-
       "name": "Sandbox · QA start",
-
       "scene": "sandbox",
-
       "flags": {},
-
       "items": {},
-
       "tokens": 5,
-
       "modules": [
-
         "timer.so",
-
         "switch.so"
-
       ],
-
       "programs": [
-
         "scan.so"
-
       ],
-
       "keyring": [],
-
       "state": {},
-
       "day": 1,
-
       "minute": 580,
-
       "seed": 3,
-
       "weather": "forecast",
-
       "clock": "fixed",
-
       "spawn": null
-
     },
-
     {
-
       "id": "shop-start",
-
       "name": "Shop · start",
-
       "scene": "shop",
-
       "flags": {},
-
       "items": {},
-
       "tokens": 5,
-
       "modules": [
-
         "timer.so",
-
         "switch.so"
-
       ],
-
       "programs": [
-
         "scan.so"
-
       ],
-
       "keyring": [],
-
       "state": {},
-
       "day": 1,
-
       "minute": 580,
-
       "seed": 3,
-
       "weather": "forecast",
-
       "clock": "fixed",
-
       "spawn": null
-
     },
-
     {
-
       "id": "library-start",
-
       "name": "Library · start",
-
       "scene": "library",
-
       "flags": {},
-
       "items": {},
-
       "tokens": 5,
-
       "modules": [
-
         "timer.so",
-
         "switch.so"
-
       ],
-
       "programs": [
-
         "scan.so"
-
       ],
-
       "keyring": [],
-
       "state": {},
-
       "day": 1,
-
       "minute": 580,
-
       "seed": 3,
-
       "weather": "forecast",
-
       "clock": "fixed",
-
       "spawn": null
-
     },
-
     {
-
       "id": "laundromat-start",
-
       "name": "Laundromat · start",
-
       "scene": "laundromat",
-
       "flags": {},
-
       "items": {},
-
       "tokens": 5,
-
       "modules": [
-
         "timer.so",
-
         "switch.so"
-
       ],
-
       "programs": [
-
         "scan.so"
-
       ],
-
       "keyring": [],
-
       "state": {},
-
       "day": 1,
-
       "minute": 580,
-
       "seed": 3,
-
       "weather": "forecast",
-
       "clock": "fixed",
-
       "spawn": null
-
+    },
+    {
+      "id": "train-start",
+      "name": "Train · Galleria departure",
+      "scene": "train",
+      "flags": {},
+      "items": {
+        "maglev.pass": 1
+      },
+      "tokens": 5,
+      "modules": [
+        "timer.so",
+        "switch.so"
+      ],
+      "programs": [
+        "scan.so"
+      ],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 580,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "fixed",
+      "spawn": null,
+      "metro": {
+        "version": 1,
+        "line": [
+          "downtown",
+          "galleria",
+          "harbor"
+        ],
+        "ride": {
+          "at": 1,
+          "to": 0,
+          "phase": "dwell",
+          "timer": 0,
+          "dwell": 330,
+          "pos": 3000,
+          "d": 0,
+          "span": 3000,
+          "frames": 780,
+          "v": 0,
+          "open": 1,
+          "doors": false,
+          "halt": null,
+          "haltFor": 0,
+          "decel": 0.032,
+          "say": "GALLERIA"
+        },
+        "shift": {
+          "downtown": 0,
+          "galleria": 0,
+          "harbor": 0
+        },
+        "lineOpen": {
+          "downtown": true,
+          "galleria": true,
+          "harbor": false
+        }
+      }
+    },
+    {
+      "id": "train-before-siding",
+      "name": "Train · approaching the hidden siding",
+      "scene": "train",
+      "flags": {},
+      "items": {
+        "maglev.pass": 1
+      },
+      "tokens": 5,
+      "modules": [
+        "timer.so",
+        "switch.so"
+      ],
+      "programs": [
+        "scan.so"
+      ],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 580,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "fixed",
+      "spawn": null,
+      "metro": {
+        "version": 1,
+        "line": [
+          "downtown",
+          "galleria",
+          "harbor"
+        ],
+        "ride": {
+          "at": 1,
+          "to": 0,
+          "phase": "running",
+          "timer": 416.00000000000006,
+          "dwell": 330,
+          "pos": 4500,
+          "d": 1500,
+          "span": 6000,
+          "frames": 1248,
+          "v": 0,
+          "open": 0,
+          "doors": false,
+          "halt": null,
+          "haltFor": 0,
+          "decel": 0.032,
+          "say": "NEXT: DOWNTOWN"
+        },
+        "shift": {
+          "downtown": 0,
+          "galleria": 0,
+          "harbor": 0
+        },
+        "lineOpen": {
+          "downtown": true,
+          "galleria": true,
+          "harbor": false
+        }
+      }
+    },
+    {
+      "id": "train-at-siding",
+      "name": "Train · stopped at the hidden siding",
+      "scene": "train",
+      "flags": {},
+      "items": {
+        "maglev.pass": 1
+      },
+      "tokens": 5,
+      "modules": [
+        "timer.so",
+        "switch.so"
+      ],
+      "programs": [
+        "scan.so"
+      ],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 580,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "fixed",
+      "spawn": null,
+      "metro": {
+        "version": 1,
+        "line": [
+          "downtown",
+          "galleria",
+          "harbor"
+        ],
+        "ride": {
+          "at": 1,
+          "to": 0,
+          "phase": "halted",
+          "timer": 0,
+          "dwell": 330,
+          "pos": 5350,
+          "d": 2350,
+          "span": 6000,
+          "frames": 1248,
+          "v": 0,
+          "open": 0,
+          "doors": false,
+          "halt": "siding",
+          "haltFor": 420,
+          "decel": 0.032,
+          "say": "STOPPED · NOT A STATION"
+        },
+        "shift": {
+          "downtown": 0,
+          "galleria": 0,
+          "harbor": 0
+        },
+        "lineOpen": {
+          "downtown": true,
+          "galleria": true,
+          "harbor": false
+        }
+      }
+    },
+    {
+      "id": "train-siding-open",
+      "name": "Train · siding doors released",
+      "scene": "train",
+      "flags": {
+        "harbor:open": true
+      },
+      "items": {
+        "maglev.pass": 1
+      },
+      "tokens": 5,
+      "modules": [
+        "timer.so",
+        "switch.so"
+      ],
+      "programs": [
+        "scan.so"
+      ],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 580,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "fixed",
+      "spawn": null,
+      "metro": {
+        "version": 1,
+        "line": [
+          "downtown",
+          "galleria",
+          "harbor"
+        ],
+        "ride": {
+          "at": 1,
+          "to": 0,
+          "phase": "halted",
+          "timer": 0,
+          "dwell": 330,
+          "pos": 5350,
+          "d": 2350,
+          "span": 6000,
+          "frames": 1248,
+          "v": 0,
+          "open": 1,
+          "doors": true,
+          "halt": "siding",
+          "haltFor": 2400,
+          "decel": 0.032,
+          "say": "STOPPED · NOT A STATION"
+        },
+        "shift": {
+          "downtown": 0,
+          "galleria": 0,
+          "harbor": 0
+        },
+        "lineOpen": {
+          "downtown": true,
+          "galleria": true,
+          "harbor": false
+        }
+      }
     }
-
   ]
-
 }

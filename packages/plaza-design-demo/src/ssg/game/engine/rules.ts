@@ -1,3 +1,4 @@
+import type {FeedbackReceipt} from './feedback-receipt';
 /**
  * What a scene's code provides to the engine, next to its data file: the named
  * effects its data calls, the panels its view implements, values it computes,
@@ -20,7 +21,8 @@ export interface World {
   line(key: string, vars?: Vars): Line;
   has(key: string): boolean;
   /** Say a line; `from` names who reacted when it is not this effect's own device (`'router'`, `'pixel'`). */
-  say(l: Line, from?: string): void;
+  say(l: Line, from?: string): FeedbackReceipt;
+  receipt(l:Line,from?:string):FeedbackReceipt;
   changed(): void;
   goal(g: string): void;
   tune(key: string): number;
@@ -79,8 +81,9 @@ export const ENGINE_EFFECTS: Record<string, Effect> = {
 };
 
 /** What the build checks a scene file against: the scene's code plus the engine. */
-export function contractOf(r: SceneRules): CodeContract {
+export function contractOf(r: SceneRules,routes:readonly {device:string;noun:string;verb:string}[] = []): CodeContract {
   return {
+    nativeVerbs:routes.map(r=>r.device+'.'+r.noun+':'+r.verb),
     effects: [...Object.keys(ENGINE_EFFECTS), ...Object.keys(r.effects)],
     panels: [...ENGINE_PANELS, ...(r.panels ?? [])],
     state: r.needs?.state ?? [],

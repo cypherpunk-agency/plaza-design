@@ -172,5 +172,27 @@
     "goals.done": "scan.so is yours. NET, in hack vision (N): what you reach from where you are plugged in. Downtown's street next.",
     "talk.aria": "Say something to CATALOG",
     "prompt.out": "[E] DOWNTOWN"
+  },
+  "observations": {
+    "aliases": {
+      "catalogConnected": {
+        "kind": "nodeConnected",
+        "node": "catalog"
+      },
+      "lendingConnected": {
+        "kind": "nodeConnected",
+        "node": "lending"
+      }
+    },
+    "goals": [
+      {
+        "when": "catalogConnected",
+        "goal": "lan"
+      },
+      {
+        "when": "lendingConnected",
+        "goal": "lan"
+      }
+    ]
   }
 }

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import * as fs from 'node:fs';import * as path from 'node:path';
-import {SANDBOX} from '../../src/ssg/game/data';
-import {behaviorNoun,cloneBehavior,validateSandboxBehavior,preserveSandboxBehavior} from '../../src/ssg/game/authoring/behavior-validation';
+import source from '../../src/ssg/game/scenes/sandbox/devices.json';
+import type {SceneData} from '../../src/ssg/game/data/types';
+const SANDBOX=source as unknown as SceneData;
+import {behaviorNoun,cloneBehavior,validateSandboxBehavior,preserveSandboxBehavior} from './legacy-s13/behavior-validation';
 import {AuthoringStore,StoreError} from '../../src/ssg/game/authoring/server/store';
-import {createBehaviorSandbox} from '../../src/ssg/game/authoring/behavior-sandbox';
+import {createBehaviorSandbox} from './legacy-s13/behavior-sandbox';
 const scratch=path.resolve('../../.scene-system/evidence/s13-store');fs.mkdirSync(scratch,{recursive:true});const root=fs.mkdtempSync(path.join(scratch,'run-'));
 const doc={id:'sandbox-behavior',kind:'behavior' as const,file:'devices.json',validate:validateSandboxBehavior,validateUpdate:preserveSandboxBehavior};
 const err=(code:string)=>(e:unknown)=>e instanceof StoreError&&e.code===code;

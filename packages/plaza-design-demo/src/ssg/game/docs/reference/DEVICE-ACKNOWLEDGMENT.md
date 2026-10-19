@@ -1,0 +1,15 @@
+# Device acknowledgment captions
+
+CONCIERGE now delivers its response through the existing world caption lane, anchored to the actual device ID or `exit:<id>` passed by the interaction that requested it. The opening source still owns its speaker, pages and height. It no longer borrows a character speech bubble.
+
+`SceneHost.acknowledgeDevice(request, complete, canceled?)` returns a `DeviceAcknowledgment`. A request has `id`, `from`, `speaker`, `pages`, optional source-relative `height` and optional tone. The host exposes `acknowledgmentPending`, `acknowledgmentId`, `advanceAcknowledgment()` and `cancelAcknowledgment(reason)`. One delivery is active per host. Repeating its ID returns the current delivery; replacing it explicitly cancels the previous one. Invalid new requests do not cancel a valid delivery.
+
+The delivery has no timeout or saved state. Its current page must have a real, positive-size caption layout with free space before its button or keyboard action can advance it. Missing anchors, a covered lane, pause and other overlays prevent acknowledgment. Off-screen anchors keep the caption at the appropriate edge with a direction indicator. When space or its anchor returns, the same page resumes.
+
+The pinned caption has its own delivery identity. Ordinary replies from the same device cannot swap it; queue shortening, alerts and expiry cannot remove its pages. Ordinary feedback still uses its existing bounded queue and timing. A popup can make the caption move or wait; closing ordinary UI retains it. Each page enters the terminal history once through a sourced feedback receipt. The caption is the visible response owner, without a parallel status notice.
+
+The native caption contains a keyboard-accessible next/continue button. E, Enter and Space also acknowledge through the game's normal interaction path. Repeated keys and stale detached page buttons cannot skip a later page. Escape cancels; cancellation never runs completion. Scene hide, scene reset, title replacement, story reset and game stop explicitly cancel pending deliveries. Title replacement preserves the existing save/beat/sleep handoff policy. Final acknowledgment marks the delivery complete and releases its UI before invoking its callback exactly once.
+
+CONCIERGE's callback checks that its requesting scene remains current, then sets the existing opening-flat flag, persists the save and executes the original exit continuation. The success sound plays once per new request. There is no automatic travel timer. Player movement, turnstile sequencing and world drawing are unchanged.
+
+Verification: `check-device-acknowledgment.mts` exercises the actual Feedback and Host delivery methods with a DOM layout fixture, including same-source replacement attempts, queue flooding, long elapsed time, missing/off-screen anchors, popup coverage, pause/overlay gating, stale buttons, page history, replacement/cancellation/reset/scene hide, and the actual Game exit/device callsites and final-ack ordering. `check-device-feedback-timing.mts` preserves the preexisting ordinary feedback regression coverage. Browser layout review remains part of the parent integration gate.

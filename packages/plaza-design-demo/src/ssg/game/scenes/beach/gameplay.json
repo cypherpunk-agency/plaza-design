@@ -1,10 +1,17 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "beach:drink"
+  ],
   "items": [],
   "events": [
     "beach.poured",
-    "beach.freeGranted"
+    "beach.freeGranted",
+    "beach.gull.shooed",
+    "beach.rent.started",
+    "beach.minute.charged",
+    "beach.rent.exhausted",
+    "beach.drone.cleared"
   ],
   "commands": {
     "beach.meter.run": {
@@ -57,6 +64,156 @@
           "emit": "beach.poured"
         }
       ]
+    },
+    "beach.order": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "purchase": "beach.order"
+        },
+        {
+          "flag": "beach:drink",
+          "value": true
+        }
+      ]
+    },
+    "beach.gull.0": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "beach.gull.cursor",
+          "set": 1
+        },
+        {
+          "emit": "beach.gull.shooed"
+        }
+      ]
+    },
+    "beach.gull.1": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "beach.gull.cursor",
+          "set": 0
+        },
+        {
+          "emit": "beach.gull.shooed"
+        }
+      ]
+    },
+    "beach.crab.0": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "beach.crab.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "beach.crab.1": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "beach.crab.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "beach.noop": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "beach.rent": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "beach.rented",
+          "set": true
+        },
+        {
+          "state": "beach.billed",
+          "set": 1
+        },
+        {
+          "emit": "beach.rent.started"
+        }
+      ]
+    },
+    "beach.end": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "beach.rented",
+          "set": false
+        }
+      ]
+    },
+    "beach.bill": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "beach.billed",
+          "add": 1
+        },
+        {
+          "emit": "beach.minute.charged"
+        }
+      ]
+    },
+    "beach.exhaust": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "beach.rented",
+          "set": false
+        },
+        {
+          "emit": "beach.rent.exhausted"
+        }
+      ]
+    },
+    "beach.calm": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "beach.flag",
+          "set": "clear"
+        },
+        {
+          "emit": "beach.drone.cleared"
+        }
+      ]
     }
   },
   "reactions": [],
@@ -77,12 +234,51 @@
       "lifetime": "save",
       "type": "boolean",
       "default": false
+    },
+    "beach.gull.cursor": {
+      "owner": "beach.gull",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "beach.crab.cursor": {
+      "owner": "beach.crab",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "beach.rented": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "beach.billed": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "beach.flag": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "string",
+      "default": "clear"
     }
   },
   "native": {
     "state": {
       "beach.billing": "billing",
-      "beach.freeDrink": "freeDrink"
+      "beach.freeDrink": "freeDrink",
+      "beach.rented": "rented",
+      "beach.billed": "billed",
+      "beach.flag": "flag"
     },
     "verbs": [
       {
@@ -146,13 +342,79 @@
           "MIXER: manual pour disabled. pours on an order from the till.",
           "err"
         ]
+      },
+      {
+        "device": "kiosk",
+        "noun": "rent",
+        "verb": "rent",
+        "cases": [
+          {
+            "when": {
+              "state": "beach.rented",
+              "is": true
+            },
+            "command": "beach.noop",
+            "say": [
+              "use rent --rent",
+              "KIOSK: you already rent sunbed 7. one sunbed per identity.",
+              "dim"
+            ]
+          },
+          {
+            "when": {
+              "tokensAtLeast": 1
+            },
+            "command": "beach.rent",
+            "say": [
+              "use rent --rent",
+              "KIOSK: SUNBED 7 RENTED. 1 TOKEN DEBITED. BILLING CONTINUES PER MINUTE. ENJOY THE SUN.",
+              "ok"
+            ]
+          },
+          {
+            "command": "beach.noop",
+            "say": [
+              "use rent --rent",
+              "KIOSK: INSUFFICIENT BALANCE. SUNBEDS ARE 1 TOKEN PER MINUTE.",
+              "err"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "kiosk",
+        "noun": "rent",
+        "verb": "end",
+        "cases": [
+          {
+            "when": {
+              "state": "beach.rented",
+              "is": true
+            },
+            "command": "beach.end",
+            "template": true,
+            "say": [
+              "use rent --end",
+              "KIOSK: RENTAL ENDED. TOTAL: {state:beach.billed} TOKENS. THANK YOU FOR RELAXING."
+            ]
+          },
+          {
+            "command": "beach.noop",
+            "say": [
+              "use rent --end",
+              "KIOSK: no rental to end.",
+              "dim"
+            ]
+          }
+        ]
       }
     ],
     "events": {
       "beach.poured": "mixer.pump:poured"
     },
     "goals": {
-      "beach.freeGranted": "free"
+      "beach.freeGranted": "free",
+      "beach.rent.started": "sunbed"
     },
     "wires": [
       {
@@ -173,6 +435,94 @@
         "to": "pier.lamps",
         "verb": "off"
       }
-    ]
+    ],
+    "intervals": {
+      "beach.billing": {
+        "kind": "liveInterval",
+        "elapsed": "minute",
+        "duration": {
+          "tuning": "minuteMs"
+        },
+        "active": {
+          "all": [
+            {
+              "state": "beach.rented",
+              "is": true
+            },
+            {
+              "not": {
+                "state": "beach.billing",
+                "is": "pause"
+              }
+            }
+          ]
+        },
+        "inactive": "hold",
+        "resetOn": [
+          "beach.rent.started"
+        ],
+        "due": [
+          {
+            "when": {
+              "tokensAtLeast": 1
+            },
+            "command": "beach.bill"
+          },
+          {
+            "command": "beach.exhaust"
+          }
+        ]
+      },
+      "beach.danger": {
+        "kind": "liveInterval",
+        "elapsed": "danger",
+        "duration": {
+          "tuning": "dangerMs"
+        },
+        "active": {
+          "state": "beach.flag",
+          "is": "danger"
+        },
+        "inactive": "reset",
+        "due": [
+          {
+            "command": "beach.calm"
+          }
+        ]
+      }
+    },
+    "replies": {
+      "beach.minute.charged": {
+        "from": "kiosk",
+        "say": [
+          "meter",
+          "KIOSK: 1 MINUTE. 1 TOKEN DEBITED. TOTAL: {state:beach.billed}.",
+          "dim"
+        ],
+        "template": true
+      },
+      "beach.rent.exhausted": {
+        "from": "kiosk",
+        "say": [
+          "meter",
+          "KIOSK: BALANCE EXHAUSTED. RENTAL ENDED. PLEASE VACATE SUNBED 7.",
+          "err"
+        ]
+      },
+      "beach.drone.cleared": {
+        "from": "drone",
+        "say": [
+          "drone",
+          "DRONE: no threat confirmed. FLAG: GREEN. swimming resumes.",
+          "dim"
+        ]
+      }
+    }
+  },
+  "purchases": {
+    "beach.order": {
+      "service": true,
+      "basePrice": 2
+    }
   }
 }

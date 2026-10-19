@@ -13,7 +13,7 @@ export function createGameplayPilot(initial:GameplayState={flags:{},items:{},tok
   const gameplay=new GameplaySession(definition,{read:()=>state,write:next=>{state=next;}});
   const model=new SceneModel({say:line=>{lines.push(line);if(lines.length>64)lines.shift();},open:()=>{},changed:()=>{}},DELIVERY_TERMINAL,deliveryTerminalRules(gameplay));
   model.now=()=>time;model.wall=()=>time;
-  model.later=(ms,run)=>{if(disposed)return;if(pending.length>=256)throw new Error('Pilot callback queue limit');pending.push({at:time+ms,serial:serial++,run});};
+  model.later=(ms,run,_detail,canceled)=>{if(disposed)return()=>{};if(pending.length>=256)throw new Error('Pilot callback limit');const task={at:time+ms,serial:serial++,run};pending.push(task);return()=>{const i=pending.indexOf(task);if(i>=0){pending.splice(i,1);canceled?.();}};};
   model.reset();
   function live(){if(disposed)throw new Error('Pilot disposed');}
   return{gameplay,model,lines,get time(){return time;},get pending(){return pending.length;},

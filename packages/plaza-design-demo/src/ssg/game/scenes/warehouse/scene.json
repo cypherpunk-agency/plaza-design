@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "id": "warehouse",
+  "name": "Warehouse 4",
+  "intro": [
+    "Warehouse 4. The Registry keeps what it takes in here.",
+    "The door has a reader. The reader has an opinion about me."
+  ],
+  "uses": [
+    {
+      "id": "door",
+      "name": "WARRANT READER",
+      "label": "[E] THE DOOR",
+      "routes": [
+        {
+          "pages": [
+            "EVIDENCE CUSTODY \u00b7 ACCESS BY REGISTRY WARRANT CARD.",
+            "READER: PRESENT YOUR CARD. YOUR IDENTITY: NOT FOUND. A PERSON WHO IS NOT FOUND CANNOT HOLD A WARRANT. DOOR REMAINS LOCKED."
+          ]
+        }
+      ],
+      "speakerKind": "device"
+    }
+  ],
+  "people": [
+    {
+      "id": "mender",
+      "name": "TIDE HAND",
+      "talk": [
+        [
+          "Twenty years this was the Tide's. Fish in, fish out, the odd crate nobody asked about.",
+          "Then the Registry bought the building, the lock and the silence. Now it's evidence."
+        ],
+        [
+          "Evidence of what? They don't say. Things people had when they got counted out. Phones. Keys. Shoes, for some reason.",
+          "If the Registry ever took something of yours, it's behind that door. Pending review."
+        ],
+        [
+          "I mend nets out here because they let me. Nobody seizes a net. Too many holes to file."
+        ]
+      ]
+    },
+    {
+      "id": "gull",
+      "name": "GULL",
+      "talk": [
+        [
+          "(The gull is standing guard over a chip packet that belongs to nobody. It looks at you like you are the review.)"
+        ],
+        [
+          "(It takes one step towards you. Pending.)"
+        ]
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "plaque",
+      "name": "PLAQUE",
+      "pages": [
+        "BONDED WAREHOUSE 4 \u00b7 REGISTRY EVIDENCE CUSTODY.",
+        "SEIZED PROPERTY IS HELD PENDING REVIEW. OWNERS WILL BE CONTACTED AT THEIR REGISTERED ADDRESS."
+      ]
+    },
+    {
+      "id": "shoe",
+      "name": "EVIDENCE TAG",
+      "pages": [
+        "ITEM 44-0812 \u00b7 1 SHOE (LEFT) \u00b7 OWNER: COUNTED OUT \u00b7 STATUS: PENDING REVIEW."
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "stacks",
+      "to": "stacks",
+      "at": "warehouse",
+      "label": "[E] STACKS"
+    }
+  ],
+  "actors": [
+    {
+      "key": true,
+      "seed": 7401,
+      "look": {
+        "body": "old",
+        "garb": "coat",
+        "hair": "beanie",
+        "top": "#8a7a2a",
+        "acc": "#8a7a2a",
+        "extras": []
+      },
+      "act": "sit",
+      "facing": 1,
+      "id": "mender",
+      "instance": "mender",
+      "band": "world",
+      "target": "mender",
+      "height": "artwork",
+      "reaction": "mender"
+    },
+    {
+      "look": "gull",
+      "seed": 8,
+      "act": "walk",
+      "id": "gull",
+      "instance": "gull",
+      "band": "world",
+      "target": "gull",
+      "range": 30,
+      "reaction": "gull"
+    },
+    {
+      "look": "pigeon",
+      "seed": 9,
+      "act": "walk",
+      "id": "pigeon",
+      "instance": "pigeon",
+      "band": "world",
+      "height": "artwork",
+      "range": 40,
+      "reaction": "slot-2"
+    },
+    {
+      "look": {
+        "bot": "mech",
+        "paint": "#6a6e78"
+      },
+      "act": "patrol",
+      "id": "mech",
+      "instance": "mech",
+      "band": "world",
+      "range": [
+        0,
+        260
+      ],
+      "reaction": "slot-3",
+      "bakeSeed": 3923
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "door": {
+        "instance": "door",
+        "promptH": 74,
+        "responseH": 0,
+        "responseAboveFloor": true
+      }
+    },
+    "readables": {
+      "plaque": {
+        "instance": "plaque",
+        "promptH": 80
+      },
+      "shoe": {
+        "instance": "shoe",
+        "promptH": 30
+      }
+    },
+    "rests": {},
+    "exits": {
+      "stacks": {
+        "instance": "exit-stacks",
+        "promptH": 82
+      }
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "weather": true
+    }
+  },
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    }
+  }
+}

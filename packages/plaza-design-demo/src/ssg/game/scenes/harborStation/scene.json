@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "id": "harborStation",
+  "name": "Harbor metro",
+  "intro": [
+    "The Harbor metro. Salt, diesel, and a timetable nobody believes."
+  ],
+  "uses": [],
+  "readables": [
+    {
+      "id": "board",
+      "name": "DEPARTURES",
+      "pages": [
+        "LINE 0 > DOWNTOWN > GALLERIA > HARBOR.",
+        "IDENTITY CHECK AT ALL EXITS. HAVE YOUR ID READY."
+      ],
+      "promptH": 120
+    },
+    {
+      "id": "screen",
+      "name": "REGISTRY SCREEN",
+      "pages": [
+        "STAND BEHIND THE YELLOW LINE.",
+        "PERSONS CROSSING THE LINE WILL BE RECORDED."
+      ],
+      "promptH": 160
+    },
+    {
+      "id": "checkpoint",
+      "name": "REGISTRY CHECKPOINT",
+      "pages": [
+        "REGISTRY CHECKPOINT.",
+        "RANDOM IDENTITY CHECKS IN PROGRESS. COMPLY WITH ALL REQUESTS."
+      ],
+      "promptH": 92
+    },
+    {
+      "id": "tide",
+      "name": "TIDE TABLE",
+      "pages": [
+        "HIGH TIDE 03:12 \u00b7 LOW TIDE 09:40.",
+        "PLATFORM MAY FLOOD AT HIGH TIDE. SERVICE CONTINUES."
+      ],
+      "promptH": 84
+    },
+    {
+      "id": "regular",
+      "name": "DOCKWORKER",
+      "label": "[E] TALK",
+      "pages": [
+        "Mm. Is this Harbor?",
+        "Then wake me at the next one. The cranes do my shift. I just have to be here when they break."
+      ],
+      "promptH": 54
+    }
+  ],
+  "exits": [
+    {
+      "id": "harbor",
+      "to": "harbor",
+      "at": "metro",
+      "label": "[E] GATE \u00b7 HARBOR PIER",
+      "promptH": 92
+    },
+    {
+      "id": "train",
+      "to": "",
+      "action": "board",
+      "label": "[E] BOARD",
+      "promptH": 84
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {},
+    "rests": {
+      "bench0": {
+        "instance": "bench0",
+        "x": 0
+      },
+      "bench1": {
+        "instance": "bench1",
+        "x": -12
+      }
+    },
+    "exits": {
+      "harbor": "street-exit",
+      "train": "train-exit"
+    },
+    "readables": {
+      "board": {
+        "instance": "board"
+      },
+      "screen": {
+        "instance": "screen"
+      },
+      "checkpoint": {
+        "instance": "checkpoint"
+      },
+      "tide": {
+        "instance": "tide"
+      },
+      "regular": {
+        "instance": "regular"
+      }
+    }
+  },
+  "rests": [
+    {
+      "id": "bench0",
+      "kind": "bench"
+    },
+    {
+      "id": "bench1",
+      "kind": "bench"
+    }
+  ],
+  "actors": [
+    {
+      "id": "waiting-0",
+      "instance": "waiting-0",
+      "band": "background",
+      "reaction": "actor.waiting-0",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "harbor",
+          "slot": 0,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-1",
+      "instance": "waiting-1",
+      "band": "background",
+      "reaction": "actor.waiting-1",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "harbor",
+          "slot": 1,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-2",
+      "instance": "waiting-2",
+      "band": "background",
+      "reaction": "actor.waiting-2",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "harbor",
+          "slot": 2,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-3",
+      "instance": "waiting-3",
+      "band": "background",
+      "reaction": "actor.waiting-3",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "harbor",
+          "slot": 3,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-4",
+      "instance": "waiting-4",
+      "band": "background",
+      "reaction": "actor.waiting-4",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "harbor",
+          "slot": 4,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "regular",
+      "instance": "regular",
+      "band": "background",
+      "reaction": "actor.regular",
+      "presentation": {
+        "kind": "rider",
+        "rider": "sleeper",
+        "sit": true,
+        "phase": 980
+      }
+    }
+  ],
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "weather": true
+    },
+    "facing": 90
+  },
+  "companion": {
+    "mode": "off"
+  }
+}

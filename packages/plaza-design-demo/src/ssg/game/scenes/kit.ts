@@ -1,3 +1,6 @@
+import type {CompiledCompanion} from '../engine/gameplay/scene-companion';
+import type {CityModel} from '../world/city';
+import type {LineSystem} from '../world/transport/line';
 /**
  * The scene definition (`SceneDef`), and shared shapes and drawing for every
  * scene. A scene is one walkable screen: mostly data (positions, sizes, texts
@@ -15,7 +18,7 @@
  */
 
 import type { Character } from "../runtime/characters";
-import type { GameplayDefinition } from '../engine/gameplay/types';
+import type { GameplayDefinition,GameplayState } from '../engine/gameplay/types';
 import type { GameplaySession } from '../engine/gameplay/session';
 import type { Perch } from "../runtime/companion";
 import type { SceneData } from '../data/types';
@@ -83,6 +86,12 @@ export interface SceneReadable { id: string; x: number; name: string; pages: str
  * presses E there and returns what is said (a bubble). It can spend tokens and set save flags.
  */
 export interface SceneUse {
+  targetOrder?:'before-devices'|'after-devices';
+  /** Optional prompt wording when the shared quote is nonzero. */
+  pricedLabel?:string;
+  conversationPresentation?:'bubble'|'panel';
+  speakerKind?:'character'|'device'|'system';
+  eligibility?: (flags:Readonly<Record<string,boolean>>,gameplay?:GameplaySession)=>import('../engine/gameplay/access').AccessResult;
   /** Omit interactions outside their authored story stage. */
   available?: (flags: Readonly<Record<string, boolean>>) => boolean;
   id: string;
@@ -170,14 +179,17 @@ export type ItemId = keyof typeof ITEMS;
  * own drawing. Which place it belongs to is the city's data (city.ts).
  */
 export interface SceneDef {
+  /** Bind world controllers once per game; source definitions remain immutable. */
+  bindWorld?(services:{city:CityModel;metro:LineSystem}):SceneDef;
+  /** Registered cosmetic event binding; receives the same frame clock as artwork. */
+  gameplayEvent?:(event:Readonly<import('../engine/gameplay/types').GameplayEvent>,frame:number)=>void;
   /** Validated shared commands, events and conversations; independent of artwork/device documents. */
   gameplay?: GameplayDefinition;
-  /** Read-only native state aliases, until their device subsystem is migrated. */
-  gameplayReads?:Record<string,string>;
   /** Story objective for scenes without hacking goals. */
-  attention?: (flags:Readonly<Record<string,boolean>>)=>{x:number;gentle?:boolean}|null;
+  attention?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{x:number;gentle?:boolean}|null;
   storyMinute?: (flags:Readonly<Record<string,boolean>>)=>number;
-  objective?: (flags: Readonly<Record<string, boolean>>) => string;
+  objectives?:readonly import('../engine/gameplay/objectives').ObjectiveDefinition[];
+  objective?: (flags: Readonly<Record<string, boolean>>,state?:GameplayState) => string;
   id: string;
   /** Shown in the HUD. */
   name: string;
@@ -188,6 +200,8 @@ export interface SceneDef {
   readables?: SceneReadable[];
   /** The people who live here (characters.ts). The scene draws them; the engine makes [E] TALK targets for those with `id` and `talk`. */
   people?: Character[];
+  /** Scene actor artwork in its authored order, before companion/player drawing. */
+  drawActors?:(ctx:CanvasRenderingContext2D,view:View)=>void;
   /** Things to do here with E (buy, haggle). */
   uses?: SceneUse[];
   /**
@@ -236,6 +250,7 @@ export interface SceneDef {
   /** Pixel: 'home' where it lives (`perch`: where it wants to be), 'along' where it follows you once it does. */
   pixel?: 'home' | 'along';
   perch?: (m: SceneModel) => Perch;
+  companion?:CompiledCompanion;
   /** The engine's error lines buzz (Downtown's ACCESS DENIED, as the old terminal did). */
   buzz?: boolean;
 

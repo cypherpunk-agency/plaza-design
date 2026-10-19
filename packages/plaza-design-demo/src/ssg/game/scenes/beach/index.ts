@@ -1,10 +1,16 @@
+import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
+import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
+import {content} from './scene-document';
+import {type SceneDocument} from '../../engine/gameplay/scene-document';
+import {compileNativeTargets} from '../../engine/gameplay/native-targets';
+import {PresentationSignals} from '../../engine/gameplay/presentation-signals';
 /**
  * The beach and SALT, its bar: a real beach along the shore from the harbor, looking east over the sea,
  * with Moth's boat moored at the end of the pier.
  *
  * Its devices (the sunbed kiosk, the jukebox, SALT's mixer, the lifeguard
  * drone, the pier's lamp schedule, the boat) are data/beach.json; the kiosk's
- * billing and the drone's flag running out are rules.ts; the drawing is
+ * billing and flag clearing are shared gameplay commands/workflows; the drawing is
  * scene.ts. Its life (people who talk, the cat, ordering a drink, a gull to
  * shoo, a crab, the Registry's notice) is `people`, `uses` and `readables`,
  * like any scene's.
@@ -14,87 +20,28 @@
  */
 
 import {BEACH_GAMEPLAY} from './gameplay';
-import {nativeDeviceData} from '../../engine/gameplay/native-bindings';
+import {projectNativeDeviceData} from '../../engine/gameplay/native-bindings';
 import { BEACH } from "../../data/index";
 import type { SceneDef } from "../kit";
 import { BEACH_RULES } from './rules';
-import { beachComposition,beachGeometry,beachLayout,beachLights,beachCasters,beachDeviceData,validateBeachComposition,drawBeachComposition,type BeachRenderOptions } from './composition';
+import { beachComposition,beachGeometry,beachEnvironment,beachLights,beachCasters,beachDeviceData,validateBeachComposition,drawBeachComposition,type BeachRenderOptions } from './composition';
 import type { Composition,Environment } from '../../art/core/composition';
-import { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W, BEACH_ACTORS, CRAB, GULL, L, PEOPLE } from './scene';
+import { beachActors } from './scene';
 
 export { BEACH_RULES } from './rules';
 export { BEACH_EDGE_X, BEACH_SPAWN, BEACH_W } from './scene';
 
-/** The beach, complete: data, rules, drawing, its life and the ways out. */
-const base: SceneDef = {
-  gameplay:BEACH_GAMEPLAY,
-  id: 'beach',
-  name: 'the beach',
-  width: BEACH_W,
-  spawn: BEACH_SPAWN,
-  exits: [
-    // the stairs up to the promenade and the harbor (E, the scene's own target)
-    { id: 'stairs', x: L.stairs, to: 'harbor', label: '', engine: true },
-    // the promenade runs on, west, into the harbor: walk off the left edge (the harbor lands you at its exit 'beach' once it has one)
-    { id: 'harbor', x: BEACH_EDGE_X, to: 'harbor', at: 'beach', label: '< HARBOR', edge: 'left' },
-  ],
-  intro: [
-    'A beach. A real one: sand, sea, a sunset nobody is charging for. Yet.',
-    "SALT, the bar on stilts, is open. And at the end of the pier there's a boat. Moth's status said \"gone fishing\".",
-  ],
-  keepFace: true,
-  // a real beach, under the harbor's sky: its weather (heat by day; weather.ts climate 'beach')
-  ambient: { weather: true },
-  // the beach looks east over the open sea: the sun rises out of it; at dusk it sets behind you, over the city
-  facing: 90,
-  lights: beachLights(),
-  casters: beachCasters(),
-  pixel: 'along',
-  data: beachDeviceData(BEACH),
-  rules: BEACH_RULES,
-  drawBackdrop: (x, v, e) => drawBeachComposition(x, v, e.m, e.hover, BEACH_ACTORS, GULL),
-  targets: (m) => [{ id: 'stairs', x: L.stairs, label: m.label('prompt.out'), promptH: 116 }],
-  use: (id, m, say) => {
-    if (id !== 'stairs') return;
-    say(m.line('stairs.out'));
-    return 'stairs';
-  },
-  people: PEOPLE,
-  readables: [
-    { id: 'notice', x: L.board, name: 'PUBLIC BEACH', promptH: 102, pages: [
-      'PUBLIC BEACH. OPEN TO VERIFIED PERSONS 06:00–22:00.',
-      'TOWELS MUST DISPLAY A VALID ID. SAND IS MUNICIPAL PROPERTY. DO NOT REMOVE.',
-      'UNVERIFIED BATHERS: SECTOR 4 (THE ROCKS). SWIMMING BEYOND THE BUOY IS NOT RECORDED AND NOT ADVISED.',
-    ] },
-  ],
-  uses: [
-    { id: 'order', x: L.order, label: '[E] ORDER', price: 2, name: 'LIME', promptH: 70, h: 70, use: (c) => {
-      if (!c.pay(2)) return ['Two tokens. You have ' + c.tokens + '. I would lend you one, but I remember everything.', 'The jukebox is free. Just saying. Nobody listens to the bartender.'];
-      c.set('beach:drink');
-      return ['One SALT SPECIAL. Mostly lime. Do not tell the lime.', "Moth's usual was water with a slice of me in it. Cheaper. Moth was always cheaper."];
-    } },
-    { id: 'gull', x: L.gull, label: '[E] SHOO', name: 'GULL', promptH: 62, h: 50, use: (c) => {
-      GULL.shooed = c.t;
-      return GULL.n++ % 2 === 0
-        ? ['The gull looks at your hands, finds no chips, and leaves in disgust.']
-        : ['The gull circles once and lands back on its post. It was always going to come back.'];
-    } },
-    { id: 'crab', x: L.crab, label: '[E] POKE', name: 'CRAB', promptH: 24, h: 16, use: () => (CRAB.n++ % 2 === 0
-      ? ['The crab raises one claw. You lower your hand. Fair.']
-      : ['The crab walks off sideways, which is the only way it knows, then comes back the same way.']) },
-  ],
-};
-
 /** Canonical shipping/composer definition. Physical markers use the same resolved geometry. */
-export function beachScene(document:Composition=beachComposition,state:Environment['state']={},options:BeachRenderOptions={},gameplay=BEACH_GAMEPLAY):SceneDef{
- const doc=validateBeachComposition(document),rows=beachGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,at=(id:string)=>get(id).placement,l=beachLayout(doc);
- const people=PEOPLE.map(actor=>{const id=Object.keys(BEACH_ACTORS).find(id=>BEACH_ACTORS[id]===actor)!;const p=at(id);return{...actor,x:p.x,h:p.h};});
- return{...base,width:Number(get('scene').props.width),spawn:at('spawn').x,gameplay,data:nativeDeviceData(beachDeviceData(BEACH,doc),gameplay),lights:beachLights(doc),casters:beachCasters(doc),people,
- exits:base.exits.map(e=>({...e,x:e.id==='stairs'?l.stairs:at('edge-exit').x})),
- readables:base.readables?.map(r=>({...r,x:l.board,h:at('notice').h,promptH:(r.promptH??0)+at('notice').h})),
- uses:base.uses?.map(u=>{const id=u.id==='order'?'order':u.id,p=at(id);return{...u,x:p.x,h:u.id==='order'?p.h:(u.h??0)+p.h,promptH:(u.promptH??0)+p.h-(u.id==='order'?70:0)};}),
- targets:m=>[{id:'stairs',x:l.stairs,label:m.label('prompt.out'),promptH:116+at('stairs-exit').h}],
- drawBackdrop:(ctx,v,e)=>drawBeachComposition(ctx,v,e.m,e.hover,BEACH_ACTORS,GULL,doc,state,options),
+export function beachScene(document:Composition=beachComposition,state:Environment['state']={},options:BeachRenderOptions={},gameplay=BEACH_GAMEPLAY,sceneDocument:SceneDocument=content.scene):SceneDef{
+ const doc=validateBeachComposition(document),rows=beachGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,at=(id:string)=>get(id).placement;
+ const authored=content.validateScene(sceneDocument,gameplay),signals=new PresentationSignals(authored.cues??[],{gullShooed:-1e9}),gull={get shooed(){return signals.read('gullShooed');}};
+ const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,omitGroundRestHeight:true}),actors=beachActors(doc,authored);
+ return{id:'beach',name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],rules:BEACH_RULES,
+ ...compiled.content,people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),gameplay:withSceneConversations(gameplay,authored),gameplayEvent:signals.event,presentationState:signals,
+ data:projectNativeDeviceData(beachDeviceData(BEACH,doc),gameplay),lights:beachLights(doc),casters:beachCasters(doc),
+ ...compileNativeTargets(authored,{'stairs-exit':at('stairs-exit')}),
+ drawBackdrop:(ctx,v,e)=>drawBeachComposition(ctx,v,e.m,e.hover,actors,gull,doc,state,options),
+ visualEnvironment:(v,e)=>beachEnvironment(doc,v,e.m,e.hover,actors,gull),
  };
 }
 export const beach=beachScene();

@@ -6,7 +6,7 @@ import type {SceneData} from '../../src/ssg/game/data/types';
 import devices from '../../src/ssg/game/scenes/yard/devices.json';
 const doc=validateYardComposition(structuredClone(yardComposition));assert.deepEqual(doc,yardComposition);assert.deepEqual(yardDeviceData(devices as SceneData),devices);
 const edit=structuredClone(doc);edit.instances.find(i=>i.id==='crane')!.placement.x+=20;edit.instances.find(i=>i.id==='tray')!.placement.x+=8;
-assert.equal(yardDeviceData(devices as SceneData,edit).devices.find(d=>d.id==='crane')!.layout!.spot!.x,370);assert.equal(yardScene(edit).targets!({get:()=> 'tray',label:()=> 'take'} as never)[0].x,676);
+assert.equal(yardDeviceData(devices as SceneData,edit).devices.find(d=>d.id==='crane')!.layout!.spot!.x,370);assert.equal(yardScene(edit).targets!({get:()=> 'tray',label:()=> 'take',cond:()=>true} as never)[0].x,676);
 const values:Record<string,unknown>={armAt:'C-7',parcelAt:'hook',pan:1,gateAllowed:true};
 const model={get:(key:string)=>values[key],value:()=>false,now:()=>1000,scratch:{slideStart:0},data:{tuning:{slideMs:2500}}};const engine={m:model,hover:null,layer:'all'} as unknown as EngineDraw;
 const state=createYardPresentationState();assert.equal(state.hookX,350);const first=prepareYardFrame(state,engine);assert.equal(first.hookX,354.8);assert.deepEqual(first.parcel,[354.8,51]);const frozen=structuredClone(state);yardVisualSnapshot(state,engine);assert.deepEqual(state,frozen);assert.equal(prepareYardFrame(state,{...engine,layer:'world'}).hookX,354.8);assert.equal(prepareYardFrame(state,{...engine,layer:'devices'}).hookX,359.216);

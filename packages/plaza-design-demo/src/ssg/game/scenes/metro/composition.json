@@ -670,20 +670,24 @@
       "id": "bench0",
       "type": "station.bench",
       "props": {
-        "who": "paper"
+        "who": "",
+        "sourceRider": true
       },
       "placement": {
         "x": 930,
         "h": 0
       },
       "order": 41,
-      "pass": "backdrop"
+      "pass": "backdrop",
+      "bindings": {
+        "rider": "actor.regular.pose.embedded"
+      }
     },
     {
       "id": "regular",
-      "type": "metro.marker",
+      "type": "actor.prepared",
       "props": {
-        "role": "readable"
+        "actor": "regular"
       },
       "placement": {
         "x": 8,
@@ -694,6 +698,9 @@
       "attach": {
         "instance": "bench0",
         "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.regular.pose"
       }
     },
     {
@@ -709,8 +716,10 @@
     },
     {
       "id": "waiting0",
-      "type": "station.waiting-passenger",
-      "props": {},
+      "type": "actor.prepared",
+      "props": {
+        "actor": "waiting0"
+      },
       "placement": {
         "x": 460,
         "h": 0
@@ -718,13 +727,15 @@
       "order": 44,
       "pass": "backdrop",
       "bindings": {
-        "rider": "transit.waiting.0"
+        "pose": "actor.waiting0.pose"
       }
     },
     {
       "id": "waiting1",
-      "type": "station.waiting-passenger",
-      "props": {},
+      "type": "actor.prepared",
+      "props": {
+        "actor": "waiting1"
+      },
       "placement": {
         "x": 640,
         "h": 0
@@ -732,13 +743,15 @@
       "order": 45,
       "pass": "backdrop",
       "bindings": {
-        "rider": "transit.waiting.1"
+        "pose": "actor.waiting1.pose"
       }
     },
     {
       "id": "waiting2",
-      "type": "station.waiting-passenger",
-      "props": {},
+      "type": "actor.prepared",
+      "props": {
+        "actor": "waiting2"
+      },
       "placement": {
         "x": 1060,
         "h": 0
@@ -746,13 +759,15 @@
       "order": 46,
       "pass": "backdrop",
       "bindings": {
-        "rider": "transit.waiting.2"
+        "pose": "actor.waiting2.pose"
       }
     },
     {
       "id": "waiting3",
-      "type": "station.waiting-passenger",
-      "props": {},
+      "type": "actor.prepared",
+      "props": {
+        "actor": "waiting3"
+      },
       "placement": {
         "x": 1180,
         "h": 0
@@ -760,7 +775,7 @@
       "order": 47,
       "pass": "backdrop",
       "bindings": {
-        "rider": "transit.waiting.3"
+        "pose": "actor.waiting3.pose"
       }
     },
     {

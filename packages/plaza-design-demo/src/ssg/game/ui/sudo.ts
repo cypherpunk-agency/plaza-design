@@ -19,7 +19,8 @@ import { CUTSCENES } from "../story/cutscenes/index";
 import { KEYRING, LOGIC, NET } from "../data/index";
 import type { Save } from "../runtime/save";
 import { SCENES, sceneTitle, type ItemId, type SceneId } from "../scenes/index";
-import { boardRide } from "../world/transport/line";
+import * as defaultMetro from '../world/transport/line';
+import type {LineSystem} from '../world/transport/line';
 import { OPENING_LEVELS } from "../story/opening";
 
 export { SUDO } from "../runtime/mode";
@@ -36,15 +37,15 @@ const NOSCAN = (() => { try { return new URLSearchParams(location.search).has('n
  * and returns the scene to enter. P14: on the train at Galleria, doors about to close, the run past
  * the siding next.
  */
-const STORY: Record<string, { name: string; start: () => SceneId }> = {
+const STORY: Record<string, { name: string; start: (metro:LineSystem) => SceneId }> = {
   // P16, the first hacking job: the library's reading room (add &noscan to play it without scan.so already owned)
   p16: { name: 'P16 · LONG OVERDUE (THE LIBRARY)', start: () => 'library' },
-  p14: { name: "P14 · THE STOP THAT ISN'T ON THE MAP", start: () => { boardRide('galleria', 240); return 'train'; } },
+  p14: { name: "P14 · THE STOP THAT ISN'T ON THE MAP", start: metro => { metro.boardRide('galleria', 240); return 'train'; } },
   // P15, the end of Act I: the stacks at the gate booth (the scene keeps its progress; its watchdog starts on PORT AUTHORITY)
   p15: { name: 'P15 · NRLU 404 0451 (ACT I FINALE)', start: () => 'stacks' },
 };
 /** A story level's start (null: not one, `id` is a scene or cutscene). */
-export const startLevel = (id: string): SceneId | null => STORY[id]?.start() ?? null;
+export const startLevel = (id: string,metro:LineSystem=defaultMetro): SceneId | null => STORY[id]?.start(metro) ?? null;
 
 /** Every place the game can start in, in the order you'd meet them. */
 export function levels(): Level[] {

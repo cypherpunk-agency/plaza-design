@@ -1,0 +1,59 @@
+import assert from 'node:assert/strict';
+import {SceneModel,type Line} from '../../src/ssg/game/engine/model';
+import {SceneHost} from '../../src/ssg/game/engine/host';
+import {mintFeedback,type FeedbackReceipt} from '../../src/ssg/game/engine/feedback-receipt';
+import {sound} from '../../src/ssg/game/runtime/audio';
+import {downtownRules} from '../../src/ssg/game/scenes/downtown/rules';
+import downtown from '../../src/ssg/game/scenes/downtown/devices.json';
+import type {SceneData} from '../../src/ssg/game/data/types';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const frozen=path.resolve('../../.scene-system/all-game-baseline-2026-10-18/source');
+const baselineModel=await import(pathToFileURL(path.join(frozen,'engine/model.ts')).href),baselineRules=await import(pathToFileURL(path.join(frozen,'scenes/downtown/rules.ts')).href);
+const original={setTimeout:globalThis.setTimeout,clearTimeout:globalThis.clearTimeout,AudioContext:globalThis.AudioContext};
+let clock=0,next=0;const timers=new Map<number,{at:number;run:()=>void}>(),notes:number[]=[];
+(globalThis as any).setTimeout=(run:()=>void,ms=0)=>{const id=++next;timers.set(id,{at:clock+ms,run});return id;};
+(globalThis as any).clearTimeout=(id:number)=>timers.delete(id);
+const nowDescriptor=Object.getOwnPropertyDescriptor(performance,'now');Object.defineProperty(performance,'now',{configurable:true,value:()=>clock});
+class Audio{currentTime=0;destination={};resume(){}createOscillator(){let frequency=0;return{frequency:{setValueAtTime(f:number){frequency=f;},linearRampToValueAtTime(){}},connect(){return{connect(){}};},start(){notes.push(frequency);},stop(){}};}createGain(){return{gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}};}}
+(globalThis as any).AudioContext=Audio;
+function advance(ms:number){const end=clock+ms;for(;;){const entry=[...timers].filter(([,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at||a[0]-b[0])[0];if(!entry)break;clock=entry[1].at;timers.delete(entry[0]);entry[1].run();}clock=end;}
+const history:{line:Line;receipt:FeedbackReceipt}[]=[],host:any={active:false,echo:false,def:{id:'causal'},schem:{note(){}},vision:{note(){}},locate:()=>null,print(){},store:{feedbackCue:sound.feedback}};
+host.say=(SceneHost.prototype as any).say;
+function hooks(){return{feedbackScope:'causal',say:(line:Line,from?:string,receipt?:FeedbackReceipt)=>{history.push({line,receipt:receipt!});host.say(line,from,receipt);},changed(){},open(){}};}
+try{
+ sound.toggle();notes.length=0;
+ const shared:Line=['','Same response.','ok'],data:SceneData={id:'causal',name:'Causal',state:{},tuning:{},cables:[],goals:[],texts:{},devices:[{id:'device',name:'DEVICE',look:'',nouns:[{id:'act',kind:'ACT',verbs:['go'],on:{go:{do:[{effect:'burst'}]}}}]}]};
+ let model:SceneModel;
+ model=new SceneModel(hooks(),data,{effects:{burst:w=>{const receipt=w.receipt(shared);sound.feedback(receipt);w.say(shared);w.say(['','Second actual reply.','ok']);model.later(300,()=>{w.say(['','Delayed reply.','ok']);w.say(['','Second delayed reply.','ok']);});}}});host.model=model;
+ model.act('device','act','go');assert.equal(history.length,2);assert.notEqual(history[0].receipt.id,history[1].receipt.id);assert.equal(history[0].receipt.cueId,history[1].receipt.cueId);assert.equal(timers.size,4,'one three-note cue and one native callback');advance(200);assert.deepEqual(notes,[523,659,784]);advance(300);assert.deepEqual(notes,[523,659,784,523,659,784]);assert.equal(history.length,4);assert.equal(history[2].receipt.cueId,history[3].receipt.cueId);assert.notEqual(history[0].receipt.cueId,history[2].receipt.cueId);
+ model.act('device','act','go');assert.notEqual(history[0].receipt.id,history[4].receipt.id,'same reused line in another action is a fresh delivery');assert.notEqual(history[0].receipt.cueId,history[4].receipt.cueId);advance(600);assert.equal(notes.length,12);
+ const before=notes.length,success=mintFeedback('causal','device','success'),error=mintFeedback('causal','device','error',success.cueId);sound.feedback(success);sound.feedback(error);assert.equal(notes.length,before+1,'error is immediate');assert.equal(notes.at(-1),140);advance(200);assert.deepEqual(notes.slice(before),[140,110],'error cancels this cause’s pending success notes');sound.feedback(success);sound.feedback(error);advance(200);assert.equal(notes.length,before+2);
+ const silent=mintFeedback('causal','controller','success');sound.feedback(silent);advance(200);assert.deepEqual(notes.slice(-3),[523,659,784],'standalone controller completion keeps its cue');
+ sound.feedback(mintFeedback('causal','device','success'));sound.cancelFeedback('causal');advance(200);assert.equal(timers.size,0);sound.feedback(mintFeedback('other','device','success'));sound.cancelFeedback('causal');assert.equal(timers.size,3);sound.cancelFeedback();
+ sound.toggle();const muted=mintFeedback('causal','device','success');sound.feedback(muted);assert.equal(timers.size,0);sound.toggle();const n=notes.length;sound.feedback(muted);advance(200);assert.equal(notes.length,n,'muted receipt does not replay on unmute');
+ // Native Downtown effects preserve actual replies and controller state while sharing the cue.
+ const save={handle:'ghost',tokens:0,jump:false,controlled:[] as string[],flags:{} as Record<string,boolean>},grants:FeedbackReceipt[]=[],events:string[]=[];
+ const rules=downtownRules({save:()=>save,persist:()=>events.push('persist'),nodes:()=>42,granted:r=>{assert(r);grants.push(r);events.push('granted');sound.feedback(r);},end:()=>events.push('end')});
+ history.length=0;const native=new SceneModel({...hooks(),observe:e=>{assert.deepEqual(Object.keys(e.context).sort(),['bySignal','dev','noun','verb']);}},downtown as unknown as SceneData,rules);host.model=native;
+ native.apply([{effect:'legs.install'}]);assert(save.jump);assert.equal(history.length,1);assert.equal(grants.at(-1),history[0].receipt);assert.deepEqual(events,['persist','granted']);
+ native.apply([{effect:'till.pay'}]);assert.equal(save.tokens,3);assert.equal(grants.at(-1),history.at(-1)!.receipt);
+ native.guess('box','login','vrify');assert(save.controlled.includes('0x2F'));const box=history.filter(r=>r.line[1].includes('0x2F'));assert(box.length);assert.equal(grants.at(-1)!.cueId,box.at(-1)!.receipt.cueId);native.reset();timers.clear();
+ // The program hook receives the actual reply's reserved identity before it is delivered.
+ history.length=0;let acquired:FeedbackReceipt|undefined;const programs:string[]=[];
+ const acquisition=new SceneModel({...hooks(),programs:()=>programs,program:(id,r)=>{programs.push(id);acquired=r;sound.feedback(r!);}},data,{});host.model=acquisition;
+ const firstNote=notes.length;acquisition.apply([{give:'scan.so'}]);assert(acquired);assert.equal(history.length,1);assert.equal(acquired,history[0].receipt);advance(200);assert.equal(notes.length-firstNote,3);assert.deepEqual(programs,['scan.so']);
+ // Compare actual native effects, event order, saves and delayed controller outcomes to immutable original code.
+ sound.toggle();timers.clear();
+ function run(Model:any,makeRules:any){
+  clock=0;const save={handle:'ghost',tokens:0,jump:false,controlled:[] as string[],flags:{} as Record<string,boolean>},events:unknown[]=[],checkpoints:unknown[]=[];
+  const m=new Model({say:(line:Line,from?:string)=>events.push(['say',structuredClone(line),from]),changed:()=>events.push(['changed']),open:()=>{},observe:(e:unknown)=>events.push(['observe',e])},downtown,makeRules({save:()=>save,persist:()=>events.push(['persist']),nodes:()=>42,granted:()=>events.push(['granted']),end:()=>events.push(['end'])}));
+  const capture=()=>checkpoints.push(structuredClone({save,state:m.snapshot(),events}));
+  m.guess('box','login','wrong');capture();m.guess('box','login','vrify');capture();m.apply([{effect:'legs.install'}]);capture();m.apply([{effect:'till.pay'}]);capture();m.apply([{effect:'billboard.feed'}]);capture();advance(3000);capture();
+  // Existing DLV completion callback must retain persist -> granted -> goal/reply -> end ordering.
+  m.links=[];m.set('routeFixed',true);m.set('lock','open');m.act('dlv9','wheels','go home');advance(10000);assert(save.flags.end,'test must execute final native gate completion');capture();
+  m.reset();timers.clear();return checkpoints;
+ }
+ assert.deepEqual(run(SceneModel,downtownRules),run(baselineModel.SceneModel,baselineRules.downtownRules),'immutable native state/replies/scheduled outcomes/trace and service order');
+ console.log('Causal feedback PASS: distinct delivery/history IDs, exact-line consumed reservation, repeated identical actions, native delayed callback scopes, success-service/reply single cue, immediate error priority, standalone completion, program acquisition, mute/scoped disposal, Downtown install/till/control and immutable original state/replies/scheduled callback/event order/context parity.');
+}finally{if(sound.enabled)sound.toggle();Object.assign(globalThis,original);if(nowDescriptor)Object.defineProperty(performance,'now',nowDescriptor);else delete (performance as any).now;}

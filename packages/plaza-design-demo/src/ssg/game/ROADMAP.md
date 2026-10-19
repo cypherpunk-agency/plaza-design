@@ -1,31 +1,129 @@
 # ACCESS DENIED: roadmap
 
-Updated 2026-10-18. This is the single priority and status overview for the game, its gameplay
+Updated 2026-10-19. This is the single priority and status overview for the game, its gameplay
 systems, authoring tools and demo world. Detailed plans inherit priorities from here.
 Everything remains in design. Milestones are deliverables, not dates; later story proposals remain provisional.
 Story M1-M9 retain their existing identities. Completed artwork S0-S13 gates are not reopened or renumbered.
 
-## Current delivery order
+## Consolidated delivery order
 
-1. **ENG-01: technically complete. Roadmap reconciliation and finite contracts.** Consolidate existing evidence and
-   specify the agreed extensions to the working command/event/conversation pilot. Do not rebuild it.
-2. **ENG-02: technically complete. Persistent commerce and the demo-world foundation.** Extend saved state, unify prices
-   and purchases, expose authoring, prove the mechanic in the demo district, then update Shop and
-   Laundromat. Demo acceptance precedes broad scene migration.
-3. **ENG-03: technically complete within its named corpus. Unified conversations.** Consolidate NPC, device and shared conversation behavior,
-   expose the editor and demo scenarios, then migrate the explicitly listed representative paths.
-4. **ENG-04: technically complete within its named corpus.** Shared native device bindings,
-   eligibility, typed wiring and the connected Test Workshop; scoped Market fortune and Beach
-   meter/mixer migration. [Frozen scope](./ENG-04-PLAN.md), [evidence](./ENG-04-STATUS.md).
-5. **Next: ENG-05**, with its corpus and detailed gates to be specified before implementation.
-   ENG-01 through ENG-03 evidence is in [the execution ledger](./GAMEPLAY-ENGINE-STATUS.md).
-   Demo feedback remains pending; 49 legacy conversation paths and bot reactions remain inventoried.
-   The current run is authorized through ENG-04.
-   Listing later work is not authorization to execute or publish it.
+There is one roadmap, with engine, authoring and experience delivered together as needed.
+Story M1–M9 and completed artwork/workbench S0–S13 keep their existing IDs.
 
-The experience checkpoint remains **M2 pacing review**, followed by **M3 ordinary-life prologue**.
-Story design can continue in parallel; M3 needs only its actual dependencies, not a finished engine.
-A campaign playthrough, CI/regression expansion and publication remain separately scoped.
+### Active goal checkpoint, 2026-10-19
+
+User correction: old-save-format compatibility is not requested. Remove it as an acceptance
+requirement; do not add compatibility layers or scene-specific state bridges. One common runtime
+game state and shared actions are the target. Current-format persistence and gameplay/visual
+preservation remain required. See the correction at the top of ENGINE-CONSOLIDATION-GOAL.md.
+
+Latest semantic migration update: all19 scenes have source-backed ordinary content/actors and
+editable device sources; world/transport, network, opening and companion inputs have focused
+source/Save evidence. Capsule plug-off, Sandbox five counter/resource operations, Harbor Shift
+onepress conversation routing and Train door refusal/reply chains now use shared editable logic;
+replaced ordinary bodies are deleted. Focused parity:12 Capsule,109 Sandbox,48 Shift and672 Train
+cases. Sandbox and Shift protected Save/fresh shipping imports pass. Shared typed additions cover
+manual/signal cases, explicit silence, post-commit templates, cosmetic pulses and atomic conversation
+entry refusal sinks. Package TypeScript and both builds pass at this checkpoint. Current editor
+app-7B2MY45M.js / Play play-YRJIHYT4.js. The build now validates all registered scene data and shared
+routes rather than the former static10scene list.
+
+Remaining: ordinary timed workflows (Beach billing/Laundromat), other inventoried scene/controller
+branches and saved-owner bridges, full all-scene authoring/lifecycle/compatibility acceptance,
+six workload reports and cleanup. The prior173raster checkpoint predates these semantic edits;
+a new comparison is running. Partial browser startup on the preceding build is not all19 acceptance.
+The per-scene matrix remains conservative and has not yet reconciled every focused evidence entry;
+NOT RUN entries must not be interpreted as a claim that no underlying implementation exists.
+No whole goal gate is signed. See ENGINE-CONSOLIDATION-STATUS.md and
+[ordinary controller audit](./docs/reference/ORDINARY-CONTROLLER-CONSOLIDATION.md).
+
+The goal is in scene migration and editor integration, not final cleanup. All 19 native scenes
+now have ordinary manifests and shared actor collections (287 original source bodies). Per-scene
+checks cover source CRUD, rebinding, typed recipes, grouped Save, fresh imports and Undo; combined
+verification is in progress. This includes the 36 transit riders and Downtown's four original
+sprite actors, retaining their native art and draw order. Empty Capsule, Yard and Moth collections
+also support creation. Specialized controllers are a separate remaining requirement.
+
+Downtown's shared dialogue graphs match the original exhaustive outcome and target-priority corpus;
+the production duplicate runner is removed. Fixed scene environment settings have moved to source
+with typed controls, while geometry-derived values keep their existing Layout owner. Communication
+consolidation now includes covered-screen/reduced-motion clocks, scan deduplication, explicit device
+routing, feedback receipts and persisted noun/wiring lessons. Success-service receipt plumbing and causal cue checks now pass.
+
+Specialized controllers, existing world/network routes, complete editor coverage, final preservation,
+lifecycle/performance acceptance and removal of superseded paths remain required. No whole-goal
+G0–G13 gate is signed off. Historical scoped completions below do not imply full-game completion.
+
+Latest integrated preservation checkpoint: 173 raster comparisons passed; the current parallel batch
+still needs a new integrated comparison. Story M1 remains a completed design pass and M2 an implemented
+prototype awaiting pacing review. Story M3–M9 and publication remain outside this engineering goal.
+
+| Order | Delivery | Current state / next action |
+| --- | --- | --- |
+| Completed foundation | ENG-01–04, scoped ENG-05 objectives/access, ENG-06 recorder and ENG-08 manifest pilot; further four-actor Market conversation batch | Technically complete within recorded scopes. Reuse these systems; do not restart them |
+| Active autonomous goal | All 19 scenes and full editor support, including shared communication/conversations/controllers/world/network contracts and reliability | [Frozen scope and G0–G13 gates](./ENGINE-CONSOLIDATION-GOAL.md). Authorized 2026-10-18; original source captured, all scene content registrations present; native entity/controller/world migration and final gates remain open |
+| Editor integration within active goal | Extend latest scene-centered editor | Full typed controls and all-scene private Play are required; preserve the current layout and user changes |
+| Included in active goal | ENG-08 all-scene/controller/world authoring and registration | All 19 scenes, editable existing behavior and ordinary scene creation without TS edits; pilot is reused |
+| Experience checkpoint | Story M2 Harbor pacing/comprehension review, then M3 ordinary-life prologue | Current demo mechanics feedback does not answer Harbor pacing. M3 depends on actual needs, not completion of the entire engine/editor |
+| Subsequent experience | M4 deletion/first agency → M5 foundational hacking → M6 local Act I | Preserve gradual teaching and independent practice; settle finale causality before implementing it |
+| Later foundations/chapters | ENG-07 remote identity/network lifecycle; M7–M9 body/remote chapters | Prototype required capabilities before their chapter. Do not make remote networking a prerequisite for the prologue |
+
+Current world/controller slice: canonical city source and isolated metro sessions are implemented;
+City & travel edits city names/arrivals/fares plus metro timing/braking. Original native scene,
+map and bound-metro raster checks pass. Full world creation, in-flight controller fixtures and
+other controller/network authoring remain open; see the consolidation evidence ledger.
+
+Device authoring slice: ten native scene device sources now feed typed Logic -> Devices and
+Wiring -> Starting cables, pending native preview/Play and protected Save. Native noun/guard/toy/clock/link/log templates, four sector seals and
+ordinary native events/actions are supported; original bound identities,
+full block/entity creation and complete controller/network authoring still require work.
+
+Ordinary-content creation foundation: the reusable manifest factory now binds interactions,
+people, readables, resting places and exits to composition artwork. Typed add/remove/rebind controls,
+shared persistent actor dialogue, pending native preview and scene-mode private Play are checked in
+the isolated manifest scene. Existing 19-scene defaults retain sampled pixel parity. Assets → Scenes now creates ordinary scenes with projected Layout/Logic documents, their own runtime
+identity, starting fixtures and membership in an existing city place. Save/history/bundles remain
+atomic, with one catalogue owner. Native identity migrations, full environment/controller/world
+creation and complete lifecycle acceptance remain required.
+
+Native ordinary-content migrations: Corner Shop, Library, Laundromat and Warehouse now use shared width/spawn/interaction/
+readable/rest/exit manifests, registered anchors and typed rebind/create/remove controls. Its
+original metadata, actor geometry, paint operations and purchase rotation remain checked against
+the immutable references. Shop, Library, Laundromat and Warehouse actor bodies now use shared source definitions and typed appearance,
+movement, following and schedule controls, preserving native actor IDs, saved reaction keys and rendering. Actor
+creation/removal, clipping/controller definitions and the other native scene migrations remain open;
+the per-scene ledger records this as partial progress. Manifest scenes also expose creation/removal of goals and
+story-clock milestones through typed controls, retaining an unconditional final fallback. Native
+actor interaction order is editable in these four scenes; stable reaction identities preserve old
+bot progress across reorder and reload. Actor creation/removal/rebinding remains open.
+
+### Player feedback received (2026-10-18)
+
+Purchases, objectives/access, conversations and devices work for the user at present. Wiring mostly
+works, with unspecified details to revisit; do not invent fixes for unreported details. The user needs
+editor access to assess authoring comfort and is currently reworking that interface. This is positive
+functional feedback for the demo, not blanket acceptance of all mechanics, editor UX or the learning curve.
+
+The initial conversation-ledger discrepancy is reconciled. Current source-backed coverage is
+19/19 scene-document registrations. Downtown’s custom runtime story/people and native controllers
+are still separate migration work; registration is not a full-scene acceptance result. The recorded
+conversation corpus and procedural bot reactions now use shared graphs; the legacy panel and local
+character dialogue counters are removed. Focused parity and source-save checks pass, while full
+integration/browser acceptance and Downtown runtime story migration remain open.
+Capsule, Yard, Moth and Sandbox now have declared engine targets with typed editor fields. Registration is not full editor acceptance: existing binding restrictions,
+controller/device editing, world editing and ordinary scene creation still need implementation.
+The detailed current evidence is [ENGINE-CONSOLIDATION-STATUS.md](./ENGINE-CONSOLIDATION-STATUS.md).
+
+Communication direction is agreed: retain world speech/captions/actions/pings and meaningful ongoing
+state; merge independent toast/gain/touch-mirror/hint overlays into one restrained status/help lane;
+coordinate guidance, deduplicate announcements and separate readable time from animation. Implementation
+belongs to new ENG-09; the concrete contract, migration corpus and evidence are in the active goal.
+
+Historical technical evidence remains in [ENG-04-STATUS.md](./ENG-04-STATUS.md),
+[ENG-05-08-STATUS.md](./ENG-05-08-STATUS.md) and [GAMEPLAY-ENGINE-STATUS.md](./GAMEPLAY-ENGINE-STATUS.md).
+The previous finite goal is finished. The user authorized the expanded all-19-scene goal on 2026-10-18.
+Campaign playthrough, CI expansion and publication remain excluded. Current local work includes a main sync to `31616f6`;
+package evidence retains its original source identities rather than claiming those checks cover all later edits.
 
 ## Current position
 
@@ -80,13 +178,14 @@ Current gate evidence: [GAMEPLAY-ENGINE-STATUS.md](./GAMEPLAY-ENGINE-STATUS.md).
 | ID | Complete delivery across systems, authoring, demo and game | Dependency / story use |
 | --- | --- | --- |
 | ENG-01 | Reconciled plans, baseline inventory, contract extensions and preservation/change ledger | Technically complete locally; builds on existing pilot |
-| ENG-02 | Persistent typed state, purchase/price definitions, editor, demo shop, Shop/Laundromat migration | Technically complete locally; demo feedback pending; reusable for M3 |
+| ENG-02 | Persistent typed state, purchase/price definitions, editor, demo shop, Shop/Laundromat migration | Technically complete locally; positive purchase feedback received; editor review pending; reusable for M3 |
 | ENG-03 | One conversation runner/model, authoring, demo conversations, representative NPC/device/Harbor migration | Technically complete for 17 scoped paths; remaining legacy corpus deferred; supports M3-M4 |
-| ENG-04 | Common interaction/device operations and eligibility; typed wiring; workshop; bounded Market/Beach migration | Technically complete locally for named corpus; demo feedback pending; supports M4-M5 |
-| ENG-05 | Objectives/guidance, capability lookup and world access; demo mission; Harbor/Downtown integration | ENG-04; supports M3-M6 as required |
-| ENG-06 | Clock/lifecycle contracts and performance harness; timing/environment demos; scoped puzzle alignment | ENG-04; scope dependencies per feature, supports M3/M8 |
+| ENG-04 | Common interaction/device operations and eligibility; typed wiring; workshop; bounded Market/Beach migration | Technically complete locally for named corpus; devices work, wiring details deferred; supports M4-M5 |
+| ENG-05 | Shared objective/access/capability slice, editor controls and counter mission; scoped Harbor/Downtown/native access integration | Named package technically complete; broader policy authoring remains later; supports M3-M6 |
+| ENG-06 | Measurement-only recorder/report slice delivered; broader clock/lifecycle contracts and performance baseline/optimization remain | No timing-policy changes or optimization claims; later scope supports M3/M8 |
 | ENG-07 | Remote entity identity, discovery/reach/connection semantics; network demo and puzzle integration | ENG-04/05/06; foundations for M8-M9, not Act III implementation |
-| ENG-08 | Declared bindings, manifests and generic scene creation; editor-built demo; remaining scoped migrations | Established ENG contracts; supports all chapters |
+| ENG-08 | Declared bindings, manifests and generic scene creation; editor-built demo; remaining scoped migrations | Catalogue creation, projected Layout/Logic/Play and city membership implemented; original native entity/controller migrations remain active |
+| ENG-09 | Coordinated player communication, one status/help lane, device-source feedback, guidance and timing | Agreed design; next proposed package; preserves world art and distinct presenters |
 
 Each delivery follows **need -> system -> authoring -> demo -> scoped game migration -> feedback**.
 The demo uses the real runtime, model and renderer. Feedback may remain explicitly pending after
@@ -102,9 +201,9 @@ technical gates pass; never claim observed comprehension from implementation che
 | Workbenches S8-S13 / F1-F6 | Completed within recorded inventories | Viewers, inspector and bounded Sandbox authoring; wider editing is new scope |
 | Editor phases 0-1 | Substantial implemented slices: isolated Play, fixtures, native inspection | Existing capabilities reused; outstanding acceptance stays explicit |
 | Editor phase 2 | Partial: Harbor, Shop, Library and Laundromat documents and shared gameplay | Extended by ENG-01/02/03/04/05; no restart |
-| Editor phases 3-5 | Broader binding/registration, tools and world work remains | Executed through ENG-04 through ENG-08, not a separate priority queue |
+| Editor phases 3-5 | Isolated declared-scene pilot added; broad registration/world work remains | Executed through ENG-04 through ENG-08, not a separate priority queue |
 | Editor phase 6 | Custom packs/player distribution undecided | Deferred; not required for internal authoring |
-| Performance proposal | Plan exists; harness not implemented | Detailed work under ENG-06; measurement before optimization |
+| Performance proposal | Opt-in measurement slice implemented; broader harness phases remain | Local spans/reports and calibration; reproducible baseline/optimization work remains ENG-06 |
 
 [SCENE-SYSTEM-PLAN.md](./SCENE-SYSTEM-PLAN.md) and its ledgers preserve completed artwork/workbench
 scope. [GAME-EDITOR-PLAN.md](./GAME-EDITOR-PLAN.md) retains detailed editor requirements and historical
@@ -154,6 +253,7 @@ from the progression redesign; Harbor now has resumable task state through its s
 ## Records and documentation roles
 
 - [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md): execution contracts and acceptance gates for ENG deliveries.
+- [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md): authorized all-game execution package and G0–G13 gates; not an additional roadmap.
 - [GAMEPLAY-ENGINE-STATUS.md](./GAMEPLAY-ENGINE-STATUS.md): current evidence, failures, exceptions and feedback.
 - [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md): story direction, principles and open embodiment ideas.
 - [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md): milestone 1 encounter plan and dependencies.
@@ -164,3 +264,26 @@ from the progression redesign; Harbor now has resumable task state through its s
 
 The archive preserves the old record; its checkmarks and dated decisions are not completion
 claims for these new milestones. No production state is inferred from this document.
+
+
+2026-10-19 controller integration update: pending native cinematic playback/full handoffs,
+instance-scoped global network source/editing, Moth/Library observation recipes and versioned
+source-owned transport arrivals now have focused source/behavior/Save evidence. See the latest
+ENGINE-CONSOLIDATION-STATUS.md checkpoint. New combined raster/build/native-Play evidence is still
+required; whole goal gates remain unsigned. Next active slices are full city typed controls,
+companion policy/shared pet content and opening-story controller authoring. This does not advance
+story chapters or authorize publication.
+
+2026-10-19 follow-through: city controls, companion/shared pet content and opening-source authoring
+now have focused implementation evidence, and the combined prior integration passed173raster
+comparisons. These are not the remaining work list above. Next is semantic ordinary-controller
+consolidation: conditions/actions/rewards/workflows must move into shared logic and replaced native
+paths must be removed. Capsule plug-off is the first verified slice; Sandbox counters/rewards are next.
+See docs/reference/ORDINARY-CONTROLLER-CONSOLIDATION.md and the latest ENGINE-CONSOLIDATION-STATUS.md.
+All19 controller/editor acceptance, cleanup, six workload evidence and final G0-G13 audit remain required.
+
+Stable checkpoint prepared for user-authorized main/production publication,2026-10-19:
+Beach billing/rental/danger workflows now use shared commands and typed live intervals; Downtown
+uses common state/player facts/authored objectives, with its special adapter removed. Both builds,
+ENG04,current-save/context regressions and173raster comparisons PASS. This is an intermediate
+publication, not completion of remaining native state/controller migrations or final goal gates.

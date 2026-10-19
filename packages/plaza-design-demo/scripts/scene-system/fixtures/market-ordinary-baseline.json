@@ -1,0 +1,363 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "haggle",
+      "before": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      },
+      "price": 0,
+      "pages": [
+        "Umbrella? Nine tokens.",
+        "Look up. The sky does my advertising."
+      ],
+      "after": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      }
+    },
+    {
+      "id": "haggle",
+      "before": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      },
+      "price": 0,
+      "pages": [
+        "Seven. Because you have an honest face. Unregistered, but honest."
+      ],
+      "after": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      }
+    },
+    {
+      "id": "haggle",
+      "before": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      },
+      "price": 0,
+      "pages": [
+        "Four. I have children to feed.",
+        "(The kid at the fruit stall waves at him. He does not wave back.)"
+      ],
+      "after": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      }
+    },
+    {
+      "id": "haggle",
+      "before": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      },
+      "price": 0,
+      "pages": [
+        "ONE token. Final. You are robbing me in front of the cameras.",
+        "Haggle again to pay."
+      ],
+      "after": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      }
+    },
+    {
+      "id": "haggle",
+      "before": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      },
+      "price": 1,
+      "pages": [
+        "No tokens? Then that was haggling for the exercise.",
+        "Come back with one. The rain will wait. It always waits."
+      ],
+      "after": {
+        "flags": {},
+        "items": {},
+        "tokens": 0
+      }
+    },
+    {
+      "id": "haggle",
+      "before": {
+        "flags": {},
+        "items": {},
+        "tokens": 2
+      },
+      "price": 1,
+      "pages": [
+        "Pleasure. It is a smart umbrella: it opens once you accept its terms.",
+        "Forty pages. Read them under a roof."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 1
+      }
+    },
+    {
+      "id": "haggle",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2
+      },
+      "price": 0,
+      "pages": [
+        "You already have one of mine. It works. Mostly.",
+        "If it asks for an update, say no."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2
+      }
+    },
+    {
+      "id": "fortune",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 0
+      },
+      "price": 1,
+      "pages": [
+        "FORTUNE UNIT 9 CANNOT SEE YOUR FUTURE.",
+        "IT CAN SEE YOUR BALANCE. IT IS ZERO."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 0
+      }
+    },
+    {
+      "id": "fortune",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2
+      },
+      "price": 1,
+      "pages": [
+        "FORTUNE UNIT 9 SEES... a stranger. You are in a market. That was not hard."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 1,
+        "values": {
+          "market.fortune": 1,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      }
+    },
+    {
+      "id": "fortune",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2,
+        "values": {
+          "market.fortune": 1,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      },
+      "price": 1,
+      "pages": [
+        "FORTUNE UNIT 9 SEES... a friend who is not fishing. A boat that knows where.",
+        "That will be all. FORTUNE UNIT 9 does not do follow-up questions."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 1,
+        "values": {
+          "market.fortune": 2,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      }
+    },
+    {
+      "id": "fortune",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2,
+        "values": {
+          "market.fortune": 2,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      },
+      "price": 1,
+      "pages": [
+        "FORTUNE UNIT 9 SEES... a door that opens. Do not trust the door."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 1,
+        "values": {
+          "market.fortune": 3,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      }
+    },
+    {
+      "id": "fortune",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2,
+        "values": {
+          "market.fortune": 3,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      },
+      "price": 1,
+      "pages": [
+        "FORTUNE UNIT 9 SEES... your credit score rising.",
+        "Correction: someone else's. FORTUNE UNIT 9 regrets the error."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 1,
+        "values": {
+          "market.fortune": 4,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      }
+    },
+    {
+      "id": "fortune",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2,
+        "values": {
+          "market.fortune": 4,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      },
+      "price": 1,
+      "pages": [
+        "FORTUNE UNIT 9 SEES... rain. FORTUNE UNIT 9 is never wrong about rain."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 1,
+        "values": {
+          "market.fortune": 0,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      }
+    },
+    {
+      "id": "fortune",
+      "before": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 2,
+        "values": {
+          "market.fortune": 0,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      },
+      "price": 1,
+      "pages": [
+        "FORTUNE UNIT 9 SEES... a stranger. You are in a market. That was not hard."
+      ],
+      "after": {
+        "flags": {
+          "market:umbrella": true
+        },
+        "items": {},
+        "tokens": 1,
+        "values": {
+          "market.fortune": 1,
+          "talk.market.cook.cursor": 0,
+          "talk.market.fish.cursor": 0,
+          "talk.market.repair.cursor": 0,
+          "talk.market.sleeper.cursor": 0
+        }
+      }
+    }
+  ]
+}

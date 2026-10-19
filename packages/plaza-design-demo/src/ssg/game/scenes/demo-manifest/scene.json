@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "shop",
+  "name": "Manifest pilot",
+  "intro": [
+    "An isolated scene assembled from ordinary source documents."
+  ],
+  "manifest": {
+    "version": 1,
+    "width": 720,
+    "spawn": "spawn",
+    "uses": {
+      "checkpoint": "checkpoint"
+    }
+  },
+  "objectives": [
+    {
+      "id": "sample",
+      "text": "Use the sample checkpoint",
+      "when": {
+        "flag": "pilot.done",
+        "is": false
+      },
+      "target": "checkpoint"
+    },
+    {
+      "id": "done",
+      "text": "Sample task complete"
+    }
+  ],
+  "uses": [
+    {
+      "id": "checkpoint",
+      "name": "CHECKPOINT",
+      "label": "[E] COMPLETE SAMPLE TASK",
+      "routes": [
+        {
+          "command": "pilot.complete",
+          "pages": [
+            "Task complete. This interaction, its position and the goal are authored definitions."
+          ]
+        }
+      ]
+    }
+  ]
+}

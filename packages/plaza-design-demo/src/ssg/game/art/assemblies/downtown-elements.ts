@@ -40,7 +40,7 @@ export const downtownElements:Element[]=[
  element('billboard','Registry billboard frame','signage',{mask,smearColor:str('Reflection RGB')},()=>box(132,160,-66),(_x,_v,_p,_s,at)=>kernel.drawBillboard(at.x)),
  element('stall','Noodle stall and lamps','furniture',{width:num('Width',140,1),mask},p=>box(n(p,'width')+40,150,-20),(_x,_v,p,_s,at)=>kernel.drawStall({x:at.x,w:n(p,'width')})),
  element('fence','Antenna fence','architecture',{},()=>box(120,44),(_x,_v,_p,_s,at)=>kernel.drawFence(at.x)),
- element('alley','Lit yard passage','architecture',{},()=>box(150,190,-40),(_x,_v,_p,s,at)=>kernel.drawAlley(at.x,n(s,'doorOffset')),{doorOffset:num('Yard door offset',22)}),
+ element('alley','Lit yard passage','architecture',{doorOffset:num('Passage door drawing offset',22)},()=>box(150,190,-40),(_x,_v,_p,s,at)=>kernel.drawAlley(at.x,n(s,'doorOffset')),{doorOffset:num('Yard door offset',22)}),
  element('dumpster','Climbable dumpster','props',{width:num('Width',40,1),height:num('Height',22,1)},p=>box(n(p,'width'),n(p,'height')),(_x,_v,p,_s,at)=>kernel.drawDumpster(at.x,n(p,'width'),n(p,'height'))),
  element('entrance','Door plate and reader','architecture',{kind:{kind:'select',label:'Door kind',default:'shop',options:['shop','capsule','moth']},smearColor:str('Reflection RGB')},()=>box(72,90,-36),(_x,_v,p,_s,at)=>{if(p.kind==='shop')kernel.drawShopDoor(at.x);else if(p.kind==='capsule')kernel.drawCapsuleDoor(at.x);else kernel.drawMothDoor(at.x);}),
  element('street','Wet street surface','surfaces',{},()=>box(2000,60),()=>kernel.drawStreetSurface()),

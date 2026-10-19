@@ -18,6 +18,8 @@ import { drawSelectionOverlay } from './selection-overlay';
 export interface NativeSceneAdapter {
   validate(value: unknown): Composition;
   definition(document: Composition, state: Environment['state'], options: NativeOptions): SceneDef;
+  /** Resolve authored content before construction, so removed default bindings are never evaluated. */
+  pendingDefinition?(document:Composition,state:Environment['state'],options:NativeOptions,documents:ReadonlyMap<string,unknown>):SceneDef;
   environment?(document: Composition, view: View, engine: EngineDraw): Environment;
   frame?(document: Composition, state: Environment['state'], options: NativeOptions): Partial<Pick<SceneFrame, 'reflections' | 'city' | 'street' | 'actors' | 'roomWash' | 'skyTraffic'>>;
 }
@@ -66,14 +68,14 @@ function parentOf(rows: Resolved[], id: string): string | undefined {
   return rows.find(row => row.instance.children?.some(child => child.id === id))?.instance.id;
 }
 /** No Game construction, controller stepping, player-save reads or player-save writes occur here. */
-export function createNativePreview(adapters: Readonly<Record<string, NativeSceneAdapter>>) {
+export function createNativePreview(adapters: Readonly<Record<string, NativeSceneAdapter>>,bindWorld?:(definition:SceneDef,request:PreviewRequest)=>SceneDef,resolveAdapter?:(scene:string,request:PreviewRequest)=>NativeSceneAdapter|undefined) {
   const ships = createSkyShips();
   const render = (canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult => {
-      const adapter = adapters[request.composition.scene];
+      const adapter = adapters[request.composition.scene]??resolveAdapter?.(request.composition.scene,request);
       if (!adapter) throw new Error(`Native composition adapter is not available yet for ${request.composition.scene}`);
       const document = adapter.validate(request.frame?.composition ?? request.composition), state = request.frame?.state ?? {};
       const options: NativeOptions = { reduced: request.reduced, visibility: request.frame?.visibility, opacity: request.frame?.opacity, clips: request.frame?.clips, sequenceTime: request.time };
-      const def = adapter.definition(document, state, options), settings = request.environment;
+      const original = request.documents&&adapter.pendingDefinition?adapter.pendingDefinition(document,state,options,request.documents):adapter.definition(document, state, options), def=bindWorld?.(original,request)??original, settings = request.environment;
       if (settings.presentation !== undefined && settings.presentation !== '') {
         if (!def.presentationState) throw new Error('This scene has no presentation controller state');
         def.presentationState.restore(object(settings.presentation, 'Presentation state') as Parameters<typeof def.presentationState.restore>[0]);

@@ -3,8 +3,7 @@
   "id": "shop",
   "name": "TEST DISTRICT - COUNTER",
   "intro": [
-    "A counter where every transaction can be inspected. Stock and conversations remember your visits.",
-    "Use the counter to buy. The door returns to the Test Desk, where you can change the scenario."
+    "Use the counter or its direct controls. Guidance example starts an optional permission task here."
   ],
   "uses": [
     {
@@ -51,7 +50,13 @@
         }
       ],
       "purchase": "demo.goods",
-      "cycleState": "demo.rotation"
+      "cycleState": "demo.rotation",
+      "access": [
+        {
+          "command": "demo.buy",
+          "reason": "Purchase unavailable. Check Guidance example permission, balance and stock."
+        }
+      ]
     }
   ],
   "readables": [
@@ -117,6 +122,52 @@
       "to": "library",
       "at": "downtown",
       "label": "[E] TEST DESK"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "permission",
+      "text": "Get task permission in Guidance example",
+      "when": {
+        "all": [
+          {
+            "flag": "demo.mission"
+          },
+          {
+            "flag": "demo.permit",
+            "is": false
+          }
+        ]
+      },
+      "target": "buy"
+    },
+    {
+      "id": "purchase",
+      "text": "Buy one item at this counter",
+      "when": {
+        "all": [
+          {
+            "flag": "demo.mission"
+          },
+          {
+            "flag": "demo.completed",
+            "is": false
+          }
+        ]
+      },
+      "target": "buy"
+    },
+    {
+      "id": "complete",
+      "text": "Purchase task complete",
+      "when": {
+        "flag": "demo.mission"
+      }
+    },
+    {
+      "id": "idle",
+      "text": "Start the optional Guidance example here",
+      "gentle": true
     }
   ]
 }

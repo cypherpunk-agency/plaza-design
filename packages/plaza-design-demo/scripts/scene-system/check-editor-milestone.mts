@@ -10,7 +10,7 @@ import {SHIFT_SCENE,validateShiftScene} from '../../src/ssg/game/scenes/harbor-s
 import {harborShiftScene} from '../../src/ssg/game/scenes/harbor-shift';
 import {SHIFT_GAMEPLAY} from '../../src/ssg/game/scenes/harbor-shift/gameplay';
 import {harborShiftComposition} from '../../src/ssg/game/scenes/harbor-shift/composition';
-import {validateSandboxBehavior} from '../../src/ssg/game/authoring/behavior-validation';
+import {validateSandboxBehavior} from './legacy-s13/behavior-validation';
 import {SANDBOX} from '../../src/ssg/game/data';import {SANDBOX_RULES} from '../../src/ssg/game/scenes/sandbox';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 const copy=structuredClone;

@@ -1,0 +1,407 @@
+{
+  "version": 1,
+  "id": "sandbox",
+  "name": "the sandbox",
+  "intro": [
+    "REGISTRY QA BAY 3. Every device in here is under test.",
+    "One bench per thing the system can do. The console by the door puts it all back."
+  ],
+  "exits": [
+    {
+      "id": "out",
+      "to": "downtown",
+      "at": "metro",
+      "label": "[E] EXIT"
+    }
+  ],
+  "readables": [
+    {
+      "id": "plan",
+      "name": "TEST PLAN \u00b7 BAY 3",
+      "pages": [
+        "BAY 3 \u00b7 DEVICES UNDER TEST. STATIONS 01\u201310, LEFT TO RIGHT: NOUN KINDS, CABLES, GUARDS, SEALED SECTORS, TRACE, THE NET, WATCHDOG, EVERYDAY USE, PEOPLE, TIME AND WEATHER.",
+        "EACH STATION HAS A TEST CARD. RESET BAY 3 RETURNS EVERY DEVICE TO ITS FIRST STATE. TESTERS ARE NOT RESET."
+      ]
+    },
+    {
+      "id": "card1",
+      "name": "BAY 3\u00b701 \u00b7 NOUN KINDS",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "NOUN KINDS. ONE DEVICE PER KIND, LEFT TO RIGHT: SENSE (MOTION SENSOR), ACT (TEST LAMP), STORE (MEMO SCREEN), LINK (WALL PORT), DAEMON (UNIT 7), CLOCK (METRONOME), LOG (TAPE RECORDER).",
+        "TEST: TAP EACH. WAVE AT THE SENSOR: ITS PRE-WIRED CABLE SWITCHES THE LAMP. TALK TO UNIT 7. STOP THE METRONOME IN HACK VIEW. OPEN THE RECORDER AND WATCH ITS TRACE."
+      ]
+    },
+    {
+      "id": "card2",
+      "name": "BAY 3\u00b702 \u00b7 CABLES",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "CABLES. THE TEST BUTTON FANS OUT: ONE EVENT, THREE CABLES (BEACON, HORN, COUNTER). THE COUNTER'S IS A FIXED CONDUIT: IT CANNOT BE CUT.",
+        "CHAIN: WIRE PLATE \u2192 TIMER (WAIT 2 S) \u2192 SWITCH (ON, PASS) \u2192 HATCH OPEN. THE HATCH IS PRE-WIRED TO THE FAN. TIMER AND SWITCH ARE IN THE LOGIC DRAWER."
+      ]
+    },
+    {
+      "id": "card3",
+      "name": "BAY 3\u00b703 \u00b7 GUARDS",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "GUARDS. QA LOGIN: PASSWORD, 2 TRIES, LOCKS 5 S, A NEAR MISS (\"bay3\"). THE STICKY NOTE PUTS BOTH ON YOUR KEYRING.",
+        "ONE GUARD PER LOCK TOY: SHIELD LOCKER (RINGS), CIPHER BOX (SHIFT 3), CRYPTEX CASE (A 4-LETTER WORD), MORSE LAMP (OK). PROBE EACH IN HACK VIEW. EACH TAG HAS THE ANSWER."
+      ]
+    },
+    {
+      "id": "card4",
+      "name": "BAY 3\u00b704 \u00b7 SEALED SECTORS",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "SEALED SECTORS. SECURE CABINET: DRAWER A, KEY SEAL (CUT A KEY CHIP AT THE CUTTER, DROP IT ON THE DRAWER). DRAWER B, SEQUENCE SEAL: RED, GREEN, BLUE ON THE PANEL, BY CABLE, WITHIN 3 S.",
+        "DRAWER C, CONDITION SEAL: OPENS WHILE THE MAINS LEVER IS UP. OPENED SECTORS ARE SAVED; RESET BAY 3 SHUTS THEM."
+      ]
+    },
+    {
+      "id": "card5",
+      "name": "BAY 3\u00b705 \u00b7 TRACE",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "TRACE. THE AUDIT DESK LOGS YOU AT 20% A SECOND WHILE YOU ARE INSIDE IT. A WRONG PASSWORD ADDS 30%. AT 100% YOU ARE OUT AND IT LOCKS FOR 8 S. THE METER ON THE WALL SHOWS IT.",
+        "WAYS OUT: CUT ITS CABLE TO THE SPOOL, SWITCH ITS LOG OFF, OR LOG IN (\"auditor\") AND WIPE IT FROM ROOT."
+      ]
+    },
+    {
+      "id": "card6",
+      "name": "BAY 3\u00b706 \u00b7 THE NET",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "THE NET. THE NET JACK IS ON THE TEST LAN. IT KNOWS QA-SRV 01; A SCAN FINDS QA-PRN 2. QA-VAULT IS ONE HOP ON, THROUGH QA-SRV 01'S OWN LINK.",
+        "PING QA-SRV 01: ITS CABLE RINGS THE BELL. PRINT ON QA-PRN 2: THE LABEL PRINTER PRINTS. THE TEST LAN IS ONLY REACHABLE FROM THIS BAY."
+      ]
+    },
+    {
+      "id": "card7",
+      "name": "BAY 3\u00b707 \u00b7 WATCHDOG",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "WATCHDOG. QA-WD WALKS STAMP PRESS \u2192 CONVEYOR \u2192 SIREN: 3.5 S ON EACH, 1.5 S BETWEEN. THE ONE IT SITS ON IS FROZEN: NO VERBS, NO SIGNALS. THE RED LAMP OVER A DEVICE SAYS WHERE IT IS.",
+        "EACH OF THE THREE HAS A WATCHDOG NOUN: WIRE ITS \"leaves\" TO SOMETHING TO ACT WHILE IT IS AWAY."
+      ]
+    },
+    {
+      "id": "card8",
+      "name": "BAY 3\u00b708 \u00b7 EVERYDAY USE",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "EVERYDAY USE. THE COFFEE MACHINE HAS THE FULL POPUP: THREE EVERYDAY ACTIONS, JACK IN, HACK IT.",
+        "ITEMS: TAKE A BLANK CHIP FROM THE DISPENSER (YOU CARRY IT: HELD), INSERT IT AT THE CHIP READER. TOKENS: THE TEST TILL TAKES ONE PER PAYMENT."
+      ]
+    },
+    {
+      "id": "card9",
+      "name": "BAY 3\u00b709 \u00b7 LIFE",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "PEOPLE, ROBOTS, ANIMALS. TALK TO THE QA LEAD AND THE NIGHT TECH (THE TECH ANSWERS DIFFERENTLY BY NIGHT AND IN RAIN). TALK TO TEST UNIT 0 WHILE IT WORKS. PET THE CAT."
+      ]
+    },
+    {
+      "id": "card10",
+      "name": "BAY 3\u00b710 \u00b7 TIME AND WEATHER",
+      "label": "[E] TEST CARD",
+      "pages": [
+        "TIME AND WEATHER. THE NIGHT LIGHT IS PERMITTED 18:00\u201306:00 ONLY, AND GOES OFF BY ITSELF AT DAYBREAK. THE VENT REFUSES RAIN, STORM AND SMOG, AND SHUTS ITSELF WHEN THEY COME.",
+        "THE WEATHER SENSOR READS THE DISTRICT'S WEATHER. SIT ON THE BENCH TO WAIT UNTIL LATER. SUDO'S TIME CONTROL AND WEATHER OVERRIDE WORK HERE."
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "lead",
+      "name": "QA LEAD",
+      "talk": [
+        [
+          "Bay 3. Every device in here has passed its test at least once.",
+          "Not at the same time. We do not test that."
+        ],
+        [
+          "The console behind me resets the bay. Devices, cables, trace, the lot.",
+          "It does not reset me. I asked. Twice. It logged both requests."
+        ],
+        [
+          "Left to right, one bench per thing the system can do. Read the plate, then break the thing under it.",
+          "Then log that you broke it. Then log that you logged it."
+        ],
+        [
+          "The watchdog in seven is ours. Well. It is the Registry's. We just feed it."
+        ]
+      ]
+    },
+    {
+      "id": "unit0",
+      "name": "TEST UNIT 0",
+      "talk": [
+        [
+          "CARRYING: 1 DEVICE UNDER TEST. DESTINATION: THE NEXT BENCH.",
+          "I HAVE BEEN TO THE NEXT BENCH. IT IS ALSO A BENCH."
+        ],
+        [
+          "MY JOB: MOVE THE TEST. MY TEST: WHETHER I MOVE THE TEST.",
+          "RESULT: PENDING. I AM MOVING IT."
+        ]
+      ]
+    },
+    {
+      "id": "tech",
+      "name": "NIGHT TECH",
+      "talk": [
+        [
+          "I test the bench. Sit on it, wait, see if time passes. It does. Every time.",
+          "Forty-one passes. I am going for fifty."
+        ],
+        [
+          "The cat is not a device under test. We checked. It refused the checking."
+        ],
+        [
+          "TEST UNIT 0 has carried that same box between bays since I started.",
+          "I asked what is in it. It said: \"THE TEST.\" Fair."
+        ]
+      ],
+      "lines": [
+        {
+          "weather": [
+            "rain",
+            "storm"
+          ],
+          "pages": [
+            "Rain. The vent knows before the forecast does. I trust the vent.",
+            "The vent has never once said \"light showers\"."
+          ]
+        },
+        {
+          "when": {
+            "from": "18:00",
+            "to": "06:00"
+          },
+          "pages": [
+            "Night shift. The night light is allowed on now. It waited all day for this.",
+            "Same, honestly."
+          ]
+        }
+      ]
+    }
+  ],
+  "uses": [
+    {
+      "id": "chips",
+      "name": "BLANK CHIPS",
+      "label": "[E] TAKE A BLANK CHIP",
+      "speakerKind": "device",
+      "routes": [
+        {
+          "command": "sandbox.dispense",
+          "pages": [
+            "ONE BLANK CHIP DISPENSED. FREE OF CHARGE. LOGGED.",
+            "FOR THE CHIP READER, NEXT TO IT."
+          ]
+        }
+      ]
+    }
+  ],
+  "nativeTargets": [
+    {
+      "id": "reset",
+      "anchor": "reset",
+      "promptH": 66,
+      "labels": [
+        {
+          "text": "prompt.reset"
+        }
+      ],
+      "routes": [
+        {
+          "steps": [
+            {
+              "reset": true
+            },
+            {
+              "say": "reset.ok"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "actors": [
+    {
+      "seed": 9101,
+      "look": {
+        "body": "tall",
+        "garb": "coat",
+        "hair": "bun",
+        "extras": [
+          "glasses"
+        ],
+        "top": "#c8c0b0",
+        "acc": "#2a6ad8"
+      },
+      "act": "scan",
+      "facing": 1,
+      "id": "lead",
+      "instance": "lead",
+      "target": "lead",
+      "band": "world",
+      "reaction": "lead"
+    },
+    {
+      "seed": 9103,
+      "look": {
+        "bot": "servbot",
+        "paint": "#c8b890",
+        "v": 1
+      },
+      "act": "carry",
+      "range": [
+        0,
+        680
+      ],
+      "speed": 0.18,
+      "id": "unit0",
+      "instance": "unit0",
+      "target": "unit0",
+      "band": "world",
+      "reaction": "unit0"
+    },
+    {
+      "seed": 9102,
+      "look": {
+        "body": "wide",
+        "garb": "hivis",
+        "hair": "beanie",
+        "extras": [
+          "headphones"
+        ],
+        "top": "#c9a227"
+      },
+      "act": "sit",
+      "facing": 1,
+      "id": "tech",
+      "instance": "tech",
+      "target": "tech",
+      "band": "world",
+      "reaction": "tech",
+      "height": "artwork"
+    },
+    {
+      "look": "cat",
+      "seed": 31,
+      "act": "sit",
+      "facing": -1,
+      "id": "cat",
+      "instance": "cat",
+      "band": "world",
+      "reaction": "slot-3",
+      "height": "artwork"
+    },
+    {
+      "seed": 9201,
+      "act": "walk",
+      "range": 180,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 1,
+      "speed": 0.25,
+      "look": {
+        "extras": [
+          "umbrella"
+        ]
+      },
+      "id": "outside",
+      "instance": "outside",
+      "band": "background",
+      "reaction": "actor.outside",
+      "height": "artwork"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "hall",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "chips": {
+        "instance": "chip-dispenser",
+        "promptH": 100,
+        "responseH": 80
+      }
+    },
+    "readables": {
+      "plan": {
+        "instance": "plan",
+        "promptH": 6
+      },
+      "card1": {
+        "instance": "card1",
+        "promptH": 66
+      },
+      "card2": {
+        "instance": "card2",
+        "promptH": 66
+      },
+      "card3": {
+        "instance": "card3",
+        "promptH": 66
+      },
+      "card4": {
+        "instance": "card4",
+        "promptH": 66
+      },
+      "card5": {
+        "instance": "card5",
+        "promptH": 66
+      },
+      "card6": {
+        "instance": "card6",
+        "promptH": 66
+      },
+      "card7": {
+        "instance": "card7",
+        "promptH": 66
+      },
+      "card8": {
+        "instance": "card8",
+        "promptH": 66
+      },
+      "card9": {
+        "instance": "card9",
+        "promptH": 66
+      },
+      "card10": {
+        "instance": "card10",
+        "promptH": 66
+      }
+    },
+    "exits": {
+      "out": {
+        "instance": "exit-out",
+        "promptH": 82
+      }
+    },
+    "rests": {
+      "bench": {
+        "instance": "wait-bench",
+        "promptH": 52
+      }
+    }
+  },
+  "rests": [
+    {
+      "id": "bench",
+      "kind": "bench"
+    }
+  ],
+  "environment": {},
+  "companion": {
+    "mode": "off"
+  }
+}

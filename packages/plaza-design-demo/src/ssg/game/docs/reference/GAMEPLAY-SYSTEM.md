@@ -282,7 +282,7 @@ missing saved state defaults deterministically. The portable envelope remains ve
   rewards use explicit guarded commands and entry routes, not rendering callbacks.
 - Native Library catalog text now lives once in library/gameplay.json. `native-dialogue.ts` produces
   read-only compatibility data for native checks/inspection; Panels uses ConversationSession to run
-  it. `gameplayReads` maps its read-only renewed flag from the native model; it is not a second saved
+  it. `native.reads` declares its read-only renewed flag from the native model; it is not a second saved
   source of truth. Unsupported legacy projection shapes are rejected during source validation.
 - Actor painting retains talk metadata and the exact prepared actors/hint markers. Conversation IDs
   are runtime metadata, not an appearance change. The scene document validator checks generated
@@ -297,7 +297,8 @@ node-entry effects remain listed adapters for later work.
 ### Test District
 
 Open `/?demo` after building the homepage. It uses real Game with two source-defined role overrides:
-the native Library artwork as Test Desk and Shop artwork as Counter, connected by their doors. The
+the native Library and Shop examples with a compact native device area. Review shortcuts replace travel;
+plain backgrounds retain only the required people and props. Purchase, price and permission controls work in place. The
 19-scene campaign registry is unchanged; generic scene registration is still ENG-08. No renderer,
 conversation evaluator or commerce implementation is copied for the demo.
 
@@ -305,7 +306,7 @@ Standalone demo autosave, manual slots and resume use distinct demo keys. Locati
 conversation progress and modifiers persist; MENU -> NEW GAME resets only the demo autosave, retaining
 demo manual slots. Editor **Demo world** runs pending definitions in the existing opaque disposable
 Play frame. Leaving/Stop destroys it; its progress is not the standalone demo save. The regular five
-Play scenes remain available. District entry is constrained to the two demo content roles.
+Play scenes remain available. District entry is constrained to the three demo content roles.
 
 Demo coverage is in `demo/coverage.json` and is shown read-only in the workbench. Gameplay can edit the
 shared demo purchase/state/choices; Scene logic edits both areas. The inspector includes resolved
@@ -364,3 +365,74 @@ pnpm --filter plaza-design-demo exec tsx scripts/scene-system/check-eng04.mts
 It covers the finite migration/security/rollback corpus, actual pausable scheduler, editor history,
 portable import and protected source-save round trips using disposable files. Existing Beach/Market
 appearance checks remain separate gates. No campaign playthrough or CI expansion is implied.
+
+
+## Objectives, access and declared-scene pilot
+
+The feedback-ready package adds one ordered objective selector used by authored Harbor guidance
+and the existing seven-stage Downtown bridge. Text, target and urgency come from the same selected
+row. Harbor's presentation and progression ordering remain unchanged.
+
+Access requirements use shared pure conditions or an existing interaction command's eligibility
+query, with authored refusal text and optional hidden-while-refused behavior. A requirement can be
+checked by prompts, runtime invocation and the editor inspector without spending resources. Both
+main and carried-item actions enforce the same gate; commands still own atomic mutation.
+Native adapters cover current flag/key doors, quick-travel refusal priority and harbor transport.
+Capabilities are a detached view over existing jump/module/program/key/control owners, not a second
+saved ability registry. New unlock policies and broad world-access authoring remain design work.
+
+Four further Market actors (cook/fish/repair/sleeper) use shared conversations and saved cursors.
+This raises the scoped migrated paths from 17 to 21 and reduces the inventoried legacy paths from
+49 to 45; generic bot reactions remain separate. The baseline page sequences and final repeats are
+preserved. New saved cursors initialize lazily, retaining unrelated native state and resources.
+
+The editor's declared-scene pilot resolves authored spawn/use bindings against composition instance
+IDs and runs the same commands, objective selector and native artwork/render path. It occupies only
+a private shop role; no campaign registration/map membership is added. See the
+[binding inventory](./SCENE-BINDING-INVENTORY.md) for the supported contract and explicit exceptions.
+
+
+## All-game conversation continuation (2026-10-19)
+
+The earlier ENG-03 counts above describe historical snapshots. Every row currently recorded in
+`CONVERSATION-MIGRATION.json` now uses shared conversation graphs, including all six device
+dialogues. Procedural bot reactions now use the registered shared template source described below. The legacy panel dialogue evaluator
+has been removed; projected native dialogue metadata is read-only compatibility/inspection data.
+Panels resolve explicit or default conversation IDs through the same ConversationSession.
+
+`native.reads` declares read-only truthiness bindings to live native state (or an explicitly
+registered derived value). They are not copied into the save and cannot be assigned by commands.
+`native.state` aliases writable state to its original SceneSave owner. Omitting `native.wires`
+preserves another subsystem's cable source; an explicit empty list owns and removes defaults.
+
+`handoffs` binds a committed shared event to an existing cinematic and/or delayed system commands.
+The typed editor exposes the event, cinematic, delay and command references. GameplaySession
+still owns all state/resource/flag actions; the handoff adapter only requests the existing
+cutscene presenter and schedules commands on SceneModel's existing clock. Eligibility and failed
+transactions never trigger handoffs. Session disposal, native reset and restore cancel delayed
+work. The runtime bounds pending handoff work at 64 callbacks; this remains a small shared
+controller facility, not full controller/world/editor acceptance.
+
+Stacks Moth's ending uses this path: one guarded command sets the original talked state, three
+story flags and the moth goal; its committed event requests ACT II and schedules the authored
+ferry-depart command after 1500ms. Native end-effect code has been removed. Repeated entry resolves
+to the same final line without replaying the transition. Verification: check-stacks-conversation
+and check-gameplay-handoffs; these do not constitute a campaign playthrough or full G3/G9/G11.
+
+
+Procedural robot voices are authored in `engine/gameplay/bot-reactions.json`. Artwork specs retain
+only appearance/motion data. `withBotConversations` expands the registered voice templates through
+`withSceneConversations`, so ConversationSession/GameplaySession are the only text progression and
+state writers. Game caches each expanded scene definition; prompting does not construct or advance
+a conversation. The current source has 21 voices and 17 procedural bindings in the registered
+scenes. New saved cursors preserve the original cycling policy and initialize once for old saves.
+The former REACTED and SAID maps and native panel dialogue evaluator are removed. Existing unnamed
+actors are bound by their stable scene slot; generalized entity creation/reorder remains a G10 gate.
+
+Communication continuation: device captions and pings in Game receive the status/help readable
+clock. Identical replies do not extend their lifetime; pings deduplicate per source and remain
+bounded while tracking screen-edge changes. Significant dialogue/status words archive to terminal
+history with notification forwarding disabled. Source-specific empty-board, trace-lock and taxi
+refusals have visible destinations. Focused checks are check-device-feedback-timing and
+check-communication-history. Full message policy, sound, remote/busy-screen routing and browser
+acceptance remain part of the active ENG-09/all-game goal.

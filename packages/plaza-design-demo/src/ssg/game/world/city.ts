@@ -1,3 +1,8 @@
+import {harborTransportPermission} from './access';
+import {validateCitySource,type CitySourceContext} from './city-source';
+import citySource from './city.json';
+import {nativeAccess} from '../engine/gameplay/access';
+
 /**
  * The city (CITY.md, the source of truth): city → district → place → scene.
  *
@@ -24,36 +29,23 @@
 
 import type { SceneId } from "../scenes/index";
 
+
 // ---------- the city: districts and places ----------
 
 /** The city has three strata: the Spire above, the street, the Undercity below (the map's ABOVE and BELOW layers). */
 export type Stratum = 'overworld' | 'street' | 'underworld';
 
+
 export interface District {
-  id: string;
+  id: DistrictId;
   name: string;
   /** What the city map writes on its block (where it has one). */
   short: string;
   stratum: Stratum;
 }
 
-/**
- * The nine districts, as CITY.md numbers them. The Old Quarter (along both banks of the canal) was
- * split from the Neon Market (the market and the laundromat stay Neon Market); the Skyport and the
- * Exclusion Zone lie north-west beyond the Fringe, behind a fence. Neither has a place yet.
- */
-export const DISTRICTS = [
-  { id: 'downtown', name: 'Downtown', short: 'DOWNTOWN', stratum: 'street' },
-  { id: 'oldq', name: 'Old Quarter', short: 'OLD QUARTER', stratum: 'street' },
-  { id: 'market', name: 'Neon Market', short: 'NEON MARKET', stratum: 'street' },
-  { id: 'galleria', name: 'Galleria', short: 'GALLERIA', stratum: 'street' },
-  { id: 'harbor', name: 'Harbor & Shore', short: 'HARBOR', stratum: 'street' },
-  { id: 'spire', name: 'The Spire / Plaza Central', short: 'THE SPIRE', stratum: 'overworld' },
-  { id: 'undercity', name: 'Undercity', short: 'UNDERCITY', stratum: 'underworld' },
-  { id: 'fringe', name: 'The Fringe', short: 'THE FRINGE', stratum: 'street' },
-  { id: 'skyport', name: 'Skyport and the Exclusion Zone', short: 'SKYPORT', stratum: 'street' },
-] as const satisfies readonly District[];
-export type DistrictId = (typeof DISTRICTS)[number]['id'];
+export type DistrictId = "downtown" | "oldq" | "market" | "galleria" | "harbor" | "spire" | "undercity" | "fringe" | "skyport";
+
 
 /**
  * A place: a location with one scene or several. `district` is null only for
@@ -62,85 +54,12 @@ export type DistrictId = (typeof DISTRICTS)[number]['id'];
  */
 export interface PlaceData { id: string; name: string; district: DistrictId | null; entrance: SceneId; at?: string }
 
-/** Every place that exists now, in the order quick travel steps through them (west to east). */
-const PLACE_DATA = [
-  { id: 'laundromat', name: 'LAUNDROMAT', district: 'market', entrance: 'laundromat', at: 'market' },
-  { id: 'market', name: 'NEON MARKET', district: 'market', entrance: 'market', at: 'downtown' },
-  { id: 'shop', name: 'CORNER SHOP', district: 'downtown', entrance: 'shop' },
-  { id: 'library', name: 'PUBLIC LIBRARY', district: 'downtown', entrance: 'library' },
-  { id: 'station-downtown', name: 'DOWNTOWN METRO', district: 'downtown', entrance: 'metro', at: 'downtown' },
-  { id: 'downtown', name: 'DOWNTOWN', district: 'downtown', entrance: 'downtown', at: 'metro' },
-  { id: 'yard', name: 'BACK YARD', district: 'downtown', entrance: 'yard' },
-  { id: 'capsule', name: 'CAPSULE 7B', district: 'downtown', entrance: 'capsule', at: 'door' },
-  { id: 'moth', name: "MOTH'S PLACE", district: 'downtown', entrance: 'moth', at: 'door' },
-  { id: 'station-galleria', name: 'GALLERIA METRO', district: 'galleria', entrance: 'galleriaStation', at: 'mall' },
-  { id: 'mall', name: 'GALLERIA MALL', district: 'galleria', entrance: 'mall' },
-  { id: 'station-harbor', name: 'HARBOR METRO', district: 'harbor', entrance: 'harborStation', at: 'harbor' },
-  { id: 'harbor', name: 'HARBOR', district: 'harbor', entrance: 'harbor' },
-  { id: 'warehouse', name: 'WAREHOUSE 4', district: 'harbor', entrance: 'warehouse', at: 'stacks' },
-  { id: 'beach', name: 'BEACH', district: 'harbor', entrance: 'beach', at: 'harbor' },
-  { id: 'line0', name: 'LINE 0', district: null, entrance: 'train' },
-  // sudo only: the engine's test bay (sandbox/), in no district and not on the map
-  { id: 'sandbox', name: 'QA BAY 3', district: null, entrance: 'sandbox' },
-] as const satisfies readonly PlaceData[];
-export type PlaceId = (typeof PLACE_DATA)[number]['id'];
+export type PlaceId = string;
 
-/** Every scene's place. Every scene is in exactly one (the type-check holds every scene to it). */
-export const SCENE_PLACE = {
-  downtown: 'downtown',
-  capsule: 'capsule',
-  yard: 'yard',
-  moth: 'moth',
-  shop: 'shop',
-  library: 'library',
-  metro: 'station-downtown',
-  market: 'market',
-  laundromat: 'laundromat',
-  mall: 'mall',
-  galleriaStation: 'station-galleria',
-  harbor: 'harbor',
-  harborShift: 'harbor',
-  // the stacks (terminal 2, P15) are a second scene of the harbor's place: a door from the pier, no map pin of their own
-  stacks: 'harbor',
-  warehouse: 'warehouse',
-  harborStation: 'station-harbor',
-  beach: 'beach',
-  train: 'line0',
-  sandbox: 'sandbox',
-} as const satisfies Record<SceneId, PlaceId>;
 
 /** A place, with its scenes. */
 export interface Place extends PlaceData { id: PlaceId; scenes: SceneId[] }
-export const PLACES: Place[] = PLACE_DATA.map((p) => ({
-  ...p, scenes: (Object.keys(SCENE_PLACE) as SceneId[]).filter((s) => SCENE_PLACE[s] === p.id),
-}));
-/** The place a scene belongs to. */
-export const placeOf = (id: SceneId): Place => PLACES.find((p) => p.id === SCENE_PLACE[id])!;
-export const districtOf = (p: Place) => DISTRICTS.find((d) => d.id === p.district) ?? null;
 
-/** What the build checks of the city (generate-demos): every place has a scene, its entrance among them; districts exist. */
-export function cityProblems(): string[] {
-  const out: string[] = [], ids = new Set<string>();
-  for (const p of PLACES) {
-    if (ids.has(p.id)) out.push(`place "${p.id}" is listed twice`);
-    ids.add(p.id);
-    if (!p.scenes.length) out.push(`place "${p.id}" has no scene (SCENE_PLACE)`);
-    if (!p.scenes.includes(p.entrance)) out.push(`place "${p.id}": its entrance "${p.entrance}" is not one of its scenes`);
-    if (p.district !== null && !DISTRICTS.some((d) => d.id === p.district)) out.push(`place "${p.id}": no district "${p.district}"`);
-  }
-  return out;
-}
-
-/**
- * Where a new game starts: Capsule 7B, the player's flat. The intro cutscene
- * hands over to it (cutscenes.json `next`), and a save that has never been
- * Downtown starts there too.
- */
-export const START_SCENE = 'capsule' satisfies SceneId;
-
-export const seenFlag = (id: SceneId) => 'seen:' + id;
-/** A place counts as visited once you have been in any of its scenes. */
-export const seenPlace = (p: Place, seen: (id: SceneId) => boolean) => p.scenes.some(seen);
 
 /**
  * Downtown's ways out, by where they sit on the street (world x): its exits
@@ -157,59 +76,12 @@ export const seenPlace = (p: Place, seen: (id: SceneId) => boolean) => p.scenes.
 // ---------- the metro ----------
 
 export type Station = 'downtown' | 'galleria' | 'harbor';
-/** LINE 0 is a loop, in this order: after HARBOR it runs back to DOWNTOWN. The ride itself is scenes/line.ts. */
-export const LINE: Station[] = ['downtown', 'galleria', 'harbor'];
-/**
- * Each station: its name, its platform (a scene, where you land stepping off at
- * its `train` exit) and the scene its stairs lead up to.
- */
-export const STATIONS: Record<Station, { name: string; scene: SceneId; up: SceneId }> = {
-  downtown: { name: 'DOWNTOWN', scene: 'metro', up: 'downtown' },
-  galleria: { name: 'GALLERIA', scene: 'galleriaStation', up: 'mall' },
-  harbor: { name: 'HARBOR', scene: 'harborStation', up: 'harbor' },
-};
-/** The station whose platform this scene is, if it is one. */
-export const stationAt = (id: SceneId): Station | null => LINE.find((s) => STATIONS[s].scene === id) ?? null;
 
-/**
- * The harbor lock (ROADMAP, Act I): until P14 (`HARBOR_FLAG`, set when the train's doors open at
- * the old siding) LINE 0 does not stop at the harbor and the sky taxi will not fly to its pier;
- * the beach is only reached through the harbor, so it is shut too. Quick travel keeps to the same
- * rule. After P14 it is open for good (sudo sets the flag; `?sudo&locked` leaves it unset).
- */
-export const HARBOR_FLAG = 'harbor:open';
-export const harborOpen = (flags: Readonly<Record<string, boolean>>) => !!flags[HARBOR_FLAG];
-/** The taxi driver, asked for the harbor pier while it is shut. */
-/** What you say coming up from the old siding (P14): a service stair, then the pier by the harbor's metro stairs. */
-export const SIDING_OUT = ['A service stair. Two hundred steps, a door marked AUTHORISED PERSONNEL, not locked.', 'The harbor. Moth booked this stop two days ago. For me.'];
-export const DRIVER_HARBOR = ['Harbor pier is closed to air traffic. Port Authority notice. I can show you the notice.', 'I can also take you somewhere that is open. Those are my two services.'];
 
 // ---------- sky taxis ----------
 
 export type Stand = 'downtown' | 'galleria' | 'harbor';
-export const STAND_IDS: Stand[] = ['downtown', 'galleria', 'harbor'];
-/** Each stand: its name and the scene it is in; you land at that scene's `taxi` exit. */
-export const STANDS: Record<Stand, { name: string; scene: SceneId }> = {
-  downtown: { name: 'DOWNTOWN EAST', scene: 'downtown' },
-  galleria: { name: 'GALLERIA ROOF', scene: 'mall' },
-  harbor: { name: 'HARBOR PIER', scene: 'harbor' },
-};
-export const standOf = (id: SceneId): Stand | null => STAND_IDS.find((s) => STANDS[s].scene === id) ?? null;
-export const FARE = 1;
-/** Frames of a quick trip from the map: a fade out, the move, a fade in. */
-export const HOP = 40;
-export const DRIVER_BROKE = ['One token a ride. You have the look of someone with zero.', 'Walking is free. Very popular with people like you.'];
 
-// ---------- the map: the street plan (CITY.md, "The map") ----------
-
-/**
- * The city map is a street plan, drawn by citymap.ts (and traced by cityplan.ts) from the data
- * here. Plan units: MAP_W × MAP_H, x runs west → east, y north → south. The sea lies east of the
- * coast, the Spire stands on its island in the bay, the canal flows in from the west through the
- * Old Quarter into the bay (cityplan.ts has the coast, the canal and the avenues). The map shows the
- * plan tilted back by default (towers stand up), or flat.
- */
-export const MAP_W = 844, MAP_H = 390;
 
 /**
  * Each district on the plan. `centre`: where its streets grow from (the land is shared out to the
@@ -220,47 +92,7 @@ export const MAP_W = 844, MAP_H = 390;
  * (CITY.md's character).
  */
 export interface DistrictPlan { centre: [number, number] | null; sep: number; dens: number; col: string; frame: [number, number, number, number]; label: [number, number]; note: string }
-export const DISTRICT_MAP: Record<DistrictId, DistrictPlan> = {
-  downtown: { centre: [395, 205], sep: 11, dens: 1, col: '255,136,0', frame: [300, 132, 186, 140], label: [392, 126], note: 'WORKING CLASS · MIXED · RAIN' },
-  oldq: { centre: [300, 318], sep: 9, dens: 0.5, col: '214,150,96', frame: [150, 282, 330, 84], label: [318, 374], note: 'OLD TOWN · THE CANAL · AGEING' },
-  market: { centre: [230, 236], sep: 9, dens: 0.6, col: '232,84,206', frame: [168, 180, 134, 100], label: [234, 176], note: 'LOW INCOME · PACKED · LOW TECH' },
-  galleria: { centre: [560, 110], sep: 15, dens: 0.75, col: '96,206,222', frame: [486, 44, 156, 136], label: [560, 40], note: 'MIDDLE CLASS AND UP · RETAIL' },
-  harbor: { centre: [640, 290], sep: 17, dens: 0.45, col: '255,210,90', frame: [560, 200, 214, 172], label: [612, 206], note: 'INDUSTRY · LEISURE · WATER' },
-  spire: { centre: null, sep: 0, dens: 1, col: '170,225,235', frame: [728, 70, 84, 84], label: [770, 160], note: 'RESTRICTED · HIGH TECH · FEW PEOPLE' },
-  undercity: { centre: null, sep: 0, dens: 0, col: '90,200,190', frame: [60, 150, 680, 230], label: [440, 352], note: 'CANALS · SEWERS · UNREGISTERED' },
-  fringe: { centre: [90, 210], sep: 28, dens: 0.25, col: '120,120,134', frame: [8, 124, 158, 250], label: [86, 380], note: 'AUTOMATED · NO RESIDENTS' },
-  skyport: { centre: [48, 62], sep: 34, dens: 0.15, col: '170,190,210', frame: [6, 14, 96, 104], label: [54, 10], note: 'RESTRICTED · LAUNCHES · FENCED' },
-};
 
-/** Where each place sits on the plan. A place listed here is on the map and can be quick-travelled to. */
-export const PLACE_MAP: Partial<Record<PlaceId, [number, number]>> = {
-  laundromat: [215, 262],
-  market: [250, 230],
-  shop: [330, 228],
-  library: [356, 196],
-  downtown: [388, 236],
-  yard: [420, 262],
-  capsule: [440, 176],
-  moth: [372, 154],
-  'station-downtown': [412, 228],
-  mall: [560, 110],
-  'station-galleria': [540, 150],
-  harbor: [646, 262],
-  warehouse: [650, 312],
-  'station-harbor': [610, 238],
-  beach: [730, 356],
-};
-
-/** Each LINE 0 station on the plan, and each sky-taxi pad. */
-export const STATION_MAP: Record<Station, [number, number]> = { downtown: [412, 228], galleria: [540, 150], harbor: [610, 238] };
-export const PAD_MAP: Record<Stand, [number, number]> = { downtown: [452, 206], galleria: [574, 84], harbor: [690, 276] };
-
-/**
- * LINE 0's loop on the plan, as the metro diagram draws it (straight runs, 45° corners): north from
- * Downtown, east to the Galleria, down to the harbor, back west under Downtown. The train runs it
- * in this order (Downtown, Galleria, Harbor, Downtown).
- */
-export const LOOP_MAP: [number, number][] = [[412, 228], [412, 190], [452, 150], [540, 150], [580, 150], [610, 180], [610, 238], [590, 258], [432, 258], [412, 238]];
 
 /**
  * The lines the game does not run yet (CITY.md: LINE 1, the Canal Line; bus 7; the ferry). The map
@@ -269,19 +101,7 @@ export const LOOP_MAP: [number, number][] = [[412, 228], [412, 190], [452, 150],
  * district.
  */
 export interface MapLine { id: string; name: string; short: string; col: string; width: number; dash?: number[]; path: [number, number][]; stops: { name: string; pt: [number, number]; district: DistrictId }[] }
-export const LINES_PLANNED: MapLine[] = [
-  {
-    id: 'line1', name: 'LINE 1 · CANAL LINE', short: 'L1', col: '0,200,200', width: 2.4,
-    path: [[60, 270], [140, 270], [200, 290], [300, 290], [412, 290], [500, 290], [560, 300], [610, 300], [700, 320], [730, 346]],
-    stops: [
-      { name: 'FRINGE DEPOT', pt: [60, 270], district: 'fringe' }, { name: 'OLD QUARTER', pt: [200, 290], district: 'oldq' },
-      { name: 'CANAL STREET', pt: [412, 290], district: 'oldq' }, { name: 'HARBOR SHORE', pt: [610, 300], district: 'harbor' }, { name: 'BEACH', pt: [730, 346], district: 'harbor' },
-    ],
-  },
-  { id: 'bus7', name: 'BUS 7', short: 'BUS', col: '255,210,90', width: 1, dash: [6, 3], path: [[250, 226], [330, 226], [412, 228], [478, 190], [540, 150]], stops: [] },
-  { id: 'ferry', name: 'FERRY', short: 'FERRY', col: '160,200,255', width: 1, dash: [2, 4], path: [[700, 300], [744, 220], [760, 150]], stops: [] },
-];
-export const lineKnownFlag = (id: string) => 'heard:' + id;
+
 
 /**
  * The ways between districts, other than LINE 0 and the taxis between stands (drawn from
@@ -290,30 +110,15 @@ export const lineKnownFlag = (id: string) => 'heard:' + id;
  * not yet: not on the map at all). `at`: the scenes it is in plain view from (`linkKnown`).
  */
 export type LinkKind = 'walk' | 'road' | 'elevator' | 'taxi' | 'bridge' | 'drain' | 'tunnel' | 'canal' | 'lift';
+
 export interface MapLink { kind: LinkKind; name: string; from: DistrictId; to: DistrictId; path: [number, number][]; state: 'open' | 'gate' | 'planned'; at?: SceneId[] }
-export const LINKS: MapLink[] = [
-  { kind: 'walk', name: 'MARKET GATE', from: 'downtown', to: 'market', path: [[304, 229], [318, 229]], state: 'gate', at: ['downtown', 'market'] },
-  { kind: 'walk', name: 'SHORE PATH', from: 'harbor', to: 'harbor', path: [[690, 286], [716, 320], [728, 350]], state: 'open', at: ['harbor', 'beach'] },
-  { kind: 'road', name: 'ACCESS ROAD', from: 'market', to: 'fringe', path: [[170, 230], [150, 228]], state: 'planned' },
-  { kind: 'elevator', name: 'SKY ELEVATOR', from: 'galleria', to: 'spire', path: [[560, 110], [770, 120]], state: 'planned' },
-  { kind: 'taxi', name: 'SKY TAXI DEPOT', from: 'downtown', to: 'spire', path: [[452, 206], [770, 120]], state: 'planned' },
-  { kind: 'bridge', name: 'THE BRIDGE', from: 'harbor', to: 'spire', path: [[700, 200], [748, 136]], state: 'planned' },
-  { kind: 'drain', name: 'STORM DRAIN', from: 'market', to: 'undercity', path: [[250, 250], [250, 300]], state: 'planned' },
-  { kind: 'tunnel', name: 'SERVICE TUNNEL', from: 'downtown', to: 'undercity', path: [[412, 258], [412, 300]], state: 'planned' },
-  { kind: 'canal', name: 'CANAL OUTFALL', from: 'harbor', to: 'undercity', path: [[724, 322], [700, 330]], state: 'planned' },
-  { kind: 'lift', name: 'SERVICE LIFT', from: 'spire', to: 'undercity', path: [[770, 120], [740, 200]], state: 'planned' },
-];
+
 
 // ---------- quick travel ----------
 
 /** A place on the map: a place with its point on the section. */
 export type MapPlace = Place & { pt: [number, number] };
-/** Every place on the map, west to east within each district (quick travel goes to these). */
-export const MAP_PLACES: MapPlace[] = PLACES.flatMap((p) => { const pt = PLACE_MAP[p.id]; return pt ? [{ ...p, pt }] : []; });
-/** A district's places on the map, west to east. */
-export const districtPlaces = (d: DistrictId) => MAP_PLACES.filter((p) => p.district === d).sort((a, b) => a.pt[0] - b.pt[0]);
-/** A district counts as seen once you have been in any of its places. */
-export const districtSeen = (d: DistrictId, seen: (id: SceneId) => boolean) => PLACES.some((p) => p.district === d && seenPlace(p, seen));
+
 
 // ---------- what you know of the city (the map discovers it as you travel) ----------
 
@@ -324,6 +129,177 @@ export const districtSeen = (d: DistrictId, seen: (id: SceneId) => boolean) => P
  * - 'known': its full name and its note.
  */
 export type DistrictStage = 'unknown' | 'heard' | 'known';
+
+
+/** What the map reads from the save: scenes you have been in, and any flag. */
+export interface Knowledge { seen: (id: SceneId) => boolean; flag: (name: string) => boolean }
+
+
+/** What quick travel needs to know. */
+export interface TravelState {
+  scene: SceneId;
+  /** While riding: the stop the train stands at or last left, the next one, and how far along it is (0..1). */
+  ride: { from: Station; to: Station; f: number } | null;
+  seen: (id: SceneId) => boolean;
+  gateOpen: boolean;
+  /** The harbor lock is off (P14 solved): `harborOpen`. */
+  harborOpen: boolean;
+}
+
+/** Authored world values; scene exits remain owned by their scene documents. */
+export interface CitySource {
+ version:2;DISTRICTS:District[];PLACES:Place[];START_SCENE:SceneId;
+ LINE:Station[];STATIONS:Record<Station,{name:string;scene:SceneId;up:SceneId;at?:string}>;
+ TRANSPORT:{boarding:{scene:SceneId;entrance?:string};siding:{scene:SceneId;entrance?:string}};
+ HARBOR_FLAG:string;SIDING_OUT:string[];DRIVER_HARBOR:string[];
+ STAND_IDS:Stand[];STANDS:Record<Stand,{name:string;scene:SceneId;at?:string}>;FARE:number;HOP:number;DRIVER_BROKE:string[];
+ MAP_W:number;MAP_H:number;DISTRICT_MAP:Record<DistrictId,DistrictPlan>;PLACE_MAP:Partial<Record<PlaceId,[number,number]>>;
+ STATION_MAP:Record<Station,[number,number]>;PAD_MAP:Record<Stand,[number,number]>;LOOP_MAP:[number,number][];
+ LINES_PLANNED:MapLine[];LINKS:MapLink[];DISTRICT_REVEAL:Record<DistrictId,{near:DistrictId[];landmark?:boolean}>;PLACE_IN_VIEW:Partial<Record<PlaceId,SceneId[]>>;
+}
+
+/** Independent world registries; default consumers keep the established named API. */
+export function createCityModel(input:CitySource,context?:CitySourceContext){
+ const data=validateCitySource(input,context);
+
+
+/**
+ * The nine districts, as CITY.md numbers them. The Old Quarter (along both banks of the canal) was
+ * split from the Neon Market (the market and the laundromat stay Neon Market); the Skyport and the
+ * Exclusion Zone lie north-west beyond the Fringe, behind a fence. Neither has a place yet.
+ */
+ const DISTRICTS = data.DISTRICTS;
+
+
+/** Every scene's place. Every scene is in exactly one (the type-check holds every scene to it). */
+ const SCENE_PLACE = Object.fromEntries(data.PLACES.flatMap(p=>p.scenes.map(scene=>[scene,p.id]))) as Record<SceneId,PlaceId>;
+
+ const PLACES: Place[] = data.PLACES;
+
+/** The place a scene belongs to. */
+ const placeOf = (id: SceneId): Place => PLACES.find((p) => p.id === SCENE_PLACE[id])!;
+
+ const districtOf = (p: Place) => DISTRICTS.find((d) => d.id === p.district) ?? null;
+
+
+/** What the build checks of the city (generate-demos): every place has a scene, its entrance among them; districts exist. */
+ function cityProblems(): string[] {
+  const out: string[] = [], ids = new Set<string>();
+  for (const p of PLACES) {
+    if (ids.has(p.id)) out.push(`place "${p.id}" is listed twice`);
+    ids.add(p.id);
+    if (!p.scenes.length) out.push(`place "${p.id}" has no scene (SCENE_PLACE)`);
+    if (!p.scenes.includes(p.entrance)) out.push(`place "${p.id}": its entrance "${p.entrance}" is not one of its scenes`);
+    if (p.district !== null && !DISTRICTS.some((d) => d.id === p.district)) out.push(`place "${p.id}": no district "${p.district}"`);
+  }
+  return out;
+}
+
+
+/**
+ * Where a new game starts: Capsule 7B, the player's flat. The intro cutscene
+ * hands over to it (cutscenes.json `next`), and a save that has never been
+ * Downtown starts there too.
+ */
+ const START_SCENE = data.START_SCENE;
+
+
+ const seenFlag = (id: SceneId) => 'seen:' + id;
+
+/** A place counts as visited once you have been in any of its scenes. */
+ const seenPlace = (p: Place, seen: (id: SceneId) => boolean) => p.scenes.some(seen);
+
+/** LINE 0 is a loop, in this order: after HARBOR it runs back to DOWNTOWN. The ride itself is scenes/line.ts. */
+ const LINE: Station[] = data.LINE;
+
+/**
+ * Each station: its name, its platform (a scene, where you land stepping off at
+ * its `train` exit) and the scene its stairs lead up to.
+ */
+ const STATIONS = data.STATIONS;
+ const TRANSPORT=data.TRANSPORT;
+
+/** The station whose platform this scene is, if it is one. */
+ const stationAt = (id: SceneId): Station | null => LINE.find((s) => STATIONS[s].scene === id) ?? null;
+
+
+/**
+ * The harbor lock (ROADMAP, Act I): until P14 (`HARBOR_FLAG`, set when the train's doors open at
+ * the old siding) LINE 0 does not stop at the harbor and the sky taxi will not fly to its pier;
+ * the beach is only reached through the harbor, so it is shut too. Quick travel keeps to the same
+ * rule. After P14 it is open for good (sudo sets the flag; `?sudo&locked` leaves it unset).
+ */
+ const HARBOR_FLAG = data.HARBOR_FLAG;
+
+ const harborOpen = (flags: Readonly<Record<string, boolean>>) => !!flags[HARBOR_FLAG];
+
+/** The taxi driver, asked for the harbor pier while it is shut. */
+/** What you say coming up from the old siding (P14): a service stair, then the pier by the harbor's metro stairs. */
+ const SIDING_OUT = data.SIDING_OUT;
+
+ const DRIVER_HARBOR = data.DRIVER_HARBOR;
+
+ const STAND_IDS: Stand[] = data.STAND_IDS;
+
+/** Each stand: its name and the scene it is in; you land at that scene's `taxi` exit. */
+ const STANDS = data.STANDS;
+
+ const standOf = (id: SceneId): Stand | null => STAND_IDS.find((s) => STANDS[s].scene === id) ?? null;
+
+ const FARE = data.FARE;
+
+/** Frames of a quick trip from the map: a fade out, the move, a fade in. */
+ const HOP = data.HOP;
+
+ const DRIVER_BROKE = data.DRIVER_BROKE;
+
+
+// ---------- the map: the street plan (CITY.md, "The map") ----------
+
+/**
+ * The city map is a street plan, drawn by citymap.ts (and traced by cityplan.ts) from the data
+ * here. Plan units: MAP_W × MAP_H, x runs west → east, y north → south. The sea lies east of the
+ * coast, the Spire stands on its island in the bay, the canal flows in from the west through the
+ * Old Quarter into the bay (cityplan.ts has the coast, the canal and the avenues). The map shows the
+ * plan tilted back by default (towers stand up), or flat.
+ */
+ const MAP_W = data.MAP_W, MAP_H = data.MAP_H;
+
+ const DISTRICT_MAP: Record<DistrictId, DistrictPlan> = data.DISTRICT_MAP;
+
+
+/** Where each place sits on the plan. A place listed here is on the map and can be quick-travelled to. */
+ const PLACE_MAP: Partial<Record<PlaceId, [number, number]>> = data.PLACE_MAP;
+
+
+/** Each LINE 0 station on the plan, and each sky-taxi pad. */
+ const STATION_MAP: Record<Station, [number, number]> = data.STATION_MAP;
+
+ const PAD_MAP: Record<Stand, [number, number]> = data.PAD_MAP;
+
+
+/**
+ * LINE 0's loop on the plan, as the metro diagram draws it (straight runs, 45° corners): north from
+ * Downtown, east to the Galleria, down to the harbor, back west under Downtown. The train runs it
+ * in this order (Downtown, Galleria, Harbor, Downtown).
+ */
+ const LOOP_MAP: [number, number][] = data.LOOP_MAP;
+
+ const LINES_PLANNED: MapLine[] = data.LINES_PLANNED;
+
+ const lineKnownFlag = (id: string) => 'heard:' + id;
+
+ const LINKS: MapLink[] = data.LINKS;
+
+/** Every place on the map, west to east within each district (quick travel goes to these). */
+ const MAP_PLACES: MapPlace[] = PLACES.flatMap((p) => { const pt = PLACE_MAP[p.id]; return pt ? [{ ...p, pt }] : []; });
+
+/** A district's places on the map, west to east. */
+ const districtPlaces = (d: DistrictId) => MAP_PLACES.filter((p) => p.district === d).sort((a, b) => a.pt[0] - b.pt[0]);
+
+/** A district counts as seen once you have been in any of its places. */
+ const districtSeen = (d: DistrictId, seen: (id: SceneId) => boolean) => PLACES.some((p) => p.district === d && seenPlace(p, seen));
+
 
 /**
  * What moves each district along, all from save flags so the story can set them:
@@ -342,107 +318,66 @@ export type DistrictStage = 'unknown' | 'heard' | 'known';
  * street). The Skyport: a landmark like the Spire (its launches are seen from everywhere), so it is
  * drawn from the start, but it stays `???` until the story names it (`heard:skyport`).
  */
-export const DISTRICT_REVEAL: Record<DistrictId, { near: DistrictId[]; landmark?: boolean }> = {
-  fringe: { near: ['market'] },
-  market: { near: ['downtown', 'oldq'] },
-  downtown: { near: ['market', 'galleria', 'oldq'] },
-  oldq: { near: ['market', 'downtown'] },
-  galleria: { near: ['downtown', 'harbor'] },
-  harbor: { near: ['galleria'] },
-  spire: { near: ['galleria', 'harbor'], landmark: true },
-  undercity: { near: [] },
-  skyport: { near: [], landmark: true },
-};
-export const heardFlag = (d: DistrictId) => 'heard:' + d;
-export const mappedFlag = (d: DistrictId) => 'mapped:' + d;
+ const DISTRICT_REVEAL: Record<DistrictId, { near: DistrictId[]; landmark?: boolean }> = data.DISTRICT_REVEAL;
 
-/** What the map reads from the save: scenes you have been in, and any flag. */
-export interface Knowledge { seen: (id: SceneId) => boolean; flag: (name: string) => boolean }
+ const heardFlag = (d: DistrictId) => 'heard:' + d;
 
-export function districtStage(d: DistrictId, k: Knowledge): DistrictStage {
+ const mappedFlag = (d: DistrictId) => 'mapped:' + d;
+
+
+ function districtStage(d: DistrictId, k: Knowledge): DistrictStage {
   if (districtSeen(d, k.seen) || k.flag(mappedFlag(d))) return 'known';
   if (k.flag(heardFlag(d)) || DISTRICT_REVEAL[d].near.some((n) => districtSeen(n, k.seen))) return 'heard';
   return 'unknown';
 }
+
 /** A district's name as far as you know it: `???`, its short name (heard), or its full name (`long`, known). */
-export function districtName(d: DistrictId, k: Knowledge, long = false): string {
+ function districtName(d: DistrictId, k: Knowledge, long = false): string {
   const st = districtStage(d, k), dd = DISTRICTS.find((q) => q.id === d)!;
   return st === 'unknown' ? '???' : st === 'known' && long ? dd.name.toUpperCase() : dd.short;
 }
+
 
 /**
  * Where each place's way in is in plain view from: being in one of these scenes puts the place on
  * the map (named, not yet visited). A place you have been in is on it anyway.
  */
-export const PLACE_IN_VIEW: Partial<Record<PlaceId, SceneId[]>> = {
-  market: ['downtown'],
-  laundromat: ['market'],
-  shop: ['downtown'],
-  library: ['downtown'],
-  'station-downtown': ['downtown', 'train'],
-  downtown: ['capsule', 'metro', 'yard', 'shop', 'moth', 'library'],
-  yard: ['downtown'],
-  capsule: ['downtown'],
-  moth: ['downtown'],
-  'station-galleria': ['mall', 'train'],
-  mall: ['galleriaStation'],
-  'station-harbor': ['harbor', 'beach', 'train'],
-  harbor: ['harborStation', 'beach'],
-  warehouse: ['stacks'],
-  beach: ['harbor'],
-};
+ const PLACE_IN_VIEW: Partial<Record<PlaceId, SceneId[]>> = data.PLACE_IN_VIEW;
+
 /** A place is on the map once you have been in it or seen its way in. */
-export const placeKnown = (p: Place, seen: (id: SceneId) => boolean) => seenPlace(p, seen) || (PLACE_IN_VIEW[p.id] ?? []).some(seen);
+ const placeKnown = (p: Place, seen: (id: SceneId) => boolean) => seenPlace(p, seen) || (PLACE_IN_VIEW[p.id] ?? []).some(seen);
+
 /** A district's places on the map that you know of, west to east. */
-export const knownPlaces = (d: DistrictId, seen: (id: SceneId) => boolean) => districtPlaces(d).filter((p) => placeKnown(p, seen));
+ const knownPlaces = (d: DistrictId, seen: (id: SceneId) => boolean) => districtPlaces(d).filter((p) => placeKnown(p, seen));
+
 
 /**
  * A way between districts is on the map once you have seen it: from a scene in its `at`, or (with
  * no `at`) once you have been in a district at either end. A planned way is never on the map.
  */
-export function linkKnown(l: MapLink, seen: (id: SceneId) => boolean): boolean {
+ function linkKnown(l: MapLink, seen: (id: SceneId) => boolean): boolean {
   if (l.state === 'planned') return false;
   return l.at ? l.at.some(seen) : districtSeen(l.from, seen) || districtSeen(l.to, seen);
 }
-/** A LINE 0 station is on the map once you have stood on its platform or walked past its stairs. */
-export const stationKnown = (s: Station, seen: (id: SceneId) => boolean) => seen(STATIONS[s].scene) || seen(STATIONS[s].up);
 
-/** What quick travel needs to know. */
-export interface TravelState {
-  scene: SceneId;
-  /** While riding: the stop the train stands at or last left, the next one, and how far along it is (0..1). */
-  ride: { from: Station; to: Station; f: number } | null;
-  seen: (id: SceneId) => boolean;
-  gateOpen: boolean;
-  /** The harbor lock is off (P14 solved): `harborOpen`. */
-  harborOpen: boolean;
-}
+/** A LINE 0 station is on the map once you have stood on its platform or walked past its stairs. */
+ const stationKnown = (s: Station, seen: (id: SceneId) => boolean) => seen(STATIONS[s].scene) || seen(STATIONS[s].up);
+
 
 /** Why you cannot quick-travel to a place right now ('' if you can). */
-export function placeBlocked(p: Place, st: TravelState): string {
-  if (!seenPlace(p, st.seen)) return 'NOT VISITED YET';
-  if (p.scenes.includes(st.scene)) return 'YOU ARE HERE';
-  if (p.district === 'market' && !st.gateOpen) return 'THE MARKET GATE IS SHUT';
-  // the harbor lock: from outside the harbor, nothing goes there (inside it, you can still walk about)
-  if (p.district === 'harbor' && !st.harborOpen && placeOf(st.scene).district !== 'harbor') return 'HARBOR CLOSED · LINE 0 DOES NOT STOP';
-  if (st.ride && st.ride.f > 0) return 'NOT FROM A MOVING METRO · GET OFF FIRST';
-  return '';
+ function placeBlocked(p: Place, st: TravelState): string {
+  const harbor=harborTransportPermission(p.district??'',st.harborOpen||placeOf(st.scene).district==='harbor');
+  const access=nativeAccess([
+    {allowed:seenPlace(p,st.seen),reason:'NOT VISITED YET'},
+    {allowed:!p.scenes.includes(st.scene),reason:'YOU ARE HERE'},
+    {allowed:p.district!=='market'||st.gateOpen,reason:'THE MARKET GATE IS SHUT'},
+    {allowed:harbor.ok,reason:harbor.ok?'':harbor.reason},
+    {allowed:!st.ride||st.ride.f<=0,reason:'NOT FROM A MOVING METRO · GET OFF FIRST'},
+  ]);
+  return access.ok?'':access.reason;
 }
-
-// ---------- the flight ----------
-
-
-
-
-/** A sky taxi: a small hovering cab, warm lit cabin, its roof light, thrusters glowing under it. */
-
-
-/** The flight between stands: city lights scrolling past under a hovering cab. `f` runs 0 → 1. */
-
-
-// ---------- stands and stairs in the play band ----------
-
-/** A sky-taxi stand: a landing pad on the ground, a pole with its SKY TAXI plate and a call box, a cab waiting over the pad. */
-
-
-/** Metro stairs going down from the street: an opening in the pavement, railings, and a METRO plate on a post. */
+ return {DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,placeBlocked};
+}
+export type CityModel=ReturnType<typeof createCityModel>;
+const shippingCity=createCityModel(citySource as unknown as CitySource);
+export const {DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,placeBlocked}=shippingCity;

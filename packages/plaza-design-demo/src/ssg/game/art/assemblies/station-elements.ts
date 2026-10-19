@@ -1,3 +1,5 @@
+import {drawPreparedActor,validatePreparedActor} from '../characters/prepared-actor';
+import type {PreparedActor} from '../../engine/gameplay/actor-frame';
 /** Shared platform pieces and specialized station architecture. No element reads transport state. */
 import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
@@ -15,7 +17,7 @@ const n=(p:Properties,k:string)=>Number(p[k]);
 const raised=(v:View,h:number):View=>h===0?v:{...v,gy:v.gy-h,y:q=>v.y(q+h)};
 const origin:Anchor={x:0,h:0,role:'origin'};
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
-function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties,s:Properties)=>Bounds,draw:Draw,visualFields:Record<string,Field>={}):Element{return{type:'station.'+type,version:1,label,category,coordinates:'world',fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},underside:{x:0,h:Number(p.under??0),role:'mount'}}),draw(x,v,p,s,_pass,at){draw(x,v,p,s,at);}};}
+function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties,s:Properties)=>Bounds,draw:Draw,visualFields:Record<string,Field>={}):Element{return{type:'station.'+type,version:1,label,category,bindingIdentity:'presentation',coordinates:'world',fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},underside:{x:0,h:Number(p.under??0),role:'mount'}}),draw(x,v,p,s,_pass,at){draw(x,v,p,s,at);}};}
 const bounds=(w:number,h:number,x=-w/2):Bounds=>({x,h,w,tall:h});
 function G(beam={under:0,top:0},frieze={h0:0,h1:0,step:1}){return galleriaKernels({width:0,spawn:0,exit:0,boardAt:0,beam,frieze,posters:[],columns:[],lamps:[],board:0,benches:[],snacks:0,lineMap:0,screen:0,cams:[],waiting:[]} satisfies GLayout);}
 function H(width=0,canopy={under:0,fascia:0},horizon=0,wall=0){return harborKernels({width,spawn:0,exit:0,boardAt:0,horizon,wall,canopy,posts:[],lamps:[],cranes:[],board:0,benches:[],tide:0,screen:0,cam:0,checkpoint:0,waiting:[]} satisfies HLayout);}
@@ -39,7 +41,7 @@ export const stationElements:Element[]=[
  element('screen','Hanging Registry display','signage',{phase:num('Display phase')},()=>bounds(120,100),(x,v,p,s,at)=>drawScreen(x,v,at.x,at.h,n(s,'roof'),n(p,'phase')),{roof:num('Roof underside')}),
  element('departures','Hanging departure board','signage',{},()=>bounds(124,42),(x,v,_p,s,at)=>drawDepartures(x,v,s.departure as unknown as DepartureVisual,at.x,at.h,n(s,'roof')),{roof:num('Roof underside'),departure}),
  element('notice-stand','Notice on a platform post','signage',{width:num('Notice width',50,1),height:num('Notice height',30,1),first:str('First line'),second:str('Second line'),phase:num('Phase'),red:bool('Warning tab')},p=>bounds(n(p,'width'),n(p,'height')),(x,v,p,_s,at)=>{const {y,t}=v,s=v.sx(at.x);if(!onScreen(v,s-30,60))return;box(x,s-1,y(44),3,44,'#2a160a');notice(x,t,s,y(at.h),n(p,'width'),n(p,'height'),[String(p.first),String(p.second)],n(p,'phase'));if(p.red){x.fillStyle='rgba('+RED+',.85)';x.fillRect(s-30,y(at.h-3),6,3);}}),
- element('bench','Platform bench and regular','furniture',{who:{kind:'select',label:'Seated regular',default:'',options:['',...KINDS]}},()=>bounds(60,48),(x,v,p,_s,at)=>drawBench(x,raised(v,at.h),{x:at.x,who:p.who? p.who as RiderKind:undefined})),
+ element('bench','Platform bench and regular','furniture',{who:{kind:'select',label:'Legacy seated regular',default:'',options:['',...KINDS]},sourceRider:bool('Actor source owns rider',false)},()=>bounds(60,48),(x,v,p,s,at)=>drawBench(x,raised(v,at.h),{x:at.x,who:p.who? p.who as RiderKind:undefined},p.sourceRider?()=>{if(s.rider!==null)drawPreparedActor(x,v,s.rider as unknown as PreparedActor,false);}:undefined),{rider:{kind:'json',label:'Source actor in bench',default:null,validate:v=>{if(v!==null)validatePreparedActor(v);}}}),
  element('snacks','Lit snack machine','electronics',{},()=>bounds(80,80),(x,v,_p,_s,at)=>G().drawSnacks(x,raised(v,at.h),at.x)),
  element('waiting-passenger','Waiting platform passenger','characters',{},()=>bounds(32,48),(x,v,_p,s,at)=>{const r=s.rider as unknown as {on:boolean;kind:RiderKind;flip:boolean;phase:number},cx=v.sx(at.x);if(r.on&&onScreen(v,cx-16,32))drawRider(x,r.kind,cx,v.y(at.h),v.t,{flip:r.flip,phase:r.phase});},{rider}),
  element('escalator','Moving escalator to mall','architecture',{},()=>bounds(120,190),(x,v,_p,s,at)=>G({under:n(s,'roof'),top:n(s,'roof')}).drawEscalator(x,raised(v,at.h),at.x),{roof:num('Escalator rise',176)}),

@@ -3642,7 +3642,9 @@
     {
       "id": "yard-alley",
       "type": "downtown.alley",
-      "props": {},
+      "props": {
+        "doorOffset": 22
+      },
       "placement": {
         "x": 950,
         "h": 0
@@ -3938,8 +3940,10 @@
     },
     {
       "id": "fixer",
-      "type": "downtown.fixer",
-      "props": {},
+      "type": "actor.prepared",
+      "props": {
+        "actor": "fixer"
+      },
       "placement": {
         "x": 70,
         "h": 0
@@ -3949,6 +3953,9 @@
       "attach": {
         "instance": "noodle-stall",
         "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.fixer.pose"
       }
     },
     {
@@ -3971,45 +3978,51 @@
     },
     {
       "id": "npc-hood",
-      "type": "downtown.pedestrian",
+      "type": "actor.prepared",
       "props": {
-        "sprite": "hood",
-        "flip": true
+        "actor": "hood"
       },
       "placement": {
         "x": 440,
         "h": 0
       },
       "order": 223,
-      "pass": "people"
+      "pass": "people",
+      "bindings": {
+        "pose": "actor.hood.pose"
+      }
     },
     {
       "id": "npc-umbrella",
-      "type": "downtown.pedestrian",
+      "type": "actor.prepared",
       "props": {
-        "sprite": "umbrella",
-        "flip": false
+        "actor": "umbrella"
       },
       "placement": {
         "x": 600,
         "h": 0
       },
       "order": 224,
-      "pass": "people"
+      "pass": "people",
+      "bindings": {
+        "pose": "actor.umbrella.pose"
+      }
     },
     {
       "id": "npc-hat",
-      "type": "downtown.pedestrian",
+      "type": "actor.prepared",
       "props": {
-        "sprite": "hat",
-        "flip": true
+        "actor": "hat"
       },
       "placement": {
         "x": 1112,
         "h": 0
       },
       "order": 225,
-      "pass": "people"
+      "pass": "people",
+      "bindings": {
+        "pose": "actor.hat.pose"
+      }
     },
     {
       "id": "exit-library",

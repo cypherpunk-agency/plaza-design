@@ -4,7 +4,9 @@ import * as path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 
 export interface DocumentDescriptor {
-  id: string; file: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures'; validate(value: unknown): unknown;
+  id: string; file: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices'; validate(value: unknown): unknown;
+  /** Reference-bearing documents validate against the complete prospective snapshot. */
+  validateContext?(value:unknown,documents:ReadonlyMap<string,unknown>):unknown;
   /** Source-specific invariants checked against the current revision, including direct API saves. */
   validateUpdate?(before: unknown, after: unknown): void;
 }
@@ -69,14 +71,19 @@ export class AuthoringStore {
     return this.safePath(path.resolve(this.root, descriptor.file), true);
   }
   private parse(id: string, raw: string) {
-    try { const value: unknown = JSON.parse(raw); this.descriptors.get(id)!.validate(value); return value; }
+    try { const value: unknown = JSON.parse(raw); encode(value); return value; }
     catch (e) { throw new StoreError('invalid', `${id}: ${e instanceof Error ? e.message : String(e)}`); }
   }
   read(id: string): LoadedDocument {
-    const raw = fs.readFileSync(this.file(id), 'utf8');
-    return { id, kind: this.descriptors.get(id)!.kind, revision: hash(raw), value: this.parse(id, raw) };
+    this.file(id);
+    return this.list().find(d=>d.id===id)!;
   }
-  list() { return [...this.descriptors.keys()].map(id => this.read(id)); }
+  private loadDocuments(){return [...this.descriptors.keys()].map(id=>{const raw=fs.readFileSync(this.file(id),'utf8');return{id,kind:this.descriptors.get(id)!.kind,revision:hash(raw),value:this.parse(id,raw)};});}
+  private validateDocuments(documents:ReadonlyMap<string,unknown>,all=false){
+    try{for(const [id,descriptor]of this.descriptors){if(!documents.has(id))throw new Error('Missing document '+id);if(descriptor.validateContext)descriptor.validateContext(documents.get(id),documents);else descriptor.validate(documents.get(id));}if(all)this.options.validateAll?.(documents);}
+    catch(error){throw new StoreError('invalid','Document references: '+String(error));}
+  }
+  list() {const documents=this.loadDocuments();this.validateDocuments(new Map(documents.map(d=>[d.id,d.value])));return documents;}
   /** Synchronous serialized transaction; all validation/conflict checks happen before mutation. */
   save(edits: Edit[]): SaveResult {
     return this.commit(edits);
@@ -85,7 +92,7 @@ export class AuthoringStore {
   private commit(edits: Edit[], originalBytes?: ReadonlyMap<string, string>): SaveResult {
     if (!edits.length || edits.length > this.descriptors.size) throw new StoreError('invalid', 'Empty or oversized save');
     const unique = new Set<string>(), entries: Backup['entries'] = [];
-    const prospective = new Map(this.list().map(doc => [doc.id, doc.value]));
+    const prospective = new Map(this.loadDocuments().map(doc => [doc.id, doc.value]));
     for (const edit of edits) {
       if (!edit || typeof edit.id !== 'string' || typeof edit.revision !== 'string' || unique.has(edit.id)) throw new StoreError('invalid', 'Invalid/duplicate edit');
       unique.add(edit.id); const before = fs.readFileSync(this.file(edit.id), 'utf8');
@@ -96,7 +103,7 @@ export class AuthoringStore {
       prospective.set(edit.id, value);
       entries.push({ id: edit.id, before, after });
     }
-    try { this.options.validateAll?.(prospective); } catch (e) { throw new StoreError('invalid', `Document references: ${String(e)}`); }
+    this.validateDocuments(prospective,true);
     const transaction = randomUUID(), backup: Backup = { version: 1, transaction, state: 'prepared', entries };
     this.writeBackup(backup);
     const staged: { id: string; file: string; temporary: string }[] = [];
@@ -125,14 +132,16 @@ export class AuthoringStore {
       if (error instanceof StoreError) throw error;
       throw new StoreError('io', `Save failed and original documents restored: ${String(error)}`);
     } finally { for (const stage of staged) if (fs.existsSync(stage.temporary)) fs.unlinkSync(stage.temporary); }
-    return { transaction, documents: entries.map(e => this.read(e.id)) };
+    const committed=new Map(this.list().map(d=>[d.id,d]));
+    return { transaction, documents: entries.map(e => committed.get(e.id)!) };
   }
   /** Undo is a new validated transaction and requires current revisions for every affected document. */
   undo(transaction: string, revisions: Record<string, string>): SaveResult {
     const backup = this.backup(transaction);
     if (backup.state !== 'committed') throw new StoreError('invalid', 'Only committed saves can be undone');
+    const currentDocuments=new Map(this.loadDocuments().map(d=>[d.id,d]));
     const edits = backup.entries.map(e => {
-      const current = this.read(e.id);
+      const current = currentDocuments.get(e.id)!;
       if (current.revision !== hash(e.after) || revisions[e.id] !== current.revision) throw new StoreError('conflict', `${e.id}: changed since transaction`);
       return { id: e.id, revision: current.revision, value: this.parse(e.id, e.before) };
     });
@@ -172,6 +181,8 @@ export class AuthoringStore {
       const backup = this.backup(name.slice(0, -5)); if (backup.state !== 'prepared') continue;
       // A crash cannot overwrite subsequent outside edits. Refuse startup on ambiguous state.
       for (const e of backup.entries) { const raw = fs.readFileSync(this.file(e.id), 'utf8'); if (raw !== e.before && raw !== e.after) throw new StoreError('conflict', `${e.id}: interrupted save conflicts with outside edit`); }
+      // A partially replaced pair need not be valid; validate the complete restored snapshot first.
+      const restored=new Map(this.loadDocuments().map(d=>[d.id,d.value]));for(const e of backup.entries)restored.set(e.id,this.parse(e.id,e.before));this.validateDocuments(restored,true);
       for(const e of backup.entries)this.restoreOriginal(e);
       backup.state = 'rolled-back'; this.writeBackup(backup);
     }

@@ -1,3 +1,18 @@
+import {capsuleController} from '../engine/controllers/capsule';
+import {SCAN} from '../engine/model';
+import {withCompanionConversations,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
+import type {GameRuntimeSources} from './game-sources';
+import {runtimeSequenceDocuments} from '../story/sequence-documents';
+import {defaultNetworkContext} from '../engine/network-context';
+import {mintFeedback,type FeedbackReceipt} from '../engine/feedback-receipt';
+import type {MetroSnapshot} from '../world/transport/metro-snapshot';
+import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
+import {BOT_REACTIONS,withBotConversations,botVoice,botConversationId,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
+import {perfBegin,perfEnd,perfSample} from './diagnostics/performance';
+import {mountPerformancePanel} from './diagnostics/performance-panel';
+import {capabilityView,exitVisibility,exitPermission,harborTransportPermission} from '../world/access';
+import {mountReviewNavigator} from '../demo/review-navigator';
+import {reviewStations} from '../demo/review-stations';
 import {DEMO_MODE} from './mode';
 import {nativeStatePort} from '../engine/gameplay/native-bindings';
 import {ConversationSession} from '../engine/gameplay/conversation';
@@ -26,34 +41,23 @@ import { clearWorld } from '../art/core/canvas';
  * is drawn at an integer pixel scale so the sprites stay crisp.
  */
 
-import { SMEARS, renderDowntownCity, renderDowntownStreet, renderDowntownPeople } from "../scenes/downtown/composition";
+import { SMEARS, renderDowntownCity, renderDowntownStreet } from "../scenes/downtown/composition";
 import { SPR } from "../art/core/sprites";
-import { drawFlight,taxiSequenceDuration } from '../story/cutscenes/taxi';
+import { drawFlight,taxiDurationFor } from '../story/cutscenes/taxi';
 import type { Handoff } from '../art/core/timeline';
-import { KEYRING,NET,SCENE_FILES,type MachineData,type NetworkData } from "../data/index";
+import { type MachineData,type NetworkData } from "../data/index";
 import { MAX_EVERYDAY } from "../engine/host";
 import { CITY,NO_RULES,SceneHost } from "../engine/index";
-import { SCAN } from "../engine/model";
 import type { PopupItem } from "../engine/popup";
-import { CAPSULE_SPAWN } from "../scenes/capsule/index";
-import { fixerPrice,fixerTalk,npcTalk } from "../scenes/downtown/dialogue";
 import { reconcile,sceneShell,syncGoals } from "../scenes/downtown/index";
-import { NPCS,SPAWN_X,STALL } from "../scenes/downtown/layout";
 import { shiftAttention,shiftCarry,shiftMinute } from "../scenes/harbor-shift/index";
 import { isSceneId,ITEMS,priceTag,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type SceneView,type UseCtx } from "../scenes/index";
 import { PARCEL } from "../scenes/yard/index";
 import { messagesOf,unread } from "../story/contacts";
-import { cutsceneById,CutscenePlay,isCutsceneId,type CutsceneId } from "../story/cutscenes/index";
-import {
-DECK_BEFORE,
-hackLocked,
-HOME_RUN,IDLE_PING,isBefore,
-MORNING,MOTH_MESSAGE,OPENING,OPENING_EVERYDAY,OPENING_EXITS,OPENING_GOAL,OPENING_INTRO,
-OPENING_LINES,OPENING_PINGS,OPENING_TARGETS,OPENING_TIME,openingLevel,openingResume,openingState,pick,SLEEP,TURNSTILE,UPLINK_KEY,UPLINK_LINES,WAKE_LINES,
-type ExitRule,type OpeningState,type PingTarget,
-} from "../story/opening";
+import { createCutscenes,CutscenePlay,isCutsceneId,type CutsceneId } from "../story/cutscenes/index";
+import {openingStoryModel,pick,type ExitRule,type OpeningState,type PingTarget} from '../story/opening';
 import { Opening } from "../story/title/index";
-import { drawCityMap,mapKey,mapPointer,openMap,type MapAct,type MapState,type MapView } from "../ui/citymap";
+import { createCityMap,type MapAct,type MapState,type MapView } from "../ui/citymap";
 import { KeyBar } from "../ui/keybar";
 import { Hints } from "../ui/hints";
 import { Menu, type DeckData } from "../ui/menu";
@@ -63,22 +67,16 @@ import { levels,startLevel,SUDO,unlockAll } from "../ui/sudo";
 import { Terminal,type LineKind } from "../ui/terminal";
 import { commands,NO_ARGS,run,suggest,type Ctx } from "../ui/terminal/commands";
 import { ClockBar,Transport } from "../ui/transport";
-import { DRIVER_BROKE,DRIVER_HARBOR,FARE,harborOpen,HOP,LINE,placeBlocked,seenFlag,SIDING_OUT,standOf,STANDS,START_SCENE,stationAt,STATIONS,type MapPlace,type Stand,type Station } from '../world/city';
+import * as defaultCity from '../world/city';
+import type {CityModel,MapPlace,Stand,Station} from '../world/city';
 import { city,parseHM,TRAVEL,WAIT_CARD,WAITS,type WaitTo } from "../world/clock";
-import { lightAt,setLight,type Light } from "../world/light";
+import { light,lightAt,setLight,type Light } from "../world/light";
 import { frameView } from '../art/core/view';
-import {
-boardRide,lineOpen,nextStation,
-platformDoors,platformLeft,platformOpen,platformSync,
-ride,
-rideAtSiding,rideLeft,rideNext,rideOpen,rideRun,rideStop,
-SEG,
-stepRide,STOP,TIMETABLE,
-} from "../world/transport/line";
+import {createLineSystem,type LineSystem} from '../world/transport/line';
 import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from "../world/weather";
 import { sound } from './audio';
-import { botReact,characterHeight,characterX,isBot,isHere,talkTo } from './characters';
-import { Companion,WARM } from './companion';
+import { characterHeight,characterX,isBot,isHere,talkTo } from './characters';
+import { Companion } from './companion';
 import { EDITOR_PLAY,SAVE_KEY,SHIFT_PROTOTYPE } from "./mode";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 
@@ -98,7 +96,7 @@ const PET_PIGEON = [
  * to talk to, an animal, a robot), a device or the scene's own target on the engine (`device`),
  * Pixel (`pixel`), and Downtown's street people and the fixer (`talk`, level.ts).
  */
-type Target = { kind: 'exit' | 'life' | 'device' | 'pixel' | 'talk'; id: string; x: number; h: number; label: string; promptH?: number };
+type Target = { kind: 'exit' | 'life' | 'device' | 'pixel'; id: string; x: number; h: number; label: string; promptH?: number };
 /** A speech bubble; `then` runs once its last page is read (the fixer's question opens the deck). */
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number; then?: () => void }
 
@@ -135,12 +133,26 @@ export class Game {
   private raf = 0;
   private running = false;
   private keys = new Set<string>();
-  private p = { x: SPAWN_X, y: 0, vy: 0, face: 1, onGround: true, moving: false };
+  private p = { x: SCENES.downtown.spawn, y: 0, vy: 0, face: 1, onGround: true, moving: false };
   private bubble: Bubble | null = null;
   private showEnd = false;
-  private toast: { text: string; until: number } | null = null;
+
   private touch = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
   private ships: Ship[] = [];
+  private disposePerformance?:()=>void;
+  private reviewNav?:ReturnType<typeof mountReviewNavigator>;
+  private reviewAllowed(){return DEMO_MODE||EDITOR_PLAY;}
+  private refreshReview(){this.reviewNav?.refresh(this.here,this.here==='shop'&&!!this.def.gameplay?.conversations['demo.desk'],!!this.def.gameplay?.conversations['workshop.operator'],!!this.def.gameplay?.conversations.catalog);}
+  /** Explicit review bookmarks; never available in campaign play. */
+  reviewJump(id:string){
+    if(!this.reviewAllowed())return;const station=reviewStations(this.content).find(s=>s.id===id);if(!station)return;
+    this.keys.clear();this.bubble=null;this.zh.closeAll();this.menu.hide();this.mapView=null;this.netView=null;this.term.close();
+    this.enter(station.scene as SceneId,true);this.bubble=null;Object.assign(this.p,{x:station.x,y:0,vy:0,onGround:true});
+    this.cam=Math.max(0,Math.min(this.levelW-this.viewW,this.p.x-this.viewW*.45));if(this.levelW<this.viewW)this.cam=(this.levelW-this.viewW)/2;
+    this.syncEnginePause();this.refreshReview();this.reviewNav?.station(id);this.canvas.focus();
+  }
+  private reviewTalk(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const session=this.gameplayFor(this.here);if(!session?.definition.conversations[id])return;this.bubble=null;this.keys.clear();this.zh.closeAll();this.zh.presentConversation(new ConversationSession(session,id));}
+  private reviewUse(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const use=this.def.uses?.find(u=>u.id===id);if(!use||use.available&&!use.available(this.save.flags))return;this.bubble=null;this.zh.closeAll();this.keys.clear();this.runUse(use,use.use);this.canvas.focus();}
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   /** The scene the player is in. */
   private here: SceneId = 'downtown';
@@ -152,20 +164,34 @@ export class Game {
   /** Every scene on the engine, hosted the first time it is needed (`hostOf`), with its part of the save. */
   private hosts = new Map<SceneId, SceneHost>();
   private gameplaySessions = new Map<SceneId, GameplaySession>();
+  private compiledScenes=new Map<SceneId,SceneDef>();
+  private get openingStory(){return this.sources?.openingStory??openingStoryModel;}
+  private get sequenceDocuments(){return this.sources?.sequences??runtimeSequenceDocuments;}
+  private get networkContext(){return this.sources?.network??defaultNetworkContext;}
+  private cutsceneRegistry?:ReturnType<typeof createCutscenes>;
+  private get nativeCutscenes(){return this.cutsceneRegistry??=createCutscenes(this.sequenceDocuments.cinematics);}
+  private metroInstance?:LineSystem;
+  private get metro(){return this.metroInstance??=createLineSystem(this.world,this.metroSource);}
+  private get world():CityModel{return this.cityModel??defaultCity;}
+  private cityMapInstance?:ReturnType<typeof createCityMap>;
+  private get worldMap(){return this.cityMapInstance??=createCityMap(this.world);}
+  private hasScene(id:string):id is SceneId{return Object.prototype.hasOwnProperty.call(this.content,id)||isSceneId(id);}
+  private sceneDefinition(id:SceneId):SceneDef {let scene=this.compiledScenes.get(id);if(!scene){const source=this.content[id]??SCENES[id];if(!source)throw new Error('Unknown scene '+id);scene=withCompanionConversations(withBotConversations(source.bindWorld?.({city:this.world,metro:this.metro})??source,this.botReactions),this.sources?.companionGameplay??COMPANION_GAMEPLAY);this.compiledScenes.set(id,scene);}return scene;}
   private gameplayFor(id:SceneId):GameplaySession|undefined {
-    const definition=(this.content[id] ?? SCENES[id]).gameplay;
+    const definition=this.sceneDefinition(id).gameplay;
     if(!definition)return undefined;
     let session=this.gameplaySessions.get(id);
     if(!session){
       const port:import('../engine/gameplay/types').StatePort={
-        read:()=>({flags:{...this.save.flags,...Object.fromEntries(Object.entries((this.content[id]??SCENES[id]).gameplayReads??{}).map(([flag,key])=>[flag,!!(this.hosts.get(id)?.model.value(key)??this.save.scenes[id]?.state?.[key])]))},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay}),
-        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;this.save.gameplay=state.values;for(const flag of Object.keys((this.content[id]??SCENES[id]).gameplayReads??{}))delete this.save.flags[flag];},
+        read:()=>{const state:import('../engine/gameplay/types').GameplayState={world:{day:city.day,minute:city.min,weather:weatherNow(sceneClimate(id)).kind},player:{handle:this.save.handle,jump:this.save.jump,controlled:this.save.controlled,keyring:this.save.keyring},flags:{...this.save.flags},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay};return state;},
+        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;this.save.gameplay=state.values;},
       };
       const model=()=>{const m=this.hosts.get(id)?.model;if(!m)throw new Error('Native scene not ready');return m;};
       session=new GameplaySession(definition,definition.native?nativeStatePort(definition,port,model):port,()=>{
         if(definition.native){const m=model(),snapshot=m.snapshot(),board=this.save.scenes[id]?.board;this.save.scenes[id]={...snapshot,...(board?{board}:{})};m.changed();}
         storeSave(this.save);this.syncHud();
-      });
+      },this.sceneDefinition(id).objectives);
+      const onEvent=this.sceneDefinition(id).gameplayEvent;if(onEvent)session.observe(event=>onEvent(event,this.t));
       this.gameplaySessions.set(id,session);
     }
     return session;
@@ -185,7 +211,8 @@ export class Game {
   private netView: NetView | null = null;
   private netBack = false;
 
-  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private restricted=false) {
+  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private restricted=false,private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroSnapshot,private sources:GameRuntimeSources={}) {
+    if(metroStart)this.metro.restore(metroStart);
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'game-canvas';
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: Downtown');
@@ -194,7 +221,7 @@ export class Game {
     this.x = this.canvas.getContext('2d')!;
 
     this.term = new Terminal(host.windowEl, host.inputHost, this.touch);
-    if (this.touch) this.term.onLine = (text, kind) => { if (kind !== 'head') this.termLine = { text: text.split('\n').pop() ?? text, kind, until: this.t + 300 }; };
+    this.term.onLine = (text, kind) => { if (kind === 'err' && !this.term.isOpen) this.hints.notify(text.split('\n').pop() ?? text,'error'); };
     this.term.onSubmit((line) => run(this.ctx(), line));
     this.term.onSuggest((line) => suggest(this.ctx(), line), NO_ARGS);
     this.term.onComplete((prefix) => {
@@ -205,11 +232,11 @@ export class Game {
     this.term.onClose = () => this.canvas.focus();
 
     this.keyBar = new KeyBar(host.windowEl);
-    if (SHIFT_PROTOTYPE) this.shiftGuidance = new ShiftGuidance(host.windowEl, this.reduced, wx => {
+    if (SHIFT_PROTOTYPE||DEMO_MODE||(EDITOR_PLAY&&this.restricted)) this.shiftGuidance = new ShiftGuidance(host.windowEl, this.reduced, wx => {
       this.zh.clearPing('goal');
       this.goalAt = wx;
       if (wx !== null) this.zh.ping('goal', 'look');
-    }, flags=>this.def.attention?this.def.attention(flags):shiftAttention(flags,this.def.uses), flags=>this.def.objective?.(flags)??'');
+    }, flags=>this.def.attention?this.def.attention(flags,this.gameplayFor(this.here)?.state()):SHIFT_PROTOTYPE?shiftAttention(flags,this.def.uses):null, flags=>this.def.objective?.(flags,this.gameplayFor(this.here)?.state())??'');
     // the fixer's parcel holds Moth's key chip and uplink.so: a save that took it before they were in it gets them now
     if (this.hostOf('yard').model.get('parcelAt') === 'taken') PARCEL.forEach((k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); });
     // Downtown keeps most of its progress in the save's own fields: its devices agree with them
@@ -268,13 +295,13 @@ export class Game {
   private hostOf(id: SceneId): SceneHost {
     const had = this.hosts.get(id);
     if (had) return had;
-    const def: SceneDef = this.content[id] ?? SCENES[id];
-    const print = def.buzz ? (text: string, kind?: LineKind) => this.buzzPrint(text, kind) : (text: string, kind?: LineKind) => this.term.print(text, kind);
+    const def: SceneDef = this.sceneDefinition(id);
+    const print = (text:string,kind?:LineKind,from?:string,receipt?:FeedbackReceipt)=>{this.term.print(text,kind,!from&&!receipt,receipt);};
     const rules = typeof def.rules === 'function' ? def.rules({
       save: () => this.save,
       persist: () => this.persist(),
       nodes: () => nodeCount(this.save),
-      granted: () => sound.granted(),
+      granted: (receipt) => sound.feedback(receipt??mintFeedback(this.here,'controller','success')),
       end: () => { this.showEnd = true; },
       // a story beat's cutscene (the stacks' ACT II card) waits for the screen to be free (`loop`)
       cutscene: (cut) => { this.pendingCut = cut; },
@@ -282,8 +309,15 @@ export class Game {
       sceneState: (scene, key) => this.hosts.get(scene as SceneId)?.model.get(key) ?? this.save.scenes[scene]?.state?.[key],
     }) : def.rules ?? NO_RULES;
     const zh = new SceneHost(this.host.windowEl, print, {
+      notice:(text,tone,receipt)=>{this.hints.notify(text,tone,receipt);},
+      feedbackCue:receipt=>sound.feedback(receipt),
+      hints:this.hints,
+      hintBusy:()=>document.hidden||this.menu.open||!!this.opening||!!this.cut||!!this.mapView||!!this.netView||!!this.flight||this.showEnd||!!this.sleep||this.term.isOpen||!!this.bubble||!!this.hosts.get(id)?.acknowledgmentPending,
+      feedbackTime:()=>this.hints.notices.time,
+      cutscene:cut=>{this.pendingCut=cut;},
       gameplay:()=>this.gameplayFor(id),
       conversation:(conversationId)=>{const session=this.gameplayFor(id);return session?.definition.conversations[conversationId]?new ConversationSession(session,conversationId):undefined;},
+      conversationCompleted:cue=>{if(this.here===id)this.completeConversation(cue);},
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
       give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
@@ -302,15 +336,20 @@ export class Game {
       sudo: SUDO,
       // the net (NET.md): programs you own (scan.so), and the nodes that answer to you
       programs: () => this.save.programs,
-      program: (p) => this.grantProgram(p),
+      program: (p,receipt) => this.grantProgram(p,receipt),
       controlled: () => this.save.controlled,
       load: () => this.save.scenes[id],
       store: (z) => { this.save.scenes[id] = z; storeSave(this.save); },
-    }, def, rules);
+    }, def, rules,this.networkContext);
     // Pixel is the game's, not the scene's: lines about Pixel stand over Pixel, and popups keep clear of the cat
-    zh.where = (from) => (from === 'pixel' && this.pixelHere ? { x: this.pixel.x, h: this.pixel.h } : from === 'goal' && this.goalAt !== null ? { x: this.goalAt, h: 20 } : null);
+    zh.where = (from) => {
+      if(from==='pixel'&&this.pixelHere)return {x:this.pixel.x,h:this.pixel.h};
+      if(from==='goal'&&this.goalAt!==null)return {x:this.goalAt,h:20};
+      const source=from.startsWith('use:')?def.uses?.find(u=>u.id===from.slice(4)):from.startsWith('exit:')?def.exits.find(e=>e.id===from.slice(5)):undefined;
+      return source?{x:source.x,h:'h'in source?source.h??0:0}:null;
+    };
     // the opening (opening.ts): hacking is not yours until uplink.so, and some everyday actions say something else
-    zh.hackLock = () => hackLocked(this.save.flags);
+    zh.hackLock = () => this.openingStory.hackLocked(this.save.flags);
     zh.story = (dev) => this.storyChips(id, dev);
     zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
     // captions never cover the player's speech bubble, and keep their lane over people's heads
@@ -325,7 +364,7 @@ export class Game {
     zh.drawerInfo = () => this.ownLine();
     // NET in hack vision's bar: once scan.so is yours, pinging until the net map has been opened once
     zh.netOk = () => this.netOk;
-    zh.netNew = () => !this.save.flags[NET_OPENED];
+    zh.netNew = () => false;
     zh.onNet = () => this.showNet();
     if(EDITOR_PLAY)zh.model.enableInspection();
     this.hosts.set(id, zh);
@@ -342,7 +381,7 @@ export class Game {
   }
 
   /** The scene the player is in: its definition, and its host on the engine. */
-  private get def(): SceneDef { return this.content[this.here] ?? SCENES[this.here]; }
+  private get def(): SceneDef { return this.sceneDefinition(this.here); }
   private get zh(): SceneHost { return this.hostOf(this.here); }
   /** Downtown's host: its goals follow the save's own fields. */
   private get downtown(): SceneHost { return this.hostOf('downtown'); }
@@ -375,6 +414,7 @@ export class Game {
     window.addEventListener('keyup', this.onKeyUp);
     window.addEventListener('resize', this.onResize);
     this.syncHud();
+    this.disposePerformance??=mountPerformancePanel(this.host.windowEl,()=>({scene:this.here,clock:{...this.save.clock},weather:this.weatherHere().kind,camera:this.cam,scale:this.k,hostedScenes:[...this.hosts.keys()],actors:this.def.people?.length??0,devices:this.zh.model.data.devices.length}));
     this.running = true;
     this.last = 0;
     this.raf = requestAnimationFrame((n) => this.loop(n));
@@ -383,7 +423,8 @@ export class Game {
     if (title) { this.showTitle(); return; }
     const first = !this.started;
     this.started = true;
-    this.continueGame(scene && isSceneId(scene) ? scene : undefined, first);
+    this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first);
+    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
   }
 
   /**
@@ -392,17 +433,17 @@ export class Game {
    */
   private continueGame(scene: SceneId | undefined, first: boolean) {
     this.endTitle();
-    if(DEMO_MODE)scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:'library');
+    if(DEMO_MODE)scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:'shop');
     this.started = true;
-    const resume = !scene && first ? openingResume(this.save.flags) : null;
-    if (!scene && first && this.save.scene && isSceneId(this.save.scene) && (this.save.scene !== 'sandbox' || SUDO)) scene = this.save.scene;
-    else if (resume) scene = resume;
-    else if (!scene && first && !this.save.flags.arrived && !this.save.flags[seenFlag('downtown')]) {
+    const resume = !scene && first ? this.openingStory.openingResumeDestination(this.save.flags) : null;let resumeEntrance:string|undefined;
+    if (!scene && first && this.save.scene && this.hasScene(this.save.scene) && (this.save.scene !== 'sandbox' || SUDO)) scene = this.save.scene;
+    else if (resume && this.hasScene(resume.scene)) {scene=resume.scene;resumeEntrance=resume.entrance;}
+    else if (!scene && first && !this.save.flags.arrived && !this.save.flags[this.world.seenFlag('downtown')]) {
       // a save that never got going: the opening, on the train home (no glide: that is NEW GAME's)
-      if (!this.save.flags[seenFlag(START_SCENE)]) { this.startOpening(); return; }
-      scene = START_SCENE;
+      if (!this.save.flags[this.world.seenFlag(this.world.START_SCENE)]) { this.startOpening(); return; }
+      scene = this.world.START_SCENE;
     }
-    if (scene && this.here !== scene) this.enter(scene, true);
+    if (scene && (this.here !== scene||resumeEntrance)) this.enter(scene, true,resumeEntrance);
     this.showHost();
     this.markSeen(this.here);
     this.greet();
@@ -435,9 +476,9 @@ export class Game {
     this.endCutscene(false);
     this.bubble = null;
     this.keys.clear();
-    this.hosts.forEach((h) => h.closeAll());
+    this.hosts.forEach((h) => {h.cancelAcknowledgment?.('dismissed');h.closeAll();});
     this.term.close();
-    this.opening = new Opening(this.reduced);
+    this.opening = new Opening(this.reduced,this.sequenceDocuments.opening);
     this.syncEnginePause();
     document.documentElement.classList.add('cutscene');
     this.host.setScene('ACCESS DENIED');
@@ -488,7 +529,7 @@ export class Game {
     this.term.clear();
     this.bubble = null;
     this.showEnd = false;
-    this.toast = null;
+    this.hints.sceneChanged();sound.cancelFeedback();
     this.save = SUDO ? unlockAll(newSave()) : newSave();
     city.bind(this.save.clock);
     // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
@@ -503,20 +544,17 @@ export class Game {
 
   /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
   private greet() {
-    // (before you are deleted, the street is not yet the one you have to fight)
-    if (this.here !== 'downtown' || hackLocked(this.save.flags)) return;
-    const how = this.touch
-      ? 'Every machine here does something: tap it. HACK, bottom right, shows how they all work.'
-      : 'Every machine here does something: E or a tap. H shows how they all work, B is the board.';
+    const greeting=this.openingStory.CONTROLLER.greeting;
+    if (this.here !== greeting.scene || this.openingStory.hackLocked(this.save.flags)) return;
+    const how=this.touch?greeting.how.touchPages:greeting.how.pages;
     if (!this.save.flags.arrived) {
       this.save.flags.arrived = true; this.save.flags.schematics = true;
-      const wet = this.weatherHere().rain > 0.2;
-      const pages = [wet ? 'Downtown. Rain, neon, and nobody who sees me.' : 'Downtown. Neon, wet streets, and nobody who sees me.', 'The noodle stall is still lit. Worth a try.', how];
-      if (this.save.flags.pixel) pages.splice(1, 0, 'Pixel came along. Nobody asked Pixel. Nobody ever does.');
-      this.say('YOU', pages, this.p.x, 46);
+      const pages=[this.weatherHere().rain>greeting.rainThreshold?greeting.wet:greeting.dry,greeting.stall,...how];
+      if (this.save.flags.pixel) pages.splice(1,0,greeting.pixel);
+      this.say(greeting.speaker,pages,this.p.x,greeting.height);
     } else if (!this.save.flags.schematics) {
       this.save.flags.schematics = true;
-      this.say('YOU', ['My deck sees this street differently now.', how], this.p.x, 46);
+      this.say(greeting.speaker,[greeting.relearn,...how],this.p.x,greeting.height);
     }
   }
 
@@ -528,19 +566,29 @@ export class Game {
 
   checkpoint(){this.hosts.forEach(host=>host.persist());storeSave(this.save);}
 
+  /** Private Play restart state; never added to the player's save format. */
+  captureMetroState():MetroSnapshot{if(!EDITOR_PLAY)throw new Error('Controller snapshots require private Play');return this.metro.capture();}
+
   /** Detached diagnostics for editor inspection; no mutable runtime references. */
   inspect() {
     const shared=this.gameplayFor(this.here);
     return structuredClone({scene:this.here, player:{x:this.p.x,y:this.p.y}, save:this.save,
+      actors:EDITOR_PLAY?(this.def.people??[]).map((p,index)=>({index,id:p.id,seed:p.seed,look:p.look,x:p.x,h:p.h,act:p.act,range:p.range,speed:p.speed,facing:p.facing,when:p.when,visible:isHere(p),follow:p.follow?(this.def.people??[]).indexOf(p.follow):undefined,gap:p.gap})):undefined,
+      metro:EDITOR_PLAY?this.metro.capture():undefined,
       engine:EDITOR_PLAY?this.zh.model.inspect():undefined,
       gameplay:shared?{state:shared.state(),purchases:Object.fromEntries(Object.keys(shared.definition.purchases??{}).map(id=>[id,shared.quote(id)]))}:null,conversation:this.zh.conversationFrame,
       environment:{weather:this.weatherHere().kind,clock:this.editorClock},
-      objective:this.def.objective?.(this.save.flags), paused:this.enginesPaused,
+      capabilities:capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags)),access:{exits:this.def.exits.map(e=>({id:e.id,visibility:exitVisibility(e,this.save.flags),permission:exitPermission(e,this.save.keyring)})),interactions:this.def.uses?.map(u=>({id:u.id,result:u.eligibility?.(this.save.flags,shared)??{ok:true}}))},
+      objective:this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()), paused:this.enginesPaused,
       dialogue:this.bubble?{speaker:this.bubble.name,pages:this.bubble.pages,page:this.bubble.page}:null, popup:this.zh.popupOpen,
       events:[...this.gameplaySessions].flatMap(([scene,session])=>session.events().map(event=>({scene,...event}))) });
   }
 
   stop() {
+    this.cancelStoryTransitions();this.flight=null;this.hop=null;
+    this.hints.sceneChanged();sound.cancelFeedback();
+    this.disposePerformance?.();this.disposePerformance=undefined;
+    this.reviewNav?.dispose();this.reviewNav=undefined;
     this.running = false;
     this.gameplaySessions.forEach(session=>session.dispose());
     this.gameplaySessions.clear();
@@ -561,7 +609,7 @@ export class Game {
     this.mapView = null;
     this.netView = null;
     this.netBack = false;
-    this.hosts.forEach((h) => { h.closeAll(); h.persist(); });
+    this.hosts.forEach((h) => { h.cancelAcknowledgment?.('disposed');h.closeAll(); h.persist(); });
     this.term.close();
     this.canvas.hidden = true;
     storeSave(this.save);
@@ -608,9 +656,20 @@ export class Game {
   /** How often the player has petted a scene's animals (which line comes next). */
   private petCount = 0;
 
-  private loop(now: number) {
+  private loop(now:number){const span=perfBegin('game.frame',this.here);try{this.stepLoop(now);}finally{perfEnd(span);}}
+
+  /** Readability stops while another surface covers the world; simulation clocks keep their own policy. */
+  private get communicationCovered() {
+    return document.hidden||this.menu.open||!!this.opening||!!this.cut||!!this.mapView||!!this.netView||!!this.flight||this.showEnd||!!this.sleep||this.term.isOpen||!!this.zh.overlayOpen;
+  }
+
+  private stepLoop(now: number) {
     if (!this.running) return;
     this.syncEnginePause();
+    if(this.last)perfSample('raf.gap',now-this.last);
+    const readableBefore=this.hints.notices.time;
+    this.hints.notices.frame(now,this.communicationCovered);
+    const readableDelta=(this.hints.notices.time-readableBefore)/1000;
     const dt = this.last ? Math.min(3, (now - this.last) / 16.67) : 1;
     this.last = now;
     // sudo's time control follows whatever timed picture is up (none: it hides); in a scene, the city clock's bar
@@ -631,7 +690,7 @@ export class Game {
     if (this.pendingCut && !this.zh.overlayOpen && !this.zh.popupOpen && !this.bubble && !this.mapView && !this.term.focused) {
       const id = this.pendingCut;
       this.pendingCut = null;
-      this.playCutscene(id, () => this.inbox());
+      this.playCutscene(id, () => this.inbox(),'after-handoff');
     }
     if (!this.reduced || this.t < 1) this.t += dt;
     this.clock += dt;
@@ -639,12 +698,14 @@ export class Game {
     this.pinStory();
     if (this.clockRuns()) city.tick(dt / 60);
     this.syncClock();
-    this.update(dt);
-    this.shiftGuidance?.update(this.save.flags, dt / 60,
-      !!this.bubble || !!this.zh.popupOpen || !!this.zh.overlayOpen,
+    const updateSpan=perfBegin('game.update');
+    try{this.update(dt);}finally{perfEnd(updateSpan);}
+    this.shiftGuidance?.update(this.save.flags, readableDelta,
+      this.communicationCovered || !!this.bubble || !!this.zh.popupOpen,
       this.p.moving, this.p.x);
     this.checkGain();
-    this.draw();
+    const renderSpan=perfBegin('game.render');
+    try{this.draw();}finally{perfEnd(renderSpan);}
     this.followHost();
     this.raf = requestAnimationFrame((n) => this.loop(n));
   }
@@ -673,6 +734,7 @@ export class Game {
       else if ((e.key === 'h' || e.key === 'H') && !e.repeat) zh.toggleVision();
       return;
     }
+    if(zh?.acknowledgmentPending&&['e','E','Enter',' '].includes(e.key)){e.preventDefault();if(!e.repeat)this.interact();return;}
     // a thing's popup takes arrows, Enter / E and Esc; any other key closes it and goes on as usual
     if (zh && zh.popupOpen && zh.popupKey(e)) return;
     const k = e.key;
@@ -685,6 +747,7 @@ export class Game {
     }
     if (k === 'Escape') {
       if (this.bubble) { this.bubble = null; return; }
+      if(zh?.acknowledgmentPending){zh.cancelAcknowledgment('dismissed');return;}
       if (zh && zh.visionOn) { zh.toggleVision(); return; }
       // Nothing left to close: the deck, on its last tab (SYSTEM: QUIT TO HOMEPAGE leaves the game).
       this.openMenu();
@@ -694,7 +757,7 @@ export class Game {
     if ((k === 'Enter' || k === ' ') && this.bubble) { e.preventDefault(); this.interact(); return; }
     if (k === 'Enter') { e.preventDefault(); this.openDeck(); return; }
     // the deck's map app: the city as far as you know it
-    if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); this.showMap(); return; }
+    if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); if (!DEMO_MODE) this.showMap(); return; }
     // B and H mean something only where there is something to hack (a scene with devices)
     if (zh.hackable && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
     if (zh.hackable && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
@@ -718,7 +781,7 @@ export class Game {
   private openDeck() {
     if (SHIFT_PROTOTYPE) return;
     if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
-    const at = hackLocked(this.save.flags) ? null : this.termMachine();
+    const at = this.openingStory.hackLocked(this.save.flags) ? null : this.termMachine();
     if (at) this.term.print('[' + (this.zh.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
     this.term.focus();
   }
@@ -771,9 +834,9 @@ export class Game {
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: the coast at sunrise, from the sea west to Downtown and LINE 0');
   }
 
-  private flash(text: string) { this.toast = { text, until: this.t + 110 }; }
-  /** Phones have no terminal: its latest line shows in the game for a few seconds. */
-  private termLine: { text: string; kind: LineKind; until: number } | null = null;
+  private notify(text:string,tone:import('../ui/communication').MessageTone='info'){this.hints.notify(text,tone);this.term.print(text,tone==='error'?'err':tone==='success'?'ok':'out',false);}
+  private flash(text: string) { this.notify(text,text.startsWith('[ERR]')?'error':text.startsWith('+')?'success':'info'); }
+
 
   private get levelW() { return this.def.width; }
   /** The scene's name, for the HUD and the canvas label. */
@@ -787,7 +850,7 @@ export class Game {
   private enter(id: SceneId, quiet = false, at?: string) {
     if((DEMO_MODE||this.restricted)&&!this.content[id]){this.flash('This route is outside the Test District.');return;}
     if (SHIFT_PROTOTYPE) id = 'harborShift';
-    const s: SceneDef = this.content[id] ?? SCENES[id];
+    const s: SceneDef = this.sceneDefinition(id);
     this.zh.persist();
     this.hosts.forEach((h) => h.closeAll());
     this.bubble = null;
@@ -807,17 +870,18 @@ export class Game {
     // Pixel: at home (coming in behind you through the door, or already asleep there), at your heels where it follows you
     if (s.perch) {
       const home = s.perch(this.zh.model);
-      if (at && this.save.flags.pixel) this.pixel.place(x - 14, 0, 'walk', 1);
+      if (at && this.save.flags[s.companion?.unlockFlag??'pixel']) this.pixel.place(x - 14, 0, 'walk', 1);
       else this.pixel.place(home.x, home.h, home.rest);
     } else if (this.pixelHere) this.pixel.place(x - this.p.face * 20, 0, 'sit', this.p.face);
     // the opening: the train home runs into Downtown; arriving, the player says the opening's words instead
-    const st = this.story, said = pick(OPENING_INTRO, st, id);
-    if (id === 'train' && st === 'home') this.rideHome();
+    const st = this.story, said = pick(this.openingStory.OPENING_INTRO, st, id);
+    if (id === this.openingStory.CONTROLLER.homeRun.scene && st === 'home') this.rideHome();
+    this.hints.sceneChanged();sound.cancelFeedback();
     const flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
     if (said) {
       const once = 'opening:said:' + st + ':' + id;
       if (said.consume) this.save.flags[flag] = true;
-      if (!this.save.flags[once]) { this.save.flags[once] = true; storeSave(this.save); this.say('YOU', said.lines(this.touch), this.p.x, 46); }
+      if (!this.save.flags[once]) { this.save.flags[once] = true; storeSave(this.save); this.say(said.speaker,said.lines(this.touch),this.p.x,said.height); }
     } else if (intro && !this.save.flags[flag]) {
       this.save.flags[flag] = true;
       storeSave(this.save);
@@ -844,7 +908,7 @@ export class Game {
     }));
     const id = zh.spotAt(wx, h);
     // (pink is the hacking layer's colour: no pink bracket on hover until hacking is yours)
-    zh.hover = hackLocked(this.save.flags) ? null : id;
+    zh.hover = this.openingStory.hackLocked(this.save.flags) ? null : id;
     this.canvas.style.cursor = id ? 'pointer' : '';
     if (press && zh.visionOn) { zh.poke(id); return; }
     // a thing's popup: its everyday actions, then jack in (computers) and hack it
@@ -871,7 +935,6 @@ export class Game {
   private heads() {
     const s = this.cssScale, list: { x: number; h: number }[] = [];
     for (const p of this.def.people ?? []) if (isHere(p)) list.push({ x: characterX(p, this.t), h: characterHeight(p) });
-    if (this.here === 'downtown') { NPCS.forEach((n) => list.push({ x: n.x, h: 46 })); list.push({ x: STALL.fixerX, h: 74 }); }
     return list.map(({ x, h }) => ({ l: (this.sx(x) - 9) * s, t: this.y(h) * s, r: (this.sx(x) + 9) * s, b: this.y(h - 14) * s }))
       .filter((b) => b.r > 0 && b.l < this.canvas.clientWidth);
   }
@@ -896,7 +959,7 @@ export class Game {
       save: this.save,
       machine: this.termMachine(),
       // the deck's commands reach the scene's machines, when it has any
-      shell: zh.model.devices.size && !hackLocked(this.save.flags) ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
+      shell: zh.model.devices.size && !this.openingStory.hackLocked(this.save.flags) ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
       print: (text, kind) => this.term.print(text, kind),
       denied: () => sound.denied(),
       granted: () => sound.granted(),
@@ -907,11 +970,11 @@ export class Game {
       resetYard: () => this.hostOf('yard').reset(),
       resetSandbox: SUDO ? () => this.hostOf('sandbox').reset() : undefined,
       // your own deck, while you still exist
-      deck: isBefore(this.save.flags) ? DECK_BEFORE : undefined,
+      deck: this.openingStory.isBefore(this.save.flags) ? this.openingStory.DECK_BEFORE : undefined,
       // the Registry's forecast, where you are
       weather: () => reportLines(sceneClimate(this.here)),
       // the net from where you stand (NET.md): scan, connect (needs scan.so, except what a port here knows)
-      net: hackLocked(this.save.flags) ? undefined : {
+      net: this.openingStory.hackLocked(this.save.flags) ? undefined : {
         scan: () => this.deckScan(),
         connect: (name) => this.deckConnect(name),
         names: () => this.zh.model.nodesHere().filter((id) => this.zh.model.net.has(id) || this.zh.model.ports().length),
@@ -920,8 +983,9 @@ export class Game {
   }
 
   private syncHud() {
+    this.refreshReview();
     this.host.setNodes(nodeCount(this.save));
-    this.host.setScene(sceneTitle(this.def) + this.clockText + ' · ' + this.me.toUpperCase());
+    this.host.setScene(DEMO_MODE ? sceneTitle(this.def) : sceneTitle(this.def) + this.clockText + ' · ' + this.me.toUpperCase());
   }
 
   /**
@@ -930,27 +994,19 @@ export class Game {
    */
   private targets(): Target[] {
     const s = this.def, list: Target[] = [...this.exitTargets(s)];
-    if (this.here === 'downtown') list.push(...this.streetTargets());
+    const life=this.lifeTargets(s),before=new Set((s.uses??[]).filter(u=>u.targetOrder==='before-devices').map(u=>'use:'+u.id));
+    list.push(...life.filter(t=>before.has(t.id)));
     // a device is reached from the ground, or from the ledge under it (the relay, from the low roof)
     const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
     for (const t of this.zh.targets()) if (!s.hideDevice?.(t.id, this.save.flags)) list.push({ kind: 'device', id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH });
-    list.push(...this.lifeTargets(s));
+    list.push(...life.filter(t=>!before.has(t.id)));
     // the opening's own things to press E on (the bed)
-    for (const [key, t] of Object.entries(OPENING_TARGETS[this.story] ?? {})) {
+    for (const [key, t] of Object.entries(this.openingStory.OPENING_TARGETS[this.story] ?? {})) {
       const [scene, id] = key.split('/');
-      if (scene === this.here) list.push({ kind: 'life', id: 'story:' + id, x: t.x, h: 0, label: t.label, promptH: t.promptH });
+      if(scene===this.here){const target=this.openingStory.resolveTarget(t,this.def);if(target)list.push({kind:'life',id:'story:'+id,...target});}
     }
     // Pixel can always be petted, wherever it is with you
-    if (this.pixelHere) list.push({ kind: 'pixel', id: 'pixel', x: this.pixel.x, h: 0, label: '[E] PET PIXEL', promptH: this.pixel.h + 24 });
-    return list;
-  }
-
-  /** Downtown's people on the street and the fixer at his stall (level.ts says what they say). */
-  private streetTargets(): Target[] {
-    const list: Target[] = NPCS.map((n) => ({ kind: 'talk' as const, id: n.id, x: n.x, h: 0, label: '[E] TALK' }));
-    // a hint costs a bowl: the price shows where you pay (and only then)
-    const hint = fixerPrice(this.save);
-    list.push({ kind: 'talk', id: 'fixer', x: STALL.fixerX, h: 0, label: '[E] TALK' + (hint ? ' · HINT ' + priceTag(hint, this.save.tokens) : '') });
+    if (this.pixelHere&&this.def.companion?.pet) list.push({ kind: 'pixel', id: 'pixel', x: this.pixel.x, h: 0, label: this.def.companion.pet.prompt, promptH: this.pixel.h + 24 });
     return list;
   }
 
@@ -966,6 +1022,16 @@ export class Game {
 
   private say(name: string, pages: string[], x: number, h: number) {
     this.bubble = { name, pages, page: 0, chars: 0, x, h };
+    if(pages.length)this.term.print(name+': '+pages.join('\n'),'out',false);
+  }
+
+  private completeConversation(cue:NonNullable<import('../engine/gameplay/conversation').ConversationFrame['completion']>) {
+    this.term.prefill(cue.terminalPrefill);
+  }
+
+  /** Completion belongs to advancing the final page; replacing or abandoning a bubble cancels it. */
+  private dialogueCompletion(cue:import('../engine/gameplay/conversation').ConversationFrame['completion']) {
+    if(cue&&this.bubble){const scene=this.here;this.bubble.then=()=>{if(this.here===scene)this.completeConversation(cue);};}
   }
 
   private interact() {
@@ -979,32 +1045,18 @@ export class Game {
       b.then?.();
       return;
     }
+    if(this.zh.acknowledgmentPending){this.zh.advanceAcknowledgment();return;}
     const target = this.nearest();
     if (!target) return;
     if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
     if (target.kind === 'device') {
       // the opening: a scene's own way out (the flat's door) may say something else in this state
-      const rule = pick(OPENING_EXITS, this.story, this.here, target.id);
-      if (rule && this.storyExit(rule, target.x, () => {})) return;
+      const rule = pick(this.openingStory.OPENING_EXITS, this.story, this.here, target.id);
+      if (rule && this.storyExit(rule, target.x, () => {},undefined,target.id)) return;
     }
     if (target.kind === 'device') { const out = this.zh.use(target.id), e = out ? this.def.exits.find((z) => z.id === out) : undefined; if (e) this.useExit(e); return; }
-    if (target.kind === 'pixel') { sound.blip(); this.say('PIXEL', this.pixel.pet(), this.pixel.x, this.pixel.h + 14); return; }
-    if (target.kind === 'talk') {
-      // before you are deleted, the street talks to you differently (opening.ts)
-      const o = pick(OPENING_LINES, this.story, 'downtown', target.id);
-      if (o) { const npc = NPCS.find((n) => n.id === target.id); this.say(o.name ?? 'YOU', o.pages, npc?.x ?? STALL.fixerX, npc ? 48 : 30); return; }
-      if (target.id === 'fixer') {
-        const talk = fixerTalk(this.save);
-        this.persist();
-        this.say('FIXER', talk.pages, STALL.fixerX, 30);
-        // "Got a name, ghost?": the deck opens with the question half typed (the keyboard is right here)
-        if (talk.ask && this.bubble) { const ask = talk.ask; this.bubble.then = () => this.term.prefill(ask); }
-      } else {
-        const npc = NPCS.find((n) => n.id === target.id)!;
-        this.say(npc.id === 'hood' ? 'HOODED STRANGER' : npc.id === 'umbrella' ? 'UMBRELLA' : 'MAN IN A HAT', npcTalk(npc.id, this.save), npc.x, 48);
-      }
-    }
+    if (target.kind === 'pixel') { const pet=this.def.companion?.pet;if(!pet)return;const conversation=new ConversationSession(this.gameplayFor(this.here)!,this.pixel.pet(pet)),frame=conversation.frame();sound.blip();if(frame.choices?.length){this.zh.presentConversation(conversation);}else{conversation.close();this.say(frame.speaker,frame.pages,this.pixel.x,this.pixel.h+14);this.dialogueCompletion(frame.completion);}return; }
   }
 
   private update(dt: number) {
@@ -1054,16 +1106,16 @@ export class Game {
     if (p.moving || Math.abs(goal - this.cam) < 0.5) this.easeBack = false;
     this.cam += (goal - this.cam) * Math.min(1, (nudging || this.easeBack ? NUDGE_EASE : 0.12) * dt);
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
-    if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: WARM[this.here] });
+    if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: this.def.companion?.warm });
     this.host.setNodes(nodeCount(this.save));
     // the opening's idle ping: standing still a while, the next goal's target pings (opening.ts)
-    const aim = pick(OPENING_PINGS, this.story, this.here);
+    const aim = this.shiftGuidance ? null : pick(this.openingStory.OPENING_PINGS, this.story, this.here);
     if (!aim || locked || p.moving || !p.onGround || this.bubble || this.zh.popupOpen) this.still = this.clock;
-    else if (this.clock - this.still > IDLE_PING) { this.still = this.clock; this.pingGoal(aim); }
+    else if (this.clock - this.still > this.openingStory.IDLE_PING) { this.still = this.clock; this.pingGoal(aim); }
   }
 
   /** Pixel is drawn at home (the flat), and where it follows you (`pixel: 'along'`) once it does (`flags.pixel`). */
-  private get pixelHere() { const s = this.def; return s.pixel === 'home' || (!!this.save.flags.pixel && s.pixel === 'along'); }
+  private get pixelHere() { const s = this.def; return s.pixel === 'home' || (!!this.save.flags[s.companion?.unlockFlag??'pixel'] && s.pixel === 'along'); }
 
   // ---------- drawing ----------
 
@@ -1082,7 +1134,7 @@ export class Game {
     x.setTransform(k, 0, 0, k, 0, 0);
     x.imageSmoothingEnabled = false;
     clearWorld(x, this.viewW, this.viewH);
-    if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / (taxiSequenceDuration * 60)), this.clock, STANDS[this.flight.to].name); return; }
+    if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / (taxiDurationFor(this.sequenceDocuments.cinematics) * 60)), this.clock, this.world.STANDS[this.flight.to].name,light(),this.sequenceDocuments.cinematics); return; }
     // the world, at hack vision's pan and zoom; the HUD and the overlays over it at the usual scale
     this.zoomed(() => this.drawWorld());
     x.setTransform(k, 0, 0, k, 0, 0);
@@ -1132,7 +1184,7 @@ export class Game {
    */
   private weatherOf(scene: string): Weather {
     const w = weatherNow(sceneClimate(scene));
-    if (!isBefore(this.save.flags) || (w.rain < 0.01 && w.storm < 0.01)) return w;
+    if (!this.openingStory.isBefore(this.save.flags) || (w.rain < 0.01 && w.storm < 0.01)) return w;
     return { ...w, kind: w.kind === 'rain' || w.kind === 'storm' ? 'cloudy' : w.kind, rain: 0, storm: 0, wet: Math.min(w.wet, 0.4), wind: Math.min(w.wind, 0.3) };
   }
   private weatherHere() { return this.weatherOf(this.here); }
@@ -1141,7 +1193,6 @@ export class Game {
 
   private drawCharacters() {
     const x = this.x, p = this.p;
-    if (this.here === 'downtown') renderDowntownPeople(x, this.view());
     if (this.pixelHere) this.pixel.draw(x, (wx) => this.sx(wx), (h) => this.y(h), this.t);
     // jacked in: a Downtown machine's schematic is open and you stand at it, so the deck's cable runs to it
     const open = this.here === 'downtown' ? this.downtown.viewing : null;
@@ -1399,7 +1450,7 @@ export class Game {
     this.bubbleBox = { x: bx, y: by, w, h };
     x.fillStyle = '#000'; x.fillRect(bx, by, w, h);
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.strokeRect(bx + 1, by + 1, w - 2, h - 2); x.lineWidth = 1;
-    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : (SHIFT_PROTOTYPE || isBefore(this.save.flags)) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
+    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : (SHIFT_PROTOTYPE || this.openingStory.isBefore(this.save.flags)) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
     x.fillStyle = '#fff'; shownLines.forEach((l, i) => x.fillText(l, bx + 10, by + 30 + i * 13));
     if (b.chars >= full.length && Math.floor(this.t / 20) % 2) {
       x.beginPath(); x.moveTo(bx + w - 16, by + h - 10); x.lineTo(bx + w - 8, by + h - 10); x.lineTo(bx + w - 12, by + h - 5); x.closePath(); x.fill();
@@ -1416,40 +1467,30 @@ export class Game {
     let y = top - 1;
     // hack vision keeps only the goal: what you own is in the LOGIC drawer there
     if (!vision) {
-      x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);
+      if(!DEMO_MODE){x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);}
       y = top + 10;
       // what you own is not here (Tommi, 2026-10-15): hack vision's LOGIC drawer has it, and a short
       // line shows when something comes
-      const g = this.gain;
-      if (g && this.t < g.until) { x.fillStyle = 'rgba(34,197,94,' + Math.min(1, (g.until - this.t) / 30) * 0.95 + ')'; x.fillText(g.text, 8, (y += 11)); }
+
     }
     // the hint lane (ui/hints.ts): one line at a time, on a dark strip so it reads over any scene
-    const hint = this.hints.step();
+    const hint = this.hints.step(this.hints.notices.time,this.communicationCovered||!!this.bubble||!!this.zh.popupOpen||this.zh.acknowledgmentPending);
     if (hint) {
       y += 11;
       x.fillStyle = 'rgba(0,0,0,' + 0.6 * hint.alpha + ')'; x.fillRect(6, y - 8, x.measureText(hint.text).width + 4, 11);
-      x.fillStyle = 'rgba(255,217,165,' + 0.95 * hint.alpha + ')'; x.fillText(hint.text, 8, y);
+      x.fillStyle = (hint.tone==='error'?'rgba(255,90,110,':hint.tone==='success'?'rgba(34,197,94,':'rgba(255,217,165,') + 0.95 * hint.alpha + ')'; x.fillText(hint.text, 8, y);
     }
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
-    const zh = this.zh.model.data.goals.length ? this.zh : null, story = this.def.objective?.(this.save.flags) ?? pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
+    const zh = this.zh.model.data.goals.length ? this.zh : null, story = this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()) ?? pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
     if (story || zh) {
       y += 11;
       if (this.shiftGuidance) this.shiftGuidance.draw(x, this.viewW, this.viewH, y);
       else { x.fillStyle = 'rgba(255,61,242,.9)'; x.fillText('GOAL ' + (story ?? zh!.objective()), 8, y); }
     }
     // the keys and what they do: the key bar along the top (keybar.ts)
-    const tl = this.termLine;
-    if (tl && this.t < tl.until && !this.term.focused) {
-      x.fillStyle = tl.kind === 'err' ? 'rgba(255,90,110,.95)' : tl.kind === 'ok' ? 'rgba(34,197,94,.95)' : 'rgba(255,217,165,.85)';
-      x.fillText(tl.text.length > 90 ? tl.text.slice(0, 89) + '…' : tl.text, 8, y + 11);
-    }
     // how far down the HUD's lines reach (world units under the key bar): captions and popups keep below
     this.hudH = vision ? y + 4 - top : Math.max(46, y + 11 + 4 - top);
-    if (this.toast && this.t < this.toast.until) {
-      x.textAlign = 'center'; x.fillStyle = this.toast.text.startsWith('ESC') ? 'rgba(0,255,255,.95)' : 'rgba(255,90,110,.95)'; x.font = '600 9px "IBM Plex Mono", monospace';
-      x.fillText(this.toast.text, this.sx(this.p.x), this.y(this.p.y + 56));
-    }
     x.restore();
   }
 
@@ -1461,7 +1502,7 @@ export class Game {
   private owned(): [string, string] {
     const s = this.save;
     const own = 'MODULES ' + (ownedModules(s).join(' ') || '-') + (s.programs.length ? ' · PROGRAMS ' + s.programs.join(' ') : '') + (SUDO ? ' · SUDO' : '');
-    const keys = s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
+    const keys = s.keyring.map((id) => this.networkContext.keyring.get(id)).filter((k) => k?.kind === 'key').map((k) => (/^\S+$/.test(k!.label) ? k!.label : k!.id));
     return [own, keys.length ? 'KEYS ' + keys.join(' ') : ''];
   }
   // ---------- the deck's tabs and the control hints ----------
@@ -1469,7 +1510,7 @@ export class Game {
   /** The current goal as the HUD shows it (the scene's, the opening's, the library's, or the data's next). */
   private goalText(): string | null {
     const zh = this.zh.model.data.goals.length ? this.zh : null;
-    return this.def.objective?.(this.save.flags) ?? pick(OPENING_GOAL, this.story, this.here) ?? this.libraryGoal() ?? (zh ? zh.objective() : null);
+    return this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()) ?? pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? this.libraryGoal() ?? (zh ? zh.objective() : null);
   }
 
   /** What the deck's JOBS, CARRY, CONTROLS (and TERM on touch) tabs read (ui/menu.ts). */
@@ -1484,7 +1525,7 @@ export class Game {
         return {
           tokens: s.tokens,
           items: Object.entries(s.items).filter(([, n]) => n > 0).map(([id, n]): [string, number] => [ITEMS[id as ItemId] ?? id, n]),
-          keys: s.keyring.map((id) => KEYRING.get(id)).filter((k) => k?.kind === 'key').map((k) => k!.label),
+          keys: s.keyring.map((id) => this.networkContext.keyring.get(id)).filter((k) => k?.kind === 'key').map((k) => k!.label),
           modules: ownedModules(s),
           programs: s.programs,
         };
@@ -1504,8 +1545,8 @@ export class Game {
       ? [['DECK', 'this deck'], ['>_', 'terminal']]
       : [['ESC', 'this deck; first closes what is open'], ['ENTER', 'terminal'], ['TAB · M', 'city map'], ...(this.netOk ? [['N', 'net map'] as [string, string]] : [])];
     const hack: [string, string][] = t
-      ? [['HACK', 'hack vision'], ['BOARD', 'the board'], ['LOGIC', 'logic parts (in vision)'], ['UNFOLD', 'every circuit (in vision)'], ['DRAG · PINCH', 'pan · zoom (in vision)']]
-      : [['H', 'hack vision'], ['B', 'the board'], ['L', 'logic drawer (in vision)'], ['U', 'every circuit unfolded (in vision)'], ['DRAG · WHEEL · 0', 'pan · zoom · reset (in vision)']];
+      ? [['NOUN', 'tap for verbs; drag an orange dot onto a noun to wire'], ['HACK', 'hack vision'], ['BOARD', 'the board'], ['LOGIC', 'logic parts (in vision)'], ['UNFOLD', 'every circuit (in vision)'], ['DRAG · PINCH', 'pan · zoom (in vision)']]
+      : [['NOUN', 'tap for verbs; drag an orange dot onto a noun to wire'], ['H', 'hack vision'], ['B', 'the board'], ['L', 'logic drawer (in vision)'], ['U', 'every circuit unfolded (in vision)'], ['DRAG · WHEEL · 0', 'pan · zoom · reset (in vision)']];
     return [['WALKING', walk], ['THE DECK', deck], ...(this.zh.hackable ? [['HACKING', hack] as [string, [string, string][]]] : [])];
   }
 
@@ -1530,13 +1571,12 @@ export class Game {
 
   /** What you own, as a set of words, to see what came (or went) since the last frame. */
   private gainWords = '';
-  private gain: { text: string; until: number } | null = null;
   private checkGain() {
-    const s = this.save, words = [...ownedModules(s), ...s.programs, ...s.keyring.map((id) => KEYRING.get(id)?.label ?? id), ...Object.entries(s.items).filter(([, n]) => n > 0).map(([id]) => ITEMS[id as ItemId] ?? id)];
+    const s = this.save, words = [...ownedModules(s), ...s.programs, ...s.keyring.map((id) => this.networkContext.keyring.get(id)?.label ?? id), ...Object.entries(s.items).filter(([, n]) => n > 0).map(([id]) => ITEMS[id as ItemId] ?? id)];
     const now = words.join('|');
     if (this.gainWords && now !== this.gainWords) {
       const before = new Set(this.gainWords.split('|')), added = words.filter((w) => !before.has(w));
-      if (added.length) this.gain = { text: '+ ' + added.join(' · '), until: this.t + 240 };
+      if (added.length) this.notify('+ ' + added.join(' · '),'success');
     }
     this.gainWords = now;
   }
@@ -1559,11 +1599,11 @@ export class Game {
   // The train home, the turnstile, Downtown before, the flat at dawn, the sleep, the morning you
   // are deleted, Moth's uplink.so. The scenes are the usual ones; the save's flags pick their state.
 
-  private get story(): OpeningState { return openingState(this.save.flags); }
+  private get story(): OpeningState { return this.openingStory.openingState(this.save.flags); }
   /** Who you are in the HUD and your bubbles: a courier while you still exist, then your handle (or "ghost"). */
-  private get me() { if (SHIFT_PROTOTYPE) return 'worker'; return isBefore(this.save.flags) ? 'courier' : who(this.save); }
+  private get me() { if (SHIFT_PROTOTYPE) return 'worker'; return this.openingStory.isBefore(this.save.flags) ? this.openingStory.CONTROLLER.playerBefore : who(this.save); }
   /** The city clock, after the scene's name in the HUD (" · 21:40"; the opening's times are its pins). */
-  private get clockText() { return ' · ' + city.text; }
+  private get clockText() { return DEMO_MODE ? '' : ' · ' + city.text; }
 
   /** When the player last moved or did something (clock frames), for the idle ping. */
   private still = 0;
@@ -1579,38 +1619,43 @@ export class Game {
   private sleep: { start: number; woke: boolean; card: { out: number; card: number; in: number }; from: string; to: string; label: string; mid: () => void; end: () => void } | null = null;
   /** The morning: when you woke, how many plain things failed, whether Moth has written (or is about to: the mail). */
   private morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
+  /** Scratch callbacks belong to this run; disposal never acknowledges or completes them. */
+  private cancelStoryTransitions(){this.hosts?.forEach(h=>h.cancelAcknowledgment?.('dismissed'));this.bubble=null;this.beat=null;this.sleep=null;this.pendingCut=null;this.morning={at:-1,tries:0,last:-1e9,sent:false,due:false};}
+
 
   /** NEW GAME (until the glide lands) and a first launch: the opening, on the train home. */
   private startOpening(destination?: Handoff) {
+    this.cancelStoryTransitions();
     this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
-    this.save.flags[OPENING.home] = true;
+    this.save.flags[this.openingStory.OPENING.home] = true;
     storeSave(this.save);
-    this.handTo(destination?.scene ?? 'train', destination?.entrance);
+    const target=destination??this.openingStory.CONTROLLER.start;this.handTo(target.scene,target.entrance);
   }
 
   /** Sudo's LEVELS: the opening from one of its points (opening.ts `OPENING_LEVELS`), the flat as on the first night. */
   private openingFrom(flags: string[]) {
+    this.cancelStoryTransitions();
     for (const f of Object.keys(this.save.flags)) if (f.startsWith('opening:')) delete this.save.flags[f];
     flags.forEach((f) => { this.save.flags[f] = true; });
-    this.hostOf('capsule').reset();
+    this.hostOf(this.openingStory.CONTROLLER.home.scene as SceneId).reset();
     this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
     storeSave(this.save);
-    const to = openingResume(this.save.flags) ?? 'train';
-    this.handTo(to);
+    const to = this.openingStory.openingResumeDestination(this.save.flags) ?? this.openingStory.CONTROLLER.fallback;
+    this.handTo(to.scene,to.entrance);
     if (this.story === 'deleted') this.wakeUp();
   }
 
   /** The train home: on its run into Downtown (from the harbor's closed stop), slow enough to talk to people on the way. */
   private rideHome() {
-    Object.assign(ride, {
-      at: LINE.indexOf('harbor'), to: LINE.indexOf('downtown'), phase: 'running', timer: HOME_RUN.start, pos: 2 * SEG, d: 0, span: SEG,
-      frames: HOME_RUN.frames, v: 0, open: 0, doors: false, halt: null, say: 'NEXT: DOWNTOWN',
+    Object.assign(this.metro.ride, {
+      at: this.world.LINE.indexOf(this.openingStory.CONTROLLER.homeRun.from), to: this.world.LINE.indexOf(this.openingStory.CONTROLLER.homeRun.to), phase: 'running', timer: this.openingStory.HOME_RUN.start, pos: this.world.LINE.indexOf(this.openingStory.CONTROLLER.homeRun.from) * this.metro.SEG, d: 0, span: this.metro.SEG,
+      frames: this.openingStory.HOME_RUN.frames, v: 0, open: 0, doors: false, halt: null, say: this.openingStory.CONTROLLER.homeRun.announcement,
     });
   }
 
-  /** A device's everyday actions in this state (opening.ts `OPENING_EVERYDAY`), as popup chips; null: its data's. */
+  /** A device's everyday actions in this state (opening.ts `this.openingStory.OPENING_EVERYDAY`), as popup chips; null: its data's. */
   private storyChips(scene: SceneId, dev: string): PopupItem[] | null {
-    const chips = pick(OPENING_EVERYDAY, this.story, scene, dev);
+    const chips = pick(this.openingStory.OPENING_EVERYDAY, this.story, scene, dev);
     if (!chips) return null;
     const zh = this.hostOf(scene);
     return chips.map((c) => ({
@@ -1618,8 +1663,7 @@ export class Game {
       run: () => {
         if (c.act) zh.model.act(dev, c.act[0], c.act[1]);
         if (c.set) { zh.model.set(c.set[0], c.set[1]); zh.model.changed(); }
-        if (c.say) zh.react(dev, c.say);
-        if (c.say?.[2] === 'ok') sound.granted(); else if (c.say?.[2] === 'err') sound.denied();
+        if (c.say) {const receipt=zh.react(dev,c.say);if(c.say[2]==='ok')sound.feedback(receipt);}
         if (c.fail) { this.morning.tries++; this.morning.last = this.clock; }
         if (c.mail) { this.morning.due = true; this.morning.last = this.clock; }
       },
@@ -1627,26 +1671,27 @@ export class Game {
   }
 
   /** A way out that does something else in this state (opening.ts `ExitRule`); `go` leaves through it. False: use it as usual. */
-  private storyExit(rule: ExitRule, x: number, go: () => void, checkpoint?: SceneExit['checkpoint']): boolean {
+  private storyExit(rule: ExitRule, x: number, go: () => void, checkpoint?: SceneExit['checkpoint'],origin?:string): boolean {
     if ('say' in rule) { this.say(rule.say.name, rule.say.pages, x, 60); return true; }
-    if ('react' in rule) { this.zh.react(rule.react, rule.line); sound.denied(); if (rule.fail) { this.morning.tries++; this.morning.last = this.clock; } return true; }
+    if ('react' in rule) { this.zh.react(rule.react, rule.line); if (rule.fail) { this.morning.tries++; this.morning.last = this.clock; } return true; }
     if ('turnstile' in rule) {
       // Downtown station's exit gate: one beat too long on "verifying", then ok. Nobody else waits.
       this.keys.clear();
-      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, then: () => { this.save.flags[OPENING.street] = true; storeSave(this.save); go(); } };
+      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, then: () => { this.save.flags[this.openingStory.OPENING.street] = true; storeSave(this.save); go(); } };
       sound.blip();
       return true;
     }
     // CONCIERGE at the tower's door: it knows you, and lets you up
+    if(!origin)throw Error('CONCIERGE acknowledgment requires its real scene anchor');
+    const scene=this.here,id='opening.concierge:'+origin;if(this.zh.acknowledgmentId===id)return true;
     sound.granted();
-    this.say('CONCIERGE', ['welcome home. you are expected. the lift is on its way down.'], x, 60);
-    this.bubble!.then = () => { this.save.flags[OPENING.flat] = true; storeSave(this.save); go(); };
+    this.zh.acknowledgeDevice({id,from:origin,...this.openingStory.CONTROLLER.concierge,tone:'ok'},()=>{if(this.here!==scene)return;this.save.flags[this.openingStory.OPENING.flat]=true;storeSave(this.save);go();});
     return true;
   }
 
   /** The story's clock, every frame: the turnstile's beat, the sleep, the morning's message, jacking in. */
   private updateStory() {
-    if (this.beat && this.clock - this.beat.start >= TURNSTILE.verify + TURNSTILE.ok) {
+    if (this.beat && this.clock - this.beat.start >= this.openingStory.TURNSTILE.verify + this.openingStory.TURNSTILE.ok) {
       const then = this.beat.then;
       this.beat = null;
       sound.granted();
@@ -1659,21 +1704,21 @@ export class Game {
       return;
     }
     const st = this.story;
-    if (st === 'deleted' && this.here === 'capsule') {
+    if (st === 'deleted' && this.here === this.openingStory.CONTROLLER.home.scene) {
       const m = this.morning;
       if (m.at < 0) m.at = this.clock;
-      if (!m.sent && !this.bubble && !this.zh.popupOpen && this.clock - m.last > MORNING.after && (m.due || m.tries >= MORNING.tries || this.clock - m.at > MORNING.wait)) this.mothWrites();
+      if (!m.sent && !this.bubble && !this.zh.popupOpen && this.clock - m.last > this.openingStory.MORNING.after && (m.due || m.tries >= this.openingStory.MORNING.tries || this.clock - m.at > this.openingStory.MORNING.wait)) this.mothWrites();
     }
     // jacked in to HOME-PC: Capsule 7B's own goals take over
-    if (st === 'uplinked' && this.here === 'capsule' && this.zh.viewing === 'pc') { this.save.flags[OPENING.jacked] = true; storeSave(this.save); }
+    if (st === 'uplinked' && this.here === this.openingStory.CONTROLLER.home.scene && this.zh.viewing === this.openingStory.CONTROLLER.home.jackDevice) { this.save.flags[this.openingStory.OPENING.jacked] = true; storeSave(this.save); }
   }
 
-  /** [E] SLEEP: the fade, the card, the morning. */
+  /** [E] this.openingStory.SLEEP: the fade, the card, the morning. */
   private sleepNow() {
     this.keys.clear();
     this.bubble = null;
     this.zh.closeAll();
-    this.sleep = { start: this.clock, woke: false, card: SLEEP, from: SLEEP.from, to: SLEEP.to, label: 'CAPSULE 7B', mid: () => this.morningFlat(), end: () => this.wakeUp() };
+    this.sleep = { start: this.clock, woke: false, card: this.openingStory.SLEEP, from: this.openingStory.SLEEP.from, to: this.openingStory.SLEEP.to, label: this.openingStory.CONTROLLER.sleep.label, mid: () => this.morningFlat(), end: () => this.wakeUp() };
     sound.close();
   }
 
@@ -1684,7 +1729,7 @@ export class Game {
   /** The footer's timestamp in game mode (DAY 3 · 21:40), and what it and the HUD showed last. */
   private stampEl: HTMLElement;
   private shownClock = '';
-  /** The opening holds the clock (opening.ts OPENING_TIME); true while it does. */
+  /** The opening holds the clock (opening.ts this.openingStory.OPENING_TIME); true while it does. */
   private storyPinned = false;
   /** When the save was last written for the clock's sake (clock frames). */
   private clockSaved = 0;
@@ -1700,7 +1745,7 @@ export class Game {
   }
 
   /**
-   * The opening pins the clock to its times (opening.ts OPENING_TIME: the train 05:41 … the
+   * The opening pins the clock to its times (opening.ts this.openingStory.OPENING_TIME: the train 05:41 … the
    * morning after 09:40) from the train home until Moth's uplink.so; then it runs, from 09:42.
    */
   private pinStory() {
@@ -1712,14 +1757,14 @@ export class Game {
       return;
     }
     const st = this.story;
-    if (st === 'home' || st === 'flat' || st === 'deleted') {
-      const at = parseHM(pick(OPENING_TIME, st, this.here) ?? '');
+    if (this.openingStory.isPinned(this.save.flags)) {
+      const at = parseHM(pick(this.openingStory.OPENING_TIME, st, this.here) ?? '');
       if (at !== null) { if (city.pinned !== at) city.pin(at); }
       else if (city.pinned === null) city.pin(Math.floor(city.min));
       this.storyPinned = true;
     } else if (this.storyPinned) {
       this.storyPinned = false;
-      city.release(parseHM(pick(OPENING_TIME, 'uplinked', 'capsule') ?? '') ?? undefined);
+      city.release(parseHM(pick(this.openingStory.OPENING_TIME,this.openingStory.CONTROLLER.releaseClock.phase,this.openingStory.CONTROLLER.releaseClock.scene) ?? '') ?? undefined);
       storeSave(this.save);
     }
   }
@@ -1729,7 +1774,7 @@ export class Game {
     const t = city.stamp;
     if (force || t !== this.shownClock) {
       this.shownClock = t;
-      this.stampEl.textContent = t;
+      this.stampEl.textContent = DEMO_MODE ? '' : t;
       if (!this.cut && !this.opening) this.syncHud();
     }
     if (this.clock - this.clockSaved > CLOCK_SAVE) { this.clockSaved = this.clock; storeSave(this.save); }
@@ -1756,10 +1801,11 @@ export class Game {
 
   /** In the dark between the two flats: the flat as it is the morning after (Capsule 7B's puzzles from the start), you by the bed. */
   private morningFlat() {
-    this.save.flags[OPENING.slept] = true;
-    this.hostOf('capsule').reset();
+    this.save.flags[this.openingStory.OPENING.slept] = true;
+    if(this.here!==this.openingStory.CONTROLLER.home.scene)this.enter(this.openingStory.CONTROLLER.home.scene as SceneId,false);
+    this.hostOf(this.openingStory.CONTROLLER.home.scene as SceneId).reset();
     this.morning = { at: this.clock, tries: 0, last: -1e9, sent: false, due: false };
-    Object.assign(this.p, { x: CAPSULE_SPAWN, y: 0, vy: 0, onGround: true, face: -1 });
+    Object.assign(this.p, { x: this.sceneDefinition(this.openingStory.CONTROLLER.home.scene as SceneId).spawn, y: 0, vy: 0, onGround: true, face: -1 });
     const home = this.def.perch?.(this.zh.model);
     if (home) this.pixel.place(home.x, home.h, home.rest);
     storeSave(this.save);
@@ -1769,30 +1815,30 @@ export class Game {
   /** Awake: the player says what is wrong (the morning's clock starts). */
   private wakeUp() {
     this.morning.at = this.clock;
-    this.say('YOU', WAKE_LINES, this.p.x, 46);
+    this.say(this.openingStory.CONTROLLER.wake.speaker,this.openingStory.WAKE_LINES,this.p.x,this.openingStory.CONTROLLER.wake.height);
   }
 
   /** Moth's message: in the deck, as a bubble, and uplink.so with it (hacking is yours from now on). */
   private mothWrites() {
     this.morning.sent = true;
-    MOTH_MESSAGE.forEach((l) => this.term.print('moth> ' + l, 'ok'));
-    this.save.flags[OPENING.uplink] = true;
-    if (!this.save.keyring.includes(UPLINK_KEY)) this.save.keyring.push(UPLINK_KEY);
+    this.openingStory.MOTH_MESSAGE.forEach((l) => this.term.print(this.openingStory.CONTROLLER.moth.terminalPrefix + l, 'ok'));
+    this.save.flags[this.openingStory.OPENING.uplink] = true;
+    if (!this.save.keyring.includes(this.openingStory.UPLINK_KEY)) this.save.keyring.push(this.openingStory.UPLINK_KEY);
     storeSave(this.save);
     this.syncHud();
-    this.term.print('[deck] uplink.so received. hack vision: H · the board: B', 'ok');
+    this.term.print(this.openingStory.CONTROLLER.uplink.received, 'ok');
     sound.granted();
-    this.say('MOTH › YOU', MOTH_MESSAGE, this.p.x, 46);
-    this.bubble!.then = () => this.say('YOU', UPLINK_LINES(this.touch), this.p.x, 46);
+    this.say(this.openingStory.CONTROLLER.moth.speaker,this.openingStory.MOTH_MESSAGE,this.p.x,this.openingStory.CONTROLLER.moth.height);
+    this.bubble!.then = () => this.say(this.openingStory.CONTROLLER.uplink.speaker,this.openingStory.UPLINK_LINES(this.touch),this.p.x,this.openingStory.CONTROLLER.uplink.height);
   }
 
-  /** The idle ping: the next goal's target (opening.ts `OPENING_PINGS`): a device, or a point (a door, an exit, the bed). */
+  /** The idle ping: the next goal's target (opening.ts `this.openingStory.OPENING_PINGS`): a device, or a point (a door, an exit, the bed). */
   private pingGoal(t: PingTarget) {
     if ('device' in t) { this.zh.ping(t.device, 'look'); return; }
     let x: number | undefined;
     if ('door' in t) x = this.def.exits.filter((e) => e.action === 'out').map((e) => e.x).sort((a, b) => Math.abs(a - this.p.x) - Math.abs(b - this.p.x))[0];
     else if ('exit' in t) x = this.def.exits.find((e) => e.id === t.exit)?.x;
-    else x = pick(OPENING_TARGETS, this.story, this.here, t.story)?.x;
+    else {const target=pick(this.openingStory.OPENING_TARGETS,this.story,this.here,t.story);x=target?this.openingStory.resolveTarget(target,this.def)?.x:undefined;}
     if (x === undefined) return;
     this.goalAt = x;
     this.zh.ping('goal', 'look');
@@ -1800,20 +1846,20 @@ export class Game {
 
   /** The flat's light: warm at dawn, cold the morning after (until the door is yours again). Under the player, over the room. */
   private drawLight() {
-    if (this.here !== 'capsule' || this.zh.visionOn) return;
+    if (this.here !== this.openingStory.CONTROLLER.home.scene || this.zh.visionOn) return;
     const f = this.save.flags;
-    const tone = this.story === 'flat' ? 'warm' : f[OPENING.slept] && !this.zh.model.get('doorOpen') ? 'cold' : null;
+    const tone = this.story === 'flat' ? 'warm' : f[this.openingStory.OPENING.slept] && !this.zh.model.get(this.zh.model.data.controller?.kind==='capsule'?capsuleController(this.zh.model.data).state.doorOpen:'doorOpen') ? 'cold' : null;
     if (tone) drawCapsuleWash(this.x, this.viewW, this.viewH, tone);
   }
 
   /** The turnstile verifying, over the gate: dots, one beat too long, then ok. */
   private drawBeat() {
     if (!this.beat) return;
-    const x = this.x, e = this.clock - this.beat.start, ok = e >= TURNSTILE.verify;
-    const dots = '.'.repeat(1 + (Math.floor(e / 20) % 3)).padEnd(3, ' ');
-    const line = ok ? 'TURNSTILE: verifying… … ok.' : 'TURNSTILE: verifying' + dots;
+    const x = this.x, e = this.clock - this.beat.start, ok = e >= this.openingStory.TURNSTILE.verify;
+    const dots = '.'.repeat(1 + (Math.floor(e / this.openingStory.CONTROLLER.turnstile.dotEvery) % 3)).padEnd(3, ' ');
+    const line = ok ? this.openingStory.CONTROLLER.turnstile.ok : this.openingStory.CONTROLLER.turnstile.verifying + dots;
     x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'left'; x.textBaseline = 'middle';
-    const w = x.measureText('TURNSTILE: verifying… … ok.').width + 16, cx = Math.max(w / 2 + 4, Math.min(this.viewW - w / 2 - 4, this.sx(this.beat.checkpoint.x)));
+    const w = x.measureText(this.openingStory.CONTROLLER.turnstile.ok).width + 16, cx = Math.max(w / 2 + 4, Math.min(this.viewW - w / 2 - 4, this.sx(this.beat.checkpoint.x)));
     const top = this.y(96 + this.beat.checkpoint.h), gate = this.y(36 + this.beat.checkpoint.h);
     x.fillStyle = 'rgba(0,0,0,.85)'; x.fillRect(cx - w / 2, top, w, 20);
     x.strokeStyle = ok ? 'rgba(34,197,94,.8)' : 'rgba(255,217,165,.45)'; x.strokeRect(cx - w / 2 + 0.5, top + 0.5, w - 1, 19);
@@ -1851,21 +1897,26 @@ export class Game {
    * unread until `msg <contact>` in the deck.
    */
   private inbox() {
-    const news = unread(this.save.flags);
-    if (!news.length) return;
-    const who = [...new Set(news.map((n) => n.contact))];
-    who.forEach((c) => this.term.print('[deck] ' + c.name + ' · ' + c.status + ' · ' + messagesOf(c, this.save.flags).length + ' message(s) · type: msg ' + c.id, 'ok'));
-    if (who.some((c) => c.id === 'moth')) this.say('YOU', ['Moth is on my deck now. One bar of signal, out on the water.', this.touch ? 'TERMINAL, then: msg moth.' : 'ENTER for the terminal, then: msg moth.'], this.p.x, 46);
+    const news=unread(this.save.flags);if(!news.length)return;
+    const who=[...new Set(news.map(n=>n.contact))],source=this.openingStory.CONTROLLER.inbox,t=source.terminal;
+    who.forEach(c=>this.term.print(t.prefix+c.name+t.separator+c.status+t.separator+messagesOf(c,this.save.flags).length+t.countSuffix+t.commandPrefix+c.id,'ok'));
+    if(who.some(c=>c.id===source.contact))this.say(source.speaker,this.touch?source.touchPages:source.pages,this.p.x,source.height);
   }
 
   /**
    * Play a cutscene, then continue: `then` runs when it ends or is skipped. Without
-   * `then`, the game hands over to the cutscene's `next` scene (from its data).
+   * `then`, the game hands over to the cutscene's authored destination. Story triggers
+   * use after-handoff so their postlude follows travel, retaining a same-scene native interlude.
    * For a menu's NEW GAME or a story beat: `game.playCutscene('intro', () => …)`.
    */
-  playCutscene(id: CutsceneId | string, then?: () => void) {
-    const scene = cutsceneById(id);
-    const after = then ?? (() => scene && this.handTo(scene.next));
+  playCutscene(id: CutsceneId | string, then?: () => void,continuation:'replace'|'after-handoff'='replace') {
+    const scene = isCutsceneId(id)?this.nativeCutscenes[id]:undefined;
+    const handoff=()=>{if(!scene)return;const destination=scene.handoff??{scene:scene.next};
+      // A story interlude returning to its current scene preserves native runtime state.
+      if(continuation==='after-handoff'&&destination.scene===this.here&&destination.entrance===undefined)return;
+      this.handTo(destination.scene,destination.entrance);
+    };
+    const after=then?(continuation==='after-handoff'?()=>{handoff();then();}:then):handoff;
     if (!scene) { after(); return; }
     this.endCutscene(false);
     this.bubble = null;
@@ -1908,17 +1959,17 @@ export class Game {
     if (id === 'title') { this.showTitle(); return; }
     this.endTitle();
     this.bubble = null;
-    const opening = openingLevel(id);
+    const opening = this.openingStory.openingLevel(id);
     if (opening) { this.openingFrom(opening.flags); return; }
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
-    this.handTo(startLevel(id) ?? id);
+    this.handTo(startLevel(id,this.metro) ?? id);
     this.markSeen(this.here);
     storeSave(this.save);
   }
 
   /** Arrive in a scene by id (anything else is Downtown), at its spawn. */
   handTo(id: string, entrance?: string) {
-    this.enter(isSceneId(id) ? id : 'downtown', true, entrance);
+    this.enter(this.hasScene(id) ? id : 'downtown', true, entrance);
   }
 
   // ---------- a scene's ways out and its life ----------
@@ -1933,17 +1984,17 @@ export class Game {
   private exitTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
     for (const e of s.exits) {
-      if (e.edge || e.engine || (e.requires && !this.save.flags[e.requires])) continue;
+      if (e.edge || e.engine || !exitVisibility(e,this.save.flags).ok) continue;
       if (e.action === 'board') {
-        const st = stationAt(this.here);
-        if (st) for (const dx of platformDoors(st, this.t, this.cam, s.platformStop ?? STOP)) list.push({ kind: 'exit', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + STATIONS[nextStation(st)].name, promptH: e.promptH ?? 70 });
+        const st = this.world.stationAt(this.here);
+        if (st) for (const dx of this.metro.platformDoors(st, this.t, this.cam, s.platformStop ?? this.metro.STOP)) list.push({ kind: 'exit', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + this.world.STATIONS[this.metro.nextStation(st)].name, promptH: e.promptH ?? 70 });
         continue;
       }
       // The train's door: only while it stands at a stop with the doors open.
-      if (e.action === 'out' && !rideOpen()) continue;
+      if (e.action === 'out' && !this.metro.rideOpen()) continue;
       // a taxi stand shows its fare and what you have (tokens show only where you pay)
-      const label = e.action === 'out' ? '[E] STEP OUT · ' + (rideAtSiding() ? 'SIDING' : STATIONS[rideStop()].name)
-        : e.action === 'taxi' ? e.label + ' · ' + priceTag(FARE, this.save.tokens) : e.label;
+      const label = e.action === 'out' ? '[E] STEP OUT · ' + (this.metro.rideAtSiding() ? 'SIDING' : this.world.STATIONS[this.metro.rideStop()].name)
+        : e.action === 'taxi' ? e.label + ' · ' + priceTag(this.world.FARE, this.save.tokens) : e.label;
       list.push({ kind: 'exit', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
     return list;
@@ -1956,7 +2007,7 @@ export class Game {
   private lifeTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
     for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
-    for (const u of s.uses ?? []) if (!u.available || u.available(this.save.flags)) list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: this.useLabel(u), promptH: u.promptH ?? 70 });
+    for (const u of s.uses ?? []) {if(u.available&&!u.available(this.save.flags))continue;const permission=u.eligibility?.(this.save.flags,this.gameplayFor(this.here));if(permission&&!permission.ok&&permission.hidden)continue;list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: this.useLabel(u), promptH: u.promptH ?? 70 });}
     // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
     if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
     // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
@@ -1966,7 +2017,7 @@ export class Game {
       if (!isHere(p)) return;
       if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'life', id: 'pet:' + i, x: characterX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: characterHeight(p) + 14 });
       // robots without talk still answer: a beep, a status, a polite refusal
-      else if (!p.talk && isBot(p)) list.push({ kind: 'life', id: 'bot:' + i, x: characterX(p, this.t), h: 0, label: botReact(p).label, promptH: characterHeight(p) + 14 });
+      else if (!p.talk && isBot(p)) list.push({ kind: 'life', id: 'bot:' + i, x: characterX(p, this.t), h: 0, label: botVoice(p,this.botReactions).label, promptH: characterHeight(p) + 14 });
     });
     return list;
   }
@@ -1974,10 +2025,10 @@ export class Game {
   /** E next to a scene's exit or something of its life (`kind:id`, as `exitTargets` and `lifeTargets` make them). */
   private useLife(target: string) {
     const s = this.def, [kind, id] = target.split(':');
-    if (kind === 'story') { if (id === 'bed') this.sleepNow(); return; }
+    if (kind === 'story') { if (id === this.openingStory.CONTROLLER.sleep.target) this.sleepNow(); return; }
     if (kind === 'rest') { const r = s.rests?.find((z) => z.id === id); if (r) this.offerWait(r); return; }
     if (kind === 'read') {
-      const r = s.readables!.find((z) => z.id === id)!, o = pick(OPENING_LINES, this.story, this.here, id);
+      const r = s.readables!.find((z) => z.id === id)!, o = pick(this.openingStory.OPENING_LINES, this.story, this.here, id);
       this.say(o?.name ?? r.name, o?.pages ?? r.pages, r.x, r.h ?? 70);
       return;
     }
@@ -1989,15 +2040,18 @@ export class Game {
       return;
     }
     if (kind === 'bot') {
-      const p = s.people![Number(id)], said = botReact(p, true);
+      const index=Number(id),p=s.people![index],conversation=new ConversationSession(this.gameplayFor(this.here)!,botConversationId(this.here,p,index));
+      const frame=conversation.frame(),said={name:frame.speaker,pages:frame.pages};conversation.close();
       sound.blip();
       this.say(said.name, said.pages, characterX(p, this.t), characterHeight(p) + 4);
+      this.dialogueCompletion(frame.completion);
       return;
     }
     if (kind === 'talk') {
       const p = s.people!.find((z) => z.id === id)!, said = talkTo(p,this.gameplayFor(this.here));
       storeSave(this.save);
       this.say(said.name, said.pages, characterX(p, this.t), characterHeight(p) - 10);
+      this.dialogueCompletion(said.completion);
       return;
     }
     if (kind === 'use') {
@@ -2021,12 +2075,15 @@ export class Game {
   /** What a use costs now (0: nothing to pay this time). */
   private usePrice(u: SceneUse) { return typeof u.price === 'function' ? u.price(this.save.flags,this.gameplayFor(this.here)) : u.price ?? 0; }
   /** A use's E prompt: its price and what you have, only when there is something to pay. */
-  private useLabel(u: SceneUse) { const n = this.usePrice(u); return n ? u.label + ' · ' + priceTag(n, this.save.tokens) : u.label; }
+  private useLabel(u: SceneUse) { const n = this.usePrice(u); return n ? (u.pricedLabel!==undefined?u.pricedLabel+' ':u.label+' · ') + priceTag(n, this.save.tokens) : u.label; }
 
   /** Run a use (or what it does with something you carry), say what comes of it, write the save. */
   private runUse(u: SceneUse, fn: (c: UseCtx) => SceneSaid) {
     const save = this.save;
+    const opening=pick(this.openingStory.OPENING_LINES,this.story,this.here,u.id);
+    if(opening){this.say(opening.name??'YOU',opening.pages,u.x,u.h??60);return;}
     const gameplay=this.gameplayFor(this.here),tokensBefore=save.tokens;
+    const permission=u.eligibility?.(save.flags,gameplay);if(permission&&!permission.ok){this.zh.react('use:'+u.id,['',permission.reason,'err']);return;}
     const out = fn({
       gameplay,
       tokens: save.tokens,
@@ -2049,22 +2106,22 @@ export class Game {
     storeSave(save);
     this.syncHud();
     const said = Array.isArray(out) ? { name: u.name, pages: out } : out;
-    if(said.conversation){if(!gameplay)throw new Error('Conversation requires gameplay session');this.zh.presentConversation(new ConversationSession(gameplay,said.conversation));return;}
-    if (said.pages.length) this.say(said.name, said.pages, u.x, u.h ?? 60);
+    if(said.conversation){if(!gameplay)throw new Error('Conversation requires gameplay session');const conversation=new ConversationSession(gameplay,said.conversation,{objective:this.def.objective?.(save.flags,gameplay.state())??''}),frame=conversation.frame();if(u.conversationPresentation==='bubble'&&!frame.choices?.length&&!frame.acceptsText){conversation.close();this.say(frame.speaker,frame.pages,u.x,u.h??60);this.dialogueCompletion(frame.completion);}else this.zh.presentConversation(conversation);return;}
+    if(said.pages.length){if(u.speakerKind==='device')this.zh.react('use:'+u.id,['',said.pages.join('\n')]);else if(u.speakerKind==='system')this.notify(said.pages.join(' '));else this.say(said.name,said.pages,u.x,u.h??60);}
   }
 
   /** Leave through an exit: board, step out, hail a taxi, look at the map, or walk to its scene, landing at its matching exit there. */
   private useExit(e: SceneExit) {
     // the opening: some ways out do something else in this state (the turnstile, CONCIERGE, "bed first")
-    const rule = pick(OPENING_EXITS, this.story, this.here, e.id);
-    if (rule && this.storyExit(rule, e.x, () => { if (isSceneId(e.to)) this.travel(e.to, e.at); }, e.checkpoint)) return;
+    const rule = pick(this.openingStory.OPENING_EXITS, this.story, this.here, e.id);
+    if (rule && this.storyExit(rule, e.x, () => { if (this.hasScene(e.to)) this.travel(e.to, e.at); }, e.checkpoint,'exit:'+e.id)) return;
     // a door that reads key chips (Moth's building): only the right one opens it
-    if (e.needs && !this.save.keyring.includes(e.needs.key)) { sound.denied(); this.say(e.needs.name, e.needs.pages, e.x, e.needs.h); return; }
-    if (e.action === 'board') { const st = stationAt(this.here); if (st && platformOpen(st, this.t)) this.enterTrain(st); return; }
+    if (e.needs && !exitPermission(e,this.save.keyring).ok) { this.zh.react('exit:'+e.id,['',e.needs.pages.join('\n'),'err']); return; }
+    if (e.action === 'board') { const st = this.world.stationAt(this.here); if (st && this.metro.platformOpen(st, this.t)) this.enterTrain(st); return; }
     if (e.action === 'out') { this.stepOut(); return; }
     if (e.action === 'taxi') { this.hailTaxi(); return; }
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
-    if (!isSceneId(e.to)) return;
+    if (!this.hasScene(e.to)) return;
     // the flat's door: Pixel comes along from now on
     if (e.sets) { this.save.flags[e.sets] = true; storeSave(this.save); }
     this.travel(e.to, e.at);
@@ -2084,14 +2141,14 @@ export class Game {
     this.mapView = null;
     this.enter(id, false, at);
     // With reduced motion the platforms' clocks stand still: stand a train there with its doors open.
-    const st = stationAt(id);
-    if (st && this.reduced && !platformOpen(st, this.t)) platformSync(st, this.t, TIMETABLE.dwell / 2);
+    const st = this.world.stationAt(id);
+    if (st && this.reduced && !this.metro.platformOpen(st, this.t)) this.metro.platformSync(st, this.t, this.metro.TIMETABLE.dwell / 2);
   }
 
   /** The player walked into a border: leave through that edge's exit, if the scene has one, still walking the same way. */
   private walkOff(edge: 'left' | 'right') {
-    const e = this.def.exits.find((z) => z.edge === edge && (!z.requires || this.save.flags[z.requires]));
-    if (!e || !isSceneId(e.to)) return;
+    const e = this.def.exits.find((z) => z.edge === edge && exitVisibility(z,this.save.flags).ok);
+    if (!e || !this.hasScene(e.to)) return;
     this.travel(e.to, e.at);
     this.p.face = edge === 'left' ? -1 : 1;
   }
@@ -2099,35 +2156,37 @@ export class Game {
   /** Remember a scene for the city map: `flags['seen:<scene>']`. */
   private markSeen(id: SceneId) {
     this.save.scene = id;
-    const f = seenFlag(id);
+    const f = this.world.seenFlag(id);
     this.save.flags[f] = true;
     storeSave(this.save);
   }
 
   /** Board the train standing at a station's platform: in the car by its door, which stays open as long as it would have on the platform. */
   private enterTrain(at: Station) {
-    boardRide(at, platformLeft(at, this.t));
-    this.travel('train', 'out');
+    this.metro.boardRide(at, this.metro.platformLeft(at, this.t));
+    this.travel(this.world.TRANSPORT.boarding.scene,this.world.TRANSPORT.boarding.entrance);
   }
 
   /** E at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
   private stepOut() {
-    if (!rideOpen()) return;
+    if (!this.metro.rideOpen()) return;
     // P14: the old siding has no station, only a service stair up to the harbor's pier
-    if (rideAtSiding()) { this.travel('harbor', 'metro'); this.say('YOU', SIDING_OUT, this.p.x, 50); return; }
-    const st = rideStop(), left = rideLeft();
-    this.travel(STATIONS[st].scene, 'train');
-    platformSync(st, this.t, this.reduced ? TIMETABLE.dwell / 2 : left);
+    if (this.metro.rideAtSiding()) { this.travel(this.world.TRANSPORT.siding.scene,this.world.TRANSPORT.siding.entrance); this.say('YOU', this.world.SIDING_OUT, this.p.x, 50); return; }
+    const st = this.metro.rideStop(), left = this.metro.rideLeft();
+    this.travel(this.world.STATIONS[st].scene,this.world.STATIONS[st].at);
+    this.metro.platformSync(st, this.t, this.reduced ? this.metro.TIMETABLE.dwell / 2 : left);
   }
+
+  /** The taxi answers at its stand; an unavailable anchor falls back to system feedback. */
+  private driverReply(pages:string[]){const text='DRIVER: '+pages.join('\n'),taxi=this.def.exits.find(e=>e.action==='taxi');if(taxi)this.zh.react('exit:'+taxi.id,['',text,'err']);else {this.notify(text,'error');sound.denied();}}
 
   /** E at a taxi stand: the city map to pick a stand, if you can pay. */
   private hailTaxi() {
-    if (this.save.tokens < FARE) {
-      sound.denied();
-      this.say('DRIVER', DRIVER_BROKE, this.p.x + 20, 40);
+    if (this.save.tokens < this.world.FARE) {
+      this.driverReply(this.world.DRIVER_BROKE);
       return;
     }
-    this.mapView = openMap('taxi', this.here, this.here === 'train' ? rideStop() : null);
+    this.mapView = this.worldMap.openMap('taxi', this.here, this.here === 'train' ? this.metro.rideStop() : null);
     this.keys.clear();
     this.syncEnginePause();
     sound.open();
@@ -2141,7 +2200,7 @@ export class Game {
     this.bubble = null;
     // the map takes the screen: hack vision closes first
     if (this.zh.visionOn) this.zh.toggleVision();
-    this.mapView = openMap('view', this.here, this.here === 'train' ? rideStop() : null);
+    this.mapView = this.worldMap.openMap('view', this.here, this.here === 'train' ? this.metro.rideStop() : null);
     this.syncEnginePause();
   }
 
@@ -2152,7 +2211,7 @@ export class Game {
     const k = e.key;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Enter', 'Tab', 'Escape'].includes(k)) e.preventDefault();
     if (e.repeat) return;
-    this.mapAct(mapKey(this.mapState(), k));
+    this.mapAct(this.worldMap.mapKey(this.mapState(), k));
   }
 
   /** Do what the map asks: close, a sound, quick travel to a place, a taxi to a stand. */
@@ -2172,10 +2231,10 @@ export class Game {
   private fly(to: Stand) {
     this.mapView = null;
     this.canvas.style.cursor = '';
-    if (to === standOf(this.here)) { this.flash('you are already here'); return; }
+    if (to === this.world.standOf(this.here)) { this.flash('you are already here'); return; }
     // the harbor lock: no flights to the pier until P14
-    if (to === 'harbor' && !harborOpen(this.save.flags)) { sound.denied(); this.say('DRIVER', DRIVER_HARBOR, this.p.x + 20, 40); return; }
-    this.save.tokens -= FARE;
+    if (!harborTransportPermission(to,this.world.harborOpen(this.save.flags)).ok) { this.driverReply(this.world.DRIVER_HARBOR); return; }
+    this.save.tokens -= this.world.FARE;
     storeSave(this.save);
     this.syncHud();
     this.flight = { to, start: this.clock };
@@ -2184,14 +2243,14 @@ export class Game {
 
   /** The map's state, for drawing it and for deciding where you may go. */
   private mapState(): MapState {
-    const m = this.mapView ?? openMap('view', this.here, null);
+    const m = this.mapView ?? this.worldMap.openMap('view', this.here, null);
     return {
       view: m, touch: this.touch, scene: this.here, reduced: this.reduced,
       // the smallest touch target, 44 CSS px, in view units
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
       avoid: this.mapAvoid(),
-      ride: this.here === 'train' ? { from: rideStop(), to: rideNext(), f: rideRun() } : null,
-      seen: (z) => !!this.save.flags[seenFlag(z)], flag: (f) => !!this.save.flags[f], gateOpen: !!this.save.flags.end, harborOpen: harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
+      ride: this.here === 'train' ? { from: this.metro.rideStop(), to: this.metro.rideNext(), f: this.metro.rideRun() } : null,
+      seen: (z) => !!this.save.flags[this.world.seenFlag(z)], flag: (f) => !!this.save.flags[f], gateOpen: !!this.save.flags.end, harborOpen: this.world.harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
     };
   }
 
@@ -2208,7 +2267,7 @@ export class Game {
   private mapPointer(e: PointerEvent, press: boolean) {
     const r = this.canvas.getBoundingClientRect();
     const px = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k, py = ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k;
-    const { act, pointer } = mapPointer(this.mapState(), this.viewW, this.viewH, px, py, press, e.pointerType === 'mouse');
+    const { act, pointer } = this.worldMap.mapPointer(this.mapState(), this.viewW, this.viewH, px, py, press, e.pointerType === 'mouse');
     this.canvas.style.cursor = pointer ? 'pointer' : '';
     if (press) e.preventDefault();
     this.mapAct(act);
@@ -2216,8 +2275,8 @@ export class Game {
 
   /** Quick travel to a place you know, from the map: no fare, a short fade; or say why not. */
   private quickTravel(place: MapPlace) {
-    if (hackLocked(this.save.flags)) { this.flash('not now: ' + (pick(OPENING_GOAL, this.story, this.here) ?? 'later')); sound.denied(); return; }
-    const why = placeBlocked(place, this.mapState());
+    if (this.openingStory.hackLocked(this.save.flags)) { this.flash('not now: ' + (pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? 'later')); sound.denied(); return; }
+    const why = this.world.placeBlocked(place, this.mapState());
     if (why) { this.flash(why.toLowerCase()); sound.denied(); return; }
     this.mapView = null;
     this.canvas.style.cursor = '';
@@ -2230,41 +2289,47 @@ export class Game {
     // Maps hold the ride as well as the engine that reads its position (P14).
     if (this.mapView || this.netView) return;
     // the harbor lock: LINE 0 stops there only once P14 is solved
-    lineOpen.harbor = harborOpen(this.save.flags);
-    if (this.flight && this.clock - this.flight.start >= taxiSequenceDuration * 60) {
+    this.metro.lineOpen.harbor = harborTransportPermission('harbor',this.world.harborOpen(this.save.flags)).ok;
+    if (this.flight && this.clock - this.flight.start >= taxiDurationFor(this.sequenceDocuments.cinematics) * 60) {
       const to = this.flight.to;
       this.flight = null;
       // the flight costs its fixed time on the city clock (clock.ts TRAVEL)
       city.advance(TRAVEL.taxi);
-      this.travel(STANDS[to].scene, 'taxi');
-      this.flash('-' + FARE + ' token · ' + STANDS[to].name);
+      this.travel(this.world.STANDS[to].scene,this.world.STANDS[to].at);
+      this.flash('-' + this.world.FARE + ' token · ' + this.world.STANDS[to].name);
     }
     // a quick trip moves you while the screen is dark, half way through its fade
     if (this.hop) {
       const e = this.clock - this.hop.start;
-      if (!this.hop.done && e >= HOP / 2) { this.hop.done = true; city.advance(TRAVEL.quick); this.travel(this.hop.place.entrance, this.hop.place.at); }
-      if (e >= HOP) this.hop = null;
+      if (!this.hop.done && e >= this.world.HOP / 2) { this.hop.done = true; city.advance(TRAVEL.quick); this.travel(this.hop.place.entrance, this.hop.place.at); }
+      if (e >= this.world.HOP) this.hop = null;
     }
     if (this.here !== 'train') return;
-    const ev = stepRide(dt);
+    const ev = this.metro.stepRide(dt);
     // the train home stands at Downtown with its doors open until you get off
-    if (this.story === 'home' && ride.phase === 'dwell' && rideStop() === 'downtown') ride.timer = 0;
-    if (ev === 'depart') { this.flash('NEXT: ' + STATIONS[rideNext()].name); sound.close(); }
-    else if (ev === 'arrive') { this.flash(STATIONS[rideStop()].name + ' · doors open'); sound.open(); }
-    else if (ev === 'pass') this.flash('HARBOR · STATION CLOSED · NOT STOPPING');
+    if (this.story === 'home' && this.metro.ride.phase === 'dwell' && this.metro.rideStop() === this.openingStory.CONTROLLER.homeRun.to) this.metro.ride.timer = 0;
+    // The car's sign carries stop news; sound reinforces the actual door transition.
+    if (ev === 'depart') sound.close();
+    else if (ev === 'arrive') sound.open();
   }
 
   // ---------- the net map (netmap.ts, NET.md) ----------
 
   /** NET is yours: scan.so owned, and hacking yours (not in the opening's locked part). */
-  private get netOk() { return this.save.programs.includes(SCAN) && !hackLocked(this.save.flags); }
+  private get netOk() { return capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags)).network; }
 
   /** A program came (scan.so from the library): saved, and NET shows in hack vision's bar, pinging until used. */
-  private grantProgram(id: string) {
-    if (!this.save.programs.includes(id)) this.save.programs.push(id);
+  private grantProgram(id: string,receipt?:FeedbackReceipt) {
+    const acquired=!this.save.programs.includes(id);
+    if (acquired) this.save.programs.push(id);
     storeSave(this.save);
     this.syncHud();
-    if (id === SCAN) { this.flash(this.touch ? 'NET: in hack vision, the net map' : 'NET: N, the net map'); sound.granted(); }
+    if (id === SCAN&&acquired) {
+      this.flash(this.touch ? 'NET: in hack vision, the net map' : 'NET: N, the net map'); sound.feedback(receipt??mintFeedback(this.here,'program','success'));
+      // This program already announced its acquisition. Advance only that word in the
+      // ownership observer so its next pass still reports any other simultaneous gains.
+      if(this.gainWords&&!this.gainWords.split('|').includes(id))this.gainWords+='|'+id;
+    }
   }
 
   /**
@@ -2282,7 +2347,7 @@ export class Game {
     this.zh.closeAll();
     const zh = this.zh, reached = zh.model.netsHere();
     // what you reach is found; so is any network with a port standing here (you can see the plug, if not the way in)
-    const here = NET.networks.filter((n) => n.from.some((r) => 'port' in r && r.port.startsWith(this.here + ':'))).map((n) => n.id);
+    const here = this.networkContext.net.networks.filter((n) => n.from.some((r) => 'port' in r && r.port.startsWith(this.here + ':'))).map((n) => n.id);
     for (const n of [...reached, ...here]) if (!this.save.nets.includes(n)) this.save.nets.push(n);
     if (zh.model.ports().length || reached.size) zh.typed(() => zh.scanHere());
     this.save.flags[NET_OPENED] = true;
@@ -2302,7 +2367,7 @@ export class Game {
   /** A machine's name, from the scene file (or net.json) that has it. */
   private machineName(m: MachineData) {
     for (const s of m.in) {
-      const d = s === 'net' ? NET.nodes.find((x) => x.id === m.id) : [...(SCENE_FILES[s]?.devices ?? []), ...(SCENE_FILES[s]?.nodes ?? [])].find((x) => x.id === m.id);
+      const d = s === 'net' ? this.networkContext.net.nodes.find((x) => x.id === m.id) : [...(this.hasScene(s)?this.sceneDefinition(s).data?.devices??[]:[]), ...(this.hasScene(s)?this.sceneDefinition(s).data?.nodes??[]:[])].find((x) => x.id === m.id);
       if (d) return d.name;
     }
     return m.id.toUpperCase();
@@ -2312,7 +2377,7 @@ export class Game {
   private netState(): NetState {
     const zh = this.zh, model = zh.model, reached = model.netsHere();
     const portKeys = new Set(model.ports().map((p) => p.key));
-    const plugged = new Set(NET.networks.filter((n) => n.from.some((r) => 'port' in r && portKeys.has(r.port))).map((n) => n.id));
+    const plugged = new Set(this.networkContext.net.networks.filter((n) => n.from.some((r) => 'port' in r && portKeys.has(r.port))).map((n) => n.id));
     const state = (m: MachineData, n: NetworkData): MachineState => {
       if (!reached.has(n.id)) return 'out';
       if (!m.in.includes(this.here) && !m.in.includes('net')) return 'far';
@@ -2321,7 +2386,7 @@ export class Game {
       return model.net.get(m.id) === 'connected' ? 'board' : 'reach';
     };
     return {
-      view: this.netView ?? openNet(), nets: NET.networks, reached, plugged, found: new Set(this.save.nets),
+      view: this.netView ?? openNet(), nets: this.networkContext.net.networks, reached, plugged, found: new Set(this.save.nets),
       where: sceneTitle(this.def), ports: [...new Set(model.ports().map((p) => model.devices.get(p.dev)?.name ?? p.dev))],
       controlled: this.save.controlled, name: (m) => this.machineName(m), state, touch: this.touch,
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k, avoid: this.mapAvoid(), t: this.clock,
@@ -2353,7 +2418,7 @@ export class Game {
     if (a.state === 'out') { sound.denied(); this.flash(name + ': out of reach. plug in from ' + a.net.need); return; }
     if (a.state === 'far') {
       sound.denied();
-      const place = a.machine.in.filter((s) => isSceneId(s)).map((s) => sceneTitle(SCENES[s as SceneId]))[0] ?? 'another place';
+      const place = a.machine.in.filter((s) => this.hasScene(s)).map((s) => sceneTitle(this.sceneDefinition(s as SceneId)))[0] ?? 'another place';
       this.flash(name + ' answers. its board is at ' + place);
       return;
     }
@@ -2368,13 +2433,13 @@ export class Game {
     storeSave(this.save);
     const l = zh.model.scanHere();
     this.term.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : 'dim');
-    if (l[2] !== 'err' && reached.size) this.term.print('networks in reach: ' + NET.networks.filter((n) => reached.has(n.id)).map((n) => n.name).join(', '), 'dim');
+    if (l[2] !== 'err' && reached.size) this.term.print('networks in reach: ' + this.networkContext.net.networks.filter((n) => reached.has(n.id)).map((n) => n.name).join(', '), 'dim');
   }
 
   /** The deck's `connect <machine>` (by id or name): onto the board, and the deck talks to it from then on. */
   private deckConnect(name: string) {
     const zh = this.zh, want = name.toLowerCase().replace(/\s+/g, '');
-    const all = NET.networks.flatMap((n) => n.machines);
+    const all = this.networkContext.net.networks.flatMap((n) => n.machines);
     const m = all.find((x) => x.id.toLowerCase() === want || this.machineName(x).toLowerCase().replace(/\s+/g, '') === want);
     const id = m?.id ?? name;
     if (!zh.model.devices.has(id) && !zh.model.nodesHere().includes(id) && !m) { this.term.print('connect: no machine called ' + (name || '?') + ' in reach. try scan.', 'err'); return; }
@@ -2383,22 +2448,22 @@ export class Game {
 
   /** The GOAL after Capsule 7B, until scan.so is yours: the library (Act I: Capsule 7B → the library → Downtown). */
   private libraryGoal(): string | null {
-    if (this.save.programs.includes(SCAN) || this.here === 'library' || hackLocked(this.save.flags)) return null;
-    const cap = this.hosts.get('capsule')?.model.goals ?? new Set(this.save.scenes.capsule?.goals ?? []);
-    if (!cap.has('door')) return null;
-    // in the flat, its own goals first
-    if (this.here === 'capsule' && this.zh.model.data.goals.some((g) => !cap.has(g.id))) return null;
-    return 'the public library, down the street: scan.so (Moth\'s tip)';
+    const source=this.openingStory.CONTROLLER.libraryGuidance;
+    if(this.save.programs.includes(source.program)||this.here===source.destinationScene||this.openingStory.hackLocked(this.save.flags))return null;
+    const complete=this.hosts.get(source.completedScene as SceneId)?.model.goals??new Set(this.save.scenes[source.completedScene]?.goals??[]);
+    if(!complete.has(source.completedGoal))return null;
+    if(this.here===source.completedScene&&this.zh.model.data.goals.some(g=>!complete.has(g.id)))return null;
+    return source.line;
   }
 
   /** The city map when it is open, and the fade of a quick trip (dark in the middle, with where you are going). */
   private drawMap() {
     if (this.hop) {
-      const x = this.x, f = (this.clock - this.hop.start) / HOP;
+      const x = this.x, f = (this.clock - this.hop.start) / this.world.HOP;
       x.fillStyle = 'rgba(0,0,0,' + Math.min(1, 1.2 - Math.abs(f * 2 - 1) * 1.2) + ')'; x.fillRect(0, 0, this.viewW, this.viewH);
       if (f > 0.3 && f < 0.7) { x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,.85)'; x.fillText('> ' + this.hop.place.name, this.viewW / 2, this.viewH / 2); x.restore(); }
     }
-    if (this.mapView) drawCityMap(this.x, this.viewW, this.viewH, this.mapState());
+    if (this.mapView) this.worldMap.drawCityMap(this.x, this.viewW, this.viewH, this.mapState());
   }
 }
 

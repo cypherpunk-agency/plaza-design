@@ -340,18 +340,6 @@
         "verb": "on"
       },
       {
-        "id": "sbx.fan.beacon",
-        "from": "button.button:pressed",
-        "to": "beacon.beacon",
-        "verb": "on"
-      },
-      {
-        "id": "sbx.fan.horn",
-        "from": "button.button:pressed",
-        "to": "horn.horn",
-        "verb": "buzz"
-      },
-      {
         "id": "sbx.fan.counter",
         "from": "button.button:pressed",
         "to": "counter.count",
@@ -363,48 +351,6 @@
         "from": "hatch.hatch:opened",
         "to": "fan.fan",
         "verb": "spin"
-      },
-      {
-        "id": "sbx.rec",
-        "from": "recorder.log:entry",
-        "to": "recorder.reel",
-        "verb": "store"
-      },
-      {
-        "id": "sbx.red",
-        "from": "rgb.red:pressed",
-        "to": "cabinet.seq",
-        "verb": "red"
-      },
-      {
-        "id": "sbx.green",
-        "from": "rgb.green:pressed",
-        "to": "cabinet.seq",
-        "verb": "green"
-      },
-      {
-        "id": "sbx.blue",
-        "from": "rgb.blue:pressed",
-        "to": "cabinet.seq",
-        "verb": "blue"
-      },
-      {
-        "id": "sbx.audit",
-        "from": "audit.log:entry",
-        "to": "spool.reel",
-        "verb": "store"
-      },
-      {
-        "id": "sbx.bell",
-        "from": "qasrv.ping:pinged",
-        "to": "bell.bell",
-        "verb": "ring"
-      },
-      {
-        "id": "sbx.print",
-        "from": "qaprn.job:queued",
-        "to": "printer.feed",
-        "verb": "print"
       }
     ]
   }

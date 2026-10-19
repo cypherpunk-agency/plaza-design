@@ -1,43 +1,47 @@
+import {validateMetroSnapshot,type MetroSnapshot,type MetroRide} from './metro-snapshot';
+export type {RidePhase} from './metro-snapshot';
+import {METRO_SOURCE,validateMetroSource,type MetroSource} from './metro-source';
 import { PLATFORM_TRAIN, type PlatformTrainVisual } from '../../art/vehicles/platform-train';
-import type { DepartureVisual } from '../../art/signage/line-departures';
-/**
- * LINE 0 in motion: the train you wait for on a platform, and the ride you take
- * in it. A loop: DOWNTOWN → GALLERIA → HARBOR → DOWNTOWN, round and round.
- *
- * - On a platform, each station's train runs on its own clock (TIMETABLE): it
- *   pulls in from the right, stands with its doors open for a few seconds, pulls
- *   out to the left, and the next one is due. The departure board counts down.
- * - On board, `ride` is the train you are on: it stands at a stop (doors open),
- *   closes, runs along the track to the next stop, opens. `pos` is where it is
- *   on the loop, in track units, and slides the world past the windows (train.ts).
- *
- * Timings are in frames (60 a second). The engine owns no metro state of its
- * own: it boards, steps out, and calls `stepRide` once a frame in the car.
- */
 
-import { LINE, STATIONS, type Station } from '../city';
+import type { DepartureVisual } from '../../art/signage/line-departures';
+import * as defaultCity from '../city';
+import type {CityModel,Station} from '../city';
+
+
+
+/** One metro session per game/private Play; the legacy facade serves standalone previews. */
+export function createLineSystem(world:CityModel=defaultCity,source:MetroSource=METRO_SOURCE){
+ const config=validateMetroSource(source);
+ const {LINE,STATIONS}=world;
+
 
 // ---------- the platforms ----------
 
 /** A platform's rhythm: the train runs in, stands with its doors open, runs out, and the next one is due `loop` frames after the last. */
-export const TIMETABLE = { loop: 1500, arrive: 280, dwell: 460, leave: 280 };
+const TIMETABLE = config.timetable;
+
 /** The three platforms are not in step: each clock starts this far along. */
-const OFFSET: Record<Station, number> = { downtown: 0, galleria: 520, harbor: 1010 };
+const OFFSET: Record<Station, number> = config.offset;
+
 /** Shifts a platform's clock so the train you stepped off stands there (`platformSync`). */
 const shift: Record<Station, number> = { downtown: 0, galleria: 0, harbor: 0 };
 
+
 /** Where the train's nose stops at every platform (track x, in the track's parallax), so the doors fall in the same places. */
-export const STOP = 150;
+const STOP = 150;
+
 /** The train on a platform, drawn in the track's parallax: cars, their length, the gap, which window bays are doors. */
-export const TRAIN = PLATFORM_TRAIN;
+const TRAIN = PLATFORM_TRAIN;
+
 
 const phaseOf = (st: Station, t: number) => {
   const L = TIMETABLE.loop;
   return (((t + OFFSET[st] + shift[st]) % L) + L) % L;
 };
 
+
 /** Where the train's nose is (track x), how open its doors are (0..1), whether it is moving; null between trains. `stop` is where the nose stops. */
-export function platformTrain(st: Station, t: number, stop: number): { x: number; open: number; moving: boolean } | null {
+function platformTrain(st: Station, t: number, stop: number): { x: number; open: number; moving: boolean } | null {
   const T = TIMETABLE, ph = phaseOf(st, t);
   // a closed station: the train runs straight through, doors shut, at speed
   if (!lineOpen[st]) { const all = T.arrive + T.dwell + T.leave, f = ph / all; return f < 1 ? { x: stop + 2600 - 5600 * f, open: 0, moving: true } : null; }
@@ -47,39 +51,44 @@ export function platformTrain(st: Station, t: number, stop: number): { x: number
   return null;
 }
 
+
 /** True while the train stands at the platform with its doors open: you can board. */
-export function platformOpen(st: Station, t: number) {
+function platformOpen(st: Station, t: number) {
   const at = platformTrain(st, t, 0);
   return !!at && !at.moving && at.open > 0.6;
 }
 
+
 /** Frames before the doors start to close (0 when they are not open). */
-export function platformLeft(st: Station, t: number) {
+function platformLeft(st: Station, t: number) {
   if (!platformOpen(st, t)) return 0;
   const T = TIMETABLE;
   return Math.max(0, T.arrive + T.dwell * (7 / 8) - phaseOf(st, t));
 }
 
+
 /** Frames until the next train stands at the platform (0 while one does). */
-export function platformDue(st: Station, t: number) {
+function platformDue(st: Station, t: number) {
   const T = TIMETABLE, ph = phaseOf(st, t);
   if (!lineOpen[st]) return Infinity;
   if (ph >= T.arrive && ph < T.arrive + T.dwell) return 0;
   return ph < T.arrive ? T.arrive - ph : T.loop - ph + T.arrive;
 }
 
+
 /** Puts the train at the platform with its doors open, `left` frames before they close: the train you just stepped off. */
-export function platformSync(st: Station, t: number, left: number) {
+function platformSync(st: Station, t: number, left: number) {
   const T = TIMETABLE, L = T.loop, want = T.arrive + T.dwell * (7 / 8) - Math.max(30, Math.min(T.dwell * 0.75 - 30, left));
   shift[st] = (((want - t - OFFSET[st]) % L) + L) % L;
 }
+
 
 /**
  * The open doors' positions in the player's world x. The train stands in the
  * track's parallax, so its doors line up with the player a little further along
  * the more the camera has moved.
  */
-export function platformDoors(st: Station, t: number, cam: number, stop: number): number[] {
+function platformDoors(st: Station, t: number, cam: number, stop: number): number[] {
   const at = platformTrain(st, t, stop);
   if (!at || at.moving || at.open <= 0.6) return [];
   const T = TRAIN, out: number[] = [];
@@ -87,44 +96,53 @@ export function platformDoors(st: Station, t: number, cam: number, stop: number)
   return out;
 }
 
+
 /**
  * Which stations LINE 0 stops at. The harbor is closed until P14 (city.ts `harborOpen`): the
  * train runs straight past it, and its platform's trains pass without stopping. game.ts sets
  * this from the save every frame.
  */
-export const lineOpen: Record<Station, boolean> = { downtown: true, galleria: true, harbor: true };
+const lineOpen: Record<Station, boolean> = { downtown: true, galleria: true, harbor: true };
+
 
 /** The stop after this one on the loop that the train stops at (a closed station is passed). */
-export const nextStation = (st: Station): Station => {
+const nextStation = (st: Station): Station => {
   let i = LINE.indexOf(st);
   for (let k = 0; k < LINE.length; k++) { i = (i + 1) % LINE.length; if (lineOpen[LINE[i]]) return LINE[i]; }
   return st;
 };
 
+
 /** Which train this is at a platform (one more every loop), so each brings different riders. */
 const trainNo = (st: Station, t: number) => Math.floor((t + OFFSET[st] + shift[st]) / TIMETABLE.loop);
+
 
 /**
  * The people waiting on a platform: which train they wait for (a new crowd
  * gathers after each one leaves), and whether they have got on (from half way
  * through the doors' open time until the train has gone).
  */
-export function platformQueue(st: Station, t: number): { train: number; boarded: boolean } {
+function platformQueue(st: Station, t: number): { train: number; boarded: boolean } {
   const T = TIMETABLE, ph = phaseOf(st, t), n = trainNo(st, t), gone = T.arrive + T.dwell + T.leave;
   return { train: ph >= gone ? n + 1 : n, boarded: ph >= T.arrive + T.dwell * 0.5 && ph < gone };
 }
 
+
 /** m:ss for a count of frames. */
-export const clock = (frames: number) => { const s = Math.max(0, Math.ceil(frames / 60)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const clock = (frames: number) => { const s = Math.max(0, Math.ceil(frames / 60)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
 
 // ---------- the ride ----------
 
 /** On board: how long the doors stand open at a stop, take to close and open, and the run between two stops. */
-export const DWELL = 330, CLOSE = 36, RUN = 780, OPEN = 36;
+const DWELL = config.dwell, CLOSE = config.close, RUN = config.run, OPEN = config.open;
+
 /** Track units between two stops; the loop is three of them. */
-export const SEG = 3000, LOOP = SEG * 3;
+const SEG = 3000, LOOP = SEG * 3;
+
 /** A run past a closed station (two stops' worth of track) takes this much longer than one stop's run, not twice. */
-const LONG_RUN = 1.6;
+const LONG_RUN = config.longRun;
+
 
 /**
  * Along the loop, in track units from Downtown's platform: where the tunnel under the mall starts
@@ -132,8 +150,10 @@ const LONG_RUN = 1.6;
  * on no map (P14): a stub of platform with a service stair up to the pier. It flashes past in
  * under a second.
  */
-export const TUNNEL_IN = SEG - 470;
-export const SIDING = 2 * SEG - 650;
+const TUNNEL_IN = SEG - 470;
+
+const SIDING = 2 * SEG - 650;
+
 /**
  * The emergency brake (P14): how hard it brakes (track units per frame², a long train: about 900
  * units from full speed), how close to the siding a stop must come to count as at it (the brake
@@ -141,11 +161,11 @@ export const SIDING = 2 * SEG - 650;
  * `harbor siding` (track units of stop point before the siding: the tick and the cable take up
  * to ~0.4 s to pull the brake).
  */
-export const BRAKE = { decel: 0.032, window: 260, accel: 0.05, lead: 110 };
-/** Frames the train stands after an emergency stop: on the track, at the siding, at the siding with its doors open. */
-export const HALT = { track: 240, siding: 420, open: 2400 };
+const BRAKE = config.brake;
 
-export type RidePhase = 'dwell' | 'closing' | 'running' | 'opening' | 'braking' | 'halted' | 'resuming';
+/** Frames the train stands after an emergency stop: on the track, at the siding, at the siding with its doors open. */
+const HALT = config.halt;
+
 
 /**
  * The train you are on. `at`: index into LINE of the stop it stands at (or last left); `to`: the
@@ -156,24 +176,31 @@ export type RidePhase = 'dwell' | 'closing' | 'running' | 'opening' | 'braking' 
  * an emergency stop stopped it, `haltFor` for how long; `decel` this stop's braking. `say`: what
  * the announcement display shows.
  */
-export const ride = {
-  at: 0, to: 1, phase: 'dwell' as RidePhase, timer: 0, dwell: DWELL, pos: 0, d: 0, span: SEG, frames: RUN, v: 0,
-  open: 1, doors: false, halt: null as null | 'track' | 'siding', haltFor: 0, decel: BRAKE.decel, say: 'DOWNTOWN',
+const ride:MetroRide = {
+  at: 0, to: 1, phase: 'dwell', timer: 0, dwell: DWELL, pos: 0, d: 0, span: SEG, frames: RUN, v: 0,
+  open: 1, doors: false, halt: null as null | 'track' | 'siding', haltFor: 0, decel: BRAKE.decel, say: STATIONS[LINE[0]].name,
 };
 
+
 /** The stop the train stands at (or last left), and the one it runs to next. */
-export const rideStop = (): Station => LINE[ride.at];
-export const rideNext = (): Station => (between() ? LINE[ride.to] : nextStation(rideStop()));
+const rideStop = (): Station => LINE[ride.at];
+
+const rideNext = (): Station => (between() ? LINE[ride.to] : nextStation(rideStop()));
+
 /** Moving, or standing between stations after an emergency stop. */
-export const between = () => ride.phase === 'running' || ride.phase === 'braking' || ride.phase === 'halted' || ride.phase === 'resuming';
+const between = () => ride.phase === 'running' || ride.phase === 'braking' || ride.phase === 'halted' || ride.phase === 'resuming';
+
 /** Standing at the old siding after an emergency stop (P14). */
-export const rideAtSiding = () => ride.phase === 'halted' && ride.halt === 'siding';
+const rideAtSiding = () => ride.phase === 'halted' && ride.halt === 'siding';
+
 /** The doors are open far enough to step through: at a stop, or at the siding once they were let open. */
-export const rideOpen = () => (ride.phase === 'dwell' || ride.phase === 'opening' || (rideAtSiding() && ride.doors)) && ride.open > 0.6;
+const rideOpen = () => (ride.phase === 'dwell' || ride.phase === 'opening' || (rideAtSiding() && ride.doors)) && ride.open > 0.6;
+
 /** Frames before the doors start to close (for the platform you step out onto). */
-export const rideLeft = () => (ride.phase === 'dwell' ? Math.max(0, ride.dwell - ride.timer) : ride.phase === 'opening' ? ride.dwell : 0);
+const rideLeft = () => (ride.phase === 'dwell' ? Math.max(0, ride.dwell - ride.timer) : ride.phase === 'opening' ? ride.dwell : 0);
+
 /** Frames until the doors open at the next stop (0 while they are open or opening; a guess while it stands between stations). */
-export const rideDue = () => {
+const rideDue = () => {
   const r = ride;
   if (r.phase === 'dwell') return Math.max(0, r.dwell - r.timer) + CLOSE + RUN + OPEN;
   if (r.phase === 'closing') return Math.max(0, CLOSE - r.timer) + RUN + OPEN;
@@ -181,33 +208,39 @@ export const rideDue = () => {
   if (between()) return (r.phase === 'halted' ? Math.max(0, r.haltFor - r.timer) : 0) + r.frames * (1 - r.d / r.span) + OPEN;
   return 0;
 };
+
 /** How far along the run to the next stop, 0..1 (0 while standing at a stop). */
-export const rideRun = () => (between() ? Math.min(1, ride.d / ride.span) : 0);
+const rideRun = () => (between() ? Math.min(1, ride.d / ride.span) : 0);
+
 /** The siding, in track units along this run, or null when this run does not pass it. */
-export const sidingAlong = () => { const d = (((SIDING - ride.at * SEG) % LOOP) + LOOP) % LOOP; return d > 0 && d < ride.span ? d : null; };
+const sidingAlong = () => { const d = (((SIDING - ride.at * SEG) % LOOP) + LOOP) % LOOP; return d > 0 && d < ride.span ? d : null; };
+
 
 /** You board at `st`; the doors stay open `left` more frames. */
-export function boardRide(st: Station, left: number) {
+function boardRide(st: Station, left: number) {
   const at = LINE.indexOf(st);
   Object.assign(ride, { at, to: LINE.indexOf(nextStation(st)), phase: 'dwell', timer: 0, dwell: Math.max(120, left), pos: at * SEG, d: 0, v: 0, open: 1, doors: false, halt: null, say: STATIONS[st].name });
 }
 
+
 /** The train's speed now, track units a frame: on its run's curve, or braking / getting going. */
-export function rideSpeed() {
+function rideSpeed() {
   const r = ride;
   if (r.phase === 'braking' || r.phase === 'resuming') return r.v;
   if (r.phase !== 'running') return 0;
   return (r.span * Math.PI / (2 * r.frames)) * Math.sin(Math.PI * Math.min(1, r.timer / r.frames));
 }
+
 /** Where the train would come to a stand if the brake were pulled now (track units along this run), or null while it is not moving. */
-export const rideStopsAt = () => (ride.phase === 'running' || ride.phase === 'resuming' ? ride.d + rideSpeed() ** 2 / (2 * BRAKE.decel) : null);
+const rideStopsAt = () => (ride.phase === 'running' || ride.phase === 'resuming' ? ride.d + rideSpeed() ** 2 / (2 * BRAKE.decel) : null);
+
 
 /**
  * The emergency brake, pulled (P14): the train brakes where it is. If it would come to a stand
  * within `BRAKE.window` of the old siding, it brakes to stand exactly at it. Says where it is going
  * to stop, or why it does not brake.
  */
-export function brakeRide(): 'siding' | 'track' | 'standing' | 'braking' {
+function brakeRide(): 'siding' | 'track' | 'standing' | 'braking' {
   const r = ride;
   if (r.phase === 'braking') return 'braking';
   if (r.phase !== 'running' && r.phase !== 'resuming') return 'standing';
@@ -218,15 +251,18 @@ export function brakeRide(): 'siding' | 'track' | 'standing' | 'braking' {
   return r.halt;
 }
 
+
 /** The doors while the train stands between stations: let open (only at the siding, where there is a platform), or not. */
-export function rideDoors(open: boolean) {
+function rideDoors(open: boolean) {
   const r = ride;
   r.doors = open && rideAtSiding();
   if (r.doors) r.haltFor = Math.max(r.haltFor, r.timer + HALT.open);
 }
 
+
 /** The loop position from how far along this run it is. */
 const place = () => { ride.pos = (ride.at * SEG + ride.d) % LOOP; };
+
 
 /** The run is over: it stands at its stop and opens. */
 function arrive(): 'arrive' {
@@ -237,12 +273,13 @@ function arrive(): 'arrive' {
   return 'arrive';
 }
 
+
 /**
  * One frame of the ride. Returns 'depart' as the doors shut and it pulls out, 'arrive' as it
  * stops at the next station, 'pass' as it runs through a closed one, 'halt' as an emergency stop
  * stands it still, 'resume' as it gets going again.
  */
-export function stepRide(dt: number): 'depart' | 'arrive' | 'pass' | 'halt' | 'resume' | null {
+function stepRide(dt: number): 'depart' | 'arrive' | 'pass' | 'halt' | 'resume' | null {
   const r = ride;
   r.timer += dt;
   if (r.phase === 'dwell') {
@@ -304,17 +341,31 @@ export function stepRide(dt: number): 'depart' | 'arrive' | 'pass' | 'halt' | 'r
   return null;
 }
 
+
 /** Immutable inputs for artwork: all timetable decisions remain in transport. */
-export function platformTrainVisual(st: Station, t: number, stop: number): PlatformTrainVisual | null {
+function platformTrainVisual(st: Station, t: number, stop: number): PlatformTrainVisual | null {
   const at = platformTrain(st, t, stop);
   return at ? { ...at, riderSeed: 1000 + trainNo(st, t) * 7 + OFFSET[st], destination: STATIONS[nextStation(st)].name } : null;
 }
-export function departureVisual(st: Station, t: number): DepartureVisual {
+
+function departureVisual(st: Station, t: number): DepartureVisual {
   const left = platformLeft(st, t), due = platformDue(st, t);
   const message = due > 0 ? (platformTrain(st, t, 0) && due > TIMETABLE.arrive ? 'DEPARTED' : 'DUE IN ' + clock(due)) : left > 0 && left < 100 ? 'CLOSING' : left > 0 ? 'BOARDING' : 'DEPARTING';
   return { open: lineOpen[st], station: STATIONS[st].name, destination: STATIONS[nextStation(st)].name, left, due, message };
 }
+
 /** Snapshot for the moving interior; callers may render it without mutating the ride. */
-export function trainVisualState() {
+function trainVisualState() {
   return { ride: { ...ride }, lineOpen: { ...lineOpen }, between: between(), atSiding: rideAtSiding(), due: rideDue(), next: rideNext(), open: rideOpen(), run: rideRun() };
 }
+ const initialRide=structuredClone(ride);
+ /** JSON only: no closures, clocks or artwork objects leave this controller. */
+ function capture():MetroSnapshot{return {version:1,line:[...LINE],ride:{...ride},shift:{...shift},lineOpen:{...lineOpen}};}
+ function restore(value:unknown){const snapshot=validateMetroSnapshot(value,{line:LINE,source:config});Object.assign(ride,snapshot.ride);Object.assign(shift,snapshot.shift);Object.assign(lineOpen,snapshot.lineOpen);}
+ /** Retains object identities held by bound rules while clearing all mutable session state. */
+ function reset(){Object.assign(ride,initialRide);for(const id of LINE){shift[id]=0;lineOpen[id]=true;}}
+ return {capture,restore,reset,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformSync,platformDoors,lineOpen,nextStation,platformQueue,clock,DWELL,CLOSE,RUN,OPEN,SEG,LOOP,TUNNEL_IN,SIDING,BRAKE,HALT,ride,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,sidingAlong,boardRide,rideSpeed,rideStopsAt,brakeRide,rideDoors,stepRide,platformTrainVisual,departureVisual,trainVisualState};
+}
+export type LineSystem=ReturnType<typeof createLineSystem>;
+const shippingLine=createLineSystem();
+export const {capture,restore,reset,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformSync,platformDoors,lineOpen,nextStation,platformQueue,clock,DWELL,CLOSE,RUN,OPEN,SEG,LOOP,TUNNEL_IN,SIDING,BRAKE,HALT,ride,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,sidingAlong,boardRide,rideSpeed,rideStopsAt,brakeRide,rideDoors,stepRide,platformTrainVisual,departureVisual,trainVisualState}=shippingLine;

@@ -48,12 +48,12 @@ export function nameplate(x: CanvasRenderingContext2D, v: View, s: number, h: nu
 
 
 /** A bench, maybe with someone on it (`who`: what kind of person) who has given up waiting. */
-export function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; who?: RiderKind }) {
+export function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; who?: RiderKind }, sourceRider?:()=>void) {
   const { y, t } = v, s = v.sx(b.x);
   if (!onScreen(v, s - 30, 60)) return;
   box(x, s - 26, y(28), 52, 3, '#2a160a', 'rgba(' + O + ',.6)');
   box(x, s - 22, y(SEAT_H), 3, SEAT_H, '#2a160a'); box(x, s + 19, y(SEAT_H), 3, SEAT_H, '#2a160a');
-  if (b.who) drawRider(x, b.who, s + 8, y(0), t, { sit: true, phase: b.x });
+  if(sourceRider)sourceRider();else if (b.who) drawRider(x, b.who, s + 8, y(0), t, { sit: true, phase: b.x });
   box(x, s - 26, y(SEAT_H + 2), 52, 4, '#2a160a', 'rgba(' + O + ',.8)');
 }
 

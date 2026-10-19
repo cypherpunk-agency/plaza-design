@@ -1,0 +1,441 @@
+{
+  "version": 1,
+  "id": "stacks",
+  "name": "the stacks",
+  "intro": [
+    "Terminal 2, berth 4. A crane, a gate, a ferry waiting for one box.",
+    "Somewhere in these stacks is a container the yard system lost. I would bet my deck it has Moth's number on it."
+  ],
+  "uses": [
+    {
+      "id": "urn",
+      "name": "TEA URN",
+      "label": "[E] TEA URN",
+      "speakerKind": "device",
+      "routes": [
+        {
+          "when": {
+            "item": "tea",
+            "atLeast": 1
+          },
+          "pages": [
+            "(A note on the urn: ONE CUP EACH. YOU KNOW WHO YOU ARE.)",
+            "You do know who you are. You already have a cup."
+          ]
+        },
+        {
+          "command": "stacks.pour",
+          "pages": [
+            "(You pour a paper cup of black tea from the night shift's urn. Nobody stops you. Nobody sees you. Those are the same thing now.)"
+          ]
+        }
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "gatekeeper",
+      "name": "GATEKEEPER",
+      "talk": [
+        [
+          "Terminal 2. Authorised vehicles only.",
+          "You are not a vehicle, so the rule does not cover you. I am not paid to extend it."
+        ],
+        [
+          "Warehouse 4 is down the lane. Registry evidence now. Used to be the Tide's.",
+          "I used to wave at the Tide's trucks. Now I wave at nobody, on a schedule."
+        ]
+      ]
+    },
+    {
+      "id": "inspector",
+      "name": "PORT INSPECTOR",
+      "talk": [
+        [
+          "Thermal inspection. A container is meant to be the temperature on its label.",
+          "A reefer at four degrees reads four. If it reads thirty-one, something in it is breathing, and breathing cargo is my paperwork."
+        ],
+        [
+          "The gate wires itself to the alarm. I don't touch it. The Registry's watchdog checks the wiring every round.",
+          "When the dog sits on my gate the whole gate freezes. Nothing gets in or out of it. I take my break then. Everyone does."
+        ],
+        [
+          "The crane only lifts once the dog has cleared the ferry. Then it's three seconds and it's back at my gate.",
+          "You learn its walk. Port, crane, ferry. Port, crane, ferry. Like a man who forgot why he came into a room."
+        ]
+      ]
+    },
+    {
+      "id": "signaller",
+      "name": "SIGNALLER",
+      "talk": [
+        [
+          "I wave at the crane. The crane ignores me.",
+          "Forty years. Longest relationship I've had."
+        ],
+        [
+          "The camera on STS-2 reads every roof in the blocks. The yard system lost one tonight. The camera never loses anything. Shame about the people upstairs."
+        ]
+      ]
+    },
+    {
+      "id": "lasher",
+      "name": "LASHER",
+      "talk": [
+        [
+          "Eleven boxes down the hatch, lashed. One slot on deck for a reefer, plug ready.",
+          "Schedule says NRLU-something. Yard system says it doesn't exist. I've lashed things that don't exist before. They pay the same."
+        ],
+        [
+          "The ferry leaves when it's full. It's been one box from full since Tuesday.",
+          "The captain's asleep in the bridge. He says wake him when it's full. He says it like a man who knows."
+        ]
+      ]
+    },
+    {
+      "id": "tally",
+      "name": "TALLY-4",
+      "talk": [
+        [
+          "COUNT: 1,204 CONTAINERS. COUNT: 1,204. COUNT: 1,203.",
+          "RECOUNT."
+        ],
+        [
+          "BLOCK B, BACK ROW, SLOT 6: YARD RECORD MISSING. CONTAINER PRESENT. CONTAINER CANNOT BE PRESENT. RECOUNT."
+        ]
+      ]
+    },
+    {
+      "id": "gull1",
+      "name": "GULL",
+      "talk": [
+        [
+          "(The gull looks at you, then at the stack under its feet, then screams as if you own it.)"
+        ],
+        [
+          "(It edges along the container roof to keep exactly out of reach.)"
+        ]
+      ]
+    },
+    {
+      "id": "gull2",
+      "name": "GULL",
+      "talk": [
+        [
+          "(It is guarding the gangway. From whom is not clear. Possibly you.)"
+        ],
+        [
+          "(It steps aside. It steps back. It has made a point.)"
+        ]
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "notice",
+      "name": "PORT AUTHORITY",
+      "pages": [
+        "TERMINAL 2 \u00b7 ALL OUTBOUND CARGO PASSES THE THERMAL GATE AT BERTH 4.",
+        "A CONTAINER WARMER THAN ITS LABEL IS HELD FOR INSPECTION. PERSONS FOUND IN CARGO ARE RETURNED TO THEIR REGISTERED ADDRESS. PERSONS WITHOUT ONE ARE RETURNED TO THE REGISTRY."
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "harbor",
+      "to": "harbor",
+      "at": "stacks",
+      "label": "[E] PIER"
+    },
+    {
+      "id": "warehouse",
+      "to": "warehouse",
+      "at": "stacks",
+      "label": "[E] WAREHOUSE 4"
+    }
+  ],
+  "actors": [
+    {
+      "seed": 7305,
+      "look": {
+        "body": "avg",
+        "garb": "hivis",
+        "hair": "short",
+        "extras": [
+          "headphones"
+        ]
+      },
+      "act": "sit",
+      "facing": 1,
+      "ps": 2,
+      "id": "operator",
+      "instance": "operator",
+      "band": "background",
+      "reaction": "actor.operator",
+      "height": "artwork"
+    },
+    {
+      "seed": 4510,
+      "look": {
+        "body": "slim",
+        "garb": "coat",
+        "hair": "hood",
+        "top": "#3a3438",
+        "acc": "#5a3a6a",
+        "extras": [
+          "headphones"
+        ]
+      },
+      "act": "sit",
+      "facing": -1,
+      "id": "moth",
+      "instance": "moth",
+      "band": "background",
+      "reaction": "actor.moth",
+      "height": "artwork"
+    },
+    {
+      "seed": 7311,
+      "look": {
+        "body": "wide",
+        "garb": "hivis",
+        "hair": "helmet",
+        "acc": "#e8e0d0"
+      },
+      "act": "sit",
+      "facing": -1,
+      "id": "quiet-0",
+      "instance": "quiet-0",
+      "band": "background",
+      "reaction": "actor.quiet-0",
+      "height": "artwork"
+    },
+    {
+      "seed": 7312,
+      "look": {
+        "body": "short",
+        "garb": "hivis",
+        "hair": "helmet",
+        "acc": "#d8b040",
+        "extras": [
+          "backpack"
+        ]
+      },
+      "act": "sweep",
+      "range": [
+        0,
+        80
+      ],
+      "id": "quiet-1",
+      "instance": "quiet-1",
+      "band": "background",
+      "reaction": "actor.quiet-1"
+    },
+    {
+      "look": {
+        "bot": "loader",
+        "paint": "#c8641e"
+      },
+      "act": "carry",
+      "range": [
+        0,
+        180
+      ],
+      "id": "quiet-2",
+      "instance": "quiet-2",
+      "band": "background",
+      "reaction": "actor.quiet-2",
+      "bakeSeed": 8193
+    },
+    {
+      "seed": 7301,
+      "look": {
+        "body": "wide",
+        "garb": "jacket",
+        "hair": "cap",
+        "top": "#2e3a4a",
+        "extras": [
+          "glasses"
+        ]
+      },
+      "act": "stand",
+      "facing": 1,
+      "id": "person-0",
+      "instance": "person-0",
+      "target": "gatekeeper",
+      "band": "world",
+      "reaction": "gatekeeper",
+      "height": "artwork"
+    },
+    {
+      "key": true,
+      "seed": 7302,
+      "look": {
+        "body": "tall",
+        "garb": "jacket",
+        "hair": "short",
+        "top": "#3a4458",
+        "extras": [
+          "visor"
+        ]
+      },
+      "act": "stand",
+      "facing": -1,
+      "id": "person-1",
+      "instance": "person-1",
+      "target": "inspector",
+      "band": "world",
+      "reaction": "inspector",
+      "height": "artwork"
+    },
+    {
+      "seed": 7303,
+      "look": {
+        "body": "old",
+        "garb": "hivis",
+        "hair": "helmet",
+        "acc": "#d8b040"
+      },
+      "act": "direct",
+      "facing": 1,
+      "id": "person-2",
+      "instance": "person-2",
+      "target": "signaller",
+      "band": "world",
+      "reaction": "signaller",
+      "height": "artwork"
+    },
+    {
+      "seed": 7304,
+      "look": {
+        "body": "avg",
+        "garb": "hivis",
+        "hair": "helmet",
+        "acc": "#d86a2a",
+        "extras": [
+          "headphones"
+        ]
+      },
+      "act": "stand",
+      "facing": -1,
+      "id": "person-3",
+      "instance": "person-3",
+      "target": "lasher",
+      "band": "world",
+      "reaction": "lasher",
+      "height": "artwork"
+    },
+    {
+      "seed": 7306,
+      "look": {
+        "bot": "minidrone",
+        "paint": "#d8a03a"
+      },
+      "act": "hover",
+      "range": [
+        0,
+        340
+      ],
+      "id": "person-4",
+      "instance": "person-4",
+      "target": "tally",
+      "band": "world",
+      "reaction": "tally",
+      "height": "artwork"
+    },
+    {
+      "look": "gull",
+      "act": "stand",
+      "facing": -1,
+      "id": "person-5",
+      "instance": "person-5",
+      "target": "gull1",
+      "band": "world",
+      "reaction": "gull1",
+      "bakeSeed": 2257,
+      "height": "artwork"
+    },
+    {
+      "look": "gull",
+      "seed": 3,
+      "act": "walk",
+      "range": 40,
+      "id": "person-6",
+      "instance": "person-6",
+      "target": "gull2",
+      "band": "world",
+      "reaction": "gull2",
+      "height": "artwork"
+    },
+    {
+      "look": "pigeon",
+      "seed": 11,
+      "act": "walk",
+      "range": 26,
+      "id": "person-7",
+      "instance": "person-7",
+      "band": "world",
+      "reaction": "slot-7",
+      "height": "artwork"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "urn": {
+        "instance": "urn",
+        "promptH": 52
+      }
+    },
+    "readables": {
+      "notice": {
+        "instance": "board",
+        "promptH": 86
+      }
+    },
+    "rests": {},
+    "exits": {
+      "harbor": {
+        "instance": "exit-harbor",
+        "promptH": 82
+      },
+      "warehouse": {
+        "instance": "exit-warehouse",
+        "promptH": 92
+      }
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "weather": true
+    },
+    "facing": 90
+  },
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    }
+  }
+}

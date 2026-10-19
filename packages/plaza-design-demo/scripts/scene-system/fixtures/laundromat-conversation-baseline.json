@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "dialogue": {
+    "speaker": "SUDS · laundromat daemon",
+    "start": "start",
+    "sayCmd": "say \"{line}\" > suds",
+    "nodes": {
+      "start": [
+        {
+          "if": "jacket",
+          "text": "Washer 3 is free again. SUDS has already let it. To a sock. Long-term.",
+          "choices": [
+            [
+              "Good for the sock.",
+              "bye"
+            ],
+            [
+              "Ask about the rules.",
+              "rules"
+            ]
+          ]
+        },
+        {
+          "if": "trips",
+          "text": "SUDS here. The breaker tripped again. It does that. It is the only thing in here that finishes. How can SUDS help?",
+          "choices": [
+            [
+              "Open washer 3.",
+              "open"
+            ],
+            [
+              "Stop one of the washes.",
+              "cancel"
+            ],
+            [
+              "Why does it trip?",
+              "breaker"
+            ],
+            [
+              "Whose jacket is in 3?",
+              "jacket"
+            ]
+          ]
+        },
+        {
+          "text": "SUDS here. Four machines, one breaker, no complaints accepted. How can SUDS help?",
+          "choices": [
+            [
+              "Open washer 3.",
+              "open"
+            ],
+            [
+              "Stop one of the washes.",
+              "cancel"
+            ],
+            [
+              "Why does it trip?",
+              "breaker"
+            ],
+            [
+              "Whose jacket is in 3?",
+              "jacket"
+            ]
+          ]
+        }
+      ],
+      "open": {
+        "text": "Washer 3 has one cycle left, prepaid. SUDS does not open doors on wet laundry. SUDS has standards.",
+        "choices": [
+          [
+            "When does it run?",
+            "prepaid"
+          ],
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "prepaid": {
+        "text": "Prepaid cycles are not on the schedule. They start when a machine finishes. Nothing has finished since Tuesday. Three start at every slot, the breaker trips, everybody starts over.",
+        "choices": [
+          [
+            "So nothing ever finishes.",
+            "never"
+          ],
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "never": {
+        "text": "Correct. SUDS has asked for a second circuit. SUDS was sent a form. SUDS filled in the form. The form is also waiting for a slot.",
+        "choices": [
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "cancel": {
+        "text": "Cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them.",
+        "choices": [
+          [
+            "What if they ran later instead?",
+            "later"
+          ],
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "later": {
+        "text": "Later is not cancelling. Later is scheduling. SUDS loves scheduling. The schedule is the box by the door. SUDS does not touch its wiring. SUDS cannot see anyone touching its wiring. Hypothetically.",
+        "choices": [
+          [
+            "Hypothetically.",
+            "start"
+          ]
+        ]
+      },
+      "breaker": {
+        "text": "One circuit, four washers. The breaker allows two at once. The schedule starts three. They were installed by two contractors who never met. SUDS has met both. SUDS sides with the breaker.",
+        "choices": [
+          [
+            "And then?",
+            "rule4"
+          ],
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "rule4": {
+        "text": "When it trips, every machine stops. Lost cycle, wet laundry, nobody goes home. And nobody's laundry leaves until everybody's laundry is clean. House rule 4. Solidarity. Also the fire code.",
+        "choices": [
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "jacket": {
+        "text": "One jacket, prepaid nine cycles, owner not on site for three days. SUDS does not ask questions. SUDS asks for detergent.",
+        "choices": [
+          [
+            "It's my friend's.",
+            "friend"
+          ],
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "friend": {
+        "text": "Then your friend washes very thoroughly. Nine cycles. Either a stain or a secret. SUDS does not judge. SUDS rinses.",
+        "choices": [
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "manners": {
+        "text": "Politeness noted and logged. The breaker remains unmoved. It has no ears. Only amps.",
+        "choices": [
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "rules": {
+        "text": "Start on the schedule. Two at a time. Never cancel. Doors open when the queue is clear. Four rules. SUDS wrote none of them and loves all of them.",
+        "choices": [
+          [
+            "Let me start over.",
+            "start"
+          ]
+        ]
+      },
+      "bye": {
+        "text": "Separate your colours."
+      }
+    },
+    "free": {
+      "match": "please|thank",
+      "goto": "manners",
+      "miss": "SUDS files that under 'delicates'.",
+      "retry": "Again. Slower. Like a spin cycle.",
+      "retryGoto": "start"
+    }
+  },
+  "cables": [
+    {
+      "id": "slot.w1",
+      "from": "clock.clock:open",
+      "to": "washer1.drum",
+      "verb": "start"
+    },
+    {
+      "id": "slot.w2",
+      "from": "clock.clock:open",
+      "to": "washer2.drum",
+      "verb": "start"
+    },
+    {
+      "id": "slot.w4",
+      "from": "clock.clock:open",
+      "to": "washer4.drum",
+      "verb": "start"
+    },
+    {
+      "id": "trip.w1",
+      "from": "breaker.load:tripped",
+      "to": "washer1.drum",
+      "verb": "stop",
+      "fixed": true
+    },
+    {
+      "id": "trip.w2",
+      "from": "breaker.load:tripped",
+      "to": "washer2.drum",
+      "verb": "stop",
+      "fixed": true
+    },
+    {
+      "id": "trip.w3",
+      "from": "breaker.load:tripped",
+      "to": "washer3.drum",
+      "verb": "stop",
+      "fixed": true
+    },
+    {
+      "id": "trip.w4",
+      "from": "breaker.load:tripped",
+      "to": "washer4.drum",
+      "verb": "stop",
+      "fixed": true
+    }
+  ],
+  "initialState": {
+    "w1": "idle",
+    "w2": "idle",
+    "w3": "idle",
+    "w4": "idle",
+    "breaker": "on",
+    "trips": 0,
+    "jacket": false
+  }
+}

@@ -1,94 +1,300 @@
 {
   "id": "train",
   "name": "Metro car",
-
   "state": {
     "pulls": 0
   },
-
   "tuning": {},
-
   "devices": [
     {
       "id": "train",
       "name": "TRAIN-0",
       "look": "LINE 0's train, from its emergency panel at the end of car 3: the brake, a plate, a slot for a pass. It goes round. It never says where.",
       "everyday": [
-        { "noun": "brake", "verb": "pull", "label": "pull the brake" },
-        { "noun": "emergency.reg", "verb": "read", "label": "read the register" },
-        { "noun": "plate", "verb": "read", "label": "read the brake plate" }
+        {
+          "noun": "brake",
+          "verb": "pull",
+          "label": "pull the brake"
+        },
+        {
+          "noun": "emergency.reg",
+          "verb": "read",
+          "label": "read the register"
+        },
+        {
+          "noun": "plate",
+          "verb": "read",
+          "label": "read the brake plate"
+        }
       ],
       "items": [
-        { "item": "maglev.pass", "noun": "brake", "label": "show the maglev pass", "on": { "say": "brake.pass" } }
+        {
+          "item": "maglev.pass",
+          "noun": "brake",
+          "label": "show the maglev pass",
+          "on": {
+            "say": "brake.pass"
+          }
+        }
       ],
-      "status": ["LINE 0 · {where}"],
+      "status": [
+        "LINE 0 · {where}"
+      ],
       "layout": {
-        "spot": { "x": 1140, "y": 22, "w": 26, "h": 40 },
-        "board": { "x": 0.5, "y": 0.5 },
-        "dir": { "position": "up", "emergency.reg": "left", "plate": "left", "brake": "right", "doors": "down" },
-        "row": ["position", "emergency.reg", "plate", "brake", "doors"]
+        "spot": {
+          "x": 1140,
+          "y": 22,
+          "w": 26,
+          "h": 40
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "dir": {
+          "position": "up",
+          "emergency.reg": "left",
+          "plate": "left",
+          "brake": "right",
+          "doors": "down"
+        },
+        "row": [
+          "position",
+          "emergency.reg",
+          "plate",
+          "brake",
+          "doors"
+        ]
       },
       "nouns": [
         {
-          "id": "position", "kind": "SENSE", "verbs": ["read"], "events": ["tunnel", "harbor siding"],
-          "on": { "read": { "do": [{ "effect": "train.position" }] } }
-        },
-        {
-          "id": "emergency.reg", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat emergency.reg", "#0451 · registered by MOTH · 2 days ago · reason: a friend needs to get off at the harbor. they'll know when."] } }
-        },
-        {
-          "id": "plate", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat plate", "EMERGENCY BRAKE. PULL ONLY IN AN EMERGENCY. EMERGENCIES MUST BE REGISTERED AT LEAST 48 HOURS IN ADVANCE. MISUSE IS RECORDED AGAINST YOUR REGISTRY ID."] } }
-        },
-        {
-          "id": "brake", "kind": "ACT", "verbs": ["pull"], "events": ["stopped"],
-          "on": { "pull": { "do": [{ "effect": "train.brake" }] } }
-        },
-        {
-          "id": "doors", "kind": "ACT", "verbs": ["open", "lock"],
+          "id": "position",
+          "kind": "SENSE",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "tunnel",
+            "harbor siding"
+          ],
           "on": {
-            "open": { "do": [{ "effect": "train.doors" }] },
-            "lock": { "do": [{ "effect": "train.lock" }] }
+            "read": {
+              "do": [
+                {
+                  "effect": "train.position"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "emergency.reg",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat emergency.reg",
+                "#0451 · registered by MOTH · 2 days ago · reason: a friend needs to get off at the harbor. they'll know when."
+              ]
+            }
+          }
+        },
+        {
+          "id": "plate",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat plate",
+                "EMERGENCY BRAKE. PULL ONLY IN AN EMERGENCY. EMERGENCIES MUST BE REGISTERED AT LEAST 48 HOURS IN ADVANCE. MISUSE IS RECORDED AGAINST YOUR REGISTRY ID."
+              ]
+            }
+          }
+        },
+        {
+          "id": "brake",
+          "kind": "ACT",
+          "verbs": [
+            "pull"
+          ],
+          "events": [
+            "stopped"
+          ],
+          "on": {
+            "pull": {
+              "do": [
+                {
+                  "effect": "train.brake"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "doors",
+          "kind": "ACT",
+          "verbs": [
+            "open",
+            "lock"
+          ],
+          "on": {
+            "open": [
+              {
+                "if": "!trainBetween",
+                "say": "doors.station"
+              },
+              {
+                "if": "!signal",
+                "say": "doors.hand"
+              },
+              {
+                "if": "!trainHalted",
+                "say": "doors.moving"
+              },
+              {
+                "if": "!trainAtSiding",
+                "say": "doors.wall"
+              },
+              {
+                "do": [
+                  {
+                    "effect": "train.doors"
+                  },
+                  {
+                    "goal": "siding"
+                  }
+                ],
+                "say": "doors.siding"
+              }
+            ],
+            "lock": [
+              {
+                "if": "!trainBetween",
+                "say": "doors.station"
+              },
+              {
+                "do": [
+                  {
+                    "effect": "train.lock"
+                  }
+                ],
+                "say": "doors.locked"
+              }
+            ]
           }
         }
       ]
     }
   ],
-
   "cables": [
-    { "id": "safety", "from": "train.brake:stopped", "to": "train.doors", "verb": "lock" }
+    {
+      "id": "safety",
+      "from": "train.brake:stopped",
+      "to": "train.doors",
+      "verb": "lock"
+    }
   ],
-
   "dialogue": {},
-
   "goals": [
-    { "id": "siding", "text": "the train passes an old siding before the harbor, too fast to see. Stop there, and get the doors open" }
+    {
+      "id": "siding",
+      "text": "the train passes an old siding before the harbor, too fast to see. Stop there, and get the doors open"
+    }
   ],
-
   "texts": {
     "goals.done": "the doors open on a platform that is on no map. a stair goes up. the harbor is open now.",
-
-    "pos.station": ["cat position", "standing at {stop}. doors {doors}."],
-    "pos.between": ["cat position", "between {from} and {to}. track km {km}."],
-    "pos.halted": ["cat position", "stopped between {from} and {to}. track km {km}. not a station."],
-
-    "brake.notyours": ["{via}use brake --pull", "BRAKE: emergency #0451 is registered to another passenger. pull not accepted.", "err"],
-    "brake.queued": ["{via}use brake --pull", "BRAKE: a new emergency has been registered in your name. it will be ready in 48 hours.", "err"],
-    "brake.standing": ["{via}use brake --pull", "BRAKE: the train is standing. there is nothing to stop.", "dim"],
-    "brake.already": ["{via}use brake --pull", "BRAKE: already braking.", "dim"],
-    "brake.pass": ["show maglev.pass", "BRAKE: pass read · MOTH, second holder: you · emergency #0451 is registered to you. pull when ready.", "ok"],
-    "brake.pulled": ["{via}use brake --pull", "BRAKE: emergency #0451 · passenger verified (MAGLEV PASS) · braking.", "ok"],
-
-    "halt.track": ["train", "the train stops {where}. the lights flicker. nobody looks up.", "dim"],
-    "halt.siding": ["train", "the train stops beside an old platform with no name on it. a stair goes up into the dark. it smells of the sea.", "ok"],
-    "resume": ["train", "a voice apologises for the delay. the train restarts.", "dim"],
-
-    "doors.locked": ["{via}use doors --lock", "DOORS: locked. for your safety, doors stay shut between stations.", "dim"],
-    "doors.hand": ["use doors --{verb}", "DOORS: manual release disabled. doors open at stations.", "err"],
-    "doors.moving": ["{via}use doors --open", "DOORS: the train is moving. request refused.", "err"],
-    "doors.station": ["{via}use doors --{verb}", "DOORS: at a station the doors keep their own schedule.", "dim"],
-    "doors.wall": ["{via}use doors --open", "DOORS: open. outside, a wall, forty centimetres away. they close again.", "dim"],
-    "doors.siding": ["{via}use doors --open", "DOORS: open. an old platform, a service stair up. the emergency registration is closed: #0451 · resolved.", "ok"]
+    "pos.station": [
+      "cat position",
+      "standing at {stop}. doors {doors}."
+    ],
+    "pos.between": [
+      "cat position",
+      "between {from} and {to}. track km {km}."
+    ],
+    "pos.halted": [
+      "cat position",
+      "stopped between {from} and {to}. track km {km}. not a station."
+    ],
+    "brake.notyours": [
+      "{via}use brake --pull",
+      "BRAKE: emergency #0451 is registered to another passenger. pull not accepted.",
+      "err"
+    ],
+    "brake.queued": [
+      "{via}use brake --pull",
+      "BRAKE: a new emergency has been registered in your name. it will be ready in 48 hours.",
+      "err"
+    ],
+    "brake.standing": [
+      "{via}use brake --pull",
+      "BRAKE: the train is standing. there is nothing to stop.",
+      "dim"
+    ],
+    "brake.already": [
+      "{via}use brake --pull",
+      "BRAKE: already braking.",
+      "dim"
+    ],
+    "brake.pass": [
+      "show maglev.pass",
+      "BRAKE: pass read · MOTH, second holder: you · emergency #0451 is registered to you. pull when ready.",
+      "ok"
+    ],
+    "brake.pulled": [
+      "{via}use brake --pull",
+      "BRAKE: emergency #0451 · passenger verified (MAGLEV PASS) · braking.",
+      "ok"
+    ],
+    "halt.track": [
+      "train",
+      "the train stops {where}. the lights flicker. nobody looks up.",
+      "dim"
+    ],
+    "halt.siding": [
+      "train",
+      "the train stops beside an old platform with no name on it. a stair goes up into the dark. it smells of the sea.",
+      "ok"
+    ],
+    "resume": [
+      "train",
+      "a voice apologises for the delay. the train restarts.",
+      "dim"
+    ],
+    "doors.locked": [
+      "{via}use doors --lock",
+      "DOORS: locked. for your safety, doors stay shut between stations.",
+      "dim"
+    ],
+    "doors.hand": [
+      "use doors --{verb}",
+      "DOORS: manual release disabled. doors open at stations.",
+      "err"
+    ],
+    "doors.moving": [
+      "{via}use doors --open",
+      "DOORS: the train is moving. request refused.",
+      "err"
+    ],
+    "doors.station": [
+      "{via}use doors --{verb}",
+      "DOORS: at a station the doors keep their own schedule.",
+      "dim"
+    ],
+    "doors.wall": [
+      "{via}use doors --open",
+      "DOORS: open. outside, a wall, forty centimetres away. they close again.",
+      "dim"
+    ],
+    "doors.siding": [
+      "{via}use doors --open",
+      "DOORS: open. an old platform, a service stair up. the emergency registration is closed: #0451 · resolved.",
+      "ok"
+    ]
   }
 }

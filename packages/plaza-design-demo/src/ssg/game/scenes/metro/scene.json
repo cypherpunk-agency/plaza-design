@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "id": "metro",
+  "name": "Downtown metro",
+  "intro": [
+    "The metro. One line, three stops, round and round. Getting off at the right one is my problem."
+  ],
+  "uses": [],
+  "readables": [
+    {
+      "id": "board",
+      "name": "DEPARTURES",
+      "pages": [
+        "LINE 0 \u00b7 A TRAIN EVERY 25 SECONDS.",
+        "DOORS OPEN FOR A LIMITED TIME. DO NOT HOLD THE DOORS."
+      ],
+      "promptH": 120
+    },
+    {
+      "id": "map",
+      "name": "LINE MAP",
+      "pages": [
+        "LINE 0: DOWNTOWN \u00b7 GALLERIA \u00b7 HARBOR.",
+        "LOOP SERVICE. TRAINS STOP AT EVERY STATION."
+      ],
+      "promptH": 92
+    },
+    {
+      "id": "screen",
+      "name": "REGISTRY SCREEN",
+      "pages": [
+        "COMPLIANCE IS COMFORT.",
+        "THIS MESSAGE IS BROUGHT TO YOU BY THE REGISTRY."
+      ],
+      "promptH": 170
+    },
+    {
+      "id": "regular",
+      "name": "MAN WITH A PAPER",
+      "label": "[E] TALK",
+      "pages": [
+        "The paper says the metro runs on time.",
+        "It's yesterday's paper. It ran on time yesterday too. Allegedly."
+      ],
+      "promptH": 54
+    },
+    {
+      "id": "poster",
+      "name": "POSTER",
+      "pages": [
+        "REGISTRY PREMIUM.",
+        "PRIORITY IDENTITY CHECKS AT ALL EXITS."
+      ],
+      "promptH": 92
+    }
+  ],
+  "exits": [
+    {
+      "id": "downtown",
+      "to": "downtown",
+      "at": "metro",
+      "label": "[E] STAIRS DOWN \u00b7 DOWNTOWN",
+      "promptH": 82
+    },
+    {
+      "id": "train",
+      "to": "",
+      "action": "board",
+      "label": "[E] BOARD",
+      "promptH": 84
+    },
+    {
+      "id": "citymap",
+      "to": "",
+      "action": "map",
+      "label": "[E] CITY MAP",
+      "promptH": 90
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {},
+    "rests": {
+      "bench0": {
+        "instance": "bench0",
+        "x": -12
+      },
+      "bench1": {
+        "instance": "bench1",
+        "x": 0
+      }
+    },
+    "exits": {
+      "downtown": "downtown",
+      "train": "train-exit",
+      "citymap": "citymap"
+    },
+    "readables": {
+      "board": {
+        "instance": "board"
+      },
+      "map": {
+        "instance": "map"
+      },
+      "screen": {
+        "instance": "screen"
+      },
+      "regular": {
+        "instance": "regular"
+      },
+      "poster": {
+        "instance": "poster"
+      }
+    }
+  },
+  "rests": [
+    {
+      "id": "bench0",
+      "kind": "bench"
+    },
+    {
+      "id": "bench1",
+      "kind": "bench"
+    }
+  ],
+  "actors": [
+    {
+      "id": "waiting0",
+      "instance": "waiting0",
+      "band": "background",
+      "reaction": "actor.waiting0",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "downtown",
+          "slot": 0,
+          "count": 4
+        }
+      }
+    },
+    {
+      "id": "waiting1",
+      "instance": "waiting1",
+      "band": "background",
+      "reaction": "actor.waiting1",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "downtown",
+          "slot": 1,
+          "count": 4
+        }
+      }
+    },
+    {
+      "id": "waiting2",
+      "instance": "waiting2",
+      "band": "background",
+      "reaction": "actor.waiting2",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "downtown",
+          "slot": 2,
+          "count": 4
+        }
+      }
+    },
+    {
+      "id": "waiting3",
+      "instance": "waiting3",
+      "band": "background",
+      "reaction": "actor.waiting3",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "downtown",
+          "slot": 3,
+          "count": 4
+        }
+      }
+    },
+    {
+      "id": "regular",
+      "instance": "regular",
+      "band": "background",
+      "reaction": "actor.regular",
+      "presentation": {
+        "kind": "rider",
+        "rider": "paper",
+        "sit": true,
+        "phase": 930
+      }
+    }
+  ],
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "weather": true
+    },
+    "facing": 270
+  },
+  "companion": {
+    "mode": "off"
+  }
+}

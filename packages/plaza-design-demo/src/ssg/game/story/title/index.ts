@@ -24,12 +24,11 @@ import type { Timeline } from "../../ui/transport";
 import {renderOpeningDocument}from'./render';
 import{light}from'../../world/light';
 import { openingDocuments } from './documents';
+import type {OpeningDocuments} from '../../art/sequences/opening/sequence';
 
 const titleSequence = openingDocuments.timeline.sequences.find(s => s.id === 'title')!;
 const glideSequence = openingDocuments.timeline.sequences.find(s => s.id === 'glide')!;
 export const RISE = titleSequence.duration, GLIDE = glideSequence.duration;
-const RISE_BEATS = titleSequence.beats.map(b => ({ at: b.time, name: b.id }));
-const GLIDE_BEATS = glideSequence.beats.map(b => ({ at: b.time, name: b.id }));
 
 /**
  * The title shot and the glide: one picture, two clocks. game.ts steps and draws it instead of the
@@ -48,13 +47,17 @@ export class Opening {
   private titleTl: Timeline | null = null;
   private glideTl: Timeline | null = null;
 
-  constructor(private reduced: boolean) { this.t = reduced ? RISE : 0; }
+  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments) { this.t = reduced ? this.rise : 0; }
+  private get titleSequence(){return this.documents.timeline.sequences.find(s=>s.id==='title')!;}
+  private get glideSequence(){return this.documents.timeline.sequences.find(s=>s.id==='glide')!;}
+  private get rise(){return this.titleSequence.duration;}
+  private get glide(){return this.glideSequence.duration;}
 
   /** The sun has settled on the horizon: the menu is up. */
-  get risen() { return this.t >= RISE; }
+  get risen() { return this.t >= this.rise; }
 
   /** Any key or click during the sunrise: straight to the settled shot. */
-  skipRise() { if (this.tau === null && this.t < RISE) this.t = RISE; }
+  skipRise() { if (this.tau === null && this.t < this.rise) this.t = this.rise; }
 
   /** NEW GAME: the same shot starts moving (from the settled one, if the sun was still coming up). */
   go() {
@@ -66,37 +69,37 @@ export class Opening {
 
   get gliding() { return this.tau !== null; }
   /** Only the runtime controller commits this destination; drawing and seeking never do. */
-  get handoff() { return glideSequence.handoff ? { ...glideSequence.handoff } : undefined; }
+  get handoff() { return this.glideSequence.handoff ? { ...this.glideSequence.handoff } : undefined; }
 
   /** Advance by `dt` seconds of play. The glide is done once play runs it to its end (a seek never ends it). */
   step(dt: number) {
     if (dt <= 0) return;
     if (this.tau === null) { this.t += dt; return; }
-    this.tau = Math.min(GLIDE, this.tau + dt);
+    this.tau = Math.min(this.glide, this.tau + dt);
     this.t = this.t0 + this.tau;
-    if (this.tau >= GLIDE) this.done = true;
+    if (this.tau >= this.glide) this.done = true;
   }
 
   /** Sudo's time control: the sunrise, or once NEW GAME is pressed, the glide. */
   get timeline(): Timeline {
     if (this.tau === null) {
       return this.titleTl ??= {
-        id: 'title', label: 'TITLE', duration: RISE, beats: RISE_BEATS,
+        id: 'title', label: 'TITLE', duration: this.rise, beats: this.titleSequence.beats.map(b=>({at:b.time,name:b.id})),
         time: () => this.t,
         seek: (s) => { if (this.tau === null) this.t = Math.max(0, s); },
       };
     }
     return this.glideTl ??= {
-      id: 'glide', label: 'GLIDE', duration: GLIDE, beats: GLIDE_BEATS,
+      id: 'glide', label: 'GLIDE', duration: this.glide, beats: this.glideSequence.beats.map(b=>({at:b.time,name:b.id})),
       time: () => this.tau ?? 0,
-      seek: (s) => { if (this.tau === null) return; this.tau = Math.max(0, Math.min(GLIDE, s)); this.t = this.t0 + this.tau; },
+      seek: (s) => { if (this.tau === null) return; this.tau = Math.max(0, Math.min(this.glide, s)); this.t = this.t0 + this.tau; },
     };
   }
 
   /** Draw a frame into a context already scaled to world units. */
   draw(x: CanvasRenderingContext2D, W: number, H: number) {
     x.save();
-    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting:light() }, openingDocuments, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ambientTime: this.t });
+    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting:light() }, this.documents, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ambientTime: this.t });
     x.restore();
   }
 }

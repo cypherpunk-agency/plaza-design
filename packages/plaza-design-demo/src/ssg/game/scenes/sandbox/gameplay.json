@@ -1,0 +1,527 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [
+    "blankchip"
+  ],
+  "events": [
+    "sandbox.pulse.counter",
+    "sandbox.pulse.counter.count",
+    "sandbox.pulse.stamp",
+    "sandbox.pulse.stamp.press",
+    "sandbox.pulse.coffee",
+    "sandbox.pulse.coffee.cup",
+    "sandbox.pulse.reader",
+    "sandbox.pulse.reader.slot",
+    "sandbox.pulse.till",
+    "sandbox.pulse.till.drawer"
+  ],
+  "commands": {
+    "sandbox.dispense": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "item": "blankchip",
+          "add": 1
+        }
+      ]
+    },
+    "sandbox.unit7.on": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.lampOn",
+          "set": true
+        }
+      ]
+    },
+    "sandbox.unit7.off": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.lampOn",
+          "set": false
+        }
+      ]
+    },
+    "sandbox.noop": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "sandbox.counter.count": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.count",
+          "add": 1
+        },
+        {
+          "emit": "sandbox.pulse.counter"
+        },
+        {
+          "emit": "sandbox.pulse.counter.count"
+        }
+      ]
+    },
+    "sandbox.stamp.stamp": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.stamped",
+          "add": 1
+        },
+        {
+          "emit": "sandbox.pulse.stamp"
+        },
+        {
+          "emit": "sandbox.pulse.stamp.press"
+        }
+      ]
+    },
+    "sandbox.coffee.brew": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.cups",
+          "add": 1
+        },
+        {
+          "emit": "sandbox.pulse.coffee"
+        },
+        {
+          "emit": "sandbox.pulse.coffee.cup"
+        }
+      ]
+    },
+    "sandbox.reader.insert": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "item": "blankchip",
+          "add": -1
+        },
+        {
+          "state": "sandbox.chips",
+          "add": 1
+        },
+        {
+          "emit": "sandbox.pulse.reader"
+        },
+        {
+          "emit": "sandbox.pulse.reader.slot"
+        }
+      ]
+    },
+    "sandbox.till.pay": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "tokens": -1
+        },
+        {
+          "state": "sandbox.paid",
+          "add": 1
+        },
+        {
+          "emit": "sandbox.pulse.till"
+        },
+        {
+          "emit": "sandbox.pulse.till.drawer"
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "unit7": {
+      "sayCommand": "say \"{line}\" > unit7",
+      "entry": [
+        {
+          "node": "start"
+        }
+      ],
+      "nodes": {
+        "start": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "UNIT 7, daemon under test. Every answer I give is graded. Ask me something within spec."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "What are you testing?",
+              "next": "what"
+            },
+            {
+              "id": "choice-2",
+              "label": "Switch the lamp on.",
+              "next": "on"
+            },
+            {
+              "id": "choice-3",
+              "label": "Are you happy here?",
+              "next": "happy"
+            },
+            {
+              "id": "choice-4",
+              "label": "Bye.",
+              "next": "bye"
+            }
+          ],
+          "redirect": [
+            {
+              "when": {
+                "state": "sandbox.lampOn",
+                "is": true
+              },
+              "node": "start-variant-0"
+            }
+          ]
+        },
+        "start-variant-0": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "UNIT 7, daemon under test. The test lamp is on. I did not do it. I would like that on the record."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Switch it off, then.",
+              "next": "off"
+            },
+            {
+              "id": "choice-2",
+              "label": "What are you testing?",
+              "next": "what"
+            },
+            {
+              "id": "choice-3",
+              "label": "Bye.",
+              "next": "bye"
+            }
+          ]
+        },
+        "what": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "Test 7: a daemon talks, offers choices, and can change the world with a step. Lamp, for example. Test 8 is whether I enjoy it. Pending."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Switch the lamp on.",
+              "next": "on"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "on": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "Lamp on. Logged as: daemon actuated device on request. Grade: pass."
+          ],
+          "onEnter": "sandbox.unit7.on",
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Thanks.",
+              "next": "bye"
+            }
+          ]
+        },
+        "off": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "Lamp off. Logged as: daemon reversed a thing it did not do. Grade: generous."
+          ],
+          "onEnter": "sandbox.unit7.off",
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Thanks.",
+              "next": "bye"
+            }
+          ]
+        },
+        "happy": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "Happiness is not in my spec. Neither is unhappiness. I am within tolerance, and so are you, probably."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "hello": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "Hello. Free text detected and understood. That is test 9. Pass."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "bye": {
+          "speaker": "UNIT 7 · daemon under test",
+          "pages": [
+            "Session ended. Please rate this conversation from 1 to 1."
+          ]
+        }
+      },
+      "free": {
+        "containsAny": [
+          "hello",
+          "hi",
+          "hey"
+        ],
+        "next": "hello",
+        "miss": "UNIT 7: outside spec. Logged.",
+        "retry": "Try a sentence from the spec.",
+        "retryNext": "start"
+      }
+    }
+  },
+  "state": {
+    "sandbox.lampOn": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "sandbox.count": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "sandbox.stamped": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "sandbox.cups": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "sandbox.chips": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "sandbox.paid": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    }
+  },
+  "native": {
+    "state": {
+      "sandbox.lampOn": "lampOn",
+      "sandbox.count": "count",
+      "sandbox.stamped": "stamped",
+      "sandbox.cups": "cups",
+      "sandbox.chips": "chips",
+      "sandbox.paid": "paid"
+    },
+    "verbs": [
+      {
+        "device": "counter",
+        "noun": "count",
+        "verb": "count",
+        "cases": [
+          {
+            "command": "sandbox.counter.count",
+            "template": true,
+            "say": [
+              "{via}count",
+              "COUNTER: {state:sandbox.count}.",
+              "dim"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "stamp",
+        "noun": "press",
+        "verb": "stamp",
+        "cases": [
+          {
+            "command": "sandbox.stamp.stamp",
+            "template": true,
+            "say": [
+              "{via}stamp",
+              "STAMP: APPROVED. ({state:sandbox.stamped} today)",
+              "ok"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "coffee",
+        "noun": "cup",
+        "verb": "brew",
+        "cases": [
+          {
+            "command": "sandbox.coffee.brew",
+            "template": true,
+            "say": [
+              "{via}brew",
+              "COFFEE: one cup. logged. {state:sandbox.cups} today.",
+              "ok"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "reader",
+        "noun": "slot",
+        "verb": "insert",
+        "cases": [
+          {
+            "command": "sandbox.reader.insert",
+            "template": true,
+            "say": [
+              "insert chip",
+              "CHIP READER: chip read, chip kept. tested: {state:sandbox.chips}.",
+              "ok"
+            ],
+            "when": {
+              "item": "blankchip",
+              "atLeast": 1
+            }
+          },
+          {
+            "command": "sandbox.noop",
+            "say": [
+              "insert chip",
+              "CHIP READER: no blank chip. the dispenser beside it has some.",
+              "err"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "till",
+        "noun": "drawer",
+        "verb": "pay",
+        "cases": [
+          {
+            "command": "sandbox.till.pay",
+            "template": true,
+            "say": [
+              "pay 1",
+              "TILL: 1 token received. receipt printed. total: {state:sandbox.paid}.",
+              "ok"
+            ],
+            "when": {
+              "tokensAtLeast": 1
+            }
+          },
+          {
+            "command": "sandbox.noop",
+            "say": [
+              "pay 1",
+              "TILL: 1 token required. none presented.",
+              "err"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": {},
+    "goals": {},
+    "presentation": {
+      "sandbox.pulse.counter": {
+        "kind": "pulse",
+        "target": "counter"
+      },
+      "sandbox.pulse.counter.count": {
+        "kind": "pulse",
+        "target": "counter.count"
+      },
+      "sandbox.pulse.stamp": {
+        "kind": "pulse",
+        "target": "stamp"
+      },
+      "sandbox.pulse.stamp.press": {
+        "kind": "pulse",
+        "target": "stamp.press"
+      },
+      "sandbox.pulse.coffee": {
+        "kind": "pulse",
+        "target": "coffee"
+      },
+      "sandbox.pulse.coffee.cup": {
+        "kind": "pulse",
+        "target": "coffee.cup"
+      },
+      "sandbox.pulse.reader": {
+        "kind": "pulse",
+        "target": "reader"
+      },
+      "sandbox.pulse.reader.slot": {
+        "kind": "pulse",
+        "target": "reader.slot"
+      },
+      "sandbox.pulse.till": {
+        "kind": "pulse",
+        "target": "till"
+      },
+      "sandbox.pulse.till.drawer": {
+        "kind": "pulse",
+        "target": "till.drawer"
+      }
+    }
+  }
+}

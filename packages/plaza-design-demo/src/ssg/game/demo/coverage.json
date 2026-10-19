@@ -3,13 +3,14 @@
   "scope": [
     "ENG-02",
     "ENG-03",
-    "ENG-04"
+    "ENG-04",
+    "ENG-05"
   ],
   "runtime": "Game",
   "areas": {
-    "library": "Test Desk",
-    "shop": "Counter",
-    "sandbox": "Test Workshop"
+    "library": "Conversations",
+    "shop": "Purchases and optional guidance",
+    "sandbox": "Devices and wiring"
   },
   "features": [
     {
@@ -97,6 +98,15 @@
       "game": [
         "market"
       ]
+    },
+    {
+      "id": "objectives.access",
+      "authoring": "Scene logic objectives/access; Gameplay demo mission choices",
+      "minimal": "Purchases -> Guidance example -> Start guidance example",
+      "failure": "Try buying before task permission; resources and mission remain unchanged",
+      "combined": "Authorize in place, then purchase; objective advances through the shared transaction",
+      "game": "Harbor authored guidance, Downtown progression, flag/key exits, quick-travel and harbor transport adapters",
+      "evidence": "ENG-05-08-STATUS.md"
     }
   ]
 }

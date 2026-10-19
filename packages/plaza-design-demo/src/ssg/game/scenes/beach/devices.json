@@ -1,7 +1,6 @@
 {
   "id": "beach",
   "name": "the beach",
-
   "state": {
     "song": 0,
     "freeDrink": false,
@@ -12,49 +11,120 @@
     "billing": "run",
     "billed": 0
   },
-
   "tuning": {
     "minuteMs": 60000,
     "dangerMs": 40000
   },
-
   "devices": [
     {
       "id": "kiosk",
       "name": "SUNBED RENTAL",
       "look": "A rental kiosk on the boardwalk. A meter, a card reader, a list of terms longer than the beach.",
       "everyday": [
-        { "noun": "rent", "verb": "rent", "label": "rent a sunbed · 1 token a minute · you have {tokens}" },
-        { "noun": "rent", "verb": "end", "label": "end the rental" },
-        { "noun": "terms", "verb": "read", "label": "read the terms" }
+        {
+          "noun": "rent",
+          "verb": "rent",
+          "label": "rent a sunbed · 1 token a minute · you have {tokens}"
+        },
+        {
+          "noun": "rent",
+          "verb": "end",
+          "label": "end the rental"
+        },
+        {
+          "noun": "terms",
+          "verb": "read",
+          "label": "read the terms"
+        }
       ],
       "status": [
-        { "if": "rented", "then": "SUNBED 7 · RENTED · {billed} BILLED", "else": "SUNBEDS FREE: 3 OF 12" },
-        { "if": "billing=pause", "then": " · METER PAUSED" }
+        {
+          "if": "rented",
+          "then": "SUNBED 7 · RENTED · {billed} BILLED",
+          "else": "SUNBEDS FREE: 3 OF 12"
+        },
+        {
+          "if": "billing=pause",
+          "then": " · METER PAUSED"
+        }
       ],
       "layout": {
-        "spot": { "x": 236, "w": 30, "h": 50 },
-        "board": { "x": 0.1, "y": 0.72 },
-        "dir": { "rent": "up", "meter": "right", "terms": "left" }
+        "spot": {
+          "x": 236,
+          "w": 30,
+          "h": 50
+        },
+        "board": {
+          "x": 0.1,
+          "y": 0.72
+        },
+        "dir": {
+          "rent": "up",
+          "meter": "right",
+          "terms": "left"
+        }
       },
       "nouns": [
         {
-          "id": "rent", "kind": "ACT", "verbs": ["rent", "end"],
+          "id": "rent",
+          "kind": "ACT",
+          "verbs": [
+            "rent",
+            "end"
+          ],
+          "on": {}
+        },
+        {
+          "id": "meter",
+          "kind": "ACT",
+          "verbs": [
+            "run",
+            "pause"
+          ],
+          "current": "billing",
           "on": {
-            "rent": { "do": [{ "effect": "sunbed.rent" }] },
-            "end": { "do": [{ "effect": "sunbed.end" }] }
+            "run": {
+              "do": [
+                {
+                  "set": "billing",
+                  "to": "run"
+                }
+              ],
+              "say": [
+                "{via}use meter --run",
+                "METER: billing resumed. thank you for your patience.",
+                "dim"
+              ]
+            },
+            "pause": {
+              "do": [
+                {
+                  "set": "billing",
+                  "to": "pause"
+                }
+              ],
+              "say": [
+                "{via}use meter --pause",
+                "METER: billing paused. maintenance mode. the kiosk's screen keeps smiling.",
+                "ok"
+              ]
+            }
           }
         },
         {
-          "id": "meter", "kind": "ACT", "verbs": ["run", "pause"], "current": "billing",
+          "id": "terms",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
           "on": {
-            "run": { "do": [{ "set": "billing", "to": "run" }], "say": ["{via}use meter --run", "METER: billing resumed. thank you for your patience.", "dim"] },
-            "pause": { "do": [{ "set": "billing", "to": "pause" }], "say": ["{via}use meter --pause", "METER: billing paused. maintenance mode. the kiosk's screen keeps smiling.", "ok"] }
+            "read": {
+              "say": [
+                "cat terms",
+                "SUNBED RENTAL. 1 TOKEN PER MINUTE OR PART THEREOF. BILLING BEGINS ON CONTACT. SHADE NOT INCLUDED. UNPAID TIME IS REPORTED TO THE REGISTRY."
+              ]
+            }
           }
-        },
-        {
-          "id": "terms", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat terms", "SUNBED RENTAL. 1 TOKEN PER MINUTE OR PART THEREOF. BILLING BEGINS ON CONTACT. SHADE NOT INCLUDED. UNPAID TIME IS REPORTED TO THE REGISTRY."] } }
         }
       ]
     },
@@ -63,29 +133,109 @@
       "name": "SALT JUKEBOX",
       "look": "An old jukebox under the bar's awning, chrome gone green with salt. It plays whatever it likes, and it likes the mixer.",
       "everyday": [
-        { "noun": "songs", "verb": "play", "label": "play a song" },
-        { "noun": "card", "verb": "read", "label": "read the card" }
+        {
+          "noun": "songs",
+          "verb": "play",
+          "label": "play a song"
+        },
+        {
+          "noun": "card",
+          "verb": "read",
+          "label": "read the card"
+        }
       ],
       "status": "FREE PLAY · ONE SONG AT A TIME",
       "layout": {
-        "spot": { "x": 466, "w": 26, "h": 44 },
-        "board": { "x": 0.3, "y": 0.28 },
-        "dir": { "songs": "right", "card": "up" }
+        "spot": {
+          "x": 466,
+          "w": 26,
+          "h": 44
+        },
+        "board": {
+          "x": 0.3,
+          "y": 0.28
+        },
+        "dir": {
+          "songs": "right",
+          "card": "up"
+        }
       },
       "nouns": [
         {
-          "id": "songs", "kind": "ACT", "verbs": ["play"], "events": ["played"],
+          "id": "songs",
+          "kind": "ACT",
+          "verbs": [
+            "play"
+          ],
+          "events": [
+            "played"
+          ],
           "on": {
             "play": [
-              { "if": "song=0", "do": [{ "set": "song", "to": 1 }, { "emit": "played" }], "say": ["{via}use jukebox --play", "the jukebox clunks and plays \"LOW TIDE\". somebody on a sunbed sings along, badly."] },
-              { "if": "song=1", "do": [{ "set": "song", "to": 2 }, { "emit": "played" }], "say": ["{via}use jukebox --play", "the jukebox plays \"BRINE AND NEON\". a gull leaves."] },
-              { "do": [{ "set": "song", "to": 0 }, { "emit": "played" }], "say": ["{via}use jukebox --play", "the jukebox plays \"GONE FISHING\". LIME stops polishing a glass, for one bar."] }
+              {
+                "if": "song=0",
+                "do": [
+                  {
+                    "set": "song",
+                    "to": 1
+                  },
+                  {
+                    "emit": "played"
+                  }
+                ],
+                "say": [
+                  "{via}use jukebox --play",
+                  "the jukebox clunks and plays \"LOW TIDE\". somebody on a sunbed sings along, badly."
+                ]
+              },
+              {
+                "if": "song=1",
+                "do": [
+                  {
+                    "set": "song",
+                    "to": 2
+                  },
+                  {
+                    "emit": "played"
+                  }
+                ],
+                "say": [
+                  "{via}use jukebox --play",
+                  "the jukebox plays \"BRINE AND NEON\". a gull leaves."
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "song",
+                    "to": 0
+                  },
+                  {
+                    "emit": "played"
+                  }
+                ],
+                "say": [
+                  "{via}use jukebox --play",
+                  "the jukebox plays \"GONE FISHING\". LIME stops polishing a glass, for one bar."
+                ]
+              }
             ]
           }
         },
         {
-          "id": "card", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat card", "FREE PLAY. COURTESY OF THE MANAGEMENT. SONG EVENTS ARE SHARED WITH THE BAR SYSTEM FOR AMBIENCE."] } }
+          "id": "card",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat card",
+                "FREE PLAY. COURTESY OF THE MANAGEMENT. SONG EVENTS ARE SHARED WITH THE BAR SYSTEM FOR AMBIENCE."
+              ]
+            }
+          }
         }
       ]
     },
@@ -93,31 +243,122 @@
       "id": "mixer",
       "name": "COCKTAIL MIXER",
       "look": "SALT's mixer on the end of the counter: six bottles upside down, one pump, one opinion. It pours when the till says so.",
-      "everyday": [{ "noun": "menu", "verb": "read", "label": "read the menu" }],
-      "status": [{ "if": "freeDrink", "then": "1 SALT SPECIAL POURED · UNBILLED", "else": "AWAITING ORDER FROM TILL" }],
+      "everyday": [
+        {
+          "noun": "menu",
+          "verb": "read",
+          "label": "read the menu"
+        }
+      ],
+      "status": [
+        {
+          "if": "freeDrink",
+          "then": "1 SALT SPECIAL POURED · UNBILLED",
+          "else": "AWAITING ORDER FROM TILL"
+        }
+      ],
       "layout": {
-        "spot": { "x": 626, "y": 26, "w": 22, "h": 26 },
-        "board": { "x": 0.5, "y": 0.28 },
-        "dir": { "lights": "left", "pump": "up", "menu": "right" }
+        "spot": {
+          "x": 626,
+          "y": 26,
+          "w": 22,
+          "h": 26
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.28
+        },
+        "dir": {
+          "lights": "left",
+          "pump": "up",
+          "menu": "right"
+        }
       },
       "nouns": [
         {
-          "id": "lights", "kind": "ACT", "verbs": ["flash"],
-          "on": { "flash": { "say": ["{via}use lights --flash", "the bar's lights pulse on the beat. ambience.", "dim"] } }
+          "id": "lights",
+          "kind": "ACT",
+          "verbs": [
+            "flash"
+          ],
+          "on": {
+            "flash": {
+              "say": [
+                "{via}use lights --flash",
+                "the bar's lights pulse on the beat. ambience.",
+                "dim"
+              ]
+            }
+          }
         },
         {
-          "id": "pump", "kind": "ACT", "verbs": ["pour"], "events": ["poured"],
+          "id": "pump",
+          "kind": "ACT",
+          "verbs": [
+            "pour"
+          ],
+          "events": [
+            "poured"
+          ],
           "on": {
             "pour": [
-              { "if": "!signal", "say": ["use pump --pour", "MIXER: manual pour disabled. pours on an order from the till.", "err"] },
-              { "if": "freeDrink", "do": [{ "emit": "poured" }], "say": ["signal → pump --pour", "the mixer pours another on the beat. LIME moves it out of your reach. \"one. the machine and I agreed on one.\"", "dim"] },
-              { "do": [{ "set": "freeDrink", "to": true }, { "emit": "poured" }, { "goal": "free" }], "say": ["signal → pump --pour", "the mixer pours a SALT SPECIAL on the beat. nobody ordered it. LIME slides it over: \"the machine insists. who am I to argue with the machine.\"", "ok"] }
+              {
+                "if": "!signal",
+                "say": [
+                  "use pump --pour",
+                  "MIXER: manual pour disabled. pours on an order from the till.",
+                  "err"
+                ]
+              },
+              {
+                "if": "freeDrink",
+                "do": [
+                  {
+                    "emit": "poured"
+                  }
+                ],
+                "say": [
+                  "signal → pump --pour",
+                  "the mixer pours another on the beat. LIME moves it out of your reach. \"one. the machine and I agreed on one.\"",
+                  "dim"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "freeDrink",
+                    "to": true
+                  },
+                  {
+                    "emit": "poured"
+                  },
+                  {
+                    "goal": "free"
+                  }
+                ],
+                "say": [
+                  "signal → pump --pour",
+                  "the mixer pours a SALT SPECIAL on the beat. nobody ordered it. LIME slides it over: \"the machine insists. who am I to argue with the machine.\"",
+                  "ok"
+                ]
+              }
             ]
           }
         },
         {
-          "id": "menu", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat menu", "SALT SPECIAL 2 · WATER 2 · WATER WITH LIME 3 · ORDERS AT THE BAR. ALL DRINKS BILLED TO A VERIFIED IDENTITY OR IN TOKENS."] } }
+          "id": "menu",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat menu",
+                "SALT SPECIAL 2 · WATER 2 · WATER WITH LIME 3 · ORDERS AT THE BAR. ALL DRINKS BILLED TO A VERIFIED IDENTITY OR IN TOKENS."
+              ]
+            }
+          }
         }
       ]
     },
@@ -125,35 +366,134 @@
       "id": "drone",
       "name": "LIFEGUARD DRONE",
       "look": "A municipal lifeguard drone over the tower. It counts swimmers, and it decides what counts as danger.",
-      "everyday": [{ "noun": "eye", "verb": "read", "label": "read its display" }],
-      "status": [{ "if": "flag=danger", "then": "FLAG: RED · WATER CLOSED", "else": "FLAG: GREEN · 7 SWIMMERS" }],
+      "everyday": [
+        {
+          "noun": "eye",
+          "verb": "read",
+          "label": "read its display"
+        }
+      ],
+      "status": [
+        {
+          "if": "flag=danger",
+          "then": "FLAG: RED · WATER CLOSED",
+          "else": "FLAG: GREEN · 7 SWIMMERS"
+        }
+      ],
       "layout": {
-        "spot": { "x": 798, "y": 112, "w": 32, "h": 16 },
-        "board": { "x": 0.7, "y": 0.28 },
-        "dir": { "eye": "left", "flag": "up" }
+        "spot": {
+          "x": 798,
+          "y": 112,
+          "w": 32,
+          "h": 16
+        },
+        "board": {
+          "x": 0.7,
+          "y": 0.28
+        },
+        "dir": {
+          "eye": "left",
+          "flag": "up"
+        }
       },
       "nouns": [
         {
-          "id": "eye", "kind": "SENSE", "verbs": ["read"],
+          "id": "eye",
+          "kind": "SENSE",
+          "verbs": [
+            "read"
+          ],
           "on": {
             "read": [
-              { "if": "flag=danger", "say": ["cat eye", "SWIMMERS: 0. THREAT: UNCONFIRMED. WATER CLOSED UNTIL FURTHER NOTICE."] },
-              { "if": "weather=storm", "say": ["cat eye", "SWIMMERS: 0. WEATHER: STORM. BATHING SUSPENDED BY FORECAST. THE FLAG IS ADVISORY."] },
-              { "when": { "from": "22:00", "to": "06:00" }, "say": ["cat eye", "SWIMMERS: 2 (VERIFIED: 0). BATHING HOURS 06:00 TO 22:00. NIGHT SWIMMERS ARE COUNTED AS DEBRIS."] },
-              { "say": ["cat eye", "SWIMMERS: 7 (VERIFIED: 5). SHARKS: 0. CONFIDENCE: 61%."] }
+              {
+                "if": "flag=danger",
+                "say": [
+                  "cat eye",
+                  "SWIMMERS: 0. THREAT: UNCONFIRMED. WATER CLOSED UNTIL FURTHER NOTICE."
+                ]
+              },
+              {
+                "if": "weather=storm",
+                "say": [
+                  "cat eye",
+                  "SWIMMERS: 0. WEATHER: STORM. BATHING SUSPENDED BY FORECAST. THE FLAG IS ADVISORY."
+                ]
+              },
+              {
+                "when": {
+                  "from": "22:00",
+                  "to": "06:00"
+                },
+                "say": [
+                  "cat eye",
+                  "SWIMMERS: 2 (VERIFIED: 0). BATHING HOURS 06:00 TO 22:00. NIGHT SWIMMERS ARE COUNTED AS DEBRIS."
+                ]
+              },
+              {
+                "say": [
+                  "cat eye",
+                  "SWIMMERS: 7 (VERIFIED: 5). SHARKS: 0. CONFIDENCE: 61%."
+                ]
+              }
             ]
           }
         },
         {
-          "id": "flag", "kind": "ACT", "verbs": ["danger", "clear"], "current": "flag",
+          "id": "flag",
+          "kind": "ACT",
+          "verbs": [
+            "danger",
+            "clear"
+          ],
+          "current": "flag",
           "on": {
             "danger": [
-              { "if": "flag=danger", "say": ["{via}use flag --danger", "the flag is already red. the water is already empty.", "dim"] },
-              { "do": [{ "set": "flag", "to": "danger" }, { "goal": "clear" }], "say": ["{via}use flag --danger", "DRONE: DANGER. CLEAR THE WATER. the flag goes red and everyone wades out, grumbling.", "ok"] }
+              {
+                "if": "flag=danger",
+                "say": [
+                  "{via}use flag --danger",
+                  "the flag is already red. the water is already empty.",
+                  "dim"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "flag",
+                    "to": "danger"
+                  },
+                  {
+                    "goal": "clear"
+                  }
+                ],
+                "say": [
+                  "{via}use flag --danger",
+                  "DRONE: DANGER. CLEAR THE WATER. the flag goes red and everyone wades out, grumbling.",
+                  "ok"
+                ]
+              }
             ],
             "clear": [
-              { "if": "flag=clear", "say": ["{via}use flag --clear", "the flag is green already.", "dim"] },
-              { "do": [{ "set": "flag", "to": "clear" }], "say": ["{via}use flag --clear", "DRONE: no threat confirmed. swimming resumes."] }
+              {
+                "if": "flag=clear",
+                "say": [
+                  "{via}use flag --clear",
+                  "the flag is green already.",
+                  "dim"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "flag",
+                    "to": "clear"
+                  }
+                ],
+                "say": [
+                  "{via}use flag --clear",
+                  "DRONE: no threat confirmed. swimming resumes."
+                ]
+              }
             ]
           }
         }
@@ -163,36 +503,132 @@
       "id": "pier",
       "name": "PIER LIGHTS",
       "look": "The pier's lamp controller, a grey box at the foot of the pier. The lamps run on a schedule, whatever the sky does.",
-      "everyday": [{ "noun": "plate", "verb": "read", "label": "read the plate" }],
-      "status": [{ "if": "lamps=on", "then": "LAMPS: ON", "else": "LAMPS: OFF" }, " · ENERGY SCHEDULE"],
+      "everyday": [
+        {
+          "noun": "plate",
+          "verb": "read",
+          "label": "read the plate"
+        }
+      ],
+      "status": [
+        {
+          "if": "lamps=on",
+          "then": "LAMPS: ON",
+          "else": "LAMPS: OFF"
+        },
+        " · ENERGY SCHEDULE"
+      ],
       "layout": {
-        "spot": { "x": 1146, "w": 22, "h": 36 },
-        "board": { "x": 0.9, "y": 0.72 },
-        "dir": { "clock": "up", "lamps": "right", "plate": "left" }
+        "spot": {
+          "x": 1146,
+          "w": 22,
+          "h": 36
+        },
+        "board": {
+          "x": 0.9,
+          "y": 0.72
+        },
+        "dir": {
+          "clock": "up",
+          "lamps": "right",
+          "plate": "left"
+        }
       },
       "nouns": [
         {
-          "id": "clock", "kind": "CLOCK", "events": ["on", "off"],
-          "clock": { "every": 8000, "set": "pierClock" },
-          "verbs": ["read"],
-          "on": { "read": { "say": ["cat clock", "SCHEDULE: ON 8 S, OFF 8 S. ENERGY SAVING. APPROVED BY THE HARBOUR AUTHORITY."] } }
+          "id": "clock",
+          "kind": "CLOCK",
+          "events": [
+            "on",
+            "off"
+          ],
+          "clock": {
+            "every": 8000,
+            "set": "pierClock"
+          },
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat clock",
+                "SCHEDULE: ON 8 S, OFF 8 S. ENERGY SAVING. APPROVED BY THE HARBOUR AUTHORITY."
+              ]
+            }
+          }
         },
         {
-          "id": "lamps", "kind": "ACT", "verbs": ["on", "off"], "current": "lamps",
+          "id": "lamps",
+          "kind": "ACT",
+          "verbs": [
+            "on",
+            "off"
+          ],
+          "current": "lamps",
           "on": {
             "on": [
-              { "if": "signal", "do": [{ "set": "lamps", "to": "on" }] },
-              { "do": [{ "set": "lamps", "to": "on" }], "say": ["use lamps --on", "the pier lamps come on, one after another."] }
+              {
+                "if": "signal",
+                "do": [
+                  {
+                    "set": "lamps",
+                    "to": "on"
+                  }
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "lamps",
+                    "to": "on"
+                  }
+                ],
+                "say": [
+                  "use lamps --on",
+                  "the pier lamps come on, one after another."
+                ]
+              }
             ],
             "off": [
-              { "if": "signal", "do": [{ "set": "lamps", "to": "off" }] },
-              { "do": [{ "set": "lamps", "to": "off" }], "say": ["use lamps --off", "the pier goes dark. the old man fishing doesn't notice."] }
+              {
+                "if": "signal",
+                "do": [
+                  {
+                    "set": "lamps",
+                    "to": "off"
+                  }
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "lamps",
+                    "to": "off"
+                  }
+                ],
+                "say": [
+                  "use lamps --off",
+                  "the pier goes dark. the old man fishing doesn't notice."
+                ]
+              }
             ]
           }
         },
         {
-          "id": "plate", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat plate", "PIER LIGHTING. HARBOUR AUTHORITY. TAMPERING IS AN OFFENCE. FAULTS: REPORT IN PERSON."] } }
+          "id": "plate",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat plate",
+                "PIER LIGHTING. HARBOUR AUTHORITY. TAMPERING IS AN OFFENCE. FAULTS: REPORT IN PERSON."
+              ]
+            }
+          }
         }
       ]
     },
@@ -201,59 +637,112 @@
       "name": "BOAT · BERTH 9",
       "look": "A small fishing boat at the end of the pier, cover tied down, hatch padlocked. Moth's. The lights are off.",
       "everyday": [
-        { "noun": "notice", "verb": "read", "label": "read the notice" },
-        { "noun": "name", "verb": "read", "label": "look at the name" },
-        { "noun": "hatch", "verb": "open", "label": "try the hatch" }
+        {
+          "noun": "notice",
+          "verb": "read",
+          "label": "read the notice"
+        },
+        {
+          "noun": "name",
+          "verb": "read",
+          "label": "look at the name"
+        },
+        {
+          "noun": "hatch",
+          "verb": "open",
+          "label": "try the hatch"
+        }
       ],
       "status": "MOORED · IMMOBILISED · NO ONE ABOARD",
       "layout": {
-        "spot": { "x": 1440, "w": 120, "h": 54 },
-        "board": { "x": 0.9, "y": 0.28 },
-        "dir": { "notice": "up", "name": "left", "hatch": "right" }
+        "spot": {
+          "x": 1440,
+          "w": 120,
+          "h": 54
+        },
+        "board": {
+          "x": 0.9,
+          "y": 0.28
+        },
+        "dir": {
+          "notice": "up",
+          "name": "left",
+          "hatch": "right"
+        }
       },
       "nouns": [
         {
-          "id": "notice", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat notice", "HARBOUR AUTHORITY. BERTH 9. MOORING FEE OVERDUE. VESSEL IMMOBILISED PENDING VERIFICATION OF OWNER. OWNER: NOT VERIFIED."] } }
+          "id": "notice",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat notice",
+                "HARBOUR AUTHORITY. BERTH 9. MOORING FEE OVERDUE. VESSEL IMMOBILISED PENDING VERIFICATION OF OWNER. OWNER: NOT VERIFIED."
+              ]
+            }
+          }
         },
         {
-          "id": "name", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat name", "the name on the hull, hand-painted, dripping a little: NOT FISHING. under it, smaller: (gone)."] } }
+          "id": "name",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat name",
+                "the name on the hull, hand-painted, dripping a little: NOT FISHING. under it, smaller: (gone)."
+              ]
+            }
+          }
         },
         {
-          "id": "hatch", "kind": "ACT", "verbs": ["open"],
-          "on": { "open": { "say": ["{via}use hatch --open", "locked. a padlock, and a second padlock on the first. inside, nothing moves. not yet.", "err"] } }
+          "id": "hatch",
+          "kind": "ACT",
+          "verbs": [
+            "open"
+          ],
+          "on": {
+            "open": {
+              "say": [
+                "{via}use hatch --open",
+                "locked. a padlock, and a second padlock on the first. inside, nothing moves. not yet.",
+                "err"
+              ]
+            }
+          }
         }
       ]
     }
   ],
-
-  "cables": [
-    { "id": "party", "from": "jukebox.songs:played", "to": "mixer.lights", "verb": "flash" },
-    { "id": "pier.on", "from": "pier.clock:on", "to": "pier.lamps", "verb": "on" },
-    { "id": "pier.off", "from": "pier.clock:off", "to": "pier.lamps", "verb": "off" }
-  ],
-
+  "cables": [],
   "dialogue": {},
-
   "goals": [
-    { "id": "sunbed", "text": "rent a sunbed at the kiosk (it bills by the minute)" },
-    { "id": "free", "text": "SALT's mixer pours on the till's word. Find it another word: a drink on the house" },
-    { "id": "clear", "text": "the lifeguard drone decides what danger is: clear the water" }
+    {
+      "id": "sunbed",
+      "text": "rent a sunbed at the kiosk (it bills by the minute)"
+    },
+    {
+      "id": "free",
+      "text": "SALT's mixer pours on the till's word. Find it another word: a drink on the house"
+    },
+    {
+      "id": "clear",
+      "text": "the lifeguard drone decides what danger is: clear the water"
+    }
   ],
-
   "texts": {
     "goals.done": "a free drink, an empty sea. the boat at the end of the pier can wait.",
     "prompt.out": "[E] STAIRS · HARBOR",
-    "stairs.out": ["exit", "up the stairs to the promenade, and the harbor.", "dim"],
-
-    "sunbed.rented": ["use rent --rent", "KIOSK: SUNBED 7 RENTED. 1 TOKEN DEBITED. BILLING CONTINUES PER MINUTE. ENJOY THE SUN.", "ok"],
-    "sunbed.already": ["use rent --rent", "KIOSK: you already rent sunbed 7. one sunbed per identity.", "dim"],
-    "sunbed.broke": ["use rent --rent", "KIOSK: INSUFFICIENT BALANCE. SUNBEDS ARE 1 TOKEN PER MINUTE.", "err"],
-    "sunbed.ended": ["use rent --end", "KIOSK: RENTAL ENDED. TOTAL: {billed} TOKENS. THANK YOU FOR RELAXING."],
-    "sunbed.none": ["use rent --end", "KIOSK: no rental to end.", "dim"],
-    "sunbed.minute": ["meter", "KIOSK: 1 MINUTE. 1 TOKEN DEBITED. TOTAL: {billed}.", "dim"],
-    "sunbed.cut": ["meter", "KIOSK: BALANCE EXHAUSTED. RENTAL ENDED. PLEASE VACATE SUNBED 7.", "err"],
-    "drone.calm": ["drone", "DRONE: no threat confirmed. FLAG: GREEN. swimming resumes.", "dim"]
+    "stairs.out": [
+      "exit",
+      "up the stairs to the promenade, and the harbor.",
+      "dim"
+    ]
   }
 }

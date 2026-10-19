@@ -1,6 +1,9 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "laundromat:jacket",
+    "laundromat:tripped"
+  ],
   "items": [
     "soap"
   ],
@@ -18,7 +21,290 @@
     }
   },
   "reactions": [],
-  "conversations": {},
+  "conversations": {
+    "suds": {
+      "sayCommand": "say \"{line}\" > suds",
+      "entry": [
+        {
+          "node": "start"
+        }
+      ],
+      "nodes": {
+        "start": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "SUDS here. Four machines, one breaker, no complaints accepted. How can SUDS help?"
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Open washer 3.",
+              "next": "open"
+            },
+            {
+              "id": "choice-2",
+              "label": "Stop one of the washes.",
+              "next": "cancel"
+            },
+            {
+              "id": "choice-3",
+              "label": "Why does it trip?",
+              "next": "breaker"
+            },
+            {
+              "id": "choice-4",
+              "label": "Whose jacket is in 3?",
+              "next": "jacket"
+            }
+          ],
+          "redirect": [
+            {
+              "when": {
+                "flag": "laundromat:jacket"
+              },
+              "node": "start-variant-0"
+            },
+            {
+              "when": {
+                "flag": "laundromat:tripped"
+              },
+              "node": "start-variant-1"
+            }
+          ]
+        },
+        "start-variant-0": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Washer 3 is free again. SUDS has already let it. To a sock. Long-term."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Good for the sock.",
+              "next": "bye"
+            },
+            {
+              "id": "choice-2",
+              "label": "Ask about the rules.",
+              "next": "rules"
+            }
+          ]
+        },
+        "start-variant-1": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "SUDS here. The breaker tripped again. It does that. It is the only thing in here that finishes. How can SUDS help?"
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Open washer 3.",
+              "next": "open"
+            },
+            {
+              "id": "choice-2",
+              "label": "Stop one of the washes.",
+              "next": "cancel"
+            },
+            {
+              "id": "choice-3",
+              "label": "Why does it trip?",
+              "next": "breaker"
+            },
+            {
+              "id": "choice-4",
+              "label": "Whose jacket is in 3?",
+              "next": "jacket"
+            }
+          ]
+        },
+        "open": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Washer 3 has one cycle left, prepaid. SUDS does not open doors on wet laundry. SUDS has standards."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "When does it run?",
+              "next": "prepaid"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "prepaid": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Prepaid cycles are not on the schedule. They start when a machine finishes. Nothing has finished since Tuesday. Three start at every slot, the breaker trips, everybody starts over."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "So nothing ever finishes.",
+              "next": "never"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "never": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Correct. SUDS has asked for a second circuit. SUDS was sent a form. SUDS filled in the form. The form is also waiting for a slot."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "cancel": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "What if they ran later instead?",
+              "next": "later"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "later": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Later is not cancelling. Later is scheduling. SUDS loves scheduling. The schedule is the box by the door. SUDS does not touch its wiring. SUDS cannot see anyone touching its wiring. Hypothetically."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Hypothetically.",
+              "next": "start"
+            }
+          ]
+        },
+        "breaker": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "One circuit, four washers. The breaker allows two at once. The schedule starts three. They were installed by two contractors who never met. SUDS has met both. SUDS sides with the breaker."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "And then?",
+              "next": "rule4"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "rule4": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "When it trips, every machine stops. Lost cycle, wet laundry, nobody goes home. And nobody's laundry leaves until everybody's laundry is clean. House rule 4. Solidarity. Also the fire code."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "jacket": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "One jacket, prepaid nine cycles, owner not on site for three days. SUDS does not ask questions. SUDS asks for detergent."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "It's my friend's.",
+              "next": "friend"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "friend": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Then your friend washes very thoroughly. Nine cycles. Either a stain or a secret. SUDS does not judge. SUDS rinses."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "manners": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Politeness noted and logged. The breaker remains unmoved. It has no ears. Only amps."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "rules": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Start on the schedule. Two at a time. Never cancel. Doors open when the queue is clear. Four rules. SUDS wrote none of them and loves all of them."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "bye": {
+          "speaker": "SUDS · laundromat daemon",
+          "pages": [
+            "Separate your colours."
+          ]
+        }
+      },
+      "free": {
+        "containsAny": [
+          "please",
+          "thank"
+        ],
+        "next": "manners",
+        "miss": "SUDS files that under 'delicates'.",
+        "retry": "Again. Slower. Like a spin cycle.",
+        "retryNext": "start"
+      }
+    }
+  },
   "purchases": {
     "laundromat.soap": {
       "basePrice": 1,
@@ -29,5 +315,15 @@
         }
       ]
     }
+  },
+  "native": {
+    "state": {},
+    "reads": {
+      "laundromat:jacket": "jacket",
+      "laundromat:tripped": "trips"
+    },
+    "verbs": [],
+    "events": {},
+    "goals": {}
   }
 }

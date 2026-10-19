@@ -2,7 +2,10 @@
   "version": 1,
   "flags": [
     "demo.discount",
-    "demo.fee"
+    "demo.fee",
+    "demo.mission",
+    "demo.permit",
+    "demo.completed"
   ],
   "items": [
     "blue",
@@ -76,8 +79,23 @@
         },
         {
           "emit": "demo.purchased"
+        },
+        {
+          "flag": "demo.completed",
+          "value": true
         }
-      ]
+      ],
+      "when": {
+        "any": [
+          {
+            "flag": "demo.mission",
+            "is": false
+          },
+          {
+            "flag": "demo.permit"
+          }
+        ]
+      }
     },
     "demo.credit": {
       "sources": [
@@ -145,6 +163,47 @@
         {
           "state": "demo.stock",
           "set": 0
+        }
+      ]
+    },
+    "demo.mission.start": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "demo.mission",
+          "value": true
+        },
+        {
+          "flag": "demo.permit",
+          "value": false
+        },
+        {
+          "flag": "demo.completed",
+          "value": false
+        }
+      ]
+    },
+    "demo.mission.permit": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "demo.permit",
+          "value": true
+        }
+      ]
+    },
+    "demo.mission.leave": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "demo.mission",
+          "value": false
         }
       ]
     }
@@ -294,6 +353,63 @@
               "id": "back",
               "label": "Back",
               "next": "desk"
+            }
+          ]
+        }
+      }
+    },
+    "demo.mission": {
+      "entry": [
+        {
+          "node": "setup"
+        }
+      ],
+      "nodes": {
+        "setup": {
+          "speaker": "GUIDANCE EXAMPLE",
+          "pages": [
+            "Start a small task here. Try buying before permission, then authorize and buy. Leave the example to return to ordinary purchase testing."
+          ],
+          "choices": [
+            {
+              "id": "mission-start",
+              "label": "Start guidance example",
+              "command": "demo.mission.start",
+              "next": "mission"
+            },
+            {
+              "id": "mission-leave",
+              "label": "Leave guidance example",
+              "command": "demo.mission.leave",
+              "next": "setup"
+            },
+            {
+              "id": "permit-current",
+              "label": "Authorize current task",
+              "when": {
+                "flag": "demo.mission"
+              },
+              "command": "demo.mission.permit",
+              "next": "setup"
+            }
+          ]
+        },
+        "mission": {
+          "speaker": "TASK PERMISSION",
+          "pages": [
+            "Try buying before permission is granted. Then authorize the task here and buy once. The goal should update after success."
+          ],
+          "choices": [
+            {
+              "id": "permit",
+              "label": "Authorize purchase task",
+              "command": "demo.mission.permit",
+              "next": "setup"
+            },
+            {
+              "id": "back",
+              "label": "Return without permission",
+              "next": "setup"
             }
           ]
         }

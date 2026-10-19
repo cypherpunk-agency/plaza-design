@@ -1,0 +1,389 @@
+{
+  "version": 1,
+  "id": "downtown",
+  "name": "Downtown",
+  "intro": [],
+  "uses": [
+    {
+      "id": "fixer",
+      "name": "FIXER",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "pricedLabel": "[E] TALK · HINT",
+      "purchase": "downtown.fixer.hint",
+      "routes": [
+        {
+          "conversation": "talk.downtown.fixer"
+        }
+      ],
+      "targetOrder": "before-devices"
+    },
+    {
+      "id": "hood",
+      "name": "HOODED STRANGER",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.downtown.hood"
+        }
+      ],
+      "targetOrder": "before-devices"
+    },
+    {
+      "id": "umbrella",
+      "name": "UMBRELLA",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.downtown.umbrella"
+        }
+      ],
+      "targetOrder": "before-devices"
+    },
+    {
+      "id": "hat",
+      "name": "MAN IN A HAT",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.downtown.hat"
+        }
+      ],
+      "targetOrder": "before-devices"
+    }
+  ],
+  "exits": [
+    {
+      "id": "market",
+      "to": "market",
+      "at": "downtown",
+      "label": "[E] NEON MARKET",
+      "promptH": 120,
+      "requires": "end"
+    },
+    {
+      "id": "shop",
+      "to": "shop",
+      "at": "downtown",
+      "label": "[E] CORNER SHOP",
+      "promptH": 84
+    },
+    {
+      "id": "library",
+      "to": "library",
+      "at": "downtown",
+      "label": "[E] PUBLIC LIBRARY",
+      "promptH": 96
+    },
+    {
+      "id": "yard",
+      "to": "yard",
+      "label": "[E] BACK YARD",
+      "promptH": 86
+    },
+    {
+      "id": "capsule",
+      "to": "capsule",
+      "at": "door",
+      "label": "[E] HOME · CAPSULE 7B",
+      "promptH": 84
+    },
+    {
+      "id": "metro",
+      "to": "metro",
+      "at": "downtown",
+      "label": "[E] METRO",
+      "promptH": 106
+    },
+    {
+      "id": "moth",
+      "to": "moth",
+      "at": "door",
+      "label": "[E] FLAT 4C · MOTH",
+      "promptH": 102,
+      "needs": {
+        "key": "moth.key",
+        "name": "DOOR",
+        "h": 52,
+        "pages": [
+          "RESIDENTS ONLY. PRESENT KEY CHIP.",
+          "FLAT 4C · RESIDENT: MOTH · AUTHORISED VISITORS: 0."
+        ]
+      }
+    },
+    {
+      "id": "taxi",
+      "to": "",
+      "action": "taxi",
+      "label": "[E] HAIL TAXI",
+      "promptH": 122
+    },
+    {
+      "id": "map",
+      "to": "",
+      "action": "map",
+      "label": "[E] CITY MAP",
+      "promptH": 92
+    }
+  ],
+  "readables": [
+    {
+      "id": "plaque",
+      "name": "SIGN",
+      "pages": [
+        "PENTHOUSE · BY INVITATION",
+        "The door has no handle. Only a window, very high up."
+      ],
+      "promptH": 160
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "fixer": {
+        "instance": "fixer",
+        "promptH": 66,
+        "responseH": 30
+      },
+      "hood": {
+        "instance": "npc-hood",
+        "promptH": 62,
+        "responseH": 48
+      },
+      "umbrella": {
+        "instance": "npc-umbrella",
+        "promptH": 62,
+        "responseH": 48
+      },
+      "hat": {
+        "instance": "npc-hat",
+        "promptH": 62,
+        "responseH": 48
+      }
+    },
+    "rests": {},
+    "exits": {
+      "market": "exit-market",
+      "shop": "exit-shop",
+      "library": "exit-library",
+      "yard": "exit-yard",
+      "capsule": "exit-capsule",
+      "metro": "exit-metro",
+      "moth": "exit-moth",
+      "taxi": "exit-taxi",
+      "map": "exit-map"
+    },
+    "readables": {
+      "plaque": {
+        "instance": "readable-plaque",
+        "responseH": 0,
+        "responseAboveFloor": true
+      }
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "city": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 80,
+    "shade": {
+      "front": {
+        "h": 300,
+        "gaps": [
+          [
+            950,
+            1040
+          ],
+          [
+            1040,
+            1200
+          ],
+          [
+            1520,
+            1680
+          ]
+        ]
+      },
+      "back": {
+        "h": 220,
+        "gaps": [
+          [
+            380,
+            430
+          ],
+          [
+            1090,
+            1160
+          ],
+          [
+            1600,
+            1660
+          ],
+          [
+            2010,
+            2100
+          ]
+        ]
+      }
+    },
+    "keepFace": true
+  },
+  "actors": [
+    {
+      "id": "fixer",
+      "instance": "fixer",
+      "band": "world",
+      "presentation": {
+        "kind": "streetSprite",
+        "sprite": "fixer"
+      }
+    },
+    {
+      "id": "hood",
+      "instance": "npc-hood",
+      "band": "world",
+      "presentation": {
+        "kind": "streetSprite",
+        "sprite": "hood",
+        "flip": true
+      }
+    },
+    {
+      "id": "umbrella",
+      "instance": "npc-umbrella",
+      "band": "world",
+      "presentation": {
+        "kind": "streetSprite",
+        "sprite": "umbrella",
+        "flip": false
+      }
+    },
+    {
+      "id": "hat",
+      "instance": "npc-hat",
+      "band": "world",
+      "presentation": {
+        "kind": "streetSprite",
+        "sprite": "hat",
+        "flip": true
+      }
+    }
+  ],
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    },
+    "warm": [
+      {
+        "id": "noodles",
+        "point": {
+          "instance": "noodle-stall",
+          "x": 14,
+          "h": 30
+        },
+        "rest": "sleep"
+      },
+      {
+        "id": "box",
+        "point": {
+          "instance": "device-box",
+          "h": 70
+        },
+        "rest": "sleep"
+      }
+    ]
+  },
+  "objectives": [
+    {
+      "id": "handle",
+      "text": "tell the fixer your name",
+      "when": {
+        "player": {
+          "field": "handle",
+          "is": ""
+        }
+      }
+    },
+    {
+      "id": "till",
+      "text": "crack the noodle till",
+      "when": {
+        "flag": "till",
+        "is": false
+      }
+    },
+    {
+      "id": "box",
+      "text": "get into junction box 0x2F",
+      "when": {
+        "not": {
+          "player": {
+            "collection": "controlled",
+            "contains": "0x2F"
+          }
+        }
+      }
+    },
+    {
+      "id": "install",
+      "text": "install what the box gave you",
+      "when": {
+        "player": {
+          "field": "jump",
+          "is": false
+        }
+      }
+    },
+    {
+      "id": "relay",
+      "text": "get into the rooftop relay 0x31",
+      "when": {
+        "not": {
+          "player": {
+            "collection": "controlled",
+            "contains": "0x31"
+          }
+        }
+      }
+    },
+    {
+      "id": "gate",
+      "text": "open the Neon Market gate",
+      "when": {
+        "flag": "end",
+        "is": false
+      }
+    },
+    {
+      "id": "done",
+      "text": "Downtown cleared. the market is open."
+    }
+  ]
+}

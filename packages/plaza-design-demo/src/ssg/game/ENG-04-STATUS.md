@@ -3,6 +3,14 @@
 2026-10-18. Scope: [ENG-04-PLAN.md](./ENG-04-PLAN.md). Status: TECHNICALLY COMPLETE locally.
 Demo feedback remains pending. No commit, push, deployment, campaign playthrough or CI expansion.
 
+## Player feedback update (2026-10-18)
+
+The user reports purchases, objectives/access, conversations and devices working; wiring mostly
+works with details deferred. Editor usability review awaits their ongoing editor rework. Harbor
+pacing/comprehension remains unreviewed. Earlier pending-feedback statements describe the original
+technical delivery; this update supersedes them for these demo mechanics only. No new technical
+gates or full campaign acceptance are implied. Next proposed scope: [consolidation goal](./ENGINE-CONSOLIDATION-GOAL.md).
+
 ## Gate evidence
 
 | Gate | Status | Evidence |

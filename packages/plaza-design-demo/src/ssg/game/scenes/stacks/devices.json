@@ -1,7 +1,6 @@
 {
   "id": "stacks",
   "name": "the stacks",
-
   "state": {
     "found": false,
     "box": "B-6",
@@ -11,46 +10,131 @@
     "talked": false,
     "departed": false
   },
-
   "tuning": {
     "tamperTrace": 30
   },
-
   "devices": [
     {
       "id": "sts2",
       "name": "STS-2",
       "look": "Ship-to-shore crane 2, berth 4. It has moved everything. It has asked nothing. Its cab rides the trolley under the boom; its camera looks straight down on the stacks.",
       "everyday": [
-        { "noun": "schedule", "verb": "read", "label": "read the schedule" },
-        { "noun": "camera", "verb": "view", "label": "look through the camera" }
+        {
+          "noun": "schedule",
+          "verb": "read",
+          "label": "read the schedule"
+        },
+        {
+          "noun": "camera",
+          "verb": "view",
+          "label": "look through the camera"
+        }
       ],
-      "status": ["{crane}", { "if": "found", "then": " · tagged: slot {box}" }],
+      "status": [
+        "{crane}",
+        {
+          "if": "found",
+          "then": " · tagged: slot {box}"
+        }
+      ],
       "layout": {
-        "spot": { "x": 770, "w": 44, "h": 110 },
-        "board": { "x": 0.16, "y": 0.3 },
-        "dir": { "camera": "up", "schedule": "left", "spreader": "down" },
-        "row": ["camera", "schedule", "spreader"]
+        "spot": {
+          "x": 770,
+          "w": 44,
+          "h": 110
+        },
+        "board": {
+          "x": 0.16,
+          "y": 0.3
+        },
+        "dir": {
+          "camera": "up",
+          "schedule": "left",
+          "spreader": "down"
+        },
+        "row": [
+          "camera",
+          "schedule",
+          "spreader"
+        ]
       },
       "nouns": [
         {
-          "id": "camera", "kind": "SENSE", "verbs": ["view"],
-          "on": { "view": { "do": [{ "open": "scope" }], "say": ["cat camera", "STS-2 CAM: feed open. looking down on blocks A, B and C."] } }
+          "id": "camera",
+          "kind": "SENSE",
+          "verbs": [
+            "view"
+          ],
+          "on": {
+            "view": {
+              "do": [
+                {
+                  "open": "scope"
+                }
+              ],
+              "say": [
+                "cat camera",
+                "STS-2 CAM: feed open. looking down on blocks A, B and C."
+              ]
+            }
+          }
         },
         {
-          "id": "schedule", "kind": "STORE", "verbs": ["read"],
+          "id": "schedule",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
           "on": {
             "read": [
-              { "if": "departed", "say": ["cat schedule", "BERTH 4 · NIGHT FERRY 7: DEPARTED, 12 OF 12. NEXT FERRY: WHEN FULL."] },
-              { "if": "boxAt=ferry", "say": ["cat schedule", "BERTH 4 · NIGHT FERRY 7 · 12 OF 12 LOADED · NRLU 404 0451: ON DECK, SHORE POWER ON."] },
-              { "if": "found", "say": ["cat schedule", "BERTH 4 · NIGHT FERRY 7 · NEXT: NRLU 404 0451, REEFER · SLOT {box} (TAGGED) · LIFTS ON CLEARANCE: WHEN THE REGISTRY'S WATCHDOG LEAVES THE FERRY."] },
-              { "say": ["cat schedule", "BERTH 4 · NIGHT FERRY 7 · NEXT: NRLU 404 0451, REEFER · SLOT: NOT FOUND (YARD RECORD LOST) · STS-2 LIFTS THE SLOT TAGGED ON ITS CAMERA; UNTAGGED, IT LIFTS REGULAR CARGO FROM THE CHASSIS · LIFTS RUN ON CLEARANCE: WHEN THE REGISTRY'S WATCHDOG LEAVES THE FERRY."] }
+              {
+                "if": "departed",
+                "say": [
+                  "cat schedule",
+                  "BERTH 4 · NIGHT FERRY 7: DEPARTED, 12 OF 12. NEXT FERRY: WHEN FULL."
+                ]
+              },
+              {
+                "if": "boxAt=ferry",
+                "say": [
+                  "cat schedule",
+                  "BERTH 4 · NIGHT FERRY 7 · 12 OF 12 LOADED · NRLU 404 0451: ON DECK, SHORE POWER ON."
+                ]
+              },
+              {
+                "if": "found",
+                "say": [
+                  "cat schedule",
+                  "BERTH 4 · NIGHT FERRY 7 · NEXT: NRLU 404 0451, REEFER · SLOT {box} (TAGGED) · LIFTS ON CLEARANCE: WHEN THE REGISTRY'S WATCHDOG LEAVES THE FERRY."
+                ]
+              },
+              {
+                "say": [
+                  "cat schedule",
+                  "BERTH 4 · NIGHT FERRY 7 · NEXT: NRLU 404 0451, REEFER · SLOT: NOT FOUND (YARD RECORD LOST) · STS-2 LIFTS THE SLOT TAGGED ON ITS CAMERA; UNTAGGED, IT LIFTS REGULAR CARGO FROM THE CHASSIS · LIFTS RUN ON CLEARANCE: WHEN THE REGISTRY'S WATCHDOG LEAVES THE FERRY."
+                ]
+              }
             ]
           }
         },
         {
-          "id": "spreader", "kind": "ACT", "verbs": ["lift"], "events": ["lifted"],
-          "on": { "lift": { "do": [{ "effect": "sts2.lift" }] } }
+          "id": "spreader",
+          "kind": "ACT",
+          "verbs": [
+            "lift"
+          ],
+          "events": [
+            "lifted"
+          ],
+          "on": {
+            "lift": {
+              "do": [
+                {
+                  "effect": "sts2.lift"
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -59,28 +143,90 @@
       "name": "PORT AUTHORITY",
       "look": "The Port Authority's thermal gate at berth 4: two steel posts and a sheet of red light the crane's load passes through on its way to the ferry. A box is meant to be the temperature on its label.",
       "everyday": [
-        { "noun": "scanner", "verb": "read", "label": "read the gate" },
-        { "noun": "log", "verb": "read", "label": "read the scan log" }
+        {
+          "noun": "scanner",
+          "verb": "read",
+          "label": "read the gate"
+        },
+        {
+          "noun": "log",
+          "verb": "read",
+          "label": "read the scan log"
+        }
       ],
-      "status": ["THERMAL GATE · BERTH 4 · ALARMS TONIGHT: {alarms}"],
+      "status": [
+        "THERMAL GATE · BERTH 4 · ALARMS TONIGHT: {alarms}"
+      ],
       "layout": {
-        "spot": { "x": 1064, "w": 34, "h": 150 },
-        "board": { "x": 0.5, "y": 0.3 },
-        "dir": { "scanner": "up", "alarm": "right", "log": "left" },
-        "row": ["scanner", "log", "alarm"]
+        "spot": {
+          "x": 1064,
+          "w": 34,
+          "h": 150
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.3
+        },
+        "dir": {
+          "scanner": "up",
+          "alarm": "right",
+          "log": "left"
+        },
+        "row": [
+          "scanner",
+          "log",
+          "alarm"
+        ]
       },
       "nouns": [
         {
-          "id": "scanner", "kind": "SENSE", "verbs": ["read"], "events": ["warm"],
-          "on": { "read": { "say": ["cat scanner", "THERMAL GATE: every lift is read against the temperature on its label. warmer than its label: warm. a warm box is a box with someone breathing in it. warm → alarm. the Registry's watchdog checks this wiring on every visit."] } }
+          "id": "scanner",
+          "kind": "SENSE",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "warm"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat scanner",
+                "THERMAL GATE: every lift is read against the temperature on its label. warmer than its label: warm. a warm box is a box with someone breathing in it. warm → alarm. the Registry's watchdog checks this wiring on every visit."
+              ]
+            }
+          }
         },
         {
-          "id": "log", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat log", "SCAN LOG · BERTH 4 · TONIGHT: {loaded} LIFTS CLEARED COLD · ALARMS: {alarms} · INSPECTION BACKLOG: 4 DAYS."] } }
+          "id": "log",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat log",
+                "SCAN LOG · BERTH 4 · TONIGHT: {loaded} LIFTS CLEARED COLD · ALARMS: {alarms} · INSPECTION BACKLOG: 4 DAYS."
+              ]
+            }
+          }
         },
         {
-          "id": "alarm", "kind": "ACT", "verbs": ["sound"],
-          "on": { "sound": { "do": [{ "effect": "port.alarm" }] } }
+          "id": "alarm",
+          "kind": "ACT",
+          "verbs": [
+            "sound"
+          ],
+          "on": {
+            "sound": {
+              "do": [
+                {
+                  "effect": "port.alarm"
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -89,29 +235,85 @@
       "name": "NIGHT FERRY",
       "look": "The night ferry at berth 4: a rust-red hull, an open hatch, a gangway with a purser's terminal. Departs when full. It is waiting for one box.",
       "everyday": [
-        { "noun": "manifest", "verb": "read", "label": "read the manifest" },
-        { "noun": "horn", "verb": "sound", "label": "sound the horn" }
+        {
+          "noun": "manifest",
+          "verb": "read",
+          "label": "read the manifest"
+        },
+        {
+          "noun": "horn",
+          "verb": "sound",
+          "label": "sound the horn"
+        }
       ],
-      "status": ["{ferryStatus}"],
+      "status": [
+        "{ferryStatus}"
+      ],
       "layout": {
-        "spot": { "x": 1214, "w": 30, "h": 56 },
-        "board": { "x": 0.84, "y": 0.3 },
-        "dir": { "manifest": "up", "horn": "right" }
+        "spot": {
+          "x": 1214,
+          "w": 30,
+          "h": 56
+        },
+        "board": {
+          "x": 0.84,
+          "y": 0.3
+        },
+        "dir": {
+          "manifest": "up",
+          "horn": "right"
+        }
       },
       "nouns": [
         {
-          "id": "manifest", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": [
-            { "if": "departed", "say": ["cat manifest", "NIGHT FERRY 8 · BERTH 4 · 12 SLOTS · REGULAR CARGO · DEPARTS WHEN FULL. (NIGHT FERRY 7: DEPARTED 12 OF 12. DESTINATION: OPEN WATER.)"] },
-            { "say": ["cat manifest", "NIGHT FERRY 7 · BERTH 4 · 12 SLOTS · AWAITED: NRLU 404 0451, REEFER, SET 4°C · SHIPPER: TIDE MARINE (C. BRINE) · CONSIGNEE: REDACTED · DESTINATION: OPEN WATER · DEPARTS WHEN FULL."] }
-          ] }
+          "id": "manifest",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": [
+              {
+                "if": "departed",
+                "say": [
+                  "cat manifest",
+                  "NIGHT FERRY 8 · BERTH 4 · 12 SLOTS · REGULAR CARGO · DEPARTS WHEN FULL. (NIGHT FERRY 7: DEPARTED 12 OF 12. DESTINATION: OPEN WATER.)"
+                ]
+              },
+              {
+                "say": [
+                  "cat manifest",
+                  "NIGHT FERRY 7 · BERTH 4 · 12 SLOTS · AWAITED: NRLU 404 0451, REEFER, SET 4°C · SHIPPER: TIDE MARINE (C. BRINE) · CONSIGNEE: REDACTED · DESTINATION: OPEN WATER · DEPARTS WHEN FULL."
+                ]
+              }
+            ]
+          }
         },
         {
-          "id": "horn", "kind": "ACT", "verbs": ["sound"],
-          "on": { "sound": [
-            { "if": "signal", "say": ["signal → horn --sound", "NIGHT FERRY 7: horn. one long. the gulls leave and come back.", "dim"] },
-            { "say": ["use horn --sound", "PURSER: the horn is the master's. the master is asleep. please do not test the horn.", "err"] }
-          ] }
+          "id": "horn",
+          "kind": "ACT",
+          "verbs": [
+            "sound"
+          ],
+          "on": {
+            "sound": [
+              {
+                "if": "signal",
+                "say": [
+                  "signal → horn --sound",
+                  "NIGHT FERRY 7: horn. one long. the gulls leave and come back.",
+                  "dim"
+                ]
+              },
+              {
+                "say": [
+                  "use horn --sound",
+                  "PURSER: the horn is the master's. the master is asleep. please do not test the horn.",
+                  "err"
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -120,132 +322,412 @@
       "name": "NRLU 404 0451",
       "look": "A refrigerated container, white once, with a humming unit at one end and a small intercom panel for the crew. Its label says 4°C.",
       "everyday": [
-        { "noun": "intercom", "verb": "talk", "label": "talk" },
-        { "noun": "panel", "verb": "read", "label": "read the panel" }
+        {
+          "noun": "intercom",
+          "verb": "talk",
+          "label": "talk"
+        },
+        {
+          "noun": "panel",
+          "verb": "read",
+          "label": "read the panel"
+        }
       ],
-      "status": ["REEFER · SET 4°C · INSIDE 31°C"],
+      "status": [
+        "REEFER · SET 4°C · INSIDE 31°C"
+      ],
       "layout": {
-        "spot": { "x": 1452, "w": 96, "h": 58 },
-        "board": { "x": 0.7, "y": 0.75 },
-        "dir": { "panel": "left", "intercom": "up" }
+        "spot": {
+          "x": 1452,
+          "w": 96,
+          "h": 58
+        },
+        "board": {
+          "x": 0.7,
+          "y": 0.75
+        },
+        "dir": {
+          "panel": "left",
+          "intercom": "up"
+        }
       },
       "nouns": [
         {
-          "id": "panel", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": [
-            { "if": "boxAt=ferry", "say": ["cat panel", "REEFER · SET 4°C · INSIDE 31°C · POWER: NIGHT FERRY 7 · DOOR: UNLATCHED FROM INSIDE."] },
-            { "say": ["cat panel", "REEFER · SET 4°C · INSIDE 31°C · POWER: YARD · LAST OPENED: 2 DAYS AGO, FROM INSIDE."] }
-          ] }
+          "id": "panel",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": [
+              {
+                "if": "boxAt=ferry",
+                "say": [
+                  "cat panel",
+                  "REEFER · SET 4°C · INSIDE 31°C · POWER: NIGHT FERRY 7 · DOOR: UNLATCHED FROM INSIDE."
+                ]
+              },
+              {
+                "say": [
+                  "cat panel",
+                  "REEFER · SET 4°C · INSIDE 31°C · POWER: YARD · LAST OPENED: 2 DAYS AGO, FROM INSIDE."
+                ]
+              }
+            ]
+          }
         },
         {
-          "id": "intercom", "kind": "DAEMON", "verbs": ["talk"],
-          "on": { "talk": { "do": [{ "open": "talk", "with": "moth" }] } }
+          "id": "intercom",
+          "kind": "DAEMON",
+          "verbs": [
+            "talk"
+          ],
+          "on": {
+            "talk": {
+              "do": [
+                {
+                  "open": "talk",
+                  "with": "moth"
+                }
+              ]
+            }
+          }
         }
       ]
     }
   ],
-
   "cables": [
-    { "id": "alarm", "from": "port.scanner:warm", "to": "port.alarm", "verb": "sound" },
-    { "id": "clearance", "from": "ferry.watchdog:leaves", "to": "sts2.spreader", "verb": "lift" }
+    {
+      "id": "alarm",
+      "from": "port.scanner:warm",
+      "to": "port.alarm",
+      "verb": "sound"
+    },
+    {
+      "id": "clearance",
+      "from": "ferry.watchdog:leaves",
+      "to": "sts2.spreader",
+      "verb": "lift"
+    }
   ],
-
-  "watchdog": { "name": "REGISTRY WATCHDOG", "route": ["port", "sts2", "ferry"], "dwellMs": 4000, "moveMs": 3500 },
-
+  "watchdog": {
+    "name": "REGISTRY WATCHDOG",
+    "route": [
+      "port",
+      "sts2",
+      "ferry"
+    ],
+    "dwellMs": 4000,
+    "moveMs": 3500
+  },
   "camera": {
     "crates": [
-      { "id": "A-1", "x": 12, "y": 30, "w": 42, "h": 16, "label": "TDLU 771 0817" },
-      { "id": "A-2", "x": 56, "y": 30, "w": 42, "h": 16, "label": "NRLU 220 3310" },
-      { "id": "A-3", "x": 12, "y": 48, "w": 42, "h": 16, "label": "PLZU 300 1981" },
-      { "id": "A-4", "x": 56, "y": 48, "w": 42, "h": 16, "label": "HLXU 090 6620" },
-      { "id": "A-5", "x": 12, "y": 66, "w": 42, "h": 16, "label": "CSQU 314 1592" },
-      { "id": "A-6", "x": 56, "y": 66, "w": 42, "h": 16, "label": "MRDU 118 2207" },
-      { "id": "A-7", "x": 12, "y": 84, "w": 42, "h": 16, "label": "MRDU 451 0404" },
-      { "id": "A-8", "x": 56, "y": 84, "w": 42, "h": 16, "label": "KSNU 552 9014" },
-      { "id": "B-1", "x": 116, "y": 30, "w": 42, "h": 16, "label": "BRNU 007 2231" },
-      { "id": "B-2", "x": 160, "y": 30, "w": 42, "h": 16, "label": "PLZU 610 0017" },
-      { "id": "B-3", "x": 116, "y": 48, "w": 42, "h": 16, "label": "KSNU 404 1145" },
-      { "id": "B-4", "x": 160, "y": 48, "w": 42, "h": 16, "label": "TDLU 112 0763" },
-      { "id": "B-5", "x": 116, "y": 66, "w": 42, "h": 16, "label": "NRLU 404 0415" },
-      { "id": "B-6", "x": 160, "y": 66, "w": 42, "h": 16, "label": "NRLU 404 0451" },
-      { "id": "B-7", "x": 116, "y": 84, "w": 42, "h": 16, "label": "CSQU 271 8281" },
-      { "id": "B-8", "x": 160, "y": 84, "w": 42, "h": 16, "label": "HLXU 330 0419" },
-      { "id": "C-1", "x": 220, "y": 30, "w": 42, "h": 16, "label": "MRDU 440 1170" },
-      { "id": "C-2", "x": 264, "y": 30, "w": 42, "h": 16, "label": "NRLU 044 0451" },
-      { "id": "C-3", "x": 220, "y": 48, "w": 42, "h": 16, "label": "TDLU 771 0098" },
-      { "id": "C-4", "x": 264, "y": 48, "w": 42, "h": 16, "label": "PLZU 300 1990" },
-      { "id": "C-5", "x": 220, "y": 66, "w": 42, "h": 16, "label": "KSNU 909 1207" },
-      { "id": "C-6", "x": 264, "y": 66, "w": 42, "h": 16, "label": "BRNU 112 5813" },
-      { "id": "C-7", "x": 220, "y": 84, "w": 42, "h": 16, "label": "HLXU 451 0404" },
-      { "id": "C-8", "x": 264, "y": 84, "w": 42, "h": 16, "label": "CSQU 161 8033" }
+      {
+        "id": "A-1",
+        "x": 12,
+        "y": 30,
+        "w": 42,
+        "h": 16,
+        "label": "TDLU 771 0817"
+      },
+      {
+        "id": "A-2",
+        "x": 56,
+        "y": 30,
+        "w": 42,
+        "h": 16,
+        "label": "NRLU 220 3310"
+      },
+      {
+        "id": "A-3",
+        "x": 12,
+        "y": 48,
+        "w": 42,
+        "h": 16,
+        "label": "PLZU 300 1981"
+      },
+      {
+        "id": "A-4",
+        "x": 56,
+        "y": 48,
+        "w": 42,
+        "h": 16,
+        "label": "HLXU 090 6620"
+      },
+      {
+        "id": "A-5",
+        "x": 12,
+        "y": 66,
+        "w": 42,
+        "h": 16,
+        "label": "CSQU 314 1592"
+      },
+      {
+        "id": "A-6",
+        "x": 56,
+        "y": 66,
+        "w": 42,
+        "h": 16,
+        "label": "MRDU 118 2207"
+      },
+      {
+        "id": "A-7",
+        "x": 12,
+        "y": 84,
+        "w": 42,
+        "h": 16,
+        "label": "MRDU 451 0404"
+      },
+      {
+        "id": "A-8",
+        "x": 56,
+        "y": 84,
+        "w": 42,
+        "h": 16,
+        "label": "KSNU 552 9014"
+      },
+      {
+        "id": "B-1",
+        "x": 116,
+        "y": 30,
+        "w": 42,
+        "h": 16,
+        "label": "BRNU 007 2231"
+      },
+      {
+        "id": "B-2",
+        "x": 160,
+        "y": 30,
+        "w": 42,
+        "h": 16,
+        "label": "PLZU 610 0017"
+      },
+      {
+        "id": "B-3",
+        "x": 116,
+        "y": 48,
+        "w": 42,
+        "h": 16,
+        "label": "KSNU 404 1145"
+      },
+      {
+        "id": "B-4",
+        "x": 160,
+        "y": 48,
+        "w": 42,
+        "h": 16,
+        "label": "TDLU 112 0763"
+      },
+      {
+        "id": "B-5",
+        "x": 116,
+        "y": 66,
+        "w": 42,
+        "h": 16,
+        "label": "NRLU 404 0415"
+      },
+      {
+        "id": "B-6",
+        "x": 160,
+        "y": 66,
+        "w": 42,
+        "h": 16,
+        "label": "NRLU 404 0451"
+      },
+      {
+        "id": "B-7",
+        "x": 116,
+        "y": 84,
+        "w": 42,
+        "h": 16,
+        "label": "CSQU 271 8281"
+      },
+      {
+        "id": "B-8",
+        "x": 160,
+        "y": 84,
+        "w": 42,
+        "h": 16,
+        "label": "HLXU 330 0419"
+      },
+      {
+        "id": "C-1",
+        "x": 220,
+        "y": 30,
+        "w": 42,
+        "h": 16,
+        "label": "MRDU 440 1170"
+      },
+      {
+        "id": "C-2",
+        "x": 264,
+        "y": 30,
+        "w": 42,
+        "h": 16,
+        "label": "NRLU 044 0451"
+      },
+      {
+        "id": "C-3",
+        "x": 220,
+        "y": 48,
+        "w": 42,
+        "h": 16,
+        "label": "TDLU 771 0098"
+      },
+      {
+        "id": "C-4",
+        "x": 264,
+        "y": 48,
+        "w": 42,
+        "h": 16,
+        "label": "PLZU 300 1990"
+      },
+      {
+        "id": "C-5",
+        "x": 220,
+        "y": 66,
+        "w": 42,
+        "h": 16,
+        "label": "KSNU 909 1207"
+      },
+      {
+        "id": "C-6",
+        "x": 264,
+        "y": 66,
+        "w": 42,
+        "h": 16,
+        "label": "BRNU 112 5813"
+      },
+      {
+        "id": "C-7",
+        "x": 220,
+        "y": 84,
+        "w": 42,
+        "h": 16,
+        "label": "HLXU 451 0404"
+      },
+      {
+        "id": "C-8",
+        "x": 264,
+        "y": 84,
+        "w": 42,
+        "h": 16,
+        "label": "CSQU 161 8033"
+      }
     ]
   },
-
-  "dialogue": {
-    "moth": {
-      "speaker": "MOTH · the intercom of NRLU 404 0451",
-      "start": "start",
-      "sayCmd": "say \"{line}\" > reefer",
-      "nodes": {
-        "start": [
-          { "if": "talked", "text": "(The intercom hisses. The ferry is out of range. Moth is on your deck now.)" },
-          { "if": "boxAt=stack", "text": "(Static. Then, from somewhere in block B, two knocks. Then nothing. The thermal gate is listening, and so is whoever knocked.)", "choices": [["Knock twice on the panel.", "knock"], ["Leave it.", "quiet"]] },
-          { "if": "boxAt=air", "text": "(The intercom is all wind and winch.)" },
-          { "if": "spratFed", "text": "Took you long enough. Did you feed Sprat?", "choices": [["I fed Sprat.", "fed"], ["Hello to you too.", "hello"]] },
-          { "text": "Took you long enough. Did you feed Sprat?", "choices": [["Sprat is... fine.", "notfed"], ["Hello to you too.", "hello"]] }
-        ],
-        "knock": { "text": "(Two knocks back. A pause. Then one, slow. Moth's knock: wait.)" },
-        "quiet": { "text": "(The reefer hums. Its label says 4°C. It is not 4°C in there.)" },
-        "fed": { "text": "You did? He'll act like you didn't. He holds a grudge like a much bigger fish.", "choices": [["Moth. What happened to me?", "deleted"]] },
-        "notfed": { "text": "You didn't. I can hear it in your voice. It's fine. He's a fish. He'll turn it into a story about how he survived.", "choices": [["Moth. What happened to me?", "deleted"]] },
-        "hello": { "text": "Hello. Sorry. Two days in a fridge set to warm. Manners go first. Then the left foot.", "choices": [["Moth. What happened to me?", "deleted"]] },
-        "deleted": [
-          { "if": "alarms", "text": "First: that alarm. Subtle. I bit my own sleeve. Second: you. Your door says rent: pending, the street looks through you, the turnstiles think about it. That's not a glitch. You were deleted. On purpose.", "choices": [["On purpose? By who?", "list"]] },
-          { "text": "Your door says rent: pending. The street looks through you. The turnstiles think about it. That's not a glitch, and it's not your rent. You were deleted. On purpose.", "choices": [["On purpose? By who?", "list"]] }
-        ],
-        "list": { "text": "The Registry. Tuesday, 03:12, one batch: you and four hundred and six others. I was inside on a boring job, address records, and there was a list. Signed, dated, approved. Your name on it, spelt right for once.", "choices": [["What did you do?", "took"]] },
-        "took": { "text": "I took it. Badly. Registry files don't leave in one piece: it came apart into seven root fragments, and each one went back to wherever its key lives. The relay on Downtown's roof had one. You've been carrying a piece of this since before you knew.", "choices": [["And the Registry?", "knows"]] },
-        "knows": { "text": "Knows I have it. That's why I'm in a fridge, and why their dog walks this quay. They don't need the list back. They need me. Then you, because you came looking.", "choices": [["Where does it end?", "spire"]] },
-        "spire": { "text": "Up. The antenna on Plaza Central, top of the Spire. The list's lock is up there. Put the seven pieces back in and everyone on it comes back. You included. Probably. I didn't read the manual. I stole it.", "choices": [["And you?", "deck"]] },
-        "deck": { "text": "The ferry leaves when it's full, and I'm the last box. Out on the water their gates only scan fish. I'll be on your deck: messages, when there's signal. I find out where the pieces are. You go and get them. You were always better with doors.", "choices": [["Don't go dark again.", "end"], ["Moth. Thank you.", "end"]] },
-        "end": { "text": "No promises. I'm a moth. Go on. And feed Sprat.", "do": [{ "effect": "moth.end" }] }
-      }
-    }
-  },
-
+  "dialogue": {},
   "goals": [
-    { "id": "find", "text": "find NRLU 404 0451 in the stacks: STS-2's camera reads the codes on the roofs. Tag its slot" },
-    { "id": "lift", "text": "get 0451 onto the night ferry. Every lift passes the Port Authority's thermal gate" },
-    { "id": "moth", "text": "talk to the reefer on the ferry's deck" }
+    {
+      "id": "find",
+      "text": "find NRLU 404 0451 in the stacks: STS-2's camera reads the codes on the roofs. Tag its slot"
+    },
+    {
+      "id": "lift",
+      "text": "get 0451 onto the night ferry. Every lift passes the Port Authority's thermal gate"
+    },
+    {
+      "id": "moth",
+      "text": "talk to the reefer on the ferry's deck"
+    }
   ],
-
   "texts": {
     "goals.done": "Act I is done. Moth is on your deck: type msg moth.",
     "talk.aria": "Say something to Moth",
-
-    "lift.hand": ["use spreader --lift", "STS-2: lifts run on the schedule. the cab lifts when the Registry has cleared the ferry. not before, not by hand.", "err"],
-    "lift.busy": ["{via}use spreader --lift", "STS-2: lift in progress. one box at a time.", "dim"],
-    "lift.box": ["{via}use spreader --lift", "STS-2: lifting slot {box}: NRLU 404 0451 → NIGHT FERRY 7.", "ok"],
-    "scan.warm": ["", "THERMAL GATE: NRLU 404 0451 · label 4°C · reading 31°C · warm.", "err"],
-    "box.landed": ["", "NRLU 404 0451: set down on NIGHT FERRY 7, deck slot 12, shore power on. from inside: three long knocks.", "ok"],
-    "box.back": ["", "STS-2: NRLU 404 0451 back in slot {box}. held for inspection at 06:00.", "dim"],
-    "alarm.test": ["use alarm --sound", "PORT AUTHORITY: manual alarm test. logged against your identity. identity: not found. logged anyway.", "dim"],
-    "alarm.empty": ["{via}use alarm --sound", "PORT AUTHORITY: alarm. nothing in the gate. logged.", "dim"],
-    "alarm.box": ["{via}use alarm --sound", "PORT AUTHORITY: ALARM. thermal anomaly in NRLU 404 0451. lift aborted. container returned to its slot.", "err"],
-    "watchdog.restore": ["", "REGISTRY WATCHDOG: port.scanner warm → port.alarm was cut. restored. tamper logged.", "err"],
-
+    "lift.hand": [
+      "use spreader --lift",
+      "STS-2: lifts run on the schedule. the cab lifts when the Registry has cleared the ferry. not before, not by hand.",
+      "err"
+    ],
+    "lift.busy": [
+      "{via}use spreader --lift",
+      "STS-2: lift in progress. one box at a time.",
+      "dim"
+    ],
+    "lift.box": [
+      "{via}use spreader --lift",
+      "STS-2: lifting slot {box}: NRLU 404 0451 → NIGHT FERRY 7.",
+      "ok"
+    ],
+    "scan.warm": [
+      "",
+      "THERMAL GATE: NRLU 404 0451 · label 4°C · reading 31°C · warm.",
+      "err"
+    ],
+    "box.landed": [
+      "",
+      "NRLU 404 0451: set down on NIGHT FERRY 7, deck slot 12, shore power on. from inside: three long knocks.",
+      "ok"
+    ],
+    "box.back": [
+      "",
+      "STS-2: NRLU 404 0451 back in slot {box}. held for inspection at 06:00.",
+      "dim"
+    ],
+    "alarm.test": [
+      "use alarm --sound",
+      "PORT AUTHORITY: manual alarm test. logged against your identity. identity: not found. logged anyway.",
+      "dim"
+    ],
+    "alarm.empty": [
+      "{via}use alarm --sound",
+      "PORT AUTHORITY: alarm. nothing in the gate. logged.",
+      "dim"
+    ],
+    "alarm.box": [
+      "{via}use alarm --sound",
+      "PORT AUTHORITY: ALARM. thermal anomaly in NRLU 404 0451. lift aborted. container returned to its slot.",
+      "err"
+    ],
+    "watchdog.restore": [
+      "",
+      "REGISTRY WATCHDOG: port.scanner warm → port.alarm was cut. restored. tamper logged.",
+      "err"
+    ],
     "scope.zoom": "ZOOM",
     "scope.tag": "TAG FOR LIFT",
     "scope.hud": "● STS-2 CAM · BERTH 4",
     "scope.aim": "tap to aim",
     "scope.on": "slot {id}",
-    "scope.zoom.ground": ["zoom", "zoomed into: puddles between the blocks. high resolution puddles.", "dim"],
-    "scope.zoom.box": ["zoom", "slot {id}: {label}.", "dim"],
-    "scope.zoom.found": ["zoom", "slot {id}: NRLU 404 0451. a reefer. no frost on its roof. every other reefer has frost.", "ok"],
-    "scope.zoom.out": ["zoom --out", "zoomed out.", "dim"],
-    "scope.tag.none": ["tag", "nothing under the crosshair to lift.", "dim"],
-    "scope.tag.wrong": ["tag", "slot {id}: {label}. not on tonight's schedule. STS-2 will not lift it.", "err"],
-    "scope.tag.ok": ["tag", "slot {id} tagged: NRLU 404 0451. STS-2 takes it on the next clearance.", "ok"],
-    "scope.tag.done": ["tag", "0451 is not in its slot any more.", "dim"]
+    "scope.zoom.ground": [
+      "zoom",
+      "zoomed into: puddles between the blocks. high resolution puddles.",
+      "dim"
+    ],
+    "scope.zoom.box": [
+      "zoom",
+      "slot {id}: {label}.",
+      "dim"
+    ],
+    "scope.zoom.found": [
+      "zoom",
+      "slot {id}: NRLU 404 0451. a reefer. no frost on its roof. every other reefer has frost.",
+      "ok"
+    ],
+    "scope.zoom.out": [
+      "zoom --out",
+      "zoomed out.",
+      "dim"
+    ],
+    "scope.tag.none": [
+      "tag",
+      "nothing under the crosshair to lift.",
+      "dim"
+    ],
+    "scope.tag.wrong": [
+      "tag",
+      "slot {id}: {label}. not on tonight's schedule. STS-2 will not lift it.",
+      "err"
+    ],
+    "scope.tag.ok": [
+      "tag",
+      "slot {id} tagged: NRLU 404 0451. STS-2 takes it on the next clearance.",
+      "ok"
+    ],
+    "scope.tag.done": [
+      "tag",
+      "0451 is not in its slot any more.",
+      "dim"
+    ]
   }
 }

@@ -1,3 +1,5 @@
+import {mintFeedback,mintFeedbackCause,type FeedbackReceipt} from './feedback-receipt';
+import {readObservation} from './native-observations';
 /**
  * A scene's rules, for any scene file: devices made of nouns, nouns with verbs,
  * events on nouns, and cables that say "when this noun does X, that noun does Y".
@@ -91,7 +93,8 @@ export interface SceneHooks {
    * (or whose effect names itself), or another speaker an effect names ('pixel'). The host
    * puts it as a caption over that thing; without `from` it goes to the terminal only.
    */
-  say: (line: Line, from?: string) => void;
+  say: (line: Line, from?: string, receipt?:FeedbackReceipt) => void;
+  feedbackScope?:string;
   /** Open a panel: `talk` (arg: the dialogue), or one of the scene's own (`camera`). */
   open: (panel: string, arg?: string) => void;
   changed: () => void;
@@ -121,7 +124,7 @@ export interface SceneHooks {
   /** The programs the player owns (`scan.so`). Default: the model keeps its own list. */
   programs?: () => string[];
   /** The player now owns this program (and save). */
-  program?: (id: string) => void;
+  program?: (id: string, receipt?:FeedbackReceipt) => void;
   /** The nodes the player controls, by Registry label (`0x2F`): access points onto their networks. */
   controlled?: () => string[];
 }
@@ -232,13 +235,13 @@ export class SceneModel {
   /** Bumped by reset and restore: timers started before it never fire. */
   private epoch = 0;
 
-  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET) {
+  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING) {
     this.texts = { ...ENGINE.texts, ...data.texts };
     this.nets = net.networks ?? [];
     this.programList = net.programs ?? [];
     for (const n of [...net.nodes, ...(data.nodes ?? [])]) this.nodeData.set(n.id, n);
     this.prewired = [...data.cables, ...net.cables];
-    this.keys = new Map([...KEYRING, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
+    this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
     this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
     this.clocks = new Clocks(() => this.now());
     this.init();
@@ -247,6 +250,7 @@ export class SceneModel {
   /** Back to how the scene file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
     this.epoch++;
+    this.reservations=new WeakMap();
     this.recent=[];
     this.time.clear();
     this.clocks.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
@@ -284,14 +288,14 @@ export class SceneModel {
   setPaused(on: boolean) { this.time.pause(on); }
 
   /** Delayed scene action: pauses with the scene, cancelled by reset or restore. */
-  later(ms: number, fn: () => void, detail?:unknown) {
+  later(ms: number, fn: () => void, detail?:unknown,canceled?:()=>void) {
     const e = this.epoch;
-    this.time.later(ms, () => { if (e === this.epoch) fn(); },detail);
+    return this.time.later(ms, () => { if (e === this.epoch) this.withCue(fn,true); },detail,canceled);
   }
 
   /** A scene state key (for effects and the scene). */
   get(key: string): Value { return this.state[key]; }
-  set(key: string, v: Value) { this.state[key] = v; }
+  set(key: string, v: Value) { if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);this.state[key] = v; }
   /** A state key, a derived value (`gateOpen`) or `signal`, as conditions read them. */
   value(key: string): Value | undefined { return this.read(key, this.ctx('')); }
   noun(key: string) { const [d, n] = split(key); return this.devices.get(d)?.nouns.find((x) => x.id === n); }
@@ -315,12 +319,27 @@ export class SceneModel {
   /** Who is speaking right now: the device whose verb (or guess, or item) is running. */
   private speaker: string | null = null;
   /** Say a line, as the speaker (or as `from`, when an effect names who reacted). */
-  private sayLine(l: Line, from: string | null = this.speaker) { this.hooks.say(l, from ?? undefined); }
+  private cue:string|undefined;
+  private reservations=new WeakMap<Line,FeedbackReceipt>();
+  private reserved:Line[]|undefined;
+  private withCue<T>(fn:()=>T,fresh=false):T {
+    if(this.cue&&!fresh)return fn();
+    const before=this.cue,reserved=this.reserved;this.cue=mintFeedbackCause();this.reserved=[];
+    try{return fn();}finally{for(const l of this.reserved)this.reservations.delete(l);this.cue=before;this.reserved=reserved;}
+  }
+  /** Reserve the next delivery of this exact line, allowing a controller cue before its reply. */
+  receipt(l:Line,from:string|null=this.speaker):FeedbackReceipt {
+    let r=this.reservations.get(l);if(r)return r;
+    r=mintFeedback(this.hooks.feedbackScope??this.data.id,from??'system',l[2]==='err'?'error':l[2]==='ok'?'success':'info',this.cue);
+    this.reservations.set(l,r);this.reserved?.push(l);return r;
+  }
+  takeReceipt(l:Line,from:string|null=this.speaker):FeedbackReceipt {const r=this.receipt(l,from);this.reservations.delete(l);return r;}
+  private sayLine(l: Line, from: string | null = this.speaker) {const receipt=this.takeReceipt(l,from);this.hooks.say(l, from ?? undefined,receipt);return receipt;}
   /** Run `fn` with `dev` as the speaker: what it says comes from that device. */
   private as<T>(dev: string, fn: () => T): T {
     const before = this.speaker;
     this.speaker = dev;
-    try { return fn(); } finally { this.speaker = before; }
+    try { return this.withCue(fn); } finally { this.speaker = before; }
   }
 
   private observe(phase: SceneTrace['phase'], context: Ctx, detail: unknown) {
@@ -331,8 +350,11 @@ export class SceneModel {
     } catch { /* Diagnostics must never alter gameplay, including observer failures. */ }
   }
   /** Scoped shared operation adapter; absent for unmigrated verbs. */
-  gameplay?: (context:Ctx)=>{result:import('./gameplay/types').GameplayResult;line:Line}|undefined;
+  gameplay?: (context:Ctx)=>{result:import('./gameplay/types').GameplayResult;line:Line|null}|undefined;
   gameplayEligibility?:(context:Ctx)=>import('./gameplay/types').GameplayResult|undefined;
+  gameplayTick?:(dt:number,cause:(run:()=>void)=>void)=>void;
+  /** Native committed device replies retain the existing receipt, caption and history owner. */
+  reply(line:Line,from:string){return this.sayLine(line,from);}
   /** Pure reach/permission preflight. Signals intentionally bypass manual locks and sectors. */
   eligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
     const native=this.nativeEligibility(dev,noun,verb,bySignal);if(!native.ok)return native;
@@ -407,7 +429,7 @@ export class SceneModel {
   /** Does a data condition hold right now (scene state only)? For panels. */
   cond(c: string) { return this.test(c, this.ctx('')); }
   /** Run data actions outside any noun (dialogue choices). */
-  apply(actions: Action[]) { actions.forEach((a) => { const l = this.doAction(a, this.ctx('')); if (l) this.sayLine(l); }); this.changed(); }
+  apply(actions: Action[],say:(line:Line)=>void=(l)=>this.sayLine(l)) { this.withCue(()=>{actions.forEach((a) => { const l = this.doAction(a, this.ctx('')); if (l) say(l); }); this.changed();}); }
   /** A label from the texts, with `{vars}` filled in. */
   label(key: string, vars?: Vars) { const t = this.texts[key]; return typeof t === 'string' ? this.fmt(t, this.ctx(''), vars) : '[' + key + ']'; }
   /** A terminal line from the texts. */
@@ -537,8 +559,9 @@ export class SceneModel {
     if (prog) {
       const vars = { program: id, name: prog.name, look: prog.look };
       if (this.programs().includes(id)) return this.line('give.program.have', vars);
-      if (this.hooks.program) this.hooks.program(id); else this.ownPrograms.push(id);
-      return this.line('give.program', vars);
+      const line=this.line('give.program', vars),receipt=this.receipt(line);
+      if (this.hooks.program) this.hooks.program(id,receipt); else this.ownPrograms.push(id);
+      return line;
     }
     const mod = this.logic.modules.find((x) => x.id === id);
     if (mod) {
@@ -821,7 +844,7 @@ export class SceneModel {
    * (the host redraws the meters, or everything when a lock ended).
    */
   tick(dt: number, live = true): boolean {
-    if (live) this.rules.tick?.(this.world(this.ctx('')), dt);
+    if (live) { this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true));for(const row of this.data.observations?.goals??[])if(this.cond(row.when))this.goal(row.goal); }
     let moved = false;
     for (const d of this.devices.values()) {
       const logs = this.logsOf(d.id), before = this.traceOf(d.id);
@@ -1259,6 +1282,7 @@ export class SceneModel {
       has: (key) => key in this.texts,
       // an effect speaks for its own device, unless it names who reacted (`w.say(line, 'router')`)
       say: (l, from) => this.sayLine(l, from ?? (c.dev || this.speaker)),
+      receipt: (l,from)=>this.receipt(l,from??(c.dev||this.speaker)),
       changed: () => this.changed(),
       goal: (g) => this.goal(g),
       tune: (key) => this.data.tuning[key],
@@ -1291,6 +1315,8 @@ export class SceneModel {
     if (key === 'signal') return c.bySignal;
     const derived = this.rules.derived?.[key];
     if (derived) return derived(this);
+    const observed=Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key)?this.data.observations!.aliases[key]:undefined;
+    if(observed)return readObservation(observed,this);
     if (key in this.state) return this.state[key];
     // the city's keys (weather, hour, day): a scene's own state of the same name wins
     if (CITY.read && (CITY_KEYS as readonly string[]).includes(key)) return CITY.read(key, this.data.id);
@@ -1301,6 +1327,7 @@ export class SceneModel {
   within(w?: TimeWindow) { return now(w); }
 
   private write(key: string, v: Value, dev = '') {
+    if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);
     const own = this.local.get(dev);
     if (own && key in own) own[key] = v;
     else this.state[key] = v;

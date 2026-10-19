@@ -1,0 +1,418 @@
+{
+  "version": 1,
+  "flags": [
+    "act1:done",
+    "heard:spire",
+    "contact:moth",
+    "stacks:alarms",
+    "stacks:spratFed"
+  ],
+  "items": [
+    "tea"
+  ],
+  "events": [
+    "stacks.moth.recruited"
+  ],
+  "commands": {
+    "stacks.pour": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "not": {
+          "item": "tea",
+          "atLeast": 1
+        }
+      },
+      "actions": [
+        {
+          "item": "tea",
+          "add": 1
+        }
+      ]
+    },
+    "stacks.moth.finish": {
+      "sources": [
+        "conversation"
+      ],
+      "when": {
+        "state": "stacks.talked",
+        "is": false
+      },
+      "actions": [
+        {
+          "state": "stacks.talked",
+          "set": true
+        },
+        {
+          "flag": "act1:done",
+          "value": true
+        },
+        {
+          "flag": "heard:spire",
+          "value": true
+        },
+        {
+          "flag": "contact:moth",
+          "value": true
+        },
+        {
+          "emit": "stacks.moth.recruited"
+        }
+      ]
+    },
+    "stacks.ferry.depart": {
+      "sources": [
+        "system"
+      ],
+      "when": {
+        "state": "stacks.talked",
+        "is": true
+      },
+      "actions": [
+        {
+          "state": "stacks.departed",
+          "set": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "moth": {
+      "sayCommand": "say \"{line}\" > reefer",
+      "entry": [
+        {
+          "node": "start"
+        }
+      ],
+      "nodes": {
+        "start": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "Took you long enough. Did you feed Sprat?"
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Sprat is... fine.",
+              "next": "notfed"
+            },
+            {
+              "id": "choice-2",
+              "label": "Hello to you too.",
+              "next": "hello"
+            }
+          ],
+          "redirect": [
+            {
+              "when": {
+                "state": "stacks.talked",
+                "is": true
+              },
+              "node": "start-variant-0"
+            },
+            {
+              "when": {
+                "state": "stacks.boxAt",
+                "is": "stack"
+              },
+              "node": "start-variant-1"
+            },
+            {
+              "when": {
+                "state": "stacks.boxAt",
+                "is": "air"
+              },
+              "node": "start-variant-2"
+            },
+            {
+              "when": {
+                "flag": "stacks:spratFed"
+              },
+              "node": "start-variant-3"
+            }
+          ]
+        },
+        "start-variant-0": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "(The intercom hisses. The ferry is out of range. Moth is on your deck now.)"
+          ]
+        },
+        "start-variant-1": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "(Static. Then, from somewhere in block B, two knocks. Then nothing. The thermal gate is listening, and so is whoever knocked.)"
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Knock twice on the panel.",
+              "next": "knock"
+            },
+            {
+              "id": "choice-2",
+              "label": "Leave it.",
+              "next": "quiet"
+            }
+          ]
+        },
+        "start-variant-2": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "(The intercom is all wind and winch.)"
+          ]
+        },
+        "start-variant-3": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "Took you long enough. Did you feed Sprat?"
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "I fed Sprat.",
+              "next": "fed"
+            },
+            {
+              "id": "choice-2",
+              "label": "Hello to you too.",
+              "next": "hello"
+            }
+          ]
+        },
+        "knock": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "(Two knocks back. A pause. Then one, slow. Moth's knock: wait.)"
+          ]
+        },
+        "quiet": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "(The reefer hums. Its label says 4°C. It is not 4°C in there.)"
+          ]
+        },
+        "fed": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "You did? He'll act like you didn't. He holds a grudge like a much bigger fish."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Moth. What happened to me?",
+              "next": "deleted"
+            }
+          ]
+        },
+        "notfed": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "You didn't. I can hear it in your voice. It's fine. He's a fish. He'll turn it into a story about how he survived."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Moth. What happened to me?",
+              "next": "deleted"
+            }
+          ]
+        },
+        "hello": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "Hello. Sorry. Two days in a fridge set to warm. Manners go first. Then the left foot."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Moth. What happened to me?",
+              "next": "deleted"
+            }
+          ]
+        },
+        "deleted": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "Your door says rent: pending. The street looks through you. The turnstiles think about it. That's not a glitch, and it's not your rent. You were deleted. On purpose."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "On purpose? By who?",
+              "next": "list"
+            }
+          ],
+          "redirect": [
+            {
+              "when": {
+                "flag": "stacks:alarms"
+              },
+              "node": "deleted-variant-0"
+            }
+          ]
+        },
+        "deleted-variant-0": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "First: that alarm. Subtle. I bit my own sleeve. Second: you. Your door says rent: pending, the street looks through you, the turnstiles think about it. That's not a glitch. You were deleted. On purpose."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "On purpose? By who?",
+              "next": "list"
+            }
+          ]
+        },
+        "list": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "The Registry. Tuesday, 03:12, one batch: you and four hundred and six others. I was inside on a boring job, address records, and there was a list. Signed, dated, approved. Your name on it, spelt right for once."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "What did you do?",
+              "next": "took"
+            }
+          ]
+        },
+        "took": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "I took it. Badly. Registry files don't leave in one piece: it came apart into seven root fragments, and each one went back to wherever its key lives. The relay on Downtown's roof had one. You've been carrying a piece of this since before you knew."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "And the Registry?",
+              "next": "knows"
+            }
+          ]
+        },
+        "knows": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "Knows I have it. That's why I'm in a fridge, and why their dog walks this quay. They don't need the list back. They need me. Then you, because you came looking."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Where does it end?",
+              "next": "spire"
+            }
+          ]
+        },
+        "spire": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "Up. The antenna on Plaza Central, top of the Spire. The list's lock is up there. Put the seven pieces back in and everyone on it comes back. You included. Probably. I didn't read the manual. I stole it."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "And you?",
+              "next": "deck"
+            }
+          ]
+        },
+        "deck": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "The ferry leaves when it's full, and I'm the last box. Out on the water their gates only scan fish. I'll be on your deck: messages, when there's signal. I find out where the pieces are. You go and get them. You were always better with doors."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Don't go dark again.",
+              "next": "end"
+            },
+            {
+              "id": "choice-2",
+              "label": "Moth. Thank you.",
+              "next": "end"
+            }
+          ]
+        },
+        "end": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "No promises. I'm a moth. Go on. And feed Sprat."
+          ],
+          "onEnter": "stacks.moth.finish",
+          "redirect": [
+            {
+              "when": {
+                "state": "stacks.talked",
+                "is": true
+              },
+              "node": "end-completed"
+            }
+          ]
+        },
+        "end-completed": {
+          "speaker": "MOTH · the intercom of NRLU 404 0451",
+          "pages": [
+            "No promises. I'm a moth. Go on. And feed Sprat."
+          ]
+        }
+      }
+    }
+  },
+  "state": {
+    "stacks.talked": {
+      "owner": "stacks",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "stacks.departed": {
+      "owner": "stacks",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "stacks.boxAt": {
+      "owner": "stacks",
+      "lifetime": "save",
+      "type": "enum",
+      "options": [
+        "stack",
+        "air",
+        "ferry"
+      ],
+      "default": "stack"
+    }
+  },
+  "native": {
+    "state": {
+      "stacks.talked": "talked",
+      "stacks.departed": "departed",
+      "stacks.boxAt": "boxAt"
+    },
+    "reads": {
+      "stacks:alarms": "alarms",
+      "stacks:spratFed": "spratFed"
+    },
+    "verbs": [],
+    "events": {},
+    "goals": {
+      "stacks.moth.recruited": "moth"
+    }
+  },
+  "handoffs": [
+    {
+      "event": "stacks.moth.recruited",
+      "cutscene": "act2",
+      "after": [
+        {
+          "ms": 1500,
+          "command": "stacks.ferry.depart"
+        }
+      ]
+    }
+  ]
+}

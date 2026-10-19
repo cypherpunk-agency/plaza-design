@@ -54,6 +54,7 @@ export interface AccessDeniedOpts {
 export function initAccessDenied(opts: AccessDeniedOpts) {
   const html = document.documentElement;
   if (SHIFT_PROTOTYPE) html.classList.add('shift-prototype');
+  if(DEMO_MODE){const style=document.createElement('style');style.textContent='.game-mode .header-online,.game-mode .plaza-window-header>span:last-child,.game-mode .footer-timestamp{display:none}';document.head.append(style);}
   const cta = document.getElementById('cta');
   const windowEl = document.querySelector('.demo-window') as HTMLElement | null;
   const header = document.querySelector('.plaza-window-header') as HTMLElement | null;

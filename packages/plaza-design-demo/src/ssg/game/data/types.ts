@@ -1,3 +1,5 @@
+import type {RegisteredSceneController} from '../engine/controllers';
+import type {NativeObservations} from '../engine/native-observations';
 /**
  * The shape of a scene's data file (see GAME-DATA.md).
  *
@@ -354,6 +356,9 @@ export interface KeyItem {
 }
 
 export interface SceneData {
+  controller?:RegisteredSceneController;
+  /** Native read-only projections and idempotent live-tick goal observations. */
+  observations?: NativeObservations;
   id: string;
   name: string;
   /** Every state key the scene has, with its starting value. */

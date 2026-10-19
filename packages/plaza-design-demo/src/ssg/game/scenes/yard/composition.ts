@@ -1,6 +1,11 @@
+import {actorPresentationDefaults,actorPresentationBindings,validateActorPresentationNode} from '../../engine/gameplay/actor-presentation';
+import {compileSceneActors} from '../../engine/gameplay/actors';
+import type {SceneDocument} from '../../engine/gameplay/scene-document';
+import type {Character} from '../../runtime/characters';
+import sceneSource from './scene.json';
 import { frameView } from '../../art/core/view';
 /** Yard composition source, pure bindings, and the explicit legacy presentation controller. */
-import {art,drawComposition,resolveComposition,type Composition,type Environment,type Value} from '../../art';
+import {art,drawComposition,resolveComposition,type Composition,type Environment,type Instance,type Value} from '../../art';
 import {yardVisualFields} from '../../art/assemblies/yard-elements';
 import type {YardVisual} from '../../art/assemblies/fixer-yard';
 import type {View} from '../../art/core/view';
@@ -11,12 +16,13 @@ import {light} from '../../world/light';
 import document from './composition.json';
 export const yardArt=art;
 export const yardComposition=art.validate(document);
-const required=['sky','side-walls','spawn','exit-downtown','passage','camera','crane','hatch','tray','chute','parcel','A-3','B-5','C-7','slot-home','slot-chute','device-cam','device-crane','device-gate'];
-export function validateYardComposition(input:unknown):Composition{const doc=art.validate(input);if(doc.scene!=='yard')throw new Error('Expected yard composition');for(const id of required)if(!doc.instances.some(i=>i.id===id))throw new Error('Missing gameplay-bound Yard instance '+id);for(const i of doc.instances)for(const [k,v] of Object.entries(i.bindings??{}))if(v!=='yard.'+k||!(k in yardVisualFields))throw new Error(i.id+': unknown Yard visual binding '+v);return doc;}
+const flatten=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
+const required=['sky','side-walls','passage','camera','crane','hatch','tray','chute','parcel','A-3','B-5','C-7','slot-home','slot-chute','device-cam','device-crane','device-gate'];
+export function validateYardComposition(input:unknown):Composition{const doc=art.validate(input);if(doc.scene!=='yard')throw new Error('Expected yard composition');for(const id of required)if(!flatten(doc.instances).some(i=>i.id===id))throw new Error('Missing gameplay-bound Yard instance '+id);for(const i of flatten(doc.instances)){if(i.type==='character.prepared'){validateActorPresentationNode('yard',i);continue;}for(const[k,v]of Object.entries(i.bindings??{}))if(v!=='yard.'+k||!(k in yardVisualFields))throw new Error(i.id+': unknown Yard visual binding '+v);}return doc;}
 validateYardComposition(yardComposition);
-const defaults=()=>Object.fromEntries(Object.entries(yardVisualFields).map(([k,f])=>['yard.'+k,f.default]));
+const defaults=(doc:Composition)=>({...Object.fromEntries(Object.entries(yardVisualFields).map(([k,f])=>['yard.'+k,f.default])),...actorPresentationDefaults('yard',doc)});
 const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:640,viewH:360,flags:{}};
-export function yardGeometry(doc:Composition=yardComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(),reduced:false});}
+export function yardGeometry(doc:Composition=yardComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(doc),reduced:false});}
 export function yardPlacement(id:string,doc:Composition=yardComposition){const row=yardGeometry(doc).find(r=>r.instance.id===id);if(!row)throw new Error('Unknown Yard instance '+id);return row.placement;}
 export function yardWidth(doc:Composition=yardComposition){return Number(yardGeometry(doc).find(r=>r.instance.id==='side-walls')!.props.width);}
 export function yardDeviceData(source:SceneData,doc:Composition=yardComposition):SceneData{const result=structuredClone(source);for(const id of ['cam','crane','gate']){const p=yardPlacement('device-'+id,doc),spot=result.devices.find(d=>d.id===id)!.layout!.spot!;spot.x=p.x;if(spot.y!==undefined||p.h!==0)spot.y=p.h;}return result;}
@@ -34,5 +40,5 @@ export function prepareYardFrame(controller:YardPresentationState,engine:EngineD
 if(!Number.isFinite(target))controller.hookVisible=false;
 if(controller.hookVisible)controller.hookX+=(target-controller.hookX)*.08;}return yardVisualSnapshot(controller,engine,doc);}
 export type YardRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
-export function yardEnvironment(view:View,snapshot:YardVisual):Environment{return{view,state:{},bindings:Object.fromEntries(Object.entries(snapshot).map(([k,v])=>['yard.'+k,v as Value])),reduced:false};}
-export function drawYardComposition(ctx:CanvasRenderingContext2D,view:View,snapshot:YardVisual,doc:Composition=yardComposition,state:Environment['state']={},options:YardRenderOptions={}){drawComposition(ctx,art,doc,{...yardEnvironment(view,snapshot),state,...options},'backdrop');}
+export function yardEnvironment(view:View,snapshot:YardVisual,doc:Composition=yardComposition,actors:Readonly<Record<string,Character>>=compileSceneActors(sceneSource as unknown as SceneDocument,yardGeometry(doc))):Environment{return{view,state:{},bindings:{...Object.fromEntries(Object.entries(snapshot).map(([k,v])=>['yard.'+k,v as Value])),...actorPresentationBindings('yard',actors,view.t,snapshot.layer!=='devices')},reduced:false};}
+export function drawYardComposition(ctx:CanvasRenderingContext2D,view:View,snapshot:YardVisual,doc:Composition=yardComposition,state:Environment['state']={},options:YardRenderOptions={},actors?:Readonly<Record<string,Character>>){drawComposition(ctx,art,doc,{...yardEnvironment(view,snapshot,doc,actors),state,...options},'backdrop');}

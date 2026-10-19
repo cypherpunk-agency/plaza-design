@@ -2,7 +2,7 @@ import {referenceView} from './reference-view';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import vm from 'node:vm';import ts from 'typescript';
 import { beach,beachScene } from '../../src/ssg/game/scenes/beach/index';
 import { beachComposition,beachGeometry,beachLayout,beachLights,beachCasters,beachDeviceData,drawBeachComposition,validateBeachComposition } from '../../src/ssg/game/scenes/beach/composition.ts';
-import { BEACH_ACTORS,GULL,L } from '../../src/ssg/game/scenes/beach/scene';
+import { BEACH_ACTORS,GULL } from '../../src/ssg/game/scenes/beach/scene';
 import * as primitives from '../../src/ssg/game/art/core/primitives';import * as sky from '../../src/ssg/game/art/environment/sky';import * as bar from '../../src/ssg/game/art/assemblies/beach-bar';import * as screens from '../../src/ssg/game/art/signage/screens';import * as chars from '../../src/ssg/game/runtime/characters';
 import { placed } from '../../src/ssg/game/art/core/view';import { drawLounger } from '../../src/ssg/game/art/props/beach-party';import { light } from '../../src/ssg/game/world/light';import { BEACH } from '../../src/ssg/game/data/index';
 import type { View } from '../../src/ssg/game/art/core/view';import type { SceneModel } from '../../src/ssg/game/engine/model';
@@ -13,6 +13,7 @@ for(const[name,body]of immutable)if(saved.has(name))assert.equal(saved.get(name)
 function load(file:string,globals:Record<string,unknown>){let text=fs.readFileSync(file,'utf8');const sf=ts.createSourceFile(file,text,99,true);for(const n of sf.statements.filter(n=>ts.isImportDeclaration(n)||(ts.isExportDeclaration(n)&&!!n.moduleSpecifier)).reverse())text=text.slice(0,n.getStart(sf))+text.slice(n.end);const compat=ts.createSourceFile(file,text,99,true),edits:{start:number;end:number;text:string}[]=[];function attach(n:ts.Node){if(ts.isVariableDeclaration(n)&&n.type?.getText(compat)==='View'&&n.initializer&&ts.isObjectLiteralExpression(n.initializer))edits.push({start:n.initializer.getStart(compat),end:n.initializer.end,text:'referenceView('+n.initializer.getText(compat)+')'});ts.forEachChild(n,attach);}attach(compat);for(const e of edits.sort((a,b)=>b.start-a.start))text=text.slice(0,e.start)+e.text+text.slice(e.end);const exports:Record<string,any>={};vm.runInNewContext(ts.transpileModule(text,{compilerOptions:{target:99,module:ts.ModuleKind.CommonJS}}).outputText,{exports,referenceView,...globals});return exports;}
 const oldArtwork=load(path.join(backup,'art/assemblies/beach.ts'),{...primitives,...sky,...bar,...screens,...chars,placed,drawLounger,light}).createBeachArtwork;
 let oldInputs:any;const oldScene=load(path.join(backup,'scenes/beach/scene.ts'),{createBeachArtwork:(input:unknown)=>{oldInputs=input;return oldArtwork(input);}});
+const L=beachLayout();
 const a=(id:string)=>BEACH_ACTORS[id];
 const original=oldArtwork({...oldInputs,GULL,ASHORE:[0,1,2,3,4,5,6].map(i=>a('ashore-'+i)),SUNBEDS:[a('sunbed-person-0'),a('sunbed-person-1')],sunbather:a('sunbather'),lifeguard:a('guard'),BEACHGOERS:[0,1,2,3,4,5,6].map(i=>a('beachgoer-'+i)),volley:a('volley'),kid:a('kid'),surfer:a('surfer'),fisher:a('fisher'),PEOPLE:[a('cat')]});
 function json(v:unknown){return JSON.stringify(v);}
@@ -29,7 +30,9 @@ for(const cam of [0,300,750,1100,1500])for(const gy of [170,280])for(const t of 
  const old=recording(),now=recording();original.drawBeach(old.ctx,m,v,'mixer');drawBeachComposition(now.ctx,v,m,'mixer',BEACH_ACTORS,GULL);
  if(json(old.ops)!==json(now.ops)){let first=0;while(json(old.ops[first])===json(now.ops[first]))first++;throw new Error(`cam${cam} gy${gy} t${t} danger${danger}: op${first}/${old.ops.length}/${now.ops.length}: ${json(old.ops[first])} != ${json(now.ops[first])}`);}cases++;
 }
-const doc=validateBeachComposition(structuredClone(beachComposition)),barNode=doc.instances.find(n=>n.id==='bar')!;barNode.placement.x+=35;barNode.placement.h+=10;barNode.placement.scale=1.5;barNode.placement.facing=-1;
+const doc=validateBeachComposition(structuredClone(beachComposition)),barNode=doc.instances.find(n=>n.id==='bar')!;barNode.placement.x+=35;barNode.placement.h+=10;// Shared physical bindings require unit scale and normal facing.
+const scaled=structuredClone(doc);scaled.instances.find(n=>n.id==='bar')!.placement.scale=1.5;assert.throws(()=>beachScene(scaled),/unit scale/);
+
 const rows=beachGeometry(doc),r=(id:string)=>rows.find(r=>r.instance.id===id)!,scene=beachScene(doc);
 assert.equal(scene.data!.devices.find(d=>d.id==='mixer')!.layout!.spot!.x,r('device-mixer').placement.x);assert.equal(scene.data!.devices.find(d=>d.id==='mixer')!.layout!.spot!.y,r('device-mixer').placement.h);assert.equal(scene.uses!.find(u=>u.id==='order')!.x,r('order').placement.x);assert.equal(scene.uses!.find(u=>u.id==='order')!.h,r('order').placement.h);
 assert.deepEqual(scene.exits.map(({x,...rest})=>rest),beach.exits.map(({x,...rest})=>rest));assert.equal(scene.people!.find(p=>p.id==='lime')!.x,r('lime-talk').placement.x);

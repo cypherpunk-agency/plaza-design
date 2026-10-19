@@ -1,0 +1,48 @@
+{
+  "kind": "capsule",
+  "version": 1,
+  "state": {
+    "plugOn": "plugOn",
+    "sun": "sun",
+    "pixelAt": "pixelAt",
+    "doorOpen": "doorOpen"
+  },
+  "devices": {
+    "router": "router",
+    "pixel": "pixel",
+    "lock": "lock",
+    "concierge": "concierge"
+  },
+  "schedule": {
+    "from": "plug.schedule:night",
+    "to": "plug.power"
+  },
+  "tuning": {
+    "nightEveryMs": "nightEveryMs",
+    "bootMs": "bootMs",
+    "rebootMs": "rebootMs",
+    "pixelMoveMs": "pixelMoveMs",
+    "roomTemp": "roomTemp",
+    "idleTemp": "idleTemp",
+    "hotTemp": "hotTemp",
+    "rebootTemp": "rebootTemp",
+    "heatPerS": "heatPerS",
+    "coolPerS": "coolPerS",
+    "steamMs": "steamMs"
+  },
+  "texts": {
+    "online": "router.online",
+    "reboot": "router.reboot",
+    "pixelBed": "pixel.bed",
+    "pixelRouter": "pixel.router",
+    "pixelSun": "pixel.sun",
+    "unlocked": "lock.unlocked"
+  },
+  "goals": {
+    "router": "router",
+    "concierge": "concierge",
+    "pixel": "pixel"
+  },
+  "onlineNoticeDelayMs": 20,
+  "temperatureNoticeStep": 5
+}

@@ -20,31 +20,28 @@ import { cinematicDocuments } from './documents';
 import type { TimelineDocument } from '../../art/core/timeline';
 import type { Composition } from '../../art/core/composition';
 import type { Timeline } from "../../ui/transport";
-import type { Cutscene, CutsceneData, CutView } from './types';
+import type { Cutscene, CutView } from './types';
 
 export type { Cutscene, CutsceneData, CutView, TextCard } from './types';
 
-const DATA: Record<string, CutsceneData> = Object.fromEntries(Object.entries(data).map(([id, meta]) => {
-  const sequence = cinematicDocuments.timeline.sequences.find(s => s.id === meta.sequence)!;
-  if (!sequence?.handoff) throw new Error(`Cutscene ${id}: missing timeline or handoff`);
-  return [id, { title: meta.title, duration: sequence.duration, next: sequence.handoff.scene, cards: sequence.text.map(card => ({ at: card.from, until: card.to, text: card.text, x: card.x, h: card.h })), beats: sequence.beats.map(beat => ({ at: beat.time, name: beat.id })) }];
-}));
-
-const DRAW = {
-  /** The opening: the city with nobody in it. */
-  intro: (x: CanvasRenderingContext2D, v: CutView, t: number) => { renderCinematicPicture(x,v,cinematicDocuments,'intro',t,{intro:introPlayback.prepare(t)}); },
-  /** The end of Act I: the ferry leaves with Moth, the Spire across the bay, ACT II. */
-  act2: (x: CanvasRenderingContext2D, v: CutView, t: number) => { renderCinematicPicture(x, v, cinematicDocuments, 'act2', t); },
-} satisfies Record<string, Cutscene['draw']>;
-
-export type CutsceneId = keyof typeof DRAW;
-
-export const CUTSCENES = Object.fromEntries(
-  (Object.keys(DRAW) as CutsceneId[]).map((id) => [id, { id, ...DATA[id], ownsFade: true, draw: DRAW[id], transition: (ctx, view, time) => renderCinematicTransition(ctx, view, cinematicDocuments, id, time) } satisfies Cutscene]),
-) as Record<CutsceneId, Cutscene>;
-
-export const isCutsceneId = (id: string): id is CutsceneId => Object.prototype.hasOwnProperty.call(CUTSCENES, id);
-export const cutsceneById = (id: string): Cutscene | undefined => (isCutsceneId(id) ? CUTSCENES[id] : undefined);
+/** A private document set owns its native playback session; shipping remains independent. */
+export function createCutscenes(documents:import('../../art/sequences/cinematics').CinematicDocuments=cinematicDocuments){
+  const playback=new IntroPlaybackSession();
+  const registry=Object.fromEntries((['intro','act2'] as const).map(id=>{
+    const meta=data[id],sequence=documents.timeline.sequences.find(s=>s.id===meta.sequence);
+    if(!sequence?.handoff)throw new Error(`Cutscene ${id}: missing timeline or handoff`);
+    const scene:Cutscene={id,title:meta.title,duration:sequence.duration,next:sequence.handoff.scene,handoff:{...sequence.handoff},ownsFade:true,
+      cards:sequence.text.map(card=>({at:card.from,until:card.to,text:card.text,x:card.x,h:card.h})),beats:sequence.beats.map(beat=>({at:beat.time,name:beat.id})),
+      draw:(ctx,view,time)=>renderCinematicPicture(ctx,view,documents,id,time,id==='intro'?{intro:playback.prepare(time)}:{}),
+      transition:(ctx,view,time)=>renderCinematicTransition(ctx,view,documents,id,time)};
+    return[id,scene];
+  })) as Record<CutsceneId,Cutscene>;
+  return registry;
+}
+export type CutsceneId='intro'|'act2';
+export const CUTSCENES=createCutscenes();
+export const isCutsceneId=(id:string):id is CutsceneId=>Object.prototype.hasOwnProperty.call(CUTSCENES,id);
+export const cutsceneById=(id:string):Cutscene|undefined=>isCutsceneId(id)?CUTSCENES[id]:undefined;
 
 /** Inputs in the first moments don't skip: the key that started the scene is still being pressed. */
 const GRACE = 0.8;
@@ -190,7 +187,7 @@ export class CutscenePlay {
 export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H: number, id: 'intro' | 'act2', seconds: number, options:CinematicOptions&{seek?:IntroSeekSession;reduced:boolean;lighting?:Light; touch?: boolean; timeline?: TimelineDocument; composition?: Composition }) {
   const timeline = options.timeline ?? cinematicDocuments.timeline, sequence = timeline.sequences.find(s => s.id === (options.sequenceId ?? id));
   if (!sequence) throw new Error(`Cutscene ${id}: missing timeline sequence`);
-  const scene: Cutscene = { id, title: DATA[id].title, duration: sequence.duration, next: sequence.handoff?.scene ?? '', ownsFade: true,
+  const scene: Cutscene = { id, title: data[id].title, duration: sequence.duration, next: sequence.handoff?.scene ?? '', ...(sequence.handoff?{handoff:{...sequence.handoff}}:{}), ownsFade: true,
     cards: sequence.text.map(card => ({ at: card.from, until: card.to, text: card.text, x: card.x, h: card.h })), beats: sequence.beats.map(beat => ({ at: beat.time, name: beat.id })),
     draw: (ctx, view, time) => { renderCinematicPicture(ctx,view,cinematicDocuments,id,time,{...options,...(id==='intro'?{intro:options.seek?options.seek.prepare(ctx,view,time,sequence.duration):introPlayback.prepare(time)}:{})}); },
     transition: (ctx, view, time) => renderCinematicTransition(ctx, view, cinematicDocuments, id, time, options),

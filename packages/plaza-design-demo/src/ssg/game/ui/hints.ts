@@ -1,3 +1,4 @@
+import {CommunicationLane,type MessageTone} from './communication';
 /**
  * Hints: a channel any part of the game can send a short line to (docs/design/DECK-SCREEN-PLAN.md).
  * It does not decide when a player gets help; senders do. One hint shows at a time, in the hint
@@ -16,12 +17,13 @@ interface Hint { id: string; text: string; sticky: boolean }
 const BASE_MS = 3500, PER_CHAR_MS = 45, FADE_MS = 400;
 
 export class Hints {
+  readonly notices = new CommunicationLane();
   private queue: Hint[] = [];
   private cur: (Hint & { from: number; until: number }) | null = null;
   /** The last timed hint shown this session (JOBS). */
   latest: string | null = null;
   /** Wall time of the last frame the lane was drawn: a gap (deck, map, cutscene) is not counted. */
-  private lastStep = 0;
+  private lastStep:number|null = null;
 
   constructor(private seen: () => string[]) {}
 
@@ -33,18 +35,33 @@ export class Hints {
     if (!opts.repeat && this.seen().includes(id)) return;
     if (this.pending(id)) return;
     const h = { id, text, sticky: !!opts.sticky };
-    if (!opts.first) { this.queue.push(h); return; }
+    if (!opts.first) { if(this.queue.length+(this.cur?1:0)<CommunicationLane.capacity)this.queue.push(h); return; }
     if (this.cur) { this.queue.unshift({ id: this.cur.id, text: this.cur.text, sticky: this.cur.sticky }); this.cur = null; }
-    this.queue.unshift(h);
+    this.queue.unshift(h);if(this.queue.length>CommunicationLane.capacity)this.queue.length=CommunicationLane.capacity;
   }
 
+  notify(text:string,tone:MessageTone='info',receipt?:import('../engine/feedback-receipt').FeedbackReceipt){
+    return this.notices.offer({id:receipt?.id??'status:'+text,text,tone,source:'system',scope:'scene',priority:tone==='error'?200:100,duration:Math.min(10000,3500+text.length*45)});
+  }
+  sceneChanged(){this.notices.sceneChanged();this.queue=[];this.cur=null;this.lastStep=null;}
+  /** The same saved lesson queue, presented by the board while the world HUD is covered. */
+  boardHint(busy=false):string|null {
+    if(busy)return null;
+    const noun='ctl.noun',wire='ctl.wire';
+    const id=!this.has(noun)?noun:!this.has(wire)?wire:null;
+    if(!id)return null;
+    this.show(id,id===noun?'TAP A NOUN TO OPEN ITS VERBS':'DRAG AN ORANGE EVENT DOT ONTO A NOUN, THEN PICK A VERB',{sticky:true,first:true});
+    // The board owns this presenter while open; pending HUD help waits in the same queue.
+    if(this.cur?.id!==id){if(this.cur)this.queue.unshift(this.cur);const at=this.queue.findIndex(h=>h.id===id);if(at<0)return null;this.cur={...this.queue.splice(at,1)[0],from:0,until:Infinity};}
+    return this.cur.text;
+  }
   /** Is this hint showing or waiting? */
   pending(id: string) { return this.cur?.id === id || this.queue.some((q) => q.id === id); }
 
   /** The player did it, or the sender withdraws it: gone, and seen for good. */
   done(id: string) {
     const seen = this.seen();
-    if (seen.includes(id) && this.cur?.id !== id) return;
+    if (seen.includes(id) && !this.pending(id)) return;
     this.queue = this.queue.filter((q) => q.id !== id);
     if (this.cur?.id === id) this.cur = null;
     if (!seen.includes(id)) seen.push(id);
@@ -54,14 +71,18 @@ export class Hints {
   has(id: string) { return this.seen().includes(id); }
 
   /** The hint to draw now, with its opacity; null for none. Call once per drawn frame. */
-  step(now = performance.now()): { text: string; alpha: number } | null {
+  step(now = performance.now(), optionalBusy=false): { text: string; alpha: number; tone?:MessageTone } | null {
+    const notice=this.notices.step(optionalBusy);
+    if(notice||optionalBusy){if(this.cur&&this.lastStep!==null){const gap=now-this.lastStep;this.cur.from+=gap;this.cur.until+=gap;}this.lastStep=now;return notice;}
     // time spent not drawing (the deck open, a cutscene) moves the current hint's clock along with it
-    const gap = this.lastStep ? now - this.lastStep : 0;
+    const gap = this.lastStep!==null ? now - this.lastStep : 0;
     this.lastStep = now;
     if (this.cur && gap > 250) { this.cur.from += gap; this.cur.until += gap; }
     if (this.cur && !this.cur.sticky && now >= this.cur.until) this.cur = null;
-    if (!this.cur && this.queue.length) {
-      const q = this.queue.shift()!;
+    if(this.cur?.id==='ctl.noun'||this.cur?.id==='ctl.wire'){this.queue.unshift(this.cur);this.cur=null;}
+    const next=this.queue.findIndex(h=>h.id!=='ctl.noun'&&h.id!=='ctl.wire');
+    if (!this.cur && next>=0) {
+      const q = this.queue.splice(next,1)[0];
       this.cur = { ...q, from: now, until: now + BASE_MS + q.text.length * PER_CHAR_MS };
       // JOBS keeps timed hints; sticky ones are controls, and CONTROLS lists those
       if (!q.sticky) { this.latest = q.text; const seen = this.seen(); if (!seen.includes(q.id)) seen.push(q.id); }

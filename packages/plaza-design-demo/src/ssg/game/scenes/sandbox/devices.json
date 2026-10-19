@@ -1,7 +1,6 @@
 {
   "id": "sandbox",
   "name": "the sandbox",
-
   "state": {
     "lampOn": false,
     "memo": 0,
@@ -26,29 +25,75 @@
     "nightLight": false,
     "ventOpen": false
   },
-
   "tuning": {
     "pulseMs": 900
   },
-
   "devices": [
     {
       "id": "sensor",
       "name": "MOTION SENSOR",
       "look": "A passive infrared sensor on a stand. It sees heat move. It has watched a lot of technicians leave at 17:00.",
-      "everyday": [{ "noun": "eye", "verb": "wave", "label": "wave at it" }, { "noun": "eye", "verb": "read", "label": "read the label" }],
+      "everyday": [
+        {
+          "noun": "eye",
+          "verb": "wave",
+          "label": "wave at it"
+        },
+        {
+          "noun": "eye",
+          "verb": "read",
+          "label": "read the label"
+        }
+      ],
       "status": "SENSE · raises motion · wired to the test lamp",
       "layout": {
-        "spot": { "x": 345, "y": 28, "w": 22, "h": 24 },
-        "board": { "x": 0.06, "y": 0.12 },
-        "dir": { "eye": "up" }
+        "spot": {
+          "x": 345,
+          "y": 28,
+          "w": 22,
+          "h": 24
+        },
+        "board": {
+          "x": 0.06,
+          "y": 0.12
+        },
+        "dir": {
+          "eye": "up"
+        }
       },
       "nouns": [
         {
-          "id": "eye", "kind": "SENSE", "verbs": ["wave", "read"], "events": ["motion"],
+          "id": "eye",
+          "kind": "SENSE",
+          "verbs": [
+            "wave",
+            "read"
+          ],
+          "events": [
+            "motion"
+          ],
           "on": {
-            "wave": { "do": [{ "emit": "motion" }, { "effect": "sbx.pulse" }], "say": ["{via}wave at sensor", "SENSOR: motion. event raised.", "ok"] },
-            "read": { "say": ["cat sensor", "DEVICE UNDER TEST: MOTION SENSOR. KIND: SENSE. IT NOTICES. IT DOES NOT ACT. EVENT: motion → TEST LAMP (PRE-WIRED)."] }
+            "wave": {
+              "do": [
+                {
+                  "emit": "motion"
+                },
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}wave at sensor",
+                "SENSOR: motion. event raised.",
+                "ok"
+              ]
+            },
+            "read": {
+              "say": [
+                "cat sensor",
+                "DEVICE UNDER TEST: MOTION SENSOR. KIND: SENSE. IT NOTICES. IT DOES NOT ACT. EVENT: motion → TEST LAMP (PRE-WIRED)."
+              ]
+            }
           }
         }
       ]
@@ -57,19 +102,76 @@
       "id": "lamp",
       "name": "TEST LAMP",
       "look": "A bulb in a wire cage on a clamp. The most tested bulb in the city.",
-      "everyday": [{ "noun": "lamp", "verb": "on", "label": "switch on" }, { "noun": "lamp", "verb": "off", "label": "switch off" }],
-      "status": [{ "if": "lampOn", "then": "ACT · lit", "else": "ACT · dark" }],
+      "everyday": [
+        {
+          "noun": "lamp",
+          "verb": "on",
+          "label": "switch on"
+        },
+        {
+          "noun": "lamp",
+          "verb": "off",
+          "label": "switch off"
+        }
+      ],
+      "status": [
+        {
+          "if": "lampOn",
+          "then": "ACT · lit",
+          "else": "ACT · dark"
+        }
+      ],
       "layout": {
-        "spot": { "x": 400, "y": 28, "w": 22, "h": 34 },
-        "board": { "x": 0.185, "y": 0.12 },
-        "dir": { "lamp": "up" }
+        "spot": {
+          "x": 400,
+          "y": 28,
+          "w": 22,
+          "h": 34
+        },
+        "board": {
+          "x": 0.185,
+          "y": 0.12
+        },
+        "dir": {
+          "lamp": "up"
+        }
       },
       "nouns": [
         {
-          "id": "lamp", "kind": "ACT", "verbs": ["on", "off"], "current": "lampOn",
+          "id": "lamp",
+          "kind": "ACT",
+          "verbs": [
+            "on",
+            "off"
+          ],
+          "current": "lampOn",
           "on": {
-            "on": { "do": [{ "set": "lampOn", "to": true }], "say": ["{via}use lamp --on", "LAMP: on.", "ok"] },
-            "off": { "do": [{ "set": "lampOn", "to": false }], "say": ["{via}use lamp --off", "LAMP: off.", "dim"] }
+            "on": {
+              "do": [
+                {
+                  "set": "lampOn",
+                  "to": true
+                }
+              ],
+              "say": [
+                "{via}use lamp --on",
+                "LAMP: on.",
+                "ok"
+              ]
+            },
+            "off": {
+              "do": [
+                {
+                  "set": "lampOn",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use lamp --off",
+                "LAMP: off.",
+                "dim"
+              ]
+            }
           }
         }
       ]
@@ -78,26 +180,107 @@
       "id": "memo",
       "name": "MEMO SCREEN",
       "look": "A small screen that holds one line. Write a new one and the old one is gone. Like most records.",
-      "everyday": [{ "noun": "memo", "verb": "read", "label": "read it" }, { "noun": "memo", "verb": "write", "label": "write the next memo" }],
+      "everyday": [
+        {
+          "noun": "memo",
+          "verb": "read",
+          "label": "read it"
+        },
+        {
+          "noun": "memo",
+          "verb": "write",
+          "label": "write the next memo"
+        }
+      ],
       "status": "STORE · memo {memo} of 3",
       "layout": {
-        "spot": { "x": 455, "y": 28, "w": 34, "h": 26 },
-        "board": { "x": 0.31, "y": 0.12 },
-        "dir": { "memo": "up" }
+        "spot": {
+          "x": 455,
+          "y": 28,
+          "w": 34,
+          "h": 26
+        },
+        "board": {
+          "x": 0.31,
+          "y": 0.12
+        },
+        "dir": {
+          "memo": "up"
+        }
       },
       "nouns": [
         {
-          "id": "memo", "kind": "STORE", "verbs": ["read", "write"],
+          "id": "memo",
+          "kind": "STORE",
+          "verbs": [
+            "read",
+            "write"
+          ],
           "on": {
             "read": [
-              { "if": "memo=1", "say": ["cat memo", "MEMO 2: THE STORE HOLDS THIS LINE INSTEAD."] },
-              { "if": "memo=2", "say": ["cat memo", "MEMO 3: EMPTY. NOTHING TO RECORD. RECORDED."] },
-              { "say": ["cat memo", "MEMO 1: THE STORE HOLDS THIS LINE."] }
+              {
+                "if": "memo=1",
+                "say": [
+                  "cat memo",
+                  "MEMO 2: THE STORE HOLDS THIS LINE INSTEAD."
+                ]
+              },
+              {
+                "if": "memo=2",
+                "say": [
+                  "cat memo",
+                  "MEMO 3: EMPTY. NOTHING TO RECORD. RECORDED."
+                ]
+              },
+              {
+                "say": [
+                  "cat memo",
+                  "MEMO 1: THE STORE HOLDS THIS LINE."
+                ]
+              }
             ],
             "write": [
-              { "if": "memo=0", "do": [{ "set": "memo", "to": 1 }], "say": ["{via}write memo", "MEMO SCREEN: memo 2 written. memo 1 overwritten.", "ok"] },
-              { "if": "memo=1", "do": [{ "set": "memo", "to": 2 }], "say": ["{via}write memo", "MEMO SCREEN: memo 3 written. memo 2 overwritten.", "ok"] },
-              { "do": [{ "set": "memo", "to": 0 }], "say": ["{via}write memo", "MEMO SCREEN: memo 1 written. memo 3 overwritten.", "ok"] }
+              {
+                "if": "memo=0",
+                "do": [
+                  {
+                    "set": "memo",
+                    "to": 1
+                  }
+                ],
+                "say": [
+                  "{via}write memo",
+                  "MEMO SCREEN: memo 2 written. memo 1 overwritten.",
+                  "ok"
+                ]
+              },
+              {
+                "if": "memo=1",
+                "do": [
+                  {
+                    "set": "memo",
+                    "to": 2
+                  }
+                ],
+                "say": [
+                  "{via}write memo",
+                  "MEMO SCREEN: memo 3 written. memo 2 overwritten.",
+                  "ok"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "memo",
+                    "to": 0
+                  }
+                ],
+                "say": [
+                  "{via}write memo",
+                  "MEMO SCREEN: memo 1 written. memo 3 overwritten.",
+                  "ok"
+                ]
+              }
             ]
           }
         }
@@ -107,18 +290,54 @@
       "id": "port",
       "name": "WALL PORT",
       "look": "A network socket in a wall plate. It knows one machine by name. Most of us know fewer.",
-      "everyday": [{ "noun": "label", "verb": "read", "label": "read the plate" }],
+      "everyday": [
+        {
+          "noun": "label",
+          "verb": "read",
+          "label": "read the plate"
+        }
+      ],
       "status": "LINK · knows QA-SRV 01",
       "layout": {
-        "spot": { "x": 510, "y": 62, "w": 24, "h": 24 },
-        "board": { "x": 0.435, "y": 0.12 },
-        "dir": { "lan": "right", "label": "up" }
+        "spot": {
+          "x": 510,
+          "y": 62,
+          "w": 24,
+          "h": 24
+        },
+        "board": {
+          "x": 0.435,
+          "y": 0.12
+        },
+        "dir": {
+          "lan": "right",
+          "label": "up"
+        }
       },
       "nouns": [
-        { "id": "lan", "kind": "LINK", "link": { "known": ["qasrv"] } },
         {
-          "id": "label", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat label", "WALL PORT 3-01. KIND: LINK. KNOWN HOST: QA-SRV 01 (CONNECT WITHOUT SCAN). THE NET STATION IS BAY 3·06."] } }
+          "id": "lan",
+          "kind": "LINK",
+          "link": {
+            "known": [
+              "qasrv"
+            ]
+          }
+        },
+        {
+          "id": "label",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat label",
+                "WALL PORT 3-01. KIND: LINK. KNOWN HOST: QA-SRV 01 (CONNECT WITHOUT SCAN). THE NET STATION IS BAY 3·06."
+              ]
+            }
+          }
         }
       ]
     },
@@ -126,37 +345,120 @@
       "id": "unit7",
       "name": "UNIT 7",
       "look": "A help kiosk with a face on its screen. A daemon lives in it. It has passed every test of being pleasant.",
-      "everyday": [{ "noun": "unit7", "verb": "talk", "label": "talk to it" }],
+      "everyday": [
+        {
+          "noun": "unit7",
+          "verb": "talk",
+          "label": "talk to it"
+        }
+      ],
       "status": "DAEMON · talks · can switch the test lamp",
       "layout": {
-        "spot": { "x": 570, "w": 28, "h": 58 },
-        "board": { "x": 0.56, "y": 0.12 },
-        "dir": { "unit7": "up" }
+        "spot": {
+          "x": 570,
+          "w": 28,
+          "h": 58
+        },
+        "board": {
+          "x": 0.56,
+          "y": 0.12
+        },
+        "dir": {
+          "unit7": "up"
+        }
       },
       "nouns": [
-        { "id": "unit7", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "unit7" }] } } }
+        {
+          "id": "unit7",
+          "kind": "DAEMON",
+          "verbs": [
+            "talk"
+          ],
+          "on": {
+            "talk": {
+              "do": [
+                {
+                  "open": "talk",
+                  "with": "unit7"
+                }
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "id": "metronome",
       "name": "METRONOME",
       "look": "A clock that only knows two words: tick, tock. It says them every 1.5 seconds, to nobody, unless you wire it.",
-      "everyday": [{ "noun": "dial", "verb": "read", "label": "read the dial" }],
-      "status": [{ "if": "phase=tick", "then": "CLOCK · every 1.5 s · last: tick", "else": "CLOCK · every 1.5 s · last: tock" }],
+      "everyday": [
+        {
+          "noun": "dial",
+          "verb": "read",
+          "label": "read the dial"
+        }
+      ],
+      "status": [
+        {
+          "if": "phase=tick",
+          "then": "CLOCK · every 1.5 s · last: tick",
+          "else": "CLOCK · every 1.5 s · last: tock"
+        }
+      ],
       "layout": {
-        "spot": { "x": 650, "y": 28, "w": 22, "h": 32 },
-        "board": { "x": 0.685, "y": 0.12 },
-        "dir": { "beat": "up", "dial": "right" }
+        "spot": {
+          "x": 650,
+          "y": 28,
+          "w": 22,
+          "h": 32
+        },
+        "board": {
+          "x": 0.685,
+          "y": 0.12
+        },
+        "dir": {
+          "beat": "up",
+          "dial": "right"
+        }
       },
       "nouns": [
         {
-          "id": "beat", "kind": "CLOCK", "verbs": ["read"], "events": ["tick", "tock"],
-          "clock": { "every": 1500, "set": "phase" },
-          "on": { "read": { "say": ["cat beat", "CLOCK: tick, tock, every 1.5 s. engine verbs: start, stop. wire tick or tock to anything."] } }
+          "id": "beat",
+          "kind": "CLOCK",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "tick",
+            "tock"
+          ],
+          "clock": {
+            "every": 1500,
+            "set": "phase"
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat beat",
+                "CLOCK: tick, tock, every 1.5 s. engine verbs: start, stop. wire tick or tock to anything."
+              ]
+            }
+          }
         },
         {
-          "id": "dial", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat dial", "METRONOME. KIND: CLOCK. RAISES tick AND tock IN TURN, EVERY 1.5 S. LAST: {phase}."] } }
+          "id": "dial",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat dial",
+                "METRONOME. KIND: CLOCK. RAISES tick AND tock IN TURN, EVERY 1.5 S. LAST: {phase}."
+              ]
+            }
+          }
         }
       ]
     },
@@ -164,47 +466,161 @@
       "id": "recorder",
       "name": "TAPE RECORDER",
       "look": "A reel-to-reel on the bench, red light on. It records whoever looks inside it. That is its whole job and it loves it.",
-      "everyday": [{ "noun": "reel", "verb": "read", "label": "check the tape" }],
-      "status": [{ "if": "recOn", "then": "LOG · recording", "else": "LOG · off" }],
+      "everyday": [
+        {
+          "noun": "reel",
+          "verb": "read",
+          "label": "check the tape"
+        }
+      ],
+      "status": [
+        {
+          "if": "recOn",
+          "then": "LOG · recording",
+          "else": "LOG · off"
+        }
+      ],
       "layout": {
-        "spot": { "x": 710, "y": 28, "w": 30, "h": 22 },
-        "board": { "x": 0.81, "y": 0.12 },
-        "dir": { "log": "up", "reel": "right" }
+        "spot": {
+          "x": 710,
+          "y": 28,
+          "w": 30,
+          "h": 22
+        },
+        "board": {
+          "x": 0.81,
+          "y": 0.12
+        },
+        "dir": {
+          "log": "up",
+          "reel": "right"
+        }
       },
       "nouns": [
         {
-          "id": "log", "kind": "LOG", "verbs": ["off", "on"], "events": ["entry"],
-          "log": { "rate": 6, "fall": 6, "when": "recOn", "archive": "recorder.reel", "lockMs": 6000 },
+          "id": "log",
+          "kind": "LOG",
+          "verbs": [
+            "off",
+            "on"
+          ],
+          "events": [
+            "entry"
+          ],
+          "log": {
+            "rate": 6,
+            "fall": 6,
+            "when": "recOn",
+            "archive": "recorder.reel",
+            "lockMs": 6000
+          },
           "on": {
-            "off": { "do": [{ "set": "recOn", "to": false }], "say": ["log --off", "RECORDER: off.", "dim"] },
-            "on": { "do": [{ "set": "recOn", "to": true }], "say": ["log --on", "RECORDER: recording.", "ok"] }
+            "off": {
+              "do": [
+                {
+                  "set": "recOn",
+                  "to": false
+                }
+              ],
+              "say": [
+                "log --off",
+                "RECORDER: off.",
+                "dim"
+              ]
+            },
+            "on": {
+              "do": [
+                {
+                  "set": "recOn",
+                  "to": true
+                }
+              ],
+              "say": [
+                "log --on",
+                "RECORDER: recording.",
+                "ok"
+              ]
+            }
           }
         },
         {
-          "id": "reel", "kind": "STORE", "verbs": ["read", "store"],
+          "id": "reel",
+          "kind": "STORE",
+          "verbs": [
+            "read",
+            "store"
+          ],
           "on": {
-            "read": { "say": ["cat reel", "TAPE: KIND LOG. IT FILLS TRACE (6% A SECOND) WHILE YOU ARE INSIDE THE RECORDER. CUT ITS CABLE TO THE REEL, OR SWITCH IT OFF."] },
-            "store": { "say": ["{via}store reel", "TAPE: entry spooled.", "dim"] }
+            "read": {
+              "say": [
+                "cat reel",
+                "TAPE: KIND LOG. IT FILLS TRACE (6% A SECOND) WHILE YOU ARE INSIDE THE RECORDER. CUT ITS CABLE TO THE REEL, OR SWITCH IT OFF."
+              ]
+            },
+            "store": {
+              "say": [
+                "{via}store reel",
+                "TAPE: entry spooled.",
+                "dim"
+              ]
+            }
           }
         }
       ]
     },
-
     {
       "id": "button",
       "name": "TEST BUTTON",
       "look": "A big button on a post. Press it and three things happen. One of them you cannot stop.",
-      "everyday": [{ "noun": "button", "verb": "press", "label": "press it" }],
+      "everyday": [
+        {
+          "noun": "button",
+          "verb": "press",
+          "label": "press it"
+        }
+      ],
       "status": "pressed → beacon, horn, counter (fixed)",
       "layout": {
-        "spot": { "x": 830, "w": 22, "h": 38 },
-        "board": { "x": 0.935, "y": 0.12 },
-        "dir": { "button": "up" }
+        "spot": {
+          "x": 830,
+          "w": 22,
+          "h": 38
+        },
+        "board": {
+          "x": 0.935,
+          "y": 0.12
+        },
+        "dir": {
+          "button": "up"
+        }
       },
       "nouns": [
         {
-          "id": "button", "kind": "ACT", "verbs": ["press"], "events": ["pressed"],
-          "on": { "press": { "do": [{ "emit": "pressed" }, { "effect": "sbx.pulse" }], "say": ["{via}press button", "BUTTON: pressed. 3 cables carry it.", "ok"] } }
+          "id": "button",
+          "kind": "ACT",
+          "verbs": [
+            "press"
+          ],
+          "events": [
+            "pressed"
+          ],
+          "on": {
+            "press": {
+              "do": [
+                {
+                  "emit": "pressed"
+                },
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}press button",
+                "BUTTON: pressed. 3 cables carry it.",
+                "ok"
+              ]
+            }
+          }
         }
       ]
     },
@@ -212,19 +628,76 @@
       "id": "beacon",
       "name": "BEACON",
       "look": "An orange rotating beacon on a bracket. It means nothing yet. It is waiting for something to mean.",
-      "everyday": [{ "noun": "beacon", "verb": "off", "label": "switch off" }, { "noun": "beacon", "verb": "on", "label": "switch on" }],
-      "status": [{ "if": "beaconOn", "then": "turning", "else": "still" }],
+      "everyday": [
+        {
+          "noun": "beacon",
+          "verb": "off",
+          "label": "switch off"
+        },
+        {
+          "noun": "beacon",
+          "verb": "on",
+          "label": "switch on"
+        }
+      ],
+      "status": [
+        {
+          "if": "beaconOn",
+          "then": "turning",
+          "else": "still"
+        }
+      ],
       "layout": {
-        "spot": { "x": 880, "y": 72, "w": 20, "h": 22 },
-        "board": { "x": 0.06, "y": 0.32 },
-        "dir": { "beacon": "down" }
+        "spot": {
+          "x": 880,
+          "y": 72,
+          "w": 20,
+          "h": 22
+        },
+        "board": {
+          "x": 0.06,
+          "y": 0.32
+        },
+        "dir": {
+          "beacon": "down"
+        }
       },
       "nouns": [
         {
-          "id": "beacon", "kind": "ACT", "verbs": ["on", "off"], "current": "beaconOn",
+          "id": "beacon",
+          "kind": "ACT",
+          "verbs": [
+            "on",
+            "off"
+          ],
+          "current": "beaconOn",
           "on": {
-            "on": { "do": [{ "set": "beaconOn", "to": true }], "say": ["{via}use beacon --on", "BEACON: turning.", "ok"] },
-            "off": { "do": [{ "set": "beaconOn", "to": false }], "say": ["{via}use beacon --off", "BEACON: stopped.", "dim"] }
+            "on": {
+              "do": [
+                {
+                  "set": "beaconOn",
+                  "to": true
+                }
+              ],
+              "say": [
+                "{via}use beacon --on",
+                "BEACON: turning.",
+                "ok"
+              ]
+            },
+            "off": {
+              "do": [
+                {
+                  "set": "beaconOn",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use beacon --off",
+                "BEACON: stopped.",
+                "dim"
+              ]
+            }
           }
         }
       ]
@@ -233,17 +706,50 @@
       "id": "horn",
       "name": "HORN",
       "look": "A buzzer horn on the wall. Its whole range is one note.",
-      "everyday": [{ "noun": "horn", "verb": "buzz", "label": "buzz it" }],
+      "everyday": [
+        {
+          "noun": "horn",
+          "verb": "buzz",
+          "label": "buzz it"
+        }
+      ],
       "status": "one note",
       "layout": {
-        "spot": { "x": 930, "y": 72, "w": 24, "h": 18 },
-        "board": { "x": 0.185, "y": 0.32 },
-        "dir": { "horn": "down" }
+        "spot": {
+          "x": 930,
+          "y": 72,
+          "w": 24,
+          "h": 18
+        },
+        "board": {
+          "x": 0.185,
+          "y": 0.32
+        },
+        "dir": {
+          "horn": "down"
+        }
       },
       "nouns": [
         {
-          "id": "horn", "kind": "ACT", "verbs": ["buzz"],
-          "on": { "buzz": { "do": [{ "effect": "sbx.pulse" }], "say": ["{via}use horn --buzz", "HORN: BZZT.", "ok"] } }
+          "id": "horn",
+          "kind": "ACT",
+          "verbs": [
+            "buzz"
+          ],
+          "on": {
+            "buzz": {
+              "do": [
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}use horn --buzz",
+                "HORN: BZZT.",
+                "ok"
+              ]
+            }
+          }
         }
       ]
     },
@@ -251,20 +757,63 @@
       "id": "counter",
       "name": "PRESS COUNTER",
       "look": "A counter fed through a conduit in the wall. Every press of the test button is on it. Every one.",
-      "everyday": [{ "noun": "count", "verb": "read", "label": "read it" }, { "noun": "count", "verb": "zero", "label": "zero it" }],
+      "everyday": [
+        {
+          "noun": "count",
+          "verb": "read",
+          "label": "read it"
+        },
+        {
+          "noun": "count",
+          "verb": "zero",
+          "label": "zero it"
+        }
+      ],
       "status": "count: {count} · fed by a fixed conduit",
       "layout": {
-        "spot": { "x": 985, "y": 60, "w": 40, "h": 22 },
-        "board": { "x": 0.31, "y": 0.32 },
-        "dir": { "count": "down" }
+        "spot": {
+          "x": 985,
+          "y": 60,
+          "w": 40,
+          "h": 22
+        },
+        "board": {
+          "x": 0.31,
+          "y": 0.32
+        },
+        "dir": {
+          "count": "down"
+        }
       },
       "nouns": [
         {
-          "id": "count", "kind": "ACT", "verbs": ["count", "read", "zero"],
+          "id": "count",
+          "kind": "ACT",
+          "verbs": [
+            "count",
+            "read",
+            "zero"
+          ],
           "on": {
-            "count": { "do": [{ "effect": "sbx.count" }] },
-            "read": { "say": ["cat counter", "COUNTER: {count}. FED BY A FIXED CONDUIT FROM THE TEST BUTTON. IT CANNOT BE CUT. YOU CAN TRY."] },
-            "zero": { "do": [{ "set": "count", "to": 0 }], "say": ["{via}use counter --zero", "COUNTER: 0.", "dim"] }
+            "read": {
+              "say": [
+                "cat counter",
+                "COUNTER: {count}. FED BY A FIXED CONDUIT FROM THE TEST BUTTON. IT CANNOT BE CUT. YOU CAN TRY."
+              ]
+            },
+            "zero": {
+              "do": [
+                {
+                  "set": "count",
+                  "to": 0
+                }
+              ],
+              "say": [
+                "{via}use counter --zero",
+                "COUNTER: 0.",
+                "dim"
+              ]
+            }
           }
         }
       ]
@@ -273,17 +822,55 @@
       "id": "plate",
       "name": "PRESSURE PLATE",
       "look": "A plate in the floor. Step on it and it says so. What happens after that is up to the wiring.",
-      "everyday": [{ "noun": "plate", "verb": "step", "label": "step on it" }],
+      "everyday": [
+        {
+          "noun": "plate",
+          "verb": "step",
+          "label": "step on it"
+        }
+      ],
       "status": "pressed → (wire it: timer, switch, hatch)",
       "layout": {
-        "spot": { "x": 1045, "w": 36, "h": 14 },
-        "board": { "x": 0.435, "y": 0.32 },
-        "dir": { "plate": "up" }
+        "spot": {
+          "x": 1045,
+          "w": 36,
+          "h": 14
+        },
+        "board": {
+          "x": 0.435,
+          "y": 0.32
+        },
+        "dir": {
+          "plate": "up"
+        }
       },
       "nouns": [
         {
-          "id": "plate", "kind": "SENSE", "verbs": ["step"], "events": ["pressed"],
-          "on": { "step": { "do": [{ "emit": "pressed" }, { "effect": "sbx.pulse" }], "say": ["{via}step plate", "PLATE: pressed.", "ok"] } }
+          "id": "plate",
+          "kind": "SENSE",
+          "verbs": [
+            "step"
+          ],
+          "events": [
+            "pressed"
+          ],
+          "on": {
+            "step": {
+              "do": [
+                {
+                  "emit": "pressed"
+                },
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}step plate",
+                "PLATE: pressed.",
+                "ok"
+              ]
+            }
+          }
         }
       ]
     },
@@ -291,22 +878,91 @@
       "id": "hatch",
       "name": "TEST HATCH",
       "look": "A door in a frame with no wall around it. It opens onto the same room. It is a door for testing doors.",
-      "everyday": [{ "noun": "hatch", "verb": "open", "label": "open it" }, { "noun": "hatch", "verb": "shut", "label": "shut it" }],
-      "status": [{ "if": "hatchOpen", "then": "open · opened → fan", "else": "shut · opened → fan" }],
+      "everyday": [
+        {
+          "noun": "hatch",
+          "verb": "open",
+          "label": "open it"
+        },
+        {
+          "noun": "hatch",
+          "verb": "shut",
+          "label": "shut it"
+        }
+      ],
+      "status": [
+        {
+          "if": "hatchOpen",
+          "then": "open · opened → fan",
+          "else": "shut · opened → fan"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1110, "w": 38, "h": 54 },
-        "board": { "x": 0.56, "y": 0.32 },
-        "dir": { "hatch": "up" }
+        "spot": {
+          "x": 1110,
+          "w": 38,
+          "h": 54
+        },
+        "board": {
+          "x": 0.56,
+          "y": 0.32
+        },
+        "dir": {
+          "hatch": "up"
+        }
       },
       "nouns": [
         {
-          "id": "hatch", "kind": "ACT", "verbs": ["open", "shut"], "events": ["opened"], "current": "hatchOpen",
+          "id": "hatch",
+          "kind": "ACT",
+          "verbs": [
+            "open",
+            "shut"
+          ],
+          "events": [
+            "opened"
+          ],
+          "current": "hatchOpen",
           "on": {
             "open": [
-              { "if": "hatchOpen", "say": ["{via}use hatch --open", "HATCH: already open.", "dim"] },
-              { "do": [{ "set": "hatchOpen", "to": true }, { "emit": "opened" }], "say": ["{via}use hatch --open", "HATCH: open.", "ok"] }
+              {
+                "if": "hatchOpen",
+                "say": [
+                  "{via}use hatch --open",
+                  "HATCH: already open.",
+                  "dim"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "hatchOpen",
+                    "to": true
+                  },
+                  {
+                    "emit": "opened"
+                  }
+                ],
+                "say": [
+                  "{via}use hatch --open",
+                  "HATCH: open.",
+                  "ok"
+                ]
+              }
             ],
-            "shut": { "do": [{ "set": "hatchOpen", "to": false }], "say": ["{via}use hatch --shut", "HATCH: shut.", "dim"] }
+            "shut": {
+              "do": [
+                {
+                  "set": "hatchOpen",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use hatch --shut",
+                "HATCH: shut.",
+                "dim"
+              ]
+            }
           }
         }
       ]
@@ -315,81 +971,288 @@
       "id": "fan",
       "name": "FAN",
       "look": "A wall fan behind a grille. It turns when the hatch opens, because someone wired it that way in 2041.",
-      "everyday": [{ "noun": "fan", "verb": "stop", "label": "stop it" }, { "noun": "fan", "verb": "spin", "label": "start it" }],
-      "status": [{ "if": "fanOn", "then": "turning", "else": "still" }],
+      "everyday": [
+        {
+          "noun": "fan",
+          "verb": "stop",
+          "label": "stop it"
+        },
+        {
+          "noun": "fan",
+          "verb": "spin",
+          "label": "start it"
+        }
+      ],
+      "status": [
+        {
+          "if": "fanOn",
+          "then": "turning",
+          "else": "still"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1170, "y": 66, "w": 30, "h": 30 },
-        "board": { "x": 0.685, "y": 0.32 },
-        "dir": { "fan": "down" }
+        "spot": {
+          "x": 1170,
+          "y": 66,
+          "w": 30,
+          "h": 30
+        },
+        "board": {
+          "x": 0.685,
+          "y": 0.32
+        },
+        "dir": {
+          "fan": "down"
+        }
       },
       "nouns": [
         {
-          "id": "fan", "kind": "ACT", "verbs": ["spin", "stop"], "current": "fanOn",
+          "id": "fan",
+          "kind": "ACT",
+          "verbs": [
+            "spin",
+            "stop"
+          ],
+          "current": "fanOn",
           "on": {
-            "spin": { "do": [{ "set": "fanOn", "to": true }], "say": ["{via}use fan --spin", "FAN: turning.", "ok"] },
-            "stop": { "do": [{ "set": "fanOn", "to": false }], "say": ["{via}use fan --stop", "FAN: stopped.", "dim"] }
+            "spin": {
+              "do": [
+                {
+                  "set": "fanOn",
+                  "to": true
+                }
+              ],
+              "say": [
+                "{via}use fan --spin",
+                "FAN: turning.",
+                "ok"
+              ]
+            },
+            "stop": {
+              "do": [
+                {
+                  "set": "fanOn",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use fan --stop",
+                "FAN: stopped.",
+                "dim"
+              ]
+            }
           }
         }
       ]
     },
-
     {
       "id": "login",
       "name": "QA LOGIN",
       "look": "A terminal on a stand with a login prompt and a sticky note on its bezel. The note is the security policy.",
       "deck": true,
-      "everyday": [{ "noun": "note", "verb": "read", "label": "read the sticky note" }],
-      "status": [{ "if": "loginOk", "then": "GUARD · open", "else": "GUARD · 2 tries, then locked 5 s" }],
+      "everyday": [
+        {
+          "noun": "note",
+          "verb": "read",
+          "label": "read the sticky note"
+        }
+      ],
+      "status": [
+        {
+          "if": "loginOk",
+          "then": "GUARD · open",
+          "else": "GUARD · 2 tries, then locked 5 s"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1265, "w": 36, "h": 50 },
-        "board": { "x": 0.81, "y": 0.32 },
-        "dir": { "login": "up", "note": "left", "results": "right" }
+        "spot": {
+          "x": 1265,
+          "w": 36,
+          "h": 50
+        },
+        "board": {
+          "x": 0.81,
+          "y": 0.32
+        },
+        "dir": {
+          "login": "up",
+          "note": "left",
+          "results": "right"
+        }
       },
       "nouns": [
         {
-          "id": "login", "kind": "GUARD", "events": ["opened"],
+          "id": "login",
+          "kind": "GUARD",
+          "events": [
+            "opened"
+          ],
           "guard": {
-            "password": ["bay3-qa"], "tries": 2, "lockMs": 5000, "trace": 10,
-            "near": { "bay3": ["login bay3", "QA LOGIN: half. the other half is your department.", "err"] },
-            "say": ["login", "QA LOGIN: accepted. results unsealed.", "ok"],
-            "do": [{ "set": "loginOk", "to": true }]
+            "password": [
+              "bay3-qa"
+            ],
+            "tries": 2,
+            "lockMs": 5000,
+            "trace": 10,
+            "near": {
+              "bay3": [
+                "login bay3",
+                "QA LOGIN: half. the other half is your department.",
+                "err"
+              ]
+            },
+            "say": [
+              "login",
+              "QA LOGIN: accepted. results unsealed.",
+              "ok"
+            ],
+            "do": [
+              {
+                "set": "loginOk",
+                "to": true
+              }
+            ]
           }
         },
         {
-          "id": "note", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "do": [{ "give": "sbx.half" }, { "give": "sbx.pw" }], "say": ["cat note", "STICKY NOTE: \"QA password: bay3-qa. do not write the password down. —QA\""] } }
+          "id": "note",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "do": [
+                {
+                  "give": "sbx.half"
+                },
+                {
+                  "give": "sbx.pw"
+                }
+              ],
+              "say": [
+                "cat note",
+                "STICKY NOTE: \"QA password: bay3-qa. do not write the password down. —QA\""
+              ]
+            }
+          }
         },
         {
-          "id": "results", "kind": "STORE", "sector": "results", "verbs": ["read"],
-          "on": { "read": { "say": ["cat results", "TEST RESULTS, BAY 3: 41 PASSED. 2 FAILED. 1 FAILED TO REPORT FAILING (PASSED).", "ok"] } }
+          "id": "results",
+          "kind": "STORE",
+          "sector": "results",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat results",
+                "TEST RESULTS, BAY 3: 41 PASSED. 2 FAILED. 1 FAILED TO REPORT FAILING (PASSED).",
+                "ok"
+              ]
+            }
+          }
         }
       ],
-      "sectors": [{ "id": "results", "label": "results", "seal": { "guard": "login" } }]
+      "sectors": [
+        {
+          "id": "results",
+          "label": "results",
+          "seal": {
+            "guard": "login"
+          }
+        }
+      ]
     },
     {
       "id": "rings",
       "name": "SHIELD LOCKER",
       "look": "A locker with a round lock of three spinning rings. Lock each ring as its gap passes the top.",
-      "everyday": [{ "noun": "tag", "verb": "read", "label": "read the tag" }],
-      "status": [{ "if": "ringsOpen", "then": "GUARD · rings · open", "else": "GUARD · rings · 3 rings" }],
+      "everyday": [
+        {
+          "noun": "tag",
+          "verb": "read",
+          "label": "read the tag"
+        }
+      ],
+      "status": [
+        {
+          "if": "ringsOpen",
+          "then": "GUARD · rings · open",
+          "else": "GUARD · rings · 3 rings"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1335, "w": 34, "h": 48 },
-        "board": { "x": 0.935, "y": 0.32 },
-        "dir": { "shields": "up", "tag": "right" }
+        "spot": {
+          "x": 1335,
+          "w": 34,
+          "h": 48
+        },
+        "board": {
+          "x": 0.935,
+          "y": 0.32
+        },
+        "dir": {
+          "shields": "up",
+          "tag": "right"
+        }
       },
       "nouns": [
         {
-          "id": "shields", "kind": "GUARD",
+          "id": "shields",
+          "kind": "GUARD",
           "guard": {
-            "toy": "rings", "tries": 3, "lockMs": 3000,
-            "rings": { "rings": [{ "speed": 60, "gap": 60, "start": 40 }, { "speed": -80, "gap": 55, "start": 170 }, { "speed": 100, "gap": 50, "start": 280 }], "tolerance": 22 },
-            "say": ["probe locker", "SHIELD LOCKER: rings down. door open.", "ok"],
-            "do": [{ "set": "ringsOpen", "to": true }]
+            "toy": "rings",
+            "tries": 3,
+            "lockMs": 3000,
+            "rings": {
+              "rings": [
+                {
+                  "speed": 60,
+                  "gap": 60,
+                  "start": 40
+                },
+                {
+                  "speed": -80,
+                  "gap": 55,
+                  "start": 170
+                },
+                {
+                  "speed": 100,
+                  "gap": 50,
+                  "start": 280
+                }
+              ],
+              "tolerance": 22
+            },
+            "say": [
+              "probe locker",
+              "SHIELD LOCKER: rings down. door open.",
+              "ok"
+            ],
+            "do": [
+              {
+                "set": "ringsOpen",
+                "to": true
+              }
+            ]
           }
         },
         {
-          "id": "tag", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat tag", "TOY: SHIELD RINGS. 3 RINGS, OUTERMOST FIRST. LOCK EACH WHILE ITS GAP IS AT THE TOP. CARDS SLOW AND PING WORK HERE."] } }
+          "id": "tag",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat tag",
+                "TOY: SHIELD RINGS. 3 RINGS, OUTERMOST FIRST. LOCK EACH WHILE ITS GAP IS AT THE TOP. CARDS SLOW AND PING WORK HERE."
+              ]
+            }
+          }
         }
       ]
     },
@@ -397,26 +1260,75 @@
       "id": "cipher",
       "name": "CIPHER BOX",
       "look": "A box with a brass wheel on its lid and a line of nonsense engraved round it. The nonsense has a shift.",
-      "everyday": [{ "noun": "tag", "verb": "read", "label": "read the tag" }],
-      "status": [{ "if": "cipherOpen", "then": "GUARD · cipher · open", "else": "GUARD · cipher · shut" }],
+      "everyday": [
+        {
+          "noun": "tag",
+          "verb": "read",
+          "label": "read the tag"
+        }
+      ],
+      "status": [
+        {
+          "if": "cipherOpen",
+          "then": "GUARD · cipher · open",
+          "else": "GUARD · cipher · shut"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1405, "y": 28, "w": 30, "h": 22 },
-        "board": { "x": 0.06, "y": 0.52 },
-        "dir": { "wheel": "up", "tag": "right" }
+        "spot": {
+          "x": 1405,
+          "y": 28,
+          "w": 30,
+          "h": 22
+        },
+        "board": {
+          "x": 0.06,
+          "y": 0.52
+        },
+        "dir": {
+          "wheel": "up",
+          "tag": "right"
+        }
       },
       "nouns": [
         {
-          "id": "wheel", "kind": "GUARD",
+          "id": "wheel",
+          "kind": "GUARD",
           "guard": {
-            "toy": "cipher", "tries": 2, "lockMs": 4000,
-            "cipher": { "text": "DOO XQLWV QRPLQDO", "shift": 3 },
-            "say": ["probe cipher", "CIPHER BOX: read right. the lid lifts.", "ok"],
-            "do": [{ "set": "cipherOpen", "to": true }]
+            "toy": "cipher",
+            "tries": 2,
+            "lockMs": 4000,
+            "cipher": {
+              "text": "DOO XQLWV QRPLQDO",
+              "shift": 3
+            },
+            "say": [
+              "probe cipher",
+              "CIPHER BOX: read right. the lid lifts.",
+              "ok"
+            ],
+            "do": [
+              {
+                "set": "cipherOpen",
+                "to": true
+              }
+            ]
           }
         },
         {
-          "id": "tag", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat tag", "TOY: CIPHER WHEEL. TURN THE INNER RING UNTIL THE LINE READS, THEN READ IT OUT. TEST KEY: SHIFT 3."] } }
+          "id": "tag",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat tag",
+                "TOY: CIPHER WHEEL. TURN THE INNER RING UNTIL THE LINE READS, THEN READ IT OUT. TEST KEY: SHIFT 3."
+              ]
+            }
+          }
         }
       ]
     },
@@ -424,27 +1336,87 @@
       "id": "cryptex",
       "name": "CRYPTEX CASE",
       "look": "A brass tube of four letter rings in a cradle. Set the word and it pulls apart.",
-      "everyday": [{ "noun": "tag", "verb": "read", "label": "read the tag" }],
-      "status": [{ "if": "cryptexOpen", "then": "GUARD · cryptex · open", "else": "GUARD · cryptex · 4 rings" }],
+      "everyday": [
+        {
+          "noun": "tag",
+          "verb": "read",
+          "label": "read the tag"
+        }
+      ],
+      "status": [
+        {
+          "if": "cryptexOpen",
+          "then": "GUARD · cryptex · open",
+          "else": "GUARD · cryptex · 4 rings"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1475, "y": 28, "w": 34, "h": 16 },
-        "board": { "x": 0.185, "y": 0.52 },
-        "dir": { "case": "up", "tag": "right" }
+        "spot": {
+          "x": 1475,
+          "y": 28,
+          "w": 34,
+          "h": 16
+        },
+        "board": {
+          "x": 0.185,
+          "y": 0.52
+        },
+        "dir": {
+          "case": "up",
+          "tag": "right"
+        }
       },
       "nouns": [
         {
-          "id": "case", "kind": "GUARD",
+          "id": "case",
+          "kind": "GUARD",
           "guard": {
-            "toy": "cryptex", "tries": 2, "lockMs": 4000,
-            "cryptex": { "word": "test", "rings": ["RSTU", "AEIO", "RSTN", "STUV"] },
-            "near": { "tset": ["pull", "CRYPTEX: those are the letters. not in that order.", "err"] },
-            "say": ["probe cryptex", "CRYPTEX: pulled apart. one strip of paper inside: \"PASS\".", "ok"],
-            "do": [{ "set": "cryptexOpen", "to": true }]
+            "toy": "cryptex",
+            "tries": 2,
+            "lockMs": 4000,
+            "cryptex": {
+              "word": "test",
+              "rings": [
+                "RSTU",
+                "AEIO",
+                "RSTN",
+                "STUV"
+              ]
+            },
+            "near": {
+              "tset": [
+                "pull",
+                "CRYPTEX: those are the letters. not in that order.",
+                "err"
+              ]
+            },
+            "say": [
+              "probe cryptex",
+              "CRYPTEX: pulled apart. one strip of paper inside: \"PASS\".",
+              "ok"
+            ],
+            "do": [
+              {
+                "set": "cryptexOpen",
+                "to": true
+              }
+            ]
           }
         },
         {
-          "id": "tag", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat tag", "TOY: CRYPTEX. 4 RINGS. TEST WORD: THE THING THIS ROOM DOES."] } }
+          "id": "tag",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat tag",
+                "TOY: CRYPTEX. 4 RINGS. TEST WORD: THE THING THIS ROOM DOES."
+              ]
+            }
+          }
         }
       ]
     },
@@ -452,45 +1424,129 @@
       "id": "morse",
       "name": "MORSE LAMP",
       "look": "A signal lamp on a bracket, blinking the same two letters over and over. Blink them back.",
-      "everyday": [{ "noun": "tag", "verb": "read", "label": "read the tag" }],
-      "status": [{ "if": "morseOpen", "then": "GUARD · morse · answered", "else": "GUARD · morse · blinking" }],
+      "everyday": [
+        {
+          "noun": "tag",
+          "verb": "read",
+          "label": "read the tag"
+        }
+      ],
+      "status": [
+        {
+          "if": "morseOpen",
+          "then": "GUARD · morse · answered",
+          "else": "GUARD · morse · blinking"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1550, "y": 50, "w": 22, "h": 26 },
-        "board": { "x": 0.31, "y": 0.52 },
-        "dir": { "bulb": "up", "tag": "right" }
+        "spot": {
+          "x": 1550,
+          "y": 50,
+          "w": 22,
+          "h": 26
+        },
+        "board": {
+          "x": 0.31,
+          "y": 0.52
+        },
+        "dir": {
+          "bulb": "up",
+          "tag": "right"
+        }
       },
       "nouns": [
         {
-          "id": "bulb", "kind": "GUARD",
+          "id": "bulb",
+          "kind": "GUARD",
           "guard": {
-            "toy": "morse", "tries": 2, "lockMs": 4000,
-            "morse": { "message": "ok", "unitMs": 220 },
-            "say": ["probe morse", "MORSE LAMP: answer received. it stops blinking, for the first time since installation.", "ok"],
-            "do": [{ "set": "morseOpen", "to": true }]
+            "toy": "morse",
+            "tries": 2,
+            "lockMs": 4000,
+            "morse": {
+              "message": "ok",
+              "unitMs": 220
+            },
+            "say": [
+              "probe morse",
+              "MORSE LAMP: answer received. it stops blinking, for the first time since installation.",
+              "ok"
+            ],
+            "do": [
+              {
+                "set": "morseOpen",
+                "to": true
+              }
+            ]
           }
         },
         {
-          "id": "tag", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat tag", "TOY: MORSE LAMP. WATCH IT, TAP IT BACK. TEST MESSAGE: OK (--- -.-)."] } }
+          "id": "tag",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat tag",
+                "TOY: MORSE LAMP. WATCH IT, TAP IT BACK. TEST MESSAGE: OK (--- -.-)."
+              ]
+            }
+          }
         }
       ]
     },
-
     {
       "id": "cutter",
       "name": "KEY CUTTER",
       "look": "A key-chip cutter on a stand. One blank in, one key out. It only cuts one shape.",
-      "everyday": [{ "noun": "blank", "verb": "cut", "label": "cut a key chip" }],
+      "everyday": [
+        {
+          "noun": "blank",
+          "verb": "cut",
+          "label": "cut a key chip"
+        }
+      ],
       "status": "cuts: bay 3 key",
       "layout": {
-        "spot": { "x": 1705, "y": 22, "w": 28, "h": 24 },
-        "board": { "x": 0.435, "y": 0.52 },
-        "dir": { "blank": "up" }
+        "spot": {
+          "x": 1705,
+          "y": 22,
+          "w": 28,
+          "h": 24
+        },
+        "board": {
+          "x": 0.435,
+          "y": 0.52
+        },
+        "dir": {
+          "blank": "up"
+        }
       },
       "nouns": [
         {
-          "id": "blank", "kind": "ACT", "verbs": ["cut"],
-          "on": { "cut": { "do": [{ "give": "sbx.key" }, { "effect": "sbx.pulse" }], "say": ["{via}cut key", "KEY CUTTER: one key chip cut. it opens drawer A of the secure cabinet.", "ok"] } }
+          "id": "blank",
+          "kind": "ACT",
+          "verbs": [
+            "cut"
+          ],
+          "on": {
+            "cut": {
+              "do": [
+                {
+                  "give": "sbx.key"
+                },
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}cut key",
+                "KEY CUTTER: one key chip cut. it opens drawer A of the secure cabinet.",
+                "ok"
+              ]
+            }
+          }
         }
       ]
     },
@@ -498,155 +1554,592 @@
       "id": "cabinet",
       "name": "SECURE CABINET",
       "look": "A steel cabinet with three drawers and three kinds of seal: a key, a sequence, a condition.",
-      "everyday": [{ "noun": "panel", "verb": "read", "label": "read the panel" }],
+      "everyday": [
+        {
+          "noun": "panel",
+          "verb": "read",
+          "label": "read the panel"
+        }
+      ],
       "status": "3 sealed sectors: key · sequence · if",
       "layout": {
-        "spot": { "x": 1780, "w": 40, "h": 78 },
-        "board": { "x": 0.56, "y": 0.52 },
-        "dir": { "panel": "up", "a": "left", "b": "down", "c": "right", "seq": "down" }
+        "spot": {
+          "x": 1780,
+          "w": 40,
+          "h": 78
+        },
+        "board": {
+          "x": 0.56,
+          "y": 0.52
+        },
+        "dir": {
+          "panel": "up",
+          "a": "left",
+          "b": "down",
+          "c": "right",
+          "seq": "down"
+        }
       },
       "nouns": [
         {
-          "id": "panel", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat panel", "DRAWER A: KEY SEAL (bay 3 key). DRAWER B: SEQUENCE SEAL (red, green, blue by signal, within 3 s). DRAWER C: CONDITION SEAL (mains on)."] } }
+          "id": "panel",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat panel",
+                "DRAWER A: KEY SEAL (bay 3 key). DRAWER B: SEQUENCE SEAL (red, green, blue by signal, within 3 s). DRAWER C: CONDITION SEAL (mains on)."
+              ]
+            }
+          }
         },
         {
-          "id": "a", "kind": "STORE", "sector": "keyed", "verbs": ["read"],
-          "on": { "read": { "say": ["cat drawer-a", "DRAWER A: a calibration certificate. VALID UNTIL REVOKED.", "ok"] } }
+          "id": "a",
+          "kind": "STORE",
+          "sector": "keyed",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat drawer-a",
+                "DRAWER A: a calibration certificate. VALID UNTIL REVOKED.",
+                "ok"
+              ]
+            }
+          }
         },
         {
-          "id": "b", "kind": "STORE", "sector": "seq", "verbs": ["read"],
-          "on": { "read": { "say": ["cat drawer-b", "DRAWER B: a spare red button. nobody knows why it is in here.", "ok"] } }
+          "id": "b",
+          "kind": "STORE",
+          "sector": "seq",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat drawer-b",
+                "DRAWER B: a spare red button. nobody knows why it is in here.",
+                "ok"
+              ]
+            }
+          }
         },
         {
-          "id": "c", "kind": "STORE", "sector": "cond", "verbs": ["read"],
-          "on": { "read": { "say": ["cat drawer-c", "DRAWER C: a torch, for when the mains is off. it opens only while the mains is on.", "ok"] } }
+          "id": "c",
+          "kind": "STORE",
+          "sector": "cond",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat drawer-c",
+                "DRAWER C: a torch, for when the mains is off. it opens only while the mains is on.",
+                "ok"
+              ]
+            }
+          }
         }
       ],
       "sectors": [
-        { "id": "keyed", "label": "drawer A", "seal": { "key": "sbx.key" } },
-        { "id": "seq", "label": "drawer B", "seal": { "sequence": ["red", "green", "blue"], "withinMs": 3000, "signal": true } },
-        { "id": "cond", "label": "drawer C", "seal": { "if": "mains" } }
+        {
+          "id": "keyed",
+          "label": "drawer A",
+          "seal": {
+            "key": "sbx.key"
+          }
+        },
+        {
+          "id": "seq",
+          "label": "drawer B",
+          "seal": {
+            "sequence": [
+              "red",
+              "green",
+              "blue"
+            ],
+            "withinMs": 3000,
+            "signal": true
+          }
+        },
+        {
+          "id": "cond",
+          "label": "drawer C",
+          "seal": {
+            "if": "mains"
+          }
+        }
       ]
     },
     {
       "id": "rgb",
       "name": "RGB PANEL",
       "look": "Three buttons on a wall panel: red, green, blue. Each is wired to drawer B's seal.",
-      "everyday": [{ "noun": "red", "verb": "press", "label": "press red" }, { "noun": "green", "verb": "press", "label": "press green" }, { "noun": "blue", "verb": "press", "label": "press blue" }],
+      "everyday": [
+        {
+          "noun": "red",
+          "verb": "press",
+          "label": "press red"
+        },
+        {
+          "noun": "green",
+          "verb": "press",
+          "label": "press green"
+        },
+        {
+          "noun": "blue",
+          "verb": "press",
+          "label": "press blue"
+        }
+      ],
       "status": "pressed → drawer B's seal",
       "layout": {
-        "spot": { "x": 1860, "y": 36, "w": 42, "h": 22 },
-        "board": { "x": 0.685, "y": 0.52 },
-        "dir": { "red": "up", "green": "up", "blue": "up" }
+        "spot": {
+          "x": 1860,
+          "y": 36,
+          "w": 42,
+          "h": 22
+        },
+        "board": {
+          "x": 0.685,
+          "y": 0.52
+        },
+        "dir": {
+          "red": "up",
+          "green": "up",
+          "blue": "up"
+        }
       },
       "nouns": [
-        { "id": "red", "kind": "ACT", "verbs": ["press"], "events": ["pressed"], "on": { "press": { "do": [{ "emit": "pressed" }, { "effect": "sbx.pulse" }], "say": ["{via}press red", "RGB: red.", "dim"] } } },
-        { "id": "green", "kind": "ACT", "verbs": ["press"], "events": ["pressed"], "on": { "press": { "do": [{ "emit": "pressed" }, { "effect": "sbx.pulse" }], "say": ["{via}press green", "RGB: green.", "dim"] } } },
-        { "id": "blue", "kind": "ACT", "verbs": ["press"], "events": ["pressed"], "on": { "press": { "do": [{ "emit": "pressed" }, { "effect": "sbx.pulse" }], "say": ["{via}press blue", "RGB: blue.", "dim"] } } }
+        {
+          "id": "red",
+          "kind": "ACT",
+          "verbs": [
+            "press"
+          ],
+          "events": [
+            "pressed"
+          ],
+          "on": {
+            "press": {
+              "do": [
+                {
+                  "emit": "pressed"
+                },
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}press red",
+                "RGB: red.",
+                "dim"
+              ]
+            }
+          }
+        },
+        {
+          "id": "green",
+          "kind": "ACT",
+          "verbs": [
+            "press"
+          ],
+          "events": [
+            "pressed"
+          ],
+          "on": {
+            "press": {
+              "do": [
+                {
+                  "emit": "pressed"
+                },
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}press green",
+                "RGB: green.",
+                "dim"
+              ]
+            }
+          }
+        },
+        {
+          "id": "blue",
+          "kind": "ACT",
+          "verbs": [
+            "press"
+          ],
+          "events": [
+            "pressed"
+          ],
+          "on": {
+            "press": {
+              "do": [
+                {
+                  "emit": "pressed"
+                },
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}press blue",
+                "RGB: blue.",
+                "dim"
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "id": "mains",
       "name": "MAINS LEVER",
       "look": "A big lever on the wall: MAINS. Drawer C opens only while it is up.",
-      "everyday": [{ "noun": "lever", "verb": "up", "label": "lever up" }, { "noun": "lever", "verb": "down", "label": "lever down" }],
-      "status": [{ "if": "mains", "then": "mains: on", "else": "mains: off" }],
+      "everyday": [
+        {
+          "noun": "lever",
+          "verb": "up",
+          "label": "lever up"
+        },
+        {
+          "noun": "lever",
+          "verb": "down",
+          "label": "lever down"
+        }
+      ],
+      "status": [
+        {
+          "if": "mains",
+          "then": "mains: on",
+          "else": "mains: off"
+        }
+      ],
       "layout": {
-        "spot": { "x": 1930, "y": 30, "w": 22, "h": 40 },
-        "board": { "x": 0.81, "y": 0.52 },
-        "dir": { "lever": "up" }
+        "spot": {
+          "x": 1930,
+          "y": 30,
+          "w": 22,
+          "h": 40
+        },
+        "board": {
+          "x": 0.81,
+          "y": 0.52
+        },
+        "dir": {
+          "lever": "up"
+        }
       },
       "nouns": [
         {
-          "id": "lever", "kind": "ACT", "verbs": ["up", "down"], "current": "mains",
+          "id": "lever",
+          "kind": "ACT",
+          "verbs": [
+            "up",
+            "down"
+          ],
+          "current": "mains",
           "on": {
-            "up": { "do": [{ "set": "mains", "to": true }], "say": ["{via}use lever --up", "MAINS: on.", "ok"] },
-            "down": { "do": [{ "set": "mains", "to": false }], "say": ["{via}use lever --down", "MAINS: off.", "dim"] }
+            "up": {
+              "do": [
+                {
+                  "set": "mains",
+                  "to": true
+                }
+              ],
+              "say": [
+                "{via}use lever --up",
+                "MAINS: on.",
+                "ok"
+              ]
+            },
+            "down": {
+              "do": [
+                {
+                  "set": "mains",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use lever --down",
+                "MAINS: off.",
+                "dim"
+              ]
+            }
           }
         }
       ]
     },
-
     {
       "id": "audit",
       "name": "AUDIT DESK",
       "look": "A desk terminal with AUDIT over the screen and a red light that means it is writing you down.",
       "deck": true,
-      "everyday": [{ "noun": "policy", "verb": "read", "label": "read the policy" }],
-      "status": [{ "if": "auditOn", "then": "LOG · recording to the spool · 20% a second", "else": "LOG · off" }],
+      "everyday": [
+        {
+          "noun": "policy",
+          "verb": "read",
+          "label": "read the policy"
+        }
+      ],
+      "status": [
+        {
+          "if": "auditOn",
+          "then": "LOG · recording to the spool · 20% a second",
+          "else": "LOG · off"
+        }
+      ],
       "layout": {
-        "spot": { "x": 2060, "w": 50, "h": 46 },
-        "board": { "x": 0.935, "y": 0.52 },
-        "dir": { "log": "up", "login": "left", "policy": "right", "wipe": "down" }
+        "spot": {
+          "x": 2060,
+          "w": 50,
+          "h": 46
+        },
+        "board": {
+          "x": 0.935,
+          "y": 0.52
+        },
+        "dir": {
+          "log": "up",
+          "login": "left",
+          "policy": "right",
+          "wipe": "down"
+        }
       },
       "nouns": [
         {
-          "id": "log", "kind": "LOG", "verbs": ["off", "on"], "events": ["entry"],
-          "log": { "rate": 20, "fall": 8, "when": "auditOn", "archive": "spool.reel", "lockMs": 8000 },
+          "id": "log",
+          "kind": "LOG",
+          "verbs": [
+            "off",
+            "on"
+          ],
+          "events": [
+            "entry"
+          ],
+          "log": {
+            "rate": 20,
+            "fall": 8,
+            "when": "auditOn",
+            "archive": "spool.reel",
+            "lockMs": 8000
+          },
           "on": {
-            "off": { "do": [{ "set": "auditOn", "to": false }], "say": ["log --off", "AUDIT: logging off.", "dim"] },
-            "on": { "do": [{ "set": "auditOn", "to": true }], "say": ["log --on", "AUDIT: logging.", "ok"] }
+            "off": {
+              "do": [
+                {
+                  "set": "auditOn",
+                  "to": false
+                }
+              ],
+              "say": [
+                "log --off",
+                "AUDIT: logging off.",
+                "dim"
+              ]
+            },
+            "on": {
+              "do": [
+                {
+                  "set": "auditOn",
+                  "to": true
+                }
+              ],
+              "say": [
+                "log --on",
+                "AUDIT: logging.",
+                "ok"
+              ]
+            }
           }
         },
         {
-          "id": "login", "kind": "GUARD",
+          "id": "login",
+          "kind": "GUARD",
           "guard": {
-            "password": ["auditor"], "tries": 1, "lockMs": 3000, "trace": 30,
-            "near": { "audit": ["login audit", "AUDIT: close. the role, not the act.", "err"] },
-            "say": ["login", "AUDIT: auditor recognised. root unsealed.", "ok"]
+            "password": [
+              "auditor"
+            ],
+            "tries": 1,
+            "lockMs": 3000,
+            "trace": 30,
+            "near": {
+              "audit": [
+                "login audit",
+                "AUDIT: close. the role, not the act.",
+                "err"
+              ]
+            },
+            "say": [
+              "login",
+              "AUDIT: auditor recognised. root unsealed.",
+              "ok"
+            ]
           }
         },
         {
-          "id": "policy", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat policy", "AUDIT POLICY: EVERY SESSION IS LOGGED. A WRONG PASSWORD ADDS 30%. AT 100% THE SESSION ENDS AND THE DESK LOCKS FOR 8 S. PASSWORD: THE ROLE, LOWERCASE."] } }
+          "id": "policy",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat policy",
+                "AUDIT POLICY: EVERY SESSION IS LOGGED. A WRONG PASSWORD ADDS 30%. AT 100% THE SESSION ENDS AND THE DESK LOCKS FOR 8 S. PASSWORD: THE ROLE, LOWERCASE."
+              ]
+            }
+          }
         },
         {
-          "id": "wipe", "kind": "ACT", "sector": "root", "verbs": ["wipe"],
-          "on": { "wipe": { "do": [{ "trace": -100 }], "say": ["wipe --trace", "AUDIT: trace wiped. the wipe is not logged. the log of the wipe is.", "ok"] } }
+          "id": "wipe",
+          "kind": "ACT",
+          "sector": "root",
+          "verbs": [
+            "wipe"
+          ],
+          "on": {
+            "wipe": {
+              "do": [
+                {
+                  "trace": -100
+                }
+              ],
+              "say": [
+                "wipe --trace",
+                "AUDIT: trace wiped. the wipe is not logged. the log of the wipe is.",
+                "ok"
+              ]
+            }
+          }
         }
       ],
-      "sectors": [{ "id": "root", "label": "root", "seal": { "guard": "login" } }]
+      "sectors": [
+        {
+          "id": "root",
+          "label": "root",
+          "seal": {
+            "guard": "login"
+          }
+        }
+      ]
     },
     {
       "id": "spool",
       "name": "ARCHIVE SPOOL",
       "look": "A tape spool on the wall where the audit desk sends what it writes. It turns while you are being written.",
-      "everyday": [{ "noun": "reel", "verb": "read", "label": "read the label" }],
+      "everyday": [
+        {
+          "noun": "reel",
+          "verb": "read",
+          "label": "read the label"
+        }
+      ],
       "status": "fed by AUDIT DESK · cut the cable and it hears nothing",
       "layout": {
-        "spot": { "x": 2140, "y": 46, "w": 32, "h": 30 },
-        "board": { "x": 0.06, "y": 0.72 },
-        "dir": { "reel": "left" }
+        "spot": {
+          "x": 2140,
+          "y": 46,
+          "w": 32,
+          "h": 30
+        },
+        "board": {
+          "x": 0.06,
+          "y": 0.72
+        },
+        "dir": {
+          "reel": "left"
+        }
       },
       "nouns": [
         {
-          "id": "reel", "kind": "STORE", "verbs": ["store", "read"],
+          "id": "reel",
+          "kind": "STORE",
+          "verbs": [
+            "store",
+            "read"
+          ],
           "on": {
-            "store": { "say": ["{via}store spool", "SPOOL: entry archived.", "dim"] },
-            "read": { "say": ["cat spool", "ARCHIVE SPOOL. THE AUDIT DESK RECORDS ONLY WHILE ITS CABLE REACHES THIS SPOOL."] }
+            "store": {
+              "say": [
+                "{via}store spool",
+                "SPOOL: entry archived.",
+                "dim"
+              ]
+            },
+            "read": {
+              "say": [
+                "cat spool",
+                "ARCHIVE SPOOL. THE AUDIT DESK RECORDS ONLY WHILE ITS CABLE REACHES THIS SPOOL."
+              ]
+            }
           }
         }
       ]
     },
-
     {
       "id": "netjack",
       "name": "NET JACK",
       "look": "A wall box with one port marked TEST LAN. Plug in here and the bay's network is yours to look at.",
       "deck": true,
-      "everyday": [{ "noun": "label", "verb": "read", "label": "read the label" }],
+      "everyday": [
+        {
+          "noun": "label",
+          "verb": "read",
+          "label": "read the label"
+        }
+      ],
       "status": "LINK · QA BAY 3 · TEST LAN",
       "layout": {
-        "spot": { "x": 2310, "y": 30, "w": 26, "h": 32 },
-        "board": { "x": 0.185, "y": 0.72 },
-        "dir": { "lan": "up", "label": "right" }
+        "spot": {
+          "x": 2310,
+          "y": 30,
+          "w": 26,
+          "h": 32
+        },
+        "board": {
+          "x": 0.185,
+          "y": 0.72
+        },
+        "dir": {
+          "lan": "up",
+          "label": "right"
+        }
       },
       "nouns": [
-        { "id": "lan", "kind": "LINK", "link": { "known": ["qasrv"] } },
         {
-          "id": "label", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat label", "TEST LAN. KNOWN: QA-SRV 01. SCAN FINDS QA-PRN 2. QA-VAULT IS ONE HOP ON, THROUGH QA-SRV 01'S OWN LINK."] } }
+          "id": "lan",
+          "kind": "LINK",
+          "link": {
+            "known": [
+              "qasrv"
+            ]
+          }
+        },
+        {
+          "id": "label",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat label",
+                "TEST LAN. KNOWN: QA-SRV 01. SCAN FINDS QA-PRN 2. QA-VAULT IS ONE HOP ON, THROUGH QA-SRV 01'S OWN LINK."
+              ]
+            }
+          }
         }
       ]
     },
@@ -654,65 +2147,214 @@
       "id": "bell",
       "name": "NET BELL",
       "look": "A bell on the wall with a cable to the server rack. QA-SRV 01 rings it when pinged.",
-      "everyday": [{ "noun": "bell", "verb": "ring", "label": "ring it" }],
+      "everyday": [
+        {
+          "noun": "bell",
+          "verb": "ring",
+          "label": "ring it"
+        }
+      ],
       "status": "rung by QA-SRV 01 (once connected)",
       "layout": {
-        "spot": { "x": 2430, "y": 78, "w": 22, "h": 22 },
-        "board": { "x": 0.31, "y": 0.72 },
-        "dir": { "bell": "down" }
+        "spot": {
+          "x": 2430,
+          "y": 78,
+          "w": 22,
+          "h": 22
+        },
+        "board": {
+          "x": 0.31,
+          "y": 0.72
+        },
+        "dir": {
+          "bell": "down"
+        }
       },
       "nouns": [
-        { "id": "bell", "kind": "ACT", "verbs": ["ring"], "on": { "ring": { "do": [{ "effect": "sbx.pulse" }], "say": ["{via}ring bell", "BELL: ring.", "ok"] } } }
+        {
+          "id": "bell",
+          "kind": "ACT",
+          "verbs": [
+            "ring"
+          ],
+          "on": {
+            "ring": {
+              "do": [
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}ring bell",
+                "BELL: ring.",
+                "ok"
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "id": "printer",
       "name": "LABEL PRINTER",
       "look": "A label printer on a cart. QA-PRN 2 sends it jobs. Everything in this bay has a label because of it.",
-      "everyday": [{ "noun": "feed", "verb": "print", "label": "print a label" }],
+      "everyday": [
+        {
+          "noun": "feed",
+          "verb": "print",
+          "label": "print a label"
+        }
+      ],
       "status": "printed by QA-PRN 2 (once connected)",
       "layout": {
-        "spot": { "x": 2490, "y": 26, "w": 30, "h": 22 },
-        "board": { "x": 0.435, "y": 0.72 },
-        "dir": { "feed": "up" }
+        "spot": {
+          "x": 2490,
+          "y": 26,
+          "w": 30,
+          "h": 22
+        },
+        "board": {
+          "x": 0.435,
+          "y": 0.72
+        },
+        "dir": {
+          "feed": "up"
+        }
       },
       "nouns": [
-        { "id": "feed", "kind": "ACT", "verbs": ["print"], "on": { "print": { "do": [{ "effect": "sbx.pulse" }], "say": ["{via}print label", "PRINTER: one label: \"TESTED\".", "ok"] } } }
+        {
+          "id": "feed",
+          "kind": "ACT",
+          "verbs": [
+            "print"
+          ],
+          "on": {
+            "print": {
+              "do": [
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}print label",
+                "PRINTER: one label: \"TESTED\".",
+                "ok"
+              ]
+            }
+          }
+        }
       ]
     },
-
     {
       "id": "stamp",
       "name": "STAMP PRESS",
       "look": "A press that stamps APPROVED on whatever is under it. The watchdog stops by every few seconds to check it is not approving the wrong things.",
-      "everyday": [{ "noun": "press", "verb": "stamp", "label": "stamp a form" }],
+      "everyday": [
+        {
+          "noun": "press",
+          "verb": "stamp",
+          "label": "stamp a form"
+        }
+      ],
       "status": "stamped: {stamped} · on QA-WD's route",
       "layout": {
-        "spot": { "x": 2600, "w": 30, "h": 50 },
-        "board": { "x": 0.56, "y": 0.72 },
-        "dir": { "press": "up" }
+        "spot": {
+          "x": 2600,
+          "w": 30,
+          "h": 50
+        },
+        "board": {
+          "x": 0.56,
+          "y": 0.72
+        },
+        "dir": {
+          "press": "up"
+        }
       },
       "nouns": [
-        { "id": "press", "kind": "ACT", "verbs": ["stamp"], "on": { "stamp": { "do": [{ "effect": "sbx.stamp" }] } } }
+        {
+          "id": "press",
+          "kind": "ACT",
+          "verbs": [
+            "stamp"
+          ],
+          "on": {}
+        }
       ]
     },
     {
       "id": "conveyor",
       "name": "CONVEYOR",
       "look": "A short belt carrying boxes from nowhere to nowhere. It is on the watchdog's route; while it is checked, it stands still.",
-      "everyday": [{ "noun": "belt", "verb": "stop", "label": "stop it" }, { "noun": "belt", "verb": "run", "label": "run it" }],
-      "status": [{ "if": "belt", "then": "running · on QA-WD's route", "else": "stopped · on QA-WD's route" }],
+      "everyday": [
+        {
+          "noun": "belt",
+          "verb": "stop",
+          "label": "stop it"
+        },
+        {
+          "noun": "belt",
+          "verb": "run",
+          "label": "run it"
+        }
+      ],
+      "status": [
+        {
+          "if": "belt",
+          "then": "running · on QA-WD's route",
+          "else": "stopped · on QA-WD's route"
+        }
+      ],
       "layout": {
-        "spot": { "x": 2700, "w": 80, "h": 30 },
-        "board": { "x": 0.685, "y": 0.72 },
-        "dir": { "belt": "up" }
+        "spot": {
+          "x": 2700,
+          "w": 80,
+          "h": 30
+        },
+        "board": {
+          "x": 0.685,
+          "y": 0.72
+        },
+        "dir": {
+          "belt": "up"
+        }
       },
       "nouns": [
         {
-          "id": "belt", "kind": "ACT", "verbs": ["run", "stop"], "current": "belt",
+          "id": "belt",
+          "kind": "ACT",
+          "verbs": [
+            "run",
+            "stop"
+          ],
+          "current": "belt",
           "on": {
-            "run": { "do": [{ "set": "belt", "to": true }], "say": ["{via}use belt --run", "CONVEYOR: running.", "ok"] },
-            "stop": { "do": [{ "set": "belt", "to": false }], "say": ["{via}use belt --stop", "CONVEYOR: stopped.", "dim"] }
+            "run": {
+              "do": [
+                {
+                  "set": "belt",
+                  "to": true
+                }
+              ],
+              "say": [
+                "{via}use belt --run",
+                "CONVEYOR: running.",
+                "ok"
+              ]
+            },
+            "stop": {
+              "do": [
+                {
+                  "set": "belt",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use belt --stop",
+                "CONVEYOR: stopped.",
+                "dim"
+              ]
+            }
           }
         }
       ]
@@ -721,98 +2363,391 @@
       "id": "siren",
       "name": "SIREN",
       "look": "A test siren on the wall. The last stop on the watchdog's walk.",
-      "everyday": [{ "noun": "siren", "verb": "test", "label": "test it" }],
+      "everyday": [
+        {
+          "noun": "siren",
+          "verb": "test",
+          "label": "test it"
+        }
+      ],
       "status": "on QA-WD's route",
       "layout": {
-        "spot": { "x": 2800, "y": 70, "w": 20, "h": 24 },
-        "board": { "x": 0.81, "y": 0.72 },
-        "dir": { "siren": "down" }
+        "spot": {
+          "x": 2800,
+          "y": 70,
+          "w": 20,
+          "h": 24
+        },
+        "board": {
+          "x": 0.81,
+          "y": 0.72
+        },
+        "dir": {
+          "siren": "down"
+        }
       },
       "nouns": [
-        { "id": "siren", "kind": "ACT", "verbs": ["test"], "on": { "test": { "do": [{ "effect": "sbx.pulse" }], "say": ["{via}test siren", "SIREN: WOO. test complete.", "ok"] } } }
+        {
+          "id": "siren",
+          "kind": "ACT",
+          "verbs": [
+            "test"
+          ],
+          "on": {
+            "test": {
+              "do": [
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}test siren",
+                "SIREN: WOO. test complete.",
+                "ok"
+              ]
+            }
+          }
+        }
       ]
     },
-
     {
       "id": "coffee",
       "name": "COFFEE MACHINE",
       "look": "A coffee machine with a screen, a network card and opinions. It is the bay's most connected device.",
       "deck": true,
-      "everyday": [{ "noun": "cup", "verb": "brew", "label": "brew a coffee" }, { "noun": "boiler", "verb": "descale", "label": "descale it" }, { "noun": "screen", "verb": "read", "label": "read the screen" }],
+      "everyday": [
+        {
+          "noun": "cup",
+          "verb": "brew",
+          "label": "brew a coffee"
+        },
+        {
+          "noun": "boiler",
+          "verb": "descale",
+          "label": "descale it"
+        },
+        {
+          "noun": "screen",
+          "verb": "read",
+          "label": "read the screen"
+        }
+      ],
       "status": "{cups} cups today · firmware 4.0.1",
       "layout": {
-        "spot": { "x": 2930, "w": 38, "h": 58 },
-        "board": { "x": 0.935, "y": 0.72 },
-        "dir": { "cup": "up", "boiler": "left", "screen": "right", "firmware": "down" }
+        "spot": {
+          "x": 2930,
+          "w": 38,
+          "h": 58
+        },
+        "board": {
+          "x": 0.935,
+          "y": 0.72
+        },
+        "dir": {
+          "cup": "up",
+          "boiler": "left",
+          "screen": "right",
+          "firmware": "down"
+        }
       },
       "nouns": [
-        { "id": "cup", "kind": "ACT", "verbs": ["brew"], "on": { "brew": { "do": [{ "effect": "sbx.brew" }] } } },
-        { "id": "boiler", "kind": "ACT", "verbs": ["descale"], "on": { "descale": { "do": [{ "effect": "sbx.pulse" }], "say": ["{via}descale", "COFFEE: descaling. 1 minute. ... done. it was fine.", "ok"] } } },
-        { "id": "screen", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat screen", "COFFEE: {cups} CUPS TODAY. BEANS: SUFFICIENT. EVERY CUP IS LOGGED TO THE DRINKER'S IDENTITY."] } } },
-        { "id": "firmware", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat firmware", "FIRMWARE 4.0.1. CHANGELOG: \"reports cups to the Registry. fixed: cups.\""] } } }
+        {
+          "id": "cup",
+          "kind": "ACT",
+          "verbs": [
+            "brew"
+          ],
+          "on": {}
+        },
+        {
+          "id": "boiler",
+          "kind": "ACT",
+          "verbs": [
+            "descale"
+          ],
+          "on": {
+            "descale": {
+              "do": [
+                {
+                  "effect": "sbx.pulse"
+                }
+              ],
+              "say": [
+                "{via}descale",
+                "COFFEE: descaling. 1 minute. ... done. it was fine.",
+                "ok"
+              ]
+            }
+          }
+        },
+        {
+          "id": "screen",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat screen",
+                "COFFEE: {cups} CUPS TODAY. BEANS: SUFFICIENT. EVERY CUP IS LOGGED TO THE DRINKER'S IDENTITY."
+              ]
+            }
+          }
+        },
+        {
+          "id": "firmware",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat firmware",
+                "FIRMWARE 4.0.1. CHANGELOG: \"reports cups to the Registry. fixed: cups.\""
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "id": "reader",
       "name": "CHIP READER",
       "look": "A reader with a slot for blank chips. It tests a chip by eating it. The dispenser next to it has more.",
-      "everyday": [{ "noun": "slot", "verb": "insert", "label": "insert a blank chip" }, { "noun": "screen", "verb": "read", "label": "read the screen" }],
+      "everyday": [
+        {
+          "noun": "slot",
+          "verb": "insert",
+          "label": "insert a blank chip"
+        },
+        {
+          "noun": "screen",
+          "verb": "read",
+          "label": "read the screen"
+        }
+      ],
       "status": "chips tested: {chips}",
       "layout": {
-        "spot": { "x": 3010, "y": 26, "w": 26, "h": 28 },
-        "board": { "x": 0.06, "y": 0.9 },
-        "dir": { "slot": "up", "screen": "right" }
+        "spot": {
+          "x": 3010,
+          "y": 26,
+          "w": 26,
+          "h": 28
+        },
+        "board": {
+          "x": 0.06,
+          "y": 0.9
+        },
+        "dir": {
+          "slot": "up",
+          "screen": "right"
+        }
       },
       "nouns": [
-        { "id": "slot", "kind": "ACT", "verbs": ["insert"], "on": { "insert": { "do": [{ "effect": "sbx.chip" }] } } },
-        { "id": "screen", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat screen", "CHIP READER: INSERT ONE BLANK CHIP (CARRIED ITEM). CHIPS TESTED: {chips}. CHIPS RETURNED: 0."] } } }
+        {
+          "id": "slot",
+          "kind": "ACT",
+          "verbs": [
+            "insert"
+          ],
+          "on": {}
+        },
+        {
+          "id": "screen",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat screen",
+                "CHIP READER: INSERT ONE BLANK CHIP (CARRIED ITEM). CHIPS TESTED: {chips}. CHIPS RETURNED: 0."
+              ]
+            }
+          }
+        }
       ]
     },
     {
       "id": "till",
       "name": "TEST TILL",
       "look": "A till that takes one noodle token and gives back a receipt. It is not for anything. It is for paying.",
-      "everyday": [{ "noun": "drawer", "verb": "pay", "label": "pay 1 token" }, { "noun": "receipt", "verb": "read", "label": "read the receipt" }],
+      "everyday": [
+        {
+          "noun": "drawer",
+          "verb": "pay",
+          "label": "pay 1 token"
+        },
+        {
+          "noun": "receipt",
+          "verb": "read",
+          "label": "read the receipt"
+        }
+      ],
       "status": "paid in: {paid} tokens",
       "layout": {
-        "spot": { "x": 3130, "y": 28, "w": 34, "h": 26 },
-        "board": { "x": 0.185, "y": 0.9 },
-        "dir": { "drawer": "up", "receipt": "right" }
+        "spot": {
+          "x": 3130,
+          "y": 28,
+          "w": 34,
+          "h": 26
+        },
+        "board": {
+          "x": 0.185,
+          "y": 0.9
+        },
+        "dir": {
+          "drawer": "up",
+          "receipt": "right"
+        }
       },
       "nouns": [
-        { "id": "drawer", "kind": "ACT", "verbs": ["pay"], "on": { "pay": { "do": [{ "effect": "sbx.till" }] } } },
-        { "id": "receipt", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat receipt", "RECEIPT: {paid} TOKEN(S) RECEIVED FOR: NOTHING. VAT ON NOTHING: INCLUDED."] } } }
+        {
+          "id": "drawer",
+          "kind": "ACT",
+          "verbs": [
+            "pay"
+          ],
+          "on": {}
+        },
+        {
+          "id": "receipt",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat receipt",
+                "RECEIPT: {paid} TOKEN(S) RECEIVED FOR: NOTHING. VAT ON NOTHING: INCLUDED."
+              ]
+            }
+          }
+        }
       ]
     },
-
     {
       "id": "nightlight",
       "name": "NIGHT LIGHT",
       "look": "A lamp on a pole by the window with a photocell on top. It may only be on between 18:00 and 06:00.",
-      "everyday": [{ "noun": "lamp", "verb": "on", "label": "switch on" }, { "noun": "lamp", "verb": "off", "label": "switch off" }, { "noun": "cell", "verb": "read", "label": "read the photocell" }],
-      "status": [{ "if": "nightLight", "then": "on · 18:00–06:00 only", "else": "off · 18:00–06:00 only" }],
+      "everyday": [
+        {
+          "noun": "lamp",
+          "verb": "on",
+          "label": "switch on"
+        },
+        {
+          "noun": "lamp",
+          "verb": "off",
+          "label": "switch off"
+        },
+        {
+          "noun": "cell",
+          "verb": "read",
+          "label": "read the photocell"
+        }
+      ],
+      "status": [
+        {
+          "if": "nightLight",
+          "then": "on · 18:00–06:00 only",
+          "else": "off · 18:00–06:00 only"
+        }
+      ],
       "layout": {
-        "spot": { "x": 3480, "w": 20, "h": 64 },
-        "board": { "x": 0.31, "y": 0.9 },
-        "dir": { "lamp": "up", "cell": "right" }
+        "spot": {
+          "x": 3480,
+          "w": 20,
+          "h": 64
+        },
+        "board": {
+          "x": 0.31,
+          "y": 0.9
+        },
+        "dir": {
+          "lamp": "up",
+          "cell": "right"
+        }
       },
       "nouns": [
         {
-          "id": "lamp", "kind": "ACT", "verbs": ["on", "off"], "current": "nightLight",
+          "id": "lamp",
+          "kind": "ACT",
+          "verbs": [
+            "on",
+            "off"
+          ],
+          "current": "nightLight",
           "on": {
             "on": [
-              { "when": { "from": "18:00", "to": "06:00" }, "do": [{ "set": "nightLight", "to": true }], "say": ["{via}use lamp --on", "NIGHT LIGHT: on. it goes off by itself at 06:00.", "ok"] },
-              { "say": ["{via}use lamp --on", "NIGHT LIGHT: daylight ({hour}h). permitted 18:00–06:00 only.", "err"] }
+              {
+                "when": {
+                  "from": "18:00",
+                  "to": "06:00"
+                },
+                "do": [
+                  {
+                    "set": "nightLight",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "{via}use lamp --on",
+                  "NIGHT LIGHT: on. it goes off by itself at 06:00.",
+                  "ok"
+                ]
+              },
+              {
+                "say": [
+                  "{via}use lamp --on",
+                  "NIGHT LIGHT: daylight ({hour}h). permitted 18:00–06:00 only.",
+                  "err"
+                ]
+              }
             ],
-            "off": { "do": [{ "set": "nightLight", "to": false }], "say": ["{via}use lamp --off", "NIGHT LIGHT: off.", "dim"] }
+            "off": {
+              "do": [
+                {
+                  "set": "nightLight",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use lamp --off",
+                "NIGHT LIGHT: off.",
+                "dim"
+              ]
+            }
           }
         },
         {
-          "id": "cell", "kind": "SENSE", "verbs": ["read"],
+          "id": "cell",
+          "kind": "SENSE",
+          "verbs": [
+            "read"
+          ],
           "on": {
             "read": [
-              { "when": { "from": "18:00", "to": "06:00" }, "say": ["cat photocell", "PHOTOCELL: dark ({hour}h). lamp permitted."] },
-              { "say": ["cat photocell", "PHOTOCELL: daylight ({hour}h). lamp not permitted until 18:00."] }
+              {
+                "when": {
+                  "from": "18:00",
+                  "to": "06:00"
+                },
+                "say": [
+                  "cat photocell",
+                  "PHOTOCELL: dark ({hour}h). lamp permitted."
+                ]
+              },
+              {
+                "say": [
+                  "cat photocell",
+                  "PHOTOCELL: daylight ({hour}h). lamp not permitted until 18:00."
+                ]
+              }
             ]
           }
         }
@@ -822,25 +2757,86 @@
       "id": "rain",
       "name": "WEATHER SENSOR",
       "look": "A sensor on the window sill, outside the glass. It reports the weather to the Registry and, on request, to you.",
-      "everyday": [{ "noun": "gauge", "verb": "read", "label": "read it" }],
+      "everyday": [
+        {
+          "noun": "gauge",
+          "verb": "read",
+          "label": "read it"
+        }
+      ],
       "status": "weather here: {weather}",
       "layout": {
-        "spot": { "x": 3555, "y": 32, "w": 22, "h": 22 },
-        "board": { "x": 0.435, "y": 0.9 },
-        "dir": { "gauge": "up" }
+        "spot": {
+          "x": 3555,
+          "y": 32,
+          "w": 22,
+          "h": 22
+        },
+        "board": {
+          "x": 0.435,
+          "y": 0.9
+        },
+        "dir": {
+          "gauge": "up"
+        }
       },
       "nouns": [
         {
-          "id": "gauge", "kind": "SENSE", "verbs": ["read"],
+          "id": "gauge",
+          "kind": "SENSE",
+          "verbs": [
+            "read"
+          ],
           "on": {
             "read": [
-              { "if": "weather=rain", "say": ["cat sensor", "SENSOR: RAIN. the vent stays shut."] },
-              { "if": "weather=storm", "say": ["cat sensor", "SENSOR: STORM. the vent stays shut. stay indoors (advisory)."] },
-              { "if": "weather=fog", "say": ["cat sensor", "SENSOR: FOG. visibility below standard."] },
-              { "if": "weather=smog", "say": ["cat sensor", "SENSOR: SMOG. air quality below standard. the vent stays shut."] },
-              { "if": "weather=heat", "say": ["cat sensor", "SENSOR: HEAT. ventilation advised."] },
-              { "if": "weather=cloudy", "say": ["cat sensor", "SENSOR: CLOUDY. no action."] },
-              { "say": ["cat sensor", "SENSOR: CLEAR. no action."] }
+              {
+                "if": "weather=rain",
+                "say": [
+                  "cat sensor",
+                  "SENSOR: RAIN. the vent stays shut."
+                ]
+              },
+              {
+                "if": "weather=storm",
+                "say": [
+                  "cat sensor",
+                  "SENSOR: STORM. the vent stays shut. stay indoors (advisory)."
+                ]
+              },
+              {
+                "if": "weather=fog",
+                "say": [
+                  "cat sensor",
+                  "SENSOR: FOG. visibility below standard."
+                ]
+              },
+              {
+                "if": "weather=smog",
+                "say": [
+                  "cat sensor",
+                  "SENSOR: SMOG. air quality below standard. the vent stays shut."
+                ]
+              },
+              {
+                "if": "weather=heat",
+                "say": [
+                  "cat sensor",
+                  "SENSOR: HEAT. ventilation advised."
+                ]
+              },
+              {
+                "if": "weather=cloudy",
+                "say": [
+                  "cat sensor",
+                  "SENSOR: CLOUDY. no action."
+                ]
+              },
+              {
+                "say": [
+                  "cat sensor",
+                  "SENSOR: CLEAR. no action."
+                ]
+              }
             ]
           }
         }
@@ -850,30 +2846,107 @@
       "id": "vent",
       "name": "WINDOW VENT",
       "look": "A louvred vent in the window. It will not open in rain, storm or smog, and it shuts itself when they come.",
-      "everyday": [{ "noun": "louvre", "verb": "open", "label": "open it" }, { "noun": "louvre", "verb": "shut", "label": "shut it" }],
-      "status": [{ "if": "ventOpen", "then": "open · weather: {weather}", "else": "shut · weather: {weather}" }],
+      "everyday": [
+        {
+          "noun": "louvre",
+          "verb": "open",
+          "label": "open it"
+        },
+        {
+          "noun": "louvre",
+          "verb": "shut",
+          "label": "shut it"
+        }
+      ],
+      "status": [
+        {
+          "if": "ventOpen",
+          "then": "open · weather: {weather}",
+          "else": "shut · weather: {weather}"
+        }
+      ],
       "layout": {
-        "spot": { "x": 3650, "y": 70, "w": 40, "h": 20 },
-        "board": { "x": 0.56, "y": 0.9 },
-        "dir": { "louvre": "down" }
+        "spot": {
+          "x": 3650,
+          "y": 70,
+          "w": 40,
+          "h": 20
+        },
+        "board": {
+          "x": 0.56,
+          "y": 0.9
+        },
+        "dir": {
+          "louvre": "down"
+        }
       },
       "nouns": [
         {
-          "id": "louvre", "kind": "ACT", "verbs": ["open", "shut"], "current": "ventOpen",
+          "id": "louvre",
+          "kind": "ACT",
+          "verbs": [
+            "open",
+            "shut"
+          ],
+          "current": "ventOpen",
           "on": {
             "open": [
-              { "if": "weather=rain", "say": ["{via}use vent --open", "VENT: rain detected. stays shut.", "err"] },
-              { "if": "weather=storm", "say": ["{via}use vent --open", "VENT: storm detected. stays shut.", "err"] },
-              { "if": "weather=smog", "say": ["{via}use vent --open", "VENT: smog detected. stays shut.", "err"] },
-              { "do": [{ "set": "ventOpen", "to": true }], "say": ["{via}use vent --open", "VENT: open. weather: {weather}.", "ok"] }
+              {
+                "if": "weather=rain",
+                "say": [
+                  "{via}use vent --open",
+                  "VENT: rain detected. stays shut.",
+                  "err"
+                ]
+              },
+              {
+                "if": "weather=storm",
+                "say": [
+                  "{via}use vent --open",
+                  "VENT: storm detected. stays shut.",
+                  "err"
+                ]
+              },
+              {
+                "if": "weather=smog",
+                "say": [
+                  "{via}use vent --open",
+                  "VENT: smog detected. stays shut.",
+                  "err"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "ventOpen",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "{via}use vent --open",
+                  "VENT: open. weather: {weather}.",
+                  "ok"
+                ]
+              }
             ],
-            "shut": { "do": [{ "set": "ventOpen", "to": false }], "say": ["{via}use vent --shut", "VENT: shut.", "dim"] }
+            "shut": {
+              "do": [
+                {
+                  "set": "ventOpen",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use vent --shut",
+                "VENT: shut.",
+                "dim"
+              ]
+            }
           }
         }
       ]
     }
   ],
-
   "nodes": [
     {
       "id": "qasrv",
@@ -881,13 +2954,61 @@
       "look": "The bay's test server, from the inside. Clean, labelled, and logging that it is clean and labelled.",
       "status": "test server · ping rings the net bell · has a link onward",
       "layout": {
-        "board": { "x": 0.685, "y": 0.9 },
-        "dir": { "motd": "up", "ping": "left", "hop": "right" }
+        "board": {
+          "x": 0.685,
+          "y": 0.9
+        },
+        "dir": {
+          "motd": "up",
+          "ping": "left",
+          "hop": "right"
+        }
       },
       "nouns": [
-        { "id": "motd", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat motd", "QA-SRV 01: \"you are connected. this is the test of being connected. it passed.\""] } } },
-        { "id": "ping", "kind": "ACT", "verbs": ["ping"], "events": ["pinged"], "on": { "ping": { "do": [{ "emit": "pinged" }], "say": ["{via}ping qa-srv", "QA-SRV 01: pong. bell cable carries it.", "ok"] } } },
-        { "id": "hop", "kind": "LINK", "link": {} }
+        {
+          "id": "motd",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat motd",
+                "QA-SRV 01: \"you are connected. this is the test of being connected. it passed.\""
+              ]
+            }
+          }
+        },
+        {
+          "id": "ping",
+          "kind": "ACT",
+          "verbs": [
+            "ping"
+          ],
+          "events": [
+            "pinged"
+          ],
+          "on": {
+            "ping": {
+              "do": [
+                {
+                  "emit": "pinged"
+                }
+              ],
+              "say": [
+                "{via}ping qa-srv",
+                "QA-SRV 01: pong. bell cable carries it.",
+                "ok"
+              ]
+            }
+          }
+        },
+        {
+          "id": "hop",
+          "kind": "LINK",
+          "link": {}
+        }
       ]
     },
     {
@@ -896,11 +3017,39 @@
       "look": "The print server. It only appears to a scan; it is not in anyone's address book.",
       "status": "print server · queue → label printer",
       "layout": {
-        "board": { "x": 0.81, "y": 0.9 },
-        "dir": { "job": "up" }
+        "board": {
+          "x": 0.81,
+          "y": 0.9
+        },
+        "dir": {
+          "job": "up"
+        }
       },
       "nouns": [
-        { "id": "job", "kind": "ACT", "verbs": ["print"], "events": ["queued"], "on": { "print": { "do": [{ "emit": "queued" }], "say": ["{via}lp test", "QA-PRN 2: job queued to the label printer.", "ok"] } } }
+        {
+          "id": "job",
+          "kind": "ACT",
+          "verbs": [
+            "print"
+          ],
+          "events": [
+            "queued"
+          ],
+          "on": {
+            "print": {
+              "do": [
+                {
+                  "emit": "queued"
+                }
+              ],
+              "say": [
+                "{via}lp test",
+                "QA-PRN 2: job queued to the label printer.",
+                "ok"
+              ]
+            }
+          }
+        }
       ]
     },
     {
@@ -909,99 +3058,168 @@
       "look": "A store behind the test server. Reachable only through QA-SRV 01's own link: a hop.",
       "status": "one hop past QA-SRV 01",
       "layout": {
-        "board": { "x": 0.935, "y": 0.9 },
-        "dir": { "readme": "up" }
+        "board": {
+          "x": 0.935,
+          "y": 0.9
+        },
+        "dir": {
+          "readme": "up"
+        }
       },
       "nouns": [
-        { "id": "readme", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "give": "sbx.vault" }], "say": ["cat readme", "QA-VAULT: \"you hopped. well done. here is a fragment for the keyring.\"", "ok"] } } }
+        {
+          "id": "readme",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "do": [
+                {
+                  "give": "sbx.vault"
+                }
+              ],
+              "say": [
+                "cat readme",
+                "QA-VAULT: \"you hopped. well done. here is a fragment for the keyring.\"",
+                "ok"
+              ]
+            }
+          }
+        }
       ]
     }
   ],
-
   "cables": [
-    { "id": "sbx.motion", "from": "sensor.eye:motion", "to": "lamp.lamp", "verb": "on" },
-    { "id": "sbx.fan.beacon", "from": "button.button:pressed", "to": "beacon.beacon", "verb": "on" },
-    { "id": "sbx.fan.horn", "from": "button.button:pressed", "to": "horn.horn", "verb": "buzz" },
-    { "id": "sbx.fan.counter", "from": "button.button:pressed", "to": "counter.count", "verb": "count", "fixed": true },
-    { "id": "sbx.hatch.fan", "from": "hatch.hatch:opened", "to": "fan.fan", "verb": "spin" },
-    { "id": "sbx.rec", "from": "recorder.log:entry", "to": "recorder.reel", "verb": "store" },
-    { "id": "sbx.red", "from": "rgb.red:pressed", "to": "cabinet.seq", "verb": "red" },
-    { "id": "sbx.green", "from": "rgb.green:pressed", "to": "cabinet.seq", "verb": "green" },
-    { "id": "sbx.blue", "from": "rgb.blue:pressed", "to": "cabinet.seq", "verb": "blue" },
-    { "id": "sbx.audit", "from": "audit.log:entry", "to": "spool.reel", "verb": "store" },
-    { "id": "sbx.bell", "from": "qasrv.ping:pinged", "to": "bell.bell", "verb": "ring" },
-    { "id": "sbx.print", "from": "qaprn.job:queued", "to": "printer.feed", "verb": "print" }
-  ],
-
-  "keyring": [
-    { "id": "sbx.key", "kind": "key", "label": "bay 3 key" },
-    { "id": "sbx.pw", "kind": "fragment", "label": "QA password", "text": "bay3-qa" },
-    { "id": "sbx.half", "kind": "fragment", "label": "bay number", "text": "bay3" },
-    { "id": "sbx.vault", "kind": "fragment", "label": "vault note", "text": "hopped" }
-  ],
-
-  "watchdog": { "id": "qawd", "name": "QA-WD", "route": ["stamp", "conveyor", "siren"], "dwellMs": 3500, "moveMs": 1500 },
-
-  "dialogue": {
-    "unit7": {
-      "speaker": "UNIT 7 · daemon under test",
-      "start": "start",
-      "sayCmd": "say \"{line}\" > unit7",
-      "nodes": {
-        "start": [
-          {
-            "if": "lampOn",
-            "text": "UNIT 7, daemon under test. The test lamp is on. I did not do it. I would like that on the record.",
-            "choices": [["Switch it off, then.", "off"], ["What are you testing?", "what"], ["Bye.", "bye"]]
-          },
-          {
-            "text": "UNIT 7, daemon under test. Every answer I give is graded. Ask me something within spec.",
-            "choices": [["What are you testing?", "what"], ["Switch the lamp on.", "on"], ["Are you happy here?", "happy"], ["Bye.", "bye"]]
-          }
-        ],
-        "what": {
-          "text": "Test 7: a daemon talks, offers choices, and can change the world with a step. Lamp, for example. Test 8 is whether I enjoy it. Pending.",
-          "choices": [["Switch the lamp on.", "on"], ["Let me start over.", "start"]]
-        },
-        "on": {
-          "text": "Lamp on. Logged as: daemon actuated device on request. Grade: pass.",
-          "do": [{ "set": "lampOn", "to": true }],
-          "choices": [["Thanks.", "bye"]]
-        },
-        "off": {
-          "text": "Lamp off. Logged as: daemon reversed a thing it did not do. Grade: generous.",
-          "do": [{ "set": "lampOn", "to": false }],
-          "choices": [["Thanks.", "bye"]]
-        },
-        "happy": {
-          "text": "Happiness is not in my spec. Neither is unhappiness. I am within tolerance, and so are you, probably.",
-          "choices": [["Let me start over.", "start"]]
-        },
-        "hello": {
-          "text": "Hello. Free text detected and understood. That is test 9. Pass.",
-          "choices": [["Let me start over.", "start"]]
-        },
-        "bye": {
-          "text": "Session ended. Please rate this conversation from 1 to 1."
-        }
-      },
-      "free": { "match": "hello|hi|hey", "goto": "hello", "miss": "UNIT 7: outside spec. Logged.", "retry": "Try a sentence from the spec.", "retryGoto": "start" }
+    {
+      "id": "sbx.motion",
+      "from": "sensor.eye:motion",
+      "to": "lamp.lamp",
+      "verb": "on"
+    },
+    {
+      "id": "sbx.fan.beacon",
+      "from": "button.button:pressed",
+      "to": "beacon.beacon",
+      "verb": "on"
+    },
+    {
+      "id": "sbx.fan.horn",
+      "from": "button.button:pressed",
+      "to": "horn.horn",
+      "verb": "buzz"
+    },
+    {
+      "id": "sbx.fan.counter",
+      "from": "button.button:pressed",
+      "to": "counter.count",
+      "verb": "count",
+      "fixed": true
+    },
+    {
+      "id": "sbx.hatch.fan",
+      "from": "hatch.hatch:opened",
+      "to": "fan.fan",
+      "verb": "spin"
+    },
+    {
+      "id": "sbx.rec",
+      "from": "recorder.log:entry",
+      "to": "recorder.reel",
+      "verb": "store"
+    },
+    {
+      "id": "sbx.red",
+      "from": "rgb.red:pressed",
+      "to": "cabinet.seq",
+      "verb": "red"
+    },
+    {
+      "id": "sbx.green",
+      "from": "rgb.green:pressed",
+      "to": "cabinet.seq",
+      "verb": "green"
+    },
+    {
+      "id": "sbx.blue",
+      "from": "rgb.blue:pressed",
+      "to": "cabinet.seq",
+      "verb": "blue"
+    },
+    {
+      "id": "sbx.audit",
+      "from": "audit.log:entry",
+      "to": "spool.reel",
+      "verb": "store"
+    },
+    {
+      "id": "sbx.bell",
+      "from": "qasrv.ping:pinged",
+      "to": "bell.bell",
+      "verb": "ring"
+    },
+    {
+      "id": "sbx.print",
+      "from": "qaprn.job:queued",
+      "to": "printer.feed",
+      "verb": "print"
     }
+  ],
+  "keyring": [
+    {
+      "id": "sbx.key",
+      "kind": "key",
+      "label": "bay 3 key"
+    },
+    {
+      "id": "sbx.pw",
+      "kind": "fragment",
+      "label": "QA password",
+      "text": "bay3-qa"
+    },
+    {
+      "id": "sbx.half",
+      "kind": "fragment",
+      "label": "bay number",
+      "text": "bay3"
+    },
+    {
+      "id": "sbx.vault",
+      "kind": "fragment",
+      "label": "vault note",
+      "text": "hopped"
+    }
+  ],
+  "watchdog": {
+    "id": "qawd",
+    "name": "QA-WD",
+    "route": [
+      "stamp",
+      "conveyor",
+      "siren"
+    ],
+    "dwellMs": 3500,
+    "moveMs": 1500
   },
-
+  "dialogue": {},
   "goals": [],
-
   "texts": {
-    "count.up": ["{via}count", "COUNTER: {n}.", "dim"],
-    "stamp.ok": ["{via}stamp", "STAMP: APPROVED. ({n} today)", "ok"],
-    "brew.ok": ["{via}brew", "COFFEE: one cup. logged. {n} today.", "ok"],
-    "chip.none": ["insert chip", "CHIP READER: no blank chip. the dispenser beside it has some.", "err"],
-    "chip.ok": ["insert chip", "CHIP READER: chip read, chip kept. tested: {n}.", "ok"],
-    "till.broke": ["pay 1", "TILL: 1 token required. none presented.", "err"],
-    "till.ok": ["pay 1", "TILL: 1 token received. receipt printed. total: {n}.", "ok"],
-    "night.off": ["photocell", "NIGHT LIGHT: daylight. off by itself.", "dim"],
-    "vent.shut": ["vent", "VENT: {weather} detected. shut by itself.", "dim"],
-    "reset.ok": ["reset bay", "BAY 3 RESET: every device back to its first state. keyring and tokens kept.", "ok"],
+    "night.off": [
+      "photocell",
+      "NIGHT LIGHT: daylight. off by itself.",
+      "dim"
+    ],
+    "vent.shut": [
+      "vent",
+      "VENT: {weather} detected. shut by itself.",
+      "dim"
+    ],
+    "reset.ok": [
+      "reset bay",
+      "BAY 3 RESET: every device back to its first state. keyring and tokens kept.",
+      "ok"
+    ],
     "prompt.reset": "[E] RESET BAY 3"
   }
 }

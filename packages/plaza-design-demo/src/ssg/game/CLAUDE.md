@@ -84,3 +84,61 @@ those implicitly. Do not treat a successful build as proof that every puzzle can
 
 A request to edit or review does not itself authorize publishing. Homepage and design builds
 are separate outputs; production workflows run when the production branch is pushed.
+
+
+## Feedback-ready ENG-05/06/08 package
+
+See ENG-05-08-PACKAGE.md and ENG-05-08-STATUS.md for the bounded scope. Objective selection lives
+in engine/gameplay/objectives.ts; access conditions/command eligibility in access.ts; native
+capability/door/harbor adapters in world/access.ts. Do not duplicate their evaluation in UI code.
+Scene logic supports optional ordinary-interaction access requirements. Manifest fields require
+the registered declared-scene adapter; other factories must not silently accept them.
+
+scenes/demo-manifest supplies three protected source documents and an isolated editor pilot.
+Its runtime shop role is private to the opaque Play frame; it is not a campaign scene/save/map entry.
+Native scene controllers and world registration remain code-owned outside the explicit pilot.
+Market cook/fish/repair/sleeper text now lives in gameplay.json shared nodes, not inline talk arrays.
+
+Performance recording is opt-in via ?perf, bounded, local-only and disposed with its owning session.
+Keep real measurement time separate from game clocks. Normal rendering, saves and inactive-scene
+policies must not change merely to improve a measurement. No CI expansion, campaign playthrough,
+publication or new story/pacing decisions follow from this package.
+
+
+## Active all-game migration (authorized 2026-10-18)
+
+ENGINE-CONSOLIDATION-GOAL.md expands existing source/editor support to all 19 scenes, G0–G13.
+The old pilot-only editing restrictions describe historical completed scope; the user explicitly
+approved typed wider authoring and full editor integration for this goal. Preserve the latest
+scene-centered UI. ENGINE-CONSOLIDATION-STATUS.md and ALL-GAME-MIGRATION.json distinguish source
+registration, actual editable behavior and preservation evidence. Do not call an opaque native
+content wrapper or read-only source panel full authoring. Immutable original source is under
+.scene-system/all-game-baseline-2026-10-18 at the repository root; never overwrite it.
+Scene content registration currently covers all 19 scenes; native Play fixtures cover all 19. Ordinary
+entity creation/deletion, world/controller contracts and some device dialogue remain unfinished.
+Shared conditions now support pure time-window/weather reads through GameplayState.world. Game
+supplies live context; missing context remains unknown under negation and cannot grant permission.
+Actor contextual lines compile to shared conversation entries without advancing ordinary cursors.
+Paid service purchases use explicit service:true (no fake inventory goods) and atomic commands.
+Browser raster evidence can be archived with build-all-game-pixel-check.mts and the loopback-only
+serve-all-game-pixel-check.mts. Native preview pixel parity is not full gameplay/HUD verification.
+
+Declared engine targets live in scene.json nativeTargets, validated through the existing device
+condition/action checker and executed through SceneModel. No independent native state evaluator.
+Capsule/Yard/Moth/Sandbox use this adapter; only Sandbox grants its explicit reset lifecycle operation.
+Private Play uses authoring/pending-scene.ts to assemble pending content and behavior together.
+
+Source descriptors may supply validateContext for references into companion documents. Protected
+Save/read/reload and recovery validate paired snapshots; never validate a pending scene against
+its compiled original gameplay document when a prospective companion is available. Native action
+permissions remain protected. Scene cues are cosmetic committed-event frame stamps, never rewards.
+Beach uses the same shared native event observer for the gull animation and keeps its existing frame
+clock; templates are explicit, read-only tokens/item/state fields, validated before execution.
+
+Harbor ordinary interactions now share scene/gameplay documents, with a committed crane cue.
+Goods rotation and bribe dialogue progress are saved; the native first-tea reward remains session
+scoped. Empty ordinary response pages mean intentional silence (never an empty bubble). Route
+speaker overrides preserve named objects such as the painted mark. Optional use heights remain
+local to their composition anchors. Downtown exits/readable text are authored, including key/flag
+requirements; empty arrival pages compile to no intro. Downtown runtime story/people, device
+controllers and generic bot reactions remain outstanding despite all 19 source registrations.

@@ -143,16 +143,13 @@ export const LAUNDROMAT_RULES: SceneRules = {
       'queue.clear': 'line', 'breaker.trip': 'line', 'breaker.auto': 'line', 'jacket.take': 'line', 'jacket.pass': 'line',
     },
   },
-  /** P13's own: four washers on one breaker, its stop wired to every washer in the wall, the schedule pre-wired to 1, 2 and 4. */
+  /** Washer events and controller tuning; default cable topology is authored content. */
   check: (z: SceneData) => {
     const errs: string[] = [];
     for (const d of WASHERS) {
       const dev = z.devices.find((x) => x.id === d);
       if (!dev?.nouns.some((n) => n.id === 'drum' && n.events?.includes('done'))) errs.push(`devices[${d}]: needs a "drum" noun that raises "done" (P13)`);
-      if (!z.cables.some((c) => c.from === 'breaker.load:tripped' && c.to === d + '.drum' && c.verb === 'stop' && c.fixed)) errs.push(`cables: the breaker's trip must stop ${d} through a fixed cable (P13)`);
     }
-    for (const d of ['washer1', 'washer2', 'washer4']) if (!z.cables.some((c) => c.from === 'clock.clock:open' && c.to === d + '.drum' && !c.fixed)) errs.push(`cables: the schedule must start ${d} from the start, cuttable (P13)`);
-    if (z.cables.some((c) => c.to === 'washer3.drum' && c.verb === 'start')) errs.push('cables: nothing may start washer 3 from the start: that is the puzzle (P13)');
     for (const k of ['cycleMs', 'resetMs', 'maxRunning']) if (typeof z.tuning[k] !== 'number') errs.push(`tuning.${k}: missing (the washers read it)`);
     return errs;
   },

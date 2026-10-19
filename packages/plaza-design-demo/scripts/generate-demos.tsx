@@ -1,3 +1,6 @@
+import {SCENES as registeredGameScenes} from '../src/ssg/game/scenes';
+import {sceneRuleContract} from '../src/ssg/game/engine/scene-rule-contract';
+import {gameSourceIdentity} from './scene-system/source-identity.mts';
 /**
  * generate-demos.tsx
  *
@@ -151,18 +154,10 @@ ${js}
  */
 function checkGameData() {
   // one entry per scene with a data file: the file and its code (engine/rules.ts); net.json, logic.json and the keyring come along
-  const problems = checkGame([
-    { data: YARD, code: contractOf(YARD_RULES), extra: YARD_RULES.check },
-    { data: CAPSULE, code: contractOf(CAPSULE_RULES), extra: CAPSULE_RULES.check },
-    { data: DOWNTOWN, code: contractOf(DOWNTOWN_RULES_SHAPE), extra: DOWNTOWN_RULES_SHAPE.check },
-    { data: MOTH, code: contractOf(MOTH_RULES), extra: MOTH_RULES.check },
-    { data: BEACH, code: contractOf(BEACH_RULES), extra: BEACH_RULES.check },
-    { data: TRAIN, code: contractOf(TRAIN_RULES_SHAPE), extra: TRAIN_RULES_SHAPE.check },
-    { data: LAUNDROMAT, code: contractOf(LAUNDROMAT_RULES), extra: LAUNDROMAT_RULES.check },
-    { data: STACKS, code: contractOf(STACKS_RULES_SHAPE), extra: STACKS_RULES_SHAPE.check },
-    { data: LIBRARY, code: contractOf(LIBRARY_RULES), extra: LIBRARY_RULES.check },
-    { data: SANDBOX, code: contractOf(SANDBOX_RULES), extra: SANDBOX_RULES.check },
-  ], LOGIC, NET, ENGINE);
+  const problems = checkGame(Object.values(registeredGameScenes).flatMap(scene=>{
+    if(!scene.data)return[];const rules=sceneRuleContract(scene);
+    return[{data:scene.data,code:contractOf(rules,scene.gameplay?.native?.verbs),extra:rules.check}];
+  }), LOGIC, NET, ENGINE);
   // the city's districts and places (city.ts): every place has its scenes, its entrance among them
   problems.push(...cityProblems().map((p) => 'city.ts › ' + p));
   // the street plan (cityplan.ts): every place, station and pad on land, in its own district
@@ -182,7 +177,7 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const [css, js] = await Promise.all([bundleCSS(), bundleJS()]);
-  const html = generateHTML(renderStaticHTML(), css, js);
+  const html = generateHTML(renderStaticHTML(), css, js).replace('<head>',`<head><meta name="game-source" content="${gameSourceIdentity(path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../src/ssg/game'))}">`);
   fs.writeFileSync(path.join(OUT_DIR, 'index.html'), html, 'utf-8');
   fs.copyFileSync(path.join(REPO_ROOT, 'og-image.png'), path.join(OUT_DIR, 'og-image.png'));
   const editor = await buildPublicEditor(OUT_DIR);

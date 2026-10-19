@@ -1,3 +1,4 @@
+import type {Hints} from '../ui/hints';
 import { gameStorage } from '../runtime/storage';
 /**
  * The schematic: a device in the middle, its nouns branching out. Tap a noun
@@ -53,8 +54,6 @@ const NS = 'http://www.w3.org/2000/svg';
 type P = { x: number; y: number };
 /** Where a device stands on screen for hack vision: its box centre and size, in stage px. */
 export interface Anchor { x: number; y: number; w: number; h: number }
-const HINT = 'tap a noun for its verbs · drag an orange dot onto a noun to wire';
-const VISION_HINT = 'tap a device for its nouns · drag cores and nouns anywhere · drag an orange dot onto a noun to wire';
 /**
  * Hack vision, in px: the gap between a device's frame and its core over it, half a core's
  * height, how far over the core the default row of nouns stands, the gap between them.
@@ -90,7 +89,8 @@ export class Schematic {
   private hint: HTMLDivElement;
   private palette: HTMLDivElement;
   private ring: HTMLDivElement;
-  private opens = 0;
+  private hints?:Hints;
+  private hintBusy?:()=>boolean;
   private mode: 'device' | 'board' | 'vision' = 'device';
   private dev = '';
   /** Devices you have opened or seen; shared between the overlay and hack vision. */
@@ -142,7 +142,8 @@ export class Schematic {
   /** Hack vision: a logic part is being dragged; `at` is where its centre should be, in stage px. */
   onMovePart: (id: string, at: P) => void = () => {};
 
-  constructor(host: HTMLElement, private m: SceneModel, private say: (l: Line) => void, opts: { vision?: boolean; known?: Set<string> } = {}) {
+  constructor(host: HTMLElement, private m: SceneModel, private say: (l: Line) => void, opts: { vision?: boolean; known?: Set<string>; hints?:Hints; hintBusy?:()=>boolean } = {}) {
+    this.hints=opts.hints;this.hintBusy=opts.hintBusy;
     this.known = opts.known ?? new Set();
     this.root = el('div'); this.root.hidden = true;
     const bar = el('div', 'hack-bar');
@@ -150,7 +151,7 @@ export class Schematic {
     this.modeBtn = el('button', 'hack-btn'); this.modeBtn.type = 'button';
     this.modeBtn.addEventListener('click', () => (this.mode === 'board' ? this.openDevice(this.dev || [...this.known][0]) : this.openBoard()));
     const close = el('button', 'hack-btn', m.label('ui.close')); close.type = 'button'; close.addEventListener('click', () => this.close());
-    this.hint = el('div', 'hack-hint', HINT);
+    this.hint = el('div', 'hack-hint');
     bar.append(this.title, this.modeBtn, close, this.hint);
     this.status = el('div', 'hack-status');
     this.stage = el('div', 'hack-stage');
@@ -202,11 +203,9 @@ export class Schematic {
   /** The device you are looking into (for trace): one device's schematic, open. */
   get viewing() { return this.isOpen && this.mode === 'device' ? this.dev : null; }
 
-  /** The how-to line under the header shows for the first few opens, or until the first cable. */
-  private show() {
-    if (this.root.hidden) { this.opens++; this.hint.hidden = this.opens > 3 || this.m.links.length > 0; }
-    this.root.hidden = false;
-  }
+  /** A shared saved lesson is drawn in the existing board hint spot. */
+  presentHint(busy=false){const text=this.isOpen?this.hints?.boardHint(busy||!!this.hintBusy?.()):null;this.hint.textContent=text??'';this.hint.hidden=!text;}
+  private show() {this.root.hidden=false;this.presentHint();}
   openDevice(id: string) {
     this.known.add(id); this.mode = 'device'; this.dev = id;
     this.show(); this.pending = null; this.armed = null; this.chip = null;
@@ -219,7 +218,7 @@ export class Schematic {
   /** Hack vision (the vision instance only): every device on screen, wired in place. */
   openVision() {
     this.root.hidden = false; this.armed = null; this.pending = null; this.chip = null; this.drawer = false;
-    this.note(['', 'HACK VISION · ' + VISION_HINT + ' · H to leave', 'dim']);
+    this.presentHint();
     this.render();
   }
   /** Hack vision follows the camera: where each device on screen stands now. */
@@ -765,7 +764,9 @@ export class Schematic {
           const p = this.pending!; this.pending = null;
           // hack vision keeps circuits compact: the verbs picked for a cable fold away again
           if (this.mode === 'vision') this.open.delete(p.to);
-          this.say(this.m.connect(p.from, p.to, v));
+          const line=this.m.connect(p.from,p.to,v);
+          if(line[2]==='ok')this.hints?.done('ctl.wire');
+          this.say(line);
         }
         else if (v === typeVerb) { this.typing = key; this.draft = ''; this.render(); }
         else this.m.act(dev, noun, v);
@@ -901,6 +902,7 @@ export class Schematic {
   private only(key: string) {
     if (this.mode === 'vision') { const dev = key.split('.')[0] + '.'; [...this.open].forEach((k) => { if (k.startsWith(dev)) this.open.delete(k); }); }
     this.open.add(key);
+    this.hints?.done('ctl.noun');
   }
 
   /** Open every verb of a device, or close them all if they are all open. */
@@ -909,6 +911,7 @@ export class Schematic {
     const keys = d.nouns.filter((n) => !n.sector || !this.m.sealed(id, n.sector)).map((n) => id + '.' + n.id);
     const all = keys.every((k) => this.open.has(k));
     keys.forEach((k) => (all ? this.open.delete(k) : this.open.add(k)));
+    if(!all&&keys.length)this.hints?.done('ctl.noun');
     this.render();
   }
 

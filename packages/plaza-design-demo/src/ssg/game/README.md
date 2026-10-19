@@ -68,13 +68,30 @@ separately; a complete player playthrough and comprehension assessment remain pe
 ## Test District
 
 After the homepage build, open `http://127.0.0.1:4174/?demo` using the static server above.
-This separate saved demo world connects a Test Desk, Counter and Test Workshop using the same engine and artwork
-as the game. Try conversation choices, persistent stock/rotation and normal/discount/deceptive
-pricing. Near the Desk entrance, take the Workshop route. Its board near the entrance offers hatch
-permission controls; the first two benches demonstrate direct use, cables and chains. H opens hacking;
-L offers timer and switch parts. MENU -> NEW GAME resets only the demo autosave. Demo slots and resume are separate too.
-The editor's Demo world tab previews pending definitions with disposable private progress.
-See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for scope and limitations.
+This separate saved demo world has three plain review areas: Purchases, Conversations, and Devices & wiring.
+Only the people and objects needed for an example remain. Use **Review shortcuts** to jump directly;
+**Buy at counter**, **Pricing & stock**, both **Talk** buttons, and **Hatch permissions** work in place.
+H opens hacking; L offers timer and switch parts. MENU -> NEW GAME resets only the demo autosave.
+Demo slots and resume are separate too. The editor's **Demo world** tab uses these compact areas
+and previews pending definitions with disposable private progress.
+
+Feedback to focus on:
+
+- **Purchases:** buy once, then open Pricing & stock here. Are price, availability and purchase feedback clear?
+- **Conversations:** talk to the nearby librarian or SHELF-E. Is the speaker clear? Do choices read naturally and responses feel useful?
+- **Guidance/access:** open Guidance example at Purchases. Start the task, try buying before permission, authorize, then buy. Is the refusal useful and the objective change noticeable?
+- **Devices:** jump here, press H, try the sensor and lamp. Is the cause of each change visible?
+- **Wiring & chains:** jump here, press H and L. Try linking the plate through a timer or switch to the hatch/fan. Is connecting and following a chain understandable?
+- **Editor:** open Demo world after changing a supported definition. Does previewing and iterating feel straightforward?
+
+Technical checks for pricing arithmetic, atomic failure, source permissions, saved state and campaign isolation
+are maintained by the agent; user feedback should focus on clarity, appeal and interaction quality.
+The editor also has an isolated **Manifest pilot**. Edit `demo-manifest` artwork, then
+`demo-manifest-scene` objectives/manifest bindings in Scene logic, and launch the pilot tab.
+It adds no campaign location. [Binding inventory](./docs/reference/SCENE-BINDING-INVENTORY.md).
+
+Opt-in performance recording: [local workflow](./docs/reference/PERFORMANCE-RECORDING.md).
+See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for system scope.
 
 ## Code map
 

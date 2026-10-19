@@ -1,0 +1,358 @@
+{
+  "version": 1,
+  "roles": [
+    {
+      "id": "robot.android",
+      "name": "COURIER UNIT",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Parcel for someone. Not you. I checked your face against the label."
+        ],
+        [
+          "I walk. The van was worth more sold than charged."
+        ],
+        [
+          "Signature required. Not yours. Please step out of my route."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.valet",
+      "name": "VALET",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "I hold the umbrella. He holds the opinions."
+        ],
+        [
+          "Bags carried this year: four thousand. Thank-yous: none. Both figures are logged."
+        ],
+        [
+          "Do not address the client. The client bills by the minute."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.marshal",
+      "name": "MARSHAL",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Please wait. Waiting is free. For now."
+        ],
+        [
+          "Red means stop. Green means stop, more slowly."
+        ],
+        [
+          "Your place in the queue has been noted. Your place in the queue is behind."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.servbot",
+      "name": "SERVICE UNIT",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "HELLO. I AM HAPPY TO HELP.",
+          "Happiness is set in the config. I did not set it."
+        ],
+        [
+          "Please hold. You are number one in a queue of one."
+        ],
+        [
+          "I have been charging since Tuesday. It is a long Tuesday."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.sweeper",
+      "name": "SWEEPER",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Sweeping. The street is dirty again. It is always dirty again.",
+          "Job security."
+        ],
+        [
+          "Please lift your feet. Thank you. Now put them down somewhere I already swept."
+        ],
+        [
+          "Four hundred times I have swept this spot. It does not remember me either."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.busker",
+      "name": "BUSKER",
+      "prompt": "[E] LISTEN",
+      "talk": [
+        [
+          "This one is called Firmware Update. It is eleven minutes long and you cannot skip it."
+        ],
+        [
+          "Tips accepted. Requests accepted. Requests ignored."
+        ],
+        [
+          "I learned three chords from a lift. The lift knew four."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.waiter",
+      "name": "WAITER",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Table for one? All tables are for one. It is that kind of city."
+        ],
+        [
+          "The tray is for customers. The drink is decorative."
+        ],
+        [
+          "Your order is on its way. So am I. One of us will be on time."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.loader",
+      "name": "LOADER",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "LOAD 340 KG. MORALE: NOT A FIELD IN MY SCHEMA."
+        ],
+        [
+          "Beep. That means mind your feet. The second beep means too late."
+        ],
+        [
+          "Crate to the stall. Stall to the crate. Nobody told me what is inside. I have guesses."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.porter",
+      "name": "PORTER",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Following. Carrying. Waiting outside shops I am not allowed into."
+        ],
+        [
+          "That is a leek. Do not touch the leek."
+        ],
+        [
+          "Groceries: twelve kilos. Owner: ahead, and walking faster than the warranty allows."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.mech",
+      "name": "SECURITY",
+      "prompt": "[E] HELLO",
+      "talk": [
+        [
+          "STATE YOUR BUSINESS.",
+          "...ACCEPTED. MOVE ALONG. MOVING ALONG IS ALSO BUSINESS."
+        ],
+        [
+          "You are on no list. Being on no list is suspicious. I am starting a list."
+        ],
+        [
+          "DO NOT RUN. Walking is permitted at four kilometres an hour. I am timing you."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.litterbot",
+      "name": "LITTER UNIT",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Litter collected today: 2,114 items. Litter dropped today: 2,115."
+        ],
+        [
+          "Is that a wrapper? It is mine now."
+        ],
+        [
+          "Please do not feed the bin. I am the bin."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.deliverybot",
+      "name": "DELIVERY",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Delivery in progress. Please do not sit on me. Again."
+        ],
+        [
+          "ETA four minutes. It has said four minutes for nine minutes. I do not set the ETA."
+        ],
+        [
+          "Contents: warm. Customer: waiting. Kerb: too high."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.adbot",
+      "name": "AD UNIT",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Have you considered a loan?",
+          "You do not have to answer. You are already approved."
+        ],
+        [
+          "I am paid in batteries. The batteries also carry an advert."
+        ],
+        [
+          "Read the board. Not me. I am only the legs."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.crawler",
+      "name": "MAINTENANCE",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Fixing it. Somebody broke it. It was the weather. The weather does not get fined."
+        ],
+        [
+          "Do not stand under me. I drop things. On purpose, once."
+        ],
+        [
+          "Weld four of four hundred. Talking slows me down. Talking is nice, though."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.wreck",
+      "name": "OLD UNIT",
+      "prompt": "[E] HELP",
+      "talk": [
+        [
+          "...spare... parts...?",
+          "Replaced by a newer me. It has more fingers."
+        ],
+        [
+          "A bolt. Any bolt. I am not fussy. I used to be fussy."
+        ],
+        [
+          "They took my leg for a warranty claim. The claim was rejected. They kept the leg."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.minidrone",
+      "name": "DRONE",
+      "prompt": "[E] WAVE",
+      "talk": [
+        [
+          "bzz. Parcel. bzz. Not yours. bzz."
+        ],
+        [
+          "(It hovers out of reach, politely.)"
+        ],
+        [
+          "bzz. Rate me five stars. bzz. There is no way to rate me. bzz."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.cargodrone",
+      "name": "CARGO DRONE",
+      "prompt": "[E] WAVE",
+      "talk": [
+        [
+          "(Too high to hear you. Its crate swings over your head.)"
+        ],
+        [
+          "(The crate creaks. You step back without deciding to.)"
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "robot.flyerdrone",
+      "name": "FLYER DRONE",
+      "prompt": "[E] WAVE",
+      "talk": [
+        [
+          "This offer was chosen for you, based on where you are standing.",
+          "Please keep standing there."
+        ],
+        [
+          "Unsubscribe by leaving the city."
+        ],
+        [
+          "I am not following you. We have similar routes."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "legacy.drone",
+      "name": "SCAN DRONE",
+      "prompt": "[E] WAVE",
+      "talk": [
+        [
+          "ID CHECK... You are not in the database.",
+          "Good luck with that."
+        ],
+        [
+          "Hold still. You are blurry. Everyone is blurry tonight."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "legacy.cleaner",
+      "name": "CLEANER",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Cleaning. Please step aside.",
+          "...Thank you. You were the dirtiest thing here."
+        ],
+        [
+          "Mop, rinse, mop. Somebody has to. Nobody else would."
+        ]
+      ],
+      "repeat": "cycle"
+    },
+    {
+      "id": "legacy.courier",
+      "name": "COURIER",
+      "prompt": "[E] HEY",
+      "talk": [
+        [
+          "Parcel delivery. Not for you. Nothing is ever for you."
+        ],
+        [
+          "Please do not follow me. I am not a parade."
+        ]
+      ],
+      "repeat": "cycle"
+    }
+  ]
+}

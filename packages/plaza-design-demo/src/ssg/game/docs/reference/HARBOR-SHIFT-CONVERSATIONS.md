@@ -1,0 +1,13 @@
+# Harbor Shift conversation routing
+
+The scene's `boss` use points to the source-owned `supervisor-shift` conversation and requests the shared bubble presenter. Its conditional entry rows select the assignment, trolley, off-duty, lost-tag recovery, or reminder node. Shared `onEnter` commands perform acceptance and tag recovery; the former `shiftConversation` imperative adapter is removed. Mara uses the same generic bubble path.
+
+The separate `supervisor` graph remains the optional explicit-choice panel used by the gameplay workbench. Its offer/accept/later choices and reward timing are unchanged. Repeated presentation text is explicit authored source for these distinct presentations; it is not selected by hidden TypeScript branches.
+
+Reminder text uses the shared `{objective}` display context. Game captures the current scene objective before the entry command, preserving the former timing. This read-only display value comes from the scene objective definitions and is never copied into save state or used as a predicate.
+
+`ConversationNode.onEnterFailure` names a pure sink: an existing node without entry commands or redirects. Constructor entry refusal shows that sink without committing state. During a choice, fallback is eligible only after the choice command and its reactions have reached the entry-command stage. A refused entry rolls the complete transaction back and successfully navigates to the authored failure page with an empty committed-event list. A rejected choice before that stage keeps the original frame and returns its refusal. Thrown programmer errors propagate. Reading frames and closing never retries commands.
+
+Shift assignments and trolley acceptance preserve the original refusal sentence. Refused lost-tag replacement preserves the original reminder, because the old interaction ignored that replacement refusal. Existing command IDs and optional-panel permissions remain unchanged; the new conversation-source reissue command explicitly owns the recovery route.
+
+Evidence: `check-shift-conversation-source.mts` compares 48 immutable baseline interactions across progression, inventory, supervisor, and Mara, plus actual `Game.runUse` pending text/objective/refusal paths. `check-conversation-entry-failure.mts` covers stage-aware atomic failure, malformed sinks, programmer errors, and real typed controls. `check-harbor-shift-manifest-save.mts` covers history, bundles, protected source Save, and a fresh saved-source graph.

@@ -1,3 +1,5 @@
+import {controllerProblems} from '../engine/controllers';
+import {observationProblems,observationAliases} from '../engine/native-observations';
 /**
  * The build-time check for the game's data. The type-check (data/index.ts)
  * only sees the shape; this sees the meaning: does every cable reach a real
@@ -19,6 +21,8 @@ import { ITEMS } from '../scenes/kit';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
 export interface CodeContract {
+  /** Verbs implemented by validated shared native routes, rather than legacy on steps. */
+  nativeVerbs?: string[];
   /** Named effects implemented in code. */
   effects: string[];
   /** Panels the data may open. */
@@ -53,7 +57,7 @@ const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect', 'give', 'take', 't
 const ITEM_IDS = Object.keys(ITEMS);
 const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
 const KEYS: Record<string, string[]> = {
-  scene: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog'],
+  scene: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog', 'observations','controller'],
   logic: ['modules'],
   net: ['nodes', 'cables', 'keyring', 'watchdog', 'networks', 'programs'],
   network: ['id', 'name', 'note', 'from', 'need', 'machines'],
@@ -301,7 +305,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     if (which.length !== 1) { err(where, `needs exactly one of ${ACTION_KEYS.join(' / ')}`); return; }
     cond(a.if, known, where);
     when(a.when, where);
-    if ('set' in a) { if (!writable.has(a.set)) err(where, `cannot set "${a.set}": not a state key`); if (!('to' in a)) err(where, 'set needs "to"'); }
+    if ('set' in a) { if (!writable.has(a.set)) err(where, `cannot set "${a.set}": not a state key`); if (!('to' in a)) err(where, 'set needs "to"'); else if(a.to!==null&&!['string','boolean'].includes(typeof a.to)&&!(typeof a.to==='number'&&Number.isFinite(a.to)))err(where,'set value must be a finite scalar'); }
     else if ('to' in a) err(where, '"to" only goes with "set"');
     if ('with' in a && !('open' in a)) err(where, '"with" only goes with "open"');
     if ('open' in a) {
@@ -463,7 +467,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       if (verbs.length && !n.on) err(w, 'has verbs but no "on" (what they do)');
       if (n.current !== undefined && !known.has(n.current)) err(w, `current: unknown key "${n.current}"`);
       for (const v of Object.keys(n.on ?? {})) if (v !== '*' && !verbs.includes(v)) err(`${w} › on`, `"${v}" is not one of its verbs`);
-      for (const v of verbs) if (!(v in (n.on ?? {})) && !('*' in (n.on ?? {}))) err(`${w} › on`, `verb "${v}" does nothing (add it, or a "*" entry)`);
+      for (const v of verbs) if (!(v in (n.on ?? {})) && !('*' in (n.on ?? {})) && !env.code.nativeVerbs?.includes(d.id+'.'+n.id+':'+v)) err(`${w} › on`, `verb "${v}" does nothing (add it, or a "*" entry)`);
       if (n.sector !== undefined && !sectors.some((s) => s.id === n.sector)) err(w, `sector "${n.sector}" is not one of this device's sectors`);
       if (n.id === WATCH_NOUN && env.routes.has(d.id)) err(w, `"${WATCH_NOUN}" is the engine's noun on a device the watchdog visits: rename this one`);
       for (const [f, kind] of [['guard', 'GUARD'], ['log', 'LOG'], ['link', 'LINK'], ['clock', 'CLOCK']] as const) {
@@ -592,13 +596,21 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
  * that scene (their effects and conditions must make sense there). Problems in
  * the modules are reported against `logic.json`.
  */
+/** Validate world-target operations with exactly the same grammar and references as device cases. */
+export function checkSceneInteractionRows(z:SceneData,code:CodeContract,source:{engine:EngineData;logic:LogicData;net:NetData;keyring:ReadonlyMap<string,KeyItem>},rows:Case[]):string[]{
+  const errors:string[]=[],world:World={keyring:new Map([...source.keyring].map(([id,item])=>[id,{item,file:'world'}])),netNodes:new Map(source.net.nodes.map(n=>[n.id,n])),logic:source.logic,gives:new Map(),nets:source.net.networks??[],programs:new Set((source.net.programs??[]).map(p=>p.id))};
+  const env:Env={known:new Set([...Object.keys(z.state),...code.derived,...observationAliases(z),...CITY_KEYS,'signal']),writable:new Set(Object.keys(z.state)),code,goals:new Set(z.goals.map(g=>g.id)),dialogues:Object.keys(z.dialogue),texts:{...source.engine.texts,...z.texts},routes:new Set()};
+  const c=checker(z.id+' scene targets',errors,env,world,new Map([...world.netNodes,...(z.nodes??[]).map(n=>[n.id,n] as const),...z.devices.map(d=>[d.id,d] as const)]));
+  rows.forEach((r,i)=>{const at='operation '+i;c.cond(r.if,env.known,at);c.when(r.when,at);r.do?.forEach((a,j)=>c.action(a,at+' action '+j,env.known,env.writable,null,null));if(r.say!==undefined)c.line(r.say,at);});
+  return errors;
+}
 export function checkScene(z: SceneData, code: CodeContract, world: World, engine: EngineData, net?: NetData): string[] {
   const errs: string[] = [];
   const file = z.id + '.json';
   const texts = { ...engine.texts, ...z.texts };
   const env: Env = {
     // the city's keys (weather, hour, day: engine/model.ts CITY_KEYS) are in every scene
-    known: new Set([...Object.keys(z.state), ...code.derived, 'signal', ...CITY_KEYS]),
+    known: new Set([...Object.keys(z.state), ...code.derived, ...observationAliases(z), 'signal', ...CITY_KEYS]),
     writable: new Set(Object.keys(z.state)),
     code, goals: new Set(z.goals.map((g) => g.id)), dialogues: Object.keys(z.dialogue), texts,
     routes: new Set([...(Array.isArray(z.watchdog?.route) ? z.watchdog!.route : []), ...(Array.isArray(net?.watchdog?.route) ? net!.watchdog!.route : [])]),
@@ -608,6 +620,11 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
   const c = checker(file, errs, env, world, all);
   nodes.forEach((n) => c.nodeIds.add(n.id));
   const { err, keys, dupes, line } = c;
+
+  errs.push(...controllerProblems(z,world.netNodes));
+  const observationErrors=observationProblems(z,code.derived,{nodes:world.netNodes,keys:new Set(world.keyring.keys())});
+  errs.push(...observationErrors);
+  if(z.observations&&!observationErrors.length)for(const row of z.observations.goals)c.cond(row.when,env.known,'observations goal '+row.goal);
 
   // ---------- the watchdog ----------
   if (z.watchdog) {

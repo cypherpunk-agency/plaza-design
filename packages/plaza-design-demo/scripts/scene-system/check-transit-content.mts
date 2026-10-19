@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {gameplayScene} from '../../src/ssg/game/authoring/gameplay-scenes';
+import {nativeSceneAdapters} from '../../src/ssg/game/authoring/scene-adapters';
+import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
+import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
+import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {art} from '../../src/ssg/game/art';
+import {SCENES} from '../../src/ssg/game/scenes';
+import {defaultPlayFixture,validatePlayFixtures} from '../../src/ssg/game/authoring/play-fixtures';
+const baseline=JSON.parse(fs.readFileSync('../../.scene-system/all-game-baseline-2026-10-18/manifest.json','utf8'));
+const documents=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:JSON.parse(fs.readFileSync('src/ssg/game/'+d.file,'utf8'))}));
+const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
+const validate=(doc:{id:string},rows:typeof documents)=>{if(doc.id===documents[0].id)validateSourceDocuments(new Map(rows.map(r=>[r.id,r.value])));};
+const model=new ComposerModel(art,context,validate);model.load(documents);
+for(const id of ['metro','galleriaStation','harborStation','train']){
+ const registered=gameplayScene(id),old=baseline.rows.find((r:any)=>r.id===id).baseline;
+ const composition=model.get(id).value as any,content=model.get(id+'-scene').value as any,gp=model.get(id+'-gameplay').value as any;
+ const scene=registered.definition(composition,{},{},content,gp);
+ assert.equal(scene.name,old.name);assert.deepEqual(scene.intro,old.intro);assert.deepEqual(scene.exits,old.exits);assert.deepEqual(scene.readables,old.readables);
+ assert.equal(scene.spawn,old.spawn);assert.equal(scene.width,old.width);
+ assert.deepEqual(scene.data,nativeSceneAdapters[id].definition(composition,{},{reduced:false}).data);
+ const pending=structuredClone(content);pending.name='Pending '+id;pending.intro=['Pending arrival'];pending.readables[0].pages=['Pending notice'];pending.exits[0].label='[E] PENDING';
+ model.edit(id+'-scene','Edit transit content',()=>pending);
+ const preview=registered.definition(composition,{},{},registered.validateScene(model.get(id+'-scene').value,gp),gp);
+ assert.equal(preview.name,'Pending '+id);assert.deepEqual(preview.readables![0].pages,['Pending notice']);assert.equal(preview.exits[0].label,'[E] PENDING');
+ assert.equal(preview.exits[0].x,scene.exits[0].x);assert.equal(preview.exits[0].action,scene.exits[0].action);
+ assert.equal(validatePlayFixtures({version:1,fixtures:[defaultPlayFixture(id as any)]},true).fixtures[0].scene,id);
+}
+const receiver=new ComposerModel(art,context,validate);receiver.load(documents);receiver.importDocuments(readDocumentBundle(createDocumentBundle(model.edits(),model.list()),receiver.list()));assert.equal(receiver.edits().length,4);receiver.undo();assert.equal(receiver.dirty(),false);receiver.redo();assert.equal(receiver.edits().length,4);
+const before=receiver.list();const invalid=structuredClone(receiver.get('train-scene').value) as any;invalid.exits[0].action='fly-to-anywhere';assert.throws(()=>receiver.importDocuments([{id:'train-scene',value:invalid}]));assert.deepEqual(receiver.list(),before);
+console.log('Transit content PASS: four original scene geometries/boarding exits/device definitions, pending arrival/readable/exit edits, four private fixtures and atomic history/bundle round-trip.');

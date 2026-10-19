@@ -1,3 +1,4 @@
+import originalLaundromat from '../../../../.scene-system/all-game-baseline-2026-10-18/source/scenes/laundromat';
 import assert from 'node:assert/strict';
 import {laundromatScene,laundromatComposition,LAUNDROMAT_GAMEPLAY,LAUNDROMAT_SCENE,validateLaundromatGameplay,validateLaundromatScene,LAUNDROMAT_RULES} from '../../src/ssg/game/scenes/laundromat';
 import {laundromatPeople} from '../../src/ssg/game/scenes/laundromat/scene';
@@ -12,6 +13,8 @@ const refusal=['INSERT 1 TOKEN.','NO TOKEN DETECTED. NO SOAP DISPENSED. ATTEMPT 
 // Captured pre-migration ordinary-use callback: repeatable, no flag and no stock limit.
 function legacy(state:GameplayState){if(state.tokens<1)return refusal;state.tokens--;state.items.soap=(state.items.soap??0)+1;return success;}
 const scene=laundromatScene();
+const original=originalLaundromat.laundromat as typeof scene;const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(k,v)=>k==='conversation'?undefined:v));for(const key of ['people','readables','exits','width','spawn','facing'] as const)assert.deepEqual(plain(scene[key]),plain(original[key]),'Immutable original Laundromat '+key);
+
 assert.equal(scene.rules,LAUNDROMAT_RULES);
 assert.equal(scene.objective,undefined);assert.equal(scene.attention,undefined);assert.equal(scene.storyMinute,undefined);
 assert.deepEqual(scene.exits,[{id:'market',x:30,to:'market',at:'laundromat',label:'[E] MARKET',promptH:82}]);
@@ -50,7 +53,7 @@ const prepared=pending.visualEnvironment!(view,engine).bindings!['actor.blue.pos
 assert.equal(prepared.character.name,pending.people![0].name);assert.deepEqual(prepared.character.talk,[['Pending talk']]);
 const regular=pending.visualEnvironment!(view,engine).bindings!['actor.gran.pose'] as unknown as {character:{key:boolean;talk:string[][]}};
 assert.equal(regular.character.key,true);assert.ok(regular.character.talk.length);
-const bad=structuredClone(LAUNDROMAT_SCENE);bad.exits![0].to='capsule';assert.throws(()=>validateLaundromatScene(bad),/protected/);
+const bad=structuredClone(LAUNDROMAT_SCENE);bad.actors![0].reaction='changed';assert.throws(()=>validateLaundromatScene(bad),/protected/);
 const wrong=structuredClone(LAUNDROMAT_GAMEPLAY);wrong.commands['laundromat.buy-soap'].sources.push('signal');assert.throws(()=>validateLaundromatGameplay(wrong),/protected/);
 const unknown=structuredClone(LAUNDROMAT_SCENE);unknown.uses[0].routes[0].command='missing';assert.throws(()=>validateLaundromatScene(unknown),/permission\/reference/);
 console.log(`Laundromat gameplay checks passed: ${cases} legacy purchase boundaries/repeats, reload, unrelated resources, protected identities/permissions, pending narrative and unchanged native rules/actor/anchor geometry.`);

@@ -2,9 +2,9 @@
 import {SANDBOX,type SceneData} from '../../src/ssg/game/data';
 import {SceneModel,type Line} from '../../src/ssg/game/engine/model';
 import {SANDBOX_RULES} from '../../src/ssg/game/scenes/sandbox/rules';
-import {createBehaviorSandbox} from '../../src/ssg/game/authoring/behavior-sandbox';
-import {behaviorNoun,cloneBehavior,validateSandboxBehavior} from '../../src/ssg/game/authoring/behavior-validation';
-export {mountBehaviorWorkbench} from '../../src/ssg/game/authoring/behavior-authoring';
+import {createBehaviorSandbox} from './legacy-s13/behavior-sandbox';
+import {behaviorNoun,cloneBehavior,validateSandboxBehavior} from './legacy-s13/behavior-validation';
+export {mountBehaviorWorkbench} from './legacy-s13/behavior-authoring';
 type Op={key:string;verb:string}|{advance:number}|{reset:true}|{save:true}|{restore:true};
 export const behaviorCases:{id:string;ops:Op[];edited?:boolean}[]=[
  {id:'sensor-before-delivery',ops:[{key:'sensor.eye',verb:'wave'},{advance:149}]},

@@ -48,3 +48,6 @@ dist-homepage/
 
 # Local source-edit recovery journal (never a player save)
 .authoring-history/
+
+# Opt-in local performance recordings
+.performance/

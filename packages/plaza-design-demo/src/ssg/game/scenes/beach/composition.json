@@ -1178,14 +1178,17 @@
         "drinkX": "beach.drinkX",
         "shore": "beach.shore",
         "lampPositions": "beach.lampPositions",
-        "drinkH": "beach.drinkH"
+        "drinkH": "beach.drinkH",
+        "limeVisible": "beach.limeVisible",
+        "limeX": "beach.limeX",
+        "limeH": "beach.limeH"
       }
     },
     {
       "id": "lime-talk",
-      "type": "beach.marker",
+      "type": "character.prepared",
       "props": {
-        "role": "person"
+        "actor": "lime-talk"
       },
       "placement": {
         "x": 0,
@@ -1196,6 +1199,9 @@
       "attach": {
         "instance": "bartender",
         "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.lime-talk.pose"
       }
     },
     {

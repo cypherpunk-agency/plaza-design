@@ -25,6 +25,8 @@ export interface CutsceneData {
   duration: number;
   /** The scene it hands over to by default: 'downtown', 'yard', 'capsule' or a scene id. */
   next: string;
+  /** Full authored destination; next remains the compatibility scene alias. */
+  handoff?:import('../../art/core/timeline').Handoff;
   cards: TextCard[];
   /** Named moments in the picture, for sudo's time control (transport.ts); without them the cards are the beats. */
   beats?: { at: number; name: string }[];

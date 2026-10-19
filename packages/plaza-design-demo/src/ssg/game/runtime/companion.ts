@@ -1,3 +1,4 @@
+import type {CompanionPet} from '../engine/gameplay/scene-companion';
 import { drawPixel, type PixelPose as Pose } from '../art/characters/pixel';
 /**
  * Pixel, the robot cat: a small companion the engine draws in any scene.
@@ -5,47 +6,18 @@ import { drawPixel, type PixelPose as Pose } from '../art/characters/pixel';
  * Pixel sleeps on whatever is warm. In the flat (Capsule 7B) the scene says
  * where that is (`perch`: the bed, the router, the sunny spot); outside, Pixel
  * follows the player: walks behind, sits when you stop, and after a while
- * curls up on a warm machine nearby (`WARM`) or naps where it sat.
+ * curls up on a warm machine nearby (the scene source) or naps where it sat.
  *
  * Pixel is only a picture: it never blocks the player, never takes a prompt,
  * and has no hit box. Whether Pixel is with you is a save flag (`flags.pixel`,
  * set when you first leave the flat); where Pixel stands is not saved, it
  * simply turns up behind you.
  *
- * Canvas drawing only.
+ * Native companion movement and presentation; authored conversations own the words.
  */
 
 /** Somewhere to rest: world x, height above the ground, and how Pixel rests there. */
 export interface Perch { x: number; h: number; rest: 'sleep' | 'sun' | 'sit' }
-
-/**
- * Warm machines outside, per scene, where Pixel sometimes curls up while you
- * stand around: the noodle stall's lamp-warm counter, junction box 0x2F
- * (warm electronics), the yard's cable-spool table under the lit kitchen
- * window, the dumpster lid under the caged lamp. Coordinates follow the
- * scene art (level.ts, yard/scene.ts).
- */
-export const WARM: Record<string, Perch[]> = {
-  downtown: [{ x: 754, h: 30, rest: 'sleep' }, { x: 330, h: 70, rest: 'sleep' }],
-  yard: [{ x: 200, h: 14, rest: 'sleep' }, { x: 724, h: 24, rest: 'sleep' }],
-  // Moth's place: the lid of Sprat's tank, warm from the heat lamp (moth/scene.ts)
-  moth: [{ x: 402, h: 50, rest: 'sleep' }],
-  // the beach: on top of SALT's jukebox, warm from its valves (beach/scene.ts)
-  beach: [{ x: 466, h: 44, rest: 'sleep' }],
-};
-
-
-
-/**
- * Sprites face right; each character is a pixel ('.' is clear). Drawn at
- * 2 world units a pixel, so a sitting Pixel is about a third of the player.
- * b body, d shade, l light rim (ears, back), e eyes, n nose, y the tail LED.
- */
-
-
-
-
-
 
 export class Companion {
   x = 0;
@@ -66,20 +38,10 @@ export class Companion {
   private petted = 0;
 
   /** Petted (E next to Pixel): a visible purr, and what you notice, in turn. */
-  pet(): string[] {
+  pet(recipe:CompanionPet):string {
     for (let i = 0; i < 3; i++) this.zs.push({ x: this.x + (i - 1) * 5, h: this.h + 12, age: -i * 14, ch: 'prr' });
-    const n = this.petted++;
-    if (this.pose === 'sleep') return n % 2
-      ? ['Pixel stretches one paw at you without waking up. That counts as a hug.']
-      : ['Pixel opens one eye, checks that you are not food, and closes it again.', 'The purr starts anyway.'];
-    if (this.pose === 'sun') return ['Pixel is in the sun. You are in the way of the sun.', 'Pixel lets you stay. Briefly.'];
-    if (this.pose === 'walk' || this.pose === 'hop') return ['Pixel takes exactly one stroke and keeps walking. Places to be.'];
-    return [
-      ['Pixel leans into your hand. It is warm from the router. It is always warm from something.'],
-      ['Pixel headbutts your knuckles until you do it properly.'],
-      ['You scratch behind the ear sensor. The tail light goes steady. That means yes.'],
-      ['Pixel looks at you for a long time. Then at the fridge. Subtle.'],
-    ][n % 4];
+    const n=this.petted++,c=recipe.conversations;
+    return this.pose==='sleep'?c.sleep[n%c.sleep.length]:this.pose==='sun'?c.sun:this.pose==='walk'||this.pose==='hop'?c.moving:c.idle[n%c.idle.length];
   }
 
   /** Put Pixel down right here (on arriving somewhere). */

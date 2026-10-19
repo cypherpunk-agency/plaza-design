@@ -17,12 +17,14 @@ function same(actual:readonly string[],expected:readonly string[],name:string){
 }
 export function validateShiftGameplay(value:unknown){
   const doc=validateGameplay(value);if(doc.native)throw new Error('Native bindings are not registered for this gameplay document');
-  same(doc.flags,flags,'flag');same(doc.items,items,'item');same(doc.events,events,'event');
-  same(Object.keys(doc.commands),Object.keys(sources),'command');
+  const retain=(actual:readonly string[],expected:readonly string[],name:string)=>{if(expected.some(id=>!actual.includes(id)))throw new Error('Harbor gameplay: retain existing '+name+' IDs');};
+  retain(doc.flags,flags,'flag');retain(doc.items,items,'item');retain(doc.events,events,'event');
+  retain(Object.keys(doc.commands),Object.keys(sources),'command');
   for(const[id,allowed]of Object.entries(sources))same(doc.commands[id].sources,allowed,id);
-  same(Object.keys(doc.conversations),['supervisor','mara'],'conversation');
+  retain(Object.keys(doc.conversations),['supervisor','mara'],'conversation');
   for(const node of ['offer','trolley-offer']){
-    if(!doc.conversations.supervisor.nodes[node]?.choices?.some(c=>c.id==='accept'))throw new Error('Harbor gameplay: retain the '+node+' accept choice used by the ordinary interaction');
+    const expected=node==='offer'?{command:'shift.accept',next:'assigned'}:{command:'shift.assign-trolley',next:'trolley'};
+    if(!doc.conversations.supervisor.nodes[node]?.choices?.some(c=>c.id==='accept'&&c.command===expected.command&&c.next===expected.next))throw new Error('Harbor gameplay: retain the '+node+' accept choice used by the optional interactive panel');
   }
   const seen=new Set<string>();
   for(const reaction of doc.reactions){const key=reaction.event+'>'+reaction.command;if(seen.has(key))throw new Error('Duplicate gameplay reaction');seen.add(key);}

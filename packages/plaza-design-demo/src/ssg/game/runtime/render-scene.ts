@@ -1,3 +1,4 @@
+import {perfBegin,perfEnd} from './diagnostics/performance';
 import{drawTimelineOverlay,type TimelineOverlay}from'../art/core/timeline-overlay';
 /** Shared native frame orchestration. Game and composer provide state, never duplicate artwork. */
 import type { View } from '../art/core/view';
@@ -28,7 +29,9 @@ export interface SceneFrame {
   timeline?:TimelineOverlay;
 }
 
-export function renderSceneFrame(frame: SceneFrame) {
+export function renderSceneFrame(frame:SceneFrame){const span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);}finally{perfEnd(span);}}
+function renderMeasuredFrame(frame: SceneFrame) {
+  let pass=perfBegin('render.prepare');
   const x = frame.context, k = frame.scale, s = frame.scene, zh = frame.host, amb = s.ambient ?? {};
   x.setTransform(k, 0, 0, k, 0, 0);
   const v = frame.view;
@@ -42,6 +45,7 @@ export function renderSceneFrame(frame: SceneFrame) {
   frame.preparePresentation?.();
   const look = W ? { w: W, t: frame.reduced ? frame.clock * 0.35 : v.t, still: frame.reduced, covers, day: L.daylight } : null;
   const rain = W?.wet ?? 0;
+  perfEnd(pass);pass=perfBegin('render.world');
   if (amb.sky) { drawSky(x, v, L, { horizon: v.y(s.horizon ?? 0) }); if (look) weatherSky(x, v, look); frame.skyTraffic?.(x, v); }
   if (amb.city) frame.city?.(x, v);
   if (amb.street) frame.street?.(x, v, rain, !!amb.city);
@@ -58,8 +62,11 @@ export function renderSceneFrame(frame: SceneFrame) {
     if (vision) { if (look) weatherFront(x, v, { ...look, still: true }); muteWorld(x, v, zh.model.spots()); }
   }
   if (!vision) drawCasters(x, v, s.casters);
+  perfEnd(pass);pass=perfBegin('render.actors');
   frame.roomWash?.(x, v);
+  s.drawActors?.(x, v);
   frame.actors?.(x, v);
+  perfEnd(pass);pass=perfBegin('render.finish');
   if (!vision) drawShade(x, v);
   s.drawFront?.(x, v);
   if (!vision) { drawGrade(x, v, L); drawLights(x, v, s.lights, L); }
@@ -67,4 +74,5 @@ export function renderSceneFrame(frame: SceneFrame) {
   frame.prompts?.(x, v);
   frame.bubbles?.(x, v);
   if(frame.timeline)drawTimelineOverlay(x,{width:v.viewW,height:v.viewH,scale:k},frame.timeline);
+  perfEnd(pass);
 }

@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "id": "capsule",
+  "name": "Capsule 7B",
+  "intro": [
+    "Capsule 7B. Home: four walls, one window, rent \"pending\".",
+    "Door's locked, the router's dark, and Pixel is asleep on the bed, as is tradition.",
+    "Tap a thing to use it. H: hack vision. B: the board, to wire things up."
+  ],
+  "introTouch": [
+    "Capsule 7B. Home: four walls, one window, rent \"pending\".",
+    "Door's locked, the router's dark, and Pixel is asleep on the bed, as is tradition.",
+    "Tap a thing to use it. HACK, top right: hack vision. BOARD: wire things up."
+  ],
+  "uses": [],
+  "exits": [
+    {
+      "id": "door",
+      "to": "downtown",
+      "at": "capsule",
+      "label": "",
+      "engine": true,
+      "sets": "pixel"
+    }
+  ],
+  "nativeTargets": [
+    {
+      "id": "door",
+      "anchor": "door",
+      "promptH": 66,
+      "labels": [
+        {
+          "if": "doorOpen",
+          "text": "prompt.out"
+        },
+        {
+          "text": "prompt.door"
+        }
+      ],
+      "routes": [
+        {
+          "if": "!doorOpen",
+          "steps": [
+            {
+              "say": "door.locked"
+            }
+          ]
+        },
+        {
+          "steps": [
+            {
+              "do": [
+                {
+                  "goal": "out"
+                }
+              ]
+            },
+            {
+              "exit": "door"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "shell",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {},
+    "readables": {},
+    "rests": {
+      "bed": {
+        "instance": "rest-bed",
+        "promptH": 46
+      }
+    },
+    "exits": {
+      "door": "exit-door"
+    }
+  },
+  "rests": [
+    {
+      "id": "bed",
+      "kind": "bed"
+    }
+  ],
+  "actors": [],
+  "environment": {},
+  "companion": {
+    "mode": "home",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    },
+    "home": {
+      "state": "pixelAt",
+      "default": "bed",
+      "perches": [
+        {
+          "id": "bed",
+          "point": "pixel-bed",
+          "rest": "sleep"
+        },
+        {
+          "id": "router",
+          "point": "pixel-router",
+          "rest": "sleep"
+        },
+        {
+          "id": "sun",
+          "point": "pixel-sun",
+          "rest": "sun"
+        }
+      ]
+    }
+  }
+}

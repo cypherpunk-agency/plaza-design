@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "id": "galleriaStation",
+  "name": "Galleria metro",
+  "intro": [
+    "The Galleria metro, under the mall. The ads followed me down."
+  ],
+  "uses": [],
+  "readables": [
+    {
+      "id": "board",
+      "name": "DEPARTURES",
+      "pages": [
+        "LINE 0 > HARBOR > DOWNTOWN > GALLERIA.",
+        "LOOP SERVICE. DELAYS POSSIBLE. NO REASON WILL BE GIVEN."
+      ],
+      "promptH": 120
+    },
+    {
+      "id": "snacks",
+      "name": "SNACK MACHINE",
+      "pages": [
+        "CHIPS: SOLD OUT.",
+        "NO REFUNDS AT THIS LOCATION."
+      ],
+      "promptH": 80
+    },
+    {
+      "id": "screen",
+      "name": "REGISTRY SCREEN",
+      "pages": [
+        "THE REGISTRY THANKS YOU FOR YOUR PATIENCE.",
+        "WAITING TIMES ARE RECORDED."
+      ],
+      "promptH": 160
+    },
+    {
+      "id": "linemap",
+      "name": "LINE MAP",
+      "pages": [
+        "LINE 0: DOWNTOWN \u00b7 GALLERIA \u00b7 HARBOR.",
+        "YOU ARE HERE: GALLERIA. THE LINE IS A LOOP."
+      ],
+      "promptH": 86
+    },
+    {
+      "id": "regular",
+      "name": "OLD WOMAN",
+      "label": "[E] TALK",
+      "pages": [
+        "I come down here for the air conditioning.",
+        "And the trains. I like to watch them leave without me. It feels like winning."
+      ],
+      "promptH": 54
+    }
+  ],
+  "exits": [
+    {
+      "id": "mall",
+      "to": "mall",
+      "at": "metro",
+      "label": "[E] UP \u00b7 GALLERIA MALL",
+      "promptH": 92
+    },
+    {
+      "id": "train",
+      "to": "",
+      "action": "board",
+      "label": "[E] BOARD",
+      "promptH": 84
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {},
+    "rests": {
+      "bench0": {
+        "instance": "bench0",
+        "x": -12
+      },
+      "bench1": {
+        "instance": "bench1",
+        "x": 0
+      }
+    },
+    "exits": {
+      "mall": "street-exit",
+      "train": "train-exit"
+    },
+    "readables": {
+      "board": {
+        "instance": "board"
+      },
+      "snacks": {
+        "instance": "snacks"
+      },
+      "screen": {
+        "instance": "screen"
+      },
+      "linemap": {
+        "instance": "linemap"
+      },
+      "regular": {
+        "instance": "regular"
+      }
+    }
+  },
+  "rests": [
+    {
+      "id": "bench0",
+      "kind": "bench"
+    },
+    {
+      "id": "bench1",
+      "kind": "bench"
+    }
+  ],
+  "actors": [
+    {
+      "id": "waiting-0",
+      "instance": "waiting-0",
+      "band": "background",
+      "reaction": "actor.waiting-0",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "galleria",
+          "slot": 0,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-1",
+      "instance": "waiting-1",
+      "band": "background",
+      "reaction": "actor.waiting-1",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "galleria",
+          "slot": 1,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-2",
+      "instance": "waiting-2",
+      "band": "background",
+      "reaction": "actor.waiting-2",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "galleria",
+          "slot": 2,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-3",
+      "instance": "waiting-3",
+      "band": "background",
+      "reaction": "actor.waiting-3",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "galleria",
+          "slot": 3,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "waiting-4",
+      "instance": "waiting-4",
+      "band": "background",
+      "reaction": "actor.waiting-4",
+      "presentation": {
+        "kind": "rider",
+        "rider": "phone",
+        "controller": {
+          "kind": "platformQueue",
+          "station": "galleria",
+          "slot": 4,
+          "count": 5
+        }
+      }
+    },
+    {
+      "id": "regular",
+      "instance": "regular",
+      "band": "background",
+      "reaction": "actor.regular",
+      "presentation": {
+        "kind": "rider",
+        "rider": "elder",
+        "sit": true,
+        "phase": 620
+      }
+    }
+  ],
+  "environment": {
+    "facing": 180
+  },
+  "companion": {
+    "mode": "off"
+  }
+}

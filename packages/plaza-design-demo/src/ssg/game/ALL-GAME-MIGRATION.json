@@ -1,0 +1,1936 @@
+{
+  "version": 1,
+  "sourceBaseline": "4d646c8add7a13b4687bd85fc5dae517376df47234666623351896bf974dc805",
+  "scenes": [
+    {
+      "id": "capsule",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 0,
+        "rests": 1,
+        "exits": 1,
+        "devices": 7
+      },
+      "nativeCallbacks": [
+        "intro",
+        "perch",
+        "drawBackdrop",
+        "targets",
+        "use"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "declaredContentCheckpoint": {
+          "status": "PASS",
+          "check": "check-interior-content.mts",
+          "scope": "source scene/engine-target definitions, existing native behavior/old-save cases and pending edits; full controller/world/creation gates remain incomplete"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryManifestCheckpoint": {
+          "status": "PASS",
+          "check": "check-interior-manifest-save.mts",
+          "evidence": ".scene-system/interior-manifest-save/run-HaFX6h/evidence.json",
+          "scope": "ordinary uses/readables/rests/exits and spawn/width bindings: add/remove/rebind, original marker removal, shared commands, grouped history/bundle/protected Save, fresh saved-source module reload and byte Undo; special controller/entity/world/network migration remains incomplete"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 0,
+          "manifest": true,
+          "checks": [
+            "check-interior-actors.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/interior-actors/run-XgVEXX",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "downtown",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 1,
+        "rests": 0,
+        "exits": 9,
+        "devices": 10
+      },
+      "nativeCallbacks": [
+        "rules",
+        "hideDevice",
+        "drawBackdrop"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "contentCheckpoint20261019": {
+          "status": "PASS",
+          "check": "check-downtown-content.mts",
+          "scope": "authored readable/exit/key/flag content and empty arrival, original shipping/native device paint/state; runtime story/people/controllers/world migration remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "nextSourceBatchCheckpoint": {
+          "status": "PASS",
+          "check": "check-downtown-manifest-save.mts",
+          "save": ".scene-system/downtown-manifest-save/run-1NlZLi/evidence.json",
+          "scope": "Ordinary manifest width/spawn/nine exits/plaque plus new content; mirrors/scaled exit anchors preserve old authoring policy. SourceCRUD/history/bundle/Save/freshmodule/byte Undo; original143paintcases. Four legacy SPR actors/Fixer runtime/controller logic explicitly unmigrated; exhaustive frozen outcomes captured for later migration."
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 4,
+          "manifest": true,
+          "checks": [
+            "check-downtown-actors.mts",
+            "check-downtown-dialogue.mts",
+            "check-downtown-shared-dialogue.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/downtown-actors/run-MfLw06",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "library",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": true,
+        "partialGameplay": false,
+        "privatePlay": true
+      },
+      "counts": {
+        "people": 8,
+        "uses": 1,
+        "readables": 3,
+        "rests": 0,
+        "exits": 1,
+        "devices": 3
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "intro",
+        "visualEnvironment"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "IN PROGRESS",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "actorSourceCheckpoint": {
+          "status": "PASS",
+          "scope": "Eight native Library bodies in scene.json use the shared actor compiler and typed editor. Original identities/order, seated heights and content/geometry preserved. Ordinary entity/controller migrations and actor creation/removal remain incomplete.",
+          "checks": [
+            "scripts/scene-system/check-library.mts",
+            "scripts/scene-system/check-library-gameplay.mts",
+            "scripts/scene-system/check-native-actor-save.mts"
+          ],
+          "saveEvidence": ".scene-system/native-actor-save/run-bRSh9j"
+        },
+        "ordinaryManifestCheckpoint": {
+          "status": "PASS",
+          "scope": "Native Library width/spawn/use/readable/rest/exit source bindings, ordinary add/remove/rebind, new shared commands/events/objectives/story time, original defaults preserved. Device/controller/actor identity creation and full all-scene acceptance remain incomplete.",
+          "checks": [
+            "scripts/scene-system/check-library-gameplay.mts",
+            "scripts/scene-system/check-library-manifest-save.mts"
+          ],
+          "saveEvidence": ".scene-system/library-manifest-save/run-cLygTm"
+        },
+        "actorIdentityCheckpoint": {
+          "status": "PASS",
+          "scope": "Authored reaction identities preserve all original bot save keys and permit actor interaction reordering without progress reassignment. Actor creation/removal/rebinding remains incomplete.",
+          "checks": [
+            "scripts/scene-system/check-actor-identities.mts",
+            "scripts/scene-system/check-native-actor-save.mts"
+          ],
+          "saveEvidence": ".scene-system/native-actor-save/run-s3Fu01"
+        },
+        "actorEntities": {
+          "checks": [
+            "check-actor-entities.mts",
+            "check-actor-identities.mts"
+          ],
+          "report": ".scene-system/actor-entities/run-LrcUrl/evidence.json",
+          "scope": "Grouped actor creation, duplication, removal, dialogue ownership and attachment rebinding; protected Save/native reload/history/bundle/byte Undo. Original reaction identities retained; Warehouse implicit appearance seed retained. Full scene/controller/world/lifecycle gates remain open."
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 8,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "yard",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 0,
+        "rests": 0,
+        "exits": 1,
+        "devices": 3
+      },
+      "nativeCallbacks": [
+        "intro",
+        "drawBackdrop",
+        "targets",
+        "use",
+        "preparePresentation",
+        "visualEnvironment"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "declaredContentCheckpoint": {
+          "status": "PASS",
+          "check": "check-interior-content.mts",
+          "scope": "source scene/engine-target definitions, existing native behavior/old-save cases and pending edits; full controller/world/creation gates remain incomplete"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryManifestCheckpoint": {
+          "status": "PASS",
+          "check": "check-interior-manifest-save.mts",
+          "evidence": ".scene-system/interior-manifest-save/run-HaFX6h/evidence.json",
+          "scope": "ordinary uses/readables/rests/exits and spawn/width bindings: add/remove/rebind, original marker removal, shared commands, grouped history/bundle/protected Save, fresh saved-source module reload and byte Undo; special controller/entity/world/network migration remains incomplete"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 0,
+          "manifest": true,
+          "checks": [
+            "check-interior-actors.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/interior-actors/run-XgVEXX",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "moth",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 0,
+        "rests": 0,
+        "exits": 1,
+        "devices": 7
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "targets",
+        "use"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "declaredContentCheckpoint": {
+          "status": "PASS",
+          "check": "check-interior-content.mts",
+          "scope": "source scene/engine-target definitions, existing native behavior/old-save cases and pending edits; full controller/world/creation gates remain incomplete"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryManifestCheckpoint": {
+          "status": "PASS",
+          "check": "check-interior-manifest-save.mts",
+          "evidence": ".scene-system/interior-manifest-save/run-HaFX6h/evidence.json",
+          "scope": "ordinary uses/readables/rests/exits and spawn/width bindings: add/remove/rebind, original marker removal, shared commands, grouped history/bundle/protected Save, fresh saved-source module reload and byte Undo; special controller/entity/world/network migration remains incomplete"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 0,
+          "manifest": true,
+          "checks": [
+            "check-interior-actors.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/interior-actors/run-XgVEXX",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "beach",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": true,
+        "privatePlay": true
+      },
+      "counts": {
+        "people": 8,
+        "uses": 3,
+        "readables": 1,
+        "rests": 0,
+        "exits": 2,
+        "devices": 6
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "targets",
+        "use"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "contentCheckpoint20261019": {
+          "status": "PASS",
+          "check": "check-beach-content.mts",
+          "scope": "ordinary content, purchases, saved animal/chatter rotations, declared native exit and cosmetic cue; native controller/full authoring gates remain open"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "sourceActorManifestCheckpoint": {
+          "status": "PASS",
+          "actors": 24,
+          "check": "check-beach-manifest-save.mts",
+          "save": ".scene-system/beach-manifest-save/run-h0nTfj/evidence.json",
+          "scope": "Shared source actor bodies and ordinary uses/readables/rests/exits/spawn bindings; source CRUD/rebinding/legacy defaults, native behavior and focused paints, history/bundle/protected Save/reload/byte Undo. Remaining special controller/world/network/lifecycle authoring and full all-scene gates are not complete.",
+          "combinedActorSave": ".scene-system/actor-entities/run-FYrQL1/evidence.json"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 24,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "harbor",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 11,
+        "uses": 6,
+        "readables": 3,
+        "rests": 0,
+        "exits": 4,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "drawFront"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "NOT RUN",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "contentCheckpoint20261019": {
+          "status": "PASS",
+          "check": "check-harbor-content.mts",
+          "scope": "26 original ordinary cases, shared NPCs/weather, commerce/handovers, declared cosmetic crane cue and pending bindings; full G8/G9/G10 not complete"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "sourceActorManifestCheckpoint": {
+          "status": "PASS",
+          "actors": 30,
+          "check": "check-harbor-manifest-save.mts",
+          "save": ".scene-system/harbor-manifest-save/run-IsqBxm/evidence.json",
+          "scope": "Shared source actor bodies and ordinary uses/readables/rests/exits/spawn bindings; source CRUD/rebinding/legacy defaults, native behavior and focused paints, history/bundle/protected Save/reload/byte Undo. Remaining special controller/world/network/lifecycle authoring and full all-scene gates are not complete.",
+          "combinedActorSave": ".scene-system/actor-entities/run-FYrQL1/evidence.json"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 30,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "stacks",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 8,
+        "uses": 1,
+        "readables": 1,
+        "rests": 0,
+        "exits": 2,
+        "devices": 4
+      },
+      "nativeCallbacks": [
+        "rules",
+        "drawBackdrop",
+        "drawFront"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay source, pending native edits and focused parity checks pass; entity/controller/world completion remains pending",
+        "contentCheck": "check-stacks-content.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "sourceActorManifestCheckpoint": {
+          "status": "PASS",
+          "actors": 13,
+          "check": "check-stacks-editable.mts",
+          "save": ".scene-system/actor-entities/run-8XJaBL/evidence.json",
+          "scope": "Shared source actor bodies and ordinary uses/readables/rests/exits/spawn bindings; source CRUD/rebinding/legacy defaults, native behavior and focused paints, history/bundle/protected Save/reload/byte Undo. Remaining special controller/world/network/lifecycle authoring and full all-scene gates are not complete.",
+          "combinedActorSave": ".scene-system/actor-entities/run-FYrQL1/evidence.json"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 13,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "warehouse",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 4,
+        "uses": 1,
+        "readables": 2,
+        "rests": 0,
+        "exits": 1,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "drawBackdrop"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "NOT RUN",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "IN PROGRESS",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay documents and focused native-content comparison; creation/controller/world gates pending",
+        "check": "check-warehouse-content.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryActorManifestCheckpoint": {
+          "status": "PASS",
+          "scope": "Four native bodies, shared actor/dialogue binding, native ordinary manifest add/remove/rebind, original lighting/shade/casters and actor/patrol defaults preserved. Full environment/controller authoring and actor creation/removal remain incomplete.",
+          "checks": [
+            "scripts/scene-system/check-warehouse.mts",
+            "scripts/scene-system/check-warehouse-content.mts",
+            "scripts/scene-system/check-warehouse-manifest-save.mts"
+          ],
+          "saveEvidence": ".scene-system/warehouse-manifest-save/run-7qEvCg"
+        },
+        "actorIdentityCheckpoint": {
+          "status": "PASS",
+          "scope": "Authored reaction identities preserve all original bot save keys and permit actor interaction reordering without progress reassignment. Actor creation/removal/rebinding remains incomplete.",
+          "checks": [
+            "scripts/scene-system/check-actor-identities.mts",
+            "scripts/scene-system/check-native-actor-save.mts"
+          ],
+          "saveEvidence": ".scene-system/native-actor-save/run-s3Fu01"
+        },
+        "actorEntities": {
+          "checks": [
+            "check-actor-entities.mts",
+            "check-actor-identities.mts"
+          ],
+          "report": ".scene-system/actor-entities/run-LrcUrl/evidence.json",
+          "scope": "Grouped actor creation, duplication, removal, dialogue ownership and attachment rebinding; protected Save/native reload/history/bundle/byte Undo. Original reaction identities retained; Warehouse implicit appearance seed retained. Full scene/controller/world/lifecycle gates remain open."
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 4,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "market",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": true,
+        "privatePlay": true
+      },
+      "counts": {
+        "people": 41,
+        "uses": 2,
+        "readables": 3,
+        "rests": 1,
+        "exits": 3,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "drawFront",
+        "visualEnvironment"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "NOT RUN",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay source, pending native edits and focused parity checks pass; entity/controller/world completion remains pending",
+        "contentCheck": "check-market-ordinary.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "nextSourceBatchCheckpoint": {
+          "status": "PASS",
+          "actors": 67,
+          "check": "check-market-editable.mts",
+          "save": ".scene-system/market-editable/run-7b3NJX/evidence.json",
+          "scope": "67 source bodies including9 formerly embedded vendors; four original graph refs +six chatter sources, followers/reaction IDs/implicit seeds, ordinary manifest/rest/gate/legacy defaults, original64paint cases, CRUD/history/bundle/Save/freshmodule/byte Undo. Native stall/weather/gate controller authoring remains incomplete.",
+          "combinedActorSave": ".scene-system/actor-entities/run-9I8o1b/evidence.json"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 67,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "laundromat",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": true,
+        "partialGameplay": false,
+        "privatePlay": true
+      },
+      "counts": {
+        "people": 5,
+        "uses": 1,
+        "readables": 2,
+        "rests": 0,
+        "exits": 1,
+        "devices": 7
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "visualEnvironment"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "IN PROGRESS",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryActorManifestCheckpoint": {
+          "status": "PASS",
+          "scope": "Eight native actor bodies and ordinary width/spawn/use/readable/rest/exit source bindings; typed actor/content/milestone controls. Optional snapshot-consuming art can be removed after rebinding; required controllers/actors remain protected. Washer controller migration and full acceptance remain incomplete.",
+          "checks": [
+            "scripts/scene-system/check-laundromat.mts",
+            "scripts/scene-system/check-laundromat-gameplay.mts",
+            "scripts/scene-system/check-laundromat-manifest-save.mts"
+          ],
+          "saveEvidence": ".scene-system/laundromat-manifest-save/run-USu7jN"
+        },
+        "actorIdentityCheckpoint": {
+          "status": "PASS",
+          "scope": "Authored reaction identities preserve all original bot save keys and permit actor interaction reordering without progress reassignment. Actor creation/removal/rebinding remains incomplete.",
+          "checks": [
+            "scripts/scene-system/check-actor-identities.mts",
+            "scripts/scene-system/check-native-actor-save.mts"
+          ],
+          "saveEvidence": ".scene-system/native-actor-save/run-s3Fu01"
+        },
+        "actorEntities": {
+          "checks": [
+            "check-actor-entities.mts",
+            "check-actor-identities.mts"
+          ],
+          "report": ".scene-system/actor-entities/run-LrcUrl/evidence.json",
+          "scope": "Grouped actor creation, duplication, removal, dialogue ownership and attachment rebinding; protected Save/native reload/history/bundle/byte Undo. Original reaction identities retained; Warehouse implicit appearance seed retained. Full scene/controller/world/lifecycle gates remain open."
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 8,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "shop",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": true,
+        "partialGameplay": false,
+        "privatePlay": true
+      },
+      "counts": {
+        "people": 7,
+        "uses": 1,
+        "readables": 2,
+        "rests": 0,
+        "exits": 1,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "drawFront",
+        "visualEnvironment"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "NOT RUN",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "IN PROGRESS",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryManifest": {
+          "status": "PASS",
+          "scope": "shared width/spawn/uses/readables/rests/exits bindings and added ordinary gameplay; actor appearance/controller migration still pending",
+          "check": "scripts/scene-system/check-shop-manifest-save.mts",
+          "saveEvidence": ".scene-system/shop-manifest-save/run-xSA4vR",
+          "compatibility": "immutable original Shop metadata/reference hash and four paint-operation cases retained; original rotation and 12 purchases/36 refusals pass",
+          "browser": "new native review-action, purchase rebound to counter, till artwork removed, real private Game has both interactions and quote=charge=1"
+        },
+        "actorSourceCheckpoint": {
+          "status": "PASS",
+          "scope": "Nine native Shop actor bodies in scene.json; typed appearance/movement/follow/schedule editing; original identities/order and native renderer preserved. Actor creation/removal and clipping/controller migration remain incomplete.",
+          "checks": [
+            "scripts/scene-system/check-shop-actors.mts",
+            "scripts/scene-system/check-shop-gameplay.mts",
+            "scripts/scene-system/check-shop-composition.mts",
+            "scripts/scene-system/check-shop-manifest-save.mts"
+          ],
+          "saveEvidence": ".scene-system/shop-manifest-save/run-PEaIlP"
+        },
+        "actorIdentityCheckpoint": {
+          "status": "PASS",
+          "scope": "Authored reaction identities preserve all original bot save keys and permit actor interaction reordering without progress reassignment. Actor creation/removal/rebinding remains incomplete.",
+          "checks": [
+            "scripts/scene-system/check-actor-identities.mts",
+            "scripts/scene-system/check-native-actor-save.mts"
+          ],
+          "saveEvidence": ".scene-system/native-actor-save/run-s3Fu01"
+        },
+        "actorEntities": {
+          "checks": [
+            "check-actor-entities.mts",
+            "check-actor-identities.mts"
+          ],
+          "report": ".scene-system/actor-entities/run-LrcUrl/evidence.json",
+          "scope": "Grouped actor creation, duplication, removal, dialogue ownership and attachment rebinding; protected Save/native reload/history/bundle/byte Undo. Original reaction identities retained; Warehouse implicit appearance seed retained. Full scene/controller/world/lifecycle gates remain open."
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 9,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "mall",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 6,
+        "uses": 7,
+        "readables": 3,
+        "rests": 0,
+        "exits": 3,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "drawFront",
+        "visualEnvironment"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "NOT RUN",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay documents and focused native-content comparison; creation/controller/world gates pending",
+        "check": "check-mall-content.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "sourceActorManifestCheckpoint": {
+          "status": "PASS",
+          "actors": 77,
+          "check": "check-mall-editable.mts",
+          "save": ".scene-system/mall-editable/run-GTHTFH/evidence.json",
+          "scope": "Shared source actor bodies and ordinary uses/readables/rests/exits/spawn bindings; source CRUD/rebinding/legacy defaults, native behavior and focused paints, history/bundle/protected Save/reload/byte Undo. Remaining special controller/world/network/lifecycle authoring and full all-scene gates are not complete.",
+          "combinedActorSave": ".scene-system/actor-entities/run-FYrQL1/evidence.json"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 77,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "metro",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 5,
+        "rests": 2,
+        "exits": 3,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "preparePresentation",
+        "visualEnvironment",
+        "drawBackdrop"
+      ],
+      "content": "NOT RUN",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "NOT RUN",
+      "logic": "NOT RUN",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "NOT RUN",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay source, pending native edits and focused parity checks pass; entity/controller/world completion remains pending",
+        "contentCheck": "check-transit-content.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "metroSessions": {
+          "checks": [
+            "check-metro-sessions.mts",
+            "check-metro-snapshots.mts",
+            "check-metro-source-save.mts"
+          ],
+          "scope": "Per-Game ride/platform isolation, original controller behavior, bound artwork/rules, source timing and snapshot contracts; final integrated controller/authoring acceptance remains pending"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 5,
+          "manifest": true,
+          "checks": [
+            "check-transit-editable.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/transit-editable/run-aBjOIJ",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "galleriaStation",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 5,
+        "rests": 2,
+        "exits": 2,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "drawBackdrop"
+      ],
+      "content": "NOT RUN",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "NOT RUN",
+      "logic": "NOT RUN",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "NOT RUN",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay source, pending native edits and focused parity checks pass; entity/controller/world completion remains pending",
+        "contentCheck": "check-transit-content.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "metroSessions": {
+          "checks": [
+            "check-metro-sessions.mts",
+            "check-metro-snapshots.mts",
+            "check-metro-source-save.mts"
+          ],
+          "scope": "Per-Game ride/platform isolation, original controller behavior, bound artwork/rules, source timing and snapshot contracts; final integrated controller/authoring acceptance remains pending"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 6,
+          "manifest": true,
+          "checks": [
+            "check-transit-editable.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/transit-editable/run-aBjOIJ",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "harborStation",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 5,
+        "rests": 2,
+        "exits": 2,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "drawBackdrop"
+      ],
+      "content": "NOT RUN",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "NOT RUN",
+      "logic": "NOT RUN",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "NOT RUN",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay source, pending native edits and focused parity checks pass; entity/controller/world completion remains pending",
+        "contentCheck": "check-transit-content.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "metroSessions": {
+          "checks": [
+            "check-metro-sessions.mts",
+            "check-metro-snapshots.mts",
+            "check-metro-source-save.mts"
+          ],
+          "scope": "Per-Game ride/platform isolation, original controller behavior, bound artwork/rules, source timing and snapshot contracts; final integrated controller/authoring acceptance remains pending"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 6,
+          "manifest": true,
+          "checks": [
+            "check-transit-editable.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/transit-editable/run-aBjOIJ",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "train",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": false
+      },
+      "counts": {
+        "people": 0,
+        "uses": 0,
+        "readables": 7,
+        "rests": 0,
+        "exits": 3,
+        "devices": 1
+      },
+      "nativeCallbacks": [
+        "preparePresentation",
+        "visualEnvironment",
+        "drawBackdrop",
+        "drawFront"
+      ],
+      "content": "NOT RUN",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "NOT RUN",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "IN PROGRESS",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "sharedContent": "Registered scene/gameplay source, pending native edits and focused parity checks pass; entity/controller/world completion remains pending",
+        "contentCheck": "check-transit-content.mts",
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "metroSessions": {
+          "checks": [
+            "check-metro-sessions.mts",
+            "check-metro-snapshots.mts",
+            "check-metro-source-save.mts"
+          ],
+          "scope": "Per-Game ride/platform isolation, original controller behavior, bound artwork/rules, source timing and snapshot contracts; final integrated controller/authoring acceptance remains pending"
+        },
+        "metroFixtures": {
+          "check": "check-metro-fixture-save.mts",
+          "browser": "Private train siding-open startup, live capture/history undo and Reset Play observed 2026-10-19",
+          "scope": "Four persisted train fixtures; typed metro/native state controls; does not prove all-scene Play lifecycle, other controllers or campaign saves"
+        },
+        "deviceSources": {
+          "checks": [
+            "check-device-source-baselines.mts",
+            "check-device-source-save.mts"
+          ],
+          "scope": "Typed existing device/noun/parameter fields, new STORE nouns/native verbs/events/actions, canonical starting cables, pending geometry/native Play and grouped Save. Original bound IDs/kinds remain protected; full creation/rebinding and all controller contracts remain open."
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 19,
+          "manifest": true,
+          "checks": [
+            "check-transit-editable.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "artifact": ".scene-system/transit-editable/run-aBjOIJ",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "sandbox",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": false,
+        "partialGameplay": false,
+        "privatePlay": true
+      },
+      "counts": {
+        "people": 4,
+        "uses": 1,
+        "readables": 11,
+        "rests": 1,
+        "exits": 1,
+        "devices": 37
+      },
+      "nativeCallbacks": [
+        "drawBackdrop",
+        "targets",
+        "use"
+      ],
+      "content": "NOT RUN",
+      "devicesControllers": "IN PROGRESS",
+      "world": "NOT RUN",
+      "layout": "NOT RUN",
+      "logic": "IN PROGRESS",
+      "wiring": "IN PROGRESS",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "declaredContentCheckpoint": {
+          "status": "PASS",
+          "check": "check-sandbox-content.mts",
+          "scope": "source scene/engine-target definitions, existing native behavior/old-save cases and pending edits; full controller/world/creation gates remain incomplete"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "nativeBlocks": {
+          "checks": [
+            "check-native-blocks.mts",
+            "check-native-block-save.mts",
+            "check-device-source-save.mts",
+            "check-event-inspector.mts"
+          ],
+          "scope": "Twelve native noun templates/four sector seals across ten device scenes, typed creation/configuration/naming, native engine and save checks, shared device source and pending Events. Full optional-field/entity/scene creation and general controller/network coverage remain open."
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "nativeActorContent": {
+          "checks": [
+            "check-sandbox-content.mts",
+            "check-sandbox-manifest-save.mts",
+            "check-actor-entities.mts"
+          ],
+          "scope": "Five source bodies, typed actor CRUD and ordinary manifest bindings. Original metadata, 12 NPC pages/nine contextual cases, 37 device spots and reset outcomes checked. Source add/remove/rebind, deleted original artwork, shared command and protected Save/reload/byte Undo tested. Full Sandbox machine/controller/network authoring/lifecycle acceptance remains open."
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 5,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    },
+    {
+      "id": "harborShift",
+      "baseline": {
+        "composition": true,
+        "sceneDocument": true,
+        "partialGameplay": false,
+        "privatePlay": true
+      },
+      "counts": {
+        "people": 0,
+        "uses": 9,
+        "readables": 0,
+        "rests": 0,
+        "exits": 0,
+        "devices": 0
+      },
+      "nativeCallbacks": [
+        "objective",
+        "drawBackdrop",
+        "attention",
+        "storyMinute"
+      ],
+      "content": "IN PROGRESS",
+      "devicesControllers": "NOT RUN",
+      "world": "NOT RUN",
+      "layout": "IN PROGRESS",
+      "logic": "IN PROGRESS",
+      "wiring": "NOT RUN",
+      "play": "IN PROGRESS",
+      "saveBundle": "IN PROGRESS",
+      "persistence": "NOT RUN",
+      "pixels": "NOT RUN",
+      "outcomes": "NOT RUN",
+      "cleanup": "NOT RUN",
+      "evidence": {
+        "rasterCheckpoint": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:3d886a863a549c985ea6dce6ab4325e4771d2a3cad8ea7dabb4596f45e1cf0c8",
+          "scope": "native preview initial-state fixtures only; final full-scene parity remains pending"
+        },
+        "rasterCheckpoint20261019Interiors": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:bb917f378b29491113aee7f20f20f817949f4e6d917dce8e0ae78f200f2d11c9",
+          "scope": "native preview initial-state fixtures only; full G12 not complete"
+        },
+        "rasterLatest": {
+          "status": "PASS",
+          "cases": 5,
+          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
+          "scope": "native preview initial-state fixtures only; full G12 remains open"
+        },
+        "privatePlayStartup": {
+          "status": "PASS",
+          "report": ".scene-system/scene-catalogue-check/2026-10-19-private-play-summary.json",
+          "source": "sha256:a3dea81faf644fedc98464fb2fcb501ed74f99e110ca1d1063fed5ce2ccc88d2",
+          "scope": "actual editor startup/native scene and save identity/Stop iframe disposal; full lifecycle acceptance pending"
+        },
+        "nextSourceBatchCheckpoint": {
+          "status": "PASS",
+          "actors": 2,
+          "check": "check-harbor-shift-manifest-save.mts",
+          "save": ".scene-system/harbor-shift-manifest-save/run-vmxd34/evidence.json",
+          "scope": "Two source bodies and nine ordinary uses; uses retain supervisor/Mara dialogue. Typed content/actor/objective/time/command edits, ground/elevated prompt parity, protected accept wiring,1100legacycases and36paintcases, sourcehistory/bundle/Save/freshmodule/byte Undo. Native trolley/carry/day controllers remain incomplete.",
+          "combinedActorSave": ".scene-system/actor-entities/run-9I8o1b/evidence.json"
+        },
+        "ordinaryAndActorSourceCheckpoint": {
+          "status": "PASS",
+          "sourceActorCount": 2,
+          "manifest": true,
+          "checks": [
+            "check-actor-entities.mts"
+          ],
+          "scope": "Source actor CRUD/recipe/placement/dialogue binding and ordinary manifest checks; full controllers/world/network/final native Play and raster acceptance remain open.",
+          "combinedArtifact": ".scene-system/actor-entities/run-0aIJUt/evidence.json",
+          "combinedCheck": "check-actor-entities.mts (all19 native scenes)"
+        },
+        "environmentSourceCheckpoint": {
+          "status": "PASS",
+          "check": "check-scene-environment.mts",
+          "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
+          "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        }
+      }
+    }
+  ],
+  "sharedControllerAuthoringCheckpoint": {
+    "status": "focused-PASS-await-combined-browser",
+    "sourceSaveArtifacts": [
+      ".scene-system/general-devices/run-6xH8ED",
+      ".scene-system/gameplay-binding-save-hUnO67",
+      ".scene-system/opening-story-save/run-hWgIO0",
+      ".scene-system/companion-source-save/run-ldCOTC",
+      ".scene-system/capsule-controller/run-HZib2Y"
+    ],
+    "scope": "All19 ordinary device sources and new catalogue devices; existing/native shared state/command bindings; opening/companion/Capsule/observation slices; typed city controls; communication acknowledgment/causal receipt tests. Remaining specialized controllers and G0-G13 final audit remain open."
+  }
+}

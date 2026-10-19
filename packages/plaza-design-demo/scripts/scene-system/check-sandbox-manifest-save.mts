@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
+import {art,type Composition} from '../../src/ssg/game/art';
+import {SCENES} from '../../src/ssg/game/scenes';
+import {sandboxScene} from '../../src/ssg/game/scenes/sandbox';
+import {content} from '../../src/ssg/game/scenes/sandbox/scene-document';
+import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
+import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
+import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
+import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
+import {addManifestContent,removeManifestContent} from '../../src/ssg/game/engine/gameplay/manifest-content';
+import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
+import {actorReactionIdentity} from '../../src/ssg/game/engine/gameplay/actor-identity';
+const root=path.resolve('src/ssg/game'),documents=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:JSON.parse(fs.readFileSync(path.join(root,d.file),'utf8'))}));
+const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
+const make=()=>{const m=new ComposerModel(art,context,(d,docs)=>{if(d.id==='sandbox-scene')validateSourceDocuments(new Map(docs.map(d=>[d.id,d.value])));});m.load(documents);return m;};
+const model=make(),composition=model.get('sandbox').value as Composition,scene=structuredClone(content.scene),gameplay=structuredClone(content.gameplay);
+composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,pass:'backdrop'});
+scene.manifest!.spawn='review-stool';scene.manifest!.exits!.out={instance:'review-stool',promptH:82};scene.manifest!.uses.chips={instance:'review-stool',promptH:100,responseH:80};scene.manifest!.rests!.bench={instance:'review-stool',promptH:52};
+removeManifestContent(scene,'readables','plan');removeManifestContent(scene,'readables','card1');
+addManifestContent(scene,'readables','review-note','review-stool');scene.readables!.find(r=>r.id==='review-note')!.pages=['Pending test note.'];
+addManifestContent(scene,'uses','review-action','review-stool');scene.uses.find(u=>u.id==='review-action')!.routes=[{command:'review.grant',pages:['Two chips.']}];
+gameplay.commands['review.grant']={sources:['interaction'],actions:[{item:'blankchip',add:2}]};
+composition.instances=composition.instances.filter(i=>!['spawn','exit-out','plan','card1','chip-dispenser','wait-bench'].includes(i.id));
+const tech=scene.actors!.find(a=>a.id==='tech')!;tech.look={body:'old',garb:'robe'};tech.when={from:'18:00',to:'06:00'};
+model.importDocuments([{id:'sandbox',value:composition},{id:'sandbox-scene',value:scene},{id:'sandbox-gameplay',value:gameplay}]);
+const inspect=(native:ReturnType<typeof sandboxScene>)=>{
+ assert.equal(native.spawn,180);assert.equal(native.exits[0].x,180);assert.equal(native.uses!.find(u=>u.id==='chips')!.x,180);assert.equal(native.rests![0].x,180);assert.equal(native.readables!.find(r=>r.id==='review-note')!.x,180);assert(!native.readables!.some(r=>['plan','card1'].includes(r.id)));
+ assert.deepEqual(native.people!.find(p=>p.id==='tech')!.look,{body:'old',garb:'robe'});assert.equal(actorReactionIdentity(native.people!.find(p=>p.id==='tech')!),'tech');
+ let state:any={flags:{},items:{},tokens:0};const session=new GameplaySession(native.gameplay!,{read:()=>state,write:s=>{state=s;}});assert.deepEqual(native.uses!.find(u=>u.id==='review-action')!.use({gameplay:session} as any),['Two chips.']);assert.equal(state.items.blankchip,2);session.dispose();
+};
+inspect(pendingRegistry(new Map(model.list().map(d=>[d.id,d.value]))).sandbox);
+const edits=structuredClone(model.edits());
+for(const mutate of [(d:any)=>{d.instances=d.instances.filter((i:any)=>i.id!=='sensor');},(d:any)=>{d.instances.find((i:any)=>i.id==='sensor').type='furniture.stool';}]){const invalid=structuredClone(composition);mutate(invalid);assert.throws(()=>model.importDocuments([{id:'sandbox',value:invalid}]));assert.deepEqual(model.edits(),edits);}
+const legacy=structuredClone(content.scene);delete legacy.actors;delete legacy.manifest;assert.deepEqual(sandboxScene(undefined,{},{},undefined,legacy).people,sandboxScene().people);
+const receiver=make();receiver.importDocuments(readDocumentBundle(createDocumentBundle(model.edits(),model.list()),receiver.list()));inspect(pendingRegistry(new Map(receiver.list().map(d=>[d.id,d.value]))).sandbox);model.undo();assert(!model.dirty());model.redo();assert.deepEqual(model.edits(),edits);
+const scratch=path.resolve('../../.scene-system/sandbox-manifest-save');fs.mkdirSync(scratch,{recursive:true});const dir=fs.mkdtempSync(path.join(scratch,'run-'));for(const d of sourceDocuments){const dest=path.join(dir,d.file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(path.join(root,d.file),dest);}
+const store=new AuthoringStore({root:dir,documents:sourceDocuments,validateAll:validateSourceDocuments}),originals=Object.fromEntries(model.edits().map(({id})=>[id,fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8')]));
+const saved=store.save(model.edits().map(e=>({...e,revision:store.read(e.id).revision})));inspect(sandboxScene(store.read('sandbox').value as Composition,{},{},undefined,store.read('sandbox-scene').value as any,store.read('sandbox-gameplay').value as any));
+store.undo(saved.transaction,Object.fromEntries(saved.documents.map(d=>[d.id,d.revision])));for(const[id,bytes]of Object.entries(originals))assert.equal(fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8'),bytes);
+fs.writeFileSync(path.join(dir,'evidence.json'),JSON.stringify({status:'PASS',checks:['ordinary add/remove/rebind','original artwork removed','pending actor appearance/schedule','shared command','legacy omission migration','protected machine identity','atomic history','bundle','protected Save','native reload','exact byte Undo']},null,2)+'\n');
+console.log('Sandbox manifest Save PASS: editable ordinary content/actors/shared commands, original artwork removed after rebind, legacy defaults, protected machines, grouped history/bundle/source Save/native reload/byte Undo. Evidence: '+dir);

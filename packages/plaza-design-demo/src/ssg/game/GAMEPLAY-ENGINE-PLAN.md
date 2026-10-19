@@ -5,6 +5,15 @@ ENG IDs do not renumber story M1-M9 or completed artwork/workbench S0-S13.
 The target is one programmable world with specialized simulation and presentation subsystems.
 Current implementation is a foundation, not a reason to start again.
 
+## Authorized all-game consolidation (2026-10-18)
+
+[ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md) supersedes the smaller proposal:
+all 19 existing scenes, full typed editor support, shared content/device/controller/world/network
+contracts and removal of replaced paths. G0–G13 are mandatory. The user authorized execution;
+full editor UI integration is included, preserving the latest scene-centered rework. Deferred hooks
+or opaque legacy content wrappers do not satisfy completion. Historical completed scopes remain
+valid evidence but are not claims that all-game migration is already done.
+
 ## What makes a valid goal condition
 
 A goal is a finite deliverable, not "improve the engine", "keep optimizing", or a list of activity.
@@ -62,11 +71,10 @@ history, protected source Save, private Play storage and existing player saves a
 
 ## Demo world: Test District
 
-Proposed presentation: a small after-hours municipal test district built from existing city artwork.
-The first delivery contains a navigable entrance and a combined counter/conversation area. A service
-robot can sell tea and remember a conversation; labelled scenario controls expose discounts, missing
-funds and deceptive quotes. These controls are test fixtures, not a claim that hacking is already
-integrated. Once ENG-04 lands, actual wires/controls can drive the same mechanisms.
+Current presentation follows player feedback: compact plain Purchases, Conversations, and Devices & wiring
+areas, with direct review shortcuts and in-place controls. No travel routes or decorative district
+scenery are required. The optional guidance/access task uses the same counter, not another room.
+The isolated manifest scene is a separate editor pilot, not a fourth required testing destination.
 
 Use the shipping Game, scene factories, renderer, schemas, command engine and conversation presenter.
 No duplicated demo evaluator, test-only resource rules or simplified fake rendering. Private demo
@@ -161,6 +169,10 @@ with execution evidence in [ENG-04-STATUS.md](./ENG-04-STATUS.md).
 Before any later delivery runs, freeze its scene/feature corpus and measurable sub-gates at the
 same specificity as ENG-02/03. "Whole engine" is not a sufficient stopping condition. Story M3-M9
 are enabled according to actual dependencies, not automatically implemented by ENG completion.
+
+The subsequent bounded ENG-05/06/08 package and four-actor Market batch are authorized and scoped in
+[ENG-05-08-PACKAGE.md](./ENG-05-08-PACKAGE.md), with their own evidence ledger. This does not
+authorize all of ENG-06 or ENG-08.
 
 ## Execution and evidence
 

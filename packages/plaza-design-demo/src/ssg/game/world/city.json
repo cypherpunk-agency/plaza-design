@@ -1,0 +1,1054 @@
+{
+  "version": 2,
+  "DISTRICTS": [
+    {
+      "id": "downtown",
+      "name": "Downtown",
+      "short": "DOWNTOWN",
+      "stratum": "street"
+    },
+    {
+      "id": "oldq",
+      "name": "Old Quarter",
+      "short": "OLD QUARTER",
+      "stratum": "street"
+    },
+    {
+      "id": "market",
+      "name": "Neon Market",
+      "short": "NEON MARKET",
+      "stratum": "street"
+    },
+    {
+      "id": "galleria",
+      "name": "Galleria",
+      "short": "GALLERIA",
+      "stratum": "street"
+    },
+    {
+      "id": "harbor",
+      "name": "Harbor & Shore",
+      "short": "HARBOR",
+      "stratum": "street"
+    },
+    {
+      "id": "spire",
+      "name": "The Spire / Plaza Central",
+      "short": "THE SPIRE",
+      "stratum": "overworld"
+    },
+    {
+      "id": "undercity",
+      "name": "Undercity",
+      "short": "UNDERCITY",
+      "stratum": "underworld"
+    },
+    {
+      "id": "fringe",
+      "name": "The Fringe",
+      "short": "THE FRINGE",
+      "stratum": "street"
+    },
+    {
+      "id": "skyport",
+      "name": "Skyport and the Exclusion Zone",
+      "short": "SKYPORT",
+      "stratum": "street"
+    }
+  ],
+  "PLACES": [
+    {
+      "id": "laundromat",
+      "name": "LAUNDROMAT",
+      "district": "market",
+      "entrance": "laundromat",
+      "at": "market",
+      "scenes": [
+        "laundromat"
+      ]
+    },
+    {
+      "id": "market",
+      "name": "NEON MARKET",
+      "district": "market",
+      "entrance": "market",
+      "at": "downtown",
+      "scenes": [
+        "market"
+      ]
+    },
+    {
+      "id": "shop",
+      "name": "CORNER SHOP",
+      "district": "downtown",
+      "entrance": "shop",
+      "scenes": [
+        "shop"
+      ]
+    },
+    {
+      "id": "library",
+      "name": "PUBLIC LIBRARY",
+      "district": "downtown",
+      "entrance": "library",
+      "scenes": [
+        "library"
+      ]
+    },
+    {
+      "id": "station-downtown",
+      "name": "DOWNTOWN METRO",
+      "district": "downtown",
+      "entrance": "metro",
+      "at": "downtown",
+      "scenes": [
+        "metro"
+      ]
+    },
+    {
+      "id": "downtown",
+      "name": "DOWNTOWN",
+      "district": "downtown",
+      "entrance": "downtown",
+      "at": "metro",
+      "scenes": [
+        "downtown"
+      ]
+    },
+    {
+      "id": "yard",
+      "name": "BACK YARD",
+      "district": "downtown",
+      "entrance": "yard",
+      "scenes": [
+        "yard"
+      ]
+    },
+    {
+      "id": "capsule",
+      "name": "CAPSULE 7B",
+      "district": "downtown",
+      "entrance": "capsule",
+      "at": "door",
+      "scenes": [
+        "capsule"
+      ]
+    },
+    {
+      "id": "moth",
+      "name": "MOTH'S PLACE",
+      "district": "downtown",
+      "entrance": "moth",
+      "at": "door",
+      "scenes": [
+        "moth"
+      ]
+    },
+    {
+      "id": "station-galleria",
+      "name": "GALLERIA METRO",
+      "district": "galleria",
+      "entrance": "galleriaStation",
+      "at": "mall",
+      "scenes": [
+        "galleriaStation"
+      ]
+    },
+    {
+      "id": "mall",
+      "name": "GALLERIA MALL",
+      "district": "galleria",
+      "entrance": "mall",
+      "scenes": [
+        "mall"
+      ]
+    },
+    {
+      "id": "station-harbor",
+      "name": "HARBOR METRO",
+      "district": "harbor",
+      "entrance": "harborStation",
+      "at": "harbor",
+      "scenes": [
+        "harborStation"
+      ]
+    },
+    {
+      "id": "harbor",
+      "name": "HARBOR",
+      "district": "harbor",
+      "entrance": "harbor",
+      "scenes": [
+        "harbor",
+        "harborShift",
+        "stacks"
+      ]
+    },
+    {
+      "id": "warehouse",
+      "name": "WAREHOUSE 4",
+      "district": "harbor",
+      "entrance": "warehouse",
+      "at": "stacks",
+      "scenes": [
+        "warehouse"
+      ]
+    },
+    {
+      "id": "beach",
+      "name": "BEACH",
+      "district": "harbor",
+      "entrance": "beach",
+      "at": "harbor",
+      "scenes": [
+        "beach"
+      ]
+    },
+    {
+      "id": "line0",
+      "name": "LINE 0",
+      "district": null,
+      "entrance": "train",
+      "scenes": [
+        "train"
+      ]
+    },
+    {
+      "id": "sandbox",
+      "name": "QA BAY 3",
+      "district": null,
+      "entrance": "sandbox",
+      "scenes": [
+        "sandbox"
+      ]
+    }
+  ],
+  "START_SCENE": "capsule",
+  "LINE": [
+    "downtown",
+    "galleria",
+    "harbor"
+  ],
+  "STATIONS": {
+    "downtown": {
+      "name": "DOWNTOWN",
+      "scene": "metro",
+      "up": "downtown",
+      "at": "train"
+    },
+    "galleria": {
+      "name": "GALLERIA",
+      "scene": "galleriaStation",
+      "up": "mall",
+      "at": "train"
+    },
+    "harbor": {
+      "name": "HARBOR",
+      "scene": "harborStation",
+      "up": "harbor",
+      "at": "train"
+    }
+  },
+  "HARBOR_FLAG": "harbor:open",
+  "SIDING_OUT": [
+    "A service stair. Two hundred steps, a door marked AUTHORISED PERSONNEL, not locked.",
+    "The harbor. Moth booked this stop two days ago. For me."
+  ],
+  "DRIVER_HARBOR": [
+    "Harbor pier is closed to air traffic. Port Authority notice. I can show you the notice.",
+    "I can also take you somewhere that is open. Those are my two services."
+  ],
+  "STAND_IDS": [
+    "downtown",
+    "galleria",
+    "harbor"
+  ],
+  "STANDS": {
+    "downtown": {
+      "name": "DOWNTOWN EAST",
+      "scene": "downtown",
+      "at": "taxi"
+    },
+    "galleria": {
+      "name": "GALLERIA ROOF",
+      "scene": "mall",
+      "at": "taxi"
+    },
+    "harbor": {
+      "name": "HARBOR PIER",
+      "scene": "harbor",
+      "at": "taxi"
+    }
+  },
+  "FARE": 1,
+  "HOP": 40,
+  "DRIVER_BROKE": [
+    "One token a ride. You have the look of someone with zero.",
+    "Walking is free. Very popular with people like you."
+  ],
+  "MAP_W": 844,
+  "MAP_H": 390,
+  "DISTRICT_MAP": {
+    "downtown": {
+      "centre": [
+        395,
+        205
+      ],
+      "sep": 11,
+      "dens": 1,
+      "col": "255,136,0",
+      "frame": [
+        300,
+        132,
+        186,
+        140
+      ],
+      "label": [
+        392,
+        126
+      ],
+      "note": "WORKING CLASS · MIXED · RAIN"
+    },
+    "oldq": {
+      "centre": [
+        300,
+        318
+      ],
+      "sep": 9,
+      "dens": 0.5,
+      "col": "214,150,96",
+      "frame": [
+        150,
+        282,
+        330,
+        84
+      ],
+      "label": [
+        318,
+        374
+      ],
+      "note": "OLD TOWN · THE CANAL · AGEING"
+    },
+    "market": {
+      "centre": [
+        230,
+        236
+      ],
+      "sep": 9,
+      "dens": 0.6,
+      "col": "232,84,206",
+      "frame": [
+        168,
+        180,
+        134,
+        100
+      ],
+      "label": [
+        234,
+        176
+      ],
+      "note": "LOW INCOME · PACKED · LOW TECH"
+    },
+    "galleria": {
+      "centre": [
+        560,
+        110
+      ],
+      "sep": 15,
+      "dens": 0.75,
+      "col": "96,206,222",
+      "frame": [
+        486,
+        44,
+        156,
+        136
+      ],
+      "label": [
+        560,
+        40
+      ],
+      "note": "MIDDLE CLASS AND UP · RETAIL"
+    },
+    "harbor": {
+      "centre": [
+        640,
+        290
+      ],
+      "sep": 17,
+      "dens": 0.45,
+      "col": "255,210,90",
+      "frame": [
+        560,
+        200,
+        214,
+        172
+      ],
+      "label": [
+        612,
+        206
+      ],
+      "note": "INDUSTRY · LEISURE · WATER"
+    },
+    "spire": {
+      "centre": null,
+      "sep": 0,
+      "dens": 1,
+      "col": "170,225,235",
+      "frame": [
+        728,
+        70,
+        84,
+        84
+      ],
+      "label": [
+        770,
+        160
+      ],
+      "note": "RESTRICTED · HIGH TECH · FEW PEOPLE"
+    },
+    "undercity": {
+      "centre": null,
+      "sep": 0,
+      "dens": 0,
+      "col": "90,200,190",
+      "frame": [
+        60,
+        150,
+        680,
+        230
+      ],
+      "label": [
+        440,
+        352
+      ],
+      "note": "CANALS · SEWERS · UNREGISTERED"
+    },
+    "fringe": {
+      "centre": [
+        90,
+        210
+      ],
+      "sep": 28,
+      "dens": 0.25,
+      "col": "120,120,134",
+      "frame": [
+        8,
+        124,
+        158,
+        250
+      ],
+      "label": [
+        86,
+        380
+      ],
+      "note": "AUTOMATED · NO RESIDENTS"
+    },
+    "skyport": {
+      "centre": [
+        48,
+        62
+      ],
+      "sep": 34,
+      "dens": 0.15,
+      "col": "170,190,210",
+      "frame": [
+        6,
+        14,
+        96,
+        104
+      ],
+      "label": [
+        54,
+        10
+      ],
+      "note": "RESTRICTED · LAUNCHES · FENCED"
+    }
+  },
+  "PLACE_MAP": {
+    "laundromat": [
+      215,
+      262
+    ],
+    "market": [
+      250,
+      230
+    ],
+    "shop": [
+      330,
+      228
+    ],
+    "library": [
+      356,
+      196
+    ],
+    "downtown": [
+      388,
+      236
+    ],
+    "yard": [
+      420,
+      262
+    ],
+    "capsule": [
+      440,
+      176
+    ],
+    "moth": [
+      372,
+      154
+    ],
+    "station-downtown": [
+      412,
+      228
+    ],
+    "mall": [
+      560,
+      110
+    ],
+    "station-galleria": [
+      540,
+      150
+    ],
+    "harbor": [
+      646,
+      262
+    ],
+    "warehouse": [
+      650,
+      312
+    ],
+    "station-harbor": [
+      610,
+      238
+    ],
+    "beach": [
+      730,
+      356
+    ]
+  },
+  "STATION_MAP": {
+    "downtown": [
+      412,
+      228
+    ],
+    "galleria": [
+      540,
+      150
+    ],
+    "harbor": [
+      610,
+      238
+    ]
+  },
+  "PAD_MAP": {
+    "downtown": [
+      452,
+      206
+    ],
+    "galleria": [
+      574,
+      84
+    ],
+    "harbor": [
+      690,
+      276
+    ]
+  },
+  "LOOP_MAP": [
+    [
+      412,
+      228
+    ],
+    [
+      412,
+      190
+    ],
+    [
+      452,
+      150
+    ],
+    [
+      540,
+      150
+    ],
+    [
+      580,
+      150
+    ],
+    [
+      610,
+      180
+    ],
+    [
+      610,
+      238
+    ],
+    [
+      590,
+      258
+    ],
+    [
+      432,
+      258
+    ],
+    [
+      412,
+      238
+    ]
+  ],
+  "LINES_PLANNED": [
+    {
+      "id": "line1",
+      "name": "LINE 1 · CANAL LINE",
+      "short": "L1",
+      "col": "0,200,200",
+      "width": 2.4,
+      "path": [
+        [
+          60,
+          270
+        ],
+        [
+          140,
+          270
+        ],
+        [
+          200,
+          290
+        ],
+        [
+          300,
+          290
+        ],
+        [
+          412,
+          290
+        ],
+        [
+          500,
+          290
+        ],
+        [
+          560,
+          300
+        ],
+        [
+          610,
+          300
+        ],
+        [
+          700,
+          320
+        ],
+        [
+          730,
+          346
+        ]
+      ],
+      "stops": [
+        {
+          "name": "FRINGE DEPOT",
+          "pt": [
+            60,
+            270
+          ],
+          "district": "fringe"
+        },
+        {
+          "name": "OLD QUARTER",
+          "pt": [
+            200,
+            290
+          ],
+          "district": "oldq"
+        },
+        {
+          "name": "CANAL STREET",
+          "pt": [
+            412,
+            290
+          ],
+          "district": "oldq"
+        },
+        {
+          "name": "HARBOR SHORE",
+          "pt": [
+            610,
+            300
+          ],
+          "district": "harbor"
+        },
+        {
+          "name": "BEACH",
+          "pt": [
+            730,
+            346
+          ],
+          "district": "harbor"
+        }
+      ]
+    },
+    {
+      "id": "bus7",
+      "name": "BUS 7",
+      "short": "BUS",
+      "col": "255,210,90",
+      "width": 1,
+      "dash": [
+        6,
+        3
+      ],
+      "path": [
+        [
+          250,
+          226
+        ],
+        [
+          330,
+          226
+        ],
+        [
+          412,
+          228
+        ],
+        [
+          478,
+          190
+        ],
+        [
+          540,
+          150
+        ]
+      ],
+      "stops": []
+    },
+    {
+      "id": "ferry",
+      "name": "FERRY",
+      "short": "FERRY",
+      "col": "160,200,255",
+      "width": 1,
+      "dash": [
+        2,
+        4
+      ],
+      "path": [
+        [
+          700,
+          300
+        ],
+        [
+          744,
+          220
+        ],
+        [
+          760,
+          150
+        ]
+      ],
+      "stops": []
+    }
+  ],
+  "LINKS": [
+    {
+      "kind": "walk",
+      "name": "MARKET GATE",
+      "from": "downtown",
+      "to": "market",
+      "path": [
+        [
+          304,
+          229
+        ],
+        [
+          318,
+          229
+        ]
+      ],
+      "state": "gate",
+      "at": [
+        "downtown",
+        "market"
+      ]
+    },
+    {
+      "kind": "walk",
+      "name": "SHORE PATH",
+      "from": "harbor",
+      "to": "harbor",
+      "path": [
+        [
+          690,
+          286
+        ],
+        [
+          716,
+          320
+        ],
+        [
+          728,
+          350
+        ]
+      ],
+      "state": "open",
+      "at": [
+        "harbor",
+        "beach"
+      ]
+    },
+    {
+      "kind": "road",
+      "name": "ACCESS ROAD",
+      "from": "market",
+      "to": "fringe",
+      "path": [
+        [
+          170,
+          230
+        ],
+        [
+          150,
+          228
+        ]
+      ],
+      "state": "planned"
+    },
+    {
+      "kind": "elevator",
+      "name": "SKY ELEVATOR",
+      "from": "galleria",
+      "to": "spire",
+      "path": [
+        [
+          560,
+          110
+        ],
+        [
+          770,
+          120
+        ]
+      ],
+      "state": "planned"
+    },
+    {
+      "kind": "taxi",
+      "name": "SKY TAXI DEPOT",
+      "from": "downtown",
+      "to": "spire",
+      "path": [
+        [
+          452,
+          206
+        ],
+        [
+          770,
+          120
+        ]
+      ],
+      "state": "planned"
+    },
+    {
+      "kind": "bridge",
+      "name": "THE BRIDGE",
+      "from": "harbor",
+      "to": "spire",
+      "path": [
+        [
+          700,
+          200
+        ],
+        [
+          748,
+          136
+        ]
+      ],
+      "state": "planned"
+    },
+    {
+      "kind": "drain",
+      "name": "STORM DRAIN",
+      "from": "market",
+      "to": "undercity",
+      "path": [
+        [
+          250,
+          250
+        ],
+        [
+          250,
+          300
+        ]
+      ],
+      "state": "planned"
+    },
+    {
+      "kind": "tunnel",
+      "name": "SERVICE TUNNEL",
+      "from": "downtown",
+      "to": "undercity",
+      "path": [
+        [
+          412,
+          258
+        ],
+        [
+          412,
+          300
+        ]
+      ],
+      "state": "planned"
+    },
+    {
+      "kind": "canal",
+      "name": "CANAL OUTFALL",
+      "from": "harbor",
+      "to": "undercity",
+      "path": [
+        [
+          724,
+          322
+        ],
+        [
+          700,
+          330
+        ]
+      ],
+      "state": "planned"
+    },
+    {
+      "kind": "lift",
+      "name": "SERVICE LIFT",
+      "from": "spire",
+      "to": "undercity",
+      "path": [
+        [
+          770,
+          120
+        ],
+        [
+          740,
+          200
+        ]
+      ],
+      "state": "planned"
+    }
+  ],
+  "DISTRICT_REVEAL": {
+    "fringe": {
+      "near": [
+        "market"
+      ]
+    },
+    "market": {
+      "near": [
+        "downtown",
+        "oldq"
+      ]
+    },
+    "downtown": {
+      "near": [
+        "market",
+        "galleria",
+        "oldq"
+      ]
+    },
+    "oldq": {
+      "near": [
+        "market",
+        "downtown"
+      ]
+    },
+    "galleria": {
+      "near": [
+        "downtown",
+        "harbor"
+      ]
+    },
+    "harbor": {
+      "near": [
+        "galleria"
+      ]
+    },
+    "spire": {
+      "near": [
+        "galleria",
+        "harbor"
+      ],
+      "landmark": true
+    },
+    "undercity": {
+      "near": []
+    },
+    "skyport": {
+      "near": [],
+      "landmark": true
+    }
+  },
+  "PLACE_IN_VIEW": {
+    "market": [
+      "downtown"
+    ],
+    "laundromat": [
+      "market"
+    ],
+    "shop": [
+      "downtown"
+    ],
+    "library": [
+      "downtown"
+    ],
+    "station-downtown": [
+      "downtown",
+      "train"
+    ],
+    "downtown": [
+      "capsule",
+      "metro",
+      "yard",
+      "shop",
+      "moth",
+      "library"
+    ],
+    "yard": [
+      "downtown"
+    ],
+    "capsule": [
+      "downtown"
+    ],
+    "moth": [
+      "downtown"
+    ],
+    "station-galleria": [
+      "mall",
+      "train"
+    ],
+    "mall": [
+      "galleriaStation"
+    ],
+    "station-harbor": [
+      "harbor",
+      "beach",
+      "train"
+    ],
+    "harbor": [
+      "harborStation",
+      "beach"
+    ],
+    "warehouse": [
+      "stacks"
+    ],
+    "beach": [
+      "harbor"
+    ]
+  },
+  "TRANSPORT": {
+    "boarding": {
+      "scene": "train",
+      "entrance": "out"
+    },
+    "siding": {
+      "scene": "harbor",
+      "entrance": "metro"
+    }
+  }
+}

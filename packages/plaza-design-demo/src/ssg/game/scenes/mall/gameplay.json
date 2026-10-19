@@ -1,0 +1,597 @@
+{
+  "version": 1,
+  "flags": [
+    "mall:implant",
+    "mall:kiosk",
+    "mall:pawn1",
+    "mall:pawn2",
+    "mall:pawn3",
+    "mall:deck",
+    "mall:leaf",
+    "mall:keycutter",
+    "mall:blankchip",
+    "mall:ate"
+  ],
+  "items": [
+    "basil",
+    "blankchip"
+  ],
+  "state": {
+    "mall.implantAsked": {
+      "owner": "mall",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "mall.kioskAsked": {
+      "owner": "mall",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "mall.deckChecked": {
+      "owner": "mall",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "mall.floristAsked": {
+      "owner": "mall",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "mall.leafBought": {
+      "owner": "mall",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "mall.keyAsked": {
+      "owner": "mall",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "mall.meal": {
+      "owner": "mall",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    }
+  },
+  "purchases": {
+    "mall.implant": {
+      "basePrice": 2,
+      "modifiers": [
+        {
+          "id": "introduction",
+          "when": {
+            "state": "mall.implantAsked",
+            "is": false
+          },
+          "amount": -2,
+          "scope": "both"
+        },
+        {
+          "id": "already-owned",
+          "when": {
+            "all": [
+              {
+                "state": "mall.implantAsked",
+                "is": true
+              },
+              {
+                "flag": "mall:implant",
+                "is": true
+              }
+            ]
+          },
+          "amount": -2,
+          "scope": "both"
+        }
+      ],
+      "service": true
+    },
+    "mall.deck": {
+      "basePrice": 1,
+      "service": true
+    },
+    "mall.leaf": {
+      "basePrice": 2,
+      "goods": [
+        {
+          "item": "basil",
+          "quantity": 1
+        }
+      ],
+      "modifiers": [
+        {
+          "id": "introduction",
+          "when": {
+            "state": "mall.floristAsked",
+            "is": false
+          },
+          "amount": -2,
+          "scope": "both"
+        }
+      ]
+    },
+    "mall.blankchip": {
+      "basePrice": 2,
+      "goods": [
+        {
+          "item": "blankchip",
+          "quantity": 1
+        }
+      ],
+      "modifiers": [
+        {
+          "id": "introduction",
+          "when": {
+            "state": "mall.keyAsked",
+            "is": false
+          },
+          "amount": -2,
+          "scope": "both"
+        },
+        {
+          "id": "already-owned",
+          "when": {
+            "all": [
+              {
+                "state": "mall.keyAsked",
+                "is": true
+              },
+              {
+                "flag": "mall:blankchip",
+                "is": true
+              }
+            ]
+          },
+          "amount": -2,
+          "scope": "both"
+        }
+      ]
+    },
+    "mall.meal": {
+      "basePrice": 1,
+      "service": true
+    }
+  },
+  "events": [],
+  "commands": {
+    "mall.implantAsked.intro": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "mall.implantAsked",
+          "set": true
+        }
+      ]
+    },
+    "mall.implant.buy": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 2
+      },
+      "actions": [
+        {
+          "purchase": "mall.implant"
+        },
+        {
+          "flag": "mall:implant",
+          "value": true
+        }
+      ]
+    },
+    "mall.kiosk.first": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "flag": "mall:kiosk",
+          "value": true
+        },
+        {
+          "state": "mall.kioskAsked",
+          "set": true
+        }
+      ]
+    },
+    "mall.kiosk.again": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "flag": "mall:kiosk",
+          "value": true
+        }
+      ]
+    },
+    "mall.pawn.1": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "any": [
+          {
+            "all": [
+              {
+                "flag": "mall:pawn1",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn2",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn3",
+                "is": false
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "flag": "mall:pawn1",
+          "value": true
+        },
+        {
+          "tokens": 1
+        }
+      ]
+    },
+    "mall.pawn.2": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "any": [
+          {
+            "all": [
+              {
+                "flag": "mall:pawn1",
+                "is": true
+              },
+              {
+                "flag": "mall:pawn2",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn3",
+                "is": false
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "flag": "mall:pawn1",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn2",
+                "is": true
+              },
+              {
+                "flag": "mall:pawn3",
+                "is": false
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "flag": "mall:pawn1",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn2",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn3",
+                "is": true
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "flag": "mall:pawn2",
+          "value": true
+        },
+        {
+          "tokens": 1
+        }
+      ]
+    },
+    "mall.pawn.3": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "any": [
+          {
+            "all": [
+              {
+                "flag": "mall:pawn1",
+                "is": true
+              },
+              {
+                "flag": "mall:pawn2",
+                "is": true
+              },
+              {
+                "flag": "mall:pawn3",
+                "is": false
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "flag": "mall:pawn1",
+                "is": true
+              },
+              {
+                "flag": "mall:pawn2",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn3",
+                "is": true
+              }
+            ]
+          },
+          {
+            "all": [
+              {
+                "flag": "mall:pawn1",
+                "is": false
+              },
+              {
+                "flag": "mall:pawn2",
+                "is": true
+              },
+              {
+                "flag": "mall:pawn3",
+                "is": true
+              }
+            ]
+          }
+        ]
+      },
+      "actions": [
+        {
+          "flag": "mall:pawn3",
+          "value": true
+        },
+        {
+          "tokens": 1
+        }
+      ]
+    },
+    "mall.deck.first": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 1
+      },
+      "actions": [
+        {
+          "purchase": "mall.deck"
+        },
+        {
+          "flag": "mall:deck",
+          "value": true
+        },
+        {
+          "state": "mall.deckChecked",
+          "set": true
+        }
+      ]
+    },
+    "mall.deck.again": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 1
+      },
+      "actions": [
+        {
+          "purchase": "mall.deck"
+        },
+        {
+          "flag": "mall:deck",
+          "value": true
+        }
+      ]
+    },
+    "mall.floristAsked.intro": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "mall.floristAsked",
+          "set": true
+        }
+      ]
+    },
+    "mall.leaf.first": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 2
+      },
+      "actions": [
+        {
+          "purchase": "mall.leaf"
+        },
+        {
+          "flag": "mall:leaf",
+          "value": true
+        },
+        {
+          "state": "mall.leafBought",
+          "set": true
+        }
+      ]
+    },
+    "mall.leaf.again": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 2
+      },
+      "actions": [
+        {
+          "purchase": "mall.leaf"
+        },
+        {
+          "flag": "mall:leaf",
+          "value": true
+        }
+      ]
+    },
+    "mall.keys.intro": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "flag": "mall:keycutter",
+          "value": true
+        },
+        {
+          "state": "mall.keyAsked",
+          "set": true
+        }
+      ]
+    },
+    "mall.keys.owned": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "flag": "mall:keycutter",
+          "value": true
+        }
+      ]
+    },
+    "mall.keys.buy": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 2
+      },
+      "actions": [
+        {
+          "flag": "mall:keycutter",
+          "value": true
+        },
+        {
+          "purchase": "mall.blankchip"
+        },
+        {
+          "flag": "mall:blankchip",
+          "value": true
+        }
+      ]
+    },
+    "mall.keys.refuse": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "flag": "mall:keycutter",
+          "value": true
+        }
+      ]
+    },
+    "mall.meal.0": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 1
+      },
+      "actions": [
+        {
+          "purchase": "mall.meal"
+        },
+        {
+          "flag": "mall:ate",
+          "value": true
+        },
+        {
+          "state": "mall.meal",
+          "set": 1
+        }
+      ]
+    },
+    "mall.meal.1": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 1
+      },
+      "actions": [
+        {
+          "purchase": "mall.meal"
+        },
+        {
+          "flag": "mall:ate",
+          "value": true
+        },
+        {
+          "state": "mall.meal",
+          "set": 2
+        }
+      ]
+    },
+    "mall.meal.2": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "tokensAtLeast": 1
+      },
+      "actions": [
+        {
+          "purchase": "mall.meal"
+        },
+        {
+          "flag": "mall:ate",
+          "value": true
+        },
+        {
+          "state": "mall.meal",
+          "set": 0
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {}
+}

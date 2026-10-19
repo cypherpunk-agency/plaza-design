@@ -16,7 +16,7 @@ function layout():ArtworkInputs['L']{return{door:0,spawn:0,notice:0,soap:0,clock
 const cache=new Map<string,ReturnType<typeof createLaundromatArtwork>>();
 function kernel(L=layout(),width=880,originX=0,ceiling=150,facing=180){const key=JSON.stringify([L,width,originX,ceiling,facing]);let k=cache.get(key);if(!k){k=createLaundromatArtwork({L,LAUNDROMAT_W:width,LAUNDROMAT_FACING:facing,originX,ceiling});if(cache.size>=2048)cache.clear();cache.set(key,k);}return k;}
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
-function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'laundromat.'+id,version:1,label,category,coordinates:'world',fields,visualFields:laundromatVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,s,at)};}
+function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'laundromat.'+id,version:1,label,category,coordinates:'world',bindingIdentity:'presentation',fields,visualFields:laundromatVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,s,at)};}
 const rectangle=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 const roomFields={width:num('Width',880,1),ceiling:num('Ceiling',150,1)};
 const windowFields={width:num('Width',192,1),height:num('Height',84,1),facing:num('Compass facing',180,0)};

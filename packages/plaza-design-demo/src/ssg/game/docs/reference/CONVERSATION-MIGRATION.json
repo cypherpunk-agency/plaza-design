@@ -1,17 +1,18 @@
 {
   "version": 1,
-  "scope": "ENG-03",
-  "note": "Finite scoped migration; remaining legacy adapters are explicit, not claimed converted. Unconverted scene packages retain native behavior.",
-  "genericBotReaction": "legacy-adapter: runtime/characters.ts botReact",
+  "scope": "engine-consolidation G3",
+  "note": "All recorded NPC/device rows and procedural bot reactions use shared graphs. Broader runtime story/controller/editor acceptance remains open; corpus migration is not full goal completion.",
+  "genericBotReaction": "migrated: engine/gameplay/bot-reactions.json; shared cycling compiler and ConversationSession; check-bot-conversations/check-bot-source-save",
   "rows": [
     {
       "kind": "device",
       "scene": "capsule",
       "id": "concierge",
-      "status": "legacy-adapter",
-      "source": "scenes/capsule/devices.json",
+      "status": "migrated",
+      "source": "scenes/capsule/gameplay.json",
       "nodeEntryEffects": 0,
-      "freeText": true
+      "freeText": true,
+      "evidence": "check-capsule-conversation.mts: 20 original node/state cases, 24 choice transitions, free input/miss/retry, pending edits/wires and native state ownership"
     },
     {
       "kind": "npc",
@@ -82,306 +83,325 @@
       "kind": "device",
       "scene": "yard",
       "id": "hinge",
-      "status": "legacy-adapter",
-      "source": "scenes/yard/devices.json",
+      "status": "migrated",
+      "source": "scenes/yard/gameplay.json",
       "nodeEntryEffects": 1,
-      "freeText": true
+      "freeText": true,
+      "evidence": "check-native-conversation-actions.mts: immutable native node/action/goal and saved-state parity; shared entry commands and free input"
     },
     {
       "kind": "npc",
       "scene": "beach",
       "id": "lime",
-      "status": "legacy-adapter",
-      "source": "scenes/beach/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/beach/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-beach-content.mts: original chatter, appearance, native cue and pending content"
     },
     {
       "kind": "npc",
       "scene": "beach",
       "id": "guard",
-      "status": "legacy-adapter",
-      "source": "scenes/beach/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/beach/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-beach-content.mts: original chatter, appearance, native cue and pending content"
     },
     {
       "kind": "npc",
       "scene": "beach",
       "id": "sunbather",
-      "status": "legacy-adapter",
-      "source": "scenes/beach/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/beach/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-beach-content.mts: original chatter, appearance, native cue and pending content"
     },
     {
       "kind": "npc",
       "scene": "beach",
       "id": "volley",
-      "status": "legacy-adapter",
-      "source": "scenes/beach/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/beach/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-beach-content.mts: original chatter, appearance, native cue and pending content"
     },
     {
       "kind": "npc",
       "scene": "beach",
       "id": "kid",
-      "status": "legacy-adapter",
-      "source": "scenes/beach/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/beach/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-beach-content.mts: original chatter, appearance, native cue and pending content"
     },
     {
       "kind": "npc",
       "scene": "beach",
       "id": "surfer",
-      "status": "legacy-adapter",
-      "source": "scenes/beach/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/beach/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-beach-content.mts: original chatter, appearance, native cue and pending content"
     },
     {
       "kind": "npc",
       "scene": "beach",
       "id": "fisher",
-      "status": "legacy-adapter",
-      "source": "scenes/beach/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/beach/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-beach-content.mts: original chatter, appearance, native cue and pending content"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "customs",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "docker",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "tide",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "fisher",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": true
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": true,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "jogger",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "gull1",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "gull2",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "gull3",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "gull4",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "harbor",
       "id": "gull5",
-      "status": "legacy-adapter",
-      "source": "scenes/harbor/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/harbor/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-harbor-content.mts: original chatter/weather/appearance and pending native bindings"
     },
     {
       "kind": "npc",
       "scene": "stacks",
       "id": "gatekeeper",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/index.ts",
+      "status": "migrated",
+      "source": "scenes/stacks/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "stacks",
       "id": "inspector",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/index.ts",
+      "status": "migrated",
+      "source": "scenes/stacks/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "stacks",
       "id": "signaller",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/index.ts",
+      "status": "migrated",
+      "source": "scenes/stacks/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "stacks",
       "id": "lasher",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/index.ts",
+      "status": "migrated",
+      "source": "scenes/stacks/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "stacks",
       "id": "tally",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/index.ts",
+      "status": "migrated",
+      "source": "scenes/stacks/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "stacks",
       "id": "gull1",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/index.ts",
+      "status": "migrated",
+      "source": "scenes/stacks/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "stacks",
       "id": "gull2",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/index.ts",
+      "status": "migrated",
+      "source": "scenes/stacks/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "device",
       "scene": "stacks",
       "id": "moth",
-      "status": "legacy-adapter",
-      "source": "scenes/stacks/devices.json",
+      "status": "migrated",
+      "source": "scenes/stacks/gameplay.json",
       "nodeEntryEffects": 1,
-      "freeText": false
+      "freeText": false,
+      "evidence": "check-stacks-conversation.mts: 312 original dialogue/state cases, 256 choice transitions, native flags/goals/cutscene/1500ms parity, repeat guard and native reload"
     },
     {
       "kind": "npc",
       "scene": "warehouse",
       "id": "mender",
-      "status": "legacy-adapter",
-      "source": "scenes/warehouse/index.ts",
+      "status": "migrated",
+      "source": "scenes/warehouse/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "warehouse",
       "id": "gull",
-      "status": "legacy-adapter",
-      "source": "scenes/warehouse/index.ts",
+      "status": "migrated",
+      "source": "scenes/warehouse/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "cook",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "fish",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "repair",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "sleeper",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "regular",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "kid",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "queue",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "busker",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "marshal",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "market",
       "id": "oldunit",
-      "status": "legacy-adapter",
-      "source": "scenes/market/index.ts",
+      "status": "migrated",
+      "source": "scenes/market/scene.json",
       "weatherTimeVariants": false
     },
     {
@@ -420,10 +440,11 @@
       "kind": "device",
       "scene": "laundromat",
       "id": "suds",
-      "status": "legacy-adapter",
-      "source": "scenes/laundromat/devices.json",
+      "status": "migrated",
+      "source": "scenes/laundromat/gameplay.json",
       "nodeEntryEffects": 0,
-      "freeText": true
+      "freeText": true,
+      "evidence": "check-native-read-bindings.mts: 104 original node/state cases and 152 choice transitions, live read-only bindings, free input, pending dialogue and save ownership"
     },
     {
       "kind": "npc",
@@ -453,74 +474,78 @@
       "kind": "npc",
       "scene": "mall",
       "id": "teen",
-      "status": "legacy-adapter",
-      "source": "scenes/mall/index.ts",
+      "status": "migrated",
+      "source": "scenes/mall/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "mall",
       "id": "kid",
-      "status": "legacy-adapter",
-      "source": "scenes/mall/index.ts",
+      "status": "migrated",
+      "source": "scenes/mall/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "mall",
       "id": "diner",
-      "status": "legacy-adapter",
-      "source": "scenes/mall/index.ts",
+      "status": "migrated",
+      "source": "scenes/mall/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "mall",
       "id": "security",
-      "status": "legacy-adapter",
-      "source": "scenes/mall/index.ts",
+      "status": "migrated",
+      "source": "scenes/mall/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "mall",
       "id": "dancer",
-      "status": "legacy-adapter",
-      "source": "scenes/mall/index.ts",
+      "status": "migrated",
+      "source": "scenes/mall/scene.json",
       "weatherTimeVariants": false
     },
     {
       "kind": "npc",
       "scene": "sandbox",
       "id": "lead",
-      "status": "legacy-adapter",
-      "source": "scenes/sandbox/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/sandbox/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-sandbox-content.mts: original pages, contextual variants and pending native Play"
     },
     {
       "kind": "npc",
       "scene": "sandbox",
       "id": "unit0",
-      "status": "legacy-adapter",
-      "source": "scenes/sandbox/index.ts",
-      "weatherTimeVariants": false
+      "status": "migrated",
+      "source": "scenes/sandbox/scene.json",
+      "weatherTimeVariants": false,
+      "evidence": "check-sandbox-content.mts: original pages, contextual variants and pending native Play"
     },
     {
       "kind": "npc",
       "scene": "sandbox",
       "id": "tech",
-      "status": "legacy-adapter",
-      "source": "scenes/sandbox/index.ts",
-      "weatherTimeVariants": true
+      "status": "migrated",
+      "source": "scenes/sandbox/scene.json",
+      "weatherTimeVariants": true,
+      "evidence": "check-sandbox-content.mts: original pages, contextual variants and pending native Play"
     },
     {
       "kind": "device",
       "scene": "sandbox",
       "id": "unit7",
-      "status": "legacy-adapter",
-      "source": "scenes/sandbox/devices.json",
+      "status": "migrated",
+      "source": "scenes/sandbox/gameplay.json",
       "nodeEntryEffects": 2,
-      "freeText": true
+      "freeText": true,
+      "evidence": "check-native-conversation-actions.mts: immutable native node/action/goal and saved-state parity; shared entry commands and free input"
     },
     {
       "kind": "shared",

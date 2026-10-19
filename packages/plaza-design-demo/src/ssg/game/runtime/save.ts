@@ -1,3 +1,4 @@
+import {perfBegin,perfEnd} from './diagnostics/performance';
 import { gameStorage } from './storage';
 /** Extracted save responsibilities; function bodies and stored identifiers are preserved. */
 import type { SceneSave } from '../data/types';
@@ -26,7 +27,6 @@ export interface Save {
   /** Networks you have found (net.json ids): the net map draws them. */
   nets: string[];
   flags: Record<string, boolean>;
-  hints: Record<string, number>;
   /** The keyring: clue fragments and key chips (ids in the game data's `keyring`), carried across scenes. */
   keyring: string[];
   /** Each scene's own progress, by scene id: `scenes.yard`. Downtown keeps using the fields above. */
@@ -47,7 +47,7 @@ export interface Save {
 /** A fresh player save; the title/glide hands it to the train-home opening. */
 
 export function newSave(): Save {
-  return { ...(DEMO_MODE?{scene:'library'}:{}),handle: DEMO_MODE?'TESTER':'', tokens: DEMO_MODE?8:0, jump: false, modules: [...START_MODULES,...(DEMO_MODE?['switch.so']:[])], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: DEMO_MODE?{arrived:true,schematics:true}:{}, hints: {}, scenes: {}, clock: newClock() };
+  return { ...(DEMO_MODE?{scene:'shop'}:{}),handle: DEMO_MODE?'TESTER':'', tokens: DEMO_MODE?8:0, jump: false, modules: [...START_MODULES,...(DEMO_MODE?['switch.so']:[])], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: DEMO_MODE?{arrived:true,schematics:true}:{}, scenes: {}, clock: newClock() };
 }
 
 
@@ -80,7 +80,10 @@ export const ownedModules = (s: Save) => [...(s.jump ? ['legs.so'] : []), ...s.m
 
 
 export function storeSave(s: Save) {
-  try { gameStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch { /* not persisted */ }
+  const total=perfBegin('save.total');
+  try {let span=perfBegin('save.stringify');let raw:string;try{raw=JSON.stringify(s);}finally{perfEnd(span);}
+    span=perfBegin('save.write');try{gameStorage.setItem(SAVE_KEY,raw);}finally{perfEnd(span);}
+  } catch { /* not persisted */ }finally{perfEnd(total);}
 }
 
 

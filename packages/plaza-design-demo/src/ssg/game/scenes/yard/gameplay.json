@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [
+    "yard.talk"
+  ],
+  "commands": {
+    "yard.hinge.deal": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "yard.gateAllowed",
+          "set": true
+        },
+        {
+          "emit": "yard.talk"
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "hinge": {
+      "sayCommand": "say \"{line}\" > hinge",
+      "entry": [
+        {
+          "node": "start"
+        }
+      ],
+      "nodes": {
+        "start": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "State your business. Briefly. I have been a hatch for eleven years."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "I have a parcel coming.",
+              "next": "parcel"
+            },
+            {
+              "id": "choice-2",
+              "label": "Can you open, please?",
+              "next": "please"
+            },
+            {
+              "id": "choice-3",
+              "label": "Open.",
+              "next": "blunt"
+            }
+          ],
+          "redirect": [
+            {
+              "when": {
+                "state": "yard.gateAllowed",
+                "is": true
+              },
+              "node": "start-variant-0"
+            }
+          ]
+        },
+        "start-variant-0": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "Signals: allowed. One second per ping. Do not make me regret this."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Thanks, HINGE.",
+              "next": "bye"
+            }
+          ]
+        },
+        "parcel": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "Parcels. Always parcels. I do not watch chutes. I have standards."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "What if something pinged you?",
+              "next": "ping"
+            },
+            {
+              "id": "choice-2",
+              "label": "Never mind.",
+              "next": "start"
+            }
+          ]
+        },
+        "ping": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "A signal? Hm. Automation. Very modern. Fine: one ping, I open for one second. I will not wait."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Deal.",
+              "next": "deal"
+            }
+          ]
+        },
+        "please": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "Manners. Rare. But I do not open for people. I open for reasons."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "The reason is a parcel.",
+              "next": "parcel"
+            }
+          ]
+        },
+        "blunt": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "Bold. No."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "deal": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "Noted. Signals allowed. Timing is your problem."
+          ],
+          "onEnter": "yard.hinge.deal"
+        },
+        "bye": {
+          "speaker": "HINGE · hatch daemon",
+          "pages": [
+            "Hmph."
+          ]
+        }
+      },
+      "free": {
+        "containsAny": [
+          "wire",
+          "ping",
+          "signal",
+          "automat"
+        ],
+        "next": "ping",
+        "miss": "HINGE does not parse that. HINGE does not want to.",
+        "retry": "Try again.",
+        "retryNext": "start"
+      }
+    }
+  },
+  "state": {
+    "yard.gateAllowed": {
+      "owner": "yard",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "native": {
+    "state": {
+      "yard.gateAllowed": "gateAllowed"
+    },
+    "verbs": [],
+    "events": {},
+    "goals": {
+      "yard.talk": "talk"
+    },
+    "wires": []
+  }
+}

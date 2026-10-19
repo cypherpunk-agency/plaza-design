@@ -1,0 +1,7 @@
+import type {SceneDocument} from './scene-document';
+/** Ordered milestones have exactly one unconditional final fallback. */
+function editable(doc:SceneDocument){if(!doc.manifest)throw new Error('Milestones require a registered manifest scene');}
+export function addManifestObjective(doc:SceneDocument){editable(doc);const rows=doc.objectives??=[];if(rows.length>=32)throw new Error('At most 32 objectives');let i=1;while(rows.some(r=>r.id==='objective-'+i))i++;const next={id:'objective-'+i,text:'New objective'};if(rows.length)rows.splice(rows.length-1,0,{...next,when:{all:[]}});else rows.push(next);return next.id;}
+export function removeManifestObjective(doc:SceneDocument,index:number){editable(doc);const rows=doc.objectives;if(!rows||!Number.isInteger(index)||index<0||index>=rows.length)throw new Error('Unknown objective');rows.splice(index,1);if(rows.length)delete rows.at(-1)!.when;else delete doc.objectives;}
+export function addManifestTime(doc:SceneDocument){editable(doc);const rows=doc.time??=[];if(rows.length>=32)throw new Error('At most 32 story-clock milestones');if(rows.length)rows.splice(rows.length-1,0,{minute:rows.at(-1)!.minute,when:{all:[]}});else rows.push({minute:580});}
+export function removeManifestTime(doc:SceneDocument,index:number){editable(doc);const rows=doc.time;if(!rows||!Number.isInteger(index)||index<0||index>=rows.length)throw new Error('Unknown story-clock milestone');rows.splice(index,1);if(rows.length)delete rows.at(-1)!.when;else delete doc.time;}

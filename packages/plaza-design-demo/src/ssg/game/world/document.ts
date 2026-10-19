@@ -1,12 +1,17 @@
+import * as defaultCity from './city';
+import type {CityModel} from './city';
+import {createCityPlan} from './cityplan';
 /** Read-only JSON index of the shipping world. Geometry and rules continue to belong to city.ts. */
 import type { Composition } from '../art/core/composition';
 import type { Sequence } from '../art/core/timeline';
 import { SCENES, type SceneDef, type SceneId } from '../scenes';
-import { DISTRICTS, DISTRICT_MAP, DISTRICT_REVEAL, LINE, LINES_PLANNED, LINKS, LOOP_MAP, MAP_H, MAP_W, PAD_MAP, PLACE_IN_VIEW, PLACE_MAP, PLACES, SCENE_PLACE, STANDS, STAND_IDS, STATIONS, STATION_MAP, type PlaceId } from './city';
-import { AVENUES, CANAL, CANAL_W, COAST, FENCE, ISLE, PARK, planProblems } from './cityplan';
+import type {PlaceId} from './city';
+import { AVENUES, CANAL, CANAL_W, COAST, FENCE, ISLE, PARK } from './cityplan';
 
 export interface WorldSequenceReference { id: string; scene: string; entrance?: string }
 export interface WorldDocumentContext {
+  world?:CityModel;
+  scenes?:Readonly<Record<string,SceneDef>>;
   /** Real validated composition documents, keyed by their authoring document id. */
   compositions: Readonly<Record<string, Composition>>;
   /** Registered sequence destinations. No placeholder paths or invented destinations. */
@@ -53,9 +58,10 @@ function connections(scene: SceneDef) {
   }));
 }
 /** Adapt existing registries; local x/h/attachment markers belong in scene compositions, never here. */
-export function snapshotWorld(sceneCompositions: Readonly<Record<string,string>>, sequences: readonly WorldSequenceReference[] = []) {
-  for (const id of Object.keys(sceneCompositions)) if (!own(SCENES,id)) fail(`world.scenes.${id}`, 'unknown scene');
-  for (const id of Object.keys(SCENES)) if (!own(sceneCompositions,id) || !sceneCompositions[id]) fail(`world.scenes.${id}.composition`, 'a real composition reference is required');
+export function snapshotWorld(sceneCompositions: Readonly<Record<string,string>>, sequences: readonly WorldSequenceReference[] = [],world:CityModel=defaultCity,registry:Readonly<Record<string,SceneDef>>=SCENES) {
+  const {DISTRICTS,DISTRICT_MAP,DISTRICT_REVEAL,LINE,LINES_PLANNED,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_IN_VIEW,PLACE_MAP,PLACES,SCENE_PLACE,STANDS,STAND_IDS,STATIONS,STATION_MAP}=world;
+  for (const id of Object.keys(sceneCompositions)) if (!own(registry,id)) fail(`world.scenes.${id}`, 'unknown scene');
+  for (const id of Object.keys(registry)) if (!own(sceneCompositions,id) || !sceneCompositions[id]) fail(`world.scenes.${id}.composition`, 'a real composition reference is required');
   return structuredClone({
     version:1 as const,
     map:{
@@ -64,7 +70,7 @@ export function snapshotWorld(sceneCompositions: Readonly<Record<string,string>>
       districts:DISTRICTS.map(d=>({...d,plan:DISTRICT_MAP[d.id]})),
       places:PLACES.map(p=>({...p,mapPosition:PLACE_MAP[p.id] ?? null})),
     },
-    scenes:(Object.keys(SCENES) as SceneId[]).map(id=>({id,place:SCENE_PLACE[id],composition:sceneCompositions[id],exits:connections(SCENES[id])})),
+    scenes:(Object.keys(registry) as SceneId[]).map(id=>({id,place:SCENE_PLACE[id],composition:sceneCompositions[id],exits:connections(registry[id])})),
     transport:{
       metro:{id:'line0',order:LINE,stations:LINE.map(id=>({id,...STATIONS[id],mapPosition:STATION_MAP[id]})),path:LOOP_MAP},
       taxi:STAND_IDS.map(id=>({id,...STANDS[id],mapPosition:PAD_MAP[id]})),
@@ -79,19 +85,19 @@ export function snapshotWorld(sceneCompositions: Readonly<Record<string,string>>
 }
 export type WorldDocument = ReturnType<typeof snapshotWorld>;
 
-function destination(scene: string, entrance: string | undefined, at: string): void {
-  if (!own(SCENES,scene)) fail(`${at}.scene`, `unknown destination ${JSON.stringify(scene)}`);
-  if (entrance !== undefined && !(SCENES[scene as SceneId] as SceneDef).exits.some(e=>e.id===entrance)) fail(`${at}.entrance`, `unknown entrance ${JSON.stringify(entrance)} in ${scene}`);
+function destination(scene: string, entrance: string | undefined, at: string,registry:Readonly<Record<string,SceneDef>>): void {
+  if (!own(registry,scene)) fail(`${at}.scene`, `unknown destination ${JSON.stringify(scene)}`);
+  if (entrance !== undefined && !(registry[scene as SceneId] as SceneDef).exits.some(e=>e.id===entrance)) fail(`${at}.entrance`, `unknown entrance ${JSON.stringify(entrance)} in ${scene}`);
 }
 /** Validate ids and cross references, then enforce the unchanged shipping world and its real rules. */
 export function validateWorldDocument(value: unknown, context: WorldDocumentContext): WorldDocument {
-  json(value);
+  const registry=context.scenes??SCENES;json(value);
   if (!object(value) || value.version !== 1) fail('world.version','expected version 1');
   if (!Array.isArray(value.scenes)) fail('world.scenes','expected scene references');
   const refs: Record<string,string> = Object.create(null);
   value.scenes.forEach((s: unknown,i: number)=>{
     const at=`world.scenes[${i}]`;
-    if (!object(s) || typeof s.id !== 'string' || !own(SCENES,s.id)) fail(`${at}.id`,'unknown scene');
+    if (!object(s) || typeof s.id !== 'string' || !own(registry,s.id)) fail(`${at}.id`,'unknown scene');
     if (own(refs,s.id)) fail(`${at}.id`,'duplicate scene');
     if (typeof s.composition !== 'string' || !own(context.compositions,s.composition)) fail(`${at}.composition`,'unknown composition');
     if (context.compositions[s.composition].scene !== s.id) fail(`${at}.composition`,'composition belongs to another scene');
@@ -101,19 +107,19 @@ export function validateWorldDocument(value: unknown, context: WorldDocumentCont
   const sequenceIds=new Set<string>();
   sequences.forEach((s,i)=>{
     if (sequenceIds.has(s.id)) fail(`world.sequences[${i}].id`,'duplicate sequence');
-    sequenceIds.add(s.id);destination(s.scene,s.entrance,`world.sequences[${i}]`);
+    sequenceIds.add(s.id);destination(s.scene,s.entrance,`world.sequences[${i}]`,registry);
   });
-  const expected=snapshotWorld(refs,sequences);
+  const expected=snapshotWorld(refs,sequences,context.world,registry);
   identical(value,expected);
   // Current land/district/frame constraints stay authoritative and are also checked by the build.
-  const problems=planProblems();
+  const problems=createCityPlan(context.world).planProblems();
   if(problems.length) fail('world.map',problems.join('; '));
   expected.map.places.forEach((p,i)=>{
     if(!p.scenes.includes(p.entrance)) fail(`world.map.places[${i}].entrance`,'entrance is outside the place');
-    destination(p.entrance,p.at,`world.map.places[${i}]`);
+    destination(p.entrance,p.at,`world.map.places[${i}]`,registry);
   });
   expected.scenes.forEach((s,i)=>s.exits.forEach((e,j)=>{
-    if(e.to) destination(e.to,e.at ?? undefined,`world.scenes[${i}].exits[${j}]`);
+    if(e.to) destination(e.to,e.at ?? undefined,`world.scenes[${i}].exits[${j}]`,registry);
     else if(!e.action) fail(`world.scenes[${i}].exits[${j}].to`,'empty destination requires a registered action');
   }));
   return structuredClone(expected);

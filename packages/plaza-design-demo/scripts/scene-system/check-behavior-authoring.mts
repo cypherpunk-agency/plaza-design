@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {SANDBOX} from '../../src/ssg/game/data';
-import {validateSandboxBehavior,behaviorNoun,cloneBehavior} from '../../src/ssg/game/authoring/behavior-validation';
-import {createBehaviorSandbox} from '../../src/ssg/game/authoring/behavior-sandbox';
+import {validateSandboxBehavior,behaviorNoun,cloneBehavior} from './legacy-s13/behavior-validation';
+import {createBehaviorSandbox} from './legacy-s13/behavior-sandbox';
 const data=validateSandboxBehavior(SANDBOX);
 const session=createBehaviorSandbox(data);
 session.trigger('sensor.eye','wave');assert.equal(session.model.state.lampOn,false);session.advance(149);assert.equal(session.model.state.lampOn,false);session.advance(1);assert.equal(session.model.state.lampOn,true);assert.equal(session.model.scratch['pulse.sensor'],0);assert.equal(session.model.scratch['pulse.sensor.eye'],0);

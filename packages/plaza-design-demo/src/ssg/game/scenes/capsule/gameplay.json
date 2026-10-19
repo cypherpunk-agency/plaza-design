@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [],
+  "commands": {
+    "capsule.plug.off": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "capsule.plugOn",
+          "set": false
+        }
+      ]
+    },
+    "capsule.plug.noop": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "concierge": {
+      "sayCommand": "say \"{line}\" > concierge",
+      "entry": [
+        {
+          "node": "start"
+        }
+      ],
+      "nodes": {
+        "start": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "CONCIERGE, at your service, within reason. Your rent is pending."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "I paid.",
+              "next": "paid"
+            },
+            {
+              "id": "choice-2",
+              "label": "Open the door.",
+              "next": "door"
+            },
+            {
+              "id": "choice-3",
+              "label": "Nice door frame.",
+              "next": "oak"
+            },
+            {
+              "id": "choice-4",
+              "label": "When's maintenance?",
+              "next": "tuesday"
+            }
+          ],
+          "redirect": [
+            {
+              "when": {
+                "state": "capsule.doorOpen",
+                "is": true
+              },
+              "node": "start-variant-0"
+            }
+          ]
+        },
+        "start-variant-0": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "Ah. The tenant of 7B, paid and present. I have prepared a form congratulating you."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Thanks, I think.",
+              "next": "bye"
+            },
+            {
+              "id": "choice-2",
+              "label": "When's maintenance?",
+              "next": "tuesday"
+            }
+          ]
+        },
+        "paid": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "Then there is a receipt. Receipts are sent, not described. I do not accept verbal receipts."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "It's stuck in my outbox.",
+              "next": "outbox"
+            },
+            {
+              "id": "choice-2",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "outbox": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "Then it is your outbox's problem, and I wish it well. When a document reaches my desk, I verify. I live to verify."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Noted.",
+              "next": "bye"
+            }
+          ]
+        },
+        "door": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "The door opens for paid tenants. You are a tenant. The rest is paperwork, and the paperwork has paperwork."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "oak": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "It is original oak-effect. Nobody ever notices."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "I noticed.",
+              "next": "noticed"
+            }
+          ]
+        },
+        "noticed": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "…You may pass. The conversation, not the door. Wipe your feet. Metaphorically."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "tuesday": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "Maintenance comes on Tuesdays. It is not Tuesday. It is never Tuesday when it matters."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "It's Tuesday somewhere.",
+              "next": "somewhere"
+            }
+          ]
+        },
+        "somewhere": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "…That is technically true. I respect technically true. It changes nothing."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Fair.",
+              "next": "start"
+            }
+          ]
+        },
+        "manners": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "Manners. In this economy. Fine. Still no."
+          ],
+          "choices": [
+            {
+              "id": "choice-1",
+              "label": "Let me start over.",
+              "next": "start"
+            }
+          ]
+        },
+        "bye": {
+          "speaker": "CONCIERGE · door daemon",
+          "pages": [
+            "Do have a compliant day."
+          ]
+        }
+      },
+      "free": {
+        "containsAny": [
+          "please",
+          "thank"
+        ],
+        "next": "manners",
+        "miss": "CONCIERGE files that under 'unclear'.",
+        "retry": "Try again. In triplicate.",
+        "retryNext": "start"
+      }
+    }
+  },
+  "state": {
+    "capsule.doorOpen": {
+      "owner": "capsule",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "capsule.plugOn": {
+      "owner": "capsule",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "native": {
+    "state": {
+      "capsule.doorOpen": "doorOpen",
+      "capsule.plugOn": "plugOn"
+    },
+    "verbs": [
+      {
+        "device": "plug",
+        "noun": "power",
+        "verb": "off",
+        "cases": [
+          {
+            "when": {
+              "state": "capsule.plugOn",
+              "is": false
+            },
+            "sources": [
+              "signal"
+            ],
+            "command": "capsule.plug.noop",
+            "say": null
+          },
+          {
+            "when": {
+              "state": "capsule.plugOn",
+              "is": false
+            },
+            "command": "capsule.plug.noop",
+            "say": [
+              "use power --off",
+              "already off.",
+              "dim"
+            ]
+          },
+          {
+            "sources": [
+              "signal"
+            ],
+            "command": "capsule.plug.off",
+            "say": [
+              "signal → power --off",
+              "SCHEDULE: night. plug off.",
+              "err"
+            ]
+          },
+          {
+            "command": "capsule.plug.off",
+            "say": [
+              "{via}use power --off",
+              "click. dark again.",
+              "dim"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": {},
+    "goals": {},
+    "wires": [
+      {
+        "from": "plug.schedule:night",
+        "to": "plug.power",
+        "verb": "off"
+      }
+    ]
+  }
+}

@@ -158,7 +158,17 @@
             "Quiet, please. Conversations are transcribed. Mine are filed."
           ]
         }
-      }
+      },
+      "sayCommand": "say \"{line}\" > catalog"
     }
+  },
+  "native": {
+    "state": {},
+    "reads": {
+      "library:renewed": "renewed"
+    },
+    "verbs": [],
+    "events": {},
+    "goals": {}
   }
 }

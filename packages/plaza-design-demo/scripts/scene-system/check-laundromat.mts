@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { laundromatArt,laundromatComposition,laundromatDeviceData,laundromatGeometry,laundromatLayout,validateLaundromatComposition } from '../../src/ssg/game/scenes/laundromat/composition';
+import { laundromatArt,laundromatComposition,laundromatDeviceData,laundromatGeometry,validateLaundromatComposition } from '../../src/ssg/game/scenes/laundromat/composition';
 import { laundromatScene,laundromatFrameEnvironment } from '../../src/ssg/game/scenes/laundromat';
 import { resolveComposition,type Composition } from '../../src/ssg/game/art';
 import type { EngineDraw } from '../../src/ssg/game/engine/host';
@@ -8,7 +8,7 @@ import devices from '../../src/ssg/game/scenes/laundromat/devices.json';
 const doc=validateLaundromatComposition(JSON.parse(JSON.stringify(laundromatComposition)));
 assert.deepEqual(doc,laundromatComposition);assert.equal(doc.instances.length,52);
 assert.deepEqual(laundromatDeviceData(devices as SceneData),devices);
-assert.equal(laundromatLayout().spawn,70);
+assert.equal(laundromatScene().spawn,70);
 const edit=structuredClone(doc);edit.instances.find(i=>i.id==='washer2')!.placement.x+=12;edit.instances.find(i=>i.id==='bench')!.placement.x+=10;edit.instances.find(i=>i.id==='bench')!.placement.h+=5;
 const rows=laundromatGeometry(edit);
 assert.equal(rows.find(i=>i.instance.id==='washer-note-2')!.placement.x,366);

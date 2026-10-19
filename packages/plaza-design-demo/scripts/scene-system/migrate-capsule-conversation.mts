@@ -1,0 +1,13 @@
+/** Extract one native dialogue into the shared runner, retaining its native read/write owner. */
+import fs from 'node:fs';
+import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
+import {nativeDialogue} from '../../src/ssg/game/engine/gameplay/native-dialogue';
+const dir='src/ssg/game/scenes/capsule',fixture='scripts/scene-system/fixtures/capsule-conversation-baseline.json',gp=JSON.parse(fs.readFileSync(dir+'/gameplay.json','utf8'));
+if(gp.conversations.concierge||fs.existsSync(fixture))throw new Error('Refusing to overwrite dialogue extraction');
+const original=JSON.parse(fs.readFileSync('../../.scene-system/all-game-baseline-2026-10-18/source/scenes/capsule/devices.json','utf8')),dialogue=original.dialogue.concierge;
+const nodes:Record<string,any>={};const convert=(node:any)=>({speaker:dialogue.speaker,pages:[node.text],...(node.choices?{choices:node.choices.map(([label,next]:[string,string],i:number)=>({id:'choice-'+(i+1),label,next}))}:{})});
+for(const[id,value]of Object.entries(dialogue.nodes)){const variants=Array.isArray(value)?value:[value],fallback=variants.at(-1);if(fallback.if)throw new Error('Expected native fallback');nodes[id]=convert(fallback);const routes=variants.slice(0,-1).map((node:any,i:number)=>{if(node.if!=='doorOpen'||node.do)throw new Error('Unexpected native predicate/effect');const target=id+'-variant-'+i;nodes[target]=convert(node);return{when:{state:'capsule.doorOpen',is:true},node:target};});if(routes.length)nodes[id].redirect=routes;}
+gp.state={'capsule.doorOpen':{owner:'capsule',lifetime:'save',type:'boolean',default:false}};gp.native={state:{'capsule.doorOpen':'doorOpen'},verbs:[],events:{},goals:{},wires:original.cables};gp.conversations.concierge={sayCommand:dialogue.sayCmd,entry:[{node:dialogue.start}],nodes,free:{containsAny:dialogue.free.match.split('|'),next:dialogue.free.goto,miss:dialogue.free.miss,retry:dialogue.free.retry,retryNext:dialogue.free.retryGoto}};
+const valid=validateGameplay(gp),projected=nativeDialogue(valid,'concierge');if(JSON.stringify(projected.nodes.start).includes('undefined'))throw new Error('Bad native projection');
+const devices=JSON.parse(fs.readFileSync(dir+'/devices.json','utf8'));devices.dialogue={};devices.cables=[];
+fs.writeFileSync(fixture,JSON.stringify({version:1,dialogue,cables:original.cables,initialState:original.state},null,2)+'\n');fs.writeFileSync(dir+'/gameplay.json',JSON.stringify(valid,null,2)+'\n');fs.writeFileSync(dir+'/devices.json',JSON.stringify(devices,null,2)+'\n');console.log('Extracted CONCIERGE shared conversation/free input; dialogue and source wires have one authored owner');

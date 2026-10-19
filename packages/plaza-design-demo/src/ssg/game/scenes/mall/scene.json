@@ -1,0 +1,1760 @@
+{
+  "version": 1,
+  "id": "mall",
+  "name": "Mall",
+  "intro": [
+    "The mall. Warm, dry and recording everything I look at."
+  ],
+  "uses": [
+    {
+      "id": "implants",
+      "name": "VANTA CLERK",
+      "label": "[E] VANTA IMPLANTS",
+      "purchase": "mall.implant",
+      "routes": [
+        {
+          "when": {
+            "state": "mall.implantAsked",
+            "is": false
+          },
+          "command": "mall.implantAsked.intro",
+          "pages": [
+            "Welcome to Vanta. Eyes, ears, spines: the full catalogue.",
+            "An optic upgrade starts at four hundred tokens. Thirty-six months' finance. Your lungs secure the loan."
+          ]
+        },
+        {
+          "when": {
+            "flag": "mall:implant",
+            "is": true
+          },
+          "pages": [
+            "The light in your thumb? It's working. You just don't have any messages.",
+            "We sell a messages package, if you'd like some."
+          ]
+        },
+        {
+          "when": {
+            "tokensAtLeast": 2
+          },
+          "command": "mall.implant.buy",
+          "pages": [
+            "Excellent. A subdermal light, left thumb, two tokens. It glows when you get a message.",
+            "(A pinch. A glow.) You don't get messages? It glows anyway. Optimism is a feature."
+          ]
+        },
+        {
+          "pages": [
+            "We do have a budget option: looking at the catalogue. That's free.",
+            "Until it isn't. Read the terms."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kiosk",
+      "name": "REGISTRY KIOSK",
+      "label": "[E] VERIFY IDENTITY",
+      "speakerKind": "device",
+      "routes": [
+        {
+          "when": {
+            "state": "mall.kioskAsked",
+            "is": false
+          },
+          "command": "mall.kiosk.first",
+          "pages": [
+            "PLEASE LOOK INTO THE CAMERA.",
+            "IDENTITY NOT FOUND. MEMBER PRICES UNAVAILABLE. PLEASE CONTACT YOUR REGISTRY OFFICE."
+          ]
+        },
+        {
+          "command": "mall.kiosk.again",
+          "pages": [
+            "IDENTITY NOT FOUND.",
+            "THIS ATTEMPT HAS BEEN LOGGED. THANK YOU FOR SHOPPING AT THE GALLERIA."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pawn",
+      "name": "PAWNBROKER",
+      "label": "[E] PAWN \u00b7 SELL A MEMORY",
+      "routes": [
+        {
+          "when": {
+            "any": [
+              {
+                "all": [
+                  {
+                    "flag": "mall:pawn1",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn2",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn3",
+                    "is": false
+                  }
+                ]
+              }
+            ]
+          },
+          "command": "mall.pawn.1",
+          "pages": [
+            "Memories bought by the megabyte. Let me see the head. Hold still.",
+            "(The helmet hums.) Your first bike. Thirty-one megabytes, mostly a scuffed knee. One token.",
+            "Pleasure. You won't miss it. Nobody remembers what they sold here, that's the beauty of it."
+          ]
+        },
+        {
+          "when": {
+            "any": [
+              {
+                "all": [
+                  {
+                    "flag": "mall:pawn1",
+                    "is": true
+                  },
+                  {
+                    "flag": "mall:pawn2",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn3",
+                    "is": false
+                  }
+                ]
+              },
+              {
+                "all": [
+                  {
+                    "flag": "mall:pawn1",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn2",
+                    "is": true
+                  },
+                  {
+                    "flag": "mall:pawn3",
+                    "is": false
+                  }
+                ]
+              },
+              {
+                "all": [
+                  {
+                    "flag": "mall:pawn1",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn2",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn3",
+                    "is": true
+                  }
+                ]
+              }
+            ]
+          },
+          "command": "mall.pawn.2",
+          "pages": [
+            "A birthday. Eleven candles. Good resolution, bit of cake on the lens.",
+            "One token. I'd go two if there was a pony. There's never a pony."
+          ]
+        },
+        {
+          "when": {
+            "any": [
+              {
+                "all": [
+                  {
+                    "flag": "mall:pawn1",
+                    "is": true
+                  },
+                  {
+                    "flag": "mall:pawn2",
+                    "is": true
+                  },
+                  {
+                    "flag": "mall:pawn3",
+                    "is": false
+                  }
+                ]
+              },
+              {
+                "all": [
+                  {
+                    "flag": "mall:pawn1",
+                    "is": true
+                  },
+                  {
+                    "flag": "mall:pawn2",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn3",
+                    "is": true
+                  }
+                ]
+              },
+              {
+                "all": [
+                  {
+                    "flag": "mall:pawn1",
+                    "is": false
+                  },
+                  {
+                    "flag": "mall:pawn2",
+                    "is": true
+                  },
+                  {
+                    "flag": "mall:pawn3",
+                    "is": true
+                  }
+                ]
+              }
+            ]
+          },
+          "command": "mall.pawn.3",
+          "pages": [
+            "A rainy afternoon reading on a bus. Low drama, low price.",
+            "Still one token. I'm sentimental. Don't tell anyone, it's bad for business."
+          ]
+        },
+        {
+          "pages": [
+            "No. You're running low. I don't buy from anyone under a gigabyte: bad for business, worse for you.",
+            "Come back when you've made some new ones. Live a little. Then sell it to me."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deck",
+      "name": "DECK REPAIR",
+      "label": "[E] DECK CHECKUP",
+      "purchase": "mall.deck",
+      "routes": [
+        {
+          "when": {
+            "not": {
+              "tokensAtLeast": 1
+            }
+          },
+          "pages": [
+            "A checkup is one token. I can look at it for free, but then all I'll tell you is that it's a deck."
+          ]
+        },
+        {
+          "when": {
+            "state": "mall.deckChecked",
+            "is": false
+          },
+          "command": "mall.deck.first",
+          "pages": [
+            "(She opens your deck, blows into it, closes it.) Dust in the fan. Fixed.",
+            "Three sets of fingerprints on the keys. Yours, a cat's, and someone who types fast and angry. A friend?"
+          ]
+        },
+        {
+          "command": "mall.deck.again",
+          "pages": [
+            "It's clean. Stop paying me to tell you it's clean.",
+            "...Fine. Token received. It's clean."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "florist",
+      "name": "FLORIST",
+      "label": "[E] FLORIST",
+      "purchase": "mall.leaf",
+      "routes": [
+        {
+          "when": {
+            "state": "mall.floristAsked",
+            "is": false
+          },
+          "command": "mall.floristAsked.intro",
+          "pages": [
+            "Everything here is real. Grown in dirt, in daylight, from a seed. Look, don't touch.",
+            "The fern is nine hundred tokens. The basil is four hundred. A single basil leaf is two."
+          ]
+        },
+        {
+          "when": {
+            "not": {
+              "tokensAtLeast": 2
+            }
+          },
+          "pages": [
+            "Then just breathe near the fern. The first breath is free."
+          ]
+        },
+        {
+          "when": {
+            "state": "mall.leafBought",
+            "is": false
+          },
+          "command": "mall.leaf.first",
+          "pages": [
+            "One leaf. I'll wrap it.",
+            "Smell it on the way home. That's what you're paying for. Eating it would be a waste of money."
+          ]
+        },
+        {
+          "command": "mall.leaf.again",
+          "pages": [
+            "Another leaf. You remind me of someone: the one with the deck and the smart pot.",
+            "Buys plant food here. Talks to their fern. The fern looks well on it."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "keys",
+      "name": "KEY CUTTER",
+      "label": "[E] KEY CUTTER",
+      "purchase": "mall.blankchip",
+      "routes": [
+        {
+          "when": {
+            "state": "mall.keyAsked",
+            "is": false
+          },
+          "command": "mall.keys.intro",
+          "pages": [
+            "Keys cut. Chips copied. Registered chips only, it says so on the counter.",
+            "Unregistered ones I don't copy. I clone. Different word, different price.",
+            "Bring me a chip and a reason. I copy the chip and forget the reason."
+          ]
+        },
+        {
+          "when": {
+            "flag": "mall:blankchip",
+            "is": true
+          },
+          "command": "mall.keys.owned",
+          "pages": [
+            "You have your blank. When you need something opened, bring the chip it's afraid of."
+          ]
+        },
+        {
+          "when": {
+            "tokensAtLeast": 2
+          },
+          "command": "mall.keys.buy",
+          "pages": [
+            "A blank chip. Unregistered. Not illegal, just unsold.",
+            "I'll remember your face. It's the one memory I never sell."
+          ]
+        },
+        {
+          "command": "mall.keys.refuse",
+          "pages": [
+            "Two tokens for a blank. The pawnshop pays for memories, if you're short. I don't ask which ones."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "order",
+      "name": "FOOD COURT",
+      "label": "[E] ORDER",
+      "purchase": "mall.meal",
+      "routes": [
+        {
+          "when": {
+            "not": {
+              "tokensAtLeast": 1
+            }
+          },
+          "pages": [
+            "One token. We take tokens, registered cards and nothing else. You are nothing else."
+          ]
+        },
+        {
+          "when": {
+            "state": "mall.meal",
+            "is": 0
+          },
+          "command": "mall.meal.0",
+          "pages": [
+            "Noodles, number four. The number is the noodles. There is no one to three."
+          ]
+        },
+        {
+          "when": {
+            "state": "mall.meal",
+            "is": 1
+          },
+          "command": "mall.meal.1",
+          "pages": [
+            "Vat burger. Grown in a vat in the basement. The vat has a name. We don't say it in front of customers."
+          ]
+        },
+        {
+          "command": "mall.meal.2",
+          "pages": [
+            "Dumplings. Six. Count them. I counted them. We both know it's five."
+          ]
+        }
+      ]
+    }
+  ],
+  "people": [
+    {
+      "id": "teen",
+      "name": "KIOSK",
+      "talk": [
+        [
+          "Phone cases. Screens. Screen protectors for your screen protector.",
+          "I get paid by the hour. The hours are very long. Coincidence."
+        ],
+        [
+          "If you're not buying, could you at least look interested? Camera 6 counts customers."
+        ]
+      ]
+    },
+    {
+      "id": "kid",
+      "name": "KID",
+      "talk": [
+        [
+          "I threw a token in. I wished for two tokens.",
+          "The fountain is thinking about it."
+        ],
+        [
+          "Mum says the fountain money goes to the Registry. I said then the Registry has my wish.",
+          "She said that's what worries her."
+        ]
+      ]
+    },
+    {
+      "id": "diner",
+      "name": "DINER",
+      "talk": [
+        [
+          "Six counters in this food court. Four of them are the same kitchen.",
+          "I eat lunch here because the park charges by the minute."
+        ],
+        [
+          "Try the noodles. Everything else is also the noodles, in a different shape."
+        ]
+      ]
+    },
+    {
+      "id": "security",
+      "name": "SECURITY",
+      "talk": [
+        [
+          "Galleria security. You look unverified. Most people do, after nine.",
+          "I'm not paid to chase you. I'm paid to write down which way you went."
+        ],
+        [
+          "Lost child? Desk 2. Lost identity? Also desk 2. It's a busy desk."
+        ]
+      ]
+    },
+    {
+      "id": "dancer",
+      "name": "SECURITY",
+      "talk": [
+        [
+          "(He freezes, mid-move.)",
+          "Camera 14 has a blind spot behind this pillar. Four minutes an hour. I did not tell you that.",
+          "I'm stretching. It's in the union agreement."
+        ],
+        [
+          "You again. Either dance or stand guard. Those are the only two jobs in here."
+        ]
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "kiosk",
+      "name": "DIRECTORY",
+      "pages": [
+        "GALLERIA \u00b7 GROUND FLOOR: IMPLANTS \u00b7 PAWN \u00b7 DECK REPAIR \u00b7 FLORIST \u00b7 KEYS \u00b7 FOOD COURT.",
+        "EXITS: METRO (WEST). SKY TAXI (ROOF). SERVICE CORRIDOR (EAST, STAFF ONLY)."
+      ]
+    },
+    {
+      "id": "fountain",
+      "name": "FOUNTAIN",
+      "pages": [
+        "COINS ARE COLLECTED NIGHTLY. PROCEEDS: GALLERIA MAINTENANCE FUND.",
+        "WISHES ARE NOT RECORDED."
+      ]
+    },
+    {
+      "id": "escalator",
+      "name": "ESCALATOR B",
+      "pages": [
+        "ESCALATOR B \u00b7 UP ONLY.",
+        "DOWN SERVICE SUSPENDED PENDING REVIEW. USE STAIRS C."
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "metro",
+      "to": "galleriaStation",
+      "at": "mall",
+      "label": "[E] DOWN TO THE METRO"
+    },
+    {
+      "id": "taxi",
+      "to": "",
+      "action": "taxi",
+      "label": "[E] ROOF PAD \u00b7 HAIL TAXI"
+    },
+    {
+      "id": "market",
+      "to": "market",
+      "at": "mall",
+      "label": "[E] SERVICE CORRIDOR"
+    }
+  ],
+  "actors": [
+    {
+      "seed": 7105,
+      "look": {
+        "body": "slim",
+        "garb": "tee",
+        "hair": "mohawk",
+        "hairCol": "#6a3a9a",
+        "extras": [
+          "headphones",
+          "phone"
+        ]
+      },
+      "act": "phone",
+      "facing": -1,
+      "id": "teen",
+      "instance": "actor-teen",
+      "band": "world",
+      "target": "teen",
+      "reaction": "teen"
+    },
+    {
+      "seed": 7201,
+      "look": {
+        "body": "kid",
+        "garb": "tee",
+        "hair": "cap",
+        "acc": "#c83a2a",
+        "extras": []
+      },
+      "act": "stand",
+      "facing": -1,
+      "id": "kid",
+      "instance": "kid",
+      "band": "world",
+      "target": "kid",
+      "reaction": "kid"
+    },
+    {
+      "seed": 7202,
+      "look": {
+        "body": "avg",
+        "garb": "suit",
+        "hair": "short",
+        "extras": [
+          "glasses"
+        ]
+      },
+      "act": "sit",
+      "facing": -1,
+      "id": "diner",
+      "instance": "diner",
+      "band": "world",
+      "target": "diner",
+      "height": "artwork",
+      "reaction": "diner"
+    },
+    {
+      "seed": 7203,
+      "look": {
+        "body": "wide",
+        "garb": "jacket",
+        "top": "#2e3a4a",
+        "bottom": "#1e2430",
+        "hair": "cap",
+        "acc": "#1a1a22",
+        "extras": [
+          "visor"
+        ]
+      },
+      "act": "stand",
+      "facing": -1,
+      "id": "securityPerson",
+      "instance": "securityPerson",
+      "band": "world",
+      "target": "security",
+      "reaction": "security"
+    },
+    {
+      "seed": 7204,
+      "look": {
+        "body": "tall",
+        "garb": "jacket",
+        "top": "#2e3a4a",
+        "bottom": "#1e2430",
+        "hair": "short",
+        "acc": "#1a1a22",
+        "hairCol": "#16100c",
+        "extras": []
+      },
+      "act": "dance",
+      "facing": -1,
+      "id": "dancer",
+      "instance": "dancer",
+      "band": "world",
+      "target": "dancer",
+      "reaction": "dancer"
+    },
+    {
+      "look": "pigeon",
+      "seed": 7,
+      "act": "walk",
+      "range": 24,
+      "id": "pigeon",
+      "instance": "pigeon",
+      "band": "world",
+      "reaction": "slot-5"
+    },
+    {
+      "seed": 7103,
+      "look": {
+        "body": "avg",
+        "garb": "hivis",
+        "hair": "bun",
+        "extras": [
+          "glasses",
+          "cyberarm"
+        ]
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "deckTech",
+      "instance": "actor-deckTech",
+      "band": "background",
+      "reaction": "actor.deckTech"
+    },
+    {
+      "seed": 7101,
+      "look": {
+        "body": "slim",
+        "garb": "suit",
+        "hair": "bald",
+        "extras": [
+          "visor",
+          "cyberarm"
+        ]
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "implantClerk",
+      "instance": "implantClerk",
+      "band": "background",
+      "reaction": "actor.implantClerk"
+    },
+    {
+      "seed": 7102,
+      "look": {
+        "body": "wide",
+        "garb": "jacket",
+        "hair": "short",
+        "hairCol": "#a8a29a",
+        "top": "#6a2a3e",
+        "extras": [
+          "glasses"
+        ]
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "pawnbroker",
+      "instance": "pawnbroker",
+      "band": "background",
+      "reaction": "actor.pawnbroker"
+    },
+    {
+      "seed": 7104,
+      "look": {
+        "body": "old",
+        "garb": "apron",
+        "hair": "bun",
+        "hairCol": "#e8e4dc",
+        "extras": []
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "florist",
+      "instance": "keeper-florist",
+      "band": "background",
+      "reaction": "actor.florist"
+    },
+    {
+      "seed": 7106,
+      "look": {
+        "body": "old",
+        "garb": "apron",
+        "hair": "brim",
+        "acc": "#5a3a2a",
+        "extras": [
+          "glasses"
+        ]
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "keyCutter",
+      "instance": "keyCutter",
+      "band": "background",
+      "reaction": "actor.keyCutter"
+    },
+    {
+      "seed": 7107,
+      "look": {
+        "body": "wide",
+        "garb": "apron",
+        "hair": "scarf",
+        "acc": "#c83a2a",
+        "extras": []
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "cook-0",
+      "instance": "cook-0",
+      "band": "background",
+      "reaction": "actor.cook-0"
+    },
+    {
+      "seed": 7108,
+      "look": {
+        "body": "tall",
+        "garb": "tee",
+        "hair": "cap",
+        "acc": "#d8b040",
+        "top": "#a84a3a",
+        "extras": [
+          "mask"
+        ]
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "cook-1",
+      "instance": "cook-1",
+      "band": "background",
+      "reaction": "actor.cook-1"
+    },
+    {
+      "seed": 7109,
+      "look": {
+        "body": "short",
+        "garb": "apron",
+        "hair": "beanie",
+        "extras": []
+      },
+      "act": "vend",
+      "facing": -1,
+      "id": "cook-2",
+      "instance": "cook-2",
+      "band": "background",
+      "reaction": "actor.cook-2"
+    },
+    {
+      "seed": 7301,
+      "act": "walk",
+      "range": [
+        0,
+        480
+      ],
+      "look": {
+        "body": "avg",
+        "garb": "dress",
+        "hair": "long",
+        "extras": [
+          "bag"
+        ]
+      },
+      "id": "floor-0",
+      "instance": "floor-0",
+      "band": "background",
+      "reaction": "actor.floor-0"
+    },
+    {
+      "seed": 7302,
+      "act": "phone",
+      "facing": 1,
+      "look": {
+        "body": "tall",
+        "garb": "suit",
+        "hair": "short",
+        "extras": [
+          "phone"
+        ]
+      },
+      "id": "floor-1",
+      "instance": "floor-1",
+      "band": "background",
+      "reaction": "actor.floor-1"
+    },
+    {
+      "seed": 7303,
+      "act": "walk",
+      "range": [
+        0,
+        430
+      ],
+      "speed": 0.26,
+      "look": {
+        "body": "old",
+        "garb": "coat",
+        "hair": "brim",
+        "extras": [
+          "cane"
+        ]
+      },
+      "id": "floor-2",
+      "instance": "floor-2",
+      "band": "background",
+      "reaction": "actor.floor-2"
+    },
+    {
+      "seed": 7304,
+      "act": "haggle",
+      "facing": 1,
+      "look": {
+        "body": "wide",
+        "garb": "jacket",
+        "hair": "beanie",
+        "extras": [
+          "backpack"
+        ]
+      },
+      "id": "floor-3",
+      "instance": "floor-3",
+      "band": "background",
+      "reaction": "actor.floor-3"
+    },
+    {
+      "seed": 7305,
+      "act": "walk",
+      "range": [
+        0,
+        740
+      ],
+      "look": {
+        "body": "avg",
+        "garb": "jacket",
+        "top": "#2e3a4a",
+        "bottom": "#1e2430",
+        "hair": "cap",
+        "acc": "#1a1a22",
+        "extras": []
+      },
+      "id": "floor-4",
+      "instance": "floor-4",
+      "band": "background",
+      "reaction": "actor.floor-4"
+    },
+    {
+      "seed": 7306,
+      "act": "walk",
+      "range": [
+        0,
+        390
+      ],
+      "speed": 0.4,
+      "look": {
+        "body": "avg",
+        "garb": "tee",
+        "hair": "long",
+        "extras": [
+          "headphones",
+          "bag"
+        ]
+      },
+      "id": "floor-5",
+      "instance": "floor-5",
+      "band": "background",
+      "reaction": "actor.floor-5"
+    },
+    {
+      "seed": 7307,
+      "act": "stand",
+      "facing": -1,
+      "look": {
+        "body": "avg",
+        "garb": "coat",
+        "hair": "bun",
+        "extras": [
+          "bag"
+        ]
+      },
+      "id": "floor-6",
+      "instance": "floor-6",
+      "band": "background",
+      "reaction": "actor.floor-6"
+    },
+    {
+      "look": "cleaner",
+      "act": "walk",
+      "range": [
+        0,
+        320
+      ],
+      "id": "floor-7",
+      "instance": "floor-7",
+      "band": "background",
+      "reaction": "actor.floor-7",
+      "bakeSeed": 6023
+    },
+    {
+      "seed": 7308,
+      "act": "walk",
+      "range": [
+        0,
+        504
+      ],
+      "speed": 0.3,
+      "look": {
+        "body": "tall",
+        "garb": "jacket",
+        "hair": "cap",
+        "extras": [
+          "visor",
+          "backpack"
+        ]
+      },
+      "id": "floor-8",
+      "instance": "floor-8",
+      "band": "background",
+      "reaction": "actor.floor-8"
+    },
+    {
+      "seed": 7309,
+      "act": "stand",
+      "facing": 1,
+      "look": {
+        "body": "slim",
+        "garb": "dress",
+        "hair": "bun",
+        "extras": [
+          "bag"
+        ]
+      },
+      "id": "floor-9",
+      "instance": "floor-9",
+      "band": "background",
+      "reaction": "actor.floor-9"
+    },
+    {
+      "seed": 7310,
+      "act": "walk",
+      "range": [
+        0,
+        -420
+      ],
+      "speed": 0.5,
+      "look": {
+        "body": "kid",
+        "garb": "tee",
+        "hair": "short",
+        "extras": [
+          "backpack"
+        ]
+      },
+      "id": "floor-10",
+      "instance": "floor-10",
+      "band": "background",
+      "reaction": "actor.floor-10"
+    },
+    {
+      "seed": 7311,
+      "act": "lean",
+      "facing": 1,
+      "look": {
+        "body": "slim",
+        "garb": "jacket",
+        "hair": "hood",
+        "extras": []
+      },
+      "id": "floor-11",
+      "instance": "floor-11",
+      "band": "background",
+      "reaction": "actor.floor-11"
+    },
+    {
+      "seed": 7312,
+      "act": "walk",
+      "range": [
+        0,
+        600
+      ],
+      "look": {
+        "body": "wide",
+        "garb": "coat",
+        "hair": "short",
+        "extras": [
+          "bag",
+          "umbrella"
+        ],
+        "acc": "#8a3a8a"
+      },
+      "id": "floor-12",
+      "instance": "floor-12",
+      "band": "background",
+      "reaction": "actor.floor-12"
+    },
+    {
+      "seed": 7313,
+      "act": "sit",
+      "facing": 1,
+      "look": {
+        "body": "short",
+        "garb": "tee",
+        "hair": "long",
+        "extras": [
+          "phone"
+        ]
+      },
+      "id": "floor-13",
+      "instance": "floor-13",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.floor-13"
+    },
+    {
+      "seed": 7314,
+      "act": "sit",
+      "facing": 1,
+      "look": {
+        "body": "old",
+        "garb": "coat",
+        "hair": "scarf",
+        "extras": []
+      },
+      "id": "floor-14",
+      "instance": "floor-14",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.floor-14"
+    },
+    {
+      "seed": 7315,
+      "act": "sleep",
+      "look": {
+        "body": "tall",
+        "garb": "jacket",
+        "hair": "beanie",
+        "extras": []
+      },
+      "id": "floor-15",
+      "instance": "floor-15",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.floor-15"
+    },
+    {
+      "look": "cleaner",
+      "act": "walk",
+      "range": [
+        0,
+        440
+      ],
+      "id": "floor-16",
+      "instance": "floor-16",
+      "band": "background",
+      "reaction": "actor.floor-16",
+      "bakeSeed": 12883
+    },
+    {
+      "look": "drone",
+      "act": "scan",
+      "id": "floor-17",
+      "instance": "floor-17",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.floor-17",
+      "bakeSeed": 2943
+    },
+    {
+      "look": "courier",
+      "act": "walk",
+      "range": [
+        0,
+        750
+      ],
+      "speed": 0.4,
+      "id": "floor-18",
+      "instance": "floor-18",
+      "band": "background",
+      "reaction": "actor.floor-18",
+      "bakeSeed": 10503
+    },
+    {
+      "seed": 7316,
+      "act": "queue",
+      "facing": 1,
+      "look": {
+        "body": "avg",
+        "garb": "hivis",
+        "hair": "helmet",
+        "extras": []
+      },
+      "id": "floor-19",
+      "instance": "floor-19",
+      "band": "background",
+      "reaction": "actor.floor-19"
+    },
+    {
+      "seed": 7401,
+      "act": "stand",
+      "facing": 1,
+      "look": {
+        "extras": [
+          "bag"
+        ]
+      },
+      "id": "rider-0",
+      "instance": "rider-0",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.rider-0"
+    },
+    {
+      "seed": 7402,
+      "act": "phone",
+      "facing": 1,
+      "look": {
+        "extras": [
+          "bag"
+        ]
+      },
+      "id": "rider-1",
+      "instance": "rider-1",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.rider-1"
+    },
+    {
+      "seed": 7403,
+      "act": "stand",
+      "facing": 1,
+      "look": {
+        "body": "kid"
+      },
+      "id": "rider-2",
+      "instance": "rider-2",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.rider-2"
+    },
+    {
+      "seed": 2387,
+      "act": "walk",
+      "range": -400.0164235662745,
+      "facing": 1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-0",
+      "instance": "gallery-0",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-0"
+    },
+    {
+      "seed": 2394,
+      "act": "phone",
+      "range": 0,
+      "facing": -1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-1",
+      "instance": "gallery-1",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-1"
+    },
+    {
+      "seed": 2401,
+      "act": "walk",
+      "range": -215.52071061708068,
+      "facing": 1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-2",
+      "instance": "gallery-2",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-2"
+    },
+    {
+      "seed": 2408,
+      "act": "phone",
+      "range": 0,
+      "facing": -1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-3",
+      "instance": "gallery-3",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-3"
+    },
+    {
+      "seed": 2415,
+      "act": "walk",
+      "range": -250.2137654881057,
+      "facing": 1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-4",
+      "instance": "gallery-4",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-4"
+    },
+    {
+      "seed": 2422,
+      "look": "servbot",
+      "act": "charge",
+      "range": 0,
+      "facing": 1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-5",
+      "instance": "gallery-5",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-5"
+    },
+    {
+      "seed": 2429,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-6",
+      "instance": "gallery-6",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-6"
+    },
+    {
+      "seed": 2436,
+      "act": "walk",
+      "range": -240.53919472756758,
+      "facing": 1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-7",
+      "instance": "gallery-7",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-7"
+    },
+    {
+      "seed": 2443,
+      "look": "deliverybot",
+      "act": "roll",
+      "range": 419.0639017890505,
+      "facing": -1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-8",
+      "instance": "gallery-8",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-8"
+    },
+    {
+      "seed": 2450,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 3,
+      "dim": 0.42,
+      "id": "gallery-9",
+      "instance": "gallery-9",
+      "band": "background",
+      "height": "artwork",
+      "reaction": "actor.gallery-9"
+    },
+    {
+      "seed": 2449,
+      "act": "stand",
+      "range": 0,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-0",
+      "instance": "far-0",
+      "band": "background",
+      "reaction": "actor.far-0"
+    },
+    {
+      "seed": 2456,
+      "act": "walk",
+      "range": -396.00767038576663,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-1",
+      "instance": "far-1",
+      "band": "background",
+      "reaction": "actor.far-1"
+    },
+    {
+      "seed": 2463,
+      "look": "loader",
+      "act": "carry",
+      "range": 284.2355342694724,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-2",
+      "instance": "far-2",
+      "band": "background",
+      "reaction": "actor.far-2"
+    },
+    {
+      "seed": 2470,
+      "act": "walk",
+      "range": -384.7726274397097,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-3",
+      "instance": "far-3",
+      "band": "background",
+      "reaction": "actor.far-3"
+    },
+    {
+      "seed": 2477,
+      "act": "walk",
+      "range": -288.6608762800046,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-4",
+      "instance": "far-4",
+      "band": "background",
+      "reaction": "actor.far-4"
+    },
+    {
+      "seed": 2484,
+      "act": "walk",
+      "range": 219.45671767902405,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-5",
+      "instance": "far-5",
+      "band": "background",
+      "reaction": "actor.far-5"
+    },
+    {
+      "seed": 2491,
+      "act": "walk",
+      "range": 141.41318280315642,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-6",
+      "instance": "far-6",
+      "band": "background",
+      "reaction": "actor.far-6"
+    },
+    {
+      "seed": 2498,
+      "act": "walk",
+      "range": 387.82592705815375,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-7",
+      "instance": "far-7",
+      "band": "background",
+      "reaction": "actor.far-7"
+    },
+    {
+      "seed": 2505,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-8",
+      "instance": "far-8",
+      "band": "background",
+      "reaction": "actor.far-8"
+    },
+    {
+      "seed": 2512,
+      "act": "walk",
+      "range": 171.26744543726903,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-9",
+      "instance": "far-9",
+      "band": "background",
+      "reaction": "actor.far-9"
+    },
+    {
+      "seed": 2519,
+      "act": "walk",
+      "range": -419.68129587344885,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-10",
+      "instance": "far-10",
+      "band": "background",
+      "reaction": "actor.far-10"
+    },
+    {
+      "seed": 2526,
+      "act": "walk",
+      "range": -324.8318727430104,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-11",
+      "instance": "far-11",
+      "band": "background",
+      "reaction": "actor.far-11"
+    },
+    {
+      "seed": 2533,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-12",
+      "instance": "far-12",
+      "band": "background",
+      "reaction": "actor.far-12"
+    },
+    {
+      "seed": 2540,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-13",
+      "instance": "far-13",
+      "band": "background",
+      "reaction": "actor.far-13"
+    },
+    {
+      "seed": 2547,
+      "act": "walk",
+      "range": 400.56701248538076,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-14",
+      "instance": "far-14",
+      "band": "background",
+      "reaction": "actor.far-14"
+    },
+    {
+      "seed": 2554,
+      "act": "walk",
+      "range": 318.81535367985043,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-15",
+      "instance": "far-15",
+      "band": "background",
+      "reaction": "actor.far-15"
+    },
+    {
+      "seed": 2561,
+      "act": "walk",
+      "range": -211.76664785098592,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-16",
+      "instance": "far-16",
+      "band": "background",
+      "reaction": "actor.far-16"
+    },
+    {
+      "seed": 2568,
+      "act": "walk",
+      "range": -373.49798754486164,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-17",
+      "instance": "far-17",
+      "band": "background",
+      "reaction": "actor.far-17"
+    },
+    {
+      "seed": 2575,
+      "act": "walk",
+      "range": 410.5999589201994,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-18",
+      "instance": "far-18",
+      "band": "background",
+      "reaction": "actor.far-18"
+    },
+    {
+      "seed": 2582,
+      "act": "walk",
+      "range": -256.2086378672201,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-19",
+      "instance": "far-19",
+      "band": "background",
+      "reaction": "actor.far-19"
+    },
+    {
+      "seed": 2589,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-20",
+      "instance": "far-20",
+      "band": "background",
+      "reaction": "actor.far-20"
+    },
+    {
+      "seed": 2596,
+      "act": "walk",
+      "range": 341.9388080862997,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-21",
+      "instance": "far-21",
+      "band": "background",
+      "reaction": "actor.far-21"
+    },
+    {
+      "seed": 2603,
+      "act": "walk",
+      "range": 319.2462001271761,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-22",
+      "instance": "far-22",
+      "band": "background",
+      "reaction": "actor.far-22"
+    },
+    {
+      "seed": 2610,
+      "act": "walk",
+      "range": -270.18108927187563,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-23",
+      "instance": "far-23",
+      "band": "background",
+      "reaction": "actor.far-23"
+    },
+    {
+      "seed": 2617,
+      "act": "walk",
+      "range": -224.38234070520025,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-24",
+      "instance": "far-24",
+      "band": "background",
+      "reaction": "actor.far-24"
+    },
+    {
+      "seed": 2624,
+      "act": "walk",
+      "range": 238.4176100038074,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-25",
+      "instance": "far-25",
+      "band": "background",
+      "reaction": "actor.far-25"
+    },
+    {
+      "seed": 2631,
+      "act": "walk",
+      "range": 225.034492306893,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-26",
+      "instance": "far-26",
+      "band": "background",
+      "reaction": "actor.far-26"
+    },
+    {
+      "seed": 2638,
+      "act": "walk",
+      "range": -413.052292984469,
+      "facing": -1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-27",
+      "instance": "far-27",
+      "band": "background",
+      "reaction": "actor.far-27"
+    },
+    {
+      "seed": 2645,
+      "act": "walk",
+      "range": -343.7893330975386,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-28",
+      "instance": "far-28",
+      "band": "background",
+      "reaction": "actor.far-28"
+    },
+    {
+      "seed": 2652,
+      "act": "stand",
+      "range": 0,
+      "facing": 1,
+      "ps": 2,
+      "dim": 0.55,
+      "parallax": 0.55,
+      "id": "far-29",
+      "instance": "far-29",
+      "band": "background",
+      "reaction": "actor.far-29"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "scene",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "implants": {
+        "instance": "use-implants",
+        "promptH": 70
+      },
+      "kiosk": {
+        "instance": "use-kiosk",
+        "promptH": 96
+      },
+      "pawn": {
+        "instance": "use-pawn",
+        "promptH": 70
+      },
+      "deck": {
+        "instance": "use-deck",
+        "promptH": 96
+      },
+      "florist": {
+        "instance": "use-florist",
+        "promptH": 70
+      },
+      "keys": {
+        "instance": "use-keys",
+        "promptH": 70
+      },
+      "order": {
+        "instance": "use-order",
+        "promptH": 70
+      }
+    },
+    "readables": {
+      "kiosk": {
+        "instance": "read-kiosk",
+        "promptH": 70
+      },
+      "fountain": {
+        "instance": "read-fountain",
+        "promptH": 66
+      },
+      "escalator": {
+        "instance": "read-escalator",
+        "promptH": 76
+      }
+    },
+    "exits": {
+      "metro": {
+        "instance": "exit-metro",
+        "promptH": 82
+      },
+      "taxi": {
+        "instance": "exit-taxi",
+        "promptH": 82
+      },
+      "market": {
+        "instance": "exit-market",
+        "promptH": 82
+      }
+    }
+  },
+  "environment": {
+    "facing": 180
+  },
+  "companion": {
+    "mode": "off"
+  }
+}

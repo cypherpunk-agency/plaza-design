@@ -1,7 +1,6 @@
 {
   "id": "yard",
   "name": "back yard",
-
   "state": {
     "found": false,
     "armAt": "home",
@@ -11,43 +10,120 @@
     "gateAllowed": false,
     "pan": 0
   },
-
   "tuning": {
     "gateOpenMs": 1000,
     "slideMs": 2500,
     "chuteDropMs": 400,
     "bounceBackMs": 700
   },
-
   "devices": [
     {
       "id": "cam",
       "name": "CAM-1",
       "look": "A camera on a pole over the crates.",
-      "status": [{ "if": "found", "then": "tagged: {parcel}", "else": "watching the yard" }],
+      "status": [
+        {
+          "if": "found",
+          "then": "tagged: {parcel}",
+          "else": "watching the yard"
+        }
+      ],
       "layout": {
-        "spot": { "x": 90, "w": 26, "h": 86 },
-        "board": { "x": 0.14, "y": 0.3 },
-        "dir": { "lens": "up", "motor": "down", "footage": "right" }
+        "spot": {
+          "x": 90,
+          "w": 26,
+          "h": 86
+        },
+        "board": {
+          "x": 0.14,
+          "y": 0.3
+        },
+        "dir": {
+          "lens": "up",
+          "motor": "down",
+          "footage": "right"
+        }
       },
       "nouns": [
         {
-          "id": "lens", "kind": "SENSE", "verbs": ["view"],
-          "on": { "view": { "do": [{ "open": "camera" }], "say": ["cat lens", "feed open."] } }
-        },
-        {
-          "id": "motor", "kind": "ACT", "verbs": ["left", "centre", "right"], "current": "pan",
+          "id": "lens",
+          "kind": "SENSE",
+          "verbs": [
+            "view"
+          ],
           "on": {
-            "left": { "do": [{ "set": "pan", "to": -1 }], "say": "motor.turn" },
-            "centre": { "do": [{ "set": "pan", "to": 0 }], "say": "motor.turn" },
-            "right": { "do": [{ "set": "pan", "to": 1 }], "say": "motor.turn" }
+            "view": {
+              "do": [
+                {
+                  "open": "camera"
+                }
+              ],
+              "say": [
+                "cat lens",
+                "feed open."
+              ]
+            }
           }
         },
         {
-          "id": "footage", "kind": "STORE", "verbs": ["read", "copy"],
+          "id": "motor",
+          "kind": "ACT",
+          "verbs": [
+            "left",
+            "centre",
+            "right"
+          ],
+          "current": "pan",
           "on": {
-            "read": { "say": ["cat footage", "three hours of crates. one is addressed to someone you know."] },
-            "copy": { "say": ["cp footage ~/deck", "copied footage (3 hours)."] }
+            "left": {
+              "do": [
+                {
+                  "set": "pan",
+                  "to": -1
+                }
+              ],
+              "say": "motor.turn"
+            },
+            "centre": {
+              "do": [
+                {
+                  "set": "pan",
+                  "to": 0
+                }
+              ],
+              "say": "motor.turn"
+            },
+            "right": {
+              "do": [
+                {
+                  "set": "pan",
+                  "to": 1
+                }
+              ],
+              "say": "motor.turn"
+            }
+          }
+        },
+        {
+          "id": "footage",
+          "kind": "STORE",
+          "verbs": [
+            "read",
+            "copy"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat footage",
+                "three hours of crates. one is addressed to someone you know."
+              ]
+            },
+            "copy": {
+              "say": [
+                "cp footage ~/deck",
+                "copied footage (3 hours)."
+              ]
+            }
           }
         }
       ]
@@ -56,29 +132,94 @@
       "id": "crane",
       "name": "CRANE",
       "look": "A yard crane. Does exactly what it is told, in order.",
-      "status": ["arm: {armAt}", { "if": "held", "then": " · holding {held}" }],
+      "status": [
+        "arm: {armAt}",
+        {
+          "if": "held",
+          "then": " · holding {held}"
+        }
+      ],
       "layout": {
-        "spot": { "x": 350, "w": 186, "h": 130 },
-        "board": { "x": 0.5, "y": 0.3 },
-        "dir": { "arm": "down", "claw": "up", "job.log": "left" }
+        "spot": {
+          "x": 350,
+          "w": 186,
+          "h": 130
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.3
+        },
+        "dir": {
+          "arm": "down",
+          "claw": "up",
+          "job.log": "left"
+        }
       },
       "nouns": [
         {
-          "id": "arm", "kind": "ACT", "verbs": ["A-3", "B-5", "C-7", "chute"], "current": "armAt",
+          "id": "arm",
+          "kind": "ACT",
+          "verbs": [
+            "A-3",
+            "B-5",
+            "C-7",
+            "chute"
+          ],
+          "current": "armAt",
           "on": {
             "*": {
-              "do": [{ "set": "armAt", "to": "{verb}" }, { "if": "held", "set": "parcelAt", "to": "hook" }],
-              "say": ["use arm --{verb}", "arm swings to {verb}."]
+              "do": [
+                {
+                  "set": "armAt",
+                  "to": "{verb}"
+                },
+                {
+                  "if": "held",
+                  "set": "parcelAt",
+                  "to": "hook"
+                }
+              ],
+              "say": [
+                "use arm --{verb}",
+                "arm swings to {verb}."
+              ]
             }
           }
         },
         {
-          "id": "claw", "kind": "ACT", "verbs": ["grab", "drop"], "events": ["dropped"],
-          "on": { "*": { "do": [{ "effect": "crane.claw" }] } }
+          "id": "claw",
+          "kind": "ACT",
+          "verbs": [
+            "grab",
+            "drop"
+          ],
+          "events": [
+            "dropped"
+          ],
+          "on": {
+            "*": {
+              "do": [
+                {
+                  "effect": "crane.claw"
+                }
+              ]
+            }
+          }
         },
         {
-          "id": "job.log", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat job.log", "job.log: \"parcel for you, slot ?-? (smudged by a thumb).\""] } }
+          "id": "job.log",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat job.log",
+                "job.log: \"parcel for you, slot ?-? (smudged by a thumb).\""
+              ]
+            }
+          }
         }
       ]
     },
@@ -86,121 +227,266 @@
       "id": "gate",
       "name": "HATCH · HINGE",
       "look": "A hatch in the fence, with a face. It is judging you.",
-      "everyday": [{ "noun": "hinge", "verb": "talk", "label": "talk to HINGE" }],
+      "everyday": [
+        {
+          "noun": "hinge",
+          "verb": "talk",
+          "label": "talk to HINGE"
+        }
+      ],
       "status": [
-        { "if": "gateOpen", "then": "OPEN", "else": "closed" },
-        { "if": "gateAllowed", "then": " · takes signals", "else": " · ignores signals" }
+        {
+          "if": "gateOpen",
+          "then": "OPEN",
+          "else": "closed"
+        },
+        {
+          "if": "gateAllowed",
+          "then": " · takes signals",
+          "else": " · ignores signals"
+        }
       ],
       "layout": {
-        "spot": { "x": 615, "w": 36, "h": 68 },
-        "board": { "x": 0.86, "y": 0.3 },
-        "dir": { "lock": "left", "log": "up", "hinge": "down" }
+        "spot": {
+          "x": 615,
+          "w": 36,
+          "h": 68
+        },
+        "board": {
+          "x": 0.86,
+          "y": 0.3
+        },
+        "dir": {
+          "lock": "left",
+          "log": "up",
+          "hinge": "down"
+        }
       },
       "nouns": [
         {
-          "id": "lock", "kind": "ACT", "verbs": ["open"],
+          "id": "lock",
+          "kind": "ACT",
+          "verbs": [
+            "open"
+          ],
           "on": {
             "open": [
-              { "if": "!signal", "say": ["use lock --open", "HINGE: \"hands off the lock. ask me like a person.\"", "err"] },
-              { "if": "!gateAllowed", "say": ["signal → lock --open", "HINGE ignores the signal. it wants to be asked first.", "err"] },
-              { "do": [{ "effect": "hatch.open" }], "say": ["signal → lock --open", "HINGE: \"opening. one second. I am busy.\""] }
+              {
+                "if": "!signal",
+                "say": [
+                  "use lock --open",
+                  "HINGE: \"hands off the lock. ask me like a person.\"",
+                  "err"
+                ]
+              },
+              {
+                "if": "!gateAllowed",
+                "say": [
+                  "signal → lock --open",
+                  "HINGE ignores the signal. it wants to be asked first.",
+                  "err"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "effect": "hatch.open"
+                  }
+                ],
+                "say": [
+                  "signal → lock --open",
+                  "HINGE: \"opening. one second. I am busy.\""
+                ]
+              }
             ]
           }
         },
         {
-          "id": "log", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat log", "log: opened 0 times today. 0 times this week."] } }
+          "id": "log",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat log",
+                "log: opened 0 times today. 0 times this week."
+              ]
+            }
+          }
         },
         {
-          "id": "hinge", "kind": "DAEMON", "verbs": ["talk"],
-          "on": { "talk": { "do": [{ "open": "talk" }] } }
+          "id": "hinge",
+          "kind": "DAEMON",
+          "verbs": [
+            "talk"
+          ],
+          "on": {
+            "talk": {
+              "do": [
+                {
+                  "open": "talk"
+                }
+              ]
+            }
+          }
         }
       ]
     }
   ],
-
   "cables": [],
-
   "keyring": [
-    { "id": "moth.key", "kind": "key", "label": "Moth's key chip" },
-    { "id": "uplink", "kind": "key", "label": "uplink.so" }
+    {
+      "id": "moth.key",
+      "kind": "key",
+      "label": "Moth's key chip"
+    },
+    {
+      "id": "uplink",
+      "kind": "key",
+      "label": "uplink.so"
+    }
   ],
-
   "camera": {
     "crates": [
-      { "id": "A-3", "x": 60, "y": 92, "w": 44, "h": 34, "label": "RAISINS (BULK)" },
-      { "id": "B-5", "x": 140, "y": 88, "w": 40, "h": 38, "label": "HOLD · NOT FOR COLLECTION" },
-      { "id": "C-7", "x": 222, "y": 96, "w": 36, "h": 30, "label": "TO: YOU · FRAGILE" }
+      {
+        "id": "A-3",
+        "x": 60,
+        "y": 92,
+        "w": 44,
+        "h": 34,
+        "label": "RAISINS (BULK)"
+      },
+      {
+        "id": "B-5",
+        "x": 140,
+        "y": 88,
+        "w": 40,
+        "h": 38,
+        "label": "HOLD · NOT FOR COLLECTION"
+      },
+      {
+        "id": "C-7",
+        "x": 222,
+        "y": 96,
+        "w": 36,
+        "h": 30,
+        "label": "TO: YOU · FRAGILE"
+      }
     ]
   },
-
-  "dialogue": {
-    "hinge": {
-      "speaker": "HINGE · hatch daemon",
-      "start": "start",
-      "sayCmd": "say \"{line}\" > hinge",
-      "nodes": {
-        "start": [
-          { "if": "gateAllowed", "text": "Signals: allowed. One second per ping. Do not make me regret this.", "choices": [["Thanks, HINGE.", "bye"]] },
-          { "text": "State your business. Briefly. I have been a hatch for eleven years.", "choices": [["I have a parcel coming.", "parcel"], ["Can you open, please?", "please"], ["Open.", "blunt"]] }
-        ],
-        "parcel": { "text": "Parcels. Always parcels. I do not watch chutes. I have standards.", "choices": [["What if something pinged you?", "ping"], ["Never mind.", "start"]] },
-        "ping": { "text": "A signal? Hm. Automation. Very modern. Fine: one ping, I open for one second. I will not wait.", "choices": [["Deal.", "deal"]] },
-        "please": { "text": "Manners. Rare. But I do not open for people. I open for reasons.", "choices": [["The reason is a parcel.", "parcel"]] },
-        "blunt": { "text": "Bold. No.", "choices": [["Let me start over.", "start"]] },
-        "deal": { "text": "Noted. Signals allowed. Timing is your problem.", "do": [{ "set": "gateAllowed", "to": true }, { "goal": "talk" }] },
-        "bye": { "text": "Hmph." }
-      },
-      "free": {
-        "match": "wire|ping|signal|automat",
-        "goto": "ping",
-        "miss": "HINGE does not parse that. HINGE does not want to.",
-        "retry": "Try again.",
-        "retryGoto": "start"
-      }
-    }
-  },
-
+  "dialogue": {},
   "goals": [
-    { "id": "find", "text": "find your parcel" },
-    { "id": "chute", "text": "get it into the chute" },
-    { "id": "talk", "text": "get the hatch to cooperate" },
-    { "id": "gate", "text": "get it through the hatch" },
-    { "id": "take", "text": "pick it up" }
+    {
+      "id": "find",
+      "text": "find your parcel"
+    },
+    {
+      "id": "chute",
+      "text": "get it into the chute"
+    },
+    {
+      "id": "talk",
+      "text": "get the hatch to cooperate"
+    },
+    {
+      "id": "gate",
+      "text": "get it through the hatch"
+    },
+    {
+      "id": "take",
+      "text": "pick it up"
+    }
   ],
-
   "texts": {
     "goals.done": "done. the fixer owes you one.",
     "prompt.exit": "[E] DOWNTOWN",
     "prompt.take": "[E] TAKE PARCEL",
-
-    "motor.turn": ["use motor --{verb}", "motor whirrs. pointed {verb}."],
-
-    "claw.grab.holding": ["use claw --grab", "already holding {held}."],
-    "claw.grab.air": ["use claw --grab", "the claw grabs air."],
-    "claw.grab.wrong": ["use claw --grab", "a crate marked \"HOLD · NOT FOR COLLECTION\". the claw lets go."],
-    "claw.grab.wrong.A-3": ["use claw --grab", "crate A-3: raisins, bulk. not your parcel. released."],
-    "claw.grab.ok": ["use claw --grab", "got it. a parcel, slightly squashed.", "ok"],
-    "claw.drop.empty": ["use claw --drop", "claw empty. nothing dropped."],
-    "claw.drop.at": ["use claw --drop", "dropped at {armAt}. thud."],
-    "claw.drop.chute": ["use claw --drop", "dropped into the chute."],
-
-    "parcel.tray": ["", "the parcel slides through the hatch and into the pickup tray.", "ok"],
-    "parcel.bonk": ["", "the parcel hits the closed hatch. the crane fishes it back.", "err"],
-    "parcel.take": ["take parcel", "a parcel, slightly squashed. inside: a key chip with a moth sticker, a spare uplink.so chip, and a note: \"Moth asked me to give you this. nice wiring. —the fixer\"", "ok"],
-
+    "motor.turn": [
+      "use motor --{verb}",
+      "motor whirrs. pointed {verb}."
+    ],
+    "claw.grab.holding": [
+      "use claw --grab",
+      "already holding {held}."
+    ],
+    "claw.grab.air": [
+      "use claw --grab",
+      "the claw grabs air."
+    ],
+    "claw.grab.wrong": [
+      "use claw --grab",
+      "a crate marked \"HOLD · NOT FOR COLLECTION\". the claw lets go."
+    ],
+    "claw.grab.wrong.A-3": [
+      "use claw --grab",
+      "crate A-3: raisins, bulk. not your parcel. released."
+    ],
+    "claw.grab.ok": [
+      "use claw --grab",
+      "got it. a parcel, slightly squashed.",
+      "ok"
+    ],
+    "claw.drop.empty": [
+      "use claw --drop",
+      "claw empty. nothing dropped."
+    ],
+    "claw.drop.at": [
+      "use claw --drop",
+      "dropped at {armAt}. thud."
+    ],
+    "claw.drop.chute": [
+      "use claw --drop",
+      "dropped into the chute."
+    ],
+    "parcel.tray": [
+      "",
+      "the parcel slides through the hatch and into the pickup tray.",
+      "ok"
+    ],
+    "parcel.bonk": [
+      "",
+      "the parcel hits the closed hatch. the crane fishes it back.",
+      "err"
+    ],
+    "parcel.take": [
+      "take parcel",
+      "a parcel, slightly squashed. inside: a key chip with a moth sticker, a spare uplink.so chip, and a note: \"Moth asked me to give you this. nice wiring. —the fixer\"",
+      "ok"
+    ],
     "cam.zoom": "ZOOM",
     "cam.tag": "TAG",
-    "cam.zoom.gravel": ["cam1 zoom", "zoomed into: gravel."],
-    "cam.zoom.crate": ["cam1 zoom {id}", "crate {id} label: \"{label}\""],
-    "cam.zoom.parcel": ["cam1 zoom {id}", "crate {id} label: \"{label}\"", "ok"],
-    "cam.zoom.out": ["cam1 zoom --out", "whole yard again.", "dim"],
-    "cam.tag.none": ["cam1 tag", "nothing to tag there.", "dim"],
-    "cam.tag.ok": ["cam1 tag {id}", "tagged {id}."],
+    "cam.zoom.gravel": [
+      "cam1 zoom",
+      "zoomed into: gravel."
+    ],
+    "cam.zoom.crate": [
+      "cam1 zoom {id}",
+      "crate {id} label: \"{label}\""
+    ],
+    "cam.zoom.parcel": [
+      "cam1 zoom {id}",
+      "crate {id} label: \"{label}\"",
+      "ok"
+    ],
+    "cam.zoom.out": [
+      "cam1 zoom --out",
+      "whole yard again.",
+      "dim"
+    ],
+    "cam.tag.none": [
+      "cam1 tag",
+      "nothing to tag there.",
+      "dim"
+    ],
+    "cam.tag.ok": [
+      "cam1 tag {id}",
+      "tagged {id}."
+    ],
     "cam.hud": "● CAM-1 · YARD",
     "cam.on": "ON: crate {id}",
     "cam.aim": "tap the feed to aim",
-
     "talk.aria": "Say something to HINGE"
   }
 }

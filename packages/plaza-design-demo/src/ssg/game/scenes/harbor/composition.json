@@ -2863,9 +2863,9 @@
     },
     {
       "id": "fishSeller",
-      "type": "harbor.marker",
+      "type": "character.prepared",
       "props": {
-        "role": "vendor"
+        "actor": "fishSeller"
       },
       "placement": {
         "x": 58,
@@ -2876,13 +2876,16 @@
       "attach": {
         "instance": "fish",
         "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.fishSeller.pose"
       }
     },
     {
       "id": "teaMan",
-      "type": "harbor.marker",
+      "type": "character.prepared",
       "props": {
-        "role": "vendor"
+        "actor": "teaMan"
       },
       "placement": {
         "x": 48,
@@ -2893,6 +2896,9 @@
       "attach": {
         "instance": "drinks",
         "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.teaMan.pose"
       }
     }
   ]

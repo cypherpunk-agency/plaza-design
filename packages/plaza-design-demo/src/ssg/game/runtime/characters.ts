@@ -1,6 +1,10 @@
+import {streetSpriteHeadHeight} from '../art/characters/street-sprite';
+import {actorPresentation} from '../engine/gameplay/actor-presentation';
+import {actorAppearanceSeed} from '../engine/gameplay/actor-identity';
+import botSource from '../engine/gameplay/bot-reactions.json';
 import {ConversationSession} from '../engine/gameplay/conversation';
 import type {GameplaySession} from '../engine/gameplay/session';
-import { drawCharacterFrame, BODIES, type Full, rnd, pick, lookFrom, type Legs, type Arms, CRITTERS, type Bot, type BotLook, BOT, CRITTER_BOT, type BotFull, botFrom, botKind, faceAt, psOf } from "../art/characters/appearance";
+import { drawCharacterFrame, BODIES, type Full, rnd, pick, lookFrom, type Legs, type Arms, CRITTERS, type Bot, type BotLook, BOT, type BotFull, botFrom, botKind, faceAt, psOf } from "../art/characters/appearance";
 export { lookFrom, shade, drawPortrait } from "../art/characters/appearance";
 export type { Bot, Face, BotLook } from "../art/characters/appearance";
 /**
@@ -11,7 +15,7 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
  *   import { drawCharacters, type Character } from '../characters';
  *
  *   const STREET: Character[] = [
- *     { seed: 3, x: 300, act: 'walk', range: 220 },                  // a passer-by, walks 300 ⇄ 520
+ *     { seed: 3, x: 300, act: 'walk', range: 220 },                  // a passer-by, walks 300 â‡„ 520
  *     { seed: 8, x: 410, act: 'haggle', facing: -1 },                // two people haggling...
  *     { seed: 9, x: 386, act: 'haggle', facing: 1 },                 // ...facing each other
  *     { look: { body: 'old', garb: 'coat', hair: 'brim' }, x: 600, act: 'smoke' },
@@ -37,7 +41,7 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
  *   counter or in front of a stall. `ps` (pixel size, default 3 = the player's scale) and `dim` (0..1)
  *   and `parallax` put people in a back band; a back crowd is `crowd(seed, n, from, to, { ps: 2, dim: .55, parallax: .9 })`.
  * - Fast: every look and pose is baked once into a small canvas (with its rim) and blitted after that.
- * - People are never cyan (cyan = tech you can use); a rim keeps them off dark walls (ART-GUIDE §4, §6).
+ * - People are never cyan (cyan = tech you can use); a rim keeps them off dark walls (ART-GUIDE Â§4, Â§6).
  *
  * ROBOTS: every one has a job you can see it doing
  *
@@ -59,7 +63,7 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
  * - Robot acts: carry, roll, patrol, serve, crawl, hover (movers); direct, play, weld, scrub, charge,
  *   glitch, blink, slump (in place); and stand, walk, sweep, queue, vend. Drones fly their own height over `h`.
  * - Robots with `talk` talk like people. Robots without it still answer E with a short line in their own
- *   voice (game.ts: `bot:` targets from `isBot` / `botReact`). Robots are never cyan: paint is orange,
+ *   voice (game.ts: `bot:` targets from `isBot` / shared bot conversations). Robots are never cyan: paint is orange,
  *   paper, grey, rust; lights are red and amber. Signs on them (boards, flyers) stay dry.
  * - `crowd()` makes about one in five a robot doing a crowd job (`bots` to change the share, 0 for none).
  */
@@ -67,7 +71,7 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
 import type { View } from "../scenes/kit";
 import { city } from "../world/clock";
 import type { TimeWindow } from "../data/types";
-import { hereClimate, weatherNow, type WeatherKind } from "../world/weather";
+import type {WeatherKind} from "../world/weather";
 
 export type Body = 'avg' | 'tall' | 'short' | 'wide' | 'slim' | 'kid' | 'old';
 export type Hair = 'bald' | 'short' | 'long' | 'bun' | 'mohawk' | 'cap' | 'beanie' | 'hood' | 'brim' | 'helmet' | 'scarf';
@@ -121,7 +125,7 @@ export interface Character {
   /** Only here inside this window on the city clock: outside it they are not drawn and say nothing. */
   when?: TimeWindow;
   key?: boolean;
-  /** Pixel size: 3 = the player's scale; 2 for a back band; 4–5 for a near foreground. */
+  /** Pixel size: 3 = the player's scale; 2 for a back band; 4â€“5 for a near foreground. */
   ps?: number;
   /** Darkens the person (0..1), for back bands. */
   dim?: number;
@@ -140,7 +144,7 @@ let looks = 0;
 function ready(p: Character): Ready {
   let R = READY.get(p);
   if (R) return R;
-  const seed = p.seed ?? Math.round(p.x * 7 + 3), bk = botKind(p.look);
+  const seed = p.seed ?? actorAppearanceSeed(p) ?? Math.round(p.x * 7 + 3), bk = botKind(p.look);
   const crit = typeof p.look === 'string' && p.look in CRITTERS ? p.look as Critter : undefined;
   const [a, b] = Array.isArray(p.range) ? p.range : [p.x, p.x + (p.range ?? 0)];
   R = {
@@ -286,10 +290,11 @@ export function drawCharacters(x: CanvasRenderingContext2D, v: View, list: reado
 }
 
 /** Where a person is now (walkers move). */
-export function characterX(p: Character, t: number) { return frameOf(p, ready(p), t).x; }
+export function characterX(p: Character, t: number) { if(actorPresentation(p))return p.x;return frameOf(p, ready(p), t).x; }
 
 /** How tall a person is drawn, in world units (for prompts and bubbles). */
 export function characterHeight(p: Character) {
+  const recipe=actorPresentation(p);if(recipe)return(recipe.kind==='streetSprite'?streetSpriteHeadHeight(recipe):(recipe.sit?12:14)*(p.ps??3))+(p.h??0);
   const R = ready(p), ps = psOf(p);
   if (R.bot) { const S = BOT[R.bot.kind]; return S.top * ps + (p.h ?? 0) + (S.fly ?? 0); }
   if (R.critter) return CRITTERS[R.critter].frames[Object.keys(CRITTERS[R.critter].frames)[0]].length * ps + (p.h ?? CRITTERS[R.critter].h ?? 0);
@@ -297,34 +302,17 @@ export function characterHeight(p: Character) {
   return (B.leg + B.torso + B.head + 1) * ps + (p.h ?? 0);
 }
 
-/** Robots (and the old drone, cleaner and courier) answer E even without `talk`. */
-export function isBot(p: Character) { const R = ready(p); return !!R.bot || (!!R.critter && R.critter in CRITTER_BOT); }
-
-const REACTED = new Map<Character, number>();
-/** A robot's [E] prompt, name and reaction line; `next` moves it on to its next line. */
-export function botReact(p: Character, next = false): { label: string; name: string; pages: string[] } {
-  const R = ready(p), S = R.bot ? BOT[R.bot.kind] : CRITTER_BOT[R.critter!]!, n = REACTED.get(p) ?? 0;
-  if (next) REACTED.set(p, n + 1);
-  return { label: S.prompt, name: p.name ?? S.name + (R.bot ? '-' + (100 + ((R.seed * 37) % 900)) : ''), pages: S.lines[n % S.lines.length] };
+const legacyRobotKinds=new Set(botSource.voices.filter(v=>v.id.startsWith('legacy.')).map(v=>v.id.slice(7)));
+/** Appearance identity only; dialogue text and progress belong to the shared gameplay source. */
+export function botProfile(p:Character):{voice:string;serial?:number}|null {
+ const R=ready(p);return R.bot?{voice:'robot.'+R.bot.kind,serial:100+((R.seed*37)%900)}:R.critter&&legacyRobotKinds.has(R.critter)?{voice:'legacy.'+R.critter}:null;
 }
+export function isBot(p:Character){return botProfile(p)!==null;}
 
-const SAID = new Map<Character, number>();
-/** The pages a person says now: one set, or the next of several (the last repeats). */
-export function talkTo(p: Character,gameplay?:GameplaySession): { name: string; pages: string[] } {
-  if(p.conversation&&gameplay){const session=new ConversationSession(gameplay,p.conversation);try{const f=session.frame();return{name:f.speaker,pages:f.pages};}finally{session.close();}}
-  const T = p.talk ?? [];
-  const name = p.name ?? 'STRANGER';
-  // a line for now, or for this weather, first
-  if (p.lines?.length) {
-    const wx = weatherNow(hereClimate()).kind;
-    const l = p.lines.find((q) => (!q.when || city.within(q.when)) && (!q.weather || q.weather.includes(wx)));
-    if (l) return { name, pages: l.pages };
-  }
-  if (!T.length || typeof T[0] === 'string') return { name, pages: T as string[] };
-  const n = SAID.get(p) ?? 0;
-  SAID.set(p, n + 1);
-  const sets = T as string[][];
-  return { name, pages: sets[Math.min(n, sets.length - 1)] };
+/** Shared dialogue is the only progression/variant owner for talkable actors. */
+export function talkTo(p:Character,gameplay?:GameplaySession):{name:string;pages:string[];completion?:{terminalPrefill:string}}{
+ if(!p.conversation||!gameplay)throw new Error('Character conversation is not registered');
+ const session=new ConversationSession(gameplay,p.conversation);try{const f=session.frame();return{name:f.speaker,pages:f.pages,...(f.completion?{completion:{...f.completion}}:{})};}finally{session.close();}
 }
 
 /** The jobs a robot in a crowd does, each with its act. */

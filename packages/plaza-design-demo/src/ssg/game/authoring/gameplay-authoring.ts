@@ -1,11 +1,15 @@
+import cutsceneCatalog from '../data/cutscenes.json';
 import type {SceneData} from '../data/types';
-import {nativeVocabulary} from '../engine/gameplay/native-bindings';
+import {renderGameplayBindingsAuthoring} from './gameplay-bindings-authoring';
 import {TypedForm} from './typed-form';
 import type { Condition, ConversationChoice, GameplayAction, GameplayDefinition } from '../engine/gameplay/types';
 import { validateShiftGameplay } from '../scenes/harbor-shift/gameplay-contract';
 
 export interface GameplayAuthoring {
   nativeData?:SceneData;
+  nativeDataSource?():SceneData|undefined;
+  nativeDerivedSource?():readonly string[];
+  objectiveIdsSource?():readonly string[];
   document():unknown;
   validate?(value:unknown):GameplayDefinition;
   onEdit(value:GameplayDefinition,label:string):void;
@@ -16,7 +20,7 @@ export interface GameplayAuthoring {
 /** Typed controls for the pilot's registered vocabulary; no executable or raw JSON fields. */
 export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthoring){
   let conversation='supervisor',node='offer',command='shift.accept',disposed=false;
-  const expanded=new Map<string,boolean>();
+  const expanded=new Map<string,boolean>(),bindingDraft:Record<string,string>={};
   const root=document.createElement('section');root.className='gameplay-editor';host.append(root);
   const error=document.createElement('p');error.className='error';error.setAttribute('role','alert');
   function element<K extends keyof HTMLElementTagNameMap>(tag:K,text?:string){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;}
@@ -28,50 +32,36 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
   function select(parent:HTMLElement,name:string,values:readonly string[],value:string,change:(value:string)=>void){const input=element('select');for(const v of values){const option=element('option',v||'(none)');option.value=v;input.append(option);}input.value=value;input.onchange=()=>{try{change(input.value);}catch(e){report(e);}};field(parent,name,input);}
   function section(parent:HTMLElement,title:string,collapsed=false){const details=element('details'),key=conversation+'/'+node+'/'+command+':'+title;details.open=expanded.get(key)??!collapsed;details.ontoggle=()=>expanded.set(key,details.open);details.append(element('summary',title));const body=element('div');body.className='gameplay-fields';details.append(body);parent.append(details);return body;}
   function edit(label:string,change:(doc:GameplayDefinition)=>void){const doc=(options.validate??validateShiftGameplay)(options.document());change(doc);const valid=(options.validate??validateShiftGameplay)(doc);error.textContent='';options.onEdit(valid,label);}
-  function condition(parent:HTMLElement,name:string,value:Condition|undefined,change:(value:Condition|undefined)=>void,doc:GameplayDefinition,depth=0){new TypedForm(report).condition(parent,name,value,change,doc,false,depth);}
-  function nativeControls(doc:GameplayDefinition){
-    if(!doc.native||!options.nativeData)return;
-    const form=new TypedForm(report),box=section(root,'Native device bindings'),vocabulary=nativeVocabulary(options.nativeData),events=vocabulary.flatMap(n=>n.events.map(e=>n.key+':'+e)),targets=vocabulary.filter(n=>n.verbs.length);
-    box.append(element('p','Native state ownership, endpoint IDs and command permissions are protected. Player rewires stay in the play save; these are authored starting cables.'));
-    for(const[r,route]of doc.native.verbs.entries()){
-      const row=section(box,route.device+'.'+route.noun+' / '+route.verb,true);
-      route.cases.forEach((c,i)=>{const prefix=route.device+'.'+route.noun+' '+route.verb+' case '+(i+1);form.select(row,prefix+' command',Object.keys(doc.commands),c.command,command=>edit('Edit device command',d=>{d.native!.verbs[r].cases[i].command=command;}));if(i<route.cases.length-1)form.condition(row,prefix+' condition',c.when,when=>edit('Edit device condition',d=>{if(!when)throw new Error('Ordered case requires a condition');d.native!.verbs[r].cases[i].when=when;}),doc);form.text(row,prefix+' response',c.say[1],value=>edit('Edit device response',d=>{d.native!.verbs[r].cases[i].say[1]=value;}));});
-    }
-    const wires=section(root,'Native wiring');
-    for(const[w,wire]of doc.native.wires.entries()){
-      const row=section(wires,'Wire '+wire.id,true),prefix='Wire '+wire.id;
-      if(wire.fixed){row.append(element('p','Fixed conduit: '+wire.from+' -> '+wire.to+' / '+wire.verb));continue;}
-      form.select(row,prefix+' source',events,wire.from,from=>edit('Edit wire source',d=>{d.native!.wires[w].from=from;}));
-      form.select(row,prefix+' target',targets.map(n=>n.key),wire.to,to=>edit('Edit wire target',d=>{const wire=d.native!.wires[w];wire.to=to;wire.verb=targets.find(n=>n.key===to)!.verbs[0];}));
-      form.select(row,prefix+' verb',targets.find(n=>n.key===wire.to)!.verbs,wire.verb,verb=>edit('Edit wire verb',d=>{d.native!.wires[w].verb=verb;}));
-      form.button(row,'Remove '+prefix,()=>edit('Remove wire',d=>{d.native!.wires.splice(w,1);}));
-    }
-    form.button(wires,'Add native wire',()=>edit('Add wire',d=>{const b=d.native!;let i=1;while(b.wires.some(w=>w.id==='wire-'+i))i++;const pair=events.flatMap(from=>targets.map(to=>({from,to:to.key,verb:to.verbs[0]}))).find(p=>!b.wires.some(w=>w.from===p.from&&w.to===p.to));if(!pair)throw new Error('No unused endpoint pair');b.wires.push({id:'wire-'+i,...pair});}),doc.native.wires.length>=128);
-  }
+  function condition(parent:HTMLElement,name:string,value:Condition|undefined,change:(value:Condition|undefined)=>void,doc:GameplayDefinition,depth=0){const form=new TypedForm(report);form.objectiveIds=options.objectiveIdsSource?.()??[];form.condition(parent,name,value,change,doc,false,depth);}
   function refresh(){
     if(disposed)return;
     const doc=(options.validate??validateShiftGameplay)(options.document());
+    const nativeData=options.nativeDataSource?options.nativeDataSource():options.nativeData,nativeDerived=options.nativeDerivedSource?.();
     if(!doc.conversations[conversation])conversation=Object.keys(doc.conversations)[0];
+    const writableFlags=doc.flags.filter(flag=>!doc.native?.reads?.[flag]);
     const dialogue=doc.conversations[conversation];if(dialogue&&!dialogue.nodes[node])node=Object.keys(dialogue.nodes)[0];
     if(!doc.commands[command])command=Object.keys(doc.commands)[0];
     root.replaceChildren();root.append(element('p','Edits join the editor history; Undo, Redo and Save are in the header.'));
     root.append(error);
-    const form=new TypedForm(report);
-    for(const[id,d]of Object.entries(doc.state??{})){const box=section(root,'State '+id,true);box.append(element('p',d.owner+' / '+d.lifetime+' / '+d.type));if(d.type==='number')form.number(box,'State '+id+' default',Number(d.default),value=>edit('Edit state default',g=>{g.state![id].default=value;}),d.min??-1000000,d.max??1000000);else if(d.type==='boolean')form.check(box,'State '+id+' default',Boolean(d.default),value=>edit('Edit state default',g=>{g.state![id].default=value;}));else form.select(box,'State '+id+' default',d.options!,String(d.default),value=>edit('Edit state default',g=>{g.state![id].default=value;}));}
+    const form=new TypedForm(report);form.objectiveIds=options.objectiveIdsSource?.()??[];
     for(const[id,p]of Object.entries(doc.purchases??{})){const box=section(root,'Purchase '+id);form.number(box,'Purchase '+id+' base price',p.basePrice,value=>edit('Edit purchase price',d=>{d.purchases![id].basePrice=value;}));box.append(element('p','Quote and charge share this base. Explicit modifiers may change either. Goods: '+(p.rotation?.items??p.goods?.map(g=>g.item+' x'+g.quantity)??[]).join(', ')));
+     if(!p.rotation)form.select(box,'Purchase '+id+' kind',doc.items.length?['goods','service']:['service'],p.service?'service':'goods',kind=>edit('Edit purchase kind',d=>{const p=d.purchases![id];if(kind==='service'){p.service=true;delete p.goods;}else{delete p.service;p.goods=[{item:d.items[0],quantity:1}];}}));
      p.goods?.forEach((goods,i)=>{form.select(box,'Purchase '+id+' goods '+(i+1),doc.items,goods.item,item=>edit('Edit purchase goods',d=>{d.purchases![id].goods![i].item=item;}));form.number(box,'Purchase '+id+' quantity '+(i+1),goods.quantity,quantity=>edit('Edit purchase quantity',d=>{d.purchases![id].goods![i].quantity=quantity;}),1);});
      const stocks=Object.entries(doc.state??{}).filter(([key,d])=>d.type==='number'&&(d.min??-1000000)>=0&&key!==p.rotation?.state).map(([id])=>id);form.select(box,'Purchase '+id+' stock',['',...stocks],p.stock??'',stock=>edit('Edit purchase stock',d=>{if(stock)d.purchases![id].stock=stock;else delete d.purchases![id].stock;}));
      p.rotation?.items.forEach((item,i)=>form.select(box,'Purchase '+id+' rotation '+(i+1),doc.items,item,item=>edit('Edit purchase rotation',d=>{d.purchases![id].rotation!.items[i]=item;})));
      p.modifiers?.forEach((m,i)=>{const row=section(box,'Modifier '+m.id);form.number(row,'Modifier '+m.id+' amount',m.amount,value=>edit('Edit price modifier',d=>{d.purchases![id].modifiers![i].amount=value;}),-1000000);form.select(row,'Modifier '+m.id+' scope',['both','quote','charge'],m.scope,value=>edit('Edit modifier scope',d=>{d.purchases![id].modifiers![i].scope=value as typeof m.scope;}));form.condition(row,'Modifier '+m.id+' condition',m.when,value=>edit('Edit modifier condition',d=>{if(value)d.purchases![id].modifiers![i].when=value;else delete d.purchases![id].modifiers![i].when;}),doc);form.button(row,'Remove modifier '+m.id,()=>edit('Remove price modifier',d=>{d.purchases![id].modifiers!.splice(i,1);}));});
      form.button(box,'Add modifier to '+id,()=>edit('Add price modifier',d=>{const p=d.purchases![id];p.modifiers??=[];let n=1;while(p.modifiers.some(m=>m.id==='modifier-'+n))n++;p.modifiers.push({id:'modifier-'+n,amount:0,scope:'both'});}),(p.modifiers?.length??0)>=32);
     }
-    nativeControls(doc);
+    renderGameplayBindingsAuthoring(root,doc,{data:nativeData,derived:nativeDerived,edit,section,form,draft:bindingDraft,refresh});
     if(dialogue){const talk=section(root,'Dialogue and choices');
     select(talk,'Conversation',Object.keys(doc.conversations),conversation,id=>{conversation=id;node=Object.keys(doc.conversations[id].nodes)[0];refresh();});
     select(talk,'Dialogue node',Object.keys(dialogue.nodes),node,id=>{node=id;refresh();});
     const selected=dialogue.nodes[node];
     text(talk,'Speaker',selected.speaker,value=>edit('Change dialogue speaker',d=>{d.conversations[conversation].nodes[node].speaker=value;}));
-    select(talk,'Node entry command',['',...Object.keys(doc.commands).filter(id=>doc.commands[id].sources.includes('conversation'))],selected.onEnter??'',value=>edit('Edit node entry command',d=>{if(value)d.conversations[conversation].nodes[node].onEnter=value;else delete d.conversations[conversation].nodes[node].onEnter;}));
+    select(talk,'Node entry command',['',...Object.keys(doc.commands).filter(id=>doc.commands[id].sources.includes('conversation'))],selected.onEnter??'',value=>edit('Edit node entry command',d=>{if(value)d.conversations[conversation].nodes[node].onEnter=value;else{delete d.conversations[conversation].nodes[node].onEnter;delete d.conversations[conversation].nodes[node].onEnterFailure;}}));
+    if(selected.onEnter)select(talk,'Node entry failure', ['',...Object.entries(dialogue.nodes).filter(([,n])=>!n.onEnter&&!n.redirect).map(([id])=>id)],selected.onEnterFailure??'',value=>edit('Edit node entry failure',d=>{if(value)d.conversations[conversation].nodes[node].onEnterFailure=value;else delete d.conversations[conversation].nodes[node].onEnterFailure;}));
+    form.check(talk,'Expand dialogue text templates',selected.template===true,on=>edit('Edit dialogue templates',d=>{const n=d.conversations[conversation].nodes[node];if(on)n.template=true;else delete n.template;}));
+    text(talk,'Terminal prefill after final page',selected.completion?.terminalPrefill??'',value=>edit('Edit dialogue completion',d=>{const n=d.conversations[conversation].nodes[node];if(value)n.completion={terminalPrefill:value};else delete n.completion;}));
     selected.redirect?.forEach((r,i)=>{const row=section(talk,'Conditional redirect '+(i+1));select(row,'Redirect '+(i+1)+' destination',Object.keys(dialogue.nodes),r.node,value=>edit('Edit redirect',d=>{d.conversations[conversation].nodes[node].redirect![i].node=value;}));condition(row,'Redirect '+(i+1)+' condition',r.when,value=>edit('Edit redirect condition',d=>{if(!value)throw new Error('Redirect requires a condition');d.conversations[conversation].nodes[node].redirect![i].when=value;}),doc);});
     text(talk,'Dialogue pages (blank line between pages)',selected.pages.join('\n\n'),value=>edit('Change dialogue pages',d=>{d.conversations[conversation].nodes[node].pages=value.split(/\n\s*\n/).map(page=>page.trim());}),true);
     for(const[ index,choice ]of(selected.choices??[]).entries()){
@@ -87,6 +77,10 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     }
     button(talk,'Add choice',()=>edit('Add dialogue choice',d=>{const n=d.conversations[conversation].nodes[node];n.choices??=[];let i=1;while(n.choices.some(c=>c.id==='choice-'+i))i++;n.choices.push({id:'choice-'+i,label:'New choice',next:node});}),(selected.choices?.length??0)>=8);
     button(talk,'Add dialogue node',()=>edit('Add dialogue node',d=>{const nodes=d.conversations[conversation].nodes;let i=1;while(nodes['node-'+i])i++;node='node-'+i;nodes[node]={speaker:selected.speaker,pages:['New dialogue.']};}));
+    text(talk,'Terminal command template',dialogue.sayCommand??'',value=>edit('Edit conversation command template',d=>{if(value.trim())d.conversations[conversation].sayCommand=value;else delete d.conversations[conversation].sayCommand;}));
+    const freeInput=section(talk,'Free-text input',true);
+    form.check(freeInput,'Enable free-text input',!!dialogue.free,on=>edit('Edit free-text input',d=>{const c=d.conversations[conversation];if(on)c.free={containsAny:['hello'],next:node,miss:'Not understood.',retry:'Try again.',retryNext:node};else delete c.free;}));
+    if(dialogue.free){const free=dialogue.free,change=(fn:(f:NonNullable<typeof free>)=>void)=>edit('Edit free-text rule',d=>fn(d.conversations[conversation].free!));text(freeInput,'Matched fragments (one per line)',free.containsAny.join('\n'),value=>change(f=>{f.containsAny=value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);}),true);select(freeInput,'Matched input destination',Object.keys(dialogue.nodes),free.next,next=>change(f=>{f.next=next;}));text(freeInput,'Unmatched input response',free.miss,miss=>change(f=>{f.miss=miss;}),true);text(freeInput,'Retry label',free.retry,retry=>change(f=>{f.retry=retry;}));select(freeInput,'Retry destination',Object.keys(dialogue.nodes),free.retryNext,retryNext=>change(f=>{f.retryNext=retryNext;}));freeInput.append(element('p','Fragments match anywhere, ignoring case. These are literal text, not regular expressions.'));}
     const routes=section(root,'Conversation entry routes',true);
     dialogue.entry.forEach((route,index)=>{
       const row=section(routes,'Entry '+(index+1));select(row,'Entry '+(index+1)+' node',Object.keys(dialogue.nodes),route.node,value=>edit('Change conversation entry',d=>{d.conversations[conversation].entry[index].node=value;}));
@@ -96,24 +90,39 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     }
     if(!command){root.append(element('p','This scene uses dialogue and text without shared resource commands. Edit those in Scene logic.'));return;}
     const commands=section(root,'Commands and actions');select(commands,'Command',Object.keys(doc.commands),command,id=>{command=id;refresh();});
-    commands.append(element('p','Invoked by: '+doc.commands[command].sources.join(', ')+' · permissions and IDs are fixed for this pilot.'));
+    commands.append(element('p','Invoked by: '+doc.commands[command].sources.join(', ')+' · existing registered permissions are validated by the scene contract.'));
     condition(commands,'Command condition',doc.commands[command].when,value=>edit('Change command condition',d=>{if(value)d.commands[command].when=value;else delete d.commands[command].when;}),doc);
     doc.commands[command].actions.forEach((action,index)=>{
       const box=section(commands,'Action '+(index+1));
       const replace=(next:GameplayAction)=>edit('Change command action',d=>{d.commands[command].actions[index]=next;});
+      const kind='state'in action?'state':'purchase'in action?'purchase':'flag'in action?'flag':'item'in action?'item':'tokens'in action?'tokens':'emit';
+      select(box,'Action '+(index+1)+' kind',[...(Object.keys(doc.state??{}).length?['state']:[]),...(Object.keys(doc.purchases??{}).length?['purchase']:[]),...(writableFlags.length?['flag']:[]),...(doc.items.length?['item']:[]),'tokens',...(doc.events.length?['emit']:[])],kind,value=>replace(value==='state'?{state:Object.keys(doc.state!)[0],set:doc.state![Object.keys(doc.state!)[0]].default}:value==='purchase'?{purchase:Object.keys(doc.purchases!)[0]}:value==='flag'?{flag:writableFlags[0],value:true}:value==='item'?{item:doc.items[0],add:1}:value==='tokens'?{tokens:1}:{emit:doc.events[0]}));
+      button(box,'Remove action '+(index+1),()=>edit('Remove command action',d=>{d.commands[command].actions.splice(index,1);}));
+      button(box,'Move action '+(index+1)+' up',()=>edit('Reorder command action',d=>{const a=d.commands[command].actions;[a[index-1],a[index]]=[a[index],a[index-1]];}),index===0);
+
       if('purchase'in action){select(box,'Action '+(index+1)+' purchase',Object.keys(doc.purchases??{}),action.purchase,purchase=>replace({purchase}));box.append(element('p','Payment and goods are defined together under Purchases.'));return;}
-      if('state'in action){const d=doc.state![action.state];select(box,'Action '+(index+1)+' state',Object.keys(doc.state!),action.state,state=>replace({state,set:doc.state![state].default}));if('add'in action)number(box,'Action '+(index+1)+' increment',action.add,add=>replace({...action,add}));else if(d.type==='number')number(box,'Action '+(index+1)+' state value',Number(action.set),set=>replace({...action,set}),d.min);else if(d.type==='boolean')select(box,'Action '+(index+1)+' state value',['true','false'],String(action.set),set=>replace({...action,set:set==='true'}));else select(box,'Action '+(index+1)+' state value',d.options!,String(action.set),set=>replace({...action,set}));return;}
-      const kind='flag'in action?'flag':'item'in action?'item':'tokens'in action?'tokens':'emit';
-      select(box,'Action '+(index+1)+' kind',[...(doc.flags.length?['flag']:[]),...(doc.items.length?['item']:[]),'tokens',...(doc.events.length?['emit']:[])],kind,value=>replace(value==='flag'?{flag:doc.flags[0],value:true}:value==='item'?{item:doc.items[0],add:1}:value==='tokens'?{tokens:1}:{emit:doc.events[0]}));
-      if('flag'in action){select(box,'Action '+(index+1)+' flag',doc.flags,action.flag,value=>replace({...action,flag:value}));select(box,'Action '+(index+1)+' value',['true','false'],String(action.value),value=>replace({...action,value:value==='true'}));}
+      if('state'in action){const d=doc.state![action.state];select(box,'Action '+(index+1)+' state',Object.keys(doc.state!),action.state,state=>replace({state,set:doc.state![state].default}));if('add'in action)number(box,'Action '+(index+1)+' increment',action.add,add=>replace({...action,add}));else if(d.type==='number')number(box,'Action '+(index+1)+' state value',Number(action.set),set=>replace({...action,set}),d.min);else if(d.type==='boolean')select(box,'Action '+(index+1)+' state value',['true','false'],String(action.set),set=>replace({...action,set:set==='true'}));else if(d.type==='string')text(box,'Action '+(index+1)+' state value',String(action.set),set=>replace({...action,set}));else select(box,'Action '+(index+1)+' state value',d.options!,String(action.set),set=>replace({...action,set}));return;}
+      if('flag'in action){select(box,'Action '+(index+1)+' flag',writableFlags,action.flag,value=>replace({...action,flag:value}));select(box,'Action '+(index+1)+' value',['true','false'],String(action.value),value=>replace({...action,value:value==='true'}));}
       else if('item'in action){select(box,'Action '+(index+1)+' item',doc.items,action.item,value=>replace({...action,item:value}));number(box,'Action '+(index+1)+' quantity',action.add,value=>replace({...action,add:value}));}
       else if('tokens'in action)number(box,'Action '+(index+1)+' tokens',action.tokens,value=>replace({tokens:value}));
       else select(box,'Action '+(index+1)+' event',doc.events,action.emit,value=>replace({emit:value}));
-      button(box,'Remove action '+(index+1),()=>edit('Remove command action',d=>{d.commands[command].actions.splice(index,1);}));
-      button(box,'Move action '+(index+1)+' up',()=>edit('Reorder command action',d=>{const a=d.commands[command].actions;[a[index-1],a[index]]=[a[index],a[index-1]];}),index===0);
+
     });
     button(commands,'Add action',()=>edit('Add command action',d=>{d.commands[command].actions.push(doc.events.length?{emit:doc.events[0]}:{tokens:0});}),doc.commands[command].actions.length>=32);
     const reactions=section(root,'Event reactions',true),systemCommands=Object.keys(doc.commands).filter(id=>doc.commands[id].sources.includes('system'));
+    const handoffs=section(root,'Event handoffs',true),handoffForm=new TypedForm(report);
+    for(const[i,h]of (doc.handoffs??[]).entries()){
+     const row=section(handoffs,'Handoff '+(i+1));select(row,'Handoff '+(i+1)+' event',doc.events,h.event,event=>edit('Edit handoff event',d=>{d.handoffs![i].event=event;}));
+     select(row,'Handoff '+(i+1)+' cutscene',['none',...Object.keys(cutsceneCatalog)],h.cutscene??'none',value=>edit('Edit handoff cutscene',d=>{if(value==='none')delete d.handoffs![i].cutscene;else d.handoffs![i].cutscene=value;}));
+     for(const[j,a]of (h.after??[]).entries()){
+      handoffForm.number(row,'Handoff '+(i+1)+' delay '+(j+1)+' ms',a.ms,ms=>edit('Edit handoff delay',d=>{d.handoffs![i].after![j].ms=ms;}),1,1000000);
+      select(row,'Handoff '+(i+1)+' delayed command '+(j+1),systemCommands,a.command,command=>edit('Edit handoff command',d=>{d.handoffs![i].after![j].command=command;}));
+      button(row,'Remove delayed command '+(j+1),()=>edit('Remove delayed command',d=>{const h=d.handoffs![i];h.after!.splice(j,1);if(!h.after!.length)delete h.after;}));
+     }
+     button(row,'Add delayed command',()=>edit('Add delayed command',d=>{const h=d.handoffs![i];h.after??=[];h.after.push({ms:1500,command:systemCommands[0]});}),!systemCommands.length||(h.after?.length??0)>=16);
+     button(row,'Remove handoff '+(i+1),()=>edit('Remove event handoff',d=>{d.handoffs!.splice(i,1);}));
+    }
+    button(handoffs,'Add event handoff',()=>edit('Add event handoff',d=>{const event=d.events.find(e=>!d.handoffs?.some(h=>h.event===e));if(!event)throw new Error('No unused event');d.handoffs??=[];d.handoffs.push({event,cutscene:Object.keys(cutsceneCatalog)[0]});}),(doc.handoffs?.length??0)>=32||doc.events.every(e=>doc.handoffs?.some(h=>h.event===e)));
     doc.reactions.forEach((reaction,index)=>{
       const row=section(reactions,'Reaction '+(index+1));
       select(row,'Reaction '+(index+1)+' event',doc.events,reaction.event,value=>edit('Change reaction event',d=>{d.reactions[index].event=value;}));

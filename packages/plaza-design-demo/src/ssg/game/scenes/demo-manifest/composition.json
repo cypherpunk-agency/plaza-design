@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "scene": "demo-manifest",
+  "instances": [
+    {
+      "id": "spawn",
+      "type": "assembly.group",
+      "props": {},
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "checkpoint",
+      "type": "furniture.stool",
+      "props": {
+        "seed": 3
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    }
+  ]
+}

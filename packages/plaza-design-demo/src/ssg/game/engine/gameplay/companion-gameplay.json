@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [],
+  "commands": {},
+  "reactions": [],
+  "conversations": {
+    "companion.pet.sleep.0": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "Pixel opens one eye, checks that you are not food, and closes it again.",
+            "The purr starts anyway."
+          ]
+        }
+      }
+    },
+    "companion.pet.sleep.1": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "Pixel stretches one paw at you without waking up. That counts as a hug."
+          ]
+        }
+      }
+    },
+    "companion.pet.sun": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "Pixel is in the sun. You are in the way of the sun.",
+            "Pixel lets you stay. Briefly."
+          ]
+        }
+      }
+    },
+    "companion.pet.moving": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "Pixel takes exactly one stroke and keeps walking. Places to be."
+          ]
+        }
+      }
+    },
+    "companion.pet.idle.0": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "Pixel leans into your hand. It is warm from the router. It is always warm from something."
+          ]
+        }
+      }
+    },
+    "companion.pet.idle.1": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "Pixel headbutts your knuckles until you do it properly."
+          ]
+        }
+      }
+    },
+    "companion.pet.idle.2": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "You scratch behind the ear sensor. The tail light goes steady. That means yes."
+          ]
+        }
+      }
+    },
+    "companion.pet.idle.3": {
+      "entry": [
+        {
+          "node": "reply"
+        }
+      ],
+      "nodes": {
+        "reply": {
+          "speaker": "PIXEL",
+          "pages": [
+            "Pixel looks at you for a long time. Then at the fridge. Subtle."
+          ]
+        }
+      }
+    }
+  }
+}

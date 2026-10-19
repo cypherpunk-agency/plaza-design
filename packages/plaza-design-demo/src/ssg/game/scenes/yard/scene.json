@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "id": "yard",
+  "name": "the back yard",
+  "intro": [
+    "The fixer's back yard. My parcel is in here somewhere.",
+    "Tap a thing to use it.",
+    "H: hack vision, every device and its guts at once. B: the board, to wire them up and add timers and switches."
+  ],
+  "introTouch": [
+    "The fixer's back yard. My parcel is in here somewhere.",
+    "Tap a thing to use it.",
+    "HACK, top right: hack vision, every device and its guts at once. BOARD: wire them up, add timers and switches."
+  ],
+  "uses": [],
+  "exits": [
+    {
+      "id": "downtown",
+      "to": "downtown",
+      "at": "yard",
+      "label": "< DOWNTOWN",
+      "edge": "left"
+    }
+  ],
+  "nativeTargets": [
+    {
+      "id": "tray",
+      "anchor": "tray",
+      "promptH": 26,
+      "if": "parcelAt=tray",
+      "labels": [
+        {
+          "text": "prompt.take"
+        }
+      ],
+      "routes": [
+        {
+          "steps": [
+            {
+              "do": [
+                {
+                  "set": "parcelAt",
+                  "to": "taken"
+                },
+                {
+                  "goal": "take"
+                }
+              ]
+            },
+            {
+              "say": "parcel.take"
+            },
+            {
+              "do": [
+                {
+                  "give": "moth.key"
+                },
+                {
+                  "give": "uplink"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": {
+      "instance": "side-walls",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {},
+    "readables": {},
+    "rests": {},
+    "exits": {
+      "downtown": "exit-downtown"
+    }
+  },
+  "actors": [],
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 90,
+    "keepFace": true
+  },
+  "companion": {
+    "mode": "along",
+    "unlockFlag": "pixel",
+    "pet": {
+      "prompt": "[E] PET PIXEL",
+      "conversations": {
+        "sleep": [
+          "companion.pet.sleep.0",
+          "companion.pet.sleep.1"
+        ],
+        "sun": "companion.pet.sun",
+        "moving": "companion.pet.moving",
+        "idle": [
+          "companion.pet.idle.0",
+          "companion.pet.idle.1",
+          "companion.pet.idle.2",
+          "companion.pet.idle.3"
+        ]
+      }
+    },
+    "warm": [
+      {
+        "id": "spool",
+        "point": {
+          "instance": "spool-table",
+          "h": 14
+        },
+        "rest": "sleep"
+      },
+      {
+        "id": "dumpster",
+        "point": {
+          "instance": "dumpster",
+          "x": 12,
+          "h": 24
+        },
+        "rest": "sleep"
+      }
+    ]
+  }
+}

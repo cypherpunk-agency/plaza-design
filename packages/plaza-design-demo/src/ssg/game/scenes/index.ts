@@ -1,3 +1,5 @@
+import {attachSceneDeviceSource} from '../engine/gameplay/native-scene-devices';
+import {nativeDeviceSources} from './native-device-sources';
 /**
  * Every scene, by id: every place in the game is one (city.ts says which
  * place each belongs to). `?play=<id>` starts in one, and sudo's LEVELS lists
@@ -27,17 +29,21 @@ import { galleriaStation } from './galleriaStation/index';
 import { harborStation } from './harborStation/index';
 import { train } from "./train/index";
 import { warehouse } from "./warehouse/index";
+import authored from './authored.json';
+import {createSceneRegistry} from '../engine/gameplay/scene-catalogue';
 
 export type { ItemId, SceneDef, SceneExit, SceneReadable, SceneRest, SceneSaid, SceneUse, UseCtx, View as SceneView } from './kit';
 export { ITEMS, priceTag } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
-export const SCENES = {
+const nativeDefinitions = {
   capsule, downtown, library, yard, moth, beach, harbor, stacks, warehouse, market, laundromat, shop, mall, metro, galleriaStation, harborStation, train,
   // sudo only (index.ts refuses `?play=sandbox` without `?sudo`): the engine's test bay, outside the story
   sandbox, harborShift,
 } satisfies Record<string, SceneDef>;
-export type SceneId = keyof typeof SCENES;
+export const NATIVE_SCENES=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
+export const SCENES=createSceneRegistry(NATIVE_SCENES,authored);
+export type SceneId = keyof typeof NATIVE_SCENES | (string & {readonly __sceneId:unique symbol});
 
 export const isSceneId = (id: string): id is SceneId => Object.prototype.hasOwnProperty.call(SCENES, id);
 export const sceneById = (id: string): SceneDef | undefined => (isSceneId(id) ? SCENES[id] : undefined);

@@ -59,10 +59,11 @@ export const composerStyles = `
 .scene-composer .frame-step{display:flex;gap:4px}
 .scene-composer .preview-options .environment{margin:0;padding:0 10px 6px;border-top:1px solid var(--line)}.scene-composer .preview-options .environment>summary{padding:6px 0 0}
 .scene-composer .environment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px;padding-top:6px}.scene-composer .environment-grid label{margin:2px 0}.scene-composer .environment-grid label.wide{grid-column:span 2}.scene-composer .environment-grid label>input:not([type=checkbox]),.scene-composer .environment-grid label>select{width:auto;flex:0 1 120px}.scene-composer .environment-grid label.wide>input{flex-basis:220px}
-.scene-composer .stage-wrap{position:relative;flex:1;min-height:200px}
+.scene-composer .stage-wrap{position:relative;flex:1;min-height:200px;overflow:hidden}
 .scene-composer .preview-stage{position:absolute;inset:0;overflow:auto;display:grid;align-items:safe center;justify-items:safe center;background:#05080c;container-type:size;padding:8px;overscroll-behavior:contain}
 .scene-composer .preview-stage>canvas[data-hover=artwork]{cursor:pointer}.scene-composer .preview-stage>canvas[data-hover=selected]{cursor:move}.scene-composer .preview-stage>canvas[data-hover=empty]{cursor:grab}.scene-composer .preview-stage>canvas[data-panning]{cursor:grabbing}
 .scene-composer .hover-box{position:absolute;pointer-events:none;outline:1px solid #ffd27acc;outline-offset:1px}.scene-composer .hover-box[hidden]{display:none}
+.scene-composer .hover-box[data-below]::after{bottom:auto;top:calc(100% + 3px)}.scene-composer .hover-box[data-right]::after{left:auto;right:-2px}
 .scene-composer .hover-box::after{content:attr(data-label);position:absolute;left:-2px;bottom:calc(100% + 3px);font:11px/1.4 var(--mono);background:#10151df0;color:var(--warn);padding:1px 6px;border-radius:3px;white-space:nowrap}
 .scene-composer .viewport-tools{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;gap:2px;padding:3px;background:#10151de6;border:1px solid var(--line);border-radius:6px}.scene-composer .viewport-tools[hidden]{display:none}
 .scene-composer .viewport-tools button{min-height:26px;padding:2px 9px;border-color:transparent;background:none;font-family:var(--mono);font-size:12px}.scene-composer .viewport-tools .zoom-level{min-width:56px}.scene-composer .viewport-tools button[aria-pressed=true]{color:var(--accent);border-color:var(--line-strong)}

@@ -1,6 +1,16 @@
+import {NO_RULES} from './scene-rule-contract';
+export {NO_RULES} from './scene-rule-contract';
+import {emptyData} from './empty-data';
+export {emptyData} from './empty-data';
+import {DeviceAcknowledgment,type DeviceAcknowledgmentRequest,type AcknowledgmentCancel} from './device-acknowledgment';
+import {defaultNetworkContext,type EngineNetworkContext} from './network-context';
+import {mintFeedback,acceptFeedback,type FeedbackReceipt} from './feedback-receipt';
+import type {Hints} from '../ui/hints';
+import {attachGameplayHandoffs} from './gameplay/handoffs';
+import {perfBegin,perfEnd} from '../runtime/diagnostics/performance';
 import {attachNativeGameplay} from './gameplay/native-bindings';
 import type {GameplaySession} from './gameplay/session';
-import type {ConversationSession} from './gameplay/conversation';
+import type {ConversationSession,ConversationFrame} from './gameplay/conversation';
 /**
  * A scene on screen: its model, the schematic overlay, hack vision, its panels,
  * the HACK and BOARD buttons, and its part of the save. One class for every
@@ -23,7 +33,7 @@ import type {ConversationSession} from './gameplay/conversation';
  * The keyring and the modules are the player's, across scenes.
  */
 
-import type { MachineData, SceneData, SceneSave } from '../data/types';
+import type { MachineData, SceneSave } from '../data/types';
 import type { SceneDef, View } from '../scenes/kit';
 import type { LineKind } from "../ui/terminal";
 import { type Line, type Spot, SceneModel } from './model';
@@ -52,18 +62,20 @@ export type DrawLayer = 'all' | 'world' | 'devices';
 /** What a scene's drawing gets from the engine besides the view: its model, the device under the pointer, the layer. */
 export interface EngineDraw { m: SceneModel; hover: string | null; layer: DrawLayer }
 
-/** A scene without a data file: no devices, no goals, nothing to hack. Hack vision shows nothing here. */
-export function emptyData(id: string, name: string): SceneData {
-  return { id, name, state: {}, tuning: {}, devices: [], cables: [], dialogue: {}, goals: [], texts: {} };
-}
-
 /** A scene without code of its own on the engine. */
-export const NO_RULES: SceneRules = { effects: {} };
+
 
 /** How a scene reaches the game's save. */
 export interface SceneStore {
+  notice?:(text:string,tone?:import('../ui/communication').MessageTone,receipt?:FeedbackReceipt)=>void;
+  feedbackCue?:(receipt:FeedbackReceipt)=>void;
+  hints?:Hints;
+  hintBusy?:()=>boolean;
+  feedbackTime?:()=>number;
+  cutscene?:(id:string)=>void;
   gameplay?:()=>GameplaySession|undefined;
   conversation?:(id:string)=>ConversationSession|undefined;
+  conversationCompleted?:(cue:NonNullable<ConversationFrame['completion']>)=>void;
   /** Logic modules the player owns. */
   modules: () => string[];
   /** Keyring item ids the player holds. */
@@ -84,7 +96,7 @@ export interface SceneStore {
   sudo?: boolean;
   /** The programs the player owns (scan.so), and one more (and write the save). */
   programs?: () => string[];
-  program?: (id: string) => void;
+  program?: (id: string,receipt?:FeedbackReceipt) => void;
   /** The nodes the player controls, by Registry label (0x2F). */
   controlled?: () => string[];
   /** This scene's saved progress, if any. */
@@ -123,6 +135,7 @@ export class SceneHost {
   private seen = new Map<string, Anchor>();
   /** Captions over the thing that reacted, and pings (scene/feedback.ts). */
   private fx: Feedback;
+  private deviceAcknowledgment?:DeviceAcknowledgment;
   /** Speakers that are not devices or targets (the game's: 'pixel'), as world points; null when not here. */
   where: (from: string) => { x: number; h: number } | null = () => null;
   /** Things the game keeps the popup away from besides the player (Pixel), as world points. */
@@ -176,9 +189,10 @@ export class SceneHost {
   /** While a typed command runs (`typed`), the deck already shows it: don't print the shell line again. */
   private echo = true;
 
-  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind) => void, private store: SceneStore | undefined, readonly def: SceneDef, rules: SceneRules = NO_RULES) {
+  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind, from?:string,receipt?:FeedbackReceipt) => void, private store: SceneStore | undefined, readonly def: SceneDef, rules: SceneRules = NO_RULES, network:EngineNetworkContext = defaultNetworkContext) {
     this.model = new SceneModel({
-      say: (l, from) => this.say(l, from),
+      say: (l, from,receipt) => this.say(l, from,receipt),
+      feedbackScope:def.id,
       open: (panel, arg) => this.panels.open(panel, arg),
       changed: () => { this.schem?.render(); this.vision?.render(); this.dirty(); },
       kick: (dev) => { if (this.schem.viewing === dev) this.schem.close(); },
@@ -194,16 +208,17 @@ export class SceneHost {
       programs: store?.programs,
       program: store?.program,
       controlled: store?.controlled,
-    }, def.data ?? emptyData(def.id, def.name), rules);
+    }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring);
     const shared=store?.gameplay?.();if(shared?.definition.native)attachNativeGameplay(this.model,shared);
+    if(shared?.definition.handoffs?.length)attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>this.model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id)});
     const known = new Set<string>();
-    this.schem = new Schematic(host, this.model, (l) => this.say(l), { known });
-    this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true });
+    this.schem = new Schematic(host, this.model, (l) => this.say(l), { known, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen });
+    this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen||this.schem.isOpen });
     // the engine's own panels (the lock toys) under the scene's
     this.popup = new Popup(host);
-    this.fx = new Feedback(host);
+    this.fx = new Feedback(host,store?.feedbackTime);
     this.popup.onClose = () => { this.chosen = null; this.onClose(); };
-    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.panels },store?.conversation);
+    this.panels = new Panels(host, this.model, (l) => this.say(l), { ...ENGINE_PANEL_FNS, ...def.panels },store?.conversation,(speaker,pages)=>this.print(speaker+': '+pages.join('\n'),'out','dialogue'),store?.conversationCompleted);
     this.schem.onLayout = () => this.dirty();
     this.vision.onLayout = () => this.dirty();
     this.vision.onPlace = (id) => { this.place(id); this.refollow(); this.dirty(); };
@@ -248,11 +263,13 @@ export class SceneHost {
       const now = this.model.now(), dt = now - last;
       last = now;
       if (this.paused) return;
+      const perf=perfBegin('host.tick',this.id);try{
       this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
       if (this.model.tick(dt, this.active)) { this.schem.meters(); this.vision.meters(); }
       // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
       const h = this.heat();
       if (h !== heat && now - wrote > HEAT_SAVE_MS) { heat = h; wrote = now; this.persist(); }
+      }finally{perfEnd(perf);}
     }, TICK_MS);
     window.addEventListener('pagehide', () => this.persist());
   }
@@ -302,6 +319,7 @@ export class SceneHost {
 
   /** `reset <scene>`: the scene as on the first visit; the rest of the save (keyring included) is untouched. */
   reset() {
+    this.cancelAcknowledgment('reset');
     this.closeAll();
     this.model.reset();
     this.schem.known.clear();
@@ -315,15 +333,39 @@ export class SceneHost {
    * A line: to the terminal (the history), the open schematic's status, and, when it is known
    * who said it, as a caption over that thing in the world (with a ping).
    */
-  private say(l: Line, from?: string) {
+  private say(l: Line, from?: string,receipt?:FeedbackReceipt) {
+    const tone=l[2]==='err'?'error':l[2]==='ok'?'success':'info';
+    receipt??=this.model?.takeReceipt?.(l,from)??mintFeedback(this.def?.id??'scene',from??'system',tone);
+    if(!acceptFeedback(this,receipt))return receipt;
     if (l[0] && this.echo) this.print('> ' + l[0], 'in');
-    if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out');
+    if (l[1]) this.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : l[2] === 'dim' ? 'dim' : 'out', from,receipt);
     this.schem.note(l); this.vision.note(l);
-    if (from && l[1] && this.active) { this.fx.caption(from, l[1], l[2], this.locate); this.onReact(from, l[1], l[2]); }
+    if(l[1]&&(l[2]==='err'||l[2]==='ok'))this.store?.feedbackCue?.(receipt);
+    if (from && l[1]) {
+      if(this.active&&this.locate(from)){this.fx.caption(from,l[1],l[2],this.locate);this.onReact(from,l[1],l[2]);}
+      // A remote result or an absent anchor cannot own a world caption. The sourced
+      // history write above suppresses terminal forwarding; offer its one visible result here.
+      else if(l[2]!=='dim')this.store?.notice?.(l[1],l[2]==='err'?'error':l[2]==='ok'?'success':'info',receipt);
+    }else if(!from&&l[1]&&l[2]==='err')this.store?.notice?.(l[1],'error',receipt);
+    return receipt;
   }
 
   /** Something of this scene says a line, as if it had reacted (a caption over it, the history): the story's lines. */
-  react(from: string, l: Line) { this.say(l, from); }
+  react(from: string, l: Line,receipt?:FeedbackReceipt) { return this.say(l, from,receipt); }
+
+  get acknowledgmentPending(){return !!this.deviceAcknowledgment?.pending;}
+  get acknowledgmentId(){return this.deviceAcknowledgment?.pending?this.deviceAcknowledgment.request.id:undefined;}
+  advanceAcknowledgment(){return this.deviceAcknowledgment?.advance()??false;}
+  cancelAcknowledgment(reason:AcknowledgmentCancel='dismissed'){return this.deviceAcknowledgment?.cancel(reason)??false;}
+  acknowledgeDevice(request:DeviceAcknowledgmentRequest,complete:()=>void,canceled?:(reason:AcknowledgmentCancel)=>void):DeviceAcknowledgment{
+    if(this.deviceAcknowledgment?.pending&&this.deviceAcknowledgment.request.id===request.id)return this.deviceAcknowledgment;
+    const logged=new Set<number>();let delivery:DeviceAcknowledgment;
+    const changed=()=>{if(!delivery.pending){this.fx.releaseAcknowledgment(delivery);if(this.deviceAcknowledgment===delivery)this.deviceAcknowledgment=undefined;return;}
+      if(!logged.has(delivery.page)){logged.add(delivery.page);const tone=request.tone==='ok'?'success':request.tone==='err'?'error':'info',receipt=mintFeedback(this.def.id,request.from,tone);this.print(request.speaker+': '+delivery.text,request.tone==='ok'?'ok':request.tone==='err'?'err':request.tone==='dim'?'dim':'out',request.from,receipt);}
+      this.fx.acknowledge(delivery,this.locate,from=>this.locate(from,request.height));
+    };
+    delivery=new DeviceAcknowledgment(request,complete,canceled,changed,()=>this.active&&!this.paused&&!this.overlayOpen);this.cancelAcknowledgment('replaced');this.deviceAcknowledgment=delivery;changed();return delivery;
+  }
 
   /** A ping where something of this scene is (a device, one of its targets, or what `where` knows); an edge arrow when it is off the view. */
   clearPing(from: string) { this.fx.clearPing(from); }
@@ -333,7 +375,7 @@ export class SceneHost {
    * Where a speaker is on screen now: a device (its spot), one of the scene's own targets
    * (the pickup tray), or what the game knows (Pixel). `off`: it is off to that side of the view.
    */
-  private locate = (from: string): Spot2D | null => {
+  private locate = (from: string,anchorHeight?:number): Spot2D | null => {
     const p = this.project;
     if (!p) return null;
     const s = this.model.spots().find((x) => x.id === from);
@@ -344,6 +386,7 @@ export class SceneHost {
       if (!q) return null;
       x = q.x; base = q.h; w = t ? 24 : 18; h = t ? Math.max(16, t.promptH - 14) : 16;
     }
+    if(anchorHeight!==undefined){base+=anchorHeight;w=18;h=16;}
     const c = p(x, base + h / 2), e = p(x + w / 2, base + h), sw = (e.x - c.x) * 2, sh = (c.y - e.y) * 2;
     const off = c.x + sw / 2 < 0 ? -1 : c.x - sw / 2 > this.width ? 1 : 0;
     return { x: c.x, y: c.y, w: sw, h: sh, off };
@@ -448,7 +491,7 @@ export class SceneHost {
   get conversationFrame(){return this.panels.conversationFrame;}
   get panelOpen() { return this.panels.isOpen; }
   closeOverlay() { if (this.panels.isOpen) this.panels.close(); else this.schem.close(); }
-  closeAll() { this.popup.close(); this.fx.clear(); this.panels.close(); this.schem.close(); this.vision.close(); }
+  closeAll() { this.popup.close(); this.fx.clear(true); this.panels.close(); this.schem.close(); this.vision.close(); }
   /** This scene is the one on screen: its clock runs and its captions show. */
   private active = false;
   private paused = false;
@@ -458,7 +501,7 @@ export class SceneHost {
    * The scene is on screen (or not). Its HACK and BOARD buttons show only here, and only when it
    * has devices: in a scene with nothing to hack they stay away (and H and B do nothing).
    */
-  show(on: boolean) { this.active = on; this.btns.hidden = !on || !this.hackable; }
+  show(on: boolean) { if(!on)this.cancelAcknowledgment('scene-hidden');this.active = on; this.btns.hidden = !on || !this.hackable; }
   /** The scene has devices, and hacking is yours: hack vision and the board mean something here. */
   get hackable() { return this.model.devices.size > 0 && !this.hackLock(); }
 
@@ -514,6 +557,9 @@ export class SceneHost {
       [...m.devices.values()].filter((d) => d.logic && !m.logicAt.has(d.id)).forEach((d) => { this.place(d.id); this.dirty(); });
       m.logicAt.forEach((at, id) => add(id, at.x, at.h, PART.w, PART.h));
     }
+    const hintBusy=!!this.store?.hintBusy?.()||this.popup.isOpen||this.panels.isOpen;
+    this.schem.presentHint(hintBusy||!this.active);
+    this.vision.presentHint(hintBusy||!this.active||this.schem.isOpen);
     this.vision.see(seen);
     this.sync();
   }
@@ -633,13 +679,13 @@ export class SceneHost {
     const d = this.model.devices.get(id);
     if (!d || this.hackLock()) return;
     const left = this.model.lockLeft(id);
-    if (left) { this.say(this.model.line('trace.locked', { device: d.name, sec: Math.ceil(left / 1000) })); return; }
+    if (left) { this.say(this.model.line('trace.locked', { device: d.name, sec: Math.ceil(left / 1000) }),id); return; }
     this.say(['login ' + id, d.look, 'dim']);
     this.schem.openDevice(id);
   }
   toggleBoard() {
     if (this.hackLock()) return;
-    if (!this.schem.known.size) { this.print(this.model.label('board.empty'), 'dim'); return; }
+    if (!this.schem.known.size) { const text=this.model.label('board.empty');this.print(text, 'dim');this.store?.notice?.(text,'info');return; }
     this.schem.toggleBoard();
   }
 

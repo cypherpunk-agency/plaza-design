@@ -16,14 +16,19 @@
  * Pure: no DOM, so node can run it (the build's check).
  */
 
-import { HARBOR_FLAG, LINE, STATIONS } from '../../world/city';
+import * as defaultCity from '../../world/city';
+import type {CityModel} from '../../world/city';
 import type { SceneData } from "../../data/types";
 import type { Effect, SceneRules, World } from "../../engine/rules";
-import { between, BRAKE, brakeRide, LOOP, ride, rideAtSiding, rideDoors, rideNext, rideStop, rideStopsAt, SEG, sidingAlong, TUNNEL_IN } from "../../world/transport/line";
+import * as defaultMetro from '../../world/transport/line';
+import type {LineSystem} from '../../world/transport/line';
 
 /** The save's item that makes the brake take your pull (P13 hands it over). */
 export const PASS = 'maglev.pass';
 
+export function createTrainRules(metro:LineSystem=defaultMetro,city:CityModel=defaultCity):SceneRules {
+ const {HARBOR_FLAG,LINE,STATIONS}=city;
+ const {between,BRAKE,brakeRide,LOOP,ride,rideAtSiding,rideDoors,rideNext,rideStop,rideStopsAt,SEG,sidingAlong,TUNNEL_IN}=metro;
 /** Where along the loop a stop happened, in words for the halt line. */
 function whereWords(pos: number): string {
   // the stretches train.ts lays along the loop (a district reaches 900 either side of its stop)
@@ -41,7 +46,7 @@ function whereWords(pos: number): string {
 const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5, resuming: 6 } as const;
 
 /** TRAIN-0's rules. The pass is an item the player carries and the harbor flag a save flag: the model's `carry` and `flag` reach the save. */
-function trainRules(): SceneRules {
+
 
   const effects: Record<string, Effect> = {
     'train.position': (w) => {
@@ -63,21 +68,13 @@ function trainRules(): SceneRules {
       w.changed();
       return w.line('brake.pulled');
     },
-    'train.doors': (w, c) => {
-      if (!between()) return w.line('doors.station');
-      if (!c.bySignal) return w.line('doors.hand');
-      if (ride.phase !== 'halted') return w.line('doors.moving');
-      if (!rideAtSiding()) return w.line('doors.wall');
+    // Permission cases, goal and reply belong to the shared source evaluator.
+    // This remaining operation owns only physical transport and the editable city flag.
+    'train.doors': (w) => {
       rideDoors(true);
       w.m.flag(HARBOR_FLAG);
-      w.goal('siding');
-      return w.line('doors.siding');
     },
-    'train.lock': (w) => {
-      if (!between()) return w.line('doors.station');
-      rideDoors(false);
-      return w.line('doors.locked');
-    },
+    'train.lock': () => { rideDoors(false); },
   };
 
   function tick(w: World) {
@@ -103,6 +100,10 @@ function trainRules(): SceneRules {
     effects,
     tick,
     derived: {
+      /** Physical observations; permissions remain editable native source cases. */
+      trainBetween: () => between(),
+      trainHalted: () => ride.phase === 'halted',
+      trainAtSiding: () => rideAtSiding(),
       /** The status line: where the train is. */
       where: () => rideAtSiding() ? 'STOPPED · NOT A STATION'
         : ride.phase === 'halted' ? 'EMERGENCY STOP'
@@ -111,26 +112,23 @@ function trainRules(): SceneRules {
     },
     needs: {
       state: ['pulls'],
-      goals: ['siding'],
       texts: {
         'pos.station': 'line', 'pos.between': 'line', 'pos.halted': 'line',
         'brake.notyours': 'line', 'brake.queued': 'line', 'brake.standing': 'line', 'brake.already': 'line', 'brake.pulled': 'line',
         'halt.track': 'line', 'halt.siding': 'line', 'resume': 'line',
-        'doors.locked': 'line', 'doors.hand': 'line', 'doors.moving': 'line', 'doors.station': 'line', 'doors.wall': 'line', 'doors.siding': 'line',
       },
     },
-    /** P14's own: the siding event, the brake's `stopped`, and the safety cable that locks the doors. */
+    /** Controller dependencies: the siding and stopped events. Default cables are authored. */
     check: (z: SceneData) => {
       const errs: string[] = [];
       const t = z.devices.find((d) => d.id === 'train'), noun = (id: string) => t?.nouns.find((n) => n.id === id);
       if (!noun('position')?.events?.includes('harbor siding')) errs.push('devices[train] › position: needs the event "harbor siding" (P14)');
       if (!noun('brake')?.events?.includes('stopped')) errs.push('devices[train] › brake: needs the event "stopped" (P14)');
-      if (!z.cables.some((c) => c.from === 'train.brake:stopped' && c.to === 'train.doors' && c.verb === 'lock')) errs.push('cables: the safety cable train.brake:stopped → train.doors lock must be there from the start (P14)');
       return errs;
     },
   };
 }
 
-export const TRAIN_RULES = trainRules();
+export const TRAIN_RULES = createTrainRules();
 /** The build-time check's name for them (generate-demos). */
 export const TRAIN_RULES_SHAPE = TRAIN_RULES;

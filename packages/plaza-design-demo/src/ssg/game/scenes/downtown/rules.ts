@@ -80,8 +80,9 @@ function drive(w: World, p: PlayerServices, inward: boolean) {
       m.set('scanned', false);
       m.set('dlvAt', through === inward ? 'market' : 'gate');
       if (through && m.get('lock') === 'open' && !p.save().flags.end) {
-        p.save().flags.end = true; p.persist(); p.granted();
-        w.goal('gate'); w.say(w.line('gate.end'), 'gate'); p.end();
+        p.save().flags.end = true; p.persist();
+        const line=w.line('gate.end');p.granted(w.receipt(line,'gate'));
+        w.goal('gate'); w.say(line, 'gate'); p.end();
       }
       w.changed();
     });
@@ -91,8 +92,10 @@ function drive(w: World, p: PlayerServices, inward: boolean) {
 /** Take control of a Registry node (NODES +1): an access point onto its networks now (NET.md). `fresh`: it was not yours before. */
 function controlNode(w: World, p: PlayerServices, dev: string) {
   const node = w.m.label('node.' + dev), s = p.save(), fresh = !s.controlled.includes(node);
-  if (fresh) { s.controlled.push(node); p.persist(); p.granted(); }
-  return { fresh, line: w.line('control.' + dev, { node, nodes: p.nodes() }) };
+  if (fresh) { s.controlled.push(node); p.persist(); }
+  const line=w.line('control.' + dev, { node, nodes: p.nodes() });
+  if(fresh)p.granted(w.receipt(line));
+  return { fresh, line };
 }
 
 function effects(p: PlayerServices): Record<string, Effect> {
@@ -108,16 +111,17 @@ function effects(p: PlayerServices): Record<string, Effect> {
     /** legs.so out of the box and into your deck: SPACE jumps (the save keeps it as `jump`). */
     'legs.install': (w) => {
       const s = p.save();
-      s.jump = true; p.persist(); p.granted();
-      return w.line('legs.install');
+      s.jump = true; p.persist();
+      const line=w.line('legs.install');p.granted(w.receipt(line));return line;
     },
 
     /** The till's drawer: noodle tokens, once. `flags.till` means the same as it always did: cracked and paid. */
     'till.pay': (w) => {
       const s = p.save(), n = w.tune('drawerTokens');
-      s.tokens += n; s.flags.till = true; p.persist(); p.granted();
+      s.tokens += n; s.flags.till = true; p.persist();
+      const line=w.line('till.pay', { tokens: n });p.granted(w.receipt(line));
       w.goal('till');
-      return w.line('till.pay', { tokens: n });
+      return line;
     },
 
     /** The VERIFY sign lights its tubes one by one (the scene draws it). */
