@@ -42,7 +42,7 @@ transport/map links and existing network behavior. Demo scenes are examples, not
    current behavior. Reuse existing command, event, permission and conversation engines.
 4. **All-scene migration:** simple ordinary scenes first, then story/security/device scenes, then
    harbor/rail/timed simulations. Record each scene's parity before removing its replaced code.
-5. **Full editor:** extend the current scene-centered Layout/Logic/Wiring/Play workflow with typed
+5. **Full editor:** extend the current scene-centered Scene/Logic/Play workflow (wiring sits under Logic) with typed
    scene creation, add/remove/rebind, controller forms, world-link editing and all-scene private Play.
    Integrate alongside migrations so editor limitations are discovered before scaling the corpus.
 6. **Cleanup, measurements and handoff:** remove replaced paths, verify current persistence and isolation,
@@ -151,6 +151,10 @@ Do not lower quality, DPR or population, change renderer technology or claim RAF
 Provide validated serializable definitions and typed editor controls in the latest scene-centered
 editor. The user explicitly expanded authorization to full editor support; the former no-UI restriction
 is superseded. Preserve the new scene-centered UX and existing user changes rather than replacing it.
+On 2026-10-19 the user directed the next step of that UX: a Scene view with an outline, preview
+toolbar and an inspector whose Behaviour/Device/Wiring tabs show the logic bound to the selected
+artwork; Logic keeps the full lists; Library and World hold everything that is not scene-specific
+(see authoring/README.md). This is the current scene-centered UX to preserve.
 All required hooks must be integrated and usable; a deferred UI adapter is no longer an acceptance
 substitute. Define current-state defaults before schema changes and test pending documents in the real
 private Game realm. Keep protected local Save and public download-only workflows separate.
@@ -185,7 +189,7 @@ without inventing a fallback product design or shrinking mandatory scope silentl
 | --- | --- |
 | G8 All-scene content | Every one of the 19 matrix rows has scene/gameplay/device/controller/world documents as applicable; tests mutate representative ordinary content in pending data and observe real runtime changes; no ordinary content hidden in native closures |
 | G9 Controllers/network | Every inventoried specialized mechanic and existing network route has a typed validated registered adapter; event/permission/timer/parity cases pass; editor controls change actual native behavior; controllers dispose without stale work |
-| G10 Full authoring | All 19 scenes support Layout/Logic/Wiring/Play and creation/deletion/rebinding for supported entities; typed conditions/actions/dialogue/device/controller edits, history, bundle round-trip and protected Save reload pass; a created scene runs and connects without TS edits |
+| G10 Full authoring | All 19 scenes support Scene/Logic/Play (including wiring) and creation/deletion/rebinding for supported entities; typed conditions/actions/dialogue/device/controller edits, history, bundle round-trip and protected Save reload pass; a created scene runs and connects without TS edits |
 | G11 World/story | Pending world/scene documents drive exits, arrivals, map/transport permissions and existing narrative/timeline handoffs consistently; dangling references and incompatible grouped imports reject atomically |
 | G12 Preservation/persistence | Immutable before/after world and actor pixel/render fixtures across day/night/weather/motion and relevant scene states; separate approved overlay deltas; current campaign/Harbor/slot save and reload preserve progress; recorded puzzle/controller outcomes and timing match |
 | G13 Removal/completeness | Each inventoried old implementation is removed or explicitly retained as the sole registered simulation/art primitive; no second content evaluator/dialogue progress map/scene-specific ordinary-content branch remains; all matrix rows and G0–G12 PASS, final source identity and user guide delivered |

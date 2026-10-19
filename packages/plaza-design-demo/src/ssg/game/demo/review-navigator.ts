@@ -1,10 +1,12 @@
 import type {ReviewStation} from './review-stations';
 export interface ReviewNavigatorOptions {
  stations:ReviewStation[];jump(id:string):void;use(id:string):void;talk(id:string):void;actor(id:string):void;
+ /** Start expanded. The editor's Play keeps it collapsed so it does not cover the scene. */
+ open?:boolean;
 }
 /** Review-only navigation chrome. Every interaction still runs through the native game. */
 export function mountReviewNavigator(host:HTMLElement,options:ReviewNavigatorOptions){
- const root=document.createElement('details');root.open=true;root.setAttribute('aria-label','Review shortcuts');
+ const root=document.createElement('details');root.open=options.open??true;root.setAttribute('aria-label','Review shortcuts');
  root.style.cssText='position:absolute;left:8px;top:80px;z-index:40;max-width:calc(100% - 16px);background:#101820ee;border:1px solid #46525e;border-radius:4px;padding:6px 9px;color:#e3eaf3;font:12px/1.5 "IBM Plex Mono",monospace';
  const summary=document.createElement('summary');summary.textContent='Review shortcuts · skip the walking';root.append(summary);
  const stations=document.createElement('div'),actions=document.createElement('div'),hint=document.createElement('p');stations.style.cssText=actions.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px';hint.style.cssText='margin:6px 0 0;max-width:620px';hint.setAttribute('role','status');root.append(stations,actions,hint);

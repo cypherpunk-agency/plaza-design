@@ -7,7 +7,8 @@ import { composerStyles } from './styles';
 import { preserveBoundIdentity } from './bound-identity';
 import type { Light } from '../world/light';
 import type { Climate, Weather } from '../world/weather';
-import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type AssetUsage, type AssetPreviewReport } from './asset-browser';
+import { mountAssetBrowser, assetInventory, filterAssets, type AssetBrowserSession, type AssetEntry, type AssetUsage, type AssetPreviewReport } from './asset-browser';
+import { createThumbnails } from './asset-thumbnails';
 import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { LAYER_ROLES, layerRole } from './layer-roles';
@@ -15,11 +16,16 @@ import { LAYER_ROLES, layerRole } from './layer-roles';
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices'; revision: string; value: unknown }
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
-export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number }
+/** `quick` controls sit in the Scene toolbar; `choices` render as a segmented row of named presets. The rest live under More. */
+export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number; quick?: boolean; choices?: { label: string; value: number | string }[] }
+/** One inspector tab beside Appearance: the logic, device or wiring that belongs to the selection (or to the scene when nothing is selected). */
+export interface InspectorSection { id: string; label: string; title?: string; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }
 export interface WorkbenchContext {
   documents: EditorDocument[]; openScene(scene: string): void; openInstance(document: string, instance: string): void;
   /** The scene chosen in the header; scene-mode workbenches follow it instead of keeping their own picker. */
   scene?: string;
+  /** Set when the panel was opened by an action that asks it to start (the Scene toolbar's Play). */
+  autostart?: boolean;
   authoring?: { get(id: string): EditorDocument; edit(id: string, label: string, value: unknown): void; editDocuments?(changes:{id:string;value:unknown}[],label:string):void; undo(): void; redo(): void; save(): Promise<void>; reload(): Promise<void>; dirty(id: string): boolean };
 }
 export type WorkbenchHandle = (() => void) & { refresh?(): void };
@@ -39,15 +45,18 @@ export interface ComposerConfig {
   /** Source documents that belong to a scene beyond its composition, for unsaved-change markers. */
   sceneDocuments?(scene: string,documents:readonly EditorDocument[]): string[];
   workbenches?: WorkbenchConfig[];
+  /** Tabs for the Scene inspector. Called for the open scene with the selected instance, or none for the scene itself. */
+  inspector?(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[];
 }
 /**
- * `area: 'scene'` panels are modes of the selected scene (Logic, Wiring, Play) and receive it through
- * `showScene` before mounting; `supports` decides whether the scene has anything to show. `library`
- * panels are asset viewers; `labs` panels are developer test beds outside the scene workflow.
+ * `area: 'scene'` panels are modes of the selected scene (Logic, Play; `wiring` panels sit under Logic)
+ * and receive it through `showScene` before mounting; `supports` decides whether the scene has
+ * anything to show. `library` panels are artwork viewers, `world` panels edit what is shared between
+ * scenes (city, travel, opening, networks, shared dialogue), and `labs` panels are developer test beds.
  */
 export interface WorkbenchConfig {
   id: string; title: string; label?: string; documentDependent?: boolean; documentIds?: string[]; primaryDocumentId?: string; authoring?: boolean;
-  area?: 'scene' | 'library' | 'labs'; mode?: 'logic' | 'wiring' | 'play'; supports?(scene: string,documents:readonly EditorDocument[]): boolean; showScene?(scene: string,documents:readonly EditorDocument[]): void; unsupported?: string;
+  area?: 'scene' | 'library' | 'world' | 'labs'; mode?: 'logic' | 'wiring' | 'play'; supports?(scene: string,documents:readonly EditorDocument[]): boolean; showScene?(scene: string,documents:readonly EditorDocument[]): void; unsupported?: string;
   mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle;
 }
 interface Snapshot { id: string; value: unknown }
@@ -134,9 +143,16 @@ export class ComposerModel {
   updateInstance(id: string, instanceId: string, label: string, edit: (node: Instance) => void) {
     this.edit(id, label, value => { const doc = value as Composition, node = flatten(doc).find(x => x.node.id === instanceId)?.node; if (!node) throw new Error('Selected instance no longer exists'); edit(node); return doc; });
   }
-  add(id: string, type: string) {
-    const element = this.registry.get(type); let instanceId = '';
-    this.edit(id, 'Add artwork', value => { const doc = value as Composition; instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')); const props: Properties = {}; for (const [key, field] of Object.entries(element.fields)) props[key] = copy(field.default) as Value; doc.instances.push({ id: instanceId, type, props, placement: { x: 0, h: 0 }, order: Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1, pass: element.parts[0] ?? 'backdrop' }); return doc; }); return instanceId;
+  add(id: string, type: string, placement: Instance['placement'] = { x: 0, h: 0 }) {
+    let instanceId = '';
+    this.edit(id, 'Add artwork', value => { const doc = value as Composition; instanceId = this.insert(doc, type, placement); return doc; }); return instanceId;
+  }
+  /** The composition as it would be after `add`, without touching history (used to measure placement). */
+  draftAdd(id: string, type: string) { const doc = copy(this.get(id).value as Composition), instanceId = this.insert(doc, type, { x: 0, h: 0 }); return { composition: this.registry.validate(doc), instanceId }; }
+  private insert(doc: Composition, type: string, placement: Instance['placement']) {
+    const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
+    for (const [key, field] of Object.entries(element.fields)) props[key] = copy(field.default) as Value;
+    doc.instances.push({ id: instanceId, type, props, placement: { ...placement }, order: Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1, pass: element.parts[0] ?? 'backdrop' }); return instanceId;
   }
   private unique(doc: Composition, prefix: string) { const ids = new Set(flatten(doc).map(x => x.node.id)); let i = 1; while (ids.has(`${prefix}-${i}`)) i++; return `${prefix}-${i}`; }
   duplicate(id: string, instanceId: string) {
@@ -171,21 +187,23 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const style = element('style'); style.textContent = composerStyles; root.append(style);
   const header = element('header'), status = element('div', 'status', 'Loading authoring documents…'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const workspace = element('div', 'workspace'), left = element('aside'), center = element('div', 'preview-column'), right = element('aside');
-  left.setAttribute('aria-label', 'Documents and artwork hierarchy'); right.setAttribute('aria-label', 'Selected artwork properties');
+  left.setAttribute('aria-label', 'Scene outline'); right.setAttribute('aria-label', 'Inspector');
   const options = element('div', 'preview-options'), stageWrap = element('div', 'stage-wrap'), stage = element('div', 'preview-stage'), canvas = element('canvas'), previewError = element('div', 'preview-error');
   const viewportTools = element('div', 'viewport-tools'), hoverBox = element('div', 'hover-box'); viewportTools.setAttribute('role', 'group'); viewportTools.setAttribute('aria-label', 'Preview zoom'); hoverBox.hidden = true;
+  const picker = element('div', 'add-picker'); picker.setAttribute('role', 'dialog'); picker.setAttribute('aria-label', 'Add artwork'); picker.hidden = true;
   const baseWidth = config.viewport?.width ?? 960, baseHeight = config.viewport?.height ?? 540;
-  canvas.width = baseWidth; canvas.height = baseHeight; canvas.setAttribute('aria-label', 'Game renderer preview. Click artwork to select it, drag the selected artwork to move it, drag elsewhere to pan, Ctrl+wheel or pinch to zoom.'); canvas.tabIndex = 0; previewError.hidden = true;
+  canvas.width = baseWidth; canvas.height = baseHeight; canvas.setAttribute('aria-label', 'Game renderer preview. Click artwork to select it, click empty space to deselect, drag the selected artwork to move it, drag elsewhere to pan, Ctrl+wheel or pinch to zoom, Delete removes the selection.'); canvas.tabIndex = 0; previewError.hidden = true;
   const timelineHost = element('section', 'timeline'); timelineHost.setAttribute('aria-label', 'Animation timeline');
   const panelSwitch = element('div', 'panel-switch'); panelSwitch.setAttribute('role', 'group'); panelSwitch.setAttribute('aria-label', 'Editor panel');
   const tools = element('nav', 'tools'); tools.setAttribute('aria-label', 'Editor tools');
   const compact = window.matchMedia('(max-width: 760px)');
   let layerQuery = '', layerSort: 'kind' | 'order' = 'kind'; const roleOpen = new Map<string, boolean>();
-  let worldOpen = false, catalogOpen = false, layersOpen = true, environmentOpen = false;
+  let moreOpen = false, inspectorTab = 'appearance', animating = false, ambientLabel: HTMLElement | undefined;
+  let inspectorMount: { key: string; host: HTMLElement; handle?: WorkbenchHandle } | undefined;
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
-  for (const [panel, text] of [['layers', 'Layers'], ['properties', 'Properties']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
+  for (const [panel, text] of [['layers', 'Outline'], ['properties', 'Inspector']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
-  stage.append(canvas); stageWrap.append(stage, hoverBox, viewportTools, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
+  stage.append(canvas); stageWrap.append(stage, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
   let currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
   let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
   /** Editor-only framing: renderScale zoom, native camera pan and a crop to the artwork's height. Never saved. */
@@ -195,28 +213,42 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let dragging: { before: Composition; pending: Composition; x: number; y: number; id: string; delta: PreviewResult['deltaToLocal'] } | undefined;
   let scrub: HTMLInputElement | undefined, timeLabel: HTMLElement | undefined;
   const environment: Record<string, string | number | boolean> = { cameraX: 0, zoom: 1, ...config.initialEnvironment };
-  let cleanupWorld: void | (() => void), worldHost: HTMLElement | undefined;
+  let cleanupWorld: void | (() => void);
   let cleanupAssets: void | (() => void); const assetSession: AssetBrowserSession = {};
-  const assetHost = element('details', 'asset-browser tool-panel'); assetHost.dataset.tool = 'assets'; assetHost.append(element('summary', '', 'Asset browser · read-only')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
+  const assetHost = element('details', 'asset-browser tool-panel'); assetHost.dataset.tool = 'assets'; assetHost.append(element('summary', '', 'Artwork library')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
+  const mapHost = element('details', 'world-map tool-panel'); mapHost.dataset.tool = 'world-map'; mapHost.append(element('summary', '', 'City map')); const mapPanel = element('div'); mapHost.append(mapPanel); if (config.worldPanel) root.insertBefore(mapHost, workspace);
+  /** Artwork pictures for the Add picker and the Library, drawn by the same isolated game preview. */
+  const thumbnails = config.assetPreview ? createThumbnails((target, entry) => config.assetPreview!(target, entry, entry.preview === 'local' ? undefined : entry.usages.find(usage => !usage.scene.startsWith('sequence-')) ?? entry.usages[0], model.list(), { time: 0, reduced: true, environment: { ...config.initialEnvironment, renderScale: 1 } })) : undefined;
   const workbenches = (config.workbenches ?? []).map(workbench => {
     const details = element('details', 'workbench-screen tool-panel'), panel = element('section'); details.dataset.workbench = details.dataset.tool = workbench.id; details.append(element('summary', '', workbench.title), panel); root.insertBefore(details, workspace);
-    return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '', scene: '' };
+    return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '', scene: '', autostart: false };
   });
-  /** Layout is the composer itself. The other modes act on the scene chosen in the header; Assets and Labs stand apart. */
+  /**
+   * Scene is the editor itself: outline, viewport and an inspector for the selection. Logic lists all of
+   * the scene's logic at once and Play runs it; both act on the scene chosen in the header. Library,
+   * World and Labs are not tied to a scene.
+   */
   const groups = [
-    { id: 'layout', label: 'Layout', title: 'Arrange this scene’s artwork and animation' },
-    { id: 'logic', label: 'Logic', title: 'Interactions, objectives, dialogue and commands for this scene' },
-    { id: 'wiring', label: 'Wiring', title: 'Events and connections in this scene · read-only' },
+    { id: 'layout', label: 'Scene', title: 'Edit this scene: select artwork to change how it looks and what it does' },
+    { id: 'logic', label: 'Logic', title: 'All of this scene’s interactions, dialogue, devices and wiring as lists' },
     { id: 'play', label: 'Play', title: 'Play this scene from a starting state' },
-    { id: 'library', label: 'Assets', title: 'Browse assets and edit shared character dialogue' },
+    { id: 'library', label: 'Library', title: 'Every piece of artwork, independent of scenes' },
+    { id: 'world', label: 'World', title: 'The city map, travel, the opening and everything shared between scenes' },
     { id: 'labs', label: 'Labs', title: 'Developer test beds outside the scene workflow' },
   ] as const;
   type Group = typeof groups[number]['id'];
-  const panels = [...(config.assetPreview ? [{ details: assetHost, label: 'Artwork', title: 'Asset browser · read-only', group: 'library' as Group }] : []), ...workbenches.map(item => ({ details: item.details, label: item.config.label ?? item.config.title.split(' · ')[0], title: item.config.title, group: (item.config.area === 'scene' ? item.config.mode ?? 'logic' : item.config.area ?? 'library') as Group }))];
+  const panelGroup = (item: WorkbenchConfig): Group => item.area === 'scene' ? item.mode === 'play' ? 'play' : 'logic' : item.area ?? 'library';
+  const panels = [...(config.assetPreview ? [{ details: assetHost, label: 'Artwork', title: 'Artwork library', group: 'library' as Group }] : []), ...(config.worldPanel ? [{ details: mapHost, label: 'City map', title: 'City map · open a place to edit it', group: 'world' as Group }] : []),
+    // Wiring panels follow the logic panels under Logic.
+    ...[...workbenches].sort((a, b) => Number(a.config.mode === 'wiring') - Number(b.config.mode === 'wiring')).map(item => ({ details: item.details, label: item.config.label ?? item.config.title.split(' · ')[0], title: item.config.title, group: panelGroup(item.config) }))];
   const chosen = new Map<Group, HTMLDetailsElement>(); let group: Group = 'layout';
   const subtools = element('nav', 'subtools'); subtools.setAttribute('aria-label', 'Panels in this mode'); root.insertBefore(subtools, status);
   const showLayout = () => { group = 'layout'; panels.forEach(item => item.details.open = false); refreshTools(); };
   const openPanel = (details: HTMLDetailsElement) => { const item = panels.find(p => p.details === details); if (!item) return; group = item.group; chosen.set(group, details); details.open = true; refreshTools(); };
+  /** Scene toolbar's Play: open the Play panel and start the scene immediately. */
+  const playWorkbench = () => workbenches.find(item => item.config.area === 'scene' && item.config.mode === 'play');
+  const canPlay = () => { const item = playWorkbench(), scene = sceneId(); return !!item && !!scene && (!item.config.supports || item.config.supports(scene, model.list())); };
+  const playScene = () => { const item = playWorkbench(); if (!item) return; animating = false; item.autostart = true; if (item.details.open) { item.dispose?.(); item.dispose = undefined; refreshWorkbench(item); } else openPanel(item.details); };
   const showGroup = (id: Group) => { if (id === 'layout') { showLayout(); return; } const target = chosen.get(id) ?? panels.find(p => p.group === id)?.details; if (target) openPanel(target); };
   function refreshTools() {
     const active = panels.find(item => item.details.open); root.dataset.tool = active?.details.dataset.tool ?? 'scene'; root.dataset.group = group;
@@ -247,21 +279,26 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       item.documentsVersion = version; item.scene = scene;
       if (sceneBound && item.config.supports && !item.config.supports(scene,documents)) { item.panel.replaceChildren(emptyState(item.config, scene)); item.dispose = (() => item.panel.replaceChildren()) as WorkbenchHandle; return; }
       if (sceneBound) item.config.showScene?.(scene,documents);
-      try { item.dispose = item.config.mount(item.panel, { documents, openScene, openInstance, ...(sceneBound ? { scene } : {}),
-        ...(item.config.authoring ? { authoring: { get: (id: string) => model.get(id), edit: (id: string, label: string, value: unknown) => run(() => model.edit(id, label, () => value)),
-          editDocuments:(changes:{id:string;value:unknown}[],label:string)=>run(()=>model.importDocuments(changes,label)),
-          undo: () => run(() => model.undo()), redo: () => run(() => model.redo()), save,
-          reload: async () => { if (!model.dirty() || window.confirm('Discard all unsaved edits and reload source? Download or export first to keep them.')) await load(); },
-          dirty: (id: string) => model.dirty(id) } } : {}),
-      }); }
+      const autostart = item.autostart; item.autostart = false;
+      try { item.dispose = item.config.mount(item.panel, { documents, openScene, openInstance, ...(sceneBound ? { scene } : {}), ...(autostart ? { autostart } : {}), ...(item.config.authoring ? { authoring: authoringApi() } : {}) }); }
       catch (error) { item.panel.replaceChildren(element('p', 'error', `Workbench unavailable: ${message(error)}`)); }
     }
   };
-  workbenches.forEach(item => item.details.ontoggle = () => { if (item.details.open) { assetHost.open = false; workbenches.filter(other => other !== item).forEach(other => other.details.open = false); } refreshWorkbench(item); refreshTools(); });
-  assetHost.ontoggle = () => { if (assetHost.open) workbenches.forEach(item => item.details.open = false); refreshTools(); };
+  function authoringApi(): NonNullable<WorkbenchContext['authoring']> {
+    return { get: (id: string) => model.get(id), edit: (id: string, label: string, value: unknown) => run(() => model.edit(id, label, () => value)),
+      editDocuments: (changes: { id: string; value: unknown }[], label: string) => run(() => model.importDocuments(changes, label)),
+      undo: () => run(() => model.undo()), redo: () => run(() => model.redo()), save,
+      reload: async () => { if (!model.dirty() || window.confirm('Discard all unsaved edits and reload source? Download or export first to keep them.')) await load(); },
+      dirty: (id: string) => model.dirty(id) };
+  }
+  /** One panel at a time: opening any closes the others. */
+  const closeOthers = (details: HTMLDetailsElement) => { if (details.open) panels.forEach(other => { if (other.details !== details) other.details.open = false; }); };
+  workbenches.forEach(item => item.details.ontoggle = () => { closeOthers(item.details); refreshWorkbench(item); refreshTools(); });
+  assetHost.ontoggle = () => { closeOthers(assetHost); refreshLibrary(); refreshTools(); };
+  mapHost.ontoggle = () => { closeOthers(mapHost); refreshMap(); refreshTools(); };
   refreshTools();
   const notice = (text: string, error = false) => { status.textContent = text; status.className = 'status' + (error ? ' error' : ''); };
-  const run = (action: () => void) => { try { action(); refresh(); } catch (e) { notice(message(e), true); } };
+  const run = (action: () => void) => { try { notice(''); action(); refresh(); } catch (e) { notice(message(e), true); } };
   const current = () => currentId ? model.get(currentId) : undefined;
   /** The document an open panel edits (Export/Import JSON), otherwise the scene's composition or timeline. */
   const activeDocument = () => { const id = workbenches.find(item => item.details.open)?.config.primaryDocumentId; return id && model.list().some(doc => doc.id === id) ? model.get(id) : current(); };
@@ -328,30 +365,58 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const importButton = button('Import JSON', () => file.click()); importButton.disabled = activeDocument()?.kind === 'world'; menuItems.append(importButton, file);
   }
   function refreshOptions() {
-    const quick = element('div', 'quick'), settings = element('details', 'environment'), grid = element('div', 'environment-grid');
-    settings.open = environmentOpen; settings.ontoggle = () => { environmentOpen = settings.open; };
-    settings.append(element('summary', '', 'Preview environment'), grid); options.replaceChildren(quick, settings);
-    const check = (text: string, value: boolean, change: (v: boolean) => void) => { const input = element('input'); input.type = 'checkbox'; input.checked = value; input.onchange = () => { change(input.checked); void draw(); }; quick.append(label(text, input)); };
-    check('Selection overlays', overlays, v => overlays = v); check('Reduced motion', reduced, v => reduced = v);
-    const snapInput = element('input'); snapInput.type = 'number'; snapInput.min = '0'; snapInput.step = '1'; snapInput.value = String(snap); snapInput.onchange = () => { const v = Number(snapInput.value); if (Number.isFinite(v) && v >= 0) snap = v; }; quick.append(label('Snap', snapInput));
-    if (current()?.kind === 'composition') { const input = element('input'); input.type = 'number'; input.min = '0'; input.step = '0.0166666667'; input.value = time.toFixed(3); input.onchange = () => { const v = Number(input.value); if (Number.isFinite(v) && v >= 0) { time = v; void draw(); } }; const frames = element('div', 'frame-step'); frames.append(button('−1 frame', () => { time = Math.max(0, time - 1 / 60); refreshOptions(); void draw(); }), button('+1 frame', () => { time += 1 / 60; refreshOptions(); void draw(); })); quick.append(label('Preview seconds', input), frames); }
+    options.replaceChildren(); ambientLabel = undefined;
+    const bar = element('div', 'scene-toolbar'), composition = current()?.kind === 'composition';
+    const cluster = (name: string) => { const node = element('div', 'toolbar-group'); node.setAttribute('role', 'group'); node.setAttribute('aria-label', name); bar.append(node); return node; };
+    if (composition) {
+      const add = button('＋ Add artwork', () => openPicker(), 'Add a piece of artwork where you are looking (A)'); add.className = 'primary'; cluster('Artwork').append(add);
+      const animation = cluster('Scene animation'), toggle = button(animating ? '❚❚ Pause' : '▶ Animate', () => { animating = !animating; refreshOptions(); }, animating ? 'Pause the scene’s ambient animation (Space)' : 'Run the scene’s ambient animation, such as people, lights and signs, without playing the game (Space)');
+      toggle.setAttribute('aria-pressed', String(animating)); ambientLabel = element('span', 'time', `${time.toFixed(1)} s`);
+      animation.append(toggle, ambientLabel, button('⟲', () => { time = 0; refreshOptions(); void draw(); }, 'Back to the first frame'));
+    }
     const controls: EnvironmentControl[] = config.environmentControls ?? [{ key: 'cameraX', label: 'Camera X', kind: 'number', step: 10 }, { key: 'zoom', label: 'Zoom', kind: 'number', min: 0.1, max: 8, step: 0.1 }];
-    for (const control of controls) {
-      if (control.kind === 'select') grid.append(label(control.label, select((control.options ?? []).map(v => ({ value: v, label: v })), String(environment[control.key] ?? ''), value => { environment[control.key] = value; void draw(); })));
-      else { const input = element('input'); input.type = control.kind === 'boolean' ? 'checkbox' : control.kind === 'text' ? 'text' : 'number'; input.checked = !!environment[control.key]; input.value = String(environment[control.key] ?? (control.kind === 'text' ? '' : 0)); if (control.min !== undefined) input.min = String(control.min); if (control.max !== undefined) input.max = String(control.max); if (control.step !== undefined) input.step = String(control.step); input.onchange = () => { const value = control.kind === 'boolean' ? input.checked : control.kind === 'text' ? input.value : Number(input.value); if (typeof value === 'number' && !Number.isFinite(value)) return; environment[control.key] = value; void draw(); }; const row = label(control.label, input); if (control.kind === 'text') row.classList.add('wide'); grid.append(row); }
+    const quick = controls.filter(control => control.quick);
+    if (quick.length) { const preview = cluster('Preview as'); preview.append(element('span', 'toolbar-label', 'Preview')); for (const control of quick) preview.append(environmentControl(control, true)); }
+    if (composition) {
+      const grid = select([{ value: '0', label: 'Grid off' }, ...[1, 2, 4, 8, 16].map(n => ({ value: String(n), label: `Grid ${n} px` }))], String(snap), value => { snap = Number(value); });
+      grid.title = 'Dragging and arrow keys snap to this grid'; grid.setAttribute('aria-label', 'Grid'); cluster('Grid').append(grid);
     }
+    const more = element('details', 'more-menu'), panel = element('div', 'more-panel'); more.open = moreOpen; more.ontoggle = () => { moreOpen = more.open; };
+    more.append(element('summary', '', 'More preview settings'), panel); bar.append(more);
+    const motion = element('input'); motion.type = 'checkbox'; motion.checked = reduced; motion.onchange = () => { reduced = motion.checked; void draw(); }; panel.append(label('Reduced motion', motion));
+    for (const control of controls) if (!control.quick) panel.append(environmentControl(control, false));
+    if (canPlay()) { const play = button('▶ Play scene', playScene, 'Run this scene in the game from its starting state'); play.className = 'play-button'; bar.append(play); }
+    options.append(bar);
   }
-  function refreshLeft() {
-    cleanupWorld?.(); cleanupWorld = undefined; cleanupAssets?.(); cleanupAssets = undefined; left.replaceChildren();
-    workbenches.forEach(item => refreshWorkbench(item, true));
-    if (config.assetPreview) {
-      assetPanel.replaceChildren(); cleanupAssets = mountAssetBrowser(assetPanel, { registry: config.registry, documents: model.list(),
-        openUsage(usage) { openInstance(usage.document, usage.instance); },
-        preview: (canvas, entry, usage, zoom) => config.assetPreview!(canvas, entry, usage, model.list(), { time, reduced, environment: { ...environment, renderScale: zoom } }),
-      }, assetSession);
+  function environmentControl(control: EnvironmentControl, inToolbar: boolean): HTMLElement {
+    const change = (value: string | number | boolean) => { environment[control.key] = value; void draw(); if (inToolbar) refreshOptions(); };
+    if (control.choices) {
+      const row = element('div', 'segmented'); row.setAttribute('role', 'group'); row.setAttribute('aria-label', control.label);
+      for (const choice of control.choices) { const pick = button(choice.label, () => change(choice.value), `${control.label}: ${choice.label}`); pick.setAttribute('aria-pressed', String(environment[control.key] === choice.value)); row.append(pick); }
+      return inToolbar ? row : label(control.label, row);
     }
-    if (config.worldPanel) { const details = element('details', 'world'); details.open = worldOpen; details.ontoggle = () => { worldOpen = details.open; }; details.append(element('summary', '', 'City map · read-only')); worldHost = element('div'); details.append(worldHost); left.append(details); cleanupWorld = config.worldPanel(worldHost, openScene, model.list(), sceneId()); }
-    const layers = element('details', 'layers'); layers.open = layersOpen; layers.ontoggle = () => { layersOpen = layers.open; }; layers.append(element('summary', '', 'Artwork layers')); left.append(layers);
+    if (control.kind === 'boolean' && inToolbar) { const toggle = button(control.label, () => change(!environment[control.key])); toggle.className = 'toggle'; toggle.setAttribute('aria-pressed', String(!!environment[control.key])); return toggle; }
+    if (control.kind === 'select') { const input = select((control.options ?? []).map(v => ({ value: v, label: inToolbar ? `${control.label} · ${v}` : v })), String(environment[control.key] ?? ''), change); input.setAttribute('aria-label', control.label); return inToolbar ? input : label(control.label, input); }
+    const input = element('input'); input.type = control.kind === 'boolean' ? 'checkbox' : control.kind === 'text' ? 'text' : 'number'; input.checked = !!environment[control.key]; input.value = String(environment[control.key] ?? (control.kind === 'text' ? '' : 0));
+    if (control.min !== undefined) input.min = String(control.min); if (control.max !== undefined) input.max = String(control.max); if (control.step !== undefined) input.step = String(control.step);
+    input.onchange = () => { const value = control.kind === 'boolean' ? input.checked : control.kind === 'text' ? input.value : Number(input.value); if (typeof value === 'number' && !Number.isFinite(value)) return; change(value); };
+    const row = label(control.label, input); if (control.kind === 'text') row.classList.add('wide'); return row;
+  }
+  function refreshLibrary() {
+    cleanupAssets?.(); cleanupAssets = undefined; assetPanel.replaceChildren(); if (!config.assetPreview || !assetHost.open) return;
+    const scene = current()?.kind === 'composition' ? sceneId() : '';
+    cleanupAssets = mountAssetBrowser(assetPanel, { registry: config.registry, documents: model.list(),
+      openUsage(usage) { openInstance(usage.document, usage.instance); },
+      preview: (canvas, entry, usage, zoom) => config.assetPreview!(canvas, entry, usage, model.list(), { time, reduced, environment: { ...environment, renderScale: zoom } }),
+      ...(thumbnails ? { thumbnail: (entry: AssetEntry) => thumbnails.thumbnail(entry) } : {}),
+      ...(scene ? { useInScene: { label: `Add to ${sceneName(scene)}`, run: (entry: AssetEntry) => { showLayout(); void addAtView(entry.id); } } } : {}),
+    }, assetSession);
+  }
+  function refreshMap() { cleanupWorld?.(); cleanupWorld = undefined; mapPanel.replaceChildren(); if (config.worldPanel && mapHost.open) cleanupWorld = config.worldPanel(mapPanel, openScene, model.list(), sceneId()); }
+  function refreshLeft() {
+    left.replaceChildren();
+    workbenches.forEach(item => refreshWorkbench(item, true)); refreshLibrary(); refreshMap();
+    left.append(element('h2', '', 'Outline'));
     const doc = compositionDocument();
     if (doc) {
       const composition = doc.value as Composition, rows = flatten(composition), parents = new Map<string, string>();
@@ -360,15 +425,17 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       const art = (node: Instance) => config.registry.get(node.type);
       const matches = (node: Instance) => { const query = layerQuery.trim().toLowerCase(); return !query || `${node.id} ${node.type} ${art(node).label}`.toLowerCase().includes(query); };
       const layerTools = element('div', 'layer-tools'), search = element('input'), order = element('div', 'segmented'), listHost = element('div');
-      search.type = 'search'; search.placeholder = 'Filter layers'; search.value = layerQuery; search.setAttribute('aria-label', 'Filter artwork layers'); search.oninput = () => { layerQuery = search.value; renderLayers(); };
-      order.setAttribute('role', 'group'); order.setAttribute('aria-label', 'Arrange layers');
+      search.type = 'search'; search.placeholder = 'Filter'; search.value = layerQuery; search.setAttribute('aria-label', 'Filter the outline'); search.oninput = () => { layerQuery = search.value; renderLayers(); };
+      order.setAttribute('role', 'group'); order.setAttribute('aria-label', 'Arrange the outline');
       for (const [mode, text, title] of [['kind', 'Kind', 'Group by kind of artwork'], ['order', 'Order', 'Document and draw order, back to front']] as const) {
         const toggle = button(text, () => { layerSort = mode; for (const other of order.children) other.setAttribute('aria-pressed', String((other as HTMLElement).dataset.mode === mode)); renderLayers(); }, title);
         toggle.dataset.mode = mode; toggle.setAttribute('aria-pressed', String(mode === layerSort)); order.append(toggle);
       }
-      layerTools.append(search, order); layers.append(layerTools, listHost);
+      layerTools.append(search, order); left.append(layerTools, listHost);
+      // Hovering a row outlines the artwork in the preview, the same box the preview shows on hover.
       const item = (node: Instance, depth: number) => {
-        const li = element('li'), pick = button('', () => { selectedId = node.id; if (compact.matches) showPanel('properties'); refreshRight(); refreshLeft(); void draw(); }, `${node.type} · ${node.pass} · order ${node.order}`);
+        const li = element('li'), pick = button('', () => select_(node.id === selectedId ? '' : node.id), `${node.type} · ${node.pass} · order ${node.order}`);
+        pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
         pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', art(node).label)); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId)); li.append(pick); return li;
       };
       function renderLayers() {
@@ -384,21 +451,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           const group = element('details', 'layer-group'); group.open = layerQuery.trim() ? true : roleOpen.get(role) ?? true; group.ontoggle = () => { if (!layerQuery.trim()) roleOpen.set(role, group.open); };
           group.append(element('summary', '', `${role} · ${count}`), list); listHost.append(group);
         }
-        if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'No layers match this filter.' : 'This composition has no artwork yet.'));
+        if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'Nothing matches this filter.' : 'This scene has no artwork yet. Use ＋ Add artwork in the toolbar.'));
         listHost.querySelector<HTMLElement>('button[aria-pressed=true]')?.scrollIntoView({ block: 'nearest' });
       }
       renderLayers();
-      const row = element('div', 'row'); const duplicate = button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), remove = button('Delete', () => run(() => { model.remove(doc.id, selectedId); selectedId = ''; })); duplicate.disabled = remove.disabled = !selected(); row.append(duplicate, remove); layers.append(row);
-      const details = element('details'); details.open = catalogOpen; details.ontoggle = () => { catalogOpen = details.open; }; details.append(element('summary', '', 'Add artwork'));
-      const catalog = element('div', 'catalog-list'), categories = new Map<string, ReturnType<ArtRegistry['catalog']>>();
-      for (const entry of config.registry.catalog()) { const key = entry.category.charAt(0).toUpperCase() + entry.category.slice(1); categories.set(key, [...(categories.get(key) ?? []), entry]); }
-      for (const [category, entries] of [...categories].sort(([a], [b]) => a.localeCompare(b))) {
-        const box = element('details', 'catalog-group'); box.append(element('summary', '', `${category} · ${entries.length}`));
-        for (const entry of entries) box.append(button(`+ ${entry.label}`, () => run(() => selectedId = model.add(doc.id, entry.type)), `${entry.category}: ${entry.type}`));
-        catalog.append(box);
-      }
-      details.append(catalog); left.append(details);
-    } else layers.append(element('p', 'muted', 'Select a composition or a timeline with a composition reference.'));
+    } else left.append(element('p', 'muted', 'Open a scene, or a timeline that refers to one.'));
   }
   function numberInput(value: number, apply: (n: number) => void, min?: number, step = 'any') { const input = element('input'); input.type = 'number'; input.step = step; if (min !== undefined) input.min = String(min); input.value = String(value); input.onchange = () => { const number = Number(input.value); if (!Number.isFinite(number) || min !== undefined && number < min) { notice('Enter a finite number within the field range.', true); return; } apply(number); }; return input; }
   function fieldInput(field: Field, value: Value, apply: (v: Value) => void): HTMLElement {
@@ -409,27 +466,87 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (kind === 'json') { const wrap = element('div'), input = element('textarea'); input.value = JSON.stringify(value, null, 2); input.setAttribute('aria-label', field.label); wrap.append(input, button('Apply JSON field', () => { try { apply(JSON.parse(input.value) as Value); } catch (e) { notice(message(e), true); } })); return wrap; }
     const input = element('input'); input.type = 'text'; input.value = String(value); input.onchange = () => apply(input.value); return input;
   }
+  const disposeInspector = () => { inspectorMount?.handle?.(); inspectorMount = undefined; };
+  /** Sections read the live documents, so a section's own refresh always sees the latest edit. */
+  const liveContext = (scene: string): WorkbenchContext => ({ get documents() { return model.list(); }, scene, openScene, openInstance, authoring: authoringApi() });
   function refreshRight() {
-    right.replaceChildren(element('h2', '', 'Selected artwork')); const node = selected();
-    if (!node) { right.append(element('p', 'muted', 'Select an item in the hierarchy or click it in the preview.')); return; }
-    const art = config.registry.get(node.type); right.append(element('strong', '', node.id), element('p', 'muted', `${art.label} · ${node.type}`));
-    if (current()?.kind === 'timeline') right.append(element('p', 'muted', 'These edit the base composition. Timeline keys can override these values; use track keyframes to animate.'));
-    right.append(element('h3', '', 'Local transform'));
+    const node = selected(), scene = sceneId(), doc = compositionDocument(); right.replaceChildren();
+    if (!doc) { disposeInspector(); right.append(element('h2', '', 'Inspector'), element('p', 'muted', 'Open a scene to inspect it.')); return; }
+    const head = element('div', 'inspector-head');
+    if (node) {
+      const art = config.registry.get(node.type), actions = element('div', 'row');
+      head.append(element('h2', '', node.id), element('p', 'muted', `${art.label} · ${node.type}`));
+      actions.append(button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), button('Delete', () => run(() => { model.remove(doc.id, selectedId); selectedId = ''; }), 'Delete this artwork (Delete)'), button('Deselect', () => select_(''), 'Back to the scene’s own settings (Esc)'));
+      if (current()?.kind === 'timeline') actions.querySelectorAll('button').forEach((b, i) => { if (i < 2) (b as HTMLButtonElement).disabled = true; });
+      head.append(actions);
+    } else head.append(element('h2', '', sceneName(scene) || 'Scene'), element('p', 'muted', 'Nothing selected, so these are the scene’s own settings. Click artwork in the preview or the outline to inspect it.'));
+    right.append(head);
+    let sections: InspectorSection[] = [];
+    try { sections = scene && config.inspector ? config.inspector(scene, node, model.list()) : []; } catch (e) { right.append(element('p', 'error', `Inspector unavailable: ${message(e)}`)); }
+    const tabs = [...(node ? [{ id: 'appearance', label: 'Appearance', title: 'Position, look and attachment' }] : []), ...sections];
+    if (!tabs.length) { disposeInspector(); right.append(element('p', 'muted', 'This scene has no editable logic yet.')); return; }
+    if (!tabs.some(tab => tab.id === inspectorTab)) inspectorTab = tabs[0].id;
+    if (tabs.length > 1) {
+      const strip = element('div', 'inspector-tabs'); strip.setAttribute('role', 'tablist'); strip.setAttribute('aria-label', 'Inspector sections');
+      for (const tab of tabs) { const pick = button(tab.label, () => { inspectorTab = tab.id; refreshRight(); }, tab.title); pick.setAttribute('role', 'tab'); pick.setAttribute('aria-selected', String(tab.id === inspectorTab)); strip.append(pick); }
+      right.append(strip);
+    }
+    const body = element('div', 'inspector-body'); body.setAttribute('role', 'tabpanel'); right.append(body);
+    if (inspectorTab === 'appearance' && node) { disposeInspector(); renderAppearance(body, node); return; }
+    const section = sections.find(item => item.id === inspectorTab)!, key = `${scene}|${node?.id ?? ''}|${section.id}|${section.title ?? section.label}`;
+    if (inspectorMount?.key === key && inspectorMount.handle?.refresh) { body.append(inspectorMount.host); inspectorMount.handle.refresh(); return; }
+    disposeInspector(); const host = element('div', 'inspector-mount'); body.append(host); inspectorMount = { key, host };
+    try { inspectorMount.handle = section.mount(host, liveContext(scene)); } catch (e) { host.replaceChildren(element('p', 'error', `Unavailable: ${message(e)}`)); }
+  }
+  function renderAppearance(host: HTMLElement, node: Instance) {
+    const art = config.registry.get(node.type), part = (title: string, open: boolean) => { const box = element('details', 'inspector-part'), inner = element('div'); box.open = open; box.append(element('summary', '', title), inner); host.append(box); return inner; };
+    if (current()?.kind === 'timeline') host.append(element('p', 'muted', 'These edit the base composition. Timeline keys can override these values; use track keyframes to animate.'));
+    const position = part('Position', true);
     const placementLabels: Record<string, string> = { x: 'X position', h: 'Height above floor', scale: 'Scale', parallax: 'Parallax' };
-    for (const [key, value, min] of [['x', node.placement.x], ['h', node.placement.h], ['scale', node.placement.scale ?? 1, 0.0001], ['parallax', node.placement.parallax ?? 1, 0]] as [keyof Instance['placement'], number, number?][]) right.append(label(placementLabels[key], numberInput(value, v => editInstance(`Change ${key}`, n => { n.placement[key] = v as never; }), min)));
-    right.append(label('Facing', select([{ value: '1', label: 'Right' }, { value: '-1', label: 'Left' }], String(node.placement.facing ?? 1), v => editInstance('Change facing', n => n.placement.facing = Number(v) as 1 | -1))));
-    right.append(label('Order', numberInput(node.order, v => editInstance('Change layer order', n => n.order = v))));
-    right.append(label('Pass', select(['backdrop', 'devices', 'people', 'foreground'].map(v => ({ value: v, label: v })), node.pass, v => editInstance('Change drawing pass', n => n.pass = v as Instance['pass']))));
-    right.append(element('h3', '', 'Appearance'));
-    for (const [key, field] of Object.entries(art.fields)) { const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); right.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); }
-    const composition = compositionDocument()!.value as Composition;
-    const anchorDetails = element('details'); anchorDetails.append(element('summary', '', 'Attachment and anchors'));
+    for (const [key, value, min] of [['x', node.placement.x], ['h', node.placement.h], ['scale', node.placement.scale ?? 1, 0.0001], ['parallax', node.placement.parallax ?? 1, 0]] as [keyof Instance['placement'], number, number?][]) position.append(label(placementLabels[key], numberInput(value, v => editInstance(`Change ${key}`, n => { n.placement[key] = v as never; }), min)));
+    position.append(label('Facing', select([{ value: '1', label: 'Right' }, { value: '-1', label: 'Left' }], String(node.placement.facing ?? 1), v => editInstance('Change facing', n => n.placement.facing = Number(v) as 1 | -1))));
+    position.append(label('Draw order', numberInput(node.order, v => editInstance('Change layer order', n => n.order = v))));
+    position.append(label('Drawing pass', select(['backdrop', 'devices', 'people', 'foreground'].map(v => ({ value: v, label: v })), node.pass, v => editInstance('Change drawing pass', n => n.pass = v as Instance['pass']))));
+    const fields = Object.entries(art.fields);
+    if (fields.length) { const look = part('Look', true); for (const [key, field] of fields) { const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
+    const composition = compositionDocument()!.value as Composition, anchorDetails = part('Attachment and anchors', !!node.attach);
     const candidates = flatten(composition).map(x => x.node).filter(n => n.id !== node.id);
     const attachTo = select([{ value: '', label: 'None / parent origin' }, ...candidates.map(n => ({ value: n.id, label: n.id }))], node.attach?.instance ?? '', v => editInstance('Change attachment', n => { if (!v) { delete n.attach; return; } const owner = candidates.find(x => x.id === v)!; const anchors = config.registry.get(owner.type).anchors(config.registry.properties(owner.type, owner.props), {}); const anchor = Object.keys(anchors)[0]; if (!anchor) throw new Error('The selected owner exposes no anchors'); n.attach = { instance: v, anchor }; })); anchorDetails.append(label('Attach to', attachTo));
     if (node.attach) { const owner = candidates.find(n => n.id === node.attach!.instance); if (owner) { const anchors = config.registry.get(owner.type).anchors(config.registry.properties(owner.type, owner.props), {}); anchorDetails.append(label('Owner anchor', select(Object.keys(anchors).map(v => ({ value: v, label: `${v} · ${anchors[v].role}` })), node.attach.anchor, v => editInstance('Change anchor', n => n.attach!.anchor = v)))); } }
     const ownAnchors = art.anchors(config.registry.properties(node.type, node.props), {}); for (const [name, anchor] of Object.entries(ownAnchors)) anchorDetails.append(element('p', 'muted', `${name}: (${anchor.x}, ${anchor.h}) · ${anchor.role}`));
-    anchorDetails.append(element('p', 'muted', 'Attachment offsets are local. Changing an owner keeps the existing local offset; review the preview before saving.')); right.append(anchorDetails);
-    if (Object.keys(node.bindings ?? {}).length) { const binding = element('div', 'readonly'); binding.append(element('strong', '', 'Gameplay bindings · read-only')); for (const [key, value] of Object.entries(node.bindings ?? {})) { const row = element('p', 'binding-row'); row.append(element('span', 'muted', key), element('code', '', typeof value === 'string' ? value : JSON.stringify(value))); binding.append(row); } right.append(binding); }
+    anchorDetails.append(element('p', 'muted', 'Attachment offsets are local. Changing an owner keeps the existing local offset; review the preview before saving.'));
+    if (Object.keys(node.bindings ?? {}).length) { const binding = part('Gameplay bindings · read-only', false); for (const [key, value] of Object.entries(node.bindings ?? {})) { const row = element('p', 'binding-row'); row.append(element('span', 'muted', key), element('code', '', typeof value === 'string' ? value : JSON.stringify(value))); binding.append(row); } }
+  }
+  /** The Add picker: searchable pictures of every registered piece, placed at the centre of the view. */
+  let pickerQuery = '', pickerFamily = '';
+  function openPicker() { if (current()?.kind !== 'composition') return; picker.hidden = false; renderPicker(); picker.querySelector<HTMLInputElement>('input[type=search]')?.focus(); }
+  function closePicker() { if (picker.hidden) return; picker.hidden = true; picker.replaceChildren(); }
+  function renderPicker() {
+    const entries = assetInventory(config.registry, model.list()), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
+    const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
+    search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
+    const family = select([{ value: '', label: 'All kinds' }, ...[...new Set(entries.map(e => e.family))].sort().map(f => ({ value: f, label: f }))], pickerFamily, value => { pickerFamily = value; fill(); }); family.setAttribute('aria-label', 'Kind of artwork');
+    head.append(element('strong', '', 'Add artwork'), search, family, button('✕', closePicker, 'Close (Esc)')); picker.replaceChildren(head, count, grid);
+    function fill() {
+      const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id))), shown = list.slice(0, 300);
+      count.textContent = `${list.length} pieces${list.length > shown.length ? ` · showing ${shown.length}, search to narrow` : ''} · pieces already in this scene come first`; grid.replaceChildren();
+      for (const entry of shown) { const card = button('', () => { closePicker(); void addAtView(entry.id); }, entry.id); card.className = 'asset-card'; if (thumbnails) card.append(thumbnails.thumbnail(entry)); card.append(element('span', '', entry.label)); if (used.has(entry.id)) card.append(element('small', '', 'in this scene')); grid.append(card); }
+    }
+    fill();
+  }
+  picker.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); closePicker(); canvas.focus(); } });
+  async function addAtView(type: string) {
+    const doc = compositionDocument(); if (!doc || current()?.kind !== 'composition') { notice('Open a scene to add artwork.', true); return; }
+    let x = 0;
+    try {
+      // Draw the new piece once off-screen at x = 0, then move it by its measured distance to the centre of the view.
+      const draft = model.draftAdd(doc.id, type), probe = element('canvas'); probe.width = canvas.width; probe.height = canvas.height;
+      const result = await config.preview.render(probe, previewRequest(draft.composition, false, viewZoom)), box = result.bounds.find(b => b.id === draft.instanceId);
+      if (box && result.deltaToLocal) { const rect = canvas.getBoundingClientRect(), view = stage.getBoundingClientRect(), centre = ((Math.max(rect.left, view.left) + Math.min(rect.right, view.right)) / 2 - rect.left) * canvas.width / Math.max(1, rect.width); x = result.deltaToLocal(draft.instanceId, centre - (box.x + box.width / 2), 0).x; }
+    } catch { x = 0; }
+    x = snap ? Math.round(x / snap) * snap : Math.round(x);
+    let added = false; run(() => { selectedId = model.add(doc.id, type, { x, h: 0 }); inspectorTab = 'appearance'; added = true; });
+    if (added) { if (compact.matches) showPanel('properties'); notice(`Added ${config.registry.get(type).label}. Drag it into place or set its position in the inspector.`); }
   }
   function editArray<T>(container: HTMLElement, title: string, value: T, apply: (v: T) => void, help?: string) {
     const details = element('details'); details.append(element('summary', '', title)); if (help) details.append(element('p', 'muted', help)); const input = element('textarea'); input.value = JSON.stringify(value, null, 2); input.setAttribute('aria-label', title + ' JSON'); details.append(input, button('Apply ' + title.toLowerCase(), () => { try { apply(JSON.parse(input.value) as T); } catch (e) { notice(`Invalid ${title.toLowerCase()}: ${message(e)}`, true); } })); container.append(details);
@@ -500,13 +617,17 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     });
   }
   function updateTime() { if (scrub) scrub.value = String(time); if (timeLabel) timeLabel.textContent = `${time.toFixed(3)} / ${(sequence()?.duration ?? 0).toFixed(3)} s · frame ${Math.round(time * 60)}`; }
+  function previewRequest(composition: Composition, overlay: boolean, scale: number, frame?: TimelineFrame): PreviewRequest {
+    const timeline = currentTimeline();
+    return { documents: new Map(model.list().map(d => [d.id, d.value])), composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced, overlays: overlay, selectedId, environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } };
+  }
   async function draw() {
     if (disposed) return; if (previewPending) { renderAgain = true; return; } const doc = compositionDocument(); if (!doc) { preview = undefined; previewError.textContent = current()?.kind === 'world' ? 'World structure is read-only. Open a scene from the world panel to preview it.' : 'No composition selected.'; previewError.hidden = false; canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); return; }
     previewPending = true; const generation = ++previewGeneration;
     try {
       const timeline = currentTimeline(); const frame = timeline && sequence() ? evaluateTimeline(timeline, sequenceId, time, evaluationContext(), { reduced }) : undefined;
       const composition = dragging?.pending ?? frame?.composition ?? doc.value as Composition;
-      const request = (overlay: boolean, scale: number): PreviewRequest => ({ documents:new Map(model.list().map(d=>[d.id,d.value])), composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced, overlays: overlay, selectedId, environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } });
+      const request = (overlay: boolean, scale: number) => previewRequest(composition, overlay, scale, frame);
       if (zoomable() && crop && cropFor !== currentId) {
         // Measure once per document at the full frame; the floor stays anchored to the bottom edge.
         sizeCanvas(baseWidth, baseHeight); const measured = await config.preview.render(canvas, request(false, 1));
@@ -555,7 +676,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     viewportTools.replaceChildren(button('−', () => zoomTo(viewZoom / 1.25), 'Zoom out (−)'), level, button('+', () => zoomTo(viewZoom * 1.25), 'Zoom in (+)'), button('Fit', fit, 'Fit the scene (F)'), cropToggle);
   }
   const select_ = (id: string) => { selectedId = id; hoverId = ''; if (compact.matches && id) showPanel('properties'); refreshRight(); refreshLeft(); refreshTimeline(); void draw(); };
+  // Clicking the dark area around the scene deselects, like clicking empty space in it.
+  stage.addEventListener('pointerdown', event => { if (event.target !== stage || event.button !== 0) return; closePicker(); if (selectedId) select_(''); });
   canvas.onpointerdown = event => {
+    closePicker();
     if (event.pointerType === 'touch') { touches.set(event.pointerId, { x: event.clientX, y: event.clientY }); if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { distance: Math.hypot(a.x - b.x, a.y - b.y), zoom: viewZoom }; dragging = undefined; panning = undefined; return; } }
     // Only the already-selected artwork can be dragged; any other press selects on release and pans while moving.
     const pressed = event.button === 0 ? hitTest(coordinates(event)) : undefined;
@@ -591,6 +715,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   canvas.onkeydown = event => {
     if (event.ctrlKey || event.metaKey || event.altKey) return; const key = event.key;
     if (key === 'Escape' && selectedId) { event.preventDefault(); select_(''); }
+    else if ((key === 'Delete' || key === 'Backspace') && selectedId && current()?.kind === 'composition') { event.preventDefault(); const doc = compositionDocument()!; run(() => { model.remove(doc.id, selectedId); selectedId = ''; }); }
+    else if (key.toLowerCase() === 'a' && current()?.kind === 'composition') { event.preventDefault(); openPicker(); }
+    else if (key === ' ' && current()?.kind === 'composition') { event.preventDefault(); animating = !animating; refreshOptions(); }
     else if (zoomable() && (key === '+' || key === '=')) { event.preventDefault(); zoomTo(viewZoom * 1.25); }
     else if (zoomable() && (key === '-' || key === '_')) { event.preventDefault(); zoomTo(viewZoom / 1.25); }
     else if (zoomable() && key === '0') { event.preventDefault(); zoomTo(1); }
@@ -611,7 +738,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const closeMenu = (event: Event) => { const menu = header.querySelector<HTMLDetailsElement>('details.menu'); if (menu?.open && (!menu.contains(event.target as Node) || (event.target as HTMLElement).closest('.menu-items button'))) menu.open = false; };
   window.addEventListener('beforeunload', unload); root.addEventListener('keydown', keyboard); document.addEventListener('click', closeMenu);
   let previous = performance.now(), frameId = 0;
-  const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous = now; const seq = sequence(); if (playing && seq) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); } } updateTime(); void draw(); } frameId = requestAnimationFrame(tick); };
+  const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous = now; const seq = sequence(); if (animating && group === 'layout' && current()?.kind === 'composition') { time += delta; if (ambientLabel) ambientLabel.textContent = `${time.toFixed(1)} s`; void draw(); } if (playing && seq) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); } } updateTime(); void draw(); } frameId = requestAnimationFrame(tick); };
   frameId = requestAnimationFrame(tick); void load();
-  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); document.removeEventListener('click', closeMenu); root.remove(); } };
+  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); disposeInspector(); thumbnails?.dispose(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); document.removeEventListener('click', closeMenu); root.remove(); } };
 }

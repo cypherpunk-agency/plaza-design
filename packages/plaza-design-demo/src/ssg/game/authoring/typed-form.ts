@@ -16,7 +16,9 @@ export class TypedForm {
  select(parent:HTMLElement,name:string,values:readonly string[],value:string,edit:(v:string)=>void){const input=document.createElement('select');for(const v of values){const o=document.createElement('option');o.value=v;o.textContent=v||'(none)';input.append(o);}input.value=value;input.onchange=()=>this.run(()=>edit(input.value));this.field(parent,name,input);}
  check(parent:HTMLElement,name:string,value:boolean,edit:(v:boolean)=>void){const input=document.createElement('input');input.type='checkbox';input.checked=value;input.onchange=()=>this.run(()=>edit(input.checked));this.field(parent,name,input);}
  button(parent:HTMLElement,label:string,run:()=>void,disabled=false){const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;b.onclick=()=>this.run(run);parent.append(b);}
- section(parent:HTMLElement,title:string){const d=document.createElement('details');d.open=true;const s=document.createElement('summary');s.textContent=title;d.append(s);const body=document.createElement('div');body.className='gameplay-fields';d.append(body);parent.append(d);return body;}
+ /** Sections start collapsed so long documents read as an index; the open ones survive re-renders. */
+ private sectionOpen=new Map<string,boolean>();
+ section(parent:HTMLElement,title:string){const d=document.createElement('details');d.open=this.sectionOpen.get(title)??false;d.ontoggle=()=>{this.sectionOpen.set(title,d.open);};const s=document.createElement('summary');s.textContent=title;d.append(s);const body=document.createElement('div');body.className='gameplay-fields';d.append(body);parent.append(d);return body;}
  condition(parent:HTMLElement,name:string,value:Condition|undefined,edit:(v:Condition|undefined)=>void,doc:GameplayDefinition,flagsOnly=false,depth=0){
   const group=document.createElement('fieldset'),legend=document.createElement('legend');group.className='gameplay-condition';group.setAttribute('aria-label',name);legend.textContent=this.visible(name);group.append(legend);parent.append(group);
   const stateIds=Object.keys(doc.state??{});

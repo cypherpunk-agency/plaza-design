@@ -424,7 +424,7 @@ export class Game {
     const first = !this.started;
     this.started = true;
     this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first);
-    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
+    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,open:!EDITOR_PLAY,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
   }
 
   /**
