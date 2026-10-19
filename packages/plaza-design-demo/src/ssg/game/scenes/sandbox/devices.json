@@ -1,30 +1,6 @@
 {
   "id": "sandbox",
   "name": "the sandbox",
-  "state": {
-    "lampOn": false,
-    "memo": 0,
-    "phase": "tick",
-    "recOn": true,
-    "beaconOn": false,
-    "count": 0,
-    "hatchOpen": false,
-    "fanOn": false,
-    "loginOk": false,
-    "ringsOpen": false,
-    "cipherOpen": false,
-    "cryptexOpen": false,
-    "morseOpen": false,
-    "mains": false,
-    "auditOn": true,
-    "belt": true,
-    "stamped": 0,
-    "cups": 0,
-    "chips": 0,
-    "paid": 0,
-    "nightLight": false,
-    "ventOpen": false
-  },
   "tuning": {
     "pulseMs": 900
   },
@@ -3205,16 +3181,6 @@
   "dialogue": {},
   "goals": [],
   "texts": {
-    "night.off": [
-      "photocell",
-      "NIGHT LIGHT: daylight. off by itself.",
-      "dim"
-    ],
-    "vent.shut": [
-      "vent",
-      "VENT: {weather} detected. shut by itself.",
-      "dim"
-    ],
     "reset.ok": [
       "reset bay",
       "BAY 3 RESET: every device back to its first state. keyring and tokens kept.",

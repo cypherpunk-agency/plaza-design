@@ -3,7 +3,8 @@
   "flags": [],
   "items": [],
   "events": [
-    "yard.talk"
+    "yard.talk",
+    "yard.camera.found"
   ],
   "commands": {
     "yard.hinge.deal": {
@@ -19,6 +20,24 @@
           "emit": "yard.talk"
         }
       ]
+    },
+    "yard.camera.discover": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "yard.found",
+          "set": true
+        },
+        {
+          "emit": "yard.camera.found"
+        }
+      ],
+      "when": {
+        "state": "yard.found",
+        "is": false
+      }
     }
   },
   "reactions": [],
@@ -167,16 +186,54 @@
       "lifetime": "save",
       "type": "boolean",
       "default": false
+    },
+    "yard.found": {
+      "owner": "yard",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "yard.armAt": {
+      "owner": "yard",
+      "lifetime": "save",
+      "type": "string",
+      "default": "home"
+    },
+    "yard.held": {
+      "owner": "yard",
+      "lifetime": "save",
+      "type": "string",
+      "default": null,
+      "nullable": true
+    },
+    "yard.parcel": {
+      "owner": "yard",
+      "lifetime": "save",
+      "type": "string",
+      "default": "C-7"
+    },
+    "yard.parcelAt": {
+      "owner": "yard",
+      "lifetime": "save",
+      "type": "string",
+      "default": "C-7"
+    },
+    "yard.pan": {
+      "owner": "yard",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
     }
   },
   "native": {
-    "state": {
-      "yard.gateAllowed": "gateAllowed"
-    },
     "verbs": [],
     "events": {},
     "goals": {
-      "yard.talk": "talk"
+      "yard.talk": "talk",
+      "yard.camera.found": "find"
     },
     "wires": []
   }

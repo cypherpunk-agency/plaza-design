@@ -5,5 +5,28 @@
   "events": [],
   "commands": {},
   "reactions": [],
-  "conversations": {}
+  "conversations": {},
+  "state": {
+    "moth.fern": {
+      "owner": "moth",
+      "lifetime": "save",
+      "type": "string",
+      "default": "dry"
+    },
+    "moth.fed": {
+      "owner": "moth",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "moth.tape": {
+      "owner": "moth",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    }
+  }
 }

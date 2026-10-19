@@ -156,7 +156,7 @@ function checkGameData() {
   // one entry per scene with a data file: the file and its code (engine/rules.ts); net.json, logic.json and the keyring come along
   const problems = checkGame(Object.values(registeredGameScenes).flatMap(scene=>{
     if(!scene.data)return[];const rules=sceneRuleContract(scene);
-    return[{data:scene.data,code:contractOf(rules,scene.gameplay?.native?.verbs),extra:rules.check}];
+    return[{data:scene.data,code:contractOf(rules,scene.gameplay?.native?.verbs,Object.keys(scene.gameplay?.queries??{})),extra:rules.check}];
   }), LOGIC, NET, ENGINE);
   // the city's districts and places (city.ts): every place has its scenes, its entrance among them
   problems.push(...cityProblems().map((p) => 'city.ts › ' + p));

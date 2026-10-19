@@ -1,4 +1,4 @@
-import type {SceneData} from '../../data/types';
+import {projectSceneState,type SceneDeviceSource} from './scene-state';
 import {emptyData} from '../empty-data';
 import {nativeDeviceData} from './native-bindings';
 import {projectDeviceBindings} from './device-bindings';
@@ -32,9 +32,9 @@ export function validateDeclaredDestinations(scene:SceneDocument,destinations:Re
  }
 }
 /** The same factory handles every instance; source contains no executable scripts or renderer selection. */
-export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,options:Partial<Environment>={},devices?:SceneData):SceneDef{
+export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,options:Partial<Environment>={},devices?:SceneDeviceSource):SceneDef{
  const validated=validateDeclaredScene(scene,composition,gameplay),d=validated.scene;
- const data=nativeDeviceData(projectDeviceBindings(d,validated.rows,devices??emptyData(d.id,d.name),validated.width),gameplay);
+ const data=nativeDeviceData(projectDeviceBindings(d,validated.rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay);
  const compiled=compileManifestDocument(d,validated.rows,(_c,id)=>({name:d.name,pages:[],conversation:id}),{elevatedResponses:true});
  const draw=(ctx:CanvasRenderingContext2D,view:import('../../art/core/view').View,front=false)=>{const env={...options,view,state:options.state??{},bindings:{},reduced:options.reduced??false};if(!front){drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,outdoor:false,ambient:{},...compiled.content,people:validated.people,gameplay:withSceneConversations(gameplay,d),visualEnvironment:view=>({...options,view,state:options.state??{},bindings:{},reduced:options.reduced??false}),drawBackdrop:(ctx,v)=>draw(ctx,v),drawFront:(ctx,v)=>draw(ctx,v,true)};

@@ -1,3 +1,4 @@
+import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/gameplay/state';
 import {capsuleController} from '../engine/controllers/capsule';
 import {SCAN} from '../engine/model';
 import {withCompanionConversations,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
@@ -14,7 +15,7 @@ import {capabilityView,exitVisibility,exitPermission,harborTransportPermission} 
 import {mountReviewNavigator} from '../demo/review-navigator';
 import {reviewStations} from '../demo/review-stations';
 import {DEMO_MODE} from './mode';
-import {nativeStatePort} from '../engine/gameplay/native-bindings';
+import {nativeGameplayPort} from '../engine/gameplay/native-bindings';
 import {ConversationSession} from '../engine/gameplay/conversation';
 import { gameStorage, reloadRuntime } from './storage';
 import { drawCapsuleWash } from '../art/atmosphere/capsule-wash';
@@ -184,18 +185,26 @@ export class Game {
     if(!session){
       const port:import('../engine/gameplay/types').StatePort={
         read:()=>{const state:import('../engine/gameplay/types').GameplayState={world:{day:city.day,minute:city.min,weather:weatherNow(sceneClimate(id)).kind},player:{handle:this.save.handle,jump:this.save.jump,controlled:this.save.controlled,keyring:this.save.keyring},flags:{...this.save.flags},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay};return state;},
-        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;this.save.gameplay=state.values;},
+        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;mergeValues(this.save.gameplay??={},state.values??{});},
       };
       const model=()=>{const m=this.hosts.get(id)?.model;if(!m)throw new Error('Native scene not ready');return m;};
-      session=new GameplaySession(definition,definition.native?nativeStatePort(definition,port,model):port,()=>{
-        if(definition.native){const m=model(),snapshot=m.snapshot(),board=this.save.scenes[id]?.board;this.save.scenes[id]={...snapshot,...(board?{board}:{})};m.changed();}
-        storeSave(this.save);this.syncHud();
+      session=new GameplaySession(definition,definition.native?nativeGameplayPort(definition,port,model):port,()=>{
+        if(definition.native){const m=model(),{state:scalar,...snapshot}=m.snapshot(),board=this.save.scenes[id]?.board;this.save.scenes[id]={...snapshot,...(board?{board}:{})};m.changed();}
+        this.persistSave();this.syncHud();
       },this.sceneDefinition(id).objectives);
       const onEvent=this.sceneDefinition(id).gameplayEvent;if(onEvent)session.observe(event=>onEvent(event,this.t));
       this.gameplaySessions.set(id,session);
     }
     return session;
   }
+  /** Serialization works on settled copies; live common blocks keep their identity and in-flight values. */
+  private prepareSave(save:Save):Save{
+    const values=cloneValues(save.gameplay),scenes={...save.scenes};
+    for(const[id,host]of this.hosts){const {state,...engine}=host.model.snapshot();Object.assign(values[id]??={},state);scenes[id]={...engine,...(scenes[id]?.board?{board:scenes[id]!.board}:{})};}
+    for(const id of new Set([...Object.keys(this.content),...Object.keys(SCENES)]))for(const[key,d]of Object.entries(this.sceneDefinition(id as SceneId).gameplay?.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
+    return {...save,gameplay:values,scenes};
+  }
+  private persistSave(){storeSave(this.save,save=>this.prepareSave(save));}
   /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
   private pixel = new Companion();
   private started = false;
@@ -243,6 +252,7 @@ export class Game {
     reconcile(this.downtown.model, this.save);
     this.menu = new Menu(host.windowEl, {
       save: () => this.save,
+      saveSnapshot:()=>this.prepareSave(this.save),
       scene: () => ({ id: this.here, name: sceneTitle(this.def) }),
       newGame: () => this.newGame(),
       continueGame: () => this.continueGame(undefined, true),
@@ -306,7 +316,7 @@ export class Game {
       // a story beat's cutscene (the stacks' ACT II card) waits for the screen to be free (`loop`)
       cutscene: (cut) => { this.pendingCut = cut; },
       // another scene's state: its live model if it is hosted, else its save
-      sceneState: (scene, key) => this.hosts.get(scene as SceneId)?.model.get(key) ?? this.save.scenes[scene]?.state?.[key],
+      sceneState: (scene, key) => this.save.gameplay?.[scene]?.[key],
     }) : def.rules ?? NO_RULES;
     const zh = new SceneHost(this.host.windowEl, print, {
       notice:(text,tone,receipt)=>{this.hints.notify(text,tone,receipt);},
@@ -315,31 +325,32 @@ export class Game {
       hintBusy:()=>document.hidden||this.menu.open||!!this.opening||!!this.cut||!!this.mapView||!!this.netView||!!this.flight||this.showEnd||!!this.sleep||this.term.isOpen||!!this.bubble||!!this.hosts.get(id)?.acknowledgmentPending,
       feedbackTime:()=>this.hints.notices.time,
       cutscene:cut=>{this.pendingCut=cut;},
+      state:()=>{const values=this.save.gameplay??={};if(def.gameplay)mergeValues(values,resolveValues(def.gameplay,{flags:this.save.flags,items:this.save.items,tokens:this.save.tokens,values}));return values[id]??={};},
       gameplay:()=>this.gameplayFor(id),
       conversation:(conversationId)=>{const session=this.gameplayFor(id);return session?.definition.conversations[conversationId]?new ConversationSession(session,conversationId):undefined;},
       conversationCompleted:cue=>{if(this.here===id)this.completeConversation(cue);},
       modules: () => this.save.modules,
       keyring: () => this.save.keyring,
-      give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); storeSave(this.save); },
+      give: (k) => { if (!this.save.keyring.includes(k)) this.save.keyring.push(k); this.persistSave(); },
       // scene steps that hand out modules and tokens (GAME-DATA.md, "Giving things")
-      grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); storeSave(this.save); this.syncHud(); },
-      tokens: (n) => { this.save.tokens += n; storeSave(this.save); this.syncHud(); return this.save.tokens; },
+      grant: (mod) => { if (!this.save.modules.includes(mod)) this.save.modules.push(mod); this.persistSave(); this.syncHud(); },
+      tokens: (n) => { this.save.tokens += n; this.persistSave(); this.syncHud(); return this.save.tokens; },
       // what you carry (the HUD's HELD) and story flags, for scene effects (the laundromat's jacket)
       carry: (item, n) => {
         const now = Math.max(0, (this.save.items[item] ?? 0) + n);
         if (now) this.save.items[item] = now; else delete this.save.items[item];
-        if (n) { storeSave(this.save); this.syncHud(); }
+        if (n) { this.persistSave(); this.syncHud(); }
         return now;
       },
-      flag: (f) => { this.save.flags[f] = true; storeSave(this.save); },
-      drop: () => storeSave(this.save),
+      flag: (f) => { this.save.flags[f] = true; this.persistSave(); },
+      drop: () => this.persistSave(),
       sudo: SUDO,
       // the net (NET.md): programs you own (scan.so), and the nodes that answer to you
       programs: () => this.save.programs,
       program: (p,receipt) => this.grantProgram(p,receipt),
       controlled: () => this.save.controlled,
       load: () => this.save.scenes[id],
-      store: (z) => { this.save.scenes[id] = z; storeSave(this.save); },
+      store: (z) => { this.save.scenes[id] = z; this.persistSave(); },
     }, def, rules,this.networkContext);
     // Pixel is the game's, not the scene's: lines about Pixel stand over Pixel, and popups keep clear of the cat
     zh.where = (from) => {
@@ -388,7 +399,7 @@ export class Game {
 
   /** Write the save, refresh the HUD and Downtown's goals (they follow the save's fields). */
   private persist() {
-    storeSave(this.save);
+    this.persistSave();
     this.syncHud();
     syncGoals(this.downtown.model, this.save);
   }
@@ -533,9 +544,11 @@ export class Game {
     this.save = SUDO ? unlockAll(newSave()) : newSave();
     city.bind(this.save.clock);
     // every scene's runtime back to a first visit, written into the new save (Downtown then agrees with its fields)
+    this.save.gameplay={};
+    this.hosts.forEach((h,id)=>{this.save.gameplay![id]=h.model.state;});
     this.hosts.forEach((h) => h.reset());
     reconcile(this.downtown.model, this.save);
-    storeSave(this.save);
+    this.persistSave();
     this.syncHud();
     this.started = true;
     // the story half of the opening takes over: `opening:home`, the train home (opening.ts)
@@ -564,7 +577,7 @@ export class Game {
     this.hosts.forEach((h) => h.show(h === here));
   }
 
-  checkpoint(){this.hosts.forEach(host=>host.persist());storeSave(this.save);}
+  checkpoint(){this.hosts.forEach(host=>host.persist());this.persistSave();}
 
   /** Private Play restart state; never added to the player's save format. */
   captureMetroState():MetroSnapshot{if(!EDITOR_PLAY)throw new Error('Controller snapshots require private Play');return this.metro.capture();}
@@ -612,7 +625,7 @@ export class Game {
     this.hosts.forEach((h) => { h.cancelAcknowledgment?.('disposed');h.closeAll(); h.persist(); });
     this.term.close();
     this.canvas.hidden = true;
-    storeSave(this.save);
+    this.persistSave();
   }
 
   private onResize() {
@@ -813,7 +826,7 @@ export class Game {
     this.p.moving = false;
     this.hints.done('ctl.deck');
     this.zh.persist();
-    storeSave(this.save);
+    this.persistSave();
     this.menu.show();
     this.shiftGuidance?.hide();
     this.syncEnginePause();
@@ -881,10 +894,10 @@ export class Game {
     if (said) {
       const once = 'opening:said:' + st + ':' + id;
       if (said.consume) this.save.flags[flag] = true;
-      if (!this.save.flags[once]) { this.save.flags[once] = true; storeSave(this.save); this.say(said.speaker,said.lines(this.touch),this.p.x,said.height); }
+      if (!this.save.flags[once]) { this.save.flags[once] = true; this.persistSave(); this.say(said.speaker,said.lines(this.touch),this.p.x,said.height); }
     } else if (intro && !this.save.flags[flag]) {
       this.save.flags[flag] = true;
-      storeSave(this.save);
+      this.persistSave();
       this.say('YOU', intro, this.p.x, 46);
     }
     this.greet();
@@ -1628,7 +1641,7 @@ export class Game {
     this.cancelStoryTransitions();
     this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
     this.save.flags[this.openingStory.OPENING.home] = true;
-    storeSave(this.save);
+    this.persistSave();
     const target=destination??this.openingStory.CONTROLLER.start;this.handTo(target.scene,target.entrance);
   }
 
@@ -1639,7 +1652,7 @@ export class Game {
     flags.forEach((f) => { this.save.flags[f] = true; });
     this.hostOf(this.openingStory.CONTROLLER.home.scene as SceneId).reset();
     this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
-    storeSave(this.save);
+    this.persistSave();
     const to = this.openingStory.openingResumeDestination(this.save.flags) ?? this.openingStory.CONTROLLER.fallback;
     this.handTo(to.scene,to.entrance);
     if (this.story === 'deleted') this.wakeUp();
@@ -1677,7 +1690,7 @@ export class Game {
     if ('turnstile' in rule) {
       // Downtown station's exit gate: one beat too long on "verifying", then ok. Nobody else waits.
       this.keys.clear();
-      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, then: () => { this.save.flags[this.openingStory.OPENING.street] = true; storeSave(this.save); go(); } };
+      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, then: () => { this.save.flags[this.openingStory.OPENING.street] = true; this.persistSave(); go(); } };
       sound.blip();
       return true;
     }
@@ -1685,7 +1698,7 @@ export class Game {
     if(!origin)throw Error('CONCIERGE acknowledgment requires its real scene anchor');
     const scene=this.here,id='opening.concierge:'+origin;if(this.zh.acknowledgmentId===id)return true;
     sound.granted();
-    this.zh.acknowledgeDevice({id,from:origin,...this.openingStory.CONTROLLER.concierge,tone:'ok'},()=>{if(this.here!==scene)return;this.save.flags[this.openingStory.OPENING.flat]=true;storeSave(this.save);go();});
+    this.zh.acknowledgeDevice({id,from:origin,...this.openingStory.CONTROLLER.concierge,tone:'ok'},()=>{if(this.here!==scene)return;this.save.flags[this.openingStory.OPENING.flat]=true;this.persistSave();go();});
     return true;
   }
 
@@ -1710,7 +1723,7 @@ export class Game {
       if (!m.sent && !this.bubble && !this.zh.popupOpen && this.clock - m.last > this.openingStory.MORNING.after && (m.due || m.tries >= this.openingStory.MORNING.tries || this.clock - m.at > this.openingStory.MORNING.wait)) this.mothWrites();
     }
     // jacked in to HOME-PC: Capsule 7B's own goals take over
-    if (st === 'uplinked' && this.here === this.openingStory.CONTROLLER.home.scene && this.zh.viewing === this.openingStory.CONTROLLER.home.jackDevice) { this.save.flags[this.openingStory.OPENING.jacked] = true; storeSave(this.save); }
+    if (st === 'uplinked' && this.here === this.openingStory.CONTROLLER.home.scene && this.zh.viewing === this.openingStory.CONTROLLER.home.jackDevice) { this.save.flags[this.openingStory.OPENING.jacked] = true; this.persistSave(); }
   }
 
   /** [E] this.openingStory.SLEEP: the fade, the card, the morning. */
@@ -1765,7 +1778,7 @@ export class Game {
     } else if (this.storyPinned) {
       this.storyPinned = false;
       city.release(parseHM(pick(this.openingStory.OPENING_TIME,this.openingStory.CONTROLLER.releaseClock.phase,this.openingStory.CONTROLLER.releaseClock.scene) ?? '') ?? undefined);
-      storeSave(this.save);
+      this.persistSave();
     }
   }
 
@@ -1777,7 +1790,7 @@ export class Game {
       this.stampEl.textContent = DEMO_MODE ? '' : t;
       if (!this.cut && !this.opening) this.syncHud();
     }
-    if (this.clock - this.clockSaved > CLOCK_SAVE) { this.clockSaved = this.clock; storeSave(this.save); }
+    if (this.clock - this.clockSaved > CLOCK_SAVE) { this.clockSaved = this.clock; this.persistSave(); }
   }
 
   /** E at a bench, a stool or the bed: the popup's "wait until…" choices. */
@@ -1795,7 +1808,7 @@ export class Game {
     this.keys.clear();
     this.bubble = null;
     const label = (r.kind === 'bed' ? 'SLEEPING · ' : 'WAITING · ') + this.placeName.toUpperCase();
-    this.sleep = { start: this.clock, woke: false, card: WAIT_CARD, from, to: hmOf(to), label, mid: () => { city.advance(minutes); this.syncClock(true); storeSave(this.save); }, end: () => {} };
+    this.sleep = { start: this.clock, woke: false, card: WAIT_CARD, from, to: hmOf(to), label, mid: () => { city.advance(minutes); this.syncClock(true); this.persistSave(); }, end: () => {} };
     sound.close();
   }
 
@@ -1808,7 +1821,7 @@ export class Game {
     Object.assign(this.p, { x: this.sceneDefinition(this.openingStory.CONTROLLER.home.scene as SceneId).spawn, y: 0, vy: 0, onGround: true, face: -1 });
     const home = this.def.perch?.(this.zh.model);
     if (home) this.pixel.place(home.x, home.h, home.rest);
-    storeSave(this.save);
+    this.persistSave();
     this.syncHud();
   }
 
@@ -1824,7 +1837,7 @@ export class Game {
     this.openingStory.MOTH_MESSAGE.forEach((l) => this.term.print(this.openingStory.CONTROLLER.moth.terminalPrefix + l, 'ok'));
     this.save.flags[this.openingStory.OPENING.uplink] = true;
     if (!this.save.keyring.includes(this.openingStory.UPLINK_KEY)) this.save.keyring.push(this.openingStory.UPLINK_KEY);
-    storeSave(this.save);
+    this.persistSave();
     this.syncHud();
     this.term.print(this.openingStory.CONTROLLER.uplink.received, 'ok');
     sound.granted();
@@ -1964,7 +1977,7 @@ export class Game {
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
     this.handTo(startLevel(id,this.metro) ?? id);
     this.markSeen(this.here);
-    storeSave(this.save);
+    this.persistSave();
   }
 
   /** Arrive in a scene by id (anything else is Downtown), at its spawn. */
@@ -2049,7 +2062,7 @@ export class Game {
     }
     if (kind === 'talk') {
       const p = s.people!.find((z) => z.id === id)!, said = talkTo(p,this.gameplayFor(this.here));
-      storeSave(this.save);
+      this.persistSave();
       this.say(said.name, said.pages, characterX(p, this.t), characterHeight(p) - 10);
       this.dialogueCompletion(said.completion);
       return;
@@ -2103,7 +2116,7 @@ export class Game {
     });
     const tokenDelta=save.tokens-tokensBefore;
     if(gameplay&&tokenDelta)this.flash((tokenDelta>0?'+':'')+tokenDelta+' token'+(Math.abs(tokenDelta)===1?'':'s'));
-    storeSave(save);
+    this.persistSave();
     this.syncHud();
     const said = Array.isArray(out) ? { name: u.name, pages: out } : out;
     if(said.conversation){if(!gameplay)throw new Error('Conversation requires gameplay session');const conversation=new ConversationSession(gameplay,said.conversation,{objective:this.def.objective?.(save.flags,gameplay.state())??''}),frame=conversation.frame();if(u.conversationPresentation==='bubble'&&!frame.choices?.length&&!frame.acceptsText){conversation.close();this.say(frame.speaker,frame.pages,u.x,u.h??60);this.dialogueCompletion(frame.completion);}else this.zh.presentConversation(conversation);return;}
@@ -2123,7 +2136,7 @@ export class Game {
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
     if (!this.hasScene(e.to)) return;
     // the flat's door: Pixel comes along from now on
-    if (e.sets) { this.save.flags[e.sets] = true; storeSave(this.save); }
+    if (e.sets) { this.save.flags[e.sets] = true; this.persistSave(); }
     this.travel(e.to, e.at);
   }
 
@@ -2158,7 +2171,7 @@ export class Game {
     this.save.scene = id;
     const f = this.world.seenFlag(id);
     this.save.flags[f] = true;
-    storeSave(this.save);
+    this.persistSave();
   }
 
   /** Board the train standing at a station's platform: in the car by its door, which stays open as long as it would have on the platform. */
@@ -2235,7 +2248,7 @@ export class Game {
     // the harbor lock: no flights to the pier until P14
     if (!harborTransportPermission(to,this.world.harborOpen(this.save.flags)).ok) { this.driverReply(this.world.DRIVER_HARBOR); return; }
     this.save.tokens -= this.world.FARE;
-    storeSave(this.save);
+    this.persistSave();
     this.syncHud();
     this.flight = { to, start: this.clock };
     sound.open();
@@ -2322,7 +2335,7 @@ export class Game {
   private grantProgram(id: string,receipt?:FeedbackReceipt) {
     const acquired=!this.save.programs.includes(id);
     if (acquired) this.save.programs.push(id);
-    storeSave(this.save);
+    this.persistSave();
     this.syncHud();
     if (id === SCAN&&acquired) {
       this.flash(this.touch ? 'NET: in hack vision, the net map' : 'NET: N, the net map'); sound.feedback(receipt??mintFeedback(this.here,'program','success'));
@@ -2351,7 +2364,7 @@ export class Game {
     for (const n of [...reached, ...here]) if (!this.save.nets.includes(n)) this.save.nets.push(n);
     if (zh.model.ports().length || reached.size) zh.typed(() => zh.scanHere());
     this.save.flags[NET_OPENED] = true;
-    storeSave(this.save);
+    this.persistSave();
     this.netView = openNet();
     this.syncEnginePause();
     sound.open();
@@ -2430,7 +2443,7 @@ export class Game {
   private deckScan() {
     const zh = this.zh, reached = zh.model.netsHere();
     for (const n of reached) if (zh.model.canScan && !this.save.nets.includes(n)) this.save.nets.push(n);
-    storeSave(this.save);
+    this.persistSave();
     const l = zh.model.scanHere();
     this.term.print(l[1], l[2] === 'ok' ? 'ok' : l[2] === 'err' ? 'err' : 'dim');
     if (l[2] !== 'err' && reached.size) this.term.print('networks in reach: ' + this.networkContext.net.networks.filter((n) => reached.has(n.id)).map((n) => n.name).join(', '), 'dim');

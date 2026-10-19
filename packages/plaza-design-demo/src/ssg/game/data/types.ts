@@ -375,7 +375,7 @@ export interface SceneData {
   /** A workbench that turns two parts into a logic part. Later. */
   bench?: { parts: string[]; recipes: RecipeData[] };
   /** The yard's CAM-1 feed (read by the yard's camera panel). */
-  camera?: { crates: CrateData[] };
+  camera?: { crates: CrateData[]; actions?:Partial<Record<'inspectOwned'|'tagOwned',string>> };
   dialogue: Record<string, DialogueData>;
   goals: GoalData[];
   /** Lines and labels the code asks for by key. The engine's own (engine.json) can be overridden here. */
@@ -454,8 +454,6 @@ export interface Pt { x: number; y: number }
  * does not wipe them; so are clocks and the watchdog's place on its route.
  */
 export interface SceneSave {
-  /** The scene's `state` keys, settled. */
-  state: Record<string, Value>;
   /** Goal ids reached. */
   goals: string[];
   /** Every cable: `from` device.noun:event, `to` device.noun, the verb it carries. Pre-wired ones you cut are missing. */
@@ -490,6 +488,9 @@ export interface SceneSave {
    */
   board?: { known: string[]; pos: Record<string, Pt>; offsets: Record<string, Pt>; vision?: Record<string, Pt> };
 }
+
+/** A transient engine checkpoint; root storage owns scalar blocks separately. */
+export interface SceneSnapshot extends SceneSave {state:Record<string,Value>}
 
 /**
  * JSON imports type their strings as `string`, not 'SENSE' | 'ACT' | ….

@@ -1,16 +1,6 @@
 {
   "id": "beach",
   "name": "the beach",
-  "state": {
-    "song": 0,
-    "freeDrink": false,
-    "flag": "clear",
-    "lamps": "on",
-    "pierClock": "on",
-    "rented": false,
-    "billing": "run",
-    "billed": 0
-  },
   "tuning": {
     "minuteMs": 60000,
     "dangerMs": 40000

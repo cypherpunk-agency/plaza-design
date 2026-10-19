@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {laundromatScene,laundromatComposition,LAUNDROMAT_GAMEPLAY,LAUNDROMAT_SCENE,validateLaundromatGameplay,validateLaundromatScene,LAUNDROMAT_RULES} from '../../src/ssg/game/scenes/laundromat';
 import {laundromatPeople} from '../../src/ssg/game/scenes/laundromat/scene';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
+import {SceneModel} from '../../src/ssg/game/engine/model';
+import {attachNativeGameplay,nativeStatePort} from '../../src/ssg/game/engine/gameplay/native-bindings';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 import type {UseCtx} from '../../src/ssg/game/scenes/kit';
 import type {EngineDraw} from '../../src/ssg/game/engine/host';
@@ -24,9 +26,10 @@ assert.deepEqual(scene.people!.map(p=>p.id),['blue','folder','gran','sleeper',un
 assert.deepEqual(scene.people!.filter(p=>p.talk).map(({id,name,talk})=>({id,name,talk})),LAUNDROMAT_SCENE.people);
 let cases=0;
 for(const tokens of [0,1,2,3,17])for(const soap of [0,1,9]){
-  let actual:GameplayState={flags:{pixel:true,p13:true},items:{fish:2,...(soap?{soap}:{})},tokens};
+  let actual:GameplayState={flags:{pixel:true,p13:true},items:{fish:2,...(soap?{soap}:{})},tokens,values:{}};
   const expected=structuredClone(actual);
-  const session=new GameplaySession(LAUNDROMAT_GAMEPLAY,{read:()=>actual,write:s=>{actual=s;}});
+  const model=new SceneModel({say(){},changed(){},open(){}},scene.data!,LAUNDROMAT_RULES);
+  const session=new GameplaySession(LAUNDROMAT_GAMEPLAY,nativeStatePort(LAUNDROMAT_GAMEPLAY,{read:()=>actual,write:s=>{actual=s;}},()=>model));attachNativeGameplay(model,session);
   for(let repeat=0;repeat<5;repeat++){
     const c={gameplay:session,flags:actual.flags,tokens:actual.tokens} as UseCtx;
     assert.deepEqual(scene.uses![0].use(c),legacy(expected));
@@ -37,6 +40,7 @@ for(const tokens of [0,1,2,3,17])for(const soap of [0,1,9]){
   assert.deepEqual(scene.uses![0].use({gameplay:session,flags:actual.flags,tokens:actual.tokens} as UseCtx),legacy(expected));
   assert.deepEqual(actual,expected);
   session.dispose();
+  model.reset();model.setPaused(true);
 }
 const moved=structuredClone(laundromatComposition);
 for(const id of ['soap','notice','socks','exit-market'])moved.instances.find(i=>i.id===id)!.placement.x+=13;

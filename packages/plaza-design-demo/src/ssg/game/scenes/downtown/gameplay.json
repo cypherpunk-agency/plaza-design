@@ -2429,6 +2429,42 @@
       "default": 0,
       "min": 0,
       "max": 1000000
+    },
+    "downtown.lock": {
+      "owner": "downtown",
+      "lifetime": "save",
+      "type": "string",
+      "default": "shut"
+    },
+    "downtown.scanned": {
+      "owner": "downtown",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "downtown.dlvAt": {
+      "owner": "downtown",
+      "lifetime": "save",
+      "type": "string",
+      "default": "home"
+    },
+    "downtown.dlvFrom": {
+      "owner": "downtown",
+      "lifetime": "save",
+      "type": "string",
+      "default": "home"
+    },
+    "downtown.routeFixed": {
+      "owner": "downtown",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "downtown.feed": {
+      "owner": "downtown",
+      "lifetime": "save",
+      "type": "string",
+      "default": "ads"
     }
   },
   "purchases": {

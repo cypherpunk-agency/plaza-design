@@ -1866,3 +1866,51 @@ Stable publication candidate,2026-10-19:
 - User-authorized main/production publication is a stable intermediate checkpoint. Native shared-state
   unification,remaining controllers/timed workflows,all19finalacceptance,sixworkloads and G0-G13
   completion remain open. No whole-goal completion is claimed.
+
+Published intermediate checkpoint,2026-10-19:
+- Commit28888d62ef1867ff257e38322d668051cafb288d was atomically pushed and both remote main and
+  production were verified at that commit. Production homepage deployment39286739765 succeeded.
+  Design-demo deployment39286740530 was last observed queued; later status lookup was unavailable.
+  The source75dbde1 raster/build evidence above applies to this checkpoint, not subsequent changes.
+- Subsequent uncommitted work: Laundromat breaker reset uses the shared interval/command/reply
+  contract (24 immutable behavior cases); Sandbox ordered environmental triggers use existing
+  conditions/commands (504 actual-world histories); Yard/Stacks discovery uses configured shared
+  commands (28 actual panel histories with effective canvas-op parity). Typed pending edits and
+  scoped source Save checks pass. These are focused checks, not full all19 acceptance.
+- Nullable and finite-decimal scalar declarations now support native state representation while
+  preserving integer commerce/cursor rules. This representation work alone does not unify owners.
+  Common state ownership, canonical scene fields and deletion of the mapping bridge are in progress.
+- Retired the one-use downtown-migrate-conversations generator: it reconstructed obsolete projected
+  player/goal facts. Authored conversations remain the source; their immutable fixture stays intact.
+- Ordinary washer deadlines/queries/rewards, other native ordinary decisions, final typed-editor
+  coverage/lifecycle, six measured workloads, cleanup and all G0-G13 gates remain open.
+
+Common state/query integration checkpoint,2026-10-19:
+- One common scalar root now owns save/session values. Native models hold direct scene-block references;
+  commands commit in place, reset/restore preserve identity, and autosave/slots settle copied values.
+  Removed native.state alias maps, nativeStatePort and the separate temporary value store. All19 device
+  sources compile scalar defaults from shared declarations;67 immutable original defaults are preserved.
+  Devices and Gameplay share one typed declaration editor. Current-format ownership/lifetimes/reset/
+  restore/menu-slot/persistence tests PASS. No historic-format compatibility layer was added.
+- Shared read-only count/select/tuning/label/duration queries, comparisons and typed query controls
+  replace Laundromat count/door callbacks.162 immutable query cases, post-action/reaction reads,
+  refusal/readonly/cycle/reference/cleanup cases PASS. Native preview uses the same read evaluator.
+- Opening phase selection is now ordered source rules using common flag conditions;64 immutable flag
+  histories, typed CRUD/reorder/nested conditions, protected Save/fresh shipping module/Undo PASS.
+  Actual story effects and timing still need further consolidation. Workshop counter uses the shared
+  source command after its obsolete native effect was removed; direct/signal replies and pulses PASS.
+- Integrated package TypeScript, both builds and public build guard PASS. Editor app-ZSNKQRZ7.js,
+  Play play-BGZTSE5Q.js. Source2b006c014979824956f299d328fdbf977e2b2f3748ccc8052c30b4e264b71443.
+- Raster repeat: all173 comparisons PASS, zero differing pixels/errors, report
+  .scene-system/all-game-pixel-check/evidence/2b006c014979824956f299d328fdbf977e2b2f3748ccc8052c30b4e264b71443-1792429484434.json.
+  The first unchanged run had2 differing pixels in the below-map case; its failed report is retained
+  at the same prefix with timestamp1792429412694. It did not repeat. No source or baseline changed.
+- Actual built public editor:19 native Game startups matched scene IDs, every Stop removed its iframe,
+  console errors empty. .scene-system/all-scene-source-checkpoint/native-play-19-app-ZSNKQRZ7.json.
+  This is startup/disposal evidence, not all19 full-authoring or controller acceptance.
+- Protected Save/fresh import/byte Undo: state-scalars/run-hAv0PE,scene-state-source-save-RA3B2I,
+  gameplay-binding-save-L7J5zl,laundromat-query-save-Zi8qR1,opening-story-save/run-p65t5Q,
+  beach-workflow-save-GKeDqV,sandbox-live-condition-save-Z1oZq8 (all under .scene-system).
+- Further ordinary controller migration, final full-authoring/lifecycle/communication acceptance,
+  six measured workloads, removal audit and G0-G13 remain open. Capsule temporal traps and next
+  contracts are specified in docs/reference/CAPSULE-ORDINARY-MIGRATION-PROPOSAL.md.

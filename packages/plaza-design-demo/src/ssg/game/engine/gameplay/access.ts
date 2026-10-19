@@ -1,14 +1,15 @@
+import type {GameplayReadContext} from './queries';
 import type {Condition,GameplayDefinition,GameplayState} from './types';
 import {matches,validateGameplay} from './validation';
 
 /** Requirements compose capabilities and common conditions; evaluation never mutates progress. */
 export interface AccessRequirement {when?:Condition;capability?:string;command?:string;reason:string;hidden?:boolean}
 export type AccessResult={ok:true}|{ok:false;reason:string;index:number;hidden:boolean};
-export interface AccessContext {state:GameplayState;capabilities?:Readonly<Record<string,boolean>>;eligibility?:(command:string)=>{ok:boolean}}
+export interface AccessContext {state:GameplayState;reads?:GameplayReadContext;capabilities?:Readonly<Record<string,boolean>>;eligibility?:(command:string)=>{ok:boolean}}
 export function evaluateAccess(requirements:readonly AccessRequirement[],context:AccessContext):AccessResult {
   for(let index=0;index<requirements.length;index++){
     const rule=requirements[index];
-    if(!matches(rule.when,context.state)||(rule.capability!==undefined&&context.capabilities?.[rule.capability]!==true)||(rule.command!==undefined&&context.eligibility?.(rule.command).ok!==true))
+    if(!matches(rule.when,context.state,context.reads)||(rule.capability!==undefined&&context.capabilities?.[rule.capability]!==true)||(rule.command!==undefined&&context.eligibility?.(rule.command).ok!==true))
       return {ok:false,reason:rule.reason,index,hidden:!!rule.hidden};
   }
   return {ok:true};
@@ -21,7 +22,7 @@ export function validateAccess(value:unknown,gameplay:GameplayDefinition,capabil
     if(Object.keys(raw).some(k=>!['when','capability','command','reason','hidden'].includes(k))||typeof rule.reason!=='string'||!rule.reason.trim()||rule.reason.length>2000||rule.hidden!==undefined&&typeof rule.hidden!=='boolean'||rule.when===undefined&&rule.capability===undefined&&rule.command===undefined)throw new Error('Invalid access requirement');
     if(rule.capability!==undefined&&!capabilities.includes(rule.capability))throw new Error('Unknown access capability');
     if(rule.command!==undefined&&!gameplay.commands[rule.command]?.sources.includes('interaction'))throw new Error('Unknown or forbidden access command');
-    if(rule.when!==undefined)validateGameplay({version:1,flags:gameplay.flags,items:gameplay.items,...(gameplay.state?{state:gameplay.state}:{}),events:[],commands:{check:{sources:['interaction'],when:rule.when,actions:[]}},reactions:[],conversations:{}});
+    if(rule.when!==undefined)validateGameplay({version:1,flags:gameplay.flags,items:gameplay.items,...(gameplay.state?{state:gameplay.state}:{}),...(gameplay.queries?{queries:gameplay.queries}:{}),events:[],commands:{check:{sources:['interaction'],when:rule.when,actions:[]}},reactions:[],conversations:{}});
   }
   return structuredClone(value);
 }

@@ -37,7 +37,7 @@ export const cameraPanel: PanelFn = ({ body, m, say, frame }) => {
         const mine = k.id === m.get('parcel');
         say(m.line(mine ? 'cam.zoom.parcel' : 'cam.zoom.crate', { id: k.id, label: k.label.toLowerCase() }));
         // found: the first time you read your own name on a crate
-        if (mine && !m.get('found')) { m.set('found', true); m.goal('find'); m.changed(); }
+        if(mine&&m.data.camera?.actions?.inspectOwned)m.runCommand(m.data.camera.actions.inspectOwned);
       } else { zoom = 1; focus = { x: 160, y: 75 }; say(m.line('cam.zoom.out')); }
     }),
     button(m.label('cam.tag'), 'hack-btn', () => {

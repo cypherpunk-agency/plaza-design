@@ -1,13 +1,6 @@
 {
   "id": "capsule",
   "name": "Capsule 7B",
-  "state": {
-    "plugOn": false,
-    "sun": false,
-    "pixelAt": "bed",
-    "doorOpen": false,
-    "rent": "pending"
-  },
   "tuning": {
     "nightEveryMs": 4000,
     "bootMs": 1500,

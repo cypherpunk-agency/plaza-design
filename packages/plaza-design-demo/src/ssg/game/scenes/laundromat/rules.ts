@@ -13,7 +13,7 @@
  * - `washer.take`: washer 3's door, once its cycle is done and the queue is
  *   clear: Moth's jacket, the maglev pass (an item: HELD) and the right glove
  *   (a keyring key chip, the twin of DLV-9's left one), and the save flag `p13`.
- * - the breaker resets itself `resetMs` after a trip (the tick).
+ * Breaker reset is a shared live workflow in gameplay.json; no scene tick remains.
  *
  * The washers' state keys are `w1`…`w4`: `idle` (a load, a cycle left),
  * `running`, `done`. `door3` (derived) is what washer 3's door does.
@@ -21,9 +21,8 @@
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
-import type { SceneData, Value } from "../../data/types";
-import type { Effect, SceneRules, World } from "../../engine/rules";
-import type { SceneModel } from "../../engine/model";
+import type { SceneData } from "../../data/types";
+import type { Effect, SceneRules } from "../../engine/rules";
 
 /** The four washers, by device id, and their state keys. */
 export const WASHERS = ['washer1', 'washer2', 'washer3', 'washer4'] as const;
@@ -34,18 +33,13 @@ export const RIGHT_GLOVE = 'glove.right';
 /** The save flag for "P13 done": the jacket is out of washer 3. */
 export const P13_FLAG = 'p13';
 
-const running = (m: SceneModel) => WASHERS.filter((d) => m.get(key(d)) === 'running').length;
-const waiting = (m: SceneModel) => WASHERS.filter((d) => m.get(key(d)) !== 'done').length;
-/** Washer 3's door: `locked` (its cycle to run), `held` (done, but SUDS holds it until every wash is done), `open`, `empty` (the jacket taken). */
-const door3 = (m: SceneModel): Value => (m.get('jacket') ? 'empty' : m.get('w3') !== 'done' ? 'locked' : waiting(m) ? 'held' : 'open');
-
 /** A run's ticket: a stop or a reload makes a counting cycle forget to finish. */
 let ticket = 0;
 
 const EFFECTS: Record<string, Effect> = {
   /** `start`: by cable only. Starts a cycle; a third machine trips the breaker. */
   'washer.run': (w, c) => {
-    const m = w.m, k = key(c.dev), name = m.label('name.' + c.dev);
+    const m = w.m, k = key(c.dev), name = String(m.value('laundromat.name.' + c.dev));
     if (!c.bySignal) { w.say(w.line(c.dev === 'washer3' ? 'suds.prepaid' : 'suds.start'), 'suds'); return null; }
     if (m.get('breaker') === 'tripped') return w.line('washer.nopower', { name });
     if (m.get(k) === 'running') return w.line('washer.already', { name });
@@ -56,36 +50,36 @@ const EFFECTS: Record<string, Effect> = {
     m.scratch['run.' + c.dev] = t;
     m.scratch['at.' + c.dev] = m.now();
     // one breaker, two machines: a third trips it, and the conduits stop every washer
-    if (running(m) > w.tune('maxRunning')) {
+    if (Number(m.value('laundromat.running')) > Number(m.value('laundromat.maxRunning'))) {
       m.set('breaker', 'tripped');
       m.set('trips', Number(m.get('trips') ?? 0) + 1);
       m.scratch.tripped = 0;
-      w.say(w.line('breaker.trip', { n: running(m) }), 'breaker');
+      w.say(w.line('breaker.trip', { n: Number(m.value('laundromat.running')) }), 'breaker');
       m.emit('breaker.load:tripped');
       w.changed();
       return null;
     }
-    m.later(w.tune('cycleMs'), () => {
+    m.later(Number(m.value('laundromat.cycleMs')), () => {
       if (m.scratch['run.' + c.dev] !== t || m.get(k) !== 'running') return;
       m.set(k, 'done');
       delete m.scratch['run.' + c.dev];
       if (c.dev === 'washer3') w.goal('run');
-      const d3 = door3(m);
+      const d3 = m.value('laundromat.door3');
       const line = c.dev === 'washer3'
-        ? w.line(d3 === 'open' ? 'washer3.done.open' : 'washer3.done.held', { n: waiting(m) })
+        ? w.line(d3 === 'open' ? 'washer3.done.open' : 'washer3.done.held', { n: Number(m.value('laundromat.waiting')) })
         : d3 === 'open' ? w.line('queue.clear') : w.line('washer.done', { name });
       w.say(line, d3 === 'open' && c.dev !== 'washer3' ? 'suds' : c.dev);
       m.emit(c.dev + '.drum:done');
       w.changed();
     });
     w.changed();
-    return w.line('washer.started', { name, sec: Math.round(w.tune('cycleMs') / 1000) });
+    return w.line('washer.started', { name, sec: Number(m.value('laundromat.cycleSeconds')) });
   },
   /** `stop`: the breaker's conduit stops a running cycle (lost: the load stays, a cycle left). A finger is refused. */
   'washer.stop': (w, c) => {
     const m = w.m, k = key(c.dev);
     if (!c.bySignal) {
-      if (m.get(k) !== 'running') return w.line('washer.idle', { name: m.label('name.' + c.dev) });
+      if (m.get(k) !== 'running') return w.line('washer.idle', { name: String(m.value('laundromat.name.' + c.dev)) });
       w.say(w.line(c.dev === 'washer3' ? 'suds.cancel.own' : 'suds.cancel'), 'suds');
       return null;
     }
@@ -110,23 +104,9 @@ const EFFECTS: Record<string, Effect> = {
   },
 };
 
-function tick(w: World, dt: number) {
-  const m = w.m, s = m.scratch;
-  // the breaker resets itself after a while (or by hand: its `reset`)
-  if (m.get('breaker') === 'tripped') {
-    s.tripped = (s.tripped ?? 0) + dt;
-    if (s.tripped >= w.tune('resetMs')) { s.tripped = 0; m.set('breaker', 'on'); w.say(w.line('breaker.auto'), 'breaker'); w.changed(); }
-  }
-}
 
 export const LAUNDROMAT_RULES: SceneRules = {
   effects: EFFECTS,
-  derived: {
-    running: (m) => running(m),
-    waiting: (m) => waiting(m),
-    door3: (m) => door3(m),
-  },
-  tick,
   /** A cycle in flight is not saved: a running washer comes back stopped, its load still in it. The breaker comes back on. */
   settle: (state) => {
     for (const d of WASHERS) if (state[key(d)] === 'running') state[key(d)] = 'idle';
@@ -136,11 +116,10 @@ export const LAUNDROMAT_RULES: SceneRules = {
     state: ['w1', 'w2', 'w3', 'w4', 'breaker', 'trips', 'jacket'],
     goals: ['run', 'jacket'],
     texts: {
-      'name.washer1': 'label', 'name.washer2': 'label', 'name.washer3': 'label', 'name.washer4': 'label',
       'suds.start': 'line', 'suds.prepaid': 'line', 'suds.cancel': 'line', 'suds.cancel.own': 'line',
       'washer.nopower': 'line', 'washer.already': 'line', 'washer.started': 'line',
       'washer.done': 'line', 'washer.idle': 'line', 'washer3.done.open': 'line', 'washer3.done.held': 'line',
-      'queue.clear': 'line', 'breaker.trip': 'line', 'breaker.auto': 'line', 'jacket.take': 'line', 'jacket.pass': 'line',
+      'queue.clear': 'line', 'breaker.trip': 'line', 'jacket.take': 'line', 'jacket.pass': 'line',
     },
   },
   /** Washer events and controller tuning; default cable topology is authored content. */
@@ -150,7 +129,7 @@ export const LAUNDROMAT_RULES: SceneRules = {
       const dev = z.devices.find((x) => x.id === d);
       if (!dev?.nouns.some((n) => n.id === 'drum' && n.events?.includes('done'))) errs.push(`devices[${d}]: needs a "drum" noun that raises "done" (P13)`);
     }
-    for (const k of ['cycleMs', 'resetMs', 'maxRunning']) if (typeof z.tuning[k] !== 'number') errs.push(`tuning.${k}: missing (the washers read it)`);
+    for (const k of ['cycleMs', 'maxRunning']) if (typeof z.tuning[k] !== 'number') errs.push(`tuning.${k}: missing (the washers read it)`);
     return errs;
   },
 };

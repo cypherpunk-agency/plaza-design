@@ -1,3 +1,4 @@
+import {validateNativeLiveConditionsShape,nativeLiveConditionsTick} from './native-live-conditions';
 import type {SceneData} from '../../data/types';
 import type {SceneModel,Line} from '../model';
 import type {GameplayDefinition} from './types';
@@ -8,6 +9,7 @@ const object=(v:unknown,keys:string[],required=keys):Record<string,any>=>{if(!v|
 const name=(v:unknown)=>{if(typeof v!=='string'||!/^[-a-zA-Z0-9_.]{1,128}$/.test(v)||['__proto__','constructor','prototype'].includes(v))fail('reference name');};
 const entries=(v:unknown)=>{const d=object(v,Object.keys(v&&typeof v==='object'?v:{}));if(Object.keys(d).length>64)fail('at most 64 bindings');return Object.entries(d);};
 export function validateNativeWorkflowShape(d:GameplayDefinition,condition:(value:unknown)=>void){
+ validateNativeLiveConditionsShape(d,condition);
  const elapsed=new Set<string>();
  for(const[id,raw]of entries(d.native?.intervals??{})){
   name(id);const r=object(raw,['kind','elapsed','duration','active','inactive','resetOn','due'],['kind','elapsed','duration','active','inactive','due']);
@@ -19,7 +21,7 @@ export function validateNativeWorkflowShape(d:GameplayDefinition,condition:(valu
  }
  for(const[event,raw]of entries(d.native?.replies??{})){
   if(!d.events.includes(event))fail('reply event');const r=object(raw,['from','say','template'],['from','say']);name(r.from);
-  if(!Array.isArray(r.say)||r.say.length<2||r.say.length>3||r.say.slice(0,2).some((s:unknown)=>typeof s!=='string'||!s||s.length>2000)||r.say[2]!==undefined&&!['ok','err','dim'].includes(r.say[2]))fail('reply line');
+  if(!Array.isArray(r.say)||r.say.length<2||r.say.length>3||r.say.slice(0,2).some((s:unknown,i:number)=>typeof s!=='string'||i===1&&!s||s.length>2000)||r.say[2]!==undefined&&!['ok','err','dim'].includes(r.say[2]))fail('reply line');
   if(r.template!==undefined&&r.template!==true)fail('reply template');if(r.template)validateGameplayText(r.say.slice(0,2),d);
  }
 }
@@ -31,7 +33,7 @@ export function validateNativeWorkflowBindings(d:GameplayDefinition,data:SceneDa
 export function nativeWorkflowEvent(model:SceneModel,session:GameplaySession,event:string){
  for(const row of Object.values(session.definition.native?.intervals??{}))if(row.resetOn?.includes(event))model.scratch[row.elapsed]=0;
  const reply=session.definition.native?.replies?.[event];if(!reply)return;
- const line=[...reply.say] as Line;if(reply.template){const text=renderGameplayText([line[0],line[1]],session.state());line[0]=text[0];line[1]=text[1];}model.reply(line,reply.from);
+ const line=[...reply.say] as Line;if(reply.template){const text=renderGameplayText([line[0],line[1]],session.state(),{},session.queryContext());line[0]=text[0];line[1]=text[1];}model.reply(line,reply.from);
 }
 /** At most one due command per row/tick; resetting to zero deliberately discards overshoot. */
 export function nativeWorkflowTick(model:SceneModel,session:GameplaySession,dt:number,cause:(run:()=>void)=>void){
@@ -42,4 +44,5 @@ export function nativeWorkflowTick(model:SceneModel,session:GameplaySession,dt:n
   model.scratch[row.elapsed]=0;
   cause(()=>{const c=row.due.find(c=>session.matches(c.when))!;if(session.dispatch(c.command,'system').ok)model.changed();});
  }
+ nativeLiveConditionsTick(model,session,cause);
 }

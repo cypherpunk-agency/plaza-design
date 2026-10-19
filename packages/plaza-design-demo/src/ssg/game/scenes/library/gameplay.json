@@ -163,12 +163,19 @@
     }
   },
   "native": {
-    "state": {},
     "reads": {
       "library:renewed": "renewed"
     },
     "verbs": [],
     "events": {},
     "goals": {}
+  },
+  "state": {
+    "library.renewed": {
+      "owner": "library",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    }
   }
 }

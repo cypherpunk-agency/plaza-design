@@ -30,24 +30,18 @@ the detailed first design pass. The prior roadmap is preserved under archive/ an
   reading or changing a global light/shadow frame.
 - Read `authoring/README.md` before composer work. Its local launcher is
   `pnpm --filter plaza-design-demo compose-scenes` (repository root; UI 4192, save service 4193).
-  Saved composition/timeline JSON, the scoped Sandbox behavior document and Harbor Shift's
-  `gameplay.json`/`scene.json` plus registered `authoring/play-fixtures.json` are game source,
-  not player saves. Workbench viewing is read-only; behavior edits must stay within the frozen
-  `authoring/inventories/S13.json` contract and existing protected Save until a phase of
-  `GAME-EDITOR-PLAN.md` (the approved full-game-editor direction) defines a wider scope. Restart
-  after code/schema changes and rebuild the homepage after saving source edits.
-  The Gameplay workbench may edit the registered `harbor-shift-gameplay` document through
-  `validateShiftGameplay`; retain its protected IDs and invocation permissions. Its laboratory
-  executes pending documents without accessing player storage. Shop, Library and Laundromat also have explicitly registered scene/gameplay documents in
-  `authoring/gameplay-scenes.ts`; their validators protect existing IDs and invocation permissions.
-  The Test District registers demo-counter-scene, demo-desk-scene and their single shared
-  demo-counter-gameplay document; validators preserve role bindings and permissions. Other gameplay
-  files are not implicitly editable. Scene logic may edit `harbor-shift-scene` through `validateShiftScene`;
-  Play fixture edits use `validatePlayFixtures`. Both use protected Save/history/bundles.
-  The Play tab runs the real Harbor Shift, Sandbox, Shop, Library or Laundromat Game from pending snapshots
-  in a disposable opaque-origin iframe. Keep its storage private through `runtime/storage.ts`;
-  do not give the frame same-origin privileges or a source-service credential. Stop/reset/tab
-  closure must destroy its realm. Test-only input hooks belong only in focused fixture scripts.
+  Composition, scene, gameplay, devices, world, network and timeline documents are authored game
+  source, not player saves. ENGINE-CONSOLIDATION-GOAL.md expands the earlier Sandbox/ENG-04 pilot
+  to all 19 existing scenes and ordinary authored scene creation. Earlier frozen pilot inventories
+  describe their historical scopes, not a present restriction on the authorized goal.
+  Use registered prospective validators and shared typed controls; preserve existing identities and
+  invocation permissions while supporting required creation, removal and rebinding. Pending documents
+  must drive the actual runtime rather than a parallel editor evaluator. Restart after code/schema
+  changes and rebuild the homepage after source edits.
+  The scene-centered Layout/Logic/Wiring/Play editor runs pending native Game scenes in disposable
+  opaque-origin iframes. Keep storage private through runtime/storage.ts; do not give frames same-origin
+  privileges or source-service credentials. Stop/reset/tab closure must destroy the realm. Test-only
+  input hooks belong in focused fixture scripts.
 - The homepage build also emits the static public `/editor/`. Keep its snapshots/read-only
   source viewer and edit downloads independent of the loopback source-write service. Never
   publish that service or its session credentials. Portable edit bundles use the existing
@@ -59,18 +53,20 @@ the detailed first design pass. The prior roadmap is preserved under archive/ an
   Use ROADMAP.md to distinguish implemented work from proposed work, not to lock priorities.
 - Register new scenes/data and include their code contracts in the homepage generator's
   validation where applicable. The regular React demo build is not the game build.
-- Shared saved values live in optional Save.gameplay; preserve unrelated values and native scene
-  snapshots. Purchases own their quote/charge definitions. Migrated chatter uses the shared
+- Scalar state has one common owner: Save.gameplay[owner][localKey]. Gameplay declarations own
+  defaults/types/lifetimes; SceneModel.state directly references its scene block. Engine snapshots
+  contain device metadata, not another scalar store. Preserve unrelated values. Purchases own their quote/charge definitions. Migrated chatter uses the shared
   conversation runner with explicit progress/entry commands; painting a frame must never give rewards.
   /?demo has separate autosave/slot/resume keys; editor Demo world retains opaque private Play.
-- ENG-04 native bindings are registered only for Beach and the demo Workshop; Market has a shared
-  paid fortune sequence. See ENG-04-PLAN.md for exact verbs/exclusions. Native state keeps one owner
-  in SceneSave via nativeStatePort; committed event metadata carries native goal changes atomically.
-  Bindings and source wires use protected validators in native-gameplay-scenes.ts. Do not attach
-  native bindings to other gameplay documents implicitly. Eligibility must remain pure, and dialogue
+- Device bindings cover the existing scene corpus through validated gameplay sources. Shared commands
+  and native simulation mutate the same common state blocks; no scalar alias map or save-owner bridge.
+  Current Save serializes settled copies without mutating live state. Read-only queries use the common
+  evaluator and never acquire saved values. Committed event metadata carries native goal changes.
+  Bindings and source wires use protected validators in native-gameplay-scenes.ts. Eligibility must remain pure, and dialogue
   commands must respect native lock/seal/watchdog rules. Existing signal time stays authoritative.
-- Keep player progress compatible unless the user requests a reset/version change. Validate
-  saved scene ids before entering them and keep a fallback for older saves.
+- Preserve normal current-format progress and validate saved scene IDs before entering them.
+  The user explicitly excluded historic save-format compatibility; do not add codecs, migration
+  bridges or old-format acceptance gates. Keep safe invalid-destination handling.
 - Scene clocks, watchdogs and delayed signals/actions share pausable scene time. Lockout
   deadlines use wall time intentionally; do not accidentally pause them with puzzle time.
 - When changing behavior, correct the relevant implementation description. Label older

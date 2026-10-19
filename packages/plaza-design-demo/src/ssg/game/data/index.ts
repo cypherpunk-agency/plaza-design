@@ -1,3 +1,16 @@
+import harborshiftGameplay from '../scenes/harbor-shift/gameplay.json';
+import harborStationGameplay from '../scenes/harborStation/gameplay.json';
+import galleriaStationGameplay from '../scenes/galleriaStation/gameplay.json';
+import metroGameplay from '../scenes/metro/gameplay.json';
+import mallGameplay from '../scenes/mall/gameplay.json';
+import shopGameplay from '../scenes/shop/gameplay.json';
+import marketGameplay from '../scenes/market/gameplay.json';
+import warehouseGameplay from '../scenes/warehouse/gameplay.json';
+import harborGameplay from '../scenes/harbor/gameplay.json';
+import trainGameplay from '../scenes/train/gameplay.json';
+import mothGameplay from '../scenes/moth/gameplay.json';
+import downtownGameplay from '../scenes/downtown/gameplay.json';
+import {projectSceneState} from '../engine/gameplay/scene-state';
 import authoredDeviceSource from '../scenes/authored.json';
 import harborDeviceJson from '../scenes/harbor/devices.json';
 import warehouseDeviceJson from '../scenes/warehouse/devices.json';
@@ -45,11 +58,11 @@ const yardDefinition=validateGameplay(yardGameplay);
 const yard: Loose<SceneData> = nativeDeviceData({...yardJson,dialogue:{hinge:nativeDialogue(yardDefinition,'hinge')}} as unknown as SceneData,yardDefinition);
 const capsuleDefinition=validateGameplay(capsuleGameplay);
 const capsule: Loose<SceneData> = nativeDeviceData({...capsuleJson,dialogue:{concierge:nativeDialogue(capsuleDefinition,'concierge')}} as unknown as SceneData,capsuleDefinition);
-const moth: Loose<SceneData> = mothJson;
+const moth: Loose<SceneData> = projectSceneState(mothJson as unknown as SceneData,validateGameplay(mothGameplay));
 const beach: Loose<SceneData> = nativeDeviceData(beachJson as unknown as SceneData,validateGameplay(beachGameplay));
 const laundromatDefinition=validateGameplay(laundromatGameplay);
-const laundromat: Loose<SceneData> = {...laundromatJson,dialogue:{suds:nativeDialogue(laundromatDefinition,'suds')}};
-const downtown: Loose<SceneData> = downtownJson;
+const laundromat: Loose<SceneData> = {...projectSceneState(laundromatJson as unknown as SceneData,laundromatDefinition),dialogue:{suds:nativeDialogue(laundromatDefinition,'suds')}};
+const downtown: Loose<SceneData> = projectSceneState(downtownJson as unknown as SceneData,validateGameplay(downtownGameplay));
 const logic: Loose<LogicData> = logicJson;
 const net: Loose<NetData> = netJson;
 const engine: Loose<EngineData> = engineJson;
@@ -73,28 +86,28 @@ export const LAUNDROMAT = laundromat as SceneData;
 export const DOWNTOWN = downtown as SceneData;
 
 /** The metro car: TRAIN-0's emergency panel (P14, the stop that isn't on the map). */
-const train: Loose<SceneData> = trainJson;
+const train: Loose<SceneData> = projectSceneState(trainJson as unknown as SceneData,validateGameplay(trainGameplay));
 export const TRAIN = train as SceneData;
 
 /** The stacks at the harbor (P15 NRLU 404 0451, the end of Act I): STS-2, the thermal gate, the night ferry, the reefer, the watchdog. */
 const stacksDefinition=validateGameplay(stacksGameplay);
-const stacks: Loose<SceneData> = {...stacksJson,dialogue:{moth:nativeDialogue(stacksDefinition,'moth',{},undefined,{entryActions:false})}};
+const stacks: Loose<SceneData> = {...projectSceneState(stacksJson as unknown as SceneData,stacksDefinition),dialogue:{moth:nativeDialogue(stacksDefinition,'moth',{},undefined,{entryActions:false})}};
 export const STACKS = stacks as SceneData;
 
 /** The public library (P16 Long overdue): the card reader, the session timer, the printer, the LIBRARY LAN's nodes, scan.so. */
-const library: Loose<SceneData> = {...libraryJson,dialogue:{catalog:nativeDialogue(validateGameplay(libraryGameplay),'catalog',{'library:renewed':'renewed'},'say "{line}" > catalog')}};
+const library: Loose<SceneData> = {...projectSceneState(libraryJson as unknown as SceneData,validateGameplay(libraryGameplay)),dialogue:{catalog:nativeDialogue(validateGameplay(libraryGameplay),'catalog',{'library:renewed':'renewed'},'say "{line}" > catalog')}};
 export const LIBRARY = library as SceneData;
 
 /** The sandbox (sudo only): REGISTRY QA BAY 3, one bench per engine feature. */
 const sandboxDefinition=validateGameplay(sandboxGameplay);
-const sandbox: Loose<SceneData> = {...sandboxJson,dialogue:{unit7:nativeDialogue(sandboxDefinition,'unit7')}};
+const sandbox: Loose<SceneData> = {...projectSceneState(sandboxJson as unknown as SceneData,sandboxDefinition),dialogue:{unit7:nativeDialogue(sandboxDefinition,'unit7')}};
 export const SANDBOX = sandbox as SceneData;
 
 /** Canonical device catalogs include every native scene and data-only authored scene sources. */
 export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH, laundromat: LAUNDROMAT,
   train: TRAIN, stacks: STACKS, library: LIBRARY, sandbox: SANDBOX,
-  harbor: harborDeviceJson as unknown as SceneData, warehouse: warehouseDeviceJson as unknown as SceneData, market: marketDeviceJson as unknown as SceneData, shop: shopDeviceJson as unknown as SceneData, mall: mallDeviceJson as unknown as SceneData, metro: metroDeviceJson as unknown as SceneData, galleriaStation: galleriaStationDeviceJson as unknown as SceneData, harborStation: harborStationDeviceJson as unknown as SceneData, harborShift: harborShiftDeviceJson as unknown as SceneData,
-  ...Object.fromEntries((authoredDeviceSource.scenes as {scene:{id:string};devices?:SceneData}[]).flatMap(entry=>entry.devices?[[entry.scene.id,entry.devices]]:[])),
+  harbor: projectSceneState(harborDeviceJson as unknown as SceneData,validateGameplay(harborGameplay)), warehouse: projectSceneState(warehouseDeviceJson as unknown as SceneData,validateGameplay(warehouseGameplay)), market: projectSceneState(marketDeviceJson as unknown as SceneData,validateGameplay(marketGameplay)), shop: projectSceneState(shopDeviceJson as unknown as SceneData,validateGameplay(shopGameplay)), mall: projectSceneState(mallDeviceJson as unknown as SceneData,validateGameplay(mallGameplay)), metro: projectSceneState(metroDeviceJson as unknown as SceneData,validateGameplay(metroGameplay)), galleriaStation: projectSceneState(galleriaStationDeviceJson as unknown as SceneData,validateGameplay(galleriaStationGameplay)), harborStation: projectSceneState(harborStationDeviceJson as unknown as SceneData,validateGameplay(harborStationGameplay)), harborShift: projectSceneState(harborShiftDeviceJson as unknown as SceneData,validateGameplay(harborshiftGameplay)),
+  ...Object.fromEntries((authoredDeviceSource.scenes as {scene:{id:string};devices?:SceneData;gameplay:import('../engine/gameplay/types').GameplayDefinition}[]).flatMap(entry=>entry.devices?[[entry.scene.id,projectSceneState(entry.devices,entry.gameplay)]]:[])),
 };
 
 /** The logic modules (TIMER, SWITCH), shared by every scene. Checked like a scene. */

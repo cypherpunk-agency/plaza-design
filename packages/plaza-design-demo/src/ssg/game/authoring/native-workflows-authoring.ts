@@ -1,9 +1,11 @@
+import {renderNativeLiveConditionsAuthoring} from './native-live-conditions-authoring';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import type {GameplayBindingControls} from './gameplay-bindings-authoring';
 /** All edits use the owning workbench's prospective source validator. */
 export function renderNativeWorkflowAuthoring(parent:HTMLElement,doc:GameplayDefinition,ui:GameplayBindingControls){
  const{data,form,section,edit,draft}=ui;if(!data||!doc.native)return;
  const system=Object.entries(doc.commands).filter(([,c])=>c.sources.length===1&&c.sources[0]==='system').map(([id])=>id),tuning=Object.entries(data.tuning).filter(([,v])=>Number.isFinite(v)&&v>0&&v<=1000000).map(([id])=>id);
+ renderNativeLiveConditionsAuthoring(parent,doc,ui);
  const box=section(parent,'Live workflows',true),entries=Object.entries(doc.native.intervals??{});
  for(const[id,row]of entries){const host=section(box,'Interval '+id,true),prefix='Interval '+id;
   form.text(host,prefix+' ID',id,value=>edit('Rename live interval',g=>{if(value!==id&&g.native!.intervals![value])throw Error('Interval already exists');g.native!.intervals=Object.fromEntries(Object.entries(g.native!.intervals!).map(([key,r])=>[key===id?value:key,r]));}));

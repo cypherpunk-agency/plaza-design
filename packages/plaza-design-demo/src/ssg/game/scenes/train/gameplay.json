@@ -5,5 +5,16 @@
   "events": [],
   "commands": {},
   "reactions": [],
-  "conversations": {}
+  "conversations": {},
+  "state": {
+    "train.pulls": {
+      "owner": "train",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    }
+  }
 }

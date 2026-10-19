@@ -51,7 +51,9 @@ export const scopePanel: PanelFn = ({ body, m, say, frame }) => {
       const k = under(cross);
       if (!k) return say(m.line('scope.tag.none'));
       if (k.id !== mine()) return say(m.line('scope.tag.wrong', { id: k.id, label: k.label }));
-      m.set('found', true); m.goal('find'); m.changed();
+      const command=m.data.camera?.actions?.tagOwned;
+      const result=command?m.runCommand(command):{ok:false,reason:'unknown-command'} as const;
+      if(!result.ok)return say(m.line('scope.tag.refused',{reason:result.reason,id:k.id}));
       say(m.line('scope.tag.ok', { id: k.id }));
     }),
   );

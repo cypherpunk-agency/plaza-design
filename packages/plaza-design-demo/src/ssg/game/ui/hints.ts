@@ -3,7 +3,7 @@ import {CommunicationLane,type MessageTone} from './communication';
  * Hints: a channel any part of the game can send a short line to (docs/design/DECK-SCREEN-PLAN.md).
  * It does not decide when a player gets help; senders do. One hint shows at a time, in the hint
  * lane under the scene title (game.ts drawHud); the rest wait their turn. Each id shows once per
- * run (`save.seenHints`; not `save.hints`, which counts the fixer's paid hints). A sticky hint (a
+ * run (`save.seenHints`). Paid Fixer hints use shared gameplay state. A sticky hint (a
  * control you have not used yet) stays until its sender calls `done`. The deck's JOBS tab keeps the
  * latest one, so a missed hint is not lost.
  *

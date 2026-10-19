@@ -6,6 +6,8 @@ import {checkSceneInteractionRows} from '../../data/check';
 import {contractOf,type SceneRules} from '../rules';
 import type {SceneDef} from '../../scenes/kit';
 import type {SceneDocument} from './scene-document';
+import type {GameplayDefinition} from './types';
+import {projectSceneState} from './scene-state';
 
 export type NativeTargetStep={do:Action[]}|{say:LineRef}|{exit:string}|{reset:true};
 export interface NativeTargetDocument {
@@ -22,7 +24,7 @@ const fields=(o:Record<string,unknown>,allowed:string[],required:string[])=>{if(
 const text=(v:unknown)=>{if(typeof v!=='string'||!v.trim()||v.length>2000)fail('bounded text required');};
 const ordered=(r:Record<string,unknown>[])=>{if(r.at(-1)!.if!==undefined||r.slice(0,-1).some(x=>x.if===undefined))fail('exactly one final fallback required');};
 export function nativeTargetValidator(data:SceneData,rules:SceneRules,anchors:readonly string[],permissions:{reset?:boolean}={}){
- return (doc:SceneDocument)=>{
+ return (doc:SceneDocument,gameplay?:GameplayDefinition)=>{
   if(doc.nativeTargets===undefined)return;
   const targets=rows(doc.nativeTargets),ids=new Set<string>(),cases:{if?:Cond;do?:Action[];say?:LineRef}[]=[];
   const label=(v:unknown)=>{text(v);if(typeof ({...ENGINE.texts,...data.texts})[String(v)]!=='string')fail('unknown label '+v);};
@@ -47,7 +49,7 @@ export function nativeTargetValidator(data:SceneData,rules:SceneRules,anchors:re
     });
    }
   }
-  const errors=checkSceneInteractionRows(data,contractOf(rules),{engine:ENGINE,logic:LOGIC,net:NET,keyring:KEYRING},cases);
+  const errors=checkSceneInteractionRows(gameplay?projectSceneState(data,gameplay):data,contractOf(rules,gameplay?.native?.verbs,Object.keys(gameplay?.queries??{})),{engine:ENGINE,logic:LOGIC,net:NET,keyring:KEYRING},cases);
   if(errors.length)fail(errors.join('\n'));
  };
 }

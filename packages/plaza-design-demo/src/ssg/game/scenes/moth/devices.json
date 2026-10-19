@@ -1,35 +1,70 @@
 {
   "id": "moth",
   "name": "Moth's place",
-
-  "state": {
-    "fern": "dry",
-    "fed": false,
-    "tape": 0
-  },
-
   "tuning": {},
-
   "devices": [
     {
       "id": "mail",
       "name": "HALL TABLE",
       "look": "A hall table by the door. Mail, keys that open nothing, and a notice someone slid under the door.",
-      "everyday": [{ "noun": "notice", "verb": "read", "label": "read the notice" }, { "noun": "post", "verb": "read", "label": "go through the mail" }],
+      "everyday": [
+        {
+          "noun": "notice",
+          "verb": "read",
+          "label": "read the notice"
+        },
+        {
+          "noun": "post",
+          "verb": "read",
+          "label": "go through the mail"
+        }
+      ],
       "status": "3 days of mail",
       "layout": {
-        "spot": { "x": 84, "w": 28, "h": 30 },
-        "board": { "x": 0.1, "y": 0.72 },
-        "dir": { "notice": "up", "post": "right" }
+        "spot": {
+          "x": 84,
+          "w": 28,
+          "h": 30
+        },
+        "board": {
+          "x": 0.1,
+          "y": 0.72
+        },
+        "dir": {
+          "notice": "up",
+          "post": "right"
+        }
       },
       "nouns": [
         {
-          "id": "notice", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat notice", "REGISTRY HOUSING NOTICE. RESIDENT 4C NOT VERIFIED FOR 72 HOURS. FLAT SCHEDULED FOR REALLOCATION. NO ACTION REQUIRED."] } }
+          "id": "notice",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat notice",
+                "REGISTRY HOUSING NOTICE. RESIDENT 4C NOT VERIFIED FOR 72 HOURS. FLAT SCHEDULED FOR REALLOCATION. NO ACTION REQUIRED."
+              ]
+            }
+          }
         },
         {
-          "id": "post", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["ls post", "a takeaway menu, a final reminder, and a postcard of a fish, blank, addressed to Moth, in Moth's handwriting."] } }
+          "id": "post",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "ls post",
+                "a takeaway menu, a final reminder, and a postcard of a fish, blank, addressed to Moth, in Moth's handwriting."
+              ]
+            }
+          }
         }
       ]
     },
@@ -37,25 +72,86 @@
       "id": "board",
       "name": "CORKBOARD",
       "look": "A corkboard over a fishing rod that has never been out of its wrapper.",
-      "everyday": [{ "noun": "photo", "verb": "read", "label": "look at the photo" }, { "noun": "list", "verb": "read", "label": "read the list" }, { "noun": "rod", "verb": "read", "label": "check the rod" }],
+      "everyday": [
+        {
+          "noun": "photo",
+          "verb": "read",
+          "label": "look at the photo"
+        },
+        {
+          "noun": "list",
+          "verb": "read",
+          "label": "read the list"
+        },
+        {
+          "noun": "rod",
+          "verb": "read",
+          "label": "check the rod"
+        }
+      ],
       "status": "1 photo · 1 list · 1 receipt",
       "layout": {
-        "spot": { "x": 150, "y": 30, "w": 44, "h": 34 },
-        "board": { "x": 0.1, "y": 0.28 },
-        "dir": { "photo": "up", "list": "right", "rod": "down" }
+        "spot": {
+          "x": 150,
+          "y": 30,
+          "w": 44,
+          "h": 34
+        },
+        "board": {
+          "x": 0.1,
+          "y": 0.28
+        },
+        "dir": {
+          "photo": "up",
+          "list": "right",
+          "rod": "down"
+        }
       },
       "nouns": [
         {
-          "id": "photo", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat photo", "you and Moth at the noodle stall. on the back, in marker: \"proof we eat. —M\""] } }
+          "id": "photo",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat photo",
+                "you and Moth at the noodle stall. on the back, in marker: \"proof we eat. —M\""
+              ]
+            }
+          }
         },
         {
-          "id": "list", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat list", "\"BEFORE LEAVING: 1. feed Sprat. 2. water Fern. 3. tape the camera. 4. tape the other camera. 5. trust nobody (except you, reading this. hi).\" items 1 and 2 are not ticked."] } }
+          "id": "list",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat list",
+                "\"BEFORE LEAVING: 1. feed Sprat. 2. water Fern. 3. tape the camera. 4. tape the other camera. 5. trust nobody (except you, reading this. hi).\" items 1 and 2 are not ticked."
+              ]
+            }
+          }
         },
         {
-          "id": "rod", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat rod", "a fishing rod, still in its wrapper. the receipt is pinned above it. on the receipt: \"for my status. —M\""] } }
+          "id": "rod",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat rod",
+                "a fishing rod, still in its wrapper. the receipt is pinned above it. on the receipt: \"for my status. —M\""
+              ]
+            }
+          }
         }
       ]
     },
@@ -63,22 +159,65 @@
       "id": "turntable",
       "name": "RECORD PLAYER",
       "look": "A record player on a crate. One record on it, looping. Moth liked routines.",
-      "everyday": [{ "noun": "sleeve", "verb": "read", "label": "read the sleeve" }],
+      "everyday": [
+        {
+          "noun": "sleeve",
+          "verb": "read",
+          "label": "read the sleeve"
+        }
+      ],
       "status": "playing · loop: 2 s",
       "layout": {
-        "spot": { "x": 222, "w": 30, "h": 40 },
-        "board": { "x": 0.3, "y": 0.72 },
-        "dir": { "record": "up", "sleeve": "left" }
+        "spot": {
+          "x": 222,
+          "w": 30,
+          "h": 40
+        },
+        "board": {
+          "x": 0.3,
+          "y": 0.72
+        },
+        "dir": {
+          "record": "up",
+          "sleeve": "left"
+        }
       },
       "nouns": [
         {
-          "id": "record", "kind": "CLOCK", "verbs": ["read"], "events": ["played"],
-          "clock": { "every": 2000 },
-          "on": { "read": { "say": ["cat record", "the song, every 2 s. a single, cut short. it skips back to the start before it ends."] } }
+          "id": "record",
+          "kind": "CLOCK",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "played"
+          ],
+          "clock": {
+            "every": 2000
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat record",
+                "the song, every 2 s. a single, cut short. it skips back to the start before it ends."
+              ]
+            }
+          }
         },
         {
-          "id": "sleeve", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat sleeve", "a hand-labelled single. on the label: \"OURS.\" no title. Moth's writing: \"you were there. you know it.\""] } }
+          "id": "sleeve",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat sleeve",
+                "a hand-labelled single. on the label: \"OURS.\" no title. Moth's writing: \"you were there. you know it.\""
+              ]
+            }
+          }
         }
       ]
     },
@@ -87,58 +226,192 @@
       "name": "MOTH'S RIG",
       "look": "Three screens, one keyboard, a lot of tape. The webcam is taped. So is the spare.",
       "deck": true,
-      "everyday": [{ "noun": "screen", "verb": "read", "label": "look at the screen" }, { "noun": "sticky", "verb": "read", "label": "read the sticky note" }],
-      "status": [{ "if": "uplink", "then": "line: open (your uplink.so)", "else": "line: local only" }],
+      "everyday": [
+        {
+          "noun": "screen",
+          "verb": "read",
+          "label": "look at the screen"
+        },
+        {
+          "noun": "sticky",
+          "verb": "read",
+          "label": "read the sticky note"
+        }
+      ],
+      "status": [
+        {
+          "if": "uplink",
+          "then": "line: open (your uplink.so)",
+          "else": "line: local only"
+        }
+      ],
       "layout": {
-        "spot": { "x": 310, "w": 70, "h": 62 },
-        "board": { "x": 0.5, "y": 0.72 },
-        "dir": { "screen": "up", "sticky": "left", "net": "right" }
+        "spot": {
+          "x": 310,
+          "w": 70,
+          "h": 62
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.72
+        },
+        "dir": {
+          "screen": "up",
+          "sticky": "left",
+          "net": "right"
+        }
       },
       "nouns": [
         {
-          "id": "screen", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat screen", "MOTH-PC · LOCAL LOGIN DISABLED BY OWNER. REMOTE ACCESS: FRIENDNET CONTACTS ONLY."] } }
+          "id": "screen",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat screen",
+                "MOTH-PC · LOCAL LOGIN DISABLED BY OWNER. REMOTE ACCESS: FRIENDNET CONTACTS ONLY."
+              ]
+            }
+          }
         },
         {
-          "id": "sticky", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat sticky", "\"no, you can't log in here. nobody can. friends come in through FRIENDNET, like friends. —M\""] } }
+          "id": "sticky",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat sticky",
+                "\"no, you can't log in here. nobody can. friends come in through FRIENDNET, like friends. —M\""
+              ]
+            }
+          }
         },
-        { "id": "net", "kind": "LINK", "link": { "when": "uplink" } }
+        {
+          "id": "net",
+          "kind": "LINK",
+          "link": {
+            "when": "uplink"
+          }
+        }
       ]
     },
     {
       "id": "tank",
       "name": "SPRAT'S TANK",
       "look": "A fish tank with a heat lamp in the lid. One fish. He's fine.",
-      "everyday": [{ "noun": "feeder", "verb": "feed", "label": "feed Sprat" }, { "noun": "sprat", "verb": "read", "label": "look at Sprat" }],
-      "status": [{ "if": "fed", "then": "Sprat: fed", "else": "feeder: empty since tuesday" }, " · 26°C"],
+      "everyday": [
+        {
+          "noun": "feeder",
+          "verb": "feed",
+          "label": "feed Sprat"
+        },
+        {
+          "noun": "sprat",
+          "verb": "read",
+          "label": "look at Sprat"
+        }
+      ],
+      "status": [
+        {
+          "if": "fed",
+          "then": "Sprat: fed",
+          "else": "feeder: empty since tuesday"
+        },
+        " · 26°C"
+      ],
       "layout": {
-        "spot": { "x": 402, "w": 46, "h": 46 },
-        "board": { "x": 0.7, "y": 0.72 },
-        "dir": { "sprat": "up", "feeder": "right", "lamp": "left" }
+        "spot": {
+          "x": 402,
+          "w": 46,
+          "h": 46
+        },
+        "board": {
+          "x": 0.7,
+          "y": 0.72
+        },
+        "dir": {
+          "sprat": "up",
+          "feeder": "right",
+          "lamp": "left"
+        }
       },
       "nouns": [
         {
-          "id": "sprat", "kind": "STORE", "verbs": ["read"],
+          "id": "sprat",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
           "on": {
             "read": [
-              { "if": "fed", "say": ["cat sprat", "Sprat swims a slow lap of victory. he's fine."] },
-              { "say": ["cat sprat", "Sprat looks at you, then at the feeder, then at you. he's fine. he would like it noted that he's fine."] }
+              {
+                "if": "fed",
+                "say": [
+                  "cat sprat",
+                  "Sprat swims a slow lap of victory. he's fine."
+                ]
+              },
+              {
+                "say": [
+                  "cat sprat",
+                  "Sprat looks at you, then at the feeder, then at you. he's fine. he would like it noted that he's fine."
+                ]
+              }
             ]
           }
         },
         {
-          "id": "feeder", "kind": "ACT", "verbs": ["feed"],
+          "id": "feeder",
+          "kind": "ACT",
+          "verbs": [
+            "feed"
+          ],
           "on": {
             "feed": [
-              { "if": "fed", "say": ["{via}use feeder --feed", "FEEDER: daily portion already dispensed.", "dim"] },
-              { "do": [{ "set": "fed", "to": true }], "say": ["{via}use feeder --feed", "FEEDER: 1 portion dispensed.", "ok"] }
+              {
+                "if": "fed",
+                "say": [
+                  "{via}use feeder --feed",
+                  "FEEDER: daily portion already dispensed.",
+                  "dim"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "fed",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "{via}use feeder --feed",
+                  "FEEDER: 1 portion dispensed.",
+                  "ok"
+                ]
+              }
             ]
           }
         },
         {
-          "id": "lamp", "kind": "SENSE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat lamp", "LAMP: 26°C. the lid is warm. something has been sleeping on it."] } }
+          "id": "lamp",
+          "kind": "SENSE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat lamp",
+                "LAMP: 26°C. the lid is warm. something has been sleeping on it."
+              ]
+            }
+          }
         }
       ]
     },
@@ -146,29 +419,94 @@
       "id": "pot",
       "name": "SMART POT",
       "look": "A smart pot by the window. The plant in it is called Fern. It is not a fern.",
-      "everyday": [{ "noun": "pump", "verb": "water", "label": "water Fern" }, { "noun": "soil", "verb": "read", "label": "check the soil" }],
-      "status": [{ "if": "fern=dry", "then": "moisture 3% · schedule suspended (owner absent)", "else": "moisture 41% · Fern: recovering" }],
+      "everyday": [
+        {
+          "noun": "pump",
+          "verb": "water",
+          "label": "water Fern"
+        },
+        {
+          "noun": "soil",
+          "verb": "read",
+          "label": "check the soil"
+        }
+      ],
+      "status": [
+        {
+          "if": "fern=dry",
+          "then": "moisture 3% · schedule suspended (owner absent)",
+          "else": "moisture 41% · Fern: recovering"
+        }
+      ],
       "layout": {
-        "spot": { "x": 478, "w": 24, "h": 34 },
-        "board": { "x": 0.86, "y": 0.72 },
-        "dir": { "soil": "up", "pump": "left" }
+        "spot": {
+          "x": 478,
+          "w": 24,
+          "h": 34
+        },
+        "board": {
+          "x": 0.86,
+          "y": 0.72
+        },
+        "dir": {
+          "soil": "up",
+          "pump": "left"
+        }
       },
       "nouns": [
         {
-          "id": "soil", "kind": "SENSE", "verbs": ["read"],
+          "id": "soil",
+          "kind": "SENSE",
+          "verbs": [
+            "read"
+          ],
           "on": {
             "read": [
-              { "if": "fern=dry", "say": ["cat soil", "MOISTURE 3%. WATERING SCHEDULE SUSPENDED: OWNER NOT VERIFIED."] },
-              { "say": ["cat soil", "MOISTURE 41%. within tolerance."] }
+              {
+                "if": "fern=dry",
+                "say": [
+                  "cat soil",
+                  "MOISTURE 3%. WATERING SCHEDULE SUSPENDED: OWNER NOT VERIFIED."
+                ]
+              },
+              {
+                "say": [
+                  "cat soil",
+                  "MOISTURE 41%. within tolerance."
+                ]
+              }
             ]
           }
         },
         {
-          "id": "pump", "kind": "ACT", "verbs": ["water"],
+          "id": "pump",
+          "kind": "ACT",
+          "verbs": [
+            "water"
+          ],
           "on": {
             "water": [
-              { "if": "fern=wet", "say": ["{via}use pump --water", "POT: moisture within tolerance. further water declined.", "dim"] },
-              { "do": [{ "set": "fern", "to": "wet" }], "say": ["{via}use pump --water", "POT: 200 ml dispensed. moisture 41%.", "ok"] }
+              {
+                "if": "fern=wet",
+                "say": [
+                  "{via}use pump --water",
+                  "POT: moisture within tolerance. further water declined.",
+                  "dim"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "fern",
+                    "to": "wet"
+                  }
+                ],
+                "say": [
+                  "{via}use pump --water",
+                  "POT: 200 ml dispensed. moisture 41%.",
+                  "ok"
+                ]
+              }
             ]
           }
         }
@@ -178,29 +516,88 @@
       "id": "phone",
       "name": "ANSWERING MACHINE",
       "look": "A landline with an answering machine. Moth said apps listen. Tapes only listen when asked.",
-      "everyday": [{ "noun": "tape", "verb": "play", "label": "play the message" }],
-      "status": [{ "if": "tape=0", "then": "1 new message", "else": "1 message · part {tape} of 3 played" }],
+      "everyday": [
+        {
+          "noun": "tape",
+          "verb": "play",
+          "label": "play the message"
+        }
+      ],
+      "status": [
+        {
+          "if": "tape=0",
+          "then": "1 new message",
+          "else": "1 message · part {tape} of 3 played"
+        }
+      ],
       "layout": {
-        "spot": { "x": 548, "w": 24, "h": 34 },
-        "board": { "x": 0.9, "y": 0.28 },
-        "dir": { "tape": "up" }
+        "spot": {
+          "x": 548,
+          "w": 24,
+          "h": 34
+        },
+        "board": {
+          "x": 0.9,
+          "y": 0.28
+        },
+        "dir": {
+          "tape": "up"
+        }
       },
       "nouns": [
         {
-          "id": "tape", "kind": "STORE", "verbs": ["play"],
+          "id": "tape",
+          "kind": "STORE",
+          "verbs": [
+            "play"
+          ],
           "on": {
             "play": [
-              { "if": "tape=0", "do": [{ "set": "tape", "to": 1 }], "say": "tape.1" },
-              { "if": "tape=1", "do": [{ "set": "tape", "to": 2 }], "say": "tape.2" },
-              { "if": "tape=2", "do": [{ "set": "tape", "to": 3 }], "say": "tape.3" },
-              { "do": [{ "set": "tape", "to": 1 }], "say": "tape.1" }
+              {
+                "if": "tape=0",
+                "do": [
+                  {
+                    "set": "tape",
+                    "to": 1
+                  }
+                ],
+                "say": "tape.1"
+              },
+              {
+                "if": "tape=1",
+                "do": [
+                  {
+                    "set": "tape",
+                    "to": 2
+                  }
+                ],
+                "say": "tape.2"
+              },
+              {
+                "if": "tape=2",
+                "do": [
+                  {
+                    "set": "tape",
+                    "to": 3
+                  }
+                ],
+                "say": "tape.3"
+              },
+              {
+                "do": [
+                  {
+                    "set": "tape",
+                    "to": 1
+                  }
+                ],
+                "say": "tape.1"
+              }
             ]
           }
         }
       ]
     }
   ],
-
   "nodes": [
     {
       "id": "friendnet",
@@ -208,104 +605,321 @@
       "look": "A chat service. Everyone's status line is written by its owner, and it shows.",
       "status": "4 contacts online · 1 of them is a process",
       "layout": {
-        "board": { "x": 0.3, "y": 0.28 },
-        "dir": { "moth": "up", "you": "up", "fixer": "left", "wall": "down", "home": "right" }
+        "board": {
+          "x": 0.3,
+          "y": 0.28
+        },
+        "dir": {
+          "moth": "up",
+          "you": "up",
+          "fixer": "left",
+          "wall": "down",
+          "home": "right"
+        }
       },
       "nouns": [
         {
-          "id": "moth", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat moth", "moth · status: \"gone fishing (not fishing)\" · last seen 3 days ago · profile photo: a moth, wearing sunglasses, indoors."] } }
+          "id": "moth",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat moth",
+                "moth · status: \"gone fishing (not fishing)\" · last seen 3 days ago · profile photo: a moth, wearing sunglasses, indoors."
+              ]
+            }
+          }
         },
         {
-          "id": "you", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat you", "you · status: \"pretending to be busy\" · account flagged: identity pending. your status was set by you, in a better week."] } }
+          "id": "you",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat you",
+                "you · status: \"pretending to be busy\" · account flagged: identity pending. your status was set by you, in a better week."
+              ]
+            }
+          }
         },
         {
-          "id": "fixer", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat fixer", "NO LOGS KEPT · status: \"serving noodles to the dead. the dead tip better.\""] } }
+          "id": "fixer",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat fixer",
+                "NO LOGS KEPT · status: \"serving noodles to the dead. the dead tip better.\""
+              ]
+            }
+          }
         },
         {
-          "id": "wall", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat wall", "moth's wall: \"happy hatch day, moth!! 0412 forever\" · the fixer: \"your tab has chapters now.\" · REGISTRY-WD: \"just checking.\""] } }
+          "id": "wall",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat wall",
+                "moth's wall: \"happy hatch day, moth!! 0412 forever\" · the fixer: \"your tab has chapters now.\" · REGISTRY-WD: \"just checking.\""
+              ]
+            }
+          }
         },
-        { "id": "home", "kind": "LINK", "link": {} }
+        {
+          "id": "home",
+          "kind": "LINK",
+          "link": {}
+        }
       ]
     },
     {
       "id": "mothpc",
       "name": "MOTH-PC",
       "look": "Moth's computer, from the inside. It smells of solder and fish food.",
-      "status": [{ "if": "journalOpen", "then": "journal: open", "else": "2 sealed sectors" }],
+      "status": [
+        {
+          "if": "journalOpen",
+          "then": "journal: open",
+          "else": "2 sealed sectors"
+        }
+      ],
       "layout": {
-        "board": { "x": 0.66, "y": 0.28 },
-        "dir": { "motd": "up", "notes.txt": "up", "photos": "up", "switch.so": "right", "journal": "down", "journal.txt": "down" }
+        "board": {
+          "x": 0.66,
+          "y": 0.28
+        },
+        "dir": {
+          "motd": "up",
+          "notes.txt": "up",
+          "photos": "up",
+          "switch.so": "right",
+          "journal": "down",
+          "journal.txt": "down"
+        }
       },
       "nouns": [
         {
-          "id": "motd", "kind": "STORE", "verbs": ["read"],
-          "on": { "read": { "say": ["cat motd", "\"if you're not my friend, go away. if you are, you know where the key is.\""] } }
-        },
-        {
-          "id": "notes.txt", "kind": "STORE", "sector": "drawer", "verbs": ["read"],
-          "on": { "read": { "say": "notes.read" } }
-        },
-        {
-          "id": "photos", "kind": "STORE", "sector": "drawer", "verbs": ["read"],
-          "on": { "read": { "do": [{ "give": "sprat" }], "say": "photos.read" } }
-        },
-        {
-          "id": "switch.so", "kind": "STORE", "sector": "drawer", "verbs": ["read", "install"],
+          "id": "motd",
+          "kind": "STORE",
+          "verbs": [
+            "read"
+          ],
           "on": {
-            "read": { "say": ["cat switch.so", "[logic module] SWITCH. passes a signal while it is on, stops it while it is off. Moth's label: \"a door for signals.\""] },
-            "install": { "do": [{ "give": "switch.so" }, { "goal": "switch" }] }
+            "read": {
+              "say": [
+                "cat motd",
+                "\"if you're not my friend, go away. if you are, you know where the key is.\""
+              ]
+            }
           }
         },
         {
-          "id": "journal.txt", "kind": "STORE", "sector": "journal", "verbs": ["read"],
-          "on": { "read": { "do": [{ "give": "washer3" }, { "goal": "read" }], "say": "journal.read" } }
+          "id": "notes.txt",
+          "kind": "STORE",
+          "sector": "drawer",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": "notes.read"
+            }
+          }
+        },
+        {
+          "id": "photos",
+          "kind": "STORE",
+          "sector": "drawer",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "do": [
+                {
+                  "give": "sprat"
+                }
+              ],
+              "say": "photos.read"
+            }
+          }
+        },
+        {
+          "id": "switch.so",
+          "kind": "STORE",
+          "sector": "drawer",
+          "verbs": [
+            "read",
+            "install"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat switch.so",
+                "[logic module] SWITCH. passes a signal while it is on, stops it while it is off. Moth's label: \"a door for signals.\""
+              ]
+            },
+            "install": {
+              "do": [
+                {
+                  "give": "switch.so"
+                },
+                {
+                  "goal": "switch"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "journal.txt",
+          "kind": "STORE",
+          "sector": "journal",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "do": [
+                {
+                  "give": "washer3"
+                },
+                {
+                  "goal": "read"
+                }
+              ],
+              "say": "journal.read"
+            }
+          }
         }
       ],
       "sectors": [
-        { "id": "drawer", "label": "drawer", "seal": { "key": "moth.key" } },
-        { "id": "journal", "label": "journal", "seal": { "sequence": ["high", "low", "mid"], "withinMs": 1500, "signal": true } }
+        {
+          "id": "drawer",
+          "label": "drawer",
+          "seal": {
+            "key": "moth.key"
+          }
+        },
+        {
+          "id": "journal",
+          "label": "journal",
+          "seal": {
+            "sequence": [
+              "high",
+              "low",
+              "mid"
+            ],
+            "withinMs": 1500,
+            "signal": true
+          }
+        }
       ]
     }
   ],
-
   "cables": [],
-
   "keyring": [
-    { "id": "sprat", "kind": "fragment", "label": "Moth's fish", "text": "sprat" },
-    { "id": "washer3", "kind": "fragment", "label": "Moth's jacket", "text": "washer 3, market laundromat" }
+    {
+      "id": "sprat",
+      "kind": "fragment",
+      "label": "Moth's fish",
+      "text": "sprat"
+    },
+    {
+      "id": "washer3",
+      "kind": "fragment",
+      "label": "Moth's jacket",
+      "text": "washer 3, market laundromat"
+    }
   ],
-
-  "watchdog": { "name": "REGISTRY-WD", "route": ["friendnet", "mothpc"], "dwellMs": 4000, "moveMs": 2000 },
-
+  "watchdog": {
+    "name": "REGISTRY-WD",
+    "route": [
+      "friendnet",
+      "mothpc"
+    ],
+    "dwellMs": 4000,
+    "moveMs": 2000
+  },
   "dialogue": {},
-
   "goals": [
-    { "id": "friendnet", "text": "Moth's PC only takes friends: get on FRIENDNET" },
-    { "id": "mothpc", "text": "find Moth's computer from FRIENDNET" },
-    { "id": "drawer", "text": "open Moth's drawer on MOTH-PC (your key chip)" },
-    { "id": "switch", "text": "install what's in the drawer" },
-    { "id": "journal", "text": "unseal the journal: play it Moth's song" },
-    { "id": "read", "text": "read the journal's last entry" }
+    {
+      "id": "friendnet",
+      "text": "Moth's PC only takes friends: get on FRIENDNET"
+    },
+    {
+      "id": "mothpc",
+      "text": "find Moth's computer from FRIENDNET"
+    },
+    {
+      "id": "drawer",
+      "text": "open Moth's drawer on MOTH-PC (your key chip)"
+    },
+    {
+      "id": "switch",
+      "text": "install what's in the drawer"
+    },
+    {
+      "id": "journal",
+      "text": "unseal the journal: play it Moth's song"
+    },
+    {
+      "id": "read",
+      "text": "read the journal's last entry"
+    }
   ],
-
   "texts": {
     "goals.done": "done. washer 3, the market laundromat. the market gate is at Downtown's west end.",
     "prompt.out": "[E] DOWNTOWN",
-    "door.out": ["exit", "you pull the door shut behind you. the lock clicks. it knows the key.", "dim"],
-
-    "net.down": ["{via}{verb}", "no line out: your deck can't reach past this room. it needs uplink.so.", "err"],
-
-    "tape.1": ["play tape", "MESSAGE 1 OF 1. [beep] \"hey. it's me. if this isn't you: hello Registry, the plants are plastic, go home. (they're not. sorry, Fern.) if it is you: you got the key, so the fixer didn't eat it. good.\" [press play to continue]"],
-    "tape.2": ["play tape", "\"don't touch the rig, it won't let you, I made sure. come in the front door like a friend: FRIENDNET. the drawer takes the key. the journal takes the song. you know the song. you sang it wrong for a year.\" [press play to continue]"],
-    "tape.3": ["play tape", "\"one more thing. a dog comes by. a Registry dog, every few seconds. it's not personal, it's a policy. do your thing while it's out. feed Sprat. bye.\" [click] END OF MESSAGES.", "ok"],
-
-    "notes.read": ["cat notes.txt", "\"notes to self. 1) the record loops every 2 s, the song takes longer than that. one song at a time or it talks over itself. 2) SWITCH: a door for signals. open it when the dog leaves. shut it behind the first song. 3) timers: one beat is 1 s. 4) water Fern.\""],
-    "photos.read": ["cat photos", "photos/: \"SPRAT, day 1. (he's a fish. he's fine.)\" · \"karaoke, the usual booth. our song: HIGH, LOW, MIDDLE. yes, the title is the tune. you sang it wrong.\" · \"you, asleep at the noodle stall. the fixer charged you rent.\""],
-    "journal.read": ["cat journal.txt", "journal, last entry: \"found something in the Registry I wasn't meant to. a list. you're on it. so am I, now. going where the Registry doesn't look: the water. your pass is in my jacket. the jacket's in washer 3 at the market laundromat. nobody searches a wash cycle. follow the trains. —M\"", "ok"]
+    "door.out": [
+      "exit",
+      "you pull the door shut behind you. the lock clicks. it knows the key.",
+      "dim"
+    ],
+    "net.down": [
+      "{via}{verb}",
+      "no line out: your deck can't reach past this room. it needs uplink.so.",
+      "err"
+    ],
+    "tape.1": [
+      "play tape",
+      "MESSAGE 1 OF 1. [beep] \"hey. it's me. if this isn't you: hello Registry, the plants are plastic, go home. (they're not. sorry, Fern.) if it is you: you got the key, so the fixer didn't eat it. good.\" [press play to continue]"
+    ],
+    "tape.2": [
+      "play tape",
+      "\"don't touch the rig, it won't let you, I made sure. come in the front door like a friend: FRIENDNET. the drawer takes the key. the journal takes the song. you know the song. you sang it wrong for a year.\" [press play to continue]"
+    ],
+    "tape.3": [
+      "play tape",
+      "\"one more thing. a dog comes by. a Registry dog, every few seconds. it's not personal, it's a policy. do your thing while it's out. feed Sprat. bye.\" [click] END OF MESSAGES.",
+      "ok"
+    ],
+    "notes.read": [
+      "cat notes.txt",
+      "\"notes to self. 1) the record loops every 2 s, the song takes longer than that. one song at a time or it talks over itself. 2) SWITCH: a door for signals. open it when the dog leaves. shut it behind the first song. 3) timers: one beat is 1 s. 4) water Fern.\""
+    ],
+    "photos.read": [
+      "cat photos",
+      "photos/: \"SPRAT, day 1. (he's a fish. he's fine.)\" · \"karaoke, the usual booth. our song: HIGH, LOW, MIDDLE. yes, the title is the tune. you sang it wrong.\" · \"you, asleep at the noodle stall. the fixer charged you rent.\""
+    ],
+    "journal.read": [
+      "cat journal.txt",
+      "journal, last entry: \"found something in the Registry I wasn't meant to. a list. you're on it. so am I, now. going where the Registry doesn't look: the water. your pass is in my jacket. the jacket's in washer 3 at the market laundromat. nobody searches a wash cycle. follow the trains. —M\"",
+      "ok"
+    ]
   },
   "observations": {
     "aliases": {

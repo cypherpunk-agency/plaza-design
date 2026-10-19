@@ -3,7 +3,9 @@
   "flags": [],
   "items": [],
   "events": [
-    "workshop.opened"
+    "workshop.opened",
+    "sandbox.pulse.counter",
+    "sandbox.pulse.counter.count"
   ],
   "commands": {
     "workshop.lamp.on": {
@@ -14,7 +16,7 @@
       ],
       "actions": [
         {
-          "state": "workshop.lampOn",
+          "state": "sandbox.lampOn",
           "set": true
         }
       ]
@@ -27,7 +29,7 @@
       ],
       "actions": [
         {
-          "state": "workshop.lampOn",
+          "state": "sandbox.lampOn",
           "set": false
         }
       ]
@@ -40,7 +42,7 @@
       ],
       "actions": [
         {
-          "state": "workshop.hatchOpen",
+          "state": "sandbox.hatchOpen",
           "set": true
         }
       ],
@@ -57,7 +59,7 @@
       ],
       "actions": [
         {
-          "state": "workshop.hatchOpen",
+          "state": "sandbox.hatchOpen",
           "set": true
         },
         {
@@ -77,7 +79,7 @@
       ],
       "actions": [
         {
-          "state": "workshop.hatchOpen",
+          "state": "sandbox.hatchOpen",
           "set": false
         }
       ]
@@ -90,7 +92,7 @@
       ],
       "actions": [
         {
-          "state": "workshop.fanOn",
+          "state": "sandbox.fanOn",
           "set": true
         }
       ]
@@ -103,7 +105,7 @@
       ],
       "actions": [
         {
-          "state": "workshop.fanOn",
+          "state": "sandbox.fanOn",
           "set": false
         }
       ]
@@ -127,6 +129,24 @@
         {
           "state": "workshop.permit",
           "set": false
+        }
+      ]
+    },
+    "sandbox.counter.count": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "sandbox.count",
+          "add": 1
+        },
+        {
+          "emit": "sandbox.pulse.counter"
+        },
+        {
+          "emit": "sandbox.pulse.counter.count"
         }
       ]
     }
@@ -193,20 +213,20 @@
     }
   },
   "state": {
-    "workshop.lampOn": {
-      "owner": "workshop",
+    "sandbox.lampOn": {
+      "owner": "sandbox",
       "lifetime": "save",
       "type": "boolean",
       "default": false
     },
-    "workshop.hatchOpen": {
-      "owner": "workshop",
+    "sandbox.hatchOpen": {
+      "owner": "sandbox",
       "lifetime": "save",
       "type": "boolean",
       "default": false
     },
-    "workshop.fanOn": {
-      "owner": "workshop",
+    "sandbox.fanOn": {
+      "owner": "sandbox",
       "lifetime": "save",
       "type": "boolean",
       "default": false
@@ -216,15 +236,34 @@
       "lifetime": "save",
       "type": "boolean",
       "default": true
+    },
+    "sandbox.count": {
+      "owner": "sandbox",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": -9007199254740991,
+      "max": 9007199254740991
     }
   },
   "native": {
-    "state": {
-      "workshop.lampOn": "lampOn",
-      "workshop.hatchOpen": "hatchOpen",
-      "workshop.fanOn": "fanOn"
-    },
     "verbs": [
+      {
+        "device": "counter",
+        "noun": "count",
+        "verb": "count",
+        "cases": [
+          {
+            "command": "sandbox.counter.count",
+            "template": true,
+            "say": [
+              "{via}count",
+              "COUNTER: {state:sandbox.count}.",
+              "dim"
+            ]
+          }
+        ]
+      },
       {
         "device": "lamp",
         "noun": "lamp",
@@ -268,7 +307,7 @@
               "dim"
             ],
             "when": {
-              "state": "workshop.hatchOpen",
+              "state": "sandbox.hatchOpen",
               "is": true
             }
           },
@@ -352,6 +391,16 @@
         "to": "fan.fan",
         "verb": "spin"
       }
-    ]
+    ],
+    "presentation": {
+      "sandbox.pulse.counter": {
+        "kind": "pulse",
+        "target": "counter"
+      },
+      "sandbox.pulse.counter.count": {
+        "kind": "pulse",
+        "target": "counter.count"
+      }
+    }
   }
 }

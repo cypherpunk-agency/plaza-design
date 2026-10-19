@@ -7,7 +7,7 @@ import {contractOf} from '../engine/rules';
 /** Typed controls over the same native actions used by device verbs. No executable editor callbacks. */
 export function renderNativeTarget(form:TypedForm,host:HTMLElement,doc:SceneDocument,index:number,edit:(label:string,fn:(doc:SceneDocument)=>void)=>void){
  const target=doc.nativeTargets![index],scene=SCENES[doc.id as keyof typeof SCENES],data=scene.data!;
- const rules=typeof scene.rules==='function'?undefined:scene.rules,contract=rules?contractOf(rules):undefined;
+ const rules=typeof scene.rules==='function'?undefined:scene.rules,contract=rules?contractOf(rules,scene.gameplay?.native?.verbs,Object.keys(scene.gameplay?.queries??{})):undefined;
  const labels=Object.entries({...ENGINE.texts,...data.texts}).filter(([,v])=>typeof v==='string').map(([k])=>k),lines=Object.entries({...ENGINE.texts,...data.texts}).filter(([,v])=>Array.isArray(v)).map(([k])=>k);
  const change=(label:string,fn:(t:typeof target)=>void)=>edit(label,d=>fn(d.nativeTargets![index]));
  const condition=(parent:HTMLElement,name:string,value:string|undefined,set:(value:string|undefined)=>void)=>form.text(parent,name,value??'',v=>set(v.trim()||undefined));

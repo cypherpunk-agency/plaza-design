@@ -74,6 +74,8 @@ export interface SceneStore {
   feedbackTime?:()=>number;
   cutscene?:(id:string)=>void;
   gameplay?:()=>GameplaySession|undefined;
+  /** Direct common owner block. The model never replaces it. */
+  state?:()=>Record<string,import('../data/types').Value>;
   conversation?:(id:string)=>ConversationSession|undefined;
   conversationCompleted?:(cue:NonNullable<ConversationFrame['completion']>)=>void;
   /** Logic modules the player owns. */
@@ -208,8 +210,8 @@ export class SceneHost {
       programs: store?.programs,
       program: store?.program,
       controlled: store?.controlled,
-    }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring);
-    const shared=store?.gameplay?.();if(shared?.definition.native)attachNativeGameplay(this.model,shared);
+    }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring,store?.state?.());
+    const shared=store?.gameplay?.();if(shared)attachNativeGameplay(this.model,shared);
     if(shared?.definition.handoffs?.length)attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>this.model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id)});
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen });
@@ -254,7 +256,7 @@ export class SceneHost {
     this.vision.bar = this.btns;
     const saved = store?.load();
     if (saved) this.restore(saved);
-    this.saved = JSON.stringify(this.snapshot());
+    this.saved = JSON.stringify({...this.snapshot(),state:this.model.state});
     this.sync();
     // trace: the meter fills while you look into a logged device, and drains when you leave
     // (the watchdog walks and clocks beat on the same tick)
@@ -289,11 +291,12 @@ export class SceneHost {
     const board = this.schem.layout(), pieces = this.vision.pieces();
     // hack vision: plates and circuits moved off their default spot (world units from it)
     const vision = Object.keys(pieces).length ? { vision: pieces } : {};
-    return { ...this.model.snapshot(), board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets, ...vision } };
+    const {state:scalarState,...engine}=this.model.snapshot();
+    return { ...engine, board: { known: [...this.schem.known], pos: board.pos, offsets: board.offsets, ...vision } };
   }
 
   private restore(z: SceneSave) {
-    this.model.restore(z);
+    this.model.restore({...z,state:{...this.model.state}});
     this.schem.known.clear();
     (z.board?.known ?? []).forEach((id) => { if (this.model.devices.has(id)) this.schem.known.add(id); });
     this.schem.restoreLayout({ pos: z.board?.pos, offsets: z.board?.offsets });
@@ -311,7 +314,7 @@ export class SceneHost {
   persist() {
     clearTimeout(this.saveTimer);
     if (!this.store) return;
-    const z = this.snapshot(), json = JSON.stringify(z);
+    const z = this.snapshot(), json = JSON.stringify({...z,state:this.model.state});
     if (json === this.saved) return;
     this.saved = json;
     this.store.store(z);

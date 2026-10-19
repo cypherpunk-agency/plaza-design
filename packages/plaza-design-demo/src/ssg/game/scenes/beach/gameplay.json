@@ -270,16 +270,30 @@
       "lifetime": "save",
       "type": "string",
       "default": "clear"
+    },
+    "beach.song": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": -9007199254740991,
+      "max": 9007199254740991
+    },
+    "beach.lamps": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "string",
+      "default": "on"
+    },
+    "beach.pierClock": {
+      "owner": "beach",
+      "lifetime": "save",
+      "type": "string",
+      "default": "on"
     }
   },
   "native": {
-    "state": {
-      "beach.billing": "billing",
-      "beach.freeDrink": "freeDrink",
-      "beach.rented": "rented",
-      "beach.billed": "billed",
-      "beach.flag": "flag"
-    },
     "verbs": [
       {
         "device": "kiosk",
