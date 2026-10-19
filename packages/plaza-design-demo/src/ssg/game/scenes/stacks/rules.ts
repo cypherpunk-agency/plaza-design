@@ -3,7 +3,12 @@
  * everything is data/stacks.json on the engine: STS-2, the Port Authority's
  * thermal gate and its alarm cable, the night ferry, the reefer with Moth in
  * it, the Registry's watchdog walking port → crane → ferry, and Moth's talk.
- * What is left here has timing or geometry in it:
+ * Source Case lists own lift/alarm manual refusals and busy eligibility. A
+ * source select query supplies the finite regular/reefer trajectory kind.
+ * Remaining native work still includes the ordinary callback/watchdog tails
+ * listed in STACKS-ORDINARY-MIGRATION.md; this file is not fully consolidated.
+ *
+ * The trajectory mechanics:
  *
  * - `sts2.lift`: STS-2's spreader. Only a cable lifts (the pre-wired
  *   `ferry.watchdog:leaves → sts2.spreader lift`: the crane lifts when the
@@ -32,7 +37,7 @@
  */
 
 import type {TerminalGeometry} from '../../art/assemblies/terminal-state';
-import type { SceneData, Value } from "../../data/types";
+import type { SceneData } from "../../data/types";
 import type { PlayerServices } from "../../runtime/player";
 import type { Effect, SceneRules, World } from "../../engine/rules";
 import type { SceneModel, Spot } from "../../engine/model";
@@ -124,11 +129,10 @@ function stacksRules(player: PlayerServices,geometry:TerminalGeometry={X,H}): Sc
 const {X}=geometry;
   const effects: Record<string, Effect> = {
     /** STS-2's spreader: a cable lifts (the Registry's clearance), a finger does not. */
-    'sts2.lift': (w, c) => {
+    'sts2.lift': (w) => {
       const m = w.m;
-      if (!c.bySignal) return w.line('lift.hand');
-      if (busy(m)) return w.line('lift.busy');
-      const kind = m.get('found') && m.get('boxAt') === 'stack' ? KIND.box : KIND.regular;
+      const kind = m.value('stacks.liftKind');
+      if (kind !== KIND.box && kind !== KIND.regular) throw new Error('STS-2 requires source liftKind 1 or 2');
       const t = ++ticket, s = m.scratch;
       s.liftT0 = m.now(); s.liftKind = kind; s.liftX = trolley(m,geometry).x; s.ticket = t;
       if (kind === KIND.box) m.set('boxAt', 'air');
@@ -158,9 +162,8 @@ const {X}=geometry;
     },
 
     /** The alarm: by hand a test; with 0451 in the air, the lift is aborted and the box goes back. */
-    'port.alarm': (w, c) => {
+    'port.alarm': (w) => {
       const m = w.m, s = m.scratch;
-      if (!c.bySignal) return w.line('alarm.test');
       s.alarm = m.now();
       if (m.get('boxAt') !== 'air') { w.changed(); return w.line('alarm.empty'); }
       m.set('alarms', Number(m.get('alarms') ?? 0) + 1);
@@ -198,6 +201,8 @@ const {X}=geometry;
     effects,
     panels: ['scope'],
     derived: {
+      /** Physical trajectory occupancy; source cases own permission/refusal policy. */
+      craneBusy: (m) => busy(m),
       /** Moth's question has an answer: did you feed Sprat (Moth's place, the feeder)? */
       spratFed: () => !!player.sceneState?.('moth', 'fed'),
       /** STS-2's status: what the trolley is doing. */
@@ -212,17 +217,13 @@ const {X}=geometry;
       if (home.id === 'reefer') return m.get('boxAt') === 'ferry' && !m.get('departed') ? home : null;
       return home;
     },
-    /** Saved mid-air: the box is back in its slot (a lift in flight is not stored). */
-    settle: (state: Record<string, Value>) => {
-      if (state.boxAt === 'air') state.boxAt = 'stack';
-    },
     needs: {
       state: ['found', 'box', 'boxAt', 'alarms', 'loaded', 'talked', 'departed'],
       goals: ['find', 'lift', 'moth'],
       texts: {
-        'lift.hand': 'line', 'lift.busy': 'line', 'lift.box': 'line',
+        'lift.box': 'line',
         'scan.warm': 'line', 'box.landed': 'line', 'box.back': 'line',
-        'alarm.test': 'line', 'alarm.empty': 'line', 'alarm.box': 'line',
+        'alarm.empty': 'line', 'alarm.box': 'line',
         'watchdog.restore': 'line',
         // the scope (scope.ts)
         'scope.zoom': 'label', 'scope.tag': 'label', 'scope.hud': 'label', 'scope.aim': 'label', 'scope.on': 'label',

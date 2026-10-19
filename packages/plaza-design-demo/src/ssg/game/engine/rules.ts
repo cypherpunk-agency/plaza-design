@@ -39,8 +39,6 @@ export interface SceneRules {
   panels?: string[];
   /** Read-only values computed in code, usable in conditions and templates (`gateOpen`). */
   derived?: Record<string, (m: SceneModel) => Value>;
-  /** For the save: turn anything in flight into where it ends up (a parcel mid-slide back on the hook). */
-  settle?: (state: Record<string, Value>) => void;
   /** What the code relies on: state keys, goals it ticks, text keys it asks for. */
   needs?: { state?: string[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
   /** Extra checks only this scene's code knows (a crate the parcel sits in). One message per problem. */

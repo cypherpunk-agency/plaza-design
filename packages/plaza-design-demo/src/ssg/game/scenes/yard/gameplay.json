@@ -1,10 +1,17 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "yard:gateOpen"
+  ],
   "items": [],
   "events": [
     "yard.talk",
-    "yard.camera.found"
+    "yard.camera.found",
+    "yard.chute.start",
+    "yard.chute.sliding",
+    "yard.parcel.tray",
+    "yard.parcel.bonk",
+    "yard.parcel.return"
   ],
   "commands": {
     "yard.hinge.deal": {
@@ -38,6 +45,114 @@
         "state": "yard.found",
         "is": false
       }
+    },
+    "checkpoint.yard.parcel": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "yard.parcelAt",
+          "set": "hook"
+        },
+        {
+          "state": "yard.held",
+          "set": "parcel"
+        },
+        {
+          "state": "yard.armAt",
+          "set": "chute"
+        }
+      ]
+    },
+    "yard.drop.empty": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "yard.drop.at": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "yard.held",
+          "set": null
+        },
+        {
+          "state": "yard.parcelAt",
+          "set": {
+            "state": "yard.armAt"
+          }
+        }
+      ]
+    },
+    "yard.drop.chute": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "yard.held",
+          "set": null
+        },
+        {
+          "state": "yard.parcelAt",
+          "set": "chute"
+        },
+        {
+          "emit": "yard.chute.start"
+        }
+      ]
+    },
+    "yard.chute.slide": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "yard.parcelAt",
+          "set": "sliding"
+        },
+        {
+          "emit": "yard.chute.sliding"
+        }
+      ]
+    },
+    "yard.parcel.arrive": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "yard.parcelAt",
+          "set": "tray"
+        },
+        {
+          "emit": "yard.parcel.tray"
+        }
+      ]
+    },
+    "yard.parcel.bounce": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "yard.parcelAt",
+          "set": "bounced"
+        },
+        {
+          "emit": "yard.parcel.bonk"
+        },
+        {
+          "emit": "yard.parcel.return"
+        }
+      ]
     }
   },
   "reactions": [],
@@ -229,12 +344,159 @@
     }
   },
   "native": {
-    "verbs": [],
-    "events": {},
+    "verbs": [
+      {
+        "device": "crane",
+        "noun": "claw",
+        "verb": "drop",
+        "cases": [
+          {
+            "when": {
+              "any": [
+                {
+                  "state": "yard.held",
+                  "is": null
+                },
+                {
+                  "state": "yard.held",
+                  "is": ""
+                }
+              ]
+            },
+            "command": "yard.drop.empty",
+            "say": [
+              "use claw --drop",
+              "claw empty. nothing dropped."
+            ]
+          },
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "state": "yard.armAt"
+                },
+                "op": "ne",
+                "right": {
+                  "literal": "chute"
+                }
+              }
+            },
+            "command": "yard.drop.at",
+            "say": [
+              "use claw --drop",
+              "dropped at {state:yard.armAt}. thud."
+            ],
+            "template": true
+          },
+          {
+            "command": "yard.drop.chute",
+            "say": [
+              "use claw --drop",
+              "dropped into the chute."
+            ]
+          }
+        ]
+      }
+    ],
+    "events": {
+      "yard.chute.start": "crane.claw:dropped"
+    },
     "goals": {
       "yard.talk": "talk",
-      "yard.camera.found": "find"
+      "yard.camera.found": "find",
+      "yard.chute.start": "chute",
+      "yard.parcel.tray": "gate"
     },
-    "wires": []
-  }
+    "wires": [],
+    "reads": {
+      "yard:gateOpen": "gateOpen"
+    },
+    "deadlines": {
+      "yard.chute": {
+        "startOn": [
+          "yard.chute.start"
+        ],
+        "duration": {
+          "tuning": "chuteDropMs"
+        },
+        "due": [
+          {
+            "command": "yard.chute.slide"
+          }
+        ]
+      },
+      "yard.slide": {
+        "startOn": [
+          "yard.chute.sliding"
+        ],
+        "duration": {
+          "tuning": "slideMs"
+        },
+        "startedAt": "slideStart",
+        "due": [
+          {
+            "when": {
+              "flag": "yard:gateOpen"
+            },
+            "command": "yard.parcel.arrive"
+          },
+          {
+            "command": "yard.parcel.bounce"
+          }
+        ]
+      },
+      "yard.return": {
+        "startOn": [
+          "yard.parcel.return"
+        ],
+        "duration": {
+          "tuning": "bounceBackMs"
+        },
+        "due": [
+          {
+            "command": "checkpoint.yard.parcel"
+          }
+        ]
+      }
+    },
+    "replies": {
+      "yard.parcel.tray": {
+        "from": "gate",
+        "say": [
+          "",
+          "the parcel slides through the hatch and into the pickup tray.",
+          "ok"
+        ]
+      },
+      "yard.parcel.bonk": {
+        "from": "gate",
+        "say": [
+          "",
+          "the parcel hits the closed hatch. the crane fishes it back.",
+          "err"
+        ]
+      }
+    }
+  },
+  "checkpoint": [
+    {
+      "command": "checkpoint.yard.parcel",
+      "when": {
+        "any": [
+          {
+            "state": "yard.parcelAt",
+            "is": "chute"
+          },
+          {
+            "state": "yard.parcelAt",
+            "is": "sliding"
+          },
+          {
+            "state": "yard.parcelAt",
+            "is": "bounced"
+          }
+        ]
+      }
+    }
+  ]
 }

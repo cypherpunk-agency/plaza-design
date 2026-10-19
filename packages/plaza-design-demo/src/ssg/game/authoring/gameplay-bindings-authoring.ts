@@ -19,6 +19,8 @@ export function renameGameplayVocabulary(d:GameplayDefinition,kind:'flags'|'item
  if(d.native)for(const row of Object.values(d.native.triggers??{}))condition(row.when);
  if(d.native)for(const row of Object.values(d.native.intervals??{})){condition(row.active);for(const c of row.due)condition(c.when);if(kind==='events'&&row.resetOn)row.resetOn=row.resetOn.map(id=>id===before?after:id);}
  for(const query of Object.values(d.queries??{})){if(query.kind==='count')query.conditions.forEach(condition);else if(query.kind==='select')query.cases.forEach(row=>condition(row.when));}
+ if(d.native)for(const row of Object.values(d.native.deadlines??{})){condition(row.armWhen);condition(row.while);for(const c of row.due)condition(c.when);if(kind==='events'){row.startOn=row.startOn.map(id=>id===before?after:id);if(row.cancelOn)row.cancelOn=row.cancelOn.map(id=>id===before?after:id);}}
+ if(d.native)for(const reply of Object.values(d.native.replies??{}))if('cases'in reply)for(const row of reply.cases)condition(row.when);
  if(kind==='events'){for(const r of d.reactions)if(r.event===before)r.event=after;for(const h of d.handoffs??[])if(h.event===before)h.event=after;}
 }
 /** Typed edits go through the exact source validator supplied to the real gameplay workbench. */

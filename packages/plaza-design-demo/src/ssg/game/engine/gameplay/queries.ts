@@ -6,6 +6,7 @@ import {matches} from './validation';
 /** Scalar reads are immutable expressions, never another state declaration or save block. */
 export type ScalarRead={literal:StateValue}|{state:string}|{query:string};
 export type QueryDefinition=
+ | {kind:'wirePresent';from:string;to:string;verb?:string}
  | {kind:'count';conditions:Condition[]}
  | {kind:'select';cases:{when?:Condition;value:ScalarRead}[]}
  | {kind:'tuning';key:string}
@@ -13,6 +14,7 @@ export type QueryDefinition=
  | {kind:'duration';value:ScalarRead;unit:'seconds';round:'nearest'};
 export interface GameplayReadContext {
  definition:Pick<GameplayDefinition,'queries'>;
+ cables?:readonly {from:string;to:string;verb:string}[];
  tuning?:Readonly<SceneData['tuning']>;
  labels?:Readonly<SceneData['texts']>;
  /** Evaluation-local recursion guard, not source content or retained state. */
@@ -29,6 +31,7 @@ export function readQuery(id:string,state:Readonly<GameplayState>,context?:Gamep
  const queries=context?.definition.queries;if(!queries||!own(queries,id))return undefined;
  const path=context?.queryPath??[];if(path.includes(id)||path.length>=32)throw Error('Gameplay query cycle/budget: '+id);
  const next={...context!,queryPath:[...path,id]},q=queries[id];
+ if(q.kind==='wirePresent')return context?.cables?.some(w=>w.from===q.from&&w.to===q.to&&(q.verb===undefined||w.verb===q.verb));
  if(q.kind==='count')return q.conditions.filter(c=>matches(c,state,next)).length;
  if(q.kind==='select'){const row=q.cases.find(r=>matches(r.when,state,next));return row?scalarRead(row.value,state,next):undefined;}
  if(q.kind==='tuning')return context?.tuning&&own(context.tuning,q.key)?context.tuning[q.key]:undefined;
@@ -57,7 +60,8 @@ export function validateGameplayQueries(d:GameplayDefinition,condition:(v:unknow
  const queries=d.queries??{};object(queries);if(Object.keys(queries).length>64)fail('query count');
  for(const[id,raw]of Object.entries(queries)){
   name(id);if(own(d.state??{},id))fail('query shadows state '+id);const q=object(raw);
-  if(q.kind==='count'){fields(q,['kind','conditions']);if(!Array.isArray(q.conditions)||!q.conditions.length||q.conditions.length>128)fail('count rows');(q.conditions as unknown[]).forEach(condition);}
+  if(q.kind==='wirePresent'){fields(q,['kind','from','to','verb'],['kind','from','to']);name(q.from);name(q.to);if(q.verb!==undefined)name(q.verb);}
+  else if(q.kind==='count'){fields(q,['kind','conditions']);if(!Array.isArray(q.conditions)||!q.conditions.length||q.conditions.length>128)fail('count rows');(q.conditions as unknown[]).forEach(condition);}
   else if(q.kind==='select'){fields(q,['kind','cases']);if(!Array.isArray(q.cases)||!q.cases.length||q.cases.length>32)fail('select rows');for(const[i,raw]of (q.cases as unknown[]).entries()){const r=fields(raw,['when','value'],['value']);if(i===(q.cases as unknown[]).length-1?r.when!==undefined:r.when===undefined)fail('select final fallback');if(r.when!==undefined)condition(r.when);validateScalarRead(r.value,d);}}
   else if(q.kind==='tuning'||q.kind==='label'){fields(q,['kind','key']);name(q.key);}
   else if(q.kind==='duration'){fields(q,['kind','value','unit','round']);if(q.unit!=='seconds'||q.round!=='nearest')fail('duration format');validateScalarRead(q.value,d);}
@@ -69,8 +73,9 @@ export function validateGameplayQueries(d:GameplayDefinition,condition:(v:unknow
  for(const q of Object.values(queries))if(q.kind==='duration'&&!numericScalarRead(q.value,d))fail('duration requires numeric milliseconds');
 }
 /** Validate only against the assembled prospective source, including unsaved tuning/label edits. */
-export function validateGameplayQuerySources(d:GameplayDefinition,data:Pick<SceneData,'tuning'|'texts'>){
+export function validateGameplayQuerySources(d:GameplayDefinition,data:Pick<SceneData,'tuning'|'texts'> & Partial<Pick<SceneData,'devices'|'nodes'>>){
  for(const q of Object.values(d.queries??{})){
+  if(q.kind==='wirePresent'){const nouns=[...(data.devices??[]),...(data.nodes??[])].flatMap(dev=>dev.nouns.map(noun=>({key:dev.id+'.'+noun.id,noun}))),at=q.from.lastIndexOf(':'),source=nouns.find(n=>n.key===q.from.slice(0,at)),target=nouns.find(n=>n.key===q.to);if(at<0||!source?.noun.events?.includes(q.from.slice(at+1))||!target)fail('wire endpoint reference');if(q.verb!==undefined&&![...(target!.noun.verbs??[]),...(target!.noun.clock?['start','stop']:[])].includes(q.verb))fail('wire verb reference');}
   if(q.kind==='tuning'&&(!own(data.tuning,q.key)||typeof data.tuning[q.key]!=='number'||!Number.isFinite(data.tuning[q.key])))fail('tuning reference '+q.key);
   if(q.kind==='label'&&(!own(data.texts,q.key)||typeof data.texts[q.key]!=='string'))fail('label reference '+q.key);
  }

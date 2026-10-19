@@ -1,3 +1,5 @@
+import {renderNativeDeadlinesAuthoring} from './native-deadlines-authoring';
+import {renderNativeRepliesAuthoring} from './native-replies-authoring';
 import {renderNativeLiveConditionsAuthoring} from './native-live-conditions-authoring';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import type {GameplayBindingControls} from './gameplay-bindings-authoring';
@@ -8,6 +10,7 @@ export function renderNativeWorkflowAuthoring(parent:HTMLElement,doc:GameplayDef
  renderNativeLiveConditionsAuthoring(parent,doc,ui);
  const box=section(parent,'Live workflows',true),entries=Object.entries(doc.native.intervals??{});
  for(const[id,row]of entries){const host=section(box,'Interval '+id,true),prefix='Interval '+id;
+  form.select(host,prefix+' phase',['beforeNative','afterNative'],row.phase??'afterNative',phase=>edit('Edit live workflow phase',g=>{g.native!.intervals![id].phase=phase as 'beforeNative'|'afterNative';}));
   form.text(host,prefix+' ID',id,value=>edit('Rename live interval',g=>{if(value!==id&&g.native!.intervals![value])throw Error('Interval already exists');g.native!.intervals=Object.fromEntries(Object.entries(g.native!.intervals!).map(([key,r])=>[key===id?value:key,r]));}));
   form.text(host,prefix+' elapsed key',row.elapsed,elapsed=>edit('Rebind elapsed time',g=>{g.native!.intervals![id].elapsed=elapsed;}));
   form.select(host,prefix+' duration',tuning,row.duration.tuning,value=>edit('Rebind interval duration',g=>{g.native!.intervals![id].duration.tuning=value;}));
@@ -21,13 +24,6 @@ export function renderNativeWorkflowAuthoring(parent:HTMLElement,doc:GameplayDef
   form.button(host,'Remove '+prefix,()=>edit('Remove live interval',g=>{delete g.native!.intervals![id];}));
  }
  form.text(box,'New interval ID',draft.interval??'',value=>{draft.interval=value;});form.button(box,'Add live interval',()=>edit('Add live interval',g=>{const id=draft.interval??'';g.native!.intervals??={};if(g.native!.intervals[id])throw Error('Interval already exists');g.native!.intervals[id]={kind:'liveInterval',elapsed:'interval.'+id,duration:{tuning:tuning[0]},active:{tokensAtLeast:0},inactive:'hold',due:[{command:system[0]}]};}),!system.length||!tuning.length||entries.length>=64);
- const replies=section(parent,'Committed device replies',true),devices=[...data.devices,...data.nodes??[]].map(d=>d.id);
- for(const[event,row]of Object.entries(doc.native.replies??{})){const host=section(replies,'Reply '+event,true),prefix='Reply '+event;
-  form.select(host,prefix+' device',devices,row.from,from=>edit('Rebind reply device',g=>{g.native!.replies![event].from=from;}));
-  form.text(host,prefix+' input',row.say[0],text=>edit('Edit committed reply input',g=>{g.native!.replies![event].say[0]=text;}));form.text(host,prefix+' response',row.say[1],text=>edit('Edit committed reply',g=>{g.native!.replies![event].say[1]=text;}),true);
-  form.select(host,prefix+' tone',['','ok','err','dim'],row.say[2]??'',tone=>edit('Edit reply tone',g=>{const r=g.native!.replies![event];r.say=tone?[r.say[0],r.say[1],tone as 'ok'|'err'|'dim']:[r.say[0],r.say[1]];}));
-  form.check(host,prefix+' template',!!row.template,on=>edit('Edit reply template',g=>{if(on)g.native!.replies![event].template=true;else delete g.native!.replies![event].template;}));
-  form.button(host,'Remove '+prefix,()=>edit('Remove committed reply',g=>{delete g.native!.replies![event];}));
- }
- form.select(replies,'New reply event',['',...doc.events.filter(id=>!doc.native!.replies?.[id])],draft.reply??'',value=>{draft.reply=value;});form.button(replies,'Add committed reply',()=>edit('Add committed reply',g=>{const event=draft.reply??'';if(!doc.events.includes(event)||g.native!.replies?.[event])throw Error('Select an unused declared event');g.native!.replies??={};g.native!.replies[event]={from:devices[0],say:['reply','Device replied.']};}),!devices.length||Object.keys(doc.native.replies??{}).length>=64);
+ renderNativeDeadlinesAuthoring(parent,doc,ui);
+ renderNativeRepliesAuthoring(parent,doc,ui);
 }

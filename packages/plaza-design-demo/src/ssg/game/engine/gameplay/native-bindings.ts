@@ -1,3 +1,6 @@
+import {validateCheckpointOwner} from './checkpoint-source';
+import {clearNativeLiveConditions} from './native-live-conditions';
+import {nativeDeadlines} from './native-deadlines';
 import {validateGameplayQuerySources} from './queries';
 import {validateNativeWorkflowShape,validateNativeWorkflowBindings,nativeWorkflowEvent,nativeWorkflowTick} from './native-workflows';
 import {renderGameplayText,validateGameplayText} from './text-template';
@@ -13,12 +16,12 @@ const record=(v:unknown):Record<string,any>=>{if(!v||typeof v!=='object'||Array.
 const fields=(v:unknown,allowed:string[])=>{const r=record(v);if(Object.keys(r).some(k=>!allowed.includes(k)))fail('unsupported field');return r;};
 const name=(s:unknown)=>{if(typeof s!=='string'||!s.trim()||s.length>128||['__proto__','constructor','prototype'].includes(s))fail('name');};
 export function validateNativeShape(d:GameplayDefinition,condition:(v:unknown)=>void){
- if(d.native===undefined)return;const b=fields(d.native,['verbs','events','goals','wires','reads','presentation','intervals','replies','triggers']);
+ if(d.native===undefined)return;const b=fields(d.native,['verbs','events','goals','wires','reads','presentation','intervals','replies','triggers','deadlines']);
  for(const[flag,key]of Object.entries(b.reads===undefined?{}:record(b.reads))){if(!d.flags.includes(flag))fail('read flag reference');name(key);if(Object.values(d.commands).some(c=>c.actions.some(a=>'flag'in a&&a.flag===flag)))fail('read-only native flag');}
  const routes=new Set<string>();if(!Array.isArray(b.verbs)||b.verbs.length>128)fail('verb list');
  for(const raw of b.verbs){const r=fields(raw,['device','noun','verb','cases','denied']);[r.device,r.noun,r.verb].forEach(name);const key=r.device+'.'+r.noun+':'+r.verb;if(routes.has(key))fail('duplicate verb');routes.add(key);if(!Array.isArray(r.cases)||!r.cases.length||r.cases.length>32)fail('cases');
   if(r.denied!==undefined&&(!Array.isArray(r.denied)||r.denied.length<2||r.denied.length>3||r.denied.slice(0,2).some((s:unknown)=>typeof s!=='string'||!s||s.length>2000)||r.denied[2]!==undefined&&!['ok','err','dim'].includes(r.denied[2])))fail('denied line');
-  for(const[i,raw]of r.cases.entries()){const c=fields(raw,['when','sources','command','say','template']);if(c.template!==undefined&&(c.template!==true||c.say===null))fail('case template');if(c.sources!==undefined&&(!Array.isArray(c.sources)||!c.sources.length||c.sources.length>2||new Set(c.sources).size!==c.sources.length||c.sources.some((s:unknown)=>s!=='interaction'&&s!=='signal')))fail('case sources');if(c.when!==undefined)condition(c.when);else if(c.sources===undefined&&i!==r.cases.length-1)fail('fallback must be last');if(i===r.cases.length-1&&(c.when!==undefined||c.sources!==undefined))fail('final fallback required');if(!Object.prototype.hasOwnProperty.call(d.commands,c.command))fail('command reference');if(c.say!==null&&(!Array.isArray(c.say)||c.say.length<2||c.say.length>3||c.say.slice(0,2).some((s:unknown)=>typeof s!=='string'||!s||s.length>2000)||c.say[2]!==undefined&&!['ok','err','dim'].includes(c.say[2])))fail('line');if(c.template)validateGameplayText(c.say.slice(0,2).map((s:string)=>s.split('{via}').join('')),d);}
+  for(const[i,raw]of r.cases.entries()){const c=fields(raw,['when','sources','command','say','template']);if(c.template!==undefined&&(c.template!==true||c.say===null))fail('case template');if(c.sources!==undefined&&(!Array.isArray(c.sources)||!c.sources.length||c.sources.length>2||new Set(c.sources).size!==c.sources.length||c.sources.some((s:unknown)=>s!=='interaction'&&s!=='signal')))fail('case sources');if(c.when!==undefined)condition(c.when);else if(c.sources===undefined&&i!==r.cases.length-1)fail('fallback must be last');if(i===r.cases.length-1&&(c.when!==undefined||c.sources!==undefined))fail('final fallback required');if(!Object.prototype.hasOwnProperty.call(d.commands,c.command))fail('command reference');if(c.say!==null&&(!Array.isArray(c.say)||c.say.length<2||c.say.length>3||c.say.slice(0,2).some((s:unknown,i:number)=>typeof s!=='string'||i===1&&!s||s.length>2000)||c.say[2]!==undefined&&!['ok','err','dim'].includes(c.say[2])))fail('line');if(c.template)validateGameplayText(c.say.slice(0,2).map((s:string)=>s.split('{via}').join('')),d);}
  }
  for(const[event,raw]of Object.entries(b.presentation===undefined?{}:record(b.presentation))){if(!d.events.includes(event))fail('presentation event reference');const p=fields(raw,['kind','target']);if(p.kind!=='pulse')fail('presentation kind');name(p.target);}
  for(const[event,key]of Object.entries(record(b.events))){if(!d.events.includes(event))fail('event reference');name(key);}
@@ -30,6 +33,7 @@ function noun(data:SceneData,key:string){const i=key.indexOf('.');return [...dat
 export function nativeVocabulary(data:SceneData){return [...data.devices,...(data.nodes??[])].flatMap(d=>[...d.nouns.map(n=>({key:d.id+'.'+n.id,verbs:[...(n.clock?['start','stop']:[]),...(n.link?['scan',...Array.from(new Set([...(n.link.reach??[]),...(n.link.known??[])])).map(id=>'connect '+id)]:[]),...(n.verbs??[])],events:n.events??[]})),...(d.sectors??[]).filter(s=>'sequence'in s.seal).map(s=>({key:d.id+'.'+s.id,verbs:'sequence'in s.seal?s.seal.sequence:[],events:[]})),...((data.watchdog?.route??[]).includes(d.id)?[{key:d.id+'.watchdog',verbs:[],events:['arrives','leaves']}]:[])]);}
 export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[]):GameplayDefinition {
  validateGameplayQuerySources(d,data);
+ validateCheckpointOwner(d,data.id);
  for(const command of Object.values(data.camera?.actions??{}))if(!d.commands[command]?.sources.includes('interaction'))fail('camera interaction command '+command);
  const b=d.native;if(!b)return d;for(const key of Object.values(b.reads??{}))if(!Object.prototype.hasOwnProperty.call(data.state,key)&&!derived.includes(key)&&!Object.prototype.hasOwnProperty.call(data.observations?.aliases??{},key))fail('native read '+key);
  for(const r of b.verbs){const n=noun(data,r.device+'.'+r.noun);if(!n?.verbs?.includes(r.verb)||!['ACT','SENSE','STORE'].includes(n.kind))fail('unsupported native verb');}
@@ -53,15 +57,19 @@ export function nativeGameplayPort(d:GameplayDefinition,port:StatePort,model:()=
 export function nativeRoute(d:GameplayDefinition,c:Pick<Ctx,'dev'|'noun'|'verb'>){return d.native?.verbs.find(r=>r.device===c.dev&&r.noun===c.noun&&r.verb===c.verb);}
 /** Invoked after native watchdog/lock/seal checks. No legacy steps execute for a bound verb. */
 export function attachNativeGameplay(model:SceneModel,session:GameplaySession){
+ model.installGameplaySource(session.definition as GameplayDefinition);
  validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}));
- const queryIds=new Set(Object.keys(session.definition.queries??{})),readContext=()=>({tuning:model.data.tuning,labels:model.texts}),query=(id:string)=>queryIds.has(id)?session.query(id):undefined;session.readContext=readContext;model.gameplayQuery=query;model.gameplayQueryIds=queryIds;
+ const queryIds=new Set(Object.keys(session.definition.queries??{})),readContext=()=>({tuning:model.data.tuning,labels:model.texts,cables:model.links}),query=(id:string)=>queryIds.has(id)?session.query(id):undefined;session.readContext=readContext;model.gameplayQuery=query;model.gameplayQueryIds=queryIds;
  session.onDispose(()=>{if(session.readContext===readContext)session.readContext=undefined;if(model.gameplayQuery===query)model.gameplayQuery=undefined;if(model.gameplayQueryIds===queryIds)model.gameplayQueryIds=undefined;});
+ const previousKeyringKnown=session.keyringKnown,previousControlledKnown=session.controlledKnown,labels=new Set(model.registryLabels());session.keyringKnown=id=>!!model.item(id);session.controlledKnown=id=>labels.has(id);
+ const grantCleanup=session.observeGrants(grant=>{if(grant.kind==='keyring')model.presentKeyGrant(grant.id);});session.onDispose(()=>{grantCleanup();session.keyringKnown=previousKeyringKnown;session.controlledKnown=previousControlledKnown;});
  const command=(id:string)=>session.dispatch(id,'interaction');model.gameplayCommand=command;
  session.onDispose(()=>{if(model.gameplayCommand===command)model.gameplayCommand=undefined;});
  session.authorize=(id,source)=>{for(const r of session.definition.native?.verbs??[])if(r.cases.some(c=>c.command===id)){const result=model.nativeEligibility(r.device,r.noun,r.verb,source==='signal');if(!result.ok)return result;}return{ok:true};};
- const unsubscribe=session.observe(e=>{nativeWorkflowEvent(model,session,e.id);const pulse=session.definition.native?.presentation?.[e.id];if(pulse)model.scratch['pulse.'+pulse.target]=model.now();const event=session.definition.native?.events[e.id];if(event)model.emit(event);});
- const tick=(dt:number,cause:(run:()=>void)=>void)=>nativeWorkflowTick(model,session,dt,cause);model.gameplayTick=tick;
- session.onDispose(()=>{unsubscribe();if(model.gameplayTick===tick)model.gameplayTick=undefined;});
+ const deadlines=nativeDeadlines(model,session);
+ const unsubscribe=session.observe(e=>{deadlines.event(e.id);nativeWorkflowEvent(model,session,e.id);const pulse=session.definition.native?.presentation?.[e.id];if(pulse)model.scratch['pulse.'+pulse.target]=model.now();const event=session.definition.native?.events[e.id];if(event)model.emit(event);});
+ const tick=(dt:number,cause:(run:()=>void)=>void,phase:'beforeNative'|'afterNative')=>nativeWorkflowTick(model,session,dt,cause,phase);model.gameplayTick=tick;
+ session.onDispose(()=>{clearNativeLiveConditions(model);deadlines.dispose();unsubscribe();if(model.gameplayTick===tick)model.gameplayTick=undefined;});
  model.gameplayEligibility=c=>{const route=nativeRoute(session.definition as GameplayDefinition,c);if(!route)return undefined;const row=route.cases.find(row=>(!row.sources||row.sources.includes(c.bySignal?'signal':'interaction'))&&session.matches(row.when))!;return session.eligibility(row.command,c.bySignal?'signal':'interaction');};
  model.gameplay=(c)=>{const route=nativeRoute(session.definition as GameplayDefinition,c);if(!route)return undefined;const row=route.cases.find(row=>(!row.sources||row.sources.includes(c.bySignal?'signal':'interaction'))&&session.matches(row.when))!,source:Source=c.bySignal?'signal':'interaction',result=session.dispatch(row.command,source);
   if(!result.ok)return {result,line:route.denied??[(c.bySignal?'signal → ':'')+'use '+c.noun+' --'+c.verb,'ACTION REFUSED: '+result.reason+'.','err'] as Line};

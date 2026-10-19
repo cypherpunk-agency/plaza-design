@@ -26,4 +26,4 @@ A station bench owns a drawing slot, not a second passenger. It receives the pre
 
 This migration does not replace the native transit state machine, captured skyline animation, braking logic, turnstile checkpoint or world route controllers with fully authored controller graphs. Their existing behavior and presentation remain active. Required architectural/controller composition IDs remain protected. These specialist controls need their own typed editor contracts before transit can be described as wholly authored gameplay.
 
-The one-time `migrate-transit-editable-*` scripts describe the source lift from its original checkpoint; they are not commands to rerun against the migrated documents.
+The one-time transit extraction scripts were retired after the source lift. Their history remains in Git; use the authored documents and preservation checks for ongoing work.

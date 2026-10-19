@@ -96,7 +96,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
       const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
       const rules = typeof def.rules === 'function' ? def.rules(services) : def.rules ?? NO_RULES;
-      const model = new SceneModel({ say: forbidden, open: forbidden, changed() {} }, def.data ?? emptyData(def.id, def.name), rules);
+      const model = new SceneModel({ say: forbidden, open: forbidden, changed() {} }, def.data ?? emptyData(def.id, def.name), rules,undefined,undefined,undefined,undefined,def.gameplay);
       // Inspection never advances simulation. Reinitialize native deadlines after replacing
       // host time, so a clock/countdown snapshot cannot depend on render duration or warmup.
       model.now = () => 0;
@@ -114,7 +114,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       if(def.gameplay?.queries){
         const definition=def.gameplay,ids=new Set(Object.keys(definition.queries??{}));model.gameplayQueryIds=ids;
         model.gameplayQuery=id=>{if(!ids.has(id))return undefined;const state={flags:flags as Record<string,boolean>,items:{},tokens:player.tokens,values:{[def.id]:model.state},world:{day:city.day,minute:city.min,weather:(request.weather??weatherNow(sceneClimate(def.id))).kind}};
-          return readQuery(id,{...state,values:resolveValues(definition,state)},{definition,tuning:model.data.tuning,labels:model.texts});};
+          return readQuery(id,{...state,values:resolveValues(definition,state)},{definition,tuning:model.data.tuning,labels:model.texts,cables:model.links});};
       }
       const vision = settings.hack === true, engine: EngineDraw = { m: model, hover: typeof settings.hover === 'string' ? settings.hover || null : null, layer: 'all' };
       // A complete editor frame starts from native canvas defaults, including inherited

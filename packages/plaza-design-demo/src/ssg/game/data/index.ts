@@ -27,7 +27,8 @@ import laundromatGameplay from '../scenes/laundromat/gameplay.json';
 import yardGameplay from '../scenes/yard/gameplay.json';
 import sandboxGameplay from '../scenes/sandbox/gameplay.json';
 import capsuleGameplay from '../scenes/capsule/gameplay.json';
-import {nativeDeviceData} from '../engine/gameplay/native-bindings';
+import {projectNativeDeviceData} from '../engine/gameplay/native-bindings';
+import type {GameplayDefinition} from '../engine/gameplay/types';
 import libraryGameplay from '../scenes/library/gameplay.json';
 import {nativeDialogue} from '../engine/gameplay/native-dialogue';
 import {validateGameplay} from '../engine/gameplay/validation';
@@ -54,12 +55,14 @@ import stacksJson from "../scenes/stacks/devices.json";
 import libraryJson from "../scenes/library/devices.json";
 import sandboxJson from "../scenes/sandbox/devices.json";
 
+/** Initial catalog projection; complete native refs validate with the actual rules in scene assembly. */
+const catalogDeviceData=(data:SceneData,gameplay:GameplayDefinition)=>projectNativeDeviceData(projectSceneState(data,gameplay),gameplay);
 const yardDefinition=validateGameplay(yardGameplay);
-const yard: Loose<SceneData> = nativeDeviceData({...yardJson,dialogue:{hinge:nativeDialogue(yardDefinition,'hinge')}} as unknown as SceneData,yardDefinition);
+const yard: Loose<SceneData> = catalogDeviceData({...yardJson,dialogue:{hinge:nativeDialogue(yardDefinition,'hinge')}} as unknown as SceneData,yardDefinition);
 const capsuleDefinition=validateGameplay(capsuleGameplay);
-const capsule: Loose<SceneData> = nativeDeviceData({...capsuleJson,dialogue:{concierge:nativeDialogue(capsuleDefinition,'concierge')}} as unknown as SceneData,capsuleDefinition);
+const capsule: Loose<SceneData> = catalogDeviceData({...capsuleJson,dialogue:{concierge:nativeDialogue(capsuleDefinition,'concierge')}} as unknown as SceneData,capsuleDefinition);
 const moth: Loose<SceneData> = projectSceneState(mothJson as unknown as SceneData,validateGameplay(mothGameplay));
-const beach: Loose<SceneData> = nativeDeviceData(beachJson as unknown as SceneData,validateGameplay(beachGameplay));
+const beach: Loose<SceneData> = catalogDeviceData(beachJson as unknown as SceneData,validateGameplay(beachGameplay));
 const laundromatDefinition=validateGameplay(laundromatGameplay);
 const laundromat: Loose<SceneData> = {...projectSceneState(laundromatJson as unknown as SceneData,laundromatDefinition),dialogue:{suds:nativeDialogue(laundromatDefinition,'suds')}};
 const downtown: Loose<SceneData> = projectSceneState(downtownJson as unknown as SceneData,validateGameplay(downtownGameplay));

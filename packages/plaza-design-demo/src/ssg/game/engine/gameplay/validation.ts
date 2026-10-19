@@ -1,3 +1,4 @@
+import {validateCheckpointShape} from './checkpoint-source';
 import {stateValue,stateAddress} from './state';
 import {scalarRead,numericScalarRead,validateScalarRead,validateGameplayQueries,type GameplayReadContext} from './queries';
 import {validateGameplayText} from './text-template';
@@ -38,7 +39,7 @@ export function validateGameplay(value: unknown): GameplayDefinition {
   }
   plain(value);
   if (JSON.stringify(value).length > 128_000) fail('document size limit');
-  const doc = object(value); keys(doc, ['version','flags','items','events','commands','reactions','conversations','state','queries','purchases','native','handoffs'], ['version','flags','items','events','commands','reactions','conversations']);
+  const doc = object(value); keys(doc, ['version','flags','items','events','commands','reactions','conversations','state','queries','purchases','native','handoffs','checkpoint'], ['version','flags','items','events','commands','reactions','conversations']);
   if (doc.version !== 1) fail('unsupported version');
   const flags = names(doc.flags), items = names(doc.items), events = names(doc.events), commands = object(doc.commands), conversations = object(doc.conversations);
   const declarations=doc.state===undefined?{}:object(doc.state),purchases=doc.purchases===undefined?{}:object(doc.purchases);
@@ -49,7 +50,7 @@ export function validateGameplay(value: unknown): GameplayDefinition {
     if (depth > 12) fail('condition depth');
     const c = object(v);
     if('compare'in c){keys(c,['compare'],['compare']);const r=object(c.compare);keys(r,['left','op','right'],['left','op','right']);if(!['eq','ne','lt','lte','gt','gte'].includes(String(r.op)))fail('comparison operator');validateScalarRead(r.left,value as GameplayDefinition);validateScalarRead(r.right,value as GameplayDefinition);if(!['eq','ne'].includes(String(r.op))&&(!numericScalarRead(r.left as import('./queries').ScalarRead,value as GameplayDefinition)||!numericScalarRead(r.right as import('./queries').ScalarRead,value as GameplayDefinition)))fail('ordered comparison requires numeric reads');}
-    else if('player'in c){keys(c,['player'],['player']);const p=object(c.player);if('field'in p){keys(p,['field','is'],['field','is']);if(p.field==='handle'){if(typeof p.is!=='string'||p.is.length>2000)fail('player handle comparison');}else if(p.field==='jump'){if(typeof p.is!=='boolean')fail('player jump comparison');}else fail('unknown player field');}else{keys(p,['collection','contains'],['collection']);if(!['controlled','keyring'].includes(String(p.collection)))fail('unknown player collection');if(p.contains!==undefined)id(p.contains);}}
+    else if('player'in c){keys(c,['player'],['player']);const p=object(c.player);if('field'in p){keys(p,['field','is'],['field','is']);if(p.field==='handle'){if(typeof p.is!=='string'||p.is.length>2000)fail('player handle comparison');}else if(p.field==='jump'){if(typeof p.is!=='boolean')fail('player jump comparison');}else fail('unknown player field');}else{keys(p,['collection','contains'],['collection']);if(!['controlled','keyring'].includes(String(p.collection)))fail('unknown player collection');if(p.contains!==undefined){text(p.contains);if(String(p.contains).length>128)fail('player member length');}}}
     else if('objective'in c){keys(c,['objective'],['objective']);id(c.objective);}
     else if('time'in c){keys(c,['time'],['time']);const problem=windowProblem(c.time);if(problem)fail(problem);}
     else if('weather'in c){keys(c,['weather'],['weather']);const kinds=array(c.weather,7);if(!kinds.length||new Set(kinds).size!==kinds.length||kinds.some(k=>!WEATHER_KINDS.includes(k as typeof WEATHER_KINDS[number])))fail('weather condition');}
@@ -66,11 +67,12 @@ export function validateGameplay(value: unknown): GameplayDefinition {
     if(c.when!==undefined)condition(c.when);
     for(const rawAction of array(c.actions,32)) {
       const a=object(rawAction);
-      if('state'in a){has(stateIds,a.state);const d=declarations[String(a.state)] as unknown as StateDeclaration;if('set'in a){keys(a,['state','set'],['state','set']);if(!validValue(d,a.set))fail('state action type');}else{keys(a,['state','add'],['state','add']);if(d.type!=='number'||!validStateNumber(d,a.add))fail('numeric state action');}}
+      if('grant'in a){keys(a,['grant'],['grant']);const grant=object(a.grant);if('keyring'in grant){keys(grant,['keyring'],['keyring']);id(grant.keyring);}else if('ability'in grant){keys(grant,['ability'],['ability']);if(grant.ability!=='jump')fail('unknown ability grant');}else{keys(grant,['controlled'],['controlled']);text(grant.controlled);if(String(grant.controlled).length>128)fail('controlled node label length');}}
+      else if('state'in a){has(stateIds,a.state);const d=declarations[String(a.state)] as unknown as StateDeclaration;if('set'in a){keys(a,['state','set'],['state','set']);if(a.set!==null&&typeof a.set==='object'){validateScalarRead(a.set,value as GameplayDefinition);if('literal'in a.set&&!validValue(d,a.set.literal))fail('state action type');}else if(!validValue(d,a.set))fail('state action type');}else{keys(a,['state','add'],['state','add']);if(d.type!=='number')fail('numeric state action');if(a.add!==null&&typeof a.add==='object'){validateScalarRead(a.add,value as GameplayDefinition);if(!numericScalarRead(a.add as import('./queries').ScalarRead,value as GameplayDefinition)||'literal'in a.add&&!validStateNumber(d,a.add.literal))fail('numeric state action');}else if(!validStateNumber(d,a.add))fail('numeric state action');}}
       else if('purchase'in a){keys(a,['purchase'],['purchase']);has(purchaseIds,a.purchase);}
       else if('flag'in a){keys(a,['flag','value'],['flag','value']);has(flags,a.flag);if(typeof a.value!=='boolean')fail('flag action value');}
-      else if('item'in a){keys(a,['item','add'],['item','add']);has(items,a.item);number(a.add);}
-      else if('tokens'in a){keys(a,['tokens']);number(a.tokens);}
+      else if('item'in a){keys(a,['item','add'],['item','add']);has(items,a.item);if(a.add!==null&&typeof a.add==='object'){validateScalarRead(a.add,value as GameplayDefinition);if(!numericScalarRead(a.add as import('./queries').ScalarRead,value as GameplayDefinition))fail('numeric item action');if('literal'in a.add)number(a.add.literal);}else number(a.add);}
+      else if('tokens'in a){keys(a,['tokens']);if(a.tokens!==null&&typeof a.tokens==='object'){validateScalarRead(a.tokens,value as GameplayDefinition);if(!numericScalarRead(a.tokens as import('./queries').ScalarRead,value as GameplayDefinition))fail('numeric token action');if('literal'in a.tokens)number(a.tokens.literal);}else number(a.tokens);}
       else{keys(a,['emit'],['emit']);has(events,a.emit);}
     }
   }
@@ -109,6 +111,7 @@ export function validateGameplay(value: unknown): GameplayDefinition {
   }
   if(doc.handoffs!==undefined){const seen=new Set<string>();for(const raw of array(doc.handoffs,32)){const h=object(raw);keys(h,['event','cutscene','after'],['event']);has(events,h.event);if(seen.has(String(h.event)))fail('duplicate handoff event');seen.add(String(h.event));if(h.cutscene===undefined&&h.after===undefined)fail('empty handoff');if(h.cutscene!==undefined)has(new Set(Object.keys(cutsceneCatalog)),h.cutscene);if(h.after!==undefined){const delayed=array(h.after,16);if(!delayed.length)fail('empty delayed handoff');for(const raw of delayed){const a=object(raw);keys(a,['ms','command'],['ms','command']);number(a.ms);if(Number(a.ms)<1)fail('handoff delay');has(commandIds,a.command);if(!(object(commands[String(a.command)]).sources as unknown[]).includes('system'))fail('handoff command requires system permission');}}}}
   validateGameplayQueries(value as GameplayDefinition,condition);
+  validateCheckpointShape(doc as unknown as GameplayDefinition,condition);
   validateNativeShape(value as GameplayDefinition,condition);
   return JSON.parse(JSON.stringify(value)) as GameplayDefinition;
 }

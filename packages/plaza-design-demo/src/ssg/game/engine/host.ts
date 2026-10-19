@@ -73,7 +73,7 @@ export interface SceneStore {
   hintBusy?:()=>boolean;
   feedbackTime?:()=>number;
   cutscene?:(id:string)=>void;
-  gameplay?:()=>GameplaySession|undefined;
+  gameplay?:(model?:SceneModel)=>GameplaySession|undefined;
   /** Direct common owner block. The model never replaces it. */
   state?:()=>Record<string,import('../data/types').Value>;
   conversation?:(id:string)=>ConversationSession|undefined;
@@ -210,8 +210,8 @@ export class SceneHost {
       programs: store?.programs,
       program: store?.program,
       controlled: store?.controlled,
-    }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring,store?.state?.());
-    const shared=store?.gameplay?.();if(shared)attachNativeGameplay(this.model,shared);
+    }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring,store?.state?.(),def.gameplay);
+    const shared=store?.gameplay?.(this.model);if(shared)attachNativeGameplay(this.model,shared);
     if(shared?.definition.handoffs?.length)attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>this.model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id)});
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen });

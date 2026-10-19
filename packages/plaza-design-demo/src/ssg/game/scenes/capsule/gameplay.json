@@ -1,8 +1,16 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "capsule:routerReadyAtTickStart"
+  ],
   "items": [],
-  "events": [],
+  "events": [
+    "capsule.pixel.bed",
+    "capsule.pixel.router",
+    "capsule.pixel.sun",
+    "capsule.door.unlocked",
+    "capsule.schedule.night"
+  ],
   "commands": {
     "capsule.plug.off": {
       "sources": [
@@ -22,6 +30,68 @@
         "signal"
       ],
       "actions": []
+    },
+    "capsule.pixel.bed": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "capsule.pixelAt",
+          "set": "bed"
+        },
+        {
+          "emit": "capsule.pixel.bed"
+        }
+      ]
+    },
+    "capsule.pixel.router": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "capsule.pixelAt",
+          "set": "router"
+        },
+        {
+          "emit": "capsule.pixel.router"
+        }
+      ]
+    },
+    "capsule.pixel.sun": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "capsule.pixelAt",
+          "set": "sun"
+        },
+        {
+          "emit": "capsule.pixel.sun"
+        }
+      ]
+    },
+    "capsule.door.unlocked": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "capsule.door.unlocked"
+        }
+      ]
+    },
+    "capsule.schedule.night": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "capsule.schedule.night"
+        }
+      ]
     }
   },
   "reactions": [],
@@ -301,7 +371,9 @@
         ]
       }
     ],
-    "events": {},
+    "events": {
+      "capsule.schedule.night": "plug.schedule:night"
+    },
     "goals": {},
     "wires": [
       {
@@ -309,6 +381,227 @@
         "to": "plug.power",
         "verb": "off"
       }
-    ]
+    ],
+    "reads": {
+      "capsule:routerReadyAtTickStart": "routerUpAtTickStart"
+    },
+    "replies": {
+      "capsule.pixel.bed": {
+        "from": "pixel",
+        "say": [
+          "",
+          "Pixel goes back to the bed. it is still a little warm.",
+          "dim"
+        ]
+      },
+      "capsule.pixel.router": {
+        "from": "pixel",
+        "say": [
+          "",
+          "Pixel has found something warmer than the bed: the router.",
+          "dim"
+        ]
+      },
+      "capsule.pixel.sun": {
+        "from": "pixel",
+        "say": [
+          "",
+          "Pixel follows the sun to the floor and lies down in it. the router cools off.",
+          "ok"
+        ]
+      },
+      "capsule.door.unlocked": {
+        "from": "lock",
+        "say": [
+          "",
+          "DOOR LOCK: receipt on file. bolt released.",
+          "ok"
+        ]
+      }
+    },
+    "intervals": {
+      "capsule.pixelMove": {
+        "kind": "liveInterval",
+        "elapsed": "pixelWait",
+        "duration": {
+          "tuning": "pixelMoveMs"
+        },
+        "active": {
+          "compare": {
+            "left": {
+              "state": "capsule.pixelAt"
+            },
+            "op": "ne",
+            "right": {
+              "query": "capsule.pixelTarget"
+            }
+          }
+        },
+        "inactive": "reset",
+        "due": [
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "capsule.pixelTarget"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "sun"
+                }
+              }
+            },
+            "command": "capsule.pixel.sun"
+          },
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "capsule.pixelTarget"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "router"
+                }
+              }
+            },
+            "command": "capsule.pixel.router"
+          },
+          {
+            "command": "capsule.pixel.bed"
+          }
+        ]
+      },
+      "capsule.schedule": {
+        "kind": "liveInterval",
+        "phase": "beforeNative",
+        "elapsed": "clock",
+        "duration": {
+          "tuning": "nightEveryMs"
+        },
+        "active": {
+          "compare": {
+            "left": {
+              "literal": 0
+            },
+            "op": "eq",
+            "right": {
+              "literal": 0
+            }
+          }
+        },
+        "inactive": "reset",
+        "due": [
+          {
+            "command": "capsule.schedule.night"
+          }
+        ]
+      }
+    },
+    "triggers": {
+      "capsule.doorOpened": {
+        "when": {
+          "state": "capsule.doorOpen",
+          "is": true
+        },
+        "command": "capsule.door.unlocked",
+        "edge": "rising"
+      }
+    }
+  },
+  "queries": {
+    "capsule.pixelTarget": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "state": "capsule.sun",
+            "is": true
+          },
+          "value": {
+            "literal": "sun"
+          }
+        },
+        {
+          "when": {
+            "state": "capsule.plugOn",
+            "is": true
+          },
+          "value": {
+            "literal": "router"
+          }
+        },
+        {
+          "value": {
+            "literal": "bed"
+          }
+        }
+      ]
+    },
+    "capsule.scheduleConnected": {
+      "kind": "wirePresent",
+      "from": "plug.schedule:night",
+      "to": "plug.power"
+    },
+    "capsule.routerGoalReady": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "capsule:routerReadyAtTickStart"
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "capsule.scheduleConnected"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": false
+                  }
+                }
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "capsule.pixelGoalReady": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "state": "capsule.pixelAt",
+                "is": "sun"
+              },
+              {
+                "state": "capsule.plugOn",
+                "is": true
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    }
   }
 }

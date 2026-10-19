@@ -3,7 +3,7 @@ import source from './companion-gameplay.json';
 import {validateGameplay} from './validation';
 import type {GameplayDefinition} from './types';
 import type {SceneDef} from '../../scenes/kit';
-export function validateCompanionGameplay(value:unknown):GameplayDefinition{const d=validateGameplay(value);if(d.native)throw Error('Shared companion library cannot own scene-specific native bindings');return d;}
+export function validateCompanionGameplay(value:unknown):GameplayDefinition{const d=validateGameplay(value);if(d.native||d.checkpoint)throw Error('Shared companion library cannot own scene-specific native bindings/checkpoint policies');return d;}
 export const COMPANION_GAMEPLAY=validateCompanionGameplay(source);
 export function validateCompanionConversations(scene:SceneDef,library:GameplayDefinition=COMPANION_GAMEPLAY){validateCompanionModelBindings(scene,scene.data);const pet=scene.companion?.pet;if(!pet)return;const graphs={...library.conversations,...scene.gameplay?.conversations};for(const id of [...pet.conversations.sleep,pet.conversations.sun,pet.conversations.moving,...pet.conversations.idle])if(!Object.prototype.hasOwnProperty.call(graphs,id))throw Error('Missing companion conversation '+id);}
 /** One shared authored graph source; native pet recurrence only chooses its reference. */

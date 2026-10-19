@@ -4,12 +4,14 @@ import {SceneHost} from '../../src/ssg/game/engine/host';
 import {mintFeedback,type FeedbackReceipt} from '../../src/ssg/game/engine/feedback-receipt';
 import {sound} from '../../src/ssg/game/runtime/audio';
 import {downtownRules} from '../../src/ssg/game/scenes/downtown/rules';
-import downtown from '../../src/ssg/game/scenes/downtown/devices.json';
+import {DOWNTOWN as downtown} from '../../src/ssg/game/data';
+import fs from 'node:fs';
 import type {SceneData} from '../../src/ssg/game/data/types';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 const frozen=path.resolve('../../.scene-system/all-game-baseline-2026-10-18/source');
 const baselineModel=await import(pathToFileURL(path.join(frozen,'engine/model.ts')).href),baselineRules=await import(pathToFileURL(path.join(frozen,'scenes/downtown/rules.ts')).href);
+const originalData=JSON.parse(fs.readFileSync(path.join(frozen,'scenes/downtown/devices.json'),'utf8'));
 const original={setTimeout:globalThis.setTimeout,clearTimeout:globalThis.clearTimeout,AudioContext:globalThis.AudioContext};
 let clock=0,next=0;const timers=new Map<number,{at:number;run:()=>void}>(),notes:number[]=[];
 (globalThis as any).setTimeout=(run:()=>void,ms=0)=>{const id=++next;timers.set(id,{at:clock+ms,run});return id;};
@@ -47,7 +49,7 @@ try{
  sound.toggle();timers.clear();
  function run(Model:any,makeRules:any){
   clock=0;const save={handle:'ghost',tokens:0,jump:false,controlled:[] as string[],flags:{} as Record<string,boolean>},events:unknown[]=[],checkpoints:unknown[]=[];
-  const m=new Model({say:(line:Line,from?:string)=>events.push(['say',structuredClone(line),from]),changed:()=>events.push(['changed']),open:()=>{},observe:(e:unknown)=>events.push(['observe',e])},downtown,makeRules({save:()=>save,persist:()=>events.push(['persist']),nodes:()=>42,granted:()=>events.push(['granted']),end:()=>events.push(['end'])}));
+  const m=new Model({say:(line:Line,from?:string)=>events.push(['say',structuredClone(line),from]),changed:()=>events.push(['changed']),open:()=>{},observe:(e:unknown)=>events.push(['observe',e])},Model===SceneModel?downtown:originalData,makeRules({save:()=>save,persist:()=>events.push(['persist']),nodes:()=>42,granted:()=>events.push(['granted']),end:()=>events.push(['end'])}));
   const capture=()=>checkpoints.push(structuredClone({save,state:m.snapshot(),events}));
   m.guess('box','login','wrong');capture();m.guess('box','login','vrify');capture();m.apply([{effect:'legs.install'}]);capture();m.apply([{effect:'till.pay'}]);capture();m.apply([{effect:'billboard.feed'}]);capture();advance(3000);capture();
   // Existing DLV completion callback must retain persist -> granted -> goal/reply -> end ordering.

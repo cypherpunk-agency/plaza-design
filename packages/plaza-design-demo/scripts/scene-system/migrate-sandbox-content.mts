@@ -1,7 +1,0 @@
-import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';
-const dir='src/ssg/game/scenes/sandbox';if(fs.existsSync(dir+'/scene.json')||fs.existsSync(dir+'/gameplay.json'))throw new Error('Refusing to overwrite extracted source');
-const {sandbox:s}=await import(pathToFileURL(path.resolve('../../.scene-system/all-game-baseline-2026-10-18/source/scenes/sandbox/index.ts')).href);
-const doc={version:1,id:'sandbox',name:s.name,intro:s.intro,exits:s.exits.map(({x,...r}:any)=>r),readables:s.readables.map(({x,h,...r}:any)=>r),people:s.people.filter((p:any)=>p.id&&p.talk).map((p:any)=>({id:p.id,name:p.name,talk:p.talk,...(p.lines?{lines:p.lines}:{})})),uses:[{id:'chips',name:'BLANK CHIPS',label:'[E] TAKE A BLANK CHIP',speakerKind:'device',routes:[{command:'sandbox.dispense',pages:s.uses[0].use({add:()=>{}})}]}],nativeTargets:[{id:'reset',anchor:'reset',promptH:66,labels:[{text:'prompt.reset'}],routes:[{steps:[{reset:true},{say:'reset.ok'}]}]}]};
-const gameplay={version:1,flags:[],items:['blankchip'],events:[],commands:{'sandbox.dispense':{sources:['interaction'],actions:[{item:'blankchip',add:1}]}},reactions:[],conversations:{}};
-for(const [file,value]of [['scene',doc],['gameplay',gameplay]])fs.writeFileSync(dir+'/'+file+'.json',JSON.stringify(value,null,2)+'\n');
-console.log('Extracted immutable original Sandbox content, three NPCs and engine reset target');

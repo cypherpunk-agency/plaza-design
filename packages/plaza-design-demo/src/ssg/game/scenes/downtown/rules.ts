@@ -14,7 +14,7 @@
  * Pure: no DOM, so the build-time check and node scripts can import it.
  */
 
-import type { Value, SceneData } from "../../data/types";
+import type { SceneData } from "../../data/types";
 import type { Spot, SceneModel } from "../../engine/model";
 import type { Effect, World, SceneRules } from "../../engine/rules";
 
@@ -108,21 +108,6 @@ function effects(p: PlayerServices): Record<string, Effect> {
       return r.line;
     },
 
-    /** legs.so out of the box and into your deck: SPACE jumps (the save keeps it as `jump`). */
-    'legs.install': (w) => {
-      const s = p.save();
-      s.jump = true; p.persist();
-      const line=w.line('legs.install');p.granted(w.receipt(line));return line;
-    },
-
-    /** The till's drawer: noodle tokens, once. `flags.till` means the same as it always did: cracked and paid. */
-    'till.pay': (w) => {
-      const s = p.save(), n = w.tune('drawerTokens');
-      s.tokens += n; s.flags.till = true; p.persist();
-      const line=w.line('till.pay', { tokens: n });p.granted(w.receipt(line));
-      w.goal('till');
-      return line;
-    },
 
     /** The VERIFY sign lights its tubes one by one (the scene draws it). */
     'sign.test': (w) => { w.m.scratch.signTest = w.m.now(); },
@@ -163,13 +148,6 @@ function effects(p: PlayerServices): Record<string, Effect> {
 }
 
 /** For the save: a DLV-9 mid-drive is back where it set off from; a lock it opened on the way is shut again. */
-export function settleDowntown(state: Record<string, Value>) {
-  if (state.dlvAt === 'driving') {
-    state.dlvAt = state.dlvFrom === 'driving' ? 'home' : state.dlvFrom;
-    state.lock = 'shut';
-  }
-  state.scanned = false;
-}
 
 let jokes = 0;
 
@@ -193,7 +171,6 @@ export function downtownRules(p: PlayerServices): SceneRules {
       /** The denied jokes, in turn. */
       joke: (m) => m.label('joke.' + (jokes++ % 3)),
     },
-    settle: settleDowntown,
     place: (m: SceneModel, home: Spot) => {
       if (home.id !== 'dlv9') return home;
       const x = dlvX(m, home.x);
@@ -206,7 +183,7 @@ export function downtownRules(p: PlayerServices): SceneRules {
         'joke.0': 'label', 'joke.1': 'label', 'joke.2': 'label',
         'node.box': 'label', 'node.relay': 'label', 'node.billboard': 'label',
         'control.box': 'line', 'control.relay': 'line', 'control.billboard': 'line', 'peer.box': 'line', 'peer.box.who': 'label',
-        'till.pay': 'line', 'legs.install': 'line',
+
         'dlv.busy': 'line', 'dlv.lost': 'line', 'dlv.home': 'line', 'dlv.go': 'line', 'dlv.out': 'line',
         'dlv.follow': 'line', 'dlv.bonk': 'line', 'dlv.passed': 'line', 'gate.end': 'line',
         'tv.on': 'line', 'tv.trend': 'line',

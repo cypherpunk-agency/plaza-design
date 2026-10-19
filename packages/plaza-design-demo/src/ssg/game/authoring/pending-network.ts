@@ -1,3 +1,4 @@
+import {validateGameplayRewards,registryLabels} from '../engine/gameplay/rewards';
 import {NET,type SceneData} from '../data';
 import {NATIVE_SCENES,type SceneDef} from '../scenes';
 import {createNetworkContext} from '../engine/network-context';
@@ -18,5 +19,5 @@ export function pendingNetworkContext(documents:ReadonlyMap<string,unknown>){
 export function validatePendingNetwork(documents:ReadonlyMap<string,unknown>,registry:Record<string,SceneDef>){
  const scenes=Object.values(registry).filter((s):s is SceneDef&{data:SceneData}=>!!s.data);
  const net=validateNetworkSource(documents.get('network')??NET,scenes.map(scene=>{const rules=deviceRules(scene);return{data:scene.data,code:contractOf(rules,scene.gameplay?.native?.verbs,Object.keys(scene.gameplay?.queries??{})),extra:rules.check};}));
- return createNetworkContext(net,scenes.map(scene=>scene.data));
+ const context=createNetworkContext(net,scenes.map(scene=>scene.data)),vocabulary={keyring:new Set(context.keyring.keys()),controlled:new Set(registryLabels(context.net))};for(const scene of Object.values(registry))if(scene.gameplay)validateGameplayRewards(scene.gameplay,vocabulary);for(const value of documents.values()){const d=value as Partial<import('../engine/gameplay/types').GameplayDefinition>|undefined;if(d?.version===1&&d.commands&&Array.isArray(d.flags)&&Array.isArray(d.items)&&Array.isArray(d.events))validateGameplayRewards(d as import('../engine/gameplay/types').GameplayDefinition,vocabulary);}return context;
 }

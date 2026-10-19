@@ -1,3 +1,6 @@
+import {registryLabels} from './gameplay/rewards';
+import {compileCheckpoint} from './gameplay/checkpoint';
+import type {GameplayDefinition} from './gameplay/types';
 import {mintFeedback,mintFeedbackCause,type FeedbackReceipt} from './feedback-receipt';
 import {readObservation} from './native-observations';
 /**
@@ -235,7 +238,12 @@ export class SceneModel {
   /** Bumped by reset and restore: timers started before it never fire. */
   private epoch = 0;
 
-  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>) {
+  private checkpointProgram?:ReturnType<typeof compileCheckpoint>;
+  private checkpointReady=false;
+  /** Bind the same source once; standalone engine fixtures may attach it after construction. */
+  installGameplaySource(source:GameplayDefinition){if(this.checkpointReady)return;this.checkpointProgram=compileCheckpoint(source,this.data.id);this.checkpointReady=true;}
+
+  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>,gameplay?:GameplayDefinition) {
     this.texts = { ...ENGINE.texts, ...data.texts };
     this.nets = net.networks ?? [];
     this.programList = net.programs ?? [];
@@ -244,6 +252,7 @@ export class SceneModel {
     this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
     this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
     this.clocks = new Clocks(() => this.now());
+    if(gameplay)this.installGameplaySource(gameplay);
     const initial={...ownedState};if(ownedState)this.state=ownedState;
     this.init();
     for(const key of Object.keys(this.data.state))if(Object.prototype.hasOwnProperty.call(initial,key))this.state[key]=initial[key];
@@ -357,7 +366,7 @@ export class SceneModel {
   gameplayEligibility?:(context:Ctx)=>import('./gameplay/types').GameplayResult|undefined;
   gameplayQueryIds?:ReadonlySet<string>;
   gameplayQuery?:(id:string)=>Value|undefined;
-  gameplayTick?:(dt:number,cause:(run:()=>void)=>void)=>void;
+  gameplayTick?:(dt:number,cause:(run:()=>void)=>void,phase:'beforeNative'|'afterNative')=>void;
   /** Registered panel inputs dispatch ordinary shared commands; panels own only hit testing. */
   gameplayCommand?:(id:string)=>import('./gameplay/types').GameplayResult;
   runCommand(id:string):import('./gameplay/types').GameplayResult{return this.gameplayCommand?.(id)??{ok:false,reason:'unknown-command'};}
@@ -583,6 +592,9 @@ export class SceneModel {
     if (this.hooks.give) this.hooks.give(id); else this.ownKeyring.push(id);
     return this.line(k.kind === 'fragment' ? 'keyring.fragment' : 'keyring.' + k.kind, { label: k.label, text: k.text ?? '' });
   }
+
+  /** Feedback for an already committed shared grant. No resource or storage mutation. */
+  presentKeyGrant(id:string){const k=this.item(id);if(!k)return;const line=this.line(k.kind==='fragment'?'keyring.fragment':'keyring.'+k.kind,{label:k.label,text:k.text??''});return this.sayLine(line);}
 
   /**
    * Spend `n` noodle tokens (a scene effect that sells something: the beach's sunbed meter).
@@ -852,7 +864,7 @@ export class SceneModel {
    * (the host redraws the meters, or everything when a lock ended).
    */
   tick(dt: number, live = true): boolean {
-    if (live) { this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true));for(const row of this.data.observations?.goals??[])if(this.cond(row.when))this.goal(row.goal); }
+    if (live) { this.gameplayTick?.(dt,run=>this.withCue(run,true),'beforeNative');this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true),'afterNative');for(const row of this.data.observations?.goals??[])if(this.cond(row.when))this.goal(row.goal); }
     let moved = false;
     for (const d of this.devices.values()) {
       const logs = this.logsOf(d.id), before = this.traceOf(d.id);
@@ -947,6 +959,7 @@ export class SceneModel {
   }
 
   /** The player's controlled nodes (their Registry labels). */
+  registryLabels(){return registryLabels({networks:this.nets});}
   controlled(): string[] { return this.hooks.controlled?.() ?? []; }
   /** A LINK's port: `scene:device.noun`, as networks name it. */
   private port(dev: string, noun: string) { return this.data.id + ':' + dev + '.' + noun; }
@@ -1067,9 +1080,9 @@ export class SceneModel {
 
   /** The scene's progress for the save, settled: nothing in flight. Trace and lockouts stay (reloading is not a way out). */
   snapshot(): SceneSnapshot {
-    const state: Record<string, Value> = {};
+    let state: Record<string, Value> = {};
     for (const k of Object.keys(this.data.state)) state[k] = this.state[k];
-    this.rules.settle?.(state);
+    if(this.checkpointProgram)state=this.checkpointProgram.settle(state);
     const devs = [...this.devices.values()];
     const logic = devs.filter((d) => d.logic).map((d) => {
       const kind = d.id.replace(/\d+$/, ''), own = this.local.get(d.id), at = this.logicAt.get(d.id);
@@ -1102,9 +1115,10 @@ export class SceneModel {
    * Placed parts come back even if their module is no longer owned.
    */
   restore(s: SceneSnapshot) {
+    let restored={...this.data.state};for(const[k,v]of Object.entries(s.state??{}))if(k in this.data.state)restored[k]=v;
+    if(this.checkpointProgram)restored=this.checkpointProgram.settle(restored);
     this.init();
-    for (const [k, v] of Object.entries(s.state ?? {})) if (k in this.data.state) this.state[k] = v;
-    this.rules.settle?.(this.state);
+    Object.assign(this.state,restored);
     const goalIds = new Set(this.data.goals.map((g) => g.id));
     (s.goals ?? []).forEach((g) => { if (goalIds.has(g)) this.goals.add(g); });
     (s.net?.seen ?? []).forEach((id) => { if (this.nodeData.has(id)) this.net.set(id, 'seen'); });

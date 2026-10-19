@@ -156,23 +156,7 @@
           ],
           "events": [
             "done"
-          ],
-          "on": {
-            "start": {
-              "do": [
-                {
-                  "effect": "washer.run"
-                }
-              ]
-            },
-            "stop": {
-              "do": [
-                {
-                  "effect": "washer.stop"
-                }
-              ]
-            }
-          }
+          ]
         },
         {
           "id": "queue",
@@ -272,23 +256,7 @@
           ],
           "events": [
             "done"
-          ],
-          "on": {
-            "start": {
-              "do": [
-                {
-                  "effect": "washer.run"
-                }
-              ]
-            },
-            "stop": {
-              "do": [
-                {
-                  "effect": "washer.stop"
-                }
-              ]
-            }
-          }
+          ]
         },
         {
           "id": "queue",
@@ -397,23 +365,7 @@
           ],
           "events": [
             "done"
-          ],
-          "on": {
-            "start": {
-              "do": [
-                {
-                  "effect": "washer.run"
-                }
-              ]
-            },
-            "stop": {
-              "do": [
-                {
-                  "effect": "washer.stop"
-                }
-              ]
-            }
-          }
+          ]
         },
         {
           "id": "queue",
@@ -435,42 +387,7 @@
           "kind": "ACT",
           "verbs": [
             "open"
-          ],
-          "on": {
-            "open": [
-              {
-                "if": "laundromat.door3=empty",
-                "say": [
-                  "open door",
-                  "empty. it smells of fabric conditioner and solder.",
-                  "dim"
-                ]
-              },
-              {
-                "if": "laundromat.door3=open",
-                "do": [
-                  {
-                    "effect": "washer.take"
-                  }
-                ]
-              },
-              {
-                "if": "laundromat.door3=held",
-                "say": [
-                  "open door",
-                  "door held. house rule 4: doors open when the queue is clear. {laundromat.waiting} still waiting.",
-                  "err"
-                ]
-              },
-              {
-                "say": [
-                  "open door",
-                  "locked. one cycle left.",
-                  "err"
-                ]
-              }
-            ]
-          }
+          ]
         }
       ]
     },
@@ -555,23 +472,7 @@
           ],
           "events": [
             "done"
-          ],
-          "on": {
-            "start": {
-              "do": [
-                {
-                  "effect": "washer.run"
-                }
-              ]
-            },
-            "stop": {
-              "do": [
-                {
-                  "effect": "washer.stop"
-                }
-              ]
-            }
-          }
+          ]
         },
         {
           "id": "queue",
@@ -834,81 +735,6 @@
     "name.washer1": "WASHER 1",
     "name.washer2": "WASHER 2",
     "name.washer3": "WASHER 3",
-    "name.washer4": "WASHER 4",
-    "suds.start": [
-      "use drum --start",
-      "SUDS: machines start on the schedule. the schedule is the box by the door. SUDS loves the schedule.",
-      "err"
-    ],
-    "suds.prepaid": [
-      "use drum --start",
-      "SUDS: washer 3 is prepaid. prepaid cycles start when a machine finishes. nothing has finished since tuesday.",
-      "err"
-    ],
-    "suds.cancel": [
-      "use drum --stop",
-      "SUDS: cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them.",
-      "err"
-    ],
-    "suds.cancel.own": [
-      "use drum --stop",
-      "SUDS: that cycle is prepaid. SUDS does not refund. SUDS does not stop. SUDS waits.",
-      "err"
-    ],
-    "washer.nopower": [
-      "signal → drum --start",
-      "{name}: no power. breaker tripped.",
-      "err"
-    ],
-    "washer.already": [
-      "signal → drum --start",
-      "{name}: already washing.",
-      "dim"
-    ],
-    "washer.started": [
-      "signal → drum --start",
-      "{name}: cycle started. {sec} s.",
-      "dim"
-    ],
-    "washer.done": [
-      "",
-      "{name}: cycle complete.",
-      "ok"
-    ],
-    "washer.idle": [
-      "use drum --stop",
-      "{name}: not running.",
-      "dim"
-    ],
-    "washer3.done.open": [
-      "",
-      "WASHER 3: cycle complete. queue clear. door released.",
-      "ok"
-    ],
-    "washer3.done.held": [
-      "",
-      "WASHER 3: cycle complete. door held: {n} still waiting. house rule 4.",
-      "dim"
-    ],
-    "queue.clear": [
-      "",
-      "SUDS: queue clear. every wash done. door 3 released.",
-      "ok"
-    ],
-    "breaker.trip": [
-      "",
-      "BREAKER: {n} machines on circuit 1. tripped. every washer stopped.",
-      "err"
-    ],
-    "jacket.take": [
-      "open door",
-      "WASHER 3: door open. one jacket, Moth's, still warm from the drum.",
-      "ok"
-    ],
-    "jacket.pass": [
-      "",
-      "in the inside pocket: a maglev pass. HOLDER: MOTH. SECOND HOLDER: you.",
-      "ok"
-    ]
+    "name.washer4": "WASHER 4"
   }
 }

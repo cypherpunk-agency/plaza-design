@@ -1914,3 +1914,35 @@ Common state/query integration checkpoint,2026-10-19:
 - Further ordinary controller migration, final full-authoring/lifecycle/communication acceptance,
   six measured workloads, removal audit and G0-G13 remain open. Capsule temporal traps and next
   contracts are specified in docs/reference/CAPSULE-ORDINARY-MIGRATION-PROPOSAL.md.
+
+Further controller/source work,2026-10-19 (not yet published):
+- Cancelable shared deadlines now own washer start/stop/overload/completion. Removed native washer
+  effects, duplicate routes/text and obsolete cancellation tickets.2,592 original/current cases plus
+  28 timing histories PASS; typed pending/Save/fresh import/Undo:laundromat-deadline-save-HNe8V0.
+- Atomic keyring grants commit with other command actions and notify through the existing receipt
+  path. Jacket reward effect removed;576 original/current cases and source Save/fresh import/Undo
+  PASS in laundromat-jacket-save-S9lW4l. Shared numeric actions accept existing scalar reads;
+  46 expression cases and actual typed/sourceSave proof PASS in action-expression-save-420kPg.
+- All4 current-save settle callbacks and SceneRules.settle API removed. Source checkpoint commands
+  use the same interpreter on copied blocks, preserving live identity.274 original/current variants,
+  typed controls/inspector and actual pending Game Save/reload/bundle/history/sourceSave/fresh import/
+  Undo PASS:checkpoint-policies/run-rWs6Yq. No historical-save translation is included.
+- Capsule door reaction,goal conditions and Pixel selection/wait now use source queries/triggers/
+  intervals.1,728 original/current histories and typed/sourceSave/fresh import/Undo PASS in
+  capsule-workflow-save-qjR3iY. Native thermal/trajectory calculations remain; schedule-before-thermal
+  orchestration is still pending.
+- Downtown till reward is source-owned.128 original/current guard/manual/signal/repeat histories
+  PASS;typed tokens edit,missing-query rejection,pending/native/sourceSave/fresh import/Undo PASS in
+  downtown-till-save-xwfYdx. Other Downtown controller rewards remain open.
+- Twenty one-time migration scripts retired; authored JSON and focused preservation fixtures remain.
+  Yard and Stacks controller slices are in progress. These are bounded results,not whole-scene gate
+  signoffs. Final integrated builds/raster/editor checks must bind to the next stable source identity.
+- Existing jump and Registry control grants now extend the same atomic resource action; Game commits
+  canonical player fields together, preserving handle and unrelated progress. Typed metadata pickers,
+  strict reference validation, Save/fresh import/Undo PASS:player-grants/run-37t2BT. Legs installation
+  source route replaces its native effect;16 original/current STORE histories PASS. GUARD and billboard
+  control callers remain open and are not counted as migrated by introducing the grant primitive.
+- Existing workflow evaluation now has explicit beforeNative/afterNative phases on the same live
+  tick, defaulting afterNative. Capsule schedule emission moved into a beforeNative interval and its
+  native schedule branch was deleted. Original1,728 histories,phase ordering/pause/background/lifecycle
+  checks and actual typed phase/duration Save/fresh import/Undo PASS:capsule-workflow-save-3BbuuD.

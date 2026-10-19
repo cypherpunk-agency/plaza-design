@@ -118,13 +118,23 @@
             "lifted"
           ],
           "on": {
-            "lift": {
-              "do": [
-                {
-                  "effect": "sts2.lift"
-                }
-              ]
-            }
+            "lift": [
+              {
+                "if": "!signal",
+                "say": "lift.hand"
+              },
+              {
+                "if": "craneBusy",
+                "say": "lift.busy"
+              },
+              {
+                "do": [
+                  {
+                    "effect": "sts2.lift"
+                  }
+                ]
+              }
+            ]
           }
         }
       ]
@@ -210,13 +220,19 @@
             "sound"
           ],
           "on": {
-            "sound": {
-              "do": [
-                {
-                  "effect": "port.alarm"
-                }
-              ]
-            }
+            "sound": [
+              {
+                "if": "!signal",
+                "say": "alarm.test"
+              },
+              {
+                "do": [
+                  {
+                    "effect": "port.alarm"
+                  }
+                ]
+              }
+            ]
           }
         }
       ]

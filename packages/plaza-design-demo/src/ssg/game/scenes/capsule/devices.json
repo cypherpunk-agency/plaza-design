@@ -847,11 +847,6 @@
       "locked. see panel.",
       "err"
     ],
-    "lock.unlocked": [
-      "",
-      "DOOR LOCK: receipt on file. bolt released.",
-      "ok"
-    ],
     "router.online": [
       "",
       "ROUTER: online.",
@@ -861,21 +856,6 @@
       "",
       "ROUTER: {temp}°C. thermal reboot. vents blocked.",
       "err"
-    ],
-    "pixel.router": [
-      "",
-      "Pixel has found something warmer than the bed: the router.",
-      "dim"
-    ],
-    "pixel.sun": [
-      "",
-      "Pixel follows the sun to the floor and lies down in it. the router cools off.",
-      "ok"
-    ],
-    "pixel.bed": [
-      "",
-      "Pixel goes back to the bed. it is still a little warm.",
-      "dim"
     ],
     "talk.aria": "Say something to CONCIERGE"
   },
@@ -890,19 +870,11 @@
     },
     "devices": {
       "router": "router",
-      "pixel": "pixel",
-      "lock": "lock",
-      "concierge": "concierge"
-    },
-    "schedule": {
-      "from": "plug.schedule:night",
-      "to": "plug.power"
+      "pixel": "pixel"
     },
     "tuning": {
-      "nightEveryMs": "nightEveryMs",
       "bootMs": "bootMs",
       "rebootMs": "rebootMs",
-      "pixelMoveMs": "pixelMoveMs",
       "roomTemp": "roomTemp",
       "idleTemp": "idleTemp",
       "hotTemp": "hotTemp",
@@ -913,18 +885,31 @@
     },
     "texts": {
       "online": "router.online",
-      "reboot": "router.reboot",
-      "pixelBed": "pixel.bed",
-      "pixelRouter": "pixel.router",
-      "pixelSun": "pixel.sun",
-      "unlocked": "lock.unlocked"
-    },
-    "goals": {
-      "router": "router",
-      "concierge": "concierge",
-      "pixel": "pixel"
+      "reboot": "router.reboot"
     },
     "onlineNoticeDelayMs": 20,
     "temperatureNoticeStep": 5
+  },
+  "observations": {
+    "aliases": {
+      "conciergeConnected": {
+        "kind": "nodeConnected",
+        "node": "concierge"
+      }
+    },
+    "goals": [
+      {
+        "when": "capsule.routerGoalReady",
+        "goal": "router"
+      },
+      {
+        "when": "conciergeConnected",
+        "goal": "concierge"
+      },
+      {
+        "when": "capsule.pixelGoalReady",
+        "goal": "pixel"
+      }
+    ]
   }
 }

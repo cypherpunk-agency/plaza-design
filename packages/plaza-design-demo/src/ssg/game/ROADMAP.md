@@ -17,21 +17,22 @@ requirement; do not add compatibility layers or scene-specific state bridges. On
 game state and shared actions are the target. Current-format persistence and gameplay/visual
 preservation remain required. See the correction at the top of ENGINE-CONSOLIDATION-GOAL.md.
 
-Latest semantic migration update: all19 scenes have source-backed ordinary content/actors and
-editable device sources; world/transport, network, opening and companion inputs have focused
-source/Save evidence. Capsule plug-off, Sandbox five counter/resource operations, Harbor Shift
-onepress conversation routing and Train door refusal/reply chains now use shared editable logic;
-replaced ordinary bodies are deleted. Focused parity:12 Capsule,109 Sandbox,48 Shift and672 Train
-cases. Sandbox and Shift protected Save/fresh shipping imports pass. Shared typed additions cover
-manual/signal cases, explicit silence, post-commit templates, cosmetic pulses and atomic conversation
-entry refusal sinks. Package TypeScript and both builds pass at this checkpoint. Current editor
-app-7B2MY45M.js / Play play-YRJIHYT4.js. The build now validates all registered scene data and shared
-routes rather than the former static10scene list.
+Latest published checkpoint:7cbe1a5 on main and production; both production deployments succeeded.
+All19 scenes have source-backed ordinary content/actors and editable device sources. Scalar state
+has one common Save.gameplay owner; alias maps and the native state bridge are removed. All19
+built-editor native startups/Stop cleanup and173 raster comparisons passed at source2b006c014979.
+See ENGINE-CONSOLIDATION-STATUS.md for exact artifacts and the retained nonrepeating2pixel failure.
 
-Remaining: ordinary timed workflows (Beach billing/Laundromat), other inventoried scene/controller
-branches and saved-owner bridges, full all-scene authoring/lifecycle/compatibility acceptance,
-six workload reports and cleanup. The prior173raster checkpoint predates these semantic edits;
-a new comparison is running. Partial browser startup on the preceding build is not all19 acceptance.
+Current unpublished batch: source queries/triggers/intervals own Capsule door/goals/Pixel decisions;
+shared cancelable deadlines own washer start/stop/overload/completion; atomic grants own jacket
+rewards; Downtown till pays through a source command. Existing scalar reads now supply action
+values. All4 native settle callbacks are removed in favor of source-owned copied-state checkpoint
+commands using the same interpreter. Focused immutable behavior and typed/pending/sourceSave/fresh
+import/Undo checks pass. Yard drop and Stacks lift/controller slices are being integrated.
+
+Remaining: other inventoried ordinary controller/reward/story branches, complete all-scene typed
+authoring/lifecycle acceptance, six measured workloads and cleanup. No old-format compatibility work
+is planned. The current unpublished batch still needs integrated build/raster/editor evidence.
 The per-scene matrix remains conservative and has not yet reconciled every focused evidence entry;
 NOT RUN entries must not be interpreted as a claim that no underlying implementation exists.
 No whole goal gate is signed. See ENGINE-CONSOLIDATION-STATUS.md and
@@ -56,7 +57,8 @@ G0–G13 gate is signed off. Historical scoped completions below do not imply fu
 
 Latest integrated preservation checkpoint: 173 raster comparisons passed; the current parallel batch
 still needs a new integrated comparison. Story M1 remains a completed design pass and M2 an implemented
-prototype awaiting pacing review. Story M3–M9 and publication remain outside this engineering goal.
+prototype awaiting pacing review. Story M3–M9 remain outside this engineering goal. The user separately
+authorized publishing reasonable stable checkpoints to main and production.
 
 | Order | Delivery | Current state / next action |
 | --- | --- | --- |

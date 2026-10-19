@@ -4,7 +4,8 @@ import {laundromatScene,laundromatComposition,LAUNDROMAT_GAMEPLAY,LAUNDROMAT_SCE
 import {laundromatPeople} from '../../src/ssg/game/scenes/laundromat/scene';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {SceneModel} from '../../src/ssg/game/engine/model';
-import {attachNativeGameplay,nativeStatePort} from '../../src/ssg/game/engine/gameplay/native-bindings';
+import {attachNativeGameplay} from '../../src/ssg/game/engine/gameplay/native-bindings';
+import {fixtureGameplayPort} from './model-gameplay-fixture.mts';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 import type {UseCtx} from '../../src/ssg/game/scenes/kit';
 import type {EngineDraw} from '../../src/ssg/game/engine/host';
@@ -29,7 +30,8 @@ for(const tokens of [0,1,2,3,17])for(const soap of [0,1,9]){
   let actual:GameplayState={flags:{pixel:true,p13:true},items:{fish:2,...(soap?{soap}:{})},tokens,values:{}};
   const expected=structuredClone(actual);
   const model=new SceneModel({say(){},changed(){},open(){}},scene.data!,LAUNDROMAT_RULES);
-  const session=new GameplaySession(LAUNDROMAT_GAMEPLAY,nativeStatePort(LAUNDROMAT_GAMEPLAY,{read:()=>actual,write:s=>{actual=s;}},()=>model));attachNativeGameplay(model,session);
+  const session=new GameplaySession(LAUNDROMAT_GAMEPLAY,fixtureGameplayPort(LAUNDROMAT_GAMEPLAY,{read:()=>actual,write:s=>{actual=s;}},()=>model));attachNativeGameplay(model,session);
+  expected.values=structuredClone(actual.values);
   for(let repeat=0;repeat<5;repeat++){
     const c={gameplay:session,flags:actual.flags,tokens:actual.tokens} as UseCtx;
     assert.deepEqual(scene.uses![0].use(c),legacy(expected));

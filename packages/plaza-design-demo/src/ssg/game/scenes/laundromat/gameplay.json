@@ -2,13 +2,34 @@
   "version": 1,
   "flags": [
     "laundromat:jacket",
-    "laundromat:tripped"
+    "laundromat:tripped",
+    "p13"
   ],
   "items": [
-    "soap"
+    "soap",
+    "maglev.pass"
   ],
   "events": [
-    "laundromat.breaker.reset"
+    "laundromat.breaker.reset",
+    "laundromat.breaker.trip",
+    "laundromat.suds.start",
+    "laundromat.suds.prepaid",
+    "laundromat.suds.cancel",
+    "laundromat.suds.cancel.own",
+    "laundromat.washer1.start",
+    "laundromat.washer1.stop",
+    "laundromat.washer1.complete",
+    "laundromat.washer2.start",
+    "laundromat.washer2.stop",
+    "laundromat.washer2.complete",
+    "laundromat.washer3.start",
+    "laundromat.washer3.stop",
+    "laundromat.washer3.complete",
+    "laundromat.washer4.start",
+    "laundromat.washer4.stop",
+    "laundromat.washer4.complete",
+    "laundromat.jacket.notice",
+    "laundromat.jacket.completed"
   ],
   "commands": {
     "laundromat.buy-soap": {
@@ -34,6 +55,674 @@
           "emit": "laundromat.breaker.reset"
         }
       ]
+    },
+    "laundromat.washer1.request-start": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.start"
+        }
+      ]
+    },
+    "laundromat.washer1.no-power": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer1.already": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer1.empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer1.overload": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w1",
+          "set": "running"
+        },
+        {
+          "state": "laundromat.breaker",
+          "set": "tripped"
+        },
+        {
+          "state": "laundromat.trips",
+          "add": 1
+        },
+        {
+          "emit": "laundromat.washer1.start"
+        },
+        {
+          "emit": "laundromat.breaker.trip"
+        }
+      ]
+    },
+    "laundromat.washer1.begin": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w1",
+          "set": "running"
+        },
+        {
+          "emit": "laundromat.washer1.start"
+        }
+      ]
+    },
+    "laundromat.washer1.idle": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer1.request-stop": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.cancel"
+        }
+      ]
+    },
+    "laundromat.washer1.end": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w1",
+          "set": "idle"
+        },
+        {
+          "emit": "laundromat.washer1.stop"
+        }
+      ]
+    },
+    "laundromat.washer1.stop-empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer1.finish": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w1",
+          "set": "done"
+        },
+        {
+          "emit": "laundromat.washer1.complete"
+        }
+      ]
+    },
+    "laundromat.washer2.request-start": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.start"
+        }
+      ]
+    },
+    "laundromat.washer2.no-power": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer2.already": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer2.empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer2.overload": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w2",
+          "set": "running"
+        },
+        {
+          "state": "laundromat.breaker",
+          "set": "tripped"
+        },
+        {
+          "state": "laundromat.trips",
+          "add": 1
+        },
+        {
+          "emit": "laundromat.washer2.start"
+        },
+        {
+          "emit": "laundromat.breaker.trip"
+        }
+      ]
+    },
+    "laundromat.washer2.begin": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w2",
+          "set": "running"
+        },
+        {
+          "emit": "laundromat.washer2.start"
+        }
+      ]
+    },
+    "laundromat.washer2.idle": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer2.request-stop": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.cancel"
+        }
+      ]
+    },
+    "laundromat.washer2.end": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w2",
+          "set": "idle"
+        },
+        {
+          "emit": "laundromat.washer2.stop"
+        }
+      ]
+    },
+    "laundromat.washer2.stop-empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer2.finish": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w2",
+          "set": "done"
+        },
+        {
+          "emit": "laundromat.washer2.complete"
+        }
+      ]
+    },
+    "laundromat.washer3.request-start": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.prepaid"
+        }
+      ]
+    },
+    "laundromat.washer3.no-power": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer3.already": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer3.empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer3.overload": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w3",
+          "set": "running"
+        },
+        {
+          "state": "laundromat.breaker",
+          "set": "tripped"
+        },
+        {
+          "state": "laundromat.trips",
+          "add": 1
+        },
+        {
+          "emit": "laundromat.washer3.start"
+        },
+        {
+          "emit": "laundromat.breaker.trip"
+        }
+      ]
+    },
+    "laundromat.washer3.begin": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w3",
+          "set": "running"
+        },
+        {
+          "emit": "laundromat.washer3.start"
+        }
+      ]
+    },
+    "laundromat.washer3.idle": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer3.request-stop": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.cancel.own"
+        }
+      ]
+    },
+    "laundromat.washer3.end": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w3",
+          "set": "idle"
+        },
+        {
+          "emit": "laundromat.washer3.stop"
+        }
+      ]
+    },
+    "laundromat.washer3.stop-empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer3.finish": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w3",
+          "set": "done"
+        },
+        {
+          "emit": "laundromat.washer3.complete"
+        }
+      ]
+    },
+    "laundromat.washer4.request-start": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.start"
+        }
+      ]
+    },
+    "laundromat.washer4.no-power": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer4.already": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer4.empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer4.overload": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w4",
+          "set": "running"
+        },
+        {
+          "state": "laundromat.breaker",
+          "set": "tripped"
+        },
+        {
+          "state": "laundromat.trips",
+          "add": 1
+        },
+        {
+          "emit": "laundromat.washer4.start"
+        },
+        {
+          "emit": "laundromat.breaker.trip"
+        }
+      ]
+    },
+    "laundromat.washer4.begin": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w4",
+          "set": "running"
+        },
+        {
+          "emit": "laundromat.washer4.start"
+        }
+      ]
+    },
+    "laundromat.washer4.idle": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer4.request-stop": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "emit": "laundromat.suds.cancel"
+        }
+      ]
+    },
+    "laundromat.washer4.end": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w4",
+          "set": "idle"
+        },
+        {
+          "emit": "laundromat.washer4.stop"
+        }
+      ]
+    },
+    "laundromat.washer4.stop-empty": {
+      "sources": [
+        "signal",
+        "interaction"
+      ],
+      "actions": []
+    },
+    "laundromat.washer4.finish": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w4",
+          "set": "done"
+        },
+        {
+          "emit": "laundromat.washer4.complete"
+        }
+      ]
+    },
+    "laundromat.jacket.with-pass": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "laundromat.door3"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "open"
+              }
+            }
+          },
+          {
+            "item": "maglev.pass",
+            "atLeast": 1
+          }
+        ]
+      },
+      "actions": [
+        {
+          "state": "laundromat.jacket",
+          "set": true
+        },
+        {
+          "emit": "laundromat.jacket.notice"
+        },
+        {
+          "grant": {
+            "keyring": "glove.right"
+          }
+        },
+        {
+          "flag": "p13",
+          "value": true
+        },
+        {
+          "emit": "laundromat.jacket.completed"
+        }
+      ]
+    },
+    "laundromat.jacket.new-pass": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "laundromat.door3"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "open"
+              }
+            }
+          },
+          {
+            "not": {
+              "item": "maglev.pass",
+              "atLeast": 1
+            }
+          }
+        ]
+      },
+      "actions": [
+        {
+          "state": "laundromat.jacket",
+          "set": true
+        },
+        {
+          "emit": "laundromat.jacket.notice"
+        },
+        {
+          "grant": {
+            "keyring": "glove.right"
+          }
+        },
+        {
+          "item": "maglev.pass",
+          "add": 1
+        },
+        {
+          "flag": "p13",
+          "value": true
+        },
+        {
+          "emit": "laundromat.jacket.completed"
+        }
+      ]
+    },
+    "laundromat.jacket.noop": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "checkpoint.laundromat.washer1": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w1",
+          "set": "idle"
+        }
+      ]
+    },
+    "checkpoint.laundromat.washer2": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w2",
+          "set": "idle"
+        }
+      ]
+    },
+    "checkpoint.laundromat.washer3": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w3",
+          "set": "idle"
+        }
+      ]
+    },
+    "checkpoint.laundromat.washer4": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.w4",
+          "set": "idle"
+        }
+      ]
+    },
+    "checkpoint.laundromat.breaker": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "laundromat.breaker",
+          "set": "on"
+        }
+      ]
     }
   },
   "reactions": [],
@@ -47,7 +736,7 @@
       ],
       "nodes": {
         "start": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "SUDS here. Four machines, one breaker, no complaints accepted. How can SUDS help?"
           ],
@@ -89,7 +778,7 @@
           ]
         },
         "start-variant-0": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Washer 3 is free again. SUDS has already let it. To a sock. Long-term."
           ],
@@ -107,7 +796,7 @@
           ]
         },
         "start-variant-1": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "SUDS here. The breaker tripped again. It does that. It is the only thing in here that finishes. How can SUDS help?"
           ],
@@ -135,7 +824,7 @@
           ]
         },
         "open": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Washer 3 has one cycle left, prepaid. SUDS does not open doors on wet laundry. SUDS has standards."
           ],
@@ -153,7 +842,7 @@
           ]
         },
         "prepaid": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Prepaid cycles are not on the schedule. They start when a machine finishes. Nothing has finished since Tuesday. Three start at every slot, the breaker trips, everybody starts over."
           ],
@@ -171,7 +860,7 @@
           ]
         },
         "never": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Correct. SUDS has asked for a second circuit. SUDS was sent a form. SUDS filled in the form. The form is also waiting for a slot."
           ],
@@ -184,7 +873,7 @@
           ]
         },
         "cancel": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them."
           ],
@@ -202,7 +891,7 @@
           ]
         },
         "later": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Later is not cancelling. Later is scheduling. SUDS loves scheduling. The schedule is the box by the door. SUDS does not touch its wiring. SUDS cannot see anyone touching its wiring. Hypothetically."
           ],
@@ -215,7 +904,7 @@
           ]
         },
         "breaker": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "One circuit, four washers. The breaker allows two at once. The schedule starts three. They were installed by two contractors who never met. SUDS has met both. SUDS sides with the breaker."
           ],
@@ -233,7 +922,7 @@
           ]
         },
         "rule4": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "When it trips, every machine stops. Lost cycle, wet laundry, nobody goes home. And nobody's laundry leaves until everybody's laundry is clean. House rule 4. Solidarity. Also the fire code."
           ],
@@ -246,7 +935,7 @@
           ]
         },
         "jacket": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "One jacket, prepaid nine cycles, owner not on site for three days. SUDS does not ask questions. SUDS asks for detergent."
           ],
@@ -264,7 +953,7 @@
           ]
         },
         "friend": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Then your friend washes very thoroughly. Nine cycles. Either a stain or a secret. SUDS does not judge. SUDS rinses."
           ],
@@ -277,7 +966,7 @@
           ]
         },
         "manners": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Politeness noted and logged. The breaker remains unmoved. It has no ears. Only amps."
           ],
@@ -290,7 +979,7 @@
           ]
         },
         "rules": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Start on the schedule. Two at a time. Never cancel. Doors open when the queue is clear. Four rules. SUDS wrote none of them and loves all of them."
           ],
@@ -303,7 +992,7 @@
           ]
         },
         "bye": {
-          "speaker": "SUDS · laundromat daemon",
+          "speaker": "SUDS \u00b7 laundromat daemon",
           "pages": [
             "Separate your colours."
           ]
@@ -337,9 +1026,583 @@
       "laundromat:jacket": "jacket",
       "laundromat:tripped": "trips"
     },
-    "verbs": [],
-    "events": {},
-    "goals": {},
+    "verbs": [
+      {
+        "device": "washer1",
+        "noun": "drum",
+        "verb": "start",
+        "cases": [
+          {
+            "command": "laundromat.washer1.request-start",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer1.no-power",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer1}: no power. breaker tripped.",
+              "err"
+            ],
+            "when": {
+              "state": "laundromat.breaker",
+              "is": "tripped"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer1.already",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer1}: already washing.",
+              "dim"
+            ],
+            "when": {
+              "state": "laundromat.w1",
+              "is": "running"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer1.empty",
+            "say": null,
+            "when": {
+              "state": "laundromat.w1",
+              "is": "done"
+            }
+          },
+          {
+            "command": "laundromat.washer1.overload",
+            "say": null,
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.running"
+                },
+                "op": "gte",
+                "right": {
+                  "query": "laundromat.maxRunning"
+                }
+              }
+            }
+          },
+          {
+            "command": "laundromat.washer1.begin",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer1}: cycle started. {query:laundromat.cycleSeconds} s.",
+              "dim"
+            ],
+            "template": true
+          }
+        ]
+      },
+      {
+        "device": "washer1",
+        "noun": "drum",
+        "verb": "stop",
+        "cases": [
+          {
+            "command": "laundromat.washer1.idle",
+            "say": [
+              "use drum --stop",
+              "{query:laundromat.name.washer1}: not running.",
+              "dim"
+            ],
+            "when": {
+              "not": {
+                "state": "laundromat.w1",
+                "is": "running"
+              }
+            },
+            "sources": [
+              "interaction"
+            ],
+            "template": true
+          },
+          {
+            "command": "laundromat.washer1.request-stop",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer1.end",
+            "say": null,
+            "when": {
+              "state": "laundromat.w1",
+              "is": "running"
+            }
+          },
+          {
+            "command": "laundromat.washer1.stop-empty",
+            "say": null
+          }
+        ]
+      },
+      {
+        "device": "washer2",
+        "noun": "drum",
+        "verb": "start",
+        "cases": [
+          {
+            "command": "laundromat.washer2.request-start",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer2.no-power",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer2}: no power. breaker tripped.",
+              "err"
+            ],
+            "when": {
+              "state": "laundromat.breaker",
+              "is": "tripped"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer2.already",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer2}: already washing.",
+              "dim"
+            ],
+            "when": {
+              "state": "laundromat.w2",
+              "is": "running"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer2.empty",
+            "say": null,
+            "when": {
+              "state": "laundromat.w2",
+              "is": "done"
+            }
+          },
+          {
+            "command": "laundromat.washer2.overload",
+            "say": null,
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.running"
+                },
+                "op": "gte",
+                "right": {
+                  "query": "laundromat.maxRunning"
+                }
+              }
+            }
+          },
+          {
+            "command": "laundromat.washer2.begin",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer2}: cycle started. {query:laundromat.cycleSeconds} s.",
+              "dim"
+            ],
+            "template": true
+          }
+        ]
+      },
+      {
+        "device": "washer2",
+        "noun": "drum",
+        "verb": "stop",
+        "cases": [
+          {
+            "command": "laundromat.washer2.idle",
+            "say": [
+              "use drum --stop",
+              "{query:laundromat.name.washer2}: not running.",
+              "dim"
+            ],
+            "when": {
+              "not": {
+                "state": "laundromat.w2",
+                "is": "running"
+              }
+            },
+            "sources": [
+              "interaction"
+            ],
+            "template": true
+          },
+          {
+            "command": "laundromat.washer2.request-stop",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer2.end",
+            "say": null,
+            "when": {
+              "state": "laundromat.w2",
+              "is": "running"
+            }
+          },
+          {
+            "command": "laundromat.washer2.stop-empty",
+            "say": null
+          }
+        ]
+      },
+      {
+        "device": "washer3",
+        "noun": "drum",
+        "verb": "start",
+        "cases": [
+          {
+            "command": "laundromat.washer3.request-start",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer3.no-power",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer3}: no power. breaker tripped.",
+              "err"
+            ],
+            "when": {
+              "state": "laundromat.breaker",
+              "is": "tripped"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer3.already",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer3}: already washing.",
+              "dim"
+            ],
+            "when": {
+              "state": "laundromat.w3",
+              "is": "running"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer3.empty",
+            "say": null,
+            "when": {
+              "state": "laundromat.w3",
+              "is": "done"
+            }
+          },
+          {
+            "command": "laundromat.washer3.overload",
+            "say": null,
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.running"
+                },
+                "op": "gte",
+                "right": {
+                  "query": "laundromat.maxRunning"
+                }
+              }
+            }
+          },
+          {
+            "command": "laundromat.washer3.begin",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer3}: cycle started. {query:laundromat.cycleSeconds} s.",
+              "dim"
+            ],
+            "template": true
+          }
+        ]
+      },
+      {
+        "device": "washer3",
+        "noun": "drum",
+        "verb": "stop",
+        "cases": [
+          {
+            "command": "laundromat.washer3.idle",
+            "say": [
+              "use drum --stop",
+              "{query:laundromat.name.washer3}: not running.",
+              "dim"
+            ],
+            "when": {
+              "not": {
+                "state": "laundromat.w3",
+                "is": "running"
+              }
+            },
+            "sources": [
+              "interaction"
+            ],
+            "template": true
+          },
+          {
+            "command": "laundromat.washer3.request-stop",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer3.end",
+            "say": null,
+            "when": {
+              "state": "laundromat.w3",
+              "is": "running"
+            }
+          },
+          {
+            "command": "laundromat.washer3.stop-empty",
+            "say": null
+          }
+        ]
+      },
+      {
+        "device": "washer4",
+        "noun": "drum",
+        "verb": "start",
+        "cases": [
+          {
+            "command": "laundromat.washer4.request-start",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer4.no-power",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer4}: no power. breaker tripped.",
+              "err"
+            ],
+            "when": {
+              "state": "laundromat.breaker",
+              "is": "tripped"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer4.already",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer4}: already washing.",
+              "dim"
+            ],
+            "when": {
+              "state": "laundromat.w4",
+              "is": "running"
+            },
+            "template": true
+          },
+          {
+            "command": "laundromat.washer4.empty",
+            "say": null,
+            "when": {
+              "state": "laundromat.w4",
+              "is": "done"
+            }
+          },
+          {
+            "command": "laundromat.washer4.overload",
+            "say": null,
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.running"
+                },
+                "op": "gte",
+                "right": {
+                  "query": "laundromat.maxRunning"
+                }
+              }
+            }
+          },
+          {
+            "command": "laundromat.washer4.begin",
+            "say": [
+              "signal \u2192 drum --start",
+              "{query:laundromat.name.washer4}: cycle started. {query:laundromat.cycleSeconds} s.",
+              "dim"
+            ],
+            "template": true
+          }
+        ]
+      },
+      {
+        "device": "washer4",
+        "noun": "drum",
+        "verb": "stop",
+        "cases": [
+          {
+            "command": "laundromat.washer4.idle",
+            "say": [
+              "use drum --stop",
+              "{query:laundromat.name.washer4}: not running.",
+              "dim"
+            ],
+            "when": {
+              "not": {
+                "state": "laundromat.w4",
+                "is": "running"
+              }
+            },
+            "sources": [
+              "interaction"
+            ],
+            "template": true
+          },
+          {
+            "command": "laundromat.washer4.request-stop",
+            "say": null,
+            "sources": [
+              "interaction"
+            ]
+          },
+          {
+            "command": "laundromat.washer4.end",
+            "say": null,
+            "when": {
+              "state": "laundromat.w4",
+              "is": "running"
+            }
+          },
+          {
+            "command": "laundromat.washer4.stop-empty",
+            "say": null
+          }
+        ]
+      },
+      {
+        "device": "washer3",
+        "noun": "door",
+        "verb": "open",
+        "cases": [
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.door3"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "empty"
+                }
+              }
+            },
+            "command": "laundromat.jacket.noop",
+            "say": [
+              "open door",
+              "empty. it smells of fabric conditioner and solder.",
+              "dim"
+            ]
+          },
+          {
+            "when": {
+              "all": [
+                {
+                  "compare": {
+                    "left": {
+                      "query": "laundromat.door3"
+                    },
+                    "op": "eq",
+                    "right": {
+                      "literal": "open"
+                    }
+                  }
+                },
+                {
+                  "item": "maglev.pass",
+                  "atLeast": 1
+                }
+              ]
+            },
+            "command": "laundromat.jacket.with-pass",
+            "say": [
+              "",
+              "in the inside pocket: a maglev pass. HOLDER: MOTH. SECOND HOLDER: you.",
+              "ok"
+            ]
+          },
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.door3"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "open"
+                }
+              }
+            },
+            "command": "laundromat.jacket.new-pass",
+            "say": [
+              "",
+              "in the inside pocket: a maglev pass. HOLDER: MOTH. SECOND HOLDER: you.",
+              "ok"
+            ]
+          },
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.door3"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "held"
+                }
+              }
+            },
+            "command": "laundromat.jacket.noop",
+            "say": [
+              "open door",
+              "door held. house rule 4: doors open when the queue is clear. {query:laundromat.waiting} still waiting.",
+              "err"
+            ],
+            "template": true
+          },
+          {
+            "command": "laundromat.jacket.noop",
+            "say": [
+              "open door",
+              "locked. one cycle left.",
+              "err"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": {
+      "laundromat.breaker.trip": "breaker.load:tripped",
+      "laundromat.washer1.complete": "washer1.drum:done",
+      "laundromat.washer2.complete": "washer2.drum:done",
+      "laundromat.washer3.complete": "washer3.drum:done",
+      "laundromat.washer4.complete": "washer4.drum:done"
+    },
+    "goals": {
+      "laundromat.washer3.complete": "run",
+      "laundromat.jacket.completed": "jacket"
+    },
     "intervals": {
       "laundromat.breaker": {
         "kind": "liveInterval",
@@ -356,6 +1619,9 @@
           {
             "command": "laundromat.breaker.reset"
           }
+        ],
+        "resetOn": [
+          "laundromat.breaker.trip"
         ]
       }
     },
@@ -366,6 +1632,289 @@
           "",
           "BREAKER: reset. 0 of 2 running.",
           "dim"
+        ]
+      },
+      "laundromat.breaker.trip": {
+        "from": "breaker",
+        "say": [
+          "",
+          "BREAKER: {query:laundromat.running} machines on circuit 1. tripped. every washer stopped.",
+          "err"
+        ],
+        "template": true
+      },
+      "laundromat.suds.start": {
+        "from": "suds",
+        "say": [
+          "use drum --start",
+          "SUDS: machines start on the schedule. the schedule is the box by the door. SUDS loves the schedule.",
+          "err"
+        ]
+      },
+      "laundromat.suds.prepaid": {
+        "from": "suds",
+        "say": [
+          "use drum --start",
+          "SUDS: washer 3 is prepaid. prepaid cycles start when a machine finishes. nothing has finished since tuesday.",
+          "err"
+        ]
+      },
+      "laundromat.suds.cancel": {
+        "from": "suds",
+        "say": [
+          "use drum --stop",
+          "SUDS: cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them.",
+          "err"
+        ]
+      },
+      "laundromat.suds.cancel.own": {
+        "from": "suds",
+        "say": [
+          "use drum --stop",
+          "SUDS: that cycle is prepaid. SUDS does not refund. SUDS does not stop. SUDS waits.",
+          "err"
+        ]
+      },
+      "laundromat.washer1.complete": {
+        "cases": [
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.door3"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "open"
+                }
+              }
+            },
+            "from": "suds",
+            "say": [
+              "",
+              "SUDS: queue clear. every wash done. door 3 released.",
+              "ok"
+            ],
+            "template": true
+          },
+          {
+            "from": "washer1",
+            "say": [
+              "",
+              "{query:laundromat.name.washer1}: cycle complete.",
+              "ok"
+            ],
+            "template": true
+          }
+        ]
+      },
+      "laundromat.washer2.complete": {
+        "cases": [
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.door3"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "open"
+                }
+              }
+            },
+            "from": "suds",
+            "say": [
+              "",
+              "SUDS: queue clear. every wash done. door 3 released.",
+              "ok"
+            ],
+            "template": true
+          },
+          {
+            "from": "washer2",
+            "say": [
+              "",
+              "{query:laundromat.name.washer2}: cycle complete.",
+              "ok"
+            ],
+            "template": true
+          }
+        ]
+      },
+      "laundromat.washer3.complete": {
+        "cases": [
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.door3"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "open"
+                }
+              }
+            },
+            "from": "washer3",
+            "say": [
+              "",
+              "WASHER 3: cycle complete. queue clear. door released.",
+              "ok"
+            ],
+            "template": true
+          },
+          {
+            "from": "washer3",
+            "say": [
+              "",
+              "WASHER 3: cycle complete. door held: {query:laundromat.waiting} still waiting. house rule 4.",
+              "dim"
+            ],
+            "template": true
+          }
+        ]
+      },
+      "laundromat.washer4.complete": {
+        "cases": [
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "laundromat.door3"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": "open"
+                }
+              }
+            },
+            "from": "suds",
+            "say": [
+              "",
+              "SUDS: queue clear. every wash done. door 3 released.",
+              "ok"
+            ],
+            "template": true
+          },
+          {
+            "from": "washer4",
+            "say": [
+              "",
+              "{query:laundromat.name.washer4}: cycle complete.",
+              "ok"
+            ],
+            "template": true
+          }
+        ]
+      },
+      "laundromat.jacket.notice": {
+        "from": "washer3",
+        "say": [
+          "open door",
+          "WASHER 3: door open. one jacket, Moth's, still warm from the drum.",
+          "ok"
+        ]
+      }
+    },
+    "deadlines": {
+      "laundromat.washer1": {
+        "startOn": [
+          "laundromat.washer1.start"
+        ],
+        "cancelOn": [
+          "laundromat.washer1.stop"
+        ],
+        "duration": {
+          "tuning": "cycleMs"
+        },
+        "startedAt": "at.washer1",
+        "armWhen": {
+          "state": "laundromat.breaker",
+          "is": "on"
+        },
+        "while": {
+          "state": "laundromat.w1",
+          "is": "running"
+        },
+        "due": [
+          {
+            "command": "laundromat.washer1.finish"
+          }
+        ]
+      },
+      "laundromat.washer2": {
+        "startOn": [
+          "laundromat.washer2.start"
+        ],
+        "cancelOn": [
+          "laundromat.washer2.stop"
+        ],
+        "duration": {
+          "tuning": "cycleMs"
+        },
+        "startedAt": "at.washer2",
+        "armWhen": {
+          "state": "laundromat.breaker",
+          "is": "on"
+        },
+        "while": {
+          "state": "laundromat.w2",
+          "is": "running"
+        },
+        "due": [
+          {
+            "command": "laundromat.washer2.finish"
+          }
+        ]
+      },
+      "laundromat.washer3": {
+        "startOn": [
+          "laundromat.washer3.start"
+        ],
+        "cancelOn": [
+          "laundromat.washer3.stop"
+        ],
+        "duration": {
+          "tuning": "cycleMs"
+        },
+        "startedAt": "at.washer3",
+        "armWhen": {
+          "state": "laundromat.breaker",
+          "is": "on"
+        },
+        "while": {
+          "state": "laundromat.w3",
+          "is": "running"
+        },
+        "due": [
+          {
+            "command": "laundromat.washer3.finish"
+          }
+        ]
+      },
+      "laundromat.washer4": {
+        "startOn": [
+          "laundromat.washer4.start"
+        ],
+        "cancelOn": [
+          "laundromat.washer4.stop"
+        ],
+        "duration": {
+          "tuning": "cycleMs"
+        },
+        "startedAt": "at.washer4",
+        "armWhen": {
+          "state": "laundromat.breaker",
+          "is": "on"
+        },
+        "while": {
+          "state": "laundromat.w4",
+          "is": "running"
+        },
+        "due": [
+          {
+            "command": "laundromat.washer4.finish"
+          }
         ]
       }
     }
@@ -546,5 +2095,38 @@
       "kind": "label",
       "key": "name.washer4"
     }
-  }
+  },
+  "checkpoint": [
+    {
+      "command": "checkpoint.laundromat.washer1",
+      "when": {
+        "state": "laundromat.w1",
+        "is": "running"
+      }
+    },
+    {
+      "command": "checkpoint.laundromat.washer2",
+      "when": {
+        "state": "laundromat.w2",
+        "is": "running"
+      }
+    },
+    {
+      "command": "checkpoint.laundromat.washer3",
+      "when": {
+        "state": "laundromat.w3",
+        "is": "running"
+      }
+    },
+    {
+      "command": "checkpoint.laundromat.washer4",
+      "when": {
+        "state": "laundromat.w4",
+        "is": "running"
+      }
+    },
+    {
+      "command": "checkpoint.laundromat.breaker"
+    }
+  ]
 }

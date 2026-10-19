@@ -9,7 +9,9 @@
   ],
   "items": [],
   "events": [
-    "downtown.fixer.hint.paid"
+    "downtown.fixer.hint.paid",
+    "downtown.till.paid",
+    "downtown.legs.installed"
   ],
   "commands": {
     "downtown.fixer.first": {
@@ -1691,6 +1693,103 @@
           "emit": "downtown.fixer.hint.paid"
         }
       ]
+    },
+    "checkpoint.downtown.drive-home": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.dlvAt",
+          "set": "home"
+        },
+        {
+          "state": "downtown.lock",
+          "set": "shut"
+        }
+      ]
+    },
+    "checkpoint.downtown.drive-origin": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.dlvAt",
+          "set": {
+            "state": "downtown.dlvFrom"
+          }
+        },
+        {
+          "state": "downtown.lock",
+          "set": "shut"
+        }
+      ]
+    },
+    "checkpoint.downtown.scan": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.scanned",
+          "set": false
+        }
+      ]
+    },
+    "downtown.till.empty": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "downtown.till.pay": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "when": {
+        "flag": "till",
+        "is": false
+      },
+      "actions": [
+        {
+          "tokens": {
+            "query": "downtown.drawerTokens"
+          }
+        },
+        {
+          "flag": "till",
+          "value": true
+        },
+        {
+          "emit": "downtown.till.paid"
+        }
+      ]
+    },
+    "downtown.legs.install": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "grant": {
+            "ability": "jump"
+          }
+        },
+        {
+          "emit": "downtown.legs.installed"
+        }
+      ]
+    },
+    "downtown.legs.installed": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
     }
   },
   "reactions": [],
@@ -2631,6 +2730,105 @@
           "scope": "both"
         }
       ]
+    }
+  },
+  "checkpoint": [
+    {
+      "command": "checkpoint.downtown.drive-home",
+      "when": {
+        "all": [
+          {
+            "state": "downtown.dlvAt",
+            "is": "driving"
+          },
+          {
+            "state": "downtown.dlvFrom",
+            "is": "driving"
+          }
+        ]
+      }
+    },
+    {
+      "command": "checkpoint.downtown.drive-origin",
+      "when": {
+        "state": "downtown.dlvAt",
+        "is": "driving"
+      }
+    },
+    {
+      "command": "checkpoint.downtown.scan"
+    }
+  ],
+  "queries": {
+    "downtown.drawerTokens": {
+      "kind": "tuning",
+      "key": "drawerTokens"
+    }
+  },
+  "native": {
+    "verbs": [
+      {
+        "device": "till",
+        "noun": "drawer",
+        "verb": "open",
+        "cases": [
+          {
+            "when": {
+              "flag": "till",
+              "is": true
+            },
+            "command": "downtown.till.empty",
+            "say": [
+              "use drawer --open",
+              "drawer: empty.",
+              "dim"
+            ]
+          },
+          {
+            "command": "downtown.till.pay",
+            "template": true,
+            "say": [
+              "use drawer --open",
+              "the drawer slides out. {query:downtown.drawerTokens} noodle tokens credited to {player:name}. Spend them on hints at the stall.",
+              "ok"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "box",
+        "noun": "legs.so",
+        "verb": "install",
+        "cases": [
+          {
+            "when": {
+              "player": {
+                "field": "jump",
+                "is": true
+              }
+            },
+            "command": "downtown.legs.installed",
+            "say": [
+              "install legs.so",
+              "legs.so: already installed.",
+              "dim"
+            ]
+          },
+          {
+            "command": "downtown.legs.install",
+            "say": [
+              "install legs.so",
+              "installed legs.so. SPACE to jump.",
+              "ok"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": {},
+    "goals": {
+      "downtown.till.paid": "till",
+      "downtown.legs.installed": "install"
     }
   }
 }

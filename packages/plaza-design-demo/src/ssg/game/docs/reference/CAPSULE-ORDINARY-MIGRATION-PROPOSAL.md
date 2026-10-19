@@ -1,103 +1,76 @@
-# Capsule ordinary behavior: next source slices
+# Capsule ordinary source workflows
 
-Read-only audit after common scalar-owner and readonly-query consolidation.
-This is a proposal, not completed migration. No production code changed for it.
+Completed source migration after common scalar ownership and readonly queries.
+The native controller now retains physical simulation; ordinary companion decisions, door notices and goal eligibility live
+in editable shared gameplay/device source.
 
-## Slice A: Pixel with existing contracts
+## Current ownership
 
-The target decision is ordinary authored content: a `select` query chooses sun
-when `capsule.sun`, router when `capsule.plugOn`, otherwise bed. It intentionally
-uses plug power, not router boot readiness or temperature.
+- The schedule is a `beforeNative` source interval using the existing live tick,
+  elapsed scratch `clock`, `nightEveryMs` tuning and native event mapping. It
+  emits before thermal work, discards overshoot and adds no CLOCK noun or controls.
+- `gameplay.json` owns the `capsule.pixelTarget` select query, Pixel movement
+  interval, movement commands and captions. The interval compares actual location
+  with the query, then uses that same query to select its due outcome. Editing
+  the target therefore changes actual behavior. Active target changes preserve
+  elapsed wait; matching the target resets it; due overshoot is discarded.
+- A source rising-edge trigger owns the door-unlocked event and committed reply.
+  The first live sample is silent. Previous edge state is transient scratch,
+  cleared on reset/restore/disposal; background ticks do not prime it.
+- `devices.json` observations own router, concierge and Pixel goal readiness in
+  their original order. Existing idempotent native goal grants prevent repeated
+  commits while readiness stays true. No goalDone query or saved latch was added.
+- `capsule.scheduleConnected` is a generic `wirePresent` query reading the same
+  live cables as the model. Omitting its optional verb deliberately matches any
+  verb at the authored endpoints, preserving the original predicate.
+- Pixel captions reuse the validated Capsule controller's existing Pixel speaker
+  role. This is an editable registered simulation role, not an arbitrary actor
+  speaker catalogue. Ordinary lock replies reference the actual lock device.
 
-Use one existing live interval with elapsed `pixelWait`, duration tuning
-`pixelMoveMs`, active `compare(state capsule.pixelAt, query pixelTarget, ne)`,
-and inactive policy `reset`. Its ordered due cases set `capsule.pixelAt` to
-sun/router/bed and emit the corresponding committed reply. The source owns the
-three existing captions and speaker references. Remove the replaced native
-`pixelWants` decision and Pixel wait/movement branch; remove controller fields
-used only by those ordinary choices.
+Native thermal work exposes `routerUpAtTickStart`, an ephemeral physical sample
+stored only in scratch. The readonly source flag binds that sample. The router
+goal's ordinary conjunction (sampled ready and schedule absent) remains in source.
+This preserves the case where a router starts up, crosses the thermal reboot
+threshold, and still earns the goal on that tick despite becoming unready.
 
-Important parity: elapsed wait does **not** reset when the desired target changes
-while remaining different from the actual location. Existing interval behavior
-already matches this. It resets when the actual location matches the target or
-when one due outcome fires; overshoot is discarded. Thermal update runs before
-Pixel movement, so the current post-native interval hook preserves that order.
+Runtime order remains: source beforeNative schedule emission, thermal update/reboot notices,
+Pixel interval/movement reply, door rising-edge reply, router goal, concierge
+goal, Pixel goal. There is no second evaluator, scheduler or scalar owner.
+The companion's separate authored home-state binding remains independent.
 
-The companion's separate authored home-state binding and native thermal role
-must continue to reference the intended common block; no second Pixel state,
-role alias or saved decision latch should be introduced.
+## Native work still present
 
-## Generic contracts needed for the remaining ordinary branches
+Temperature integration, warming/cooling bounds, reboot threshold crossing,
+boot deadlines, delayed online readiness checks, temperature display buckets,
+steam presentation remain native. This slice does not claim those remaining
+physical branches migrated. The former native schedule branch and its controller
+role/tuning aliases were deleted.
 
-- Door edge: extend a live condition trigger with optional rising-edge mode and
-  initial observation policy. Store only transient previous observation per
-  trigger, clear on model reset/restore/session disposal, and retain current
-  live/background/pause policy. Initial already-open state must be observed
-  without emitting an unlock caption. Source event/reply owns the lock caption.
-- Goal guards: readonly query `{kind: "goalDone", goal: "pixel"}` reads the
-  existing native goal set. Source triggers guard `not goalDone`, avoiding
-  repeated commits, persistence and notices while a condition remains true.
-  Goal IDs validate against prospective `data.goals` and have typed controls.
-- Scheduled-wire predicate: readonly query
-  `{kind: "wirePresent", from: "plug.schedule:night", to: "plug.power"}` reads
-  actual live cables. Optional `verb` may constrain it; omitting it deliberately
-  matches any verb, exactly as the current scheduled-wire check does. Validate
-  source/target/optional verb against prospective device vocabulary. Expose only
-  readonly cables in the existing query context, not another graph or evaluator.
-- Concierge connectivity can reuse the existing `nodeConnected` observation;
-  no new connectivity evaluator is needed.
+## Verification
 
-Post-native source trigger order should be door notice, router goal, concierge
- goal, Pixel goal, after the Pixel interval's committed movement reply.
+- `check-capsule-source-workflows.mts`: 1,728 three-step histories compare real
+  current models with the immutable original rules/model. State, normalized
+  transient scratch, exact visible replies, emitted events and goal order match.
+  Explicit cases cover sampled-up thermal crossing, target changes while waiting,
+  initial/open/repeated door edges, background policy, alternate cable verbs,
+  sustained goals, existing pause/background schedule policy and disposal.
+- `check-capsule-source-workflow-forms.mts`: real typed query/interval/trigger/
+  reply/speaker/goal and phase/duration controls change pending runtime behavior. Invalid references
+  reject atomically; form history restores exact source. An edited target to
+  router and ten-unit interval produce the edited router caption and no sun goal.
+- `check-capsule-source-workflow-save.mts`: protected paired gameplay/device Save,
+  malformed physical-derived reference rejected at the final semantic boundary,
+  pending actual runtime, fresh shipping `SCENES` import with saved JSON, and
+  exact byte Undo all pass. Evidence:
+  `.scene-system/capsule-workflow-save-3BbuuD`. The saved edited schedule is
+  also checked to emit before the actual thermal reboot caption.
+- `check-native-workflow-phases.mts`: pre/native/post ordering, omitted phase
+  defaulting to afterNative, one evaluation per phase, same-tick state visibility,
+  resetOn once per event, overshoot, offscreen/disposal/restore and invalid phases.
+- Forced package TypeScript build passes at this source checkpoint.
 
-## Exact timing traps
-
-The router goal currently uses local `up` sampled **before** the thermal update.
-A tick can therefore start with the router up, cross the reboot threshold,
-restart its boot deadline, and still grant the router goal when the schedule is
-cut. A post-native trigger reading live `routerUp` would wrongly deny that goal.
-
-Resolve this explicitly before migrating the router goal: expose a transient
-physical frame observation of router readiness at tick start, or provide a
-well-defined workflow sampling stage. The observation must not become a saved
-alias or a new ordinary predicate hidden in controller code. Keep the actual
-ordinary conjunction (ready and no scheduled wire) in source.
-
-The periodic schedule event is also ordinary, but it currently emits **before**
-thermal work and its notices. Moving it into the existing post-native interval
-hook changes observable event order. A generic `beforeNative` interval phase on
-the same existing tick could preserve it. Do not change the schedule noun from
-SENSE to CLOCK, add new scheduling infrastructure or conceal the old order.
-
-## Genuine physical work that remains native
-
-Keep temperature integration, warming/cooling bounds, reboot threshold crossing,
-boot deadlines, conditional delayed online notices, temperature display buckets
-and short-lived steam presentation. These are the mechanical algorithms, not an
-excuse to retain Pixel target choices, goal eligibility or door-edge dialogue.
-The boot callback's exact extra notice delay and readiness recheck must remain
-unchanged until separately covered by a bounded shared deadline contract.
-
-## Immutable verification plan
-
-Compare the frozen original rules against real current models sharing the
-common scalar owner, using plug power, sun, each Pixel position, temperature,
-boot deadline, wire membership, connectivity and live/background combinations.
-
-- Pixel durations: zero, duration minus one, exact duration and overshoot. Change
-  desired targets during the wait without resetting it; reaching the desired
-  location resets it. Compare state, scratch, replies and source order.
-- Door: initially open is silent; closed live tick then open produces one notice;
-  repeated open is silent; closing then reopening produces another. Background
-  ticks do not prime the edge; reset/restore starts without a previous sample.
-- Goals: sustained eligible conditions grant once; current goal sets survive
-  current-format reload; connected differs from merely seen. Cut/rewire the
-  schedule, including the same endpoints carrying a different verb.
-- Mandatory sampled-readiness case: powered router, Pixel on router, temperature
-  just below reboot, crossing delta, schedule cut. The original grants the router
-  goal even though live readiness becomes false after that thermal update.
-- Schedule: compare event/caption ordering when night threshold, thermal reboot,
-  Pixel movement and door opening coincide. Preserve discarded overshoot.
-- Verify pause, background scene policy, disposal, source edits, typed CRUD,
-  prospective reference rejection, protected Save, fresh shipping-source import
-  and exact byte Undo. Test current save ownership; no old-format adapter gate.
+Initial `data/index.ts` catalogue materialization uses pure state/native data
+projection because rule-derived facts cannot be validated before rule modules
+exist. Final source assembly and prospective Save still validate the complete
+rule contract. The malformed-derived-reference regression explicitly protects
+that boundary; there is no permissive allowlist or import-cycle workaround.

@@ -1,6 +1,6 @@
 import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/gameplay/state';
 import {capsuleController} from '../engine/controllers/capsule';
-import {SCAN} from '../engine/model';
+import {SCAN,type SceneModel} from '../engine/model';
 import {withCompanionConversations,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import type {GameRuntimeSources} from './game-sources';
 import {runtimeSequenceDocuments} from '../story/sequence-documents';
@@ -178,16 +178,17 @@ export class Game {
   private get worldMap(){return this.cityMapInstance??=createCityMap(this.world);}
   private hasScene(id:string):id is SceneId{return Object.prototype.hasOwnProperty.call(this.content,id)||isSceneId(id);}
   private sceneDefinition(id:SceneId):SceneDef {let scene=this.compiledScenes.get(id);if(!scene){const source=this.content[id]??SCENES[id];if(!source)throw new Error('Unknown scene '+id);scene=withCompanionConversations(withBotConversations(source.bindWorld?.({city:this.world,metro:this.metro})??source,this.botReactions),this.sources?.companionGameplay??COMPANION_GAMEPLAY);this.compiledScenes.set(id,scene);}return scene;}
-  private gameplayFor(id:SceneId):GameplaySession|undefined {
+  private gameplayFor(id:SceneId,providedModel?:SceneModel):GameplaySession|undefined {
     const definition=this.sceneDefinition(id).gameplay;
     if(!definition)return undefined;
+    if(definition.native&&!providedModel&&!this.hosts.has(id)){this.hostOf(id);return this.gameplaySessions.get(id);}
     let session=this.gameplaySessions.get(id);
     if(!session){
       const port:import('../engine/gameplay/types').StatePort={
         read:()=>{const state:import('../engine/gameplay/types').GameplayState={world:{day:city.day,minute:city.min,weather:weatherNow(sceneClimate(id)).kind},player:{handle:this.save.handle,jump:this.save.jump,controlled:this.save.controlled,keyring:this.save.keyring},flags:{...this.save.flags},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay};return state;},
-        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;mergeValues(this.save.gameplay??={},state.values??{});},
+        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;if(state.player){this.save.keyring=[...state.player.keyring];this.save.controlled=[...state.player.controlled];this.save.jump=state.player.jump;}mergeValues(this.save.gameplay??={},state.values??{});},
       };
-      const model=()=>{const m=this.hosts.get(id)?.model;if(!m)throw new Error('Native scene not ready');return m;};
+      const model=()=>{const m=providedModel??this.hosts.get(id)?.model;if(!m)throw new Error('Native scene not ready');return m;};
       session=new GameplaySession(definition,definition.native?nativeGameplayPort(definition,port,model):port,()=>{
         if(definition.native){const m=model(),{state:scalar,...snapshot}=m.snapshot(),board=this.save.scenes[id]?.board;this.save.scenes[id]={...snapshot,...(board?{board}:{})};m.changed();}
         this.persistSave();this.syncHud();
@@ -326,7 +327,7 @@ export class Game {
       feedbackTime:()=>this.hints.notices.time,
       cutscene:cut=>{this.pendingCut=cut;},
       state:()=>{const values=this.save.gameplay??={};if(def.gameplay)mergeValues(values,resolveValues(def.gameplay,{flags:this.save.flags,items:this.save.items,tokens:this.save.tokens,values}));return values[id]??={};},
-      gameplay:()=>this.gameplayFor(id),
+      gameplay:model=>this.gameplayFor(id,model),
       conversation:(conversationId)=>{const session=this.gameplayFor(id);return session?.definition.conversations[conversationId]?new ConversationSession(session,conversationId):undefined;},
       conversationCompleted:cue=>{if(this.here===id)this.completeConversation(cue);},
       modules: () => this.save.modules,

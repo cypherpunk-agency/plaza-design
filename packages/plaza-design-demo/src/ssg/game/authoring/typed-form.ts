@@ -9,6 +9,8 @@ export class TypedForm {
  prefix?:string|RegExp;
  objectiveIds:readonly string[]=[];
  allowObjectiveContext=true;
+ /** Restrict checkpoint controls to the existing scalar-state condition vocabulary. */
+ stateOnly=false;
  constructor(private report:(e:unknown)=>void){}
  visible(name:string){const p=this.prefix,short=p instanceof RegExp?name.replace(p,'')||name:p&&name.startsWith(p)&&name.length>p.length?name.slice(p.length):name;return short.charAt(0).toUpperCase()+short.slice(1);}
  run(fn:()=>void){try{fn();}catch(e){this.report(e);}}
@@ -30,7 +32,7 @@ export class TypedForm {
  }
  scalarRead(parent:HTMLElement,name:string,value:ScalarRead,edit:(v:ScalarRead)=>void,doc:GameplayDefinition){
   const kind='literal'in value?'literal':'state'in value?'state':'query',states=Object.keys(doc.state??{}),queries=Object.keys(doc.queries??{});
-  this.select(parent,name+' source',['literal',...(states.length?['state']:[]),...(queries.length?['query']:[])],kind,kind=>edit(kind==='state'?{state:states[0]}:kind==='query'?{query:queries[0]}:{literal:0}));
+  this.select(parent,name+' source',['literal',...(states.length?['state']:[]),...(queries.length&&!this.stateOnly?['query']:[])],kind,kind=>edit(kind==='state'?{state:states[0]}:kind==='query'?{query:queries[0]}:{literal:0}));
   if('state'in value)this.select(parent,name+' state',states,value.state,state=>edit({state}));
   else if('query'in value)this.select(parent,name+' query',queries,value.query,query=>edit({query}));
   else {const type=value.literal===null?'null':typeof value.literal;this.select(parent,name+' literal type',['number','string','boolean','null'],type,type=>edit({literal:type==='number'?0:type==='string'?'':type==='boolean'?false:null}));if(typeof value.literal==='number')this.decimal(parent,name+' literal',value.literal,literal=>edit({literal}),-Number.MAX_VALUE,Number.MAX_VALUE);else if(typeof value.literal==='boolean')this.check(parent,name+' literal',value.literal,literal=>edit({literal}));else if(typeof value.literal==='string')this.text(parent,name+' literal',value.literal,literal=>edit({literal}));}
@@ -39,9 +41,9 @@ export class TypedForm {
   const group=document.createElement('fieldset'),legend=document.createElement('legend');group.className='gameplay-condition';group.setAttribute('aria-label',name);legend.textContent=this.visible(name);group.append(legend);parent.append(group);
   const stateIds=Object.keys(doc.state??{});
   const kind=!value?'always':'compare'in value?'compare':'player'in value?'player':'objective'in value?'objective':'time'in value?'time':'weather'in value?'weather':'state'in value?'state':'flag'in value?'flag':'item'in value?'item':'tokensAtLeast'in value?'tokens':'all'in value?'all':'any'in value?'any':'not';
-  const leaf:Condition=doc.flags.length?{flag:doc.flags[0]}:!flagsOnly?{tokensAtLeast:0}:{all:[]};
+  const leaf:Condition=this.stateOnly&&stateIds.length?{state:stateIds[0],is:doc.state![stateIds[0]].default}:doc.flags.length?{flag:doc.flags[0]}:!flagsOnly?{tokensAtLeast:0}:{all:[]};
   const initial=(k:string):Condition|undefined=>k==='always'?undefined:k==='compare'?{compare:{left:{literal:0},op:'eq',right:{literal:0}}}:k==='player'?{player:{field:'handle',is:''}}:k==='objective'?{objective:this.objectiveIds[0]??'objective'}:k==='time'?{time:{from:'18:00',to:'06:00'}}:k==='weather'?{weather:['rain']}:k==='state'?{state:stateIds[0],is:doc.state![stateIds[0]].default}:k==='flag'?{flag:doc.flags[0]}:k==='item'?{item:doc.items[0],atLeast:1}:k==='tokens'?{tokensAtLeast:1}:k==='not'?{not:leaf}:k==='all'?{all:[leaf]}:{any:[leaf]};
-  const kinds=[...(depth===0?['always']:[]),...(stateIds.length&&!flagsOnly?['state']:[]),...(doc.flags.length?['flag']:[]),...(!flagsOnly?['compare',...(doc.items.length?['item']:[]),'tokens','player',...(this.allowObjectiveContext&&this.objectiveIds.length?['objective']:[]),'time','weather']:[]),...(depth<10&&(doc.flags.length||!flagsOnly)?['all','any','not']:[])];
+  const kinds=this.stateOnly?[...(depth===0?['always']:[]),...(stateIds.length?['state']:[]),'compare',...(depth<10&&stateIds.length?['all','any','not']:[])]:[...(depth===0?['always']:[]),...(stateIds.length&&!flagsOnly?['state']:[]),...(doc.flags.length?['flag']:[]),...(!flagsOnly?['compare',...(doc.items.length?['item']:[]),'tokens','player',...(this.allowObjectiveContext&&this.objectiveIds.length?['objective']:[]),'time','weather']:[]),...(depth<10&&(doc.flags.length||!flagsOnly)?['all','any','not']:[])];
   this.select(group,name+' type',kinds,kind,k=>edit(initial(k)));
   if(!value)return;
   if('compare'in value){const c=value.compare;this.scalarRead(group,name+' left',c.left,left=>edit({compare:{...c,left}}),doc);this.select(group,name+' operator',['eq','ne','lt','lte','gt','gte'],c.op,op=>edit({compare:{...c,op:op as typeof c.op}}));this.scalarRead(group,name+' right',c.right,right=>edit({compare:{...c,right}}),doc);}

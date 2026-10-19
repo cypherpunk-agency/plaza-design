@@ -1,3 +1,4 @@
+import {nativeVocabulary} from '../engine/gameplay/native-bindings';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import type {QueryDefinition} from '../engine/gameplay/queries';
 import type {GameplayBindingControls} from './gameplay-bindings-authoring';
@@ -6,19 +7,21 @@ import type {GameplayBindingControls} from './gameplay-bindings-authoring';
 export function renderGameplayQueriesAuthoring(parent:HTMLElement,doc:GameplayDefinition,ui:GameplayBindingControls){
  const {form,section,edit,draft,data}=ui,box=section(parent,'Read-only queries',true);
  const tuning=Object.keys(data?.tuning??{}),labels=Object.entries(data?.texts??{}).filter(([,v])=>typeof v==='string').map(([id])=>id);
- const kinds=['count','select','duration',...(tuning.length?['tuning']:[]),...(labels.length?['label']:[])];
- const initial=(kind:string):QueryDefinition=>kind==='count'?{kind:'count',conditions:[{tokensAtLeast:0}]}:kind==='select'?{kind:'select',cases:[{value:{literal:''}}]}:kind==='tuning'?{kind:'tuning',key:tuning[0]}:kind==='label'?{kind:'label',key:labels[0]}:{kind:'duration',value:{literal:1000},unit:'seconds',round:'nearest'};
+ const vocabulary=data?nativeVocabulary(data):[],events=vocabulary.flatMap(n=>n.events.map(event=>n.key+':'+event));
+ const kinds=[...(events.length&&vocabulary.length?['wirePresent']:[]),'count','select','duration',...(tuning.length?['tuning']:[]),...(labels.length?['label']:[])];
+ const initial=(kind:string):QueryDefinition=>kind==='wirePresent'?{kind:'wirePresent',from:events[0],to:vocabulary[0].key}:kind==='count'?{kind:'count',conditions:[{tokensAtLeast:0}]}:kind==='select'?{kind:'select',cases:[{value:{literal:''}}]}:kind==='tuning'?{kind:'tuning',key:tuning[0]}:kind==='label'?{kind:'label',key:labels[0]}:{kind:'duration',value:{literal:1000},unit:'seconds',round:'nearest'};
  for(const[id,q]of Object.entries(doc.queries??{})){
   const host=section(box,'Query '+id,true),prefix='Query '+id;
   const mutate=(change:(q:QueryDefinition)=>void)=>edit('Edit read-only query',g=>change(g.queries![id]));
   form.select(host,prefix+' kind',kinds,q.kind,kind=>edit('Change query operation',g=>{g.queries![id]=initial(kind);}));
-  if(q.kind==='count'){
+  if(q.kind==='wirePresent'){form.select(host,prefix+' from',events,q.from,from=>mutate(q=>{if(q.kind==='wirePresent')q.from=from;}));form.select(host,prefix+' to',vocabulary.map(n=>n.key),q.to,to=>mutate(q=>{if(q.kind==='wirePresent'){q.to=to;delete q.verb;}}));form.select(host,prefix+' verb',['',...(vocabulary.find(n=>n.key===q.to)?.verbs??[])],q.verb??'',verb=>mutate(q=>{if(q.kind==='wirePresent'){if(verb)q.verb=verb;else delete q.verb;}}));}
+  else if(q.kind==='count'){
    q.conditions.forEach((c,i)=>{const p=prefix+' row '+(i+1);form.condition(host,p,c,when=>mutate(q=>{if(q.kind!=='count'||!when)throw Error('Count row requires a condition');q.conditions[i]=when;}),doc);form.button(host,'Remove '+p,()=>mutate(q=>{if(q.kind==='count')q.conditions.splice(i,1);}),q.conditions.length<=1);});
    form.button(host,'Add '+prefix+' row',()=>mutate(q=>{if(q.kind==='count')q.conditions.push({tokensAtLeast:0});}),q.conditions.length>=128);
   }else if(q.kind==='select'){
    q.cases.forEach((row,i)=>{const p=prefix+' case '+(i+1);if(i<q.cases.length-1)form.condition(host,p+' condition',row.when,when=>mutate(q=>{if(q.kind!=='select'||!when)throw Error('Ordered condition required');q.cases[i].when=when;}),doc);form.scalarRead(host,p+' value',row.value,value=>mutate(q=>{if(q.kind==='select')q.cases[i].value=value;}),doc);
     if(i<q.cases.length-1){form.button(host,'Remove '+p,()=>mutate(q=>{if(q.kind==='select')q.cases.splice(i,1);}));for(const step of[-1,1])form.button(host,(step<0?'Move earlier ':'Move later ')+p,()=>mutate(q=>{if(q.kind==='select')[q.cases[i],q.cases[i+step]]=[q.cases[i+step],q.cases[i]];}),i+step<0||i+step>=q.cases.length-1);}
-   });form.button(host,'Add '+prefix+' case',()=>mutate(q=>{if(q.kind==='select')q.cases.splice(q.cases.length-1,0,{when:{tokensAtLeast:0},value:{literal:''}});}),q.cases.length>=32);
+   });form.button(host,'Add '+prefix+' case',()=>mutate(q=>{if(q.kind==='select')q.cases.splice(q.cases.length-1,0,{when:{tokensAtLeast:0},value:structuredClone(q.cases[q.cases.length-1].value)});}),q.cases.length>=32);
   }else if(q.kind==='duration'){form.scalarRead(host,prefix+' milliseconds',q.value,value=>mutate(q=>{if(q.kind==='duration')q.value=value;}),doc);form.select(host,prefix+' unit',['seconds'],q.unit,()=>{});form.select(host,prefix+' rounding',['nearest'],q.round,()=>{});}
   else if(q.kind==='tuning')form.select(host,prefix+' tuning',tuning,q.key,key=>mutate(q=>{if(q.kind==='tuning')q.key=key;}));
   else form.select(host,prefix+' label',labels,q.key,key=>mutate(q=>{if(q.kind==='label')q.key=key;}));

@@ -1,3 +1,6 @@
+import {GAMEPLAY_ABILITIES} from '../engine/gameplay/rewards';
+import {renderCheckpointAuthoring} from './checkpoint-authoring';
+import {renderActionValue} from './action-values-authoring';
 import cutsceneCatalog from '../data/cutscenes.json';
 import type {SceneData} from '../data/types';
 import {renderGameplayBindingsAuthoring} from './gameplay-bindings-authoring';
@@ -10,6 +13,8 @@ export interface GameplayAuthoring {
   nativeDataSource?():SceneData|undefined;
   nativeDerivedSource?():readonly string[];
   objectiveIdsSource?():readonly string[];
+  keyringIdsSource?():readonly string[];
+  registryLabelsSource?():readonly string[];
   document():unknown;
   validate?(value:unknown):GameplayDefinition;
   onEdit(value:GameplayDefinition,label:string):void;
@@ -52,6 +57,7 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
      p.modifiers?.forEach((m,i)=>{const row=section(box,'Modifier '+m.id);form.number(row,'Modifier '+m.id+' amount',m.amount,value=>edit('Edit price modifier',d=>{d.purchases![id].modifiers![i].amount=value;}),-1000000);form.select(row,'Modifier '+m.id+' scope',['both','quote','charge'],m.scope,value=>edit('Edit modifier scope',d=>{d.purchases![id].modifiers![i].scope=value as typeof m.scope;}));form.condition(row,'Modifier '+m.id+' condition',m.when,value=>edit('Edit modifier condition',d=>{if(value)d.purchases![id].modifiers![i].when=value;else delete d.purchases![id].modifiers![i].when;}),doc);form.button(row,'Remove modifier '+m.id,()=>edit('Remove price modifier',d=>{d.purchases![id].modifiers!.splice(i,1);}));});
      form.button(box,'Add modifier to '+id,()=>edit('Add price modifier',d=>{const p=d.purchases![id];p.modifiers??=[];let n=1;while(p.modifiers.some(m=>m.id==='modifier-'+n))n++;p.modifiers.push({id:'modifier-'+n,amount:0,scope:'both'});}),(p.modifiers?.length??0)>=32);
     }
+    renderCheckpointAuthoring(root,doc,{section,edit,report,owner:nativeData?.id});
     renderGameplayBindingsAuthoring(root,doc,{data:nativeData,derived:nativeDerived,edit,section,form,draft:bindingDraft,refresh});
     if(dialogue){const talk=section(root,'Dialogue and choices');
     select(talk,'Conversation',Object.keys(doc.conversations),conversation,id=>{conversation=id;node=Object.keys(doc.conversations[id].nodes)[0];refresh();});
@@ -95,16 +101,18 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     doc.commands[command].actions.forEach((action,index)=>{
       const box=section(commands,'Action '+(index+1));
       const replace=(next:GameplayAction)=>edit('Change command action',d=>{d.commands[command].actions[index]=next;});
-      const kind='state'in action?'state':'purchase'in action?'purchase':'flag'in action?'flag':'item'in action?'item':'tokens'in action?'tokens':'emit';
-      select(box,'Action '+(index+1)+' kind',[...(Object.keys(doc.state??{}).length?['state']:[]),...(Object.keys(doc.purchases??{}).length?['purchase']:[]),...(writableFlags.length?['flag']:[]),...(doc.items.length?['item']:[]),'tokens',...(doc.events.length?['emit']:[])],kind,value=>replace(value==='state'?{state:Object.keys(doc.state!)[0],set:doc.state![Object.keys(doc.state!)[0]].default}:value==='purchase'?{purchase:Object.keys(doc.purchases!)[0]}:value==='flag'?{flag:writableFlags[0],value:true}:value==='item'?{item:doc.items[0],add:1}:value==='tokens'?{tokens:1}:{emit:doc.events[0]}));
+      const keyringIds=options.keyringIdsSource?.()??[],nodeLabels=options.registryLabelsSource?.()??[];
+      const kind='grant'in action?'keyring'in action.grant?'keyring grant':'ability'in action.grant?'ability grant':'node control':'state'in action?'state':'purchase'in action?'purchase':'flag'in action?'flag':'item'in action?'item':'tokens'in action?'tokens':'emit';
+      select(box,'Action '+(index+1)+' kind',[...(Object.keys(doc.state??{}).length?['state']:[]),...(keyringIds.length?['keyring grant']:[]),'ability grant',...(nodeLabels.length?['node control']:[]),...(Object.keys(doc.purchases??{}).length?['purchase']:[]),...(writableFlags.length?['flag']:[]),...(doc.items.length?['item']:[]),'tokens',...(doc.events.length?['emit']:[])],kind,value=>replace(value==='ability grant'?{grant:{ability:'jump'}}:value==='node control'?{grant:{controlled:nodeLabels[0]}}:value==='keyring grant'?{grant:{keyring:keyringIds[0]}}:value==='state'?{state:Object.keys(doc.state!)[0],set:doc.state![Object.keys(doc.state!)[0]].default}:value==='purchase'?{purchase:Object.keys(doc.purchases!)[0]}:value==='flag'?{flag:writableFlags[0],value:true}:value==='item'?{item:doc.items[0],add:1}:value==='tokens'?{tokens:1}:{emit:doc.events[0]}));
       button(box,'Remove action '+(index+1),()=>edit('Remove command action',d=>{d.commands[command].actions.splice(index,1);}));
       button(box,'Move action '+(index+1)+' up',()=>edit('Reorder command action',d=>{const a=d.commands[command].actions;[a[index-1],a[index]]=[a[index],a[index-1]];}),index===0);
 
+      if('grant'in action){const grant=action.grant;if('keyring'in grant)select(box,'Action '+(index+1)+' keyring',keyringIds,grant.keyring,keyring=>replace({grant:{keyring}}));else if('ability'in grant)select(box,'Action '+(index+1)+' ability',GAMEPLAY_ABILITIES,grant.ability,ability=>replace({grant:{ability:ability as 'jump'}}));else select(box,'Action '+(index+1)+' Registry node',nodeLabels,grant.controlled,controlled=>replace({grant:{controlled}}));box.append(element('p','Grants once, atomically with the other command actions.'));return;}
       if('purchase'in action){select(box,'Action '+(index+1)+' purchase',Object.keys(doc.purchases??{}),action.purchase,purchase=>replace({purchase}));box.append(element('p','Payment and goods are defined together under Purchases.'));return;}
-      if('state'in action){const d=doc.state![action.state],prefix='Action '+(index+1);select(box,prefix+' state',Object.keys(doc.state!),action.state,state=>replace({state,set:doc.state![state].default}));select(box,prefix+' state operation',d.type==='number'?['set','add']:['set'],'add'in action?'add':'set',op=>replace(op==='add'?{state:action.state,add:1}:{state:action.state,set:d.default}));if('add'in action){const field=d.integer===false?form.decimal.bind(form):form.number.bind(form);field(box,prefix+' increment',action.add,add=>replace({...action,add}),Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER);}else form.stateValue(box,prefix+' state value',action.set,d,set=>replace({...action,set}));return;}
+      if('state'in action){const d=doc.state![action.state],prefix='Action '+(index+1);select(box,prefix+' state',Object.keys(doc.state!),action.state,state=>replace({state,set:doc.state![state].default}));select(box,prefix+' state operation',d.type==='number'?['set','add']:['set'],'add'in action?'add':'set',op=>replace(op==='add'?{state:action.state,add:1}:{state:action.state,set:d.default}));if('add'in action){const name=prefix+' increment',field=d.integer===false?form.decimal.bind(form):form.number.bind(form);renderActionValue(box,name,action.add,doc,form,add=>replace({...action,add:add as typeof action.add}),{initial:1,numeric:true,literal:(value,edit)=>field(box,name,Number(value),edit,Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER)});}else{const name=prefix+' state value';renderActionValue(box,name,action.set,doc,form,set=>replace({...action,set}),{initial:d.default,numeric:d.type==='number',literal:(value,edit)=>form.stateValue(box,name,value,d,edit)});}return;}
       if('flag'in action){select(box,'Action '+(index+1)+' flag',writableFlags,action.flag,value=>replace({...action,flag:value}));select(box,'Action '+(index+1)+' value',['true','false'],String(action.value),value=>replace({...action,value:value==='true'}));}
-      else if('item'in action){select(box,'Action '+(index+1)+' item',doc.items,action.item,value=>replace({...action,item:value}));number(box,'Action '+(index+1)+' quantity',action.add,value=>replace({...action,add:value}));}
-      else if('tokens'in action)number(box,'Action '+(index+1)+' tokens',action.tokens,value=>replace({tokens:value}));
+      else if('item'in action){select(box,'Action '+(index+1)+' item',doc.items,action.item,value=>replace({...action,item:value}));const name='Action '+(index+1)+' quantity';renderActionValue(box,name,action.add,doc,form,add=>replace({...action,add:add as typeof action.add}),{initial:1,numeric:true,literal:(value,edit)=>number(box,name,Number(value),edit)});}
+      else if('tokens'in action){const name='Action '+(index+1)+' tokens';renderActionValue(box,name,action.tokens,doc,form,tokens=>replace({tokens:tokens as typeof action.tokens}),{initial:1,numeric:true,literal:(value,edit)=>number(box,name,Number(value),edit)});}
       else select(box,'Action '+(index+1)+' event',doc.events,action.emit,value=>replace({emit:value}));
 
     });

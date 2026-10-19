@@ -188,10 +188,10 @@
             "dropped"
           ],
           "on": {
-            "*": {
+            "grab": {
               "do": [
                 {
-                  "effect": "crane.claw"
+                  "effect": "crane.grab"
                 }
               ]
             }
@@ -421,28 +421,6 @@
       "use claw --grab",
       "got it. a parcel, slightly squashed.",
       "ok"
-    ],
-    "claw.drop.empty": [
-      "use claw --drop",
-      "claw empty. nothing dropped."
-    ],
-    "claw.drop.at": [
-      "use claw --drop",
-      "dropped at {armAt}. thud."
-    ],
-    "claw.drop.chute": [
-      "use claw --drop",
-      "dropped into the chute."
-    ],
-    "parcel.tray": [
-      "",
-      "the parcel slides through the hatch and into the pickup tray.",
-      "ok"
-    ],
-    "parcel.bonk": [
-      "",
-      "the parcel hits the closed hatch. the crane fishes it back.",
-      "err"
     ],
     "parcel.take": [
       "take parcel",

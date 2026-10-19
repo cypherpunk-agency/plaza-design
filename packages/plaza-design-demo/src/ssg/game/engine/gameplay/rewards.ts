@@ -1,0 +1,5 @@
+import type {GameplayDefinition} from './types';
+export const GAMEPLAY_ABILITIES=['jump'] as const;
+export function registryLabels(net:{networks:readonly {machines:readonly {node?:string}[]}[]}){return [...new Set(net.networks.flatMap(n=>n.machines.flatMap(m=>m.node?[m.node]:[])))];}
+/** Cross-document metadata validation runs against the complete prospective network/keyring. */
+export function validateGameplayRewards(definition:Pick<GameplayDefinition,'commands'>,vocabulary:{keyring:ReadonlySet<string>;controlled?:ReadonlySet<string>}){for(const[id,command]of Object.entries(definition.commands))for(const action of command.actions)if('grant'in action){const grant=action.grant;if('keyring'in grant&&!vocabulary.keyring.has(grant.keyring))throw Error('Unknown keyring grant '+grant.keyring+' in '+id);if('controlled'in grant&&!vocabulary.controlled?.has(grant.controlled))throw Error('Unknown controlled node grant '+grant.controlled+' in '+id);if('ability'in grant&&!GAMEPLAY_ABILITIES.includes(grant.ability))throw Error('Unknown ability grant in '+id);}}

@@ -1,4 +1,5 @@
-import type {NativeLiveCondition} from './native-live-conditions';
+import type {NativeDeadline} from './native-deadlines';
+import type {NativeLiveCondition,NativeWorkflowPhase} from './native-live-conditions';
 import type {QueryDefinition,ScalarRead} from './queries';
 import type {TimeWindow} from '../../data/types';
 import type {WeatherKind} from '../../world/weather';
@@ -23,12 +24,13 @@ export type Condition =
   | { tokensAtLeast: number }
   | { all: Condition[] } | { any: Condition[] } | { not: Condition };
 export type GameplayAction =
-  | {state:string;set:StateValue}
-  | {state:string;add:number}
+  | {grant:{keyring:string}|{ability:'jump'}|{controlled:string}}
+  | {state:string;set:StateValue|ScalarRead}
+  | {state:string;add:number|ScalarRead}
   | {purchase:string}
   | { flag: string; value: boolean }
-  | { item: string; add: number }
-  | { tokens: number }
+  | { item: string; add: number|ScalarRead }
+  | { tokens: number|ScalarRead }
   | { emit: string };
 export interface GameplayCommand {
   sources: Source[];
@@ -50,6 +52,8 @@ export interface GameplayDefinition {
   native?: NativeBindings;
   /** Committed events request existing cinematics and scene-clock system commands. */
   handoffs?:{event:string;cutscene?:string;after?:{ms:number;command:string}[]}[];
+  /** Ordered current-save normalization, evaluated on a copy through shared state commands. */
+  checkpoint?:{when?:Condition;command:string}[];
   state?:Record<string,StateDeclaration>;
   /** Pure reads derived from the current draft and its source; never persisted. */
   queries?:Record<string,QueryDefinition>;
@@ -62,6 +66,8 @@ export interface GameplayDefinition {
   reactions: { event: string; command: string }[];
   conversations: Record<string, ConversationDefinition>;
 }
+export interface NativeReplyLine {from:string;say:[string,string,('ok'|'err'|'dim')?];template?:true}
+export type NativeReply=NativeReplyLine|{cases:(NativeReplyLine&{when?:Condition})[]};
 export interface NativeBindings {
   /** Read-only live truthiness; never persisted as a second flag. */
   reads?:Record<string,string>;
@@ -72,11 +78,15 @@ export interface NativeBindings {
   presentation?:Record<string,{kind:'pulse';target:string}>;
   /** Ordinary workflows consume the existing live scene tick, never a second scheduler. */
   triggers?:Record<string,NativeLiveCondition>;
-  intervals?:Record<string,{kind:'liveInterval';elapsed:string;duration:{tuning:string};active:Condition;inactive:'hold'|'reset';resetOn?:string[];due:{when?:Condition;command:string}[]}>;
+  intervals?:Record<string,{kind:'liveInterval';phase?:NativeWorkflowPhase;elapsed:string;duration:{tuning:string};active:Condition;inactive:'hold'|'reset';resetOn?:string[];due:{when?:Condition;command:string}[]}>;
+  /** Named cancelable actions use the existing SceneTime, including pause/reset/restore. */
+  deadlines?:Record<string,NativeDeadline>;
   /** Committed outcomes speak through the existing native device caption/history path. */
-  replies?:Record<string,{from:string;say:[string,string,('ok'|'err'|'dim')?];template?:true}>;
+  replies?:Record<string,NativeReply>;
   wires?:{id?:string;from:string;to:string;verb:string;fixed?:boolean}[];
 }
+/** A committed resource grant, distinct from authored event vocabulary. */
+export type GameplayGrant={command:string;source:Source;cause?:string}&({kind:'keyring'|'controlled';id:string}|{kind:'ability';id:'jump'});
 export interface GameplayEvent { id: string; command: string; source: Source; cause?: string }
 export type GameplayResult =
   | { ok: true; events: readonly Readonly<GameplayEvent>[] }

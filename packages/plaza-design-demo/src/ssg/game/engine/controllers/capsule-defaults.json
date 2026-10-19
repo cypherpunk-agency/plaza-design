@@ -9,19 +9,11 @@
   },
   "devices": {
     "router": "router",
-    "pixel": "pixel",
-    "lock": "lock",
-    "concierge": "concierge"
-  },
-  "schedule": {
-    "from": "plug.schedule:night",
-    "to": "plug.power"
+    "pixel": "pixel"
   },
   "tuning": {
-    "nightEveryMs": "nightEveryMs",
     "bootMs": "bootMs",
     "rebootMs": "rebootMs",
-    "pixelMoveMs": "pixelMoveMs",
     "roomTemp": "roomTemp",
     "idleTemp": "idleTemp",
     "hotTemp": "hotTemp",
@@ -32,16 +24,7 @@
   },
   "texts": {
     "online": "router.online",
-    "reboot": "router.reboot",
-    "pixelBed": "pixel.bed",
-    "pixelRouter": "pixel.router",
-    "pixelSun": "pixel.sun",
-    "unlocked": "lock.unlocked"
-  },
-  "goals": {
-    "router": "router",
-    "concierge": "concierge",
-    "pixel": "pixel"
+    "reboot": "router.reboot"
   },
   "onlineNoticeDelayMs": 20,
   "temperatureNoticeStep": 5

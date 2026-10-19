@@ -34,7 +34,7 @@ try{
  sound.cancelFeedback('test');assert.equal(timers.size,0);sound.feedback(mintFeedback('other','device','success'));assert.equal(timers.size,3);sound.cancelFeedback('test');assert.equal(timers.size,3);sound.cancelFeedback();assert.equal(timers.size,0);
  sound.granted();assert.equal(timers.size,3);
  const noop=()=>{};(globalThis as any).document.documentElement={classList:{remove:noop}};(globalThis as any).window={removeEventListener:noop};(globalThis as any).cancelAnimationFrame=noop;
- (Game.prototype as any).stop.call({cancelStoryTransitions:(Game.prototype as any).cancelStoryTransitions,hints:h,gameplaySessions:new Map(),hosts:new Map(),keys:new Set(),syncEnginePause:noop,endTitle:noop,menu:{hide:noop},endCutscene:noop,term:{close:noop},canvas:{},save:{}});
+ (Game.prototype as any).stop.call({cancelStoryTransitions:(Game.prototype as any).cancelStoryTransitions,hints:h,gameplaySessions:new Map(),hosts:new Map(),keys:new Set(),syncEnginePause:noop,persistSave:noop,endTitle:noop,menu:{hide:noop},endCutscene:noop,term:{close:noop},canvas:{},save:{}});
  assert.equal(timers.size,0,'actual Game.stop cancels delayed feedback before teardown');
  sound.granted();assert.equal(timers.size,3);sound.toggle();assert.equal(timers.size,0);const before=nextTimer;sound.granted();sound.denied();assert.equal(nextTimer,before,'muted calls allocate no callback');
  console.log('Communication ownership PASS: actual Schematic noun/wire and Game.runUse/SceneHost calls; saved shared lessons, defer/no HUD echo, receipt replay versus equal-text distinct actions, scoped chime cancellation and no muted timers.');

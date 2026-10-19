@@ -90,6 +90,17 @@
           "emit": "stacks.camera.found"
         }
       ]
+    },
+    "checkpoint.stacks.box": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "stacks.boxAt",
+          "set": "stack"
+        }
+      ]
     }
   },
   "reactions": [],
@@ -455,5 +466,43 @@
         }
       ]
     }
-  ]
+  ],
+  "checkpoint": [
+    {
+      "command": "checkpoint.stacks.box",
+      "when": {
+        "state": "stacks.boxAt",
+        "is": "air"
+      }
+    }
+  ],
+  "queries": {
+    "stacks.liftKind": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "state": "stacks.found",
+                "is": true
+              },
+              {
+                "state": "stacks.boxAt",
+                "is": "stack"
+              }
+            ]
+          },
+          "value": {
+            "literal": 2
+          }
+        },
+        {
+          "value": {
+            "literal": 1
+          }
+        }
+      ]
+    }
+  }
 }

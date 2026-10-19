@@ -106,6 +106,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "ordinaryController20261019": {
+          "status": "PASS",
+          "cases": 1728,
+          "artifact": ".scene-system/capsule-workflow-save-3BbuuD",
+          "scope": "Source door edge/goals/Pixel delayed selection and intervals, including beforeNative schedule emission; exact original thermal histories, typed pending edits, source Save/fresh import/Undo. Whole-scene gates remain open."
         }
       }
     },
@@ -213,6 +219,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "ordinaryController20261019": {
+          "status": "PASS",
+          "cases": 128,
+          "artifact": ".scene-system/downtown-till-save-xwfYdx",
+          "scope": "Till source tokens/flag/goal command; guard/manual/signal/repeated input parity and typed pending/sourceSave/fresh import/Undo. Ownership/gate/story/controller branches remain partial."
+        },
+        "currentCheckpointPolicies": {
+          "status": "PASS",
+          "casesAcrossFourScenes": 274,
+          "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
+          "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
         }
       }
     },
@@ -450,6 +468,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "ordinaryController20261019": {
+          "status": "PASS",
+          "cases": 432,
+          "artifact": ".scene-system/yard-drop-save-r2houh",
+          "scope": "Drop/chute/slide/bounce source workflow plus19timing/visual/event histories and typed/sourceSave/fresh import/Undo. Native grab and hatch remain open."
+        },
+        "currentCheckpointPolicies": {
+          "status": "PASS",
+          "casesAcrossFourScenes": 274,
+          "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
+          "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
         }
       }
     },
@@ -853,6 +883,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "ordinaryController20261019": {
+          "status": "PASS",
+          "cases": 144,
+          "artifact": ".scene-system/stacks-permission-save-FPIRrh",
+          "scope": "Lift/alarm refusal source cases and lift-kind source query; exact trajectory/reply/goal histories and typed/sourceSave/fresh import/Undo. Landing/reward/watchdog ordinary branches remain open."
+        },
+        "currentCheckpointPolicies": {
+          "status": "PASS",
+          "casesAcrossFourScenes": 274,
+          "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
+          "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
         }
       }
     },
@@ -1163,6 +1205,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "ordinaryController20261019": {
+          "status": "PASS",
+          "cases": 2592,
+          "artifact": ".scene-system/laundromat-deadline-save-HNe8V0",
+          "scope": "Washer permissions/start/stop/overload/completion source commands and deadlines; 28 additional timing histories. Jacket rewards:576 histories and laundromat-jacket-save-S9lW4l. Checkpoints use shared copied-state source policies. Full scene gates remain open."
+        },
+        "currentCheckpointPolicies": {
+          "status": "PASS",
+          "casesAcrossFourScenes": 274,
+          "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
+          "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
         }
       }
     },

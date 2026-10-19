@@ -464,7 +464,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       const verbs = n.verbs ?? [];
       if (!verbs.length && !ENGINE_VERBS.includes(n.kind)) err(w, 'has no verbs');
       dupes(verbs, w, 'verb');
-      if (verbs.length && !n.on) err(w, 'has verbs but no "on" (what they do)');
+      if (verbs.length && !n.on && verbs.some(v=>!env.code.nativeVerbs?.includes(d.id+'.'+n.id+':'+v))) err(w, 'has verbs but no "on" (what they do)');
       if (n.current !== undefined && !known.has(n.current)) err(w, `current: unknown key "${n.current}"`);
       for (const v of Object.keys(n.on ?? {})) if (v !== '*' && !verbs.includes(v)) err(`${w} › on`, `"${v}" is not one of its verbs`);
       for (const v of verbs) if (!(v in (n.on ?? {})) && !('*' in (n.on ?? {})) && !env.code.nativeVerbs?.includes(d.id+'.'+n.id+':'+v)) err(`${w} › on`, `verb "${v}" does nothing (add it, or a "*" entry)`);
