@@ -1946,3 +1946,23 @@ Further controller/source work,2026-10-19 (not yet published):
   tick, defaulting afterNative. Capsule schedule emission moved into a beforeNative interval and its
   native schedule branch was deleted. Original1,728 histories,phase ordering/pause/background/lifecycle
   checks and actual typed phase/duration Save/fresh import/Undo PASS:capsule-workflow-save-3BbuuD.
+
+Merged editor/source checkpoint,2026-10-19:
+- Engine batch302211f merged latest origin/main43d316b through9b2eca3. Preserved the new Scene/Logic/
+  Play/Library/World editor organization. Both builds and package TypeScript PASS.
+- Source294b0d4656d4762b6803e8c79e7984f2dca3995e0563bc9f2c8f17e93732ad7f:
+  all173 raster comparisons PASS,zero differing pixels/errors. Evidence:
+  .scene-system/all-game-pixel-check/evidence/294b0d4656d4762b6803e8c79e7984f2dca3995e0563bc9f2c8f17e93732ad7f-1792431886510.json.
+- Built editor app-NMWPZ7D5.js / native Play play-PKGJODRP.js:all19 actual scene startups and Stop
+  disposal PASS,console errors empty. .scene-system/all-scene-source-checkpoint/native-play-19-app-NMWPZ7D5.json.
+  This is startup/disposal evidence,not full all-scene acceptance.
+- Merged typed/sourceSave/fresh import/Undo checks PASS:player-grants/run-BnkxvQ,
+  downtown-till-save-1jBucP,laundromat-jacket-save-sEBprD,yard-drop-save-PWd1xW,
+  stacks-permission-save-pIfFa3,capsule-workflow-save-auii5e,checkpoint-policies/run-ekCgno.
+  Common state owner,actual host startup,generic workflow phases and immutable controller checks PASS.
+- Performance fixture adaptation now uses the shared Workshop command and current state root.
+  One Downtown smoke report archived; repeated suites timed out waiting for the second opaque frame's
+  ready acknowledgement. Cause unconfirmed; no measured baseline or optimization claim. Temporary
+  diagnostic changes were reverted. Normal merged editor all19 Play did not reproduce that timeout.
+- Remaining:ordinary controller/story/security tails,complete typed scene/world/entity coverage,
+  final lifecycle/communication/removal audit,six measured workloads and all G0-G13 signoffs.
