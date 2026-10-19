@@ -113,3 +113,5 @@ Beach still has native actor-role identity branches (`lime-talk`, `ashore-*`); t
 remaining work, not hidden by the geometry proof. Move their configurable role references into the
 existing scene presentation source with typed actor selectors and atomic actor-removal cleanup.
 The danger predicate remains the one existing source-controlled Beach visual state read.
+
+The Beach actor-role follow-through is now independently verified in [SCENE-PRESENTATION-ACTORS.md](./SCENE-PRESENTATION-ACTORS.md); the earlier geometry-only scope above remains historical.

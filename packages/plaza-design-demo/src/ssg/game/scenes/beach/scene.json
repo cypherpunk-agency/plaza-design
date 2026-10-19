@@ -710,5 +710,21 @@
         "rest": "sleep"
       }
     ]
+  },
+  "presentation": {
+    "kind": "beach",
+    "flags": {},
+    "actors": {
+      "bartender": "lime-talk",
+      "ashore": [
+        "ashore-0",
+        "ashore-1",
+        "ashore-2",
+        "ashore-3",
+        "ashore-4",
+        "ashore-5",
+        "ashore-6"
+      ]
+    }
   }
 }

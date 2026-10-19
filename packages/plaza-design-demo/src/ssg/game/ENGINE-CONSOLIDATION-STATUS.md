@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `bb9db7c` on main and production; remote hashes verified.
-Production homepage/design jobs39339247808/39339247868 and main build39339247462 succeeded.
+Last verified deployment: `2bda43c` on main and production.
+Production homepage/design jobs39341311709/39341311754 and main build39341311403 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2356,3 +2356,18 @@ has173/173 zero-difference/error browser raster cases and actual native Beach Pl
 See ARTWORK-ROLE-AUTHORING.md for exact scope. Beach's fixed bartender/ashore actor-role branches are
 still open; expose their references through shared scene presentation rather than claiming scene
 completeness from geometry alone. All remaining whole-goal gates stay open.
+
+## 2026-10-20 Beach actor references / shared CRUD
+
+Shared scene.presentation now exposes typed source actor-role references. Beach bartender and
+ashore membership no longer depend on old IDs/prefixes. Danger remains the existing sole visual
+state read. Shared duplicate/remove operations inherit group membership and prune removed refs;
+actual UI, native pose/kit output, invalid refs, optional removal, source Save/fresh import/Undo
+PASS (`beach-actor-role-source-4MPOcw`). All19 actor CRUD/history/bundle/protected Save/native reload
+checks PASS (`actor-entities/run-5XGdEn`), Market shared presentation PASS (`run-Uty2SN`), Beach60
+original drawing and512 gameplay/timing cases PASS. Removed redundant LIME/draw helper/global GULL
+state and preview fallback: native scene PresentationSignals is the sole active owner.
+Sourcea7aee7d9c0d0 passes173/173 browser raster comparisons with zero differences/errors, both builds,
+tsc, actual Beach Play/Stop and actual actor-role inspector controls. No whole-goal gate promotion.
+See SCENE-PRESENTATION-ACTORS.md; next Shop's geometry/clipping and actor-role inputs, then remaining
+native consumers and the final all19 acceptance inventory/lifecycle/current-state/world/removal audit.

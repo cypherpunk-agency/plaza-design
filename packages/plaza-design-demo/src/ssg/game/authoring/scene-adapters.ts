@@ -32,8 +32,7 @@ import { galleriaStationAdapter } from '../scenes/galleriaStation/composition';
 import { harborStationAdapter } from '../scenes/harborStation/composition';
 import { sandboxScene, sandboxFrameEnvironment, validateSandboxComposition } from '../scenes/sandbox';
 import { beachScene } from '../scenes/beach';
-import { beachEnvironment, validateBeachComposition } from '../scenes/beach/composition';
-import { BEACH_ACTORS, GULL } from '../scenes/beach/scene';
+import { validateBeachComposition } from '../scenes/beach/composition';
 import { warehouseScene, warehouseFrameEnvironment, validateWarehouseComposition } from '../scenes/warehouse';
 import { yardScene, yardFrameEnvironment, validateYardComposition } from '../scenes/yard';
 import { stacksScene, stacksFrameEnvironment, validateStacksComposition } from '../scenes/stacks';
@@ -61,7 +60,7 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   galleriaStation: { validate: galleriaStationAdapter.validate, definition: galleriaStationScene, environment: (doc, v) => galleriaStationAdapter.environment(doc, v) },
   harborStation: { validate: harborStationAdapter.validate, definition: harborStationScene, environment: (doc, v) => harborStationAdapter.environment(doc, v) },
   sandbox: { validate: validateSandboxComposition, definition: sandboxScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('sandbox',doc,documents,sandboxContent,(source,gameplay,context)=>sandboxScene(doc,state,options,documents.get('sandbox-behavior') as import('../data/types').SceneData|undefined,source,gameplay,context));}, environment: (doc, v, e) => sandboxFrameEnvironment(v, e, doc) },
-  beach: { validate: validateBeachComposition, definition: beachScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('beach',doc,documents,{...beachContent,validateGameplay:validateBeachGameplay},(source,gameplay,context)=>beachScene(doc,state,options,gameplay,source,context,documents.get('beach-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => beachEnvironment(doc, v, e.m, e.hover, BEACH_ACTORS, GULL) },
+  beach: { validate: validateBeachComposition, definition: beachScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('beach',doc,documents,{...beachContent,validateGameplay:validateBeachGameplay},(source,gameplay,context)=>beachScene(doc,state,options,gameplay,source,context,documents.get('beach-devices') as import('../data/types').SceneData|undefined));} },
   warehouse: { validate: validateWarehouseComposition, definition: warehouseScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateWarehouseGameplay(documents.get('warehouse-gameplay'));return warehouseScene(doc,state,options,validateWarehouseScene(documents.get('warehouse-scene'),gameplay),gameplay);}, environment: (doc, v, e) => warehouseFrameEnvironment(v, e, doc) },
   yard: { validate: validateYardComposition, definition: yardScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('yard',doc,documents,yardContent,(source,gameplay,context)=>yardScene(doc,state,options,source,gameplay,context,documents.get('yard-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => yardFrameEnvironment(v, e, doc),
     frame: () => ({ street: (ctx, view, rain, lit) => renderDowntownStreet(ctx, view, rain, lit) }),
