@@ -2,7 +2,7 @@ import {frameView} from '../../src/ssg/game/art/core/view';
 import {warehouseLayout} from './warehouse-layout-fixture.mts';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import vm from 'node:vm';import ts from 'typescript';
 import {warehouse,warehouseScene,WAREHOUSE_ACTORS} from '../../src/ssg/game/scenes/warehouse';
-import {warehouseComposition,warehouseGeometry,warehouseLights,warehouseCasters,drawWarehouseComposition,validateWarehouseComposition} from '../../src/ssg/game/scenes/warehouse/composition';
+import {warehouseComposition,warehouseGeometry,warehouseLights,drawWarehouseComposition,validateWarehouseComposition} from '../../src/ssg/game/scenes/warehouse/composition';
 import * as primitives from '../../src/ssg/game/art/core/primitives';import * as screens from '../../src/ssg/game/art/signage/screens';import * as characters from '../../src/ssg/game/runtime/characters';
 import type {View} from '../../src/ssg/game/art/core/view';
 const root=path.resolve('../..'),backup=path.join(root,'.scene-system/warehouse-s5-original');
@@ -17,7 +17,7 @@ const extracted=ts.createSourceFile('extracted',fs.readFileSync(path.join(backup
 assert.equal(body.body!.getText(extracted).replace(/\s/g,''),baselineBody.replace(/\s/g,''),'original comparison body matches immutable source');
 const json=(value:unknown)=>JSON.stringify(value);
 for(const key of ['width','spawn','facing','ambient','shade','lights','casters','exits','intro','pixel','readables'])assert.deepEqual(JSON.parse(json((warehouse as any)[key])),JSON.parse(json(original[key])),key+' source metadata');
-assert.deepEqual(JSON.parse(json(warehouseLights())),JSON.parse(json(original.lights)));assert.deepEqual(JSON.parse(json(warehouseCasters())),JSON.parse(json(original.casters)));
+assert.deepEqual(JSON.parse(json(warehouseLights())),JSON.parse(json(original.lights)));assert.deepEqual(JSON.parse(json(warehouse.casters)),JSON.parse(json(original.casters)));
 function recording(){const ops:unknown[]=[],values:Record<string,unknown>={globalAlpha:1};let gradient=0;return{ops,ctx:new Proxy(values,{get(target,key:string){if(key in target)return target[key];if(key==='measureText')return(s:string)=>{ops.push([key,s]);return{width:s.length*4.25};};if(key.startsWith('create')&&key.endsWith('Gradient'))return(...args:unknown[])=>{const id=++gradient;ops.push([key,...args]);return{id,addColorStop:(...args:unknown[])=>ops.push(['color',id,...args])};};return(...args:unknown[])=>ops.push([key,...args]);},set(target,key:string,value){ops.push(['set',key,value]);target[key]=value;return true;}}) as unknown as CanvasRenderingContext2D};}
 Object.defineProperty(globalThis,'document',{value:{createElement:()=>({width:0,height:0,getContext:()=>recording().ctx})},configurable:true});
 let cases=0;for(const cam of [0,130.5,260,480])for(const gy of [186,306,600])for(const t of [0,137,710]){const view:View={...frameView(t),sx:(wx,p=1)=>Math.round(wx-cam*p),y:h=>gy-h,t,cam,gy,viewW:640,viewH:gy+54,flags:{}};const a=recording(),b=recording();old(a.ctx,view,layout,people);drawWarehouseComposition(b.ctx,view,WAREHOUSE_ACTORS);if(json(a.ops)!==json(b.ops)){let index=0;while(json(a.ops[index])===json(b.ops[index]))index++;throw new Error(`cam${cam} gy${gy} t${t}: operation${index}: ${json(a.ops[index])} != ${json(b.ops[index])}`);}cases++;}

@@ -1,3 +1,4 @@
+import {resolveArtworkRoles} from './artwork-roles';
 import {art,resolveComposition,type Composition,type Resolved} from '../../art';
 import {frameView} from '../../art/core/view';
 import type {SceneDocument} from './scene-document';
@@ -27,7 +28,7 @@ export function manifestGeometry(scene:SceneDocument,rows:readonly Resolved[],gr
  }
  for(const target of Object.values(manifest.devices??{}))point(target,false,true);
  if(typeof manifest.spawn!=='string'&&(manifest.spawn.promptH!==undefined||manifest.spawn.responseH!==undefined))throw new Error('Spawn has no text height');
- return{width,spawn:point(manifest.spawn,options.groundSpawn!==false).x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
+ return{artwork:resolveArtworkRoles(scene.id,manifest.artwork,rows),width,spawn:point(manifest.spawn,options.groundSpawn!==false).x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
 }
 /** Geometry-only preview: registered visual defaults resolve bindings without stepping controllers. */
 export function manifestCompositionRows(composition:Composition){

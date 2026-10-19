@@ -2,9 +2,9 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `3d6e21b` on main and production (atomic push and remote hashes verified).
-Production homepage39335599546 and design39335599631 deployments succeeded;
-main homepage39335599757 build also succeeded. Public editor HTTP200 serves app-AEG6ZUR2.js.
+Last verified deployment: `a6ba427` on main and production; both remote hashes verified.
+Production homepage/design jobs39336688893/39336688999 and main build39336688789 succeeded.
+Previous checkpoint3d6e21b was also verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
 173 zero-difference raster cases and all19 actual packaged-editor Play/Stop checks PASS.
@@ -2291,3 +2291,17 @@ Downtown, Stacks, Harbor/Shift, Mall, Shop and transit compositions. These are n
 scenery: some feed width, shade, clipping, covers, physical anchors or actor parents. Replace
 those real dependencies with typed source roles before removing floors. Do not merely delete
 validation or introduce another runtime state owner. Whole-goal gates remain open.
+
+## 2026-10-20 shared artwork role contract / Warehouse
+
+A shared stateless manifest.artwork contract now resolves registered typed artwork roles from
+pending composition rows. Warehouse orientation, front shade and shadow widths use it; replaced
+fixed-ID/type floors are gone while real dependencies remain validated. The Scene inspector now
+also edits scene-width artwork/property references. Source transaction and actual mounted-form
+proof PASS (`artwork-role-source-ADDuq3`), including native changes, former-wall removal, explicit
+feature disable, fresh shipping import and byte Undo. All36 original Warehouse draw-command
+comparisons PASS; ten original interior outcome cases and current-format reloads PASS after
+repairing obsolete raw-source equality expectations. Both builds and tsc PASS. Source90acba454a99
+passes all173 browser raster cases with zero differences/errors and actual native Warehouse
+Play/Stop, no warning/error logs. See docs/reference/ARTWORK-ROLE-AUTHORING.md.
+Whole-goal acceptance remains open; apply the shared contract to remaining real geometry floors.

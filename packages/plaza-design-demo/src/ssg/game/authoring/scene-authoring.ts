@@ -14,7 +14,7 @@ import {addSceneActor,addSceneRider,addSceneStreetSprite} from '../engine/gamepl
 import type {Composition} from '../art';
 import {addManifestObjective,removeManifestObjective,addManifestTime,removeManifestTime} from '../engine/gameplay/manifest-milestones';
 import {renderActor} from './actor-authoring';
-import {renderManifestTarget} from './manifest-target-authoring';
+import {renderManifestTarget,renderArtworkRoles,renderManifestWidth} from './manifest-target-authoring';
 import {manifestCompositionRows} from '../engine/gameplay/manifest-geometry';
 import {manifestGroups} from '../engine/gameplay/manifest-contract';
 import {addManifestContent,removeManifestContent} from '../engine/gameplay/manifest-content';
@@ -65,7 +65,8 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
    const composition=api.get(selected().prefix).value as import('../art').Composition,instances:import('../art').Instance[]=[];
    const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){instances.push(n);walk(n.children??[]);}};walk(composition.instances);
    const ids=instances.map(n=>n.id),rows=manifestCompositionRows(composition),registration=selected(),groups='bindingGroups'in registration?registration.bindingGroups:manifestGroups;
-   if(typeof d.manifest!.width==='number')form.number(h,'Scene width',d.manifest!.width,width=>edit('Edit manifest width',d=>{d.manifest!.width=width;}),240,10000);else note(h,'Scene width follows '+d.manifest!.width.instance+' / '+d.manifest!.width.property+' in Layout.');
+   renderManifestWidth(form,h,d.manifest!.width,rows,width=>edit('Edit scene width binding',d=>{d.manifest!.width=width;}));
+   renderArtworkRoles(form,h,d.id,d.manifest!,rows,(role,instance)=>edit('Rebind scene '+role,d=>{if(instance)(d.manifest!.artwork??={})[role]=instance;else if(d.manifest!.artwork)delete d.manifest!.artwork[role];}));
    renderManifestTarget(form,h,'Spawn',d.manifest!.spawn,rows,target=>edit('Edit manifest spawn',d=>{d.manifest!.spawn=target;}),undefined,'none');
    for(const group of groups){const box=form.section(h,group.charAt(0).toUpperCase()+group.slice(1)),choices=group==='people'?instances.filter(n=>n.type==='character.resident'&&n.pass==='people').map(n=>n.id):ids;
     for(const row of d[group]??[]){renderManifestTarget(form,box,group+' '+row.id,d.manifest![group]![row.id],rows,target=>edit('Bind '+group+' artwork',d=>{d.manifest![group]![row.id]=target;}),choices,group==='people'?'none':group==='exits'||group==='rests'?'prompt':'both');

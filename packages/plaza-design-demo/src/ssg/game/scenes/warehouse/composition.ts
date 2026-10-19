@@ -2,16 +2,13 @@ import {actorPoseSource} from '../../engine/gameplay/native-actor-bindings';
 import { frameView } from '../../art/core/view';
 /** Warehouse gameplay markers and visual snapshots share one source geometry. */
 import source from './composition.json';
-import { art, drawComposition, resolveComposition, type Composition, type Environment, type Instance, type Value } from '../../art';
+import { art, drawComposition, resolveComposition, type Composition, type Environment, type Instance, type Value, type Resolved } from '../../art';
 import type { View } from '../../art/core/view';
 import { prepareCharacter, type Character, type PreparedCharacter } from '../../runtime/characters';
 import type { SceneLight, Caster } from '../../art/atmosphere/lighting';
 const flatten=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
-const sourceTypes=new Map(flatten(source.instances as Instance[]).map(n=>[n.id,n.type]));
-const required=['scene','wall','dock','van'];
 export function validateWarehouseComposition(value:unknown):Composition{
   const doc=art.validate(value);if(doc.scene!=='warehouse')throw new Error('Expected warehouse composition');const all=flatten(doc.instances);
-  for(const id of required){const node=all.find(n=>n.id===id);if(!node||node.type!==sourceTypes.get(id))throw new Error('Missing/changed warehouse gameplay instance '+id);}
   for(const node of all){if(node.type==='character.prepared'){if(typeof node.props.actor!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(node.props.actor)||node.bindings?.pose!==actorPoseSource('warehouse',node.props.actor)||Object.keys(node.bindings).some(k=>k!=='pose'))throw new Error(node.id+': invalid warehouse actor');}else if(Object.keys(node.bindings??{}).length)throw new Error(node.id+': unknown warehouse binding');}
   return doc;
 }
@@ -21,7 +18,7 @@ const defaults=(doc:Composition):Record<string,Value>=>Object.fromEntries(flatte
 export const warehouseGeometry=(doc:Composition=warehouseComposition)=>resolveComposition(art,doc,{view,state:{},bindings:defaults(doc),reduced:false});
 export function warehousePosition(id:string,doc:Composition=warehouseComposition){const row=warehouseGeometry(doc).find(row=>row.instance.id===id);if(!row)throw new Error('Missing warehouse geometry: '+id);return row;}
 export function warehouseLights(doc:Composition=warehouseComposition):SceneLight[]{return warehouseGeometry(doc).filter(row=>row.instance.type==='warehouse.light').map(row=>{const p=row.props,at=row.placement;return{x:at.x,h:at.h,kind:p.kind as SceneLight['kind'],r:Number(p.radius)*at.scale,...(Number(p.width)?{w:Number(p.width)*at.scale}:{}),...(Number(p.height)?{hh:Number(p.height)*at.scale}:{}),...(p.color?{col:String(p.color)}:{}),...(Number(p.alpha)>=0?{a:Number(p.alpha)}:{})};});}
-export function warehouseCasters(doc:Composition=warehouseComposition):Caster[]{const rows=warehouseGeometry(doc),van=rows.find(r=>r.instance.id==='van')!;return rows.filter(r=>r.instance.type==='warehouse.caster').map(row=>({x:row.placement.x,h:row.placement.h,w:Number(van.props.width)*van.placement.scale}));}
+export function warehouseCasters(doc:Composition=warehouseComposition,widthOwner?:Resolved):Caster[]{const rows=warehouseGeometry(doc);if(!widthOwner)return[];return rows.filter(r=>r.instance.type==='warehouse.caster').map(row=>({x:row.placement.x,h:row.placement.h,w:Number(widthOwner.props.width)*widthOwner.placement.scale}));}
 export type WarehouseRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
 export function warehouseEnvironment(doc:Composition,view:View,actors:Readonly<Record<string,Character>>):Environment{
   const bindings=defaults(doc);

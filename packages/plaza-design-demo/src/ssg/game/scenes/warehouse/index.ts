@@ -35,12 +35,12 @@ export const WAREHOUSE_ACTORS=warehouseActors();
 export {warehouseComposition,validateWarehouseComposition} from './composition';
 export function warehouseFrameEnvironment(view:View,_engine:EngineDraw,document:Composition=warehouseComposition){return warehouseEnvironment(document,view,warehouseActors(document));}
 export function warehouseScene(document:Composition=warehouseComposition,state:Environment['state']={},options:WarehouseRenderOptions={},sceneDocument:SceneDocument=WAREHOUSE_SCENE,gameplay:GameplayDefinition=WAREHOUSE_GAMEPLAY):SceneDef{
- const content=validateWarehouseScene(sceneDocument,validateWarehouseGameplay(gameplay)),doc=validateWarehouseComposition(document),rows=warehouseGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!;
- const actors=warehouseActors(doc,content),wall=get('wall'),compiled=compileManifestDocument(content,rows,(_context,id)=>({name:'',pages:[],conversation:id}),{groups:warehouseBindingGroups,groundExits:false});
- return {id:'warehouse',name:content.name,facing:Number(get('scene').props.facing),...compiled.content,
+ const content=validateWarehouseScene(sceneDocument,validateWarehouseGameplay(gameplay)),doc=validateWarehouseComposition(document),rows=warehouseGeometry(doc);
+ const actors=warehouseActors(doc,content),compiled=compileManifestDocument(content,rows,(_context,id)=>({name:'',pages:[],conversation:id}),{groups:warehouseBindingGroups,groundExits:false}),roles=compiled.geometry.artwork,wall=roles.frontShade;
+ return {id:'warehouse',name:content.name,facing:Number(roles.orientation?.props.facing??0),...compiled.content,
   intro:content.introTouch?(touch:boolean)=>[...(touch?content.introTouch!:content.intro)]:content.intro.length?[...content.intro]:undefined,
   gameplay:withSceneConversations(gameplay,content),people:content.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
-  shade:{front:{h:wall.placement.h+Number(wall.props.height)*wall.placement.scale,gaps:[[-400,wall.placement.x]]}},lights:warehouseLights(doc),casters:warehouseCasters(doc),
+  ...(wall?{shade:{front:{h:wall.placement.h+Number(wall.props.height)*wall.placement.scale,gaps:[[-400,wall.placement.x]]}}}:{}),lights:warehouseLights(doc),casters:warehouseCasters(doc,roles.casterWidth),
   drawBackdrop:(ctx,view)=>drawWarehouseComposition(ctx,view,actors,doc,state,options),visualEnvironment:view=>warehouseEnvironment(doc,view,actors),
  };
 
