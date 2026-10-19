@@ -6,8 +6,8 @@
   "timeSamplesSeconds": [0, 1.25, 7.5],
   "facings": [1, -1],
   "families": [
-    {"id":"human","group":"Humans","variants":["seeded"],"actions":["stand","walk","sit","lean","smoke","phone","haggle","argue","sweep","queue","sleep","dance","vend","steal"]},
-    {"id":"cat","group":"Animals","variants":["seeded"],"actions":["stand","walk"]},
+    {"id":"human","group":"Humans","variants":["seeded"],"actions":["stand","walk","run","talk","sit","lean","smoke","phone","haggle","argue","sweep","queue","sleep","dance","vend","steal"]},
+    {"id":"cat","group":"Animals","variants":["seeded"],"actions":["stand","walk","sit"]},
     {"id":"pigeon","group":"Animals","variants":["seeded"],"actions":["stand","walk"]},
     {"id":"gull","group":"Animals","variants":["seeded"],"actions":["stand","walk"]},
     {"id":"cleaner","group":"Legacy robots","variants":["seeded"],"actions":["stand","walk"]},

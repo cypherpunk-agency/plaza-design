@@ -463,6 +463,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (kind === 'select') return select((field.options ?? []).map(v => ({ value: String(v), label: String(v) })), String(value), v => { const actual = field.options?.find(x => String(x) === v); if (actual !== undefined) apply(actual); });
     if (kind === 'number') { const input = numberInput(value as number, apply, field.min, String(field.step ?? 'any')); if (field.max !== undefined) input.max = String(field.max); return input; }
     if (kind === 'boolean') { const input = element('input'); input.type = 'checkbox'; input.checked = value as boolean; input.onchange = () => apply(input.checked); return input; }
+    if (kind === 'color') { const input = element('input'); input.type = 'color'; input.value = /^#[0-9a-f]{6}$/i.test(String(value)) ? String(value) : '#808080'; input.onchange = () => apply(input.value); return input; }
     if (kind === 'json') { const wrap = element('div'), input = element('textarea'); input.value = JSON.stringify(value, null, 2); input.setAttribute('aria-label', field.label); wrap.append(input, button('Apply JSON field', () => { try { apply(JSON.parse(input.value) as Value); } catch (e) { notice(message(e), true); } })); return wrap; }
     const input = element('input'); input.type = 'text'; input.value = String(value); input.onchange = () => apply(input.value); return input;
   }

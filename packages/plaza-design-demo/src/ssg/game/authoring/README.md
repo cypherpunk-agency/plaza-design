@@ -130,6 +130,16 @@ from resolved transforms/visibility/anchors. Cinematic-only pieces open their na
 context; conditional or non-painting pieces report invisible snapshots. See the
 [stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
 
+Characters and Vehicles open on a **Lineup**: up to eight variants (or every placeable road
+vehicle) side by side at true scale next to the player, on a metre ruler, with a **Depth** band
+switch (Far, Back, Play, Near; see ART-GUIDE §2 and `art/core/depth.ts`). Clicking one opens it in
+**Single** view. Actors in Logic use the same **Depth** choice instead of separate pixel size,
+parallax and dimming ("custom" shows those numbers), and their action list offers the actions their
+body really animates (`KIT_ACTS` in `runtime/characters.ts`; a value a scene already uses stays
+selectable). **Road vehicle** (`vehicle.road`) places a car, cab, van, bus, truck, yard tractor or
+forklift in any scene: parked (optionally with the driver's door open) or driving along a lane,
+with turning wheels and exhaust, at a depth band.
+
 Open one workbench panel at a time. Characters offers the supported humans, animals and robots,
 appearance controls and actual native animation inputs. Vehicles offers ground, flying, rail
 and water families, supported cargo/passenger inputs, and explicitly labeled inspection routes.

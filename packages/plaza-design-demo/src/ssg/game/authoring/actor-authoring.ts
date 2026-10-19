@@ -1,4 +1,6 @@
 import {streetSpriteKinds,type StreetSpritePresentation} from '../art/characters/street-sprite';
+import {DEPTH_BANDS,DEPTH_ORDER,depthOf,type DepthBand} from '../art/core/depth';
+import {KIT_ACTS,kitFamily} from '../runtime/characters';
 import {riderKinds,type RiderPresentation} from '../engine/gameplay/actor-presentation';
 import type {Composition} from '../art';
 import {manifestCompositionRows} from '../engine/gameplay/manifest-geometry';
@@ -47,8 +49,17 @@ export function renderActor(form:TypedForm,host:HTMLElement,source:SceneDocument
  }
  const optionalNumber=(key:'seed'|'bakeSeed'|'speed'|'ps'|'dim'|'parallax'|'gap',name:string,fallback:number,min:number,max:number,integer=false)=>{form.check(host,'Actor '+name+' override',a[key]!==undefined,on=>{change('Set actor '+name,b=>{if(on)b[key]=fallback;else delete b[key];});refresh();});if(a[key]!==undefined)(integer?form.number.bind(form):form.decimal.bind(form))(host,'Actor '+name,a[key]!,v=>change('Edit actor '+name,b=>{b[key]=v;}),min,max);};
  optionalNumber('bakeSeed','appearance seed',a.seed??73,0,1000000,true);
- optionalNumber('seed','seed',73,0,1000000,true);optionalNumber('speed','speed',.25,0,100);optionalNumber('ps','pixel size',3,1,5,true);optionalNumber('dim','dimming',0,0,1);optionalNumber('parallax','parallax',1,0,4);optionalNumber('gap','follow gap',30,0,10000);
- form.select(host,'Actor action',['',...actorAxes.act],a.act??'',v=>change('Edit actor action',b=>{if(v)b.act=v as ActorDefinition['act'];else delete b.act;}));
+ optionalNumber('seed','seed',73,0,1000000,true);optionalNumber('speed','speed',.25,0,100);
+ // Depth band: one choice instead of pixel size, parallax and dimming; "custom" shows the three numbers.
+ const depth=a.depth&&a.ps===undefined&&a.parallax===undefined&&a.dim===undefined?a.depth:depthOf(a);
+ form.select(host,'Actor depth',[...DEPTH_ORDER,'custom'],depth,v=>{change('Change actor depth',b=>{const from=b.depth?DEPTH_BANDS[b.depth]:undefined,keep={ps:b.ps??from?.ps,parallax:b.parallax??from?.parallax,dim:b.dim??from?.dim};delete b.ps;delete b.parallax;delete b.dim;delete b.depth;
+  if(v==='custom'){b.ps=keep.ps??3;b.parallax=keep.parallax??1;b.dim=keep.dim??0;}else if(v!=='play')b.depth=v as DepthBand;});refresh();});
+ if(depth==='custom'){optionalNumber('ps','pixel size',3,1,5,true);optionalNumber('dim','dimming',0,0,1);optionalNumber('parallax','parallax',1,0,4);}
+ else{const p=document.createElement('p');p.className='muted';const d=DEPTH_BANDS[depth];p.textContent=d.label+': '+d.note+' (pixel size '+d.ps+', parallax '+d.parallax+', dimming '+d.dim+').';host.append(p);}
+ optionalNumber('gap','follow gap',30,0,10000);
+ // The kit's real actions for this body first; a value a scene already uses stays selectable.
+ const acts=[...new Set([...(KIT_ACTS[kitFamily(a.look)]??actorAxes.act),...(a.act?[a.act]:[])])];
+ form.select(host,'Actor action',['',...acts],a.act??'',v=>change('Edit actor action',b=>{if(v)b.act=v as ActorDefinition['act'];else delete b.act;}));
  if(entities)form.select(host,'Actor world participation',['world','background'],a.band,v=>change('Edit actor participation',b=>{b.band=v as ActorDefinition['band'];}));
  form.select(host,'Actor facing',['automatic','left','right'],a.facing===-1?'left':a.facing===1?'right':'automatic',v=>change('Edit actor facing',b=>{if(v==='automatic')delete b.facing;else b.facing=v==='left'?-1:1;}));
  form.select(host,'Actor height',['automatic','artwork'],a.height??'automatic',v=>change('Edit actor height',b=>{if(v==='automatic')delete b.height;else b.height='artwork';}));

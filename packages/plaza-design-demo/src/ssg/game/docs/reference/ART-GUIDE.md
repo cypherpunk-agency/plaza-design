@@ -28,6 +28,23 @@ can I use. Test every scene with:
 Never let a back band compete with the play band: no bright outlines or lively
 animation behind the player unless it is a landmark on purpose (the antenna).
 
+**People and vehicles in depth (Tommi, 2026-10-19).** The game is a strict side view: the
+player never walks toward or away from the camera. People and vehicles still sit at one of four
+named depth bands (`art/core/depth.ts`), chosen with one **Depth** field instead of tuning pixel
+size, parallax and dimming by hand:
+
+| Band | People (pixel size) | Vehicles (scale) | Parallax | Dimming | Use |
+| --- | --- | --- | --- | --- | --- |
+| Far | 2 | ⅔ | 0.55 | 0.55 | across a square or a hall (Mall's far crowd) |
+| Back | 2 | ⅔ | 0.9 | 0.5 | just behind the play band (Market's back crowd) |
+| Play | 3 | 1 | 1 | 0 | the player's band; everything the player can use |
+| Near | 5 | 1⅔ | 1.3 | 0.78 | in front of the play band, a dark silhouette (Market's foreground) |
+
+People change size only in whole pixels, so Far and Back share pixel size 2 and differ in
+parallax and darkness. Vehicles scale smoothly but use the same factor, so a back-band bus
+matches back-band people. Something the player can use belongs in the play band. "Custom" is
+still allowed for special framing (people seen through a window).
+
 ## 3. The player is the unit
 
 Measure everything against the player sprite:

@@ -13,6 +13,10 @@
  * Drawn in its own frame: origin at the middle of the vehicle where its wheels meet the ground, heights
  * up (y = -h). `face` 1 drives right, -1 left. `t` is the animation clock in frames (beacons, the
  * stacker's arm); `still` holds it.
+ *
+ * Optional motion (left out, every vehicle draws exactly as before): `roll` is the distance driven, in
+ * units, and turns the wheel hubs; cars and cabs take `door` (0 shut .. 1 open, the driver's door) and
+ * `exhaust` (puffs from the tailpipe while the engine runs).
  */
 
 import { BOX40, container, type Crate } from "../props/containers";
@@ -26,10 +30,12 @@ export const SIZE = { sedan: 120, hatch: 108, van: 140, cab: 124, bus: 320, truc
 const y = (h: number) => -h;
 const R = Math.round;
 
-interface Common { t: number; face?: 1 | -1; still?: boolean; lights?: boolean }
+interface Common { t: number; face?: 1 | -1; still?: boolean; lights?: boolean; roll?: number }
+/** The distance driven for the vehicle being drawn (wheels read it); undefined draws still hubs. */
+let rolling: number | undefined;
 
-function mirror(x: CanvasRenderingContext2D, face: number | undefined, draw: () => void) {
-  x.save(); if ((face ?? 1) < 0) x.scale(-1, 1); draw(); x.restore();
+function mirror(x: CanvasRenderingContext2D, face: number | undefined, draw: () => void, roll?: number) {
+  x.save(); if ((face ?? 1) < 0) x.scale(-1, 1); rolling = roll; try { draw(); } finally { rolling = undefined; x.restore(); }
 }
 /** A container (the containers set) with its bottom-left at (left, bottom height), reading the right way round even on a mirrored vehicle. */
 function boxAt(x: CanvasRenderingContext2D, o: Common, left: number, bottom: number, b: Crate) {
@@ -42,7 +48,10 @@ const trueBox = (b: Crate): Crate => ({ ...b, w: b.w > 200 ? b.w : b.w > 100 ? B
 function wheel(x: CanvasRenderingContext2D, cx: number, r: number) {
   x.fillStyle = '#0a0808'; x.beginPath(); x.arc(cx, y(r), r, 0, 7); x.fill();
   x.fillStyle = '#4a4a50'; x.beginPath(); x.arc(cx, y(r), r * 0.5, 0, 7); x.fill();
-  x.fillStyle = '#1a1a1e'; x.fillRect(R(cx - 1), R(y(r) - 1), 2, 2);
+  if (rolling === undefined) { x.fillStyle = '#1a1a1e'; x.fillRect(R(cx - 1), R(y(r) - 1), 2, 2); return; }
+  // three lug marks on the hub, turned by the distance driven (one turn per 2πr)
+  const a = rolling / r, hub = r * 0.32; x.fillStyle = '#1a1a1e';
+  for (let k = 0; k < 3; k++) { const ang = a + k * 2.094; x.fillRect(R(cx + Math.cos(ang) * hub - 1), R(y(r) + Math.sin(ang) * hub - 1), 2, 2); }
 }
 function beacon(x: CanvasRenderingContext2D, bx: number, bh: number, t: number, still?: boolean) {
   const on = still || Math.floor(t / 10) % 2 === 0;
@@ -62,7 +71,7 @@ function taillight(x: CanvasRenderingContext2D, bx: number, h: number, lit: bool
 export type CarKind = 'sedan' | 'hatch' | 'van' | 'cab' | 'bus';
 
 /** A car (or the bus): body, cabin with windows (the city in them), wheels, the lights (beams when `lights`). */
-export function drawCar(x: CanvasRenderingContext2D, o: Common & { paint: string; kind?: CarKind; route?: string }) {
+export function drawCar(x: CanvasRenderingContext2D, o: Common & { paint: string; kind?: CarKind; route?: string; door?: number; exhaust?: boolean }) {
   const k = o.kind ?? 'sedan';
   if (k === 'bus') { drawBus(x, o); return; }
   mirror(x, o.face, () => {
@@ -87,10 +96,31 @@ export function drawCar(x: CanvasRenderingContext2D, o: Common & { paint: string
     x.fillStyle = 'rgba(255,220,180,.32)'; x.fillRect(l + 4, y(belt), len - 10, 1); x.fillRect(l + 30, y(roof), len - 80, 1);
     x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l, y(11), len, 3); x.fillRect(R(l + len * 0.5), y(belt - 2), 1, belt - 12);
     if (k === 'cab') { x.fillStyle = '#ffd23a'; x.fillRect(-12, y(roof + 7), 24, 7); x.fillStyle = '#1a1208'; x.fillRect(-9, y(roof + 5), 18, 2); x.fillStyle = '#1a1208'; for (let i = l + 36; i < l + len - 40; i += 8) x.fillRect(i, y(belt - 6), 4, 2); }
+    if (o.door) carDoor(x, p, R(l + len * 0.5), belt, roof, o.door);
     wheel(x, l + 22, 9); wheel(x, l + len - 24, 9);
     headlight(x, l + len, 14, !!o.lights);
     taillight(x, l, 14, !!o.lights);
-  });
+    if (o.exhaust) exhaustPuffs(x, l - 2, 7, o.t, o.still);
+  }, o.roll);
+}
+
+/** The driver's door swung open toward the viewer: the dark cabin behind it, the door foreshortened, hinged at the front. */
+function carDoor(x: CanvasRenderingContext2D, paint: string, rear: number, belt: number, roof: number, open: number) {
+  const w = 30, gap = R(w * Math.min(1, open)), front = rear + w;
+  x.fillStyle = '#0c0a0e'; x.fillRect(front - gap, y(roof - 3), gap, roof - 14);
+  const panel = Math.max(3, R(w * (1 - 0.8 * open)));
+  x.fillStyle = paint; x.fillRect(front, y(belt + 2), panel, belt - 8);
+  x.fillStyle = 'rgba(150,190,230,.42)'; x.fillRect(front, y(roof - 4), panel, roof - belt - 6);
+  x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(front, y(belt + 2), 1, roof - 12);
+}
+/** Exhaust: three puffs leaving the tailpipe at (px, h), drifting back and up and thinning out. */
+function exhaustPuffs(x: CanvasRenderingContext2D, px: number, h: number, t: number, still?: boolean) {
+  const clock = still ? 0 : t;
+  for (let k = 0; k < 3; k++) {
+    const u = ((clock + k * 14) % 42) / 42, r = 2 + u * 4;
+    x.fillStyle = `rgba(190,190,200,${(0.32 * (1 - u)).toFixed(3)})`;
+    x.beginPath(); x.arc(px - u * 26, y(h + u * 10), r, 0, 7); x.fill();
+  }
 }
 
 /** Bus 7 (or any route): a 12 m bus, its windows lit, the route on the front board. */
@@ -113,7 +143,7 @@ function drawBus(x: CanvasRenderingContext2D, o: Common & { paint: string; route
     wheel(x, l + 44, 12); wheel(x, l + len - 60, 12);
     headlight(x, l + len, 16, !!o.lights);
     taillight(x, l, 16, !!o.lights);
-  });
+  }, o.roll);
 }
 
 /**
@@ -152,7 +182,7 @@ export function drawTruck(x: CanvasRenderingContext2D, o: Common & { paint: stri
     x.fillStyle = '#1a1a1e'; x.fillRect(c0 + cab - 8, y(54), 10, 26);
     wheel(x, c0 + 30, 15); wheel(x, c0 + 62, 15); wheel(x, c0 + cab - 24, 15);
     headlight(x, l + len + 2, 34, !!o.lights);
-  });
+  }, o.roll);
 }
 
 /** A straddle carrier: four tall legs on wheels, the frame over the box it carries, the cab up top. `lift` 0..1 raises the box. */
@@ -180,7 +210,7 @@ export function drawStraddle(x: CanvasRenderingContext2D, o: Common & { box?: Cr
     x.fillStyle = 'rgba(255,230,170,.5)'; x.fillRect(cx, y(top + 64), 70, 2);
     for (const wx of [l + 16, l + W - 16]) wheel(x, wx, 18);
     beacon(x, cx + 52, top + 64, o.t, o.still);
-  });
+  }, o.roll);
 }
 
 /** A reach stacker: the heavy body on big wheels, the cab, the telescopic arm reaching up to a box. `reach` 0..1 lifts the arm. */
@@ -202,7 +232,7 @@ export function drawReachStacker(x: CanvasRenderingContext2D, o: Common & { box?
     x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l, y(36), SIZE.stacker, 6);
     wheel(x, l + 46, 28); wheel(x, l + SIZE.stacker - 50, 28);
     beacon(x, l + 160, 150, o.t + 5, o.still);
-  });
+  }, o.roll);
 }
 
 /** A forklift: the body and its counterweight, the overhead guard, the mast and forks, a pallet of crates. */
@@ -221,5 +251,5 @@ export function drawForklift(x: CanvasRenderingContext2D, o: Common & { load?: b
     }
     wheel(x, l + 16, 11); wheel(x, l + 60, 12);
     beacon(x, l + 36, 96, o.t + 3, o.still);
-  });
+  }, o.roll);
 }

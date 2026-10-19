@@ -75,7 +75,7 @@ import { frameView } from '../art/core/view';
 import {createLineSystem,type LineSystem} from '../world/transport/line';
 import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from "../world/weather";
 import { sound } from './audio';
-import { characterHeight,characterX,isBot,isHere,talkTo } from './characters';
+import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './characters';
 import { Companion } from './companion';
 import { EDITOR_PLAY,SAVE_KEY,SHIFT_PROTOTYPE } from "./mode";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
@@ -1139,6 +1139,8 @@ export class Game {
    * other keeps holes round its devices' frames (none: everything is muted). The player stays bright.
    */
   private draw() {
+    // a person whose speech bubble is open gestures while they talk (the player's own bubble sits at the player)
+    setSpeaker(this.bubble && Math.abs(this.bubble.x - this.p.x) > 2 ? this.bubble.x : null);
     const x = this.x, k = this.k;
     x.setTransform(k, 0, 0, k, 0, 0);
     x.imageSmoothingEnabled = false;

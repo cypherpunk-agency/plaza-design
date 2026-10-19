@@ -81,8 +81,10 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
 /**
  * What a person does. In place: stand (shifts weight, looks around), sit (on whatever is at `h`),
  * lean (legs crossed, arms folded), smoke, phone, haggle (gestures; pair two facing each other),
- * argue (faster, bigger), queue, sleep (lying on `h`), dance, vend (behind a counter, offers and waits).
- * Moving between `x` and `range`: walk, sweep (with a broom), steal (sneaks to the far end, reaches, runs back).
+ * argue (faster, bigger), queue, sleep (lying on `h`), dance, vend (behind a counter, offers and waits),
+ * talk (slow gestures and a nod; standing people also switch to it while their speech bubble is open).
+ * Moving between `x` and `range`: walk, run (longer strides, 2.6× as fast), sweep (with a broom), steal
+ * (sneaks to the far end, reaches, runs back). Walkers and runners pivot for a few frames at each end.
  * Drones: 'scan' hovers and sweeps a red beam down on whoever is below.
  * Robots (they also do stand, walk, sweep, queue, vend): moving between `x` and `range`: carry (a load
  * one way, empty back), roll (wheels, stops to pick things up), patrol (slow, sensor sweeping ahead),
@@ -91,7 +93,7 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
  * wall), charge (cabled to a wall socket), glitch (twitches), blink (the screen face changes mood),
  * slump (the derelict: a flicker, a twitch).
  */
-export type Act = 'stand' | 'walk' | 'sit' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
+export type Act = 'stand' | 'walk' | 'run' | 'talk' | 'sit' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
   | 'carry' | 'roll' | 'patrol' | 'serve' | 'crawl' | 'hover' | 'direct' | 'play' | 'weld' | 'scrub' | 'charge' | 'glitch' | 'blink' | 'slump';
 
 export interface Look {
@@ -158,31 +160,62 @@ function ready(p: Character): Ready {
 /** Where a walker is and which way it faces: there and back between a and b, with a pause at each end. */
 function walkAt(p: Character, R: Ready, t: number, speed: number, pause: number) {
   const len = Math.abs(R.b - R.a);
-  if (len < 1) return { x: R.a, face: p.facing ?? 1, moving: false, end: 0 };
+  if (len < 1) return { x: R.a, face: p.facing ?? 1, moving: false, end: 0, since: Infinity };
   const run = len / speed, period = 2 * (run + pause), u = (t + R.ph * 3) % period, dir = R.b > R.a ? 1 : -1;
-  if (u < pause) return { x: R.a, face: dir as 1 | -1, moving: false, end: -1 };
+  if (u < pause) return { x: R.a, face: dir as 1 | -1, moving: false, end: -1, since: u };
   if (u < pause + run) return { x: R.a + dir * (u - pause) * speed, face: dir as 1 | -1, moving: true, end: 0 };
-  if (u < 2 * pause + run) return { x: R.b, face: -dir as 1 | -1, moving: false, end: 1 };
+  if (u < 2 * pause + run) return { x: R.b, face: -dir as 1 | -1, moving: false, end: 1, since: u - pause - run };
   return { x: R.b - dir * (u - 2 * pause - run) * speed, face: -dir as 1 | -1, moving: true, end: 0 };
 }
 
 const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = { human: 0.32, cat: 0.45, pigeon: 0.12, gull: 0.14, cleaner: 0.22, drone: 0.35, courier: 0.55 };
-const MOVERS: Act[] = ['walk', 'sweep', 'steal', 'scan', 'carry', 'roll', 'patrol', 'serve', 'crawl', 'hover'];
+const MOVERS: Act[] = ['walk', 'run', 'sweep', 'steal', 'scan', 'carry', 'roll', 'patrol', 'serve', 'crawl', 'hover'];
 /** How long a mover waits at each end, by act. */
-const PAUSE: Partial<Record<Act, number>> = { sweep: 160, carry: 110, roll: 130, patrol: 170, serve: 150, crawl: 220, hover: 90 };
+const PAUSE: Partial<Record<Act, number>> = { run: 40, sweep: 160, carry: 110, roll: 130, patrol: 170, serve: 150, crawl: 220, hover: 90 };
+/** Runners cover ground this many times faster than they walk. */
+const RUN = 2.6;
+/** Frames a walker spends pivoting (legs crossed, still facing the old way) when it turns at an end. */
+const TURN = 8;
+
+/**
+ * The actions each body really animates (PEOPLE KIT). Other values still draw (as standing, or the
+ * body's idle) and existing scenes keep them; the editor offers these. Keys: 'human', a critter or a robot kind.
+ */
+export const KIT_ACTS: Record<string, readonly Act[]> = {
+  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal'],
+  cat: ['stand', 'walk', 'sit'], pigeon: ['stand', 'walk'], gull: ['stand', 'walk'],
+  cleaner: ['stand', 'walk'], drone: ['stand', 'hover', 'scan'], courier: ['stand', 'walk'],
+  android: ['stand', 'walk', 'carry'], valet: ['stand', 'walk'], marshal: ['stand', 'walk', 'direct'],
+  servbot: ['stand', 'walk', 'carry', 'vend', 'blink', 'charge', 'glitch'], sweeper: ['stand', 'walk', 'sweep'], busker: ['stand', 'walk', 'play'],
+  waiter: ['stand', 'walk', 'serve'], loader: ['stand', 'walk', 'carry'], porter: ['stand', 'walk'], mech: ['stand', 'patrol'],
+  litterbot: ['stand', 'roll', 'sweep'], deliverybot: ['stand', 'roll'], adbot: ['stand', 'roll', 'blink'],
+  crawler: ['stand', 'crawl', 'weld', 'scrub'], wreck: ['slump', 'glitch'], minidrone: ['stand', 'hover'], cargodrone: ['stand', 'hover'], flyerdrone: ['stand', 'hover'],
+};
+/** Which KIT_ACTS row a look belongs to. */
+export function kitFamily(look: Character['look']): string {
+  if (typeof look === 'string') return look;
+  if (look && typeof look === 'object' && 'bot' in look) return (look as BotLook).bot;
+  return 'human';
+}
+
+/** Who is speaking right now: the x of the open speech bubble, or null. Standing people there gesture (talk). */
+let speakerX: number | null = null;
+export function setSpeaker(x: number | null) { speakerX = x; }
+/** Acts that switch to the talk pose while their person is speaking; movers and sitters keep theirs. */
+const TALKERS: readonly Act[] = ['stand', 'talk', 'smoke', 'phone', 'queue', 'haggle', 'vend', 'lean'];
 
 export interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean }
 
 function frameOf(p: Character, R: Ready, t: number): Frame {
   const act = p.act ?? 'stand', ph = R.ph, tt = t + ph;
-  let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = false, end = 0;
+  let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = false, end = 0, since = Infinity;
   if (p.follow) {
     const F = frameOf(p.follow, ready(p.follow), t);
     x = F.x - F.face * (p.gap ?? 18); face = F.face; moving = F.moving;
   } else if (MOVERS.includes(act) && R.a !== R.b) {
-    const sp = p.speed ?? (R.bot ? BOT[R.bot.kind].speed : DEFAULT_SPEED[R.critter ?? 'human']) ?? 0.3;
+    const sp = (p.speed ?? (R.bot ? BOT[R.bot.kind].speed : DEFAULT_SPEED[R.critter ?? 'human']) ?? 0.3) * (act === 'run' ? RUN : 1);
     const w = act === 'steal' ? stealAt(R, t, sp) : walkAt(p, R, t, sp, PAUSE[act] ?? (R.critter === 'pigeon' || R.critter === 'gull' ? 200 : 70 + (ph % 90)));
-    ({ x, face, moving, end } = w);
+    ({ x, face, moving, end } = w); since = 'since' in w && typeof w.since === 'number' ? w.since : Infinity;
   }
   if (R.bot) return botFrame(p, R, t, x, face, moving, end);
   const step = Math.floor(tt / (act === 'steal' && moving && face !== (R.b > R.a ? 1 : -1) ? 5 : 9)) % 2 ? 'stepA' : 'stepB';
@@ -195,8 +228,13 @@ function frameOf(p: Character, R: Ready, t: number): Frame {
   }
   const slow = (n: number) => Math.floor(tt / n);
   const shift: Legs = tt % 420 < 210 ? 'stand' : 'shift';
+  // pivot at the end of a walk: a few frames with crossed legs, still facing the way they came
+  if ((act === 'walk' || act === 'run') && !moving && since < TURN) return { x, face: -face as 1 | -1, legs: 'cross', arms: 'down', bob: 0, moving };
+  if (speakerX !== null && Math.abs(x - speakerX) < 3 && TALKERS.includes(act)) return talkFrame(x, face, tt, shift, moving);
   switch (act) {
     case 'walk': return { x, face, legs: moving ? step : shift, arms: 'down', bob: moving && step === 'stepA' ? 1 : 0, moving };
+    case 'run': { const k = slow(4) % 2; return { x, face, legs: moving ? (k ? 'wide' : 'stepB') : shift, arms: moving ? (k ? 'out' : 'hip') : 'down', bob: moving && k ? 1 : 0, moving }; }
+    case 'talk': return talkFrame(x, face, tt, shift, moving);
     case 'sweep': return { x, face, legs: moving ? step : 'stand', arms: slow(12) % 2 ? 'broomA' : 'broomB', bob: 0, moving };
     case 'steal': return { x, face, legs: moving ? step : 'stand', arms: !moving && end === 1 ? (slow(14) % 2 ? 'reach' : 'out') : 'down', bob: 0, moving };
     case 'sit': { const u = tt % 360; return { x, face, legs: 'sit', arms: R.full?.extras.includes('phone') ? 'phone' : u < 70 ? 'raise' : u < 110 ? 'out' : 'down', bob: 0, moving }; }
@@ -215,6 +253,12 @@ function frameOf(p: Character, R: Ready, t: number): Frame {
       return { x, face: look, legs: shift, arms: 'down', bob: 0, moving };
     }
   }
+}
+
+/** Talking: slow hand gestures and a small nod, weight shifting as usual. */
+function talkFrame(x: number, face: 1 | -1, tt: number, shift: Legs, moving: boolean): Frame {
+  const k = Math.floor(tt / 26);
+  return { x, face, legs: shift, arms: (['out', 'down', 'point', 'down', 'hip', 'out'] as Arms[])[k % 6], bob: tt % 48 < 6 ? 1 : 0, moving };
 }
 
 /** A robot's pose (legs, wheels, rotors) and state (arms, load, screen face) for its job. */
