@@ -1,7 +1,9 @@
 # All-game consolidation: execution evidence
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
-Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json). No publication.
+Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
+Latest published checkpoint: `ee8cc6a` on main and production; subsequent work below is unpublished.
+The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 
 Starting main: `31616f6d45adf2238ceccd9ca69f8a49e08450f3`, plus preserved pre-existing local work.
 Source baseline: `4d646c8add7a13b4687bd85fc5dae517376df47234666623351896bf974dc805`.
@@ -13,18 +15,18 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
 | G0 | IN PROGRESS | Immutable source inventory captured; exact producer/controller cases and pixel/outcome fixtures still required |
-| G1 | IN PROGRESS | Toast/gain/touch-mirror display state removed; one status/help lane; source-tagged device history avoids notification echo; duplicate train toast/NET pulse removed; remaining routing pending |
-| G2 | IN PROGRESS | check-communication PASS for controlled readable time, suspension/pause, priority, dialogue deferral, duplicate collapse, queue bounds, scene cancellation and hint resumption; device captions/guidance integration pending |
-| G3 | IN PROGRESS | Recorded NPC/device corpus and bots migrated; original text/effect/state and save checks pass; final integrated corpus/browser acceptance pending |
+| G1 | PASS | Retired producer/source routing audit and actual Game/Host/Panels/Schematic/history/causal checks; exact scope and source identity in docs/reference/COMMUNICATION-ACCEPTANCE.md |
+| G2 | PASS | Actual readable-clock, reduced-motion/covered-screen, bounded priority/cancellation/guidance and on/off-screen device checks; COMMUNICATION-ACCEPTANCE.md |
+| G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
 | G4 | IN PROGRESS | Contextual source Save/history/bundles/recovery and bot source checks pass; full authoring/isolation acceptance pending |
 | G5 | IN PROGRESS | Shared handoff reset/restore/disposal checks pass; whole-runtime lifecycle inventory/cases pending |
-| G6 | IN PROGRESS | Six workloads recorded three times with raw/source/quality/calibration/variability evidence; irregular visible-frame cadence limits representativeness and final performance acceptance remains open |
+| G6 | IN PROGRESS | Historical recordings remain source-bound to earlier checkpoints. Current six-workload suite fails replacement-frame startup even without a Game; no current complete baseline or optimization claim. PERFORMANCE-STARTUP-DIAGNOSIS.md records the controls |
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
 | G8 | IN PROGRESS | 19/19 ordinary manifests and actor collections now support source CRUD/rebinding/Save; new ordinary catalogue scenes run without TS registration. Native controllers/world/network/story and integrated acceptance remain |
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
 | G10 | IN PROGRESS | Typed actor CRUD/source bindings now cover all19 native scenes; catalogue creation/history/bundles/Save are checked. Current combined source still requires all-scene browser Play, controller/network/device entity controls and complete lifecycle acceptance |
 | G11 | IN PROGRESS | Moth Act transition authored through shared handoffs; full world/story/transport source integration pending |
-| G12 | IN PROGRESS | Native raster 95/95 and focused original outcome/old-state cases pass; full state/actor/HUD/save acceptance pending |
+| G12 | IN PROGRESS | Latest published native raster173/173 has zero differing pixels/errors; focused immutable outcome/current-save checks pass. Full state/actor/HUD/save acceptance remains pending |
 | G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
 
 Package `tsc -b` and `check-communication.mts` pass after the initial communication clock/lane change.
@@ -1966,3 +1968,75 @@ Merged editor/source checkpoint,2026-10-19:
   diagnostic changes were reverted. Normal merged editor all19 Play did not reproduce that timeout.
 - Remaining:ordinary controller/story/security tails,complete typed scene/world/entity coverage,
   final lifecycle/communication/removal audit,six measured workloads and all G0-G13 signoffs.
+- Published checkpointee8cc6a73bde1cce87654d3e18444f40f8370d36:main and production remote SHAs
+  verified equal. Production homepage39297355040 and design39297355309 deployments succeeded;
+  main homepage check39297355704 succeeded. Publication does not sign the remaining goal gates.
+
+Next unpublished authoring slice:
+- Fully editable native binding contracts now permit removing an original command after all source
+  references have been rebound. Dangling references still refuse atomically; existing command IDs
+  retain their invocation permissions. Fixed-binding contracts keep their original command floor.
+  Native scalar identities and existing vocabulary protection remain unchanged pending removal of
+  external native/story consumers. Actual typed creation/rebinding/removal, pending manual/signal
+  execution, protected Save/fresh shipping import and byte Undo PASS:
+  .scene-system/rebound-command-removal-7cneBV. This removes an editor restriction; default gameplay
+  source and outcomes are unchanged.
+- Yard ordinary rules now live entirely in shared commands/queries/deadlines:collection membership,
+  bounded optional text lookup,one readonly SceneTime sample per transaction,session hatch expiry and
+  checkpoint reset preserve864 original cases and33 timing histories. Native gameplay effects and
+  derived callbacks are removed; physical presentation and camera hit testing remain. Full typed/
+  pending/sourceSave/fresh import/byteUndo PASS:yard-full-save-sHAgNB.
+- Finite physical and guard-success inputs dispatch source-owned system commands through the existing
+  interpreter. Static origin validation and runtime provenance reject ACT/items/otherguard/system
+  bypasses. Stacks landing state/reward/reply tails moved to source;288 original histories preserve
+  physical/state/reply scene-time/goal order.16 extra coalescible redraw notifications are documented,
+  not claimed identical. Typed pending/sourceSave/fresh import/Undo PASS:stacks-permission-save-9X8ytj.
+- Controlled grants and collection membership now accept existing scalar reads. Prospective finite
+  label/select/enum outputs must all name actual pending Registry metadata; missing/unassociated
+  contexts reject. Runtime uses the same draft and checks canonical metadata before committing.
+  Typed selectors,actual Game root,Save/fresh shipping/Undo PASS:controlled-target-save-7V7sat.
+- Committed replies may reference a validated static source line and use the existing native formatter
+  after state commit. Dynamic postcommit line lookup is deliberately not accepted. Actual typed source/
+  speaker edits,reply state/receipt,invalid-ref rejection and paired Save/fresh import/Undo PASS:
+  committed-source-lines-aAuSfh. Existing inline/template controls remain.
+- Downtown Registry and billboard native grant/timer bodies are removed. Source label queries own
+  targets, freshness, captions and boolean lamp/status queries; peer and parallel billboard callbacks
+  preserve128 original and128 published-feedback histories. Typed pending/sourceSave/fresh import/
+  Undo PASS:downtown-registry-save-sweAfC. DLV ordinary tails remain open.
+- Train unpaid count/refusal logic now uses an exclusive ordinary noun command step with actual
+  interaction/signal permissions. Shared remainder reads preserve negative/fractional JS semantics.
+  840 original histories and672 existing door histories PASS; typed paired Save/fresh import/Undo:
+  train-command-save-YKg6rr. Paid motion/wording,halt reporting and harbor unlock remain open. At the
+  existing MAX_SAFE numeric boundary the engine refuses overflow atomically; this is an explicit
+  bounded difference from the original unrestricted increment, not a claim of boundary parity.
+- Native session disposal now clears owned verb/eligibility callbacks and restores its prior
+  authorization callback. check-native-session-disposal.mts proves20 repeated real model/session
+  replacements, manual/signal progress, replies and idempotent release. Whole G5 remains open.
+- Performance startup failure reproduces with the full private-frame payload kept alive for3seconds
+  WITHOUT constructing a Game, then removed. The second HTML response completes but does not parse.
+  Immediate replacement passes. Underlying browser lifecycle cause remains unresolved; no engine
+  rendering change or six-workload baseline is justified. See PERFORMANCE-STARTUP-DIAGNOSIS.md.
+- Capsule physical boot/reboot timers report a declared milestone; source owns readiness and the
+  online caption. Obsolete controller online-text alias removed.108 immutable timing histories and
+  existing1728 histories PASS; actual typed pending/Save/bundle/fresh import/Undo:
+  capsule-router-online-save-8LHluu. Success has one extra redraw notification; exact caption times,
+  state, timers and native goal/event order remain preserved. Thermal integration stays native.
+- Existing handoffs now support finite presentation:end through the actual Game/SceneHost, using the
+  same postcommit interpreter. Goal/caption/END ordering, refusal, missing-host rejection, disposal
+  and non-replay on reload PASS; typed pending/sourceSave/fresh import/Undo:end-handoff-save-IjLi10.
+  No source gameplay flag is converted into a persistent screen-takeover state.
+
+Integrated checkpoint ready for publication,2026-10-19:
+- Source377ff1fccc6c5374f2826002acd7e2b239e6af02af0a04f717f16a91168606f9:
+  both builds and package TypeScript PASS. Raster173/173 PASS,zero differing pixels/errors:
+  .scene-system/all-game-pixel-check/evidence/377ff1fccc6c5374f2826002acd7e2b239e6af02af0a04f717f16a91168606f9-1792434878052.json.
+- Actual built public editor app-TWIUVSIB.js/native Play play-APE4UOCP.js:all19 scene startups,
+  actual scene-state IDs and Stop iframe disposal PASS; no application console errors. One unrelated
+  Chrome-extension connection error is recorded separately. Evidence:
+  .scene-system/all-scene-source-checkpoint/native-play-19-app-TWIUVSIB.json.
+- Downtown DLV access/refusal cases and sign pulse/grant/text are authored.64 immutable histories,
+  causal feedback/full observable old outcomes and actual typed pending/Save/fresh import/Undo PASS:
+  downtown-registry-save-qpVqbm. DLV mechanical scan/completion/finale tails remain open.
+- G1/G2/G3 now PASS from explicit source/callsite/corpus audit and focused actual-runtime tests;
+  docs/reference/COMMUNICATION-ACCEPTANCE.md records exact scope. Starting inventory bookkeeping,
+  full authoring/world/controller/lifecycle/preservation/removal and performance gates remain open.

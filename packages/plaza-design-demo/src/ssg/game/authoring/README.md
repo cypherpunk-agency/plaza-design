@@ -26,10 +26,10 @@ bundle never includes the local write service, credentials or a filesystem endpo
 
 The selector includes all 19 scene compositions, four sequence compositions, two timeline
 documents. Tool panels also use ten native device sources, city/metro/bot sources, reusable Play
-fixtures and registered scene/gameplay documents. Current packaging: 85 source documents / 121 source references. Scene-content registration
+fixtures and registered scene/gameplay documents. Current packaging: 97 source documents / 131 source references. Scene-content registration
 covers Harbor Shift, Shop, Library, Laundromat, Warehouse, Mall, Market, Stacks, Metro, Galleria Station,
 Harbor Station, Train, Capsule, Yard, Moth, Sandbox, Beach, Harbor and Downtown. All 19 now have source registrations;
-Downtown’s custom runtime story/people and native controller contracts remain unfinished. Engine targets expose visibility, labels,
+Downtown's people and ordinary content now use shared source; remaining runtime story and native controller decisions are unfinished. Engine targets expose visibility, labels,
 responses, native action fields and exit routing in Logic. Touch-specific arrival pages are editable.
 This is not full entity/controller/world authoring: creation/deletion and
 several native controller contracts remain migration work. All 19 native scenes have private Play

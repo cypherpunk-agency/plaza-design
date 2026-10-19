@@ -112,6 +112,16 @@
           "cases": 1728,
           "artifact": ".scene-system/capsule-workflow-save-3BbuuD",
           "scope": "Source door edge/goals/Pixel delayed selection and intervals, including beforeNative schedule emission; exact original thermal histories, typed pending edits, source Save/fresh import/Undo. Whole-scene gates remain open."
+        },
+        "routerOnlineSourceCheckpoint": {
+          "status": "PASS",
+          "cases": 108,
+          "checks": [
+            "check-capsule-router-online.mts",
+            "check-capsule-router-online-save.mts"
+          ],
+          "sourceSave": ".scene-system/capsule-router-online-save-8LHluu",
+          "scope": "Physical boot/reboot timers report a declared milestone; source owns readiness and online caption. Original state/timers/caption time/native event and goal order preserved; extra redraw notification documented. Thermal simulation retained; full-scene gates remain open."
         }
       }
     },
@@ -231,6 +241,27 @@
           "casesAcrossFourScenes": 274,
           "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
           "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
+        },
+        "registrySourceCheckpoint": {
+          "status": "PASS",
+          "cases": 128,
+          "checks": [
+            "check-downtown-registry-control.mts",
+            "check-downtown-registry-forms.mts",
+            "check-downtown-registry-save.mts",
+            "check-parallel-deadlines.mts"
+          ],
+          "sourceSave": ".scene-system/downtown-registry-save-sweAfC",
+          "scope": "Original and published receipt histories preserve Registry grants, peer timing, billboard callbacks, status and lamp state. Typed labels affect authoritative source grant and actual lamp paint. DLV ordinary tails and full-scene gates remain open."
+        },
+        "dlvPermissionSignCheckpoint": {
+          "status": "PASS",
+          "cases": 64,
+          "checks": [
+            "check-downtown-dlv-sign.mts",
+            "check-causal-feedback.mts"
+          ],
+          "scope": "Source DLV refusal cases retain mechanical direction endpoints; source pulse/grant/text owns sign testing. Immutable DLV and sign histories preserve state, captions, events and timing. Final DLV scan/door/completion/finale tails remain native; whole-scene gates remain open."
         }
       }
     },
@@ -480,6 +511,18 @@
           "casesAcrossFourScenes": 274,
           "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
           "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
+        },
+        "ordinaryControllerNextCheckpoint": {
+          "status": "PASS",
+          "cases": 864,
+          "timingHistories": 33,
+          "checks": [
+            "check-yard-grab-hatch.mts",
+            "check-yard-drop-workflows.mts",
+            "check-yard-full-save.mts"
+          ],
+          "sourceSave": ".scene-system/yard-full-save-sHAgNB/evidence.json",
+          "scope": "Grab/drop, hatch expiry and parcel outcomes now use shared source commands, queries and deadlines; native movement/collision retained. Final whole-scene gates remain open."
         }
       }
     },
@@ -895,6 +938,17 @@
           "casesAcrossFourScenes": 274,
           "artifact": ".scene-system/checkpoint-policies/run-rWs6Yq",
           "scope": "Current-save normalization source policies through the existing interpreter on copied blocks; typed inspector/history/bundle/Save/fresh import/Undo. No historic-format translation or live-state mutation."
+        },
+        "ordinaryControllerNextCheckpoint": {
+          "status": "PASS",
+          "cases": 288,
+          "timingHistories": 0,
+          "checks": [
+            "check-stacks-source-permissions.mts",
+            "check-stacks-source-permission-save.mts"
+          ],
+          "sourceSave": ".scene-system/stacks-permission-save-9X8ytj",
+          "scope": "Guard permissions and physical landing milestones now dispatch source rewards/replies at the original timing. Sixteen additional redraw notifications across 288 histories are explicit; final alarm/watchdog/trace and whole-scene gates remain open."
         }
       }
     },
@@ -1787,6 +1841,17 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "unpaidCommandCheckpoint": {
+          "status": "PASS",
+          "cases": 840,
+          "checks": [
+            "check-train-command-steps.mts",
+            "check-train-command-step-forms.mts",
+            "check-train-command-step-save.mts"
+          ],
+          "sourceSave": ".scene-system/train-command-save-YKg6rr/evidence.json",
+          "scope": "Unpaid count and refusal through exclusive ordinary source command step; negative/fractional JS remainder and actual source permissions. Existing MAX_SAFE overflow refuses atomically and is an explicit boundary difference. Paid physics/wording, halt and harbor flag remain native; whole-scene gates remain open."
         }
       }
     },

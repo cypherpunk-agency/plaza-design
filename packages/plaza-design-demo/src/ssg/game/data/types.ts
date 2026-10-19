@@ -42,8 +42,10 @@ export type Cond = string;
  */
 export interface TimeWindow { from: string; to: string; days?: ('odd' | 'even' | number)[] }
 
-/** One step. Each has exactly one of set / open / emit / goal / effect / give / take / trace / unseal. */
+/** One step. Each has exactly one of command / input / set / open / emit / goal / effect / give / take / trace / unseal. */
 export type Action = { if?: Cond; when?: TimeWindow } & (
+  | {command:string} // sole noun.on case step; actual interaction/signal permission, never system
+  | {input:string}
   | { set: string; to: Value }   // change a state key (strings are templates)
   | { open: string; with?: string } // open a full-screen panel: talk (with: which dialogue), camera
   | { emit: string }             // raise one of this noun's events

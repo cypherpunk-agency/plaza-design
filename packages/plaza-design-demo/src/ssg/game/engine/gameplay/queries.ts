@@ -5,7 +5,11 @@ import {matches} from './validation';
 
 /** Scalar reads are immutable expressions, never another state declaration or save block. */
 export type ScalarRead={literal:StateValue}|{state:string}|{query:string};
+export type CollectionQuery={kind:'collection';source:'camera.crates';id:ScalarRead;read:{kind:'exists'}|{kind:'lineRef';prefix:string;fallback:string}};
 export type QueryDefinition=
+ | CollectionQuery
+ | {kind:'remainder';value:ScalarRead;divisor:number}
+ | {kind:'sceneTime'}
  | {kind:'wirePresent';from:string;to:string;verb?:string}
  | {kind:'count';conditions:Condition[]}
  | {kind:'select';cases:{when?:Condition;value:ScalarRead}[]}
@@ -14,6 +18,8 @@ export type QueryDefinition=
  | {kind:'duration';value:ScalarRead;unit:'seconds';round:'nearest'};
 export interface GameplayReadContext {
  definition:Pick<GameplayDefinition,'queries'>;
+ sceneTime?:number;
+ cameraCrates?:readonly {id:string}[];
  cables?:readonly {from:string;to:string;verb:string}[];
  tuning?:Readonly<SceneData['tuning']>;
  labels?:Readonly<SceneData['texts']>;
@@ -31,6 +37,9 @@ export function readQuery(id:string,state:Readonly<GameplayState>,context?:Gamep
  const queries=context?.definition.queries;if(!queries||!own(queries,id))return undefined;
  const path=context?.queryPath??[];if(path.includes(id)||path.length>=32)throw Error('Gameplay query cycle/budget: '+id);
  const next={...context!,queryPath:[...path,id]},q=queries[id];
+ if(q.kind==='remainder'){const value=scalarRead(q.value,state,next);return typeof value==='number'&&Number.isFinite(value)?value%q.divisor:undefined;}
+ if(q.kind==='sceneTime')return Number.isFinite(context?.sceneTime)?context!.sceneTime:undefined;
+ if(q.kind==='collection'){if(!context?.cameraCrates)return undefined;const id=scalarRead(q.id,state,next);if(typeof id!=='string')return undefined;const row=context.cameraCrates.find(row=>row.id===id);if(q.read.kind==='exists')return !!row;if(!row||!context.labels)return undefined;const candidate=q.read.prefix+row.id,key=own(context.labels,candidate)?candidate:q.read.fallback;return lineValue(context.labels[key])?key:undefined;}
  if(q.kind==='wirePresent')return context?.cables?.some(w=>w.from===q.from&&w.to===q.to&&(q.verb===undefined||w.verb===q.verb));
  if(q.kind==='count')return q.conditions.filter(c=>matches(c,state,next)).length;
  if(q.kind==='select'){const row=q.cases.find(r=>matches(r.when,state,next));return row?scalarRead(row.value,state,next):undefined;}
@@ -54,13 +63,19 @@ export function numericScalarRead(read:ScalarRead,d:GameplayDefinition,depth=0):
  if('literal'in read)return typeof read.literal==='number';
  if('state'in read)return d.state?.[read.state]?.type==='number';
  const q=d.queries?.[read.query];if(!q)return false;
- return q.kind==='count'||q.kind==='tuning'||q.kind==='duration'||q.kind==='select'&&Array.isArray(q.cases)&&q.cases.every(row=>row.value&&numericScalarRead(row.value,d,depth+1));
+ return q.kind==='remainder'||q.kind==='sceneTime'||q.kind==='count'||q.kind==='tuning'||q.kind==='duration'||q.kind==='select'&&Array.isArray(q.cases)&&q.cases.every(row=>row.value&&numericScalarRead(row.value,d,depth+1));
+}
+export function stringScalarRead(read:ScalarRead,d:GameplayDefinition,depth=0):boolean{
+ if(depth>=32)return false;if('literal'in read)return typeof read.literal==='string';if('state'in read)return ['string','enum'].includes(d.state?.[read.state]?.type??'');const q=d.queries?.[read.query];return q?.kind==='label'||q?.kind==='collection'&&q.read.kind==='lineRef'||q?.kind==='select'&&Array.isArray(q.cases)&&q.cases.every(row=>row.value&&stringScalarRead(row.value,d,depth+1));
 }
 export function validateGameplayQueries(d:GameplayDefinition,condition:(v:unknown)=>void){
  const queries=d.queries??{};object(queries);if(Object.keys(queries).length>64)fail('query count');
  for(const[id,raw]of Object.entries(queries)){
   name(id);if(own(d.state??{},id))fail('query shadows state '+id);const q=object(raw);
-  if(q.kind==='wirePresent'){fields(q,['kind','from','to','verb'],['kind','from','to']);name(q.from);name(q.to);if(q.verb!==undefined)name(q.verb);}
+  if(q.kind==='remainder'){fields(q,['kind','value','divisor']);validateScalarRead(q.value,d);if(typeof q.divisor!=='number'||!Number.isFinite(q.divisor)||q.divisor===0)fail('finite nonzero divisor');}
+  else if(q.kind==='sceneTime'){fields(q,['kind']);}
+  else if(q.kind==='collection'){fields(q,['kind','source','id','read']);if(q.source!=='camera.crates')fail('registered collection source');validateScalarRead(q.id,d);if(!stringScalarRead(q.id as ScalarRead,d))fail('collection ID requires string read');const r=object(q.read);if(r.kind==='exists')fields(r,['kind']);else if(r.kind==='lineRef'){fields(r,['kind','prefix','fallback']);name(r.fallback);if(typeof r.prefix!=='string'||!/^[-a-zA-Z0-9_.:]{0,128}$/.test(r.prefix))fail('line prefix');}else fail('collection read');}
+  else if(q.kind==='wirePresent'){fields(q,['kind','from','to','verb'],['kind','from','to']);name(q.from);name(q.to);if(q.verb!==undefined)name(q.verb);}
   else if(q.kind==='count'){fields(q,['kind','conditions']);if(!Array.isArray(q.conditions)||!q.conditions.length||q.conditions.length>128)fail('count rows');(q.conditions as unknown[]).forEach(condition);}
   else if(q.kind==='select'){fields(q,['kind','cases']);if(!Array.isArray(q.cases)||!q.cases.length||q.cases.length>32)fail('select rows');for(const[i,raw]of (q.cases as unknown[]).entries()){const r=fields(raw,['when','value'],['value']);if(i===(q.cases as unknown[]).length-1?r.when!==undefined:r.when===undefined)fail('select final fallback');if(r.when!==undefined)condition(r.when);validateScalarRead(r.value,d);}}
   else if(q.kind==='tuning'||q.kind==='label'){fields(q,['kind','key']);name(q.key);}
@@ -70,13 +85,18 @@ export function validateGameplayQueries(d:GameplayDefinition,condition:(v:unknow
  const visiting=new Set<string>(),done=new Set<string>();
  function visit(id:string,depth=0){if(depth>=32||visiting.has(id))fail('cycle/budget '+id);if(done.has(id))return;visiting.add(id);function walk(v:unknown){if(!v||typeof v!=='object')return;if(own(v,'query'))visit(String((v as {query:unknown}).query),depth+1);for(const c of Object.values(v))walk(c);}walk(queries[id]);visiting.delete(id);done.add(id);}
  Object.keys(queries).forEach(id=>visit(id));
- for(const q of Object.values(queries))if(q.kind==='duration'&&!numericScalarRead(q.value,d))fail('duration requires numeric milliseconds');
+ for(const q of Object.values(queries))if((q.kind==='duration'||q.kind==='remainder')&&!numericScalarRead(q.value,d))fail('duration requires numeric milliseconds');
 }
 /** Validate only against the assembled prospective source, including unsaved tuning/label edits. */
-export function validateGameplayQuerySources(d:GameplayDefinition,data:Pick<SceneData,'tuning'|'texts'> & Partial<Pick<SceneData,'devices'|'nodes'>>){
+export function validateGameplayQuerySources(d:GameplayDefinition,data:Pick<SceneData,'tuning'|'texts'> & Partial<Pick<SceneData,'devices'|'nodes'|'camera'>>){
  for(const q of Object.values(d.queries??{})){
+  if(q.kind==='collection'){if(!data.camera||!Array.isArray(data.camera.crates)||new Set(data.camera.crates.map(row=>row.id)).size!==data.camera.crates.length)fail('camera collection source');if(q.read.kind==='lineRef'){if(!lineValue(data.texts[q.read.fallback]))fail('line fallback '+q.read.fallback);for(const row of data.camera!.crates){const key=q.read.prefix+row.id;if(own(data.texts,key)&&!lineValue(data.texts[key]))fail('optional collection line '+key);}}}
   if(q.kind==='wirePresent'){const nouns=[...(data.devices??[]),...(data.nodes??[])].flatMap(dev=>dev.nouns.map(noun=>({key:dev.id+'.'+noun.id,noun}))),at=q.from.lastIndexOf(':'),source=nouns.find(n=>n.key===q.from.slice(0,at)),target=nouns.find(n=>n.key===q.to);if(at<0||!source?.noun.events?.includes(q.from.slice(at+1))||!target)fail('wire endpoint reference');if(q.verb!==undefined&&![...(target!.noun.verbs??[]),...(target!.noun.clock?['start','stop']:[])].includes(q.verb))fail('wire verb reference');}
   if(q.kind==='tuning'&&(!own(data.tuning,q.key)||typeof data.tuning[q.key]!=='number'||!Number.isFinite(data.tuning[q.key])))fail('tuning reference '+q.key);
   if(q.kind==='label'&&(!own(data.texts,q.key)||typeof data.texts[q.key]!=='string'))fail('label reference '+q.key);
  }
 }
+
+/** Line metadata stays in the existing source library; no second formatter. */
+export function lineValue(value:unknown):value is [string,string,('ok'|'err'|'dim')?]{return Array.isArray(value)&&value.length>=2&&value.length<=3&&value.slice(0,2).every((v,i)=>typeof v==='string'&&(i===0||v.length>0)&&v.length<=2000)&&(value[2]===undefined||['ok','err','dim'].includes(value[2]));}
+export function lineReferenceQuery(d:Pick<GameplayDefinition,'queries'>,id:string){const q=d.queries?.[id];return q?.kind==='collection'&&q.read.kind==='lineRef';}

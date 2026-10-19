@@ -664,11 +664,6 @@
       "THERMAL GATE: NRLU 404 0451 · label 4°C · reading 31°C · warm.",
       "err"
     ],
-    "box.landed": [
-      "",
-      "NRLU 404 0451: set down on NIGHT FERRY 7, deck slot 12, shore power on. from inside: three long knocks.",
-      "ok"
-    ],
     "box.back": [
       "",
       "STS-2: NRLU 404 0451 back in slot {box}. held for inspection at 06:00.",

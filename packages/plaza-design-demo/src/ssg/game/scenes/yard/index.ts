@@ -8,9 +8,10 @@ import {compileNativeTargets} from '../../engine/gameplay/native-targets';
 import type {GameplayDefinition} from '../../engine/gameplay/types';
 /**
  * The back yard: the first scene on the hacking system (devices → nouns →
- * verbs, cables between nouns). What is in it is data/yard.json; what is
- * left here is its own code: the crane and the parcel (effects.ts), CAM-1
- * (camera.ts) and the drawing (scene.ts). The engine in engine/ runs the rest.
+ * verbs, cables between nouns). Scene, device and gameplay sources own the
+ * composition and ordinary crane/parcel rules. Native code retains CAM-1
+ * interaction, source validation and physical presentation; the shared engine
+ * executes commands, queries and timed transitions.
  */
 
 import { YARD } from "../../data/index";

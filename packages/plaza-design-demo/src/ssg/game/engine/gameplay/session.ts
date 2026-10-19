@@ -9,7 +9,8 @@ function freeze<T>(value:T):Readonly<T>{if(value&&typeof value==='object'){Objec
 /** One command and its authored reactions either all commit or change nothing. No timers/storage/DOM. */
 export class GameplaySession {
   readContext?:()=>Omit<GameplayReadContext,'definition'|'queryPath'>;
-  queryContext():GameplayReadContext{return {...this.readContext?.(),definition:this.definition};}
+  private transactionContext?:GameplayReadContext;
+  queryContext():GameplayReadContext{return this.transactionContext??{...this.readContext?.(),definition:this.definition};}
   query(id:string,state=this.state()){return readQuery(id,state,this.queryContext());}
   matchesState(condition:Condition|undefined,state:GameplayState){return matches(condition,state,this.queryContext());}
   /** Source metadata lookup only; never performs the grant. */
@@ -41,6 +42,7 @@ export class GameplaySession {
     if(this.active)return{ok:false,reason:'busy'};
     this.active=true;
     try{
+      this.transactionContext={...this.readContext?.(),definition:this.definition};
       const draft=this.state(),events:GameplayEvent[]=[],notifications:({event:GameplayEvent}|{grant:GameplayGrant})[]=[],queue:{id:string;source:Source;cause?:string}[]=ids.map(id=>({id,source}));
       let commands=0,actions=0,continued=false;
       for(let i=0;i<queue.length||(continuation&&!continued);i++){
@@ -59,7 +61,7 @@ export class GameplaySession {
           if('grant'in action){const grant=action.grant,player=draft.player;if(!player)return{ok:false,reason:'resources'};const origin={command:task.id,source:task.source,...(task.cause?{cause:task.cause}:{})};
             if('keyring'in grant){const id=grant.keyring;if(!Array.isArray(player.keyring)||!this.keyringKnown?.(id))return{ok:false,reason:'resources'};if(!player.keyring.includes(id)){draft.player={...player,keyring:[...player.keyring,id]};notifications.push({grant:{kind:'keyring',id,...origin}});}}
             else if('ability'in grant){if(typeof player.jump!=='boolean')return{ok:false,reason:'resources'};if(!player.jump){draft.player={...player,jump:true};notifications.push({grant:{kind:'ability',id:'jump',...origin}});}}
-            else{const id=grant.controlled;if(!Array.isArray(player.controlled)||!this.controlledKnown?.(id))return{ok:false,reason:'resources'};if(!player.controlled.includes(id)){draft.player={...player,controlled:[...player.controlled,id]};notifications.push({grant:{kind:'controlled',id,...origin}});}}
+            else{const id=typeof grant.controlled==='string'?grant.controlled:scalarRead(grant.controlled,draft,this.queryContext());if(typeof id!=='string'||!Array.isArray(player.controlled)||!this.controlledKnown?.(id))return{ok:false,reason:'resources'};if(!player.controlled.includes(id)){draft.player={...player,controlled:[...player.controlled,id]};notifications.push({grant:{kind:'controlled',id,...origin}});}}
           }
           else if('state'in action){const d=this.definition.state![action.state],current=stateValue(draft.values,action.state),raw='set'in action?action.set:action.add,value=raw!==null&&typeof raw==='object'?scalarRead(raw,draft,this.queryContext()):raw;if('add'in action&&(typeof current!=='number'||!validStateNumber(d,value)))return{ok:false,reason:'resources'};const next='set'in action?value:(current as number)+(value as number);if(!validValue(d,next))return{ok:false,reason:'resources'};setStateValue(draft.values!,action.state,next);}
           else if('purchase'in action){if(!applyPurchase(this.definition,action.purchase,draft,this.queryContext()))return{ok:false,reason:'resources'};}
@@ -82,7 +84,7 @@ export class GameplaySession {
       try{this.afterCommit();}catch{/* Presentation/persistence failures are separate from committed state. */}
       for(const notification of notifications){if('event'in notification){for(const listener of [...this.listeners])try{listener(freeze(notification.event));}catch{/* observer isolation */}}else for(const listener of [...this.grantListeners])try{listener(freeze(notification.grant));}catch{/* observer isolation */}}
       return{ok:true,events:Object.freeze(published)};
-    }finally{this.active=false;}
+    }finally{this.transactionContext=undefined;this.active=false;}
   }
   onDispose(cleanup:()=>void){if(this.disposed){cleanup();return()=>{};}this.cleanup.add(cleanup);return()=>{this.cleanup.delete(cleanup);};}
   dispose(){if(this.disposed)return;this.disposed=true;for(const cleanup of [...this.cleanup])try{cleanup();}catch{/* owned cleanup isolation */}this.cleanup.clear();this.listeners.clear();this.grantListeners.clear();this.history=[];}

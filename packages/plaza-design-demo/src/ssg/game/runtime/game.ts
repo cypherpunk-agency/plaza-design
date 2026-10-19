@@ -326,6 +326,7 @@ export class Game {
       hintBusy:()=>document.hidden||this.menu.open||!!this.opening||!!this.cut||!!this.mapView||!!this.netView||!!this.flight||this.showEnd||!!this.sleep||this.term.isOpen||!!this.bubble||!!this.hosts.get(id)?.acknowledgmentPending,
       feedbackTime:()=>this.hints.notices.time,
       cutscene:cut=>{this.pendingCut=cut;},
+      presentation:operation=>{if(operation==='end')this.showEnd=true;},
       state:()=>{const values=this.save.gameplay??={};if(def.gameplay)mergeValues(values,resolveValues(def.gameplay,{flags:this.save.flags,items:this.save.items,tokens:this.save.tokens,values}));return values[id]??={};},
       gameplay:model=>this.gameplayFor(id,model),
       conversation:(conversationId)=>{const session=this.gameplayFor(id);return session?.definition.conversations[conversationId]?new ConversationSession(session,conversationId):undefined;},

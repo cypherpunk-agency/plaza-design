@@ -1,7 +1,7 @@
 import defaults from './capsule-defaults.json';import type {SceneData,DeviceData} from '../../data/types';
 for(const value of Object.values(defaults))if(value&&typeof value==='object')Object.freeze(value);Object.freeze(defaults);
-export interface CapsuleController {kind:'capsule';version:1;state:Record<'plugOn'|'sun'|'pixelAt'|'doorOpen',string>;devices:Record<'router'|'pixel',string>;tuning:Record<'bootMs'|'rebootMs'|'roomTemp'|'idleTemp'|'hotTemp'|'rebootTemp'|'heatPerS'|'coolPerS'|'steamMs',string>;texts:Record<'online'|'reboot',string>;onlineNoticeDelayMs:number;temperatureNoticeStep:number}
-/** Frozen legacy input migration only; canonical source owns the explicit record. */
+export interface CapsuleController {kind:'capsule';version:1;state:Record<'plugOn'|'sun'|'pixelAt'|'doorOpen',string>;devices:Record<'router'|'pixel',string>;tuning:Record<'bootMs'|'rebootMs'|'roomTemp'|'idleTemp'|'hotTemp'|'rebootTemp'|'heatPerS'|'coolPerS'|'steamMs',string>;texts:Record<'reboot',string>;onlineNoticeDelayMs:number;temperatureNoticeStep:number}
+/** Registered controller defaults; authored scene source owns the explicit configuration. */
 export const capsuleController=(data:Pick<SceneData,'controller'>):CapsuleController=>(data.controller===undefined?defaults:data.controller)as CapsuleController;
 export function capsuleControllerProblems(data:SceneData,nodes:ReadonlyMap<string,DeviceData>=new Map()):string[]{
  const errors:string[]=[],c=capsuleController(data),fail=(s:string)=>errors.push('capsule controller: '+s),object=(v:unknown)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype,fields=(v:unknown,shape:object)=>{if(!object(v)||Object.keys(v as object).sort().join()!==Object.keys(shape).sort().join())fail('unknown/missing registered fields');};

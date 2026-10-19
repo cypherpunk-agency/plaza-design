@@ -56,12 +56,6 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
       return w.line(ride.phase === 'halted' ? 'pos.halted' : 'pos.between', vars);
     },
     'train.brake': (w) => {
-      const m = w.m;
-      if (m.carry(PASS) <= 0) {
-        const n = Number(m.get('pulls') ?? 0);
-        m.set('pulls', n + 1);
-        return w.line(n % 2 === 0 ? 'brake.notyours' : 'brake.queued');
-      }
       const r = brakeRide();
       if (r === 'standing') return w.line('brake.standing');
       if (r === 'braking') return w.line('brake.already');
@@ -111,10 +105,9 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
         : 'AT ' + STATIONS[rideStop()].name,
     },
     needs: {
-      state: ['pulls'],
       texts: {
         'pos.station': 'line', 'pos.between': 'line', 'pos.halted': 'line',
-        'brake.notyours': 'line', 'brake.queued': 'line', 'brake.standing': 'line', 'brake.already': 'line', 'brake.pulled': 'line',
+        'brake.standing': 'line', 'brake.already': 'line', 'brake.pulled': 'line',
         'halt.track': 'line', 'halt.siding': 'line', 'resume': 'line',
       },
     },

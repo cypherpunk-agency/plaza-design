@@ -1,16 +1,18 @@
+import type {NativeInput} from './native-inputs';
 import type {NativeDeadline} from './native-deadlines';
 import type {NativeLiveCondition,NativeWorkflowPhase} from './native-live-conditions';
 import type {QueryDefinition,ScalarRead} from './queries';
 import type {TimeWindow} from '../../data/types';
 import type {WeatherKind} from '../../world/weather';
 /** Shared gameplay contracts. Documents describe operations; they never contain executable code. */
+export type GameplayPresentation='end';
 export type Source = 'interaction' | 'conversation' | 'signal' | 'system';
 export type StateValue=boolean|number|string|null;
 export type StateValues=Record<string,Record<string,StateValue>>;
 export interface StateDeclaration {owner:string;lifetime:'save'|'session'|'interaction';type:'boolean'|'number'|'enum'|'string';maxLength?:number;nullable?:boolean;integer?:boolean;default:StateValue;min?:number;max?:number;options?:string[]}
 export interface PurchaseDefinition {service?:true;basePrice:number;when?:Condition;goods?:{item:string;quantity:number}[];rotation?:{state:string;items:string[]};stock?:string;modifiers?:{id:string;when?:Condition;amount:number;scope:'both'|'quote'|'charge'}[]}
 export interface GameplayPlayerContext {readonly handle:string;readonly jump:boolean;readonly controlled:readonly string[];readonly keyring:readonly string[]}
-export type PlayerCondition={field:'handle';is:string}|{field:'jump';is:boolean}|{collection:'controlled'|'keyring';contains?:string};
+export type PlayerCondition={field:'handle';is:string}|{field:'jump';is:boolean}|{collection:'controlled'|'keyring';contains?:string|ScalarRead};
 export interface GameplayState { player?:Readonly<GameplayPlayerContext>;objective?:string; world?:Readonly<{day:number;minute:number;weather:WeatherKind}>; values?:StateValues;flags: Record<string, boolean>; items: Record<string, number>; tokens: number }
 export type Condition =
   | {compare:{left:ScalarRead;op:'eq'|'ne'|'lt'|'lte'|'gt'|'gte';right:ScalarRead}}
@@ -24,7 +26,7 @@ export type Condition =
   | { tokensAtLeast: number }
   | { all: Condition[] } | { any: Condition[] } | { not: Condition };
 export type GameplayAction =
-  | {grant:{keyring:string}|{ability:'jump'}|{controlled:string}}
+  | {grant:{keyring:string}|{ability:'jump'}|{controlled:string|ScalarRead}}
   | {state:string;set:StateValue|ScalarRead}
   | {state:string;add:number|ScalarRead}
   | {purchase:string}
@@ -51,7 +53,7 @@ export interface GameplayDefinition {
   /** Explicit adapter onto existing native nouns, state and delayed cables. */
   native?: NativeBindings;
   /** Committed events request existing cinematics and scene-clock system commands. */
-  handoffs?:{event:string;cutscene?:string;after?:{ms:number;command:string}[]}[];
+  handoffs?:{event:string;cutscene?:string;presentation?:GameplayPresentation;after?:{ms:number;command:string}[]}[];
   /** Ordered current-save normalization, evaluated on a copy through shared state commands. */
   checkpoint?:{when?:Condition;command:string}[];
   state?:Record<string,StateDeclaration>;
@@ -66,12 +68,14 @@ export interface GameplayDefinition {
   reactions: { event: string; command: string }[];
   conversations: Record<string, ConversationDefinition>;
 }
-export interface NativeReplyLine {from:string;say:[string,string,('ok'|'err'|'dim')?];template?:true}
+export interface NativeReplyLine {from:string;say:[string,string,('ok'|'err'|'dim')?]|{text:string};template?:true}
 export type NativeReply=NativeReplyLine|{cases:(NativeReplyLine&{when?:Condition})[]};
+export type NativeSay=[string,string,('ok'|'err'|'dim')?]|{text:string|{query:string}}|null;
 export interface NativeBindings {
+  inputs?:Record<string,NativeInput>;
   /** Read-only live truthiness; never persisted as a second flag. */
   reads?:Record<string,string>;
-  verbs:{device:string;noun:string;verb:string;denied?:[string,string,('ok'|'err'|'dim')?];cases:{when?:Condition;sources?:('interaction'|'signal')[];command:string;template?:true;say:[string,string,('ok'|'err'|'dim')?]|null}[]}[];
+  verbs:{device:string;noun:string;verb:string;denied?:[string,string,('ok'|'err'|'dim')?];cases:{when?:Condition;sources?:('interaction'|'signal')[];command:string;template?:true;say:NativeSay}[]}[];
   events:Record<string,string>;
   goals:Record<string,string>;
   /** Committed cosmetic stamps on the native scene clock; never saved gameplay state. */

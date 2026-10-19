@@ -5,6 +5,6 @@ import type {SceneDef} from '../../scenes/kit';import type {SceneData} from '../
 export function attachSceneDeviceSource(scene:SceneDef,source:SceneData,composition:Composition,document:SceneDocument):SceneDef{
  if(source.id!==scene.id)throw Error('Native device source identity mismatch');const original=contracts[scene.id as keyof typeof contracts],native=new Set(original?.devices.map(d=>d.id)??[]),base=scene.data;
  let data:SceneData={...structuredClone(source),...(source.observations===undefined&&base?.observations?{observations:structuredClone(base.observations)}:{}),dialogue:base?.dialogue??{},devices:source.devices.map(d=>native.has(d.id)?structuredClone(base?.devices.find(b=>b.id===d.id)??d):structuredClone(d))};
- data=projectSceneState(data,scene.gameplay??{});data=projectDeviceBindings(document,manifestCompositionRows(composition),data,scene.width);if(scene.gameplay)data=nativeDeviceData(data,scene.gameplay,Object.keys(sceneRuleContract(scene).derived??{}));
+ data=projectSceneState(data,scene.gameplay??{});data=projectDeviceBindings(document,manifestCompositionRows(composition),data,scene.width);if(scene.gameplay)data=nativeDeviceData(data,scene.gameplay,Object.keys(sceneRuleContract(scene).derived??{}),sceneRuleContract(scene).inputs);
  return{...scene,data,...(scene.bindWorld?{bindWorld:(services:Parameters<NonNullable<SceneDef['bindWorld']>>[0])=>attachSceneDeviceSource(scene.bindWorld!(services),source,composition,document)}:{})};
 }

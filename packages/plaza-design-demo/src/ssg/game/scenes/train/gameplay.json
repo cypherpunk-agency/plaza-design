@@ -1,9 +1,78 @@
 {
   "version": 1,
   "flags": [],
-  "items": [],
+  "items": [
+    "maglev.pass"
+  ],
   "events": [],
-  "commands": {},
+  "commands": {
+    "train.unpaid.even": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "when": {
+        "all": [
+          {
+            "not": {
+              "item": "maglev.pass",
+              "atLeast": 1
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "train.pullRemainder"
+              },
+              "op": "eq",
+              "right": {
+                "literal": 0
+              }
+            }
+          }
+        ]
+      },
+      "actions": [
+        {
+          "state": "train.pulls",
+          "add": 1
+        }
+      ]
+    },
+    "train.unpaid.other": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "when": {
+        "all": [
+          {
+            "not": {
+              "item": "maglev.pass",
+              "atLeast": 1
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "train.pullRemainder"
+              },
+              "op": "ne",
+              "right": {
+                "literal": 0
+              }
+            }
+          }
+        ]
+      },
+      "actions": [
+        {
+          "state": "train.pulls",
+          "add": 1
+        }
+      ]
+    }
+  },
   "reactions": [],
   "conversations": {},
   "state": {
@@ -15,6 +84,106 @@
       "integer": false,
       "min": -9007199254740991,
       "max": 9007199254740991
+    }
+  },
+  "queries": {
+    "train.pullRemainder": {
+      "kind": "remainder",
+      "value": {
+        "state": "train.pulls"
+      },
+      "divisor": 2
+    },
+    "train.unpaidEven": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "not": {
+                  "item": "maglev.pass",
+                  "atLeast": 1
+                }
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "train.pullRemainder"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": 0
+                  }
+                }
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.unpaidOther": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "not": {
+                  "item": "maglev.pass",
+                  "atLeast": 1
+                }
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "train.pullRemainder"
+                  },
+                  "op": "ne",
+                  "right": {
+                    "literal": 0
+                  }
+                }
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "train.paid": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "item": "maglev.pass",
+            "atLeast": 1
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
     }
   }
 }

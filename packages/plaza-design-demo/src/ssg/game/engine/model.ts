@@ -363,11 +363,14 @@ export class SceneModel {
   }
   /** Scoped shared operation adapter; absent for unmigrated verbs. */
   gameplay?: (context:Ctx)=>{result:import('./gameplay/types').GameplayResult;line:Line|null}|undefined;
+  gameplayStep?:(context:Ctx,id:string,preview:boolean)=>import('./gameplay/types').GameplayResult;
   gameplayEligibility?:(context:Ctx)=>import('./gameplay/types').GameplayResult|undefined;
   gameplayQueryIds?:ReadonlySet<string>;
   gameplayQuery?:(id:string)=>Value|undefined;
   gameplayTick?:(dt:number,cause:(run:()=>void)=>void,phase:'beforeNative'|'afterNative')=>void;
   /** Registered panel inputs dispatch ordinary shared commands; panels own only hit testing. */
+  gameplayInput?:(id:string,origin:import('./gameplay/native-inputs').NativeInputOrigin)=>import('./gameplay/types').GameplayResult;
+  input(id:string):import('./gameplay/types').GameplayResult{return this.rules.inputs?.includes(id)?this.gameplayInput?.(id,{kind:'physical'})??{ok:false,reason:'unknown-command'}:{ok:false,reason:'forbidden'};}
   gameplayCommand?:(id:string)=>import('./gameplay/types').GameplayResult;
   runCommand(id:string):import('./gameplay/types').GameplayResult{return this.gameplayCommand?.(id)??{ok:false,reason:'unknown-command'};}
   /** Native committed device replies retain the existing receipt, caption and history owner. */
@@ -375,7 +378,7 @@ export class SceneModel {
   /** Pure reach/permission preflight. Signals intentionally bypass manual locks and sectors. */
   eligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
     const native=this.nativeEligibility(dev,noun,verb,bySignal);if(!native.ok)return native;
-    const shared=this.gameplayEligibility?.({dev,noun,verb,bySignal});return shared??native;
+    const c={dev,noun,verb,bySignal},shared=this.gameplayEligibility?.(c);if(shared)return shared;const selected=this.selectCase(this.nounData(dev,noun)?.on?.[verb]??this.nounData(dev,noun)?.on?.['*'],c),step=selected?.do?.find(a=>'command'in a);if(step&&'command'in step)return selected?.do?.length===1?this.gameplayStep?.(c,step.command,true)??{ok:false,reason:'unknown-command'}:{ok:false,reason:'forbidden'};return native;
   }
   nativeEligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
     const n=this.noun(dev+'.'+noun);if(!n)return{ok:false,reason:'unknown-noun'};
@@ -451,6 +454,8 @@ export class SceneModel {
   label(key: string, vars?: Vars) { const t = this.texts[key]; return typeof t === 'string' ? this.fmt(t, this.ctx(''), vars) : '[' + key + ']'; }
   /** A terminal line from the texts. */
   line(ref: LineRef, vars?: Vars) { return this.lineIn(ref, this.ctx(''), vars); }
+  /** Shared source-backed replies keep the action's existing native formatter context. */
+  lineFor(ref:LineRef,context:Ctx,vars?:Vars){return this.lineIn(ref,context,vars);}
 
   // ---------- events and cables ----------
 
@@ -707,7 +712,7 @@ export class SceneModel {
     const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, c = this.ctx(dev, noun);
     this.passed.add(key); this.fails.delete(key);
     this.sayLine(this.lineIn(g.say ?? 'guard.ok', c, { noun }));
-    (g.do ?? []).forEach((a) => { const l = this.doAction(a, c); if (l) this.sayLine(l); });
+    (g.do ?? []).forEach((a) => { const l = this.doAction(a, c, {kind:'guard',device:dev,noun}); if (l) this.sayLine(l); });
     if (this.nounData(dev, noun)!.events?.includes('opened')) this.emit(key + ':opened');
     (this.devices.get(dev)?.data.sectors ?? []).filter((s) => 'guard' in s.seal && s.seal.guard === noun)
       .forEach((s) => { const l = this.unseal(dev, s.id); if (l) this.sayLine(l); });
@@ -1254,35 +1259,37 @@ export class SceneModel {
   }
 
   /** Run a verb: the first case whose `if` holds does its steps and says its line. */
-  private perform(n: NounData, c: Ctx): Line | null { return this.runCases(n.on?.[c.verb] ?? n.on?.['*'], c); }
+  private perform(n: NounData, c: Ctx): Line | null { return this.runCases(n.on?.[c.verb] ?? n.on?.['*'], c,true); }
 
   /** The first case whose `if` holds (and whose `when` is now): its steps, then its line. */
-  private runCases(cases: Case | Case[] | undefined, c: Ctx): Line | null {
-    if (!cases) return null;
-    for (const k of list<Case>(cases)) {
-      const matches = !((k.if && !this.test(k.if, c)) || !now(k.when));
-      this.observe('condition', c, { condition: k.if ?? null, matches });
-      if (!matches) continue;
-      let out: Line | null = null;
-      const keep = (l: Line | null) => { if (!l) return; if (out) this.sayLine(out); out = l; };
-      (k.do ?? []).forEach((a) => keep(this.doAction(a, c)));
-      if (k.say !== undefined) keep(this.lineIn(k.say, c));
-      return out;
+  private selectCase(cases:Case|Case[]|undefined,c:Ctx,observe=false):Case|undefined{
+    for(const row of cases?list<Case>(cases):[]){const matches=!((row.if&&!this.test(row.if,c))||!now(row.when));if(observe)this.observe('condition',c,{condition:row.if??null,matches});if(matches)return row;}
+  }
+  private runCases(cases: Case | Case[] | undefined, c: Ctx,commands=false): Line | null {
+    const k=this.selectCase(cases,c,true);if(!k)return null;
+    const command=k.do?.find(a=>'command'in a);
+    if(command&&'command'in command){
+      const result=!commands||k.do?.length!==1||Object.keys(command).join()!=='command'?{ok:false as const,reason:'forbidden' as const}:this.gameplayStep?.(c,command.command,false)??{ok:false as const,reason:'unknown-command' as const};
+      this.observe('result',c,{action:command,state:this.state,result});
+      if(!result.ok)return[(c.bySignal?'signal → ':'')+'use '+c.noun+' --'+c.verb,'ACTION REFUSED: '+result.reason+'.','err'];
+      return k.say===undefined?null:this.lineIn(k.say,c);
     }
-    return null;
+    let out:Line|null=null;const keep=(line:Line|null)=>{if(!line)return;if(out)this.sayLine(out);out=line;};
+    for(const action of k.do??[])keep(this.doAction(action,c));if(k.say!==undefined)keep(this.lineIn(k.say,c));return out;
   }
 
-  private doAction(a: Action, c: Ctx): Line | null {
-    const result = this.executeAction(a, c);
+  private doAction(a: Action, c: Ctx,origin?:import('./gameplay/native-inputs').NativeInputOrigin): Line | null {
+    const result = this.executeAction(a, c,origin);
     this.observe('result', c, { action: a, state: this.state, response: result });
     return result;
   }
 
-  private executeAction(a: Action, c: Ctx): Line | null {
+  private executeAction(a: Action, c: Ctx,origin?:import('./gameplay/native-inputs').NativeInputOrigin): Line | null {
     const matches = !((a.if && !this.test(a.if, c)) || !now(a.when));
     this.observe('action', c, { action: a, matches });
     if (!matches) return null;
-    if ('set' in a) this.write(a.set, typeof a.to === 'string' ? this.fmt(a.to, c) : a.to, c.dev);
+    if ('input'in a){if(origin?.kind==='guard')this.gameplayInput?.(a.input,origin);}
+    else if ('set' in a) this.write(a.set, typeof a.to === 'string' ? this.fmt(a.to, c) : a.to, c.dev);
     else if ('open' in a) this.hooks.open(a.open, a.open === 'talk' ? a.with ?? this.dialogueFor(c.noun) : a.with);
     else if ('emit' in a) this.emit(c.dev + '.' + c.noun + ':' + a.emit);
     else if ('goal' in a) this.goal(a.goal);
@@ -1299,7 +1306,7 @@ export class SceneModel {
 
   private world(c: Ctx): World {
     return {
-      m: this, data: this.data,
+      m: this, data: this.data, input:id=>this.input(id),
       line: (key, vars) => this.lineIn(key, c, vars),
       has: (key) => key in this.texts,
       // an effect speaks for its own device, unless it names who reacted (`w.say(line, 'router')`)

@@ -16,6 +16,7 @@ export type Vars = Record<string, string | number>;
 
 /** What an effect may touch. `emit` raises an event on the noun it runs for. */
 export interface World {
+  input(id:string):import('./gameplay/types').GameplayResult;
   m: SceneModel;
   data: SceneData;
   line(key: string, vars?: Vars): Line;
@@ -33,6 +34,8 @@ export interface World {
 export type Effect = (w: World, c: Ctx) => Line | null | void;
 
 export interface SceneRules {
+  /** Finite mechanical milestones emitted by this native algorithm. */
+  inputs?:readonly string[];
   /** Named effects the data may run (`{ "effect": "crane.claw" }`), besides the engine's (`timer.wait`). */
   effects: Record<string, Effect>;
   /** Panels this scene's view implements, besides the engine's `talk`. */

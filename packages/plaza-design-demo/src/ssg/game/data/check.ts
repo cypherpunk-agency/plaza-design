@@ -52,7 +52,7 @@ const TONES = ['ok', 'err', 'dim'];
 const CITY_KEYS = ['weather', 'hour', 'day'];
 const WEATHER = ['clear', 'cloudy', 'rain', 'storm', 'fog', 'smog', 'heat'];
 const DIRS = ['up', 'down', 'left', 'right'];
-const ACTION_KEYS = ['set', 'open', 'emit', 'goal', 'effect', 'give', 'take', 'trace', 'unseal'];
+const ACTION_KEYS = ['command', 'input', 'set', 'open', 'emit', 'goal', 'effect', 'give', 'take', 'trace', 'unseal'];
 /** What the player can carry (scenes/kit.ts ITEMS): `take` steps and a device's `items` name these. */
 const ITEM_IDS = Object.keys(ITEMS);
 const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
@@ -299,7 +299,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
   };
 
   /** One step. `noun` is null outside a noun (a dialogue), where emit and trace make no sense. */
-  const action = (a: Action, where: string, known: Set<string>, writable: Set<string>, dev: DeviceData | null, noun: NounData | null) => {
+  const action = (a: Action, where: string, known: Set<string>, writable: Set<string>, dev: DeviceData | null, noun: NounData | null,guard=false,commandCase=false) => {
     keys(a, 'action', where);
     const which = ACTION_KEYS.filter((k) => k in a);
     if (which.length !== 1) { err(where, `needs exactly one of ${ACTION_KEYS.join(' / ')}`); return; }
@@ -315,6 +315,8 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         else if (a.with === undefined && !env.dialogues.length) err(where, 'talk: this scene has no dialogue');
       }
     }
+    if('command'in a&&(!commandCase||Object.keys(a).length!==1||typeof a.command!=='string'||!/^[-a-zA-Z0-9_.:]{1,128}$/.test(a.command)))err(where,'command requires a sole noun.on case step and a bounded ID');
+    if('input'in a&&(!guard||typeof a.input!=='string'||!/^[-a-zA-Z0-9_.]{1,128}$/.test(a.input)))err(where,'input requires guard.do and a bounded ID');
     if ('effect' in a && !env.code.effects.includes(a.effect)) err(where, `unknown effect "${a.effect}" (code has: ${env.code.effects.join(', ') || 'none here'})`);
     if ('goal' in a && !env.goals.has(a.goal)) err(where, `unknown goal "${a.goal}"`);
     if ('emit' in a) {
@@ -352,7 +354,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         keys(c, 'case', wc);
         cond(c.if, known, wc);
         when(c.when, wc);
-        (c.do ?? []).forEach((a, j) => action(a, `${wc} › do[${j}]`, known, writable, d, n));
+        (c.do ?? []).forEach((a, j) => action(a, `${wc} › do[${j}]`, known, writable, d, n,false,c.do?.length===1));
         if (c.say !== undefined) line(c.say, `${wc} › say`);
       });
       if (Array.isArray(cs) && cs.slice(0, -1).some((c) => c.if === undefined && c.when === undefined)) err(`${w} › on.${v}`, 'only the last case may have no "if" or "when" (the ones after it never run)');
@@ -485,7 +487,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         if (g.tries !== undefined && !(Number.isInteger(g.tries) && g.tries >= 1)) err(wg, 'tries is a whole number, 1 or more');
         if (g.lockMs !== undefined && !(num(g.lockMs) && g.lockMs >= 0)) err(wg, 'lockMs is a time in ms (0: never locks)');
         if (g.trace !== undefined && !num(g.trace)) err(wg, 'trace is a number (%)');
-        (g.do ?? []).forEach((a, j) => action(a, `${wg} › do[${j}]`, known, writable, d, n));
+        (g.do ?? []).forEach((a, j) => action(a, `${wg} › do[${j}]`, known, writable, d, n,true));
         if (n.on && ('*' in n.on)) err(`${w} › on`, 'a GUARD cannot have "*": its try and type verbs are the engine\'s');
       }
       if (n.log) {

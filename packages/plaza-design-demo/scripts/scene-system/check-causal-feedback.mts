@@ -1,3 +1,7 @@
+import {SCENES} from '../../src/ssg/game/scenes';
+import {Game} from '../../src/ssg/game/runtime/game';
+import {newSave} from '../../src/ssg/game/runtime/save';
+import {attachNativeGameplay} from '../../src/ssg/game/engine/gameplay/native-bindings';
 import assert from 'node:assert/strict';
 import {SceneModel,type Line} from '../../src/ssg/game/engine/model';
 import {SceneHost} from '../../src/ssg/game/engine/host';
@@ -23,6 +27,7 @@ function advance(ms:number){const end=clock+ms;for(;;){const entry=[...timers].f
 const history:{line:Line;receipt:FeedbackReceipt}[]=[],host:any={active:false,echo:false,def:{id:'causal'},schem:{note(){}},vision:{note(){}},locate:()=>null,print(){},store:{feedbackCue:sound.feedback}};
 host.say=(SceneHost.prototype as any).say;
 function hooks(){return{feedbackScope:'causal',say:(line:Line,from?:string,receipt?:FeedbackReceipt)=>{history.push({line,receipt:receipt!});host.say(line,from,receipt);},changed(){},open(){}};}
+function attach(m:SceneModel,save:any){const game:any=Object.create(Game.prototype);game.save=save;game.content={downtown:SCENES.downtown};game.hosts=new Map([['downtown',{model:m}]]);game.gameplaySessions=new Map();game.sceneDefinition=()=>SCENES.downtown;game.syncHud=()=>{};game.persistSave=()=>{};const session=game.gameplayFor('downtown',m);attachNativeGameplay(m,session);return session;}
 try{
  sound.toggle();notes.length=0;
  const shared:Line=['','Same response.','ok'],data:SceneData={id:'causal',name:'Causal',state:{},tuning:{},cables:[],goals:[],texts:{},devices:[{id:'device',name:'DEVICE',look:'',nouns:[{id:'act',kind:'ACT',verbs:['go'],on:{go:{do:[{effect:'burst'}]}}}]}]};
@@ -35,12 +40,12 @@ try{
  sound.feedback(mintFeedback('causal','device','success'));sound.cancelFeedback('causal');advance(200);assert.equal(timers.size,0);sound.feedback(mintFeedback('other','device','success'));sound.cancelFeedback('causal');assert.equal(timers.size,3);sound.cancelFeedback();
  sound.toggle();const muted=mintFeedback('causal','device','success');sound.feedback(muted);assert.equal(timers.size,0);sound.toggle();const n=notes.length;sound.feedback(muted);advance(200);assert.equal(notes.length,n,'muted receipt does not replay on unmute');
  // Native Downtown effects preserve actual replies and controller state while sharing the cue.
- const save={handle:'ghost',tokens:0,jump:false,controlled:[] as string[],flags:{} as Record<string,boolean>},grants:FeedbackReceipt[]=[],events:string[]=[];
+ const save=Object.assign(newSave(),{handle:'ghost',tokens:0}),grants:FeedbackReceipt[]=[],events:string[]=[];
  const rules=downtownRules({save:()=>save,persist:()=>events.push('persist'),nodes:()=>42,granted:r=>{assert(r);grants.push(r);events.push('granted');sound.feedback(r);},end:()=>events.push('end')});
- history.length=0;const native=new SceneModel({...hooks(),observe:e=>{assert.deepEqual(Object.keys(e.context).sort(),['bySignal','dev','noun','verb']);}},downtown as unknown as SceneData,rules);host.model=native;
- native.apply([{effect:'legs.install'}]);assert(save.jump);assert.equal(history.length,1);assert.equal(grants.at(-1),history[0].receipt);assert.deepEqual(events,['persist','granted']);
- native.apply([{effect:'till.pay'}]);assert.equal(save.tokens,3);assert.equal(grants.at(-1),history.at(-1)!.receipt);
- native.guess('box','login','vrify');assert(save.controlled.includes('0x2F'));const box=history.filter(r=>r.line[1].includes('0x2F'));assert(box.length);assert.equal(grants.at(-1)!.cueId,box.at(-1)!.receipt.cueId);native.reset();timers.clear();
+ history.length=0;const native=new SceneModel({...hooks(),observe:e=>{assert.deepEqual(Object.keys(e.context).sort(),['bySignal','dev','noun','verb']);}},downtown as unknown as SceneData,rules,undefined,undefined,undefined,(save.gameplay??={}).downtown??={},SCENES.downtown.gameplay);host.model=native;const session=attach(native,save);native.guess('box','login','vrify');const controlLines=history.filter(r=>r.line[1].includes('0x2F'));assert(controlLines.length);assert.equal(history[0].receipt.cueId,controlLines.at(-1)!.receipt.cueId);history.length=0;events.length=0;advance(200);
+ native.act('box','legs.so','install');assert(save.jump);assert.equal(history.length,1);assert(history[0].receipt);advance(200);
+ const tillNotes=notes.length;native.act('till','drawer','open',true);assert.equal(save.tokens,3);assert(history.at(-1)!.receipt);advance(200);assert.equal(notes.length-tillNotes,3,'one source till reply cue');
+ native.guess('box','login','vrify');assert(save.controlled.includes('0x2F'));assert(history.at(-1)!.receipt);session.dispose();native.reset();timers.clear();
  // The program hook receives the actual reply's reserved identity before it is delivered.
  history.length=0;let acquired:FeedbackReceipt|undefined;const programs:string[]=[];
  const acquisition=new SceneModel({...hooks(),programs:()=>programs,program:(id,r)=>{programs.push(id);acquired=r;sound.feedback(r!);}},data,{});host.model=acquisition;
@@ -48,14 +53,18 @@ try{
  // Compare actual native effects, event order, saves and delayed controller outcomes to immutable original code.
  sound.toggle();timers.clear();
  function run(Model:any,makeRules:any){
-  clock=0;const save={handle:'ghost',tokens:0,jump:false,controlled:[] as string[],flags:{} as Record<string,boolean>},events:unknown[]=[],checkpoints:unknown[]=[];
-  const m=new Model({say:(line:Line,from?:string)=>events.push(['say',structuredClone(line),from]),changed:()=>events.push(['changed']),open:()=>{},observe:(e:unknown)=>events.push(['observe',e])},Model===SceneModel?downtown:originalData,makeRules({save:()=>save,persist:()=>events.push(['persist']),nodes:()=>42,granted:()=>events.push(['granted']),end:()=>events.push(['end'])}));
-  const capture=()=>checkpoints.push(structuredClone({save,state:m.snapshot(),events}));
-  m.guess('box','login','wrong');capture();m.guess('box','login','vrify');capture();m.apply([{effect:'legs.install'}]);capture();m.apply([{effect:'till.pay'}]);capture();m.apply([{effect:'billboard.feed'}]);capture();advance(3000);capture();
-  // Existing DLV completion callback must retain persist -> granted -> goal/reply -> end ordering.
+  clock=0;const shared=Model===SceneModel,save:any=Object.assign(newSave(),{handle:'ghost',tokens:0}),events:unknown[]=[],checkpoints:unknown[]=[];
+  const m=new Model({say:(line:Line,from?:string)=>events.push(['say',structuredClone(line),from]),changed(){},open(){}},shared?downtown:originalData,makeRules({save:()=>save,persist(){},nodes:()=>42,granted(){},end:()=>events.push(['end'])}),undefined,undefined,undefined,shared?(save.gameplay??={}).downtown??={}:undefined,shared?SCENES.downtown.gameplay:undefined);
+  const session=shared?attach(m,save):undefined,emit=m.emit.bind(m);m.emit=(id:string)=>{events.push(['emit',id,m.now()]);emit(id);};
+  const capture=()=>checkpoints.push(structuredClone({save:{tokens:save.tokens,jump:save.jump,controlled:save.controlled,flags:save.flags},state:m.state,goals:[...m.goals],events}));
+  m.guess('box','login','wrong');capture();m.guess('box','login','vrify');capture();
+  m.act('box','legs.so','install');capture();
+  m.act('till','drawer','open',true);capture();
+  m.act('billboard','screen','show feed',true);capture();advance(3000);capture();
+  // Existing DLV completion remains physical in slice A: exact captions, goal, end, scalar and native event order.
   m.links=[];m.set('routeFixed',true);m.set('lock','open');m.act('dlv9','wheels','go home');advance(10000);assert(save.flags.end,'test must execute final native gate completion');capture();
-  m.reset();timers.clear();return checkpoints;
+  session?.dispose();m.reset();timers.clear();return checkpoints;
  }
- assert.deepEqual(run(SceneModel,downtownRules),run(baselineModel.SceneModel,baselineRules.downtownRules),'immutable native state/replies/scheduled outcomes/trace and service order');
+ assert.deepEqual(run(SceneModel,downtownRules),run(baselineModel.SceneModel,baselineRules.downtownRules),'immutable observable Downtown state/replies/scheduled outcomes and DLV completion order');
  console.log('Causal feedback PASS: distinct delivery/history IDs, exact-line consumed reservation, repeated identical actions, native delayed callback scopes, success-service/reply single cue, immediate error priority, standalone completion, program acquisition, mute/scoped disposal, Downtown install/till/control and immutable original state/replies/scheduled callback/event order/context parity.');
 }finally{if(sound.enabled)sound.toggle();Object.assign(globalThis,original);if(nowDescriptor)Object.defineProperty(performance,'now',nowDescriptor);else delete (performance as any).now;}

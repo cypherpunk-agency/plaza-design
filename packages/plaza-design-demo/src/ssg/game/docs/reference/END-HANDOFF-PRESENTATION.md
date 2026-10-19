@@ -1,0 +1,34 @@
+# END presentation handoffs
+
+An event handoff may specify `presentation: "end"`. This finite operation uses
+the existing postcommit handoff interpreter. SceneHost forwards it to its actual
+Game host, which opens the existing transient END presentation. It neither
+creates a saved flag nor derives presentation visibility from saved completion
+state; loading a completed game does not reopen END.
+
+A handoff cannot request both an immediate cutscene and an immediate END
+presentation. Existing delayed command continuations remain available and keep
+the existing SceneTime cancellation and pause policies. The typed presentation
+selector replaces a selected cutscene, and selecting a cutscene clears the
+presentation operation.
+
+Use ordered source events when completion has distinct deliveries: emit the
+goal event, then the caption event, then the END event. The existing transaction
+notification order produces the caption before END. Eligibility, a refused
+transaction and disposed sessions produce no presentation. Repetition is
+controlled by the authored command condition, not by a second presentation
+state owner.
+
+The presentation callback is optional on a general SceneStore. A session whose
+source requires a presentation handoff must have a real presentation host;
+attachment rejects a missing host before registering its observer. This avoids
+silently treating an unavailable presentation as delivered.
+
+Proofs: `check-end-handoff.mts`, `check-end-handoff-forms.mts`, and
+`check-end-handoff-save.mts`. The actual Game -> SceneHost path verifies ordered
+goal/caption/END delivery and saved completion without automatic reopening.
+Save evidence: `.scene-system/end-handoff-save-IjLi10/evidence.json` covers real
+typed edits, prospective registered sources, invalid operation/event/mixed
+presentation rejection, protected source target refusal, fresh shipping JSON
+imports and byte-exact Undo. Existing handoff timing and cancellation proofs
+also pass; broad goal integration remains a separate checkpoint.

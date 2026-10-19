@@ -114,7 +114,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       if(def.gameplay?.queries){
         const definition=def.gameplay,ids=new Set(Object.keys(definition.queries??{}));model.gameplayQueryIds=ids;
         model.gameplayQuery=id=>{if(!ids.has(id))return undefined;const state={flags:flags as Record<string,boolean>,items:{},tokens:player.tokens,values:{[def.id]:model.state},world:{day:city.day,minute:city.min,weather:(request.weather??weatherNow(sceneClimate(def.id))).kind}};
-          return readQuery(id,{...state,values:resolveValues(definition,state)},{definition,tuning:model.data.tuning,labels:model.texts,cables:model.links});};
+          return readQuery(id,{...state,values:resolveValues(definition,state)},{definition,tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates});};
       }
       const vision = settings.hack === true, engine: EngineDraw = { m: model, hover: typeof settings.hover === 'string' ? settings.hover || null : null, layer: 'all' };
       // A complete editor frame starts from native canvas defaults, including inherited

@@ -20,18 +20,26 @@ evaluator, scheduler or controller callback. The typed workbench edits the same
 commands, state-copy references, deadlines, duration references, outcome commands
 and replies used by the game.
 
-This is a partial ordinary-logic migration. Grab and hatch opening remain native:
+Grab and hatch opening now use the same authored source path. The Yard native
+rules contain no effects or derived gameplay callbacks.
 
-- Grab checks the camera source's crate collection and selects an optional
-  crate-specific text with a fallback. Replacing it needs an appropriate shared
-  source-collection membership and text lookup contract; crate IDs must not be
-  copied into a second list of conditions.
-- Hatch opening uses the strict native scene-clock predicate
-  `now < gateOpenUntil`, including delayed event-loop boundaries and repeated
-  opens. The existing readonly native observation projects this value for shared
-  arrival conditions. It does not persist another flag. A later migration needs
-  an explicit shared readonly clock contract; a closing boolean timer would
-  change boundary behavior.
+- Grab reads membership directly from the camera source's crate collection;
+  crate IDs are not copied into a second condition list. An optional
+  crate-specific source line falls back to the existing default source line.
+  Static and dynamic source references use the existing native formatter with
+  the actual device, noun, verb and signal context. A missing collection/text
+  context refuses before any command commits.
+- Hatch opening copies a readonly SceneTime query into the session-owned
+  `yard.gateUntil` value, then adds the existing duration tuning. Its open query
+  preserves the strict `now < gateUntil` predicate. The redraw deadline uses
+  the same duration plus an authored 50 ms offset; it does not decide whether
+  the gate is open. Reopening replaces the pending redraw without changing
+  expiry semantics. The existing source checkpoint clears the copied session
+  value on restore without altering the live running value.
+- A gameplay transaction samples readonly context once, so conditions,
+  sequential expressions and reactions see the same scene-clock instant.
+  Inspection samples the live clock again. Pause and offscreen policies remain
+  those of the existing SceneTime clock; no second timer or evaluator exists.
 
 Physical hook easing and parcel-coordinate interpolation remain presentation
 code. Neither decides a migrated gameplay outcome.
@@ -46,6 +54,18 @@ that controls physical parcel placement. The Save test checks paired registered
 sources, pending execution, a fresh shipping module using saved JSON, rejection
 of invalid references and byte-exact Undo.
 
-Evidence: `.scene-system/yard-drop-save-r2houh/evidence.json`. Existing Yard
-composition and all 274 checkpoint-preservation cases also pass. This slice does
-not mark all Yard ordinary logic complete.
+The full grab/hatch proof adds 432 immutable grab cases and 14 hatch timing
+histories, including strict expiry, fractional durations, late callbacks,
+reopening, reset and restore. Query tests cover missing-context negation,
+optional/fallback source text validation, preflight refusal without mutation,
+and once-per-transaction clock sampling. Full typed-form tests edit membership,
+source-line selection and deadline offsets, execute the changed behavior, reject
+invalid references, and check exact Undo/Redo.
+
+Full paired source Save evidence:
+`.scene-system/yard-full-save-sHAgNB/evidence.json`. This proof executes pending
+sources, imports a fresh shipping module using the saved JSON, checks the live
+versus checkpoint hatch value, and restores byte-exact source Undo. The earlier
+drop-only Save evidence remains `.scene-system/yard-drop-save-r2houh/evidence.json`.
+These focused proofs establish the Yard source migration; broad integrated
+build, startup and raster gates are reported separately by the main goal.

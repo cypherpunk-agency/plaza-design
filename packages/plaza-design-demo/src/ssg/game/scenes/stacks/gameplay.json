@@ -5,14 +5,16 @@
     "heard:spire",
     "contact:moth",
     "stacks:alarms",
-    "stacks:spratFed"
+    "stacks:spratFed",
+    "stacks:reeferTrajectory"
   ],
   "items": [
     "tea"
   ],
   "events": [
     "stacks.moth.recruited",
-    "stacks.camera.found"
+    "stacks.camera.found",
+    "stacks.crane.landed.reefer"
   ],
   "commands": {
     "stacks.pour": {
@@ -99,6 +101,31 @@
         {
           "state": "stacks.boxAt",
           "set": "stack"
+        }
+      ]
+    },
+    "stacks.crane.land.reefer": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "stacks.boxAt",
+          "set": "ferry"
+        },
+        {
+          "emit": "stacks.crane.landed.reefer"
+        }
+      ]
+    },
+    "stacks.crane.land.regular": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "stacks.loaded",
+          "add": 1
         }
       ]
     }
@@ -446,13 +473,43 @@
   "native": {
     "reads": {
       "stacks:alarms": "alarms",
-      "stacks:spratFed": "spratFed"
+      "stacks:spratFed": "spratFed",
+      "stacks:reeferTrajectory": "reeferTrajectory"
     },
     "verbs": [],
     "events": {},
     "goals": {
       "stacks.moth.recruited": "moth",
-      "stacks.camera.found": "find"
+      "stacks.camera.found": "find",
+      "stacks.crane.landed.reefer": "lift"
+    },
+    "replies": {
+      "stacks.crane.landed.reefer": {
+        "from": "reefer",
+        "say": [
+          "",
+          "NRLU 404 0451: set down on NIGHT FERRY 7, deck slot 12, shore power on. from inside: three long knocks.",
+          "ok"
+        ]
+      }
+    },
+    "inputs": {
+      "stacks.crane.landed": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "when": {
+              "flag": "stacks:reeferTrajectory"
+            },
+            "command": "stacks.crane.land.reefer"
+          },
+          {
+            "command": "stacks.crane.land.regular"
+          }
+        ]
+      }
     }
   },
   "handoffs": [

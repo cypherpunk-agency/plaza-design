@@ -5,6 +5,7 @@ import type {GameplayDefinition} from '../../engine/gameplay/types';
 export function validateDowntownGameplay(value:unknown):GameplayDefinition{
  const definition=validateNativeContract(value,source,undefined,{allowNewContent:true,allowNewVocabulary:true,allowBindingEdits:true});
  for(const id of ['fixer','hood','umbrella','hat','unknown'])if(!definition.conversations['talk.downtown.'+id])throw new Error('Missing registered Downtown conversation '+id);
+ for(const id of ['controlled2F','controlled31','controlledTV']){const q=definition.queries?.[id];if(q?.kind!=='select'||q.cases.some(row=>!('literal'in row.value)||typeof row.value.literal!=='boolean'))throw Error('Downtown presentation requires boolean select query '+id);}
  return definition;
 }
 export const DOWNTOWN_DIALOGUE_GAMEPLAY=validateDowntownGameplay(source);

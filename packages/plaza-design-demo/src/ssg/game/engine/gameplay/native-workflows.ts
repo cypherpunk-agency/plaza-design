@@ -1,4 +1,6 @@
 import {controllerSpeakers} from '../controllers';
+import engineSource from '../../data/engine.json';
+import {validateNativeSayShape,validateNativeSaySources,nativeSourceLine} from './native-text-source';
 import {validateNativeDeadlinesShape,validateNativeDeadlineSources} from './native-deadlines';
 import type {NativeWorkflowPhase} from './native-live-conditions';
 import {validateNativeLiveConditionsShape,nativeLiveConditionsTick} from './native-live-conditions';
@@ -29,8 +31,8 @@ export function validateNativeWorkflowShape(d:GameplayDefinition,condition:(valu
   for(const[i,value]of rows.entries()){
    const r=object(value,'cases'in owner?['when','from','say','template']:['from','say','template'],['from','say']);name(r.from);
    if('cases'in owner){if(i===rows.length-1?r.when!==undefined:r.when===undefined)fail('reply final fallback');if(r.when!==undefined)condition(r.when);}
-   if(!Array.isArray(r.say)||r.say.length<2||r.say.length>3||r.say.slice(0,2).some((s:unknown,i:number)=>typeof s!=='string'||i===1&&!s||s.length>2000)||r.say[2]!==undefined&&!['ok','err','dim'].includes(r.say[2]))fail('reply line');
-   if(r.template!==undefined&&r.template!==true)fail('reply template');if(r.template)validateGameplayText(r.say.slice(0,2),d);
+   validateNativeSayShape(r.say,d);if(r.say===null||!Array.isArray(r.say)&&typeof r.say.text!=='string')fail('committed replies require an inline or static source line');
+   if(r.template!==undefined&&(r.template!==true||!Array.isArray(r.say)))fail('reply template');if(r.template)validateGameplayText(r.say.slice(0,2),d);
   }
  }
 
@@ -38,13 +40,13 @@ export function validateNativeWorkflowShape(d:GameplayDefinition,condition:(valu
 export function validateNativeWorkflowBindings(d:GameplayDefinition,data:SceneData){
  validateNativeDeadlineSources(d,data);
  for(const row of Object.values(d.native?.intervals??{})){const ms=data.tuning[row.duration.tuning];if(typeof ms!=='number'||!Number.isFinite(ms)||ms<=0||ms>1000000)fail('positive duration tuning '+row.duration.tuning);}
- for(const reply of Object.values(d.native?.replies??{}))for(const row of 'cases'in reply?reply.cases:[reply])if(![...data.devices,...data.nodes??[]].some(dev=>dev.id===row.from)&&!controllerSpeakers(data).includes(row.from))fail('reply device '+row.from);
+ for(const reply of Object.values(d.native?.replies??{}))for(const row of 'cases'in reply?reply.cases:[reply]){validateNativeSaySources(row.say,{...engineSource.texts,...data.texts}as unknown as SceneData['texts']);if(![...data.devices,...data.nodes??[]].some(dev=>dev.id===row.from)&&!controllerSpeakers(data).includes(row.from))fail('reply device '+row.from);}
 }
 /** Post-commit reset and communication only; all gameplay writes belong to commands. */
 export function nativeWorkflowEvent(model:SceneModel,session:GameplaySession,event:string){
  for(const row of Object.values(session.definition.native?.intervals??{}))if(row.resetOn?.includes(event))model.scratch[row.elapsed]=0;
  const binding=session.definition.native?.replies?.[event];if(!binding)return;const reply='cases'in binding?binding.cases.find(row=>session.matches(row.when))!:binding;
- const line=[...reply.say] as Line;if(reply.template){const text=renderGameplayText([line[0],line[1]],session.state(),{},session.queryContext());line[0]=text[0];line[1]=text[1];}model.reply(line,reply.from);
+ const line=Array.isArray(reply.say)?[...reply.say] as Line:nativeSourceLine(reply.say.text,model,{dev:reply.from,noun:'',verb:'',bySignal:false});if(reply.template){const text=renderGameplayText([line[0],line[1]],session.state(),{},session.queryContext());line[0]=text[0];line[1]=text[1];}model.reply(line,reply.from);
 }
 /** At most one due command per row/tick; resetting to zero deliberately discards overshoot. */
 export function nativeWorkflowTick(model:SceneModel,session:GameplaySession,dt:number,cause:(run:()=>void)=>void,phase:NativeWorkflowPhase='afterNative'){

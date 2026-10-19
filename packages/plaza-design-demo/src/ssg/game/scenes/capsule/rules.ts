@@ -35,10 +35,8 @@ const EFFECTS: Record<string, Effect> = {
     const m = w.m, ms = tune(m,'bootMs');
     m.scratch.bootUntil = m.now() + ms;
     m.later(ms + capsuleController(m.data).onlineNoticeDelayMs, () => {
-      if (!routerUp(m)) return;
-      // the router reacted, not the plug: its caption goes over the router
-      w.say(w.line(capsuleController(m.data).texts.online), capsuleController(m.data).devices.router);
-      w.changed();
+      // Physical timer expiry is an input; source owns readiness and the reply.
+      if (w.input('capsule.router.onlineDue').ok) w.changed();
     });
   },
 
@@ -65,7 +63,7 @@ function tick(w: World, dt: number) {
   if (up && t >= tune(m, 'rebootTemp')) {
     s.bootUntil = m.now() + tune(m, 'rebootMs');
     w.say(w.line(capsuleController(m.data).texts.reboot, { temp: Math.round(t) }), capsuleController(m.data).devices.router);
-    m.later(tune(m, 'rebootMs') + capsuleController(m.data).onlineNoticeDelayMs, () => { if (routerUp(m)) { w.say(w.line(capsuleController(m.data).texts.online), capsuleController(m.data).devices.router); w.changed(); } });
+    m.later(tune(m, 'rebootMs') + capsuleController(m.data).onlineNoticeDelayMs, () => { if (w.input('capsule.router.onlineDue').ok) w.changed(); });
     w.changed();
   } else if (Math.floor(Math.round(t) / capsuleController(m.data).temperatureNoticeStep) !== Math.floor(before / capsuleController(m.data).temperatureNoticeStep)) w.changed();
 
@@ -74,6 +72,7 @@ function tick(w: World, dt: number) {
 
 export const CAPSULE_RULES: SceneRules = {
   effects: EFFECTS,
+  inputs: ['capsule.router.onlineDue'],
   derived: {
     routerUp: (m) => routerUp(m),
     routerUpAtTickStart: (m) => m.scratch.routerUpAtTickStart === 1,

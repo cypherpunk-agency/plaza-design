@@ -1,4 +1,5 @@
 import {controllerSpeakers} from '../engine/controllers';
+import {renderNativeCaseSay} from './native-case-say-authoring';
 import type {GameplayDefinition,NativeReplyLine,Condition} from '../engine/gameplay/types';
 import type {GameplayBindingControls} from './gameplay-bindings-authoring';
 export function renderNativeRepliesAuthoring(parent:HTMLElement,doc:GameplayDefinition,ui:GameplayBindingControls){
@@ -13,9 +14,7 @@ export function renderNativeRepliesAuthoring(parent:HTMLElement,doc:GameplayDefi
    const change=(label:string,fn:(r:NativeReplyLine&{when?:Condition})=>void)=>edit(label,g=>{const current=g.native!.replies![event];fn('cases'in current?current.cases[i]:current);});
    if('cases'in binding&&i<rows.length-1)form.condition(host,p+' condition',row.when,when=>change('Edit reply condition',r=>{if(!when)throw Error('Ordered condition required');r.when=when;}),doc);
    form.select(host,p+' device',devices,row.from,from=>change('Rebind reply device',r=>{r.from=from;}));
-   form.text(host,p+' input',row.say[0],text=>change('Edit committed reply input',r=>{r.say[0]=text;}));form.text(host,p+' response',row.say[1],text=>change('Edit committed reply',r=>{r.say[1]=text;}),true);
-   form.select(host,p+' tone',['','ok','err','dim'],row.say[2]??'',tone=>change('Edit reply tone',r=>{r.say=tone?[r.say[0],r.say[1],tone as 'ok'|'err'|'dim']:[r.say[0],r.say[1]];}));
-   form.check(host,p+' template',!!row.template,on=>change('Edit reply template',r=>{if(on)r.template=true;else delete r.template;}));
+   renderNativeCaseSay(host,p,row.say,!!row.template,doc,data,form,say=>change('Edit committed reply',r=>{if(!Array.isArray(say)&&typeof say.text!=='string')throw Error('Committed replies require a static source key');r.say=Array.isArray(say)?say:{text:say.text as string};if(!Array.isArray(say))delete r.template;}),on=>change('Edit reply template',r=>{if(on)r.template=true;else delete r.template;}),{allowQuery:false});
    if('cases'in binding&&i<rows.length-1){form.button(host,'Remove '+p,()=>edit('Remove reply case',g=>{const r=g.native!.replies![event];if('cases'in r)r.cases.splice(i,1);}));for(const step of[-1,1])form.button(host,(step<0?'Move earlier ':'Move later ')+p,()=>edit('Reorder reply case',g=>{const r=g.native!.replies![event];if('cases'in r)[r.cases[i],r.cases[i+step]]=[r.cases[i+step],r.cases[i]];}),i+step<0||i+step>=rows.length-1);}
   });
   if('cases'in binding)form.button(host,'Add '+prefix+' case',()=>edit('Add reply case',g=>{const r=g.native!.replies![event];if('cases'in r)r.cases.splice(r.cases.length-1,0,{when:{tokensAtLeast:0},from:devices[0],say:['reply','Device replied.']});}),binding.cases.length>=32);

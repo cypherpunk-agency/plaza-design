@@ -1,8 +1,6 @@
 {
   "version": 1,
-  "flags": [
-    "yard:gateOpen"
-  ],
+  "flags": [],
   "items": [],
   "events": [
     "yard.talk",
@@ -11,7 +9,8 @@
     "yard.chute.sliding",
     "yard.parcel.tray",
     "yard.parcel.bonk",
-    "yard.parcel.return"
+    "yard.parcel.return",
+    "yard.hatch.opened"
   ],
   "commands": {
     "yard.hinge.deal": {
@@ -151,6 +150,134 @@
         },
         {
           "emit": "yard.parcel.return"
+        }
+      ]
+    },
+    "yard.grab.holding": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "yard.grab.air": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "yard.grab.wrong": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "yard.grab.unavailable": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "yard.grab.parcel": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "yard.held",
+          "set": "parcel"
+        },
+        {
+          "state": "yard.parcelAt",
+          "set": "hook"
+        }
+      ],
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "yard.armIsCrate"
+              },
+              "op": "eq",
+              "right": {
+                "literal": true
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "state": "yard.armAt"
+              },
+              "op": "eq",
+              "right": {
+                "state": "yard.parcelAt"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "yard.hatch.manual": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "yard.hatch.ignored": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": []
+    },
+    "yard.hatch.open": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "yard.gateUntil",
+          "set": {
+            "query": "yard.sceneTime"
+          }
+        },
+        {
+          "state": "yard.gateUntil",
+          "add": {
+            "query": "yard.gateDuration"
+          }
+        },
+        {
+          "emit": "yard.hatch.opened"
+        }
+      ],
+      "when": {
+        "state": "yard.gateAllowed",
+        "is": true
+      }
+    },
+    "yard.hatch.redraw": {
+      "sources": [
+        "system"
+      ],
+      "actions": []
+    },
+    "checkpoint.yard.hatch": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "yard.gateUntil",
+          "set": 0
         }
       ]
     }
@@ -341,6 +468,15 @@
       "integer": false,
       "min": -9007199254740991,
       "max": 9007199254740991
+    },
+    "yard.gateUntil": {
+      "owner": "yard",
+      "lifetime": "session",
+      "type": "number",
+      "integer": false,
+      "default": 0,
+      "min": 0,
+      "max": 9007199254740991
     }
   },
   "native": {
@@ -396,6 +532,163 @@
             ]
           }
         ]
+      },
+      {
+        "device": "crane",
+        "noun": "claw",
+        "verb": "grab",
+        "cases": [
+          {
+            "when": {
+              "not": {
+                "any": [
+                  {
+                    "state": "yard.held",
+                    "is": null
+                  },
+                  {
+                    "state": "yard.held",
+                    "is": ""
+                  }
+                ]
+              }
+            },
+            "command": "yard.grab.holding",
+            "say": {
+              "text": "claw.grab.holding"
+            }
+          },
+          {
+            "when": {
+              "compare": {
+                "left": {
+                  "query": "yard.armIsCrate"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": false
+                }
+              }
+            },
+            "command": "yard.grab.air",
+            "say": {
+              "text": "claw.grab.air"
+            }
+          },
+          {
+            "when": {
+              "all": [
+                {
+                  "compare": {
+                    "left": {
+                      "query": "yard.armIsCrate"
+                    },
+                    "op": "eq",
+                    "right": {
+                      "literal": true
+                    }
+                  }
+                },
+                {
+                  "not": {
+                    "compare": {
+                      "left": {
+                        "state": "yard.armAt"
+                      },
+                      "op": "eq",
+                      "right": {
+                        "state": "yard.parcelAt"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "command": "yard.grab.wrong",
+            "say": {
+              "text": {
+                "query": "yard.wrongCrateLine"
+              }
+            }
+          },
+          {
+            "when": {
+              "all": [
+                {
+                  "compare": {
+                    "left": {
+                      "query": "yard.armIsCrate"
+                    },
+                    "op": "eq",
+                    "right": {
+                      "literal": true
+                    }
+                  }
+                },
+                {
+                  "compare": {
+                    "left": {
+                      "state": "yard.armAt"
+                    },
+                    "op": "eq",
+                    "right": {
+                      "state": "yard.parcelAt"
+                    }
+                  }
+                }
+              ]
+            },
+            "command": "yard.grab.parcel",
+            "say": {
+              "text": "claw.grab.ok"
+            }
+          },
+          {
+            "command": "yard.grab.unavailable",
+            "say": [
+              "use claw --grab",
+              "CAMERA SOURCE UNAVAILABLE.",
+              "err"
+            ]
+          }
+        ]
+      },
+      {
+        "device": "gate",
+        "noun": "lock",
+        "verb": "open",
+        "cases": [
+          {
+            "sources": [
+              "interaction"
+            ],
+            "command": "yard.hatch.manual",
+            "say": [
+              "use lock --open",
+              "HINGE: \"hands off the lock. ask me like a person.\"",
+              "err"
+            ]
+          },
+          {
+            "when": {
+              "state": "yard.gateAllowed",
+              "is": false
+            },
+            "command": "yard.hatch.ignored",
+            "say": [
+              "signal → lock --open",
+              "HINGE ignores the signal. it wants to be asked first.",
+              "err"
+            ]
+          },
+          {
+            "command": "yard.hatch.open",
+            "say": [
+              "signal → lock --open",
+              "HINGE: \"opening. one second. I am busy.\""
+            ]
+          }
+        ]
       }
     ],
     "events": {
@@ -408,9 +701,6 @@
       "yard.parcel.tray": "gate"
     },
     "wires": [],
-    "reads": {
-      "yard:gateOpen": "gateOpen"
-    },
     "deadlines": {
       "yard.chute": {
         "startOn": [
@@ -436,7 +726,15 @@
         "due": [
           {
             "when": {
-              "flag": "yard:gateOpen"
+              "compare": {
+                "left": {
+                  "query": "yard.gateOpen"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": true
+                }
+              }
             },
             "command": "yard.parcel.arrive"
           },
@@ -455,6 +753,20 @@
         "due": [
           {
             "command": "checkpoint.yard.parcel"
+          }
+        ]
+      },
+      "yard.hatch.redraw": {
+        "startOn": [
+          "yard.hatch.opened"
+        ],
+        "duration": {
+          "tuning": "gateOpenMs",
+          "offsetMs": 50
+        },
+        "due": [
+          {
+            "command": "yard.hatch.redraw"
           }
         ]
       }
@@ -497,6 +809,66 @@
           }
         ]
       }
+    },
+    {
+      "command": "checkpoint.yard.hatch"
     }
-  ]
+  ],
+  "queries": {
+    "yard.sceneTime": {
+      "kind": "sceneTime"
+    },
+    "yard.gateDuration": {
+      "kind": "tuning",
+      "key": "gateOpenMs"
+    },
+    "yard.armIsCrate": {
+      "kind": "collection",
+      "source": "camera.crates",
+      "id": {
+        "state": "yard.armAt"
+      },
+      "read": {
+        "kind": "exists"
+      }
+    },
+    "yard.wrongCrateLine": {
+      "kind": "collection",
+      "source": "camera.crates",
+      "id": {
+        "state": "yard.armAt"
+      },
+      "read": {
+        "kind": "lineRef",
+        "prefix": "claw.grab.wrong.",
+        "fallback": "claw.grab.wrong"
+      }
+    },
+    "yard.gateOpen": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "yard.sceneTime"
+              },
+              "op": "lt",
+              "right": {
+                "state": "yard.gateUntil"
+              }
+            }
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    }
+  }
 }

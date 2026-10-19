@@ -124,13 +124,41 @@
             "stopped"
           ],
           "on": {
-            "pull": {
-              "do": [
-                {
-                  "effect": "train.brake"
-                }
-              ]
-            }
+            "pull": [
+              {
+                "if": "train.unpaidEven",
+                "do": [
+                  {
+                    "command": "train.unpaid.even"
+                  }
+                ],
+                "say": "brake.notyours"
+              },
+              {
+                "if": "train.unpaidOther",
+                "do": [
+                  {
+                    "command": "train.unpaid.other"
+                  }
+                ],
+                "say": "brake.queued"
+              },
+              {
+                "if": "train.paid",
+                "do": [
+                  {
+                    "effect": "train.brake"
+                  }
+                ]
+              },
+              {
+                "say": [
+                  "{via}use brake --pull",
+                  "BRAKE: passenger verification unavailable. pull not accepted.",
+                  "err"
+                ]
+              }
+            ]
           }
         },
         {

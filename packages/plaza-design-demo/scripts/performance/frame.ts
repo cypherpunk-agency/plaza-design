@@ -34,8 +34,9 @@ window.addEventListener('message',async event=>{
   const w=workload(event.data.id),run=event.data.run,smoke=event.data.smoke===true;if(!Number.isInteger(run)||run<1||run>3)throw new Error('Invalid repeat');
   const initialStorage=capturePrivateStorage();if(Object.keys(initialStorage.local).length||Object.keys(initialStorage.session).length)throw new Error('Fresh realm contains private storage');
   await Promise.all([400,500,600,700].map(n=>document.fonts.load(n+' 16px "IBM Plex Mono"')));await document.fonts.ready;
-  let trustedActivation:boolean|null=null;
-  if(w.lane==='live-game')await new Promise<void>(resolve=>{const b=document.createElement('button');b.textContent='Begin native workload';b.style.cssText='position:fixed;top:4px;left:4px;z-index:99999;padding:12px';b.onclick=e=>{trustedActivation=e.isTrusted;b.remove();resolve();};document.body.append(b);});
+  // The parent owns workload controls and reports actual activation provenance.
+  const activation=w.lane==='live-game'?event.data.activation:undefined;
+  if(w.lane==='live-game'&&(!activation||activation.owner!=='parent'||typeof activation.parentTrusted!=='boolean'||activation.childTrusted!==false))throw new Error('Missing parent activation provenance');
   const calibration=calibratePerformance();
   const f=defaultPlayFixture(w.scene as PlayScene);f.day=1;f.seed=3;f.minute=w.minute;f.weather=w.weather;f.clock='fixed';f.flags={'opening:jacked':true,'opening:uplink':true};
   setOverride('city',w.weather);
@@ -58,7 +59,7 @@ window.addEventListener('message',async event=>{
   if(w.id==='private-play'){game!.checkpoint();send('running',{...snapshot(),initialStorageEmpty:true,scene:game!.inspect().scene,privateKeys:Object.keys(capturePrivateStorage().local)});return;}
   await wait(smoke?1000:w.warmupMs);
   const initial=game?.inspect(),initialModel=model?.snapshot();visibility.length=0;visibility.push({at:performance.now(),hidden:document.hidden});
-  startPerformance({source,scenario:w.id+'/run-'+run,capacity,environment:{...snapshot(),trustedActivation,calibration,fixture:f,workload:w,cache:'new realm; five-second warmup; browser process/cache may be warm',initial:initial?{scene:initial.scene,paused:initial.paused,playMs:initial.save.playMs,canvasHidden:document.querySelector('canvas')?.hidden,player:initial.player,actors:initial.actors?.length,devices:SCENES[w.scene as PlayScene].data?.devices.length??0,weather:weatherNow(sceneClimate(w.scene))}:initialModel}});
+  startPerformance({source,scenario:w.id+'/run-'+run,capacity,environment:{...snapshot(),activation,calibration,fixture:f,workload:w,cache:'new realm; five-second warmup; browser process/cache may be warm',initial:initial?{scene:initial.scene,paused:initial.paused,playMs:initial.save.playMs,canvasHidden:document.querySelector('canvas')?.hidden,player:initial.player,actors:initial.actors?.length,devices:SCENES[w.scene as PlayScene].data?.devices.length??0,weather:weatherNow(sceneClimate(w.scene))}:initialModel}});
   const begin=performance.now();
   if(w.id==='demo-fanout'){for(let n=0;n<(smoke?1:w.operations);n++){const token=perfBegin('workload.action','demo.button');try{model!.act('button','button','press');actionCount++;}finally{perfEnd(token);}await wait(smoke?250:Math.max(0,begin+(n+1)*1000-performance.now()));}}
   else if(w.id==='board-cycles'){for(let n=0;n<(smoke?1:w.operations);n++){let token=perfBegin('workload.action','board.open');key('b');perfEnd(token);if(!document.querySelector('#hack:not([hidden])'))throw new Error('Board failed to open');boardOpens++;await wait(smoke?100:500);token=perfBegin('workload.action','board.close');key('Escape');perfEnd(token);if(document.querySelector('#hack:not([hidden])'))throw new Error('Board failed to close');boardCloses++;await wait(smoke?100:500);}}

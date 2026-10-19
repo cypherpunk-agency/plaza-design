@@ -150,11 +150,7 @@ const {X}=geometry;
       m.later(SET_MS, () => {
         if (s.ticket !== t) return;
         delete s.liftT0; s.restX = route(kind,geometry).to;
-        if (kind === KIND.box) {
-          m.set('boxAt', 'ferry');
-          w.goal('lift');
-          w.say(w.line('box.landed'), 'reefer');
-        } else m.set('loaded', Number(m.get('loaded') ?? 0) + 1);
+        w.input('stacks.crane.landed');
         w.changed();
       });
       w.changed();
@@ -199,10 +195,12 @@ const {X}=geometry;
 
   return {
     effects,
+    inputs:['stacks.crane.landed'],
     panels: ['scope'],
     derived: {
       /** Physical trajectory occupancy; source cases own permission/refusal policy. */
       craneBusy: (m) => busy(m),
+      reeferTrajectory: (m) => m.scratch.liftKind===KIND.box,
       /** Moth's question has an answer: did you feed Sprat (Moth's place, the feeder)? */
       spratFed: () => !!player.sceneState?.('moth', 'fed'),
       /** STS-2's status: what the trolley is doing. */
@@ -219,10 +217,10 @@ const {X}=geometry;
     },
     needs: {
       state: ['found', 'box', 'boxAt', 'alarms', 'loaded', 'talked', 'departed'],
-      goals: ['find', 'lift', 'moth'],
+      goals: ['find', 'moth'],
       texts: {
         'lift.box': 'line',
-        'scan.warm': 'line', 'box.landed': 'line', 'box.back': 'line',
+        'scan.warm': 'line', 'box.back': 'line',
         'alarm.empty': 'line', 'alarm.box': 'line',
         'watchdog.restore': 'line',
         // the scope (scope.ts)

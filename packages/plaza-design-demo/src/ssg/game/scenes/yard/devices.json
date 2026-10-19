@@ -186,16 +186,7 @@
           ],
           "events": [
             "dropped"
-          ],
-          "on": {
-            "grab": {
-              "do": [
-                {
-                  "effect": "crane.grab"
-                }
-              ]
-            }
-          }
+          ]
         },
         {
           "id": "job.log",
@@ -227,7 +218,7 @@
       ],
       "status": [
         {
-          "if": "gateOpen",
+          "if": "yard.gateOpen",
           "then": "OPEN",
           "else": "closed"
         },
@@ -259,38 +250,7 @@
           "kind": "ACT",
           "verbs": [
             "open"
-          ],
-          "on": {
-            "open": [
-              {
-                "if": "!signal",
-                "say": [
-                  "use lock --open",
-                  "HINGE: \"hands off the lock. ask me like a person.\"",
-                  "err"
-                ]
-              },
-              {
-                "if": "!gateAllowed",
-                "say": [
-                  "signal → lock --open",
-                  "HINGE ignores the signal. it wants to be asked first.",
-                  "err"
-                ]
-              },
-              {
-                "do": [
-                  {
-                    "effect": "hatch.open"
-                  }
-                ],
-                "say": [
-                  "signal → lock --open",
-                  "HINGE: \"opening. one second. I am busy.\""
-                ]
-              }
-            ]
-          }
+          ]
         },
         {
           "id": "log",

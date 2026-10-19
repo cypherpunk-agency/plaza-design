@@ -74,3 +74,16 @@ projection because rule-derived facts cannot be validated before rule modules
 exist. Final source assembly and prospective Save still validate the complete
 rule contract. The malformed-derived-reference regression explicitly protects
 that boundary; there is no permissive allowlist or import-cycle workaround.
+
+## Router online physical milestone
+
+The boot and thermal-reboot timers still belong to the registered physical controller, including their exact boot/reboot duration plus 20 ms offset. Both due callbacks now emit the registered physical input `capsule.router.onlineDue`. Shared source owns its system command, live `routerUp` readiness condition and committed online reply. A down router refuses the command before commit, so it remains silent and does not request redraw/persistence.
+
+The default reply still resolves `router.online` at `router`, with the same text and success cue. Its former controller `texts.online` alias is removed; the typed controller panel directs authors to native inputs/replies. Native thermal text, integration, bootUntil, steam and all current timer behavior remain unchanged. Timers deliberately remain parallel: earlier boot/reboot callbacks can still announce later if the currently powered router is up. No second deadline or saved latch was introduced.
+
+Successful source delivery adds one coalescible redraw notification before the committed caption: former `say → changed` becomes `changed → say → changed`. There is no state change in that extra notification. The focused test records this explicitly; all world state, scratch, scene time, callback ownership, exact captions/cue tone and native event/goal order compare with the immutable original. Render/build verification remains the integrated checkpoint's responsibility.
+
+- `check-capsule-router-online.mts`: 108 immutable-original power/parallel boot/thermal/off/pause/reset/restore histories, exact timer snapshots and silent refusal; one success receipt and explicit redraw delta.
+- Existing 1,728-history `check-capsule-source-workflows.mts` still passes, as do its typed controls and paired Save/fresh import proof.
+- `check-capsule-router-online-save.mts`: actual typed input-command rebind, readiness condition, static text key and speaker controls affect pending behavior; missing text/milestone and obsolete alias reject atomically. Protected paired Save, document bundle, fresh shipping import with saved JSON and exact byte Undo pass. Evidence: `.scene-system/capsule-router-online-save-8LHluu`.
+- Package TypeScript build and owned diff check pass. Earlier standalone controller scripts that expect the deleted online alias are superseded by the shared-workflow/router tests; they are not new acceptance evidence.

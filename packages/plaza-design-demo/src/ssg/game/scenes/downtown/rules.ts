@@ -1,17 +1,9 @@
-/**
- * Downtown's code side: the rules too fiddly to be data, as named effects the
- * scene file refers to (`{ "effect": "dlv.drive" }`), the values Downtown reads
- * from the player's save, how it settles a save, and where DLV-9 is while it
- * drives. Everything they say comes from downtown.json's `texts`.
- *
- * Downtown is the first street, so its progress has lived in the save's own
- * fields since before the engine: `handle`, `tokens`, `jump` (legs.so),
- * `controlled` (Registry nodes that answer to you now, NET.md) and `flags` (`till`, `end`).
- * The scene reads them as derived values (`till`,
- * `controlled2F`, `jump`, …) and its effects write them; the scene's own state is
- * only what is new on the street (the gate's lock, DLV-9, the billboard).
- *
- * Pure: no DOM, so the build-time check and node scripts can import it.
+/** Downtown's native DLV-9 trajectories and remaining physical
+ * callbacks. Registry control, billboard scheduling and controlled status/lamps
+ * use authored shared commands, queries and deadlines. The source formatter's
+ * nodes read delegates to the existing canonical player node-count service.
+ * DLV access/refusals and sign pulses are authored. DLV completion/finale
+ * decisions remain native and are documented separately.
  */
 
 import type { SceneData } from "../../data/types";
@@ -89,61 +81,11 @@ function drive(w: World, p: PlayerServices, inward: boolean) {
   });
 }
 
-/** Take control of a Registry node (NODES +1): an access point onto its networks now (NET.md). `fresh`: it was not yours before. */
-function controlNode(w: World, p: PlayerServices, dev: string) {
-  const node = w.m.label('node.' + dev), s = p.save(), fresh = !s.controlled.includes(node);
-  if (fresh) { s.controlled.push(node); p.persist(); }
-  const line=w.line('control.' + dev, { node, nodes: p.nodes() });
-  if(fresh)p.granted(w.receipt(line));
-  return { fresh, line };
-}
-
 function effects(p: PlayerServices): Record<string, Effect> {
   return {
-    /** A Registry box opens up: its node is yours (which node: `texts["node.<device>"]`). */
-    'node.control': (w, c) => {
-      const r = controlNode(w, p, c.dev), peer = w.m.data.texts['peer.' + c.dev];
-      // a node you took is seen down the street: its peer answers a moment later (the box's: the noodle till)
-      if (r.fresh && peer) w.m.later(700, () => { w.say(w.line('peer.' + c.dev, { node: w.m.label('node.' + c.dev) }), w.m.label('peer.' + c.dev + '.who')); w.changed(); });
-      return r.line;
-    },
-
-
-    /** The VERIFY sign lights its tubes one by one (the scene draws it). */
-    'sign.test': (w) => { w.m.scratch.signTest = w.m.now(); },
-
-    /**
-     * CAM-3's feed on the billboard. The Registry's ad comes back a moment later
-     * (`billboard.ads:next`, pre-wired to `show ad`); if the pigeon is still up
-     * when it trends, the billboard leaves the Registry.
-     */
-    'billboard.feed': (w) => {
-      const m = w.m;
-      m.set('feed', 'cam3');
-      m.later(w.tune('adBackMs'), () => m.emit('billboard.ads:next'));
-      m.later(w.tune('trendMs'), () => {
-        if (m.get('feed') !== 'cam3') return;
-        const f = controlNode(w, p, 'billboard');
-        if (f.fresh) { w.say(w.line('tv.trend')); w.say(f.line); }
-        w.changed();
-      });
-      return w.line('tv.on');
-    },
-
-    /** DLV-9's wheels: `go home` (to the market, once it has a route), `follow you` (back out of it). */
-    'dlv.drive': (w, c) => {
-      const m = w.m, at = m.get('dlvAt') as DlvAt;
-      if (at === 'driving') return w.line('dlv.busy');
-      if (c.verb === 'go home') {
-        if (!m.get('routeFixed')) return w.line('dlv.lost');
-        if (at === 'market') return w.line('dlv.home');
-        drive(w, p, true);
-        return w.line('dlv.go');
-      }
-      if (at !== 'market') return w.line('dlv.follow');
-      drive(w, p, false);
-      return w.line('dlv.out');
-    },
+    /** Physical route endpoints; source Case lists own access and refusal policy. */
+    'dlv.inward': (w) => { drive(w, p, true); },
+    'dlv.outward': (w) => { drive(w, p, false); },
   };
 }
 
@@ -163,9 +105,6 @@ export function downtownRules(p: PlayerServices): SceneRules {
       tokens: () => s().tokens,
       jump: () => !!s().jump,
       till: () => !!s().flags.till,
-      controlled2F: () => s().controlled.includes('0x2F'),
-      controlled31: () => s().controlled.includes('0x31'),
-      controlledTV: () => s().controlled.includes('0x3C'),
       end: () => !!s().flags.end,
       nodes: () => p.nodes(),
       /** The denied jokes, in turn. */
@@ -177,16 +116,12 @@ export function downtownRules(p: PlayerServices): SceneRules {
       return x === null ? null : { ...home, x };
     },
     needs: {
-      state: ['lock', 'scanned', 'dlvAt', 'dlvFrom', 'routeFixed', 'feed'],
-      goals: ['handle', 'till', 'box', 'install', 'relay', 'gate'],
+      state: ['lock', 'scanned', 'dlvAt', 'dlvFrom', 'routeFixed'],
+      goals: ['gate'],
       texts: {
         'joke.0': 'label', 'joke.1': 'label', 'joke.2': 'label',
-        'node.box': 'label', 'node.relay': 'label', 'node.billboard': 'label',
-        'control.box': 'line', 'control.relay': 'line', 'control.billboard': 'line', 'peer.box': 'line', 'peer.box.who': 'label',
 
-        'dlv.busy': 'line', 'dlv.lost': 'line', 'dlv.home': 'line', 'dlv.go': 'line', 'dlv.out': 'line',
-        'dlv.follow': 'line', 'dlv.bonk': 'line', 'dlv.passed': 'line', 'gate.end': 'line',
-        'tv.on': 'line', 'tv.trend': 'line',
+        'dlv.bonk': 'line', 'dlv.passed': 'line', 'gate.end': 'line',
         // shell.ts (the deck's keyboard)
         'login.none': 'line', 'login.baduser': 'line',
         // camera.ts (CAM-3)
@@ -199,8 +134,7 @@ export function downtownRules(p: PlayerServices): SceneRules {
       const errs: string[] = [];
       if (!z.camera?.crates.length) errs.push('camera: CAM-3 needs things under its crosshair ("crates")');
       for (const c of z.camera?.crates ?? []) if (!(('cam.zoom.' + c.id) in z.texts)) errs.push(`texts: missing "cam.zoom.${c.id}" (what CAM-3 says zoomed onto ${c.id})`);
-      for (const id of ['gate', 'dlv9', 'box', 'relay', 'billboard']) if (!z.devices.some((d) => d.id === id)) errs.push(`devices: the code drives "${id}"; it is missing`);
-      for (const id of ['box', 'relay', 'billboard']) if (!(('node.' + id) in z.texts)) errs.push(`texts: missing "node.${id}" (the node you take with it)`);
+      for (const id of ['gate', 'dlv9']) if (!z.devices.some((d) => d.id === id)) errs.push(`devices: the code drives "${id}"; it is missing`);
       return errs;
     },
   };

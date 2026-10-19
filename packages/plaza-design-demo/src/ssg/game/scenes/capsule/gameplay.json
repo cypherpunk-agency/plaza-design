@@ -1,7 +1,8 @@
 {
   "version": 1,
   "flags": [
-    "capsule:routerReadyAtTickStart"
+    "capsule:routerReadyAtTickStart",
+    "capsule:routerUp"
   ],
   "items": [],
   "events": [
@@ -9,7 +10,8 @@
     "capsule.pixel.router",
     "capsule.pixel.sun",
     "capsule.door.unlocked",
-    "capsule.schedule.night"
+    "capsule.schedule.night",
+    "capsule.router.online"
   ],
   "commands": {
     "capsule.plug.off": {
@@ -90,6 +92,19 @@
       "actions": [
         {
           "emit": "capsule.schedule.night"
+        }
+      ]
+    },
+    "capsule.router.online": {
+      "sources": [
+        "system"
+      ],
+      "when": {
+        "flag": "capsule:routerUp"
+      },
+      "actions": [
+        {
+          "emit": "capsule.router.online"
         }
       ]
     }
@@ -383,7 +398,8 @@
       }
     ],
     "reads": {
-      "capsule:routerReadyAtTickStart": "routerUpAtTickStart"
+      "capsule:routerReadyAtTickStart": "routerUpAtTickStart",
+      "capsule:routerUp": "routerUp"
     },
     "replies": {
       "capsule.pixel.bed": {
@@ -417,6 +433,12 @@
           "DOOR LOCK: receipt on file. bolt released.",
           "ok"
         ]
+      },
+      "capsule.router.online": {
+        "from": "router",
+        "say": {
+          "text": "router.online"
+        }
       }
     },
     "intervals": {
@@ -506,6 +528,18 @@
         },
         "command": "capsule.door.unlocked",
         "edge": "rising"
+      }
+    },
+    "inputs": {
+      "capsule.router.onlineDue": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "capsule.router.online"
+          }
+        ]
       }
     }
   },

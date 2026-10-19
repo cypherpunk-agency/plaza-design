@@ -884,7 +884,6 @@
       "steamMs": "steamMs"
     },
     "texts": {
-      "online": "router.online",
       "reboot": "router.reboot"
     },
     "onlineNoticeDelayMs": 20,

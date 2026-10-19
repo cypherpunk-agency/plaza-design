@@ -17,25 +17,39 @@ requirement; do not add compatibility layers or scene-specific state bridges. On
 game state and shared actions are the target. Current-format persistence and gameplay/visual
 preservation remain required. See the correction at the top of ENGINE-CONSOLIDATION-GOAL.md.
 
-Latest published checkpoint:7cbe1a5 on main and production; both production deployments succeeded.
+Latest published checkpoint:ee8cc6a on main and production; both production deployments succeeded.
 All19 scenes have source-backed ordinary content/actors and editable device sources. Scalar state
 has one common Save.gameplay owner; alias maps and the native state bridge are removed. All19
-built-editor native startups/Stop cleanup and173 raster comparisons passed at source2b006c014979.
-See ENGINE-CONSOLIDATION-STATUS.md for exact artifacts and the retained nonrepeating2pixel failure.
+built-editor native startups/Stop cleanup and173 raster comparisons passed at source294b0d4656d4,
+with zero differing pixels/errors. See ENGINE-CONSOLIDATION-STATUS.md for exact artifacts.
 
-Current unpublished batch: source queries/triggers/intervals own Capsule door/goals/Pixel decisions;
+That published batch includes source queries/triggers/intervals for Capsule door/goals/Pixel decisions;
 shared cancelable deadlines own washer start/stop/overload/completion; atomic grants own jacket
 rewards; Downtown till pays through a source command. Existing scalar reads now supply action
 values. All4 native settle callbacks are removed in favor of source-owned copied-state checkpoint
 commands using the same interpreter. Focused immutable behavior and typed/pending/sourceSave/fresh
-import/Undo checks pass. Yard drop and Stacks lift/controller slices are being integrated.
+import/Undo checks pass. It also includes the first Yard drop and Stacks lift/controller slices.
+
+Current unpublished batch: Yard's full grab/drop/hatch/parcel logic is now source-owned (864 original
+cases and33 timing histories); native Yard gameplay effects/derived callbacks are removed. Stacks
+landing outcomes use shared physical-milestone inputs, with288 exact state/trajectory/caption-time/
+goal histories. Guard-success inputs provide the same source command entrypoint with explicit origin
+permissions. Controlled-node grants and freshness checks can read finite source labels through the
+existing query evaluator. Parallel deadline starts preserve independent original callbacks. Typed
+Save/fresh import/Undo evidence is recorded in the execution ledger. Downtown Registry grants,
+billboard callbacks and lamp/status queries are source-owned, with128 original behavior histories
+and128 published feedback comparisons. Train unpaid refusals/counters use shared source commands
+(840 histories), while paid physics and harbor unlock remain pending. Native session disposal now
+releases its owned model callbacks. Capsule online feedback, Downtown refusal/sign presentation and
+the existing END-screen handoff are under integration; final build/raster/editor evidence is pending.
 
 Remaining: other inventoried ordinary controller/reward/story branches, complete all-scene typed
 authoring/lifecycle acceptance, six measured workloads and cleanup. No old-format compatibility work
 is planned. The current unpublished batch still needs integrated build/raster/editor evidence.
 The per-scene matrix remains conservative and has not yet reconciled every focused evidence entry;
 NOT RUN entries must not be interpreted as a claim that no underlying implementation exists.
-No whole goal gate is signed. See ENGINE-CONSOLIDATION-STATUS.md and
+G1 communication routing, G2 attention/timing and G3 conversations now PASS at source377ff1fccc6c;
+the full goal remains incomplete. See ENGINE-CONSOLIDATION-STATUS.md and
 [ordinary controller audit](./docs/reference/ORDINARY-CONTROLLER-CONSOLIDATION.md).
 
 The goal is in scene migration and editor integration, not final cleanup. All 19 native scenes
@@ -53,7 +67,8 @@ routing, feedback receipts and persisted noun/wiring lessons. Success-service re
 
 Specialized controllers, existing world/network routes, complete editor coverage, final preservation,
 lifecycle/performance acceptance and removal of superseded paths remain required. No whole-goal
-G0–G13 gate is signed off. Historical scoped completions below do not imply full-game completion.
+completion is claimed: G1–G3 pass while G0/G4–G13 remain open. Historical scoped completions below
+do not imply full-game completion.
 
 Latest integrated preservation checkpoint: 173 raster comparisons passed; the current parallel batch
 still needs a new integrated comparison. Story M1 remains a completed design pass and M2 an implemented

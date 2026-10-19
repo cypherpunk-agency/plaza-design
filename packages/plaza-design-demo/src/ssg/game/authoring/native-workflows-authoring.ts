@@ -1,3 +1,4 @@
+import {renderNativeInputsAuthoring} from './native-inputs-authoring';
 import {renderNativeDeadlinesAuthoring} from './native-deadlines-authoring';
 import {renderNativeRepliesAuthoring} from './native-replies-authoring';
 import {renderNativeLiveConditionsAuthoring} from './native-live-conditions-authoring';
@@ -24,6 +25,7 @@ export function renderNativeWorkflowAuthoring(parent:HTMLElement,doc:GameplayDef
   form.button(host,'Remove '+prefix,()=>edit('Remove live interval',g=>{delete g.native!.intervals![id];}));
  }
  form.text(box,'New interval ID',draft.interval??'',value=>{draft.interval=value;});form.button(box,'Add live interval',()=>edit('Add live interval',g=>{const id=draft.interval??'';g.native!.intervals??={};if(g.native!.intervals[id])throw Error('Interval already exists');g.native!.intervals[id]={kind:'liveInterval',elapsed:'interval.'+id,duration:{tuning:tuning[0]},active:{tokensAtLeast:0},inactive:'hold',due:[{command:system[0]}]};}),!system.length||!tuning.length||entries.length>=64);
+ renderNativeInputsAuthoring(parent,doc,ui);
  renderNativeDeadlinesAuthoring(parent,doc,ui);
  renderNativeRepliesAuthoring(parent,doc,ui);
 }

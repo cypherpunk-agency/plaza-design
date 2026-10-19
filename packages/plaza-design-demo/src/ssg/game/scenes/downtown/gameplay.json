@@ -11,7 +11,16 @@
   "events": [
     "downtown.fixer.hint.paid",
     "downtown.till.paid",
-    "downtown.legs.installed"
+    "downtown.legs.installed",
+    "downtown.box.control.reply",
+    "downtown.box.control.fresh",
+    "downtown.relay.control.reply",
+    "downtown.billboard.control.reply",
+    "downtown.billboard.feed.started",
+    "downtown.billboard.ad.next",
+    "downtown.billboard.trended",
+    "downtown.box.peer",
+    "downtown.sign.test"
   ],
   "commands": {
     "downtown.fixer.first": {
@@ -1790,6 +1799,145 @@
         "signal"
       ],
       "actions": []
+    },
+    "downtown.box.control.fresh": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "grant": {
+            "controlled": {
+              "query": "downtown.node.box"
+            }
+          }
+        },
+        {
+          "emit": "downtown.box.control.fresh"
+        },
+        {
+          "emit": "downtown.box.control.reply"
+        }
+      ]
+    },
+    "downtown.box.control.known": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.box.control.reply"
+        }
+      ]
+    },
+    "downtown.relay.control.fresh": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "grant": {
+            "controlled": {
+              "query": "downtown.node.relay"
+            }
+          }
+        },
+        {
+          "emit": "downtown.relay.control.reply"
+        }
+      ]
+    },
+    "downtown.relay.control.known": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.relay.control.reply"
+        }
+      ]
+    },
+    "downtown.billboard.feed": {
+      "sources": [
+        "signal"
+      ],
+      "actions": [
+        {
+          "state": "downtown.feed",
+          "set": "cam3"
+        },
+        {
+          "emit": "downtown.billboard.feed.started"
+        }
+      ]
+    },
+    "downtown.billboard.noInput": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": []
+    },
+    "downtown.billboard.nextAd": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.billboard.ad.next"
+        }
+      ]
+    },
+    "downtown.billboard.trend.known": {
+      "sources": [
+        "system"
+      ],
+      "actions": []
+    },
+    "downtown.billboard.trend.fresh": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "grant": {
+            "controlled": {
+              "query": "downtown.node.billboard"
+            }
+          }
+        },
+        {
+          "emit": "downtown.billboard.trended"
+        },
+        {
+          "emit": "downtown.billboard.control.reply"
+        }
+      ]
+    },
+    "downtown.box.peer": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.box.peer"
+        }
+      ]
+    },
+    "downtown.sign.test": {
+      "sources": [
+        "interaction",
+        "signal"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.sign.test"
+        },
+        {
+          "grant": {
+            "keyring": "vrify"
+          }
+        }
+      ]
     }
   },
   "reactions": [],
@@ -2763,6 +2911,87 @@
     "downtown.drawerTokens": {
       "kind": "tuning",
       "key": "drawerTokens"
+    },
+    "downtown.node.box": {
+      "kind": "label",
+      "key": "node.box"
+    },
+    "downtown.node.relay": {
+      "kind": "label",
+      "key": "node.relay"
+    },
+    "downtown.node.billboard": {
+      "kind": "label",
+      "key": "node.billboard"
+    },
+    "controlled2F": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "player": {
+              "collection": "controlled",
+              "contains": {
+                "query": "downtown.node.box"
+              }
+            }
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "controlled31": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "player": {
+              "collection": "controlled",
+              "contains": {
+                "query": "downtown.node.relay"
+              }
+            }
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "controlledTV": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "player": {
+              "collection": "controlled",
+              "contains": {
+                "query": "downtown.node.billboard"
+              }
+            }
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
     }
   },
   "native": {
@@ -2823,12 +3052,198 @@
             ]
           }
         ]
+      },
+      {
+        "device": "billboard",
+        "noun": "screen",
+        "verb": "show feed",
+        "cases": [
+          {
+            "sources": [
+              "interaction"
+            ],
+            "command": "downtown.billboard.noInput",
+            "say": {
+              "text": "tv.no-input"
+            }
+          },
+          {
+            "command": "downtown.billboard.feed",
+            "say": {
+              "text": "tv.on"
+            }
+          }
+        ]
+      },
+      {
+        "device": "sign",
+        "noun": "tubes",
+        "verb": "test",
+        "cases": [
+          {
+            "command": "downtown.sign.test",
+            "say": {
+              "text": "sign.test"
+            }
+          }
+        ]
       }
     ],
-    "events": {},
+    "events": {
+      "downtown.billboard.ad.next": "billboard.ads:next"
+    },
     "goals": {
       "downtown.till.paid": "till",
       "downtown.legs.installed": "install"
+    },
+    "inputs": {
+      "downtown.box.control": {
+        "origin": {
+          "kind": "guard",
+          "device": "box",
+          "noun": "login"
+        },
+        "cases": [
+          {
+            "when": {
+              "not": {
+                "player": {
+                  "collection": "controlled",
+                  "contains": {
+                    "query": "downtown.node.box"
+                  }
+                }
+              }
+            },
+            "command": "downtown.box.control.fresh"
+          },
+          {
+            "command": "downtown.box.control.known"
+          }
+        ]
+      },
+      "downtown.relay.control": {
+        "origin": {
+          "kind": "guard",
+          "device": "relay",
+          "noun": "login"
+        },
+        "cases": [
+          {
+            "when": {
+              "not": {
+                "player": {
+                  "collection": "controlled",
+                  "contains": {
+                    "query": "downtown.node.relay"
+                  }
+                }
+              }
+            },
+            "command": "downtown.relay.control.fresh"
+          },
+          {
+            "command": "downtown.relay.control.known"
+          }
+        ]
+      }
+    },
+    "replies": {
+      "downtown.box.control.reply": {
+        "from": "box",
+        "say": {
+          "text": "control.box"
+        }
+      },
+      "downtown.relay.control.reply": {
+        "from": "relay",
+        "say": {
+          "text": "control.relay"
+        }
+      },
+      "downtown.billboard.control.reply": {
+        "from": "billboard",
+        "say": {
+          "text": "control.billboard"
+        }
+      },
+      "downtown.billboard.trended": {
+        "from": "billboard",
+        "say": {
+          "text": "tv.trend"
+        }
+      },
+      "downtown.box.peer": {
+        "from": "till",
+        "say": {
+          "text": "peer.box"
+        }
+      }
+    },
+    "deadlines": {
+      "downtown.billboard.ad": {
+        "restart": "parallel",
+        "startOn": [
+          "downtown.billboard.feed.started"
+        ],
+        "duration": {
+          "tuning": "adBackMs"
+        },
+        "due": [
+          {
+            "command": "downtown.billboard.nextAd"
+          }
+        ]
+      },
+      "downtown.billboard.trend": {
+        "restart": "parallel",
+        "startOn": [
+          "downtown.billboard.feed.started"
+        ],
+        "duration": {
+          "tuning": "trendMs"
+        },
+        "while": {
+          "state": "downtown.feed",
+          "is": "cam3"
+        },
+        "due": [
+          {
+            "when": {
+              "player": {
+                "collection": "controlled",
+                "contains": {
+                  "query": "downtown.node.billboard"
+                }
+              }
+            },
+            "command": "downtown.billboard.trend.known"
+          },
+          {
+            "command": "downtown.billboard.trend.fresh"
+          }
+        ]
+      },
+      "downtown.box.peer": {
+        "restart": "parallel",
+        "startOn": [
+          "downtown.box.control.fresh"
+        ],
+        "duration": {
+          "tuning": "peerMs"
+        },
+        "due": [
+          {
+            "command": "downtown.box.peer"
+          }
+        ]
+      }
+    },
+    "presentation": {
+      "downtown.sign.test": {
+        "kind": "pulse",
+        "target": "sign"
+      }
     }
   }
 }

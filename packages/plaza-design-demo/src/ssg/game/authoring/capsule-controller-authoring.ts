@@ -1,6 +1,7 @@
 import type {SceneData,NetData} from '../data/types';import {capsuleController,type CapsuleController} from '../engine/controllers/capsule';import {TypedForm} from './typed-form';
 /** Only registered native input bindings; no embedded scripts or second thermal evaluator. */
 export function renderCapsuleController(host:HTMLElement,form:TypedForm,data:SceneData,edit:(label:string,change:(d:SceneData)=>void)=>void,net:NetData){
+ const onlineNote=document.createElement('p');onlineNote.textContent='Router online readiness, caption and speaker are authored in Commands & dialogue, under native inputs and replies.';host.append(onlineNote);
  const c=capsuleController(data),all=[...data.devices,...(data.nodes??[]),...net.nodes],update=(label:string,fn:(c:CapsuleController)=>void)=>edit(label,d=>{d.controller??=structuredClone(c);fn(d.controller as CapsuleController);});
  for(const key of Object.keys(c.state)as(keyof CapsuleController['state'])[]){const options=Object.keys(data.state).filter(id=>key==='pixelAt'?['bed','router','sun'].includes(String(data.state[id])):typeof data.state[id]==='boolean');form.select(host,'Capsule '+key+' state',options,c.state[key],v=>update('Rebind Capsule state',c=>{c.state[key]=v;}));}
  for(const key of Object.keys(c.devices)as(keyof CapsuleController['devices'])[])form.select(host,'Capsule '+key+' device', [...new Set([...all.map(d=>d.id),...(key==='pixel'?['pixel']:[])])],c.devices[key],v=>update('Rebind Capsule device/speaker',c=>{c.devices[key]=v;}));

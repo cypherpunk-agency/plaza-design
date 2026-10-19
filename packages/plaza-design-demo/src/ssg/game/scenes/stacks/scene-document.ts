@@ -2,7 +2,7 @@ import scene from './scene.json';
 import gameplay from './gameplay.json';
 import {nativeContentContract} from '../../engine/gameplay/content-contract';
 import {STACKS} from '../../data';
-const shared=nativeContentContract(scene,gameplay,STACKS,['moth'],{actors:true,manifest:true},{derived:['spratFed'],textOnlyDialogues:['moth']});
+const shared=nativeContentContract(scene,gameplay,STACKS,['moth'],{actors:true,manifest:true},{derived:['spratFed','reeferTrajectory'],textOnlyDialogues:['moth']});
 
 /** Finite physical trajectory input: policy/conditions remain wholly authored. */
 function validateGameplay(value:unknown){
