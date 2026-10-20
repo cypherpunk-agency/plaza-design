@@ -1,14 +1,22 @@
 /** Standalone authored actors reuse the game's existing seeded appearance and animation kernels. */
-import {drawCharacter,characterHeight,type Character,type Act} from '../../runtime/characters';
+import {drawCharacter,characterHeight,KIT_ACTS,type Character,type Act} from '../../runtime/characters';
+import {BODY_KINDS,HAIR_KINDS,GARB_KINDS,EXTRA_KINDS,FACIAL_KINDS} from './parts';
+import type {BotLook,Face} from './appearance';
 import {BOT,CRITTERS} from './appearance';
 import {ARCHETYPE_IDS,type ArchetypeId} from './archetypes';
-import type {Element,Properties,Point} from '../core/composition';
+import type {Element,Field,Properties,Point,Value} from '../core/composition';
 import {DEPTH_BANDS,DEPTH_ORDER,isDepthBand} from '../core/depth';
 import {DISTRICT_PALETTES,SEATED_VIEWS,type SitPose} from './people-style';
 import type {Look} from '../../runtime/characters';
 const DISTRICTS=Object.keys(DISTRICT_PALETTES).filter(d=>d!=='city');
 export const residentKinds=['human',...Object.keys(CRITTERS),...Object.keys(BOT)];
-export const residentActs=['stand','talk','sit','lean','smoke','phone','haggle','argue','queue','sleep','dance','vend','read','doze','wait','dig','fly','scan','direct','play','weld','scrub','charge','glitch','blink','slump'];
+/** Every action some kit body animates (runtime/characters.ts KIT_ACTS); a body without it stands. Movers use the travel range. */
+export const residentActs=[...new Set(Object.values(KIT_ACTS).flat())];
+const FACES:Face[]=['eyes','happy','blink','sad','dots','off','crack'];
+const isBot=(p:Properties)=>String(p.kind) in BOT,human=(p:Properties)=>p.kind==='human';
+const sel=(label:string,options:readonly (string|number)[],showIf:(p:Properties)=>boolean):Field=>({kind:'select',label,options:[...options],default:options[0],showIf});
+/** An optional colour: empty keeps the seeded one. */
+const colour=(label:string,showIf:(p:Properties)=>boolean):Field=>({kind:'json',label,default:'',showIf,editor:{kind:'colour',empty:'Seeded'},validate:(v:Value)=>{if(v!==''&&!(typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v)))throw new Error(label+': expected a #rrggbb colour or empty');}});
 const cache=new Map<string,Character>();
 /** Bounded cache keeps the existing renderer's WeakMap appearance identity stable across frames. */
 export function residentCharacter(props:Properties,point:Point):Character{
@@ -16,15 +24,38 @@ export function residentCharacter(props:Properties,point:Point):Character{
  const band=DEPTH_BANDS[isDepthBand(props.depth)?props.depth:'play'];
  // a human may wear a named look (archetypes.ts); the seed varies the rest
  // a human may also take a colour style, a district's clothes, visible tech, and sit (mixed: the pose changes now and then)
- const look:Look={...(props.archetype?{archetype:props.archetype as ArchetypeId}:{}),...(props.style==='vivid'||props.style==='muted'?{style:props.style}:{}),...(props.district?{district:String(props.district)}:{}),...(props.tech==='yes'||props.tech==='no'?{kitted:props.tech==='yes'}:{})};
+ const own=(k:string)=>typeof props[k]==='string'&&props[k]!==''&&props[k]!=='seeded'?String(props[k]):undefined;
+ const parts={...(own('body')?{body:own('body')}:{}),...(own('hair')?{hair:own('hair')}:{}),...(own('garb')?{garb:own('garb')}:{}),...(own('facial')?{facial:own('facial')}:{}),...(Array.isArray(props.extras)?{extras:props.extras as string[]}:{}),
+  ...(own('skin')?{skin:own('skin')}:{}),...(own('hairColour')?{hairCol:own('hairColour')}:{}),...(own('top')?{top:own('top')}:{}),...(own('bottom')?{bottom:own('bottom')}:{}),...(own('accent')?{acc:own('accent')}:{})} as Partial<Look>;
+ const robot:BotLook|undefined=isBot(props)?{bot:props.kind as BotLook['bot'],...(own('paint')?{paint:own('paint')}:{}),...(own('trim')?{trim:own('trim')}:{}),...(own('screen')?{screen:own('screen')}:{}),...(own('face')?{face:own('face') as Face}:{}),...(own('variant')?{v:Number(own('variant')) as 0|1|2}:{})}:undefined;
+ const look:Look={...parts,...(props.archetype?{archetype:props.archetype as ArchetypeId}:{}),...(props.style==='vivid'||props.style==='muted'?{style:props.style}:{}),...(props.district?{district:String(props.district)}:{}),...(props.tech==='yes'||props.tech==='no'?{kitted:props.tech==='yes'}:{})};
  const sitting=props.kind==='human'&&props.sitting&&props.sitting!=='no'?{seated:true,...(props.sitting!=='mixed'?{sitView:props.sitting as SitPose}:{})}:{};
- const body=props.kind==='human'?(Object.keys(look).length?{look}:{}):{look:props.kind as Character['look']};
- actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:band.dim,parallax:band.parallax,...body,...sitting};
+ const body=props.kind==='human'?(Object.keys(look).length?{look}:{}):{look:robot&&Object.keys(robot).length>1?robot:props.kind as Character['look']};
+ // movers go between here and `range` units away (negative: to the left); speed 0 is the body's usual pace
+ const range=Number(props.range??0),speed=Number(props.speed??0);
+ actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:band.dim,parallax:band.parallax,...body,...sitting,...(range?{range}:{}),...(speed>0?{speed}:{})};
  cache.set(key,actor);if(cache.size>256)cache.delete(cache.keys().next().value!);return actor;
 }
 export const residentElement:Element={
  type:'character.resident',version:1,label:'Authored person, animal or robot',category:'characters',coordinates:'world', libraryUse: 'reusable',parts:['people'],
- fields:{kind:{kind:'select',label:'Body kind',options:residentKinds,default:'human'},archetype:{kind:'select',label:'Named look (humans)',options:['',...ARCHETYPE_IDS],default:''},seed:{kind:'number',label:'Appearance seed',default:1,min:0,max:1000000,step:1},act:{kind:'select',label:'Activity',options:residentActs,default:'stand'},style:{kind:'select',label:'Colour style (humans)',options:['automatic','vivid','muted'],default:'automatic'},district:{kind:'select',label:'District clothes (humans)',options:['',...DISTRICTS],default:''},tech:{kind:'select',label:'Visible tech (humans)',options:['automatic','yes','no'],default:'automatic'},sitting:{kind:'select',label:'Sitting (humans)',options:['no',...SEATED_VIEWS],default:'no'},depth:{kind:'select',label:'Depth',options:[...DEPTH_ORDER],default:'play'}},
+ fields:{
+  kind:{kind:'select',label:'Body kind',options:residentKinds,default:'human'},
+  archetype:{kind:'select',label:'Named look',options:['',...ARCHETYPE_IDS],default:'',showIf:human},
+  seed:{kind:'number',label:'Appearance seed',default:1,min:0,max:1000000,step:1},
+  act:{kind:'select',label:'Activity',options:residentActs,default:'stand'},
+  range:{kind:'number',label:'Travel range (movers; negative: to the left)',default:0,min:-4000,max:4000,step:1,unit:'units'},
+  speed:{kind:'number',label:'Speed (0: usual pace)',default:0,min:0,max:10,step:0.05},
+  depth:{kind:'select',label:'Depth',options:[...DEPTH_ORDER],default:'play'},
+  style:{kind:'select',label:'Colour style',options:['automatic','vivid','muted'],default:'automatic',showIf:human},
+  district:{kind:'select',label:'District clothes',options:['',...DISTRICTS],default:'',showIf:human},
+  tech:{kind:'select',label:'Visible tech',options:['automatic','yes','no'],default:'automatic',showIf:human},
+  sitting:{kind:'select',label:'Sitting',options:['no',...SEATED_VIEWS],default:'no',showIf:human},
+  body:sel('Build',['seeded',...BODY_KINDS],human),hair:sel('Hair or headwear',['seeded',...HAIR_KINDS],human),garb:sel('Clothes',['seeded',...GARB_KINDS],human),facial:sel('Facial hair',['seeded',...FACIAL_KINDS],human),
+  extras:{kind:'json',label:'Extras',default:'auto',showIf:human,editor:{kind:'set',options:EXTRA_KINDS,auto:'Seeded extras'},validate:(v:Value)=>{if(v!=='auto'&&!(Array.isArray(v)&&v.every(e=>(EXTRA_KINDS as readonly string[]).includes(e as string))))throw new Error('Extras: expected "auto" or a list of '+EXTRA_KINDS.join(', '));}},
+  skin:colour('Skin',human),hairColour:colour('Hair colour',human),top:colour('Top',human),bottom:colour('Trousers or skirt',human),accent:colour('Accent (hat, bag, umbrella)',human),
+  variant:sel('Robot variant',['seeded','0','1','2'],isBot),face:sel('Robot face',['seeded',...FACES],isBot),
+  paint:colour('Robot paint',isBot),trim:colour('Robot trim',isBot),screen:colour('Robot screen',isBot),
+ },
  bounds:props=>({x:-32,h:characterHeight(residentCharacter(props,{x:0,h:0})),w:64,tall:characterHeight(residentCharacter(props,{x:0,h:0}))}),
  anchors:()=>({origin:{x:0,h:0,role:'origin'}}),
  draw:(ctx,view,props,_state,_pass,placement)=>drawCharacter(ctx,view,residentCharacter(props,placement)),

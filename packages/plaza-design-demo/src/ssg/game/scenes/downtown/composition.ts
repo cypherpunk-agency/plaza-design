@@ -8,7 +8,7 @@ import {validateActorPresentationNode} from '../../engine/gameplay/actor-present
 import {prepareActor} from '../../engine/gameplay/actor-frame';
 import type {Character} from '../../runtime/characters';
 /** Downtown layout and state adapter. All drawing follows the same editable composition path. */
-import { drawComposition, drawCompositionSlot, isLayered, queueLayeredSlots, resolveComposition, type Composition, type Resolved, type Environment, type Instance, type Properties, type Value } from '../../art/core/composition';
+import { drawCompositionSlot, queueLayeredSlots, resolveComposition, type Composition, type Resolved, type Environment, type Instance, type Properties, type Value } from '../../art/core/composition';
 import { art as downtownArt } from '../../art';
 import type { DowntownDeviceState } from '../../art/electronics/downtown-devices';
 import { frameView, type View } from '../../art/core/view';
@@ -89,7 +89,6 @@ const STREET_TYPES=new Set(['downtown.street','downtown.stall-pool','downtown.sm
 const street=(r:Resolved)=>STREET_TYPES.has(r.instance.type);
 /** Layered Downtown keeps its engine moments: city (distance and backdrop, without the street), street, devices (set), people (playfield). */
 function drawDowntown(ctx:CanvasRenderingContext2D,doc:Composition,env:Environment,pass:'backdrop'|'foreground'|'devices'|'people'){
- if(!isLayered(doc)){drawComposition(ctx,downtownArt,doc,env,pass);return;}
  if(pass==='backdrop')drawCompositionSlot(ctx,downtownArt,doc,env,'behind-player',r=>(r.instance.layer==='distance'||r.instance.layer==='backdrop')&&!street(r));
  else if(pass==='foreground')drawCompositionSlot(ctx,downtownArt,doc,env,'behind-player',street);
  else if(pass==='devices')drawCompositionSlot(ctx,downtownArt,doc,env,'behind-player',['set']);

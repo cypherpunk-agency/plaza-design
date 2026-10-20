@@ -52,7 +52,8 @@ export function assetInventory(registry: ArtRegistry, documents: EditorDocument[
   return registry.catalog().map<AssetEntry>(element => {
     const family = layerRole(element.type, element.label, element.category), used = usages.get(element.type) ?? [], origin = originOf(element.type, family, used);
     const structure: AssetStructure = element.role === 'group' ? 'composition' : 'object';
-    const usability: AssetUsability = !element.parts.length || element.role === 'player' || element.role === 'group' || helperArtwork(element.type) ? 'helper'
+    // logic pieces a kit offers for placing (the level kit's floors, doors, building handles) are reusable too
+    const usability: AssetUsability = !element.parts.length && element.libraryUse !== 'reusable' || element.role === 'player' || element.role === 'group' || helperArtwork(element.type) ? 'helper'
       : element.libraryUse === 'reusable' ? 'reusable' : 'context';
     return { id: element.type, label: element.label, family, origin, structure, usability,
     tags: [...new Set([ORIGINS.find(o => o.id === origin)!.badge.toLowerCase(), element.category, ...element.type.split('.'), ...element.parts,
@@ -78,8 +79,12 @@ export interface AssetBrowserOptions {
   useInScene?: { label: string; run(entry: AssetEntry): void };
   /** City districts for the filter bar; `of` names a scene's district. */
   districts?: { list: { id: string; name: string }[]; of(scene: string): string | undefined };
+  /** Saved settings of kit pieces: kits list first, each followed by its presets. */
+  presets?: { of(kit: AssetEntry): AssetPreset[]; add(kit: AssetEntry, preset: AssetPreset): void };
 }
-export interface AssetBrowserSession { query?: string; family?: string; district?: string; origin?: AssetOrigin | ''; structure?: AssetStructure | ''; usability?: 'reusable' | 'context' | ''; section?: 'artwork' | 'helpers'; collapsedFilters?: Record<string, boolean>; selected?: string; usage?: string; zoom?: number }
+/** A kit preset as the browser lists it; `family` is the Kind it files under. */
+export interface AssetPreset { id: string; label: string; note?: string; family: string }
+export interface AssetBrowserSession { query?: string; family?: string; district?: string; origin?: AssetOrigin | ''; structure?: AssetStructure | ''; usability?: 'reusable' | 'context' | ''; section?: 'artwork' | 'helpers'; collapsedFilters?: Record<string, boolean>; selected?: string; preset?: string; usage?: string; zoom?: number }
 /** No model edit/save API is accepted by this panel. All preview changes are temporary. */
 export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOptions, session: AssetBrowserSession) {
   let disposed = false, generation = 0;
@@ -101,13 +106,16 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   const inDistrict = (entry: AssetEntry, id: string) => id === '__none__' ? districtsOf(entry).size === 0 : districtsOf(entry).has(id);
   const sets = el('details');
   navigation.append(sets); host.classList.add('asset-browser-grid'); host.classList.add('with-districts'); host.append(bar); host.append(navigation, inspector);
-  function inspect(entry: AssetEntry) {
+  const cardKey = (entry: AssetEntry, preset?: AssetPreset) => preset ? `${entry.id}#${preset.id}` : entry.id;
+  function inspect(entry: AssetEntry, preset?: AssetPreset) {
     if (session.selected !== entry.id) session.usage = undefined;
-    session.selected = entry.id; const source = ORIGINS.find(o => o.id === entry.origin)!, use = USABILITY.find(o => o.id === entry.usability)!;
+    session.selected = entry.id; session.preset = preset?.id; const source = ORIGINS.find(o => o.id === entry.origin)!, use = USABILITY.find(o => o.id === entry.usability)!;
     inspector.replaceChildren(el('h3', entry.label), el('code', entry.id), el('p', `${use.label}: ${use.hint}.`), el('p', `Structure: ${STRUCTURES.find(s => s.id === entry.structure)!.label}. Kind: ${entry.family}.`), el('p', `Source — ${source.badge}: ${source.hint}.`));
-    if (options.useInScene && entry.usability === 'reusable') { const add = button(options.useInScene.label, () => options.useInScene!.run(entry)); add.className = 'primary'; inspector.append(add); }
+    if (preset) inspector.prepend(el('h3', `Preset: ${preset.label}`), el('p', `Saved settings of ${entry.label}${preset.note ? ': ' + preset.note : ''}. It places an ordinary kit piece; the preview below shows the kit's defaults.`));
+    if (preset && options.useInScene && options.presets) { const add = button(`${options.useInScene.label} as ${preset.label}`, () => options.presets!.add(entry, preset)); add.className = 'primary'; inspector.append(add); }
+    else if (options.useInScene && entry.usability === 'reusable') { const add = button(options.useInScene.label, () => options.useInScene!.run(entry)); add.className = 'primary'; inspector.append(add); }
     else if (entry.usability === 'context') inspector.append(el('p', 'Inspect this artwork through Open instance below. Adding it independently is not supported yet.'));
-    for (const card of list.children) (card as HTMLElement).setAttribute('aria-pressed', String((card as HTMLElement).dataset.asset === entry.id));
+    for (const card of list.children) (card as HTMLElement).setAttribute('aria-pressed', String((card as HTMLElement).dataset.asset === cardKey(entry, preset)));
     const definition = options.registry.get(entry.id), detail = el('pre');
     detail.style.whiteSpace = 'pre-wrap';
     detail.textContent = JSON.stringify({ preview: entry.preview, coordinates: definition.coordinates ?? 'local', parts: definition.parts,
@@ -133,12 +141,13 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     const usages = el('div');
     for (const usage of entry.usages) {
       const row = el('details'), summary = el('summary', `${usage.document} / ${usage.path.join(' / ')}`), data = el('pre');
-      data.style.whiteSpace = 'pre-wrap'; data.textContent = JSON.stringify({ placement: usage.node.placement, pass: usage.node.pass, order: usage.node.order,
+      data.style.whiteSpace = 'pre-wrap'; data.textContent = JSON.stringify({ placement: usage.node.placement, layer: usage.node.layer, order: usage.node.order,
         parent: usage.parent, attachment: usage.node.attach, bindings: usage.node.bindings, children: usage.node.children?.map(child => ({ id: child.id, type: child.type })) ?? [] }, null, 2);
       row.append(summary, button('Open instance', () => options.openUsage(usage)), data); usages.append(row);
     }
     inspector.append(metadata, snapshot, el('h3', `Usages (${entry.usages.length})`), usages); void render();
   }
+  const searchTerms = () => search.value.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
   function refresh() {
     session.query = search.value; session.family = family;
     const helpers = session.section === 'helpers';
@@ -180,14 +189,32 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     sections.push(section('Source', ORIGINS.find(o => o.id === origin)?.label ?? '', [originChip('', 'All'), ...ORIGINS.map(o => originChip(o.id, o.label, o.hint))]));
     if (!helpers && session.usability !== 'reusable') sections.push(section('Other', family === '__embedded__' ? 'Embedded components' : '', [chip('Embedded components', SETS.length, family === '__embedded__', () => { family = family === '__embedded__' ? '' : '__embedded__'; refresh(); }, 'Code-drawn component sets that are not registered artwork')]));
     bar.replaceChildren(...sections);
-    const filtered = matching.filter(entry => (!district || inDistrict(entry, district)) && fromOrigin(entry) && organized(entry)); count.textContent = `${filtered.length} / ${sectionEntries.length} ${helpers ? 'scene helpers' : 'artwork entries'}`; list.replaceChildren();
+    const placed = (entry: AssetEntry) => (!district || inDistrict(entry, district)) && fromOrigin(entry) && organized(entry);
+    const filtered = matching.filter(placed); list.replaceChildren();
     list.classList.toggle('asset-grid', !!options.thumbnail);
-    for (const entry of filtered) {
-      const pick = button('', () => inspect(entry)); pick.dataset.asset = entry.id; pick.title = `${entry.id} · ${entry.preview}`; pick.setAttribute('aria-pressed', String(entry.id === session.selected));
-      const use = USABILITY.find(o => o.id === entry.usability)!, badge = el('small', use.label); badge.className = `origin origin-${entry.origin}`; badge.title = use.hint;
-      if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', entry.label), badge); } else { pick.textContent = entry.label; pick.style.display = 'block'; pick.style.width = '100%'; }
+    const card = (entry: AssetEntry, preset?: AssetPreset) => {
+      const key = cardKey(entry, preset), pick = button('', () => inspect(entry, preset)); pick.dataset.asset = key;
+      if (options.useInScene) pick.ondblclick = () => preset ? options.presets!.add(entry, preset) : options.useInScene!.run(entry);
+      pick.title = preset ? `${entry.id} · preset ${preset.id}${preset.note ? ': ' + preset.note : ''}` : `${entry.id} · ${entry.preview}`;
+      pick.setAttribute('aria-pressed', String(entry.id === session.selected && (preset?.id ?? undefined) === session.preset));
+      const use = USABILITY.find(o => o.id === entry.usability)!, badge = el('small', preset ? 'Preset' : use.label); badge.className = `origin origin-${preset ? 'preset' : entry.origin}`; badge.title = preset ? `${entry.label} with saved settings` : use.hint;
+      const name = preset?.label ?? entry.label;
+      if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', name), badge); } else { pick.textContent = name; pick.style.display = 'block'; pick.style.width = '100%'; }
       list.append(pick);
+    };
+    // Kits first, each followed by its presets; a preset matches the search by its own name and note, and the Kind by its own family.
+    let presetCount = 0;
+    const kitPool = helpers || !options.presets ? [] : base.filter(e => e.origin === 'kit' && placed(e));
+    for (const kit of kitPool) {
+      if (filtered.includes(kit)) card(kit);
+      for (const preset of options.presets!.of(kit)) {
+        const text = `${preset.label} ${preset.note ?? ''} ${kit.label} ${kit.id}`.toLocaleLowerCase();
+        if (family && preset.family !== family || !searchTerms().every(term => text.includes(term))) continue;
+        card(kit, preset); presetCount++;
+      }
     }
+    for (const entry of filtered) if (!kitPool.includes(entry)) card(entry);
+    count.textContent = `${filtered.length} / ${sectionEntries.length} ${helpers ? 'scene helpers' : 'artwork entries'}${presetCount ? ` · ${presetCount} presets` : ''}`;
     const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
     const embedded = SETS.filter(set => !helpers && session.usability !== 'reusable' && (!family || family === '__embedded__') && terms.every(term => `${set.id} ${set.file} ${set.what}`.toLowerCase().includes(term)));
     sets.hidden = helpers || session.usability === 'reusable';
@@ -196,6 +223,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     if (family === '__embedded__') sets.open = true;
   }
   search.oninput = refresh; refresh();
-  const selected = entries.find(entry => entry.id === session.selected); if (selected) inspect(selected);
+  const selected = entries.find(entry => entry.id === session.selected);
+  if (selected) inspect(selected, session.preset ? options.presets?.of(selected).find(p => p.id === session.preset) : undefined);
   return () => { disposed = true; generation++; };
 }

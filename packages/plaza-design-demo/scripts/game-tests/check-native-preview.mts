@@ -6,10 +6,10 @@ import { frameView } from '../../src/ssg/game/art/core/view';
 import { CityClock } from '../../src/ssg/game/world/clock';
 
 const document: Composition = { version: 1, scene: 'preview-contract', instances: [
-  { id: 'assembly', type: 'assembly.group', props: {}, placement: { x: 100, h: 20, scale: 2, facing: -1 }, order: 0, pass: 'backdrop', children: [
-    { id: 'seat', type: 'furniture.stool', props: {}, placement: { x: 10, h: 0 }, order: 1, pass: 'backdrop' },
+  { id: 'assembly', type: 'assembly.group', props: {}, placement: { x: 100, h: 20, scale: 2, facing: -1 }, order: 0, layer: 'backdrop', children: [
+    { id: 'seat', type: 'furniture.stool', props: {}, placement: { x: 10, h: 0 }, order: 1, layer: 'backdrop' },
   ] },
-  { id: 'attached', type: 'furniture.stool', props: {}, placement: { x: 3, h: 1 }, attach: { instance: 'seat', anchor: 'seat' }, order: 2, pass: 'backdrop' },
+  { id: 'attached', type: 'furniture.stool', props: {}, placement: { x: 3, h: 1 }, attach: { instance: 'seat', anchor: 'seat' }, order: 2, layer: 'backdrop' },
 ] };
 const env: Environment = { view: { ...frameView(0), sx: x => Math.round(x - 20), y: h => 300 - h, t: 0, cam: 20, gy: 300, viewW: 640, viewH: 360, flags: {} }, state: {}, reduced: false };
 const rows = resolveComposition(art, art.validate(document), env);

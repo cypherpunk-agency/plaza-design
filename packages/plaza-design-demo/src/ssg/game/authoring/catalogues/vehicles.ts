@@ -10,7 +10,7 @@ const air=['facing','speed','route'] as VehicleControl[];
 export const VEHICLE_FAMILIES:readonly VehicleFamily[]=[
  ...['sedan','hatch','van','cab','bus'].map(id=>row('ground.'+id,id==='cab'?'Road cab':id,'Ground','art/vehicles/vehicles.ts','drawCar',ground,id==='bus'?400:230)),
  ...['truck','yard'].map(id=>row('ground.'+id,id==='yard'?'Yard tractor':'Road truck','Ground','art/vehicles/vehicles.ts','drawTruck',[...ground,'cargo'],600)),
- row('ground.trailer','Trailer chassis (no tractor)','Ground','art/vehicles/vehicles.ts','drawTruck',['facing','cargo','lights','paint'],450,0,'tractor: false; the harbor and terminal customs chassis at port scale.'),
+ row('ground.trailer','Trailer chassis (no tractor)','Ground','art/vehicles/vehicles.ts','drawTruck',['facing','cargo','lights'],450,0,'tractor: false; the harbor and terminal customs chassis at port scale. No paint: only the tractor cab is painted.'),
  row('ground.straddle','Straddle carrier','Ground','art/vehicles/vehicles.ts','drawStraddle',['facing','speed','route','cargo','pose','livery'],500),
  row('ground.stacker','Reach stacker','Ground','art/vehicles/vehicles.ts','drawReachStacker',['facing','speed','route','cargo','pose'],800),
  row('ground.forklift','Forklift','Ground','art/vehicles/vehicles.ts','drawForklift',['facing','speed','route','cargo','pose'],230),
@@ -20,7 +20,7 @@ export const VEHICLE_FAMILIES:readonly VehicleFamily[]=[
  row('train.platform','Platform train (three small cars)','Rail','art/vehicles/rail.ts','drawPlatformTrain',['doors','passengers','seed'],1000,0,'Explicit stationary/moving snapshot; passenger toggle selects a second seed, not an empty train. Timetable and boarding are not advanced.'),
  row('train.metro','Full-scale cinematic car','Rail','art/vehicles/train-car.ts','drawMetroCar',['speed','route','passengers','seed'],650,0,'Passengers are seeded by the existing renderer; no empty override exists.'),
  row('train.interior','Car 3 interior','Rail','scenes/train/composition.ts','drawTrainComposition',['passengers','doors'],1400,0,'Uses explicit ride and rider snapshot; native transport is untouched.'),
- row('cab.legacy','Sky taxi at stand scale','Flying','art/vehicles/air-traffic.ts','drawCab',['speed','route','livery'],100,0,'The air class taxi (drawCraft taxi, hovering) at the pads\' and taxi flight\'s small scale.'),
+ row('cab.legacy','Sky taxi at stand scale','Flying','art/vehicles/air-traffic.ts','drawCab',['speed','route'],100,0,'The air class taxi (drawCraft taxi, hovering) at the pads\' and taxi flight\'s small scale.'),
  ...['lamp','cabin','patrol','ferry'].map(id=>row('water.'+id,{lamp:'Lamp boat',cabin:'Cabin boat',patrol:'Registry marine patrol',ferry:'Night ferry'}[id]!,'Water','art/vehicles/boats.ts','drawBoat',['facing','speed','route','lights','paint'],id==='lamp'?160:id==='ferry'?420:320,0,'Placeable as vehicle.boat. Lights: lamp on, patrol searchlight; driving adds the wake.')),
  ...['spinner','freighter','drone'].map(id=>row('fleet.'+id,'Sky sprite '+id,'Sprite fleet','art/environment/sky-ships.ts','drawSkyShips',['facing','speed'],400,0,'Far atmosphere layer drawn through the air class (spinner: pod, freighter: hauler); the kit\'s looping lane.')),
  row('harbor.lamp','Harbor lamp boat','Water / embedded','art/assemblies/harbor-pier.ts','drawLampBoat',[],280,(1650-140)/.3,'Native bob and lamp cycle; camera only.'),

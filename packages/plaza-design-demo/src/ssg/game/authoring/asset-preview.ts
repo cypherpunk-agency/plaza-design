@@ -1,5 +1,5 @@
-/** Isolated pass views use resolved runtime inputs, never a separate drawing implementation. */
-import { compositionAppearance, drawComposition, resolveComposition, type ArtRegistry, type Composition, type Environment, type Pass } from '../art/core/composition';
+/** Isolated artwork views use resolved runtime inputs, never a separate drawing implementation. */
+import { compositionAppearance, drawCompositionSlot, resolveComposition, type ArtRegistry, type Composition, type Environment } from '../art/core/composition';
 import { frameView } from '../art/core/view';
 import { lightAt } from '../world/light';
 import type { PreviewRequest, EditorDocument, PreviewResult } from './app';
@@ -20,7 +20,7 @@ export function isolateArtwork(registry: ArtRegistry, composition: Composition, 
   } }
   const selected = rows.filter(row => included.has(row.instance.id));
   const document: Composition = { version: 1, scene: composition.scene, instances: selected.map(row => ({
-    id: row.instance.id, type: row.instance.type, props: row.props, placement: row.placement, pass: row.instance.pass ?? row.element.parts[0] ?? 'backdrop', order: row.instance.order,
+    id: row.instance.id, type: row.instance.type, props: row.props, placement: row.placement, layer: row.instance.layer, order: row.instance.order,
   })) };
   const appearance = compositionAppearance(composition, environment);
   return { composition: document, environment: { ...environment, clips: undefined,
@@ -90,7 +90,7 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
         const nodes = (xs: Composition['instances']): Composition['instances'] => xs.flatMap(n => [n, ...nodes(n.children ?? [])]);
         const siblings = nodes(doc.instances).filter(n => n.type.startsWith(namespace + '.'));
         const bindings = entry.id === 'station.waiting-passenger' ? {} : Object.fromEntries(siblings.flatMap(n => Object.entries(n.bindings ?? {})).filter(([key]) => key in (definition.visualFields ?? {})));
-        const node = { id: '__gallery_example__', type: entry.id, props: {}, placement: { x: 400, h: 0 }, order: 9999, ...(doc.instances.some(n => n.layer) ? { layer: 'set' as const } : { pass: definition.parts[0] ?? 'backdrop' as const }), bindings };
+        const node = { id: '__gallery_example__', type: entry.id, props: {}, placement: { x: 400, h: 0 }, order: 9999, layer: definition.parts.length ? 'set' as const : 'logic' as const, bindings };
         doc.instances.push(node);
         const id = '__gallery_source__'; documents = [...documents, { ...source, id, value: doc }];
         usage = { document: id, scene, instance: node.id, path: [node.id], node };
@@ -135,7 +135,7 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
       ({ composition, environment } = isolate(prepared.composition, prepared.environment, usage.instance));
     } else {
       if (entry.preview === 'prepared-context') return 'Requires a prepared scene/controller snapshot. Select an existing usage below.';
-      composition = { version: 1, scene: 'asset-preview', instances: [{ id: 'asset', type: entry.id, props: {}, placement: { x: 0, h: 0 }, order: 0, pass: registry.get(entry.id).parts[0] ?? 'backdrop' }] };
+      composition = { version: 1, scene: 'asset-preview', instances: [{ id: 'asset', type: entry.id, props: {}, placement: { x: 0, h: 0 }, order: 0, layer: registry.get(entry.id).parts.length ? 'backdrop' : 'logic' }] };
       const view = { ...frameView(settings.time * 60, lightAt(Number(settings.environment.day ?? 1), Number(settings.environment.minute ?? 580), 90, null)), viewW: width, viewH: height,
         gy: height / 2, y: (h: number) => height / 2 - h };
       environment = { view, state: {}, reduced: settings.reduced, sequenceTime: settings.time };
@@ -151,7 +151,8 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
       }
     }
     ctx.save(); ctx.setTransform(renderScale * fit, 0, 0, renderScale * fit, 0, 0);
-    try { for (const pass of ['backdrop', 'devices', 'people', 'foreground'] as Pass[]) drawComposition(ctx, registry, composition, environment, pass); }
+    // All three slots now, in order; the isolated piece is not part of a game frame, so nothing is queued for one.
+    try { for (const slot of ['behind-player', 'over-player', 'foreground'] as const) drawCompositionSlot(ctx, registry, composition, environment, slot); }
     finally { ctx.restore(); }
     const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     let visible = false; for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) { visible = true; break; }
@@ -159,12 +160,12 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
     const snapshot = { time: settings.time, reduced: settings.reduced, day: settings.environment.day, minute: settings.environment.minute, seed: settings.environment.seed,
       cameraX: environment.view.cam, lighting: environment.view.lighting,
       instances: resolveComposition(registry, composition, environment).map(row => ({ id: row.instance.id, type: row.instance.type, placement: row.placement,
-        ...appearance.get(row.instance.id), parts: row.element.parts, pass: row.instance.pass, order: row.instance.order, anchors: row.element.anchors(row.props, row.state) })) };
-    const message = !visible && usage ? `No visible pixels for this ${settings.time.toFixed(3)} s snapshot. This may be conditional artwork, a marker, a light collector, or outside the visible pass. Open instance for its scene context and supported state controls.`
+        ...appearance.get(row.instance.id), parts: row.element.parts, layer: row.instance.layer, order: row.instance.order, anchors: row.element.anchors(row.props, row.state) })) };
+    const message = !visible && usage ? `No visible pixels for this ${settings.time.toFixed(3)} s snapshot. This may be conditional artwork, a marker, a light collector, or outside the visible layers. Open instance for its scene context and supported state controls.`
       : entry.preview === 'structural' && !usage ? 'Structural assembly: no standalone pixels. Select a source usage to inspect its children.'
       : !usage ? `Standalone artwork with default properties at ${settings.time.toFixed(3)} s, fitted to its bounds.`
       : options.showcase ? 'Gallery display example: conditional artwork is shown, character window clips are removed, and the camera is centered. Source and gameplay state are unchanged.'
-      : `Isolated registered passes at ${settings.time.toFixed(3)} s. Native camera centered on selection; scene grading/reflections are visible in Open instance.`;
+      : `Isolated registered layers at ${settings.time.toFixed(3)} s. Native camera centered on selection; scene grading/reflections are visible in Open instance.`;
     return { message, snapshot };
   };
 }

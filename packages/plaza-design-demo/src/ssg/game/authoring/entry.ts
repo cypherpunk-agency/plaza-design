@@ -1,3 +1,4 @@
+import {validationSnapshot} from './validation-snapshot';
 import {mountOpeningAuthoring} from './opening-authoring';
 import {mountSharedGameplay} from './shared-gameplay-authoring';
 import {validateCompanionGameplay} from '../engine/gameplay/companion-conversations';
@@ -6,7 +7,8 @@ import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {mountNetworkAuthoring} from './network-authoring';
 import {pendingRegistry} from './pending-registry';
 import {validatePendingFixtures} from './pending-fixtures';
-import {mountSceneCatalogue} from './scene-catalogue-authoring';
+import {createAuthoredScene,mountSceneCatalogue,sceneCreationBlocked,scenePlaces} from './scene-catalogue-authoring';
+import {mountDistrictAuthoring} from './district-authoring';
 import {declaredScene} from '../engine/gameplay/declared-scene';
 import {type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {sceneCatalogueProjection} from './scene-catalogue-projection';
@@ -82,6 +84,7 @@ import { mountSourceViewer } from './source-viewer';
 
 import { mountSignageWorkbench } from './signage-workbench';
 import { applyPeople, validatePeople } from '../art/characters/people-source';
+import { validatePresets } from './kit-presets';
 import { mountPeopleAuthoring } from './people-authoring';
 
 
@@ -174,34 +177,40 @@ async function start() {
     },
     assetPreview: createAssetPreview(art, native, (canvas, request) => sequences.render(canvas, request), { showcase: true }),
 
+    // Proposals borrow gameplay from their base; validators below never read proposal artwork.
+    // Projected authored.* children are covered by their authored-scenes source owner.
+    validationInputs: documents => documents.filter(d => !proposalScene(d.id) && !d.id.startsWith('authored.')).flatMap(d => [d.id, d.kind, d.value]),
     validateDocument(document,documents) {
-      if(document.id==='companion-gameplay'){validateCompanionGameplay(document.value);pendingRegistry(new Map(documents.map(d=>[d.id,d.value])));return;}
-      if(document.id==='opening-story'){const values=new Map(documents.map(d=>[d.id,d.value]));pendingOpeningStory(values);return;}
-      if(document.id==='network'){const values=new Map(documents.map(d=>[d.id,d.value]));validatePendingNetwork(values,pendingRegistry(values));return;}
-      if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,new Map(documents.map(d=>[d.id,d.value])));return;}
+      if(document.id==='companion-gameplay'){validateCompanionGameplay(document.value);pendingRegistry(validationSnapshot(documents));return;}
+      if(document.id==='opening-story'){const values=validationSnapshot(documents);pendingOpeningStory(values);return;}
+      if(document.id==='network'){const values=validationSnapshot(documents);validatePendingNetwork(values,pendingRegistry(values));return;}
+      if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,validationSnapshot(documents));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
-      if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(new Map(documents.map(d=>[d.id,d.value]))));}
+      if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
+      if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroSource(document.value);}
-      if(document.kind==='city')validatePendingCity(document.value,new Map(documents.map(d=>[d.id,d.value])));
+      if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
       if(document.kind==='conversations'){if(document.id!=='bot-reactions')throw new Error('Unsupported conversation library');validateBotReactions(document.value);}
-      if(document.id==='demo-manifest-scene'){const declared=validateManifestSources(documents.find(d=>d.id==='demo-manifest')!.value,document.value,documents.find(d=>d.id==='demo-manifest-gameplay')!.value);validateDeclaredDestinations(declared.scene,pendingDestinations(new Map(documents.map(d=>[d.id,d.value]))));}
+      if(document.id==='demo-manifest-scene'){const declared=validateManifestSources(documents.find(d=>d.id==='demo-manifest')!.value,document.value,documents.find(d=>d.id==='demo-manifest-gameplay')!.value);validateDeclaredDestinations(declared.scene,pendingDestinations(validationSnapshot(documents)));}
 
-      if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=new Map(documents.map(d=>[d.id,d.value])),identity=deviceSourceIdentity(s.id),network=pendingNetworkContext(values),scene=pendingScene(s.id,values.get(identity.composition),{sceneDocument:document.value,gameplay,devices:values.get(identity.devices)},network);s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);}
+      if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=validationSnapshot(documents),identity=deviceSourceIdentity(s.id),network=pendingNetworkContext(values),scene=pendingScene(s.id,values.get(identity.composition),{sceneDocument:document.value,gameplay,devices:values.get(identity.devices)},network);s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);}
 
-      if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=new Map(documents.map(d=>[d.id,d.value]));validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot),validateMetroSource(snapshot.get('metro-source')));}
+      if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=validationSnapshot(documents);validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot),validateMetroSource(snapshot.get('metro-source')));}
 
 
       if (document.kind === 'gameplay') (nativeGameplayScene(document.id)??gameplayScene(document.id)).validateGameplay(document.value);
 
     },
 
+    newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene },
     workbenches: [
       {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: opening scenes, arrivals and first guidance',authoring:true,documentDependent:true,primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
       {id:'companion-gameplay',area:'world',layout:'sections',label:'Companion dialogue',title:'Shared companion conversations',authoring:true,documentDependent:true,primaryDocumentId:'companion-gameplay',mount:(host,context)=>mountSharedGameplay(host,context,'companion-gameplay',validateCompanionGameplay,publicEditor)},
       {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},
       {id:'scene-catalogue',area:'world',label:'Scenes',title:'Create and manage authored scenes',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-fixtures','city-source'],primaryDocumentId:'authored-scenes',mount:mountSceneCatalogue},
       {id:'scene-connections',area:'scene',mode:'wiring',label:'Starting cables',title:'Authored scene connections',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){wireSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,wireSelection,true,()=>pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))))},
+      {id:'districts',area:'world',label:'Districts',title:'Districts · create, rename, place on the map and remove',authoring:true,documentDependent:true,documentIds:['city-source'],primaryDocumentId:'city-source',layout:'sections',mount:mountDistrictAuthoring},
       {id:'city-source',area:'world',layout:'sections',label:'City & travel',title:'City places, discovery and transport',authoring:true,documentDependent:true,primaryDocumentId:'city-source',mount:mountCityAuthoring},
       {id:'bot-reactions',area:'world',label:'Bot dialogue',title:'Robot reactions · shared conversations',authoring:true,documentDependent:true,documentIds:[...deviceSceneIds.map(deviceDocumentId),'metro-source','city-source','bot-reactions'],mount:mountBotReactionAuthoring},
       {id:'manifest-pilot',area:'labs',label:'Manifest pilot',title:'Declared scene: pending source in private Play',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,manifestSelection,false,true,'Lab · the declared demo scene, built only from its pending manifest source, running in private Play. A test bed for the scene manifest format, not part of the scene workflow.')},

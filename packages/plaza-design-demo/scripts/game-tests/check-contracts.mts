@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { art, ArtRegistry, compositionAppearance, drawComposition, resolveComposition, type Composition, type Environment } from "../../src/ssg/game/art/index";
 
 const doc: Composition = { version: 1, scene: 'contract-fixture', instances: [
-  { id: 'pair', type: 'assembly.group', props: {}, placement: { x: 100, h: 20, scale: 2, facing: -1 }, pass: 'backdrop', order: 0, children: [
-    { id: 'seat', type: 'furniture.stool', props: { seed: 2 }, placement: { x: 10, h: 0 }, pass: 'backdrop', order: 1 },
+  { id: 'pair', type: 'assembly.group', props: {}, placement: { x: 100, h: 20, scale: 2, facing: -1 }, layer: 'backdrop', order: 0, children: [
+    { id: 'seat', type: 'furniture.stool', props: { seed: 2 }, placement: { x: 10, h: 0 }, layer: 'backdrop', order: 1 },
   ] },
-  { id: 'attached', type: 'furniture.stool', props: {}, placement: { x: 3, h: 1 }, attach: { instance: 'seat', anchor: 'seat' }, pass: 'foreground', order: 2 },
+  { id: 'attached', type: 'furniture.stool', props: {}, placement: { x: 3, h: 1 }, attach: { instance: 'seat', anchor: 'seat' }, layer: 'foreground', order: 2 },
 ] };
 const env: Environment = { reduced: false, state: {}, view: { sx: x => x, y: h => 300 - h, t: 0, cam: 0, gy: 300, viewW: 640, viewH: 360, flags: {} } };
 const validated = art.validate(JSON.parse(JSON.stringify(doc)));
@@ -39,7 +39,7 @@ const registry = new ArtRegistry().register({
   draw(_ctx, view, _props, state, _pass, placement) { calls.push({ nativeView: view === env.view, state: structuredClone(state), x: placement.x }); },
 });
 const calls: { nativeView: boolean; state: unknown; x: number }[] = [];
-const world: Composition = { version: 1, scene: 'world-test', instances: [{ id: 'world', type: 'contract.world', props: { positions: [1, 2] }, placement: { x: 25, h: 0 }, order: 0, pass: 'backdrop', bindings: { brightness: 'lamp.level' } }] };
+const world: Composition = { version: 1, scene: 'world-test', instances: [{ id: 'world', type: 'contract.world', props: { positions: [1, 2] }, placement: { x: 25, h: 0 }, order: 0, layer: 'backdrop', bindings: { brightness: 'lamp.level' } }] };
 registry.validate(world);
 assert.throws(() => resolveComposition(registry, world, env), /unresolved visual binding/);
 assert.throws(() => resolveComposition(registry, world, { ...env, bindings: { 'lamp.level': 'bright' } }), /invalid number/);

@@ -15,20 +15,18 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "distance"
     },
     {
       "id": "spawn",
-      "type": "downtown.marker",
-      "props": {
-        "role": "spawn"
-      },
+      "type": "scene.player",
+      "props": {},
       "placement": {
         "x": 720,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop"
+      "order": 359,
+      "layer": "playfield"
     },
     {
       "id": "skyline-far",
@@ -46,10 +44,10 @@
         "h": 0
       },
       "order": 2,
-      "pass": "backdrop",
       "bindings": {
         "width": "scene.width"
-      }
+      },
+      "layer": "distance"
     },
     {
       "id": "skyline-near",
@@ -67,10 +65,10 @@
         "h": 0
       },
       "order": 3,
-      "pass": "backdrop",
       "bindings": {
         "width": "scene.width"
-      }
+      },
+      "layer": "distance"
     },
     {
       "id": "tenement-0",
@@ -86,7 +84,7 @@
         "h": 0
       },
       "order": 4,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-1",
@@ -102,7 +100,7 @@
         "h": 0
       },
       "order": 5,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-2",
@@ -118,7 +116,7 @@
         "h": 0
       },
       "order": 6,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-3",
@@ -134,7 +132,7 @@
         "h": 0
       },
       "order": 7,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-5",
@@ -150,7 +148,7 @@
         "h": 0
       },
       "order": 8,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-6",
@@ -166,7 +164,7 @@
         "h": 0
       },
       "order": 9,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-7",
@@ -182,7 +180,7 @@
         "h": 0
       },
       "order": 10,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-8",
@@ -198,7 +196,7 @@
         "h": 0
       },
       "order": 11,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-10",
@@ -214,7 +212,7 @@
         "h": 0
       },
       "order": 12,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tenement-11",
@@ -230,7 +228,7 @@
         "h": 0
       },
       "order": 13,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "antenna",
@@ -241,7 +239,7 @@
         "h": 0
       },
       "order": 14,
-      "pass": "backdrop"
+      "layer": "distance"
     },
     {
       "id": "front-0",
@@ -266,7 +264,7 @@
         "h": 0
       },
       "order": 15,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-1",
@@ -298,7 +296,7 @@
         "h": 0
       },
       "order": 34,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-2",
@@ -328,7 +326,7 @@
         "h": 0
       },
       "order": 50,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-3",
@@ -359,7 +357,7 @@
         "h": 0
       },
       "order": 74,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-4",
@@ -394,7 +392,7 @@
         "h": 0
       },
       "order": 94,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-5",
@@ -414,7 +412,7 @@
         "h": 0
       },
       "order": 124,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-6",
@@ -439,7 +437,7 @@
         "h": 0
       },
       "order": 142,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-7",
@@ -475,7 +473,7 @@
         "h": 0
       },
       "order": 153,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-8",
@@ -500,7 +498,7 @@
         "h": 0
       },
       "order": 156,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-9",
@@ -545,7 +543,7 @@
         "h": 0
       },
       "order": 164,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-10",
@@ -576,7 +574,7 @@
         "h": 0
       },
       "order": 194,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-11",
@@ -601,7 +599,7 @@
         "h": 0
       },
       "order": 210,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "front-12",
@@ -626,7 +624,7 @@
         "h": 0
       },
       "order": 233,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "penthouse",
@@ -637,11 +635,11 @@
         "h": 0
       },
       "order": 256,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-9",
         "anchor": "bay1"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "market-neon",
@@ -666,11 +664,11 @@
         "h": 100
       },
       "order": 257,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-0",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "spaceport-neon",
@@ -695,11 +693,11 @@
         "h": 110
       },
       "order": 258,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-11",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "open-neon",
@@ -724,11 +722,11 @@
         "h": 104
       },
       "order": 259,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-6",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "weather-ticker",
@@ -749,14 +747,14 @@
         "h": 90
       },
       "order": 260,
-      "pass": "backdrop",
       "bindings": {
         "text": "weather.text"
       },
       "attach": {
         "instance": "front-1",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "billboard-frame",
@@ -775,11 +773,11 @@
         "h": 0
       },
       "order": 261,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-4",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "noodle-stall",
@@ -798,11 +796,11 @@
         "h": 0
       },
       "order": 262,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-5",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "antenna-fence",
@@ -813,7 +811,7 @@
         "h": 0
       },
       "order": 263,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "yard-alley",
@@ -826,10 +824,10 @@
         "h": 0
       },
       "order": 264,
-      "pass": "backdrop",
       "bindings": {
         "doorOffset": "alley.doorOffset"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "dumpster",
@@ -843,7 +841,7 @@
         "h": 0
       },
       "order": 265,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "exit-shop",
@@ -857,11 +855,11 @@
         "h": 0
       },
       "order": 266,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-1",
         "anchor": "bay1"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "exit-capsule",
@@ -874,11 +872,11 @@
         "h": 0
       },
       "order": 267,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-8",
         "anchor": "bay0"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "exit-moth",
@@ -891,11 +889,11 @@
         "h": 0
       },
       "order": 268,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-10",
         "anchor": "bay1"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "street-surface",
@@ -906,7 +904,7 @@
         "h": 0
       },
       "order": 269,
-      "pass": "foreground"
+      "layer": "backdrop"
     },
     {
       "id": "stall-pool",
@@ -917,12 +915,12 @@
         "h": 0
       },
       "order": 270,
-      "pass": "foreground",
       "bindings": {
         "metrics": "stall.metrics",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-device-sign",
@@ -935,13 +933,13 @@
         "h": 0
       },
       "order": 271,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.device-sign.x",
         "color": "smear.device-sign.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-noodle-stall",
@@ -954,13 +952,13 @@
         "h": 0
       },
       "order": 272,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.noodle-stall.x",
         "color": "smear.noodle-stall.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-billboard-frame",
@@ -973,13 +971,13 @@
         "h": 0
       },
       "order": 273,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.billboard-frame.x",
         "color": "smear.billboard-frame.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-market-neon",
@@ -992,13 +990,13 @@
         "h": 0
       },
       "order": 274,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.market-neon.x",
         "color": "smear.market-neon.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-spaceport-neon",
@@ -1011,13 +1009,13 @@
         "h": 0
       },
       "order": 275,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.spaceport-neon.x",
         "color": "smear.spaceport-neon.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-open-neon",
@@ -1030,13 +1028,13 @@
         "h": 0
       },
       "order": 276,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.open-neon.x",
         "color": "smear.open-neon.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-exit-metro",
@@ -1049,13 +1047,13 @@
         "h": 0
       },
       "order": 277,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.exit-metro.x",
         "color": "smear.exit-metro.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-exit-taxi",
@@ -1068,13 +1066,13 @@
         "h": 0
       },
       "order": 278,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.exit-taxi.x",
         "color": "smear.exit-taxi.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-exit-shop",
@@ -1087,13 +1085,13 @@
         "h": 0
       },
       "order": 279,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.exit-shop.x",
         "color": "smear.exit-shop.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "smear-weather-ticker",
@@ -1106,13 +1104,13 @@
         "h": 0
       },
       "order": 280,
-      "pass": "foreground",
       "bindings": {
         "x": "smear.weather-ticker.x",
         "color": "smear.weather-ticker.color",
         "rain": "weather.rain",
         "city": "street.city"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "fixer",
@@ -1125,14 +1123,14 @@
         "h": 0
       },
       "order": 281,
-      "pass": "people",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "origin"
       },
       "bindings": {
         "pose": "actor.fixer.pose"
-      }
+      },
+      "layer": "playfield"
     },
     {
       "id": "stall-counter",
@@ -1143,14 +1141,14 @@
         "h": 0
       },
       "order": 282,
-      "pass": "people",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "origin"
       },
       "bindings": {
         "metrics": "stall.metrics"
-      }
+      },
+      "layer": "playfield"
     },
     {
       "id": "npc-hood",
@@ -1163,10 +1161,10 @@
         "h": 0
       },
       "order": 283,
-      "pass": "people",
       "bindings": {
         "pose": "actor.hood.pose"
-      }
+      },
+      "layer": "playfield"
     },
     {
       "id": "npc-umbrella",
@@ -1179,10 +1177,10 @@
         "h": 0
       },
       "order": 284,
-      "pass": "people",
       "bindings": {
         "pose": "actor.umbrella.pose"
-      }
+      },
+      "layer": "playfield"
     },
     {
       "id": "npc-hat",
@@ -1195,10 +1193,10 @@
         "h": 0
       },
       "order": 285,
-      "pass": "people",
       "bindings": {
         "pose": "actor.hat.pose"
-      }
+      },
+      "layer": "playfield"
     },
     {
       "id": "exit-library",
@@ -1209,11 +1207,11 @@
         "h": 0
       },
       "order": 286,
-      "pass": "devices",
       "attach": {
         "instance": "front-4",
         "anchor": "bay1"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-sign",
@@ -1234,14 +1232,14 @@
         "h": 0
       },
       "order": 287,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.sign.snapshot"
       },
       "attach": {
         "instance": "front-2",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-box",
@@ -1256,14 +1254,14 @@
         "h": 0
       },
       "order": 288,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.box.snapshot"
       },
       "attach": {
         "instance": "front-2",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-till",
@@ -1278,14 +1276,14 @@
         "h": 0
       },
       "order": 289,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.till.snapshot"
       },
       "attach": {
         "instance": "noodle-stall",
         "anchor": "right"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-relay",
@@ -1300,14 +1298,14 @@
         "h": 0
       },
       "order": 290,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.relay.snapshot"
       },
       "attach": {
         "instance": "front-7",
         "anchor": "top"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-gate",
@@ -1322,14 +1320,14 @@
         "h": 0
       },
       "order": 291,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.gate.snapshot"
       },
       "attach": {
         "instance": "front-0",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-fence",
@@ -1344,14 +1342,14 @@
         "h": 0
       },
       "order": 292,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.fence.snapshot"
       },
       "attach": {
         "instance": "antenna-fence",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-scan",
@@ -1366,14 +1364,14 @@
         "h": 0
       },
       "order": 293,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.scan.snapshot"
       },
       "attach": {
         "instance": "front-11",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-cam3",
@@ -1388,14 +1386,14 @@
         "h": 0
       },
       "order": 294,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.cam3.snapshot"
       },
       "attach": {
         "instance": "front-3",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-billboard",
@@ -1410,14 +1408,14 @@
         "h": 0
       },
       "order": 295,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.billboard.snapshot"
       },
       "attach": {
         "instance": "billboard-frame",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-dlv9",
@@ -1432,7 +1430,6 @@
         "h": 0
       },
       "order": 296,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.dlv9.snapshot",
         "position": "device.dlv9.position"
@@ -1440,7 +1437,8 @@
       "attach": {
         "instance": "dumpster",
         "anchor": "right"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "map",
@@ -1455,14 +1453,14 @@
         "h": 0
       },
       "order": 297,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.map.snapshot"
       },
       "attach": {
         "instance": "exit-metro",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "device-hover",
@@ -1473,10 +1471,10 @@
         "h": 0
       },
       "order": 298,
-      "pass": "devices",
       "bindings": {
         "snapshot": "device.hover.snapshot"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "exit-metro",
@@ -1494,11 +1492,11 @@
         "h": 0
       },
       "order": 299,
-      "pass": "devices",
       "attach": {
         "instance": "front-10",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "exit-taxi",
@@ -1516,11 +1514,11 @@
         "h": 0
       },
       "order": 300,
-      "pass": "devices",
       "attach": {
         "instance": "front-12",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "exit-market",
@@ -1533,11 +1531,11 @@
         "h": 0
       },
       "order": 301,
-      "pass": "devices",
       "attach": {
         "instance": "device-gate",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "exit-yard",
@@ -1550,11 +1548,11 @@
         "h": 0
       },
       "order": 302,
-      "pass": "devices",
       "attach": {
         "instance": "yard-alley",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "exit-map",
@@ -1567,11 +1565,11 @@
         "h": 0
       },
       "order": 303,
-      "pass": "devices",
       "attach": {
         "instance": "map",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "readable-plaque",
@@ -1584,11 +1582,11 @@
         "h": 0
       },
       "order": 304,
-      "pass": "devices",
       "attach": {
         "instance": "penthouse",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "platform-dumpster",
@@ -1601,11 +1599,11 @@
         "h": 0
       },
       "order": 305,
-      "pass": "devices",
       "attach": {
         "instance": "dumpster",
         "anchor": "top"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "platform-annex",
@@ -1618,11 +1616,11 @@
         "h": 0
       },
       "order": 306,
-      "pass": "devices",
       "attach": {
         "instance": "front-7",
         "anchor": "top"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-stall-left",
@@ -1636,11 +1634,11 @@
         "h": 96
       },
       "order": 307,
-      "pass": "devices",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-stall-right",
@@ -1654,11 +1652,11 @@
         "h": 96
       },
       "order": 308,
-      "pass": "devices",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "right"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-alley",
@@ -1673,11 +1671,11 @@
         "h": 70
       },
       "order": 309,
-      "pass": "devices",
       "attach": {
         "instance": "yard-alley",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-noodles",
@@ -1692,11 +1690,11 @@
         "h": 130
       },
       "order": 310,
-      "pass": "devices",
       "attach": {
         "instance": "fixer",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-market",
@@ -1711,11 +1709,11 @@
         "h": 0
       },
       "order": 311,
-      "pass": "devices",
       "attach": {
         "instance": "market-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-spaceport",
@@ -1729,11 +1727,11 @@
         "h": 0
       },
       "order": 312,
-      "pass": "devices",
       "attach": {
         "instance": "spaceport-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-open",
@@ -1747,11 +1745,11 @@
         "h": 0
       },
       "order": 313,
-      "pass": "devices",
       "attach": {
         "instance": "open-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-billboard",
@@ -1766,11 +1764,11 @@
         "h": 132
       },
       "order": 314,
-      "pass": "devices",
       "attach": {
         "instance": "billboard-frame",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-penthouse",
@@ -1785,11 +1783,11 @@
         "h": 220
       },
       "order": 315,
-      "pass": "devices",
       "attach": {
         "instance": "penthouse",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "light-yard-blade",
@@ -1804,11 +1802,11 @@
         "h": 140
       },
       "order": 316,
-      "pass": "devices",
       "attach": {
         "instance": "yard-alley",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "caster-dumpster",
@@ -1821,11 +1819,11 @@
         "h": 0
       },
       "order": 317,
-      "pass": "devices",
       "attach": {
         "instance": "dumpster",
         "anchor": "topCenter"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "clinic-neon",
@@ -1850,11 +1848,11 @@
         "h": 210
       },
       "order": 318,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-2",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-clinic-neon",
@@ -1869,11 +1867,11 @@
         "h": 0
       },
       "order": 319,
-      "pass": "devices",
       "attach": {
         "instance": "clinic-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "soy-neon",
@@ -1898,11 +1896,11 @@
         "h": 236
       },
       "order": 320,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-5",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-soy-neon",
@@ -1917,11 +1915,11 @@
         "h": 0
       },
       "order": 321,
-      "pass": "devices",
       "attach": {
         "instance": "soy-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "pawn-neon",
@@ -1946,11 +1944,11 @@
         "h": 170
       },
       "order": 322,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-9",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-pawn-neon",
@@ -1965,11 +1963,11 @@
         "h": 0
       },
       "order": 323,
-      "pass": "devices",
       "attach": {
         "instance": "pawn-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "hotel-neon",
@@ -1994,11 +1992,11 @@
         "h": 300
       },
       "order": 324,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-11",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-hotel-neon",
@@ -2013,11 +2011,11 @@
         "h": 0
       },
       "order": 325,
-      "pass": "devices",
       "attach": {
         "instance": "hotel-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "repair-neon",
@@ -2042,11 +2040,11 @@
         "h": 150
       },
       "order": 326,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-12",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-repair-neon",
@@ -2061,11 +2059,11 @@
         "h": 0
       },
       "order": 327,
-      "pass": "devices",
       "attach": {
         "instance": "repair-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "verify-neon",
@@ -2090,11 +2088,11 @@
         "h": 236
       },
       "order": 328,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-1",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-verify-neon",
@@ -2109,11 +2107,11 @@
         "h": 0
       },
       "order": 329,
-      "pass": "devices",
       "attach": {
         "instance": "verify-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "loans-neon",
@@ -2138,11 +2136,11 @@
         "h": 330
       },
       "order": 330,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-4",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-loans-neon",
@@ -2157,11 +2155,11 @@
         "h": 0
       },
       "order": 331,
-      "pass": "devices",
       "attach": {
         "instance": "loans-neon",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "blade-sim",
@@ -2177,11 +2175,11 @@
         "h": 160
       },
       "order": 332,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-3",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "blade-bar",
@@ -2197,11 +2195,11 @@
         "h": 220
       },
       "order": 333,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-6",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "blade-noodle",
@@ -2217,11 +2215,11 @@
         "h": 200
       },
       "order": 334,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-10",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "blade-capsule",
@@ -2237,11 +2235,11 @@
         "h": 260
       },
       "order": 335,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-12",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "ad-front-5",
@@ -2258,11 +2256,11 @@
         "h": 150
       },
       "order": 336,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-5",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-ad-front-5",
@@ -2277,11 +2275,11 @@
         "h": 0
       },
       "order": 337,
-      "pass": "devices",
       "attach": {
         "instance": "ad-front-5",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "ad-front-11",
@@ -2298,11 +2296,11 @@
         "h": 130
       },
       "order": 338,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-11",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-ad-front-11",
@@ -2317,11 +2315,11 @@
         "h": 0
       },
       "order": 339,
-      "pass": "devices",
       "attach": {
         "instance": "ad-front-11",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "ad-front-0",
@@ -2338,11 +2336,11 @@
         "h": 260
       },
       "order": 340,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-0",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "light-ad-front-0",
@@ -2357,11 +2355,11 @@
         "h": 0
       },
       "order": 341,
-      "pass": "devices",
       "attach": {
         "instance": "ad-front-0",
         "anchor": "origin"
-      }
+      },
+      "layer": "set"
     },
     {
       "id": "camera-front-3",
@@ -2376,11 +2374,11 @@
         "h": 104
       },
       "order": 342,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-3",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "camera-front-9",
@@ -2395,11 +2393,11 @@
         "h": 112
       },
       "order": 343,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-9",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "camera-front-6",
@@ -2414,11 +2412,11 @@
         "h": 100
       },
       "order": 344,
-      "pass": "backdrop",
       "attach": {
         "instance": "front-6",
         "anchor": "origin"
-      }
+      },
+      "layer": "backdrop"
     },
     {
       "id": "crowd-0",
@@ -2434,7 +2432,7 @@
         "h": 0
       },
       "order": 345,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-1",
@@ -2450,7 +2448,7 @@
         "h": 0
       },
       "order": 346,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-2",
@@ -2466,7 +2464,7 @@
         "h": 0
       },
       "order": 347,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-3",
@@ -2482,7 +2480,7 @@
         "h": 0
       },
       "order": 348,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-4",
@@ -2498,7 +2496,7 @@
         "h": 0
       },
       "order": 349,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-5",
@@ -2514,7 +2512,7 @@
         "h": 0
       },
       "order": 350,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-6",
@@ -2530,7 +2528,7 @@
         "h": 0
       },
       "order": 351,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-7",
@@ -2546,7 +2544,7 @@
         "h": 0
       },
       "order": 352,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-8",
@@ -2562,7 +2560,7 @@
         "h": 0
       },
       "order": 353,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-9",
@@ -2578,7 +2576,7 @@
         "h": 0
       },
       "order": 354,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-10",
@@ -2594,7 +2592,7 @@
         "h": 0
       },
       "order": 355,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-11",
@@ -2610,7 +2608,7 @@
         "h": 0
       },
       "order": 356,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-12",
@@ -2626,7 +2624,7 @@
         "h": 0
       },
       "order": 357,
-      "pass": "people"
+      "layer": "playfield"
     },
     {
       "id": "crowd-13",
@@ -2642,7 +2640,7 @@
         "h": 0
       },
       "order": 358,
-      "pass": "people"
+      "layer": "playfield"
     }
   ]
 }

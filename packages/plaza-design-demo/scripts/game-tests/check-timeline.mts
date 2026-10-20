@@ -4,8 +4,8 @@ import { evaluateTimeline, validateTimeline, SequenceHandoff, type TimelineDocum
 
 const registry = new ArtRegistry().register({ type: 'test', version: 1, label: 'Test', category: 'test', parts: ['backdrop'], fields: { width: { kind: 'number', label: 'Width', default: 10, min: 0, animatable: true }, fixed: { kind: 'number', label: 'Fixed', default: 0 } }, visualFields: { open: { kind: 'boolean', label: 'Open', default: false, animatable: true } }, bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ mount: { x: 10, h: 5, role: 'mount' } }), draw() {} });
 const composition: Composition = { version: 1, scene: 'temporary', instances: [
-  { id: 'parent', type: 'test', props: {}, placement: { x: 0, h: 0 }, order: 0, pass: 'backdrop' },
-  { id: 'child', type: 'test', props: {}, placement: { x: 2, h: 1 }, attach: { instance: 'parent', anchor: 'mount' }, order: 1, pass: 'backdrop' },
+  { id: 'parent', type: 'test', props: {}, placement: { x: 0, h: 0 }, order: 0, layer: 'backdrop' },
+  { id: 'child', type: 'test', props: {}, placement: { x: 2, h: 1 }, attach: { instance: 'parent', anchor: 'mount' }, order: 1, layer: 'backdrop' },
 ] };
 const context = { registry, compositions: { test: composition }, destinations: { downtown: ['door'] }, clips: { test: ['idle', 'walk'] }, motionTracks: { legacy: { validate(props: Record<string, unknown>) { assert.equal(typeof props.speed, 'number'); }, evaluate(time: number, props: Record<string, unknown>) { return time * (props.speed as number); } } } };
 const document: TimelineDocument = { version: 1, sequences: ['one', 'two'].map(id => ({ id, duration: 4, composition: 'test', shots: [ { id: 'wide', from: 0, to: 2, camera: { x: 0, h: 0, zoom: 1 } }, { id: 'close', from: 2, to: 4, camera: { x: 100, h: 10, zoom: 2 } } ], tracks: [

@@ -11,7 +11,7 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "sun",
@@ -22,7 +22,7 @@
         "h": 0
       },
       "order": 1,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "far-shore",
@@ -33,7 +33,7 @@
         "h": 0
       },
       "order": 2,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "spire",
@@ -44,7 +44,7 @@
         "h": 0
       },
       "order": 3,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "sea",
@@ -55,7 +55,7 @@
         "h": 0
       },
       "order": 4,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "boats",
@@ -66,7 +66,7 @@
         "h": 0
       },
       "order": 5,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "breakwater",
@@ -77,7 +77,7 @@
         "h": 0
       },
       "order": 6,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "skyline",
@@ -88,7 +88,7 @@
         "h": 0
       },
       "order": 7,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "air",
@@ -99,7 +99,7 @@
         "h": 0
       },
       "order": 8,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "coast",
@@ -110,7 +110,6 @@
         "h": 0
       },
       "order": 9,
-      "pass": "backdrop",
       "children": [
         {
           "id": "coast-ship",
@@ -121,7 +120,6 @@
             "h": 0
           },
           "order": 9.03225806451613,
-          "pass": "backdrop",
           "children": [
             {
               "id": "coast-ship-hull",
@@ -134,7 +132,7 @@
                 "h": 0
               },
               "order": 9.03325806451613,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-ship-stack-1",
@@ -154,7 +152,7 @@
                 "h": 0
               },
               "order": 9.03425806451613,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-ship-stack-2",
@@ -174,7 +172,7 @@
                 "h": 0
               },
               "order": 9.03525806451613,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-ship-stack-3",
@@ -194,7 +192,7 @@
                 "h": 0
               },
               "order": 9.03625806451613,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-ship-stack-4",
@@ -214,7 +212,7 @@
                 "h": 0
               },
               "order": 9.03725806451613,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-ship-bridge-house",
@@ -227,7 +225,7 @@
                 "h": 0
               },
               "order": 9.03825806451613,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-ship-funnel",
@@ -240,7 +238,7 @@
                 "h": 0
               },
               "order": 9.03925806451613,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-ship-mast",
@@ -251,9 +249,10 @@
                 "h": 0
               },
               "order": 9.040258064516129,
-              "pass": "backdrop"
+              "layer": "backdrop"
             }
-          ]
+          ],
+          "layer": "backdrop"
         },
         {
           "id": "coast-ground",
@@ -264,7 +263,7 @@
             "h": 0
           },
           "order": 9.064516129032258,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-street-ground",
@@ -275,7 +274,7 @@
             "h": 0
           },
           "order": 9.096774193548388,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-pier",
@@ -286,7 +285,6 @@
             "h": 0
           },
           "order": 9.129032258064516,
-          "pass": "backdrop",
           "children": [
             {
               "id": "coast-pier-piles",
@@ -299,7 +297,7 @@
                 "h": 0
               },
               "order": 9.130032258064515,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-deck",
@@ -312,7 +310,7 @@
                 "h": 0
               },
               "order": 9.131032258064517,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-rail",
@@ -325,7 +323,7 @@
                 "h": 0
               },
               "order": 9.132032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-stairs",
@@ -338,7 +336,7 @@
                 "h": 0
               },
               "order": 9.133032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-kiosk",
@@ -351,7 +349,7 @@
                 "h": 0
               },
               "order": 9.134032258064517,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-bench-0",
@@ -364,7 +362,7 @@
                 "h": 0
               },
               "order": 9.135032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-bench-1",
@@ -377,7 +375,7 @@
                 "h": 0
               },
               "order": 9.136032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-lamp-0",
@@ -391,7 +389,7 @@
                 "h": 0
               },
               "order": 9.137032258064515,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-lamp-1",
@@ -405,7 +403,7 @@
                 "h": 0
               },
               "order": 9.138032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-lamp-2",
@@ -419,7 +417,7 @@
                 "h": 0
               },
               "order": 9.139032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-string-0",
@@ -433,7 +431,7 @@
                 "h": 0
               },
               "order": 9.140032258064515,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-string-1",
@@ -447,7 +445,7 @@
                 "h": 0
               },
               "order": 9.141032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-pier-lantern",
@@ -461,9 +459,10 @@
                 "h": 0
               },
               "order": 9.142032258064516,
-              "pass": "backdrop"
+              "layer": "backdrop"
             }
-          ]
+          ],
+          "layer": "backdrop"
         },
         {
           "id": "coast-palm-1",
@@ -480,7 +479,7 @@
             "h": 0
           },
           "order": 9.161290322580646,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-palm-2",
@@ -497,7 +496,7 @@
             "h": 0
           },
           "order": 9.193548387096774,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-palm-4",
@@ -514,7 +513,7 @@
             "h": 0
           },
           "order": 9.225806451612904,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-palm-5",
@@ -531,7 +530,7 @@
             "h": 0
           },
           "order": 9.258064516129032,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-palm-6",
@@ -548,7 +547,7 @@
             "h": 0
           },
           "order": 9.290322580645162,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-palm-7",
@@ -565,7 +564,7 @@
             "h": 0
           },
           "order": 9.32258064516129,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-palm-8",
@@ -582,7 +581,7 @@
             "h": 0
           },
           "order": 9.35483870967742,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-salt",
@@ -593,7 +592,6 @@
             "h": 0
           },
           "order": 9.387096774193548,
-          "pass": "backdrop",
           "children": [
             {
               "id": "coast-salt-under",
@@ -607,7 +605,7 @@
                 "h": 0
               },
               "order": 9.388096774193547,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-back",
@@ -621,7 +619,7 @@
                 "h": 0
               },
               "order": 9.389096774193549,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-lime",
@@ -634,7 +632,7 @@
                 "h": 0
               },
               "order": 9.390096774193548,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-shell",
@@ -649,7 +647,7 @@
                 "h": 0
               },
               "order": 9.391096774193548,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-counter",
@@ -663,7 +661,7 @@
                 "h": 0
               },
               "order": 9.392096774193549,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-stool-0",
@@ -679,7 +677,7 @@
                 "h": 0
               },
               "order": 9.393096774193548,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-stool-1",
@@ -695,7 +693,7 @@
                 "h": 0
               },
               "order": 9.394096774193548,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-stool-2",
@@ -711,7 +709,7 @@
                 "h": 0
               },
               "order": 9.395096774193547,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-lights",
@@ -725,7 +723,7 @@
                 "h": 0
               },
               "order": 9.396096774193548,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-salt-string",
@@ -741,9 +739,10 @@
                 "h": 0
               },
               "order": 9.397096774193548,
-              "pass": "backdrop"
+              "layer": "backdrop"
             }
-          ]
+          ],
+          "layer": "backdrop"
         },
         {
           "id": "coast-lifeguard",
@@ -754,7 +753,7 @@
             "h": 0
           },
           "order": 9.419354838709678,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-inlet",
@@ -765,7 +764,7 @@
             "h": 0
           },
           "order": 9.451612903225806,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-buffer",
@@ -776,7 +775,6 @@
             "h": 0
           },
           "order": 9.483870967741936,
-          "pass": "backdrop",
           "children": [
             {
               "id": "coast-buffer-fence",
@@ -789,7 +787,7 @@
                 "h": 0
               },
               "order": 9.484870967741935,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-buffer-sign-0",
@@ -802,7 +800,7 @@
                 "h": 0
               },
               "order": 9.485870967741937,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-buffer-sign-1",
@@ -815,7 +813,7 @@
                 "h": 0
               },
               "order": 9.486870967741936,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-buffer-sign-2",
@@ -828,7 +826,7 @@
                 "h": 0
               },
               "order": 9.487870967741936,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-buffer-camera",
@@ -839,7 +837,7 @@
                 "h": 0
               },
               "order": 9.488870967741937,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-buffer-floodlight",
@@ -850,7 +848,7 @@
                 "h": 0
               },
               "order": 9.489870967741936,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-buffer-car",
@@ -863,7 +861,7 @@
                 "h": 0
               },
               "order": 9.490870967741936,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-buffer-gate",
@@ -876,9 +874,10 @@
                 "h": 0
               },
               "order": 9.491870967741935,
-              "pass": "backdrop"
+              "layer": "backdrop"
             }
-          ]
+          ],
+          "layer": "backdrop"
         },
         {
           "id": "coast-hub",
@@ -889,7 +888,6 @@
             "h": 0
           },
           "order": 9.516129032258064,
-          "pass": "backdrop",
           "children": [
             {
               "id": "coast-hub-shed",
@@ -902,7 +900,7 @@
                 "h": 0
               },
               "order": 9.517129032258064,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-door-0",
@@ -915,7 +913,7 @@
                 "h": 0
               },
               "order": 9.518129032258065,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-door-1",
@@ -928,7 +926,7 @@
                 "h": 0
               },
               "order": 9.519129032258064,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-door-2",
@@ -941,7 +939,7 @@
                 "h": 0
               },
               "order": 9.520129032258064,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-door-3",
@@ -954,7 +952,7 @@
                 "h": 0
               },
               "order": 9.521129032258065,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-sign",
@@ -967,7 +965,7 @@
                 "h": 0
               },
               "order": 9.522129032258064,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-drone-rack",
@@ -978,7 +976,7 @@
                 "h": 0
               },
               "order": 9.523129032258064,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-pad-0",
@@ -991,7 +989,7 @@
                 "h": 0
               },
               "order": 9.524129032258063,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-pad-1",
@@ -1004,7 +1002,7 @@
                 "h": 0
               },
               "order": 9.525129032258064,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-pad-2",
@@ -1017,7 +1015,7 @@
                 "h": 0
               },
               "order": 9.526129032258064,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-pad-3",
@@ -1030,7 +1028,7 @@
                 "h": 0
               },
               "order": 9.527129032258063,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-hub-pad-4",
@@ -1043,9 +1041,10 @@
                 "h": 0
               },
               "order": 9.528129032258065,
-              "pass": "backdrop"
+              "layer": "backdrop"
             }
-          ]
+          ],
+          "layer": "backdrop"
         },
         {
           "id": "coast-stack-0",
@@ -1074,7 +1073,7 @@
             "h": 0
           },
           "order": 9.548387096774194,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-stack-1",
@@ -1103,7 +1102,7 @@
             "h": 0
           },
           "order": 9.580645161290322,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-stack-2",
@@ -1125,7 +1124,7 @@
             "h": 0
           },
           "order": 9.612903225806452,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-stack-3",
@@ -1153,7 +1152,7 @@
             "h": 0
           },
           "order": 9.64516129032258,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-crane-sts1",
@@ -1173,7 +1172,7 @@
             "h": 0
           },
           "order": 9.67741935483871,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-crane-sts2",
@@ -1193,7 +1192,7 @@
             "h": 0
           },
           "order": 9.709677419354838,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-crane-sts3",
@@ -1213,7 +1212,7 @@
             "h": 0
           },
           "order": 9.741935483870968,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mast-1370",
@@ -1224,7 +1223,7 @@
             "h": 0
           },
           "order": 9.774193548387096,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mast-1640",
@@ -1235,7 +1234,7 @@
             "h": 0
           },
           "order": 9.806451612903226,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mast-1960",
@@ -1246,7 +1245,7 @@
             "h": 0
           },
           "order": 9.838709677419354,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mast-2230",
@@ -1257,7 +1256,7 @@
             "h": 0
           },
           "order": 9.870967741935484,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-truck-gate",
@@ -1268,7 +1267,7 @@
             "h": 0
           },
           "order": 9.903225806451612,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-bridge",
@@ -1279,7 +1278,6 @@
             "h": 0
           },
           "order": 9.935483870967742,
-          "pass": "backdrop",
           "children": [
             {
               "id": "coast-bridge-rail",
@@ -1292,7 +1290,7 @@
                 "h": 0
               },
               "order": 9.936483870967741,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-bridge-signal-0",
@@ -1305,7 +1303,7 @@
                 "h": 0
               },
               "order": 9.937483870967743,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-bridge-signal-1",
@@ -1318,7 +1316,7 @@
                 "h": 0
               },
               "order": 9.938483870967742,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-bridge-lamp-0",
@@ -1331,7 +1329,7 @@
                 "h": 0
               },
               "order": 9.939483870967742,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-bridge-lamp-1",
@@ -1344,7 +1342,7 @@
                 "h": 0
               },
               "order": 9.940483870967743,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-bridge-lamp-2",
@@ -1357,9 +1355,10 @@
                 "h": 0
               },
               "order": 9.941483870967742,
-              "pass": "backdrop"
+              "layer": "backdrop"
             }
-          ]
+          ],
+          "layer": "backdrop"
         },
         {
           "id": "coast-galleria",
@@ -1370,7 +1369,6 @@
             "h": 0
           },
           "order": 9.967741935483872,
-          "pass": "backdrop",
           "children": [
             {
               "id": "coast-galleria-dome",
@@ -1385,7 +1383,7 @@
                 "h": 0
               },
               "order": 9.968741935483871,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-plinth",
@@ -1398,7 +1396,7 @@
                 "h": 0
               },
               "order": 9.969741935483873,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-terrace-rail",
@@ -1409,7 +1407,7 @@
                 "h": 0
               },
               "order": 9.970741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-taxi-pad",
@@ -1422,7 +1420,7 @@
                 "h": 0
               },
               "order": 9.971741935483871,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-taxi-cab",
@@ -1436,7 +1434,7 @@
                 "h": 0
               },
               "order": 9.972741935483873,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-0",
@@ -1449,7 +1447,7 @@
                 "h": 0
               },
               "order": 9.973741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-1",
@@ -1462,7 +1460,7 @@
                 "h": 0
               },
               "order": 9.974741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-2",
@@ -1475,7 +1473,7 @@
                 "h": 0
               },
               "order": 9.975741935483871,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-3",
@@ -1488,7 +1486,7 @@
                 "h": 0
               },
               "order": 9.976741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-5",
@@ -1501,7 +1499,7 @@
                 "h": 0
               },
               "order": 9.977741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-6",
@@ -1514,7 +1512,7 @@
                 "h": 0
               },
               "order": 9.978741935483871,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-7",
@@ -1527,7 +1525,7 @@
                 "h": 0
               },
               "order": 9.979741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-window-8",
@@ -1540,7 +1538,7 @@
                 "h": 0
               },
               "order": 9.980741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-entrance",
@@ -1553,7 +1551,7 @@
                 "h": 0
               },
               "order": 9.981741935483871,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-sign",
@@ -1566,7 +1564,7 @@
                 "h": 0
               },
               "order": 9.982741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-advert",
@@ -1579,7 +1577,7 @@
                 "h": 0
               },
               "order": 9.983741935483872,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-planter-0",
@@ -1590,7 +1588,7 @@
                 "h": 0
               },
               "order": 9.984741935483871,
-              "pass": "backdrop"
+              "layer": "backdrop"
             },
             {
               "id": "coast-galleria-planter-1",
@@ -1601,11 +1599,13 @@
                 "h": 0
               },
               "order": 9.985741935483873,
-              "pass": "backdrop"
+              "layer": "backdrop"
             }
-          ]
+          ],
+          "layer": "backdrop"
         }
-      ]
+      ],
+      "layer": "backdrop"
     },
     {
       "id": "town",
@@ -1616,7 +1616,6 @@
         "h": 0
       },
       "order": 10,
-      "pass": "backdrop",
       "children": [
         {
           "id": "town-side-street-3420",
@@ -1627,7 +1626,7 @@
             "h": 0
           },
           "order": 10.071428571428571,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-side-street-3720",
@@ -1638,7 +1637,7 @@
             "h": 0
           },
           "order": 10.142857142857142,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-side-street-4130",
@@ -1649,7 +1648,7 @@
             "h": 0
           },
           "order": 10.214285714285714,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-side-street-4480",
@@ -1660,7 +1659,7 @@
             "h": 0
           },
           "order": 10.285714285714286,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-side-street-4800",
@@ -1671,7 +1670,7 @@
             "h": 0
           },
           "order": 10.357142857142858,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-4700",
@@ -1715,7 +1714,7 @@
             "h": 0
           },
           "order": 10.428571428571429,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-4701",
@@ -1743,7 +1742,7 @@
             "h": 0
           },
           "order": 10.5,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-4702",
@@ -1779,7 +1778,7 @@
             "h": 0
           },
           "order": 10.571428571428571,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-4703",
@@ -1823,7 +1822,7 @@
             "h": 0
           },
           "order": 10.642857142857142,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-4704",
@@ -1867,7 +1866,7 @@
             "h": 0
           },
           "order": 10.714285714285714,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-4705",
@@ -1911,7 +1910,7 @@
             "h": 0
           },
           "order": 10.785714285714286,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-4706",
@@ -1939,7 +1938,7 @@
             "h": 0
           },
           "order": 10.857142857142858,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "town-tower-99001",
@@ -1973,9 +1972,10 @@
             "h": 0
           },
           "order": 10.928571428571429,
-          "pass": "backdrop"
+          "layer": "backdrop"
         }
-      ]
+      ],
+      "layer": "backdrop"
     },
     {
       "id": "air-canyon",
@@ -1986,7 +1986,7 @@
         "h": 0
       },
       "order": 11,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "ring",
@@ -1997,7 +1997,7 @@
         "h": 0
       },
       "order": 12,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "air-over",
@@ -2008,7 +2008,7 @@
         "h": 0
       },
       "order": 13,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "line0",
@@ -2019,7 +2019,7 @@
         "h": 0
       },
       "order": 14,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "lamps",
@@ -2030,7 +2030,6 @@
         "h": 0
       },
       "order": 15,
-      "pass": "backdrop",
       "children": [
         {
           "id": "lamps-lamp-3180",
@@ -2044,7 +2043,7 @@
             "h": 0
           },
           "order": 15.083333333333334,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-3330",
@@ -2058,7 +2057,7 @@
             "h": 0
           },
           "order": 15.166666666666666,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-3480",
@@ -2072,7 +2071,7 @@
             "h": 0
           },
           "order": 15.25,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-3640",
@@ -2086,7 +2085,7 @@
             "h": 0
           },
           "order": 15.333333333333334,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-3800",
@@ -2100,7 +2099,7 @@
             "h": 0
           },
           "order": 15.416666666666666,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-3950",
@@ -2114,7 +2113,7 @@
             "h": 0
           },
           "order": 15.5,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-4110",
@@ -2128,7 +2127,7 @@
             "h": 0
           },
           "order": 15.583333333333334,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-4270",
@@ -2142,7 +2141,7 @@
             "h": 0
           },
           "order": 15.666666666666666,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-4430",
@@ -2156,7 +2155,7 @@
             "h": 0
           },
           "order": 15.75,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-4590",
@@ -2170,7 +2169,7 @@
             "h": 0
           },
           "order": 15.833333333333334,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "lamps-lamp-4750",
@@ -2184,9 +2183,10 @@
             "h": 0
           },
           "order": 15.916666666666666,
-          "pass": "backdrop"
+          "layer": "backdrop"
         }
-      ]
+      ],
+      "layer": "backdrop"
     },
     {
       "id": "coast-mid",
@@ -2197,7 +2197,6 @@
         "h": 0
       },
       "order": 16,
-      "pass": "backdrop",
       "children": [
         {
           "id": "coast-mid-dj",
@@ -2211,7 +2210,7 @@
             "h": 0
           },
           "order": 16.015625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-bonfire",
@@ -2225,7 +2224,7 @@
             "h": 0
           },
           "order": 16.03125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-lounger-0",
@@ -2242,7 +2241,7 @@
             "h": 0
           },
           "order": 16.046875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-lounger-1",
@@ -2259,7 +2258,7 @@
             "h": 0
           },
           "order": 16.0625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-lounger-2",
@@ -2276,7 +2275,7 @@
             "h": 0
           },
           "order": 16.078125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-lounger-3",
@@ -2293,7 +2292,7 @@
             "h": 0
           },
           "order": 16.09375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-machine-straddle",
@@ -2310,7 +2309,7 @@
             "h": 0
           },
           "order": 16.109375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-machine-reach-stacker",
@@ -2326,7 +2325,7 @@
             "h": 0
           },
           "order": 16.125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-machine-forklift",
@@ -2343,7 +2342,7 @@
             "h": 0
           },
           "order": 16.140625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-machine-truck",
@@ -2358,7 +2357,7 @@
             "h": 0
           },
           "order": 16.15625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-machine-tractor",
@@ -2374,7 +2373,7 @@
             "h": 0
           },
           "order": 16.171875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-0",
@@ -2391,7 +2390,7 @@
             "h": 0
           },
           "order": 16.1875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-1",
@@ -2408,7 +2407,7 @@
             "h": 0
           },
           "order": 16.203125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-2",
@@ -2425,7 +2424,7 @@
             "h": 0
           },
           "order": 16.21875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-3",
@@ -2442,7 +2441,7 @@
             "h": 0
           },
           "order": 16.234375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-4",
@@ -2459,7 +2458,7 @@
             "h": 0
           },
           "order": 16.25,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-5",
@@ -2476,7 +2475,7 @@
             "h": 0
           },
           "order": 16.265625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-6",
@@ -2493,7 +2492,7 @@
             "h": 0
           },
           "order": 16.28125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-7",
@@ -2510,7 +2509,7 @@
             "h": 0
           },
           "order": 16.296875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-8",
@@ -2527,7 +2526,7 @@
             "h": 0
           },
           "order": 16.3125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-9",
@@ -2544,7 +2543,7 @@
             "h": 0
           },
           "order": 16.328125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-10",
@@ -2561,7 +2560,7 @@
             "h": 0
           },
           "order": 16.34375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-11",
@@ -2578,7 +2577,7 @@
             "h": 0
           },
           "order": 16.359375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-12",
@@ -2595,7 +2594,7 @@
             "h": 0
           },
           "order": 16.375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-13",
@@ -2612,7 +2611,7 @@
             "h": 0
           },
           "order": 16.390625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-14",
@@ -2629,7 +2628,7 @@
             "h": 0
           },
           "order": 16.40625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-15",
@@ -2646,7 +2645,7 @@
             "h": 0
           },
           "order": 16.421875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-16",
@@ -2663,7 +2662,7 @@
             "h": 0
           },
           "order": 16.4375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-17",
@@ -2680,7 +2679,7 @@
             "h": 0
           },
           "order": 16.453125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-18",
@@ -2697,7 +2696,7 @@
             "h": 0
           },
           "order": 16.46875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-19",
@@ -2714,7 +2713,7 @@
             "h": 0
           },
           "order": 16.484375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-20",
@@ -2731,7 +2730,7 @@
             "h": 0
           },
           "order": 16.5,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-21",
@@ -2748,7 +2747,7 @@
             "h": 0
           },
           "order": 16.515625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-22",
@@ -2765,7 +2764,7 @@
             "h": 0
           },
           "order": 16.53125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-23",
@@ -2782,7 +2781,7 @@
             "h": 0
           },
           "order": 16.546875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-24",
@@ -2799,7 +2798,7 @@
             "h": 0
           },
           "order": 16.5625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-25",
@@ -2816,7 +2815,7 @@
             "h": 0
           },
           "order": 16.578125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-26",
@@ -2833,7 +2832,7 @@
             "h": 0
           },
           "order": 16.59375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-27",
@@ -2850,7 +2849,7 @@
             "h": 0
           },
           "order": 16.609375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-28",
@@ -2867,7 +2866,7 @@
             "h": 0
           },
           "order": 16.625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-29",
@@ -2884,7 +2883,7 @@
             "h": 0
           },
           "order": 16.640625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-30",
@@ -2901,7 +2900,7 @@
             "h": 0
           },
           "order": 16.65625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-31",
@@ -2918,7 +2917,7 @@
             "h": 0
           },
           "order": 16.671875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-32",
@@ -2935,7 +2934,7 @@
             "h": 0
           },
           "order": 16.6875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-33",
@@ -2952,7 +2951,7 @@
             "h": 0
           },
           "order": 16.703125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-34",
@@ -2969,7 +2968,7 @@
             "h": 0
           },
           "order": 16.71875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-35",
@@ -2986,7 +2985,7 @@
             "h": 0
           },
           "order": 16.734375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-36",
@@ -3003,7 +3002,7 @@
             "h": 0
           },
           "order": 16.75,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-37",
@@ -3020,7 +3019,7 @@
             "h": 0
           },
           "order": 16.765625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-38",
@@ -3037,7 +3036,7 @@
             "h": 0
           },
           "order": 16.78125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-39",
@@ -3054,7 +3053,7 @@
             "h": 0
           },
           "order": 16.796875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-40",
@@ -3071,7 +3070,7 @@
             "h": 0
           },
           "order": 16.8125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-41",
@@ -3088,7 +3087,7 @@
             "h": 0
           },
           "order": 16.828125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-42",
@@ -3105,7 +3104,7 @@
             "h": 0
           },
           "order": 16.84375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-43",
@@ -3122,7 +3121,7 @@
             "h": 0
           },
           "order": 16.859375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-44",
@@ -3139,7 +3138,7 @@
             "h": 0
           },
           "order": 16.875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-45",
@@ -3156,7 +3155,7 @@
             "h": 0
           },
           "order": 16.890625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-46",
@@ -3173,7 +3172,7 @@
             "h": 0
           },
           "order": 16.90625,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-47",
@@ -3190,7 +3189,7 @@
             "h": 0
           },
           "order": 16.921875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-48",
@@ -3207,7 +3206,7 @@
             "h": 0
           },
           "order": 16.9375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-49",
@@ -3224,7 +3223,7 @@
             "h": 0
           },
           "order": 16.953125,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-person-50",
@@ -3241,7 +3240,7 @@
             "h": 0
           },
           "order": 16.96875,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-mid-escalator",
@@ -3252,9 +3251,10 @@
             "h": 0
           },
           "order": 16.984375,
-          "pass": "backdrop"
+          "layer": "backdrop"
         }
-      ]
+      ],
+      "layer": "backdrop"
     },
     {
       "id": "people",
@@ -3265,7 +3265,6 @@
         "h": 0
       },
       "order": 17,
-      "pass": "backdrop",
       "children": [
         {
           "id": "people-person-0",
@@ -3282,7 +3281,7 @@
             "h": 0
           },
           "order": 17.066666666666666,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-1",
@@ -3299,7 +3298,7 @@
             "h": 0
           },
           "order": 17.133333333333333,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-2",
@@ -3316,7 +3315,7 @@
             "h": 0
           },
           "order": 17.2,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-3",
@@ -3333,7 +3332,7 @@
             "h": 0
           },
           "order": 17.266666666666666,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-4",
@@ -3350,7 +3349,7 @@
             "h": 0
           },
           "order": 17.333333333333332,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-5",
@@ -3367,7 +3366,7 @@
             "h": 0
           },
           "order": 17.4,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-6",
@@ -3384,7 +3383,7 @@
             "h": 0
           },
           "order": 17.466666666666665,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-7",
@@ -3401,7 +3400,7 @@
             "h": 0
           },
           "order": 17.533333333333335,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-8",
@@ -3418,7 +3417,7 @@
             "h": 0
           },
           "order": 17.6,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-9",
@@ -3435,7 +3434,7 @@
             "h": 0
           },
           "order": 17.666666666666668,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-10",
@@ -3452,7 +3451,7 @@
             "h": 0
           },
           "order": 17.733333333333334,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-11",
@@ -3469,7 +3468,7 @@
             "h": 0
           },
           "order": 17.8,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-12",
@@ -3486,7 +3485,7 @@
             "h": 0
           },
           "order": 17.866666666666667,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "people-person-13",
@@ -3503,9 +3502,10 @@
             "h": 0
           },
           "order": 17.933333333333334,
-          "pass": "backdrop"
+          "layer": "backdrop"
         }
-      ]
+      ],
+      "layer": "backdrop"
     },
     {
       "id": "traffic",
@@ -3516,7 +3516,7 @@
         "h": 0
       },
       "order": 18,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "coast-front",
@@ -3527,7 +3527,6 @@
         "h": 0
       },
       "order": 19,
-      "pass": "backdrop",
       "children": [
         {
           "id": "coast-front-palm-0",
@@ -3544,7 +3543,7 @@
             "h": 0
           },
           "order": 19.333333333333332,
-          "pass": "backdrop"
+          "layer": "backdrop"
         },
         {
           "id": "coast-front-palm-3",
@@ -3561,9 +3560,10 @@
             "h": 0
           },
           "order": 19.666666666666668,
-          "pass": "backdrop"
+          "layer": "backdrop"
         }
-      ]
+      ],
+      "layer": "backdrop"
     },
     {
       "id": "under",
@@ -3574,7 +3574,7 @@
         "h": 0
       },
       "order": 20,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "foreground",
@@ -3585,7 +3585,7 @@
         "h": 0
       },
       "order": 21,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "rain",
@@ -3596,7 +3596,7 @@
         "h": 0
       },
       "order": 22,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "tunnel-fade",
@@ -3607,7 +3607,7 @@
         "h": 0
       },
       "order": 23,
-      "pass": "backdrop"
+      "layer": "backdrop"
     }
   ]
 }

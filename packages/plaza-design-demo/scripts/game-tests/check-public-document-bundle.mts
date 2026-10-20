@@ -41,7 +41,7 @@ const { ArtRegistry } = await import('../../src/ssg/game/art/core/composition');
 const registry = new ArtRegistry().register({ type: 'public-test', version: 1, label: 'Test', category: 'Test', fields: {}, parts: ['backdrop'], bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }), draw() {} });
 const model = new ComposerModel(registry, {}, doc => { if (doc.kind === 'behavior') assert.equal((doc.value as { retained: boolean }).retained, true, 'Protected behavior changed'); });
 model.load(documents);
-const nextRoom = { version: 1, scene: 'room', instances: [{ id: 'lamp', type: 'public-test', props: {}, placement: { x: 0, h: 0 }, pass: 'backdrop', order: 0 }] };
+const nextRoom = { version: 1, scene: 'room', instances: [{ id: 'lamp', type: 'public-test', props: {}, placement: { x: 0, h: 0 }, layer: 'backdrop', order: 0 }] };
 const nextFilm = { version: 1, sequences: [{ id: 'scene', composition: 'room', duration: 1, shots: [], text: [], fades: [], beats: [], tracks: [{ id: 'move', target: { kind: 'instance', instance: 'lamp', property: 'x' }, keys: [{ time: 0, value: 0 }, { time: 1, value: 10 }] }] }] };
 const related = createDocumentBundle([{ id: 'film', value: nextFilm }, { id: 'room', value: nextRoom }], model.list());
 model.importDocuments(readDocumentBundle(related, model.list()));

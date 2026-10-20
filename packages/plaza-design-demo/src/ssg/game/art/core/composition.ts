@@ -38,15 +38,16 @@ export interface Field {
  */
 export type FieldEditor =
   | { kind: 'list'; item: Record<string, Field>; auto?: string; addLabel?: string; next?: (rows: Properties[]) => Properties }
-  | { kind: 'set'; options: readonly string[]; auto?: string };
+  | { kind: 'set'; options: readonly string[]; auto?: string }
+  /** An optional colour: "" (shown as a checkbox labelled `empty`) or a #rrggbb colour. */
+  | { kind: 'colour'; empty: string };
 export interface Placement extends Point { scale?: number; facing?: 1 | -1; parallax?: number }
 export interface Instance {
   id: string; type: string; props: Properties; placement: Placement;
-  /** Draw order within the pass or layer. Layered compositions keep it as a hidden sort key. */
+  /** Draw order within the layer: a hidden sort key behind the editor's layer stack. */
   order: number;
-  /** Older per-scene drawing passes; a composition uses either `pass` or `layer` on every instance. */
-  pass?: Pass;
-  layer?: Layer;
+  /** Where the instance draws (LAYERS). */
+  layer: Layer;
   attach?: { instance: string; anchor: string };
   children?: Instance[];
   bindings?: Record<string, string>;
@@ -99,10 +100,8 @@ export interface Element {
   draw(ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, pass: Pass, placement: Readonly<Required<Placement>>): void;
 }
 
-const passes: Pass[] = ['backdrop', 'devices', 'people', 'foreground'];
 const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
 /** A composition is layered when its instances carry `layer`; validation rejects mixtures. */
-export const isLayered = (doc: Readonly<Composition>) => flat(doc.instances).some(n => n.layer !== undefined);
 const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const owns = (v: object, key: string) => Object.prototype.hasOwnProperty.call(v, key);
@@ -160,7 +159,8 @@ export class ArtRegistry {
         this.properties(raw.type, raw.props as Properties);
         const p = raw.placement;
         if (!object(p) || !finite(p.x) || !finite(p.h) || p.scale !== undefined && (!finite(p.scale) || p.scale <= 0) || p.facing !== undefined && p.facing !== 1 && p.facing !== -1 || p.parallax !== undefined && (!finite(p.parallax) || p.parallax < 0)) throw new Error(`${raw.id}: invalid placement`);
-        if (!finite(raw.order) || (raw.layer === undefined ? !passes.includes(raw.pass as Pass) : !LAYERS.includes(raw.layer as Layer) || raw.pass !== undefined)) throw new Error(`${raw.id}: invalid drawing order/pass`);
+        if (!finite(raw.order)) throw new Error(`${raw.id}: invalid drawing order`);
+        if (!LAYERS.includes(raw.layer as Layer)) throw new Error(`${raw.id}: ${raw.layer === undefined ? 'missing layer' : `unknown layer ${String(raw.layer)}`} (${LAYERS.join(', ')})`);
         if (raw.bindings !== undefined && (!object(raw.bindings) || Object.values(raw.bindings).some(v => typeof v !== 'string'))) throw new Error(`${raw.id}: invalid bindings`);
         for (const key of Object.keys(raw.bindings ?? {})) if (!owns(this.get(raw.type).visualFields ?? {}, key)) throw new Error(`${raw.id}.${key}: unknown visual binding`);
         const node = raw as unknown as Instance; all.set(node.id, node); if (parent) parents.set(node.id, parent);
@@ -170,18 +170,19 @@ export class ArtRegistry {
     };
     visit(input.instances);
     const nodes = [...all.values()];
-    if (nodes.some(n => n.layer !== undefined)) {
+    {
       let players = 0;
       for (const n of nodes) {
-        if (n.layer === undefined) throw new Error(`${n.id}: a layered composition needs a layer on every instance`);
         const e = this.get(n.type);
         if (e.role === 'player') { players++; if (n.layer !== 'playfield') throw new Error(`${n.id}: the player row belongs in the playfield`); continue; }
         if (e.role === 'group') continue;
         if (e.parts.length > 1) throw new Error(`${n.id}: multi-part artwork ${n.type} cannot be layered yet`);
         if ((e.parts.length === 0) !== (n.layer === 'logic')) throw new Error(`${n.id}: ${e.parts.length ? 'drawn artwork needs a visual layer' : 'non-drawing items belong in the logic layer'}`);
       }
-      if (players !== 1) throw new Error('A layered composition needs exactly one player row');
-    } else if (nodes.some(n => this.get(n.type).role === 'player')) throw new Error('The player row requires a layered composition');
+      // A scene has at most one player row (a playable scene's spawn: its manifest names it); sequences (cutscenes, the
+      // title) are watched, not played. Without a player row the whole playfield draws behind the player.
+      if (input.scene.startsWith('sequence-') ? players !== 0 : players > 1) throw new Error(input.scene.startsWith('sequence-') ? 'A sequence has no player row' : 'A composition has at most one player row');
+    }
     const visiting = new Set<string>(), done = new Set<string>();
     const check = (id: string) => {
       if (visiting.has(id)) throw new Error(`${id}: attachment/parent cycle`);
@@ -259,21 +260,17 @@ export function compositionAppearance(doc: Composition, env: Pick<Environment, '
 }
 
 /** The identity transform leaves the original draw operations and fractional coordinates intact.
- * A layered document maps `backdrop` to everything behind the player and `foreground` to its
- * foreground layer; drawing `backdrop` also queues the rows over the player and the foreground
- * for the shared frame to draw at their own moments (see beginLayeredFrame / flushLayeredSlot). */
+ * `backdrop` draws everything behind the player and queues the rows over the player and the foreground for the
+ * shared frame to draw at their own moments (see beginLayeredFrame / flushLayeredSlot); `foreground` draws the
+ * foreground layer now. The engine's own passes (devices, people) have no composition rows. */
 export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, pass: Pass) {
-  if (isLayered(doc)) {
-    if (pass === 'backdrop') { drawCompositionSlot(ctx, registry, doc, env, 'behind-player'); queueLayeredSlots(ctx, registry, doc, env); }
-    else if (pass === 'foreground') { pending.foreground.delete(doc); drawCompositionSlot(ctx, registry, doc, env, 'foreground'); }
-    return;
-  }
-  paint(ctx, doc, env, resolveComposition(registry, doc, env).filter(r => r.element.parts.length && (r.element.parts.length === 1 ? r.instance.pass === pass : r.element.parts.includes(pass))), () => pass);
+  if (pass === 'backdrop') { drawCompositionSlot(ctx, registry, doc, env, 'behind-player'); queueLayeredSlots(ctx, registry, doc, env); }
+  else if (pass === 'foreground') { pending.foreground.delete(doc); drawCompositionSlot(ctx, registry, doc, env, 'foreground'); }
 }
 /** Layered scenes: distance, backdrop, set and the playfield up to the player row; then the rest of the playfield; then the foreground.
  * `only` limits the slot to some layers, for scenes that draw layers into different engine moments. */
 export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean)) {
-  const keep = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer!);
+  const keep = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer);
   const rows = resolveComposition(registry, doc, env), found = rows.findIndex(r => r.element.role === 'player'), player = found < 0 ? rows.length : found;
   const inSlot = (r: Resolved, index: number) => slot === 'foreground' ? r.instance.layer === 'foreground'
     : r.instance.layer === 'playfield' ? (slot === 'behind-player') === (index < player)

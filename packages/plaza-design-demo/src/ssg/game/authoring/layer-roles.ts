@@ -40,7 +40,7 @@ const RULES: [LayerRole, RegExp][] = [
   ['Marker', /marker|spawn|trigger|\bzone\b|\bguide\b|\bposition\b/],
   ['Animal', /\bcat\b|\bdog\b|pigeon|\bgulls?\b|\bbirds?\b|\bfish\b|\brats?\b|\bcrab\b/],
   ['Robot', /robot|android|\bbots?\b|servbot|stockbot|crawler|drone|\bmech\b/],
-  ['Human', /person|people|character|crowd|actor|resident|vendor|worker|guard|clerk|passenger|pedestrian|\bkid\b|keeper|rider|\bcook\b|sleeper|\bnpc\b|surfer|\bdj\b/],
+  ['Human', /person|people|character|crowd|\bactor\b|resident|vendor|worker|guard|clerk|passenger|pedestrian|\bkid\b|keeper|rider|\bcook\b|sleeper|\bnpc\b|surfer|\bdj\b/],
   ['Vehicle', /vehicle|\bcars?\b|taxi|\bcab\b|\bbus\b|\bvans?\b|truck|\btrains?\b|tram|\bboats?\b|\bships?\b|ferry|\bbikes?\b|scooter|forklift|carriage|traffic/],
   ['Effect', /reflection|smear|steam|smoke|\bfog\b|\bmist\b|\brain\b|puddle|splash|spark|haze|glare|\bpool\b|\bsuds\b|bonfire|\bfade\b/],
   ['Light', /light|lamp|pendant|neon|lantern|\bbulbs?\b|spotlight|\bbeam\b|flare|candle|glow|\btube\b/],
@@ -52,7 +52,18 @@ const RULES: [LayerRole, RegExp][] = [
   ['Prop', /./],
 ];
 
+/** Artwork the keyword rules get wrong (a crane cab is not a vehicle, the people kit is not a robot). */
+const KIND_OF: Record<string, LayerRole> = {
+  'character.resident': 'Human', 'sequence.opening.coast-mid.machine-tractor': 'Vehicle', 'harbor.fishStall': 'Furniture',
+  'sequence.opening.coast.lifeguard': 'Building', 'sequence.opening.coast.hub-drone-rack': 'Machine', 'sequence.opening.coast.galleria-taxi-pad': 'Building',
+  'moth.resident-panel': 'Machine', 'station.track-base': 'Building', 'beach.tower': 'Building', 'beach.board': 'Prop',
+  'warehouse.office': 'Building', 'warehouse.door': 'Building', 'harbor.craneCabBack': 'Machine', 'harbor.craneCabFront': 'Machine',
+  'harbor.ferryNotice': 'Sign', 'terminal.trolley-cab': 'Machine', 'terminal.ferry-hatch': 'Building', 'terminal.ferry-kiosk': 'Machine',
+  'train.fill': 'Building', 'train.carPlate': 'Sign',
+  'sequence.taxi.sky': 'Scenery', 'sequence.taxi.lights': 'Light', 'sequence.taxi.towers': 'Scenery', 'sequence.taxi.destination': 'Sign', 'sequence.taxi.fade': 'Effect',
+};
 export function layerRole(type: string, label: string, category: string, look?: unknown): LayerRole {
+  if (KIND_OF[type]) return KIND_OF[type];
   if (/^(scene\.player|assembly\.group)\b/.test(type)) return type.startsWith('scene.') ? 'Player' : 'Group';
   // the level kit: walkable lines, doors and building handles are positions; lifts and escalators are machines
   if (/^level\.(floor|door|shell|interior)$/.test(type)) return 'Marker';

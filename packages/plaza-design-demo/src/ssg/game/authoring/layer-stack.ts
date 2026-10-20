@@ -1,5 +1,5 @@
 /** The editor's layer stack for layered compositions: rows per layer and restacking. */
-import { LAYERS, PLAYER_ROW, isLayered, type Composition, type Instance, type Layer } from '../art/core/composition';
+import { LAYERS, PLAYER_ROW, type Composition, type Instance, type Layer } from '../art/core/composition';
 
 export const VISUAL_LAYERS = LAYERS.filter(layer => layer !== 'logic');
 export const LAYER_LABELS: Record<Layer, string> = {
@@ -14,7 +14,6 @@ export const LAYER_HINTS: Record<Layer, string> = {
   logic: 'Never drawn: spawn points, exits, markers',
 };
 const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
-export const layered = isLayered;
 export const isPlayerRow = (node: Instance) => node.type === PLAYER_ROW;
 
 /** Rows of one layer, back to front, in the same order the renderer sorts them. */

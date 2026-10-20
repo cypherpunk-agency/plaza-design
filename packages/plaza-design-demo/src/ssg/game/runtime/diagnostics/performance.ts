@@ -1,5 +1,5 @@
 /** Opt-in local CPU recorder. No storage, timers, observers or allocations per sample. */
-export const SPANS=['game.frame','game.update','game.render','render.total','render.prepare','render.world','render.actors','render.finish','host.tick','save.total','save.stringify','save.write','raf.gap','workload.action','play.start','play.stop','timer.callback','timer.lateness'] as const;
+export const SPANS=['game.frame','game.update','game.render','render.total','render.prepare','render.world','render.actors','render.finish','host.tick','save.total','save.stringify','save.write','raf.gap','workload.action','play.start','play.stop','timer.callback','timer.lateness','editor.command','editor.action','editor.documents','editor.validate','editor.header','editor.options','editor.outline','editor.inspector','editor.timeline','editor.scene-switch','editor.selection','editor.library','editor.add','editor.thumbnail'] as const;
 export type Span=typeof SPANS[number];
 export interface PerformanceOptions {source:string;scenario:string;capacity?:number;environment?:Record<string,unknown>}
 export interface PerformanceReport {
@@ -47,6 +47,7 @@ export function stopPerformance(){const recorder=active;active=undefined;return 
 export function perfBegin(span:Span,owner?:string){return active?.begin(span,owner)??-1;}
 export function perfEnd(token:number){active?.end(token);}
 export function perfSample(span:Span,duration:number){active?.sample(span,duration);}
+export function perfMeasure<T>(span:Span, work:()=>T):T { const token=perfBegin(span);try{return work();}finally{perfEnd(token);} }
 
 /** Bounded synthetic probe in the current JS environment, not a game-speed or GPU benchmark. */
 export function calibratePerformance(){

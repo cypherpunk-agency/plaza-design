@@ -4,7 +4,7 @@ import { ComposerModel, type EditorDocument } from '../../src/ssg/game/authoring
 import type { TimelineDocument } from '../../src/ssg/game/art/core/timeline';
 
 const registry = new ArtRegistry().register({ type: 'test', version: 1, label: 'Test', category: 'test', fields: { size: { kind: 'number', label: 'Size', default: 1, min: 1, animatable: true } }, visualFields: { open: { kind: 'boolean', label: 'Open', default: false, animatable: true } }, parts: ['backdrop'], bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ top: { x: 0, h: 10, role: 'mount' } }), draw() {} });
-const instance = (id: string) => ({ id, type: 'test', props: {}, placement: { x: 0, h: 0 }, pass: 'backdrop' as const, order: 0 });
+const instance = (id: string) => ({ id, type: 'test', props: {}, placement: { x: 0, h: 0 }, layer: 'backdrop' as const, order: 0 });
 const composition: Composition = { version: 1, scene: 'test-scene', instances: [
   { ...instance('parent'), children: [instance('child')] },
   { ...instance('attached'), attach: { instance: 'parent', anchor: 'top' } },
@@ -28,6 +28,11 @@ const parent = (model.get('scene-doc').value as Composition).instances[0]; asser
 assert.ok(!(model.get('scene-doc').value as Composition).instances.some(n => n.id === nestedCopy));
 model.remove('scene-doc', nestedCopy);
 assert.throws(() => model.remove('scene-doc', 'parent'), /attached/);
+// Cascading deletion lists the instance, its children and everything attached to them, in document order.
+assert.deepEqual(model.removal('scene-doc', 'parent', true), ['parent', 'child', 'attached']);
+// A trial run reports why the cascade would be refused (the timeline animates 'child') and leaves document and history as they were.
+const beforeTrial = JSON.stringify(model.get('scene-doc').value), labelBeforeTrial = model.undoLabel;
+assert.match(model.trial(() => model.remove('scene-doc', 'parent', true)), /child/); assert.equal(JSON.stringify(model.get('scene-doc').value), beforeTrial); assert.equal(model.undoLabel, labelBeforeTrial);
 assert.throws(() => model.remove('scene-doc', 'bound'), /bindings/);
 assert.throws(() => model.duplicate('scene-doc', 'bound'), /bound/);
 assert.throws(() => model.remove('scene-doc', 'child'), /instance/);
