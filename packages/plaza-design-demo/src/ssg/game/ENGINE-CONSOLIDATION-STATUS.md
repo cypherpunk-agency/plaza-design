@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `74b7d36` on main and production.
-Production/main homepage jobs39347266143/39347265633 and design job39347266264 succeeded.
+Last verified deployment: `bd5c4f7` on main and production.
+Production/main homepage jobs39348149294/39348149006 and design job39348149225 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2520,3 +2520,25 @@ packaged Play/Stop PASS with no warning/error logs; actual inspector dimension s
 Package app-E4BIS7XE.js / play-PGKPC6MZ.js / play-14bfe9cae75ebdba.html. No whole-goal gate promotion:
 remaining native geometry/actor contracts and all19 inventory/world/network/current-save/lifecycle/
 removal reconciliation still need completion.
+
+## 2026-10-20 Harbor Shift artwork roles / inspector identity fix
+
+Night-shift trolley rest/parked positions and horizon now resolve shared source artwork roles.
+Removed the blanket four-instance identity/type floor. The actual factory passes pending source;
+missing required trolley positions reject before commit, optional absent horizon stays absent.
+Real ordinary use and child attachments remain source validated. Actual Scene selectors rebind
+new positions and real trolley use, delete old geometry after preserving children, and prove
+native parked/rest outputs plus bundle/protected Save/fresh shipping/byte Undo
+(`harborShift-actor-role-source-9phmES`).
+
+This proof uncovered an actual shared inspector bug: it used a scene-document prefix as the
+composition document ID (harbor-shift instead of harborShift). Scene authoring now uses the
+existing common document identity helper for composition and scene reads/grouped actor writes.
+All19 actual mounted manifest/companion/first-actor inspectors PASS
+(`scene-inspector-identities-5FDHpk`), and the real packaged Harbor Shift inspector exposes all
+three fields without errors. Harbor Shift2048 original carry/objective/time cases and768 visual
+snapshots PASS; ordinary/actor manifest Save regression PASS (`harbor-shift-manifest-save/run-HaCZlB`).
+tsc/both builds PASS. Sourceed098aacf729f4fe70893bb2fa2ce9f206a3c1e25cbbdc7cb373c1a67c1cf774 passes173/173 browser raster rows with zero
+differences/errors (independently verified), and actual packaged native Harbor Shift Play/Stop
+without warning/error logs. Package app-Y34BTBQN.js / play-FC4K5IAZ.js /
+play-3886959c7ab68470.html. Remaining whole-goal gates and final inventory remain open.

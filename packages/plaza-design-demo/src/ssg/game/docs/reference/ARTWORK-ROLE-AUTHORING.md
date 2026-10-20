@@ -148,3 +148,17 @@ former geometry, native adaptive floors/rider routes, atomic rejection, bundle/p
 shipping/byte Undo. Original77 bodies/six people/interactions/booth/adaptive poses and tsc/both builds
 PASS. Source8235dad37ca6 passes173 zero-difference/error browser raster cases; actual native Mall
 Play/Stop and inspector fields PASS with no warning/error logs.
+
+## Harbor Shift position inputs
+
+Trolley rest position artwork, Trolley parked position artwork and Horizon artwork use the same
+Scene manifest inspector. Native picture bindings read the authored trolley X positions; the
+horizon reads authored height. Missing required trolley inputs reject; optional absent horizon
+stays absent. Old geometry can be deleted after ordinary uses/children have been rebound.
+check-shift-artwork-roles.mts PASS (`harborShift-actor-role-source-9phmES`) through actual forms,
+native outputs, invalid absence, history/bundle/protected Save/fresh import/byte Undo. Original2048
+objective/carry/time cases,768 visual snapshots and manifest/actor Save checks PASS. Both builds/tsc
+and all173 zero-difference/error raster cases PASS at sourceed098aacf729; actual native Play/Stop
+and packaged controls PASS without warnings. The inspector's prefix/composition-ID bug is fixed
+with the shared document identity helper; all19 actual manifest/companion/actor form mounts pass
+(`scene-inspector-identities-5FDHpk`).
