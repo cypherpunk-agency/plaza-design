@@ -18,7 +18,7 @@ const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.e
 const validate=(d:any,docs:any[])=>{if(d.id==='laundromat-scene')validateSourceDocuments(new Map(docs.map(row=>[row.id,row.value])));};
 const make=()=>{const m=new ComposerModel(art,context,validate);m.load(documents);return m;};
 const model=make(),composition=model.get('laundromat').value as Composition,scene=structuredClone(LAUNDROMAT_SCENE),gameplay=structuredClone(LAUNDROMAT_GAMEPLAY);
-composition.instances.push({id:'review-console',type:'furniture.stool',props:{seed:9},placement:{x:610,h:0},order:500,pass:'backdrop'});
+composition.instances.push({id:'review-console',type:'furniture.stool',props:{seed:9},placement:{x:610,h:0},order:500,layer:'set'});
 composition.instances.find(i=>i.id==='room')!.props.width=1000;scene.actors!.find(a=>a.id==='gran')!.look={body:'old',garb:'coat',top:'#123456'};scene.actors!.find(a=>a.id==='gran')!.when={from:'18:00',to:'06:00'};scene.actors!.find(a=>a.id==='cat')!.follow='gran';
 addManifestContent(scene,'uses','review-action','review-console');scene.uses.at(-1)!.routes=[{command:'laundromat.review-action',pages:['Action committed.']}];
 scene.manifest!.uses.soap={instance:'review-console',x:6,promptH:92,responseH:76};

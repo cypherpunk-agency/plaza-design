@@ -40,7 +40,7 @@ export function createSceneRegistry(native:Readonly<Record<string,SceneDef>>,sou
  return registry;
 }
 export function newAuthoredScene(id:string,name:string):AuthoredScene{
- const entry:AuthoredScene={composition:{version:1,scene:id,instances:[{id:'spawn',type:'assembly.group',props:{},placement:{x:120,h:0},order:0,pass:'backdrop'}]},scene:{version:1,id,name,intro:[],uses:[],manifest:{version:1,width:720,spawn:'spawn',uses:{}}},gameplay:{version:1,flags:[],items:[],commands:{},events:[],reactions:[],conversations:{}}};
+ const entry:AuthoredScene={composition:{version:1,scene:id,instances:[{id:'spawn',type:'scene.player',props:{},placement:{x:120,h:0},order:0,layer:'playfield'}]},scene:{version:1,id,name,intro:[],uses:[],manifest:{version:1,width:720,spawn:'spawn',uses:{}}},gameplay:{version:1,flags:[],items:[],commands:{},events:[],reactions:[],conversations:{}}};
  // Resolve all artwork defaults through the normal registry, never a separate scene builder.
  art.validate(entry.composition);return entry;
 }

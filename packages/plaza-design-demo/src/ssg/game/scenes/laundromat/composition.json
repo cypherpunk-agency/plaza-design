@@ -14,7 +14,7 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -46,7 +46,7 @@
         "h": 0
       },
       "order": 1,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -79,7 +79,7 @@
         "h": 40
       },
       "order": 2,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -109,8 +109,8 @@
         "x": 600,
         "h": 40
       },
-      "order": 3,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "set",
       "bindings": {
         "pose": "actor.outside-1.pose",
         "clip": "window.clip"
@@ -126,8 +126,8 @@
         "x": 900,
         "h": 40
       },
-      "order": 4,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "set",
       "bindings": {
         "pose": "actor.outside-2.pose",
         "clip": "window.clip"
@@ -143,8 +143,8 @@
         "x": 760,
         "h": 40
       },
-      "order": 5,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "set",
       "bindings": {
         "pose": "actor.outside-3.pose",
         "clip": "window.clip"
@@ -162,8 +162,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 6,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "set",
       "attach": {
         "instance": "window",
         "anchor": "origin"
@@ -197,8 +197,8 @@
         "x": 150,
         "h": 148
       },
-      "order": 7,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -228,8 +228,8 @@
         "x": 380,
         "h": 148
       },
-      "order": 8,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -259,8 +259,8 @@
         "x": 610,
         "h": 148
       },
-      "order": 9,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -290,8 +290,8 @@
         "x": 800,
         "h": 148
       },
-      "order": 10,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -321,8 +321,8 @@
         "x": 380,
         "h": 106
       },
-      "order": 11,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -353,8 +353,8 @@
         "x": 586,
         "h": 100
       },
-      "order": 12,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -382,8 +382,8 @@
         "x": 214,
         "h": 110
       },
-      "order": 13,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -413,8 +413,8 @@
         "x": 290,
         "h": 60
       },
-      "order": 14,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -444,8 +444,8 @@
         "x": 350,
         "h": 60
       },
-      "order": 15,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -475,8 +475,8 @@
         "x": 410,
         "h": 60
       },
-      "order": 16,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -506,8 +506,8 @@
         "x": 470,
         "h": 60
       },
-      "order": 17,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -535,8 +535,8 @@
         "x": 30,
         "h": 0
       },
-      "order": 18,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -564,8 +564,8 @@
         "x": 74,
         "h": 96
       },
-      "order": 19,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -593,8 +593,8 @@
         "x": 124,
         "h": 0
       },
-      "order": 20,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -622,8 +622,8 @@
         "x": 178,
         "h": 0
       },
-      "order": 21,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -651,8 +651,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 22,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -682,8 +682,8 @@
         "x": 290,
         "h": 0
       },
-      "order": 23,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -713,8 +713,8 @@
         "x": 350,
         "h": 0
       },
-      "order": 24,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -744,8 +744,8 @@
         "x": 410,
         "h": 0
       },
-      "order": 25,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -775,8 +775,8 @@
         "x": 470,
         "h": 0
       },
-      "order": 26,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -808,8 +808,8 @@
         "x": 4,
         "h": 60
       },
-      "order": 27,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "set",
       "attach": {
         "instance": "washer2",
         "anchor": "origin"
@@ -845,8 +845,8 @@
         "x": -2,
         "h": 60
       },
-      "order": 28,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "set",
       "attach": {
         "instance": "washer4",
         "anchor": "origin"
@@ -878,8 +878,8 @@
         "x": 530,
         "h": 0
       },
-      "order": 29,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -907,8 +907,8 @@
         "x": 586,
         "h": 0
       },
-      "order": 30,
-      "pass": "backdrop",
+      "order": 27,
+      "layer": "set",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -938,8 +938,8 @@
         "x": 646,
         "h": 0
       },
-      "order": 31,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.folder.pose"
       }
@@ -955,8 +955,8 @@
         "x": 620,
         "h": 0
       },
-      "order": 32,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "playfield",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -987,8 +987,8 @@
         "x": 690,
         "h": 0
       },
-      "order": 33,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "playfield",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -1016,8 +1016,8 @@
         "x": 852,
         "h": 0
       },
-      "order": 34,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "playfield",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -1047,8 +1047,8 @@
         "x": 232,
         "h": 0
       },
-      "order": 35,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.blue.pose"
       }
@@ -1063,8 +1063,8 @@
         "x": 16,
         "h": 0
       },
-      "order": 36,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "playfield",
       "attach": {
         "instance": "bench",
         "anchor": "seat"
@@ -1083,8 +1083,8 @@
         "x": 54,
         "h": 0
       },
-      "order": 37,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "playfield",
       "attach": {
         "instance": "bench",
         "anchor": "seat"
@@ -1103,8 +1103,8 @@
         "x": 166,
         "h": 0
       },
-      "order": 38,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "playfield",
       "attach": {
         "instance": "window",
         "anchor": "origin"
@@ -1123,8 +1123,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 39,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "playfield",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -1152,8 +1152,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 40,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "playfield",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -1181,8 +1181,8 @@
         "x": 380,
         "h": 0
       },
-      "order": 41,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "playfield",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -1210,8 +1210,8 @@
         "x": 520,
         "h": 0
       },
-      "order": 42,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "playfield",
       "bindings": {
         "hover": "laundromat.hover",
         "tripped": "laundromat.tripped",
@@ -1233,16 +1233,14 @@
     },
     {
       "id": "spawn",
-      "type": "laundromat.marker",
-      "props": {
-        "role": "spawn"
-      },
+      "type": "scene.player",
+      "props": {},
       "placement": {
         "x": 70,
         "h": 0
       },
-      "order": 43,
-      "pass": "backdrop"
+      "order": 12,
+      "layer": "playfield"
     },
     {
       "id": "exit-market",
@@ -1254,8 +1252,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 44,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "logic",
       "attach": {
         "instance": "door",
         "anchor": "entrance"
@@ -1271,8 +1269,8 @@
         "x": 0,
         "h": 58
       },
-      "order": 45,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "logic",
       "attach": {
         "instance": "clock",
         "anchor": "origin"
@@ -1288,8 +1286,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 46,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "logic",
       "attach": {
         "instance": "washer1",
         "anchor": "origin"
@@ -1305,8 +1303,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 47,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "logic",
       "attach": {
         "instance": "washer2",
         "anchor": "origin"
@@ -1322,8 +1320,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 48,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "logic",
       "attach": {
         "instance": "washer3",
         "anchor": "origin"
@@ -1339,8 +1337,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 49,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "logic",
       "attach": {
         "instance": "washer4",
         "anchor": "origin"
@@ -1356,8 +1354,8 @@
         "x": 0,
         "h": 44
       },
-      "order": 50,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "logic",
       "attach": {
         "instance": "breaker",
         "anchor": "origin"
@@ -1373,8 +1371,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 51,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "logic",
       "attach": {
         "instance": "suds",
         "anchor": "origin"

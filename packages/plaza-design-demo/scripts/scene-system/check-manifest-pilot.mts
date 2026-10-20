@@ -15,9 +15,9 @@ const game=path.resolve('src/ssg/game'),documents=sourceDocuments.map(d=>({id:d.
 const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
 const validator=(d:any,docs:typeof documents)=>{if(d.id==='demo-manifest-scene')validateSourceDocuments(new Map(docs.map(row=>[row.id,row.value])));};
 const model=new ComposerModel(art,context,validator);model.load(documents);
-const composition=structuredClone(model.get('demo-manifest').value) as Composition;composition.instances.push({id:'new-checkpoint',type:'furniture.stool',props:{seed:7},placement:{x:360,h:0},order:2,pass:'backdrop'});
+const composition=structuredClone(model.get('demo-manifest').value) as Composition;composition.instances.push({id:'new-checkpoint',type:'furniture.stool',props:{seed:7},placement:{x:360,h:0},order:2,layer:'set'});
 const scene=structuredClone(model.get('demo-manifest-scene').value) as any;scene.manifest.uses.checkpoint='new-checkpoint';scene.objectives[0].text='Pending authored task';
-composition.instances.push({id:'resident',type:'character.resident',props:{seed:23,kind:'human',act:'phone'},placement:{x:390,h:0},order:3,pass:'people'});
+composition.instances.push({id:'resident',type:'character.resident',props:{seed:23,kind:'human',act:'phone'},placement:{x:390,h:0},order:-1,layer:'playfield'});
 for(const [group,id] of [['people','guide'],['readables','notice'],['rests','seat'],['exits','door']] as const)addManifestContent(scene,group,id,group==='people'?'resident':'new-checkpoint');
 scene.people[0].talk=[['First visit.'],['Second visit.']];scene.exits[0].to='downtown';scene.exits[0].at='shop';
 scene.time=[{minute:480}];

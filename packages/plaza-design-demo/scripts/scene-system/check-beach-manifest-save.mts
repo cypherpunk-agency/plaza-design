@@ -23,12 +23,12 @@ const root=path.resolve('src/ssg/game'),documents=sourceDocuments.map(d=>({id:d.
 const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
 const make=()=>{const m=new ComposerModel(art,context,(d,docs)=>{if(d.id==='beach-scene')validateSourceDocuments(new Map(docs.map(d=>[d.id,d.value])));});m.load(documents);return m;};
 const scene=structuredClone(content.scene),composition=structuredClone(beachComposition),gameplay=structuredClone(content.gameplay);
-composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,pass:'backdrop'});
+composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,layer:'set'});
 scene.manifest!.spawn='review-stool';scene.manifest!.exits!.harbor='review-stool';scene.manifest!.uses.order={instance:'review-stool',promptH:70,responseH:70};
 removeManifestContent(scene,'readables','notice');addManifestContent(scene,'readables','review-note','review-stool');scene.readables!.find(r=>r.id==='review-note')!.pages=['Pending test note.'];
 addManifestContent(scene,'uses','review-action','review-stool');scene.uses.find(u=>u.id==='review-action')!.routes=[{command:'review.grant',pages:['Two chips.']}];gameplay.commands['review.grant']={sources:['interaction'],actions:[{tokens:2}]};
 const caster=composition.instances.find(i=>i.id==='caster-board')!;delete caster.attach;caster.placement={x:118,h:0};
-composition.instances=composition.instances.filter(i=>!['spawn','edge-exit','notice','order'].includes(i.id));
+composition.instances=composition.instances.filter(i=>!['edge-exit','notice','order'].includes(i.id));
 addSceneActor(scene,composition,'review-human',{garb:'robe'},200,0,true);addSceneActor(scene,composition,'review-animal','cat',220,0,false);addSceneActor(scene,composition,'review-robot',{bot:'loader'},240,0,true);duplicateSceneActor(scene,composition,'review-human','review-copy');removeSceneActor(scene,composition,'review-copy');
 bindSceneActor(scene,composition,'lime-talk','review-stool','origin',30,14);
 const inspect=(native:ReturnType<typeof beachScene>)=>{assert.equal(native.spawn,180);assert.equal(native.exits.find(e=>e.id==='harbor')!.x,180);assert.equal(native.uses!.find(u=>u.id==='order')!.x,180);assert.equal(native.readables!.find(r=>r.id==='review-note')!.x,180);assert(!native.readables!.some(r=>r.id==='notice'));assert.equal(native.people!.find(p=>p.id==='lime')!.x,210);assert.equal(native.people!.find(p=>p.id==='lime')!.h,14);assert.equal(actorReactionIdentity(native.people!.find(p=>p.id==='lime')!),'lime');let state:any={flags:{},items:{},tokens:0};const session=new GameplaySession(native.gameplay!,{read:()=>state,write:s=>{state=s;}});assert.deepEqual(native.uses!.find(u=>u.id==='review-action')!.use({gameplay:session} as any),['Two chips.']);assert.equal(state.tokens,2);session.dispose();};

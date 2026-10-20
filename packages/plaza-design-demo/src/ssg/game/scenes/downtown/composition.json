@@ -15,20 +15,18 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "distance"
     },
     {
       "id": "spawn",
-      "type": "downtown.marker",
-      "props": {
-        "role": "spawn"
-      },
+      "type": "scene.player",
+      "props": {},
       "placement": {
         "x": 720,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop"
+      "order": 5,
+      "layer": "playfield"
     },
     {
       "id": "skyline-far",
@@ -45,8 +43,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 2,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "distance",
       "bindings": {
         "width": "scene.width"
       }
@@ -59,8 +57,8 @@
         "x": 1600,
         "h": 0
       },
-      "order": 3,
-      "pass": "backdrop"
+      "order": 2,
+      "layer": "distance"
     },
     {
       "id": "skyline-near",
@@ -77,8 +75,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 4,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "distance",
       "bindings": {
         "width": "scene.width"
       }
@@ -96,8 +94,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 5,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-0-window-0-0",
@@ -111,8 +109,8 @@
             "x": 23,
             "h": 120
           },
-          "order": 6,
-          "pass": "backdrop",
+          "order": 1,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-0-0.enabled"
           }
@@ -129,8 +127,8 @@
             "x": 53,
             "h": 120
           },
-          "order": 7,
-          "pass": "backdrop",
+          "order": 2,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-0-1.enabled"
           }
@@ -147,8 +145,8 @@
             "x": 83,
             "h": 120
           },
-          "order": 8,
-          "pass": "backdrop",
+          "order": 3,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-0-2.enabled"
           }
@@ -165,8 +163,8 @@
             "x": 113,
             "h": 120
           },
-          "order": 9,
-          "pass": "backdrop",
+          "order": 4,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-0-3.enabled"
           }
@@ -183,8 +181,8 @@
             "x": 23,
             "h": 186
           },
-          "order": 10,
-          "pass": "backdrop",
+          "order": 5,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-1-0.enabled"
           }
@@ -201,8 +199,8 @@
             "x": 53,
             "h": 186
           },
-          "order": 11,
-          "pass": "backdrop",
+          "order": 6,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-1-1.enabled"
           }
@@ -219,8 +217,8 @@
             "x": 83,
             "h": 186
           },
-          "order": 12,
-          "pass": "backdrop",
+          "order": 7,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-1-2.enabled"
           }
@@ -237,8 +235,8 @@
             "x": 113,
             "h": 186
           },
-          "order": 13,
-          "pass": "backdrop",
+          "order": 8,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-1-3.enabled"
           }
@@ -255,8 +253,8 @@
             "x": 23,
             "h": 252
           },
-          "order": 14,
-          "pass": "backdrop",
+          "order": 9,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-2-0.enabled"
           }
@@ -273,8 +271,8 @@
             "x": 53,
             "h": 252
           },
-          "order": 15,
-          "pass": "backdrop",
+          "order": 10,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-2-1.enabled"
           }
@@ -291,8 +289,8 @@
             "x": 83,
             "h": 252
           },
-          "order": 16,
-          "pass": "backdrop",
+          "order": 11,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-2-2.enabled"
           }
@@ -309,8 +307,8 @@
             "x": 113,
             "h": 252
           },
-          "order": 17,
-          "pass": "backdrop",
+          "order": 12,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-2-3.enabled"
           }
@@ -327,8 +325,8 @@
             "x": 23,
             "h": 318
           },
-          "order": 18,
-          "pass": "backdrop",
+          "order": 13,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-3-0.enabled"
           }
@@ -345,8 +343,8 @@
             "x": 53,
             "h": 318
           },
-          "order": 19,
-          "pass": "backdrop",
+          "order": 14,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-3-1.enabled"
           }
@@ -363,8 +361,8 @@
             "x": 83,
             "h": 318
           },
-          "order": 20,
-          "pass": "backdrop",
+          "order": 15,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-3-2.enabled"
           }
@@ -381,8 +379,8 @@
             "x": 113,
             "h": 318
           },
-          "order": 21,
-          "pass": "backdrop",
+          "order": 16,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-0-window-3-3.enabled"
           }
@@ -395,8 +393,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 22,
-          "pass": "backdrop",
+          "order": 17,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-0.metrics"
           }
@@ -412,8 +410,8 @@
             "x": 116,
             "h": 0
           },
-          "order": 23,
-          "pass": "backdrop",
+          "order": 18,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-0.visible"
           }
@@ -433,8 +431,8 @@
         "x": 150,
         "h": 0
       },
-      "order": 24,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-1-window-0-0",
@@ -448,8 +446,8 @@
             "x": 23,
             "h": 120
           },
-          "order": 25,
-          "pass": "backdrop",
+          "order": 20,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-1-window-0-0.enabled"
           }
@@ -466,8 +464,8 @@
             "x": 53,
             "h": 120
           },
-          "order": 26,
-          "pass": "backdrop",
+          "order": 21,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-1-window-0-1.enabled"
           }
@@ -484,8 +482,8 @@
             "x": 83,
             "h": 120
           },
-          "order": 27,
-          "pass": "backdrop",
+          "order": 22,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-1-window-0-2.enabled"
           }
@@ -502,8 +500,8 @@
             "x": 23,
             "h": 186
           },
-          "order": 28,
-          "pass": "backdrop",
+          "order": 23,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-1-window-1-0.enabled"
           }
@@ -520,8 +518,8 @@
             "x": 53,
             "h": 186
           },
-          "order": 29,
-          "pass": "backdrop",
+          "order": 24,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-1-window-1-1.enabled"
           }
@@ -538,8 +536,8 @@
             "x": 83,
             "h": 186
           },
-          "order": 30,
-          "pass": "backdrop",
+          "order": 25,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-1-window-1-2.enabled"
           }
@@ -552,8 +550,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 31,
-          "pass": "backdrop",
+          "order": 26,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-1.metrics"
           }
@@ -569,8 +567,8 @@
             "x": 10,
             "h": 0
           },
-          "order": 32,
-          "pass": "backdrop",
+          "order": 27,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-1.visible"
           }
@@ -586,8 +584,8 @@
             "x": 80,
             "h": 0
           },
-          "order": 33,
-          "pass": "backdrop",
+          "order": 28,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-1.visible"
           }
@@ -607,8 +605,8 @@
         "x": 270,
         "h": 0
       },
-      "order": 34,
-      "pass": "backdrop",
+      "order": 29,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-2-window-0-0",
@@ -622,8 +620,8 @@
             "x": 23,
             "h": 120
           },
-          "order": 35,
-          "pass": "backdrop",
+          "order": 30,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-0-0.enabled"
           }
@@ -640,8 +638,8 @@
             "x": 53,
             "h": 120
           },
-          "order": 36,
-          "pass": "backdrop",
+          "order": 31,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-0-1.enabled"
           }
@@ -658,8 +656,8 @@
             "x": 83,
             "h": 120
           },
-          "order": 37,
-          "pass": "backdrop",
+          "order": 32,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-0-2.enabled"
           }
@@ -676,8 +674,8 @@
             "x": 113,
             "h": 120
           },
-          "order": 38,
-          "pass": "backdrop",
+          "order": 33,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-0-3.enabled"
           }
@@ -694,8 +692,8 @@
             "x": 23,
             "h": 186
           },
-          "order": 39,
-          "pass": "backdrop",
+          "order": 34,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-1-0.enabled"
           }
@@ -712,8 +710,8 @@
             "x": 53,
             "h": 186
           },
-          "order": 40,
-          "pass": "backdrop",
+          "order": 35,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-1-1.enabled"
           }
@@ -730,8 +728,8 @@
             "x": 83,
             "h": 186
           },
-          "order": 41,
-          "pass": "backdrop",
+          "order": 36,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-1-2.enabled"
           }
@@ -748,8 +746,8 @@
             "x": 113,
             "h": 186
           },
-          "order": 42,
-          "pass": "backdrop",
+          "order": 37,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-1-3.enabled"
           }
@@ -766,8 +764,8 @@
             "x": 23,
             "h": 252
           },
-          "order": 43,
-          "pass": "backdrop",
+          "order": 38,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-2-0.enabled"
           }
@@ -784,8 +782,8 @@
             "x": 53,
             "h": 252
           },
-          "order": 44,
-          "pass": "backdrop",
+          "order": 39,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-2-1.enabled"
           }
@@ -802,8 +800,8 @@
             "x": 83,
             "h": 252
           },
-          "order": 45,
-          "pass": "backdrop",
+          "order": 40,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-2-2.enabled"
           }
@@ -820,8 +818,8 @@
             "x": 113,
             "h": 252
           },
-          "order": 46,
-          "pass": "backdrop",
+          "order": 41,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-2-3.enabled"
           }
@@ -838,8 +836,8 @@
             "x": 23,
             "h": 318
           },
-          "order": 47,
-          "pass": "backdrop",
+          "order": 42,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-3-0.enabled"
           }
@@ -856,8 +854,8 @@
             "x": 53,
             "h": 318
           },
-          "order": 48,
-          "pass": "backdrop",
+          "order": 43,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-3-1.enabled"
           }
@@ -874,8 +872,8 @@
             "x": 83,
             "h": 318
           },
-          "order": 49,
-          "pass": "backdrop",
+          "order": 44,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-3-2.enabled"
           }
@@ -892,8 +890,8 @@
             "x": 113,
             "h": 318
           },
-          "order": 50,
-          "pass": "backdrop",
+          "order": 45,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-3-3.enabled"
           }
@@ -910,8 +908,8 @@
             "x": 23,
             "h": 384
           },
-          "order": 51,
-          "pass": "backdrop",
+          "order": 46,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-4-0.enabled"
           }
@@ -928,8 +926,8 @@
             "x": 53,
             "h": 384
           },
-          "order": 52,
-          "pass": "backdrop",
+          "order": 47,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-4-1.enabled"
           }
@@ -946,8 +944,8 @@
             "x": 83,
             "h": 384
           },
-          "order": 53,
-          "pass": "backdrop",
+          "order": 48,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-4-2.enabled"
           }
@@ -964,8 +962,8 @@
             "x": 113,
             "h": 384
           },
-          "order": 54,
-          "pass": "backdrop",
+          "order": 49,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-2-window-4-3.enabled"
           }
@@ -978,8 +976,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 55,
-          "pass": "backdrop",
+          "order": 50,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-2.metrics"
           }
@@ -995,8 +993,8 @@
             "x": 6,
             "h": 0
           },
-          "order": 56,
-          "pass": "backdrop",
+          "order": 51,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-2.visible"
           }
@@ -1012,8 +1010,8 @@
             "x": 112,
             "h": 0
           },
-          "order": 57,
-          "pass": "backdrop",
+          "order": 52,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-2.visible"
           }
@@ -1033,8 +1031,8 @@
         "x": 420,
         "h": 0
       },
-      "order": 58,
-      "pass": "backdrop",
+      "order": 53,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-3-window-0-0",
@@ -1048,8 +1046,8 @@
             "x": 13,
             "h": 120
           },
-          "order": 59,
-          "pass": "backdrop",
+          "order": 54,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-0-0.enabled"
           }
@@ -1066,8 +1064,8 @@
             "x": 43,
             "h": 120
           },
-          "order": 60,
-          "pass": "backdrop",
+          "order": 55,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-0-1.enabled"
           }
@@ -1084,8 +1082,8 @@
             "x": 73,
             "h": 120
           },
-          "order": 61,
-          "pass": "backdrop",
+          "order": 56,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-0-2.enabled"
           }
@@ -1102,8 +1100,8 @@
             "x": 103,
             "h": 120
           },
-          "order": 62,
-          "pass": "backdrop",
+          "order": 57,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-0-3.enabled"
           }
@@ -1120,8 +1118,8 @@
             "x": 13,
             "h": 186
           },
-          "order": 63,
-          "pass": "backdrop",
+          "order": 58,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-1-0.enabled"
           }
@@ -1138,8 +1136,8 @@
             "x": 43,
             "h": 186
           },
-          "order": 64,
-          "pass": "backdrop",
+          "order": 59,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-1-1.enabled"
           }
@@ -1156,8 +1154,8 @@
             "x": 73,
             "h": 186
           },
-          "order": 65,
-          "pass": "backdrop",
+          "order": 60,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-1-2.enabled"
           }
@@ -1174,8 +1172,8 @@
             "x": 103,
             "h": 186
           },
-          "order": 66,
-          "pass": "backdrop",
+          "order": 61,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-3-window-1-3.enabled"
           }
@@ -1188,8 +1186,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 67,
-          "pass": "backdrop",
+          "order": 62,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-3.metrics"
           }
@@ -1205,8 +1203,8 @@
             "x": 14,
             "h": 0
           },
-          "order": 68,
-          "pass": "backdrop",
+          "order": 63,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-3.visible"
           }
@@ -1222,8 +1220,8 @@
             "x": 50,
             "h": 0
           },
-          "order": 69,
-          "pass": "backdrop",
+          "order": 64,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-3.visible"
           }
@@ -1243,8 +1241,8 @@
         "x": 550,
         "h": 0
       },
-      "order": 70,
-      "pass": "backdrop",
+      "order": 65,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-4-window-0-0",
@@ -1258,8 +1256,8 @@
             "x": 18,
             "h": 120
           },
-          "order": 71,
-          "pass": "backdrop",
+          "order": 66,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-0-0.enabled"
           }
@@ -1276,8 +1274,8 @@
             "x": 48,
             "h": 120
           },
-          "order": 72,
-          "pass": "backdrop",
+          "order": 67,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-0-1.enabled"
           }
@@ -1294,8 +1292,8 @@
             "x": 78,
             "h": 120
           },
-          "order": 73,
-          "pass": "backdrop",
+          "order": 68,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-0-2.enabled"
           }
@@ -1312,8 +1310,8 @@
             "x": 108,
             "h": 120
           },
-          "order": 74,
-          "pass": "backdrop",
+          "order": 69,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-0-3.enabled"
           }
@@ -1330,8 +1328,8 @@
             "x": 138,
             "h": 120
           },
-          "order": 75,
-          "pass": "backdrop",
+          "order": 70,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-0-4.enabled"
           }
@@ -1348,8 +1346,8 @@
             "x": 18,
             "h": 186
           },
-          "order": 76,
-          "pass": "backdrop",
+          "order": 71,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-1-0.enabled"
           }
@@ -1366,8 +1364,8 @@
             "x": 48,
             "h": 186
           },
-          "order": 77,
-          "pass": "backdrop",
+          "order": 72,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-1-1.enabled"
           }
@@ -1384,8 +1382,8 @@
             "x": 78,
             "h": 186
           },
-          "order": 78,
-          "pass": "backdrop",
+          "order": 73,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-1-2.enabled"
           }
@@ -1402,8 +1400,8 @@
             "x": 108,
             "h": 186
           },
-          "order": 79,
-          "pass": "backdrop",
+          "order": 74,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-1-3.enabled"
           }
@@ -1420,8 +1418,8 @@
             "x": 138,
             "h": 186
           },
-          "order": 80,
-          "pass": "backdrop",
+          "order": 75,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-1-4.enabled"
           }
@@ -1438,8 +1436,8 @@
             "x": 18,
             "h": 252
           },
-          "order": 81,
-          "pass": "backdrop",
+          "order": 76,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-2-0.enabled"
           }
@@ -1456,8 +1454,8 @@
             "x": 48,
             "h": 252
           },
-          "order": 82,
-          "pass": "backdrop",
+          "order": 77,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-2-1.enabled"
           }
@@ -1474,8 +1472,8 @@
             "x": 78,
             "h": 252
           },
-          "order": 83,
-          "pass": "backdrop",
+          "order": 78,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-2-2.enabled"
           }
@@ -1492,8 +1490,8 @@
             "x": 108,
             "h": 252
           },
-          "order": 84,
-          "pass": "backdrop",
+          "order": 79,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-2-3.enabled"
           }
@@ -1510,8 +1508,8 @@
             "x": 138,
             "h": 252
           },
-          "order": 85,
-          "pass": "backdrop",
+          "order": 80,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-4-window-2-4.enabled"
           }
@@ -1524,8 +1522,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 86,
-          "pass": "backdrop",
+          "order": 81,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-4.metrics"
           }
@@ -1541,8 +1539,8 @@
             "x": 8,
             "h": 0
           },
-          "order": 87,
-          "pass": "backdrop",
+          "order": 82,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-4.visible"
           }
@@ -1558,8 +1556,8 @@
             "x": 70,
             "h": 0
           },
-          "order": 88,
-          "pass": "backdrop",
+          "order": 83,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-4.visible"
           }
@@ -1575,8 +1573,8 @@
             "x": 104,
             "h": 0
           },
-          "order": 89,
-          "pass": "backdrop",
+          "order": 84,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-4.visible"
           }
@@ -1596,8 +1594,8 @@
         "x": 720,
         "h": 0
       },
-      "order": 90,
-      "pass": "backdrop",
+      "order": 85,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-5-window-0-0",
@@ -1611,8 +1609,8 @@
             "x": 18,
             "h": 120
           },
-          "order": 91,
-          "pass": "backdrop",
+          "order": 86,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-0-0.enabled"
           }
@@ -1629,8 +1627,8 @@
             "x": 48,
             "h": 120
           },
-          "order": 92,
-          "pass": "backdrop",
+          "order": 87,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-0-1.enabled"
           }
@@ -1647,8 +1645,8 @@
             "x": 78,
             "h": 120
           },
-          "order": 93,
-          "pass": "backdrop",
+          "order": 88,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-0-2.enabled"
           }
@@ -1665,8 +1663,8 @@
             "x": 108,
             "h": 120
           },
-          "order": 94,
-          "pass": "backdrop",
+          "order": 89,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-0-3.enabled"
           }
@@ -1683,8 +1681,8 @@
             "x": 18,
             "h": 186
           },
-          "order": 95,
-          "pass": "backdrop",
+          "order": 90,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-1-0.enabled"
           }
@@ -1701,8 +1699,8 @@
             "x": 48,
             "h": 186
           },
-          "order": 96,
-          "pass": "backdrop",
+          "order": 91,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-1-1.enabled"
           }
@@ -1719,8 +1717,8 @@
             "x": 78,
             "h": 186
           },
-          "order": 97,
-          "pass": "backdrop",
+          "order": 92,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-1-2.enabled"
           }
@@ -1737,8 +1735,8 @@
             "x": 108,
             "h": 186
           },
-          "order": 98,
-          "pass": "backdrop",
+          "order": 93,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-1-3.enabled"
           }
@@ -1755,8 +1753,8 @@
             "x": 18,
             "h": 252
           },
-          "order": 99,
-          "pass": "backdrop",
+          "order": 94,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-2-0.enabled"
           }
@@ -1773,8 +1771,8 @@
             "x": 48,
             "h": 252
           },
-          "order": 100,
-          "pass": "backdrop",
+          "order": 95,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-2-1.enabled"
           }
@@ -1791,8 +1789,8 @@
             "x": 78,
             "h": 252
           },
-          "order": 101,
-          "pass": "backdrop",
+          "order": 96,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-2-2.enabled"
           }
@@ -1809,8 +1807,8 @@
             "x": 108,
             "h": 252
           },
-          "order": 102,
-          "pass": "backdrop",
+          "order": 97,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-2-3.enabled"
           }
@@ -1827,8 +1825,8 @@
             "x": 18,
             "h": 318
           },
-          "order": 103,
-          "pass": "backdrop",
+          "order": 98,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-3-0.enabled"
           }
@@ -1845,8 +1843,8 @@
             "x": 48,
             "h": 318
           },
-          "order": 104,
-          "pass": "backdrop",
+          "order": 99,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-3-1.enabled"
           }
@@ -1863,8 +1861,8 @@
             "x": 78,
             "h": 318
           },
-          "order": 105,
-          "pass": "backdrop",
+          "order": 100,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-3-2.enabled"
           }
@@ -1881,8 +1879,8 @@
             "x": 108,
             "h": 318
           },
-          "order": 106,
-          "pass": "backdrop",
+          "order": 101,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-5-window-3-3.enabled"
           }
@@ -1895,8 +1893,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 107,
-          "pass": "backdrop",
+          "order": 102,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-5.metrics"
           }
@@ -1916,8 +1914,8 @@
         "x": 860,
         "h": 0
       },
-      "order": 108,
-      "pass": "backdrop",
+      "order": 103,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-6-window-0-0",
@@ -1931,8 +1929,8 @@
             "x": 23,
             "h": 120
           },
-          "order": 109,
-          "pass": "backdrop",
+          "order": 104,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-0-0.enabled"
           }
@@ -1949,8 +1947,8 @@
             "x": 53,
             "h": 120
           },
-          "order": 110,
-          "pass": "backdrop",
+          "order": 105,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-0-1.enabled"
           }
@@ -1967,8 +1965,8 @@
             "x": 23,
             "h": 186
           },
-          "order": 111,
-          "pass": "backdrop",
+          "order": 106,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-1-0.enabled"
           }
@@ -1985,8 +1983,8 @@
             "x": 53,
             "h": 186
           },
-          "order": 112,
-          "pass": "backdrop",
+          "order": 107,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-1-1.enabled"
           }
@@ -2003,8 +2001,8 @@
             "x": 23,
             "h": 252
           },
-          "order": 113,
-          "pass": "backdrop",
+          "order": 108,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-2-0.enabled"
           }
@@ -2021,8 +2019,8 @@
             "x": 53,
             "h": 252
           },
-          "order": 114,
-          "pass": "backdrop",
+          "order": 109,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-2-1.enabled"
           }
@@ -2039,8 +2037,8 @@
             "x": 23,
             "h": 318
           },
-          "order": 115,
-          "pass": "backdrop",
+          "order": 110,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-3-0.enabled"
           }
@@ -2057,8 +2055,8 @@
             "x": 53,
             "h": 318
           },
-          "order": 116,
-          "pass": "backdrop",
+          "order": 111,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-6-window-3-1.enabled"
           }
@@ -2071,8 +2069,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 117,
-          "pass": "backdrop",
+          "order": 112,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-6.metrics"
           }
@@ -2088,8 +2086,8 @@
             "x": 24,
             "h": 0
           },
-          "order": 118,
-          "pass": "backdrop",
+          "order": 113,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-6.visible"
           }
@@ -2109,8 +2107,8 @@
         "x": 1040,
         "h": 0
       },
-      "order": 119,
-      "pass": "backdrop",
+      "order": 114,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-7-bay-0",
@@ -2123,8 +2121,8 @@
             "x": 16,
             "h": 0
           },
-          "order": 120,
-          "pass": "backdrop",
+          "order": 115,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-7.visible"
           }
@@ -2140,8 +2138,8 @@
             "x": 124,
             "h": 0
           },
-          "order": 121,
-          "pass": "backdrop",
+          "order": 116,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-7.visible"
           }
@@ -2161,8 +2159,8 @@
         "x": 1200,
         "h": 0
       },
-      "order": 122,
-      "pass": "backdrop",
+      "order": 117,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-8-window-0-0",
@@ -2176,8 +2174,8 @@
             "x": 23,
             "h": 120
           },
-          "order": 123,
-          "pass": "backdrop",
+          "order": 118,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-8-window-0-0.enabled"
           }
@@ -2194,8 +2192,8 @@
             "x": 23,
             "h": 186
           },
-          "order": 124,
-          "pass": "backdrop",
+          "order": 119,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-8-window-1-0.enabled"
           }
@@ -2212,8 +2210,8 @@
             "x": 23,
             "h": 252
           },
-          "order": 125,
-          "pass": "backdrop",
+          "order": 120,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-8-window-2-0.enabled"
           }
@@ -2230,8 +2228,8 @@
             "x": 23,
             "h": 318
           },
-          "order": 126,
-          "pass": "backdrop",
+          "order": 121,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-8-window-3-0.enabled"
           }
@@ -2248,8 +2246,8 @@
             "x": 23,
             "h": 384
           },
-          "order": 127,
-          "pass": "backdrop",
+          "order": 122,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-8-window-4-0.enabled"
           }
@@ -2262,8 +2260,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 128,
-          "pass": "backdrop",
+          "order": 123,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-8.metrics"
           }
@@ -2279,8 +2277,8 @@
             "x": 18,
             "h": 0
           },
-          "order": 129,
-          "pass": "backdrop",
+          "order": 124,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-8.visible"
           }
@@ -2300,8 +2298,8 @@
         "x": 1260,
         "h": 0
       },
-      "order": 130,
-      "pass": "backdrop",
+      "order": 125,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-9-window-0-0",
@@ -2315,8 +2313,8 @@
             "x": 13,
             "h": 120
           },
-          "order": 131,
-          "pass": "backdrop",
+          "order": 126,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-0-0.enabled"
           }
@@ -2333,8 +2331,8 @@
             "x": 43,
             "h": 120
           },
-          "order": 132,
-          "pass": "backdrop",
+          "order": 127,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-0-1.enabled"
           }
@@ -2351,8 +2349,8 @@
             "x": 73,
             "h": 120
           },
-          "order": 133,
-          "pass": "backdrop",
+          "order": 128,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-0-2.enabled"
           }
@@ -2369,8 +2367,8 @@
             "x": 103,
             "h": 120
           },
-          "order": 134,
-          "pass": "backdrop",
+          "order": 129,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-0-3.enabled"
           }
@@ -2387,8 +2385,8 @@
             "x": 133,
             "h": 120
           },
-          "order": 135,
-          "pass": "backdrop",
+          "order": 130,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-0-4.enabled"
           }
@@ -2405,8 +2403,8 @@
             "x": 13,
             "h": 186
           },
-          "order": 136,
-          "pass": "backdrop",
+          "order": 131,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-1-0.enabled"
           }
@@ -2423,8 +2421,8 @@
             "x": 43,
             "h": 186
           },
-          "order": 137,
-          "pass": "backdrop",
+          "order": 132,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-1-1.enabled"
           }
@@ -2441,8 +2439,8 @@
             "x": 73,
             "h": 186
           },
-          "order": 138,
-          "pass": "backdrop",
+          "order": 133,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-1-2.enabled"
           }
@@ -2459,8 +2457,8 @@
             "x": 103,
             "h": 186
           },
-          "order": 139,
-          "pass": "backdrop",
+          "order": 134,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-1-3.enabled"
           }
@@ -2477,8 +2475,8 @@
             "x": 133,
             "h": 186
           },
-          "order": 140,
-          "pass": "backdrop",
+          "order": 135,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-1-4.enabled"
           }
@@ -2495,8 +2493,8 @@
             "x": 13,
             "h": 252
           },
-          "order": 141,
-          "pass": "backdrop",
+          "order": 136,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-2-0.enabled"
           }
@@ -2513,8 +2511,8 @@
             "x": 43,
             "h": 252
           },
-          "order": 142,
-          "pass": "backdrop",
+          "order": 137,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-2-1.enabled"
           }
@@ -2531,8 +2529,8 @@
             "x": 73,
             "h": 252
           },
-          "order": 143,
-          "pass": "backdrop",
+          "order": 138,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-2-2.enabled"
           }
@@ -2549,8 +2547,8 @@
             "x": 103,
             "h": 252
           },
-          "order": 144,
-          "pass": "backdrop",
+          "order": 139,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-2-3.enabled"
           }
@@ -2567,8 +2565,8 @@
             "x": 133,
             "h": 252
           },
-          "order": 145,
-          "pass": "backdrop",
+          "order": 140,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-9-window-2-4.enabled"
           }
@@ -2581,8 +2579,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 146,
-          "pass": "backdrop",
+          "order": 141,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-9.metrics"
           }
@@ -2598,8 +2596,8 @@
             "x": 10,
             "h": 0
           },
-          "order": 147,
-          "pass": "backdrop",
+          "order": 142,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-9.visible"
           }
@@ -2615,8 +2613,8 @@
             "x": 68,
             "h": 0
           },
-          "order": 148,
-          "pass": "backdrop",
+          "order": 143,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-9.visible"
           }
@@ -2632,8 +2630,8 @@
             "x": 104,
             "h": 0
           },
-          "order": 149,
-          "pass": "backdrop",
+          "order": 144,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-9.visible"
           }
@@ -2653,8 +2651,8 @@
         "x": 1420,
         "h": 0
       },
-      "order": 150,
-      "pass": "backdrop",
+      "order": 145,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-10-window-0-0",
@@ -2668,8 +2666,8 @@
             "x": 13,
             "h": 120
           },
-          "order": 151,
-          "pass": "backdrop",
+          "order": 146,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-10-window-0-0.enabled"
           }
@@ -2686,8 +2684,8 @@
             "x": 43,
             "h": 120
           },
-          "order": 152,
-          "pass": "backdrop",
+          "order": 147,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-10-window-0-1.enabled"
           }
@@ -2704,8 +2702,8 @@
             "x": 73,
             "h": 120
           },
-          "order": 153,
-          "pass": "backdrop",
+          "order": 148,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-10-window-0-2.enabled"
           }
@@ -2722,8 +2720,8 @@
             "x": 13,
             "h": 186
           },
-          "order": 154,
-          "pass": "backdrop",
+          "order": 149,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-10-window-1-0.enabled"
           }
@@ -2740,8 +2738,8 @@
             "x": 43,
             "h": 186
           },
-          "order": 155,
-          "pass": "backdrop",
+          "order": 150,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-10-window-1-1.enabled"
           }
@@ -2758,8 +2756,8 @@
             "x": 73,
             "h": 186
           },
-          "order": 156,
-          "pass": "backdrop",
+          "order": 151,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-10-window-1-2.enabled"
           }
@@ -2772,8 +2770,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 157,
-          "pass": "backdrop",
+          "order": 152,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-10.metrics"
           }
@@ -2789,8 +2787,8 @@
             "x": 10,
             "h": 0
           },
-          "order": 158,
-          "pass": "backdrop",
+          "order": 153,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-10.visible"
           }
@@ -2806,8 +2804,8 @@
             "x": 64,
             "h": 0
           },
-          "order": 159,
-          "pass": "backdrop",
+          "order": 154,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-10.visible"
           }
@@ -2827,8 +2825,8 @@
         "x": 1680,
         "h": 0
       },
-      "order": 160,
-      "pass": "backdrop",
+      "order": 155,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-11-window-0-0",
@@ -2842,8 +2840,8 @@
             "x": 13,
             "h": 120
           },
-          "order": 161,
-          "pass": "backdrop",
+          "order": 156,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-0-0.enabled"
           }
@@ -2860,8 +2858,8 @@
             "x": 43,
             "h": 120
           },
-          "order": 162,
-          "pass": "backdrop",
+          "order": 157,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-0-1.enabled"
           }
@@ -2878,8 +2876,8 @@
             "x": 73,
             "h": 120
           },
-          "order": 163,
-          "pass": "backdrop",
+          "order": 158,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-0-2.enabled"
           }
@@ -2896,8 +2894,8 @@
             "x": 103,
             "h": 120
           },
-          "order": 164,
-          "pass": "backdrop",
+          "order": 159,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-0-3.enabled"
           }
@@ -2914,8 +2912,8 @@
             "x": 133,
             "h": 120
           },
-          "order": 165,
-          "pass": "backdrop",
+          "order": 160,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-0-4.enabled"
           }
@@ -2932,8 +2930,8 @@
             "x": 13,
             "h": 186
           },
-          "order": 166,
-          "pass": "backdrop",
+          "order": 161,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-1-0.enabled"
           }
@@ -2950,8 +2948,8 @@
             "x": 43,
             "h": 186
           },
-          "order": 167,
-          "pass": "backdrop",
+          "order": 162,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-1-1.enabled"
           }
@@ -2968,8 +2966,8 @@
             "x": 73,
             "h": 186
           },
-          "order": 168,
-          "pass": "backdrop",
+          "order": 163,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-1-2.enabled"
           }
@@ -2986,8 +2984,8 @@
             "x": 103,
             "h": 186
           },
-          "order": 169,
-          "pass": "backdrop",
+          "order": 164,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-1-3.enabled"
           }
@@ -3004,8 +3002,8 @@
             "x": 133,
             "h": 186
           },
-          "order": 170,
-          "pass": "backdrop",
+          "order": 165,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-1-4.enabled"
           }
@@ -3022,8 +3020,8 @@
             "x": 13,
             "h": 252
           },
-          "order": 171,
-          "pass": "backdrop",
+          "order": 166,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-2-0.enabled"
           }
@@ -3040,8 +3038,8 @@
             "x": 43,
             "h": 252
           },
-          "order": 172,
-          "pass": "backdrop",
+          "order": 167,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-2-1.enabled"
           }
@@ -3058,8 +3056,8 @@
             "x": 73,
             "h": 252
           },
-          "order": 173,
-          "pass": "backdrop",
+          "order": 168,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-2-2.enabled"
           }
@@ -3076,8 +3074,8 @@
             "x": 103,
             "h": 252
           },
-          "order": 174,
-          "pass": "backdrop",
+          "order": 169,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-2-3.enabled"
           }
@@ -3094,8 +3092,8 @@
             "x": 133,
             "h": 252
           },
-          "order": 175,
-          "pass": "backdrop",
+          "order": 170,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-2-4.enabled"
           }
@@ -3112,8 +3110,8 @@
             "x": 13,
             "h": 318
           },
-          "order": 176,
-          "pass": "backdrop",
+          "order": 171,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-3-0.enabled"
           }
@@ -3130,8 +3128,8 @@
             "x": 43,
             "h": 318
           },
-          "order": 177,
-          "pass": "backdrop",
+          "order": 172,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-3-1.enabled"
           }
@@ -3148,8 +3146,8 @@
             "x": 73,
             "h": 318
           },
-          "order": 178,
-          "pass": "backdrop",
+          "order": 173,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-3-2.enabled"
           }
@@ -3166,8 +3164,8 @@
             "x": 103,
             "h": 318
           },
-          "order": 179,
-          "pass": "backdrop",
+          "order": 174,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-3-3.enabled"
           }
@@ -3184,8 +3182,8 @@
             "x": 133,
             "h": 318
           },
-          "order": 180,
-          "pass": "backdrop",
+          "order": 175,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-11-window-3-4.enabled"
           }
@@ -3198,8 +3196,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 181,
-          "pass": "backdrop",
+          "order": 176,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-11.metrics"
           }
@@ -3215,8 +3213,8 @@
             "x": 8,
             "h": 0
           },
-          "order": 182,
-          "pass": "backdrop",
+          "order": 177,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-11.visible"
           }
@@ -3236,8 +3234,8 @@
         "x": 1840,
         "h": 0
       },
-      "order": 183,
-      "pass": "backdrop",
+      "order": 178,
+      "layer": "backdrop",
       "children": [
         {
           "id": "front-12-window-0-0",
@@ -3251,8 +3249,8 @@
             "x": 13,
             "h": 120
           },
-          "order": 184,
-          "pass": "backdrop",
+          "order": 179,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-0-0.enabled"
           }
@@ -3269,8 +3267,8 @@
             "x": 43,
             "h": 120
           },
-          "order": 185,
-          "pass": "backdrop",
+          "order": 180,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-0-1.enabled"
           }
@@ -3287,8 +3285,8 @@
             "x": 73,
             "h": 120
           },
-          "order": 186,
-          "pass": "backdrop",
+          "order": 181,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-0-2.enabled"
           }
@@ -3305,8 +3303,8 @@
             "x": 103,
             "h": 120
           },
-          "order": 187,
-          "pass": "backdrop",
+          "order": 182,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-0-3.enabled"
           }
@@ -3323,8 +3321,8 @@
             "x": 133,
             "h": 120
           },
-          "order": 188,
-          "pass": "backdrop",
+          "order": 183,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-0-4.enabled"
           }
@@ -3341,8 +3339,8 @@
             "x": 13,
             "h": 186
           },
-          "order": 189,
-          "pass": "backdrop",
+          "order": 184,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-1-0.enabled"
           }
@@ -3359,8 +3357,8 @@
             "x": 43,
             "h": 186
           },
-          "order": 190,
-          "pass": "backdrop",
+          "order": 185,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-1-1.enabled"
           }
@@ -3377,8 +3375,8 @@
             "x": 73,
             "h": 186
           },
-          "order": 191,
-          "pass": "backdrop",
+          "order": 186,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-1-2.enabled"
           }
@@ -3395,8 +3393,8 @@
             "x": 103,
             "h": 186
           },
-          "order": 192,
-          "pass": "backdrop",
+          "order": 187,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-1-3.enabled"
           }
@@ -3413,8 +3411,8 @@
             "x": 133,
             "h": 186
           },
-          "order": 193,
-          "pass": "backdrop",
+          "order": 188,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "window.front-12-window-1-4.enabled"
           }
@@ -3427,8 +3425,8 @@
             "x": 0,
             "h": 0
           },
-          "order": 194,
-          "pass": "backdrop",
+          "order": 189,
+          "layer": "backdrop",
           "bindings": {
             "metrics": "front.front-12.metrics"
           }
@@ -3444,8 +3442,8 @@
             "x": 104,
             "h": 0
           },
-          "order": 195,
-          "pass": "backdrop",
+          "order": 190,
+          "layer": "backdrop",
           "bindings": {
             "enabled": "front.front-12.visible"
           }
@@ -3460,8 +3458,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 196,
-      "pass": "backdrop",
+      "order": 191,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-9-bay-1",
         "anchor": "topCenter"
@@ -3489,8 +3487,8 @@
         "x": 90,
         "h": 100
       },
-      "order": 197,
-      "pass": "backdrop",
+      "order": 192,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-0",
         "anchor": "origin"
@@ -3518,8 +3516,8 @@
         "x": 90,
         "h": 110
       },
-      "order": 198,
-      "pass": "backdrop",
+      "order": 193,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-11",
         "anchor": "origin"
@@ -3547,8 +3545,8 @@
         "x": 45,
         "h": 104
       },
-      "order": 199,
-      "pass": "backdrop",
+      "order": 194,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-6",
         "anchor": "origin"
@@ -3572,8 +3570,8 @@
         "x": 60,
         "h": 90
       },
-      "order": 200,
-      "pass": "backdrop",
+      "order": 195,
+      "layer": "backdrop",
       "bindings": {
         "text": "weather.text"
       },
@@ -3598,8 +3596,8 @@
         "x": 90,
         "h": 0
       },
-      "order": 201,
-      "pass": "backdrop",
+      "order": 196,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-4",
         "anchor": "origin"
@@ -3621,8 +3619,8 @@
         "x": 20,
         "h": 0
       },
-      "order": 202,
-      "pass": "backdrop",
+      "order": 197,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-5",
         "anchor": "origin"
@@ -3636,8 +3634,8 @@
         "x": 1540,
         "h": 0
       },
-      "order": 203,
-      "pass": "backdrop"
+      "order": 198,
+      "layer": "backdrop"
     },
     {
       "id": "yard-alley",
@@ -3649,8 +3647,8 @@
         "x": 950,
         "h": 0
       },
-      "order": 204,
-      "pass": "backdrop",
+      "order": 199,
+      "layer": "backdrop",
       "bindings": {
         "doorOffset": "alley.doorOffset"
       }
@@ -3666,8 +3664,8 @@
         "x": 1000,
         "h": 0
       },
-      "order": 205,
-      "pass": "backdrop"
+      "order": 200,
+      "layer": "backdrop"
     },
     {
       "id": "exit-shop",
@@ -3680,8 +3678,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 206,
-      "pass": "backdrop",
+      "order": 201,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-1-bay-1",
         "anchor": "topCenter"
@@ -3697,8 +3695,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 207,
-      "pass": "backdrop",
+      "order": 202,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-8-bay-0",
         "anchor": "topCenter"
@@ -3714,8 +3712,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 208,
-      "pass": "backdrop",
+      "order": 203,
+      "layer": "backdrop",
       "attach": {
         "instance": "front-10-bay-1",
         "anchor": "topCenter"
@@ -3729,8 +3727,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 209,
-      "pass": "foreground"
+      "order": 204,
+      "layer": "backdrop"
     },
     {
       "id": "stall-pool",
@@ -3740,8 +3738,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 210,
-      "pass": "foreground",
+      "order": 205,
+      "layer": "backdrop",
       "bindings": {
         "metrics": "stall.metrics",
         "rain": "weather.rain",
@@ -3758,8 +3756,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 211,
-      "pass": "foreground",
+      "order": 206,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.device-sign.x",
         "color": "smear.device-sign.color",
@@ -3777,8 +3775,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 212,
-      "pass": "foreground",
+      "order": 207,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.noodle-stall.x",
         "color": "smear.noodle-stall.color",
@@ -3796,8 +3794,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 213,
-      "pass": "foreground",
+      "order": 208,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.billboard-frame.x",
         "color": "smear.billboard-frame.color",
@@ -3815,8 +3813,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 214,
-      "pass": "foreground",
+      "order": 209,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.market-neon.x",
         "color": "smear.market-neon.color",
@@ -3834,8 +3832,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 215,
-      "pass": "foreground",
+      "order": 210,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.spaceport-neon.x",
         "color": "smear.spaceport-neon.color",
@@ -3853,8 +3851,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 216,
-      "pass": "foreground",
+      "order": 211,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.open-neon.x",
         "color": "smear.open-neon.color",
@@ -3872,8 +3870,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 217,
-      "pass": "foreground",
+      "order": 212,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.exit-metro.x",
         "color": "smear.exit-metro.color",
@@ -3891,8 +3889,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 218,
-      "pass": "foreground",
+      "order": 213,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.exit-taxi.x",
         "color": "smear.exit-taxi.color",
@@ -3910,8 +3908,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 219,
-      "pass": "foreground",
+      "order": 214,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.exit-shop.x",
         "color": "smear.exit-shop.color",
@@ -3929,8 +3927,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 220,
-      "pass": "foreground",
+      "order": 215,
+      "layer": "backdrop",
       "bindings": {
         "x": "smear.weather-ticker.x",
         "color": "smear.weather-ticker.color",
@@ -3948,8 +3946,8 @@
         "x": 70,
         "h": 0
       },
-      "order": 221,
-      "pass": "people",
+      "order": 0,
+      "layer": "playfield",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "origin"
@@ -3966,8 +3964,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 222,
-      "pass": "people",
+      "order": 1,
+      "layer": "playfield",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "origin"
@@ -3986,8 +3984,8 @@
         "x": 440,
         "h": 0
       },
-      "order": 223,
-      "pass": "people",
+      "order": 2,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.hood.pose"
       }
@@ -4002,8 +4000,8 @@
         "x": 600,
         "h": 0
       },
-      "order": 224,
-      "pass": "people",
+      "order": 3,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.umbrella.pose"
       }
@@ -4018,8 +4016,8 @@
         "x": 1112,
         "h": 0
       },
-      "order": 225,
-      "pass": "people",
+      "order": 4,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.hat.pose"
       }
@@ -4032,8 +4030,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 226,
-      "pass": "devices",
+      "order": 0,
+      "layer": "set",
       "attach": {
         "instance": "front-4-bay-1",
         "anchor": "topCenter"
@@ -4057,8 +4055,8 @@
         "x": 102,
         "h": 0
       },
-      "order": 227,
-      "pass": "devices",
+      "order": 1,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.sign.snapshot"
       },
@@ -4079,8 +4077,8 @@
         "x": 60,
         "h": 0
       },
-      "order": 228,
-      "pass": "devices",
+      "order": 2,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.box.snapshot"
       },
@@ -4101,8 +4099,8 @@
         "x": -20,
         "h": 0
       },
-      "order": 229,
-      "pass": "devices",
+      "order": 3,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.till.snapshot"
       },
@@ -4123,8 +4121,8 @@
         "x": 110,
         "h": 0
       },
-      "order": 230,
-      "pass": "devices",
+      "order": 4,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.relay.snapshot"
       },
@@ -4145,8 +4143,8 @@
         "x": 70,
         "h": 0
       },
-      "order": 231,
-      "pass": "devices",
+      "order": 5,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.gate.snapshot"
       },
@@ -4167,8 +4165,8 @@
         "x": 50,
         "h": 0
       },
-      "order": 232,
-      "pass": "devices",
+      "order": 6,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.fence.snapshot"
       },
@@ -4189,8 +4187,8 @@
         "x": 110,
         "h": 0
       },
-      "order": 233,
-      "pass": "devices",
+      "order": 7,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.scan.snapshot"
       },
@@ -4211,8 +4209,8 @@
         "x": 100,
         "h": 0
       },
-      "order": 234,
-      "pass": "devices",
+      "order": 8,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.cam3.snapshot"
       },
@@ -4233,8 +4231,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 235,
-      "pass": "devices",
+      "order": 9,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.billboard.snapshot"
       },
@@ -4255,8 +4253,8 @@
         "x": 22,
         "h": 0
       },
-      "order": 236,
-      "pass": "devices",
+      "order": 10,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.dlv9.snapshot",
         "position": "device.dlv9.position"
@@ -4278,8 +4276,8 @@
         "x": -48,
         "h": 0
       },
-      "order": 237,
-      "pass": "devices",
+      "order": 11,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.map.snapshot"
       },
@@ -4296,8 +4294,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 238,
-      "pass": "devices",
+      "order": 12,
+      "layer": "set",
       "bindings": {
         "snapshot": "device.hover.snapshot"
       }
@@ -4317,8 +4315,8 @@
         "x": 20,
         "h": 0
       },
-      "order": 239,
-      "pass": "devices",
+      "order": 13,
+      "layer": "set",
       "attach": {
         "instance": "front-10",
         "anchor": "origin"
@@ -4339,8 +4337,8 @@
         "x": 90,
         "h": 0
       },
-      "order": 240,
-      "pass": "devices",
+      "order": 14,
+      "layer": "set",
       "attach": {
         "instance": "front-12",
         "anchor": "origin"
@@ -4356,8 +4354,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 241,
-      "pass": "devices",
+      "order": 15,
+      "layer": "set",
       "attach": {
         "instance": "device-gate",
         "anchor": "origin"
@@ -4373,8 +4371,8 @@
         "x": 22,
         "h": 0
       },
-      "order": 242,
-      "pass": "devices",
+      "order": 16,
+      "layer": "set",
       "attach": {
         "instance": "yard-alley",
         "anchor": "origin"
@@ -4390,8 +4388,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 243,
-      "pass": "devices",
+      "order": 17,
+      "layer": "set",
       "attach": {
         "instance": "map",
         "anchor": "origin"
@@ -4407,8 +4405,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 244,
-      "pass": "devices",
+      "order": 18,
+      "layer": "set",
       "attach": {
         "instance": "penthouse",
         "anchor": "origin"
@@ -4424,8 +4422,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 245,
-      "pass": "devices",
+      "order": 19,
+      "layer": "set",
       "attach": {
         "instance": "dumpster",
         "anchor": "top"
@@ -4441,8 +4439,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 246,
-      "pass": "devices",
+      "order": 20,
+      "layer": "set",
       "attach": {
         "instance": "front-7",
         "anchor": "top"
@@ -4459,8 +4457,8 @@
         "x": 26,
         "h": 96
       },
-      "order": 247,
-      "pass": "devices",
+      "order": 21,
+      "layer": "set",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "origin"
@@ -4477,8 +4475,8 @@
         "x": -26,
         "h": 96
       },
-      "order": 248,
-      "pass": "devices",
+      "order": 22,
+      "layer": "set",
       "attach": {
         "instance": "noodle-stall",
         "anchor": "right"
@@ -4496,8 +4494,8 @@
         "x": 45,
         "h": 70
       },
-      "order": 249,
-      "pass": "devices",
+      "order": 23,
+      "layer": "set",
       "attach": {
         "instance": "yard-alley",
         "anchor": "origin"
@@ -4515,8 +4513,8 @@
         "x": 0,
         "h": 130
       },
-      "order": 250,
-      "pass": "devices",
+      "order": 24,
+      "layer": "set",
       "attach": {
         "instance": "fixer",
         "anchor": "origin"
@@ -4534,8 +4532,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 251,
-      "pass": "devices",
+      "order": 25,
+      "layer": "set",
       "attach": {
         "instance": "market-neon",
         "anchor": "origin"
@@ -4552,8 +4550,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 252,
-      "pass": "devices",
+      "order": 26,
+      "layer": "set",
       "attach": {
         "instance": "spaceport-neon",
         "anchor": "origin"
@@ -4570,8 +4568,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 253,
-      "pass": "devices",
+      "order": 27,
+      "layer": "set",
       "attach": {
         "instance": "open-neon",
         "anchor": "origin"
@@ -4589,8 +4587,8 @@
         "x": 0,
         "h": 132
       },
-      "order": 254,
-      "pass": "devices",
+      "order": 28,
+      "layer": "set",
       "attach": {
         "instance": "billboard-frame",
         "anchor": "origin"
@@ -4608,8 +4606,8 @@
         "x": 0,
         "h": 220
       },
-      "order": 255,
-      "pass": "devices",
+      "order": 29,
+      "layer": "set",
       "attach": {
         "instance": "penthouse",
         "anchor": "origin"
@@ -4627,8 +4625,8 @@
         "x": 26,
         "h": 140
       },
-      "order": 256,
-      "pass": "devices",
+      "order": 30,
+      "layer": "set",
       "attach": {
         "instance": "yard-alley",
         "anchor": "origin"
@@ -4644,8 +4642,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 257,
-      "pass": "devices",
+      "order": 31,
+      "layer": "set",
       "attach": {
         "instance": "dumpster",
         "anchor": "topCenter"

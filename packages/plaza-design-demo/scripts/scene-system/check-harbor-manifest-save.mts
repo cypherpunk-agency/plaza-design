@@ -21,12 +21,12 @@ const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.e
 const make=()=>{const m=new ComposerModel(art,context,(d,docs)=>{if(d.id==='harbor-scene')validateSourceDocuments(new Map(docs.map(d=>[d.id,d.value])));});m.load(documents);return m;};
 const model=make(),composition=model.get('harbor').value as Composition,scene=structuredClone(content.scene),gameplay=structuredClone(content.gameplay);
 const raised=structuredClone(harborComposition);raised.instances.find(n=>n.id==='notice')!.placement.h+=17;raised.instances.find(n=>n.id==='fish-use')!.placement.h+=9;const raisedNative=harborScene(raised);assert.equal(raisedNative.readables!.find(r=>r.id==='notice')!.h,17);assert.equal(raisedNative.readables!.find(r=>r.id==='notice')!.promptH,95);assert.equal(raisedNative.uses!.find(r=>r.id==='fish')!.h,9);
-composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,pass:'backdrop'});
+composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,layer:'set'});
 scene.manifest!.spawn='review-stool';scene.manifest!.exits!.beach={instance:'review-stool'};scene.manifest!.uses.fish={instance:'review-stool',promptH:92,responseH:0,responseAboveFloor:true};
 removeManifestContent(scene,'readables','manifest');addManifestContent(scene,'readables','review-note','review-stool');scene.readables!.find(r=>r.id==='review-note')!.pages=['Pending dock notice.'];
 addManifestContent(scene,'uses','review-action','review-stool');scene.uses.find(u=>u.id==='review-action')!.routes=[{command:'review.grant',pages:['Two fish.']}];
 gameplay.commands['review.grant']={sources:['interaction'],actions:[{item:'fish',add:2}]};
-composition.instances=composition.instances.filter(i=>!['spawn','beach-exit','fish-use'].includes(i.id));
+composition.instances=composition.instances.filter(i=>!['beach-exit','fish-use'].includes(i.id));
 addSceneActor(scene,composition,'new-resident',{body:'old',garb:'robe'},210,0);duplicateSceneActor(scene,composition,'new-resident','resident-copy');bindSceneActor(scene,composition,'new-resident','fish','origin',42,4);
 setActorDialogue(scene,'fishSeller',true);scene.actors!.find(a=>a.id==='fishSeller')!.band='world';bindSceneActor(scene,composition,'fishSeller','','origin',2300,6);
 removeSceneActor(scene,composition,'bird5');

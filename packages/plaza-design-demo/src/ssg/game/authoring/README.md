@@ -144,12 +144,12 @@ from type name and label, with the registered category as a fallback. They are n
 compositions. The artwork library and the Add artwork picker filter by the same kinds; the old
 per-artwork category ("family") is still searchable as a tag.
 
-**Order** shows how the scene is drawn. For a layered scene (Library so far) it is the layer stack,
+**Order** shows how the scene is drawn. For a layered scene (every scene now) it is the layer stack,
 front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the engine's own layers
 (sky/city/street, shade, light and grade, prompts) as greyed dividers and the Logic layer (markers)
 listed separately. The **Player** in the Playfield is drawn in the preview: its place in the stack
 is where the player and engine-drawn walkers are drawn (rows above it draw over them), and its
-position is where the player arrives (Library's manifest spawn points at it). Drag rows within or
+position is where the player arrives (each scene's manifest spawn points at it). Drag rows within or
 between layers, or use **Layer**, **Bring forward** and **Send backward** in the inspector. The stack
 is in `layer-stack.ts`.
 
@@ -158,8 +158,8 @@ shows only that row or layer, and **Show all** clears it. Hiding is view state: 
 applied in Play.
 
 Drag the inner edge of the outline or the inspector to resize it; double-click the edge to reset. The
-widths are remembered per browser. Scenes not yet migrated still show document order and the older Drawing
-pass/Draw order fields.
+widths are remembered per browser. Documents still in the older pass format show document order and the
+Drawing pass/Draw order fields.
 
 Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and an
 Outline/Inspector switch; the Add picker covers the screen.

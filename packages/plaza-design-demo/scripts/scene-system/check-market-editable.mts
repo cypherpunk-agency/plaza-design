@@ -39,13 +39,13 @@ const gameplay=JSON.parse(JSON.stringify(MARKET_GAMEPLAY).replaceAll('talk.marke
 scene.exits.find(e=>e.requires==='end')!.requires='market:umbrella';
 gameplay.state['talk.market.cook.cursor']=structuredClone(MARKET_GAMEPLAY.state!['talk.market.cook.cursor']);
 
-composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,pass:'backdrop'});
+composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,layer:'set'});
 scene.manifest!.spawn='review-stool';scene.manifest!.exits!.mall={instance:'review-stool',promptH:82};scene.manifest!.uses.fortune={instance:'review-stool',promptH:98};
 removeManifestContent(scene,'readables','rules');addManifestContent(scene,'readables','review-note','review-stool');scene.readables!.find(r=>r.id==='review-note')!.pages=['Pending test note.'];
 scene.manifest!.rests!.stool={instance:'review-stool',promptH:50};scene.manifest!.uses.haggle={instance:'review-stool',promptH:70};
 addManifestContent(scene,'uses','review-action','review-stool');scene.uses.find(u=>u.id==='review-action')!.routes=[{command:'review.grant',pages:['Two tokens.']}];
 gameplay.commands['review.grant']={sources:['interaction'],actions:[{tokens:2}]};
-composition.instances=composition.instances.filter(i=>!['spawn','exit-mall','rules','use-fortune','use-haggle','stool'].includes(i.id));
+composition.instances=composition.instances.filter(i=>!['exit-mall','rules','use-fortune','use-haggle','stool'].includes(i.id));
 addSceneActor(scene,composition,'new-resident',{body:'old',garb:'robe'},240,8);duplicateSceneActor(scene,composition,'new-resident','resident-copy');bindSceneActor(scene,composition,'new-resident','scene','origin',240,8);setActorDialogue(scene,'resident-copy',false);
 bindSceneActor(scene,composition,'cook','','origin',1940,0);removeSceneActor(scene,composition,'fortuneBot');removeSceneActor(scene,composition,'street-7');bindSceneActor(scene,composition,'brolly','','origin',480,0);composition.instances=composition.instances.filter(i=>i.id!=='stall-2');bindSceneActor(scene,composition,'street-0','','origin',350,0);
 model.importDocuments([{id:'market',value:composition},{id:'market-scene',value:scene},{id:'market-gameplay',value:gameplay}]);

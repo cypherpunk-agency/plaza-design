@@ -74,10 +74,15 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   Draw order: a **layered** composition gives every instance a `layer` (`distance`, `backdrop`,
   `set`, `playfield`, `foreground`, or `logic` for things that never draw) and sorts by layer, then
   `order`. It holds exactly one `scene.player` row in `playfield`; playfield rows ordered after it
-  draw over the player, and a manifest `spawn` may point at it (Library's does), so one Player sets
-  both draw order and arrival point. Drawn artwork cannot be in `logic` and non-drawing markers must be; named
-  groups may sit in any visual layer. Older compositions still use `pass` + `order`; a composition
-  uses one form throughout. Library is the first layered scene (pilot, 2026-10-20).
+  draw over the player. Every scene's manifest `spawn` is its player row (id `spawn`), so one Player
+  sets both draw order and arrival point. Drawn artwork cannot be in `logic` and non-drawing markers
+  must be; named groups may sit in any visual layer. All scene compositions and newly created scenes
+  are layered (2026-10-20); sequences and other standalone documents may still use the older `pass` +
+  `order`, and a composition uses one form throughout. Drawing `backdrop` from a layered document
+  draws everything behind the player and queues the rows over the player and the foreground; the
+  shared frame (`runtime/render-scene.ts`) draws those after the actors and after the scene's own
+  front. Downtown keeps its engine moments: city (distance and backdrop), the street surface and its
+  reflections (engine street slot), devices (set) and people (playfield).
   Timeline shots, tracks, cards, fades and handoffs: **JSON** in `story/title/timeline.json` and
   `story/cutscenes/timeline.json`; trusted nonlinear motion evaluators remain **code**. The local
   save service validates the complete prospective allowlisted source set; it never writes rules,
