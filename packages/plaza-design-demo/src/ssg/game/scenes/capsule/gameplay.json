@@ -2,7 +2,11 @@
   "version": 1,
   "flags": [
     "capsule:routerReadyAtTickStart",
-    "capsule:routerUp"
+    "capsule:routerUp",
+    "capsule:goal.router",
+    "capsule:goal.concierge",
+    "capsule:observed.conciergeConnected",
+    "capsule:goal.pixel"
   ],
   "items": [],
   "events": [
@@ -11,7 +15,10 @@
     "capsule.pixel.sun",
     "capsule.door.unlocked",
     "capsule.schedule.night",
-    "capsule.router.online"
+    "capsule.router.online",
+    "capsule.goal.router",
+    "capsule.goal.concierge",
+    "capsule.goal.pixel"
   ],
   "commands": {
     "capsule.plug.off": {
@@ -105,6 +112,36 @@
       "actions": [
         {
           "emit": "capsule.router.online"
+        }
+      ]
+    },
+    "capsule.goal.router.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "capsule.goal.router"
+        }
+      ]
+    },
+    "capsule.goal.concierge.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "capsule.goal.concierge"
+        }
+      ]
+    },
+    "capsule.goal.pixel.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "capsule.goal.pixel"
         }
       ]
     }
@@ -389,7 +426,11 @@
     "events": {
       "capsule.schedule.night": "plug.schedule:night"
     },
-    "goals": {},
+    "goals": {
+      "capsule.goal.router": "router",
+      "capsule.goal.concierge": "concierge",
+      "capsule.goal.pixel": "pixel"
+    },
     "wires": [
       {
         "from": "plug.schedule:night",
@@ -399,7 +440,11 @@
     ],
     "reads": {
       "capsule:routerReadyAtTickStart": "routerUpAtTickStart",
-      "capsule:routerUp": "routerUp"
+      "capsule:routerUp": "routerUp",
+      "capsule:goal.router": "goal.router",
+      "capsule:goal.concierge": "goal.concierge",
+      "capsule:observed.conciergeConnected": "conciergeConnected",
+      "capsule:goal.pixel": "goal.pixel"
     },
     "replies": {
       "capsule.pixel.bed": {
@@ -528,6 +573,70 @@
         },
         "command": "capsule.door.unlocked",
         "edge": "rising"
+      },
+      "goal-1": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "compare": {
+                "left": {
+                  "query": "capsule.routerGoalReady"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": true
+                }
+              }
+            },
+            {
+              "not": {
+                "flag": "capsule:goal.router"
+              }
+            }
+          ]
+        },
+        "command": "capsule.goal.router.award"
+      },
+      "goal-2": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "capsule:observed.conciergeConnected"
+            },
+            {
+              "not": {
+                "flag": "capsule:goal.concierge"
+              }
+            }
+          ]
+        },
+        "command": "capsule.goal.concierge.award"
+      },
+      "goal-3": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "compare": {
+                "left": {
+                  "query": "capsule.pixelGoalReady"
+                },
+                "op": "eq",
+                "right": {
+                  "literal": true
+                }
+              }
+            },
+            {
+              "not": {
+                "flag": "capsule:goal.pixel"
+              }
+            }
+          ]
+        },
+        "command": "capsule.goal.pixel.award"
       }
     },
     "inputs": {

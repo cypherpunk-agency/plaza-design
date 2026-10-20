@@ -324,26 +324,24 @@
         "kind": "sectorOpen",
         "node": "mothpc",
         "sector": "drawer"
-      }
-    },
-    "goals": [
-      {
-        "when": "friendnetConnected",
+      },
+      "goal.friendnet": {
+        "kind": "goalComplete",
         "goal": "friendnet"
       },
-      {
-        "when": "mothpcConnected",
+      "goal.mothpc": {
+        "kind": "goalComplete",
         "goal": "mothpc"
       },
-      {
-        "when": "drawerOpen",
+      "goal.drawer": {
+        "kind": "goalComplete",
         "goal": "drawer"
       },
-      {
-        "when": "journalOpen",
+      "goal.journal": {
+        "kind": "goalComplete",
         "goal": "journal"
       }
-    ]
+    }
   },
   "controller": {
     "kind": "moth",

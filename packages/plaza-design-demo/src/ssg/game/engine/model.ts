@@ -865,7 +865,7 @@ export class SceneModel {
    * (the host redraws the meters, or everything when a lock ended).
    */
   tick(dt: number, live = true): boolean {
-    if (live) { this.gameplayTick?.(dt,run=>this.withCue(run,true),'beforeNative');this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true),'afterNative');for(const row of this.data.observations?.goals??[])if(this.cond(row.when))this.goal(row.goal); }
+    if (live) { this.gameplayTick?.(dt,run=>this.withCue(run,true),'beforeNative');this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true),'afterNative'); }
     let moved = false;
     for (const d of this.devices.values()) {
       const logs = this.logsOf(d.id), before = this.traceOf(d.id);

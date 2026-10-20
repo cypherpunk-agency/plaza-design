@@ -1,5 +1,10 @@
 # Opening milestone workflows
 
+Current source ownership: the home ride's car scene comes from World
+`TRANSPORT.boarding.scene`. Opening's `CONTROLLER.homeRun` owns only from/to stations and
+announcement; `HOME_RUN` owns timing. The duplicate fixed train scene field is removed.
+See [world/story acceptance](./WORLD-STORY-ACCEPTANCE.md) for G11 evidence and scope.
+
 Six existing cinematic milestones now dispatch ordinary system commands: home, street, flat,
 slept, uplink and jacked. Their definitions and command references live in opening.json GAMEPLAY
 and WORKFLOWS. They use GameplaySession and the same Game state port as scene commands; no story

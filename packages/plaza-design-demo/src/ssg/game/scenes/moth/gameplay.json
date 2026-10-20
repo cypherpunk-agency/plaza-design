@@ -1,9 +1,64 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "moth:goal.friendnet",
+    "moth:observed.friendnetConnected",
+    "moth:goal.mothpc",
+    "moth:observed.mothpcConnected",
+    "moth:goal.drawer",
+    "moth:observed.drawerOpen",
+    "moth:goal.journal",
+    "moth:observed.journalOpen"
+  ],
   "items": [],
-  "events": [],
-  "commands": {},
+  "events": [
+    "moth.goal.friendnet",
+    "moth.goal.mothpc",
+    "moth.goal.drawer",
+    "moth.goal.journal"
+  ],
+  "commands": {
+    "moth.goal.friendnet.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "moth.goal.friendnet"
+        }
+      ]
+    },
+    "moth.goal.mothpc.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "moth.goal.mothpc"
+        }
+      ]
+    },
+    "moth.goal.drawer.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "moth.goal.drawer"
+        }
+      ]
+    },
+    "moth.goal.journal.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "moth.goal.journal"
+        }
+      ]
+    }
+  },
   "reactions": [],
   "conversations": {},
   "state": {
@@ -27,6 +82,92 @@
       "integer": false,
       "min": -9007199254740991,
       "max": 9007199254740991
+    }
+  },
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {
+      "moth.goal.friendnet": "friendnet",
+      "moth.goal.mothpc": "mothpc",
+      "moth.goal.drawer": "drawer",
+      "moth.goal.journal": "journal"
+    },
+    "reads": {
+      "moth:goal.friendnet": "goal.friendnet",
+      "moth:observed.friendnetConnected": "friendnetConnected",
+      "moth:goal.mothpc": "goal.mothpc",
+      "moth:observed.mothpcConnected": "mothpcConnected",
+      "moth:goal.drawer": "goal.drawer",
+      "moth:observed.drawerOpen": "drawerOpen",
+      "moth:goal.journal": "goal.journal",
+      "moth:observed.journalOpen": "journalOpen"
+    },
+    "triggers": {
+      "goal-1": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "moth:observed.friendnetConnected"
+            },
+            {
+              "not": {
+                "flag": "moth:goal.friendnet"
+              }
+            }
+          ]
+        },
+        "command": "moth.goal.friendnet.award"
+      },
+      "goal-2": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "moth:observed.mothpcConnected"
+            },
+            {
+              "not": {
+                "flag": "moth:goal.mothpc"
+              }
+            }
+          ]
+        },
+        "command": "moth.goal.mothpc.award"
+      },
+      "goal-3": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "moth:observed.drawerOpen"
+            },
+            {
+              "not": {
+                "flag": "moth:goal.drawer"
+              }
+            }
+          ]
+        },
+        "command": "moth.goal.drawer.award"
+      },
+      "goal-4": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "moth:observed.journalOpen"
+            },
+            {
+              "not": {
+                "flag": "moth:goal.journal"
+              }
+            }
+          ]
+        },
+        "command": "moth.goal.journal.award"
+      }
     }
   }
 }

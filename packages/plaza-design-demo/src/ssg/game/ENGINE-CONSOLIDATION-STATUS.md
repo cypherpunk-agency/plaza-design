@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `cca059c` on main and production.
-Homepage jobs39376188849/39376189044 and design job39376189019 succeeded.
+Last verified deployment: `571ac3e` on main and production.
+Homepage jobs39379509408/39379509537 and design job39379509549 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -31,7 +31,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G8 | IN PROGRESS | 19/19 ordinary manifests and actor collections now support source CRUD/rebinding/Save; new ordinary catalogue scenes run without TS registration. Native controllers/world/network/story and integrated acceptance remain |
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
 | G10 | IN PROGRESS | Typed actor CRUD/source bindings now cover all19 native scenes; catalogue creation/history/bundles/Save are checked. Current combined source still requires all-scene browser Play, controller/network/device entity controls and complete lifecycle acceptance |
-| G11 | IN PROGRESS | Moth Act transition authored through shared handoffs; full world/story/transport source integration pending |
+| G11 | PASS | All19 declared route collections,41 native exit dispatches and30 pending destination/arrival edits; current world/access/map/transport/opening/cinematic source and atomic Save/import evidence. See WORLD-STORY-ACCEPTANCE.md. Other scene categories and whole-goal acceptance remain open |
 | G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
 | G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
 
@@ -3045,3 +3045,100 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   difference remains open. Conversation entry-failure, free-input and bot regression checks pass.
 - Final-source protected Save/fresh-module/byte-Undo rerun PASS:
   `.scene-system/response-conversations-save-pkdsOt`.
+
+## 2026-10-20: remove the obsolete private interaction rotation path
+
+- Current source audit found a compiler-local Map and injectable cycle read/advance adapter
+  remaining behind rotating interactions. All four shipping uses (Beach gull/crab, Market
+  fortune, Shop goods) and demo counter already declare shared cursor state. Removed both
+  fallback paths and the unused SceneCompileOptions API rather than retaining a second owner.
+- Validation requires an explicit non-negative integer declaration for cycleState. Compiler
+  execution also rejects a missing/invalid cursor. Outcome commands alone advance it, with
+  ordinary transaction refusal/rollback. There is no automatic private counter or schema shim.
+- Scene Logic now exposes the rotation-state selector before enabling rotation. Selecting
+  an inactive draft cursor does not write source/history; enabling commits the binding and
+  rotation atomically. Clearing an active cursor rejects. Conditional/conversation conversion
+  safeguards remain. Actual packaged app-EU2RV4K5.js: missing cursor rejected without history,
+  state selector remains usable before enabling, Undo restores shop.rotation; no console errors.
+- PASS: check-rotation-state (invalid/missing declarations, shared cursor across compiled
+  instances/reload, separate-player isolation, atomic failure, all current rotation sources);
+  check-interaction-crud including typed enable/rebind rejection, commands/items/outcomes,
+  pending native execution, history/bundles/protected Save/reload/byte Undo:
+  `.scene-system/interaction-crud-jcGVNw`.
+- check-persistent-commerce had stale flat-key/private-session-map assertions from the older
+  state representation. Corrected it to read current owner blocks and compare failed commands
+  against the constructor-initialized state. No runtime persistence behavior changed to satisfy
+  it. Current defaults, one shared session-state root, saved stock/rotation, reset lifetimes,
+  price modifiers and atomic purchase cases PASS. Market original outcomes and ENG-05 PASS.
+- Both root builds PASS (play-VYMHZPSV.js); no fallback cycle API references remain in source.
+- Raster source `1dadc2073b90167a0e71c9b8649897521439dc261cf268f462297708181fd110`:
+  `.scene-system/all-game-pixel-check/evidence/1dadc2073b90167a0e71c9b8649897521439dc261cf268f462297708181fd110-1792476000738.json`.
+  All four result arrays exactly equal the pre-change published-source diagnostic. Original
+  baseline still FAIL solely for the existing Mall frame delta; no baseline replacement.
+- This removes a genuine G13 duplicate path, but does not sign the broader G0/G8–G13 audits.
+- Integrated latest main5692d08 (Library style frames/district filters/crowd lineup) by fast-forward;
+  no overlap with this cleanup. Combined-source builds PASS (app-JWWMFMGT.js); interaction
+  CRUD/Save rerun PASS in `.scene-system/interaction-crud-vALSvK`.
+  Combined-source raster evidence:
+  `.scene-system/all-game-pixel-check/evidence/684d0ff4fa8babdc6566b7bbc1d130f9194079ff5a38d0e307b658a224927eca-1792476136946.json`.
+  All four arrays remain identical to the pre-change diagnostic, including the open Mall delta.
+
+## 2026-10-20: observed goals use the shared workflow engine
+
+- Removed observations.goals, its separate condition validation/editor, and the SceneModel
+  post-tick award loop. All nine rows in Capsule (3), Library (2) and Moth (4) now use
+  ordinary shared triggers, system commands, events and native goal bindings.
+- Added a typed read-only goalComplete observation against the existing model goal set.
+  Completion guards prevent repeated awards/commands; no duplicated progress state, old-schema
+  translation or alternate goal evaluator was added. Existing aliases remain read-only.
+- PASS: check-native-observations (128 original tick/save/reload histories, exact redraws,
+  inactive policy, one event per new goal, typed alias CRUD and reference guards);
+  check-native-observation-save (grouped observation + shared goal-target edits, actual
+  pending native execution, history/bundle/protected Save/fresh shipping execution/byte Undo),
+  evidence `.scene-system/native-observation-save/run-nkzR7G`.
+- Capsule original comparison PASS: 1,728 timelines, 108 router timelines, 12 kettle timelines
+  and shared plug-off cases. Instrumentation now observes insertion into the actual goal set
+  on both models; it no longer assumes all writes pass through the old goal() helper.
+  The stale native-only controller mock depended on removed Pixel/goal APIs; its acceptance
+  command now runs the real original/current shared-session suites and current schema guards.
+- Typed Capsule condition edits, rejection and history PASS; protected paired Save/fresh
+  shipping import/Undo PASS in `.scene-system/capsule-workflow-save-QIZMdu`.
+  All ten device-source baselines, ENG-04, package TypeScript and both root builds PASS.
+- Packaged checkpoint: app-H5Y6XXH6.js / play-Q67V2V7E.js, 97 documents / 128 source references.
+  Raster `.scene-system/all-game-pixel-check/evidence/63a82cce53848691cb6dd0b6a0a5baa83591e59b86af3ba6887162572f832f73-1792476763063.json`:
+  all four row arrays exactly equal the prior published-source diagnostic. Original baseline
+  still FAIL solely for the already recorded Mall frame. No baseline replacement or gate promotion.
+- Packaged editor verification PASS: Native goals library.goal.lan changed to scan through
+  its typed selector; history enabled, Undo restored lan and a clean history; no console
+  warnings/errors. No rendering/layer/object changes are included in this batch.
+
+## 2026-10-20: G11 world/story acceptance
+
+- G11 PASS; full requirement-to-evidence audit is WORLD-STORY-ACCEPTANCE.md. Matrix world
+  column now PASS for all19 scenes; other columns retain their separate acceptance status.
+  Accepted gates are G1/G2/G3/G5/G6/G11 (6/14). Remaining eight gates stay open.
+- New all-scene native route check proves exact authored/compiled exit collections with no
+  extra native-only routes,41 actual Game.useExit dispatches,30 pending ordinary destination/
+  arrival edits across the corpus and per-scene dangling-arrival rejection. Harbor Shift has
+  no authored exit and receives no new route. Source-bound raw results:
+  `.scene-system/world-story-routes-ogfjXS/evidence.json`, source9221a015e2657fc02adf5ea5334ae299920f576778bbe798a38d4d7b82ba5536.
+- Removed city version1 source upgrade and its hard-coded shipping train/taxi/harbor arrivals.
+  Current explicit version2 source remains unchanged. Old immutable fixtures remain behavior
+  oracles; the validator rejects old source instead of inventing destinations.
+- Removed opening CONTROLLER.homeRun.scene duplicate/protection and its static editor field.
+  Actual Game.enter initializes the home ride from World TRANSPORT.boarding.scene, the same
+  owner used by native boarding, ride stepping and map state. Three pending car roles and
+  home/free phases PASS; the old train ID has no special effect. Packaged opening editor
+  visibly points to the shared World transport setting.
+- PASS: check-city-source (26 original registries/all19 lookups/13,824 district cases/7,752
+  travel refusals/exact traced plan/532 map cases), transport destinations, world access policy
+  (`world-access-policy-equ7OJ`), platform world source (`platform-world-source-ALnyUs`),
+  opening runtime (42 original comparisons), source/phase rules (64 histories), bound targets,
+  opening source protected Save (`opening-story-save/run-nyWVED`), shared handoffs (1499/1500ms,
+  pause/refusal/disposal/100 cycles), and pending cinematic/native playback/grouped new-scene
+  arrival/atomic import and protected Save (`cinematic-pending/run-4Kp3jV`).
+- Both builds PASS (app-XISW3PUU.js / play-5LJYJ2II.js;97 docs/128 source references).
+  Raster6b2f6bc2 report has all four row arrays identical to the earlier published-source
+  diagnostic. Original-baseline status remains FAIL solely for the existing Mall animation
+  frame. Matrix/status acceptance metadata was updated after that runtime raster capture;
+  no rendering/layer/object implementation changed and no baseline was overwritten.

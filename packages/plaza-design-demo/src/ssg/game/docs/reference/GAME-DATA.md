@@ -46,6 +46,12 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
   can read existing label queries, preserving text IDs without another text catalogue.
   Logic exposes typed response text/graph/slot bindings; the normal conversation editor
   edits the graph. Multi-page/choice graphs and missing text slots are rejected here.
+- **Interaction rotation has no private compiler counter.** A rotating use requires
+  `cycleState` pointing to a declared non-negative integer state. Outcome commands advance
+  that state through the normal atomic transaction; failed commands leave it unchanged.
+  Select the state before enabling rotation in Logic. The declaration's lifetime controls
+  persistence, and the current shipping rotations all use saved state. Rebuilding a scene
+  cannot reset the cursor or share one player's progress with another player.
 - **No authored hints in the yard yet.** Goals stay (the GOAL line in the HUD; the deck's JOBS
   tab). The game has a hint lane now (ui/hints.ts, 2026-10-18), used so far only for control
   hints; when a goal or place gives a hint is a separate design question. Downtown's fixer hints

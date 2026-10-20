@@ -901,7 +901,7 @@ export class Game {
     } else if (this.pixelHere) this.pixel.place(x - this.p.face * 20, 0, 'sit', this.p.face);
     // the opening: the train home runs into Downtown; arriving, the player says the opening's words instead
     const st = this.story, said = pick(this.openingStory.OPENING_INTRO, st, id);
-    if (id === this.openingStory.CONTROLLER.homeRun.scene && st === 'home') this.rideHome();
+    if (id === this.world.TRANSPORT.boarding.scene && st === 'home') this.rideHome();
     this.hints.sceneChanged();sound.cancelFeedback();
     const flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
     if (said) {
