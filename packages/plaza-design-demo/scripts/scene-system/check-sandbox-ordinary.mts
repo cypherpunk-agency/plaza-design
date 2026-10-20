@@ -1,6 +1,7 @@
+import {sandboxModelSnapshot} from '../../src/ssg/game/engine/controllers/sandbox';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';
 import {SceneModel} from '../../src/ssg/game/engine/model';import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';import {attachNativeGameplay,validateNativeBindings} from '../../src/ssg/game/engine/gameplay/native-bindings';import {fixtureGameplayPort} from './model-gameplay-fixture.mts';import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
-import {SANDBOX_RULES,pulse} from '../../src/ssg/game/scenes/sandbox/rules';import {sandboxScene} from '../../src/ssg/game/scenes/sandbox';import {validateDeviceSource} from '../../src/ssg/game/authoring/device-sources';import {renderGameplayBindingsAuthoring} from '../../src/ssg/game/authoring/gameplay-bindings-authoring';import {TypedForm} from '../../src/ssg/game/authoring/typed-form';
+import {SANDBOX_RULES} from '../../src/ssg/game/scenes/sandbox/rules';import {sandboxScene} from '../../src/ssg/game/scenes/sandbox';import {validateDeviceSource} from '../../src/ssg/game/authoring/device-sources';import {renderGameplayBindingsAuthoring} from '../../src/ssg/game/authoring/gameplay-bindings-authoring';import {TypedForm} from '../../src/ssg/game/authoring/typed-form';
 const frozen=path.resolve('../../.scene-system/all-game-baseline-2026-10-18/source'),oldModel=await import(pathToFileURL(path.join(frozen,'engine/model.ts')).href),oldRules=await import(pathToFileURL(path.join(frozen,'scenes/sandbox/rules.ts')).href),oldData=JSON.parse(fs.readFileSync(path.join(frozen,'scenes/sandbox/devices.json'),'utf8'));
 const scene=sandboxScene(),definition=scene.gameplay!,data=scene.data!,keys=['count','stamped','cups','chips','paid'],routes=[['counter','count','count'],['stamp','press','stamp'],['coffee','cup','brew'],['reader','slot','insert'],['till','drawer','pay']] as const;
 let now=10000;const descriptor=Object.getOwnPropertyDescriptor(performance,'now');Object.defineProperty(performance,'now',{configurable:true,value:()=>now});let cases=0;
@@ -10,7 +11,7 @@ function run(shared:boolean,count:number,items:number,tokens:number,signal:boole
  for(const key of keys)m.set(key,count);
  if(shared){session=new GameplaySession(definition,fixtureGameplayPort(definition,{read:()=>saved,write:s=>{saved=s;}},()=>m));attachNativeGameplay(m,session);}
  const snapshots:unknown[]=[];for(let repeat=0;repeat<2;repeat++)for(const route of routes){m.act(...route,signal);snapshots.push({state:m.snapshot(),lines:structuredClone(lines),items:structuredClone(saved.items),tokens:saved.tokens,pulses:structuredClone(m.scratch)});now+=37;}
- const key='coffee.cup',samples:number[]=[];for(const delta of [0,200,700,1000]){now+=delta;samples.push((shared?pulse:oldRules.pulse)(m,key));}m.setPaused(true);now+=9000;samples.push((shared?pulse:oldRules.pulse)(m,key));m.setPaused(false);
+ const key='coffee.cup',samples:number[]=[];for(const delta of [0,200,700,1000]){now+=delta;samples.push(shared?sandboxModelSnapshot(m).pulses[key]:oldRules.pulse(m,key));}m.setPaused(true);now+=9000;samples.push(shared?sandboxModelSnapshot(m).pulses[key]:oldRules.pulse(m,key));m.setPaused(false);
  if(shared)assert.equal(saved.values.sandbox,m.state,'commands and native simulation use one common block');
  const save=m.snapshot();m.reset();m.restore(save);assert.deepEqual(m.snapshot(),save);session?.dispose();m.reset();return{snapshots,samples};
 }

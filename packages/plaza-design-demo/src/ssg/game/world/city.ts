@@ -223,7 +223,7 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
  const TRANSPORT=data.TRANSPORT;
 
 /** The station whose platform this scene is, if it is one. */
- const stationAt = (id: SceneId): Station | null => LINE.find((s) => STATIONS[s].scene === id) ?? null;
+ const stationAt = (id: string): Station | null => LINE.find((s) => STATIONS[s].scene === id) ?? null;
 
 
 /**

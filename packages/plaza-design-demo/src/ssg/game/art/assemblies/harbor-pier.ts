@@ -15,7 +15,7 @@ import type { PreparedCharacter } from '../../runtime/characters';
 export interface CraneVisual {twx:number;hang:number;carry:boolean;u:number}
 export interface ForkliftVisual {x:number;dir:1|-1}
 export interface HarborVisual {cranes:CraneVisual[];forklift:ForkliftVisual;bribed:boolean;weatherLine:string}
-export interface HarborLayout {width:number;spawn:number;hut:{x:number;w:number;h:number};notice:number;arch:{x0:number;x1:number;h:number};podium:number;manifest:number;callBox:number;cranes:{x:number;id:keyof typeof GANTRIES;phase:number}[];fish:{x:number;w:number;use:number};drinks:{x:number;w:number;use:number};den:number;fence:{x0:number;x1:number;gate:number};ghost:number;bribe:number;ghostUse:number;bollards:number[];berth:number;rails:number;beacon:number;metro:number;terminal:number;taxi:number;ferry:number;}
+export interface HarborLayout {width:number;hut:{x:number;w:number;h:number};notice:number;arch:{x0:number;x1:number;h:number};podium:number;manifest:number;callBox:number;cranes:{x:number;id:keyof typeof GANTRIES;phase:number}[];fish:{x:number;w:number};drinks:{x:number;w:number};den:number;fence:{x0:number;x1:number;gate:number};ghost:number;berth:number;rails:number;beacon:number;metro:number;terminal:number;taxi:number;ferry:number;}
 export interface ArtworkInputs{L:HarborLayout;visual:HarborVisual;fishPose:PreparedCharacter;teaPose:PreparedCharacter;loads:Crate[];}
 const SKYLINE = towers(41, 1700, [16, 40], [18, 70], 0.08);
 

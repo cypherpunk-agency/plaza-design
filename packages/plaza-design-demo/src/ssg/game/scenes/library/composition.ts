@@ -5,8 +5,6 @@ import { drawComposition, resolveComposition, type Composition, type Environment
 import type { View } from '../../art/core/view';
 import { prepareCharacter, type Character, type PreparedCharacter } from '../../runtime/characters';
 import type { EngineDraw } from '../../engine/host';
-import type { SceneData } from '../../data/types';
-import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import document from './composition.json';
 
 import { art } from '../../art';
@@ -23,7 +21,6 @@ export function validateLibraryComposition(input: unknown): Composition {
     for (const [field,source] of Object.entries(instance.bindings ?? {})) if (!(instance.type==='library.person'&&field==='pose'&&mutableActorArtwork('library',instance))&&!sources.has(source)) throw new Error(instance.id + ': unknown library binding ' + source);
     if (instance.type === 'library.person' && !mutableActorArtwork('library',instance)) throw new Error(instance.id + ': missing actor pose binding');
   }
-  for (const id of ['room']) if (!doc.instances.some(i => i.id === id)) throw new Error('Missing gameplay-bound library instance: ' + id);
   return doc;
 }
 validateLibraryComposition(libraryComposition);
@@ -36,23 +33,12 @@ function defaults(doc: Composition): Record<string, Value> {
 export function libraryGeometry(doc: Composition = libraryComposition) {
   return resolveComposition(libraryArt, doc, { view: geometryView, state: {}, bindings: defaults(doc), reduced: false });
 }
-/** Unbound original devices retain their art positions; explicit manifest bindings own replacement geometry. */
-export function libraryDeviceData(source:SceneData,doc:Composition=libraryComposition,scene?:Pick<SceneDocument,'manifest'>):SceneData{
- const result=structuredClone(source),geometry=libraryGeometry(doc);
- for(const id of deviceIds){
-  if(scene?.manifest?.devices?.[id])continue;
-  const position=geometry.find(row=>row.instance.id===id)?.placement,spot=result.devices.find(device=>device.id===id)?.layout?.spot;
-  if(!position||!spot)continue;
-  spot.x=position.x;const h=id==='printer'?position.h-2:position.h;if(spot.y!==undefined||h!==0)spot.y=h;
- }
- return result;
-}
 const value = (input: unknown): Value => input as Value;
 /** Build explicit preview/runtime snapshots. Seeking or drawing never changes gameplay. */
 export function libraryEnvironment(doc: Composition, view: View, engine: EngineDraw, actors: Readonly<Record<string, Character>>): Environment {
   const bindings = defaults(doc);
   for (const id of deviceIds) bindings['device.' + id + '.hover'] = engine.hover === id;
-  bindings['catalog.connected'] = engine.m.net.get('catalog') === 'connected';
+  bindings['catalog.connected'] = !!engine.m.value('catalogConnected');
   const geometry = resolveComposition(libraryArt, doc, { view, state: {}, bindings, reduced: false });
   bindings['architecture.windows'] = geometry.filter(row => row.instance.type === 'library.window').map(row => [row.placement.x, row.placement.x + Number(row.props.width)]);
   for (const row of geometry.filter(row => row.instance.type === 'library.person')) {

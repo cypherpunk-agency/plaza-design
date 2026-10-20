@@ -12,6 +12,6 @@ export const MOTH_RULES: SceneRules = {
   effects: {},
   needs: {
     devices:[],
-    state: [{key:'fed',type:'boolean'},{key:'fern',type:'string'},{key:'tape',type:'number'}],
+    state: [],
   },
 };

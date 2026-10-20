@@ -1,3 +1,8 @@
+import {renameSharedFlagDocuments} from './world-flag-references';
+import {mountGameplayAuthoring} from './gameplay-authoring';
+import {validateGameplay} from '../engine/gameplay/validation';
+import {validatePendingNetwork} from './pending-network';
+import {registryLabels} from '../engine/gameplay/rewards';
 import {TypedForm} from './typed-form';
 import type {WorkbenchContext,WorkbenchHandle} from './app';
 import {validateOpeningSource,type OpeningSource,type OpeningState} from '../story/opening-source';
@@ -14,8 +19,9 @@ export function relocateOpeningHome(source:OpeningSource,draft:OpeningHomeDraft)
 /** Native opening inputs use the normal typed source/history/Save path, never executable editor code. */
 export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle{
  const api=context.authoring!,error=document.createElement('p'),body=document.createElement('div');error.setAttribute('role','alert');host.replaceChildren(error,body);let disposed=false,category='Controller',phase:OpeningState='home';const newScenes:Record<string,string>={};let homeDraft:OpeningHomeDraft|undefined;const targetDrafts=new Map<string,{kind:'rest'|'use'|'exit';id:string;offsetX:number}>();
+ let workflowEditor:ReturnType<typeof mountGameplayAuthoring>|undefined,refreshMilestones:(()=>void)|undefined;
  const form=new TypedForm(e=>{error.textContent=String(e);}),phases=['home','flat','deleted','uplinked','free'] as const;
- const groups:Record<string,string[]>={Controller:['CONTROLLER'],Phases:['PHASE_RULES','PHASES','OPENING','OPENING_LEVELS'],Timing:['IDLE_PING','HOME_RUN','TURNSTILE','SLEEP','MORNING'],Intros:['OPENING_INTRO'],Goals:['OPENING_GOAL'],Dialogue:['OPENING_LINES'],Interactions:['OPENING_EVERYDAY'],Exits:['OPENING_EXITS'],Targets:['OPENING_TARGETS'],Guidance:['OPENING_PINGS'],Clock:['OPENING_TIME'],Messages:['WAKE_LINES','MOTH_MESSAGE','UPLINK_LINES','UPLINK_KEY'],Deck:['DECK_BEFORE']};
+ const groups:Record<string,string[]>={Controller:['CONTROLLER'],Workflows:['WORKFLOWS','GAMEPLAY'],Phases:['PHASE_RULES','PHASES','OPENING','OPENING_LEVELS'],Timing:['IDLE_PING','HOME_RUN','TURNSTILE','SLEEP','MORNING'],Intros:['OPENING_INTRO'],Goals:['OPENING_GOAL'],Dialogue:['OPENING_LINES'],Interactions:['OPENING_EVERYDAY'],Exits:['OPENING_EXITS'],Targets:['OPENING_TARGETS'],Guidance:['OPENING_PINGS'],Clock:['OPENING_TIME'],Messages:['WAKE_LINES','MOTH_MESSAGE','UPLINK_LINES'],Deck:['DECK_BEFORE']};
  const read=()=>validateOpeningSource(api.get('opening-story').value),at=(d:any,path:(string|number)[])=>path.reduce((r,k)=>r[k],d);
  function edit(label:string,change:(d:OpeningSource)=>void){const d=read();change(d);api.edit('opening-story',label,d);render();}
  const set=(path:(string|number)[],value:unknown)=>edit('Edit opening '+path.join('/'),d=>{if(path.join('/')==='CONTROLLER/sleep/target'){const before=d.CONTROLLER.sleep.target,next=String(value);for(const rows of Object.values(d.OPENING_TARGETS)){for(const ref of Object.keys(rows??{})){const[scene,id]=ref.split('/');if(id!==before||next===before)continue;const renamed=scene+'/'+next;if(renamed in rows!)throw new Error('A story target already owns '+renamed);rows![renamed]=rows![ref];delete rows![ref];}}for(const rows of Object.values(d.OPENING_PINGS))for(const ping of Object.values(rows??{}))if('story'in ping&&ping.story===before)ping.story=next;d.CONTROLLER.sleep.target=next;}else at(d,path.slice(0,-1))[path.at(-1)!]=value;});
@@ -37,7 +43,8 @@ export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext)
    });
    form.button(parent,'Add opening phase rule',()=>edit('Add opening phase rule',d=>{d.PHASE_RULES.splice(d.PHASE_RULES.length-1,0,{when:{flag:d.OPENING.home},phase:'home'});}),d.PHASE_RULES.length>=32);return;
   }
-  if(path[0]==='OPENING'||path[0]==='PHASES'&&path.at(-1)==='before'||path.join('/')==='CONTROLLER/homeRun/scene'){const p=document.createElement('p');p.textContent=name+': '+String(value)+(path[0]==='OPENING'?' (saved identity)':' (native phase role)');parent.append(p);return;}
+  if(path[0]==='OPENING'){for(const[role,flag]of Object.entries(read().OPENING))form.text(parent,'Opening role '+role+' flag',flag,next=>{const documents=new Map(context.documents.map(d=>[d.id,api.get(d.id).value])),changes=renameSharedFlagDocuments(documents,flag,next);if(api.editDocuments)api.editDocuments(changes,'Rename opening role '+role);else if(changes.length===1)api.edit(changes[0].id,'Rename opening role '+role,changes[0].value);else throw Error('Grouped source editing is unavailable');render();});return;}
+  if(path.join('/')==='CONTROLLER/homeRun/scene'){const p=document.createElement('p');p.textContent=name+': '+String(value)+' (registered train primitive)';parent.append(p);return;}
   if(path.join('/')==='CONTROLLER/home'){
    const d=read(),target=d.OPENING_TARGETS.flat![value.scene+'/'+d.CONTROLLER.sleep.target],binding=target.bind;
    homeDraft??={scene:value.scene,jackDevice:value.jackDevice,kind:binding?.kind??'rest',anchorId:binding?.id??'',offsetX:binding?.offsetX??0};const draft=homeDraft;
@@ -96,13 +103,19 @@ export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext)
   }
  }
  let registry:ReturnType<typeof pendingRegistry>={},sceneIds:string[]=[];
- function render(){if(disposed)return;body.replaceChildren();const d=read();registry=pendingRegistry(new Map(context.documents.map(x=>[x.id,api.get(x.id).value])));sceneIds=Object.keys(registry);
+ function render(){if(disposed)return;if(category==='Workflows'&&workflowEditor){refreshMilestones?.();workflowEditor.refresh();return;}workflowEditor?.dispose();workflowEditor=undefined;body.replaceChildren();const d=read();registry=pendingRegistry(new Map(context.documents.map(x=>[x.id,api.get(x.id).value])));sceneIds=Object.keys(registry);
   form.select(body,'Opening input group',Object.keys(groups),category,v=>{category=v;render();});
+  if(category==='Workflows'){
+   const milestones=form.section(body,'Cinematic milestones');
+   refreshMilestones=()=>{milestones.replaceChildren();const current=read(),commands=Object.entries(current.GAMEPLAY.commands).filter(([,c])=>c.sources.length===1&&c.sources[0]==='system').map(([id])=>id);for(const[role,command]of Object.entries(current.WORKFLOWS))form.select(milestones,'Opening milestone '+role,commands,command,v=>set(['WORKFLOWS',role],v));};refreshMilestones();
+   const host=document.createElement('div');body.append(host);const documents=()=>new Map(context.documents.map(x=>[x.id,api.get(x.id).value]));
+   workflowEditor=mountGameplayAuthoring(host,{document:()=>read().GAMEPLAY,validate:validateGameplay,onEdit:(value,label)=>edit(label,d=>{d.GAMEPLAY=value;}),undo:()=>api.undo(),redo:()=>api.redo(),save:()=>api.save(),reload:()=>api.reload(),dirty:()=>api.dirty('opening-story'),saveLabel:'Save story',keyringIdsSource:()=>[...validatePendingNetwork(documents(),registry).keyring.keys()],registryLabelsSource:()=>registryLabels(validatePendingNetwork(documents(),registry).net)});return;
+  }
   const tables=groups[category].filter(k=>k.startsWith('OPENING_')&&!['OPENING_LEVELS'].includes(k));
   if(tables.length){form.select(body,'Opening phase',phases,phase,v=>{phase=v as OpeningState;render();});for(const table of tables){const section=form.section(body,table),rows=(d as any)[table][phase]??{};for(const[key,row]of Object.entries(rows)){const box=form.section(section,key);walk(box,row,[table,phase,key]);form.button(box,'Remove '+table+' '+key,()=>remove([table,phase,key]));}
    let selectedScene=newScenes[table]??sceneIds[0],rowId='';form.select(section,'New '+table+' scene',sceneIds,selectedScene,v=>{selectedScene=v;newScenes[table]=v;if(table==='OPENING_TARGETS')render();});if(['OPENING_LINES','OPENING_EVERYDAY','OPENING_EXITS'].includes(table))form.text(section,'New '+table+' local ID',rowId,v=>{rowId=v;});
    form.button(section,'Add '+table+' row',()=>edit('Add opening '+table+' row',d=>{const compound=['OPENING_LINES','OPENING_EVERYDAY','OPENING_EXITS','OPENING_TARGETS'].includes(table),key=selectedScene+(compound?'/'+(table==='OPENING_TARGETS'?d.CONTROLLER.sleep.target:rowId):'');if(!rowId&&compound&&table!=='OPENING_TARGETS')throw new Error('A local entity ID is required');const root=(d as any)[table];root[phase]??={};if(key in root[phase])throw new Error('An opening row already exists');root[phase][key]=table==='OPENING_TIME'?'09:40':table==='OPENING_GOAL'?'New goal':table==='OPENING_INTRO'?{pages:['New arrival.'],speaker:'YOU',height:46}:table==='OPENING_LINES'?{pages:['New line.']}:table==='OPENING_EVERYDAY'?[{label:'look',say:['','New response.']}]:table==='OPENING_EXITS'?{say:{name:'YOU',pages:['Not yet.']}}:table==='OPENING_TARGETS'?{x:80,label:'[E] SLEEP',promptH:46}:(()=>{const scene=registry[selectedScene],device=scene?.data?.devices[0];if(scene?.exits.some(e=>e.action==='out'))return{door:true};if(device)return{device:device.id};if(scene?.exits.length)return{exit:scene.exits[0].id};throw new Error('This scene has no registered guidance anchor');})();}),table==='OPENING_TARGETS'&&!!rows[selectedScene+'/'+d.CONTROLLER.sleep.target]);
   }}else for(const key of groups[category]){const section=form.section(body,key);walk(section,(d as any)[key],[key]);}
  }
- render();const dispose=(()=>{disposed=true;host.replaceChildren();})as WorkbenchHandle;dispose.refresh=render;return dispose;
+ render();const dispose=(()=>{disposed=true;workflowEditor?.dispose();workflowEditor=undefined;host.replaceChildren();})as WorkbenchHandle;dispose.refresh=render;return dispose;
 }

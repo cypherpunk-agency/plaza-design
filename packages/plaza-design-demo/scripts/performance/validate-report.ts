@@ -17,5 +17,20 @@ export function validateReport(value:unknown,source:string){
   if(w.id==='scene-visits'&&JSON.stringify(ops.visits)!==JSON.stringify(Array.from({length:12},(_,i)=>['library','shop','laundromat','market'][i%4])))issues.push('visit operation sequence');
   if(w.lane==='live-game'&&!(r.summary['game.frame']?.count))issues.push('no native frames');
  }
- return{workload:w.id,repeat:Number(match[2]),smoke,status:issues.length?'INVALID':smoke?'SMOKE':'BASELINE',issues};
+ let scheduling:undefined|{activePlayMs:number;wallMs:number;activePlayRatio:number;frameCpuMs:number;frameCpuRatio:number;unadvancedWallMs:number;clampedRafMs:number};
+ const baselineIssues:string[]=[];
+ if(!smoke&&w.lane==='live-game'){
+  const initial=(r.environment.initial as any)?.playMs,final=(r.environment.final as any)?.playMs;
+  if(typeof initial!=='number'||!Number.isFinite(initial)||initial<0||typeof final!=='number'||!Number.isFinite(final)||final<initial)issues.push('missing or malformed active-play clock');
+  else{
+   const activePlayMs=final-initial,frameCpuMs=r.summary['game.frame']?.total??0;
+   scheduling={activePlayMs,wallMs:r.durationMs,activePlayRatio:activePlayMs/r.durationMs,frameCpuMs,frameCpuRatio:frameCpuMs/r.durationMs,unadvancedWallMs:Math.max(0,r.durationMs-activePlayMs),clampedRafMs:r.samples.filter(s=>s.span==='raf.gap').reduce((sum,s)=>sum+Math.max(0,s.duration-3*16.67),0)};
+   // Finite measurement-quality guard, not a frame-rate SLA or a cause/GPU diagnosis.
+   // CPU-heavy slow workloads remain measurable; low progress with little measured
+   // frame CPU cannot establish a representative active-play baseline.
+   if(scheduling.activePlayRatio<.5&&scheduling.frameCpuRatio<.25)baselineIssues.push('unresolved frame scheduling / unmeasured presentation wait');
+  }
+ }
+ const structuralValid=issues.length===0,baselineEligible=structuralValid&&!smoke&&baselineIssues.length===0;
+ return{workload:w.id,repeat:Number(match[2]),smoke,structuralValid,baselineEligible,status:!structuralValid?'INVALID':smoke?'SMOKE':baselineEligible?'BASELINE':'INELIGIBLE',issues,baselineIssues,scheduling};
 }

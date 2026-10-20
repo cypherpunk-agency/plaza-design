@@ -7,7 +7,7 @@ import { menuBoard,ticker,wallSign,YELLOW } from '../signage/screens';
 import { booth,shelf,type ShelfSpec,type StallSpec } from './construction';
 import type { MallVisual } from './mall-state';
 interface Shop{id:string;x:number;w:number;sign:string;col:string;tint:string;keeper:string;back?:(x:CanvasRenderingContext2D,v:View,s0:number,w:number)=>void;counter?:(x:CanvasRenderingContext2D,v:View,s0:number,w:number)=>void;plate?:string}
-export interface MallLayout{width:number;spawn:number;ceil:number;fascia:number;slab:number;rail:number;far0:number;step:number;storey:number;kiosk:number;registry:number;escalator:{x:number;w:number};escSign:number;fountain:{x:number;w:number};pillars:number[];metro:number;roof:number;service:number}
+export interface MallLayout{width:number;ceil:number;fascia:number;slab:number;rail:number;far0:number;step:number;storey:number;escalator:{x:number;h:number;w:number}}
 export interface MallArtworkInputs{x:number;width:number;shop:string;sign:string;tint:string;col:string;label:string;visual:MallVisual;vendorPose?:PreparedCharacter}
 export function createMallArtwork(inputs:MallArtworkInputs){const L=inputs.visual.layout,FAR=.55;const farLevels=(_v:View)=>inputs.visual.levels;
 const PAWN_SHELF: ShelfSpec = { x: 466, w: 70, h: 84, rows: 3, seed: 81, stock: 'household' };

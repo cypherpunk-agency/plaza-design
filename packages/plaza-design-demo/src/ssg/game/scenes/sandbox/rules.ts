@@ -4,7 +4,7 @@
  * little that data cannot say:
  *
  * - `sbx.pulse`: a thing reacted (a horn buzzed, a bell rang): the drawing
- *   flashes it for `pulseMs` (`pulse(m, key)`), nothing is stored;
+ *   flashes it for `pulseMs` (the picture controller reads its source-bound duration), nothing is stored;
  * Counter, stamp, brew, reader and till operations are shared commands in gameplay.json.
  * Time and weather reactions use source-owned live condition triggers and replies.
  * - `night` (derived): 18:00–06:00 on the city clock, for the drawing and status.
@@ -12,20 +12,12 @@
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
-import type { SceneData, Value } from "../../data/types";
+import type { Value } from "../../data/types";
 import type { Effect, SceneRules } from "../../engine/rules";
 import type { Ctx, SceneModel } from "../../engine/model";
 
 /** The carried item the chip reader eats (scenes/kit.ts `ITEMS`); the dispenser beside it hands them out. */
 export const CHIP = 'blankchip';
-
-/** When this thing last reacted (`dev` or `dev.noun`), for the drawing: 1 just now, fading to 0 over `pulseMs`. */
-export function pulse(m: SceneModel, key: string): number {
-  const at = m.scratch['pulse.' + key];
-  if (at === undefined) return 0;
-  const ms = Number(m.data.tuning.pulseMs) || 900;
-  return Math.max(0, 1 - (m.now() - at) / ms);
-}
 
 const mark = (m: SceneModel, c: Ctx) => { m.scratch['pulse.' + c.dev] = m.scratch['pulse.' + c.dev + '.' + c.noun] = m.now(); };
 /** 18:00–06:00 on the city clock (`hour` is a city key every scene reads). */
@@ -39,7 +31,5 @@ const EFFECTS: Record<string, Effect> = {
 export const SANDBOX_RULES: SceneRules = {
   effects: EFFECTS,
   derived: { night: (m): Value => isNight(m) },
-  needs: {devices:[],state:[{key:'lampOn',type:'boolean'},{key:'memo',type:'number'},{key:'phase',type:'string'},{key:'recOn',type:'boolean'},{key:'beaconOn',type:'boolean'},{key:'count',type:'number'},{key:'hatchOpen',type:'boolean'},{key:'fanOn',type:'boolean'},{key:'loginOk',type:'boolean'},{key:'ringsOpen',type:'boolean'},{key:'cipherOpen',type:'boolean'},{key:'cryptexOpen',type:'boolean'},{key:'morseOpen',type:'boolean'},{key:'mains',type:'boolean'},{key:'auditOn',type:'boolean'},{key:'stamped',type:'number'},{key:'belt',type:'boolean'},{key:'cups',type:'number'},{key:'paid',type:'number'},{key:'nightLight',type:'boolean'},{key:'ventOpen',type:'boolean'}]},
-  /** Controller tuning; the original feature inventory is verified against the frozen baseline. */
-  check: (z: SceneData) => typeof z.tuning.pulseMs==='number'?[]:['tuning.pulseMs: missing (the drawing reads it)'],
+  needs: {devices:[],state:[]},
 };

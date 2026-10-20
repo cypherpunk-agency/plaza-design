@@ -88,6 +88,10 @@ export class Menu {
   private title = false;
   /** When the title menu came up (`POP_GRACE`). */
   private poppedAt = 0;
+  private pendingGeneration=0;
+  private fadeTimer?:ReturnType<typeof setTimeout>;
+  private loadTimer?:ReturnType<typeof setTimeout>;
+  private cancelPending(){this.pendingGeneration++;clearTimeout(this.fadeTimer);clearTimeout(this.loadTimer);this.fadeTimer=this.loadTimer=undefined;this.root.classList.remove('gm-fade');}
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 
   constructor(host: HTMLElement, private hooks: MenuHooks, touch: boolean) {
@@ -136,6 +140,7 @@ export class Menu {
 
   show() {
     if (this.open) return;
+    this.cancelPending();
     this.title = false;
     this.root.classList.remove('gm-title-screen', 'gm-fade', 'gm-pop');
     this.open = true;
@@ -171,14 +176,16 @@ export class Menu {
 
   /** NEW GAME on the title: `then` runs at once (the shot starts moving) while the menu fades away. */
   private fadeOut(then: () => void) {
+    this.cancelPending();const generation=this.pendingGeneration;
     this.items = [];
     this.back = () => {};
     this.root.classList.add('gm-fade');
     then();
-    setTimeout(() => { this.hide(); this.root.classList.remove('gm-fade'); }, this.reduced ? 0 : 900);
+    if(generation===this.pendingGeneration)this.fadeTimer=setTimeout(()=>{if(generation===this.pendingGeneration)this.hide();},this.reduced?0:900);
   }
 
   hide() {
+    this.cancelPending();
     if (!this.open) return;
     this.open = false;
     this.title = false;
@@ -358,7 +365,7 @@ export class Menu {
               this.items = [];
               this.list.textContent = '';
               this.back = () => {}; // nothing to go back to while the page reloads
-              setTimeout(() => resumeInto(slot), 250);
+              const generation=this.pendingGeneration;this.loadTimer=setTimeout(()=>{if(generation!==this.pendingGeneration||!this.open)return;this.loadTimer=undefined;resumeInto(slot);},250);
             }, back);
           }
         },

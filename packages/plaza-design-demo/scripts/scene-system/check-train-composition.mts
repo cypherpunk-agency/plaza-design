@@ -1,12 +1,19 @@
+import bindingSource from '../../src/ssg/game/scenes/train/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import type {SceneData as GeometryDeviceData} from '../../src/ssg/game/data/types';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import {referenceView} from './reference-view';
 import assert from'node:assert/strict';import fs from'node:fs';import path from'node:path';import vm from'node:vm';import ts from'typescript';
-import{train,trainScene}from'../../src/ssg/game/scenes/train/index';import{trainComposition,trainGeometry,trainLayout,prepareTrainFrame,drawTrainComposition,trainDeviceData}from'../../src/ssg/game/scenes/train/composition.ts';
+import{train,trainScene}from'../../src/ssg/game/scenes/train/index';import{trainComposition,trainGeometry,trainLayout,prepareTrainFrame,drawTrainComposition}from'../../src/ssg/game/scenes/train/composition.ts';
 import*as primitives from'../../src/ssg/game/art/core/primitives';import*as riders from'../../src/ssg/game/art/characters/riders';import{drawSky}from'../../src/ssg/game/art/environment/sky';import{drawGalleriaDome}from'../../src/ssg/game/art/architecture/galleria-dome';import{drawGrade}from'../../src/ssg/game/art/atmosphere/lighting';import{placed}from'../../src/ssg/game/art/core/view';import{ticker}from'../../src/ssg/game/art/signage/line-departures';import*as line from'../../src/ssg/game/world/transport/line';import{LINE,STATIONS}from'../../src/ssg/game/world/city';import{light}from'../../src/ssg/game/world/light';import{TRAIN}from'../../src/ssg/game/data/index';import type{View}from'../../src/ssg/game/art/core/view';import type{TrainVisualState}from'../../src/ssg/game/art/assemblies/train-interior';
+const trainDeviceData=(data:GeometryDeviceData,composition=trainComposition)=>{const source=bindingSource as unknown as SceneDocument,rows=trainGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalizeGeometry=(data:GeometryDeviceData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 const root=path.resolve('../..'),backup=path.join(root,'.scene-system/metro-train-s5-original');
 function load(file:string,globals:Record<string,unknown>){let text=fs.readFileSync(file,'utf8');const sf=ts.createSourceFile(file,text,99,true);for(const n of sf.statements.filter(n=>ts.isImportDeclaration(n)||(ts.isExportDeclaration(n)&&!!n.moduleSpecifier)).reverse())text=text.slice(0,n.getStart(sf))+text.slice(n.end);const exports:Record<string,any>={};vm.runInNewContext(ts.transpileModule(text,{compilerOptions:{target:99,module:ts.ModuleKind.CommonJS}}).outputText,{exports,...globals});return exports;}
 function plain(v:unknown){return JSON.parse(JSON.stringify(v));}
 const original=load(path.join(backup,'art/assemblies/train-interior.ts'),{...primitives,...riders,...line,LINE,STATIONS,drawSky,drawGalleriaDome,drawGrade,placed,ticker}).createTrainInteriorArtwork;
-const L=JSON.parse(fs.readFileSync(path.join(backup,'train-layout.json'),'utf8'));assert.deepEqual(plain(trainLayout()),L);assert.deepEqual(trainDeviceData(TRAIN),TRAIN);
+const L=JSON.parse(fs.readFileSync(path.join(backup,'train-layout.json'),'utf8'));assert.deepEqual(plain(trainLayout()),L);assert.deepEqual(trainDeviceData(TRAIN),normalizeGeometry(TRAIN));
 /** Compare drawing commands with effective canvas state; harmless balanced scope splits normalize away. */
 function recording(){const ops:any[]=[],stack:any[]=[],init={globalAlpha:1,fillStyle:'#000',strokeStyle:'#000',lineWidth:1,font:'10px sans-serif',textAlign:'start',textBaseline:'alphabetic',shadowBlur:0,shadowColor:'rgba(0,0,0,0)',matrix:[1,0,0,1,0,0],clips:[]};let state:any=structuredClone(init),path:any[]=[];
  const multiply=(b:number[])=>{const a=state.matrix;state.matrix=[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];};

@@ -1,17 +1,23 @@
+import bindingSource from '../../src/ssg/game/scenes/library/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import {libraryScene} from '../../src/ssg/game/scenes/library';
 import {compileActors} from '../../src/ssg/game/engine/gameplay/actors';
 import assert from 'node:assert/strict';
-import { libraryArt, libraryComposition, libraryDeviceData, libraryEnvironment, libraryGeometry, validateLibraryComposition } from '../../src/ssg/game/scenes/library/composition';
+import { libraryArt, libraryComposition, libraryEnvironment, libraryGeometry, validateLibraryComposition } from '../../src/ssg/game/scenes/library/composition';
 import { resolveComposition, type Composition } from '../../src/ssg/game/art/core/composition';
 import type { Character } from '../../src/ssg/game/runtime/characters';
 import type { EngineDraw } from '../../src/ssg/game/engine/host';
 import type { SceneData } from '../../src/ssg/game/data/types';
 import devices from '../../src/ssg/game/scenes/library/devices.json';
 
+const libraryDeviceData=(data:SceneData,composition=libraryComposition,source=bindingSource as unknown as SceneDocument)=>{const rows=libraryGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalize=(data:SceneData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 const doc = validateLibraryComposition(JSON.parse(JSON.stringify(libraryComposition)));
 assert.deepEqual(doc, libraryComposition);
 assert.equal(doc.instances.length, 41);
-assert.deepEqual(libraryDeviceData(devices as SceneData), devices, 'shipping device geometry must remain exact');
+assert.deepEqual(libraryDeviceData(devices as SceneData), normalize(devices as SceneData), 'shipping device geometry must remain exact');
 assert.equal(libraryScene().spawn, 74);
 const changed = structuredClone(doc);
 changed.instances.find(i => i.id === 'counter')!.placement.x += 17;
@@ -29,8 +35,8 @@ function rejects(edit: (doc: Composition) => void, pattern: RegExp) {
   const bad = structuredClone(doc); edit(bad); assert.throws(() => validateLibraryComposition(bad), pattern);
   assert.deepEqual(doc, libraryComposition);
 }
-const withoutPrinter=structuredClone(doc);withoutPrinter.instances=withoutPrinter.instances.filter(i=>i.id!=='printer');assert.doesNotThrow(()=>validateLibraryComposition(withoutPrinter));assert.deepEqual(libraryDeviceData(devices as SceneData,withoutPrinter).devices.find(d=>d.id==='printer')!.layout!.spot,devices.devices.find(d=>d.id==='printer')!.layout!.spot,'unbound device retains its explicit source coordinates without the original picture');
-rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='room');},/Missing gameplay-bound/);
+const withoutPrinter=structuredClone(doc);withoutPrinter.instances=withoutPrinter.instances.filter(i=>i.id!=='printer');assert.doesNotThrow(()=>validateLibraryComposition(withoutPrinter));const detached=structuredClone(bindingSource) as unknown as SceneDocument;delete detached.manifest!.devices!.printer;assert.throws(()=>libraryDeviceData(devices as SceneData,withoutPrinter),/missing manifest artwork/i);assert.deepEqual(libraryDeviceData(devices as SceneData,withoutPrinter,detached).devices.find(d=>d.id==='printer')!.layout!.spot,devices.devices.find(d=>d.id==='printer')!.layout!.spot,'unbound device retains its explicit source coordinates without the original picture');
+const withoutRoom=structuredClone(doc);withoutRoom.instances=withoutRoom.instances.filter(i=>i.id!=='room');assert.doesNotThrow(()=>validateLibraryComposition(withoutRoom));assert.throws(()=>libraryScene(withoutRoom),/Missing manifest artwork/);
 rejects(d => { d.instances.find(i => i.id === 'reader')!.bindings!.online = 'absent'; }, /unknown library binding/);
 rejects(d => { d.instances.find(i => i.id === 'student')!.bindings!.pose = 'absent'; }, /unknown library binding/);
 assert.throws(() => libraryArt.visualProperties('library.person', { pose: { visible: true, character: { x: 1 } } }), /Incomplete prepared character/);
@@ -40,7 +46,7 @@ actors=compileActors(Object.entries(actors).map(([id,p])=>({id,instance:id,band:
 assert.equal(actors.knitter.x, 764);
 assert.deepEqual(actors.shelfe.range, [640, 740]);
 const view = { sx: (x: number) => x, y: (h: number) => 300 - h, gy: 300, t: 137, cam: 0, viewW: 640, viewH: 360, flags: {} };
-const engine = { hover: 'reader', m: { net: { get: () => 'connected' } }, layer: 'all' } as unknown as EngineDraw;
+const engine = { hover: 'reader', m: { value: (key:string) => key==='catalogConnected' }, layer: 'all' } as unknown as EngineDraw;
 const env = libraryEnvironment(changed, view, engine, actors), rows = resolveComposition(libraryArt, changed, env);
 assert.equal(rows.find(i => i.instance.id === 'reader')!.state.hover, true);
 assert.equal(rows.find(i => i.instance.id === 'reader')!.state.online, true);

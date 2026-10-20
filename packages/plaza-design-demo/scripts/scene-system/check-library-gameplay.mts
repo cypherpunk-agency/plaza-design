@@ -39,7 +39,7 @@ const edited=libraryScene(libraryComposition,{}, {},pending);
 const pendingSession=new GameplaySession(edited.gameplay!,{read:()=>({flags:{},items:{},tokens:0}),write:()=>{}});assert.deepEqual(talkTo(edited.people![0],pendingSession).pages,['Pending robot dialogue']);pendingSession.dispose();assert.deepEqual(edited.readables![0].pages,['Pending notice']);assert.deepEqual(edited.uses![0].use(ctx),['Pending chair']);assert.equal(edited.exits[0].label,'[E] PENDING EXIT');
 assert.deepEqual(originalData(edited.data),legacy.data);
 const view={...frameView(0,light()),sx:(x:number)=>x,y:(h:number)=>280-h,t:10,cam:0,gy:280,viewW:960,viewH:360,flags:{}};
-const engine={hover:null,m:{net:new Map()}} as unknown as EngineDraw;
+const engine={hover:null,m:{value:()=>false}} as unknown as EngineDraw;
 assert.ok(PEOPLE.find(person=>person.id==='librarian')!.talk,'Default render-bound librarian retains the hint mark');
 const defaultPose=libraryFrameEnvironment(view,engine).bindings['actor.librarian.pose'] as any;
 assert.ok(defaultPose.character.key&&defaultPose.character.talk,'Prepared default hint mark prerequisites');

@@ -132,6 +132,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"window":"window-back","counter":"counter"},
     "version": 1,
     "width": {
       "instance": "wall",
@@ -308,5 +309,16 @@
   },
   "companion": {
     "mode": "off"
+  },
+  "presentation": {
+    "kind": "shop",
+    "flags": {},
+    "actors": {
+      "keeper": "keeper",
+      "outside": [
+        "outside-0",
+        "outside-1"
+      ]
+    }
   }
 }

@@ -178,7 +178,16 @@ export type ItemId = keyof typeof ITEMS;
  * hack vision shows nothing to hack), people, uses, readables, exits and its
  * own drawing. Which place it belongs to is the city's data (city.ts).
  */
+/** Registered scene artwork passes, shared by shipping Game and isolated editor Play/preview. */
+export interface SceneArtworkFrame {
+  city?:(ctx:CanvasRenderingContext2D,view:View)=>void;
+  street?:(ctx:CanvasRenderingContext2D,view:View,rain:number,lit:boolean)=>void;
+  reflections?:[number,string][];
+}
 export interface SceneDef {
+  artworkFrame?:SceneArtworkFrame;
+  /** Pure registered dockworker presentation, reading the current source's flag roles. */
+  dockworkerCarry?:(flags:Readonly<Record<string,boolean>>)=>'parcel'|'case'|null;
   readonly nativeTargetBindings?:import('../engine/gameplay/native-targets').NativeTargetBindings;
   readonly presentationTargets?:readonly string[];
   /** Bind world controllers once per game; source definitions remain immutable. */
@@ -189,6 +198,7 @@ export interface SceneDef {
   gameplay?: GameplayDefinition;
   /** Story objective for scenes without hacking goals. */
   attention?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{x:number;gentle?:boolean}|null;
+  storyDay?: (flags:Readonly<Record<string,boolean>>)=>number;
   storyMinute?: (flags:Readonly<Record<string,boolean>>)=>number;
   objectives?:readonly import('../engine/gameplay/objectives').ObjectiveDefinition[];
   objective?: (flags: Readonly<Record<string, boolean>>,state?:GameplayState) => string;

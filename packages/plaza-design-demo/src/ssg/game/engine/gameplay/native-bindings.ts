@@ -1,4 +1,7 @@
 import {validateNativeCommandSteps} from './native-command-steps';
+import {validateYardGameplayBindings} from '../controllers/yard';
+import {validateDowntownVisualBindings} from '../controllers/downtown-visual';
+import {validateLaundryGameplayBindings} from '../controllers/laundromat';
 import engineSource from '../../data/engine.json';
 import {validateNativeTextQueries,validateNativeSayShape,validateNativeSaySources,nativeSayKey,nativeSourceLine} from './native-text-source';
 import {validateNativeInputsShape,validateNativeInputSources,dispatchNativeInput} from './native-inputs';
@@ -36,6 +39,9 @@ export function validateNativeShape(d:GameplayDefinition,condition:(v:unknown)=>
 function noun(data:SceneData,key:string){const i=key.indexOf('.');return [...data.devices,...(data.nodes??[])].find(d=>d.id===key.slice(0,i))?.nouns.find(n=>n.id===key.slice(i+1));}
 export function nativeVocabulary(data:SceneData){return [...data.devices,...(data.nodes??[])].flatMap(d=>[...d.nouns.map(n=>({key:d.id+'.'+n.id,verbs:[...(n.clock?['start','stop']:[]),...(n.link?['scan',...Array.from(new Set([...(n.link.reach??[]),...(n.link.known??[])])).map(id=>'connect '+id)]:[]),...(n.verbs??[])],events:n.events??[]})),...(d.sectors??[]).filter(s=>'sequence'in s.seal).map(s=>({key:d.id+'.'+s.id,verbs:'sequence'in s.seal?s.seal.sequence:[],events:[]})),...((data.watchdog?.route??[]).includes(d.id)?[{key:d.id+'.watchdog',verbs:[],events:['arrives','leaves']}]:[])]);}
 export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[],physical:readonly string[]=[]):GameplayDefinition {
+ validateYardGameplayBindings(data,d);
+ validateDowntownVisualBindings(data,d);
+ validateLaundryGameplayBindings(data,d);
  validateNativeInputSources(d,data,physical);validateNativeCommandSteps(d,data);validateNativeTextQueries(d,data);
  validateGameplayQuerySources(d,{...data,texts:{...engineSource.texts,...data.texts}as unknown as SceneData['texts']});
  validateCheckpointOwner(d,data.id);

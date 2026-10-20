@@ -1,3 +1,4 @@
+import {projectDeviceBindings} from '../../engine/gameplay/device-bindings';
 import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import {validateGameplay} from '../../engine/gameplay/validation';
 import {validateSceneDocument} from '../../engine/gameplay/scene-document';
@@ -24,7 +25,6 @@ import { libraryComposition, validateLibraryComposition, libraryGeometry, type L
 import { LIBRARY } from "../../data/index";
 import type {SceneData} from '../../data/types';
 import type { SceneDef } from "../kit";
-import { libraryDeviceData } from './composition';
 import { LIBRARY_RULES } from './rules';
 import { drawLibrary,libraryFrameEnvironment, libraryActors } from './scene';
 
@@ -38,9 +38,9 @@ export function librarySceneDefinition(document: Composition = libraryCompositio
   const commands=validateGameplay(gameplay),content=validateSceneDocument(librarySource(sceneDocument),commands,{actors:true,manifest:true});
   const compiled=compileManifestDocument(content,geometry,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:libraryBindingGroups,groundExits:false});
   const actors=libraryActors(doc,content);
-  return {id:'library',name:content.name,facing:Number(geometry.find(row=>row.instance.type==='library.window')!.props.facing),
+  return {id:'library',name:content.name,facing:Number(compiled.geometry.artwork.orientation?.props.facing??0),
     ...compiled.content,gameplay:withSceneConversations(commands,content),
-    data:commands.native?libraryDeviceData({...deviceSource,dialogue:nativeDeviceDialogues(commands,deviceSource)},doc,content):undefined,rules:commands.native?LIBRARY_RULES:undefined,
+    data:commands.native?projectDeviceBindings(content,geometry,{...deviceSource,dialogue:nativeDeviceDialogues(commands,deviceSource)},compiled.content.width):undefined,rules:commands.native?LIBRARY_RULES:undefined,
     people:content.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
     drawBackdrop:(ctx,view,engine)=>drawLibrary(ctx,view,engine,doc,state,options,actors),
     visualEnvironment:(view,engine)=>libraryFrameEnvironment(view,engine,doc,actors),

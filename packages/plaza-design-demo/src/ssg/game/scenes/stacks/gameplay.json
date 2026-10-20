@@ -20,7 +20,10 @@
     "stacks.crane.landed.reefer",
     "stacks.alarm.pulse",
     "stacks.crane.returned",
-    "stacks.watchdog.restored"
+    "stacks.watchdog.restored",
+    "stacks.crane.started",
+    "stacks.crane.scan.reply",
+    "stacks.crane.warm"
   ],
   "commands": {
     "stacks.pour": {
@@ -197,6 +200,53 @@
         },
         {
           "emit": "stacks.watchdog.restored"
+        }
+      ]
+    },
+    "stacks.crane.started.reefer": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "stacks.boxAt",
+          "set": "air"
+        },
+        {
+          "emit": "stacks.crane.started"
+        }
+      ]
+    },
+    "stacks.crane.started.regular": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "stacks.crane.started"
+        }
+      ]
+    },
+    "stacks.crane.scanned.audible": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "stacks.crane.scan.reply"
+        },
+        {
+          "emit": "stacks.crane.warm"
+        }
+      ]
+    },
+    "stacks.crane.scanned.muted": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "stacks.crane.warm"
         }
       ]
     }
@@ -551,7 +601,10 @@
       "stacks:portFrozen": "portFrozen"
     },
     "verbs": [],
-    "events": {},
+    "events": {
+      "stacks.crane.started": "sts2.spreader:lifted",
+      "stacks.crane.warm": "port.scanner:warm"
+    },
     "goals": {
       "stacks.moth.recruited": "moth",
       "stacks.camera.found": "find",
@@ -576,6 +629,12 @@
         "from": "port",
         "say": {
           "text": "watchdog.restore"
+        }
+      },
+      "stacks.crane.scan.reply": {
+        "from": "port",
+        "say": {
+          "text": "scan.warm"
         }
       }
     },
@@ -613,6 +672,38 @@
         "cases": [
           {
             "command": "stacks.crane.returned"
+          }
+        ]
+      },
+      "stacks.crane.started": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "when": {
+              "flag": "stacks:reeferTrajectory"
+            },
+            "command": "stacks.crane.started.reefer"
+          },
+          {
+            "command": "stacks.crane.started.regular"
+          }
+        ]
+      },
+      "stacks.crane.scanned": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "when": {
+              "flag": "stacks:portFrozen"
+            },
+            "command": "stacks.crane.scanned.muted"
+          },
+          {
+            "command": "stacks.crane.scanned.audible"
           }
         ]
       }

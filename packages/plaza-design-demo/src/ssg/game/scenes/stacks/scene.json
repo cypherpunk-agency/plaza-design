@@ -380,6 +380,12 @@
     }
   ],
   "manifest": {
+    "devices": {
+      "sts2": "device-sts2",
+      "port": "device-port",
+      "ferry": "device-ferry",
+      "reefer": "device-reefer"
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -408,6 +414,22 @@
         "instance": "exit-warehouse",
         "promptH": 92
       }
+    },
+    "artwork": {
+      "horizon": "scene",
+      "block0": "block-0",
+      "block1": "block-1",
+      "block2": "block-2",
+      "ladder": "ladder-panel",
+      "quay": "quay-floor",
+      "kiosk": "ferry-kiosk",
+      "bridge": "bridge",
+      "gate": "gate",
+      "rest": "rule-rest",
+      "slot": "rule-slot",
+      "chassis": "rule-chassis",
+      "hatch": "rule-hatch",
+      "deck": "rule-deck"
     }
   },
   "environment": {
@@ -436,6 +458,14 @@
           "companion.pet.idle.3"
         ]
       }
+    }
+  },
+  "presentation": {
+    "kind": "stacks",
+    "flags": {},
+    "actors": {
+      "craneOperator": "operator",
+      "rescuedPassenger": "moth"
     }
   }
 }

@@ -5,6 +5,7 @@
  */
 
 import { button, el, type PanelFn } from "../../engine/panels";
+import {cameraPan,cameraParcel} from '../../engine/controllers/camera-bindings';
 
 export const cameraPanel: PanelFn = ({ body, m, say, frame }) => {
   body.classList.add('cam');
@@ -16,7 +17,7 @@ export const cameraPanel: PanelFn = ({ body, m, say, frame }) => {
   let s = 1, ox = 0, oy = 0, zoom = 1, focus = { x: 160, y: 75 }, cross = { x: 160, y: 80 }, aim = { x: 160, y: 80 };
   const tags = new Set<string>();
   const hud = m.label('cam.hud'), aimText = m.label('cam.aim');
-  const pan = () => (m.get('pan') as number) * 40;
+  const pan = () => cameraPan(m);
   const under = (p: { x: number; y: number }) => crates.find((k) => p.x >= k.x - pan() - 3 && p.x <= k.x - pan() + k.w + 3 && p.y >= k.y - 3 && p.y <= k.y + k.h + 3);
   const fit = () => {
     const d = window.devicePixelRatio || 1;
@@ -34,7 +35,7 @@ export const cameraPanel: PanelFn = ({ body, m, say, frame }) => {
       if (zoom === 1) {
         zoom = 3; focus = { ...cross };
         if (!k) return say(m.line('cam.zoom.gravel'));
-        const mine = k.id === m.get('parcel');
+        const mine = k.id === cameraParcel(m);
         say(m.line(mine ? 'cam.zoom.parcel' : 'cam.zoom.crate', { id: k.id, label: k.label.toLowerCase() }));
         // found: the first time you read your own name on a crate
         if(mine&&m.data.camera?.actions?.inspectOwned)m.runCommand(m.data.camera.actions.inspectOwned);

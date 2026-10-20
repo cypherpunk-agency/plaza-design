@@ -64,8 +64,7 @@ export function cryptexPanel(kit: PanelKit, key: string) {
       e.preventDefault(); toy.sel = i; draw();
       let y0 = e.clientY;
       const mv = (ev: PointerEvent) => { while (ev.clientY - y0 > 22) { turn(-1); y0 += 22; } while (y0 - ev.clientY > 22) { turn(1); y0 -= 22; } };
-      const end = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', end); };
-      window.addEventListener('pointermove', mv); window.addEventListener('pointerup', end);
+      f.gesture(e,mv);
     });
     return { col, prev, cur, next };
   });

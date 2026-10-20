@@ -47,3 +47,54 @@ This intentionally changes historical/injected-flags behavior: setting `till`, c
 `check-beach-yard-endpoint-crud.mts` covers explicit default geometry, rebinding Kiosk/CAM-1 without original device markers, actual typed binding and endpoint deletion, strict remaining physical anchors and dangling references, native model/frame preparation, grouped history/bundle/protected Save/fresh shipping and exact-byte Undo. The kiosk deletion explicitly removes its billing workflow and replies; it does not silently retain invisible billing. Existing Beach workflow and Yard grab/hatch/drop parity suites preserve the unchanged default mechanics, including danger timing and parcel trajectories.
 
 `check-moth-laundromat-endpoint-crud.mts` covers the same pending/runtime/editor/Save lifecycle for Mail/Clock endpoints and their optional pictures. Clock-owned cables are removed with the endpoint; dangling clock cables still fail. Alternate Moth seals/watchdog routing and a renamed washer completion event with its corresponding source mapping are accepted, saved and freshly imported, while a stale event mapping fails. The original Moth geometry/snapshot and Laundromat deadline/breaker/jacket parity suites preserve default presentation and outcomes.
+
+## Capsule explicit artwork ownership
+
+2026-10-20: all seven Capsule devices now bind their position through scene.manifest.devices.
+Shipping uses the same shared projection as pending Play. Removed capsuleDeviceData and its
+editor fallback entry; detaching/rebinding does not consult device-ID-derived marker names.
+Dimensions remain in the device source. check-capsule-artwork-roles.mts now drives the actual
+Device router artwork control, removes the old marker and observes the new spot through runtime,
+history/bundle/protected Save/fresh shipping import/byte Undo (`capsule-actor-role-source-MRYxoN`).
+Ten device source baseline/primitive/cable checks PASS with full scene source context. Capsule
+controller/current-save proof PASS (`capsule-controller/run-UKFs3u`), interiors10 PASS, tsc/both
+builds PASS; source3c2235688a3d has173 zero-difference/error raster rows and native Capsule Play/Stop.
+Nine other scene geometry adapters remain; size/height property sources must migrate through a
+shared typed contract before those adapters are removed. No old-save conversion or new owner.
+
+## Five further geometry adapters removed
+
+Yard3, Moth7, Library3, Laundry7 and Stacks4 positions now use explicit shared manifest.devices
+bindings. The Library printer's -2 offset belongs to that source binding. The five corresponding
+shipping helpers and editor adapter registry entries are deleted. Native factories and pending
+Play consume the same common projector. Actual bound artwork must exist; detaching uses explicit
+device source coordinates. It never infers a marker name from a device ID.
+
+check-shared-device-geometry.mts PASS (`shared-device-geometry-9tc9nJ`) through actual typed forms,
+old-marker deletion, native models, invalid refs, history/bundle/protected Save/fresh import/byte
+Undo. Ten device source defaults/cables/primitive checks and the five original scene fixtures PASS.
+Interiors10, Stacks22/NPC/tea, Yard native source/controller proof and both builds/tsc PASS.
+Sourcead7e72626a90 passes173 original raster rows without differences/errors and targeted five-scene
+native Play/Stop without warnings. Four size/offset-derived adapters remain to migrate through a
+shared typed device extent/property contract; none is declared complete by this checkpoint.
+
+## One device artwork projection
+
+2026-10-20: all ten placement adapters and their editor routing table are removed. Common device
+bindings optionally select widthProperty, heightProperty and heightOffsetProperty from their bound
+artwork. Dimensions must resolve positive; offsets finite; scale/anchors and authored local offsets
+use the existing world-point bounds. Controls are in the selected artwork's Device inspector.
+Rebinding keeps compatible property refs; detaching copies the current projected spot into explicit
+device source coordinates. No controller, old marker identity or fallback source is inferred.
+
+Downtown10, Beach6, Sandbox37 and Train1 now own explicit source geometry through this contract.
+The committed fixture scripts/scene-system/fixtures/device-property-spots-before.json records the54
+pre-change spots at sourcead7e72626a90/74b7d36. check-device-property-geometry.mts matches every spot,
+uses actual controls to swap properties/change offsets on scaled replacement artwork, deletes old
+markers after updating real dependencies, rejects invalid refs/zero extents atomically, and covers
+history/bundle/protected Save/fresh import/byte Undo (`device-property-geometry-ZSUCTh`).
+Original Downtown143/Beach60/Train270 paint commands and Sandbox37 geometry cases PASS; Sandbox109,
+Beach512 and Train188 outcome/timing histories PASS. Ten device-source defaults/cables/primitive
+checks, prior five-scene projection proof, both builds/tsc PASS. Sourcef4a4078370ca passes all173
+zero-difference/error raster rows and targeted four-scene native editor Play/Stop without warnings.
+Remaining geometry contracts concern the pictures/controllers themselves, not device placement.

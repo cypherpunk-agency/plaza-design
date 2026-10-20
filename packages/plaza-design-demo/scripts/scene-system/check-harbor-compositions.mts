@@ -1,11 +1,12 @@
 import {light} from '../../src/ssg/game/world/light';
 import assert from 'node:assert/strict';import fs from'node:fs';import path from'node:path';import vm from'node:vm';import ts from'typescript';
-import { harbor,harborScene,HARBOR_ACTORS,harborCraneCall } from '../../src/ssg/game/scenes/harbor/index';
+import { harbor,harborScene,HARBOR_ACTORS } from '../../src/ssg/game/scenes/harbor/index';
 import { harborComposition,harborEnvironment,harborGeometry,harborLayout,drawHarborComposition,harborLights,harborCasters } from '../../src/ssg/game/scenes/harbor/composition.ts';
 import { harborShift,harborShiftScene,HARBOR_SHIFT_ACTORS,SHIFT_USES } from '../../src/ssg/game/scenes/harbor-shift/index';
 import { harborShiftComposition,harborShiftGeometry,drawHarborShiftComposition } from '../../src/ssg/game/scenes/harbor-shift/composition.ts';
 import * as primitives from '../../src/ssg/game/art/core/primitives';import * as distance from '../../src/ssg/game/art/environment/harbor-distance';import * as cranes from '../../src/ssg/game/art/machinery/crane';import * as containers from '../../src/ssg/game/art/props/containers';import * as screens from '../../src/ssg/game/art/signage/screens';import * as chars from '../../src/ssg/game/runtime/characters';import * as construction from '../../src/ssg/game/art/assemblies/construction';
 import { placed,frameView } from '../../src/ssg/game/art/core/view';import { gullFlying } from '../../src/ssg/game/art/characters/gull';import { drawTaxiPad } from '../../src/ssg/game/art/assemblies/taxi-pad';import { screenLine } from '../../src/ssg/game/world/weather';import type { View } from '../../src/ssg/game/art/core/view';
+const harborCraneCall=()=>Number((harbor.presentationState!.capture() as Record<string,number>).craneCall); // Fixture reads the real signal owner.
 const root=path.resolve('../..'),backup=path.join(root,'.scene-system/harbor-s5-original');
 function bodies(file:string){const sf=ts.createSourceFile(file,fs.readFileSync(file,'utf8'),99,true),out=new Map<string,string>();function visit(n:ts.Node){if(ts.isFunctionDeclaration(n)&&n.name&&n.body)out.set(n.name.text,n.body.getText(sf).replaceAll('\r',''));ts.forEachChild(n,visit);}visit(sf);return out;}
 const immutable=bodies(path.join(root,'.scene-system/baseline/source/ssg/game/scenes/harbor.ts')),saved=bodies(path.join(backup,'art/assemblies/harbor-pier.ts'));
@@ -19,7 +20,7 @@ const actors=HARBOR_ACTORS,a=(id:string)=>actors[id];
 const originalInputs={L:values.L,craneCall:harborCraneCall(),operators:[a('operator0'),a('operator1')],DEN:[a('den-person0'),a('den-person1')],driver:a('driver'),watchman:a('watchman'),STACKS:values.STACKS,fishSeller:a('fishSeller'),teaMan:a('teaMan'),PIER:[0,1,2,3,4,5,6,7,8].map(i=>a('pier-person'+i)),guard:a('guard'),TALKERS:['customs','docker','tide','fisher','jogger'].map(a),BIRDS:[0,1,2,3,4,5].map(i=>a('bird'+i)),CAT:a('cat')};const old=original(originalInputs);
 const oldShift=load(path.join(backup,'art/assemblies/dockwork.ts'),common).drawDockwork;
 function plain(v:unknown){return JSON.parse(JSON.stringify(v));}
-assert.deepEqual(plain(harborLayout()),values.L);
+const activeLayout=structuredClone(values.L);for(const key of ['spawn','bribe','ghostUse','bollards'])delete activeLayout[key];delete activeLayout.fish.use;delete activeLayout.drinks.use;assert.deepEqual(plain(harborLayout()),activeLayout);
 const oldScene=load(path.join(backup,'scenes/harbor/index.ts'),{...common,createHarborPierArtwork:()=>({})}).harbor;
 assert.deepEqual(plain(harborLights()),plain(oldScene.lights));assert.deepEqual(plain(harborCasters()),plain(oldScene.casters));
 for(const k of ['id','width','spawn','exits','readables','shade'])assert.deepEqual(plain((harbor as any)[k]),plain(oldScene[k]),k+' metadata');

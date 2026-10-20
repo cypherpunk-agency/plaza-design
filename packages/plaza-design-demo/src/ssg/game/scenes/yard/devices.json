@@ -328,6 +328,13 @@
     ],
     "actions": {
       "inspectOwned": "yard.camera.discover"
+    },
+    "bindings": {
+      "pan": {
+        "state": "pan",
+        "scale": 40
+      },
+      "parcel": "parcel"
     }
   },
   "dialogue": {},
@@ -420,5 +427,43 @@
     "cam.on": "ON: crate {id}",
     "cam.aim": "tap the feed to aim",
     "talk.aria": "Say something to HINGE"
+  },
+  "controller": {
+    "kind": "yard",
+    "version": 1,
+    "state": {
+      "pan": "pan",
+      "gateAllowed": "gateAllowed",
+      "parcelAt": "parcelAt",
+      "armAt": "armAt"
+    },
+    "gateOpen": "yard.gateOpen",
+    "slideDeadline": "yard.slide",
+    "hookEase": 0.08,
+    "slots": {
+      "home": "slot-home",
+      "A-3": "A-3",
+      "B-5": "B-5",
+      "C-7": "C-7",
+      "chute": "slot-chute"
+    },
+    "cargoSlots": [
+      "A-3",
+      "B-5",
+      "C-7"
+    ],
+    "anchors": {
+      "crane": "crane",
+      "chute": "chute",
+      "tray": "tray"
+    },
+    "places": {
+      "home": "home",
+      "hook": "hook",
+      "chute": "chute",
+      "sliding": "sliding",
+      "bounced": "bounced",
+      "tray": "tray"
+    }
   }
 }

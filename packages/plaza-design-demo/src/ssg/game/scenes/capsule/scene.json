@@ -64,6 +64,8 @@
     }
   ],
   "manifest": {
+    "devices": {"lock": "device-lock", "fridge": "device-fridge", "kettle": "device-kettle", "blinds": "device-blinds", "pc": "device-pc", "plug": "device-plug", "router": "device-router"},
+    "artwork": {"orientation":"blinds","deskSurface":"desk","sunPatch":"sun-patch","router":"router","door":"door"},
     "version": 1,
     "width": {
       "instance": "shell",

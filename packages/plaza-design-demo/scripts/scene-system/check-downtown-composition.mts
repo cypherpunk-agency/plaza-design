@@ -1,10 +1,15 @@
+import bindingSource from '../../src/ssg/game/scenes/downtown/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import type {SceneData as GeometryDeviceData} from '../../src/ssg/game/data/types';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import {referenceView} from './reference-view';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';import vm from 'node:vm';import ts from 'typescript';
-import { downtownArt,downtownComposition,downtownDeviceData,downtownGeometry,downtownLights,downtownCasters,renderDowntownCity,renderDowntownStreet,renderDowntownPeople,renderDowntownDevices,validateDowntownComposition,SMEARS } from '../../src/ssg/game/scenes/downtown/composition.ts';
+import { downtownArt,downtownComposition,downtownGeometry,downtownLights,downtownCasters,renderDowntownCity,renderDowntownStreet,renderDowntownPeople,renderDowntownDevices,validateDowntownComposition,SMEARS } from '../../src/ssg/game/scenes/downtown/composition.ts';
 import { downtownScene } from '../../src/ssg/game/scenes/downtown/index';
 import { downtownPlacements,downtownDoors } from '../../src/ssg/game/scenes/downtown/placements';
-import { FRONTS, NPCS, STALL, LEVEL_W, PLATFORMS } from '../../src/ssg/game/scenes/downtown/layout';
+import { FRONTS, STALL, LEVEL_W, PLATFORMS } from '../../src/ssg/game/scenes/downtown/layout';
 import * as sprites from '../../src/ssg/game/art/core/sprites';
 import * as light from '../../src/ssg/game/world/light';
 import { glass } from '../../src/ssg/game/art/environment/sky';
@@ -19,6 +24,8 @@ import devices from '../../src/ssg/game/scenes/downtown/devices.json';
 import type { SceneData } from '../../src/ssg/game/data/types';
 import type { SceneModel } from '../../src/ssg/game/engine/model';
 import type { View } from '../../src/ssg/game/art/core/view';
+const downtownDeviceData=(data:GeometryDeviceData,composition=downtownComposition)=>{const source=bindingSource as unknown as SceneDocument,rows=downtownGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalizeGeometry=(data:GeometryDeviceData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 const root=path.resolve('../..'),backup=path.join(root,'.scene-system/downtown-s5-original');
 function methodBodies(file:string,name:string){const s=ts.createSourceFile(file,fs.readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true),c=s.statements.find(n=>ts.isClassDeclaration(n)&&n.name?.text===name) as ts.ClassDeclaration;return new Map(c.members.filter(ts.isMethodDeclaration).map(n=>[n.name.getText(s),n.body!.getText(s).replaceAll('\r','')]));}
 const immutableBodies=methodBodies(path.join(root,'.scene-system/baseline/source/ssg/game/game.ts'),'Game');
@@ -35,12 +42,12 @@ function load(file:string,globals:Record<string,unknown>) {
 const oldLayout=load(path.join(backup,'scenes/downtown/layout.ts'),{SPR:sprites.SPR});
 assert.deepEqual(JSON.parse(JSON.stringify(FRONTS)),JSON.parse(JSON.stringify(oldLayout.FRONTS)));
 assert.deepEqual(PLATFORMS,JSON.parse(JSON.stringify(oldLayout.PLATFORMS)));
-assert.deepEqual(STALL,JSON.parse(JSON.stringify(oldLayout.STALL)));assert.equal(LEVEL_W,oldLayout.LEVEL_W);
+assert.deepEqual(STALL,{x:oldLayout.STALL.x,w:oldLayout.STALL.w});assert.equal(downtownGeometry().find(r=>r.instance.id==='fixer')!.placement.x,oldLayout.STALL.fixerX);assert.equal(LEVEL_W,oldLayout.LEVEL_W);
 let referenceViewForOld:View;
 const before=load(path.join(backup,'art/assemblies/downtown.ts'),{...sprites,FRONTS:oldLayout.FRONTS,NPCS:oldLayout.NPCS,STALL:oldLayout.STALL,LEVEL_W:oldLayout.LEVEL_W,DOORS:downtownDoors,windowLit:light.windowLit,lightNow:light.light,glass,addLight:(source:Parameters<typeof addLight>[1])=>addLight(referenceViewForOld,source),castShadow,ticker,YELLOW,screenLine,sceneClimate});
 const oldDevices=load(path.join(backup,'art/electronics/downtown-devices.ts'),primitives).createDowntownDevicesArtwork({MAP_KIOSK_X:1392});
 assert.deepEqual(SMEARS,JSON.parse(JSON.stringify(before.SMEARS)));
-assert.deepEqual(downtownDeviceData(devices as SceneData),devices);
+assert.deepEqual(downtownDeviceData(devices as SceneData),normalizeGeometry(devices as SceneData));
 const oldIndexFile=path.join(backup,'scenes/downtown/index.ts'),oldIndex=ts.createSourceFile(oldIndexFile,fs.readFileSync(oldIndexFile,'utf8'),ts.ScriptTarget.Latest,true);
 function originalProperty(name:string):unknown{let code='';function visit(n:ts.Node){if(ts.isVariableDeclaration(n)&&n.name.getText(oldIndex)==='downtown')for(const p of (n.initializer as ts.ObjectLiteralExpression).properties)if(ts.isPropertyAssignment(p)&&p.name.getText(oldIndex)===name)code=p.initializer.getText(oldIndex);ts.forEachChild(n,visit);}visit(oldIndex);return vm.runInNewContext('('+code+')');}
 assert.deepEqual(downtownLights(),JSON.parse(JSON.stringify(originalProperty('lights'))));
@@ -56,11 +63,11 @@ for(const cam of [0,300,850,1400,1850])for(const gy of [170,280,440])for(const t
  v.illumination=createLightingFrame(v.lighting);referenceViewForOld=v;old.drawSkyline(0.18,7,70,150,0.18,0.12);old.drawAntenna();old.drawSkyline(0.45,19,50,120,0.3,0.18);old.drawFronts();drawLights(a.ctx,v,undefined);
  v.illumination=createLightingFrame(v.lighting);referenceViewForOld=v;renderDowntownCity(b.ctx,v);drawLights(b.ctx,v,undefined);same(a.ops,b.ops,`city cam=${cam} gy=${gy} t=${t}`);
  const sa=recording(),sb=recording();old.set(sa.ctx,v);old.drawStreet(0.7,true);renderDowntownStreet(sb.ctx,v,0.7,true);same(sa.ops,sb.ops,'street');
- const pa=recording(),pb=recording();old.set(pa.ctx,v);old.drawStallPeople();renderDowntownPeople(pb.ctx,v);same(pa.ops,pb.ops,'people');
+ const pa=recording(),pb=recording();old.set(pa.ctx,v);old.drawStallPeople();downtownScene().drawActors!(pb.ctx,v);same(pa.ops,pb.ops,'people');
 }
 for(const on of [false,true])for(const cam of [0,600,1200,1800]){
  const v:View=referenceView({sx:(wx,p=1)=>Math.round(wx-cam*p),y:h=>280-h,t:137,cam,gy:280,viewW:640,viewH:360,flags:{}});
- const model={data:devices,now:()=>700,scratch:{signTest:on?50:-1e9},value:()=>on,get:(k:string)=>k==='feed'?(on?'cam3':'ads'):k==='lock'?(on?'open':'shut'):k==='dlvAt'?(on?'driving':'home'):on,traceOf:()=>on?60:0,spots:()=>devices.devices.map(d=>({id:d.id,...d.layout.spot,y:'y'in d.layout.spot?d.layout.spot.y:0}))} as unknown as SceneModel;
+ const model={data:devices,now:()=>700,scratch:{signTest:on?50:-1e9,'pulse.sign':on?50:-1e9},value:()=>on,get:(k:string)=>k==='feed'?(on?'cam3':'ads'):k==='lock'?(on?'open':'shut'):k==='dlvAt'?(on?'driving':'home'):on,traceOf:()=>on?60:0,spots:()=>devices.devices.map(d=>({id:d.id,...d.layout.spot,y:'y'in d.layout.spot?d.layout.spot.y:0}))} as unknown as SceneModel;
  const a=recording(),b=recording();drawLibraryFront(a.ctx,v,downtownDoors.library);oldDevices.drawDowntown(a.ctx,model,v,'sign',1062);drawMetroStairs(a.ctx,v,downtownDoors.metro);drawTaxiPad(a.ctx,v,downtownDoors.taxi);renderDowntownDevices(b.ctx,v,model,'sign',1062);same(a.ops,b.ops,'devices '+cam+' '+on);
 }
 const changed=structuredClone(downtownComposition),wall=changed.instances.find(n=>n.id==='front-7')!;wall.placement.scale=1.5;wall.placement.facing=-1;wall.placement.x+=37;
@@ -78,6 +85,6 @@ const coreShop=downtownGeometry(shared).find(r=>r.instance.id==='exit-shop')!.pl
 assert.equal(downtownPlacements(shared).get('exit-shop').x,coreShop.x,'shared-kit anchor uses same source/runtime geometry');
 assert.equal(downtownScene(shared).exits.find(e=>e.id==='shop')!.x,coreShop.x);
 const invalid=structuredClone(downtownComposition);invalid.instances.find(n=>n.id==='noodle-stall')!.props.mask=['wrong'];assert.throws(()=>validateDowntownComposition(invalid),/mask/);
-assert.equal(NPCS.length,3);assert.equal(downtownArt.catalog().filter(e=>e.type.startsWith('downtown.')).length,38);
+assert.equal(oldLayout.NPCS.length,3);assert.equal(downtownArt.catalog().filter(e=>e.type.startsWith('downtown.')).length,38);
 fs.writeFileSync(path.join(root,'.scene-system/evidence/S5-downtown-composition-contracts.json'),JSON.stringify({instances:downtownGeometry().length,elements:downtownArt.catalog().filter(e=>e.type.startsWith('downtown.')).length,commandComparisons:comparisons,comparisonBodiesMatchImmutableBaseline:originalNames,unchangedLeafBodies:['neon','drawWindow','drawBay','plate'],sourceLayoutEquivalent:true,deviceDataEquivalent:true,lightCasterMetadataEquivalent:true,markerTransformEquivalence:true,sharedKitAnchorEquivalence:true,markerRoundTrip:true,note:'Exact canvas command sequences supplement integrated pixel comparison; these are not pixel-renderer results.'},null,2));
 console.log(`Downtown composition: ${comparisons} exact canvas-command cases, ${downtownGeometry().length} independently placed instances, unchanged source layout/device data, transform/marker contracts pass.`);

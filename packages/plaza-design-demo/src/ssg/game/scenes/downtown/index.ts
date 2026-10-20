@@ -1,3 +1,5 @@
+import {projectDeviceBindings} from '../../engine/gameplay/device-bindings';
+import {downtownController} from '../../engine/controllers/motion';
 import {compileSceneActors} from '../../engine/gameplay/actors';
 import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
@@ -22,10 +24,9 @@ import { downtownLayout } from "./layout";
 import type { SceneDef } from "../kit";
 import { cam3Panel } from './camera';
 import { downtownRules, dlvX } from './rules';
-import { downtownDeviceData, downtownComposition, downtownLights, downtownCasters, downtownGeometry, renderDowntownDevices,renderDowntownPeople,downtownEnvironment, validateDowntownComposition, type DowntownRenderOptions } from './composition';
+import {  downtownComposition,downtownReflections,renderDowntownCity,renderDowntownStreet, downtownLights, downtownCasters, downtownGeometry, renderDowntownDevices,renderDowntownPeople,downtownEnvironment, validateDowntownComposition, type DowntownRenderOptions } from './composition';
 import type { Composition, Properties } from '../../art/core/composition';
 
-export { MAP_KIOSK_X } from './scene';
 export { syncGoals } from './save';
 export { sceneShell, type SceneShell } from './shell';
 
@@ -53,11 +54,11 @@ const baseDowntown:Omit<SceneDef,'width'|'spawn'|'exits'|'drawBackdrop'> = {
 /** Local marker edits enter the same runtime definition; rule functions and destinations stay intact. */
 export const downtownExitMarkerPolicy={axes:['x'] as const,verticalPhysics:false} as const;
 export function downtownScene(document:Composition=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay,deviceSource:SceneData=DOWNTOWN):SceneDef {
- const doc=validateDowntownComposition(document),authored=content.validateScene(sceneDocument,gameplay),layout=downtownLayout(doc,authored),data=downtownDeviceData(projectSceneState(deviceSource,gameplay),doc,authored),home=data.devices.find(d=>d.id==='dlv9')!.layout!.spot!.x;
+ const doc=validateDowntownComposition(document),authored=content.validateScene(sceneDocument,gameplay),layout=downtownLayout(doc,authored),data=projectDeviceBindings(authored,downtownGeometry(doc),projectSceneState(deviceSource,gameplay),layout.width),home=(m:import('../../engine/model').SceneModel)=>m.data.devices.find(d=>d.id===downtownController(m.data).devices.vehicle)!.layout!.spot!.x;
  const actors=compileSceneActors(authored,downtownGeometry(doc));
  const compiled=compileManifestDocument(authored,downtownGeometry(doc),(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:downtownBindingGroups,groundExits:false,transformedExits:true});
- return{...baseDowntown,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),drawActors:(x,v)=>renderDowntownPeople(x,v,doc,overrides,options,actors),visualEnvironment:v=>downtownEnvironment(doc,v,{overrides,options,actors}),platforms:layout.platforms,data,lights:downtownLights(doc),casters:downtownCasters(doc),
-  drawBackdrop:(x,v,e)=>renderDowntownDevices(x,v,e.m,e.hover,dlvX(e.m,home),doc,overrides,options),
+ return{...baseDowntown,...compiled.content,artworkFrame:{reflections:downtownReflections(doc,authored),city:(x,v)=>renderDowntownCity(x,v,doc,overrides,options,authored),street:(x,v,rain,lit)=>renderDowntownStreet(x,v,rain,lit,doc,overrides,options,authored)},name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),drawActors:(x,v)=>renderDowntownPeople(x,v,doc,overrides,options,actors,authored),visualEnvironment:v=>downtownEnvironment(doc,v,{overrides,options,actors,source:authored}),platforms:layout.platforms,data,lights:downtownLights(doc),casters:downtownCasters(doc,authored),
+  drawBackdrop:(x,v,e)=>renderDowntownDevices(x,v,e.m,e.hover,dlvX(e.m,home(e.m)),doc,overrides,options,authored),
  };
 }
 

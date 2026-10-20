@@ -38,7 +38,7 @@
       "id": "tide",
       "name": "TIDE TABLE",
       "pages": [
-        "HIGH TIDE 03:12 \u00b7 LOW TIDE 09:40.",
+        "HIGH TIDE 03:12 · LOW TIDE 09:40.",
         "PLATFORM MAY FLOOD AT HIGH TIDE. SERVICE CONTINUES."
       ],
       "promptH": 84
@@ -59,7 +59,7 @@
       "id": "harbor",
       "to": "harbor",
       "at": "metro",
-      "label": "[E] GATE \u00b7 HARBOR PIER",
+      "label": "[E] GATE · HARBOR PIER",
       "promptH": 92
     },
     {
@@ -108,6 +108,11 @@
       "regular": {
         "instance": "regular"
       }
+    },
+    "artwork": {
+      "roof": "roof",
+      "stop": "platform-train",
+      "water": "water"
     }
   },
   "rests": [

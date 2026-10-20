@@ -1,3 +1,5 @@
+import {renderConversationStructure} from './conversation-structure-authoring';
+import {renderGameplayPurchasesAuthoring} from './gameplay-purchases-authoring';
 import {domainActionOptions,initialDomainAction,renderDomainAction} from './domain-actions-authoring';
 import {GAMEPLAY_ABILITIES} from '../engine/gameplay/rewards';
 import {renderCheckpointAuthoring} from './checkpoint-authoring';
@@ -7,7 +9,7 @@ import type {SceneData} from '../data/types';
 import {renderGameplayBindingsAuthoring} from './gameplay-bindings-authoring';
 import {TypedForm} from './typed-form';
 import type { Condition, ConversationChoice, GameplayAction, GameplayDefinition } from '../engine/gameplay/types';
-import { validateShiftGameplay } from '../scenes/harbor-shift/gameplay-contract';
+import {validateGameplay} from '../engine/gameplay/validation';
 
 export interface GameplayAuthoring {
   nativeData?:SceneData;
@@ -25,7 +27,7 @@ export interface GameplayAuthoring {
 
 /** Typed controls for the pilot's registered vocabulary; no executable or raw JSON fields. */
 export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthoring){
-  let conversation='supervisor',node='offer',command='shift.accept',disposed=false;
+  let conversation='',node='',command='',disposed=false;
   const expanded=new Map<string,boolean>(),bindingDraft:Record<string,string>={};
   const root=document.createElement('section');root.className='gameplay-editor';host.append(root);
   const error=document.createElement('p');error.className='error';error.setAttribute('role','alert');
@@ -38,11 +40,11 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
   function select(parent:HTMLElement,name:string,values:readonly string[],value:string,change:(value:string)=>void){const input=element('select');for(const v of values){const option=element('option',v||'(none)');option.value=v;input.append(option);}input.value=value;input.onchange=()=>{try{change(input.value);}catch(e){report(e);}};field(parent,name,input);}
   function section(parent:HTMLElement,title:string,collapsed=false){const details=element('details'),key=conversation+'/'+node+'/'+command+':'+title;details.open=expanded.get(key)??(!collapsed&&parent===root);// nested rows start collapsed so a node reads as an index
    details.ontoggle=()=>expanded.set(key,details.open);details.append(element('summary',title));const body=element('div');body.className='gameplay-fields';details.append(body);parent.append(details);return body;}
-  function edit(label:string,change:(doc:GameplayDefinition)=>void){const doc=(options.validate??validateShiftGameplay)(options.document());change(doc);const valid=(options.validate??validateShiftGameplay)(doc);error.textContent='';options.onEdit(valid,label);}
+  function edit(label:string,change:(doc:GameplayDefinition)=>void){const doc=(options.validate??validateGameplay)(options.document());change(doc);const valid=(options.validate??validateGameplay)(doc);error.textContent='';options.onEdit(valid,label);}
   function condition(parent:HTMLElement,name:string,value:Condition|undefined,change:(value:Condition|undefined)=>void,doc:GameplayDefinition,depth=0){const form=new TypedForm(report);form.objectiveIds=options.objectiveIdsSource?.()??[];form.condition(parent,name,value,change,doc,false,depth);}
   function refresh(){
     if(disposed)return;
-    const doc=(options.validate??validateShiftGameplay)(options.document());
+    const doc=(options.validate??validateGameplay)(options.document());
     const nativeData=options.nativeDataSource?options.nativeDataSource():options.nativeData,nativeDerived=options.nativeDerivedSource?.();
     if(!doc.conversations[conversation])conversation=Object.keys(doc.conversations)[0];
     const writableFlags=doc.flags.filter(flag=>!doc.native?.reads?.[flag]);
@@ -51,20 +53,14 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     root.replaceChildren();root.append(element('p','Edits join the editor history; Undo, Redo and Save are in the header.'));
     root.append(error);
     const form=new TypedForm(report);form.objectiveIds=options.objectiveIdsSource?.()??[];
-    for(const[id,p]of Object.entries(doc.purchases??{})){const box=section(root,'Purchase '+id);form.number(box,'Purchase '+id+' base price',p.basePrice,value=>edit('Edit purchase price',d=>{d.purchases![id].basePrice=value;}));box.append(element('p','Quote and charge share this base. Explicit modifiers may change either. Goods: '+(p.rotation?.items??p.goods?.map(g=>g.item+' x'+g.quantity)??[]).join(', ')));
-     if(!p.rotation)form.select(box,'Purchase '+id+' kind',doc.items.length?['goods','service']:['service'],p.service?'service':'goods',kind=>edit('Edit purchase kind',d=>{const p=d.purchases![id];if(kind==='service'){p.service=true;delete p.goods;}else{delete p.service;p.goods=[{item:d.items[0],quantity:1}];}}));
-     p.goods?.forEach((goods,i)=>{form.select(box,'Purchase '+id+' goods '+(i+1),doc.items,goods.item,item=>edit('Edit purchase goods',d=>{d.purchases![id].goods![i].item=item;}));form.number(box,'Purchase '+id+' quantity '+(i+1),goods.quantity,quantity=>edit('Edit purchase quantity',d=>{d.purchases![id].goods![i].quantity=quantity;}),1);});
-     const stocks=Object.entries(doc.state??{}).filter(([key,d])=>d.type==='number'&&d.integer!==false&&!d.nullable&&(d.min??-1000000)>=0&&key!==p.rotation?.state).map(([id])=>id);form.select(box,'Purchase '+id+' stock',['',...stocks],p.stock??'',stock=>edit('Edit purchase stock',d=>{if(stock)d.purchases![id].stock=stock;else delete d.purchases![id].stock;}));
-     p.rotation?.items.forEach((item,i)=>form.select(box,'Purchase '+id+' rotation '+(i+1),doc.items,item,item=>edit('Edit purchase rotation',d=>{d.purchases![id].rotation!.items[i]=item;})));
-     p.modifiers?.forEach((m,i)=>{const row=section(box,'Modifier '+m.id);form.number(row,'Modifier '+m.id+' amount',m.amount,value=>edit('Edit price modifier',d=>{d.purchases![id].modifiers![i].amount=value;}),-1000000);form.select(row,'Modifier '+m.id+' scope',['both','quote','charge'],m.scope,value=>edit('Edit modifier scope',d=>{d.purchases![id].modifiers![i].scope=value as typeof m.scope;}));form.condition(row,'Modifier '+m.id+' condition',m.when,value=>edit('Edit modifier condition',d=>{if(value)d.purchases![id].modifiers![i].when=value;else delete d.purchases![id].modifiers![i].when;}),doc);form.button(row,'Remove modifier '+m.id,()=>edit('Remove price modifier',d=>{d.purchases![id].modifiers!.splice(i,1);}));});
-     form.button(box,'Add modifier to '+id,()=>edit('Add price modifier',d=>{const p=d.purchases![id];p.modifiers??=[];let n=1;while(p.modifiers.some(m=>m.id==='modifier-'+n))n++;p.modifiers.push({id:'modifier-'+n,amount:0,scope:'both'});}),(p.modifiers?.length??0)>=32);
-    }
+    renderGameplayPurchasesAuthoring(root,doc,{form,section,edit,draft:bindingDraft,refresh});
     renderCheckpointAuthoring(root,doc,{section,edit,report,owner:nativeData?.id});
     renderGameplayBindingsAuthoring(root,doc,{data:nativeData,derived:nativeDerived,edit,section,form,draft:bindingDraft,refresh});
     if(dialogue){const talk=section(root,'Dialogue and choices');
     select(talk,'Conversation',Object.keys(doc.conversations),conversation,id=>{conversation=id;node=Object.keys(doc.conversations[id].nodes)[0];refresh();});
     select(talk,'Dialogue node',Object.keys(dialogue.nodes),node,id=>{node=id;refresh();});
     const selected=dialogue.nodes[node];
+    renderConversationStructure(talk,doc,conversation,node,{form,section,edit,draft:bindingDraft,refresh,selectNode:id=>{node=id;}});
     text(talk,'Speaker',selected.speaker,value=>edit('Change dialogue speaker',d=>{d.conversations[conversation].nodes[node].speaker=value;}));
     select(talk,'Node entry command',['',...Object.keys(doc.commands).filter(id=>doc.commands[id].sources.includes('conversation'))],selected.onEnter??'',value=>edit('Edit node entry command',d=>{if(value)d.conversations[conversation].nodes[node].onEnter=value;else{delete d.conversations[conversation].nodes[node].onEnter;delete d.conversations[conversation].nodes[node].onEnterFailure;}}));
     if(selected.onEnter)select(talk,'Node entry failure', ['',...Object.entries(dialogue.nodes).filter(([,n])=>!n.onEnter&&!n.redirect).map(([id])=>id)],selected.onEnterFailure??'',value=>edit('Edit node entry failure',d=>{if(value)d.conversations[conversation].nodes[node].onEnterFailure=value;else delete d.conversations[conversation].nodes[node].onEnterFailure;}));
@@ -80,8 +76,7 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
       select(box,`Choice ${index+1} command`,allowed,choice.command??'',value=>mutate('Change choice command',c=>{if(value)c.command=value;else delete c.command;}));
       select(box,`Choice ${index+1} next`,Object.keys(dialogue.nodes),choice.next,value=>mutate('Change choice destination',c=>{c.next=value;}));
       condition(box,`Choice ${index+1} condition`,choice.when,value=>mutate('Change choice condition',c=>{if(value)c.when=value;else delete c.when;}),doc);
-      const protectedChoice=conversation==='supervisor'&&['offer','trolley-offer'].includes(node)&&choice.id==='accept';
-      button(box,'Remove choice '+(index+1),()=>edit('Remove dialogue choice',d=>{d.conversations[conversation].nodes[node].choices!.splice(index,1);}),protectedChoice);
+      button(box,'Remove choice '+(index+1),()=>edit('Remove dialogue choice',d=>{d.conversations[conversation].nodes[node].choices!.splice(index,1);}));
     }
     button(talk,'Add choice',()=>edit('Add dialogue choice',d=>{const n=d.conversations[conversation].nodes[node];n.choices??=[];let i=1;while(n.choices.some(c=>c.id==='choice-'+i))i++;n.choices.push({id:'choice-'+i,label:'New choice',next:node});}),(selected.choices?.length??0)>=8);
     button(talk,'Add dialogue node',()=>edit('Add dialogue node',d=>{const nodes=d.conversations[conversation].nodes;let i=1;while(nodes['node-'+i])i++;node='node-'+i;nodes[node]={speaker:selected.speaker,pages:['New dialogue.']};}));

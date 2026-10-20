@@ -1489,7 +1489,18 @@
         "h": 42,
         "label": "YARD"
       }
-    ]
+    ],
+    "bindings": {
+      "feed": {
+        "state": "feed",
+        "equals": "cam3"
+      },
+      "loop": {
+        "device": "cam3",
+        "noun": "lens",
+        "verb": "loop"
+      }
+    }
   },
   "dialogue": {},
   "goals": [
@@ -1697,5 +1708,39 @@
       "use tubes --test",
       "V ok · E dead · R ok · I ok · F ok · Y ok. tube 2 of 6: dead. repair ticket open since installation."
     ]
+  },
+  "controller": {
+    "kind": "downtown",
+    "version": 1,
+    "outside": 22,
+    "inside": 70,
+    "signalMs": 450,
+    "devices": {
+      "gate": "gate",
+      "vehicle": "dlv9"
+    },
+    "state": {
+      "at": "dlvAt"
+    },
+    "speedTuning": "dlvSpeed",
+    "visual": {
+      "state": {
+        "lock": "lock",
+        "scanned": "scanned"
+      },
+      "controlled": {
+        "box": "controlled2F",
+        "relay": "controlled31",
+        "other": "till"
+      },
+      "gateHeld": "end",
+      "traceDevice": "relay",
+      "sign": {
+        "tuning": "signTestMs",
+        "target": "sign"
+      },
+      "lockOpenValue": "open",
+      "feedFromCamera": true
+    }
   }
 }

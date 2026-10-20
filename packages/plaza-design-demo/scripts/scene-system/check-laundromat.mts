@@ -1,13 +1,19 @@
+import bindingSource from '../../src/ssg/game/scenes/laundromat/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import assert from 'node:assert/strict';
-import { laundromatArt,laundromatComposition,laundromatDeviceData,laundromatGeometry,validateLaundromatComposition } from '../../src/ssg/game/scenes/laundromat/composition';
+import { laundromatArt,laundromatComposition,laundromatGeometry,validateLaundromatComposition } from '../../src/ssg/game/scenes/laundromat/composition';
 import { laundromatScene,laundromatFrameEnvironment } from '../../src/ssg/game/scenes/laundromat';
 import { resolveComposition,type Composition } from '../../src/ssg/game/art';
 import type { EngineDraw } from '../../src/ssg/game/engine/host';
 import type { SceneData } from '../../src/ssg/game/data/types';
 import devices from '../../src/ssg/game/scenes/laundromat/devices.json';
+const laundromatDeviceData=(data:SceneData,composition=laundromatComposition,source=bindingSource as unknown as SceneDocument)=>{const rows=laundromatGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalize=(data:SceneData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 const doc=validateLaundromatComposition(JSON.parse(JSON.stringify(laundromatComposition)));
 assert.deepEqual(doc,laundromatComposition);assert.equal(doc.instances.length,52);
-assert.deepEqual(laundromatDeviceData(devices as SceneData),devices);
+assert.deepEqual(laundromatDeviceData(devices as SceneData),normalize(devices as SceneData));
 assert.equal(laundromatScene().spawn,70);
 const edit=structuredClone(doc);edit.instances.find(i=>i.id==='washer2')!.placement.x+=12;edit.instances.find(i=>i.id==='bench')!.placement.x+=10;edit.instances.find(i=>i.id==='bench')!.placement.h+=5;
 const rows=laundromatGeometry(edit);
@@ -16,9 +22,9 @@ assert.equal(rows.find(i=>i.instance.id==='gran')!.placement.x,716);assert.equal
 assert.equal(laundromatDeviceData(devices as SceneData,edit).devices.find(d=>d.id==='washer2')!.layout!.spot!.x,362);
 const native=laundromatScene(edit);assert.equal(native.people!.find(p=>p.id==='gran')!.x,716);assert.equal(native.people!.find(p=>p.id==='gran')!.h,15);assert.equal(native.data!.devices.find(d=>d.id==='washer2')!.layout!.spot!.x,362);assert.equal(native.exits[0].to,'market');assert.equal(native.exits[0].at,'laundromat');
 function rejects(change:(d:Composition)=>void,pattern:RegExp){const bad=structuredClone(doc);change(bad);assert.throws(()=>validateLaundromatComposition(bad),pattern);assert.deepEqual(doc,laundromatComposition);}
-rejects(d=>{d.instances=d.instances.filter(i=>i.id!=='device-washer2');},/Missing gameplay-bound/);rejects(d=>{d.instances.find(i=>i.id==='washer1')!.bindings!.w1='absent';},/unknown laundromat binding/);
+const missingWasher=structuredClone(doc);missingWasher.instances=missingWasher.instances.filter(i=>i.id!=='washer2');assert.throws(()=>laundromatScene(missingWasher),/parent|artwork|manifest|attach|reference/i);rejects(d=>{d.instances.find(i=>i.id==='washer1')!.bindings!.w1='absent';},/unknown laundromat binding/);
 const view={sx:(x:number)=>x-200,y:(h:number)=>300-h,gy:300,t:137,cam:200,viewW:640,viewH:360,flags:{}};
-const engine={hover:'washer2',layer:'all',m:{get:(key:string)=>key==='breaker'?'tripped':'running',value:(key:string)=>key==='waiting'?1:'closed',scratch:{'at.washer2':0},now:()=>1000,clocks:{next:()=>({ms:24000})},data:{tuning:{cycleMs:5000}}}} as unknown as EngineDraw;
+const engine={hover:'washer2',layer:'all',m:{get:(key:string)=>key==='breaker'?'tripped':'running',value:(key:string)=>key==='laundromat.waiting'?1:'closed',scratch:{'at.washer2':0},now:()=>1000,clocks:{next:()=>({ms:24000})},data:{...devices,tuning:{...devices.tuning,cycleMs:5000}}}} as unknown as EngineDraw;
 const env=laundromatFrameEnvironment(view,engine,edit),resolved=resolveComposition(laundromatArt,edit,env),washer=resolved.find(r=>r.instance.id==='washer2')!;
 assert.equal(washer.state.tripped,true);assert.equal(washer.state.nextMs,24000);assert.equal(washer.state.p2,.2);assert.deepEqual(washer.state.washerXs,[290,362,410,470]);assert.deepEqual(resolved.find(r=>r.instance.id==='outside-1')!.state.clip,[440,176,192,84]);
 const shared=structuredClone(doc);shared.instances.push({id:'extra-stool',type:'furniture.stool',props:{seed:1},placement:{x:100,h:0},order:100,pass:'backdrop'});assert.doesNotThrow(()=>laundromatScene(shared));

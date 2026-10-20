@@ -2,9 +2,11 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Latest published checkpoint: `ad90b79` on main and production; both production deployments succeeded.
+Last verified deployment: `531dc71` on main and production.
+Homepage jobs39359560451/39359560942 and design job39359560487 succeeded.
+Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
-Current local checkpoint B is integration-verified at source `0928013b951c`: both builds,
+Checkpoint B is integration-verified at source `0928013b951c`: both builds,
 173 zero-difference raster cases and all19 actual packaged-editor Play/Stop checks PASS.
 See docs/reference/ENGINE-CHECKPOINT-2026-10-19-B.md for the bounded evidence and remaining work.
 This does not promote the remaining whole-goal acceptance gates.
@@ -23,8 +25,8 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G2 | PASS | Actual readable-clock, reduced-motion/covered-screen, bounded priority/cancellation/guidance and on/off-screen device checks; COMMUNICATION-ACCEPTANCE.md |
 | G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
 | G4 | IN PROGRESS | Contextual source Save/history/bundles/recovery and bot source checks pass; full authoring/isolation acceptance pending |
-| G5 | IN PROGRESS | Shared handoff reset/restore/disposal checks pass; whole-runtime lifecycle inventory/cases pending |
-| G6 | IN PROGRESS | Historical recordings remain source-bound to earlier checkpoints. Current six-workload suite fails replacement-frame startup even without a Game; no current complete baseline or optimization claim. PERFORMANCE-STARTUP-DIAGNOSIS.md records the controls |
+| G5 | PASS | Sourcea3fac97e: cached Game20 cycles, panel/menu/focus/gesture cancellation, actual38 native private Play/Stop cycles, repeated scene visits and complete ownership/preserved simulation inventory. See LIFECYCLE-ACCEPTANCE.md |
+| G6 | PASS | Source839777ab5e10: all six workloads, three eligible repeats each, raw samples/environment/calibration and independent summary validation; top-three exclusive contributor inspection, no optimization retained. See PERFORMANCE-CHECKPOINT-2026-10-19-C.md. Earlier failed Chrome diagnostics remain immutable |
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
 | G8 | IN PROGRESS | 19/19 ordinary manifests and actor collections now support source CRUD/rebinding/Save; new ordinary catalogue scenes run without TS registration. Native controllers/world/network/story and integrated acceptance remain |
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
@@ -2134,3 +2136,749 @@ Follow-up editor/runtime verification:
   controls and actual native/sourceSave/fresh import/Undo:source-removal-SeWPuh. Default17 bot
   identities/reorder progress and native Library actor Save(run-ELXSim) PASS. This changes explicit
   source editing behavior; default shipping scene documents retain their original identities.
+
+## Market source dependencies after checkpoint B
+
+Market no longer restores `end` or floors the old cook cursor. Actual typed deletion, coherent
+exit/cursor rebinding, pending conversation progress, grouped Save/fresh source/history/bundle/Undo
+PASS in `.scene-system/market-editable/run-6me5KT`. Original14 interaction cases,20 NPC page cases
+and64 paint transcripts pass. See docs/reference/MARKET-EDITABLE-STATE.md for exact scope.
+This is local post-edc6007 work; no whole-scene gate is promoted.
+
+## Opening milestone shared commands after checkpoint B
+
+Six source milestone bindings now dispatch shared system commands against the common Game port;
+the old direct flag/keyring writes and standalone UPLINK_KEY field are removed. Typed nested
+command/reward/condition editing, command rebinding/removal, actual Game behavior, event handoffs,
+private instance separation, bundle/history/protectedSave/fresh shipping/byteUndo PASS in
+`.scene-system/opening-workflows-CtaNY0`. Default42 controller/timing/paint comparisons and64
+phase/resume histories pass. See docs/reference/OPENING-WORKFLOWS.md for precise remaining scope.
+No full gate promotion; this source follows published edc6007 and needs integrated preservation.
+
+## Shared commerce authoring after checkpoint B
+
+Laundromat no longer requires the original soap purchase/command/use binding or SUDS graph ID.
+The real typed purchase editor now adds/copies/removes purchases, goods and rotation entries.
+`.scene-system/laundromat-source-policies-WCTcFY` proves typed commerce/daemon rebinding and full
+ordinary-graph removal, pending native behavior, guarded resource outcomes, bundle/history,
+two protected Saves, fresh shipping imports and byte Undo. Default75 soap cases,2592 washer
+cases/28 timelines,24 breaker cases and576 jacket cases pass unchanged.
+
+Shop removes only historical catalogue/command/route/rotation floors; shipping JSON is unchanged.
+`.scene-system/shop-source-owned-dWvbk7` proves48 immutable histories with12 attempts each,
+actual typed replacement and complete deletion, conditional nonrotating routes, quote/charge,
+refusal/persisted rotation, pending/bundle/history/protected Save/fresh shipping/byte Undo.
+Neither slice promotes whole-scene or whole-editor acceptance; dynamic native dialogue and
+remaining common conversation structure controls are subsequent work.
+
+## Harbor Shift source freedom and retained presentation primitive
+
+Historical vocabulary/graph/accept-choice floors and the mounted synthetic Harbor lab were
+removed. Registered scene gameplay now uses the normal shared typed editor and native Play.
+Typed presentation flag roles and independent source day rules drive actual artwork/carry and
+Game clock; absent mappings/time/day stay absent instead of restoring canonical defaults.
+Source Save proof `.scene-system/shift-editable-save-5cRNld` includes actual typed graph/choice/
+command removal and rebinding, pending execution, bundle/history, atomic invalid references,
+fresh shipping Game day/clock behavior and byte Undo. Default2048 carry/objective/time/day cases,
+768 visual snapshots,48 actual Game interactions and1100 immutable pilot cases PASS.
+A source-only off-duty reissue condition fixes an original migration omission found in case326;
+the original baseline is unchanged. See docs/reference/HARBOR-SHIFT-AUTHORING.md.
+All of this remains local after edc6007 and requires a new integrated preservation checkpoint.
+
+Opening source Save also PASSes independently at `.scene-system/opening-story-save/run-nb5a0Y`.
+The current progress verifier reports19 registered scenes,97 documents,58 source actor bindings,
+17 bot bindings and zero legacy conversation rows; it correctly reports fullGoalComplete:false.
+
+## Further source-authoring verification
+
+Native dialogue metadata now projects currently declared graphs in source order, with actual
+device bindings validated against the shared conversation runner. Historical graph names no
+longer constrain six native scene factories. Typed node copy/rename/remove and redirect/entry
+controls are integrated. `check-native-dialogue-source.mts` PASS at
+`.scene-system/native-dialogue-source-X88l8o`; all eight frozen metadata/default regressions and
+the conversation-structure check also PASS. Poisoned display metadata cannot execute rewards
+or replace shared-session dialogue behavior.
+
+Play fixture state now uses prospective declarations, including newly authored ordinary scenes,
+nullable/decimal/enum values and bounds. No historical state keys are appended to explicitly
+empty pending vocabularies. `.scene-system/pending-fixture-state-nLLFAP` records typed controls,
+atomic reference failures, grouped Save, fresh shipping Game state and byte Undo.
+
+Motion-controller configuration and ordinary Stacks lift/scanner replies passed typed editing,
+Save/fresh-import and default preservation checks. See docs/reference/MOTION-SOURCE-AUTHORING.md
+and `.scene-system/motion-controller-source-MdU0mF/evidence.json`.
+Opening workflows passed again after integration at `.scene-system/opening-workflows-MsuG1Z`.
+
+The integrated c58679885211 raster checkpoint passed all173 cases with zero differing pixels
+or render errors, archived in `.scene-system/all-game-pixel-check/evidence/`.
+A subsequent public-entry-only change disables HTTP caching of stable documents/sources URLs;
+the previously failing public editor loads successfully after that change. Source839777ab5e10
+has both builds and TypeScript passing; all19 native Play/Stop and the six-workload/three-repeat
+suite PASS. Checkpoint C records the formatting-only publication identity separately. G6 is
+signed at that checkpoint; full scene/editor/lifecycle/removal gates remain open.
+
+## Camera and visual source continuation
+
+Yard/Downtown camera bindings and Moth/Beach procedural-picture state/value/clock inputs now
+have finite typed source controls, actual native consumers and atomic validation. Optional
+removal stays removed; fixed Moth/Beach state floors are deleted. Both builds,120 original
+visual snapshots,60 immutable Beach drawing comparisons,512 Beach workflow histories and the
+173-case browser raster check PASS at source50dca405499f. Actual packaged Moth/Beach native
+Play/Stop also PASS. Scope and Save/fresh-import/Undo artifacts:
+docs/reference/CAMERA-VISUAL-SOURCE-AUTHORING.md. This continuation is local after dbf8dec.
+Yard/Downtown world-picture inputs and the final controller/scene acceptance inventory remain open.
+
+## Yard and Downtown picture continuation
+
+Yard now reads state/query/deadline/slot/anchor/place/easing parameters from its registered
+source controller. The slide picture reads the same shared deadline definition and progress
+stamp as the executing program. Typed slot creation and artwork rebinding are integrated.
+Historical required-picture IDs are removed; real controller/manifest references validate
+dependencies. Yard artwork is marked presentation-only, and unused fixed tray/exit exports
+are removed. `.scene-system/yard-controller-source-moaari` verifies replacing/deleting the old
+tray, matching elevated pickup metadata, native motion and shared deadline progress, strict
+reference rejection, pending/history/bundle/protected Save/fresh shipping and byte Undo.
+The 864 immutable grab/drop cases and33 timing histories and native pose checks also PASS.
+
+Downtown picture state/truthy reads, lock comparison, trace device, sign duration and pulse
+target now have typed source bindings inside the existing motion controller. Billboard and
+camera pictures consume one camera-feed binding, avoiding duplicate feed predicates.
+`.scene-system/downtown-visual-source-4C1rXK` verifies actual drawing changes, shared trace/event
+execution, optional removal, strict references and the same Save/fresh-import/Undo path.
+143 frozen Canvas-command comparisons and actual Game DLV/END/lifecycle checks PASS.
+Old composition test fixtures now use current source actors and supply both documented
+reference/current pulse stamps; no original expected artwork or source capture was changed.
+
+These changes are local after dbf8dec. A further source scan found remaining direct picture
+inputs in Laundromat and Sandbox, plus Market's fixed exit-open flag. Those are the next bounded
+binding migrations before the final integrated browser/coverage audit. Capsule's temperature/
+steam reads are outputs of its retained registered physical algorithm, not ordinary quest state.
+
+## 2026-10-20 integrated picture-input checkpoint D
+
+Source `55ba9a26bd958a15be6df6146568aa24802a6d8ed08c6ced86b33c866ee080d4`:
+TypeScript and both builds PASS; all173 browser raster comparisons have zero differences;
+all19 actual packaged native Play/Stop checks PASS with no console errors.
+See [checkpoint D](./docs/reference/ENGINE-CHECKPOINT-2026-10-20-D.md) for artifacts and exact scope.
+Laundromat/Sandbox typed picture inputs now survive actual forms, pending runtime, bundle,
+protected Save, fresh shipping import and byte Undo (`laundry-sandbox-picture-source-C7Hykt`).
+Market typed visual flag and reference-preserving former-wall removal pass (`run-iSFwKV`).
+109 Sandbox ordinary cases, 2592 washer deadline cases plus28 timelines and24 breaker cases match
+immutable outcomes. G4/G8/G9/G10/G12 advance in scope; their whole-goal gates remain open.
+Remaining: full matrix/inventory reconciliation, remaining native geometry/content dependencies,
+world/network/lifecycle/current persistence and final removal/handoff acceptance.
+
+## 2026-10-20 Sandbox artwork geometry follow-through
+
+Typed Sandbox window/reset roles and station zone/sign/card bindings now replace fixed-ID
+geometry floors. Window clipping/visibility and station labels use current bindings; the actual
+reset interaction follows elevation. The former reset artwork can be deleted after reassignment.
+Clearing controller geometry requires removing its dependent reset target atomically; absent
+roles do not restore the original IDs. Target creation disables when no anchor is available.
+Unused shipping SB/STATIONS/width/layout exports removed; legacy kernel fixture parameters
+now live only in the existing test. Nested artwork also receives validated visual bindings.
+
+`check-laundry-sandbox-picture-source.mts`: PASS, artifact
+`.scene-system/laundry-sandbox-picture-source-1trIMk`; actual typed geometry plus native target,
+clip and label assertions, bundle/protected Save/fresh shipping/byte Undo. Package tsc, both
+builds, check-sandbox (including nested picture), 109 Sandbox ordinary cases and all five native
+target CRUD/form cases PASS. Source `2eaee9414bcf3f988730765ecf579ca0b62d408eac2fe3edb3282edb23dc444b`
+passes all173 browser raster comparisons with zero differences/errors. Actual current-package
+Sandbox native Play/Stop passes with no warning/error logs. Publication status is reported separately from this local evidence.
+
+The remaining geometry audit found fixed-ID floors in Capsule, Moth, Beach, Library, Warehouse,
+Downtown, Stacks, Harbor/Shift, Mall, Shop and transit compositions. These are not all removable
+scenery: some feed width, shade, clipping, covers, physical anchors or actor parents. Replace
+those real dependencies with typed source roles before removing floors. Do not merely delete
+validation or introduce another runtime state owner. Whole-goal gates remain open.
+
+## 2026-10-20 shared artwork role contract / Warehouse
+
+A shared stateless manifest.artwork contract now resolves registered typed artwork roles from
+pending composition rows. Warehouse orientation, front shade and shadow widths use it; replaced
+fixed-ID/type floors are gone while real dependencies remain validated. The Scene inspector now
+also edits scene-width artwork/property references. Source transaction and actual mounted-form
+proof PASS (`artwork-role-source-ADDuq3`), including native changes, former-wall removal, explicit
+feature disable, fresh shipping import and byte Undo. All36 original Warehouse draw-command
+comparisons PASS; ten original interior outcome cases and current-format reloads PASS after
+repairing obsolete raw-source equality expectations. Both builds and tsc PASS. Source90acba454a99
+passes all173 browser raster cases with zero differences/errors and actual native Warehouse
+Play/Stop, no warning/error logs. See docs/reference/ARTWORK-ROLE-AUTHORING.md.
+Whole-goal acceptance remains open; apply the shared contract to remaining real geometry floors.
+
+## 2026-10-20 Library / observation cleanup integrated checkpoint
+
+Library orientation now uses the shared registered artwork-role contract. Its picture reads the
+same catalogConnected observation as authored native behavior, so rebinding the observed node
+changes the actual indicator without a second node predicate. The historical room-ID floor is
+removed; actual width/attachment/actor references remain checked. Removed canonical observation
+backfills in both source validation layers and the redundant Sandbox raw-dialogue normalization.
+Absent optional data stays absent; actual dependent references reject rather than resurrecting
+shipping definitions. No historic save conversion or new saved owner was added.
+
+Actual mounted Scene/Device controls, pending native picture outputs, bundles, protected Save,
+fresh shipping import and byte Undo PASS: `artwork-role-source-koAtFX` (also earlier BhMebC/J50aTN).
+Library default geometry/bindings/gameplay checks PASS. Native observation checks PASS128 original
+cases plus actual typed operations, absence/no-backfill and current-source collision checks;
+Sandbox ordinary109 cases PASS. Package tsc and both builds PASS.
+Source `759699b704f147207a2868596cd327ac977e81c842342433a203fe997275b5d3` passes all173
+browser raster rows with zero differing pixels/max delta/errors, independently verified.
+All19 actual native packaged-editor Play/Stop checks PASS with no warning/error logs;
+`.scene-system/evidence/editor-native-play-759699b7-20261020.json` records exact package identity.
+Default command/core behavior gates are bounded here; remaining all-game gates remain open.
+
+## 2026-10-20 Moth artwork-role continuation
+
+Moth's orientation, desk surface and native door now resolve shared typed manifest roles.
+Former fixed-ID floors, static width/door/facing helpers and the redundant base definition are
+removed. Actual source replacements can delete the old desk/door after reanchoring children;
+real elevated target and desk height follow the new artwork. Interaction roles reject unsupported
+transforms/depth and out-of-scene anchors; valid choices are filtered in the actual inspector.
+`artwork-role-source-Ct9TGB` proves the three-scene typed form/native/bundle/Save/fresh import/Undo
+flow and invalid-edit atomicity. Moth defaults, ten interior outcomes/current-format reloads,
+TypeScript and both builds PASS. Latest source67428f2c6ed0 has173/173 zero-difference/error browser
+raster cases and actual Moth/Library/Warehouse native Play/Stop, no warning/error logs. Actual
+Moth Scene inspector exposes width binding and all three artwork-role selectors. Earlier all19
+Play evidence remains bound to source759699b704f1; do not relabel it as latest-source evidence.
+See ARTWORK-ROLE-AUTHORING.md. Whole-goal gates remain open; remaining geometry contracts and the
+all19 inventory/lifecycle/current-save/world/network/removal audit still need completion.
+
+## 2026-10-20 Beach geometry role checkpoint
+
+Nine shared typed artwork roles replace Beach's blanket prop identity/type floor. New source
+references drive horizon/water, sightlines, drink/shore and the real elevated stairs. Existing
+exit/attachment/actor refs remain strict. Optional absent bar input disables its visibility/width
+without restoring old IDs. Unused shipping layout/width helpers removed; retained edge helper
+reads the current stairs role. Actual form/Save/fresh shipping/Undo proof `artwork-role-source-d2f0nS`
+passes after deleting former geometry and rebinding the real dependent exit. Original Beach60
+Canvas-command and512 model/session history cases pass, as do tsc and both builds. Source5f5cb79b3c7c
+has173/173 zero-difference/error browser raster cases and actual native Beach Play/Stop, no warnings.
+See ARTWORK-ROLE-AUTHORING.md for exact scope. Beach's fixed bartender/ashore actor-role branches are
+still open; expose their references through shared scene presentation rather than claiming scene
+completeness from geometry alone. All remaining whole-goal gates stay open.
+
+## 2026-10-20 Beach actor references / shared CRUD
+
+Shared scene.presentation now exposes typed source actor-role references. Beach bartender and
+ashore membership no longer depend on old IDs/prefixes. Danger remains the existing sole visual
+state read. Shared duplicate/remove operations inherit group membership and prune removed refs;
+actual UI, native pose/kit output, invalid refs, optional removal, source Save/fresh import/Undo
+PASS (`beach-actor-role-source-4MPOcw`). All19 actor CRUD/history/bundle/protected Save/native reload
+checks PASS (`actor-entities/run-5XGdEn`), Market shared presentation PASS (`run-Uty2SN`), Beach60
+original drawing and512 gameplay/timing cases PASS. Removed redundant LIME/draw helper/global GULL
+state and preview fallback: native scene PresentationSignals is the sole active owner.
+Sourcea7aee7d9c0d0 passes173/173 browser raster comparisons with zero differences/errors, both builds,
+tsc, actual Beach Play/Stop and actual actor-role inspector controls. No whole-goal gate promotion.
+See SCENE-PRESENTATION-ACTORS.md; next Shop's geometry/clipping and actor-role inputs, then remaining
+native consumers and the final all19 acceptance inventory/lifecycle/current-state/world/removal audit.
+
+## 2026-10-20 Shop geometry and actor roles
+
+Shop window clipping/counter sightlines now resolve shared typed artwork roles; keeper/outside
+membership uses source actor references. No former geometry or actor IDs/prefixes select behavior.
+Shared actor creation/duplication emits the optional registered clip binding, so new outside actors
+receive the same clipping as shipping actors. All shop art kernels are presentation-only consumers;
+real manifest/actor/attachment references still validate before replacement or deletion.
+
+Actual Scene forms, duplicate/removal, scaled replacement window clipping, culling, deletion of
+former window/counter, explicit optional absence, invalid-edit atomicity, portable bundle, protected
+Save/fresh shipping import and byte Undo PASS: `shop-actor-role-source-p3asuo`.
+Default Shop four Canvas-command comparisons, twelve cyclic purchases and36 refusal/no-mutation
+cases PASS. TypeScript and both builds PASS. Source04c1aa71e826 has173/173 browser pixel comparisons
+with zero differences/errors, independently verified. Actual packaged Shop native Play/Stop and
+geometry/actor inspector controls PASS without warning/error logs. Package app-KDYDPDLP.js /
+play-QWKO4ICL.js / play-a92368162884aec8.html. All19 actor helper regression PASS (`actor-entities/run-v1pQT7`); all19 actual packaged
+editor Play/Stop PASS with no warning/error logs (`editor-native-play-04c1aa71-20261020.json`). Whole-goal gates remain open; this is bounded Shop evidence, not all-scene signoff.
+
+## 2026-10-20 Capsule artwork-role continuation
+
+Five typed shared roles now own Capsule orientation, desk cable surface, sun extent, cable router
+and physical door placement. The broad canonical artwork identity floor is removed. Dependent
+attachments, manifest exits, companion perches and native target placement remain validated.
+The factory passes actual pending source to the picture adapter; absent optional picture roles
+remain absent. Removing the door role rejects because the registered native target needs its
+placement. New roles may target replacement artwork; former geometry may be deleted after real
+children are reanchored. Removed redundant baseCapsule and old source bed-content backfill.
+
+Actual mounted Scene fields, moved/replaced/deleted artwork, elevated real door target, picture
+endpoints/orientation, invalid ref/physical transform atomic rejection, bundle, protected Save,
+fresh shipping import and byte Undo PASS (`capsule-actor-role-source-Uo3VDz`). Default Capsule
+geometry/device/boot/heat/steam snapshots and ten original interior outcome/current-save cases
+PASS. TypeScript and both builds PASS. Source db81f87e1f74e20577d8667acf2a314b30844bd3358bc2e0c6d8069b971f80fd
+passes all173 browser raster comparisons with zero differences/errors (independently verified).
+Actual packaged Capsule inspector and native Play/Stop PASS, no warnings/errors. Package
+app-3ZSBGOBC.js / play-4ZEX4BOK.js / play-d0be40f1038b0789.html. The previous all19 Play proof remains
+bound to source04c1aa71e826. No remaining whole-goal gate is promoted by this targeted continuation.
+
+Capsule controller persistence proof also PASS (`capsule-controller/run-paLuCP`): changed shared
+state declarations and native controller role refs, exact boot+notice timing, current snapshot
+scratch clearing/callback cancellation, companion binding, invalid device rejection, grouped
+history/bundle/protected Save/fresh module import/byte Undo. Updated stale fixtures to declare
+state in gameplay and use current controller text/device fields; original timing assertions remain.
+
+## 2026-10-20 Mall geometry continuation
+
+Mall atrium dimensions and escalator motion use two shared typed artwork roles. The broad former
+artwork ID floor is removed; actual manifest/actor/attachment dependencies remain checked. Nine
+unused layout fields and their lookup dependencies were deleted rather than exposed as spurious
+controls. Scene width comes from the shared manifest; moved elevated escalator geometry drives real
+rider positions. Missing required motion roles and unsupported physical transforms reject before
+history/source commit. Actual Scene selectors, replacement/deletion of former room/escalator,
+adaptive floor and escalator native poses, invalid-edit atomicity, bundles, protected Save/fresh
+shipping import and byte Undo PASS (`mall-actor-role-source-g546tY`).
+
+Original Mall77 poses, six people, native interaction coordinates, booth attachments and adaptive
+floor cases PASS; tsc/both builds PASS. Source8235dad37ca6a8bacd3952dea67e65040a43fdd2c11259a2bac3917f575ea664
+passes173/173 original browser raster comparisons with zero differences/errors (independently
+verified). Actual packaged inspector fields/native Mall Play/Stop PASS without warnings/errors;
+app-36ASNHAE.js / play-BHX7EADN.js / play-985a12552f05d6c5.html.
+Mall actor motion grouping/ordinal phases and embedded-vendor identities still need source contracts;
+this geometry checkpoint does not close that scene or any remaining whole-goal gate.
+
+## 2026-10-20 Mall actor-role continuation
+
+Shared presentation now supports validated per-actor slot/phase mappings. Mall adaptive far floors,
+gallery baseline heights, escalator phases and both embedded booth vendors are explicit source
+inputs with typed Scene controls. Removed old actor ID/prefix/ordinal parsing and booth instance-ID
+branches; authored attachment plus registered vendor visual slot determines embedding. Shared CRUD
+copies exact numeric settings and removes deleted references without renumbering other actors.
+Missing optional presentation never restores canonical IDs. Continuous art timing/paint order stays
+with the existing sole Mall implementation; no new state owner or simulation evaluator.
+
+Actual slot/phase/vendor forms, duplicate/removal, noncanonical actor IDs, unbound former IDs,
+replacement booth/delete old booth, native elevations/routes/vendor poses, invalid refs/phase/slots,
+absence/no backfill, history/bundle/protected Save/fresh shipping import/byte Undo PASS
+(`mall-actor-role-source-IhzrYe`). Mall geometry proof PASS (`mall-actor-role-source-O1NvDA`), Beach
+and Shop role regression PASS (`beach-actor-role-source-7kNE0A`, `shop-actor-role-source-YhNeUk`).
+All19 actor CRUD/Save/native reload/Undo PASS (`actor-entities/run-WyCTmf`). Original Mall77 body,
+interaction/booth/height/timing checks PASS, tsc/both builds PASS. Source2992ba89a94c40c8061acf7769869f8572b8f6ec1ea700741aea34864c85f19c
+has173/173 zero-difference/error browser raster cases, independently verified; all19 actual packaged
+editor Play/Stop PASS with no warning/error logs (`editor-native-play-2992ba89-20261020.json`).
+Actual Mall inspector exposes slot/phase fields and vendor pickers. Package app-BDLUXCO5.js /
+play-JG6OLUHC.js / play-69c30798feecc0b3.html. Remaining whole-goal gates remain open.
+
+## 2026-10-20 Capsule shared device placement
+
+Capsule's seven native device placements are explicit manifest.devices bindings consumed by the
+existing common projectDeviceBindings path in shipping and pending Play. Deleted capsuleDeviceData
+and its authoring geometry registry entry; no per-scene fallback finds old marker names. Native
+device-scene enumeration now derives from registered definitions with physical devices. Current
+layout dimensions remain source-owned; normal missing zero-height metadata is materialized as0.
+Actual Device router artwork control rebinds to a new source instance; deleting the old marker
+then follows that new geometry in native runtime, portable bundle, protected Save/fresh shipping
+import and byte Undo (`capsule-actor-role-source-MRYxoN`). Ten device-source default/primitive/cable
+checks PASS with full source context, Capsule boot/notice/current-format reload PASS
+(`capsule-controller/run-UKFs3u`), ten interior outcome/save cases PASS. tsc/both builds PASS.
+Source3c2235688a3dd90b12605cc08948677e8989a01c043cec3cd855469f44dedbfe passes173/173 browser raster
+cases with zero differences/errors (independently verified), and actual packaged Capsule Play/Stop
+without warning/error logs; app-OD4X3KIY.js / play-GDHEXZY7.js / play-4f0f47722d7714b3.html.
+Remaining nine device geometry adapters still need migration, including property-driven extents
+and offsets in Downtown/Beach/Sandbox/Train. Whole-goal gates and final all19 inventory remain open.
+
+## 2026-10-20 Five more shared device-placement migrations
+
+Yard, Moth, Library, Laundromat and Stacks now declare their24 device positions through the same
+manifest.devices projection. Library printer height offset is explicit source data. Removed all
+five per-scene adapters and authoring geometry entries; default source remains byte-owned by its
+normal documents, with no new state owner or old-save conversion. Real device bindings/attachments
+still validate; detachment explicitly restores source coordinates rather than silently finding old
+artwork. Fixture-only helpers use the shared projector and normalize absent zero-height metadata.
+
+Actual Device artwork fields in all five scenes rebind to replacements, then delete former markers.
+Native models observe the changed spots; dangling refs reject atomically; grouped history/bundle,
+protected Save/fresh shipping import/byte Undo PASS (`shared-device-geometry-9tc9nJ`). All ten
+native device default/primitive/cable checks PASS. The five original geometry/visual fixtures,
+interiors10 original outcome/current-save cases, Stacks22 NPC/tea/refusal cases and Yard controller
+source proof (`yard-controller-source-LXzjZf`) PASS. tsc/both builds PASS. Sourcead7e72626a906c81000462950bb46ede3ea751c43a0408588d0f09b3f7c53cd7 has173/173 browser raster rows with zero
+differences/errors (independently verified). Actual Yard/Moth/Library/Laundry/Stacks packaged native
+Play/Stop PASS, no warning/error logs. Package app-O4XKOBGX.js / play-Q4T6C5OV.js /
+play-90c93642992aeee9.html. Remaining device adapters: Downtown, Beach, Sandbox, Train (property-driven
+size/height inputs). All remaining whole-goal gates remain open.
+
+## 2026-10-20 Shared device extents / all placement adapters removed
+
+The common manifest device binding now optionally names widthProperty, heightProperty and
+heightOffsetProperty. These are validated finite numeric artwork-property refs with positive
+extents, resolved scale, and the existing point/anchor/offset bounds; no expressions/eval. Actual
+Device inspector selectors edit them, preserve compatible refs on rebind, and clear incompatible
+refs when changing owners. Offset controls continue to apply in local artwork coordinates.
+Downtown, Beach, Sandbox and Train declare their54 device spots/extents through this contract.
+All ten scene-specific DeviceData geometry adapters and the authoring routing table are deleted.
+Native simulation/rules remain their existing sole implementations; no state owner or save bridge.
+
+Committed54-spot pre-change fixture ties to sourcead7e72626a90/commit74b7d36; all spots match exactly
+with optional zero height normalized. Actual four-scene property/offset controls, scale1.25, swapped
+extent refs, former marker deletion, explicit companion-perch dependency rebind, invalid refs/zero
+extent atomic rejection, bundles/protected Save/fresh shipping/byte Undo PASS
+(`device-property-geometry-ZSUCTh`, also dnpXpG before durable fixture-path cleanup). Previous
+five-scene common binding proof PASS (`shared-device-geometry-6qek60`). Ten default device-source
+primitive/cable cases PASS. Original Downtown143, Beach60 and Train270 Canvas-command cases PASS;
+Sandbox37 spot/visual checks,109 ordinary histories, Beach512 and Train188 live/timing histories PASS.
+tsc/both builds PASS. Sourcef4a4078370ca9cfbd761786d1991a119d63273b548759f6c8512cdcb31e4b566 passes173/173 browser raster rows
+with zero differences/errors (independently verified). Actual Downtown/Beach/Sandbox/Train native
+packaged Play/Stop PASS with no warning/error logs; actual inspector dimension selectors confirmed.
+Package app-E4BIS7XE.js / play-PGKPC6MZ.js / play-14bfe9cae75ebdba.html. No whole-goal gate promotion:
+remaining native geometry/actor contracts and all19 inventory/world/network/current-save/lifecycle/
+removal reconciliation still need completion.
+
+## 2026-10-20 Harbor Shift artwork roles / inspector identity fix
+
+Night-shift trolley rest/parked positions and horizon now resolve shared source artwork roles.
+Removed the blanket four-instance identity/type floor. The actual factory passes pending source;
+missing required trolley positions reject before commit, optional absent horizon stays absent.
+Real ordinary use and child attachments remain source validated. Actual Scene selectors rebind
+new positions and real trolley use, delete old geometry after preserving children, and prove
+native parked/rest outputs plus bundle/protected Save/fresh shipping/byte Undo
+(`harborShift-actor-role-source-9phmES`).
+
+This proof uncovered an actual shared inspector bug: it used a scene-document prefix as the
+composition document ID (harbor-shift instead of harborShift). Scene authoring now uses the
+existing common document identity helper for composition and scene reads/grouped actor writes.
+All19 actual mounted manifest/companion/first-actor inspectors PASS
+(`scene-inspector-identities-5FDHpk`), and the real packaged Harbor Shift inspector exposes all
+three fields without errors. Harbor Shift2048 original carry/objective/time cases and768 visual
+snapshots PASS; ordinary/actor manifest Save regression PASS (`harbor-shift-manifest-save/run-HaCZlB`).
+tsc/both builds PASS. Sourceed098aacf729f4fe70893bb2fa2ce9f206a3c1e25cbbdc7cb373c1a67c1cf774 passes173/173 browser raster rows with zero
+differences/errors (independently verified), and actual packaged native Harbor Shift Play/Stop
+without warning/error logs. Package app-Y34BTBQN.js / play-FC4K5IAZ.js /
+play-3886959c7ab68470.html. Remaining whole-goal gates and final inventory remain open.
+
+## 2026-10-20 Harbor geometry role continuation
+
+Harbor's remaining30 native geometry/configuration inputs use typed source artwork roles instead
+of the broad prop identity/type floor. Enum/index and text-property contracts filter compatible
+crane/load inputs; ordinary positional roles reference actual chosen artwork. Scene width uses the
+shared manifest. Removed six unused layout fields/dependencies (spawn, bribe, ghostUse, bollards,
+fish.use and drinks.use). One prepared geometry result feeds native layout/motion; attachment-owner
+checks follow the current role's artwork. The default kernels, call timing and actor IDs stay
+unchanged. Actor-role identities remain the next Harbor continuation.
+
+Actual Scene controls replace hut/crane/forklift/stack/load/horizon/shade/fish/arch, reattach real
+children and delete original artwork. Native output/clip/vendor/culling/load changes, index/ref
+rejection atomicity, history/bundle/protected Save/fresh shipping/byte Undo PASS
+(`harbor-actor-role-source-eA6F29`). Original Harbor40/tea14/foreground5/shift36 command cases,
+1674 coastal bounds cases, all19 inspector mounts (`scene-inspector-identities-be8uHR`) and Harbor
+26 interaction/quote/resource cases +37 NPC pages/three weather variants +five crane-flight paint
+transcripts PASS. Harbor fixture now uses common owner-block values and actual Game.prepareSave
+for current session/save semantics; no runtime compatibility path was added.
+
+tsc/both builds PASS. Source6a0fdc397d3e23ccd4c39731ce8821ba052975dcdae4a1ea056aa8961fde336e passes173/173 browser raster rows with zero
+differences/errors (independently verified). Real packaged inspector filters crane0/load0 slots
+correctly and exposes motion/horizon refs; native Harbor Play/Stop PASS without warnings/errors.
+Package app-RBQAFZPC.js / play-FYWKWAH3.js / play-29327c92340e1075.html. Remaining whole-goal gates
+and the final all19/lifecycle/current-state/world/network/removal acceptance reconciliation stay open.
+
+## 2026-10-20 Harbor actor roles / single presentation owner
+
+Harbor operator slots, forklift driver, watchman, guard, booth vendors and den guests now select
+source actor refs; the bribed picture state selects a source flag. No old actor IDs, instance-ID
+parsing or prefix groups decide behavior. New/duplicated Harbor actors receive the common optional
+per-actor clipping binding; old role-named clip aliases are removed. Current geometry roles select
+attachment owners and clip elevations. Shared CRUD inherits/prunes groups and leaves singletons
+explicit. Removed the editor's redundant Harbor environment fallback and standalone signal-read
+alias; real native PresentationSignals is the sole preview/Game owner.
+
+Actual actor/flag controls, new noncanonical actor IDs, inherited clipping/group capability,
+operator/driver motion, watchman clips, guard action/facing, booth embedding, unbound old-prefix
+visibility, group removal, missing refs/optional absence, history/bundle/protected Save/fresh
+shipping/byte Undo PASS (`harbor-actor-role-source-1mLI7X`). Harbor geometry proof PASS
+(`harbor-actor-role-source-Nawrgn`), all19 actor CRUD/Save/reload/Undo PASS
+(`actor-entities/run-XXw1qO`), all19 inspector mounts PASS (`scene-inspector-identities-k4Or1m`),
+Mall/Shop source regressions PASS (`mall-actor-role-source-2ke7pD`, `shop-actor-role-source-HZoPZA`).
+Original Harbor40/tea14/foreground5/shift36 draws,1674 coastal bounds cases, Harbor26 interactions/
+37 NPC pages/weather/current-save semantics and five flight paints PASS. tsc/both builds PASS.
+Source648c38e100b246bfdd57228221fcdb432718627df3e6f222588c089001b0ea1d has173/173 zero-difference/error browser raster rows,
+independently verified; all19 actual native packaged editor Play/Stop PASS with no warning/error
+logs (`editor-native-play-648c38e1-20261020.json`). Actual Harbor role/flag pickers verified. Package
+app-EDXPJ44N.js / play-YQTCQNGC.js / play-e5d0f0af1029afc6.html. Remaining geometry/actor consumers in
+Stacks, Downtown and transit plus the final all19 world/network/current-state/lifecycle/removal
+inventory remain open; no whole-goal gate promotion from this bounded checkpoint.
+
+## 2026-10-20 Stacks native geometry and actor roles
+
+Terminal trolley route/height, thermal gate, cargo bay culling and ferry/watchdog anchors now
+consume shared typed artwork references. Width uses the common manifest; the optional horizon
+uses a typed artwork property. Required simulation geometry rejects absent references. Removed
+the fixed instance/type floor and unused booth/lane/legs/hatch/tiers/bridge-end layout fields.
+Crane operator and rescued passenger presentation select source actors. Former actor IDs have
+no implicit motion, clip or reveal behavior. Shared actor creation/duplication supplies clipping;
+the clip follows the selected actor's authored offset/elevation. No new state owner or save
+compatibility was added. Removed the editor's redundant default-actor environment adapter.
+
+check-stacks-artwork-roles.mts PASS (`stacks-actor-role-source-442wyn`): actual geometry/width/actor
+forms, replacement refs and former geometry deletion after attachment rebinding, native trolley/
+gate/height/culling/quay/operator/reveal outputs, invalid refs/required roles atomic rejection,
+optional presentation absence, history/bundle/protected Save/fresh shipping import/byte Undo.
+Original nine operator/Moth paint transcripts, current geometry/device spots/content and22 NPC
+pages,1674 coastal bounds cases,480 watchdog histories and21x101 return timeline frames PASS.
+An older permission-form fixture now addresses the existing four lift branches correctly;
+actual forms and protected source Save/fresh runtime/byte Undo PASS (`stacks-permission-save-hwIQPv`).
+All19 actor CRUD/Save/native reload PASS (`actor-entities/run-4HbpIb`) and all19 actual scene
+inspector forms PASS (`scene-inspector-identities-25TDnY`). tsc and both builds PASS.
+Source6c855527c33dff01533fde7340ed8766e45712d708164ade5569d67d1f25287a passes173/173 zero-difference/error browser
+raster rows (independently asserted) and all19 actual packaged editor Play/Stop checks without
+warning/error logs (`editor-native-play-6c855527-20261020.json`). Real Stacks geometry/actor
+controls are mounted in the package. app-HNPAQ5LL.js / play-Y5LRZJBG.js /
+play-092db9c168930c06.html. Downtown/transit geometry and final whole-corpus lifecycle/current-save/
+world/network/removal reconciliation remain open; this checkpoint does not promote whole-goal gates.
+
+## 2026-10-20 One scene-owned frame for Game, preview and Play
+
+Found a real pending-source gap: Game supplied Downtown city/street/reflections from the default
+composition while editor preview used pending artwork. SceneDef now carries registered artwork
+frame passes. Both shipping Game and editor preview use that same scene-owned frame. Downtown's
+factory captures its actual document/appearance/options/reflections; Yard selects its existing
+shared ground pass. Removed all Downtown drawing imports/callbacks from Game and both duplicate
+editor frame hooks, including the now-unused NativeSceneAdapter.frame extension. The renderer's
+caller frame inputs remain available for technical fixtures; scenes take precedence.
+
+check-scene-artwork-frame.mts PASS (`downtown-frame-source-9tbBHx`): a changed source stall and
+reflection enter the actual Game.prototype.drawWorld path, model history/bundle/protected Save,
+fresh shipping import and exact byte Undo. Default143 Downtown Canvas command cases and native
+preview contracts PASS. Downtown visual source (`downtown-visual-source-aerDq8`) and Yard controller
+source (`yard-controller-source-UKDhOH`) regressions PASS. Also reconciled the older Stacks primitive
+fixture with current explicit source dependencies: no fixed scanner ID lock, live refs rebound
+before marker deletion; ordinary topology/endpoint changes, protected Save/fresh native/Undo PASS
+(`stacks-roles-save-I9PH5c`).288 original manual/signal/found/location/busy/alarm histories PASS.
+
+Sourcee943774fbef77feba48473e735f1e329aa5d74668d7f02c127768f99ddb799ab passes tsc/both builds and173 zero-difference/error
+browser raster rows (independently asserted). Actual rebuilt public editor accepted a disposable
+stall width edit241 through keyboard/change controls; native pending Downtown Play/Stop and Yard
+Play/Stop PASS with no warning/error logs. This is bounded native execution evidence; the modified
+pixels are covered by source/actual-Game draw tests, not claimed as a screenshot coordinate assertion.
+Package app-REOOQEM3.js / play-NH6HP3MK.js / play-899e35851c2275ab.html. Remaining Downtown fixed
+geometry/reflections and transit/source/lifecycle/current-state/world/network/removal work stay open.
+
+## 2026-10-20 Downtown artwork geometry and hierarchy
+
+Downtown's layout/frame inputs now use common typed artwork roles: stall metrics, alley door
+offset, vehicle home, two physical platform positions/extents, caster position/extent and ten
+reflection anchors. Shared manifest width drives frames. Removed the blanket old instance/type
+floor, snapshot-only picture deletion locks and the missing-actors source backfill. Every real
+attachment, device, companion and manifest reference remains validated. Window visibility now
+uses the actual parent/attachment hierarchy; front/window binding names support ordinary source
+identities instead of requiring numbered front-N-window-N-N names. Native registered device
+picture roles remain the sole implementation; no new simulation/state owner was introduced.
+
+check-downtown-artwork-roles.mts PASS (`downtown-artwork-role-source-r6ejgu`): actual width/geometry/
+device/companion controls, eight replacement inputs, explicit dependency rebinding and old artwork
+deletion, non-numbered front/window replacement, native platform/caster/stall/alley/vehicle/
+reflection outputs, strict required refs/missing actors rejection, history/bundle/protected Save/
+fresh shipping import/byte Undo.143 immutable Canvas-command cases remain exact.
+Current ordinary manifest proof PASS (`downtown-manifest-save/run-akuzkq`); its older direct-preview
+call now supplies the actual source document, and its removal case rebinds the real device ref.
+Downtown visual source PASS (`downtown-visual-source-V9QgOf`), shared property device geometry
+PASS (`device-property-geometry-3Oy0Jr`), all19 scene inspector forms PASS
+(`scene-inspector-identities-Q026xo`). The older content proof no longer compares replaced raw
+pre-migration device JSON byte-for-byte: it retains original scene geometry/exits/access and four
+exact device-paint/initial-state-read/topology comparisons, which PASS. Existing controller source
+outcome suites remain separate evidence; no original baseline was changed.
+
+Source0343b7b81a3e2bb81d71faa17b57f22418b8a5b4ebd2c15277c16b3b52d2fb63 passes tsc/both builds and173/173 zero-difference/error
+browser raster rows (independently asserted). Real package mounts the new stall/width/reflection
+selectors; native Downtown and Yard Play/Stop PASS with no warning/error logs. Package
+app-HU3N7NWJ.js / play-52X4TZNU.js / play-10344c31ca11d0bb.html. All19 actor CRUD/history/bundle/protected Save/fresh native reload/byte Undo PASS
+(`actor-entities/run-9VmLGu`). Transit geometry and final all19 lifecycle/current-state/world/
+network/removal reconciliation remain open; no whole-goal gate promotion from this checkpoint.
+
+## 2026-10-20 Train car frame geometry and presentation rebinding
+
+Train ceiling/roof/news/window style/line map/handrail/staff/gangway/door/brake inputs now use
+shared typed artwork refs. Required inputs reject absent/invalid roles at scene construction.
+Width remains in the shared manifest. Removed the fixed required-ID/type floor; defaults and
+validation visit nested composition children. Per-window width streams accept ordinary source
+IDs and validate that the selected window actually exists. Existing ride/actor/stop simulation
+and per-window rendering are unchanged.
+
+A shared authoring restriction prevented retained presentation consumers from rebinding to a
+replacement window. Registered bindingIdentity=presentation now permits same-type rebinding or
+removal; retained artwork type changes and gameplay-owned bindings remain protected. Native source
+validation still rejects dangling/unknown streams. check-presentation-binding-identity.mts covers
+those distinct policies; actual train source edits cover final reference validation.
+
+check-train-artwork-roles.mts PASS (`train-artwork-role-source-hvwBeP`): actual frame/exit controls,
+six replacement inputs, original deletion after attachment/window-reader rebinding, non-numbered
+window ID, native ceiling/roof/news/window/gangway/map/brake geometry, invalid required/window
+refs atomic rejection, history/bundle/protected Save/fresh shipping/byte Undo.270 original draw
+cases,188 live/timing histories,672 permission histories and630 paid-brake actual-LineSystem
+histories PASS. Downtown retained-kernel identity/ordinary protected Save regression PASS
+(`downtown-manifest-save/run-RRCl7H`). tsc and both builds PASS.
+Sourceb1636f78da4950015f627810a62992028866237aa541f2b467dc8893199578f9 passes173/173 zero-difference/error browser raster
+rows (independently asserted). Actual packaged train roof/window role selectors and native
+Play/Stop PASS with no warning/error logs. Package app-S3Y2CI24.js / play-HX7XYK2X.js /
+play-e583dd17752b7a21.html. All19 actor/history/bundle/protected Save/native reload PASS (`actor-entities/run-KwkLNM`) and
+all19 inspector mounts PASS (`scene-inspector-identities-NoHUFd`) at this initial frame checkpoint.
+Three platform scenes' geometry and final whole-corpus lifecycle/current-state/world/network/
+removal reconciliation remain open; no whole-goal gate promotion from this bounded checkpoint.
+
+### Train creation and finite visual-input UI completion
+
+The inspector now exposes only registered finite presentation-binding choices, using shared
+Element.bindingChoices metadata. The common Add/draft path initializes declared inputs from
+those choices; other artwork without that registration retains its existing behavior. Train
+pieces receive train.frame in their supported context, and seats select among real source windows.
+Creation exposed a redundant unused seatWidths frame map that required an attachment and crashed
+on a new free seat; removed that map. Width is owned solely by explicit registered window reads.
+Actual seat creation is included in check-train-artwork-roles.mts PASS
+(`train-artwork-role-source-OsoNO2`), together with source Save/fresh shipping/byte Undo. The finite
+metadata/presentation-vs-gameplay identity test and270 original Train draw cases PASS.
+
+Final source0d1a6738fb29bf2cce3eba023f9368f92e6c15e8288130b200f35d6b3f9efb91 passes tsc/both builds and173/173 zero-difference/error
+browser raster rows (independently asserted). Actual public editor finite seat source picker
+changes window0 to window1 and Undo restores it (earlier UI checkpoint8cbd03a4); final package Add
+artwork creates train-seatBack-1 with six real width choices and automatic frame inputs. The new
+seat previews and runs through pending native Train Play/Stop with zero warning/error logs.
+app-HRWOLHP6.js / play-ATVUIKUD.js / play-44e7534948514b62.html. Source-bound actor/inspector evidence
+above is retained at its earlier checkpoint, not relabelled as a final-source rerun. No whole-goal
+gate promotion; final integrated corpus acceptance follows the remaining platform migrations.
+
+## 2026-10-20 continuation: three platform geometry sources
+
+- Metro/GalleriaStation/HarborStation roof, train-stop and relevant skyline/water inputs now resolve
+  typed artwork roles from each actual scene document. Removed fixed original-artwork ID/type floors
+  and unused native layout copies. Shared manifest width, attachments, actor sources and presentation
+  bindings remain the owners of ordinary positions. Rail stops retain their existing horizontal-only
+  transform policy; no transport timing or simulation changes.
+- Exit sequence checkpoints now use an optional shared manifest point binding with typed editor
+  enable/rebind/offset controls. Metro's original turnstile point is source-authored; its hard-coded
+  exit-ID injection is removed. Missing exit/artwork and text-height data reject atomically; deleting
+  an exit removes its checkpoint binding. This is interaction geometry, not save migration plumbing.
+- Registered Metro/station artwork exposes finite visual-source choices. Adding a departure board
+  assigns its existing native departure and roof sources, without per-instance code changes.
+- `check-platform-artwork-roles.mts`: actual typed width/roof/horizon/stop/checkpoint forms, replacement
+  and original-artwork removal after dependent rebinding, runtime geometry, invalid-role atomicity,
+  new departure-board defaults, bundles, protected six-document Save, fresh shipping import and byte
+  Undo PASS. Evidence: `.scene-system/platform-artwork-role-source-wr3hJl`.
+- Default preservation: Metro72 and stations144 original draw-command cases; real Game transport
+  marker540 default+540 moved-door comparisons and15 checkpoint paint cases; opening42 immutable
+  original controller/transcript/timing/paint comparisons PASS. The marker test now invokes the real
+  Game prototype; opening timing is covered by its dedicated immutable-original runtime suite.
+- Source `sha256:2fbd3e99e5c704483c7dc5456d70092a1d9ba103e8f1e5252d2607a349026867`: TypeScript,
+  both builds,173 actual raster comparisons with zero differences/errors PASS. Packaged editor
+  app-AZSSBH43.js/play-37LPXRUY.js: actual Metro checkpoint rebinding, Add departure board, and
+  private native Play/Stop for Metro/GalleriaStation/HarborStation PASS; no console warnings/errors.
+- Full world acceptance remains open: native platform transport station selection still contains
+  scene-to-station assumptions that must follow pending world documents. No whole-goal gate promoted.
+
+## 2026-10-20 continuation: platform/world route consistency
+
+- Native Metro and both platform presenters now resolve station membership through the same bound
+  CityModel used by boarding/arrival logic. The shared platform frame produces train, departure and
+  closed-state inputs; an unregistered platform displays no unrelated station train. Removed the
+  hard-coded Downtown/Galleria/Harbor transport-key selection from these pictures. Architecture
+  remains the registered scene artwork; source actor controllers retain their explicit editable slots.
+- World → City & travel now stages typed station scene/surface/arrival/map-point edits and applies
+  them as one validated history transaction. This permits exchanging occupied stations and map
+  coordinates without invalid intermediate source. Discard clears drafts; Undo restores committed
+  source. Existing immediate map/transport controls remain available.
+- `check-platform-world-source.mts`: three native station assignments rearranged using actual typed
+  controls, no draft mutation before Apply, duplicate membership atomic rejection, four native frame
+  times per platform, detached platform, bundle/protected Save/fresh shipping import/byte Undo PASS.
+  Evidence: `.scene-system/platform-world-source-9wPYZh`. `check-city-forms.mts` PASS.
+- Original city evidence:26 registry values/all19 lookups/13,824 knowledge-name cases/7,752 travel
+  refusals/532 map keyboard-pointer cases PASS. Actual Game boarding/platform/siding/taxi
+  destination checks PASS. Metro72 and station144 immutable draw-command comparisons PASS.
+- Runtime checkpoint `sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5`: both
+  builds and173 zero-difference/error raster cases PASS, independently checked from the saved report.
+  Packaged app-QLDPNTWF.js/play-4IUFXMP2.js: actual typed draft/Apply/Undo, edited world membership
+  plus pending Metro private Play/Stop PASS; console warnings/errors empty. This source identity
+  precedes the subsequent evidence-only matrix update; do not label it final goal acceptance.
+- Matrix now records these bounded platform checks and latest raster evidence separately. All ten
+  previously open gates remain open; remaining world/story/controller coverage needs its own audit.
+
+## 2026-10-20 continuation: cached Game reopening and Test District startup
+
+- Fixed a demonstrated lifetime mismatch: Game.stop retained scene hosts but disposed their paired
+  gameplay sessions, removing native source hooks and canceling paused source work. Stop now retains
+  the host/session pair on the existing paused scene clock. Private Play still destroys its iframe.
+  `check-game-reopen-lifecycle.mts` fails before the fix, passes20 actual stop/start cycles afterwards,
+  including remaining600ms handoff delivery after9000ms stopped time, listener/RAF bounds and true
+  session-disposal cancellation. No new save owner or rebuild/compatibility layer.
+- Packaged `?demo` exposed missed integration: the seven-device review area retained bindings to
+  removed devices, and Counter/Desk documents lacked source actor/manifest definitions required by
+  migrated native factories. Review sources now declare their recipes/bindings explicitly, and the
+  workshop filters device bindings alongside its deliberate device subset. Strict missing-device
+  validation remains enforced. No campaign composition or review-area scenery added.
+- An intentionally silent intro also created an empty bubble and crashed the next game update.
+  Game.say now treats an empty page list as no speech; nonempty speech remains unchanged.
+- `check-demo-district.mts` PASS for compact review areas, shared purchase/dialogue commands,
+  rotation/current-format save persistence, rejected empty stock, and isolated actual save/slot/resume
+  modules with campaign/Harbor sentinels. Updated its stale flat-state fixture to the current owner
+  block and kept VM-cloned JSON inside its own realm. No old-format compatibility added.
+- Both builds, opening42 immutable comparisons, handoff cancellation/reset/restore checks and22
+  communication clock/guidance cases PASS. Runtime source65c6850a1e4fc16ee86c15bc20a61a1e16f189d6b544f432abd8adb7aee9de32:
+  all173 raster cases PASS with zero pixel differences/errors.
+- Actual packaged homepage demo: clean startup; quit/reopen through the normal shortcut; native
+  device wave before/after reopening; shared permission revoke and visible `Operation refused:
+  conditions` afterwards PASS; console warnings/errors empty. app-32GFSBDG.js/play-WRAUES7W.js.
+- `docs/reference/LIFECYCLE-OWNERSHIP.md` records clock/resource owners and preserved off-screen
+  policy. Interrupted schematic gestures still need explicit listener cleanup; G5 remains open.
+
+## 2026-10-20 continuation: interrupted schematic gestures
+
+- Seven hacking gesture paths now share one temporary per-layer listener owner. Device/noun/part
+  dragging, cable dragging, key chips and drawer placement release on close/reset/restore/mode
+  changes/replacement/pointercancel. Other pointers cannot move or complete the gesture. Cancellation
+  clears temporary cable/chip paint without executing the old tap/drop; existing movement formulas
+  and completed actions remain unchanged. Replacement cancellation runs before new gesture state.
+- `check-schematic-gesture-lifecycle.mts`:567 actual method cases across seven paths/eight
+  interruptions PASS, including saved stale callbacks, pointer ownership, normal completion and
+  wire replacement. TypeScript, cached-Game20 cycles, shared handoffs and demo checks PASS.
+- Both builds PASS. Sourcea4afce256bf3d65e04e675fc8c174b0b9d08f68e36e8c7435da1df357918710c:
+ 173 actual raster cases with zero differences/errors. Packaged app-YRUXHJ64.js/play-S3STHPFI.js:
+  real hack-layer open, core unfold, noun open, native wave and layer close PASS; console warnings/
+  errors empty. `LIFECYCLE-OWNERSHIP.md` updated; full G5 remains open pending combined reconciliation.
+
+## 2026-10-20 continuation: authored ride scene and obsolete wrappers
+
+- Game ride advancement, current-stop map context, riding map state, map starting layer and LINE0
+  discovery now use CitySource.TRANSPORT.boarding.scene instead of assuming the ID `train`. The
+  same source field already owns boarding destination. Default transport algorithms/timing unchanged.
+- Expanded `check-platform-world-source.mts`: actual typed boarding-scene edit, source Save/bundle/
+  fresh shipping import and Game.updateTravel verify the newly authored scene advances the ride,
+  while the old scene name no longer does. All three rearranged platform presenters remain checked.
+  Protected Save evidence: `.scene-system/platform-world-source-ad7Lom`.
+- `check-transport-destinations.mts` now also checks actual Game ride dispatch and map opening in
+  the authored destination. Original city26 registry/13,824 knowledge/7,752 refusal/532 map input
+  comparisons pass; default Downtown143/Train270 drawing comparisons pass.
+- Removed unused Train regular-dialogue compatibility view and Downtown draw wrapper. The latter's
+  sole reexport of an unused map-kiosk position was removed together with its eager fixed-ID lookup.
+  The actual source manifest and shared device renderer remain the only runtime placement owners.
+- Both builds, opening42, demo isolation and schematic567 gesture cases PASS. Source
+  92178ea583a8d225a708b3ec95c44391d363777e8e053683e5051cf195306127:
+  all173 raster cases PASS with zero differing pixels/errors. Packaged app-6H4SD2MJ.js/play-SCTVE7I4.js:
+  actual World boarding edit to Capsule, native private Capsule Play, visible ride changing from
+  dwell/timer18 to running/position2972, clean Stop and empty warning/error log PASS. This tests the
+  existing role rebinding, not a new story/remote mechanic or campaign playthrough.
+- Whole world/story/controller/editor/removal gates remain open; no completion promotion.
+
+## 2026-10-20 combined editor/source verification at92178ea5
+
+- Actual packaged app-6H4SD2MJ.js/play-SCTVE7I4.js: all19 scenes selected in the editor, private
+  starting fixtures created, native runtime/Terminal plus running acknowledgment observed, Stop
+  removes iframe each time; warning/error log empty. Report:
+  `.scene-system/evidence/all19-private-play-92178ea5-20261020.json`. This covers startup and frame
+  cleanup, not every interaction or full authoring acceptance.
+- `check-actor-entities.mts`: all19 source actor CRUD/binding/dialogue/identity, invalid edits,
+  history/bundles/protected Save/native reload/byte Undo PASS; artifact
+  `.scene-system/actor-entities/run-IKhYfJ`. Actual all19 manifest/companion/actor inspector identities
+  PASS in `.scene-system/scene-inspector-identities-gdQfQX`.
+- `check-scene-batch.mts` and `check-communication.mts` PASS on this same runtime checkpoint.
+  Full coverage reconciliation and remaining mandatory controller/entity/state gates stay open.
+
+## 2026-10-20 lifecycle gate closure
+
+- PanelKit now owns cleanup callbacks and generation guards for frame/reply/close adapters. Lock
+  toys immediately release keyboard handlers, solved-card/Morse timers and drags when closed or
+  replaced. Cipher/Cryptex and Schematic reuse one PointerGesture owner. Old controls/callbacks
+  cannot affect a replacement panel. Existing drawing, puzzle rules and timing boundaries retained.
+- Schematic focus timers and Menu title-fade/slot-load timers cancel with their owner. Actual slot
+  load249/250ms and fade899/900ms/reduced-motion0ms checks pass; no new storage format.
+- Sourcea3fac97efcb8b300260b1b12296586cf5ae150629c617b2694749001f34f92a4: both builds,173 zero-
+  difference/error raster cases,38 real packaged native Play/Stop operations across all19 scenes,
+  three cipher panel reopen cycles, nine verified repeated Test District visits with stable cached
+  UI counts and empty warning/error logs PASS. Report:
+  `.scene-system/evidence/lifecycle-a3fac97e-20261020.json`.
+- Full gate audit and individual commands/results: `docs/reference/LIFECYCLE-ACCEPTANCE.md`.
+  G5 promoted to PASS. G1/G2/G3/G5/G6 now PASS; nine gates remain open. This does not promote
+  authoring/controller/network/current-save or full preservation acceptance.

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { GameplaySession,cloneState } from '../../src/ssg/game/engine/gameplay/session';
 import { ConversationSession } from '../../src/ssg/game/engine/gameplay/conversation';
 import { validateGameplay } from '../../src/ssg/game/engine/gameplay/validation';
-import { createGameplayPilot } from '../../src/ssg/game/authoring/gameplay-pilot-session';
+import { createGameplayPilot } from './shift-pilot-fixture.mts';
 import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
-import { SHIFT,SHIFT_USES,shiftGoal,shiftMinute } from '../../src/ssg/game/scenes/harbor-shift';
+const SHIFT=Object.fromEntries(SHIFT_GAMEPLAY.flags.filter(id=>id.startsWith('shift:')).map(id=>[id.slice(6),id]));
+import { SHIFT_USES,shiftGoal,shiftMinute } from '../../src/ssg/game/scenes/harbor-shift';
 import type { GameplayDefinition,GameplayState } from '../../src/ssg/game/engine/gameplay/types';
 import type { UseCtx,SceneUse } from '../../src/ssg/game/scenes/kit';
 const fresh=():GameplayState=>({flags:{},items:{},tokens:0});
@@ -57,7 +58,8 @@ function context():UseCtx{return{
  add:()=>{throw new Error('Legacy inventory mutation');},take:()=>{throw new Error('Legacy inventory mutation');},has:(item,n=1)=>(live.state().items[item]??0)>=n,
 };}
 const use=(id:string)=>SHIFT_USES.find(u=>u.id===id)!;
-const run=(id:string)=>use(id).use(context());
+function present(result:ReturnType<SceneUse['use']>,session:GameplaySession=live.gameplay){if(!Array.isArray(result)&&result.conversation){const talk=new ConversationSession(session,result.conversation,{objective:shiftGoal(session.state().flags)});try{return talk.frame().pages;}finally{talk.close();}}return result;}
+const run=(id:string)=>present(use(id).use(context()));
 const pages=(result:ReturnType<SceneUse['use']>)=>Array.isArray(result)?result:result.pages;
 assert.equal(shiftMinute(live.state().flags),1120);
 assert.equal(pages(run('boss'))[0],'You are on transport. Here is your work tag.');run('boss');assert.equal(live.state().items['shift.tag'],1);
@@ -70,7 +72,7 @@ assert.equal(live.state().tokens,3);assert.equal(live.state().items['shift.tag']
 const resumed=session(SHIFT_GAMEPLAY,JSON.parse(JSON.stringify(live.state())));assert.equal(resumed.gameplay.dispatch('shift.checkout','interaction').ok,false);assert.equal(resumed.state().tokens,3);
 const lostTag=session(SHIFT_GAMEPLAY,{flags:{[SHIFT.assigned]:true},items:{},tokens:7});
 const restoredContext={...context(),gameplay:lostTag.gameplay,flags:lostTag.state().flags,has:(item:string,n=1)=>(lostTag.state().items[item]??0)>=n};
-assert.match(pages(use('boss').use(restoredContext))[0],/Pick up the blue parcel/);assert.equal(lostTag.state().items['shift.tag'],1);assert.equal(lostTag.state().tokens,7);
+assert.match(pages(present(use('boss').use(restoredContext),lostTag.gameplay))[0],/Pick up the blue parcel/);assert.equal(lostTag.state().items['shift.tag'],1);assert.equal(lostTag.state().tokens,7);
 const failedReaction=structuredClone(SHIFT_GAMEPLAY) as GameplayDefinition;
 failedReaction.commands['shift.credit-wages'].actions=[{tokens:-4}];
 const unsettled=session(failedReaction,{flags:{[SHIFT.parked]:true},items:{'shift.tag':1},tokens:0});

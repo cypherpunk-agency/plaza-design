@@ -1,10 +1,11 @@
+import type {GameplayDefinition} from '../../engine/gameplay/types';
 import {compileSceneActors} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import { drawLaundromatComposition,laundromatComposition,laundromatEnvironment,laundromatGeometry,type LaundromatRenderOptions } from './composition';
 import type { Composition,Environment } from '../../art/core/composition';
 import type { View } from '../../art/core/view';
 import type { EngineDraw } from '../../engine/host';
-import {LAUNDROMAT_SCENE} from './scene-document';
+import {LAUNDROMAT_SCENE,LAUNDROMAT_GAMEPLAY} from './scene-document';
 /**
  * The laundromat on the canvas: a narrow shop between the market's stalls,
  * open late, lit like an operating theatre, four washers along the wall and
@@ -34,5 +35,5 @@ export function laundromatActors(doc:Composition=laundromatComposition,source:Sc
 const actors=laundromatActors();
 export const PEOPLE=LAUNDROMAT_SCENE.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]);
 export function laundromatPeople(doc:Composition=laundromatComposition){const actors=laundromatActors(doc);return LAUNDROMAT_SCENE.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]);}
-export function laundromatFrameEnvironment(view:View,engine:EngineDraw,doc:Composition=laundromatComposition,renderActors:Readonly<Record<string,Character>>=actors):Environment{return laundromatEnvironment(doc,view,engine,renderActors);}
-export function drawLaundromat(ctx:CanvasRenderingContext2D,view:View,engine:EngineDraw,doc:Composition=laundromatComposition,state:Environment['state']={},options:LaundromatRenderOptions={},renderActors:Readonly<Record<string,Character>>=actors){drawLaundromatComposition(ctx,view,engine,renderActors,doc,state,options);}
+export function laundromatFrameEnvironment(view:View,engine:EngineDraw,doc:Composition=laundromatComposition,renderActors:Readonly<Record<string,Character>>=actors,gameplay:GameplayDefinition=LAUNDROMAT_GAMEPLAY):Environment{return laundromatEnvironment(doc,view,engine,renderActors,gameplay);}
+export function drawLaundromat(ctx:CanvasRenderingContext2D,view:View,engine:EngineDraw,doc:Composition=laundromatComposition,state:Environment['state']={},options:LaundromatRenderOptions={},renderActors:Readonly<Record<string,Character>>=actors,gameplay:GameplayDefinition=LAUNDROMAT_GAMEPLAY){drawLaundromatComposition(ctx,view,engine,renderActors,doc,state,options,gameplay);}

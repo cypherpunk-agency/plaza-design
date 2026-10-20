@@ -67,3 +67,9 @@ the other gates remain open until their own completion evidence is accepted.
 Current frozen-source retests also PASS world-access policy (`world-access-policy-XIgI9A`),
 cinematic pending/history/bundle/Save/reload/Undo (`cinematic-pending/run-tWa3Sf`),
 transport destinations and all19 actor CRUD (`actor-entities/run-h5y7Al`).
+
+Published as `edc60078471059b93bb9a59c09475c0da9aee5c9` by atomic main/production push.
+Production homepage39314631594 and design39314631485 and main build39314631529 succeeded.
+Public editor HTTP200 serves CI-built `app-S47IROS6.js`, matching production job output;
+CI native Play remains `play-F6YWE5BK.js`. HTML/app hashes differ from the Windows checkout
+(source-text packaging/line endings); no claim that their bytes match the local app artifact.

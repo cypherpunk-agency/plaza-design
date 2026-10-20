@@ -11,7 +11,7 @@
       "id": "board",
       "name": "DEPARTURES",
       "pages": [
-        "LINE 0 \u00b7 A TRAIN EVERY 25 SECONDS.",
+        "LINE 0 · A TRAIN EVERY 25 SECONDS.",
         "DOORS OPEN FOR A LIMITED TIME. DO NOT HOLD THE DOORS."
       ],
       "promptH": 120
@@ -20,7 +20,7 @@
       "id": "map",
       "name": "LINE MAP",
       "pages": [
-        "LINE 0: DOWNTOWN \u00b7 GALLERIA \u00b7 HARBOR.",
+        "LINE 0: DOWNTOWN · GALLERIA · HARBOR.",
         "LOOP SERVICE. TRAINS STOP AT EVERY STATION."
       ],
       "promptH": 92
@@ -59,7 +59,7 @@
       "id": "downtown",
       "to": "downtown",
       "at": "metro",
-      "label": "[E] STAIRS DOWN \u00b7 DOWNTOWN",
+      "label": "[E] STAIRS DOWN · DOWNTOWN",
       "promptH": 82
     },
     {
@@ -116,6 +116,15 @@
       "poster": {
         "instance": "poster"
       }
+    },
+    "artwork": {
+      "roof": "canopy-shell",
+      "deck": "track",
+      "horizon": "horizon",
+      "stop": "platform-train"
+    },
+    "exitCheckpoints": {
+      "downtown": "turnstile"
     }
   },
   "rests": [

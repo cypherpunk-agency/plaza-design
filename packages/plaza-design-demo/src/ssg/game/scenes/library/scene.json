@@ -311,6 +311,8 @@
     }
   ],
   "manifest": {
+    "devices": {"reader": "reader", "session": "session", "printer": {"instance": "printer", "h": -2}},
+    "artwork": {"orientation":"window-1"},
     "version": 1,
     "width": {
       "instance": "room",

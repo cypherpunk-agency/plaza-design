@@ -141,6 +141,68 @@
     }
   ],
   "manifest": {
+    "devices": {
+      "gate": {
+        "instance": "device-gate",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "box": {
+        "instance": "device-box",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "sign": {
+        "instance": "device-sign",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "cam3": {
+        "instance": "device-cam3",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "billboard": {
+        "instance": "device-billboard",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "till": {
+        "instance": "device-till",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "dlv9": {
+        "instance": "device-dlv9",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "relay": {
+        "instance": "device-relay",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "fence": {
+        "instance": "device-fence",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      },
+      "scan": {
+        "instance": "device-scan",
+        "widthProperty": "spotWidth",
+        "heightProperty": "spotHeight",
+        "heightOffsetProperty": "spotY"
+      }
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -187,6 +249,26 @@
         "responseH": 0,
         "responseAboveFloor": true
       }
+    },
+    "artwork": {
+      "stall": "noodle-stall",
+      "alley": "yard-alley",
+      "vehicleHome": "device-dlv9",
+      "dumpsterPlatform": "platform-dumpster",
+      "annexPlatform": "platform-annex",
+      "dumpsterWidth": "dumpster",
+      "annexWidth": "front-7",
+      "caster": "caster-dumpster",
+      "reflection0": "device-sign",
+      "reflection1": "noodle-stall",
+      "reflection2": "billboard-frame",
+      "reflection3": "market-neon",
+      "reflection4": "spaceport-neon",
+      "reflection5": "open-neon",
+      "reflection6": "exit-metro",
+      "reflection7": "exit-taxi",
+      "reflection8": "exit-shop",
+      "reflection9": "weather-ticker"
     }
   },
   "environment": {

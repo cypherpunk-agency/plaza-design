@@ -1,13 +1,18 @@
+import source from '../../src/ssg/game/scenes/capsule/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import assert from 'node:assert/strict';
-import { capsuleArt, capsuleComposition, capsuleDeviceData, capsuleEnvironment, capsuleGeometry, capsulePlacement, validateCapsuleComposition } from '../../src/ssg/game/scenes/capsule/composition';
+import { capsuleArt, capsuleComposition, capsuleEnvironment, capsuleGeometry, capsulePlacement, validateCapsuleComposition } from '../../src/ssg/game/scenes/capsule/composition';
 import { resolveComposition, type Composition } from '../../src/ssg/game/art/core/composition';
 import type { SceneData } from '../../src/ssg/game/data/types';
 import type { SceneModel } from '../../src/ssg/game/engine/model';
 import devices from '../../src/ssg/game/scenes/capsule/devices.json';
+const capsuleDeviceData=(data:SceneData,composition=capsuleComposition)=>{const rows=capsuleGeometry(composition);return projectDeviceBindings(source as unknown as SceneDocument,rows,data,manifestGeometry(source as unknown as SceneDocument,rows,[],{groundSpawn:false}).width);};
 const doc = validateCapsuleComposition(JSON.parse(JSON.stringify(capsuleComposition)));
 assert.deepEqual(doc, capsuleComposition);
 assert.equal(doc.instances.length, 30);
-assert.deepEqual(capsuleDeviceData(devices as SceneData), devices, 'all seven shipping device spots remain exact');
+const projected=capsuleDeviceData(devices as SceneData);for(const d of devices.devices)assert.deepEqual(projected.devices.find(v=>v.id===d.id)!.layout!.spot,{y:0,...d.layout.spot},'all seven source-owned device spots remain exact');
 assert.equal(capsulePlacement('spawn').x, 466);
 assert.deepEqual([capsulePlacement('pixel-bed').x, capsulePlacement('pixel-bed').h], [482, 22]);
 assert.deepEqual([capsulePlacement('pixel-router').x, capsulePlacement('pixel-router').h], [438, 38]);
@@ -27,10 +32,10 @@ assert.deepEqual(capsuleDeviceData(devices as SceneData, edit).devices.map(i => 
 function rejects(change: (doc: Composition) => void, pattern: RegExp) {
   const bad = structuredClone(doc); change(bad); assert.throws(() => validateCapsuleComposition(bad), pattern); assert.deepEqual(doc, capsuleComposition);
 }
-rejects(d => { d.instances = d.instances.filter(i => i.id !== 'device-router'); }, /Missing gameplay-bound/);
+rejects(d => { d.instances = d.instances.filter(i => i.id !== 'door'); }, /attach|missing/i);
 rejects(d => { d.instances.find(i => i.id === 'router')!.bindings!.up = 'capsule.absent'; }, /unknown capsule binding/);
 const state = { plugOn: true, sun: true, doorOpen: false, pixelAt: 'router' };
-const model = { get: (key: string) => state[key as keyof typeof state], value: (key: string) => key === 'temp' ? 75 : true, now: () => 500, scratch: { bootUntil: 600, steamUntil: 700 } } as unknown as SceneModel;
+const model = { data:devices, get: (key: string) => state[key as keyof typeof state], value: (key: string) => key === 'temp' ? 75 : true, now: () => 500, scratch: { bootUntil: 600, steamUntil: 700 } } as unknown as SceneModel;
 const view = { sx: (x: number) => x, y: (h: number) => 300 - h, gy: 300, t: 137, cam: 0, viewW: 640, viewH: 360, flags: {} };
 const env = capsuleEnvironment(edit, view, model, 'router'), rows = resolveComposition(capsuleArt, edit, env), router = rows.find(i => i.instance.id === 'router')!;
 assert.equal(router.state.plugOn, true); assert.equal(router.state.up, false); assert.equal(router.state.hot, true); assert.equal(router.state.temp, 75); assert.equal(router.state.steam, true); assert.equal(router.state.hover, 'router');

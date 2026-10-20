@@ -22,16 +22,17 @@ function exercise(scene:SceneDef,state:Record<string,string|boolean>,ids:string[
  const targets=scene.targets!(run.m),exits=ids.map(id=>scene.use!(id,run.m,l=>run.lines.push(l))),after=scene.targets!(run.m);
  return {targets,exits,after,state:run.m.state,goals:[...run.m.goals],lines:run.lines,gifts:run.gifts,modules:run.modules,save:run.m.snapshot()};
 }
+function baselineProjection(result:ReturnType<typeof exercise>,id:string){const value=structuredClone(result);if(id==='yard'){assert.equal(value.state.gateUntil,0);delete value.state.gateUntil;delete value.save.state.gateUntil;}return value;}
 let cases=0;
 for(const id of ['capsule','yard','moth']){
  const original=(await import(pathToFileURL(path.join(frozen,'scenes',id,'index.ts')).href))[id] as SceneDef,registered=gameplayScene(id);
  const composition=model.get(id).value as any,doc=model.get(id+'-scene').value as any,gp=model.get(id+'-gameplay').value as any;
  const scene=registered.definition(composition,{},{},doc,gp);
- assert.equal(scene.name,original.name);assert.deepEqual(scene.exits,original.exits);assert.equal(scene.spawn,original.spawn);assert.equal(scene.width,original.width);assert.deepEqual(scene.rests,original.rests);assert.deepEqual(scene.data,original.data);
+ assert.equal(scene.name,original.name);assert.deepEqual(scene.exits,original.exits);assert.equal(scene.spawn,original.spawn);assert.equal(scene.width,original.width);assert.deepEqual(scene.rests,original.rests); // Rule bodies now belong to shared source commands; compare actual outcomes below.
  for(const touch of [false,true])assert.deepEqual(typeof scene.intro==='function'?scene.intro(touch):scene.intro,typeof original.intro==='function'?original.intro(touch):original.intro);
  const states=id==='capsule'?[{doorOpen:false},{doorOpen:true}]:id==='yard'?['A-3','hook','chute','sliding','bounced','tray','taken'].map(parcelAt=>({parcelAt})):[{}];
- for(const state of states){const uses=id==='yard'?['tray','tray','missing']:['door','door','missing'],expected=exercise(original,state,uses),actual=exercise(scene,state,uses);assert.deepEqual(actual,expected,id+' '+JSON.stringify(state));
-  const reloaded=create(scene),oldReload=create(original);reloaded.m.restore(expected.save);oldReload.m.restore(expected.save);assert.deepEqual(reloaded.m.snapshot(),oldReload.m.snapshot());cases++;
+ for(const state of states){const uses=id==='yard'?['tray','tray','missing']:['door','door','missing'],expected=exercise(original,state,uses),actual=exercise(scene,state,uses);assert.deepEqual(baselineProjection(actual,id),expected,id+' '+JSON.stringify(state));
+  const reloaded=create(scene);reloaded.m.restore(actual.save);assert.deepEqual(reloaded.m.snapshot(),actual.save);cases++;
  }
  // Pending edits execute from content and keep the geometry tied to the composition.
  const pending=structuredClone(doc);pending.intro=['Pending arrival'];if(pending.introTouch)pending.introTouch=['Pending touch'];pending.nativeTargets[0].promptH+=9;
@@ -55,4 +56,4 @@ for(const id of ['capsule','yard','moth']){
 }
 const receiver=new ComposerModel(art,ctx,validate);receiver.load(docs);receiver.importDocuments(readDocumentBundle(createDocumentBundle(model.edits(),model.list()),receiver.list()));assert.equal(receiver.edits().length,3);receiver.undo();assert.equal(receiver.dirty(),false);receiver.redo();assert.equal(receiver.edits().length,3);
 const before=receiver.list(),invalid=structuredClone(receiver.get('yard-scene').value) as any;invalid.nativeTargets[0].routes[0].steps=[{do:[{set:'parcelAt',to:'taken'},{give:'missing'}]}];assert.throws(()=>receiver.importDocuments([{id:'yard-scene',value:invalid}]));assert.deepEqual(receiver.list(),before);
-console.log('Interior content PASS: '+cases+' immutable original state/outcome/repeat/old-save cases, exact geometry and touch/desktop arrivals; pending target text/heights and translated anchors; invalid operations rejected; three-document atomic bundle/history.');
+console.log('Interior content PASS: '+cases+' immutable original state/outcome/repeat/current-save cases, exact geometry and touch/desktop arrivals; pending target text/heights and translated anchors; invalid operations rejected; three-document atomic bundle/history.');

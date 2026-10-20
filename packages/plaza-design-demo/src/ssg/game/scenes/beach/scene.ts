@@ -3,9 +3,7 @@ import {compileSceneActors} from '../../engine/gameplay/actors';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import type {Composition} from '../../art/core/composition';
 import {content} from './scene-document';
-import { beachComposition,beachGeometry,beachWidth,drawBeachComposition } from './composition';
-import type { SceneModel } from '../../engine/index';
-import type { View as DrawView } from '../../art/core/view';
+import { beachComposition,beachGeometry } from './composition';
 /**
  * The beach on the canvas: a real beach looking east over the sea (the sun rises out of it;
  * the sky and the light are the city clock's: sets/sky.ts, sets/lighting.ts), along the shore from the harbor. Sand
@@ -32,20 +30,12 @@ import type { View as DrawView } from '../../art/core/view';
 
 import { type Character } from "../../runtime/characters";
 
-/** The beach: the promenade, the sand, then the pier out to Moth's boat. */
-export const BEACH_W = beachWidth;
 /** Where you land coming down the stairs from the harbor (and walking in from its edge). */
 const ordinaryGeometry=manifestGeometry(content.scene,beachGeometry(),['exits'],{groundExits:false});
-export const BEACH_EDGE_X=ordinaryGeometry.bindings.exits.harbor?.x??ordinaryGeometry.spawn;
+export const BEACH_EDGE_X=ordinaryGeometry.artwork.stairs?.placement.x??ordinaryGeometry.spawn;
 export const BEACH_SPAWN=ordinaryGeometry.spawn;
 
 /** Native body identities and animation behavior now compile from editable scene source. */
 export function beachActors(document:Composition=beachComposition,source:SceneDocument=content.scene):Record<string,Character>{return compileSceneActors(source,beachGeometry(document));}
 export const BEACH_ACTORS=beachActors();
 export const PEOPLE:Character[]=content.scene.actors!.filter(a=>a.band==='world').map(a=>BEACH_ACTORS[a.id]);
-export const LIME=BEACH_ACTORS['lime-talk'];
-
-/** When the gull on the post was last shooed (game frames), so it can fly off and come back. */
-export const GULL = { shooed: -1e9 };
-
-export function drawBeach(x:CanvasRenderingContext2D,m:SceneModel,d:DrawView,hover:string|null){drawBeachComposition(x,d,m,hover,BEACH_ACTORS,GULL,beachComposition);}

@@ -1,3 +1,4 @@
+import {stacksState} from './rules';
 /**
  * The stacks' own panel: STS-2's camera, looking straight down from the
  * trolley on blocks A, B and C. Every container's roof carries its code, too
@@ -23,9 +24,9 @@ export const scopePanel: PanelFn = ({ body, m, say, frame }) => {
   body.append(c, btns);
   const W = 320, H = 150;
   const boxes = m.data.camera?.crates ?? [];
-  const mine = () => m.get('box') as string;
+  const mine = () => stacksState(m,'box') as string;
   /** 0451 still in its slot (it leaves the picture once lifted). */
-  const home = () => m.get('boxAt') === 'stack' || m.get('boxAt') === 'air';
+  const home = () => stacksState(m,'boxAt') === 'stack' || stacksState(m,'boxAt') === 'air';
   let s = 1, ox = 0, oy = 0, zoom = 1, focus = { x: 160, y: 75 }, cross = { x: 160, y: 66 }, aim = { x: 160, y: 66 };
   const under = (p: { x: number; y: number }) => boxes.find((k) => (k.id !== mine() || home()) && p.x >= k.x - 2 && p.x <= k.x + k.w + 2 && p.y >= k.y - 2 && p.y <= k.y + k.h + 2);
   const fit = () => {
@@ -103,7 +104,7 @@ export const scopePanel: PanelFn = ({ body, m, say, frame }) => {
     // a gull on a roof
     g.fillStyle = '#e8e4dc'; g.fillRect(230, 52, 3, 2); g.fillStyle = '#e8b030'; g.fillRect(233, 52, 1, 1);
     // the tag: STS-2's target
-    if (m.get('found') && home()) {
+    if (stacksState(m,'found') && home()) {
       const k = boxes.find((b) => b.id === mine());
       if (k) { g.strokeStyle = '#ff3df2'; g.lineWidth = 0.8; g.setLineDash([2, 2]); g.strokeRect(k.x - 2, k.y - 2, k.w + 4, k.h + 4); g.setLineDash([]); }
     }

@@ -1731,7 +1731,7 @@
       "pass": "backdrop",
       "bindings": {
         "snapshot": "mall.snapshot",
-        "vendorPose": "mall.vendor.deckTech"
+        "vendorPose": "mall.vendor.deckVendor"
       }
     },
     {
@@ -1748,7 +1748,7 @@
       "pass": "backdrop",
       "bindings": {
         "snapshot": "mall.snapshot",
-        "vendorPose": "mall.vendor.teen"
+        "vendorPose": "mall.vendor.caseVendor"
       }
     },
     {

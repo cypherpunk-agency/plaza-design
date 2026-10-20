@@ -1,3 +1,4 @@
+import {createCityMap} from '../../src/ssg/game/ui/citymap';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {validateCitySource} from '../../src/ssg/game/world/city-source';
@@ -19,6 +20,10 @@ const g=game();g.enterTrain('downtown');assert.deepEqual(arrivals.pop(),['capsul
 g.stepOut();assert.deepEqual(arrivals.pop(),['capsule',pending.STATIONS.downtown.at]);assert.deepEqual(sync.pop(),['sync','downtown',100,19]);
 g.metroInstance.rideAtSiding=()=>true;g.stepOut();assert.deepEqual(arrivals.pop(),['yard',pending.TRANSPORT.siding.entrance]);
 g.flight={to:'downtown',start:0};g.updateTravel(1);assert.deepEqual(arrivals.pop(),['yard',pending.STANDS.downtown.at]);assert.equal(g.flight,null);
+// A different authored car scene must own ride advancement and the map's riding state too.
+const moved=game(),steps:number[]=[];moved.metroInstance.stepRide=(dt:number)=>{steps.push(dt);return null;};Object.defineProperty(moved,'story',{value:'free',configurable:true});moved.here=pending.TRANSPORT.boarding.scene;moved.updateTravel(2);assert.deepEqual(steps,[2]);moved.here='train';moved.updateTravel(3);assert.deepEqual(steps,[2],'the old scene name must not keep advancing the ride');
+const map=createCityMap(world);assert.equal(map.openMap('view',pending.TRANSPORT.boarding.scene,'downtown').layer,'metro');assert.equal(map.openMap('view','train',null).layer,'street');
+Object.defineProperty(moved,'worldMap',{value:map,configurable:true});Object.defineProperty(moved,'zh',{value:{visionOn:false},configurable:true});moved.running=true;moved.keys=new Set();moved.syncEnginePause=()=>{};moved.here=pending.TRANSPORT.boarding.scene;moved.showMap();assert.equal(moved.mapView.layer,'metro');
 const spawn=structuredClone(pending);delete spawn.STATIONS.downtown.at;delete spawn.STANDS.downtown.at;delete spawn.TRANSPORT.boarding.entrance;delete spawn.TRANSPORT.siding.entrance;const spawnGame=game(createCityModel(spawn,context));spawnGame.enterTrain('downtown');assert.deepEqual(arrivals.pop(),['capsule',undefined]);spawnGame.stepOut();assert.deepEqual(arrivals.pop(),['capsule',undefined]);spawnGame.metroInstance.rideAtSiding=()=>true;spawnGame.stepOut();assert.deepEqual(arrivals.pop(),['yard',undefined]);spawnGame.flight={to:'downtown',start:0};spawnGame.updateTravel(1);assert.deepEqual(arrivals.pop(),['yard',undefined]);
 for(const change of [(d:any)=>{d.TRANSPORT.boarding.entrance='missing';},(d:any)=>{d.TRANSPORT.siding.scene='missing';},(d:any)=>{d.STATIONS.downtown.at='missing';},(d:any)=>{d.STANDS.downtown.at='missing';},(d:any)=>{d.version=3;}]){const bad=structuredClone(pending);change(bad);assert.throws(()=>validateCitySource(bad,context));}
 assert.deepEqual(createCityModel(validateCitySource(legacy,context)).TRANSPORT,{boarding:{scene:'train',entrance:'out'},siding:{scene:'harbor',entrance:'metro'}});

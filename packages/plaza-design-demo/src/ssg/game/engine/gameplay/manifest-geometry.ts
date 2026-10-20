@@ -1,7 +1,8 @@
+import {resolveArtworkRoles} from './artwork-roles';
 import {art,resolveComposition,type Composition,type Resolved} from '../../art';
 import {frameView} from '../../art/core/view';
 import type {SceneDocument} from './scene-document';
-import {manifestGroups,targetInstance,type ManifestTarget,type ManifestGroup} from './manifest-contract';
+import {manifestGroups,targetInstance,type ManifestTarget,type ManifestGroup,type DeviceManifestTarget} from './manifest-contract';
 export interface BoundPoint {row:Resolved;x:number;h:number;promptH?:number;responseH?:number}
 export function resolveManifestPoint(rows:readonly Resolved[],target:ManifestTarget,width:number,ground=false,transformed=false):BoundPoint{const row=rows.find(r=>r.instance.id===targetInstance(target));if(!row)throw new Error('Missing manifest artwork: '+targetInstance(target));const pRow=row,p=pRow.placement,t=typeof target==='string'?{instance:target}:target;
   const a=t.anchor?row.element.anchors(row.props,row.state)[t.anchor]:{x:0,h:0};if(!a)throw new Error('Missing manifest anchor: '+t.instance+'/'+t.anchor);
@@ -11,6 +12,13 @@ export function resolveManifestPoint(rows:readonly Resolved[],target:ManifestTar
   const promptH=t.promptH===undefined||t.promptAboveFloor&&h===0?undefined:h+t.promptH,responseH=t.responseH===undefined||t.responseAboveFloor&&h===0?undefined:h+t.responseH;
   if([promptH,responseH].some(v=>v!==undefined&&(!Number.isFinite(v)||v<0||v>10000)))throw new Error('Manifest text height outside scene bounds');
   return{row,x,h,...(promptH!==undefined?{promptH}:{}),...(responseH!==undefined?{responseH}:{})};
+}
+/** Device extents and offset properties are finite authored references, never expressions. */
+export function resolveDevicePoint(rows:readonly Resolved[],target:DeviceManifestTarget,width:number){
+ const ref=typeof target==='string'?{instance:target}:target,row=rows.find(r=>r.instance.id===ref.instance);if(!row)throw Error('Missing device artwork: '+ref.instance);
+ const property=(key:'widthProperty'|'heightProperty'|'heightOffsetProperty')=>{const name=typeof target==='string'?undefined:target[key];if(name===undefined)return undefined;const value=row.props[name];if(typeof value!=='number'||!Number.isFinite(value)||key!=='heightOffsetProperty'&&value<=0)throw Error('Device artwork property must be '+(key==='heightOffsetProperty'?'finite':'positive')+': '+name);const scaled=value*row.placement.scale;if(!Number.isFinite(scaled)||Math.abs(scaled)>10000)throw Error('Device artwork property outside bounds: '+name);return scaled;};
+ const offset=property('heightOffsetProperty')??0,point=resolveManifestPoint(rows,{...ref,h:(ref.h??0)+offset/row.placement.scale},width,false,true);
+ return{...point,width:property('widthProperty'),height:property('heightProperty')};
 }
 /** Resolve registered anchors and authored offsets; no scripts, property expressions or scene callbacks. */
 export function manifestGeometry(scene:SceneDocument,rows:readonly Resolved[],groups:readonly ManifestGroup[]=manifestGroups,options:{groundExits?:boolean;groundSpawn?:boolean;transformedExits?:boolean}={}){
@@ -25,9 +33,10 @@ export function manifestGeometry(scene:SceneDocument,rows:readonly Resolved[],gr
   for(const target of Object.values(map))if(typeof target!=='string'&&((group==='people'&&(target.promptH!==undefined||target.responseH!==undefined))||((group==='exits'||group==='rests')&&target.responseH!==undefined)))throw new Error('Unsupported text-height binding for '+group);
   bindings[group]=Object.fromEntries(authored.map(r=>[r.id,point(map[r.id],group==='exits'&&options.groundExits!==false,group==='exits'&&!!options.transformedExits)]));
  }
- for(const target of Object.values(manifest.devices??{}))point(target,false,true);
+ for(const target of Object.values(manifest.devices??{}))resolveDevicePoint(rows,target,width);
  if(typeof manifest.spawn!=='string'&&(manifest.spawn.promptH!==undefined||manifest.spawn.responseH!==undefined))throw new Error('Spawn has no text height');
- return{width,spawn:point(manifest.spawn,options.groundSpawn!==false).x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
+ const exitCheckpoints=Object.fromEntries(Object.entries(manifest.exitCheckpoints??{}).map(([id,target])=>{if(!scene.exits?.some(e=>e.id===id))throw Error('Exit checkpoint refers to absent exit: '+id);return[id,point(target)];}));
+ return{exitCheckpoints,artwork:resolveArtworkRoles(scene.id,manifest.artwork,rows,width),width,spawn:point(manifest.spawn,options.groundSpawn!==false).x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
 }
 /** Geometry-only preview: registered visual defaults resolve bindings without stepping controllers. */
 export function manifestCompositionRows(composition:Composition){

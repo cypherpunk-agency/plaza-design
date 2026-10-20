@@ -1,6 +1,6 @@
 import type {Instance,Resolved} from '../../art/core/composition';
 import type {ActorDefinition} from './actors';
-export interface ActorBindingController {element:string;prefix:string;suffix:string;mutable:boolean;pass?:'backdrop'|'people'}
+export interface ActorBindingController {element:string;prefix:string;suffix:string;mutable:boolean;clipPrefix?:string;pass?:'backdrop'|'people'}
 /** Registered renderer bindings; source records own actor identity, placement references and dialogue. */
 const controllers:Record<string,ActorBindingController>={
  downtown:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'people'},
@@ -15,9 +15,9 @@ const controllers:Record<string,ActorBindingController>={
  harborShift:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
  beach:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
  mall:{element:'character.prepared',prefix:'mall.actor.',suffix:'',mutable:true,pass:'backdrop'},
- harbor:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',mutable:true,pass:'backdrop'},
- shop:{element:'character.prepared',prefix:'shop.actor.',suffix:'',mutable:true,pass:'backdrop'},
+ harbor:{element:'character.prepared',prefix:'actor.',suffix:'.pose',clipPrefix:'clip.actor.',mutable:true,pass:'backdrop'},
+ stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',clipPrefix:'terminal.clip.',mutable:true,pass:'backdrop'},
+ shop:{element:'character.prepared',prefix:'shop.actor.',suffix:'',clipPrefix:'shop.clip.',mutable:true,pass:'backdrop'},
  library:{element:'library.person',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
  laundromat:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
  warehouse:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},

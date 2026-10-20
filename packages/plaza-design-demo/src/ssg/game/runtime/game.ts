@@ -1,3 +1,5 @@
+import {attachGameplayHandoffs} from '../engine/gameplay/handoffs';
+import {registryLabels} from '../engine/gameplay/rewards';
 import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/gameplay/state';
 import {capsuleController} from '../engine/controllers/capsule';
 import {SCAN,type SceneModel} from '../engine/model';
@@ -42,7 +44,6 @@ import { clearWorld } from '../art/core/canvas';
  * is drawn at an integer pixel scale so the sprites stay crisp.
  */
 
-import { SMEARS, renderDowntownCity, renderDowntownStreet } from "../scenes/downtown/composition";
 import { SPR } from "../art/core/sprites";
 import { drawFlight,taxiDurationFor } from '../story/cutscenes/taxi';
 import type { Handoff } from '../art/core/timeline';
@@ -51,7 +52,7 @@ import { MAX_EVERYDAY } from "../engine/host";
 import { CITY,NO_RULES,SceneHost } from "../engine/index";
 import type { PopupItem } from "../engine/popup";
 import { sceneShell,syncGoals } from "../scenes/downtown/index";
-import { shiftAttention,shiftCarry,shiftMinute } from "../scenes/harbor-shift/index";
+
 import { isSceneId,ITEMS,priceTag,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type SceneView,type UseCtx } from "../scenes/index";
 import { messagesOf,unread } from "../story/contacts";
 import { createCutscenes,CutscenePlay,isCutsceneId,type CutsceneId } from "../story/cutscenes/index";
@@ -177,16 +178,31 @@ export class Game {
   private get worldMap(){return this.cityMapInstance??=createCityMap(this.world);}
   private hasScene(id:string):id is SceneId{return Object.prototype.hasOwnProperty.call(this.content,id)||isSceneId(id);}
   private sceneDefinition(id:SceneId):SceneDef {let scene=this.compiledScenes.get(id);if(!scene){const source=this.content[id]??SCENES[id];if(!source)throw new Error('Unknown scene '+id);scene=withCompanionConversations(withBotConversations(source.bindWorld?.({city:this.world,metro:this.metro})??source,this.botReactions),this.sources?.companionGameplay??COMPANION_GAMEPLAY);this.compiledScenes.set(id,scene);}return scene;}
+  /** One common state port for scene commands and source-authored global story workflows. */
+  private gameplayStatePort(id?:SceneId):import('../engine/gameplay/types').StatePort {
+    return {
+        read:()=>{const state:import('../engine/gameplay/types').GameplayState={world:{day:city.day,minute:city.min,weather:weatherNow(sceneClimate(id??this.here)).kind},player:{handle:this.save.handle,jump:this.save.jump,controlled:this.save.controlled,keyring:this.save.keyring},flags:{...this.save.flags},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay};return state;},
+        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;if(state.player){this.save.keyring=[...state.player.keyring];this.save.controlled=[...state.player.controlled];this.save.jump=state.player.jump;}mergeValues(this.save.gameplay??={},state.values??{});},
+      };
+  }
+  private openingGameplaySession?:GameplaySession;
+  /** The cinematic primitive reports a milestone; shared commands own flags and rewards. */
+  private runOpeningWorkflow(role:import('../story/opening-source').OpeningWorkflow):boolean {
+    let session=this.openingGameplaySession;
+    if(!session){
+      session=new GameplaySession(this.openingStory.GAMEPLAY,this.gameplayStatePort(),undefined,[],{keyring:new Set(this.networkContext.keyring.keys()),controlled:new Set(registryLabels(this.networkContext.net))});
+      this.openingGameplaySession=session;
+      if(session.definition.handoffs?.length)attachGameplayHandoffs(session,{schedule:(ms,run,canceled,detail)=>this.hostOf(this.here).model.later(ms,()=>{run();this.persistSave();this.syncHud();},detail,canceled),cutscene:id=>{this.pendingCut=id;},presentation:operation=>{if(operation==='end')this.showEnd=true;}});
+    }
+    return session.dispatch(this.openingStory.WORKFLOWS[role],'system').ok;
+  }
   private gameplayFor(id:SceneId,providedModel?:SceneModel):GameplaySession|undefined {
     const definition=this.sceneDefinition(id).gameplay;
     if(!definition)return undefined;
     if(definition.native&&!providedModel&&!this.hosts.has(id)){this.hostOf(id);return this.gameplaySessions.get(id);}
     let session=this.gameplaySessions.get(id);
     if(!session){
-      const port:import('../engine/gameplay/types').StatePort={
-        read:()=>{const state:import('../engine/gameplay/types').GameplayState={world:{day:city.day,minute:city.min,weather:weatherNow(sceneClimate(id)).kind},player:{handle:this.save.handle,jump:this.save.jump,controlled:this.save.controlled,keyring:this.save.keyring},flags:{...this.save.flags},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay};return state;},
-        write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;if(state.player){this.save.keyring=[...state.player.keyring];this.save.controlled=[...state.player.controlled];this.save.jump=state.player.jump;}mergeValues(this.save.gameplay??={},state.values??{});},
-      };
+      const port=this.gameplayStatePort(id);
       const model=()=>{const m=providedModel??this.hosts.get(id)?.model;if(!m)throw new Error('Native scene not ready');return m;};
       session=new GameplaySession(definition,definition.native?nativeGameplayPort(definition,port,model):port,()=>{
         if(definition.native){const m=model(),{state:scalar,...snapshot}=m.snapshot(),board=this.save.scenes[id]?.board;this.save.scenes[id]={...snapshot,...(board?{board}:{})};m.changed();}
@@ -202,6 +218,7 @@ export class Game {
     const values=cloneValues(save.gameplay),scenes={...save.scenes};
     for(const[id,host]of this.hosts){const {state,...engine}=host.model.snapshot();Object.assign(values[id]??={},state);scenes[id]={...engine,...(scenes[id]?.board?{board:scenes[id]!.board}:{})};}
     for(const id of new Set([...Object.keys(this.content),...Object.keys(SCENES)]))for(const[key,d]of Object.entries(this.sceneDefinition(id as SceneId).gameplay?.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
+    for(const[key,d]of Object.entries(this.openingStory.GAMEPLAY.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
     return {...save,gameplay:values,scenes};
   }
   private persistSave(){storeSave(this.save,save=>this.prepareSave(save));}
@@ -245,7 +262,7 @@ export class Game {
       this.zh.clearPing('goal');
       this.goalAt = wx;
       if (wx !== null) this.zh.ping('goal', 'look');
-    }, flags=>this.def.attention?this.def.attention(flags,this.gameplayFor(this.here)?.state()):SHIFT_PROTOTYPE?shiftAttention(flags,this.def.uses):null, flags=>this.def.objective?.(flags,this.gameplayFor(this.here)?.state())??'');
+    }, flags=>this.def.attention?.(flags,this.gameplayFor(this.here)?.state())??null, flags=>this.def.objective?.(flags,this.gameplayFor(this.here)?.state())??'');
     this.menu = new Menu(host.windowEl, {
       save: () => this.save,
       saveSnapshot:()=>this.prepareSave(this.save),
@@ -538,6 +555,7 @@ export class Game {
     this.bubble = null;
     this.showEnd = false;
     this.hints.sceneChanged();sound.cancelFeedback();
+    this.openingGameplaySession?.dispose();this.openingGameplaySession=undefined;
     this.save = SUDO ? unlockAll(newSave()) : newSave();
     city.bind(this.save.clock);
     // Every scene starts a first visit in the new save.
@@ -599,8 +617,9 @@ export class Game {
     this.disposePerformance?.();this.disposePerformance=undefined;
     this.reviewNav?.dispose();this.reviewNav=undefined;
     this.running = false;
-    this.gameplaySessions.forEach(session=>session.dispose());
-    this.gameplaySessions.clear();
+    // Closing returns to the homepage; cached hosts and source sessions resume together.
+    // Their scene clocks pause below. Private Play destroys the entire owning frame.
+    this.openingGameplaySession?.dispose();this.openingGameplaySession=undefined;
     this.shiftGuidance?.hide();
     this.syncEnginePause();
     this.endTitle();
@@ -1030,6 +1049,7 @@ export class Game {
   }
 
   private say(name: string, pages: string[], x: number, h: number) {
+    if(!pages.length)return;
     this.bubble = { name, pages, page: 0, chars: 0, x, h };
     if(pages.length)this.term.print(name+': '+pages.join('\n'),'out',false);
   }
@@ -1161,11 +1181,9 @@ export class Game {
     const v = this.view();
     renderSceneFrame({ context: this.x, scale: this.k, view: v, scene: this.def, sceneId: this.here,
       host: this.zh, reduced: this.reduced, clock: this.clock,
-      weather: () => this.weatherHere(), lighting: W => this.lightHere(W), reflections: SMEARS,
+      weather: () => this.weatherHere(), lighting: W => this.lightHere(W),
       preparePresentation: () => this.zh.preparePresentation(v, this.zh.visionOn && this.def.layers ? 'devices' : 'all'),
       skyTraffic: (x, view) => drawSkyShips(x, view, this.ships),
-      city: (x, view) => renderDowntownCity(x, view),
-      street: (x, view, rain, lit) => renderDowntownStreet(x, view, rain, lit),
       roomWash: () => this.drawLight(), actors: () => this.drawCharacters(),
       prompts: () => this.drawPrompt(), bubbles: () => this.drawBubble(),
     });
@@ -1209,7 +1227,7 @@ export class Game {
     const open = this.here === 'downtown' ? this.downtown.viewing : null;
     const jack = open ? this.downtown.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
-    if (SHIFT_PROTOTYPE) { drawDockworker(x, this.view(), prepareDockworker(p.x,p.face,p.moving,this.view().t), p.face, shiftCarry(this.save.flags)); return; }
+    if (SHIFT_PROTOTYPE) { drawDockworker(x, this.view(), prepareDockworker(p.x,p.face,p.moving,this.view().t), p.face, this.def.dockworkerCarry?.(this.save.flags)??null); return; }
     const sprite = jack ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
     drawPlayer(x, this.view(), sprite, p, jack, this.zh.visionOn ? null : this.groundUnder(p.x, p.y));
   }
@@ -1638,7 +1656,7 @@ export class Game {
   private startOpening(destination?: Handoff) {
     this.cancelStoryTransitions();
     this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
-    this.save.flags[this.openingStory.OPENING.home] = true;
+    if(!this.runOpeningWorkflow('home'))return;
     this.persistSave();
     const target=destination??this.openingStory.CONTROLLER.start;this.handTo(target.scene,target.entrance);
   }
@@ -1646,7 +1664,7 @@ export class Game {
   /** Sudo's LEVELS: the opening from one of its points (opening.ts `OPENING_LEVELS`), the flat as on the first night. */
   private openingFrom(flags: string[]) {
     this.cancelStoryTransitions();
-    for (const f of Object.keys(this.save.flags)) if (f.startsWith('opening:')) delete this.save.flags[f];
+    for(const f of this.openingStory.OPENING_FLAGS)delete this.save.flags[f];
     flags.forEach((f) => { this.save.flags[f] = true; });
     this.hostOf(this.openingStory.CONTROLLER.home.scene as SceneId).reset();
     this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
@@ -1688,7 +1706,7 @@ export class Game {
     if ('turnstile' in rule) {
       // Downtown station's exit gate: one beat too long on "verifying", then ok. Nobody else waits.
       this.keys.clear();
-      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, then: () => { this.save.flags[this.openingStory.OPENING.street] = true; this.persistSave(); go(); } };
+      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, then: () => { if(!this.runOpeningWorkflow('street'))return; this.persistSave(); go(); } };
       sound.blip();
       return true;
     }
@@ -1696,7 +1714,7 @@ export class Game {
     if(!origin)throw Error('CONCIERGE acknowledgment requires its real scene anchor');
     const scene=this.here,id='opening.concierge:'+origin;if(this.zh.acknowledgmentId===id)return true;
     sound.granted();
-    this.zh.acknowledgeDevice({id,from:origin,...this.openingStory.CONTROLLER.concierge,tone:'ok'},()=>{if(this.here!==scene)return;this.save.flags[this.openingStory.OPENING.flat]=true;this.persistSave();go();});
+    this.zh.acknowledgeDevice({id,from:origin,...this.openingStory.CONTROLLER.concierge,tone:'ok'},()=>{if(this.here!==scene)return;if(!this.runOpeningWorkflow('flat'))return;this.persistSave();go();});
     return true;
   }
 
@@ -1721,7 +1739,7 @@ export class Game {
       if (!m.sent && !this.bubble && !this.zh.popupOpen && this.clock - m.last > this.openingStory.MORNING.after && (m.due || m.tries >= this.openingStory.MORNING.tries || this.clock - m.at > this.openingStory.MORNING.wait)) this.mothWrites();
     }
     // jacked in to HOME-PC: Capsule 7B's own goals take over
-    if (st === 'uplinked' && this.here === this.openingStory.CONTROLLER.home.scene && this.zh.viewing === this.openingStory.CONTROLLER.home.jackDevice) { this.save.flags[this.openingStory.OPENING.jacked] = true; this.persistSave(); }
+    if (st === 'uplinked' && this.here === this.openingStory.CONTROLLER.home.scene && this.zh.viewing === this.openingStory.CONTROLLER.home.jackDevice) { if(this.runOpeningWorkflow('jacked'))this.persistSave(); }
   }
 
   /** [E] this.openingStory.SLEEP: the fade, the card, the morning. */
@@ -1762,8 +1780,10 @@ export class Game {
   private pinStory() {
     if(EDITOR_PLAY&&this.editorClock!=='story'){if(this.editorClock==='fixed')city.pin(this.save.clock.min);return;}
     if (SHIFT_PROTOTYPE) {
-      this.save.clock.day = this.save.flags['shift:returned'] ? 2 : 1;
-      const at = this.def.storyMinute?.(this.save.flags) ?? shiftMinute(this.save.flags);
+      const day=this.def.storyDay?.(this.save.flags);
+      if(day!==undefined)this.save.clock.day=day;
+      const at = this.def.storyMinute?.(this.save.flags);
+      if(at===undefined){city.release();return;}
       if (city.pinned !== at) city.pin(at);
       return;
     }
@@ -1812,7 +1832,7 @@ export class Game {
 
   /** In the dark between the two flats: the flat as it is the morning after (Capsule 7B's puzzles from the start), you by the bed. */
   private morningFlat() {
-    this.save.flags[this.openingStory.OPENING.slept] = true;
+    if(!this.runOpeningWorkflow('slept'))return;
     if(this.here!==this.openingStory.CONTROLLER.home.scene)this.enter(this.openingStory.CONTROLLER.home.scene as SceneId,false);
     this.hostOf(this.openingStory.CONTROLLER.home.scene as SceneId).reset();
     this.morning = { at: this.clock, tries: 0, last: -1e9, sent: false, due: false };
@@ -1831,10 +1851,9 @@ export class Game {
 
   /** Moth's message: in the deck, as a bubble, and uplink.so with it (hacking is yours from now on). */
   private mothWrites() {
+    if(!this.runOpeningWorkflow('uplink'))return;
     this.morning.sent = true;
     this.openingStory.MOTH_MESSAGE.forEach((l) => this.term.print(this.openingStory.CONTROLLER.moth.terminalPrefix + l, 'ok'));
-    this.save.flags[this.openingStory.OPENING.uplink] = true;
-    if (!this.save.keyring.includes(this.openingStory.UPLINK_KEY)) this.save.keyring.push(this.openingStory.UPLINK_KEY);
     this.persistSave();
     this.syncHud();
     this.term.print(this.openingStory.CONTROLLER.uplink.received, 'ok');
@@ -2197,7 +2216,7 @@ export class Game {
       this.driverReply(this.world.DRIVER_BROKE);
       return;
     }
-    this.mapView = this.worldMap.openMap('taxi', this.here, this.here === 'train' ? this.metro.rideStop() : null);
+    this.mapView = this.worldMap.openMap('taxi', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop() : null);
     this.keys.clear();
     this.syncEnginePause();
     sound.open();
@@ -2211,7 +2230,7 @@ export class Game {
     this.bubble = null;
     // the map takes the screen: hack vision closes first
     if (this.zh.visionOn) this.zh.toggleVision();
-    this.mapView = this.worldMap.openMap('view', this.here, this.here === 'train' ? this.metro.rideStop() : null);
+    this.mapView = this.worldMap.openMap('view', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop() : null);
     this.syncEnginePause();
   }
 
@@ -2260,7 +2279,7 @@ export class Game {
       // the smallest touch target, 44 CSS px, in view units
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
       avoid: this.mapAvoid(),
-      ride: this.here === 'train' ? { from: this.metro.rideStop(), to: this.metro.rideNext(), f: this.metro.rideRun() } : null,
+      ride: this.here === this.world.TRANSPORT.boarding.scene ? { from: this.metro.rideStop(), to: this.metro.rideNext(), f: this.metro.rideRun() } : null,
       seen: (z) => !!this.save.flags[this.world.seenFlag(z)], flag: (f) => !!this.save.flags[f], exitAccess:(scene,id)=>sceneExitAccess(this.hasScene(scene)?this.sceneDefinition(scene).exits.find(e=>e.id===id):undefined,this.save.flags,this.save.keyring), harborOpen: this.world.harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
     };
   }
@@ -2315,7 +2334,7 @@ export class Game {
       if (!this.hop.done && e >= this.world.HOP / 2) { this.hop.done = true; city.advance(TRAVEL.quick); this.travel(this.hop.place.entrance, this.hop.place.at); }
       if (e >= this.world.HOP) this.hop = null;
     }
-    if (this.here !== 'train') return;
+    if (this.here !== this.world.TRANSPORT.boarding.scene) return;
     const ev = this.metro.stepRide(dt);
     // the train home stands at Downtown with its doors open until you get off
     if (this.story === 'home' && this.metro.ride.phase === 'dwell' && this.metro.rideStop() === this.openingStory.CONTROLLER.homeRun.to) this.metro.ride.timer = 0;

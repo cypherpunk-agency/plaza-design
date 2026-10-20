@@ -636,6 +636,8 @@
     }
   ],
   "manifest": {
+    "devices": {"kiosk": {"instance": "device-kiosk", "widthProperty": "width", "heightProperty": "height"}, "jukebox": {"instance": "device-jukebox", "widthProperty": "width", "heightProperty": "height"}, "mixer": {"instance": "device-mixer", "widthProperty": "width", "heightProperty": "height"}, "drone": {"instance": "device-drone", "widthProperty": "width", "heightProperty": "height"}, "pier": {"instance": "device-pier", "widthProperty": "width", "heightProperty": "height"}, "boat": {"instance": "device-boat", "widthProperty": "width", "heightProperty": "height"}},
+    "artwork": {"horizon": "horizon", "waterline": "waterline", "bar": "bar", "pier": "pier", "boardwalk": "boardwalk", "tower": "tower", "drink": "drink", "shore": "shore-edge", "stairs": "stairs-exit"},
     "version": 1,
     "width": {
       "instance": "scene",
@@ -709,5 +711,21 @@
         "rest": "sleep"
       }
     ]
+  },
+  "presentation": {
+    "kind": "beach",
+    "flags": {},
+    "actors": {
+      "bartender": "lime-talk",
+      "ashore": [
+        "ashore-0",
+        "ashore-1",
+        "ashore-2",
+        "ashore-3",
+        "ashore-4",
+        "ashore-5",
+        "ashore-6"
+      ]
+    }
   }
 }

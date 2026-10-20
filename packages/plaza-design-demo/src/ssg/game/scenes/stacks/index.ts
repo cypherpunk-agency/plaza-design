@@ -3,7 +3,7 @@ import {projectDeviceBindings} from '../../engine/gameplay/device-bindings';
 import type {SceneData} from '../../data/types';
 import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
-import {nativeDialogue} from '../../engine/gameplay/native-dialogue';
+import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import {content} from './scene-document';
 import {type SceneDocument} from '../../engine/gameplay/scene-document';
 import type {GameplayDefinition} from '../../engine/gameplay/types';
@@ -25,7 +25,7 @@ import type { SceneDef } from "../kit";
 import { stacksRulesFor } from './rules';
 import { scopePanel } from './scope';
 import { drawStacks, drawStacksFront, stacksActors,stacksFrameEnvironment } from './scene';
-import {stacksComposition,validateStacksComposition,stacksDeviceData,stacksGeometry,terminalRuleGeometry,type StacksRenderOptions} from './composition';
+import {stacksComposition,validateStacksComposition,stacksGeometry,terminalRuleGeometry,type StacksRenderOptions} from './composition';
 import type {Composition,Environment} from '../../art';
 export {drawStacks,drawStacksFront,stacksFrameEnvironment} from './scene';
 export {stacksArt,stacksComposition,validateStacksComposition} from './composition';
@@ -52,8 +52,9 @@ const base: Omit<SceneDef,'width'|'spawn'|'exits'> = {
 };
 
 export function stacksScene(document:Composition=stacksComposition,state:Environment['state']={},options:StacksRenderOptions={},sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay,deviceSource:SceneData=STACKS):SceneDef{
- const doc=validateStacksComposition(document),rows=stacksGeometry(doc),scene=rows.find(r=>r.instance.id==='scene')!,authored=content.validateScene(sceneDocument,gameplay);
- const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true}),actors=stacksActors(doc,authored),data=projectDeviceBindings(authored,rows,stacksDeviceData({...projectSceneState(deviceSource,gameplay),dialogue:{moth:nativeDialogue(gameplay,'moth',{},undefined,{entryActions:false})}},doc,authored),compiled.content.width);
- return {...base,gameplay:withSceneConversations(gameplay,authored),...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],horizon:Number(scene.props.horizon),data,rules:player=>stacksRulesFor(player,terminalRuleGeometry(doc)),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),visualEnvironment:(v,e)=>stacksFrameEnvironment(v,e,doc,actors,gameplay),drawBackdrop:(x,v,e)=>drawStacks(x,v,e,doc,state,options,actors,gameplay),drawFront:(x,v)=>drawStacksFront(x,v,doc,state,options)};
+ const doc=validateStacksComposition(document),rows=stacksGeometry(doc),authored=content.validateScene(sceneDocument,gameplay);
+ const compiled=compileManifestDocument(authored,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true}),actors=stacksActors(doc,authored),data=projectDeviceBindings(authored,rows,{...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource,{entryActions:false})},compiled.content.width);
+ terminalRuleGeometry(doc,authored,rows);
+ return {...base,gameplay:withSceneConversations(gameplay,authored),...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:[...authored.intro],...(compiled.geometry.artwork.horizon?{horizon:Number(compiled.geometry.artwork.horizon.props.horizon)}:{}),data,rules:player=>stacksRulesFor(player,terminalRuleGeometry(doc,authored)),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),visualEnvironment:(v,e)=>stacksFrameEnvironment(v,e,doc,actors,gameplay,authored),drawBackdrop:(x,v,e)=>drawStacks(x,v,e,doc,state,options,actors,gameplay,authored),drawFront:(x,v)=>drawStacksFront(x,v,doc,state,options)};
 }
 export const stacks=stacksScene();

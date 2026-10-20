@@ -1,6 +1,6 @@
 # ACCESS DENIED: roadmap
 
-Updated 2026-10-19. This is the single priority and status overview for the game, its gameplay
+Updated 2026-10-20. This is the single priority and status overview for the game, its gameplay
 systems, authoring tools and demo world. Detailed plans inherit priorities from here.
 Everything remains in design. Milestones are deliverables, not dates; later story proposals remain provisional.
 Story M1-M9 retain their existing identities. Completed artwork S0-S13 gates are not reopened or renumbered.
@@ -10,6 +10,16 @@ Story M1-M9 retain their existing identities. Completed artwork S0-S13 gates are
 There is one roadmap, with engine, authoring and experience delivered together as needed.
 Story M1–M9 and completed artwork/workbench S0–S13 keep their existing IDs.
 
+### Integrated checkpoint D, 2026-10-20
+
+Typed source picture inputs now cover cameras, Moth/Beach, Yard cargo, Downtown indicators,
+Market visual flags, Laundromat and Sandbox. Both builds, all173 immutable browser pixel
+comparisons and all19 actual editor native Play/Stop checks pass. Protected Save/fresh-import
+and default-outcome evidence is in [checkpoint D](./docs/reference/ENGINE-CHECKPOINT-2026-10-20-D.md).
+The overall goal remains active: finish the all19 inventory/matrix and remaining geometry,
+world/network/lifecycle/current-format persistence and removal acceptance. G1/G2/G3/G6 are signed;
+this checkpoint does not claim the other gates complete.
+
 ### Active goal checkpoint, 2026-10-19
 
 User correction: old-save-format compatibility is not requested. Remove it as an acceptance
@@ -17,7 +27,12 @@ requirement; do not add compatibility layers or scene-specific state bridges. On
 game state and shared actions are the target. Current-format persistence and gameplay/visual
 preservation remain required. See the correction at the top of ENGINE-CONSOLIDATION-GOAL.md.
 
-Latest published checkpoint:ad90b79 on main and production; both production deployments succeeded.
+Latest published checkpoint:dbf8dec on main and production; both production deployments succeeded.
+Checkpoint C has 173 zero-difference raster cases, all19 native editor Play/Stop checks and the
+six-workload/three-repeat performance suite; see docs/reference/ENGINE-CHECKPOINT-2026-10-19-C.md.
+Checkpoint B has both builds,173 zero-difference raster cases and all19 actual native editor
+Play/Stop checks at source0928013b951c. Exact scope:docs/reference/ENGINE-CHECKPOINT-2026-10-19-B.md.
+The following paragraphs retain the earlier ad90b79 checkpoint history.
 All19 scenes have source-backed ordinary content/actors and editable device sources. Scalar state
 has one common Save.gameplay owner; alias maps and the native state bridge are removed. All19
 built-editor native startups/Stop cleanup and173 raster comparisons passed at source377ff1fccc6c,
@@ -42,18 +57,24 @@ and128 published feedback comparisons. Train unpaid refusals/counters use shared
 (840 histories), while paid physics and harbor unlock remain pending. Native session disposal now
 releases its owned model callbacks. Capsule online feedback, Downtown refusal/sign presentation and
 the existing END-screen handoff are integrated. Both builds,173 raster cases and all19 actual
-packaged-editor Play/Stop checks pass. Current unpublished work covers Downtown delivery completion/
+packaged-editor Play/Stop checks pass. Checkpoint B adds Downtown delivery completion/
 finale,Train halt/resume/harbor flag,Stacks return/status,interaction and presentation-cue editing,
-pending exit keys and actual pending native-target metadata. Shared wiring/trace actions and removal
-of unnecessary device-editing restrictions are in progress. This batch still needs integrated builds,
-visual preservation and built-editor verification; it is not yet the published version.
+pending exit keys and actual pending native-target metadata. Shared wiring/trace actions, actual primitive device dependencies, native target CRUD, source
+removal without canonical restoration and shared map/exit admission also pass focused integration
+checks. Checkpoint C removes the Shop,Laundromat,Market and HarborShift historical editing
+restrictions, adds shared Opening workflow/role authoring, prospective fixture state, dynamic
+native dialogue and node/redirect controls, and Stacks/Downtown motion parameters. Its scoped
+Save/fresh-import proofs,173 zero-difference raster comparisons and all19 actual native Play/Stop
+checks pass. See docs/reference/ENGINE-CHECKPOINT-2026-10-19-C.md.
 
 Remaining: other inventoried ordinary controller/reward/story branches, complete all-scene typed
-authoring/lifecycle acceptance, six measured workloads and cleanup. No old-format compatibility work
+authoring/lifecycle acceptance, camera/visual bindings and cleanup. No old-format compatibility work
 is planned. Every further implementation batch needs its own integrated preservation evidence.
 The per-scene matrix remains conservative and has not yet reconciled every focused evidence entry;
 NOT RUN entries must not be interpreted as a claim that no underlying implementation exists.
-G1 communication routing, G2 attention/timing and G3 conversations now PASS at source377ff1fccc6c;
+G1 communication routing, G2 attention/timing and G3 conversations PASS at source377ff1fccc6c.
+G6 now PASSes at source839777ab5e10: all six workloads have three eligible source-bound repeats,
+raw samples, quality/calibration diagnostics and contributor analysis; no optimization retained.
 the full goal remains incomplete. See ENGINE-CONSOLIDATION-STATUS.md and
 [ordinary controller audit](./docs/reference/ORDINARY-CONTROLLER-CONSOLIDATION.md).
 
@@ -75,8 +96,8 @@ lifecycle/performance acceptance and removal of superseded paths remain required
 completion is claimed: G1–G3 pass while G0/G4–G13 remain open. Historical scoped completions below
 do not imply full-game completion.
 
-Latest integrated preservation checkpoint: 173 raster comparisons passed; the current parallel batch
-still needs a new integrated comparison. Story M1 remains a completed design pass and M2 an implemented
+Latest integrated preservation checkpoint:173 raster comparisons passed at source0928013b951c.
+Further source changes need a new integrated comparison. Story M1 remains a completed design pass and M2 an implemented
 prototype awaiting pacing review. Story M3–M9 remain outside this engineering goal. The user separately
 authorized publishing reasonable stable checkpoints to main and production.
 
@@ -324,3 +345,9 @@ phase rules are authored source. Both builds, focused behavior/persistence/edito
 native Play startups and the173-case raster repeat pass at source2b006c0. See the execution status
 for scoped evidence and the retained first-run two-pixel map discrepancy. Next: washer deadlines/
 rewards, Capsule ordinary choices/edge/goal timing, remaining scene decisions and final acceptance.
+
+2026-10-20 lifecycle checkpoint: G5 now PASS with source-bound repeated scene/private Play,
+callback/listener/timer ownership, reset/restore, cached Game resume and preserved simulation-policy
+evidence. See docs/reference/LIFECYCLE-ACCEPTANCE.md. G1/G2/G3/G5/G6 are accepted; G0/G4/G7–G13
+remain open. Latest all19 actor source CRUD/Save and native Play evidence is recorded separately in
+ENGINE-CONSOLIDATION-STATUS.md; no story milestone is advanced by this technical checkpoint.

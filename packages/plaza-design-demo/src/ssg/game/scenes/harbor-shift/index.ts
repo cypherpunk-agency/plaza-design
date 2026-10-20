@@ -1,3 +1,4 @@
+import {dockworkerCarry} from '../../engine/gameplay/scene-presentation';
 import {currentObjective,objectiveAttention} from '../../engine/gameplay/objectives';
 import {compileManifestDocument} from '../../engine/gameplay/manifest-content-compiler';
 import {compileSceneActors} from '../../engine/gameplay/actors';
@@ -14,13 +15,7 @@ import { type SceneDef, type SceneUse } from "../kit";
 
 
 type Flags = Readonly<Record<string, boolean>>;
-export const SHIFT = {
-  assigned: 'shift:assigned', parcel: 'shift:parcel', delivered: 'shift:delivered',
-  case: 'shift:case', returned: 'shift:returned', trolley: 'shift:trolley',
-  inspected: 'shift:inspected', released: 'shift:released', parked: 'shift:parked',
-  checked: 'shift:checked', done: 'shift:done',
-} as const;
-export function shiftCarry(f: Flags): 'parcel' | 'case' | null { return (f[SHIFT.parcel] && !f[SHIFT.delivered]) || (f[SHIFT.case] && !f[SHIFT.returned]) ? f[SHIFT.delivered] ? 'case' : 'parcel' : null; }
+export function shiftCarry(f:Flags,source:SceneDocument=SHIFT_SCENE){return dockworkerCarry(source.presentation,f);}
 
 /** Source owns physical bindings and dialogue routing; the shared Game presenter executes its authored graph. */
 const compile=(source:ReturnType<typeof validateShiftScene>,doc:Composition)=>compileManifestDocument(source,harborShiftGeometry(doc),(_c,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,omitGroundRestHeight:true});
@@ -30,14 +25,15 @@ const defaults=compile(SHIFT_SCENE,harborShiftComposition).content;
 export const SHIFT_USES=defaults.uses!;
 export const shiftGoal=defaults.objective!;
 export const shiftMinute=defaults.storyMinute!;
-export function shiftAttention(f:Flags,uses?:SceneUse[]){return uses?objectiveAttention(currentObjective(SHIFT_SCENE.objectives,{flags:{...f},items:{},tokens:0})!,Object.fromEntries(uses.map(use=>[use.id,use.x]))):defaults.attention!(f);}
+export function shiftAttention(f:Flags,uses?:SceneUse[]){return uses?objectiveAttention(currentObjective(SHIFT_SCENE.objectives??[],{flags:{...f},items:{},tokens:0})!,Object.fromEntries(uses.map(use=>[use.id,use.x]))):defaults.attention?.(f)??null;}
 
 export function harborShiftScene(document:Composition=harborShiftComposition,state:Environment['state']={},options:HarborShiftRenderOptions={},content:SceneDocument=SHIFT_SCENE,gameplay:GameplayDefinition=SHIFT_GAMEPLAY):SceneDef{
- const doc=validateHarborShiftComposition(document),source=validateShiftScene(content,gameplay),compiled=compile(source,doc),actors=harborShiftActors(doc,source),rows=harborShiftGeometry(doc);
- return{id:'harborShift',name:source.name,intro:source.introTouch?(touch:boolean)=>[...(touch?source.introTouch!:source.intro)]:[...source.intro],horizon:rows.find(r=>r.instance.id==='horizon')!.placement.h,...compiled.content,
+ const doc=validateHarborShiftComposition(document),source=validateShiftScene(content,gameplay),compiled=compile(source,doc),actors=harborShiftActors(doc,source),roles=compiled.geometry.artwork;
+ if(!roles.trolley||!roles.bay)throw Error('Night-shift trolley requires rest and parked artwork roles');
+ return{dockworkerCarry:flags=>shiftCarry(flags,source),id:'harborShift',name:source.name,intro:source.introTouch?(touch:boolean)=>[...(touch?source.introTouch!:source.intro)]:[...source.intro],...(roles.horizon?{horizon:roles.horizon.placement.h}:{}),...compiled.content,
  gameplay:withSceneConversations(gameplay,source),...(source.actors!.some(a=>a.band==='world')?{people:source.actors!.filter(a=>a.band==='world').map(a=>actors[a.id])}:{}),lights:harborShiftLights(doc),
- drawBackdrop:(ctx,v)=>drawHarborShiftComposition(ctx,v,actors,compiled.content.uses??[],doc,state,options),
- visualEnvironment:(v)=>harborShiftEnvironment(doc,v,actors,compiled.content.uses??[]),
+ drawBackdrop:(ctx,v)=>drawHarborShiftComposition(ctx,v,actors,compiled.content.uses??[],doc,state,options,source.presentation??null,source),
+ visualEnvironment:(v)=>harborShiftEnvironment(doc,v,actors,compiled.content.uses??[],source.presentation??null,source),
  };
 }
 export const harborShift=harborShiftScene();

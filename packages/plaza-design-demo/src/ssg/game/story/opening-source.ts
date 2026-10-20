@@ -1,10 +1,12 @@
 import baseline from './opening.json';
 import {matches,validateGameplay} from '../engine/gameplay/validation';
-import type {Condition} from '../engine/gameplay/types';
+import {validateGameplayRewards} from '../engine/gameplay/rewards';
+import type {Condition,GameplayDefinition} from '../engine/gameplay/types';
 import type {Line} from '../engine/index';
 import type {Station} from '../world/city';
 import type {Handoff} from '../art/core/timeline';
 import {SHIFT_PROTOTYPE,SUDO} from '../runtime/mode';
+export type OpeningWorkflow='home'|'street'|'flat'|'slept'|'uplink'|'jacked';
 export type OpeningState='home'|'flat'|'deleted'|'uplinked'|'free';
 export type PerScene<T>=Partial<Record<OpeningState,Record<string,T>>>;
 export interface StoryChip {label:string;say?:Line;act?:[noun:string,verb:string];set?:[key:string,value:boolean];fail?:boolean;mail?:boolean}
@@ -17,7 +19,8 @@ export interface OpeningTargetScene {exits:readonly {id:string;x?:number;h?:numb
 /** Resolve against the same compiled scene that owns physical interaction geometry. */
 export function resolveOpeningTarget(target:OpeningTarget,scene:OpeningTargetScene):{x:number;h:number;label:string;promptH:number}|null{if(target.x!==undefined)return{x:target.x,h:0,label:target.label,promptH:target.promptH};const binding=target.bind;if(!binding)return null;const rows=binding.kind==='rest'?scene.rests:binding.kind==='use'?scene.uses:scene.exits,at=rows?.find(r=>r.id===binding.id);if(!at||typeof at.x!=='number')return null;const h=at.h??0;return{x:at.x+(binding.offsetX??0),h,label:target.label,promptH:h+target.promptH};}
 export interface OpeningIntro {pages:string[];touchPages?:string[];consume?:boolean;speaker:string;height:number}
-export interface OpeningSource extends Omit<typeof baseline,'OPENING_TIME'|'OPENING_GOAL'|'OPENING_INTRO'|'OPENING_LINES'|'OPENING_EVERYDAY'|'OPENING_EXITS'|'OPENING_TARGETS'|'OPENING_PINGS'|'PHASES'|'PHASE_RULES'|'DECK_BEFORE'|'CONTROLLER'> {
+export interface OpeningSource extends Omit<typeof baseline,'OPENING_TIME'|'OPENING_GOAL'|'OPENING_INTRO'|'OPENING_LINES'|'OPENING_EVERYDAY'|'OPENING_EXITS'|'OPENING_TARGETS'|'OPENING_PINGS'|'PHASES'|'PHASE_RULES'|'DECK_BEFORE'|'CONTROLLER'|'GAMEPLAY'|'WORKFLOWS'> {
+ GAMEPLAY:GameplayDefinition;WORKFLOWS:Record<OpeningWorkflow,string>;
  PHASE_RULES:OpeningPhaseRule[];
  OPENING_TIME:PerScene<string>;OPENING_GOAL:PerScene<string>;OPENING_INTRO:PerScene<OpeningIntro>;
  OPENING_LINES:PerScene<{name?:string;pages:string[]}>;OPENING_EVERYDAY:PerScene<StoryChip[]>;OPENING_EXITS:PerScene<ExitRule>;
@@ -28,11 +31,11 @@ export interface OpeningSource extends Omit<typeof baseline,'OPENING_TIME'|'OPEN
 /** Supplied only after prospective registry assembly; no registry import or live game dependency. */
 export interface OpeningSourceContext {
  scenes:Readonly<Record<string,{exits:readonly {id:string;action?:string;x?:number;h?:number}[];rests?:readonly {id:string;x?:number;h?:number}[];people?:readonly {id?:string}[];uses?:readonly {id:string;x?:number;h?:number}[];readables?:readonly {id:string}[];data?:{state:Readonly<Record<string,unknown>>;goals?:readonly {id:string}[];devices:readonly {id:string;nouns:readonly {id:string;verbs?:readonly string[]}[]}[];nodes?:readonly {id:string;nouns:readonly {id:string;verbs?:readonly string[]}[]}[]}}>>;
- keyring?:readonly string[];stations?:readonly string[];programs?:readonly string[];contacts?:readonly string[];
+ keyring?:readonly string[];controlled?:readonly string[];stations?:readonly string[];programs?:readonly string[];contacts?:readonly string[];
 }
 const phases:OpeningState[]=['home','flat','deleted','uplinked','free'];
 const ROLE_FLAGS={home:'opening:home',street:'opening:street',flat:'opening:flat',slept:'opening:slept',uplink:'opening:uplink',jacked:'opening:jacked'} as const;
-const ROOT_FIELDS=['version','OPENING','OPENING_LEVELS','OPENING_TIME','OPENING_GOAL','OPENING_LINES','OPENING_EVERYDAY','OPENING_EXITS','OPENING_TARGETS','OPENING_PINGS','IDLE_PING','HOME_RUN','TURNSTILE','SLEEP','MORNING','WAKE_LINES','MOTH_MESSAGE','UPLINK_KEY','DECK_BEFORE','OPENING_INTRO','UPLINK_LINES','PHASES','PHASE_RULES','CONTROLLER'];
+const ROOT_FIELDS=['version','OPENING','OPENING_LEVELS','OPENING_TIME','OPENING_GOAL','OPENING_LINES','OPENING_EVERYDAY','OPENING_EXITS','OPENING_TARGETS','OPENING_PINGS','IDLE_PING','HOME_RUN','TURNSTILE','SLEEP','MORNING','WAKE_LINES','MOTH_MESSAGE','GAMEPLAY','WORKFLOWS','DECK_BEFORE','OPENING_INTRO','UPLINK_LINES','PHASES','PHASE_RULES','CONTROLLER'];
 const CONTROLLER_FIELDS=['start','fallback','homeRun','home','releaseClock','sleep','playerBefore','concierge','wake','moth','uplink','turnstile','greeting','inbox','libraryGuidance'];
 const fail=(at:string,reason:string):never=>{throw new Error('Invalid opening source '+at+': '+reason);};
 const object=(v:unknown,at:string):Record<string,any>=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.getPrototypeOf(v)!==Object.prototype)fail(at,'plain object required');return v as Record<string,any>;};
@@ -47,8 +50,15 @@ function line(v:unknown,at:string){const rows=list(v,at,3);if(rows.length<2)fail
 export function validateOpeningSource(value:unknown,context?:OpeningSourceContext):OpeningSource{
  const seen=new Set<object>();const json=(v:unknown,at:string,depth=0):void=>{if(depth>32)fail(at,'depth limit');if(v===null||typeof v==='string'||typeof v==='boolean'||typeof v==='number'&&Number.isFinite(v))return;if(!v||typeof v!=='object'||seen.has(v))fail(at,'finite acyclic JSON required');if(!Array.isArray(v))object(v,at);const node=v as object;seen.add(node);for(const[k,c]of Object.entries(node)){if(['__proto__','constructor','prototype'].includes(k))fail(at,'reserved key');json(c,at+'/'+k,depth+1);}seen.delete(node);};json(value,'root');if(JSON.stringify(value).length>256000)fail('root','size limit');
  const d=fields(value,'root',ROOT_FIELDS);if(d.version!==1)fail('version','version 1 required');
- const roles=fields(d.OPENING,'OPENING',Object.keys(ROLE_FLAGS));for(const[k,v]of Object.entries(ROLE_FLAGS))if(roles[k]!==v)fail('OPENING/'+k,'existing save flag identity is protected');
- const knownFlags=new Set(Object.values(ROLE_FLAGS));
+ const roles=fields(d.OPENING,'OPENING',Object.keys(ROLE_FLAGS));for(const[k,v]of Object.entries(roles))id(v,'OPENING/'+k);
+ const knownFlags=new Set<string>(Object.values(roles));if(knownFlags.size!==Object.keys(ROLE_FLAGS).length)fail('OPENING','distinct phase-role flags required');
+ const gameplay=validateGameplay(d.GAMEPLAY),workflows=fields(d.WORKFLOWS,'WORKFLOWS',Object.keys(ROLE_FLAGS));
+ for(const flag of knownFlags)if(!gameplay.flags.includes(flag))fail('GAMEPLAY/flags','opening phase role references missing flag '+flag);
+ if(gameplay.native||gameplay.checkpoint)fail('GAMEPLAY','story workflows do not own physical scene bindings or checkpoint policies');
+ for(const[name,command]of Object.entries(workflows)){id(command,'WORKFLOWS/'+name);const c=gameplay.commands[command];if(!c||c.sources.length!==1||c.sources[0]!=='system')fail('WORKFLOWS/'+name,'system command required');}
+ for(const[key,c]of Object.entries(gameplay.commands))for(const action of c.actions)if('wire'in action||'trace'in action)fail('GAMEPLAY/commands/'+key,'scene domain actions require a scene host');
+ if(context?.keyring)validateGameplayRewards(gameplay,{keyring:new Set(context.keyring),controlled:new Set(context.controlled??[])});
+
  const phaseRules=list(d.PHASE_RULES,'PHASE_RULES',32);if(!phaseRules.length)fail('PHASE_RULES','ordered rules and final fallback required');
  // Reuse the common condition validator/evaluator. This flags-only lifecycle context does not
  // expose inventory, time, player or scene scalars; the editor uses the same flags-only controls.
@@ -64,8 +74,8 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
  const device=(s:string,name:unknown,at:string)=>{id(name,at);const found=devices(s).find(d=>d.id===name);if(context&&!found)fail(at,'unknown device or node');return found;};
  const resource=(key:string,at:string,kind:'scene'|'entity'|'exit'|'device'|'target')=>{const split=key.split('/');if(kind==='scene'){scene(key,at);return{scene:key,id:''};}if(split.length!==2)fail(at,'scene/id reference required');const s=scene(split[0],at),name=split[1];id(name,at);if(context){const def=context.scenes[s];if(kind==='exit'&&!def.exits.some(e=>e.id===name))fail(at,'unknown exit');if(kind==='device')device(s,name,at);if(kind==='entity'&&![...def.people??[],...def.uses??[],...def.readables??[],...def.exits,...devices(s)].some(e=>e.id===name))fail(at,'unknown person/readable/device/exit');}return{scene:s,id:name};};
  const table=(v:unknown,at:string,kind:'scene'|'entity'|'exit'|'device'|'target',check:(v:any,at:string,ref:{scene:string;id:string})=>void)=>{const root=object(v,at);if(Object.keys(root).some(k=>!phases.includes(k as OpeningState)))fail(at,'unknown phase');for(const[p,rows]of Object.entries(root)){const entries=Object.entries(object(rows,at+'/'+p));if(entries.length>128)fail(at,'row limit');for(const[k,row]of entries){const path=at+'/'+p+'/'+k;check(row,path,resource(k,path,kind));}}};
- const metadata=fields(d.PHASES,'PHASES',phases);for(const[p,v]of Object.entries(metadata)){const r=fields(v,'PHASES/'+p,['hackLocked','before','pinned','resume']);for(const k of ['hackLocked','before','pinned'])bool(r[k],'PHASES/'+p+'/'+k);if(r.before!==(p==='home'||p==='flat'))fail('PHASES/'+p+'/before','native before-phase presentation is protected');const rules=list(r.resume,'PHASES/'+p+'/resume',8);let fallback=false;for(const[index,rule]of rules.entries()){const a='PHASES/'+p+'/resume/'+index,r=fields(rule,a,['whenFlag','destination'],['destination']);if(fallback)fail(a,'unreachable resume rule after fallback');if(r.whenFlag!==undefined){if(!knownFlags.has(r.whenFlag))fail(a,'unknown opening flag');}else fallback=true;destination(r.destination,a);}if(p!=='free'&&!fallback)fail('PHASES/'+p,'resume fallback required');}
- const levels=list(d.OPENING_LEVELS,'OPENING_LEVELS',16),levelIds=new Set();for(const l of levels){const r=fields(l,'OPENING_LEVELS',['id','name','flags']);id(r.id,'level/id');text(r.name,'level/name');if(levelIds.has(r.id))fail('levels','duplicate id');levelIds.add(r.id);for(const flag of list(r.flags,'level/flags',6))if(!knownFlags.has(flag))fail('level/flags','unknown opening flag');}for(const level of ['opening','opening-morning'])if(!levelIds.has(level))fail('levels','existing level identity required');
+ const metadata=fields(d.PHASES,'PHASES',phases);for(const[p,v]of Object.entries(metadata)){const r=fields(v,'PHASES/'+p,['hackLocked','before','pinned','resume']);for(const k of ['hackLocked','before','pinned'])bool(r[k],'PHASES/'+p+'/'+k);const rules=list(r.resume,'PHASES/'+p+'/resume',8);let fallback=false;for(const[index,rule]of rules.entries()){const a='PHASES/'+p+'/resume/'+index,r=fields(rule,a,['whenFlag','destination'],['destination']);if(fallback)fail(a,'unreachable resume rule after fallback');if(r.whenFlag!==undefined){if(!knownFlags.has(r.whenFlag))fail(a,'unknown opening flag');}else fallback=true;destination(r.destination,a);}if(p!=='free'&&!fallback)fail('PHASES/'+p,'resume fallback required');}
+ const levels=list(d.OPENING_LEVELS,'OPENING_LEVELS',16),levelIds=new Set();for(const l of levels){const r=fields(l,'OPENING_LEVELS',['id','name','flags']);id(r.id,'level/id');text(r.name,'level/name');if(levelIds.has(r.id))fail('levels','duplicate id');levelIds.add(r.id);for(const flag of list(r.flags,'level/flags',6))if(!knownFlags.has(flag))fail('level/flags','unknown opening flag');}
  table(d.OPENING_TIME,'OPENING_TIME','scene',(v,a)=>{if(typeof v!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(v))fail(a,'HH:MM required');});table(d.OPENING_GOAL,'OPENING_GOAL','scene',(v,a)=>text(v,a));
  table(d.OPENING_INTRO,'OPENING_INTRO','scene',(v,a)=>{const r=fields(v,a,['pages','touchPages','consume','speaker','height'],['pages','speaker','height']);pages(r.pages,a);text(r.speaker,a);num(r.height,a,0,10000);if(r.touchPages!==undefined)pages(r.touchPages,a);if(r.consume!==undefined)bool(r.consume,a);});
  table(d.OPENING_LINES,'OPENING_LINES','entity',(v,a)=>{const r=fields(v,a,['name','pages'],['pages']);if(r.name!==undefined)text(r.name,a);pages(r.pages,a);});
@@ -77,7 +87,7 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
  for(const[k,v]of Object.entries(fields(d.TURNSTILE,'TURNSTILE',['verify','ok'])))num(v,'TURNSTILE/'+k,1);
  const sleep=fields(d.SLEEP,'SLEEP',['out','card','in','from','to']);for(const k of['out','card','in'])num(sleep[k],'SLEEP/'+k,1);for(const k of['from','to'])if(typeof sleep[k]!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(sleep[k]))fail('SLEEP/'+k,'HH:MM required');
  for(const[k,v]of Object.entries(fields(d.MORNING,'MORNING',['tries','wait','after'])))num(v,'MORNING/'+k,k==='tries'?1:0);if(!Number.isSafeInteger(d.MORNING.tries))fail('MORNING/tries','integer required');pages(d.WAKE_LINES,'WAKE_LINES');pages(d.MOTH_MESSAGE,'MOTH_MESSAGE');
- const uplink=fields(d.UPLINK_LINES,'UPLINK_LINES',['pages','touchPages']);pages(uplink.pages,'UPLINK_LINES/pages');pages(uplink.touchPages,'UPLINK_LINES/touchPages');id(d.UPLINK_KEY,'UPLINK_KEY');if(context?.keyring&&!context.keyring.includes(d.UPLINK_KEY))fail('UPLINK_KEY','unknown keyring item');
+ const uplink=fields(d.UPLINK_LINES,'UPLINK_LINES',['pages','touchPages']);pages(uplink.pages,'UPLINK_LINES/pages');pages(uplink.touchPages,'UPLINK_LINES/touchPages');
  const deck=fields(d.DECK_BEFORE,'DECK_BEFORE',['files','whoami']);text(deck.whoami,'DECK_BEFORE/whoami');const files=object(deck.files,'DECK_BEFORE/files');if(Object.keys(files).length>32)fail('DECK_BEFORE/files','file limit');for(const[k,v]of Object.entries(files)){id(k,'DECK_BEFORE/file');text(v,'DECK_BEFORE/'+k);}
  const c=fields(d.CONTROLLER,'CONTROLLER',CONTROLLER_FIELDS);for(const k of['start','fallback'])destination(c[k],'CONTROLLER/'+k);
  const run=fields(c.homeRun,'CONTROLLER/homeRun',['from','to','announcement','scene']);if(run.scene!=='train')fail('homeRun/scene','registered train scene is protected');scene(run.scene,'homeRun/scene');for(const k of['from','to']){id(run[k],'homeRun/'+k);if(context?.stations&&!context.stations.includes(run[k]))fail('homeRun/'+k,'unknown station');}if(run.from===run.to)fail('homeRun','distinct stations required');text(run.announcement,'homeRun/announcement');

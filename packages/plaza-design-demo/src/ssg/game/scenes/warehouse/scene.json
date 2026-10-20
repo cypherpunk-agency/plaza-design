@@ -139,6 +139,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"orientation":"scene","frontShade":"wall","casterWidth":"van"},
     "version": 1,
     "width": {
       "instance": "scene",

@@ -21,7 +21,7 @@ function kernel(L: ArtworkInputs['L'], width = 520, x = 0, facing = 90, door = 0
 }
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
 function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
-  return { type: 'capsule.' + id, version: 1, label, category, coordinates: 'world', fields, visualFields: capsuleVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x, v, p, s, _pass, at) => draw(x, v, p, s, at) };
+  return { type: 'capsule.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', fields, visualFields: capsuleVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x, v, p, s, _pass, at) => draw(x, v, p, s, at) };
 }
 const visual = (state: Properties) => state as unknown as CapsuleVisualState;
 const box = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });

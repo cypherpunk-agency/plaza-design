@@ -537,6 +537,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"trolley":"trolley","bay":"bay","horizon":"horizon"},
     "version": 1,
     "width": {
       "instance": "scene",
@@ -620,5 +621,30 @@
   },
   "companion": {
     "mode": "off"
-  }
+  },
+  "presentation": {
+    "kind": "harborShift",
+    "flags": {
+      "parcel": "shift:parcel",
+      "delivered": "shift:delivered",
+      "case": "shift:case",
+      "returned": "shift:returned",
+      "parked": "shift:parked",
+      "released": "shift:released",
+      "checked": "shift:checked",
+      "done": "shift:done"
+    }
+  },
+  "timeDay": [
+    {
+      "when": {
+        "flag": "shift:returned",
+        "is": true
+      },
+      "day": 2
+    },
+    {
+      "day": 1
+    }
+  ]
 }

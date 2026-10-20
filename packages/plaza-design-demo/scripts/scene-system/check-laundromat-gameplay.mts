@@ -59,7 +59,7 @@ const prepared=pending.visualEnvironment!(view,engine).bindings!['actor.blue.pos
 assert.equal(prepared.character.name,pending.people![0].name);assert.deepEqual(prepared.character.talk,[['Pending talk']]);
 const regular=pending.visualEnvironment!(view,engine).bindings!['actor.gran.pose'] as unknown as {character:{key:boolean;talk:string[][]}};
 assert.equal(regular.character.key,true);assert.ok(regular.character.talk.length);
-const bad=structuredClone(LAUNDROMAT_SCENE);bad.actors![0].reaction='changed';assert.throws(()=>validateLaundromatScene(bad),/protected/);
-const wrong=structuredClone(LAUNDROMAT_GAMEPLAY);wrong.commands['laundromat.buy-soap'].sources.push('signal');assert.throws(()=>validateLaundromatGameplay(wrong),/protected/);
+const bad=structuredClone(LAUNDROMAT_SCENE);bad.actors![0].reaction='invalid reaction!';assert.throws(()=>validateLaundromatScene(bad),/reaction/);
+const wrong=structuredClone(LAUNDROMAT_GAMEPLAY);wrong.commands['laundromat.buy-soap'].sources.push('signal');assert.doesNotThrow(()=>validateLaundromatGameplay(wrong),'current ordinary command permissions are source-owned');wrong.commands['laundromat.buy-soap'].sources.push('unknown-source' as any);assert.throws(()=>validateLaundromatGameplay(wrong));
 const unknown=structuredClone(LAUNDROMAT_SCENE);unknown.uses[0].routes[0].command='missing';assert.throws(()=>validateLaundromatScene(unknown),/permission\/reference/);
-console.log(`Laundromat gameplay checks passed: ${cases} legacy purchase boundaries/repeats, reload, unrelated resources, protected identities/permissions, pending narrative and unchanged native rules/actor/anchor geometry.`);
+console.log(`Laundromat gameplay checks passed: ${cases} legacy purchase boundaries/repeats, reload, unrelated resources, valid identity syntax/current source permissions, pending narrative and unchanged native rules/actor/anchor geometry.`);

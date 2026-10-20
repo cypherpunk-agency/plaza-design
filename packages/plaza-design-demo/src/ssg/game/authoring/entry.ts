@@ -92,7 +92,8 @@ async function start() {
 
   if (publicEditor) {
 
-    const response = await fetch('./documents.json', { credentials: 'omit' }); if (!response.ok) throw new Error('Published editor documents are unavailable');
+    // These stable URLs are rebuilt with the editor; do not reuse another release's cache.
+    const response = await fetch('./documents.json', { credentials: 'omit', cache: 'no-store' }); if (!response.ok) throw new Error('Published editor documents are unavailable');
 
     documents = await response.json() as EditorDocument[];
 
@@ -169,7 +170,7 @@ async function start() {
       { id: 'events', area: 'scene', mode: 'wiring', label: 'Events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
         const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
         const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
-          if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
+          if (!sourceSnapshot) sourceSnapshot = fetch('./sources.json', { credentials: 'omit', cache: 'no-store' }).then(async response => { if (!response.ok) throw new Error('Published source snapshot is unavailable'); return response.json() as Promise<Record<string, string>>; }).catch(error => { sourceSnapshot = undefined; throw error; });
           const snapshot = await sourceSnapshot; if (signal.aborted) throw new Error('Source selection changed');
           if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
           return { file, text: snapshot[file] };

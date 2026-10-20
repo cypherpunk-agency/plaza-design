@@ -56,3 +56,9 @@ export const stationElements:Element[]=[
  element('closed-notice','Closed-platform notice','signage',{width:num('Width',70,1),height:num('Height',32,1),first:str('First line'),second:str('Second line'),phase:num('Phase',2)},p=>bounds(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>{if(!s.closed)return;const cx=v.sx(at.x);if(onScreen(v,cx-40,80))notice(x,v.t,cx,v.y(at.h),n(p,'width'),n(p,'height'),[String(p.first),String(p.second)],n(p,'phase'));},{closed:bool('Harbor closed')}),
  element('pier-gate','Platform pier gate','architecture',{},()=>bounds(120,90),(x,v,_p,_s,at)=>H().drawGate(x,raised(v,at.h),at.x)),
 ];
+
+for(const element of stationElements)element.bindingChoices=composition=>{
+ if(!['metro','galleriaStation','harborStation'].includes(composition.scene))return{};
+ const sources:Record<string,string[]>={train:['transit.train'],departure:['transit.departure'],roof:[composition.scene==='metro'?'metro.roof':'architecture.roof'],...(composition.scene==='harborStation'?{closed:['transit.closed']}:{})};
+ return Object.fromEntries(Object.keys(element.visualFields??{}).filter(key=>sources[key]).map(key=>[key,sources[key]]));
+};

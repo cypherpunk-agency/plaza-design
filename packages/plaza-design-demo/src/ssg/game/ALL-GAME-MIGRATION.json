@@ -57,9 +57,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "deviceSources": {
           "checks": [
@@ -179,9 +179,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 15,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "contentCheckpoint20261019": {
           "status": "PASS",
@@ -331,9 +331,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "deviceSources": {
           "checks": [
@@ -480,9 +480,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "deviceSources": {
           "checks": [
@@ -615,9 +615,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "deviceSources": {
           "checks": [
@@ -726,9 +726,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "deviceSources": {
           "checks": [
@@ -832,9 +832,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 7,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "contentCheckpoint20261019": {
           "status": "PASS",
@@ -924,9 +924,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "deviceSources": {
           "checks": [
@@ -1067,8 +1067,8 @@
         "rasterLatest": {
           "status": "PASS",
           "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "privatePlayStartup": {
           "status": "PASS",
@@ -1173,8 +1173,8 @@
         "rasterLatest": {
           "status": "PASS",
           "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "privatePlayStartup": {
           "status": "PASS",
@@ -1206,6 +1206,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "stateSourceReplacement": {
+          "status": "PASS",
+          "check": "check-market-editable.mts",
+          "artifact": ".scene-system/market-editable/run-6me5KT",
+          "scope": "coherent exit flag and cook cursor rebind; typed orphan flag/state deletion, pending conversation progress, history/bundle/Save/fresh import/byte Undo; not full-scene acceptance"
         }
       }
     },
@@ -1256,9 +1262,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "deviceSources": {
           "checks": [
@@ -1343,6 +1349,12 @@
           "check": "check-moth-laundromat-endpoint-crud.mts",
           "artifact": ".scene-system/moth-laundromat-endpoint-crud-Sn9hTC/evidence.json",
           "scope": "Actual typed rebind/delete, pending model/frame, strict remaining source/physical references, bundle/protected Save/fresh shipping/byte Undo. Focused proof only; full integration and authoring gates remain open."
+        },
+        "commerceDialogueSourceReplacement": {
+          "status": "PASS",
+          "check": "check-laundromat-source-policies.mts",
+          "artifact": ".scene-system/laundromat-source-policies-WCTcFY",
+          "scope": "typed soap purchase/command/route and daemon graph rebinding/removal, common resources/native behavior, history/bundle/two Saves/fresh shipping/byte Undo; not full scene or current helper acceptance"
         }
       }
     },
@@ -1395,8 +1407,8 @@
         "rasterLatest": {
           "status": "PASS",
           "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "privatePlayStartup": {
           "status": "PASS",
@@ -1456,6 +1468,12 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "commerceSourceReplacement": {
+          "status": "PASS",
+          "check": "check-shop-source-owned.mts",
+          "artifact": ".scene-system/shop-source-owned-dWvbk7",
+          "scope": "typed catalogue/purchase/command/route/cursor replacement and complete deletion, actual pending outcome, source Save/fresh shipping/history/bundle/byte Undo; default48x12 outcome histories; not full-scene acceptance"
         }
       }
     },
@@ -1510,8 +1528,8 @@
         "rasterLatest": {
           "status": "PASS",
           "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "privatePlayStartup": {
           "status": "PASS",
@@ -1596,9 +1614,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "metroSessions": {
           "checks": [
@@ -1631,6 +1649,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "platformSourceGeometry20261020": {
+          "status": "PASS",
+          "check": "check-platform-artwork-roles.mts",
+          "artifact": ".scene-system/platform-artwork-role-source-wr3hJl",
+          "scope": "typed width/roof/horizon/stop/checkpoint source edits, original marker removal, native outputs, creation defaults, bundles/protected Save/fresh import/byte Undo; overall scene gates remain open"
+        },
+        "platformWorldRouting20261020": {
+          "status": "PASS",
+          "check": "check-platform-world-source.mts",
+          "artifact": ".scene-system/platform-world-source-9wPYZh",
+          "scope": "typed atomic station routing, pending world membership drives native train/departure/closed presenters, detached station, invalid-reference rejection, bundle/Save/fresh import/Undo; full world/story gate remains open"
         }
       }
     },
@@ -1682,9 +1712,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "metroSessions": {
           "checks": [
@@ -1717,6 +1747,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "platformSourceGeometry20261020": {
+          "status": "PASS",
+          "check": "check-platform-artwork-roles.mts",
+          "artifact": ".scene-system/platform-artwork-role-source-wr3hJl",
+          "scope": "typed width/roof/horizon/stop/checkpoint source edits, original marker removal, native outputs, creation defaults, bundles/protected Save/fresh import/byte Undo; overall scene gates remain open"
+        },
+        "platformWorldRouting20261020": {
+          "status": "PASS",
+          "check": "check-platform-world-source.mts",
+          "artifact": ".scene-system/platform-world-source-9wPYZh",
+          "scope": "typed atomic station routing, pending world membership drives native train/departure/closed presenters, detached station, invalid-reference rejection, bundle/Save/fresh import/Undo; full world/story gate remains open"
         }
       }
     },
@@ -1768,9 +1810,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "metroSessions": {
           "checks": [
@@ -1803,6 +1845,18 @@
           "check": "check-scene-environment.mts",
           "artifact": ".scene-system/scene-environment/run-RJdEHy/evidence.json",
           "scope": "All19 immutable native metadata; pending ambient/light/orientation/shade settings; artwork-owned geometry; legacy source defaults; atomic import/bundle/protected Save/native reload/byte Undo. Browser controls and fullscene gates remain separate."
+        },
+        "platformSourceGeometry20261020": {
+          "status": "PASS",
+          "check": "check-platform-artwork-roles.mts",
+          "artifact": ".scene-system/platform-artwork-role-source-wr3hJl",
+          "scope": "typed width/roof/horizon/stop/checkpoint source edits, original marker removal, native outputs, creation defaults, bundles/protected Save/fresh import/byte Undo; overall scene gates remain open"
+        },
+        "platformWorldRouting20261020": {
+          "status": "PASS",
+          "check": "check-platform-world-source.mts",
+          "artifact": ".scene-system/platform-world-source-9wPYZh",
+          "scope": "typed atomic station routing, pending world membership drives native train/departure/closed presenters, detached station, invalid-reference rejection, bundle/Save/fresh import/Undo; full world/story gate remains open"
         }
       }
     },
@@ -1857,9 +1911,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 16,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "metroSessions": {
           "checks": [
@@ -2008,9 +2062,9 @@
         },
         "rasterLatest": {
           "status": "PASS",
-          "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "cases": 10,
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "nativeBlocks": {
           "checks": [
@@ -2110,8 +2164,8 @@
         "rasterLatest": {
           "status": "PASS",
           "cases": 5,
-          "source": "sha256:5523ba37ce8213b2f336ec66d080f388f34478eab3ac770233e974d6ad2fade7",
-          "scope": "native preview initial-state fixtures only; full G12 remains open"
+          "source": "sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5",
+          "scope": "native scene/device/boundary/map fixtures where applicable; full state/HUD/current-save acceptance remains open"
         },
         "privatePlayStartup": {
           "status": "PASS",

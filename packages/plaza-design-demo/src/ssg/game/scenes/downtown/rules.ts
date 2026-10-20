@@ -1,3 +1,4 @@
+import {downtownController} from '../../engine/controllers/motion';
 /** Downtown's native DLV-9 trajectories and remaining physical
  * callbacks. Registry control, billboard scheduling and controlled status/lamps
  * use authored shared commands, queries and deadlines. The source formatter's
@@ -17,28 +18,28 @@ export type DlvAt = 'home' | 'gate' | 'market' | 'driving';
 
 /** The market gate's span along the street, from its `layout.spot`. */
 function gateSpan(z: SceneData) {
-  const s = z.devices.find((d) => d.id === 'gate')?.layout?.spot ?? { x: 70, w: 80 };
+  const s = z.devices.find((d) => d.id === downtownController(z).devices.gate)?.layout?.spot ?? { x: 70, w: 80 };
   return { door: s.x, left: s.x - s.w / 2, right: s.x + s.w / 2 };
 }
 /** Where DLV-9 waits outside the gate, and where it disappears to inside. */
-const OUTSIDE = 22, INSIDE = 70;
+
 /** A signal takes 150 ms down a cable (scene/model.ts `emit`): give each one this long to land before looking at the lock. */
-const SIGNAL_MS = 450;
+
 
 /** DLV-9's x right now (null: inside the market). `home`: its spot by the dumpster. */
 export function dlvX(m: SceneModel, home: number): number | null {
-  const at = m.get('dlvAt') as DlvAt, g = gateSpan(m.data), s = m.scratch;
+  const c=downtownController(m.data),at = m.get(c.state.at) as DlvAt, g = gateSpan(m.data), s = m.scratch;
   if (at === 'driving') {
     const f = Math.max(0, Math.min(1, (m.now() - s.dlvT0) / Math.max(1, s.dlvT1 - s.dlvT0)));
     return s.dlvX0 + (s.dlvX1 - s.dlvX0) * f;
   }
   if (at === 'market') return null;
-  return at === 'gate' ? g.right + OUTSIDE : home;
+  return at === 'gate' ? g.right + c.outside : home;
 }
 
 /** One stretch of a drive, for the drawing: from x0 to x1, starting now. Returns how long it takes, ms. */
 function leg(w: World, x0: number, x1: number) {
-  const m = w.m, ms = (Math.abs(x1 - x0) / w.tune('dlvSpeed')) * 1000;
+  const m = w.m, ms = (Math.abs(x1 - x0) / w.tune(downtownController(w.data).speedTuning)) * 1000;
   Object.assign(m.scratch, { dlvX0: x0, dlvX1: x1, dlvT0: m.now(), dlvT1: m.now() + ms });
   return ms;
 }
@@ -51,15 +52,15 @@ function leg(w: World, x0: number, x1: number) {
  * is through, Downtown is cleared.
  */
 function drive(w: World, inward: boolean) {
-  const m = w.m, g = gateSpan(w.data);
-  const home = w.data.devices.find((d) => d.id === 'dlv9')!.layout!.spot!.x;
-  const x0 = dlvX(m, home) ?? g.left - INSIDE;
-  const scanAt = inward ? g.right : g.left, rest = inward ? g.left - INSIDE : g.right + OUTSIDE;
+  const m = w.m, c=downtownController(m.data),g = gateSpan(w.data);
+  const home = w.data.devices.find((d) => d.id === c.devices.vehicle)!.layout!.spot!.x;
+  const x0 = dlvX(m, home) ?? g.left - c.inside;
+  const scanAt = inward ? g.right : g.left, rest = inward ? g.left - c.inside : g.right + c.outside;
   // the scanner reads it on the way; it waits at the door long enough for the lock to hear (cables take a moment)
-  const toDoor = leg(w, x0, g.door), doorMs = Math.max(toDoor, SIGNAL_MS);
+  const toDoor = leg(w, x0, g.door), doorMs = Math.max(toDoor, c.signalMs);
   // A source commit can redraw immediately: prepare the trajectory before exposing driving.
   w.input('downtown.dlv.started');
-  const scanMs = Math.max(0, Math.min(toDoor * Math.abs(scanAt - x0) / Math.max(1, Math.abs(g.door - x0)), doorMs - SIGNAL_MS));
+  const scanMs = Math.max(0, Math.min(toDoor * Math.abs(scanAt - x0) / Math.max(1, Math.abs(g.door - x0)), doorMs - c.signalMs));
   m.later(scanMs, () => { w.input('downtown.dlv.scanned'); w.changed(); });
   m.later(doorMs, () => {
     const through = m.value('downtown.dlv.passage');
@@ -68,8 +69,8 @@ function drive(w: World, inward: boolean) {
     m.scratch.dlvThrough = through ? 1 : 0;
     w.input('downtown.dlv.door');
     // through: on to the other side; bonked: back to where it came from (outside, or inside the market)
-    const back = inward ? g.right + OUTSIDE : g.left - INSIDE;
-    const ms = Math.max(leg(w, g.door, through ? rest : back), SIGNAL_MS);
+    const back = inward ? g.right + c.outside : g.left - c.inside;
+    const ms = Math.max(leg(w, g.door, through ? rest : back), c.signalMs);
     w.changed();
     m.later(ms, () => {
       // Publish this callback's captured passage fact, never a later lock sample.
@@ -111,13 +112,13 @@ export function downtownRules(p: PlayerServices): SceneRules {
       joke: (m) => m.label('joke.' + (jokes++ % 3)),
     },
     place: (m: SceneModel, home: Spot) => {
-      if (home.id !== 'dlv9') return home;
+      if (home.id !== downtownController(m.data).devices.vehicle) return home;
       const x = dlvX(m, home.x);
       return x === null ? null : { ...home, x };
     },
     needs: {
-      devices:[{id:'gate',spot:true},{id:'dlv9',spot:true}],
-      state: [{key:'dlvAt',type:'string'},{key:'feed',type:'string'}],
+      devices:[],
+      state: [],
       texts: {
         'joke.0': 'label', 'joke.1': 'label', 'joke.2': 'label',
 

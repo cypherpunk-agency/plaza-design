@@ -8,7 +8,7 @@ import {MARKET_GAMEPLAY,validateMarketGameplay} from '../../src/ssg/game/scenes/
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {talkTo,drawCharacter,type Character} from '../../src/ssg/game/runtime/characters';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
-let state:GameplayState={flags:{unrelated:true},items:{fish:2},tokens:9,values:{'market.fortune':2,foreign:77}};
+let state:GameplayState={flags:{unrelated:true},items:{fish:2},tokens:9,values:{market:{fortune:2},foreign:{retained:77}}};
 const port={read:()=>state,write:(value:GameplayState)=>{state=value;}};
 for(const original of baseline.people){
  const actor=market.people!.find(p=>p.id===original.id)!;
@@ -18,7 +18,7 @@ for(const original of baseline.people){
  for(let visit=0;visit<original.talk.length+2;visit++){
   const session=new GameplaySession(MARKET_GAMEPLAY,port);
   assert.deepEqual(talkTo(actor,session),{name:original.name,pages:original.talk[Math.min(visit,original.talk.length-1)]});
-  assert.equal(session.state().values!['market.fortune'],2);assert.equal(state.values!.foreign,77);assert.equal(state.tokens,9);assert.equal(state.items.fish,2);assert.equal(state.flags.unrelated,true);
+  assert.equal(session.state().values!.market.fortune,2);assert.equal(state.values!.foreign.retained,77);assert.equal(state.tokens,9);assert.equal(state.items.fish,2);assert.equal(state.flags.unrelated,true);
   session.dispose();state=JSON.parse(JSON.stringify(state));
  }
 }

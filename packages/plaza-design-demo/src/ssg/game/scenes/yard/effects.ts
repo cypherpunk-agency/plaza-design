@@ -11,7 +11,7 @@ export const YARD_RULES: SceneRules = {
   panels: ['camera'],
   needs: {
     devices:[],
-    state: [{key:'armAt',type:'string'},{key:'parcel',type:'string'},{key:'parcelAt',type:'string'},{key:'gateAllowed',type:'boolean'},{key:'pan',type:'number'}],
+    state: [],
     goals: ['find', 'chute', 'talk', 'gate', 'take'],
     texts: {
       'parcel.take': 'line',
@@ -27,7 +27,7 @@ export const YARD_RULES: SceneRules = {
   check: (z: SceneData) => {
     const errs: string[] = [];
     if (!z.camera) errs.push('camera: the yard needs its crates (CAM-1 and the claw use them)');
-    else if (!z.camera.crates.some((c) => c.id === z.state.parcel)) errs.push(`state.parcel: "${z.state.parcel}" is not a crate`);
+    else if (z.camera.bindings?.parcel!==undefined&&!z.camera.crates.some(c=>c.id===z.state[z.camera!.bindings!.parcel!])) errs.push('camera.bindings.parcel: initial parcel must name a crate');
     return errs;
   },
 };
