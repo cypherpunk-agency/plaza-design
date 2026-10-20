@@ -215,6 +215,24 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const header = element('header'), status = element('div', 'status', 'Loading authoring documents…'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const workspace = element('div', 'workspace'), left = element('aside'), center = element('div', 'preview-column'), right = element('aside');
   left.setAttribute('aria-label', 'Scene outline'); right.setAttribute('aria-label', 'Inspector');
+  /** Drag handles on the panels' inner edges. Widths are a per-browser convenience (localStorage), never source. */
+  function panelHandles() {
+    const sides = [{ side: 'left', variable: '--left-w', min: 160, max: 560 }, { side: 'right', variable: '--right-w', min: 220, max: 680 }] as const;
+    return sides.map(({ side, variable, min, max }) => {
+      const handle = element('div', `panel-handle ${side}`), key = `composer.panel.${side}`;
+      handle.setAttribute('role', 'separator'); handle.setAttribute('aria-orientation', 'vertical'); handle.title = 'Drag to resize; double-click to reset';
+      const apply = (width: number | null) => { if (width === null) workspace.style.removeProperty(variable); else workspace.style.setProperty(variable, `${Math.round(Math.min(max, Math.max(min, width)))}px`); };
+      try { const saved = Number(localStorage.getItem(key)); if (saved) apply(saved); } catch { /* storage unavailable: default widths */ }
+      handle.onpointerdown = event => {
+        if (event.button !== 0) return; event.preventDefault(); handle.setPointerCapture(event.pointerId); handle.classList.add('dragging');
+        const move = (e: PointerEvent) => { const box = workspace.getBoundingClientRect(); apply(side === 'left' ? e.clientX - box.left : box.right - e.clientX); };
+        const up = () => { handle.classList.remove('dragging'); handle.removeEventListener('pointermove', move); handle.removeEventListener('pointerup', up); handle.removeEventListener('pointercancel', up); try { localStorage.setItem(key, workspace.style.getPropertyValue(variable).replace('px', '')); } catch { /* ignore */ } void draw(); };
+        handle.addEventListener('pointermove', move); handle.addEventListener('pointerup', up); handle.addEventListener('pointercancel', up);
+      };
+      handle.ondblclick = () => { apply(null); try { localStorage.removeItem(key); } catch { /* ignore */ } void draw(); };
+      return handle;
+    });
+  }
   const options = element('div', 'preview-options'), stageWrap = element('div', 'stage-wrap'), stage = element('div', 'preview-stage'), canvas = element('canvas'), previewError = element('div', 'preview-error');
   const viewportTools = element('div', 'viewport-tools'), hoverBox = element('div', 'hover-box'); viewportTools.setAttribute('role', 'group'); viewportTools.setAttribute('aria-label', 'Preview zoom'); hoverBox.hidden = true;
   const picker = element('div', 'add-picker'); picker.setAttribute('role', 'dialog'); picker.setAttribute('aria-label', 'Add artwork'); picker.hidden = true;
@@ -235,7 +253,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
-  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
+  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); root.append(header, tools, status, workspace); host.append(root);
   let compareId = '', currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
   let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
   /** Editor-only framing: renderScale zoom, native camera pan and a crop to the artwork's height. Never saved. */
@@ -538,7 +556,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         const parallax = node.placement.parallax ?? 1;
         pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + art(node).label)); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId));
         if (hidden.has(node.id)) li.classList.add('is-hidden');
-        li.append(eye(() => [node.id], node.id), pick); return li;
+        li.append(pick, eye(() => [node.id], node.id)); return li;
       };
       function renderLayers() {
         listHost.replaceChildren(); let shown = 0;
@@ -580,11 +598,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           return li;
         };
         const section = (layer: Layer, body: (list: HTMLElement) => number) => {
-          const box = element('section', 'stack-layer'), head = element('div', 'stack-head'), list = element('ul', 'hierarchy');
+          const box = element('section', 'stack-layer'), head = element('div', 'stack-head'), list = element('ul', 'hierarchy'), key = 'stack:' + layer, open = !!layerQuery.trim() || (roleOpen.get(key) ?? true);
+          const fold = button(open ? '▾' : '▸', () => { roleOpen.set(key, !open); renderLayers(); }, `${open ? 'Collapse' : 'Expand'} the ${LAYER_LABELS[layer]} layer`); fold.className = 'fold'; fold.setAttribute('aria-expanded', String(open)); list.hidden = !open;
           const count = body(list); shown += count;
           if (!layerRows(composition, layer).length) { const empty = element('li', 'stack-empty', 'Empty: drag artwork here'); list.append(empty); }
           const ids = () => layerRows(composition, layer).map(n => n.id);
-          head.append(...(ids().length ? [eye(ids, `the ${LAYER_LABELS[layer]} layer`)] : []), element('span', 'stack-name', LAYER_LABELS[layer]), element('span', 'muted', String(ids().length))); head.title = LAYER_HINTS[layer];
+          head.append(fold, element('span', 'stack-name', LAYER_LABELS[layer]), element('span', 'muted', String(ids().length)), ...(ids().length ? [eye(ids, `the ${LAYER_LABELS[layer]} layer`)] : [element('span', 'eye-space')])); head.title = LAYER_HINTS[layer];
+          head.ondblclick = event => { if ((event.target as HTMLElement).closest('button')) return; roleOpen.set(key, !open); renderLayers(); };
           drop(head, () => accepts(layer) ? { layer, index: layerRows(composition, layer).filter(n => n.id !== dragged).length } : undefined);
           box.append(head, list); stack.append(box);
         };
@@ -596,10 +616,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           section(layer, target => list(target, layerRows(composition, layer)));
         }
         engineAfter('start');
-        const logic = element('details', 'layer-group'); logic.open = roleOpen.get('logic-layer') ?? true; logic.ontoggle = () => roleOpen.set('logic-layer', logic.open);
+        const logic = element('details', 'layer-group logic-group'); logic.open = roleOpen.get('logic-layer') ?? true; logic.ontoggle = () => roleOpen.set('logic-layer', logic.open);
         const logicList = element('ul', 'hierarchy'); shown += list(logicList, layerRows(composition, 'logic'));
         const logicIds = () => layerRows(composition, 'logic').map(n => n.id), summary = element('summary', '', `${LAYER_LABELS.logic} · ${logicIds().length}`);
-        if (logicIds().length) summary.prepend(eye(logicIds, 'the Logic layer'));
+        if (logicIds().length) summary.append(eye(logicIds, 'the Logic layer'));
         logic.append(summary, logicList); logic.title = LAYER_HINTS.logic;
         listHost.append(stack, logic); return shown;
       }
@@ -822,7 +842,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function hitTest(point: { x: number; y: number }) {
     const rect = canvas.getBoundingClientRect(), min = 16 * canvas.width / Math.max(1, rect.width);
     const grow = (b: PreviewResult['bounds'][number]) => { const w = Math.max(b.width, min), h = Math.max(b.height, min); return { ...b, x: b.x - (w - b.width) / 2, y: b.y - (h - b.height) / 2, width: w, height: h, area: b.width * b.height }; };
-    return (preview?.bounds ?? []).map(grow).filter(b => point.x >= b.x && point.x <= b.x + b.width && point.y >= b.y && point.y <= b.y + b.height).sort((a, b) => a.area - b.area)[0];
+    // Smallest box first; on a tie the frontmost wins (bounds arrive in draw order, back to front).
+    return (preview?.bounds ?? []).map((b, index) => ({ ...grow(b), index })).filter(b => point.x >= b.x && point.x <= b.x + b.width && point.y >= b.y && point.y <= b.y + b.height).sort((a, b) => a.area - b.area || b.index - a.index)[0];
   }
   function placeHover() {
     const box = hoverId && hoverId !== selectedId ? preview?.bounds.find(b => b.id === hoverId) : undefined; hoverBox.hidden = !box; if (!box) return;

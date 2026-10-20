@@ -141,9 +141,12 @@ position is where the player arrives (Library's manifest spawn points at it). Dr
 between layers, or use **Layer**, **Bring forward** and **Send backward** in the inspector. The stack
 is in `layer-stack.ts`.
 
-The eye beside each row and layer hides it in the editor preview (also for selection); Alt-click
+Each layer folds with its arrow (or a double-click on its heading). The eye at the right of each row and layer hides it in the editor preview (also for selection); Alt-click
 shows only that row or layer, and **Show all** clears it. Hiding is view state: never saved, never
-applied in Play. Scenes not yet migrated still show document order and the older Drawing
+applied in Play.
+
+Drag the inner edge of the outline or the inspector to resize it; double-click the edge to reset. The
+widths are remembered per browser. Scenes not yet migrated still show document order and the older Drawing
 pass/Draw order fields.
 
 Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and an
