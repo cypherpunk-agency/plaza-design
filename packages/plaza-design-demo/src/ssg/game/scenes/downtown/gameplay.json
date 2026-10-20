@@ -3235,6 +3235,24 @@
     "downtown.denial.2": {
       "kind": "label",
       "key": "joke.2"
+    },
+    "downtown.gateTarget": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "flag": "end"
+          },
+          "value": {
+            "literal": false
+          }
+        },
+        {
+          "value": {
+            "literal": true
+          }
+        }
+      ]
     }
   },
   "native": {

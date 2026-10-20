@@ -244,6 +244,8 @@ export interface LayoutData {
 }
 
 export interface DeviceData {
+  /** Shared query controlling only the nearby E target; artwork, board and pointer access remain live. */
+  targetQuery?: string;
   id: string;
   name: string;
   look: string;

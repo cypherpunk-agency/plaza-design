@@ -12,6 +12,7 @@
   "devices": [
     {
       "id": "gate",
+      "targetQuery": "downtown.gateTarget",
       "name": "NEON MARKET GATE",
       "look": "A shutter across the market's mouth. It opens for a scanner signature, not a password.",
       "everyday": [

@@ -1025,7 +1025,11 @@ export class Game {
     list.push(...life.filter(t=>before.has(t.id)));
     // a device is reached from the ground, or from the ledge under it (the relay, from the low roof)
     const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
-    for (const t of this.zh.targets()) if (!s.hideDevice?.(t.id, this.save.flags)) list.push({ kind: 'device', id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH });
+    for (const t of this.zh.targets()) {
+      const query=s.data?.devices.find(d=>d.id===t.id)?.targetQuery;
+      if(query!==undefined&&this.zh.model.gameplayQuery?.(query)!==true)continue;
+      list.push({ kind: 'device', id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH });
+    }
     list.push(...life.filter(t=>!before.has(t.id)));
     // the opening's own things to press E on (the bed)
     for (const [key, t] of Object.entries(this.openingStory.OPENING_TARGETS[this.story] ?? {})) {

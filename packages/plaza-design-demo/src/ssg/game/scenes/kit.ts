@@ -276,8 +276,6 @@ export interface SceneDef {
   panels?: Record<string, PanelFn>;
   /** Hack vision draws it in two passes: the world (muted), then the devices on top. Otherwise the game mutes round the devices' frames. */
   layers?: boolean;
-  /** A device that takes no E for now (Downtown's gate once it stands open: the market's door takes its place). */
-  hideDevice?: (id: string, flags: Readonly<Record<string, boolean>>) => boolean;
   /** Things to press E on besides the devices (a door its code locks, a pickup tray). */
   targets?(m: SceneModel): SceneTarget[];
   /** E on one of those. Return an exit's id (`engine` exits) to leave through it. */

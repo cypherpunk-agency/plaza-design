@@ -68,7 +68,7 @@ const KEYS: Record<string, string[]> = {
   machine: ['id', 'in', 'node'],
   program: ['id', 'name', 'look', 'foundIn'],
   module: ['id', 'start', 'foundIn', 'part'],
-  device: ['id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'items', 'deck', 'affects'],
+  device: ['targetQuery', 'id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'items', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
   itemUse: ['item', 'noun', 'label', 'on'],
   noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
@@ -450,6 +450,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
 
   const device = (d: DeviceData, where: string) => {
     keys(d, 'device', where);
+    if(d.targetQuery!==undefined&&(typeof d.targetQuery!=='string'||!env.code.derived.includes(d.targetQuery)))err(where,'targetQuery must name a declared shared query');
     const local = Object.keys(d.state ?? {});
     const known = new Set([...env.known, ...local]);
     const writable = new Set([...env.writable, ...local]);

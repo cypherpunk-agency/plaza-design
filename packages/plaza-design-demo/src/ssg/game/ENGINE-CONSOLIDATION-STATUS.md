@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `45dff3b` on main and production.
-Homepage jobs39387666632/39387665650 and design job39387666162 succeeded.
+Last verified deployment: `9898d74` on main and production.
+Homepage jobs39389669429/39389670121 and design job39389669359 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -28,7 +28,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G5 | PASS | Sourcea3fac97e: cached Game20 cycles, panel/menu/focus/gesture cancellation, actual38 native private Play/Stop cycles, repeated scene visits and complete ownership/preserved simulation inventory. See LIFECYCLE-ACCEPTANCE.md |
 | G6 | PASS | Source839777ab5e10: all six workloads, three eligible repeats each, raw samples/environment/calibration and independent summary validation; top-three exclusive contributor inspection, no optimization retained. See PERFORMANCE-CHECKPOINT-2026-10-19-C.md. Earlier failed Chrome diagnostics remain immutable |
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
-| G8 | IN PROGRESS | 19/19 ordinary manifests and actor collections now support source CRUD/rebinding/Save; new ordinary catalogue scenes run without TS registration. Native controllers/world/network/story and integrated acceptance remain |
+| G8 | PASS | All19 source content ownership, actual pending ordinary-content CRUD/rebind/permission/outcome dispatch,38-document bundle/history/protected Save/fresh shipping/byte Undo; all19 actor CRUD and removed Downtown native prompt callback. CONTENT-ACCEPTANCE.md. Other matrix categories remain independent |
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
 | G10 | IN PROGRESS | Typed actor CRUD/source bindings now cover all19 native scenes; catalogue creation/history/bundles/Save are checked. Current combined source still requires all-scene browser Play, controller/network/device entity controls and complete lifecycle acceptance |
 | G11 | PASS | All19 declared route collections,41 native exit dispatches and30 pending destination/arrival edits; current world/access/map/transport/opening/cinematic source and atomic Save/import evidence. See WORLD-STORY-ACCEPTANCE.md. Other scene categories and whole-goal acceptance remain open |
@@ -3250,3 +3250,15 @@ no second save owner is introduced. Editor query controls expose the same source
 
 G4/G7/G8/G9/G10/G12/G13 remain open. No whole-goal acceptance is inferred from the bounded
 SceneRules removal. Drawing, geometry, layer and animation implementation were not edited.
+
+## 2026-10-20: G8 all-scene content acceptance
+
+CONTENT-ACCEPTANCE.md reconciles current19-scene source ownership with the expanded all-scene
+content transaction check,19-scene actor entity verification and native callable audit. All19
+matrix content cells now PASS; other category cells retain their separate acceptance conditions.
+Downtown prompt availability is a typed shared query, with original end-flag behavior, geometry
+and pointer access verified. Actor creation now supports the user's layered Library composition.
+Source Save checks reuse one revision snapshot instead of repeatedly validating the whole corpus
+for each individual read. This changes verification cost, not Save validation or conflict rules.
+
+Eight gates accepted: G0/G1/G2/G3/G5/G6/G8/G11. Remaining: G4/G7/G9/G10/G12/G13.

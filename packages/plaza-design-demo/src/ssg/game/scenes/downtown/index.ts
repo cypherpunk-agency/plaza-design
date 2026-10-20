@@ -45,8 +45,6 @@ const baseDowntown:Omit<SceneDef,'width'|'spawn'|'exits'|'drawBackdrop'> = {
   buzz: true,
   rules: (player:Parameters<typeof downtownRules>[0]) => downtownRules(player),
   panels: { cam3: cam3Panel },
-  // once Downtown is cleared the gate stands open: the market's door takes the gate's place
-  hideDevice: (id:string, flags:Readonly<Record<string,boolean>>) => id === 'gate' && !!flags.end,
 
 };
 

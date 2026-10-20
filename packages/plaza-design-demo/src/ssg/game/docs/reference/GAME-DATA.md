@@ -222,7 +222,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   scene, one `SceneDef` each (scenes/kit.ts), listed in `SCENES` (scenes/index.ts). What a
   definition holds: **data-like code** for what is there (`width`, `spawn`, `exits`, `people`,
   `uses`, `readables`, `intro`, `ambient`, `pixel`, `platforms`), its data file and rules on the
-  engine where it has devices (`data`, `rules`, `panels`, `targets`, `use`, `hideDevice`), and its
+  engine where it has devices (`data`, `rules`, `panels`, `targets`, `use`), and its
   drawing (`drawBackdrop`, `drawFront`). The game has **one path** for every scene (`game.ts`:
   `hostOf`, `enter`, `targets`, `useLife` / `useExit`, `draw`, `travel`), no zone-or-scene
   branches. Decisions on the way:
@@ -1014,3 +1014,8 @@ allowlist updates where applicable, rather than only adding an arbitrary drawing
 6. **Toys and trace:** playing a toy does not count as being inside the device (only `probe` and
    answers touch it). Should a LOG fill while a toy panel is open?
 7. Should the fixer's hints move into `downtown.json` (a `hints` field per goal)?
+
+A device's optional `targetQuery` names a shared query that must resolve to `true` for its
+nearby E prompt to appear. It does not remove the device's artwork, board, hack view or pointer
+access. The device inspector exposes this binding, and prospective validation rejects missing
+queries. Downtown's former gate-only `hideDevice` callback is now `downtown.gateTarget` in source.

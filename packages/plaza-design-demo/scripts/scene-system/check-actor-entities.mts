@@ -61,6 +61,7 @@ for(const id of ['shop','library','laundromat','sandbox','stacks','beach','mall'
  mutate((s,c)=>addSceneActor(s,c,'new-resident',{garb:'hivis'},260,0),id);
  mutate((s,c)=>{duplicateSceneActor(s,c,'new-resident','resident-copy');bindSceneActor(s,c,'new-resident',['capsule','moth'].includes(id)?'neighbors':id==='yard'?'sky':id==='shop'?'wall':id==='sandbox'?'hall':['stacks','beach','mall','harbor','market','harborShift','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'].includes(id)?'scene':'room','origin',240,0);},id);
  const pending=pendingRegistry(new Map(model.list().map(d=>[d.id,d.value])))[id];
+ if(id==='library'){const composition=model.get(id).value as Composition,created=composition.instances.find(n=>n.id==='actor-new-resident')!,copy=composition.instances.find(n=>n.id==='actor-resident-copy')!;assert.equal(created.layer,'playfield');assert.equal(created.pass,undefined);assert.equal(copy.layer,'playfield');art.validate(composition);}
  assert(pending.people!.some(p=>p.id==='new-resident'));assert(pending.people!.some(p=>p.id==='resident-copy'));
  mutate((s,c)=>removeSceneActor(s,c,'resident-copy'),id);
  assert(!pendingRegistry(new Map(model.list().map(d=>[d.id,d.value])))[id].people!.some(p=>p.id==='resident-copy'));
@@ -96,11 +97,13 @@ const scratch=path.resolve('../../.scene-system/actor-entities');fs.mkdirSync(sc
 for(const d of sourceDocuments){const dest=path.join(dir,d.file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(path.join(root,d.file),dest);}
 const store=new AuthoringStore({root:dir,documents:sourceDocuments,validateAll:validateSourceDocuments});
 const originals=Object.fromEntries(model.edits().map(({id})=>[id,fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8')]));
-const saved=store.save(model.edits().map(e=>({...e,revision:store.read(e.id).revision})));
-const reloaded=warehouseScene(store.read('warehouse').value as Composition,{},{},store.read('warehouse-scene').value as SceneDocument);
+const initialRevisions=new Map(store.list().map(d=>[d.id,d.revision]));
+const saved=store.save(model.edits().map(e=>({...e,revision:initialRevisions.get(e.id)!})));
+const persisted=new Map(store.list().map(d=>[d.id,d.value]));
+const reloaded=warehouseScene(persisted.get('warehouse') as Composition,{},{},persisted.get('warehouse-scene') as SceneDocument);
 assert.deepEqual(reloaded.people,native().people);
 assert.equal(actorAppearanceSeed(reloaded.people!.find(a=>actorReactionIdentity(a)==='slot-3')!),3923);
-const savedRegistry=pendingRegistry(new Map(store.list().map(d=>[d.id,d.value])));
+const savedRegistry=pendingRegistry(persisted);
 for(const id of ['shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','harborShift','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'])assert(savedRegistry[id].people!.some(p=>p.id==='new-resident'));
 model.undo();model.redo();assert.deepEqual(model.edits(),before);
 store.undo(saved.transaction,Object.fromEntries(saved.documents.map(d=>[d.id,d.revision])));
