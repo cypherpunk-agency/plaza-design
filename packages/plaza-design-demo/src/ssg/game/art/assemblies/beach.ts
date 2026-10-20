@@ -8,11 +8,22 @@ import { drawSky,seaCols,sunPath } from "../environment/sky";
 import { drawLounger } from "../props/beach-party";
 import { adScreen,registryBoard,YELLOW } from "../signage/screens";
 import { saltLime } from "./beach-bar";
+import { drawDriven, type Character } from "../../runtime/characters";
+import { BOT } from "../characters/appearance";
+import { drawFlock, type FlockOptions } from "../characters/flock";
+/** The beach's creatures are kit bodies (stable, so each is baked once); the beach only says where they are. */
+const CRAB: Character = { seed: 5, look: 'crab', x: 0, ps: 2 };
+const POST_GULL: Character = { seed: 9, look: 'gull', x: 0, ps: 2 };
+/** The Registry rescue drone: the kit's scan drone in rescue paper, no shadow over the water. */
+const RESCUE_DRONE: Character = { seed: 4, look: { bot: 'scandrone', paint: '#e8e0d0', trim: '#c83a2a', v: 0, wear: 0.1 }, x: 0, act: 'scan', shadow: false };
+export const RESCUE_AIR = 113, RESCUE_HALF = 17;
+/** The gulls over the beach, wheeling about their spots (the beach's own seeded birds). */
+const hash = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+export const BEACH_FLOCK: FlockOptions = { kind: 'gull', wander: 120, span: 1700, margin: 100, birds: Array.from({ length: 7 }, (_, i) => { const r = hash(i + 50); return { x: r * 1600, h: 130 + hash(i + 70) * 80, speed: 0, parallax: 0.3 + r * 0.5, phase: i, ps: r > 0.6 ? 2 : 1 }; }) };
 export interface BeachLayout{stairs:number;board:number;boardwalk:number;kiosk:number;sunbeds:number[];mine:number;shack:{x0:number;x1:number};jukebox:number;lime:number;order:number;mixer:number;crab:number;tower:number;drone:number;net:number;castle:number;surfer:number;shore:number;pier0:number;pierLights:number;fisher:number;gull:number;boat:number}
 export interface BeachVisualState{rented:boolean;billingPaused:boolean;billed:number;freeDrink:boolean;danger:boolean;lamps:boolean;gullShooed:number}
 export interface ArtworkInputs{HORIZON:number;WATERLINE:number;L:BeachLayout;BEACH_W:number}
 export function createBeachArtwork(inputs:ArtworkInputs){const{HORIZON,WATERLINE,L,BEACH_W}=inputs;
-const hash = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
 const mix = (a: number[], b: number[], f: number, al = 1) => 'rgba(' + Math.round(lerp(a[0], b[0], f)) + ',' + Math.round(lerp(a[1], b[1], f)) + ',' + Math.round(lerp(a[2], b[2], f)) + ',' + al + ')';
 const CITY = towers(41, 300, [4, 10], [8, 26], 0.3);
@@ -102,14 +113,11 @@ function lime(x: CanvasRenderingContext2D, V: View) {
   placed(x, c, V.y(0), 1, () => saltLime(x, V.t));
 }
 function crab(x: CanvasRenderingContext2D, V: View) {
-  const cx = V.sx(L.crab + Math.sin(V.t * 0.01) * 10), y = V.y;
-  if (!onScreen(V, cx - 8, 16)) return;
-  x.fillStyle = '#6e4c36'; x.fillRect(cx - 5, y(4), 10, 4);
-  x.fillStyle = '#d8582a'; x.fillRect(cx - 4, y(3), 8, 3);
-  const leg = Math.floor(V.t / 6) % 2;
-  x.fillRect(cx - 6, y(1 + leg), 2, 1); x.fillRect(cx + 4, y(2 - leg), 2, 1);
-  x.fillRect(cx - 6, y(6), 2, 2); x.fillRect(cx + 4, y(6), 2, 2);
-  x.fillStyle = '#16100c'; x.fillRect(cx - 2, y(5), 1, 1); x.fillRect(cx + 1, y(5), 1, 1);
+  // back and forth along the same 20 units; where it slows at each end, it stops and digs
+  const wx = L.crab + Math.sin(V.t * 0.01) * 10, vel = Math.cos(V.t * 0.01), cx = V.sx(wx);
+  if (!onScreen(V, cx - 12, 24)) return;
+  const moving = Math.abs(vel) > 0.35;
+  drawDriven(x, V, CRAB, { x: wx, moving, act: moving ? 'walk' : 'dig', facing: vel < 0 ? -1 : 1 });
 }
 function volleyball(x: CanvasRenderingContext2D, V: View) {
   const c = V.sx(L.net), y = V.y;
@@ -182,29 +190,15 @@ function postGull(x: CanvasRenderingContext2D, V: View, state:BeachVisualState) 
   if (!onScreen(V, c - 200, 400)) return;
   x.fillStyle = '#3a2618'; x.fillRect(c - 3, y(30), 6, 30);
   if (since < 600) {
-    // up and away over the water, then back down
-    const f = since / 600, out = f < 0.5 ? f * 2 : 2 - f * 2, gx = c + out * 160, gy = y(32 + out * 90);
-    gullShape(x, gx, gy, V.t, 1);
+    // up and away over the water, then back down (the kit gull's flying pose)
+    const f = since / 600, out = f < 0.5 ? f * 2 : 2 - f * 2;
+    drawDriven(x, V, POST_GULL, { x: L.gull + out * 160, air: 28 + out * 90, act: 'fly', facing: f < 0.5 ? 1 : -1, moving: true });
     return;
   }
-  x.fillStyle = '#e8e4dc'; x.fillRect(c - 4, y(36), 8, 4); x.fillRect(c + 2, y(39), 3, 3);
-  x.fillStyle = '#8a8e96'; x.fillRect(c - 4, y(36), 5, 2);
-  x.fillStyle = '#d8b040'; x.fillRect(c + 5, y(38), 2, 1);
-  x.fillStyle = '#16100c'; x.fillRect(c + 3, y(38), 1, 1);
-}
-function gullShape(x: CanvasRenderingContext2D, gx: number, gy: number, t: number, s: number) {
-  const up = Math.floor(t / 8) % 2;
-  x.fillStyle = '#e8e4dc';
-  x.fillRect(Math.round(gx) - 1, Math.round(gy), 3 * s, 2);
-  x.fillRect(Math.round(gx) - 5 * s, Math.round(gy) - (up ? 2 : -1), 4 * s, 1); x.fillRect(Math.round(gx) + 2 * s, Math.round(gy) - (up ? 2 : -1), 4 * s, 1);
+  drawDriven(x, V, POST_GULL, { x: L.gull, h: 30, act: 'stand' });
 }
 function gulls(x: CanvasRenderingContext2D, V: View) {
-  for (let i = 0; i < 7; i++) {
-    const r = hash(i + 50), cx = (r * 1600 + Math.sin(V.t * 0.004 + i) * 120) - V.cam * (0.3 + r * 0.5), cy = V.y(130 + hash(i + 70) * 80) + Math.sin(V.t * 0.02 + i * 2) * 8;
-    const sx = ((cx % 1700) + 1700) % 1700 - 100;
-    if (sx < -10 || sx > V.viewW + 10) continue;
-    gullShape(x, sx, cy, V.t + i * 3, r > 0.6 ? 2 : 1);
-  }
+  drawFlock(x, V, BEACH_FLOCK);
 }
 function foreground(x: CanvasRenderingContext2D, V: View, state:BeachVisualState, p: number, lampPositions:number[]) {
   const gy = V.gy, edge = V.sx(L.shore);
@@ -363,16 +357,12 @@ function tower(x:CanvasRenderingContext2D,V:View,state:BeachVisualState){
   x.beginPath(); x.moveTo(fx + 1, y(130)); x.lineTo(fx + 15, y(126 + wave)); x.lineTo(fx + 1, y(120)); x.closePath(); x.fill();
 }
 function drone(x:CanvasRenderingContext2D,V:View,state:BeachVisualState,hover:string|null){const y=V.y,red=state.danger;  // the drone, hovering over the water side, scanning the sea
-  const dx = V.sx(L.drone), dy = y(124) + Math.round(Math.sin(V.t * 0.06) * 2);
-  x.fillStyle = 'rgba(255,230,140,.06)';
-  x.beginPath(); x.moveTo(dx - 2, dy + 8); x.lineTo(dx - 40 + Math.sin(V.t * 0.02) * 20, y(WATERLINE + 30)); x.lineTo(dx + 10 + Math.sin(V.t * 0.02) * 20, y(WATERLINE + 30)); x.lineTo(dx + 2, dy + 8); x.closePath(); x.fill();
-  const rot = Math.floor(V.t / 2) % 2;
-  x.fillStyle = '#8e949e'; x.fillRect(dx - 15, dy - 1, rot ? 10 : 6, 1); x.fillRect(dx + 5 + (rot ? 0 : 4), dy - 1, rot ? 10 : 6, 1);
-  x.fillStyle = '#4a4f5a'; x.fillRect(dx - 11, dy, 2, 3); x.fillRect(dx + 9, dy, 2, 3);
-  box(x, dx - 9, dy + 2, 18, 7, '#e8e0d0', 'rgba(' + O + ',.6)');
-  x.fillStyle = red ? 'rgba(' + RED + ',.95)' : 'rgba(' + GREEN + ',.9)'; x.fillRect(dx - 6, dy + 4, 4, 2);
-  tell(x, V.t, dx + 5, dy + 5, 4);
-  if (hover === 'drone') glow(x, dx - 15, dy - 2, 30, 13);
+  // the kit's scan drone; the scene owns its post, its state-coloured light and the hover/tell marks
+  const dx = V.sx(L.drone), top = y(RESCUE_AIR + BOT.scandrone.top * 3 + 2);
+  drawDriven(x, V, RESCUE_DRONE, { x: L.drone, air: RESCUE_AIR, light: red ? 'rgba(' + RED + ',.95)' : 'rgba(' + GREEN + ',.9)',
+    beam: { rgb: '255,230,140', alpha: 0.06, foot: WATERLINE + 30, spread: 25, lean: -15, sweep: 20, rate: 0.02, line: false } });
+  tell(x, V.t, dx + 5, y(RESCUE_AIR + 4), 4);
+  if (hover === 'drone') glow(x, dx - RESCUE_HALF, top, RESCUE_HALF * 2, y(RESCUE_AIR - 2) - top);
 }
 function pierDeck(x:CanvasRenderingContext2D,V:View,p:number,railingEnd:number){
   const l = V.sx(L.pier0), r = V.sx(BEACH_W + 20), y = V.y;

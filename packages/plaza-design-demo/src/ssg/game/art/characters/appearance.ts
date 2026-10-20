@@ -1,6 +1,6 @@
 /** Pure character artwork and baked sprites. World scheduling/dialogue remain in characters.ts. */
 import type { View } from '../core/view';
-import type { Character, Body, Hair, Garb, Extra, Critter, Look, Act, Ready, Frame } from "../../runtime/characters";
+import type { Character, Body, Hair, Garb, Extra, Critter, Look, Act, Ready, Frame, Beam } from "../../runtime/characters";
 import { castShadow } from '../atmosphere/lighting';
 
 
@@ -93,13 +93,13 @@ const clr = (g: Grid, c: number, r: number) => { if (c >= 0 && c < W && r >= 0 &
 const rect = (g: Grid, c0: number, r0: number, c1: number, r1: number, col: string) => { for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) put(g, c, r, col); };
 
 
-/** Where the hand and mouth ended up (grid cells), for live effects (smoke, phone glow, zzz). */
+/** Where the hand and mouth ended up (grid cells), for live effects (smoke, phone glow, zzz, a robot's lens and status light). */
 interface Meta { hand: [number, number]; mouth: [number, number]; top: number }
 
 
 export type Legs = 'stand' | 'shift' | 'stepA' | 'stepB' | 'cross' | 'wide' | 'sit' | 'lie';
 
-export type Arms = 'down' | 'raise' | 'phone' | 'out' | 'point' | 'reach' | 'up' | 'hip' | 'fold' | 'hold' | 'broomA' | 'broomB';
+export type Arms = 'down' | 'raise' | 'phone' | 'out' | 'point' | 'reach' | 'up' | 'hip' | 'fold' | 'hold' | 'broomA' | 'broomB' | 'paper';
 
 
 export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
@@ -140,6 +140,8 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
   if (L.garb === 'suit') { put(g, CX, sh, '#ddd5c5'); put(g, CX + 1, sh, '#ddd5c5'); put(g, CX, sh - 1, '#a82020'); put(g, CX, sh - 2, '#a82020'); }
   if (has('backpack')) { rect(g, Lc - 2, Math.max(base, sh - T + 2), Lc - 1, sh - 1, L.acc); rect(g, Lc - 2, sh - 1, Lc - 1, sh - 1, shade(L.acc, 0.7)); }
   if (has('bag')) { for (let k = 0; k < Math.min(tw, T); k++) put(g, Rc - k, sh - k, shade(L.acc, 0.6)); if (!sit) rect(g, Lc - 2, base - 1, Lc - 1, base + 1, L.acc); }
+  // a parcel up on the back shoulder (the head is drawn over its front corner)
+  if (has('parcel')) { rect(g, Lc - 2, sh + 1, Lc + 1, sh + 3, '#a07040'); rect(g, Lc - 2, sh + 2, Lc + 1, sh + 2, '#d8c8a0'); }
 
   // arms: the back one (darker) first, then the front one in the pose
   const sleeve = L.garb === 'tee' ? L.skin : shade(top, 0.82);
@@ -162,15 +164,25 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
     hold: [[0, 0], [0, -1], [1, -1]],
     broomA: [[0, 0], [1, -1], [1, -2]],
     broomB: [[0, 0], [1, -1], [2, -1]],
+    paper: [[0, 0], [1, 0], [1, 1]],
   };
   const path = ARM[arms];
   path.forEach(([dc, dr], i) => put(g, R + dc, sh + dr, i === path.length - 1 && arms !== 'fold' ? hand : front));
   if (L.garb === 'tee' && !cyber) put(g, R, sh, shade(top, 0.85));
   if (cyber && path.length > 1) put(g, R + path[1][0], sh + path[1][1], '#ffb030');
+  // an inspector's armband, on both upper arms
+  if (has('armband')) { put(g, R + path[0][0], sh + path[0][1] - (arms === 'up' ? -1 : 1), '#c83a2a'); put(g, Lc - 1, sh - 1, '#a82020'); }
   let [hc, hrow] = path[path.length - 1];
   hc += R; hrow += sh;
   if (arms === 'fold') { rect(g, Lc + 1, sh - 2, R, sh - 2, front); put(g, Lc + 1, sh - 2, hand); hc = Lc + 1; hrow = sh - 2; }
   if (arms === 'phone') put(g, R + 2, sh, '#e4ecff');
+  // a newspaper held up in front of the face, columns of print on it
+  if (arms === 'paper') { rect(g, R + 2, sh - 2, R + 3, hb + 2, '#d8d0c0'); for (let r = sh - 1; r <= hb + 1; r += 2) put(g, R + 3, r, '#8a8478'); put(g, R + 2, hb + 2, '#b8ad94'); hc = R + 2; hrow = sh + 1; }
+  // a briefcase: hanging from the hand, or on the floor by a sitter's feet
+  if (has('briefcase')) {
+    if (sit) { rect(g, Lc - 4, 0, Lc - 1, 2, '#3a2418'); put(g, Lc - 3, 3, '#2a1a10'); put(g, Lc - 2, 1, '#c8a050'); }
+    else if (arms === 'down') { const hr0 = sh - T + 1, cc = R; rect(g, cc - 1, Math.max(1, hr0 - 3), cc + 2, Math.max(1, hr0 - 1), '#3a2418'); put(g, cc + 1, Math.max(1, hr0 - 2), '#c8a050'); }
+  }
   if (arms === 'hold') {
     const S = R + 1;
     if (has('umbrella')) {
@@ -226,7 +238,18 @@ function lying(L: Full): [Grid, Meta] {
 
 // ---------- non-humans ----------
 
-export const CRITTERS: Record<Critter, { frames: Record<string, string[]>; pal: Record<string, string>; h?: number }> = {
+/** A gull, standing, walking and flying (wings up, wings down; the body stays on row 2 so it flaps in place). */
+const GULL: Record<string, string[]> = {
+  standA: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '..p.p..'],
+  standB: ['.......', '.......', 'ggwwwww', '.gggwwk', '..p.p.y'],
+  walkA: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '..p.p..'],
+  walkB: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '...pp..'],
+  flyA: ['g.......g..', '.gg...gg...', '..gwwwwwky.', '...........', '...........'],
+  flyB: ['...........', '...........', '..gwwwwwky.', '.gg...gg...', 'g.......g..'],
+};
+
+/** Pixel-frame critters. `bot`: drawn with the robot kit instead (keeps the critter's name, voice and `h`). */
+export const CRITTERS: Record<Critter, { frames: Record<string, string[]>; pal: Record<string, string>; h?: number; bot?: BotLook }> = {
   cat: {
     frames: {
       sitA: ['...k.k', '...kkk', '...kek', '..kkkk', '.kkkkk', 'kkkkkk'],
@@ -245,14 +268,19 @@ export const CRITTERS: Record<Critter, { frames: Record<string, string[]>; pal: 
     },
     pal: { g: '#7a7a88', h: '#4a7a6a', e: '#ff7a2a', b: '#c8a890', p: '#c86a5a' },
   },
-  gull: {
+  gull: { frames: GULL, pal: { w: '#e8e4dc', g: '#8a8e96', k: '#141414', y: '#e8b030', p: '#d08a3a' } },
+  /** The Registry's gull-shaped drone: the gull's frames in gunmetal, a red eye where the beak is. */
+  robogull: { frames: GULL, pal: { w: '#9a9ea8', g: '#6a6e78', k: '#3a3e46', y: '#ff2a44', p: '#3a3e46' }, h: 120 },
+  /** A beach crab: scuttles sideways, stops to dig, claws up. */
+  crab: {
     frames: {
-      standA: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '..p.p..'],
-      standB: ['.......', '.......', 'ggwwwww', '.gggwwk', '..p.p.y'],
-      walkA: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '..p.p..'],
-      walkB: ['....ww.', '....wky', 'ggwwww.', '.gggww.', '...pp..'],
+      standA: ['cc....cc', '.ce..ec.', '.oooooo.', 'oooooooo', 'l.l..l.l'],
+      walkA: ['cc....cc', '.ce..ec.', '.oooooo.', 'oooooooo', 'l.l..l.l'],
+      walkB: ['.cc..cc.', '.ce..ec.', '.oooooo.', 'oooooooo', '.l.ll.l.'],
+      digA: ['..e..e..', '.oooooo.', 'oooooooo', 'cl.l..lc'],
+      digB: ['s.e..e.s', '.oooooo.', 'oooooooo', 'cl.l..lc'],
     },
-    pal: { w: '#e8e4dc', g: '#8a8e96', k: '#141414', y: '#e8b030', p: '#d08a3a' },
+    pal: { o: '#d8582a', c: '#e8703a', e: '#16100c', l: '#a8401a', s: '#c8a070' },
   },
   cleaner: {
     frames: {
@@ -261,14 +289,8 @@ export const CRITTERS: Record<Critter, { frames: Record<string, string[]>; pal: 
     },
     pal: { w: '#c8c0b0', k: '#1a1a1e', e: '#ffb030', y: '#d8a020', b: '#8a7a5a' },
   },
-  drone: {
-    frames: {
-      walkA: ['pp....pp', '.ssssss.', 'sskrrkss', '..s..s..'],
-      walkB: ['.p....p.', '.ssssss.', 'sskrrkss', '..s..s..'],
-    },
-    pal: { p: '#8a8e96', s: '#4a4f5a', k: '#16161a', r: '#ff2a44' },
-    h: 64,
-  },
+  // the old drone critter: drawn as the robot kit's scan drone (one drone body), at its old height
+  drone: { frames: {}, pal: {}, h: 64, bot: { bot: 'scandrone', paint: '#4a4f5a', v: 1 } },
   courier: {
     frames: {
       walkA: ['.oooooo.', '.oyoooo.', '.oooooo.', 'dddddddd', 'dkeekkkd', 'dddddddd', '.d....d.', '.d....d.', 'dd....dd'],
@@ -305,15 +327,16 @@ export type Bot =
   | 'litterbot' | 'deliverybot' | 'adbot'       // small wheeled: litter picker, kerb delivery box, sandwich-board advertiser
   | 'crawler'                                   // spider-legged maintenance bot for walls and ledges: welds, scrubs
   | 'wreck'                                     // broken, unemployed, slumped against a wall, asking for parts
-  | 'minidrone' | 'cargodrone' | 'flyerdrone';
-  // flying: parcel drone, heavy lifter with a hanging crate, hologram flyer
+  | 'minidrone' | 'cargodrone' | 'flyerdrone' | 'scandrone'
+  // flying: parcel drone, heavy lifter with a hanging crate, hologram flyer, Registry/rescue scan drone
+  | 'djbot';                                    // a busker box with headphones, working a deck
 export type Face = 'eyes' | 'happy' | 'blink' | 'sad' | 'dots' | 'off' | 'crack';
 
 /** A robot look with parts fixed: `{ bot: 'servbot', paint: '#54406a', v: 1 }`. `v` picks the base/variant (0..2). */
 export interface BotLook { bot: Bot; paint?: string; trim?: string; screen?: string; wear?: number; face?: Face; v?: 0 | 1 | 2 }
 
 
-type Shape = 'android' | 'box' | 'waiter' | 'loader' | 'porter' | 'mech' | 'litter' | 'delivery' | 'ad' | 'crawler' | 'wreck' | 'mini' | 'cargo' | 'flyer';
+type Shape = 'android' | 'box' | 'waiter' | 'loader' | 'porter' | 'mech' | 'litter' | 'delivery' | 'ad' | 'crawler' | 'wreck' | 'mini' | 'cargo' | 'flyer' | 'scan';
 
 interface BotSpec { shape: Shape; top: number; speed: number; fly?: number; paints?: string[] }
 
@@ -355,6 +378,8 @@ export const BOT: Record<Bot, BotSpec> = {
   minidrone: { shape: 'mini', top: 7, speed: 0.55, fly: 48 },
   cargodrone: { shape: 'cargo', top: 13, speed: 0.3, fly: 92, paints: ['#d8a03a', '#c8641e', '#8a8e96', '#5a5c60'] },
   flyerdrone: { shape: 'flyer', top: 7, speed: 0.2, fly: 74 },
+  scandrone: { shape: 'scan', top: 5, speed: 0.35, fly: 64, paints: ['#4a4f5a', '#5a5c60', '#8a8e96', '#e8e0d0', '#6a6e78'] },
+  djbot: { shape: 'box', top: 18, speed: 0.2, paints: ['#5a5f66', '#8b9099', '#3a3438', '#6a2a3e'] },
 };
 
 const BOT_KINDS = Object.keys(BOT) as Bot[];
@@ -486,6 +511,7 @@ function boxBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
   screenFace(g, CX - 2, 13, B, fc);
   let top = 15;
   if (B.antenna) { put(g, CX + 2, 15, J); put(g, CX + 2, 16, J); put(g, CX + 2, 17, B.light); top = 18; }
+  if (B.kind === 'djbot') { rect(g, CX - 3, 15, CX + 3, 15, '#2a2a30'); rect(g, CX - 4, 11, CX - 4, 14, '#2a2a30'); rect(g, CX + 4, 11, CX + 4, 14, '#2a2a30'); put(g, CX + 4, 12, B.light); top = Math.max(top, 16); }
   if (B.kind === 'sweeper') { rect(g, CX - 7, 3, CX - 5, 6, B.trim); rect(g, CX - 7, 6, CX - 5, 6, shade(B.trim, 1.4)); put(g, CX - 6, 7, '#e8e0d0'); }
   else rect(g, CX - 5, 5, CX - 5, 7, shade(B.metal, 0.62));
   const horn = B.kind === 'busker' && !B.human;
@@ -493,6 +519,7 @@ function boxBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
     down: [[0, 0], [0, -1], [0, -2], [1, -3]], out: [[0, 0], [1, 0], [2, 0], [3, 1]], box: [[0, 0], [1, -1], [2, -1]],
     broomA: [[0, 0], [1, -1], [1, -2]], broomB: [[0, 0], [1, -1], [2, -1]],
     playA: horn ? [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]] : [[0, 0], [0, -1], [-1, -2]], playB: horn ? [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]] : [[0, 0], [0, -1], [-1, -1]],
+    djA: [[0, 0], [1, 0], [2, 0], [3, -1]], djB: [[0, 0], [1, 1], [2, 1], [3, 0]],
   };
   const R = CX + 4, sh = 7, path = P[arms] ?? P.down;
   path.forEach(([dc, dr], i) => put(g, R + dc, sh + dr, i === path.length - 1 ? J : B.metal));
@@ -688,15 +715,33 @@ function wreckBot(B: BotFull, pose: string, st: string): [Grid, Meta] {
 }
 
 
-/** Drones: a small parcel drone, a heavy lifter with a crate on straps, a flyer drone with a projector. */
+/** Rotor boom at row `r`, `half` cells each side, blades on its tips: long, or short while they spin past. */
+function rotors(g: Grid, B: BotFull, r: number, half: number, spin: boolean) {
+  rect(g, CX - half, r, CX + half, r, J);
+  if (spin) { put(g, CX - half, r + 1, B.metal); put(g, CX + half, r + 1, B.metal); }
+  else { rect(g, CX - half - 1, r + 1, CX - half + 1, r + 1, B.metal); rect(g, CX + half - 1, r + 1, CX + half + 1, r + 1, B.metal); }
+}
+
+/** Drones: a small parcel drone, a scan drone, a heavy lifter with a crate on straps, a flyer drone with a projector. */
 function droneBot(B: BotFull, pose: string): [Grid, Meta] {
   const g = grid(), spin = pose === 'p1', S = BOT[B.kind].shape;
   if (S === 'mini') {
     if (B.v !== 2) { rect(g, CX - 1, 0, CX + 1, 1, '#8a6a40'); put(g, CX, 1, '#c8b890'); put(g, CX, 2, J); }
     rect(g, CX - 2, 3, CX + 2, 4, B.paint); put(g, CX + 1, 3, B.light);
-    rect(g, CX - 3, 5, CX + 3, 5, J);
-    if (spin) { put(g, CX - 3, 6, B.metal); put(g, CX + 3, 6, B.metal); } else { rect(g, CX - 4, 6, CX - 2, 6, B.metal); rect(g, CX + 2, 6, CX + 4, 6, B.metal); }
+    rotors(g, B, 5, 3, spin);
     return [g, { hand: [CX, 1], mouth: [CX + 1, 3], top: 7 }];
+  }
+  if (S === 'scan') {
+    // the scan drone (Registry, rescue, port watchdog): a sensor pod under a flat body, a status light, rotors.
+    // v picks the pod: one lens (0), twin lenses (1), a wide dome (2). hand = the status light, mouth = the lens.
+    const lens = '#ff2a44';
+    if (B.v === 2) { rect(g, CX - 2, 0, CX + 2, 0, J); clr(g, CX - 2, 0); clr(g, CX + 2, 0); put(g, CX, 0, lens); }
+    else { rect(g, CX - 1, 0, CX + 1, 0, J); if (B.v === 1) { put(g, CX - 1, 0, lens); put(g, CX + 1, 0, lens); } else put(g, CX, 0, lens); }
+    rect(g, CX - 3, 1, CX + 3, 2, B.paint); rect(g, CX - 3, 1, CX + 3, 1, shade(B.paint, 0.72)); put(g, CX - 3, 2, B.trim); put(g, CX + 3, 2, B.trim);
+    wearOn(g, CX - 3, 1, CX + 3, 2, B, 1);
+    put(g, CX + 1, 2, B.light);
+    rotors(g, B, 3, 4, spin);
+    return [g, { hand: [CX + 1, 2], mouth: [CX, 0], top: 5 }];
   }
   if (S === 'cargo') {
     const crate = B.v === 1 ? '#d86a1a' : '#8a5a2a';
@@ -753,8 +798,8 @@ const BAKED = new Map<string, Baked>();
 const RIM = '#6e4c36';
 
 
-function bake(key: string, make: () => [Grid, Meta], ps: number, flip: boolean, dim: number): Baked {
-  const k = key + '|' + ps + '|' + (flip ? 1 : 0) + '|' + dim;
+function bake(key: string, make: () => [Grid, Meta], ps: number, flip: boolean, dim: number, rim = true): Baked {
+  const k = key + '|' + ps + '|' + (flip ? 1 : 0) + '|' + dim + (rim ? '' : '|n');
   let b = BAKED.get(k);
   if (b) return b;
   const [g, meta] = make();
@@ -764,7 +809,7 @@ function bake(key: string, make: () => [Grid, Meta], ps: number, flip: boolean, 
   const at = (col: number) => (flip ? 2 * CX - col : col);
   // the rim: the silhouette one unit bigger all round, then the pixels on it
   x.fillStyle = RIM;
-  for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) if (g[r * W + col]) x.fillRect(at(col) * ps, (H - 1 - r) * ps, ps + 2, ps + 2);
+  if (rim) for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) if (g[r * W + col]) x.fillRect(at(col) * ps, (H - 1 - r) * ps, ps + 2, ps + 2);
   for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) { const v = g[r * W + col]; if (v) { x.fillStyle = v; x.fillRect(1 + at(col) * ps, 1 + (H - 1 - r) * ps, ps, ps); } }
   if (dim > 0) { x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(6,3,2,' + dim + ')'; x.fillRect(0, 0, c.width, c.height); }
   b = { c, meta: flip ? { ...meta, hand: [at(meta.hand[0]), meta.hand[1]], mouth: [at(meta.mouth[0]), meta.mouth[1]] } : meta };
@@ -788,6 +833,12 @@ const TXT = '600 7px "IBM Plex Mono", monospace';
 function botFx(x: CanvasRenderingContext2D, v: View, p: Character, B: BotFull, f: Frame, b: Baked, cell: (c: number, r: number) => number[], flip: boolean, tt: number, glitch: boolean | undefined) {
   const S = BOT[B.kind], act = p.act ?? 'stand', ps = psOf(p), R = Math.round;
   void f;
+  if (p.light) {
+    // a state-driven status light (a device's drone: green, red), painted over the baked one
+    const [lx, ly] = cell(b.meta.hand[0], b.meta.hand[1]);
+    x.fillStyle = p.light; x.fillRect(R(lx - ps / 2), R(ly - ps / 2), ps, ps);
+    x.globalAlpha = 0.3; x.fillRect(R(lx - ps * 1.5), R(ly - ps), ps * 3, ps * 2); x.globalAlpha = 1;
+  }
   if (glitch) { const [gx, gy] = cell(CX, S.top >> 1); x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(R(gx - 12), R(gy + ((tt * 13) % 9) - 4), 24, 1); }
   if (act === 'charge') {
     // cabled to a socket on the wall behind, the socket's pips counting up
@@ -821,8 +872,14 @@ function botFx(x: CanvasRenderingContext2D, v: View, p: Character, B: BotFull, f
       }
       break;
     }
+    case 'scan': {
+      const [ex, ey] = cell(b.meta.mouth[0], b.meta.mouth[1]);
+      if (!p.light && Math.floor(tt / 20) % 3 === 0) { x.fillStyle = 'rgba(255,42,68,.35)'; x.fillRect(R(ex - 4), R(ey - 3), 8, 6); }
+      if (act === 'scan') scanBeam(x, v, p.beam, ex, ey, tt);
+      break;
+    }
     case 'box':
-      if (B.kind === 'busker' && act === 'play') for (let i = 0; i < 3; i++) {
+      if ((B.kind === 'busker' || B.kind === 'djbot') && act === 'play') for (let i = 0; i < 3; i++) {
         // notes rising off the instrument
         const k = (tt * 0.006 + i / 3) % 1, [mx, my] = cell(CX + (flip ? -2 : 2), 12);
         const nx = R(mx + (flip ? -1 : 1) * (4 + k * 14) + Math.sin(k * 7 + i) * 3), ny = R(my - 4 - k * 30);
@@ -862,6 +919,14 @@ function botFx(x: CanvasRenderingContext2D, v: View, p: Character, B: BotFull, f
 }
 
 
+/** A scan beam from the lens at (ex, ey): a faint cone down to its foot, and a bright line bouncing over it. */
+function scanBeam(x: CanvasRenderingContext2D, v: View, beam: Beam | undefined, ex: number, ey: number, tt: number) {
+  const o = beam ?? {}, rgb = o.rgb ?? '255,42,68', s = o.spread ?? 14, sw = Math.sin(tt * (o.rate ?? 0.05)) * (o.sweep ?? 10) + (o.lean ?? 0), foot = v.y(o.foot ?? 0);
+  x.fillStyle = 'rgba(' + rgb + ',' + (o.alpha ?? 0.08) + ')';
+  x.beginPath(); x.moveTo(ex - 2, ey + 3); x.lineTo(ex - s + sw, foot); x.lineTo(ex + s + sw, foot); x.lineTo(ex + 2, ey + 3); x.closePath(); x.fill();
+  if (o.line ?? true) { x.fillStyle = 'rgba(' + rgb + ',.55)'; x.fillRect(Math.round(ex - s + 2 + sw), Math.round(foot - 12 - Math.abs(Math.sin(tt * 0.09)) * 30), Math.max(1, 2 * s - 4), 1); }
+}
+
 /**
  * A head-and-shoulders portrait of a seed's person, for screens (WANTED, ID cards, ads that know you):
  * drawn into the box (cx, top, w, h), clipped.
@@ -879,16 +944,18 @@ export function drawCharacterFrame(x: CanvasRenderingContext2D, v: View, p: Char
 
   const sx = v.sx(f.x, p.parallax ?? 1);
   if (sx < -40 || sx > v.viewW + 40) return;
-  const crit = R.critter, bot = R.bot, hDraw = (p.h ?? (crit ? CRITTERS[crit].h ?? 0 : 0)) + (bot ? BOT[bot.kind].fly ?? 0 : 0) + f.bob;
+  // a critter with a robot body (the drone) keeps the critter's height rule: h (or its default), no extra flight height
+  const crit = R.critter, bot = R.bot, hDraw = (p.h ?? (crit ? CRITTERS[crit].h ?? 0 : 0)) + (bot && !crit ? BOT[bot.kind].fly ?? 0 : 0) + f.bob;
   const flip = f.face < 0, act = p.act ?? 'stand', tt = v.t + R.ph;
   const key = R.key + ':' + f.legs + '.' + f.arms;
-  const b = bake(key, () => (crit ? critter(crit, f.legs, R.seed) : bot ? robot(bot, f.legs, f.arms) : human(R.full!, f.legs as Legs, f.arms)), ps, flip, p.dim ?? 0);
+  const b = bake(key, () => (bot ? robot(bot, f.legs, f.arms) : crit ? critter(crit, f.legs, R.seed) : human(R.full!, f.legs as Legs, f.arms)), ps, flip, p.dim ?? 0, p.rim ?? true);
   // a glitching robot jumps a pixel or two, now and then
   const glitch = bot && (act === 'glitch' ? tt % 90 < 10 : bot.glitchy && tt % 400 < 14);
   const left = Math.round(sx - CX * ps - ps / 2) - 1 + (glitch ? ((tt * 7) % 5) - 2 : 0), topY = Math.round(v.y(hDraw)) - H * ps - 1;
   // the shadow first (sets/lighting.ts): cast along the ground by the sun (or away from a lamp at night), a contact patch always
   const fly = bot ? BOT[bot.kind].fly ?? 0 : 0, sw = ps * (bot ? 6 : crit ? 3 : 4);
-  if (fly) castShadow(x, v, f.x, 6, sw * 0.6, p.h ?? 0, p.parallax ?? 1, 0.6);
+  if (p.shadow === false) { /* flying against the sky, or inside a window */ }
+  else if (fly) castShadow(x, v, f.x, 6, sw * 0.6, crit ? 0 : p.h ?? 0, p.parallax ?? 1, 0.6);
   else castShadow(x, v, f.x, p.act === 'sleep' ? ps * 3 : height - (p.h ?? 0), sw, hDraw - f.bob, p.parallax ?? 1, p.dim ?? 0);
   x.drawImage(b.c, left, topY);
   if (p.dim && p.dim > 0.4) return;
@@ -909,25 +976,19 @@ export function drawCharacterFrame(x: CanvasRenderingContext2D, v: View, p: Char
     const [hx, hy] = cell(b.meta.hand[0] + (flip ? -0 : 0), b.meta.hand[1] + 1);
     x.fillStyle = 'rgba(210,225,255,.12)'; x.fillRect(Math.round(hx - 7), Math.round(hy - 10), 14, 12);
   }
-  if (act === 'sleep') {
+  if (act === 'sleep' || act === 'doze') {
     const [mx, my] = cell(b.meta.mouth[0], b.meta.mouth[1]);
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < (act === 'doze' ? 2 : 3); i++) {
       const k = ((tt * 0.01 + i / 3) % 1);
       x.font = '600 ' + (6 + i) + 'px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,' + (0.6 * (1 - k)) + ')';
       x.fillText('z', Math.round(mx + 3 + k * 8), Math.round(my - 6 - k * 18));
     }
   }
-  if (crit === 'drone') {
-    const blink = Math.floor(tt / 20) % 3 === 0;
-    const [ex, ey] = cell(CX, 1);
-    if (blink) { x.fillStyle = 'rgba(255,42,68,.35)'; x.fillRect(Math.round(ex - 4), Math.round(ey - 3), 8, 6); }
-    if (act === 'scan') {
-      const sw = Math.sin(tt * 0.05) * 10, gy = v.y(p.h ?? 0) + 0;
-      x.fillStyle = 'rgba(255,42,68,.08)';
-      x.beginPath(); x.moveTo(ex - 2, ey + 3); x.lineTo(ex - 14 + sw, v.y(0)); x.lineTo(ex + 14 + sw, v.y(0)); x.lineTo(ex + 2, ey + 3); x.closePath(); x.fill();
-      x.fillStyle = 'rgba(255,42,68,.55)'; x.fillRect(Math.round(ex - 12 + sw), Math.round(v.y(0) - 12 - Math.abs(Math.sin(tt * 0.09)) * 30), 24, 1);
-      void gy;
-    }
+  if (crit === 'robogull') {
+    // its red eye glows now and then; scanning, it sweeps the kit's beam down from its belly
+    const [ex, ey] = cell(b.meta.mouth[0], b.meta.mouth[1]);
+    if (Math.floor(tt / 20) % 3 === 0) { x.fillStyle = 'rgba(255,42,68,.35)'; x.fillRect(Math.round(ex - 3), Math.round(ey - 2), 6, 4); }
+    if (act === 'scan') { const [bx, by] = cell(CX, 2); scanBeam(x, v, p.beam, bx, by, tt); }
   }
   if (crit === 'cleaner') {
     const on = Math.floor(tt / 15) % 2 === 0, [bx, by] = cell(CX, 7);

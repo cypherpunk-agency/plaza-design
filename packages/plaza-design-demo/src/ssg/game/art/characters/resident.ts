@@ -1,10 +1,10 @@
 /** Standalone authored actors reuse the game's existing seeded appearance and animation kernels. */
 import {drawCharacter,characterHeight,type Character,type Act} from '../../runtime/characters';
-import {BOT} from './appearance';
+import {BOT,CRITTERS} from './appearance';
 import type {Element,Properties,Point} from '../core/composition';
 import {DEPTH_BANDS,DEPTH_ORDER,isDepthBand} from '../core/depth';
-export const residentKinds=['human','cat','pigeon','gull','cleaner','drone','courier',...Object.keys(BOT)];
-export const residentActs=['stand','talk','sit','lean','smoke','phone','haggle','argue','queue','sleep','dance','vend','scan','direct','play','weld','scrub','charge','glitch','blink','slump'];
+export const residentKinds=['human',...Object.keys(CRITTERS),...Object.keys(BOT)];
+export const residentActs=['stand','talk','sit','lean','smoke','phone','haggle','argue','queue','sleep','dance','vend','read','doze','dig','fly','scan','direct','play','weld','scrub','charge','glitch','blink','slump'];
 const cache=new Map<string,Character>();
 /** Bounded cache keeps the existing renderer's WeakMap appearance identity stable across frames. */
 export function residentCharacter(props:Properties,point:Point):Character{

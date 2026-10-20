@@ -199,6 +199,10 @@ taxis, patrol, shuttle, hauler, medevac, dropship, escort, drone, blimp; altitud
 phase, cargo, searchlight, lit fans), **Boat** (`vehicle.boat`: lamp boat, cabin boat, patrol, ferry;
 waterline, bob, wake, reflection, searchlight, lamp, nav lights, name) and **Train** (`vehicle.rail`:
 platform or metro cars, car count, doors, rider seed, destination board, plate).
+**Authored person, animal or robot** (`character.resident`) also places the newer kit bodies (crab,
+robot gull, scan drone, DJ bot; acts read, doze, dig, fly), and **Flock of gulls (kit)**
+(`character.flock`) places wheeling or drifting gulls or robot gulls by count, seed, altitude band,
+parallax, drift and pixel size. The Characters lineup shows the same kinds and acts (ART-GUIDE §2).
 
 Open one workbench panel at a time. Characters offers the supported humans, animals and robots,
 appearance controls and actual native animation inputs. Vehicles offers ground, flying, rail
