@@ -7,7 +7,6 @@ import {drawRider,type RiderKind} from '../art/characters/riders';
 import {drawPixel,type PixelAppearance,type PixelPose} from '../art/characters/pixel';
 import {drawPlayer} from '../art/characters/player';
 import {drawDockworker} from '../art/characters/dockworker';
-import {gullFlying} from '../art/characters/gull';
 import {SPR} from '../art/core/sprites';
 import {frameView,placed,type View} from '../art/core/view';
 import {DowntownArtwork} from '../art/assemblies/downtown';
@@ -31,7 +30,7 @@ export interface CharacterWorkbenchConfig {
 }
 export interface CharacterWorkbenchSnapshot {config:CharacterWorkbenchConfig;time:number;pose?:PreparedCharacter;pixel?:PixelAppearance}
 export const defaultCharacterConfig=():CharacterWorkbenchConfig=>({family:'human',variant:'seeded',action:'stand',seed:73,facing:1,pixelSize:3,dim:0,minute:580,day:1,camera:0});
-const moving=new Set(['walk','run','sweep','steal','scan','carry','roll','patrol','serve','crawl','hover','follow']);
+const moving=new Set(['walk','run','sweep','steal','scan','carry','roll','patrol','serve','crawl','hover','fly','follow']);
 const has=(list:readonly string[],value:string)=>list.includes(value);
 export function validateCharacterWorkbenchConfig(input:CharacterWorkbenchConfig):void{
  const f=inventory.families.find(f=>f.id===input.family);
@@ -55,7 +54,7 @@ export function createCharacterWorkbenchSession(){
   const look=bot?{bot:config.family as Bot,v:Number(config.variant) as 0|1|2,...config.robot}:config.family==='human'?structuredClone(config.look??{}):config.family as Character['look'];
   // On the spot: a two-unit range crossed very slowly keeps the stepping animation without crossing the stage.
   const start=config.inPlace?220:config.facing>0?140:300,end=config.inPlace?220+config.facing*2:config.facing>0?300:140;
-  p={seed:config.seed,x:moving.has(config.action)?start:220,act:(config.action==='follow'?'walk':config.action) as Act,look,facing:config.facing,ps:config.pixelSize??3,dim:config.dim??0,...(moving.has(config.action)?{range:[start,end] as [number,number]}:{}),...(config.inPlace&&moving.has(config.action)?{speed:.004}:{})};
+  p={seed:config.seed,x:moving.has(config.action)?start:220,act:(config.action==='follow'?'walk':config.action) as Act,look,facing:config.facing,ps:config.pixelSize??3,dim:config.dim??0,...(moving.has(config.action)?{range:[start,end] as [number,number]}:{}),...(config.inPlace&&moving.has(config.action)?{speed:.004}:{}),...(config.family==='gull'&&config.action==='fly'?{h:60}:{})};
   if(config.action==='follow')p.follow={seed:18,x:start,range:[start,end],act:'walk',speed:.32};
   if(config.family==='dockworker')p={seed:7303,x:config.action==='walk'?start:220,act:config.action as Act,facing:config.facing,look:{body:'avg',garb:'hivis',hair:'short',top:'#b77a29',bottom:'#303746'},...(config.action==='walk'?{range:[start,end] as [number,number],...(config.inPlace?{speed:.004}:{})}:{})};
   if(actors.size>=128)actors.clear();actors.set(key,p);return p;
@@ -90,11 +89,10 @@ function drawSpecialCharacter(ctx:CanvasRenderingContext2D,v:View,s:CharacterWor
   case'rider':drawRider(ctx,c.variant as RiderKind,v.sx(x),v.y(0),t,{sit:c.action==='sit',flip,ps:c.pixelSize??3,phase:c.seed});break;
   case'pixel':drawPixel(ctx,v.sx,v.y,t,s.pixel!);break;
   case'player':{const sprite=c.action==='walk'?(Math.floor(t/9)%2?SPR.walk:SPR.stand):SPR[c.action as 'stand'|'jump'|'jack'];drawPlayer(ctx,v,sprite,{x,y:0,face:c.facing},c.action==='jack'?{x:x+c.facing*70,y:0,h:80}:undefined,0);break;}
-  case'downtown-pedestrian':{const k=new DowntownArtwork();k.set(ctx,v);k.drawPedestrian(x,SPR[c.variant as 'hood'|'hat'|'umbrella'],flip);break;}
+  case'downtown-pedestrian':{const k=new DowntownArtwork();k.set(ctx,v);k.drawPedestrian(x,c.variant as 'hood'|'hat'|'umbrella',flip);break;}
   case'downtown-fixer':{const k=new DowntownArtwork();k.set(ctx,v);k.drawFixer(x);break;}
   case'dockworker':drawDockworker(ctx,v,s.pose!,c.facing,c.variant==='empty'?null:c.variant as 'parcel'|'case');break;
   case'lime':placed(ctx,v.sx(x),v.y(0),1,()=>saltLime(ctx,t));break;
-  case'flying-gull':gullFlying(ctx,v.sx(x),v.y(90),t,c.facing,c.variant==='robot');break;
   default:throw new Error('Missing native character renderer');
  }
 }

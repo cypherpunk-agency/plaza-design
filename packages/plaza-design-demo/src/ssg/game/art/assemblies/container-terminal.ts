@@ -1,7 +1,8 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { type View } from "../../scenes/kit";
 import { drawSpire } from "../architecture/spire";
-import { gullFlying } from "../characters/gull";
+import { drawDriven, type Character } from "../../runtime/characters";
+import { drawFlock, type FlockOptions } from "../characters/flock";
 import { box,C,drawTowers,GREEN,notice,O,onScreen,PAPER,RED,rng,sign,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
 import { seaCols,sunPath } from "../environment/sky";
@@ -11,6 +12,10 @@ import { camera as securityCamera,taped,ticker,YELLOW } from "../signage/screens
 import { TerminalViewState,type TerminalVisual } from './terminal-state';
 export interface TerminalLayout {blocks:{x:number}[];ladder:number;quay:number;kiosk:number;bridge:{x0:number};boom:number}
 export interface ArtworkInputs {L:TerminalLayout;STACKS_W:number;STACKS_HZ:number;x:number;width:number;visual:TerminalVisual;part?:'far'|'near';open?:boolean;}
+/** Gulls high over the terminal, drifting east at different speeds (the kit's flock). */
+const TERMINAL_FLOCK: FlockOptions = { kind: 'gull', span: 2200, margin: 200, birds: Array.from({ length: 5 }, (_, i) => ({ x: i * 431, h: 150 + i * 22, speed: 0.3 + i * 0.07, parallax: 0.8, phase: i })) };
+/** The port watchdog: the kit's scan drone in Registry grey; the terminal owns its route and the device it checks. */
+const WATCHDOG: Character = { seed: 17, look: { bot: 'scandrone', paint: '#4a4e58', trim: '#2a2e36', v: 1, wear: 0.2 }, x: 0, shadow: false };
 export function createContainerTerminalArtwork(inputs:ArtworkInputs){
 const {L,STACKS_W}=inputs,HZ=inputs.STACKS_HZ;
 const SKYLINE=towers(57,1700,[16,40],[18,66],.08);
@@ -45,10 +50,7 @@ const m=new TerminalViewState(inputs.visual);
     if (onScreen(v, fx - 40, 80)) { x.fillStyle = '#060403'; x.fillRect(fx - 30, wl - 6, 60, 6); x.fillStyle = 'rgba(255,217,165,.6)'; for (let i = -24; i < 24; i += 6) x.fillRect(fx + i, wl - 4, 2, 2); x.fillStyle = 'rgba(' + GREEN + ',.7)'; x.fillRect(fx + 28, wl - 8, 2, 2); }
   }
   // gulls high up
-  for (let i = 0; i < 5; i++) {
-    const wx = ((i * 431 + t * (0.3 + i * 0.07)) % 2200) - 200, s = v.sx(wx, 0.8);
-    if (s > -10 && s < v.viewW + 10) gullFlying(x, s, y(150 + i * 22 + Math.sin(t * 0.02 + i) * 8), t + i * 9, 1);
-  }
+  drawFlock(x, v, TERMINAL_FLOCK);
 
 }
 function sky_glow(x:CanvasRenderingContext2D,v:View){
@@ -187,15 +189,9 @@ const m=new TerminalViewState(inputs.visual),X=inputs.visual.geometry.X;
   const hh = d.at ? 132 + Math.sin(v.t * 0.05) * 3 : 150 + Math.sin(Math.PI * d.progress) * 24;
   const s = v.sx(wx), sy = v.y(hh);
   if (!onScreen(v, s - 30, 60)) return;
-  if (d.at) {
-    // sitting: it looks the device over, a cone of grey light
-    x.fillStyle = 'rgba(200,205,220,.07)'; x.beginPath(); x.moveTo(s - 2, sy + 4); x.lineTo(s - 26, v.y(0)); x.lineTo(s + 26, v.y(0)); x.lineTo(s + 2, sy + 4); x.closePath(); x.fill();
-  }
-  box(x, s - 9, sy - 3, 18, 6, '#4a4e58', 'rgba(220,225,235,.6)');
-  x.fillStyle = '#2a2e36'; x.fillRect(s - 15, sy - 5, 6, 1); x.fillRect(s + 9, sy - 5, 6, 1);
-  const spin = Math.floor(v.t / 2) % 2;
-  x.fillStyle = 'rgba(220,225,235,.5)'; x.fillRect(s - 17 + spin * 2, sy - 6, 6, 1); x.fillRect(s + 11 - spin * 2, sy - 6, 6, 1);
-  x.fillStyle = 'rgba(' + RED + ',' + (Math.floor(v.t / 10) % 2 ? 1 : 0.4) + ')'; x.fillRect(s - 1, sy + 1, 3, 2);
+  // sitting (d.at): it looks the device over with a cone of grey light; travelling, it just hovers
+  drawDriven(x, v, WATCHDOG, { x: wx, air: hh - 8, moving: !d.at, act: d.at ? 'scan' : 'hover', facing: !d.at && d.to && at[d.to] < at[d.from] ? -1 : 1,
+    light: 'rgba(' + RED + ',' + (Math.floor(v.t / 10) % 2 ? 1 : 0.4) + ')', beam: { rgb: '200,205,220', alpha: 0.07, spread: 26, sweep: 0, line: false } });
   text(x, 'REGISTRY', s, sy - 9, 'rgba(' + PAPER + ',.45)', 7, '600');
 
 }

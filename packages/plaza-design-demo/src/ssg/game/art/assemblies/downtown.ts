@@ -1,9 +1,9 @@
 /** Downtown artwork extracted verbatim. Assembly decomposition follows after parity verification. */
 import type { View } from '../core/view';
-import { drawSprite, SPR, GLOW_THEM, type Sprite } from "../core/sprites";
+import { drawStreetSprite, streetSpriteKinds } from "../characters/street-sprite";
 import { windowLit } from "../../world/light";
 import { glass } from "../environment/sky";
-import { addLight, castShadow } from "../atmosphere/lighting";
+import { addLight } from "../atmosphere/lighting";
 const O = '255,136,0', C = '0,255,255';
 const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
 export interface Front {x:number;w:number;h:number;roof?:boolean}
@@ -332,7 +332,7 @@ drawSmear(wx: number, col: string, rain: number) { const x=this.x,gy=this.gy;
         x.fillRect(sx - 6 + wob, gy + 3 + i * 4, 12, 3);
       }
 }
-drawFixer(wx: number) {const x=this.x;     drawSprite(x, SPR.fixer, this.sx(wx), this.y(30) + Math.round(Math.sin(this.t * 0.03)), { glow: 'rgba(255,170,60,.85)' });
+drawFixer(wx: number) { drawStreetSprite(this.x, this.view(), { kind: 'streetSprite', sprite: 'fixer' }, wx);
 }
 drawCounter(stall: Stall) {const x=this.x;     const s0 = this.sx(stall.x);
     // Waist-high counter, lit by the stall's lamps, with a warm rim so it reads against the street.
@@ -345,6 +345,7 @@ drawCounter(stall: Stall) {const x=this.x;     const s0 = this.sx(stall.x);
       x.stroke();
     }
 }
-drawPedestrian(wx: number, sprite: Sprite, flip: boolean) { const x=this.x;castShadow(x, this.view(), wx, 40, 12); drawSprite(x, sprite, this.sx(wx), this.gy, { glow: GLOW_THEM, flip }); }
+/** A street resident (character kit look: hood, umbrella or brimmed hat). */
+drawPedestrian(wx: number, sprite: Exclude<typeof streetSpriteKinds[number], 'fixer'>, flip: boolean) { drawStreetSprite(this.x, this.view(), { kind: 'streetSprite', sprite, flip }, wx); }
 }
 const GROUND = 76, STOREY = 66;

@@ -25,7 +25,7 @@ export const KIND_HINTS: Record<LayerRole, string> = {
   Group: 'Named groups of artwork',
 };
 
-const ANIMALS = new Set(['cat', 'pigeon', 'gull']), MACHINES = new Set(['cleaner', 'drone', 'courier']);
+const ANIMALS = new Set(['cat', 'pigeon', 'gull', 'crab']), MACHINES = new Set(['cleaner', 'drone', 'courier', 'robogull']);
 /** A character's kind from its actor look, when the scene document gives one. */
 export function lookKind(look: unknown): LayerRole | undefined {
   if (typeof look === 'string') return ANIMALS.has(look) ? 'Animal' : MACHINES.has(look) ? 'Robot' : undefined;

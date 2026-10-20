@@ -186,6 +186,10 @@ body really animates (`KIT_ACTS` in `runtime/characters.ts`; a value a scene alr
 selectable). **Road vehicle** (`vehicle.road`) places a car, cab, van, bus, truck, yard tractor or
 forklift in any scene: parked (optionally with the driver's door open) or driving along a lane,
 with turning wheels and exhaust, at a depth band.
+**Authored person, animal or robot** (`character.resident`) also places the newer kit bodies (crab,
+robot gull, scan drone, DJ bot; acts read, doze, dig, fly), and **Flock of gulls (kit)**
+(`character.flock`) places wheeling or drifting gulls or robot gulls by count, seed, altitude band,
+parallax, drift and pixel size. The Characters lineup shows the same kinds and acts (ART-GUIDE §2).
 
 Open one workbench panel at a time. Characters offers the supported humans, animals and robots,
 appearance controls and actual native animation inputs. Vehicles offers ground, flying, rail

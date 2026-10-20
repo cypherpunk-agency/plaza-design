@@ -19,7 +19,7 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
  *     { seed: 8, x: 410, act: 'haggle', facing: -1 },                // two people haggling...
  *     { seed: 9, x: 386, act: 'haggle', facing: 1 },                 // ...facing each other
  *     { look: { body: 'old', garb: 'coat', hair: 'brim' }, x: 600, act: 'smoke' },
- *     { look: 'cat', x: 700, act: 'sit' },                           // critters: cat pigeon gull cleaner drone courier
+ *     { look: 'cat', x: 700, act: 'sit' },                           // critters: cat pigeon gull crab robogull cleaner drone courier
  *     { id: 'gran', seed: 21, x: 820, act: 'sit', h: 10, name: 'GRAN',
  *       talk: [['First visit?', 'The fish is fresh.'], ['Still here?']] },  // talks; pages cycle per visit
  *   ];
@@ -56,8 +56,11 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
  *   bottles) and porter (grocery cart); security mech (wide, slow, red sensor sweep); small wheeled
  *   litterbot (grabber + hopper), deliverybot (kerb box with a flag), adbot (sandwich board, dry ads);
  *   crawler (spider maintenance bot: weld, scrub, crawl); wreck (derelict, NEED PARTS); drones
- *   minidrone (parcel), cargodrone (hanging crate), flyerdrone (warm hologram flyer). The old cleaner,
- *   drone and courier critters are robots too.
+ *   minidrone (parcel), cargodrone (hanging crate), flyerdrone (warm hologram flyer), scandrone (Registry,
+ *   rescue or port watchdog: a lens, a status light, a scan beam); djbot (a busker box with headphones and
+ *   a deck). The old cleaner, drone and courier critters are robots too (the drone critter is a scandrone).
+ * - A controller that moves a body itself (a device's drone, a flee arc, a flock: art/characters/flock.ts)
+ *   uses `drawDriven(ctx, view, stableCharacter, { x, air, moving, act, light, beam })`.
  * - The seed varies paint, trim, wear and rust drips, a sticker, a mismatched replacement part, the
  *   screen face (eyes, happy, sad, dots), lights, antennae, porcelain vs metal heads, a glitchy few.
  * - Robot acts: carry, roll, patrol, serve, crawl, hover (movers); direct, play, weld, scrub, charge,
@@ -76,16 +79,20 @@ import type {WeatherKind} from "../world/weather";
 export type Body = 'avg' | 'tall' | 'short' | 'wide' | 'slim' | 'kid' | 'old';
 export type Hair = 'bald' | 'short' | 'long' | 'bun' | 'mohawk' | 'cap' | 'beanie' | 'hood' | 'brim' | 'helmet' | 'scarf';
 export type Garb = 'tee' | 'jacket' | 'coat' | 'dress' | 'apron' | 'hivis' | 'suit' | 'robe';
-export type Extra = 'umbrella' | 'bag' | 'backpack' | 'cyberarm' | 'visor' | 'mask' | 'phone' | 'headphones' | 'glasses' | 'cane';
-export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier';
+export type Extra = 'umbrella' | 'bag' | 'backpack' | 'cyberarm' | 'visor' | 'mask' | 'phone' | 'headphones' | 'glasses' | 'cane' | 'briefcase' | 'parcel' | 'armband';
+/** Pixel-frame animals and old robots. `drone` is drawn with the robot kit's scan drone (`scandrone`); `robogull` is a gull-shaped Registry drone. */
+export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier' | 'crab' | 'robogull';
 /**
  * What a person does. In place: stand (shifts weight, looks around), sit (on whatever is at `h`),
  * lean (legs crossed, arms folded), smoke, phone, haggle (gestures; pair two facing each other),
  * argue (faster, bigger), queue, sleep (lying on `h`), dance, vend (behind a counter, offers and waits),
- * talk (slow gestures and a nod; standing people also switch to it while their speech bubble is open).
+ * talk (slow gestures and a nod; standing people also switch to it while their speech bubble is open),
+ * read (a newspaper held up), doze (asleep on their feet or in a seat, head down).
+ * `seated: true` does any in-place act sitting down (a bench, a train seat): read, phone, doze, stand.
  * Moving between `x` and `range`: walk, run (longer strides, 2.6× as fast), sweep (with a broom), steal
  * (sneaks to the far end, reaches, runs back). Walkers and runners pivot for a few frames at each end.
- * Drones: 'scan' hovers and sweeps a red beam down on whoever is below.
+ * Drones: 'scan' hovers and sweeps a beam down on whoever is below (`beam` tunes it). Gulls: 'fly' (flapping;
+ * a mover with `range`, or in place at `h`). Crabs: 'walk' (sideways) and 'dig'.
  * Robots (they also do stand, walk, sweep, queue, vend): moving between `x` and `range`: carry (a load
  * one way, empty back), roll (wheels, stops to pick things up), patrol (slow, sensor sweeping ahead),
  * serve (tray out at each end), crawl (along a wall at `h`), hover (drones bob and drift). In place:
@@ -94,6 +101,7 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
  * slump (the derelict: a flicker, a twitch).
  */
 export type Act = 'stand' | 'walk' | 'run' | 'talk' | 'sit' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
+  | 'read' | 'doze' | 'dig' | 'fly'
   | 'carry' | 'roll' | 'patrol' | 'serve' | 'crawl' | 'hover' | 'direct' | 'play' | 'weld' | 'scrub' | 'charge' | 'glitch' | 'blink' | 'slump';
 
 export interface Look {
@@ -135,6 +143,26 @@ export interface Character {
   /** Walk behind this person (a valet with the umbrella, a porter with the shopping), `gap` units back. */
   follow?: Character;
   gap?: number;
+  /** Do the act sitting down (bench, train seat): read, phone, doze, stand. */
+  seated?: boolean;
+  /** A robot's status light, drawn live over its sprite (state-driven: green, red). CSS colour. */
+  light?: string;
+  /** The scan beam of a scanning drone (act 'scan'). */
+  beam?: Beam;
+  /** false: no rim (things against the sky, e.g. a flock). */
+  rim?: boolean;
+  /** false: no cast shadow (flying things, people inside a window). */
+  shadow?: boolean;
+}
+
+/** A scan beam: a cone from the lens down to `foot` (world height, default the ground). */
+export interface Beam {
+  /** 'r,g,b' (default the Registry's red). */
+  rgb?: string; alpha?: number; foot?: number;
+  /** Half width of the cone at its foot, and how far (px) and how fast it sweeps; `lean` shifts the foot. */
+  spread?: number; sweep?: number; rate?: number; lean?: number;
+  /** The bright scan line bouncing over the foot. */
+  line?: boolean;
 }
 
 // ---------- behaviour ----------
@@ -146,11 +174,13 @@ let looks = 0;
 function ready(p: Character): Ready {
   let R = READY.get(p);
   if (R) return R;
-  const seed = p.seed ?? actorAppearanceSeed(p) ?? Math.round(p.x * 7 + 3), bk = botKind(p.look);
+  const seed = p.seed ?? actorAppearanceSeed(p) ?? Math.round(p.x * 7 + 3);
   const crit = typeof p.look === 'string' && p.look in CRITTERS ? p.look as Critter : undefined;
+  // a critter drawn with a robot body (the old drone is the kit's scan drone) keeps its critter name, voice and heights
+  const alias = crit ? CRITTERS[crit].bot : undefined, bk = alias?.bot ?? botKind(p.look);
   const [a, b] = Array.isArray(p.range) ? p.range : [p.x, p.x + (p.range ?? 0)];
   R = {
-    critter: crit, bot: bk ? botFrom(seed, bk, typeof p.look === 'object' ? p.look as BotLook : {}) : undefined,
+    critter: crit, bot: bk ? botFrom(seed, bk, alias ?? (typeof p.look === 'object' ? p.look as BotLook : {})) : undefined,
     full: crit || bk ? undefined : lookFrom(seed, (p.look as Look) ?? {}), key: 'L' + looks++, ph: (seed * 97) % 997, seed, a, b,
   };
   READY.set(p, R);
@@ -168,10 +198,10 @@ function walkAt(p: Character, R: Ready, t: number, speed: number, pause: number)
   return { x: R.b - dir * (u - 2 * pause - run) * speed, face: -dir as 1 | -1, moving: true, end: 0 };
 }
 
-const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = { human: 0.32, cat: 0.45, pigeon: 0.12, gull: 0.14, cleaner: 0.22, drone: 0.35, courier: 0.55 };
-const MOVERS: Act[] = ['walk', 'run', 'sweep', 'steal', 'scan', 'carry', 'roll', 'patrol', 'serve', 'crawl', 'hover'];
+const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = { human: 0.32, cat: 0.45, pigeon: 0.12, gull: 0.14, cleaner: 0.22, drone: 0.35, courier: 0.55, crab: 0.2, robogull: 0.4 };
+const MOVERS: Act[] = ['walk', 'run', 'sweep', 'steal', 'scan', 'carry', 'roll', 'patrol', 'serve', 'crawl', 'hover', 'fly'];
 /** How long a mover waits at each end, by act. */
-const PAUSE: Partial<Record<Act, number>> = { run: 40, sweep: 160, carry: 110, roll: 130, patrol: 170, serve: 150, crawl: 220, hover: 90 };
+const PAUSE: Partial<Record<Act, number>> = { run: 40, sweep: 160, carry: 110, roll: 130, patrol: 170, serve: 150, crawl: 220, hover: 90, fly: 30 };
 /** Runners cover ground this many times faster than they walk. */
 const RUN = 2.6;
 /** Frames a walker spends pivoting (legs crossed, still facing the old way) when it turns at an end. */
@@ -182,14 +212,15 @@ const TURN = 8;
  * body's idle) and existing scenes keep them; the editor offers these. Keys: 'human', a critter or a robot kind.
  */
 export const KIT_ACTS: Record<string, readonly Act[]> = {
-  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal'],
-  cat: ['stand', 'walk', 'sit'], pigeon: ['stand', 'walk'], gull: ['stand', 'walk'],
-  cleaner: ['stand', 'walk'], drone: ['stand', 'hover', 'scan'], courier: ['stand', 'walk'],
+  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal', 'read', 'doze'],
+  cat: ['stand', 'walk', 'sit'], pigeon: ['stand', 'walk'], gull: ['stand', 'walk', 'fly'], crab: ['stand', 'walk', 'dig'],
+  cleaner: ['stand', 'walk'], drone: ['stand', 'hover', 'scan'], courier: ['stand', 'walk'], robogull: ['stand', 'fly', 'scan'],
   android: ['stand', 'walk', 'carry'], valet: ['stand', 'walk'], marshal: ['stand', 'walk', 'direct'],
   servbot: ['stand', 'walk', 'carry', 'vend', 'blink', 'charge', 'glitch'], sweeper: ['stand', 'walk', 'sweep'], busker: ['stand', 'walk', 'play'],
   waiter: ['stand', 'walk', 'serve'], loader: ['stand', 'walk', 'carry'], porter: ['stand', 'walk'], mech: ['stand', 'patrol'],
   litterbot: ['stand', 'roll', 'sweep'], deliverybot: ['stand', 'roll'], adbot: ['stand', 'roll', 'blink'],
   crawler: ['stand', 'crawl', 'weld', 'scrub'], wreck: ['slump', 'glitch'], minidrone: ['stand', 'hover'], cargodrone: ['stand', 'hover'], flyerdrone: ['stand', 'hover'],
+  scandrone: ['stand', 'hover', 'scan'], djbot: ['stand', 'play'],
 };
 /** Which KIT_ACTS row a look belongs to. */
 export function kitFamily(look: Character['look']): string {
@@ -206,14 +237,22 @@ const TALKERS: readonly Act[] = ['stand', 'talk', 'smoke', 'phone', 'queue', 'ha
 
 export interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean }
 
-function frameOf(p: Character, R: Ready, t: number): Frame {
+/** `drive`: a controller owns the position (p.x) and says whether the body moves; no range walking. */
+function frameOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
+  const f = poseOf(p, R, t, drive);
+  // seated: an in-place act done sitting down
+  if (p.seated && !R.bot && !R.critter && f.legs !== 'lie' && !f.moving) f.legs = 'sit';
+  return f;
+}
+function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
   const act = p.act ?? 'stand', ph = R.ph, tt = t + ph;
-  let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = false, end = 0, since = Infinity;
-  if (p.follow) {
+  let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = drive ?? false, end = 0, since = Infinity;
+  if (drive !== undefined) { /* the controller placed it */ }
+  else if (p.follow) {
     const F = frameOf(p.follow, ready(p.follow), t);
     x = F.x - F.face * (p.gap ?? 18); face = F.face; moving = F.moving;
   } else if (MOVERS.includes(act) && R.a !== R.b) {
-    const sp = (p.speed ?? (R.bot ? BOT[R.bot.kind].speed : DEFAULT_SPEED[R.critter ?? 'human']) ?? 0.3) * (act === 'run' ? RUN : 1);
+    const sp = (p.speed ?? (R.critter ? DEFAULT_SPEED[R.critter] : R.bot ? BOT[R.bot.kind].speed : DEFAULT_SPEED.human) ?? 0.3) * (act === 'run' ? RUN : 1);
     const w = act === 'steal' ? stealAt(R, t, sp) : walkAt(p, R, t, sp, PAUSE[act] ?? (R.critter === 'pigeon' || R.critter === 'gull' ? 200 : 70 + (ph % 90)));
     ({ x, face, moving, end } = w); since = 'since' in w && typeof w.since === 'number' ? w.since : Infinity;
   }
@@ -222,9 +261,11 @@ function frameOf(p: Character, R: Ready, t: number): Frame {
   if (R.critter) {
     const c = R.critter;
     if (c === 'cat') return { x, face, legs: moving ? (Math.floor(tt / 8) % 2 ? 'walkA' : 'walkB') : tt % 500 < 60 ? 'sitB' : 'sitA', arms: 'down', bob: 0, moving };
-    if (c === 'pigeon' || c === 'gull') return { x, face: moving ? face : (Math.floor(tt / 170) % 2 ? 1 : -1), legs: moving ? (Math.floor(tt / 6) % 2 ? 'walkA' : 'walkB') : tt % 90 < 25 ? 'standB' : 'standA', arms: 'down', bob: 0, moving };
-    const spin = Math.floor(tt / (c === 'drone' ? 3 : 8)) % 2 ? 'walkA' : 'walkB';
-    return { x, face, legs: c === 'courier' && !moving ? 'walkA' : spin, arms: 'down', bob: c === 'drone' ? Math.round(Math.sin(tt * 0.06) * 2) : 0, moving };
+    if ((c === 'gull' || c === 'robogull') && (act === 'fly' || act === 'scan' || c === 'robogull' && moving)) return { x, face, legs: Math.floor(tt / 7) % 2 ? 'flyA' : 'flyB', arms: 'down', bob: 0, moving };
+    if (c === 'crab') return { x, face, legs: moving ? (Math.floor(tt / 5) % 2 ? 'walkA' : 'walkB') : act === 'dig' ? (Math.floor(tt / 12) % 2 ? 'digA' : 'digB') : 'standA', arms: 'down', bob: 0, moving };
+    if (c === 'pigeon' || c === 'gull' || c === 'robogull') return { x, face: moving ? face : (Math.floor(tt / 170) % 2 ? 1 : -1), legs: moving ? (Math.floor(tt / 6) % 2 ? 'walkA' : 'walkB') : tt % 90 < 25 ? 'standB' : 'standA', arms: 'down', bob: 0, moving };
+    const spin = Math.floor(tt / 8) % 2 ? 'walkA' : 'walkB';
+    return { x, face, legs: c === 'courier' && !moving ? 'walkA' : spin, arms: 'down', bob: 0, moving };
   }
   const slow = (n: number) => Math.floor(tt / n);
   const shift: Legs = tt % 420 < 210 ? 'stand' : 'shift';
@@ -247,6 +288,8 @@ function frameOf(p: Character, R: Ready, t: number): Frame {
     case 'sleep': return { x, face, legs: 'lie', arms: 'down', bob: 0, moving };
     case 'dance': { const k = slow(16); return { x, face: k % 8 < 4 ? face : (-face as 1 | -1), legs: (['wide', 'stepA', 'wide', 'stepB'] as Legs[])[k % 4], arms: (['up', 'out', 'up', 'point'] as Arms[])[k % 4], bob: k % 2, moving }; }
     case 'vend': { const u = tt % 420; return { x, face, legs: 'stand', arms: u < 60 ? 'out' : u < 120 ? 'down' : u < 170 ? 'hip' : 'down', bob: 0, moving }; }
+    case 'read': return { x, face, legs: shift, arms: 'paper', bob: 0, moving };
+    case 'doze': return { x, face, legs: 'stand', arms: 'fold', bob: Math.sin(tt * 0.02) > 0.6 ? -1 : 0, moving };
     default: {
       // stand: shifts weight, and now and then looks the other way
       const look = tt % 700 > 640 ? -face as 1 | -1 : face;
@@ -278,7 +321,7 @@ function botFrame(p: Character, R: Ready, t: number, x: number, face: 1 | -1, mo
       st = B.kind === 'valet' ? (B.v === 0 ? 'bags' : 'umb') : B.kind === 'marshal' ? (act === 'direct' ? (slow(110) ? 'stop' : 'go') : 'down') : (act === 'walk' || act === 'carry') && loaded ? 'carry' : 'down';
       break;
     case 'box':
-      st = (B.kind === 'sweeper' ? (slow(12) ? 'broomA' : 'broomB') : B.kind === 'busker' ? (act === 'play' && slow(14) ? 'playB' : 'playA')
+      st = (B.kind === 'sweeper' ? (slow(12) ? 'broomA' : 'broomB') : B.kind === 'busker' ? (act === 'play' && slow(14) ? 'playB' : 'playA') : B.kind === 'djbot' ? (act === 'play' ? (slow(8) ? 'djA' : 'djB') : 'down')
         : act === 'carry' ? (loaded ? 'box' : 'down') : act === 'vend' || act === 'blink' ? (tt % 420 < 60 ? 'out' : 'down') : 'down') + '|' + fc;
       break;
     case 'waiter': st = (moving || act !== 'serve' ? 'tray' : 'offer') + '|' + fc; break;
@@ -328,6 +371,22 @@ export function drawCharacter(x: CanvasRenderingContext2D, v: View, p: Character
   drawCharacterFrame(x, v, p, R, ps, f, characterHeight(p));
 }
 
+/**
+ * What a controller says about a body it moves itself (a device's drone, a flee arc, a flock): where it is
+ * now and whether it moves. `air` is the absolute height of a flying body (instead of `h` plus its flight
+ * height). Everything else (how it looks, steps, flaps, scans) is the kit's. Keep `p` itself stable (a
+ * module constant): its appearance is baked once per Character object.
+ */
+export interface Drive extends Partial<Pick<Character, 'x' | 'h' | 'facing' | 'act' | 'light' | 'beam'>> { moving?: boolean; air?: number }
+/** Draw a stable kit body where a controller puts it (see Drive). */
+export function drawDriven(x: CanvasRenderingContext2D, v: View, p: Character, d: Drive) {
+  if (!isHere(p)) return;
+  const R = ready(p), fly = R.bot && !R.critter ? BOT[R.bot.kind].fly ?? 0 : 0, { moving, air, ...rest } = d;
+  const posed: Character = { ...p, ...rest, ...(air !== undefined ? { h: air - fly } : {}), range: undefined, follow: undefined };
+  const f = frameOf(posed, R, v.t, moving ?? false);
+  drawCharacterFrame(x, v, posed, R, psOf(p), f, characterHeight(p) + ((posed.h ?? 0) - (p.h ?? 0)));
+}
+
 /** Draw a list of people, back to front in the order given. */
 export function drawCharacters(x: CanvasRenderingContext2D, v: View, list: readonly Character[]) {
   for (const p of list) drawCharacter(x, v, p);
@@ -340,7 +399,7 @@ export function characterX(p: Character, t: number) { if(actorPresentation(p))re
 export function characterHeight(p: Character) {
   const recipe=actorPresentation(p);if(recipe)return(recipe.kind==='streetSprite'?streetSpriteHeadHeight(recipe):(recipe.sit?12:14)*(p.ps??3))+(p.h??0);
   const R = ready(p), ps = psOf(p);
-  if (R.bot) { const S = BOT[R.bot.kind]; return S.top * ps + (p.h ?? 0) + (S.fly ?? 0); }
+  if (R.bot) { const S = BOT[R.bot.kind]; return S.top * ps + (R.critter ? p.h ?? CRITTERS[R.critter].h ?? 0 : (p.h ?? 0) + (S.fly ?? 0)); }
   if (R.critter) return CRITTERS[R.critter].frames[Object.keys(CRITTERS[R.critter].frames)[0]].length * ps + (p.h ?? CRITTERS[R.critter].h ?? 0);
   const B = BODIES[R.full!.body];
   return (B.leg + B.torso + B.head + 1) * ps + (p.h ?? 0);
@@ -349,7 +408,7 @@ export function characterHeight(p: Character) {
 const legacyRobotKinds=new Set(botSource.voices.filter(v=>v.id.startsWith('legacy.')).map(v=>v.id.slice(7)));
 /** Appearance identity only; dialogue text and progress belong to the shared gameplay source. */
 export function botProfile(p:Character):{voice:string;serial?:number}|null {
- const R=ready(p);return R.bot?{voice:'robot.'+R.bot.kind,serial:100+((R.seed*37)%900)}:R.critter&&legacyRobotKinds.has(R.critter)?{voice:'legacy.'+R.critter}:null;
+ const R=ready(p);return R.critter&&legacyRobotKinds.has(R.critter)?{voice:'legacy.'+R.critter}:R.bot?{voice:'robot.'+R.bot.kind,serial:100+((R.seed*37)%900)}:null;
 }
 export function isBot(p:Character){return botProfile(p)!==null;}
 

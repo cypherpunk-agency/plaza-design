@@ -3,7 +3,8 @@
 import { type View } from "../../scenes/kit";
 import { drawTaxiPad } from './taxi-pad';
 
-import { gullFlying } from "../characters/gull";
+import { drawDriven, type Character } from "../../runtime/characters";
+import { drawFlock, type FlockOptions } from "../characters/flock";
 import { box,C,drawTowers,exitDoor,GREEN,notice,O,onScreen,PAPER,RED,rng,sign,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
 import { drawHorizon,drawSkyDepth,drawWater,HZ } from "../environment/harbor-distance";
@@ -19,8 +20,11 @@ export interface HarborLayout {width:number;hut:{x:number;w:number;h:number};not
 export interface ArtworkInputs{L:HarborLayout;visual:HarborVisual;fishPose:PreparedCharacter;teaPose:PreparedCharacter;loads:Crate[];}
 const SKYLINE = towers(41, 1700, [16, 40], [18, 70], 0.08);
 
-/** Gulls in flight: [x, height, speed, parallax, phase]. */
-const GULLS = (() => { const r = rng(91); return Array.from({ length: 7 }, () => [r() * 2600, 130 + r() * 150, 0.25 + r() * 0.35, 0.7 + r() * 0.3, r() * 100]); })();
+/** Gulls in flight over the harbour, drifting east (the kit's flock, with the harbour's own seeded birds). */
+export const HARBOR_FLOCK: FlockOptions = { kind: 'gull', span: 2800, margin: 200, birds: (() => { const r = rng(91); return Array.from({ length: 7 }, () => ({ x: r() * 2600, h: 130 + r() * 150, speed: 0.25 + r() * 0.35, parallax: 0.7 + r() * 0.3, phase: r() * 100 })); })() };
+/** The Registry's robot gull: a kit robogull on its figure-of-eight route, scanning the pier now and then. */
+const DRONE_GULL: Character = { seed: 3, look: 'robogull', x: 0, ps: 1, parallax: 0.95, rim: false, shadow: false };
+export function droneGullAt(t: number) { const u = t * 0.006; return { x: 1460 + Math.sin(u) * 240, h: 128 + Math.sin(u * 2) * 22, face: (Math.cos(u) > 0 ? 1 : -1) as 1 | -1, scanning: Math.sin(u * 3) > 0.55 }; }
 
 
 export function createHarborPierArtwork(inputs:ArtworkInputs){const {L}=inputs;
@@ -303,13 +307,7 @@ function horizon(x:CanvasRenderingContext2D,v:View){drawHorizon(x,v);
 }
 function water(x:CanvasRenderingContext2D,v:View){drawWater(x,v);
 }
-function flyingGulls(x:CanvasRenderingContext2D,v:View){const{t,y}=v;    for (const [gx0, gh, sp, par, ph] of GULLS) {
-      const wx = ((gx0 + t * sp) % 2800) - 200, s = v.sx(wx, par);
-      if (s < -10 || s > v.viewW + 10) continue;
-      gullFlying(x, s, y(gh + Math.sin(t * 0.02 + ph) * 8), t + ph, 1);
-    }
-
-
+function flyingGulls(x:CanvasRenderingContext2D,v:View){drawFlock(x, v, HARBOR_FLOCK);
 }
 function pierSlab(x:CanvasRenderingContext2D,v:View){const{y}=v;    x.fillStyle = '#0e0905'; x.fillRect(0, y(6), v.viewW, 6);
     x.fillStyle = 'rgba(' + O + ',.6)'; x.fillRect(0, y(6), v.viewW, 1);
@@ -394,16 +392,8 @@ function beacon(x:CanvasRenderingContext2D,v:View){const{sx,y,t}=v;const ex=sx(L
 
 function portCamera(x:CanvasRenderingContext2D,v:View){camera(x,v,{x:156,h:136,facing:1,phase:11});
 }
-function droneGull(x:CanvasRenderingContext2D,v:View){const{sx,y,t}=v;    const du = t * 0.006, dwx = 1460 + Math.sin(du) * 240, dh = 128 + Math.sin(du * 2) * 22, ds = sx(dwx, 0.95), dy = y(dh);
-    if (onScreen(v, ds - 30, 60)) {
-      if (Math.sin(du * 3) > 0.55) {
-        x.fillStyle = 'rgba(' + RED + ',.07)'; x.beginPath(); x.moveTo(ds - 1, dy + 2); x.lineTo(ds - 18, y(0)); x.lineTo(ds + 18, y(0)); x.lineTo(ds + 1, dy + 2); x.closePath(); x.fill();
-        x.fillStyle = 'rgba(' + RED + ',.5)'; x.fillRect(Math.round(ds - 16), Math.round(y(0) - 10 - Math.abs(Math.sin(t * 0.09)) * 30), 32, 1);
-      }
-      gullFlying(x, ds, dy, t, Math.cos(du) > 0 ? 1 : -1, true);
-    }
-
-
+function droneGull(x:CanvasRenderingContext2D,v:View){const g = droneGullAt(v.t);
+    if (onScreen(v, v.sx(g.x, 0.95) - 30, 60)) drawDriven(x, v, DRONE_GULL, { x: g.x, air: g.h - 2, facing: g.face, moving: true, act: g.scanning ? 'scan' : 'fly', beam: { alpha: 0.07, spread: 18, sweep: 0 } });
 }
 function nearWater(x:CanvasRenderingContext2D,v:View){const{sx,t,gy}=v;    x.fillStyle = '#0c0805'; x.fillRect(0, gy, v.viewW, 12);
     x.fillStyle = 'rgba(' + O + ',.55)'; x.fillRect(0, gy, v.viewW, 1);

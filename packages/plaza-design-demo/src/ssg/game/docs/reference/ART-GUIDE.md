@@ -45,6 +45,16 @@ parallax and darkness. Vehicles scale smoothly but use the same factor, so a bac
 matches back-band people. Something the player can use belongs in the play band. "Custom" is
 still allowed for special framing (people seen through a window).
 
+**One kit for people, creatures and robots (2026-10-20).** Scenes no longer hand-draw their animals,
+drones and passers-by: they use the character kit (`runtime/characters.ts`, `art/characters/`) and only
+say where a body is and what state it shows. The gull has standing, walking and flying poses and flies
+in flocks (`character.flock`: count, seed, altitude band, parallax, drift); the robot gull, the beach
+crab (walks sideways, digs), the scan drone (Registry, rescue, port watchdog; a state-coloured status
+light and a scan beam), the DJ bot, DLV-9 (the kit's delivery robot), Downtown's street residents and
+the LINE 0 riders (new acts `read`, `doze`, a `seated` option; extras briefcase, parcel, armband) are kit
+bodies. Device logic, hover marks and cyan "you can use it" ports stay with the device, drawn over the
+kit body. Characters with an identity stay one-offs: the player, Pixel, LIME and the Downtown fixer.
+
 ## 3. The player is the unit
 
 Measure everything against the player sprite:

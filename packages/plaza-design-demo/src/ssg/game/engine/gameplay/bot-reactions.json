@@ -293,6 +293,39 @@
       ]
     },
     {
+      "id": "robot.scandrone",
+      "name": "SCAN DRONE",
+      "prompt": "[E] WAVE",
+      "talk": [
+        [
+          "Hold still. This scan is for your convenience.",
+          "Mine, mostly."
+        ],
+        [
+          "You have been scanned. Thank you for being scanned."
+        ],
+        [
+          "I only watch. Somebody else decides. I have never met them."
+        ]
+      ]
+    },
+    {
+      "id": "robot.djbot",
+      "name": "DJ BOT",
+      "prompt": "[E] LISTEN",
+      "talk": [
+        [
+          "Next track is the same track, slower. They love that."
+        ],
+        [
+          "Requests go in the tin. The tin is decorative."
+        ],
+        [
+          "I cannot hear you. I can never hear you. It is the headphones."
+        ]
+      ]
+    },
+    {
       "id": "legacy.drone",
       "name": "SCAN DRONE",
       "prompt": "[E] WAVE",

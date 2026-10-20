@@ -6,7 +6,8 @@ import {CH,type Crate} from '../props/containers';
 import {HZ} from '../environment/harbor-distance';
 import {rng} from '../core/primitives';
 import {stallBox} from './construction';
-import type {HarborLayout,HarborVisual} from './harbor-pier';
+import {HARBOR_FLOCK,droneGullAt,type HarborLayout,type HarborVisual} from './harbor-pier';
+import {flockRects} from '../characters/flock';
 import type {PreparedCharacter} from '../../runtime/characters';
 import {screenBounds} from './static-bounds';
 type Rect={x:number;y:number;w:number;h:number};
@@ -18,7 +19,6 @@ type Geometry=(a:Inputs)=>Rect;
 const rect=(v:View,wx:number,h:number,w:number,tall:number,dx=0,par=1):Rect=>({x:v.sx(wx,par)+dx,y:v.y(h),w,h:Math.max(tall,v.y(h-tall)-v.y(h))});
 const at=(dx:number,h:number,w:number,tall=h):Geometry=>a=>rect(a.v,a.x,a.h+h,w,tall,dx);
 const origin:Anchor={x:0,h:0,role:'origin'};
-const gulls=(()=>{const r=rng(91);return Array.from({length:7},()=>[r()*2600,130+r()*150,.25+r()*.35,.7+r()*.3,r()*100]);})();
 function stallBounds(a:Inputs,tea:boolean):Rect{
  const spec=tea?a.L.drinks:a.L.fish,seed=tea?34:31,shape=stallBox({x:spec.x,w:spec.w,seed}),signWidth=(tea?10:4)*8*.64+12,fullWidth=Math.max(spec.w+16,signWidth),r=rect(a.v,spec.x,shape.awning+22,fullWidth,shape.awning+22,(spec.w-fullWidth)/2);
  const pose=a.s[tea?'teaPose':'fishPose'] as unknown as PreparedCharacter|undefined;
@@ -53,12 +53,12 @@ export function applyHarborMetadata(elements:Element[],root:(method:string,L:Har
   farSky:a=>({x:0,y:0,w:a.v.viewW,h:Math.max(0,a.v.y(HZ)+1)}),
   horizon:a=>({x:0,y:a.v.y(HZ)-45,w:a.v.viewW,h:48}),
   water:a=>({x:0,y:a.v.y(HZ),w:a.v.viewW,h:Math.max(0,a.v.y(0)-a.v.y(HZ)+1)}),
-  flyingGulls:a=>union(gulls.map(([gx,gh,sp,par,ph])=>{const s=a.v.sx(((gx+a.v.t*sp)%2800)-200,par),y=a.v.y(gh+Math.sin(a.v.t*.02+ph)*8);return{x:Math.round(s)-7,y:Math.round(y)-4,w:14,h:7};}).filter(r=>r.x+r.w>=-10&&r.x<=a.v.viewW+10)),
+  flyingGulls:a=>union(flockRects(a.v,HARBOR_FLOCK)),
   pierSlab:a=>({x:0,y:a.v.y(6),w:a.v.viewW,h:6}),metroDoor:at(-30,70,60),noticePost:at(-26,72,52),podium:at(-11,44,22),manifest:at(-15,46,30,26),callBox:at(-8,62,16),
   crates:a=>{const r=rng(41*19+3),rows:Rect[]=[];let x=1112;for(let i=0;i<2;i++){r();const w=16+Math.round(r()*8),h=12+Math.round(r()*8),stack=r()<.4;rows.push(rect(a.v,x,h,w,h));if(stack){const offset=Math.round((r()-.5)*6);rows.push(rect(a.v,x,2*h,w-4,h,offset));}x+=w+2;}return union(rows);},bollard:at(-7,12,14),
   rod:a=>{const reach=n(a.p,'reach'),v=a.v,top=v.y(a.h+34)-1,bottom=v.gy+30+Math.sin(v.t*.03+a.x)*3+2;return{x:v.sx(a.x)-1,y:Math.min(top,bottom),w:Math.max(0,reach+8),h:Math.abs(bottom-top)};},
   fishingBox:at(0,8,12),berthSign:at(-24,104,48),taxi:at(-46,110,120),ferryNotice:at(-37,96,79),rails:at(-1,25,78),beacon:at(-3,116,7),portCamera:at(-3,13,16,16),
-  droneGull:a=>{const u=a.v.t*.006;return{x:Math.round(a.v.sx(1460+Math.sin(u)*240,.95))-7,y:Math.round(a.v.y(128+Math.sin(u*2)*22))-4,w:14,h:7};},
+  droneGull:a=>{const g=droneGullAt(a.v.t);return{x:Math.round(a.v.sx(g.x,.95))-7,y:Math.round(a.v.y(g.h))-5,w:14,h:7};},
   nearWater:a=>({x:0,y:a.v.gy,w:a.v.viewW,h:Math.max(0,a.v.viewH-a.v.gy)}),
   frontBollard:a=>({x:a.v.sx(a.x,1.3)-14,y:a.v.gy+15,w:135,h:32}),
   container:a=>rect(a.v,a.x,a.h+n(a.p,'height'),n(a.p,'width'),n(a.p,'height')),

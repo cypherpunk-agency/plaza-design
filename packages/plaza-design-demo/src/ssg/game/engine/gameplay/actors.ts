@@ -13,10 +13,10 @@ export const actorAxes={
  body:['avg','tall','short','wide','slim','kid','old'],
  hair:['bald','short','long','bun','mohawk','cap','beanie','hood','brim','helmet','scarf'],
  garb:['tee','jacket','coat','dress','apron','hivis','suit','robe'],
- extras:['umbrella','bag','backpack','cyberarm','visor','mask','phone','headphones','glasses','cane'],
- critter:['cat','pigeon','gull','cleaner','drone','courier'],
- bot:['android','valet','marshal','servbot','sweeper','busker','waiter','loader','porter','mech','litterbot','deliverybot','adbot','crawler','wreck','minidrone','cargodrone','flyerdrone'],
- act:['stand','walk','run','talk','sit','lean','smoke','phone','haggle','argue','sweep','queue','sleep','dance','vend','steal','scan','carry','roll','patrol','serve','crawl','hover','direct','play','weld','scrub','charge','glitch','blink','slump'],
+ extras:['umbrella','bag','backpack','cyberarm','visor','mask','phone','headphones','glasses','cane','briefcase','parcel','armband'],
+ critter:['cat','pigeon','gull','cleaner','drone','courier','crab','robogull'],
+ bot:['android','valet','marshal','servbot','sweeper','busker','waiter','loader','porter','mech','litterbot','deliverybot','adbot','crawler','wreck','minidrone','cargodrone','flyerdrone','scandrone','djbot'],
+ act:['stand','walk','run','talk','sit','lean','smoke','phone','haggle','argue','sweep','queue','sleep','dance','vend','steal','scan','carry','roll','patrol','serve','crawl','hover','direct','play','weld','scrub','charge','glitch','blink','slump','read','doze','dig','fly'],
  face:['eyes','happy','blink','sad','dots','off','crack'],
 } as const;
 export interface ActorDefinition {

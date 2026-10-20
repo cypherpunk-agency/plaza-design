@@ -1,6 +1,9 @@
 /** Independent Downtown electronics kernels. Visual snapshots never read a scene model. */
 import type { View } from '../core/view';
 import { box,C,GREEN,RED,sign,tell,text } from '../core/primitives';
+import { drawDriven, type Character } from '../../runtime/characters';
+/** DLV-9 is the kit's kerb delivery robot; the device keeps its cyan port, its label and its state. */
+const DLV9: Character = { seed: 9, look: { bot: 'deliverybot', paint: '#3a3e44', trim: '#d86a1a', v: 0, wear: 0.3 }, x: 0, ps: 2 };
 export interface DowntownDeviceState { controlled:boolean;gateHeld:boolean;lock:string;scanned:boolean;feed:string;dlvAt:string;trace:number;signTestMs:number;signSince:number;visible:boolean;hoverSpot:{x:number;y:number;w:number;h:number}|null }
 const live = (t: number, i: number) => (t + i * 13) % 50 < 25;
 function verticalNeon(x: CanvasRenderingContext2D, t: number, s: string, cx: number, top: number, dead: number, lit: number | null) {
@@ -107,14 +110,12 @@ export function drawDeviceBillboard(x: CanvasRenderingContext2D, v: View, wx: nu
     }
   }}
 export function drawDeviceDlv9(x: CanvasRenderingContext2D, v: View, wx: number, state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};if (state.visible && seen(wx)) {
-    const s = sx(wx), rolling = state.dlvAt === 'driving', bump = rolling ? Math.round(Math.sin(t * 0.6)) : 0;
-    box(x, s - 11, y(24) + bump, 22, 16, '#1c2226', 'rgba(255,136,0,.7)');
-    box(x, s - 9, y(21) + bump, 10, 6, '#0e1214', 'rgba(255,217,165,.35)');
-    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillRect(s + 4, y(20) + bump, 4, 2);
-    x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(s + 7, y(30) + bump, 1, 6);
-    x.fillStyle = live(t, 2) ? 'rgba(255,170,60,.95)' : 'rgba(255,170,60,.3)'; x.fillRect(s + 6, y(31) + bump, 3, 2);
-    for (const wx of [-7, 5]) { x.fillStyle = '#0a0a0a'; x.fillRect(s + wx, y(8), 6, 6); x.fillStyle = 'rgba(255,217,165,.4)'; x.fillRect(s + wx + 2, y(6) + (rolling ? Math.floor(t / 4) % 2 : 0), 2, 2); }
-    text(x, 'DLV-9', s - 4, y(14) + bump, 'rgba(255,217,165,.75)', 5, '600');
+    const s = sx(wx), rolling = state.dlvAt === 'driving';
+    drawDriven(x, v, DLV9, { x: wx, moving: rolling, act: rolling ? 'roll' : 'stand' });
+    // the device's own marks over the kit body: its cyan port (you can use it), the beacon on the flag, its label
+    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillRect(s + 6, y(9), 2, 2);
+    x.fillStyle = live(t, 2) ? 'rgba(255,170,60,.95)' : 'rgba(255,170,60,.3)'; x.fillRect(s - 10, y(28), 2, 2);
+    text(x, 'DLV-9', s - 2, y(8), 'rgba(255,217,165,.75)', 5, '600');
   }}
 export function drawDeviceMap(x: CanvasRenderingContext2D, v: View, wx: number, _state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};if (seen(wx)) {
     const s = sx(wx);

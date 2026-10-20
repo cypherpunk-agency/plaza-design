@@ -3,7 +3,6 @@ import { DowntownArtwork, type Front } from './downtown';
 import { drawLibraryFront } from './library';
 import { drawMetroStairs } from '../architecture/metro-stairs';
 import { drawTaxiPad } from './taxi-pad';
-import { SPR } from '../core/sprites';
 import { ticker, YELLOW } from '../signage/screens';
 import type { Anchor, Bounds, Element, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
@@ -48,7 +47,7 @@ export const downtownElements:Element[]=[
  element('smear','Wet street neon reflection','atmosphere',{source:str('Light instance')},()=>box(16,44,-8),(_x,_v,_p,s)=>{if(s.city)kernel.drawSmear(n(s,'x'),String(s.color),n(s,'rain'));},{x:num('Resolved lamp x'),color:str('Resolved RGB'),rain:num('Wetness',0,0,1),city:bool('City reflections')}),
  element('fixer','Noodle stall fixer','characters',{},()=>box(36,60,-18),(_x,_v,_p,_s,at)=>kernel.drawFixer(at.x)),
  element('counter','Stall counter and steam','furniture',{},(_p,s)=>box(Number((s.metrics as Value[])[1]),66),(_x,_v,_p,s,at)=>kernel.drawCounter({x:at.x,w:Number((s.metrics as Value[])[1])}),{metrics:{kind:'json',label:'Stall x and width',default:[0,140],validate:v=>{if(!Array.isArray(v)||v.length!==2||v.some(q=>typeof q!=='number'))throw new Error('Invalid counter metrics');}}}),
- element('pedestrian','Street resident','characters',{sprite:{kind:'select',label:'Appearance',default:'hood',options:['hood','umbrella','hat']},flip:bool('Face left')},()=>box(48,60,-24),(_x,_v,p,_s,at)=>kernel.drawPedestrian(at.x,SPR[p.sprite as 'hood'|'umbrella'|'hat'],!!p.flip)),
+ element('pedestrian','Street resident','characters',{sprite:{kind:'select',label:'Appearance',default:'hood',options:['hood','umbrella','hat']},flip:bool('Face left')},()=>box(48,60,-24),(_x,_v,p,_s,at)=>kernel.drawPedestrian(at.x,p.sprite as 'hood'|'umbrella'|'hat',!!p.flip)),
  element('library-front','Public library entrance','architecture',{},()=>box(100,120,-50),(x,v,_p,_s,at)=>drawLibraryFront(x,raised(v,at.h),at.x)),
  element('metro-stairs','Metro street stairs','architecture',{mask},()=>box(100,110,-50),(x,v,_p,_s,at)=>drawMetroStairs(x,raised(v,at.h),at.x)),
  element('taxi-pad','Sky taxi street stand','vehicles',{mask},()=>box(120,130,-60),(x,v,_p,_s,at)=>drawTaxiPad(x,raised(v,at.h),at.x)),
