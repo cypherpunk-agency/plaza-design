@@ -28,10 +28,10 @@ assert.equal(filterAssets(entries, 'there-is-no-such-asset').length, 0);
 const registry = new ArtRegistry();
 const element: Element = { type: 'test', version: 1, category: 'test', label: 'Test', fields: {}, parts: ['backdrop'], bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ mount: { x: 12, h: 9, role: 'mount' } }), draw() {} };
 registry.register(element);
-const doc: Composition = { version: 1, scene: 'test', instances: [{ id: 'parent', type: 'test', props: {}, placement: { x: 90, h: 10, scale: 2, facing: -1 }, order: 0, pass: 'backdrop', children: [
-  { id: 'selected', type: 'test', props: {}, placement: { x: 7, h: 3 }, attach: { instance: 'parent', anchor: 'mount' }, order: 1, pass: 'backdrop', children: [
-    { id: 'child', type: 'test', props: {}, placement: { x: 4, h: 2 }, order: 2, pass: 'foreground' }] },
-  { id: 'unrelated', type: 'test', props: {}, placement: { x: 0, h: 0 }, order: 3, pass: 'backdrop' }] }] };
+const doc: Composition = { version: 1, scene: 'test', instances: [{ id: 'parent', type: 'test', props: {}, placement: { x: 90, h: 10, scale: 2, facing: -1 }, order: 0, layer: 'backdrop', children: [
+  { id: 'selected', type: 'test', props: {}, placement: { x: 7, h: 3 }, attach: { instance: 'parent', anchor: 'mount' }, order: 1, layer: 'backdrop', children: [
+    { id: 'child', type: 'test', props: {}, placement: { x: 4, h: 2 }, order: 2, layer: 'foreground' }] },
+  { id: 'unrelated', type: 'test', props: {}, placement: { x: 0, h: 0 }, order: 3, layer: 'backdrop' }] }] };
 const env = { view: frameView(0), state: {}, reduced: false, opacity: { parent: .5, selected: .5 }, visibility: { parent: false } };
 const untouched = JSON.stringify(doc), projection = isolateArtwork(registry, doc, env, 'selected');
 const originalRows = resolveComposition(registry, doc, env), isolatedRows = resolveComposition(registry, projection.composition, projection.environment);

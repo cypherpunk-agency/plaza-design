@@ -76,14 +76,15 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   `story/title/composition.json`, `story/cutscenes/*.composition.json`). Registered art kernels,
   typed field validation, bounds and anchors: **code** in `art/`. Scene factories/adapters derive
   gameplay geometry and immutable visual snapshots from the same document as the renderer.
-  Draw order: a **layered** composition gives every instance a `layer` (`distance`, `backdrop`,
+  Draw order: every composition gives every instance a `layer` (`distance`, `backdrop`,
   `set`, `playfield`, `foreground`, or `logic` for things that never draw) and sorts by layer, then
-  `order`. It holds exactly one `scene.player` row in `playfield`; playfield rows ordered after it
+  `order`. A scene holds one `scene.player` row in `playfield`; playfield rows ordered after it
   draw over the player. Every scene's manifest `spawn` is its player row (id `spawn`), so one Player
-  sets both draw order and arrival point. Drawn artwork cannot be in `logic` and non-drawing markers
-  must be; named groups may sit in any visual layer. All scene compositions and newly created scenes
-  are layered (2026-10-20); sequences and other standalone documents may still use the older `pass` +
-  `order`, and a composition uses one form throughout. Drawing `backdrop` from a layered document
+  sets both draw order and arrival point. Sequences (cutscenes, the title) have no player row.
+  Drawn artwork cannot be in `logic` and non-drawing markers must be; named groups may sit in any
+  visual layer. Per-instance drawing passes (`pass`) are retired (2026-10-20): validation rejects
+  them with a message asking for a layer. The renderer's own passes (the `pass` argument to an
+  element's `draw()` and to `drawComposition`) remain. Drawing `backdrop` from a document
   draws everything behind the player and queues the rows over the player and the foreground; the
   shared frame (`runtime/render-scene.ts`) draws those after the actors and after the scene's own
   front. Downtown keeps its engine moments: city (distance and backdrop), the street surface and its

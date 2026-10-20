@@ -4,7 +4,7 @@ import { ComposerModel, type EditorDocument } from '../../src/ssg/game/authoring
 import type { TimelineDocument } from '../../src/ssg/game/art/core/timeline';
 
 const registry = new ArtRegistry().register({ type: 'test', version: 1, label: 'Test', category: 'test', fields: { size: { kind: 'number', label: 'Size', default: 1, min: 1, animatable: true } }, visualFields: { open: { kind: 'boolean', label: 'Open', default: false, animatable: true } }, parts: ['backdrop'], bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ top: { x: 0, h: 10, role: 'mount' } }), draw() {} });
-const instance = (id: string) => ({ id, type: 'test', props: {}, placement: { x: 0, h: 0 }, pass: 'backdrop' as const, order: 0 });
+const instance = (id: string) => ({ id, type: 'test', props: {}, placement: { x: 0, h: 0 }, layer: 'backdrop' as const, order: 0 });
 const composition: Composition = { version: 1, scene: 'test-scene', instances: [
   { ...instance('parent'), children: [instance('child')] },
   { ...instance('attached'), attach: { instance: 'parent', anchor: 'top' } },

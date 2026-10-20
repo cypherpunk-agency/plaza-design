@@ -90,7 +90,7 @@ export function renderOpeningSequence(ctx: CanvasRenderingContext2D, view: Glide
         if (!resolvedPiece.element.parts.length) continue;
         if (near) { ctx.restore(); near = false; }
         const standalone = { ...node, placement: resolvedPiece.placement }; delete standalone.attach; delete standalone.children;
-        drawComposition(ctx, registry, { version: 1, scene: selected.scene, instances: [standalone] }, { view: viewForParts, state: frame.state, reduced: view.reduced, visibility: { [node.id]: look.visible }, opacity: { [node.id]: look.opacity }, clips: frame.clips, sequenceTime: seconds }, node.pass ?? 'backdrop');
+        drawComposition(ctx, registry, { version: 1, scene: selected.scene, instances: [standalone] }, { view: viewForParts, state: frame.state, reduced: view.reduced, visibility: { [node.id]: look.visible }, opacity: { [node.id]: look.opacity }, clips: frame.clips, sequenceTime: seconds }, 'backdrop');
         continue;
       }
       if ((part.space === 'near') !== near) { if (near) ctx.restore(); else { ctx.save(); ctx.translate(0, Math.round(-native.drop)); } near = part.space === 'near'; }

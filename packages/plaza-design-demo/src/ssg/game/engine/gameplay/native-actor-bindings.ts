@@ -1,27 +1,27 @@
 import type {Instance,Resolved} from '../../art/core/composition';
 import type {ActorDefinition} from './actors';
-export interface ActorBindingController {element:string;prefix:string;suffix:string;mutable:boolean;clipPrefix?:string;pass?:'backdrop'|'people'}
+export interface ActorBindingController {element:string;prefix:string;suffix:string;mutable:boolean;clipPrefix?:string}
 /** Registered renderer bindings; source records own actor identity, placement references and dialogue. */
 const controllers:Record<string,ActorBindingController>={
- downtown:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'people'},
- metro:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- galleriaStation:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- harborStation:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- train:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- capsule:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- yard:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- moth:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
+ downtown:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ metro:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ galleriaStation:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ harborStation:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ train:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ capsule:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ yard:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ moth:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  market:{element:'character.prepared',prefix:'market.actor.',suffix:'',mutable:true},
- harborShift:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- beach:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- mall:{element:'character.prepared',prefix:'mall.actor.',suffix:'',mutable:true,pass:'backdrop'},
- harbor:{element:'character.prepared',prefix:'actor.',suffix:'.pose',clipPrefix:'clip.actor.',mutable:true,pass:'backdrop'},
- stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',clipPrefix:'terminal.clip.',mutable:true,pass:'backdrop'},
- shop:{element:'character.prepared',prefix:'shop.actor.',suffix:'',clipPrefix:'shop.clip.',mutable:true,pass:'backdrop'},
- library:{element:'library.person',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- laundromat:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- warehouse:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
- sandbox:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
+ harborShift:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ beach:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ mall:{element:'character.prepared',prefix:'mall.actor.',suffix:'',mutable:true},
+ harbor:{element:'character.prepared',prefix:'actor.',suffix:'.pose',clipPrefix:'clip.actor.',mutable:true},
+ stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',clipPrefix:'terminal.clip.',mutable:true},
+ shop:{element:'character.prepared',prefix:'shop.actor.',suffix:'',clipPrefix:'shop.clip.',mutable:true},
+ library:{element:'library.person',prefix:'actor.',suffix:'.pose',mutable:true},
+ laundromat:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ warehouse:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ sandbox:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
 };
 export const actorBindingController=(scene:string)=>controllers[scene];
 export function actorPoseSource(scene:string,id:string){const c=controllers[scene];if(!c)throw new Error('Missing actor controller '+scene);return c.prefix+id+c.suffix;}
@@ -32,5 +32,5 @@ export function validateActorArtwork(scene:string,actors:readonly ActorDefinitio
  const c=controllers[scene];if(!c)return;
  if(c.element!=='actor.prepared'&&actors.some(a=>a.presentation))throw new Error('Scene actor presenter does not support rider recipes');
  const art=rows.filter(r=>r.instance.type===c.element);if(art.length!==actors.length)throw new Error('Actor source/artwork count mismatch');
- for(const a of actors){const row=art.find(r=>r.instance.id===a.instance);if(!row||row.props.actor!==a.id||row.instance.bindings?.pose!==actorPoseSource(scene,a.id)||c.pass&&(row.instance.layer?row.instance.layer==='logic':row.instance.pass!==c.pass))throw new Error('Actor artwork binding mismatch: '+a.id);}
+ for(const a of actors){const row=art.find(r=>r.instance.id===a.instance);if(!row||row.props.actor!==a.id||row.instance.bindings?.pose!==actorPoseSource(scene,a.id)||row.instance.layer==='logic')throw new Error('Actor artwork binding mismatch: '+a.id);}
 }

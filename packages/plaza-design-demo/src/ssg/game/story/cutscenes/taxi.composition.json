@@ -15,7 +15,7 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "lights",
@@ -30,7 +30,7 @@
         "h": 0
       },
       "order": 1,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "towers",
@@ -43,7 +43,7 @@
         "h": 0
       },
       "order": 2,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "cab",
@@ -54,7 +54,7 @@
         "h": 0
       },
       "order": 3,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "destination",
@@ -67,7 +67,7 @@
         "h": 0
       },
       "order": 4,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "fade",
@@ -78,7 +78,7 @@
         "h": 0
       },
       "order": 5,
-      "pass": "backdrop"
+      "layer": "backdrop"
     }
   ]
 }

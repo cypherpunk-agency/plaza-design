@@ -14,7 +14,7 @@ import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { KIND_HINTS, LAYER_ROLES, layerRole } from './layer-roles';
 import { chipStyles } from './kind-chips';
-import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
+import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people'; revision: string; value: unknown }
@@ -182,9 +182,8 @@ export class ComposerModel {
     const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
     for (const [key, field] of Object.entries(element.fields)) props[key] = copy(field.default) as Value;
     const bindings=element.bindingIdentity==='presentation'?Object.fromEntries(Object.entries(element.bindingChoices?.(doc)??{}).filter(([,choices])=>choices.length).map(([key,choices])=>[key,choices[0]])):{};
-    const layer: Layer | undefined = layered(doc) ? element.parts.length || element.role === 'group' ? 'set' : 'logic' : undefined;
-    const order = layer ? frontOrder(doc, layer) : Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1;
-    doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order, ...(layer ? { layer } : { pass: element.parts[0] ?? 'backdrop' }) }); return instanceId;
+    const layer: Layer = element.parts.length || element.role === 'group' ? 'set' : 'logic', order = frontOrder(doc, layer);
+    doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order, layer }); return instanceId;
   }
   /** Layered compositions: move artwork to a back-to-front position in a layer. */
   restack(id: string, instanceId: string, layer: Layer, index: number) {
@@ -627,7 +626,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       };
       // Hovering a row outlines the artwork in the preview, the same box the preview shows on hover.
       const item = (node: Instance, depth: number) => {
-        const li = element('li'), pick = button('', () => { revealed = node.id; select_(node.id === selectedId ? '' : node.id); }, `${art(node).label} · ${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
+        const li = element('li'), pick = button('', () => { revealed = node.id; select_(node.id === selectedId ? '' : node.id); }, `${art(node).label} · ${node.type} · ${LAYER_LABELS[node.layer]}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
         pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
         pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId));
@@ -646,8 +645,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         const fresh = reveal(); listHost.replaceChildren(); let shown = 0;
         layerTools.querySelector('.show-all')?.remove();
         if (hidden.size) { const reveal = button(`Show all (${hidden.size})`, () => { hidden.clear(); renderLayers(); void draw(); }, 'Show everything hidden with the eyes'); reveal.className = 'show-all'; layerTools.append(reveal); }
-        if (layerSort === 'order' && layered(composition)) shown = renderStack();
-        else if (layerSort === 'order') { const list = element('ul', 'hierarchy'); for (const { node, depth } of rows) if (matches(node)) { list.append(item(node, depth)); shown++; } if (shown) listHost.append(list); }
+        if (layerSort === 'order') shown = renderStack();
         else for (const role of LAYER_ROLES) {
           const list = element('ul', 'hierarchy'); let count = 0;
           for (const top of rows.filter(row => !parents.has(row.node.id) && kind(row.node) === role)) {
@@ -755,18 +753,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     for (const [key, value, min] of [['x', node.placement.x], ['h', node.placement.h], ['scale', node.placement.scale ?? 1, 0.0001], ['parallax', node.placement.parallax ?? 1, 0]] as [keyof Instance['placement'], number, number?][]) position.append(label(placementLabels[key], numberInput(value, v => editInstance(`Change ${key}`, n => { n.placement[key] = v as never; }), min)));
     position.append(label('Facing', select([{ value: '1', label: 'Right' }, { value: '-1', label: 'Left' }], String(node.placement.facing ?? 1), v => editInstance('Change facing', n => n.placement.facing = Number(v) as 1 | -1))));
     const composed = compositionDocument()!;
-    if (node.layer) {
-      const drawn = art.parts.length > 0 || art.role === 'group', choices: Layer[] = isPlayerRow(node) ? ['playfield'] : drawn ? [...VISUAL_LAYERS] : ['logic'];
-      const pick = select(choices.map(v => ({ value: v, label: LAYER_LABELS[v] })), node.layer, v => run(() => model.restack(composed.id, node.id, v as Layer, layerRows(composed.value as Composition, v as Layer).length)));
-      if (choices.length < 2) (pick as HTMLSelectElement).disabled = true; pick.title = LAYER_HINTS[node.layer];
-      position.append(label('Layer', pick));
-      const siblings = layerRows(composed.value as Composition, node.layer), at = siblings.findIndex(n => n.id === node.id), stepper = element('div', 'row');
-      const forward = button('Bring forward', () => run(() => model.restack(composed.id, node.id, node.layer!, at + 1)), 'Draw in front of the next item in this layer'), backward = button('Send backward', () => run(() => model.restack(composed.id, node.id, node.layer!, at - 1)), 'Draw behind the previous item in this layer');
-      forward.disabled = at >= siblings.length - 1; backward.disabled = at <= 0; stepper.append(backward, forward); position.append(stepper);
-    } else {
-      position.append(label('Draw order', numberInput(node.order, v => editInstance('Change layer order', n => n.order = v))));
-      position.append(label('Drawing pass', select(['backdrop', 'devices', 'people', 'foreground'].map(v => ({ value: v, label: v })), node.pass ?? 'backdrop', v => editInstance('Change drawing pass', n => n.pass = v as Instance['pass']))));
-    }
+    const drawn = art.parts.length > 0 || art.role === 'group', choices: Layer[] = isPlayerRow(node) ? ['playfield'] : drawn ? [...VISUAL_LAYERS] : ['logic'];
+    const pick = select(choices.map(v => ({ value: v, label: LAYER_LABELS[v] })), node.layer, v => run(() => model.restack(composed.id, node.id, v as Layer, layerRows(composed.value as Composition, v as Layer).length)));
+    if (choices.length < 2) (pick as HTMLSelectElement).disabled = true; pick.title = LAYER_HINTS[node.layer];
+    position.append(label('Layer', pick));
+    const siblings = layerRows(composed.value as Composition, node.layer), at = siblings.findIndex(n => n.id === node.id), stepper = element('div', 'row');
+    const forward = button('Bring forward', () => run(() => model.restack(composed.id, node.id, node.layer, at + 1)), 'Draw in front of the next item in this layer'), backward = button('Send backward', () => run(() => model.restack(composed.id, node.id, node.layer!, at - 1)), 'Draw behind the previous item in this layer');
+    forward.disabled = at >= siblings.length - 1; backward.disabled = at <= 0; stepper.append(backward, forward); position.append(stepper);
     const fields = Object.entries(art.fields);
     if (fields.length) { const look = part('Look', true); for (const [key, field] of fields) { const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
     const composition = compositionDocument()!.value as Composition, anchorDetails = part('Attachment and anchors', !!node.attach);

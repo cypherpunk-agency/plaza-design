@@ -115,7 +115,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     const usages = el('div');
     for (const usage of entry.usages) {
       const row = el('details'), summary = el('summary', `${usage.document} / ${usage.path.join(' / ')}`), data = el('pre');
-      data.style.whiteSpace = 'pre-wrap'; data.textContent = JSON.stringify({ placement: usage.node.placement, pass: usage.node.pass, order: usage.node.order,
+      data.style.whiteSpace = 'pre-wrap'; data.textContent = JSON.stringify({ placement: usage.node.placement, layer: usage.node.layer, order: usage.node.order,
         parent: usage.parent, attachment: usage.node.attach, bindings: usage.node.bindings, children: usage.node.children?.map(child => ({ id: child.id, type: child.type })) ?? [] }, null, 2);
       row.append(summary, button('Open instance', () => options.openUsage(usage)), data); usages.append(row);
     }
