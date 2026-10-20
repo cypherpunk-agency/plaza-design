@@ -16,6 +16,9 @@ import type { PreviewRequest, PreviewResult } from './app';
 import type { PlayerServices, PlayerState } from '../runtime/player';
 import { BASE_NODES } from '../runtime/save';
 import { drawSelectionOverlay } from './selection-overlay';
+import { PLAYER_ROW, type Instance } from '../art/core/composition';
+import { drawPlayer } from '../art/characters/player';
+import { SPR } from '../art/core/sprites';
 
 export interface NativeSceneAdapter {
   validate(value: unknown): Composition;
@@ -77,7 +80,8 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const adapter = adapters[request.composition.scene]??resolveAdapter?.(request.composition.scene,request);
       if (!adapter) throw new Error(`Native composition adapter is not available yet for ${request.composition.scene}`);
       const document = adapter.validate(request.frame?.composition ?? request.composition), state = request.frame?.state ?? {};
-      const options: NativeOptions = { reduced: request.reduced, visibility: request.frame?.visibility, opacity: request.frame?.opacity, clips: request.frame?.clips, sequenceTime: request.time };
+      const hidden = request.hidden?.length ? Object.fromEntries(request.hidden.map(id => [id, false])) : undefined;
+      const options: NativeOptions = { reduced: request.reduced, visibility: hidden ? { ...request.frame?.visibility, ...hidden } : request.frame?.visibility, opacity: request.frame?.opacity, clips: request.frame?.clips, sequenceTime: request.time };
       const original = request.documents&&adapter.pendingDefinition?adapter.pendingDefinition(document,state,options,request.documents):adapter.definition(document, state, options), def=bindWorld?.(original,request)??original, settings = request.environment;
       if (settings.presentation !== undefined && settings.presentation !== '') {
         if (!def.presentationState) throw new Error('This scene has no presentation controller state');
@@ -125,6 +129,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
       renderSceneFrame({ context, scale: renderScale, view, scene: def, sceneId: def.id,
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }), drawLayer: (ctx, v, slot) => def.drawLayer?.(ctx, v, { ...engine, layer: 'all' }, slot) },
+        actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
         preparePresentation: () => def.preparePresentation?.(view, { ...engine, layer: vision && def.layers ? 'devices' : 'all' }),
         lighting(W: Weather | null) {
@@ -152,3 +157,5 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
     finally { setLight(beforeLight); }
   } };
 }
+/** The layered composition's player row, which is also where the player arrives. */
+function playerRow(nodes: readonly Instance[]): Instance | undefined { for (const n of nodes) { if (n.type === PLAYER_ROW) return n; const child = playerRow(n.children ?? []); if (child) return child; } return undefined; }

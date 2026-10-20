@@ -16,7 +16,6 @@ export const LAYER_HINTS: Record<Layer, string> = {
 /** Engine-drawn layers, read-only, listed after (in front of) the scene layer they follow. */
 export const ENGINE_LAYERS: { after: Layer | 'start' | 'player'; label: string; title: string }[] = [
   { after: 'start', label: 'Sky, city and street', title: 'Engine: drawn first when the scene has them' },
-  { after: 'playfield', label: 'Weather, shadows and room light', title: 'Engine: puddles and mid weather, cast shadows, room wash. Drawn between the playfield rows behind the player and the player' },
   { after: 'player', label: 'Shade', title: 'Engine: shade, after the rows over the player' },
   { after: 'foreground', label: 'Light, grade and weather in front', title: 'Engine: colour grade, lights, front weather' },
   { after: 'foreground', label: 'Prompts and speech', title: 'Engine: interface on top of everything' },

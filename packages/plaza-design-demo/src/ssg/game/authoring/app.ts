@@ -16,7 +16,7 @@ import { ENGINE_LAYERS, LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, is
 import type { Layer } from '../art/core/composition';
 
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices'; revision: string; value: unknown }
-export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
+export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 /** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
 export interface WorldState { id: string; name: string; environment: Record<string, string | number | boolean> }
@@ -225,6 +225,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const tools = element('nav', 'tools'); tools.setAttribute('aria-label', 'Editor tools');
   const compact = window.matchMedia('(max-width: 760px)');
   let layerQuery = '', layerSort: 'kind' | 'order' = 'kind'; const roleOpen = new Map<string, boolean>();
+  /** The outline's eyes: objects hidden in the editor preview, per composition document. View state only. */
+  const hiddenByDocument = new Map<string, Set<string>>();
+  const hiddenIn = (id: string | undefined) => { if (!id) return new Set<string>(); let set = hiddenByDocument.get(id); if (!set) hiddenByDocument.set(id, set = new Set()); return set; };
   let moreOpen = false, inspectorTab = 'appearance', animating = false, ambientLabel: HTMLElement | undefined;
   let inspectorMount: { key: string; host: HTMLElement; handle?: WorkbenchHandle } | undefined;
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
@@ -514,15 +517,33 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         toggle.dataset.mode = mode; toggle.setAttribute('aria-pressed', String(mode === layerSort)); order.append(toggle);
       }
       layerTools.append(search, order); left.append(layerTools, listHost);
+      const hidden = hiddenIn(doc.id), allIds = rows.map(r => r.node.id);
+      /** Click hides or shows; Alt-click shows only these (Alt-click again shows everything). */
+      const eye = (ids: () => string[], label: string) => {
+        const node = element('button', 'eye'), set = ids(), off = set.length > 0 && set.every(id => hidden.has(id));
+        node.type = 'button'; node.title = `${off ? 'Show' : 'Hide'} ${label} in the preview (Alt-click: show only this)`; node.dataset.off = String(off); node.setAttribute('aria-label', node.title);
+        node.innerHTML = off ? '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" fill="none" stroke="currentColor" opacity=".5"/><path d="M2 14 14 2" stroke="currentColor"/></svg>' : '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" fill="none" stroke="currentColor"/><circle cx="8" cy="8" r="2.2" fill="currentColor"/></svg>';
+        node.onclick = event => {
+          event.preventDefault(); event.stopPropagation(); const chosen = ids();
+          if (event.altKey) { const others = allIds.filter(id => !chosen.includes(id)), soloed = others.length > 0 && others.every(id => hidden.has(id)) && chosen.every(id => !hidden.has(id)); hidden.clear(); if (!soloed) others.forEach(id => hidden.add(id)); }
+          else if (chosen.every(id => hidden.has(id))) chosen.forEach(id => hidden.delete(id)); else chosen.forEach(id => hidden.add(id));
+          renderLayers(); void draw();
+        };
+        return node;
+      };
       // Hovering a row outlines the artwork in the preview, the same box the preview shows on hover.
       const item = (node: Instance, depth: number) => {
         const li = element('li'), pick = button('', () => select_(node.id === selectedId ? '' : node.id), `${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
         pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
-        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + art(node).label)); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId)); li.append(pick); return li;
+        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + art(node).label)); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId));
+        if (hidden.has(node.id)) li.classList.add('is-hidden');
+        li.append(eye(() => [node.id], node.id), pick); return li;
       };
       function renderLayers() {
         listHost.replaceChildren(); let shown = 0;
+        layerTools.querySelector('.show-all')?.remove();
+        if (hidden.size) { const reveal = button(`Show all (${hidden.size})`, () => { hidden.clear(); renderLayers(); void draw(); }, 'Show everything hidden with the eyes'); reveal.className = 'show-all'; layerTools.append(reveal); }
         if (layerSort === 'order' && layered(composition)) shown = renderStack();
         else if (layerSort === 'order') { const list = element('ul', 'hierarchy'); for (const { node, depth } of rows) if (matches(node)) { list.append(item(node, depth)); shown++; } if (shown) listHost.append(list); }
         else for (const role of LAYER_ROLES) {
@@ -562,7 +583,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           const box = element('section', 'stack-layer'), head = element('div', 'stack-head'), list = element('ul', 'hierarchy');
           const count = body(list); shown += count;
           if (!layerRows(composition, layer).length) { const empty = element('li', 'stack-empty', 'Empty: drag artwork here'); list.append(empty); }
-          head.append(element('span', '', LAYER_LABELS[layer]), element('span', 'muted', String(layerRows(composition, layer).length))); head.title = LAYER_HINTS[layer];
+          const ids = () => layerRows(composition, layer).map(n => n.id);
+          head.append(...(ids().length ? [eye(ids, `the ${LAYER_LABELS[layer]} layer`)] : []), element('span', 'stack-name', LAYER_LABELS[layer]), element('span', 'muted', String(ids().length))); head.title = LAYER_HINTS[layer];
           drop(head, () => accepts(layer) ? { layer, index: layerRows(composition, layer).filter(n => n.id !== dragged).length } : undefined);
           box.append(head, list); stack.append(box);
         };
@@ -570,19 +592,15 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         const engineAfter = (after: string) => [...ENGINE_LAYERS].reverse().filter(e => e.after === after).forEach(e => stack.append(engine(e.label, e.title)));
         engineAfter('foreground');
         for (const layer of [...VISUAL_LAYERS].reverse()) {
-          if (layer === 'playfield') {
-            engineAfter('player');
-            section(layer, target => {
-              const all = layerRows(composition, layer), at = all.findIndex(isPlayerRow); if (at < 0) return list(target, all);
-              const over = list(target, all.slice(at + 1)), player = list(target, [all[at]]), divider = ENGINE_LAYERS.find(e => e.after === 'playfield')!, li = element('li');
-              li.append(engine(divider.label, divider.title)); target.append(li); return over + player + list(target, all.slice(0, at));
-            });
-          } else section(layer, target => list(target, layerRows(composition, layer)));
+          if (layer === 'playfield') engineAfter('player');
+          section(layer, target => list(target, layerRows(composition, layer)));
         }
         engineAfter('start');
         const logic = element('details', 'layer-group'); logic.open = roleOpen.get('logic-layer') ?? true; logic.ontoggle = () => roleOpen.set('logic-layer', logic.open);
         const logicList = element('ul', 'hierarchy'); shown += list(logicList, layerRows(composition, 'logic'));
-        logic.append(element('summary', '', `${LAYER_LABELS.logic} · ${layerRows(composition, 'logic').length}`), logicList); logic.title = LAYER_HINTS.logic;
+        const logicIds = () => layerRows(composition, 'logic').map(n => n.id), summary = element('summary', '', `${LAYER_LABELS.logic} · ${logicIds().length}`);
+        if (logicIds().length) summary.prepend(eye(logicIds, 'the Logic layer'));
+        logic.append(summary, logicList); logic.title = LAYER_HINTS.logic;
         listHost.append(stack, logic); return shown;
       }
       renderLayers();
@@ -762,7 +780,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function updateTime() { if (scrub) scrub.value = String(time); if (timeLabel) timeLabel.textContent = `${time.toFixed(3)} / ${(sequence()?.duration ?? 0).toFixed(3)} s · frame ${Math.round(time * 60)}`; }
   function previewRequest(composition: Composition, overlay: boolean, scale: number, frame?: TimelineFrame): PreviewRequest {
     const timeline = currentTimeline();
-    return { documents: new Map(model.list().map(d => [d.id, d.value])), composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced, overlays: overlay, selectedId, environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } };
+    return { documents: new Map(model.list().map(d => [d.id, d.value])), composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced, overlays: overlay, selectedId, player: true, hidden: [...hiddenIn(compositionDocument()?.id)], environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } };
   }
   async function draw() {
     if (disposed) return; if (previewPending) { renderAgain = true; return; } const doc = compositionDocument(); if (!doc) { preview = undefined; previewError.textContent = current()?.kind === 'world' ? 'World structure is read-only. Open a scene from the world panel to preview it.' : 'No composition selected.'; previewError.hidden = false; canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); return; }

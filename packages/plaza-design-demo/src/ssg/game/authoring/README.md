@@ -134,11 +134,16 @@ written to compositions.
 
 **Order** shows how the scene is drawn. For a layered scene (Library so far) it is the layer stack,
 front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the engine's own layers
-(sky/city/street, weather and room light, shade, light and grade, prompts) as greyed dividers and
-the Logic layer (markers, spawn) listed separately. The **player** row in the Playfield marks where
-the player and engine-drawn walkers are drawn: rows above it draw over them. Drag rows within or
+(sky/city/street, shade, light and grade, prompts) as greyed dividers and the Logic layer (markers)
+listed separately. The **Player** in the Playfield is drawn in the preview: its place in the stack
+is where the player and engine-drawn walkers are drawn (rows above it draw over them), and its
+position is where the player arrives (Library's manifest spawn points at it). Drag rows within or
 between layers, or use **Layer**, **Bring forward** and **Send backward** in the inspector. The stack
-is in `layer-stack.ts`. Scenes not yet migrated still show document order and the older Drawing
+is in `layer-stack.ts`.
+
+The eye beside each row and layer hides it in the editor preview (also for selection); Alt-click
+shows only that row or layer, and **Show all** clears it. Hiding is view state: never saved, never
+applied in Play. Scenes not yet migrated still show document order and the older Drawing
 pass/Draw order fields.
 
 Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and an
