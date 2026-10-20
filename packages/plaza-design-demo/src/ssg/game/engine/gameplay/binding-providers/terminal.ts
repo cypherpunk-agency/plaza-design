@@ -7,7 +7,7 @@ import {stacksController} from '../../controllers/motion';
 import {manifestGeometry} from '../manifest-geometry';
 import {presentationActor} from '../scene-presentation';
 import {actorAppearanceSeed,bindActorAppearanceSeed} from '../actor-identity';
-import {gantryGeometry,stacksState,trolley} from '../scene-mechanics/gantry-lift';
+import {gantryGeometry,stacksState,trolley} from '../mechanisms/gantry-lift';
 import type {BindingContext} from '../binding-sources';
 import type {BindingProvider} from './index';
 /**

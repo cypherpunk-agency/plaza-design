@@ -45,7 +45,7 @@ import type { Effect, SceneRules, World } from "../../rules";
 import type { SceneModel } from "../../model";
 import {stacksController} from '../../controllers/motion';
 import {cameraPanel, registerCameraPainter, zoomButton, type CameraView} from '../../camera-panel';
-import type {SceneMechanic} from './index';
+import type {SceneMechanism} from '../scene-mechanisms';
 
 export const stacksState=(m:SceneModel,key:keyof import('../../controllers/motion').StacksController['state'])=>m.get(stacksController(m.data).state[key]);
 
@@ -313,15 +313,15 @@ const scopePanel = cameraPanel({
   ],
 });
 
-export const gantryLift:SceneMechanic={
-  label:'Gantry lift',
-  description:'A crane lifts boxes through a thermal gate onto a ferry (STS-2); needs the artwork roles '+GANTRY_ROLES.join(', ')+'.',
-  roles:GANTRY_ROLES,
-  rules:(player,ctx)=>stacksRules(player,gantryGeometry(ctx.roles)),
-  shape:()=>stacksRules(SHAPE_PLAYER),
-  panels:{scope:scopePanel},
-  check:ctx=>{
-    const kind=ctx.gameplay.queries?.['stacks.liftKind'];
+/** scene.json `stage.mechanisms: ["gantryLift"]` (scene-mechanisms.ts): the rules, the scope panel and the source checks. */
+export const gantryLift:SceneMechanism={
+  label:'Gantry lift (crane, thermal gate, scope)',
+  requires:GANTRY_ROLES,
+  world:false,
+  apply:({roles})=>{const geometry=gantryGeometry(roles);return{rules:(player:PlayerServices)=>stacksRules(player,geometry),panels:{scope:scopePanel}};},
+  rulesShape:()=>stacksRules(SHAPE_PLAYER),
+  check:({gameplay})=>{
+    const kind=gameplay.queries?.['stacks.liftKind'];
     if(kind?.kind!=='select'||kind.cases.some(row=>!('literal'in row.value)||![1,2].includes(row.value.literal as number)))throw new Error('STS-2 liftKind requires select outputs 1 or 2');
   },
 };

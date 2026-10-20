@@ -1,6 +1,7 @@
 import type {Value} from '../../../art/core/composition';
 import type {BindingContext} from '../binding-sources';
 import {terminal} from './terminal';
+import {station} from './station';
 /**
  * Registered binding providers: a source name `<provider>.<key>` asks the provider for `key`.
  * A provider works out everything it offers once per frame from the scene as it stands (its
@@ -10,4 +11,5 @@ import {terminal} from './terminal';
 export type BindingProvider=(ctx:BindingContext)=>Record<string,Value>;
 export const BINDING_PROVIDERS:Readonly<Record<string,BindingProvider>>={
  terminal,
+ station,
 };

@@ -19,7 +19,7 @@ import {ENGINE_EFFECTS,type SceneRules}from'../engine/rules';
 
 import {DOWNTOWN_RULES_SHAPE}from'../scenes/downtown/rules';
 
-import {mechanicsRulesShape}from'../engine/gameplay/scene-mechanics';
+import {mechanismsRulesShape}from'../engine/gameplay/scene-mechanisms';
 
 import type{Composition,Instance}from'../art/core/composition';
 
@@ -72,7 +72,7 @@ const actions=['set','open','emit','goal','effect','give','take','trace','unseal
 export function buildEventInspection(options:EventInspectionOptions={}):EventInspection{
  const network=options.network??defaultNetworkContext,net=network.net;
 
- const nodes:EventNode[]=[],edges:EventEdge[]=[],all=new Map<string,EventNode>(),diagnostics:string[]=[],definitions=new Map<string,DeviceData>(),shapes:Record<string,SceneRules>={downtown:DOWNTOWN_RULES_SHAPE,...Object.fromEntries(Object.entries(FOLDER_SOURCES).flatMap(([id,source])=>{const names=(source.scene as {stage?:{mechanics?:string[]}}).stage?.mechanics;return names?.length?[[id,mechanicsRulesShape(names)]]:[];}))};
+ const nodes:EventNode[]=[],edges:EventEdge[]=[],all=new Map<string,EventNode>(),diagnostics:string[]=[],definitions=new Map<string,DeviceData>(),shapes:Record<string,SceneRules>={downtown:DOWNTOWN_RULES_SHAPE,...Object.fromEntries(Object.entries(FOLDER_SOURCES).flatMap(([id,source])=>{const shape=mechanismsRulesShape((source.scene as {stage?:{mechanisms?:string[]}}).stage?.mechanisms);return shape?[[id,shape]]:[];}))};
 
  const documentSources=new Map(sourceDocuments.map(d=>[d.id,d.file]));
 

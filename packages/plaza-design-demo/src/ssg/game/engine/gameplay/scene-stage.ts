@@ -2,7 +2,7 @@ import type {Resolved} from '../../art/core/composition';
 import type {SceneLight,Caster} from '../../art/atmosphere/lighting';
 import type {SceneDef} from '../../scenes/kit';
 import type {StageActorRules} from './binding-sources';
-import {validateMechanics} from './scene-mechanics';
+import {SCENE_MECHANISMS} from './scene-mechanisms';
 /**
  * The stage: what a declared scene takes from its own artwork rather than from code
  * (docs/design/CIRCUIT-VOCABULARY.md is for devices; this is for rooms). Each entry names an
@@ -29,21 +29,21 @@ export interface SceneStage {
  casters?:StageCasterSource[];
  /** Actors seen through a window or culled with a counter (binding-sources.ts). */
  actors?:StageActorRules;
- /** Registered mechanisms the scene runs (scene-mechanics/): their rules and panels, measured from this scene's artwork roles. */
- mechanics?:string[];
+ /** Registered mechanisms the scene uses (scene-mechanisms.ts), by name. */
+ mechanisms?:string[];
 }
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 const name=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,95}$/.test(v);
 export function validateSceneStage(value:unknown):SceneStage{
  const fail=(why:string):never=>{throw new Error('Invalid scene stage: '+why);};
  if(!object(value))fail('expected an object');const s=value as Record<string,unknown>;
- if(Object.keys(s).some(k=>!['facing','horizon','shade','lights','casters','actors','mechanics'].includes(k)))fail('unknown field');
+ if(Object.keys(s).some(k=>!['facing','horizon','shade','lights','casters','actors','mechanisms'].includes(k)))fail('unknown field');
  if(s.actors!==undefined){const a=s.actors as Record<string,unknown>;if(!object(a)||Object.keys(a).some(k=>k!=='clip'&&k!=='cull'))fail('actors');for(const c of (a.clip??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).sort().join()!=='actors,to'||!name(c.actors)||!name(c.to))fail('actors clip');for(const c of (a.cull??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).some(k=>!['actor','role','margin'].includes(k))||!name(c.actor)||!name(c.role)||c.margin!==undefined&&typeof c.margin!=='number')fail('actors cull');if(a.clip!==undefined&&!Array.isArray(a.clip)||a.cull!==undefined&&!Array.isArray(a.cull))fail('actors lists');}
- if(s.mechanics!==undefined)validateMechanics(s.mechanics);
  if(s.facing!==undefined){const f=s.facing as Record<string,unknown>;if(!object(f)||!name(f.role)||f.prop!==undefined&&!name(f.prop)||f.fallback!==undefined&&typeof f.fallback!=='number')fail('facing');}
  if(s.horizon!==undefined){const h=s.horizon as Record<string,unknown>;if(!object(h)||Object.keys(h).some(k=>k!=='role'&&k!=='prop')||!name(h.role)||h.prop!==undefined&&!name(h.prop))fail('horizon');}
  if(s.shade!==undefined){const sh=s.shade as Record<string,unknown>;if(!object(sh)||Object.keys(sh).some(k=>k!=='front'))fail('shade');const fr=sh.front as Record<string,unknown>|undefined;if(fr!==undefined&&(!object(fr)||!name(fr.role)||fr.gapFrom!==undefined&&typeof fr.gapFrom!=='number'))fail('shade front');}
  const sources=(list:unknown,what:string,keys:string[])=>{if(list===undefined)return;if(!Array.isArray(list)||list.length>16)fail(what);for(const l of list as unknown[]){const r=l as Record<string,unknown>;if(!object(r)||Object.keys(r).some(k=>!keys.includes(k))||(r.type===undefined)===(r.role===undefined)||r.type!==undefined&&!name(r.type)||r.role!==undefined&&!name(r.role))fail(what);}};
+ if(s.mechanisms!==undefined&&(!Array.isArray(s.mechanisms)||new Set(s.mechanisms).size!==s.mechanisms.length||s.mechanisms.some(m=>typeof m!=='string'||!Object.prototype.hasOwnProperty.call(SCENE_MECHANISMS,m))))fail('mechanisms');
  sources(s.lights,'lights',['type','role','style','color']);
  for(const l of (s.lights as StageLightSource[]|undefined)??[])if(l.style!=='element'&&l.style!=='lamp'||l.color!==undefined&&typeof l.color!=='string')fail('light style');
  sources(s.casters,'casters',['type','role','widthRole']);

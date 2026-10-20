@@ -1,7 +1,7 @@
 import type {SceneDocument} from '../engine/gameplay/scene-document';
 import type {SceneStage,StageLightSource,StageCasterSource} from '../engine/gameplay/scene-stage';
 import {manifestGroups,MANIFEST_COMPILE_FLAGS,type ManifestGroup} from '../engine/gameplay/manifest-contract';
-import {SCENE_MECHANICS,mechanicNames} from '../engine/gameplay/scene-mechanics';
+import {SCENE_MECHANISMS} from '../engine/gameplay/scene-mechanisms';
 import type {TypedForm} from './typed-form';
 type Edit=(label:string,change:(d:SceneDocument)=>void)=>void;
 const LABELS:Record<string,string>={groundExits:'Exits stand on the ground',groundSpawn:'Spawn stands on the ground',transformedExits:'Exits follow transformed artwork',elevatedResponses:'Responses rise above their artwork',omitGroundRestHeight:'Rests on the ground keep no height'};
@@ -16,6 +16,9 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
  const compile=form.section(host,'Compile');
  for(const flag of MANIFEST_COMPILE_FLAGS){const value=d.manifest?.compile?.[flag];form.select(compile,LABELS[flag],['default','yes','no'],value===undefined?'default':value?'yes':'no',v=>edit('Edit compile option',doc=>{const c=(doc.manifest!.compile??={});if(v==='default')delete c[flag];else c[flag]=v==='yes';if(!Object.keys(c).length)delete doc.manifest!.compile;}));}
  for(const group of manifestGroups)form.check(compile,'Binds '+group,(d.manifest?.compile?.groups??manifestGroups).includes(group),on=>edit('Edit compile groups',doc=>{const c=(doc.manifest!.compile??={}),list=new Set<ManifestGroup>(c.groups??manifestGroups);if(on)list.add(group);else list.delete(group);c.groups=manifestGroups.filter(g=>list.has(g));}));
+ // registered mechanisms (scene-mechanisms.ts): a mechanism needs its artwork roles named under Content & bindings
+ const mechanisms=form.section(host,'Mechanisms');
+ for(const[name,mechanism]of Object.entries(SCENE_MECHANISMS))form.check(mechanisms,mechanism.label+(mechanism.requires.length?' (needs '+mechanism.requires.join(', ')+')':''),(stage.mechanisms??[]).includes(name),on=>stageEdit('Edit scene mechanism',s=>{const list=new Set(s.mechanisms??[]);if(on)list.add(name);else list.delete(name);if(list.size)s.mechanisms=Object.keys(SCENE_MECHANISMS).filter(k=>list.has(k));else delete s.mechanisms;}));
  // facing and shade from roles
  const room=form.section(host,'From artwork');
  form.select(room,'Facing from role',[none,...roles],stage.facing?.role??none,v=>stageEdit('Edit facing role',s=>{if(v===none)delete s.facing;else s.facing={...(s.facing??{}),role:v};}));
@@ -23,10 +26,6 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
  form.select(room,'Sky horizon from role',[none,...roles],stage.horizon?.role??none,v=>stageEdit('Edit horizon role',s=>{if(v===none)delete s.horizon;else s.horizon={...(s.horizon??{}),role:v};}));
  if(stage.horizon)form.text(room,'Horizon property',stage.horizon.prop??'horizon',v=>stageEdit('Edit horizon property',s=>{if(v.trim()&&v!=='horizon')s.horizon!.prop=v.trim();else delete s.horizon!.prop;}));
  form.select(room,'Front shade from role',[none,...roles],stage.shade?.front?.role??none,v=>stageEdit('Edit front shade',s=>{if(v===none)delete s.shade;else s.shade={front:{...(s.shade?.front??{}),role:v}};}));
- // registered mechanisms (engine/gameplay/scene-mechanics): rules and panels the scene runs
- const mechanics=form.section(host,'Mechanisms');
- for(const name of mechanicNames()){const mechanic=SCENE_MECHANICS[name],missing=mechanic.roles.filter(r=>!roles.includes(r));
-  form.check(mechanics,mechanic.label+(missing.length?' (needs roles: '+missing.join(', ')+')':''),(stage.mechanics??[]).includes(name),on=>stageEdit('Edit mechanisms',s=>{const list=new Set(s.mechanics??[]);if(on)list.add(name);else list.delete(name);const next=mechanicNames().filter(n=>list.has(n));if(next.length)s.mechanics=next;else delete s.mechanics;}));}
  // lights and casters
  const sourceRows=<T extends {type?:string;role?:string}>(box:HTMLElement,key:'lights'|'casters',list:readonly T[],extra:(row:HTMLElement,item:T,i:number)=>void,fresh:()=>T)=>{
   list.forEach((item,i)=>{const row=form.section(box,key.slice(0,-1)+' '+(i+1));
