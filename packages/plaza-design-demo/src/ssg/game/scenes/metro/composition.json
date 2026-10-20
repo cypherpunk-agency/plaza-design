@@ -64,7 +64,7 @@
       "order": 3,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -80,7 +80,7 @@
       "order": 4,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -96,7 +96,7 @@
       "order": 5,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -112,7 +112,7 @@
       "order": 6,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -128,7 +128,7 @@
       "order": 7,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -144,7 +144,7 @@
       "order": 8,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -160,7 +160,7 @@
       "order": 9,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -176,7 +176,7 @@
       "order": 10,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -192,7 +192,7 @@
       "order": 11,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -208,7 +208,7 @@
       "order": 12,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -224,7 +224,7 @@
       "order": 13,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -240,7 +240,7 @@
       "order": 14,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -256,7 +256,7 @@
       "order": 15,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -272,7 +272,7 @@
       "order": 16,
       "layer": "distance",
       "bindings": {
-        "city": "metro.city"
+        "city": "station.city"
       }
     },
     {
@@ -286,8 +286,8 @@
       "order": 17,
       "layer": "distance",
       "bindings": {
-        "daylight": "metro.daylight",
-        "truss": "metro.truss"
+        "daylight": "station.daylight",
+        "truss": "station.truss"
       }
     },
     {
@@ -303,8 +303,8 @@
       "order": 18,
       "layer": "distance",
       "bindings": {
-        "daylight": "metro.daylight",
-        "truss": "metro.truss"
+        "daylight": "station.daylight",
+        "truss": "station.truss"
       }
     },
     {
@@ -344,7 +344,7 @@
       "order": 1,
       "layer": "backdrop",
       "bindings": {
-        "train": "transit.train"
+        "train": "station.train"
       }
     },
     {
@@ -389,7 +389,7 @@
       "order": 0,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -407,7 +407,7 @@
       "order": 1,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -425,7 +425,7 @@
       "order": 2,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -443,7 +443,7 @@
       "order": 3,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -461,7 +461,7 @@
       "order": 4,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -479,7 +479,7 @@
       "order": 5,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -497,7 +497,7 @@
       "order": 6,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -517,7 +517,7 @@
       "order": 7,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -537,7 +537,7 @@
       "order": 8,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -557,7 +557,7 @@
       "order": 9,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -575,7 +575,7 @@
       "order": 10,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -593,7 +593,7 @@
       "order": 11,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roofLocal"
+        "roof": "station.roofLocal"
       },
       "attach": {
         "instance": "canopy",
@@ -648,8 +648,8 @@
       "order": 14,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roof",
-        "departure": "transit.departure"
+        "roof": "station.roof",
+        "departure": "station.departure"
       }
     },
     {
@@ -663,7 +663,7 @@
       "order": 15,
       "layer": "set",
       "bindings": {
-        "roof": "metro.roof"
+        "roof": "station.roof"
       }
     },
     {
@@ -680,7 +680,7 @@
       "order": 16,
       "layer": "set",
       "bindings": {
-        "rider": "actor.regular.pose.embedded"
+        "rider": "station.pose.regular.embedded"
       }
     },
     {
@@ -700,7 +700,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.regular.pose"
+        "pose": "station.pose.regular"
       }
     },
     {
@@ -727,7 +727,7 @@
       "order": 19,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting0.pose"
+        "pose": "station.pose.waiting0"
       }
     },
     {
@@ -743,7 +743,7 @@
       "order": 20,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting1.pose"
+        "pose": "station.pose.waiting1"
       }
     },
     {
@@ -759,7 +759,7 @@
       "order": 21,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting2.pose"
+        "pose": "station.pose.waiting2"
       }
     },
     {
@@ -775,7 +775,7 @@
       "order": 22,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting3.pose"
+        "pose": "station.pose.waiting3"
       }
     },
     {

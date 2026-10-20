@@ -168,6 +168,15 @@
       "gangway": "gangway",
       "gangDoor": "gang-door",
       "brake": "brake"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
     }
   },
   "actors": [
@@ -488,5 +497,10 @@
   },
   "companion": {
     "mode": "off"
+  },
+  "stage": {
+    "mechanisms": [
+      "lineRide"
+    ]
   }
 }

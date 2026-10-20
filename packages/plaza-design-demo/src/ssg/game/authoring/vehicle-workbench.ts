@@ -20,7 +20,8 @@ import { FOLDER_SOURCES } from '../scenes/folder-scenes';
 import { openingFrame,paintOpeningPieces } from '../art/sequences/opening/glide';
 import { BOATER,drawCanalGlimpse } from '../art/architecture/cutaway';
 import { prepareCharacter } from '../runtime/characters';
-import { trainComposition,trainGeometry,prepareTrainFrame,drawTrainComposition } from '../scenes/train/composition';
+import { prepareTrainFrame } from '../engine/gameplay/binding-providers/train';
+import { trainScenery,drawTrainFrame } from '../engine/gameplay/train-scenery';
 import type { TrainVisualState } from '../art/assemblies/train-interior';
 import { paintRoadVehicle,roadVehicleKinds,roadExtent } from '../art/vehicles/road-vehicle';
 import { SIZE,M } from '../art/vehicles/vehicles';
@@ -78,9 +79,10 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
   const o={t,c:0,seed:state.passengers?state.seed:state.seed+1,dest:'GALLERIA',ox:offset,plate:'CAR 3',still:state.reduced};job('drawMetroCar',o,x=>drawMetroCar(x,0,h=>-h,o));
  }else if(state.id==='train.interior'){
   const visual:TrainVisualState={ride:{at:0,to:1,phase:state.doors>0?'dwell':'running',timer:0,dwell:330,pos:0,d:0,span:3000,frames:780,v:0,open:state.doors,doors:false,halt:null,haltFor:0,decel:.032,say:'DOWNTOWN'},lineOpen:{downtown:true,galleria:true,harbor:true},between:state.doors===0,atSiding:false,due:0,next:'galleria',open:state.doors>.6,run:0,lighting,home:false};
-  const f=prepareTrainFrame(trainComposition,view,null,visual);if(!state.passengers)for(const rider of Object.values(f.riders))rider.on=false;
-  const visibility=state.passengers?undefined:Object.fromEntries(trainGeometry().filter(row=>Object.prototype.hasOwnProperty.call(f.riders,String(row.props.actor))).map(row=>[row.instance.id,false]));
-  job('drawTrainComposition',f,x=>{drawTrainComposition(x,view,f,'backdrop',trainComposition,{}, {visibility});drawTrainComposition(x,view,f,'foreground',trainComposition,{}, {visibility});});
+  const {sc,composition:trainComposition}=trainScenery(FOLDER_SOURCES.train.composition,FOLDER_SOURCES.train.scene as never);
+  const f=prepareTrainFrame(sc,view,null,visual);if(!state.passengers)for(const rider of Object.values(f.riders))rider.on=false;
+  const visibility=state.passengers?undefined:Object.fromEntries(sc.rows.filter(row=>Object.prototype.hasOwnProperty.call(f.riders,String(row.props.actor))).map(row=>[row.instance.id,false]));
+  job('drawTrainComposition',f,x=>{drawTrainFrame(x,view,f,'backdrop',trainComposition,sc,{visibility});drawTrainFrame(x,view,f,'foreground',trainComposition,sc,{visibility});});
  }else if(state.id.startsWith('harbor.')){
   const L=harborLayout(FOLDER_SOURCES.harbor.composition,FOLDER_SOURCES.harbor.scene as never),inputs:ArtworkInputs={L,visual:{cranes:[],forklift:{x:70,dir:1},bribed:false,weatherLine:''},fishPose:nil,teaPose:nil,loads:[]},k=createHarborPierArtwork(inputs);
   if(kind==='lamp')job('drawLampBoat',{view},x=>k.drawLampBoat(x,view));

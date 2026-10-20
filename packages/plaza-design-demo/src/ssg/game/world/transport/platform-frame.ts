@@ -1,8 +1,8 @@
 import type {Value} from '../../art/core/composition';
 import type {View} from '../../art/core/view';
-import type {CityModel} from '../../world/city';
-import * as defaultCity from '../../world/city';
-import type {LineSystem} from '../../world/transport/line';
+import type {CityModel} from '../city';
+import * as defaultCity from '../city';
+import type {LineSystem} from './line';
 /** Native platform pictures use the same pending world membership as boarding and arrivals. */
 export function platformFrame(scene:string,stop:number,view:View,metro:LineSystem,city:CityModel=defaultCity):Record<string,Value>{
  const station=city.stationAt(scene);

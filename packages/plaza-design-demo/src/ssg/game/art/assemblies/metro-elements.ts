@@ -39,6 +39,6 @@ export const metroSnapshotValue=(v:MetroCityVisual):Value=>v as unknown as Value
 
 for(const element of metroElements){element.bindingIdentity='presentation';element.bindingChoices=composition=>{
  if(composition.scene!=='metro')return{};
- const sources:Record<string,string[]>={city:['metro.city'],daylight:['metro.daylight'],truss:['metro.truss'],roof:['metro.roofLocal','metro.roof']};
+ const sources:Record<string,string[]>={city:['station.city'],daylight:['station.daylight'],truss:['station.truss'],roof:['station.roofLocal','station.roof']};
  return Object.fromEntries(Object.keys(element.visualFields??{}).filter(key=>sources[key]).map(key=>[key,sources[key]]));
 };}

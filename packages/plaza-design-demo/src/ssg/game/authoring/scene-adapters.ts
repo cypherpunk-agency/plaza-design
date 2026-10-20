@@ -5,7 +5,6 @@ import { FOLDER_SCENE_IDS } from '../scenes';
 import { validateGameplay } from '../engine/gameplay/validation';
 import type { SceneDocument } from '../engine/gameplay/scene-document';
 import { deviceSourceIdentity } from './device-document-ids';
-import {content as trainContent} from '../scenes/train/scene-document';
 import {pendingNativeTargetScene} from './native-target-pending';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
 import {validateBeachGameplay} from '../scenes/beach/gameplay';
@@ -22,10 +21,6 @@ import { sandboxScene, sandboxFrameEnvironment, validateSandboxComposition } fro
 import { beachScene } from '../scenes/beach';
 import { validateBeachComposition } from '../scenes/beach/composition';
 import { yardScene, yardFrameEnvironment, validateYardComposition } from '../scenes/yard';
-import { metroScene } from '../scenes/metro';
-import { validateMetroComposition } from '../scenes/metro/composition';
-import { trainScene } from '../scenes/train';
-import { validateTrainComposition } from '../scenes/train/composition';
 
 /** Folder scenes share one adapter: their documents go straight to the declared path. */
 const folderAdapter = (id: string): NativeSceneAdapter => ({
@@ -45,8 +40,6 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   yard: { validate: validateYardComposition, definition: yardScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('yard',doc,documents,yardContent,(source,gameplay,context)=>yardScene(doc,state,options,source,gameplay,context,documents.get('yard-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => yardFrameEnvironment(v, e, doc),
   },
 
-  metro: { validate: validateMetroComposition, definition: metroScene },
-  train: { validate: validateTrainComposition, definition: trainScene,pendingDefinition:(doc,state,options,documents)=>{const gameplay=trainContent.validateGameplay(documents.get('train-gameplay'));return trainScene(doc,state,options,trainContent.validateScene(documents.get('train-scene'),gameplay),gameplay,documents.get('train-devices') as import('../data/types').SceneData|undefined);} },
   downtown: {
     validate: validateDowntownComposition, definition: downtownScene, pendingDefinition:(doc,_state,options,documents)=>{const gameplay=downtownContent.validateGameplay(documents.get('downtown-gameplay'));return downtownScene(doc,undefined,options,downtownContent.validateScene(documents.get('downtown-scene'),gameplay),gameplay);},
   },
