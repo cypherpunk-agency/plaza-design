@@ -95,6 +95,21 @@ that edits work: verify actual private Play and the relevant Save/fresh reload/b
 
 ## Testing and feedback
 
+For local edit profiling, open the composer with `#profile-editor`, then select the scene and
+expand **Performance · local CPU recording**. Start, make a few edits, Stop, and download JSON.
+The existing recorder measures command/validation, document copies, header/options, outline,
+inspector and timeline CPU work alongside the shared render spans. It is inactive by default.
+Local recordings may report source identity as unavailable; record the current commit/dirty state
+with the file. Timings are CPU work, not GPU completion or end-to-end presentation latency.
+
+View refreshes reuse one detached document snapshot synchronously, then discard it. Validation
+derivations are scoped to a prospective pass. `validationInputs` declares the complete immutable
+inputs read by semantic validators; a successful semantic result may be reused only while all
+those identities remain unchanged. Composition/timeline checks always run. Proposal artwork is
+excluded from gameplay dependencies because proposals borrow their base scene's gameplay; native
+scene sources and authored catalogue owners remain dependencies. Do not exclude a source that a
+validator actually reads. Protected Save still validates the complete prospective source graph.
+
 Use `?demo` for compact Purchases, Conversations and Devices & wiring examples. Review shortcuts
 jump directly to the example. The Demo world lab uses real pending definitions with disposable
 progress. The isolated manifest example demonstrates ordinary declared content without adding a
