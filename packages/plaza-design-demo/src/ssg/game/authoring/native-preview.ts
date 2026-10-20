@@ -122,7 +122,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
       renderSceneFrame({ context, scale: renderScale, view, scene: def, sceneId: def.id,
-        host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
+        host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }), drawLayer: (ctx, v, slot) => def.drawLayer?.(ctx, v, { ...engine, layer: 'all' }, slot) },
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
         preparePresentation: () => def.preparePresentation?.(view, { ...engine, layer: vision && def.layers ? 'devices' : 'all' }),
         lighting(W: Weather | null) {

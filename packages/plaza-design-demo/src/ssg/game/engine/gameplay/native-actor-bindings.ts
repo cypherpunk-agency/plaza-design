@@ -32,5 +32,5 @@ export function validateActorArtwork(scene:string,actors:readonly ActorDefinitio
  const c=controllers[scene];if(!c)return;
  if(c.element!=='actor.prepared'&&actors.some(a=>a.presentation))throw new Error('Scene actor presenter does not support rider recipes');
  const art=rows.filter(r=>r.instance.type===c.element);if(art.length!==actors.length)throw new Error('Actor source/artwork count mismatch');
- for(const a of actors){const row=art.find(r=>r.instance.id===a.instance);if(!row||row.props.actor!==a.id||row.instance.bindings?.pose!==actorPoseSource(scene,a.id)||c.pass&&row.instance.pass!==c.pass)throw new Error('Actor artwork binding mismatch: '+a.id);}
+ for(const a of actors){const row=art.find(r=>r.instance.id===a.instance);if(!row||row.props.actor!==a.id||row.instance.bindings?.pose!==actorPoseSource(scene,a.id)||c.pass&&(row.instance.layer?row.instance.layer==='logic':row.instance.pass!==c.pass))throw new Error('Actor artwork binding mismatch: '+a.id);}
 }

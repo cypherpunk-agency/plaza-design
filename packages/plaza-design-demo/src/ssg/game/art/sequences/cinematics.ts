@@ -107,7 +107,7 @@ export function renderCinematicPicture(ctx: CanvasRenderingContext2D, view: CutV
       if (!part) {
         if (!piece.element.parts.length) continue;
         const standalone = { ...piece.instance, placement: piece.placement }; delete standalone.attach; delete standalone.children;
-        drawComposition(ctx, registry, { version: 1, scene: frame.composition.scene, instances: [standalone] }, { view: nativeView, state: frame.state, reduced: view.reduced, visibility: { [piece.instance.id]: look.visible }, opacity: { [piece.instance.id]: look.opacity }, clips: frame.clips, sequenceTime: time }, piece.instance.pass);
+        drawComposition(ctx, registry, { version: 1, scene: frame.composition.scene, instances: [standalone] }, { view: nativeView, state: frame.state, reduced: view.reduced, visibility: { [piece.instance.id]: look.visible }, opacity: { [piece.instance.id]: look.opacity }, clips: frame.clips, sequenceTime: time }, piece.instance.pass ?? 'backdrop');
         continue;
       }
       const p = piece.placement, opacity = look.opacity, changed = p.x !== 0 || p.h !== 0 || p.scale !== 1 || p.facing !== 1 || opacity !== 1;

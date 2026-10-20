@@ -110,9 +110,18 @@ it on release and pans while moving. Arrow keys nudge the selection (Shift for 1
 grid step); Delete removes it; Escape clears it; +, − and 0 zoom; F fits. None of this framing is saved.
 
 The outline groups top-level artwork by kind (people, vehicles, lights, signs, props,
-architecture, markers, groups), with nested artwork under its parent. **Order** shows document
-order instead, and the filter matches id, type or label. Kinds are inferred from type, label and
-catalog category in `layer-roles.ts` and are not written to compositions.
+architecture, markers, groups), with nested artwork under its parent. The filter matches id, type
+or label. Kinds are inferred from type, label and catalog category in `layer-roles.ts` and are not
+written to compositions.
+
+**Order** shows how the scene is drawn. For a layered scene (Library so far) it is the layer stack,
+front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the engine's own layers
+(sky/city/street, weather and room light, shade, light and grade, prompts) as greyed dividers and
+the Logic layer (markers, spawn) listed separately. The **player** row in the Playfield marks where
+the player and engine-drawn walkers are drawn: rows above it draw over them. Drag rows within or
+between layers, or use **Layer**, **Bring forward** and **Send backward** in the inspector. The stack
+is in `layer-stack.ts`. Scenes not yet migrated still show document order and the older Drawing
+pass/Draw order fields.
 
 Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and an
 Outline/Inspector switch; the Add picker covers the screen.

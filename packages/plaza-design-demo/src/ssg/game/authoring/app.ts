@@ -12,6 +12,8 @@ import { createThumbnails } from './asset-thumbnails';
 import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { LAYER_ROLES, layerRole } from './layer-roles';
+import { ENGINE_LAYERS, LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
+import type { Layer } from '../art/core/composition';
 
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices'; revision: string; value: unknown }
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
@@ -155,7 +157,13 @@ export class ComposerModel {
     const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
     for (const [key, field] of Object.entries(element.fields)) props[key] = copy(field.default) as Value;
     const bindings=element.bindingIdentity==='presentation'?Object.fromEntries(Object.entries(element.bindingChoices?.(doc)??{}).filter(([,choices])=>choices.length).map(([key,choices])=>[key,choices[0]])):{};
-    doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order: Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1, pass: element.parts[0] ?? 'backdrop' }); return instanceId;
+    const layer: Layer | undefined = layered(doc) ? element.parts.length || element.role === 'group' ? 'set' : 'logic' : undefined;
+    const order = layer ? frontOrder(doc, layer) : Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1;
+    doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order, ...(layer ? { layer } : { pass: element.parts[0] ?? 'backdrop' }) }); return instanceId;
+  }
+  /** Layered compositions: move artwork to a back-to-front position in a layer. */
+  restack(id: string, instanceId: string, layer: Layer, index: number) {
+    this.edit(id, 'Move in layer stack', value => { const doc = value as Composition; restack(doc, instanceId, layer, index); return doc; });
   }
   private unique(doc: Composition, prefix: string) { const ids = new Set(flatten(doc).map(x => x.node.id)); let i = 1; while (ids.has(`${prefix}-${i}`)) i++; return `${prefix}-${i}`; }
   duplicate(id: string, instanceId: string) {
@@ -447,20 +455,22 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       const layerTools = element('div', 'layer-tools'), search = element('input'), order = element('div', 'segmented'), listHost = element('div');
       search.type = 'search'; search.placeholder = 'Filter'; search.value = layerQuery; search.setAttribute('aria-label', 'Filter the outline'); search.oninput = () => { layerQuery = search.value; renderLayers(); };
       order.setAttribute('role', 'group'); order.setAttribute('aria-label', 'Arrange the outline');
-      for (const [mode, text, title] of [['kind', 'Kind', 'Group by kind of artwork'], ['order', 'Order', 'Document and draw order, back to front']] as const) {
+      for (const [mode, text, title] of [['kind', 'Kind', 'Group by kind of artwork'], ['order', 'Order', 'Draw order: the layer stack, front at the top (older scenes: document order)']] as const) {
         const toggle = button(text, () => { layerSort = mode; for (const other of order.children) other.setAttribute('aria-pressed', String((other as HTMLElement).dataset.mode === mode)); renderLayers(); }, title);
         toggle.dataset.mode = mode; toggle.setAttribute('aria-pressed', String(mode === layerSort)); order.append(toggle);
       }
       layerTools.append(search, order); left.append(layerTools, listHost);
       // Hovering a row outlines the artwork in the preview, the same box the preview shows on hover.
       const item = (node: Instance, depth: number) => {
-        const li = element('li'), pick = button('', () => select_(node.id === selectedId ? '' : node.id), `${node.type} · ${node.pass} · order ${node.order}`);
+        const li = element('li'), pick = button('', () => select_(node.id === selectedId ? '' : node.id), `${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
         pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
-        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', art(node).label)); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId)); li.append(pick); return li;
+        const parallax = node.placement.parallax ?? 1;
+        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + art(node).label)); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId)); li.append(pick); return li;
       };
       function renderLayers() {
         listHost.replaceChildren(); let shown = 0;
-        if (layerSort === 'order') { const list = element('ul', 'hierarchy'); for (const { node, depth } of rows) if (matches(node)) { list.append(item(node, depth)); shown++; } if (shown) listHost.append(list); }
+        if (layerSort === 'order' && layered(composition)) shown = renderStack();
+        else if (layerSort === 'order') { const list = element('ul', 'hierarchy'); for (const { node, depth } of rows) if (matches(node)) { list.append(item(node, depth)); shown++; } if (shown) listHost.append(list); }
         else for (const role of LAYER_ROLES) {
           const list = element('ul', 'hierarchy'); let count = 0;
           for (const top of rows.filter(row => !parents.has(row.node.id) && layerRole(row.node.type, art(row.node).label, art(row.node).category) === role)) {
@@ -473,6 +483,53 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         }
         if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'Nothing matches this filter.' : 'This scene has no artwork yet. Use ＋ Add artwork in the toolbar.'));
         listHost.querySelector<HTMLElement>('button[aria-pressed=true]')?.scrollIntoView({ block: 'nearest' });
+      }
+      /** Front at the top, like a paint program's layer list; the engine's own layers are fixed dividers. */
+      function renderStack() {
+        let shown = 0, dragged = '';
+        const stack = element('div', 'layer-stack');
+        const engine = (text: string, title: string) => { const row = element('div', 'engine-layer', text); row.title = title; return row; };
+        const drop = (target: HTMLElement, place: (event: DragEvent) => { layer: Layer; index: number } | undefined) => {
+          target.ondragover = event => { if (!dragged || !place(event)) return; event.preventDefault(); target.classList.add('drop-target'); };
+          target.ondragleave = () => target.classList.remove('drop-target');
+          target.ondrop = event => { event.preventDefault(); target.classList.remove('drop-target'); const at = place(event); if (!at || !dragged) return; const id = dragged; dragged = ''; run(() => model.restack(doc!.id, id, at.layer, at.index)); };
+        };
+        const draggedNode = () => rows.find(r => r.node.id === dragged)?.node;
+        const accepts = (layer: Layer) => { const node = draggedNode(); if (!node) return false; const e = art(node); return isPlayerRow(node) ? layer === 'playfield' : e.role === 'group' ? layer !== 'logic' : (e.parts.length === 0) === (layer === 'logic'); };
+        const row = (node: Instance) => {
+          const li = item(node, 0);
+          if (isPlayerRow(node)) li.classList.add('player-row');
+          li.draggable = true; li.ondragstart = event => { dragged = node.id; event.dataTransfer?.setData('text/plain', node.id); li.classList.add('dragging'); };
+          li.ondragend = () => { dragged = ''; li.classList.remove('dragging'); };
+          drop(li, event => { const layer = node.layer!; if (!accepts(layer) || dragged === node.id) return; const others = layerRows(composition, layer).filter(n => n.id !== dragged), box = li.getBoundingClientRect(), front = event.clientY < box.top + box.height / 2; return { layer, index: others.indexOf(node) + (front ? 1 : 0) }; });
+          return li;
+        };
+        const section = (layer: Layer, body: (list: HTMLElement) => number) => {
+          const box = element('section', 'stack-layer'), head = element('div', 'stack-head'), list = element('ul', 'hierarchy');
+          const count = body(list); shown += count;
+          if (!layerRows(composition, layer).length) { const empty = element('li', 'stack-empty', 'Empty: drag artwork here'); list.append(empty); }
+          head.append(element('span', '', LAYER_LABELS[layer]), element('span', 'muted', String(layerRows(composition, layer).length))); head.title = LAYER_HINTS[layer];
+          drop(head, () => accepts(layer) ? { layer, index: layerRows(composition, layer).filter(n => n.id !== dragged).length } : undefined);
+          box.append(head, list); stack.append(box);
+        };
+        const list = (target: HTMLElement, nodes: Instance[]) => { let n = 0; for (const node of [...nodes].reverse()) if (matches(node)) { target.append(row(node)); n++; } return n; };
+        const engineAfter = (after: string) => [...ENGINE_LAYERS].reverse().filter(e => e.after === after).forEach(e => stack.append(engine(e.label, e.title)));
+        engineAfter('foreground');
+        for (const layer of [...VISUAL_LAYERS].reverse()) {
+          if (layer === 'playfield') {
+            engineAfter('player');
+            section(layer, target => {
+              const all = layerRows(composition, layer), at = all.findIndex(isPlayerRow); if (at < 0) return list(target, all);
+              const over = list(target, all.slice(at + 1)), player = list(target, [all[at]]), divider = ENGINE_LAYERS.find(e => e.after === 'playfield')!, li = element('li');
+              li.append(engine(divider.label, divider.title)); target.append(li); return over + player + list(target, all.slice(0, at));
+            });
+          } else section(layer, target => list(target, layerRows(composition, layer)));
+        }
+        engineAfter('start');
+        const logic = element('details', 'layer-group'); logic.open = roleOpen.get('logic-layer') ?? true; logic.ontoggle = () => roleOpen.set('logic-layer', logic.open);
+        const logicList = element('ul', 'hierarchy'); shown += list(logicList, layerRows(composition, 'logic'));
+        logic.append(element('summary', '', `${LAYER_LABELS.logic} · ${layerRows(composition, 'logic').length}`), logicList); logic.title = LAYER_HINTS.logic;
+        listHost.append(stack, logic); return shown;
       }
       renderLayers();
     } else left.append(element('p', 'muted', 'Open a scene, or a timeline that refers to one.'));
@@ -526,8 +583,19 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const placementLabels: Record<string, string> = { x: 'X position', h: 'Height above floor', scale: 'Scale', parallax: 'Parallax' };
     for (const [key, value, min] of [['x', node.placement.x], ['h', node.placement.h], ['scale', node.placement.scale ?? 1, 0.0001], ['parallax', node.placement.parallax ?? 1, 0]] as [keyof Instance['placement'], number, number?][]) position.append(label(placementLabels[key], numberInput(value, v => editInstance(`Change ${key}`, n => { n.placement[key] = v as never; }), min)));
     position.append(label('Facing', select([{ value: '1', label: 'Right' }, { value: '-1', label: 'Left' }], String(node.placement.facing ?? 1), v => editInstance('Change facing', n => n.placement.facing = Number(v) as 1 | -1))));
-    position.append(label('Draw order', numberInput(node.order, v => editInstance('Change layer order', n => n.order = v))));
-    position.append(label('Drawing pass', select(['backdrop', 'devices', 'people', 'foreground'].map(v => ({ value: v, label: v })), node.pass, v => editInstance('Change drawing pass', n => n.pass = v as Instance['pass']))));
+    const composed = compositionDocument()!;
+    if (node.layer) {
+      const drawn = art.parts.length > 0 || art.role === 'group', choices: Layer[] = isPlayerRow(node) ? ['playfield'] : drawn ? [...VISUAL_LAYERS] : ['logic'];
+      const pick = select(choices.map(v => ({ value: v, label: LAYER_LABELS[v] })), node.layer, v => run(() => model.restack(composed.id, node.id, v as Layer, layerRows(composed.value as Composition, v as Layer).length)));
+      if (choices.length < 2) (pick as HTMLSelectElement).disabled = true; pick.title = LAYER_HINTS[node.layer];
+      position.append(label('Layer', pick));
+      const siblings = layerRows(composed.value as Composition, node.layer), at = siblings.findIndex(n => n.id === node.id), stepper = element('div', 'row');
+      const forward = button('Bring forward', () => run(() => model.restack(composed.id, node.id, node.layer!, at + 1)), 'Draw in front of the next item in this layer'), backward = button('Send backward', () => run(() => model.restack(composed.id, node.id, node.layer!, at - 1)), 'Draw behind the previous item in this layer');
+      forward.disabled = at >= siblings.length - 1; backward.disabled = at <= 0; stepper.append(backward, forward); position.append(stepper);
+    } else {
+      position.append(label('Draw order', numberInput(node.order, v => editInstance('Change layer order', n => n.order = v))));
+      position.append(label('Drawing pass', select(['backdrop', 'devices', 'people', 'foreground'].map(v => ({ value: v, label: v })), node.pass ?? 'backdrop', v => editInstance('Change drawing pass', n => n.pass = v as Instance['pass']))));
+    }
     const fields = Object.entries(art.fields);
     if (fields.length) { const look = part('Look', true); for (const [key, field] of fields) { const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
     const composition = compositionDocument()!.value as Composition, anchorDetails = part('Attachment and anchors', !!node.attach);
