@@ -75,3 +75,6 @@ for(const id of ['sign','box','till','relay','gate','fence','scan','cam3','billb
   return{x:offset-n(p,'spotWidth')/2,h:n(p,'spotY')+n(p,'spotHeight'),w:n(p,'spotWidth'),tall:n(p,'spotHeight')};
  },(x,v,_p,s,at)=>draw(x,raised(v,at.h),id==='dlv9'?n(s,'position'):at.x,s.snapshot as unknown as devices.DowntownDeviceState),{snapshot:{kind:'json',label:'Live device snapshot',default:empty as unknown as Value,validate:validateDowntownDeviceSnapshot},...(id==='dlv9'?{position:num('Current route position')}: {})}),bindingIdentity:'presentation'});
 }
+
+// Snapshot consumers are presentation; source manifests protect actual live references.
+for(const element of downtownElements)element.bindingIdentity="presentation";

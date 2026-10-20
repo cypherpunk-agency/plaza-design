@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `edcfa44` on main and production.
-Homepage jobs39352020586/39352019888 and design job39352020495 succeeded.
+Last verified deployment: `2ff6905` on main and production.
+Homepage jobs39352732717/39352732577 and design job39352732545 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2648,3 +2648,35 @@ Play/Stop PASS with no warning/error logs. This is bounded native execution evid
 pixels are covered by source/actual-Game draw tests, not claimed as a screenshot coordinate assertion.
 Package app-REOOQEM3.js / play-NH6HP3MK.js / play-899e35851c2275ab.html. Remaining Downtown fixed
 geometry/reflections and transit/source/lifecycle/current-state/world/network/removal work stay open.
+
+## 2026-10-20 Downtown artwork geometry and hierarchy
+
+Downtown's layout/frame inputs now use common typed artwork roles: stall metrics, alley door
+offset, vehicle home, two physical platform positions/extents, caster position/extent and ten
+reflection anchors. Shared manifest width drives frames. Removed the blanket old instance/type
+floor, snapshot-only picture deletion locks and the missing-actors source backfill. Every real
+attachment, device, companion and manifest reference remains validated. Window visibility now
+uses the actual parent/attachment hierarchy; front/window binding names support ordinary source
+identities instead of requiring numbered front-N-window-N-N names. Native registered device
+picture roles remain the sole implementation; no new simulation/state owner was introduced.
+
+check-downtown-artwork-roles.mts PASS (`downtown-artwork-role-source-r6ejgu`): actual width/geometry/
+device/companion controls, eight replacement inputs, explicit dependency rebinding and old artwork
+deletion, non-numbered front/window replacement, native platform/caster/stall/alley/vehicle/
+reflection outputs, strict required refs/missing actors rejection, history/bundle/protected Save/
+fresh shipping import/byte Undo.143 immutable Canvas-command cases remain exact.
+Current ordinary manifest proof PASS (`downtown-manifest-save/run-akuzkq`); its older direct-preview
+call now supplies the actual source document, and its removal case rebinds the real device ref.
+Downtown visual source PASS (`downtown-visual-source-V9QgOf`), shared property device geometry
+PASS (`device-property-geometry-3Oy0Jr`), all19 scene inspector forms PASS
+(`scene-inspector-identities-Q026xo`). The older content proof no longer compares replaced raw
+pre-migration device JSON byte-for-byte: it retains original scene geometry/exits/access and four
+exact device-paint/initial-state-read/topology comparisons, which PASS. Existing controller source
+outcome suites remain separate evidence; no original baseline was changed.
+
+Source0343b7b81a3e2bb81d71faa17b57f22418b8a5b4ebd2c15277c16b3b52d2fb63 passes tsc/both builds and173/173 zero-difference/error
+browser raster rows (independently asserted). Real package mounts the new stall/width/reflection
+selectors; native Downtown and Yard Play/Stop PASS with no warning/error logs. Package
+app-HU3N7NWJ.js / play-52X4TZNU.js / play-10344c31ca11d0bb.html. All19 actor CRUD/history/bundle/protected Save/fresh native reload/byte Undo PASS
+(`actor-entities/run-9VmLGu`). Transit geometry and final all19 lifecycle/current-state/world/
+network/removal reconciliation remain open; no whole-goal gate promotion from this checkpoint.

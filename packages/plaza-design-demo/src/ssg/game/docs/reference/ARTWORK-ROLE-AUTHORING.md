@@ -191,3 +191,15 @@ layout inputs and fixed artwork identity/type restrictions. Actual typed source 
 protected Save/fresh shipping/Undo proof: check-stacks-artwork-roles.mts,
 `stacks-actor-role-source-442wyn`. Original drawings/outcomes and173 browser raster rows unchanged
 at source6c855527c33d. Actor roles are documented in SCENE-PRESENTATION-ACTORS.md.
+
+## Downtown geometry and parented fronts
+
+Typed source roles select stall metrics, alley offset, vehicle home, platform points/extents,
+shadow point/extent and ten reflection anchors. Every registered native draw pass receives the
+actual SceneDocument; old instance IDs/types do not lock ordinary artwork. Real refs must be
+rebound before removal. Window/front visibility follows parent/attachment hierarchy with ordinary
+source IDs. Missing actor collections reject instead of injecting shipping actors.
+Actual Scene geometry/width, Device artwork and Companion perch controls, native outputs,
+replacement/deletion/renamed front, protected Save/fresh import/Undo PASS:
+check-downtown-artwork-roles.mts (`downtown-artwork-role-source-r6ejgu`).143 original command cases
+and173 browser raster rows unchanged at source0343b7b81a3e. See the execution ledger for scope.
