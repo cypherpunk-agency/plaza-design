@@ -62,6 +62,8 @@ export const composerStyles = `
 .scene-composer .stage-wrap{position:relative;flex:1;min-height:200px;overflow:hidden}
 .scene-composer .preview-stage{position:absolute;inset:0;overflow:auto;display:grid;align-items:safe center;justify-items:safe center;background:#05080c;container-type:size;padding:8px;overscroll-behavior:contain}
 .scene-composer .preview-stage>canvas[data-hover=artwork]{cursor:pointer}.scene-composer .preview-stage>canvas[data-hover=selected]{cursor:move}.scene-composer .preview-stage>canvas[data-hover=empty]{cursor:grab}.scene-composer .preview-stage>canvas[data-panning]{cursor:grabbing}
+.scene-composer .stage-play{position:absolute;inset:0;overflow:auto;padding:8px 12px;background:var(--bg)}.scene-composer .stage-play[hidden],.scene-composer .preview-stage[hidden]{display:none}
+.scene-composer .preview-stage.comparing{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.scene-composer .preview-stage.comparing>canvas{width:min(50cqw - 12px,(100cqh - 16px) * var(--fit-ratio,var(--ratio,1.7778)))}.scene-composer .preview-stage>canvas.compare{pointer-events:none}.scene-composer .preview-stage>canvas[hidden]{display:none}
 .scene-composer .hover-box{position:absolute;pointer-events:none;outline:1px solid #ffd27acc;outline-offset:1px}.scene-composer .hover-box[hidden]{display:none}
 .scene-composer .hover-box[data-below]::after{bottom:auto;top:calc(100% + 3px)}.scene-composer .hover-box[data-right]::after{left:auto;right:-2px}
 .scene-composer .hover-box::after{content:attr(data-label);position:absolute;left:-2px;bottom:calc(100% + 3px);font:11px/1.4 var(--mono);background:#10151df0;color:var(--warn);padding:1px 6px;border-radius:3px;white-space:nowrap}
@@ -98,7 +100,9 @@ export const composerStyles = `
 .scene-composer .style-frames{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;padding:4px 0}.scene-composer .style-frame{display:grid;gap:10px;min-width:0;align-content:start}.scene-composer .style-frame h3{margin:0}.scene-composer .style-frame .motto{margin:2px 0 0;font-style:italic;color:#ffd9a5}
 .scene-composer .style-frame .swatches{display:flex;gap:4px;max-width:420px}.scene-composer .style-frame .swatches span{flex:1;height:14px;border-radius:2px}
 .scene-composer .frame-body{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}.scene-composer .frame-body canvas{width:100%;height:auto;background:#05080c;display:block;margin-top:8px}.scene-composer .frame-body .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.scene-composer .frame-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.scene-composer .frame-strip canvas{margin:0}
+.scene-composer .frame-strip{position:sticky;bottom:0;z-index:3;display:grid;grid-auto-flow:column;grid-auto-columns:150px;gap:8px;overflow-x:auto;margin-top:10px;padding:8px 0;background:var(--bg);border-top:1px solid var(--line);box-shadow:0 -8px 16px #0008}.scene-composer .frame-strip canvas{margin:0}
+@media(max-width:1200px){.scene-composer .frame-body{grid-template-columns:minmax(0,1fr)}}
+.scene-composer .frame-compare{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.scene-composer .frame-compare figure{margin:0;min-width:0}.scene-composer .frame-compare h3{margin:8px 0 0}
 .scene-composer .style-frame dl{display:grid;grid-template-columns:80px minmax(0,1fr);gap:6px 10px;margin:0;font-size:13px}.scene-composer .style-frame dt{color:var(--muted);font:600 11px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.05em}.scene-composer .style-frame dd{margin:0}
 .scene-composer .asset-browser-grid .primary{margin:6px 0 10px}
 
@@ -164,7 +168,7 @@ export const composerStyles = `
   .scene-composer .hierarchy button{min-height:40px;font-size:13px}
   .scene-composer .tool-panel{overflow:visible}.scene-composer .tool-panel>section,.scene-composer .tool-panel>div{padding:10px 12px}
   .scene-composer .workbench-screen :has(>canvas){display:flex;flex-direction:column;align-items:stretch}.scene-composer .workbench-screen :has(>canvas)>canvas{order:-1;position:sticky;top:0;z-index:2;margin-bottom:8px;box-shadow:0 6px 12px #000a}
-  .scene-composer .asset-browser-grid,.scene-composer .asset-browser-grid:has(.asset-grid),.scene-composer .asset-browser-grid.with-districts,.scene-composer .asset-browser-grid.with-districts:has(.asset-grid){grid-template-columns:1fr}.scene-composer .district-bar{flex-direction:row;flex-wrap:wrap}.scene-composer .style-frames,.scene-composer .frame-body{grid-template-columns:1fr}.scene-composer .district-bar .chip{width:auto;gap:6px}.scene-composer .asset-browser-grid .catalog-list{max-height:40vh}
+  .scene-composer .asset-browser-grid,.scene-composer .asset-browser-grid:has(.asset-grid),.scene-composer .asset-browser-grid.with-districts,.scene-composer .asset-browser-grid.with-districts:has(.asset-grid){grid-template-columns:1fr}.scene-composer .district-bar{flex-direction:row;flex-wrap:wrap}.scene-composer .style-frames,.scene-composer .frame-body,.scene-composer .frame-compare{grid-template-columns:1fr}.scene-composer .district-bar .chip{width:auto;gap:6px}.scene-composer .asset-browser-grid .catalog-list{max-height:40vh}
   .scene-composer .add-picker{position:fixed;inset:0;z-index:50;border-radius:0}.scene-composer .play-button{margin-left:0}
   .scene-composer .timeline-grid{grid-template-columns:1fr}
 }

@@ -23,6 +23,8 @@ export interface NativeSceneAdapter {
   /** Resolve authored content before construction, so removed default bindings are never evaluated. */
   pendingDefinition?(document:Composition,state:Environment['state'],options:NativeOptions,documents:ReadonlyMap<string,unknown>):SceneDef;
   environment?(document: Composition, view: View, engine: EngineDraw): Environment;
+  /** Weather and climate follow this scene instead (proposal scenes borrow their base's). */
+  climateScene?: string;
 }
 export type NativeOptions = Pick<Environment, 'reduced'> & Partial<Pick<Environment, 'visibility' | 'opacity' | 'clips' | 'sequenceTime'>>;
 const number = (value: unknown, fallback: number) => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -146,7 +148,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
     if (request.weather !== undefined) validatePreviewWeather(request.weather);
     if (request.climate !== undefined && request.climate !== null && !CLIMATE_IDS.includes(request.climate)) throw new Error('Invalid preview reporting climate');
     const beforeLight = light(), snapshot = request.weather ? Object.freeze({ ...request.weather }) : undefined;
-    try { return city.withSnapshot({ day: number(request.environment.day, 1), min: number(request.environment.minute, 580), seed: number(request.environment.seed, 3) }, () => withSceneWeather(request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, { ...request, weather: snapshot }), request.climate)); }
+    try { return city.withSnapshot({ day: number(request.environment.day, 1), min: number(request.environment.minute, 580), seed: number(request.environment.seed, 3) }, () => withSceneWeather(adapters[request.composition.scene]?.climateScene ?? request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, { ...request, weather: snapshot }), request.climate)); }
     finally { setLight(beforeLight); }
   } };
 }

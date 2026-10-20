@@ -1,0 +1,6532 @@
+{
+  "version": 1,
+  "scene": "downtown-next",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "downtown.marker",
+      "props": {
+        "role": "scene",
+        "width": 2000,
+        "height": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "pass": "backdrop"
+    },
+    {
+      "id": "spawn",
+      "type": "downtown.marker",
+      "props": {
+        "role": "spawn"
+      },
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 1,
+      "pass": "backdrop"
+    },
+    {
+      "id": "skyline-far",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.18,
+        "seed": 7,
+        "minHeight": 70,
+        "maxHeight": 150,
+        "alpha": 0.18,
+        "litChance": 0.12
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "pass": "backdrop",
+      "bindings": {
+        "width": "scene.width"
+      }
+    },
+    {
+      "id": "skyline-near",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.45,
+        "seed": 19,
+        "minHeight": 50,
+        "maxHeight": 120,
+        "alpha": 0.3,
+        "litChance": 0.18
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "pass": "backdrop",
+      "bindings": {
+        "width": "scene.width"
+      }
+    },
+    {
+      "id": "tenement-0",
+      "type": "market.facade",
+      "props": {
+        "width": 120,
+        "seed": 400,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": -60,
+        "h": 0
+      },
+      "order": 4,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-1",
+      "type": "market.facade",
+      "props": {
+        "width": 157,
+        "seed": 413,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 5,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-2",
+      "type": "market.facade",
+      "props": {
+        "width": 144,
+        "seed": 426,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 6,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-3",
+      "type": "market.facade",
+      "props": {
+        "width": 131,
+        "seed": 439,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 390,
+        "h": 0
+      },
+      "order": 7,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-5",
+      "type": "market.facade",
+      "props": {
+        "width": 155,
+        "seed": 465,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 690,
+        "h": 0
+      },
+      "order": 8,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-6",
+      "type": "market.facade",
+      "props": {
+        "width": 142,
+        "seed": 478,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 840,
+        "h": 0
+      },
+      "order": 9,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-7",
+      "type": "market.facade",
+      "props": {
+        "width": 129,
+        "seed": 491,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 10,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-8",
+      "type": "market.facade",
+      "props": {
+        "width": 166,
+        "seed": 504,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 1140,
+        "h": 0
+      },
+      "order": 11,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-10",
+      "type": "market.facade",
+      "props": {
+        "width": 140,
+        "seed": 530,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 1440,
+        "h": 0
+      },
+      "order": 12,
+      "pass": "backdrop"
+    },
+    {
+      "id": "tenement-11",
+      "type": "market.facade",
+      "props": {
+        "width": 127,
+        "seed": 543,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 1590,
+        "h": 0
+      },
+      "order": 13,
+      "pass": "backdrop"
+    },
+    {
+      "id": "antenna",
+      "type": "downtown.antenna",
+      "props": {},
+      "placement": {
+        "x": 1600,
+        "h": 0
+      },
+      "order": 14,
+      "pass": "backdrop"
+    },
+    {
+      "id": "front-0",
+      "type": "downtown.front",
+      "props": {
+        "width": 150,
+        "height": 340,
+        "roof": false,
+        "seed": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 15,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-0-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 210
+          },
+          "placement": {
+            "x": 23,
+            "h": 120
+          },
+          "order": 16,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 420
+          },
+          "placement": {
+            "x": 53,
+            "h": 120
+          },
+          "order": 17,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 630
+          },
+          "placement": {
+            "x": 83,
+            "h": 120
+          },
+          "order": 18,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 840
+          },
+          "placement": {
+            "x": 113,
+            "h": 120
+          },
+          "order": 19,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 211
+          },
+          "placement": {
+            "x": 23,
+            "h": 186
+          },
+          "order": 20,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 421
+          },
+          "placement": {
+            "x": 53,
+            "h": 186
+          },
+          "order": 21,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 631
+          },
+          "placement": {
+            "x": 83,
+            "h": 186
+          },
+          "order": 22,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 841
+          },
+          "placement": {
+            "x": 113,
+            "h": 186
+          },
+          "order": 23,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 212
+          },
+          "placement": {
+            "x": 23,
+            "h": 252
+          },
+          "order": 24,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5587577160493827,
+            "ac": true,
+            "seed": 422
+          },
+          "placement": {
+            "x": 53,
+            "h": 252
+          },
+          "order": 25,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 632
+          },
+          "placement": {
+            "x": 83,
+            "h": 252
+          },
+          "order": 26,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 842
+          },
+          "placement": {
+            "x": 113,
+            "h": 252
+          },
+          "order": 27,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 213
+          },
+          "placement": {
+            "x": 23,
+            "h": 318
+          },
+          "order": 28,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5564643347050754,
+            "ac": false,
+            "seed": 423
+          },
+          "placement": {
+            "x": 53,
+            "h": 318
+          },
+          "order": 29,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8111539780521262,
+            "ac": false,
+            "seed": 633
+          },
+          "placement": {
+            "x": 83,
+            "h": 318
+          },
+          "order": 30,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-0-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5462962962962963,
+            "ac": false,
+            "seed": 843
+          },
+          "placement": {
+            "x": 113,
+            "h": 318
+          },
+          "order": 31,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-0-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-0-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 32,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-0.metrics"
+          }
+        },
+        {
+          "id": "front-0-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 116,
+            "h": 0
+          },
+          "order": 33,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-0.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-1",
+      "type": "downtown.front",
+      "props": {
+        "width": 120,
+        "height": 340,
+        "roof": false,
+        "seed": 1
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 34,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-1-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 1210
+          },
+          "placement": {
+            "x": 23,
+            "h": 120
+          },
+          "order": 35,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 1420
+          },
+          "placement": {
+            "x": 53,
+            "h": 120
+          },
+          "order": 36,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.45631430041152266,
+            "ac": true,
+            "seed": 1630
+          },
+          "placement": {
+            "x": 83,
+            "h": 120
+          },
+          "order": 37,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 1211
+          },
+          "placement": {
+            "x": 23,
+            "h": 186
+          },
+          "order": 38,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8109567901234568,
+            "ac": true,
+            "seed": 1421
+          },
+          "placement": {
+            "x": 53,
+            "h": 186
+          },
+          "order": 39,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.09445301783264747,
+            "ac": false,
+            "seed": 1631
+          },
+          "placement": {
+            "x": 83,
+            "h": 186
+          },
+          "order": 40,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.109,
+            "ac": false,
+            "seed": 6041
+          },
+          "placement": {
+            "x": 23,
+            "h": 252
+          },
+          "order": 41,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.412,
+            "ac": true,
+            "seed": 6251
+          },
+          "placement": {
+            "x": 53,
+            "h": 252
+          },
+          "order": 42,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 6461
+          },
+          "placement": {
+            "x": 83,
+            "h": 252
+          },
+          "order": 43,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.12,
+            "ac": true,
+            "seed": 8141
+          },
+          "placement": {
+            "x": 23,
+            "h": 318
+          },
+          "order": 44,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 8351
+          },
+          "placement": {
+            "x": 53,
+            "h": 318
+          },
+          "order": 45,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-1-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.613,
+            "ac": true,
+            "seed": 8561
+          },
+          "placement": {
+            "x": 83,
+            "h": 318
+          },
+          "order": 46,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-1-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-1-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 47,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-1.metrics"
+          }
+        },
+        {
+          "id": "front-1-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 56,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 10,
+            "h": 0
+          },
+          "order": 48,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-1.visible"
+          }
+        },
+        {
+          "id": "front-1-bay-1",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 80,
+            "h": 0
+          },
+          "order": 49,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-1.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-2",
+      "type": "downtown.front",
+      "props": {
+        "width": 150,
+        "height": 406,
+        "roof": false,
+        "seed": 2
+      },
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 50,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-2-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 2210
+          },
+          "placement": {
+            "x": 23,
+            "h": 120
+          },
+          "order": 51,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 5.835095164609054,
+            "ac": true,
+            "seed": 2420
+          },
+          "placement": {
+            "x": 53,
+            "h": 120
+          },
+          "order": 52,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.33687842935528123,
+            "ac": true,
+            "seed": 2630
+          },
+          "placement": {
+            "x": 83,
+            "h": 120
+          },
+          "order": 53,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.34002486282578875,
+            "ac": true,
+            "seed": 2840
+          },
+          "placement": {
+            "x": 113,
+            "h": 120
+          },
+          "order": 54,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8976980452674898,
+            "ac": false,
+            "seed": 2211
+          },
+          "placement": {
+            "x": 23,
+            "h": 186
+          },
+          "order": 55,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.7259473593964335,
+            "ac": false,
+            "seed": 2421
+          },
+          "placement": {
+            "x": 53,
+            "h": 186
+          },
+          "order": 56,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 2631
+          },
+          "placement": {
+            "x": 83,
+            "h": 186
+          },
+          "order": 57,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 2841
+          },
+          "placement": {
+            "x": 113,
+            "h": 186
+          },
+          "order": 58,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9842978395061729,
+            "ac": false,
+            "seed": 2212
+          },
+          "placement": {
+            "x": 23,
+            "h": 252
+          },
+          "order": 59,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 2422
+          },
+          "placement": {
+            "x": 53,
+            "h": 252
+          },
+          "order": 60,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5241255144032921,
+            "ac": false,
+            "seed": 2632
+          },
+          "placement": {
+            "x": 83,
+            "h": 252
+          },
+          "order": 61,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 2842
+          },
+          "placement": {
+            "x": 113,
+            "h": 252
+          },
+          "order": 62,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.28386059670781894,
+            "ac": false,
+            "seed": 2213
+          },
+          "placement": {
+            "x": 23,
+            "h": 318
+          },
+          "order": 63,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 2423
+          },
+          "placement": {
+            "x": 53,
+            "h": 318
+          },
+          "order": 64,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.6801697530864198,
+            "ac": false,
+            "seed": 2633
+          },
+          "placement": {
+            "x": 83,
+            "h": 318
+          },
+          "order": 65,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4914437585733882,
+            "ac": true,
+            "seed": 2843
+          },
+          "placement": {
+            "x": 113,
+            "h": 318
+          },
+          "order": 66,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-4-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 2214
+          },
+          "placement": {
+            "x": 23,
+            "h": 384
+          },
+          "order": 67,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-4-0.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-4-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.17093192729766804,
+            "ac": true,
+            "seed": 2424
+          },
+          "placement": {
+            "x": 53,
+            "h": 384
+          },
+          "order": 68,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-4-1.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-4-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 2634
+          },
+          "placement": {
+            "x": 83,
+            "h": 384
+          },
+          "order": 69,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-4-2.enabled"
+          }
+        },
+        {
+          "id": "front-2-window-4-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.2647719478737997,
+            "ac": true,
+            "seed": 2844
+          },
+          "placement": {
+            "x": 113,
+            "h": 384
+          },
+          "order": 70,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-2-window-4-3.enabled"
+          }
+        },
+        {
+          "id": "front-2-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 71,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-2.metrics"
+          }
+        },
+        {
+          "id": "front-2-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 34,
+            "kind": "shutter"
+          },
+          "placement": {
+            "x": 6,
+            "h": 0
+          },
+          "order": 72,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-2.visible"
+          }
+        },
+        {
+          "id": "front-2-bay-1",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 112,
+            "h": 0
+          },
+          "order": 73,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-2.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-3",
+      "type": "downtown.front",
+      "props": {
+        "width": 130,
+        "height": 340,
+        "roof": false,
+        "seed": 3
+      },
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 74,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-3-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 3140
+          },
+          "placement": {
+            "x": 13,
+            "h": 120
+          },
+          "order": 75,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4862568587105624,
+            "ac": false,
+            "seed": 3350
+          },
+          "placement": {
+            "x": 43,
+            "h": 120
+          },
+          "order": 76,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.2831275720164609,
+            "ac": true,
+            "seed": 3560
+          },
+          "placement": {
+            "x": 73,
+            "h": 120
+          },
+          "order": 77,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8690929355281207,
+            "ac": false,
+            "seed": 3770
+          },
+          "placement": {
+            "x": 103,
+            "h": 120
+          },
+          "order": 78,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.7009430727023319,
+            "ac": true,
+            "seed": 3141
+          },
+          "placement": {
+            "x": 13,
+            "h": 186
+          },
+          "order": 79,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.30954218106995884,
+            "ac": true,
+            "seed": 3351
+          },
+          "placement": {
+            "x": 43,
+            "h": 186
+          },
+          "order": 80,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 3561
+          },
+          "placement": {
+            "x": 73,
+            "h": 186
+          },
+          "order": 81,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.6942772633744856,
+            "ac": true,
+            "seed": 3771
+          },
+          "placement": {
+            "x": 103,
+            "h": 186
+          },
+          "order": 82,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.178,
+            "ac": true,
+            "seed": 8181
+          },
+          "placement": {
+            "x": 13,
+            "h": 252
+          },
+          "order": 83,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.443,
+            "ac": false,
+            "seed": 8391
+          },
+          "placement": {
+            "x": 43,
+            "h": 252
+          },
+          "order": 84,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 8601
+          },
+          "placement": {
+            "x": 73,
+            "h": 252
+          },
+          "order": 85,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.242,
+            "ac": false,
+            "seed": 8811
+          },
+          "placement": {
+            "x": 103,
+            "h": 252
+          },
+          "order": 86,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.283,
+            "ac": false,
+            "seed": 10281
+          },
+          "placement": {
+            "x": 13,
+            "h": 318
+          },
+          "order": 87,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.65,
+            "ac": false,
+            "seed": 10491
+          },
+          "placement": {
+            "x": 43,
+            "h": 318
+          },
+          "order": 88,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.538,
+            "ac": true,
+            "seed": 10701
+          },
+          "placement": {
+            "x": 73,
+            "h": 318
+          },
+          "order": 89,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-3-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 10911
+          },
+          "placement": {
+            "x": 103,
+            "h": 318
+          },
+          "order": 90,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-3-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-3-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 91,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-3.metrics"
+          }
+        },
+        {
+          "id": "front-3-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 14,
+            "h": 0
+          },
+          "order": 92,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-3.visible"
+          }
+        },
+        {
+          "id": "front-3-bay-1",
+          "type": "downtown.bay",
+          "props": {
+            "width": 64,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 50,
+            "h": 0
+          },
+          "order": 93,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-3.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-4",
+      "type": "downtown.front",
+      "props": {
+        "width": 170,
+        "height": 406,
+        "roof": false,
+        "seed": 4
+      },
+      "placement": {
+        "x": 550,
+        "h": 0
+      },
+      "order": 94,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-4-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 4175
+          },
+          "placement": {
+            "x": 18,
+            "h": 120
+          },
+          "order": 95,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.2817858367626886,
+            "ac": false,
+            "seed": 4385
+          },
+          "placement": {
+            "x": 48,
+            "h": 120
+          },
+          "order": 96,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 4595
+          },
+          "placement": {
+            "x": 78,
+            "h": 120
+          },
+          "order": 97,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 4805
+          },
+          "placement": {
+            "x": 108,
+            "h": 120
+          },
+          "order": 98,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-0-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.3981610082304527,
+            "ac": false,
+            "seed": 5015
+          },
+          "placement": {
+            "x": 138,
+            "h": 120
+          },
+          "order": 99,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-0-4.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5041881001371742,
+            "ac": false,
+            "seed": 4176
+          },
+          "placement": {
+            "x": 18,
+            "h": 186
+          },
+          "order": 100,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8931370027434842,
+            "ac": false,
+            "seed": 4386
+          },
+          "placement": {
+            "x": 48,
+            "h": 186
+          },
+          "order": 101,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 4596
+          },
+          "placement": {
+            "x": 78,
+            "h": 186
+          },
+          "order": 102,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 4806
+          },
+          "placement": {
+            "x": 108,
+            "h": 186
+          },
+          "order": 103,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-1-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.3839977709190672,
+            "ac": false,
+            "seed": 5016
+          },
+          "placement": {
+            "x": 138,
+            "h": 186
+          },
+          "order": 104,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-1-4.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.6587491426611797,
+            "ac": false,
+            "seed": 4177
+          },
+          "placement": {
+            "x": 18,
+            "h": 252
+          },
+          "order": 105,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 4387
+          },
+          "placement": {
+            "x": 48,
+            "h": 252
+          },
+          "order": 106,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8714163237311385,
+            "ac": false,
+            "seed": 4597
+          },
+          "placement": {
+            "x": 78,
+            "h": 252
+          },
+          "order": 107,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 4807
+          },
+          "placement": {
+            "x": 108,
+            "h": 252
+          },
+          "order": 108,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-2-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8595464677640604,
+            "ac": false,
+            "seed": 5017
+          },
+          "placement": {
+            "x": 138,
+            "h": 252
+          },
+          "order": 109,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-2-4.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 11527
+          },
+          "placement": {
+            "x": 18,
+            "h": 318
+          },
+          "order": 110,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 11737
+          },
+          "placement": {
+            "x": 48,
+            "h": 318
+          },
+          "order": 111,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 11947
+          },
+          "placement": {
+            "x": 78,
+            "h": 318
+          },
+          "order": 112,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 12157
+          },
+          "placement": {
+            "x": 108,
+            "h": 318
+          },
+          "order": 113,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-3-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 12367
+          },
+          "placement": {
+            "x": 138,
+            "h": 318
+          },
+          "order": 114,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-3-4.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-4-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.615,
+            "ac": false,
+            "seed": 13627
+          },
+          "placement": {
+            "x": 18,
+            "h": 384
+          },
+          "order": 115,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-4-0.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-4-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.225,
+            "ac": true,
+            "seed": 13837
+          },
+          "placement": {
+            "x": 48,
+            "h": 384
+          },
+          "order": 116,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-4-1.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-4-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.811,
+            "ac": false,
+            "seed": 14047
+          },
+          "placement": {
+            "x": 78,
+            "h": 384
+          },
+          "order": 117,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-4-2.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-4-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 14257
+          },
+          "placement": {
+            "x": 108,
+            "h": 384
+          },
+          "order": 118,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-4-3.enabled"
+          }
+        },
+        {
+          "id": "front-4-window-4-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.256,
+            "ac": true,
+            "seed": 14467
+          },
+          "placement": {
+            "x": 138,
+            "h": 384
+          },
+          "order": 119,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-4-window-4-4.enabled"
+          }
+        },
+        {
+          "id": "front-4-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 120,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-4.metrics"
+          }
+        },
+        {
+          "id": "front-4-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 54,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 8,
+            "h": 0
+          },
+          "order": 121,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-4.visible"
+          }
+        },
+        {
+          "id": "front-4-bay-1",
+          "type": "downtown.bay",
+          "props": {
+            "width": 26,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 70,
+            "h": 0
+          },
+          "order": 122,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-4.visible"
+          }
+        },
+        {
+          "id": "front-4-bay-2",
+          "type": "downtown.bay",
+          "props": {
+            "width": 58,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 104,
+            "h": 0
+          },
+          "order": 123,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-4.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-5",
+      "type": "downtown.front",
+      "props": {
+        "width": 140,
+        "height": 340,
+        "roof": false,
+        "seed": 5
+      },
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 124,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-5-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 5175
+          },
+          "placement": {
+            "x": 18,
+            "h": 120
+          },
+          "order": 125,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.07731481481481481,
+            "ac": false,
+            "seed": 5385
+          },
+          "placement": {
+            "x": 48,
+            "h": 120
+          },
+          "order": 126,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 5595
+          },
+          "placement": {
+            "x": 78,
+            "h": 120
+          },
+          "order": 127,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 5805
+          },
+          "placement": {
+            "x": 108,
+            "h": 120
+          },
+          "order": 128,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9272290809327847,
+            "ac": true,
+            "seed": 5176
+          },
+          "placement": {
+            "x": 18,
+            "h": 186
+          },
+          "order": 129,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 5386
+          },
+          "placement": {
+            "x": 48,
+            "h": 186
+          },
+          "order": 130,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 5596
+          },
+          "placement": {
+            "x": 78,
+            "h": 186
+          },
+          "order": 131,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4767318244170096,
+            "ac": false,
+            "seed": 5806
+          },
+          "placement": {
+            "x": 108,
+            "h": 186
+          },
+          "order": 132,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 5177
+          },
+          "placement": {
+            "x": 18,
+            "h": 252
+          },
+          "order": 133,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9154792524005487,
+            "ac": true,
+            "seed": 5387
+          },
+          "placement": {
+            "x": 48,
+            "h": 252
+          },
+          "order": 134,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 5597
+          },
+          "placement": {
+            "x": 78,
+            "h": 252
+          },
+          "order": 135,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 5807
+          },
+          "placement": {
+            "x": 108,
+            "h": 252
+          },
+          "order": 136,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 5178
+          },
+          "placement": {
+            "x": 18,
+            "h": 318
+          },
+          "order": 137,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 5388
+          },
+          "placement": {
+            "x": 48,
+            "h": 318
+          },
+          "order": 138,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4526963305898491,
+            "ac": false,
+            "seed": 5598
+          },
+          "placement": {
+            "x": 78,
+            "h": 318
+          },
+          "order": 139,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-5-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9465835048010974,
+            "ac": false,
+            "seed": 5808
+          },
+          "placement": {
+            "x": 108,
+            "h": 318
+          },
+          "order": 140,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-5-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-5-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 141,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-5.metrics"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-6",
+      "type": "downtown.front",
+      "props": {
+        "width": 90,
+        "height": 340,
+        "roof": false,
+        "seed": 6
+      },
+      "placement": {
+        "x": 860,
+        "h": 0
+      },
+      "order": 142,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-6-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 6210
+          },
+          "placement": {
+            "x": 23,
+            "h": 120
+          },
+          "order": 143,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-6-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 6420
+          },
+          "placement": {
+            "x": 53,
+            "h": 120
+          },
+          "order": 144,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-6-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5314386145404664,
+            "ac": false,
+            "seed": 6211
+          },
+          "placement": {
+            "x": 23,
+            "h": 186
+          },
+          "order": 145,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-6-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 6421
+          },
+          "placement": {
+            "x": 53,
+            "h": 186
+          },
+          "order": 146,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-6-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4562971536351166,
+            "ac": false,
+            "seed": 6212
+          },
+          "placement": {
+            "x": 23,
+            "h": 252
+          },
+          "order": 147,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-6-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 6422
+          },
+          "placement": {
+            "x": 53,
+            "h": 252
+          },
+          "order": 148,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-6-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 6213
+          },
+          "placement": {
+            "x": 23,
+            "h": 318
+          },
+          "order": 149,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-6-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.06032664609053498,
+            "ac": true,
+            "seed": 6423
+          },
+          "placement": {
+            "x": 53,
+            "h": 318
+          },
+          "order": 150,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-6-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-6-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 151,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-6.metrics"
+          }
+        },
+        {
+          "id": "front-6-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 50,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 24,
+            "h": 0
+          },
+          "order": 152,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-6.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-7",
+      "type": "downtown.front",
+      "props": {
+        "width": 160,
+        "height": 62,
+        "roof": true,
+        "seed": 7
+      },
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 153,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-7-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 52,
+            "kind": "shutter"
+          },
+          "placement": {
+            "x": 16,
+            "h": 0
+          },
+          "order": 154,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-7.visible"
+          }
+        },
+        {
+          "id": "front-7-bay-1",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 124,
+            "h": 0
+          },
+          "order": 155,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-7.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-8",
+      "type": "downtown.front",
+      "props": {
+        "width": 60,
+        "height": 406,
+        "roof": false,
+        "seed": 8
+      },
+      "placement": {
+        "x": 1200,
+        "h": 0
+      },
+      "order": 156,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-8-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9876628943758573,
+            "ac": true,
+            "seed": 8210
+          },
+          "placement": {
+            "x": 23,
+            "h": 120
+          },
+          "order": 157,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-8-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-8-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9614883401920439,
+            "ac": false,
+            "seed": 8211
+          },
+          "placement": {
+            "x": 23,
+            "h": 186
+          },
+          "order": 158,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-8-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-8-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 8212
+          },
+          "placement": {
+            "x": 23,
+            "h": 252
+          },
+          "order": 159,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-8-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-8-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5144332990397805,
+            "ac": true,
+            "seed": 8213
+          },
+          "placement": {
+            "x": 23,
+            "h": 318
+          },
+          "order": 160,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-8-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-8-window-4-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 6.0201774691358025,
+            "ac": true,
+            "seed": 8214
+          },
+          "placement": {
+            "x": 23,
+            "h": 384
+          },
+          "order": 161,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-8-window-4-0.enabled"
+          }
+        },
+        {
+          "id": "front-8-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 162,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-8.metrics"
+          }
+        },
+        {
+          "id": "front-8-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 18,
+            "h": 0
+          },
+          "order": 163,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-8.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-9",
+      "type": "downtown.front",
+      "props": {
+        "width": 160,
+        "height": 406,
+        "roof": false,
+        "seed": 9
+      },
+      "placement": {
+        "x": 1260,
+        "h": 0
+      },
+      "order": 164,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-9-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8235725308641976,
+            "ac": true,
+            "seed": 9140
+          },
+          "placement": {
+            "x": 13,
+            "h": 120
+          },
+          "order": 165,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 9350
+          },
+          "placement": {
+            "x": 43,
+            "h": 120
+          },
+          "order": 166,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 9560
+          },
+          "placement": {
+            "x": 73,
+            "h": 120
+          },
+          "order": 167,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 7.723666838134431,
+            "ac": true,
+            "seed": 9770
+          },
+          "placement": {
+            "x": 103,
+            "h": 120
+          },
+          "order": 168,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-0-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 9980
+          },
+          "placement": {
+            "x": 133,
+            "h": 120
+          },
+          "order": 169,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-0-4.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5204132373113854,
+            "ac": true,
+            "seed": 9141
+          },
+          "placement": {
+            "x": 13,
+            "h": 186
+          },
+          "order": 170,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8111111111111111,
+            "ac": true,
+            "seed": 9351
+          },
+          "placement": {
+            "x": 43,
+            "h": 186
+          },
+          "order": 171,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 9561
+          },
+          "placement": {
+            "x": 73,
+            "h": 186
+          },
+          "order": 172,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 9771
+          },
+          "placement": {
+            "x": 103,
+            "h": 186
+          },
+          "order": 173,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-1-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 9981
+          },
+          "placement": {
+            "x": 133,
+            "h": 186
+          },
+          "order": 174,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-1-4.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.29724365569272976,
+            "ac": false,
+            "seed": 9142
+          },
+          "placement": {
+            "x": 13,
+            "h": 252
+          },
+          "order": 175,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.5195258916323731,
+            "ac": true,
+            "seed": 9352
+          },
+          "placement": {
+            "x": 43,
+            "h": 252
+          },
+          "order": 176,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 9562
+          },
+          "placement": {
+            "x": 73,
+            "h": 252
+          },
+          "order": 177,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.681267146776406,
+            "ac": true,
+            "seed": 9772
+          },
+          "placement": {
+            "x": 103,
+            "h": 252
+          },
+          "order": 178,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-2-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4843106995884774,
+            "ac": false,
+            "seed": 9982
+          },
+          "placement": {
+            "x": 133,
+            "h": 252
+          },
+          "order": 179,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-2-4.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 16492
+          },
+          "placement": {
+            "x": 13,
+            "h": 318
+          },
+          "order": 180,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.665,
+            "ac": false,
+            "seed": 16702
+          },
+          "placement": {
+            "x": 43,
+            "h": 318
+          },
+          "order": 181,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.133,
+            "ac": true,
+            "seed": 16912
+          },
+          "placement": {
+            "x": 73,
+            "h": 318
+          },
+          "order": 182,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 17122
+          },
+          "placement": {
+            "x": 103,
+            "h": 318
+          },
+          "order": 183,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-3-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 17332
+          },
+          "placement": {
+            "x": 133,
+            "h": 318
+          },
+          "order": 184,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-3-4.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-4-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.878,
+            "ac": false,
+            "seed": 18592
+          },
+          "placement": {
+            "x": 13,
+            "h": 384
+          },
+          "order": 185,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-4-0.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-4-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.168,
+            "ac": false,
+            "seed": 18802
+          },
+          "placement": {
+            "x": 43,
+            "h": 384
+          },
+          "order": 186,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-4-1.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-4-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.871,
+            "ac": false,
+            "seed": 19012
+          },
+          "placement": {
+            "x": 73,
+            "h": 384
+          },
+          "order": 187,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-4-2.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-4-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.81,
+            "ac": true,
+            "seed": 19222
+          },
+          "placement": {
+            "x": 103,
+            "h": 384
+          },
+          "order": 188,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-4-3.enabled"
+          }
+        },
+        {
+          "id": "front-9-window-4-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.749,
+            "ac": false,
+            "seed": 19432
+          },
+          "placement": {
+            "x": 133,
+            "h": 384
+          },
+          "order": 189,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-9-window-4-4.enabled"
+          }
+        },
+        {
+          "id": "front-9-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 190,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-9.metrics"
+          }
+        },
+        {
+          "id": "front-9-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 46,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 10,
+            "h": 0
+          },
+          "order": 191,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-9.visible"
+          }
+        },
+        {
+          "id": "front-9-bay-1",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "sealed"
+          },
+          "placement": {
+            "x": 68,
+            "h": 0
+          },
+          "order": 192,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-9.visible"
+          }
+        },
+        {
+          "id": "front-9-bay-2",
+          "type": "downtown.bay",
+          "props": {
+            "width": 46,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 104,
+            "h": 0
+          },
+          "order": 193,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-9.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-10",
+      "type": "downtown.front",
+      "props": {
+        "width": 100,
+        "height": 340,
+        "roof": false,
+        "seed": 10
+      },
+      "placement": {
+        "x": 1420,
+        "h": 0
+      },
+      "order": 194,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-10-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.6594821673525377,
+            "ac": true,
+            "seed": 10140
+          },
+          "placement": {
+            "x": 13,
+            "h": 120
+          },
+          "order": 195,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 10350
+          },
+          "placement": {
+            "x": 43,
+            "h": 120
+          },
+          "order": 196,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 10560
+          },
+          "placement": {
+            "x": 73,
+            "h": 120
+          },
+          "order": 197,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.023799725651577504,
+            "ac": false,
+            "seed": 10141
+          },
+          "placement": {
+            "x": 13,
+            "h": 186
+          },
+          "order": 198,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.6797239368998629,
+            "ac": false,
+            "seed": 10351
+          },
+          "placement": {
+            "x": 43,
+            "h": 186
+          },
+          "order": 199,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 10561
+          },
+          "placement": {
+            "x": 73,
+            "h": 186
+          },
+          "order": 200,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 14971
+          },
+          "placement": {
+            "x": 13,
+            "h": 252
+          },
+          "order": 201,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.804,
+            "ac": false,
+            "seed": 15181
+          },
+          "placement": {
+            "x": 43,
+            "h": 252
+          },
+          "order": 202,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 15391
+          },
+          "placement": {
+            "x": 73,
+            "h": 252
+          },
+          "order": 203,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 17071
+          },
+          "placement": {
+            "x": 13,
+            "h": 318
+          },
+          "order": 204,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.08,
+            "ac": false,
+            "seed": 17281
+          },
+          "placement": {
+            "x": 43,
+            "h": 318
+          },
+          "order": 205,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-10-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.217,
+            "ac": true,
+            "seed": 17491
+          },
+          "placement": {
+            "x": 73,
+            "h": 318
+          },
+          "order": 206,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-10-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-10-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 207,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-10.metrics"
+          }
+        },
+        {
+          "id": "front-10-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 44,
+            "kind": "shutter"
+          },
+          "placement": {
+            "x": 10,
+            "h": 0
+          },
+          "order": 208,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-10.visible"
+          }
+        },
+        {
+          "id": "front-10-bay-1",
+          "type": "downtown.bay",
+          "props": {
+            "width": 24,
+            "kind": "door"
+          },
+          "placement": {
+            "x": 64,
+            "h": 0
+          },
+          "order": 209,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-10.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-11",
+      "type": "downtown.front",
+      "props": {
+        "width": 160,
+        "height": 340,
+        "roof": false,
+        "seed": 11
+      },
+      "placement": {
+        "x": 1680,
+        "h": 0
+      },
+      "order": 210,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-11-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.49539180384087794,
+            "ac": false,
+            "seed": 11140
+          },
+          "placement": {
+            "x": 13,
+            "h": 120
+          },
+          "order": 211,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.6065629286694102,
+            "ac": false,
+            "seed": 11350
+          },
+          "placement": {
+            "x": 43,
+            "h": 120
+          },
+          "order": 212,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.08707561728395062,
+            "ac": false,
+            "seed": 11560
+          },
+          "placement": {
+            "x": 73,
+            "h": 120
+          },
+          "order": 213,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 11770
+          },
+          "placement": {
+            "x": 103,
+            "h": 120
+          },
+          "order": 214,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-0-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.12690329218106997,
+            "ac": true,
+            "seed": 11980
+          },
+          "placement": {
+            "x": 133,
+            "h": 120
+          },
+          "order": 215,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-0-4.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9783007544581619,
+            "ac": true,
+            "seed": 11141
+          },
+          "placement": {
+            "x": 13,
+            "h": 186
+          },
+          "order": 216,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 11351
+          },
+          "placement": {
+            "x": 43,
+            "h": 186
+          },
+          "order": 217,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 11561
+          },
+          "placement": {
+            "x": 73,
+            "h": 186
+          },
+          "order": 218,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.28294753086419755,
+            "ac": true,
+            "seed": 11771
+          },
+          "placement": {
+            "x": 103,
+            "h": 186
+          },
+          "order": 219,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-1-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.7608882030178327,
+            "ac": true,
+            "seed": 11981
+          },
+          "placement": {
+            "x": 133,
+            "h": 186
+          },
+          "order": 220,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-1-4.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 11142
+          },
+          "placement": {
+            "x": 13,
+            "h": 252
+          },
+          "order": 221,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9403763717421125,
+            "ac": true,
+            "seed": 11352
+          },
+          "placement": {
+            "x": 43,
+            "h": 252
+          },
+          "order": 222,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.04228823731138546,
+            "ac": false,
+            "seed": 11562
+          },
+          "placement": {
+            "x": 73,
+            "h": 252
+          },
+          "order": 223,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.9579861111111111,
+            "ac": true,
+            "seed": 11772
+          },
+          "placement": {
+            "x": 103,
+            "h": 252
+          },
+          "order": 224,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-2-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 11982
+          },
+          "placement": {
+            "x": 133,
+            "h": 252
+          },
+          "order": 225,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-2-4.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 4.9708076131687235,
+            "ac": false,
+            "seed": 11143
+          },
+          "placement": {
+            "x": 13,
+            "h": 318
+          },
+          "order": 226,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 11353
+          },
+          "placement": {
+            "x": 43,
+            "h": 318
+          },
+          "order": 227,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8964377572016461,
+            "ac": false,
+            "seed": 11563
+          },
+          "placement": {
+            "x": 73,
+            "h": 318
+          },
+          "order": 228,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 7.7795996227709185,
+            "ac": false,
+            "seed": 11773
+          },
+          "placement": {
+            "x": 103,
+            "h": 318
+          },
+          "order": 229,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-11-window-3-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 11983
+          },
+          "placement": {
+            "x": 133,
+            "h": 318
+          },
+          "order": 230,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-11-window-3-4.enabled"
+          }
+        },
+        {
+          "id": "front-11-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 231,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-11.metrics"
+          }
+        },
+        {
+          "id": "front-11-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 64,
+            "kind": "glass"
+          },
+          "placement": {
+            "x": 8,
+            "h": 0
+          },
+          "order": 232,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-11.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "front-12",
+      "type": "downtown.front",
+      "props": {
+        "width": 160,
+        "height": 340,
+        "roof": false,
+        "seed": 12
+      },
+      "placement": {
+        "x": 1840,
+        "h": 0
+      },
+      "order": 233,
+      "pass": "backdrop",
+      "children": [
+        {
+          "id": "front-12-window-0-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.3313014403292181,
+            "ac": true,
+            "seed": 12140
+          },
+          "placement": {
+            "x": 13,
+            "h": 120
+          },
+          "order": 234,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-0-0.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-0-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.8215877914951989,
+            "ac": true,
+            "seed": 12350
+          },
+          "placement": {
+            "x": 43,
+            "h": 120
+          },
+          "order": 235,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-0-1.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-0-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.15035150891632373,
+            "ac": false,
+            "seed": 12560
+          },
+          "placement": {
+            "x": 73,
+            "h": 120
+          },
+          "order": 236,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-0-2.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-0-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.40401234567901234,
+            "ac": false,
+            "seed": 12770
+          },
+          "placement": {
+            "x": 103,
+            "h": 120
+          },
+          "order": 237,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-0-3.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-0-4",
+          "type": "downtown.window",
+          "props": {
+            "light": 4.6458933470507535,
+            "ac": false,
+            "seed": 12980
+          },
+          "placement": {
+            "x": 133,
+            "h": 120
+          },
+          "order": 238,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-0-4.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-1-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4020747599451303,
+            "ac": false,
+            "seed": 12141
+          },
+          "placement": {
+            "x": 13,
+            "h": 186
+          },
+          "order": 239,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-1-0.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-1-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.6896862139917695,
+            "ac": false,
+            "seed": 12351
+          },
+          "placement": {
+            "x": 43,
+            "h": 186
+          },
+          "order": 240,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-1-1.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-1-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 2.475857338820302,
+            "ac": true,
+            "seed": 12561
+          },
+          "placement": {
+            "x": 73,
+            "h": 186
+          },
+          "order": 241,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-1-2.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-1-3",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 12771
+          },
+          "placement": {
+            "x": 103,
+            "h": 186
+          },
+          "order": 242,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-1-3.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-1-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 12981
+          },
+          "placement": {
+            "x": 133,
+            "h": 186
+          },
+          "order": 243,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-1-4.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-2-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.4,
+            "ac": true,
+            "seed": 17391
+          },
+          "placement": {
+            "x": 13,
+            "h": 252
+          },
+          "order": 244,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-2-0.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-2-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.312,
+            "ac": true,
+            "seed": 17601
+          },
+          "placement": {
+            "x": 43,
+            "h": 252
+          },
+          "order": 245,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-2-1.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-2-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.006,
+            "ac": false,
+            "seed": 17811
+          },
+          "placement": {
+            "x": 73,
+            "h": 252
+          },
+          "order": 246,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-2-2.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-2-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.997,
+            "ac": false,
+            "seed": 18021
+          },
+          "placement": {
+            "x": 103,
+            "h": 252
+          },
+          "order": 247,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-2-3.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-2-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": true,
+            "seed": 18231
+          },
+          "placement": {
+            "x": 133,
+            "h": 252
+          },
+          "order": 248,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-2-4.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-3-0",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.503,
+            "ac": false,
+            "seed": 19491
+          },
+          "placement": {
+            "x": 13,
+            "h": 318
+          },
+          "order": 249,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-3-0.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-3-1",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.395,
+            "ac": false,
+            "seed": 19701
+          },
+          "placement": {
+            "x": 43,
+            "h": 318
+          },
+          "order": 250,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-3-1.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-3-2",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.519,
+            "ac": false,
+            "seed": 19911
+          },
+          "placement": {
+            "x": 73,
+            "h": 318
+          },
+          "order": 251,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-3-2.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-3-3",
+          "type": "downtown.window",
+          "props": {
+            "light": 0.275,
+            "ac": false,
+            "seed": 20121
+          },
+          "placement": {
+            "x": 103,
+            "h": 318
+          },
+          "order": 252,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-3-3.enabled"
+          }
+        },
+        {
+          "id": "front-12-window-3-4",
+          "type": "downtown.window",
+          "props": {
+            "light": -1,
+            "ac": false,
+            "seed": 20331
+          },
+          "placement": {
+            "x": 133,
+            "h": 318
+          },
+          "order": 253,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "window.front-12-window-3-4.enabled"
+          }
+        },
+        {
+          "id": "front-12-trim",
+          "type": "downtown.front-trim",
+          "props": {},
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "order": 254,
+          "pass": "backdrop",
+          "bindings": {
+            "metrics": "front.front-12.metrics"
+          }
+        },
+        {
+          "id": "front-12-bay-0",
+          "type": "downtown.bay",
+          "props": {
+            "width": 44,
+            "kind": "shutter"
+          },
+          "placement": {
+            "x": 104,
+            "h": 0
+          },
+          "order": 255,
+          "pass": "backdrop",
+          "bindings": {
+            "enabled": "front.front-12.visible"
+          }
+        }
+      ]
+    },
+    {
+      "id": "penthouse",
+      "type": "downtown.penthouse",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 256,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-9-bay-1",
+        "anchor": "topCenter"
+      }
+    },
+    {
+      "id": "market-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 96,
+        "height": 15,
+        "text": "< NEON MARKET",
+        "color": "255,217,165",
+        "size": 10,
+        "phase": 120,
+        "mask": [
+          -50,
+          50,
+          -10,
+          10
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 90,
+        "h": 100
+      },
+      "order": 257,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "spaceport-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 82,
+        "height": 15,
+        "text": "SPACEPORT >",
+        "color": "255,136,0",
+        "size": 10,
+        "phase": 70,
+        "mask": [
+          -43,
+          43,
+          -10,
+          10
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 90,
+        "h": 110
+      },
+      "order": 258,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "open-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 88,
+        "height": 13,
+        "text": "OPEN 24/7",
+        "color": "255,136,0",
+        "size": 8,
+        "phase": 160,
+        "mask": [
+          -47,
+          47,
+          -10,
+          10
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 45,
+        "h": 104
+      },
+      "order": 259,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-6",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "weather-ticker",
+      "type": "downtown.weather-ticker",
+      "props": {
+        "width": 80,
+        "height": 11,
+        "mask": [
+          -44,
+          44,
+          -4,
+          22
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 60,
+        "h": 90
+      },
+      "order": 260,
+      "pass": "backdrop",
+      "bindings": {
+        "text": "weather.text"
+      },
+      "attach": {
+        "instance": "front-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "billboard-frame",
+      "type": "downtown.billboard",
+      "props": {
+        "mask": [
+          -66,
+          66,
+          106,
+          160
+        ],
+        "smearColor": "255,90,110"
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 261,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-4",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "noodle-stall",
+      "type": "downtown.stall",
+      "props": {
+        "width": 140,
+        "mask": [
+          -20,
+          140,
+          60,
+          142
+        ]
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 262,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-5",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "antenna-fence",
+      "type": "downtown.fence",
+      "props": {},
+      "placement": {
+        "x": 1540,
+        "h": 0
+      },
+      "order": 263,
+      "pass": "backdrop"
+    },
+    {
+      "id": "yard-alley",
+      "type": "downtown.alley",
+      "props": {
+        "doorOffset": 22
+      },
+      "placement": {
+        "x": 950,
+        "h": 0
+      },
+      "order": 264,
+      "pass": "backdrop",
+      "bindings": {
+        "doorOffset": "alley.doorOffset"
+      }
+    },
+    {
+      "id": "dumpster",
+      "type": "downtown.dumpster",
+      "props": {
+        "width": 40,
+        "height": 22
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 265,
+      "pass": "backdrop"
+    },
+    {
+      "id": "exit-shop",
+      "type": "downtown.entrance",
+      "props": {
+        "kind": "shop",
+        "smearColor": "0,255,255"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 266,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-1-bay-1",
+        "anchor": "topCenter"
+      }
+    },
+    {
+      "id": "exit-capsule",
+      "type": "downtown.entrance",
+      "props": {
+        "kind": "capsule"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 267,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-8-bay-0",
+        "anchor": "topCenter"
+      }
+    },
+    {
+      "id": "exit-moth",
+      "type": "downtown.entrance",
+      "props": {
+        "kind": "moth"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 268,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-10-bay-1",
+        "anchor": "topCenter"
+      }
+    },
+    {
+      "id": "street-surface",
+      "type": "downtown.street",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 269,
+      "pass": "foreground"
+    },
+    {
+      "id": "stall-pool",
+      "type": "downtown.stall-pool",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 270,
+      "pass": "foreground",
+      "bindings": {
+        "metrics": "stall.metrics",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-device-sign",
+      "type": "downtown.smear",
+      "props": {
+        "source": "device-sign"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 271,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.device-sign.x",
+        "color": "smear.device-sign.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-noodle-stall",
+      "type": "downtown.smear",
+      "props": {
+        "source": "noodle-stall"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 272,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.noodle-stall.x",
+        "color": "smear.noodle-stall.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-billboard-frame",
+      "type": "downtown.smear",
+      "props": {
+        "source": "billboard-frame"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 273,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.billboard-frame.x",
+        "color": "smear.billboard-frame.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-market-neon",
+      "type": "downtown.smear",
+      "props": {
+        "source": "market-neon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 274,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.market-neon.x",
+        "color": "smear.market-neon.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-spaceport-neon",
+      "type": "downtown.smear",
+      "props": {
+        "source": "spaceport-neon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 275,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.spaceport-neon.x",
+        "color": "smear.spaceport-neon.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-open-neon",
+      "type": "downtown.smear",
+      "props": {
+        "source": "open-neon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 276,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.open-neon.x",
+        "color": "smear.open-neon.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-exit-metro",
+      "type": "downtown.smear",
+      "props": {
+        "source": "exit-metro"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 277,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.exit-metro.x",
+        "color": "smear.exit-metro.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-exit-taxi",
+      "type": "downtown.smear",
+      "props": {
+        "source": "exit-taxi"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 278,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.exit-taxi.x",
+        "color": "smear.exit-taxi.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-exit-shop",
+      "type": "downtown.smear",
+      "props": {
+        "source": "exit-shop"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 279,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.exit-shop.x",
+        "color": "smear.exit-shop.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "smear-weather-ticker",
+      "type": "downtown.smear",
+      "props": {
+        "source": "weather-ticker"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 280,
+      "pass": "foreground",
+      "bindings": {
+        "x": "smear.weather-ticker.x",
+        "color": "smear.weather-ticker.color",
+        "rain": "weather.rain",
+        "city": "street.city"
+      }
+    },
+    {
+      "id": "fixer",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "fixer"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 281,
+      "pass": "people",
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "actor.fixer.pose"
+      }
+    },
+    {
+      "id": "stall-counter",
+      "type": "downtown.counter",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 282,
+      "pass": "people",
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "metrics": "stall.metrics"
+      }
+    },
+    {
+      "id": "npc-hood",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "hood"
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 283,
+      "pass": "people",
+      "bindings": {
+        "pose": "actor.hood.pose"
+      }
+    },
+    {
+      "id": "npc-umbrella",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "umbrella"
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 284,
+      "pass": "people",
+      "bindings": {
+        "pose": "actor.umbrella.pose"
+      }
+    },
+    {
+      "id": "npc-hat",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "hat"
+      },
+      "placement": {
+        "x": 1112,
+        "h": 0
+      },
+      "order": 285,
+      "pass": "people",
+      "bindings": {
+        "pose": "actor.hat.pose"
+      }
+    },
+    {
+      "id": "exit-library",
+      "type": "downtown.library-front",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 286,
+      "pass": "devices",
+      "attach": {
+        "instance": "front-4-bay-1",
+        "anchor": "topCenter"
+      }
+    },
+    {
+      "id": "device-sign",
+      "type": "downtown.device-sign",
+      "props": {
+        "spotY": 66,
+        "spotWidth": 22,
+        "spotHeight": 96,
+        "mask": [
+          -14,
+          14,
+          64,
+          164
+        ]
+      },
+      "placement": {
+        "x": 102,
+        "h": 0
+      },
+      "order": 287,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.sign.snapshot"
+      },
+      "attach": {
+        "instance": "front-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-box",
+      "type": "downtown.device-box",
+      "props": {
+        "spotY": 34,
+        "spotWidth": 30,
+        "spotHeight": 38
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 288,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.box.snapshot"
+      },
+      "attach": {
+        "instance": "front-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-till",
+      "type": "downtown.device-till",
+      "props": {
+        "spotY": 28,
+        "spotWidth": 22,
+        "spotHeight": 20
+      },
+      "placement": {
+        "x": -20,
+        "h": 0
+      },
+      "order": 289,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.till.snapshot"
+      },
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "right"
+      }
+    },
+    {
+      "id": "device-relay",
+      "type": "downtown.device-relay",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 26,
+        "spotHeight": 40
+      },
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 290,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.relay.snapshot"
+      },
+      "attach": {
+        "instance": "front-7",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "device-gate",
+      "type": "downtown.device-gate",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 80,
+        "spotHeight": 80
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 291,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.gate.snapshot"
+      },
+      "attach": {
+        "instance": "front-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-fence",
+      "type": "downtown.device-fence",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 40,
+        "spotHeight": 50
+      },
+      "placement": {
+        "x": 50,
+        "h": 0
+      },
+      "order": 292,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.fence.snapshot"
+      },
+      "attach": {
+        "instance": "antenna-fence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-scan",
+      "type": "downtown.device-scan",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 44,
+        "spotHeight": 84
+      },
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 293,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.scan.snapshot"
+      },
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-cam3",
+      "type": "downtown.device-cam3",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 18,
+        "spotHeight": 86
+      },
+      "placement": {
+        "x": 100,
+        "h": 0
+      },
+      "order": 294,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.cam3.snapshot"
+      },
+      "attach": {
+        "instance": "front-3",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-billboard",
+      "type": "downtown.device-billboard",
+      "props": {
+        "spotY": 108,
+        "spotWidth": 124,
+        "spotHeight": 42
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 295,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.billboard.snapshot"
+      },
+      "attach": {
+        "instance": "billboard-frame",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-dlv9",
+      "type": "downtown.device-dlv9",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 26,
+        "spotHeight": 28
+      },
+      "placement": {
+        "x": 22,
+        "h": 0
+      },
+      "order": 296,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.dlv9.snapshot",
+        "position": "device.dlv9.position"
+      },
+      "attach": {
+        "instance": "dumpster",
+        "anchor": "right"
+      }
+    },
+    {
+      "id": "map",
+      "type": "downtown.device-map",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 26,
+        "spotHeight": 80
+      },
+      "placement": {
+        "x": -48,
+        "h": 0
+      },
+      "order": 297,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.map.snapshot"
+      },
+      "attach": {
+        "instance": "exit-metro",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "device-hover",
+      "type": "downtown.device-hover",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 298,
+      "pass": "devices",
+      "bindings": {
+        "snapshot": "device.hover.snapshot"
+      }
+    },
+    {
+      "id": "exit-metro",
+      "type": "downtown.metro-stairs",
+      "props": {
+        "mask": [
+          8,
+          56,
+          70,
+          100
+        ]
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 299,
+      "pass": "devices",
+      "attach": {
+        "instance": "front-10",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-taxi",
+      "type": "downtown.taxi-pad",
+      "props": {
+        "mask": [
+          -50,
+          16,
+          88,
+          114
+        ]
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 300,
+      "pass": "devices",
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-market",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 301,
+      "pass": "devices",
+      "attach": {
+        "instance": "device-gate",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-yard",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 22,
+        "h": 0
+      },
+      "order": 302,
+      "pass": "devices",
+      "attach": {
+        "instance": "yard-alley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-map",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 303,
+      "pass": "devices",
+      "attach": {
+        "instance": "map",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "readable-plaque",
+      "type": "downtown.marker",
+      "props": {
+        "role": "readable"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 304,
+      "pass": "devices",
+      "attach": {
+        "instance": "penthouse",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "platform-dumpster",
+      "type": "downtown.marker",
+      "props": {
+        "role": "platform"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 305,
+      "pass": "devices",
+      "attach": {
+        "instance": "dumpster",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "platform-annex",
+      "type": "downtown.marker",
+      "props": {
+        "role": "platform"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 306,
+      "pass": "devices",
+      "attach": {
+        "instance": "front-7",
+        "anchor": "top"
+      }
+    },
+    {
+      "id": "light-stall-left",
+      "type": "downtown.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 56
+      },
+      "placement": {
+        "x": 26,
+        "h": 96
+      },
+      "order": 307,
+      "pass": "devices",
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-stall-right",
+      "type": "downtown.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 56
+      },
+      "placement": {
+        "x": -26,
+        "h": 96
+      },
+      "order": 308,
+      "pass": "devices",
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "right"
+      }
+    },
+    {
+      "id": "light-alley",
+      "type": "downtown.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 48,
+        "color": "255,180,100"
+      },
+      "placement": {
+        "x": 45,
+        "h": 70
+      },
+      "order": 309,
+      "pass": "devices",
+      "attach": {
+        "instance": "yard-alley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-noodles",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 48,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 130
+      },
+      "order": 310,
+      "pass": "devices",
+      "attach": {
+        "instance": "fixer",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-market",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 44,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 311,
+      "pass": "devices",
+      "attach": {
+        "instance": "market-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-spaceport",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 44
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 312,
+      "pass": "devices",
+      "attach": {
+        "instance": "spaceport-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-open",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 313,
+      "pass": "devices",
+      "attach": {
+        "instance": "open-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-billboard",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 64,
+        "color": "255,90,110"
+      },
+      "placement": {
+        "x": 0,
+        "h": 132
+      },
+      "order": 314,
+      "pass": "devices",
+      "attach": {
+        "instance": "billboard-frame",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-penthouse",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 30,
+        "alpha": 0.7
+      },
+      "placement": {
+        "x": 0,
+        "h": 220
+      },
+      "order": 315,
+      "pass": "devices",
+      "attach": {
+        "instance": "penthouse",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-yard-blade",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 30,
+        "color": "168,130,255"
+      },
+      "placement": {
+        "x": 26,
+        "h": 140
+      },
+      "order": 316,
+      "pass": "devices",
+      "attach": {
+        "instance": "yard-alley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caster-dumpster",
+      "type": "downtown.marker",
+      "props": {
+        "role": "caster"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 317,
+      "pass": "devices",
+      "attach": {
+        "instance": "dumpster",
+        "anchor": "topCenter"
+      }
+    },
+    {
+      "id": "clinic-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 88,
+        "height": 15,
+        "text": "CLINIC 24H",
+        "color": "255,42,68",
+        "size": 10,
+        "phase": 44,
+        "mask": [
+          -48,
+          48,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 75,
+        "h": 210
+      },
+      "order": 318,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-2",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-clinic-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,42,68"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 319,
+      "pass": "devices",
+      "attach": {
+        "instance": "clinic-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "soy-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 80,
+        "height": 15,
+        "text": "KOBA SOY",
+        "color": "255,136,0",
+        "size": 10,
+        "phase": 155,
+        "mask": [
+          -44,
+          44,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 70,
+        "h": 236
+      },
+      "order": 320,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-5",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-soy-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 321,
+      "pass": "devices",
+      "attach": {
+        "instance": "soy-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "pawn-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 92,
+        "height": 15,
+        "text": "PAWN · CASH",
+        "color": "255,217,165",
+        "size": 10,
+        "phase": 46,
+        "mask": [
+          -50,
+          50,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 80,
+        "h": 170
+      },
+      "order": 322,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-9",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-pawn-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 323,
+      "pass": "devices",
+      "attach": {
+        "instance": "pawn-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hotel-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 112,
+        "height": 15,
+        "text": "HOTEL · HOURLY",
+        "color": "168,130,255",
+        "size": 10,
+        "phase": 153,
+        "mask": [
+          -60,
+          60,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 80,
+        "h": 300
+      },
+      "order": 324,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-hotel-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "168,130,255"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 325,
+      "pass": "devices",
+      "attach": {
+        "instance": "hotel-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "repair-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 72,
+        "height": 15,
+        "text": "REPAIRS",
+        "color": "255,136,0",
+        "size": 10,
+        "phase": 98,
+        "mask": [
+          -40,
+          40,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 80,
+        "h": 150
+      },
+      "order": 326,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-repair-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 327,
+      "pass": "devices",
+      "attach": {
+        "instance": "repair-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "verify-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 92,
+        "height": 15,
+        "text": "VERIFY HERE",
+        "color": "255,217,165",
+        "size": 10,
+        "phase": 90,
+        "mask": [
+          -50,
+          50,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 60,
+        "h": 236
+      },
+      "order": 328,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-1",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-verify-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 329,
+      "pass": "devices",
+      "attach": {
+        "instance": "verify-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "loans-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 116,
+        "height": 15,
+        "text": "LOANS IN 5 MIN",
+        "color": "255,42,68",
+        "size": 10,
+        "phase": 9,
+        "mask": [
+          -62,
+          62,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 85,
+        "h": 330
+      },
+      "order": 330,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-4",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-loans-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,42,68"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 331,
+      "pass": "devices",
+      "attach": {
+        "instance": "loans-neon",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "blade-sim",
+      "type": "market.blade",
+      "props": {
+        "text": "SIM",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 83
+      },
+      "placement": {
+        "x": 120,
+        "h": 160
+      },
+      "order": 332,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-3",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "blade-bar",
+      "type": "market.blade",
+      "props": {
+        "text": "BAR",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 15
+      },
+      "placement": {
+        "x": 82,
+        "h": 220
+      },
+      "order": 333,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-6",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "blade-noodle",
+      "type": "market.blade",
+      "props": {
+        "text": "NOODLE",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 186
+      },
+      "placement": {
+        "x": 6,
+        "h": 200
+      },
+      "order": 334,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-10",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "blade-capsule",
+      "type": "market.blade",
+      "props": {
+        "text": "BEDS",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 147
+      },
+      "placement": {
+        "x": 150,
+        "h": 260
+      },
+      "order": 335,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "ad-front-5",
+      "type": "market.ad",
+      "props": {
+        "w": 92,
+        "tall": 40,
+        "parallax": 1,
+        "seed": 90,
+        "phase": 186
+      },
+      "placement": {
+        "x": 24,
+        "h": 150
+      },
+      "order": 336,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-5",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-ad-front-5",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 50,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 337,
+      "pass": "devices",
+      "attach": {
+        "instance": "ad-front-5",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "ad-front-11",
+      "type": "market.ad",
+      "props": {
+        "w": 92,
+        "tall": 40,
+        "parallax": 1,
+        "seed": 98,
+        "phase": 178
+      },
+      "placement": {
+        "x": 34,
+        "h": 130
+      },
+      "order": 338,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-ad-front-11",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 50,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 339,
+      "pass": "devices",
+      "attach": {
+        "instance": "ad-front-11",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "ad-front-0",
+      "type": "market.ad",
+      "props": {
+        "w": 92,
+        "tall": 40,
+        "parallax": 1,
+        "seed": 463,
+        "phase": 110
+      },
+      "placement": {
+        "x": 30,
+        "h": 260
+      },
+      "order": 340,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-ad-front-0",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 50,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 341,
+      "pass": "devices",
+      "attach": {
+        "instance": "ad-front-0",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera-front-3",
+      "type": "market.camera",
+      "props": {
+        "parallax": 1,
+        "facing": 1,
+        "phase": 8
+      },
+      "placement": {
+        "x": 8,
+        "h": 104
+      },
+      "order": 342,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-3",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera-front-9",
+      "type": "market.camera",
+      "props": {
+        "parallax": 1,
+        "facing": -1,
+        "phase": 35
+      },
+      "placement": {
+        "x": 150,
+        "h": 112
+      },
+      "order": 343,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-9",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "camera-front-6",
+      "type": "market.camera",
+      "props": {
+        "parallax": 1,
+        "facing": 1,
+        "phase": 49
+      },
+      "placement": {
+        "x": 4,
+        "h": 100
+      },
+      "order": 344,
+      "pass": "backdrop",
+      "attach": {
+        "instance": "front-6",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "crowd-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 18237,
+        "act": "phone",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 345,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 49549,
+        "act": "smoke",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 346,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 68686,
+        "act": "talk",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 820,
+        "h": 0
+      },
+      "order": 347,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 299,
+        "act": "talk",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 870,
+        "h": 0
+      },
+      "order": 348,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 88356,
+        "act": "queue",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 1330,
+        "h": 0
+      },
+      "order": 349,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 8583,
+        "act": "phone",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 1360,
+        "h": 0
+      },
+      "order": 350,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-6",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 43193,
+        "act": "lean",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 1760,
+        "h": 0
+      },
+      "order": 351,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-7",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 41922,
+        "act": "stand",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 230,
+        "h": 0
+      },
+      "order": 352,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-8",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 84608,
+        "act": "phone",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 353,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-9",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 66559,
+        "act": "stand",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 354,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-10",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 14387,
+        "act": "talk",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 1480,
+        "h": 0
+      },
+      "order": 355,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-11",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 29568,
+        "act": "smoke",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 1900,
+        "h": 0
+      },
+      "order": 356,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-12",
+      "type": "character.resident",
+      "props": {
+        "kind": "deliverybot",
+        "seed": 19126,
+        "act": "stand",
+        "depth": "play"
+      },
+      "placement": {
+        "x": 1010,
+        "h": 0
+      },
+      "order": 357,
+      "pass": "people"
+    },
+    {
+      "id": "crowd-13",
+      "type": "character.resident",
+      "props": {
+        "kind": "sweeper",
+        "seed": 71810,
+        "act": "stand",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 1600,
+        "h": 0
+      },
+      "order": 358,
+      "pass": "people"
+    }
+  ]
+}

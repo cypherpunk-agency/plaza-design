@@ -1,13 +1,13 @@
 /**
  * Library › Style frames: one frame per district (art direction, 2026-10-20). Each frame pairs the
  * district's card (palette, light, materials, signage, people, landmark, crowd mix) with its real
- * scenes rendered through the native preview, so a district's look can be judged as a whole.
- * Read-only: changing the time, weather or camera here edits nothing.
+ * scenes as thumbnails. Scenes open on the Scene stage (comparing with a proposal when there is one).
+ * Read-only.
  */
 import type { EditorDocument, PreviewRequest, PreviewResult, WorkbenchContext } from './app';
 import type { Composition } from '../art/core/composition';
 import { crowdMix } from '../art/characters/crowds';
-import { WEATHER_KINDS } from '../world/weather';
+import { PROPOSAL_SCENES } from './proposal-scenes';
 
 export interface StyleFrame {
   district: string; motto: string;
@@ -40,7 +40,6 @@ export const STYLE_FRAMES: StyleFrame[] = [
 
 interface CitySource { DISTRICTS: { id: string; name: string }[]; PLACES: { district: string; scenes: string[] }[] }
 export interface StyleFrameSession { district?: string; views?: Record<string, { scene?: string; cameraX: number; minute: number; weather: string }> }
-const TIMES = [['Morning', 480], ['Noon', 720], ['Evening', 1110], ['Night', 1320]] as const;
 
 export function mountStyleFrames(host: HTMLElement, context: WorkbenchContext, render: (canvas: HTMLCanvasElement, request: PreviewRequest) => PreviewResult, environment: Record<string, string | number | boolean>, session: StyleFrameSession, sceneName: (scene: string) => string) {
   const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, className?: string) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (className) n.className = className; return n; };
@@ -48,6 +47,9 @@ export function mountStyleFrames(host: HTMLElement, context: WorkbenchContext, r
   const docs = new Map<string, EditorDocument>(context.documents.map(d => [d.id, d]));
   const city = docs.get('city-source')?.value as CitySource | undefined;
   const scenesOf = (district: string) => (city?.PLACES ?? []).filter(p => p.district === district).flatMap(p => p.scenes).filter(id => docs.get(id)?.kind === 'composition');
+  // Proposal scenes live outside the city's place list, so they are added per district here.
+  const proposalsOf = (district: string) => PROPOSAL_SCENES.filter(p => p.district === district && docs.get(p.id)?.kind === 'composition').map(p => p.id);
+  const allOf = (district: string) => [...scenesOf(district), ...proposalsOf(district)];
   const nameOf = (district: string) => city?.DISTRICTS.find(d => d.id === district)?.name ?? district;
   session.views ??= {};
   const bar = el('nav', undefined, 'district-bar'), main = el('section', undefined, 'style-frame');
@@ -68,31 +70,26 @@ export function mountStyleFrames(host: HTMLElement, context: WorkbenchContext, r
   function refresh() {
     if (disposed) return;
     const current = STYLE_FRAMES.find(f => f.district === session.district) ?? STYLE_FRAMES[0]; session.district = current.district;
-    bar.replaceChildren(...STYLE_FRAMES.map(f => { const b = button('', () => { session.district = f.district; refresh(); }, 'chip'); b.append(el('span', nameOf(f.district)), el('small', String(scenesOf(f.district).length))); b.title = `${nameOf(f.district)} · ${scenesOf(f.district).length ? `${scenesOf(f.district).length} scenes` : 'no scenes yet'}`; b.setAttribute('aria-pressed', String(f === current)); return b; }));
-    const v = view(current), scenes = scenesOf(current.district), mix = crowdMix(current.district);
+    bar.replaceChildren(...STYLE_FRAMES.map(f => { const b = button('', () => { session.district = f.district; refresh(); }, 'chip'); b.append(el('span', nameOf(f.district)), el('small', String(allOf(f.district).length))); b.title = `${nameOf(f.district)} · ${scenesOf(f.district).length ? `${scenesOf(f.district).length} scenes` : 'no scenes yet'}${proposalsOf(f.district).length ? `, ${proposalsOf(f.district).length} proposal` : ''}`; b.setAttribute('aria-pressed', String(f === current)); return b; }));
+    const v = view(current), scenes = allOf(current.district), mix = crowdMix(current.district);
     const head = el('header'); head.append(el('h3', nameOf(current.district)), el('p', current.motto, 'motto'));
     const swatches = el('div', undefined, 'swatches'); swatches.setAttribute('aria-label', 'Proposed palette'); for (const c of current.palette) { const s = el('span'); s.style.background = c; s.title = c; swatches.append(s); }
     const card = el('dl'); for (const [k, text] of [...current.card, ...(mix ? [['Crowd', `${Math.round(mix.kitted * 100)}% kitted, ${Math.round(mix.robots * 100)}% robots. ${mix.note}`] as [string, string]] : [])]) card.append(el('dt', k), el('dd', text));
     main.replaceChildren(head, swatches);
-    if (!v.scene) { main.append(el('p', 'No scene in this district yet. The card and crowd mix are ready for when the first one is built.', 'muted'), card); return; }
-    const controls = el('div', undefined, 'toolbar'), canvas = el('canvas'), status = el('p', '', 'muted'), strip = el('div', undefined, 'frame-strip');
-    canvas.width = 960; canvas.height = 540; canvas.setAttribute('aria-label', `${sceneName(v.scene)} style frame`); status.setAttribute('role', 'status');
-    const times = el('div', undefined, 'segmented'); times.setAttribute('role', 'group'); times.setAttribute('aria-label', 'Time of day');
-    for (const [label, minute] of TIMES) { const b = button(label, () => { v.minute = minute; refresh(); }); b.setAttribute('aria-pressed', String(v.minute === minute)); times.append(b); }
-    const weather = el('select'); weather.setAttribute('aria-label', 'Weather'); for (const w of ['forecast', ...WEATHER_KINDS]) { const o = el('option', `Weather · ${w}`); o.value = w; weather.append(o); } weather.value = v.weather; weather.onchange = () => { v.weather = weather.value; refresh(); };
-    const camera = el('input'); camera.type = 'range'; camera.min = '0'; camera.max = '3000'; camera.step = '20'; camera.value = String(v.cameraX); camera.setAttribute('aria-label', 'Camera X');
-    camera.oninput = () => { v.cameraX = Number(camera.value); draw(canvas, status, v.scene!, v); };
-    const cameraLabel = el('label', 'Camera '); cameraLabel.append(camera);
-    controls.append(times, weather, cameraLabel, button(`Open ${sceneName(v.scene)} in Scene`, () => context.openScene(v.scene!), 'primary'));
-    // The district's other scenes as small frames at the same time and weather.
+    if (!scenes.length) { main.append(el('p', 'No scene in this district yet. The card and crowd mix are ready for when the first one is built.', 'muted'), card); return; }
+    // Scenes open on the Scene stage, the one viewport for editing, previewing and playing. A scene with a
+    // proposal (or a proposal itself) opens comparing the two side by side.
+    const strip = el('div', undefined, 'frame-strip'), status = el('p', '', 'muted'); status.setAttribute('role', 'status');
+    const look = { cameraX: 0, minute: v.minute, weather: v.weather };
     for (const scene of scenes) {
-      const pick = button('', () => { v.scene = scene; v.cameraX = 0; refresh(); }, 'asset-card'), thumb = el('canvas'); thumb.width = 240; thumb.height = 135;
-      pick.setAttribute('aria-pressed', String(scene === v.scene)); pick.append(thumb, el('span', sceneName(scene))); strip.append(pick);
-      requestAnimationFrame(() => { if (!disposed) draw(thumb, status, scene, { ...v, cameraX: 0 }); });
+      const proposal = PROPOSAL_SCENES.find(p => (p.base === scene || p.id === scene) && docs.get(p.id)?.kind === 'composition');
+      const compare = proposal ? (proposal.id === scene ? proposal.base : proposal.id) : undefined;
+      const pick = button('', () => context.openScene(scene, compare), 'asset-card'), thumb = el('canvas'); thumb.width = 240; thumb.height = 135;
+      pick.title = compare ? `Open ${sceneName(scene)} on the Scene stage, compared with ${sceneName(compare)}` : `Open ${sceneName(scene)} on the Scene stage`;
+      pick.append(thumb, el('span', sceneName(scene))); strip.append(pick);
+      requestAnimationFrame(() => { if (!disposed) draw(thumb, status, scene, look); });
     }
-    const body = el('div', undefined, 'frame-body'), side = el('aside'); side.append(card);
-    const picture = el('div'); picture.append(controls, canvas, status, strip); body.append(picture, side);
-    main.append(body); draw(canvas, status, v.scene, v);
+    main.append(el('p', 'Click a scene to open it on the Scene stage. Scenes with a proposal open side by side with it.', 'muted'), strip, status, card);
   }
   refresh();
   return () => { disposed = true; host.replaceChildren(); };

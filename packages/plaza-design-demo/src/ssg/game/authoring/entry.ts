@@ -45,6 +45,7 @@ import type { SceneDocument } from '../engine/gameplay/scene-document';
 import { createNativePreview } from './native-preview';
 
 import { nativeSceneAdapters } from './scene-adapters';
+import { PROPOSAL_SCENES, proposalAdapters, proposalScene } from './proposal-scenes';
 
 import { createSequencePreview } from './sequence-preview';
 
@@ -61,6 +62,7 @@ import { mountWorldPanel, type WorldPanelSession } from './world-panel';
 import { createAssetPreview } from './asset-preview';
 
 import { mountCharacterWorkbench } from './character-workbench';
+import type { PlayFixtures } from './play-fixtures';
 import { mountStyleFrames, type StyleFrameSession } from './style-frames';
 
 import { mountVehicleWorkbench } from './vehicle-workbench';
@@ -112,12 +114,12 @@ async function start() {
 
   const initialEnvironment = { cameraX: 0, zoom: 1, day: 1, minute: 720, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' };
   const styleFrameSession: StyleFrameSession = {};
-  const native = createNativePreview({...nativeSceneAdapters,'demo-manifest':{validate:validateManifestComposition,definition:manifestDemoScene,pendingDefinition:(composition,state,options,documents)=>{const gameplay=validateManifestGameplay(documents.get('demo-manifest-gameplay'));return manifestDemoScene(composition,state,options,validateManifestScene(documents.get('demo-manifest-scene'),gameplay),gameplay);}}},(scene,request)=>{if(!request.documents)return scene;const deviceId=deviceDocumentId(request.composition.scene);if(request.documents.has(deviceId))scene=applyDeviceSource(request.composition.scene,scene,request.frame?.composition??request.composition,request.documents.get(deviceId),pendingNetworkContext(request.documents),request.documents.get(deviceSourceIdentity(request.composition.scene).scene) as import('../engine/gameplay/scene-document').SceneDocument);if(!scene.bindWorld)return scene;const city=createPendingCity(request.documents.get('city-source'),request.documents),metro=createLineSystem(city,validateMetroSource(request.documents.get('metro-source')));return scene.bindWorld({city,metro});},(id,request)=>{const catalogue=request.documents?.get('authored-scenes') as SceneCatalogue|undefined,entry=catalogue?.scenes.find(s=>s.scene.id===id);if(!entry)return;return{validate:value=>{const c=art.validate(value);if(c.scene!==id)throw new Error('Authored composition identity');return c;},definition:(composition,_state,options)=>declaredScene(entry.scene,composition,entry.gameplay,options,entry.devices)};}), sequences = createSequencePreview(art);
+  const native = createNativePreview({...nativeSceneAdapters,...proposalAdapters,'demo-manifest':{validate:validateManifestComposition,definition:manifestDemoScene,pendingDefinition:(composition,state,options,documents)=>{const gameplay=validateManifestGameplay(documents.get('demo-manifest-gameplay'));return manifestDemoScene(composition,state,options,validateManifestScene(documents.get('demo-manifest-scene'),gameplay),gameplay);}}},(scene,request)=>{if(!request.documents)return scene;const deviceId=deviceDocumentId(request.composition.scene);if(request.documents.has(deviceId))scene=applyDeviceSource(request.composition.scene,scene,request.frame?.composition??request.composition,request.documents.get(deviceId),pendingNetworkContext(request.documents),request.documents.get(deviceSourceIdentity(request.composition.scene).scene) as import('../engine/gameplay/scene-document').SceneDocument);if(!scene.bindWorld)return scene;const city=createPendingCity(request.documents.get('city-source'),request.documents),metro=createLineSystem(city,validateMetroSource(request.documents.get('metro-source')));return scene.bindWorld({city,metro});},(id,request)=>{const catalogue=request.documents?.get('authored-scenes') as SceneCatalogue|undefined,entry=catalogue?.scenes.find(s=>s.scene.id===id);if(!entry)return;return{validate:value=>{const c=art.validate(value);if(c.scene!==id)throw new Error('Authored composition identity');return c;},definition:(composition,_state,options)=>declaredScene(entry.scene,composition,entry.gameplay,options,entry.devices)};}), sequences = createSequencePreview(art);
 
   const mapSession: WorldPanelSession = {};
 
   const deviceSelection:{scene?:string;device?:string;noun?:string;group?:string}={},wireSelection:{scene?:string}={};
-  const playSelection:{fixture?:string;device?:string;scene?:string}={};
+  const playSelection:{fixture?:string;device?:string;scene?:string}={},previewOnly=new Set<string>();
 
   const manifestSelection:{fixture?:string;device?:string}={};
   const demoSelection:{fixture?:string;device?:string}={};
@@ -126,9 +128,29 @@ async function start() {
   const logicScenes:string[]=gameplayScenes.filter(s=>!s.id.startsWith('demo')).flatMap(s=>[s.id,s.prefix]),commandScenes:string[]=[...logicScenes,...nativeGameplayScenes.filter(s=>!s.id.startsWith('demo')).map(s=>s.id)];
 
   mountComposer(host, { registry: art, api, documents, projections:[sceneCatalogueProjection], viewport: { width: 960, height: 540 },
-    sceneLabel: scene => isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene.startsWith('sequence-') ? 'Sequence · ' + scene.slice('sequence-'.length) : scene,
+    sceneLabel: scene => proposalScene(scene) ? proposalScene(scene)!.label : isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene.startsWith('sequence-') ? 'Sequence · ' + scene.slice('sequence-'.length) : scene,
     sceneDocuments:(scene,documents)=>{try{const entry=gameplayScene(scene,documents);return[entry.prefix+'-scene',entry.gameplayId,...(scene==='sandbox'?['sandbox-behavior']:[])];}catch{return nativeGameplayScene(scene)?[nativeGameplayScene(scene)!.gameplayId]:[];}},
 
+    worldStates: {
+      // Play's starting states are the scene's saved world states. A proposal uses its base scene's.
+      list(scene, documents) {
+        const fixtures = (documents.find(d => d.id === 'play-fixtures')?.value as PlayFixtures | undefined)?.fixtures ?? [], own = proposalScene(scene)?.base ?? scene;
+        return fixtures.filter(f => f.scene === own).map(f => ({ id: f.id, name: f.name, environment: { day: f.day, minute: f.minute, seed: f.seed, weather: f.weather, flags: JSON.stringify(f.flags) } }));
+      },
+      selected(scene, documents) { const own = proposalScene(scene)?.base ?? scene; if (previewOnly.has(own)) return ''; const ids = this.list(scene, documents).map(s => s.id); return playSelection.fixture && ids.includes(playSelection.fixture) ? playSelection.fixture : ids[0] ?? ''; },
+      select(scene, id) { const own = proposalScene(scene)?.base ?? scene; if (id) { previewOnly.delete(own); playSelection.fixture = id; } else previewOnly.add(own); },
+      edit(_scene, id, key, value, documents) {
+        if (!['day', 'minute', 'seed', 'weather', 'flags'].includes(key)) return undefined;
+        const doc = structuredClone(documents.find(d => d.id === 'play-fixtures')!.value as PlayFixtures), fixture = doc.fixtures.find(f => f.id === id); if (!fixture) return undefined;
+        if (key === 'flags') fixture.flags = JSON.parse(String(value)); else (fixture as unknown as Record<string, unknown>)[key] = value;
+        return { id: 'play-fixtures', value: doc };
+      },
+    },
+    compareWith(scene) {
+      const proposal = proposalScene(scene);
+      if (proposal) return [{ id: proposal.base, label: `Today · ${isSceneId(proposal.base) ? sceneTitle(SCENES[proposal.base]) : proposal.base}` }];
+      return PROPOSAL_SCENES.filter(p => p.base === scene).map(p => ({ id: p.id, label: p.label }));
+    },
     assetDistricts(documents) {
       const city = documents.find(d => d.id === 'city-source')?.value as { DISTRICTS: { id: string; name: string }[]; PLACES: { district: string; scenes: string[] }[] } | undefined;
       const sceneDistrict = new Map((city?.PLACES ?? []).flatMap(p => p.scenes.map(scene => [scene, p.district] as const)));
@@ -195,7 +217,7 @@ async function start() {
       { id: 'characters', area: 'library', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
 
       { id: 'style-frames', area: 'library', label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
-        return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene);
+        return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => proposalScene(scene)?.label ?? (isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene));
       } },
       { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
 

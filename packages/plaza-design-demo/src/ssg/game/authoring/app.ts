@@ -16,12 +16,22 @@ import { LAYER_ROLES, layerRole } from './layer-roles';
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices'; revision: string; value: unknown }
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
+/** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
+export interface WorldState { id: string; name: string; environment: Record<string, string | number | boolean> }
+export interface WorldStates {
+  list(scene: string, documents: EditorDocument[]): WorldState[];
+  /** '' means preview only: the toolbar changes nothing saved. */
+  selected(scene: string, documents: EditorDocument[]): string;
+  select(scene: string, id: string): void;
+  /** The document change that stores `key` in the state, or undefined when states do not store that key. */
+  edit(scene: string, id: string, key: string, value: string | number | boolean, documents: EditorDocument[]): { id: string; value: unknown } | undefined;
+}
 /** `quick` controls sit in the Scene toolbar; `choices` render as a segmented row of named presets. The rest live under More. */
 export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number; quick?: boolean; choices?: { label: string; value: number | string }[] }
 /** One inspector tab beside Appearance: the logic, device or wiring that belongs to the selection (or to the scene when nothing is selected). */
 export interface InspectorSection { id: string; label: string; title?: string; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }
 export interface WorkbenchContext {
-  documents: EditorDocument[]; openScene(scene: string): void; openInstance(document: string, instance: string): void;
+  documents: EditorDocument[]; openScene(scene: string, compare?: string): void; openInstance(document: string, instance: string): void;
   /** The scene chosen in the header; scene-mode workbenches follow it instead of keeping their own picker. */
   scene?: string;
   /** Set when the panel was opened by an action that asks it to start (the Scene toolbar's Play). */
@@ -40,6 +50,10 @@ export interface ComposerConfig {
   initialEnvironment?: Record<string, string | number | boolean>; environmentControls?: EnvironmentControl[];
   worldPanel?(host: HTMLElement, openScene: (scene: string) => void, documents: EditorDocument[], scene?: string): void | (() => void);
   /** Districts and which one each scene is in, for the artwork library's filter bar. */
+  /** Named world states (time, weather, flags) a scene is previewed under and Play starts from. */
+  worldStates?: WorldStates;
+  /** Compositions the stage can show beside a scene (a proposal and its base). Same request, same camera. */
+  compareWith?(scene: string, documents: EditorDocument[]): { id: string; label: string }[];
   assetDistricts?(documents: EditorDocument[]): { list: { id: string; name: string }[]; of(scene: string): string | undefined };
   assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
   /** Display name for a composition's scene id in the scene picker and empty states. */
@@ -206,8 +220,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
   for (const [panel, text] of [['layers', 'Outline'], ['properties', 'Inspector']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
-  stage.append(canvas); stageWrap.append(stage, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
-  let currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
+  const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
+  const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
+  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right); root.append(header, tools, status, workspace); host.append(root);
+  let compareId = '', currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
   let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
   /** Editor-only framing: renderScale zoom, native camera pan and a crop to the artwork's height. Never saved. */
   let viewZoom = compact.matches ? 2 : 1, crop = true, cropHeight = 0, cropFor = '', hoverId = '';
@@ -234,24 +250,37 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const groups = [
     { id: 'layout', label: 'Scene', title: 'Edit this scene: select artwork to change how it looks and what it does' },
     { id: 'logic', label: 'Logic', title: 'All of this scene’s interactions, dialogue, devices and wiring as lists' },
-    { id: 'play', label: 'Play', title: 'Play this scene from a starting state' },
     { id: 'library', label: 'Library', title: 'Every piece of artwork, independent of scenes' },
     { id: 'world', label: 'World', title: 'The city map, travel, the opening and everything shared between scenes' },
     { id: 'labs', label: 'Labs', title: 'Developer test beds outside the scene workflow' },
   ] as const;
   type Group = typeof groups[number]['id'];
-  const panelGroup = (item: WorkbenchConfig): Group => item.area === 'scene' ? item.mode === 'play' ? 'play' : 'logic' : item.area ?? 'library';
+  const panelGroup = (item: WorkbenchConfig): Group => item.area === 'scene' ? 'logic' : item.area ?? 'library';
   const panels = [...(config.assetPreview ? [{ details: assetHost, label: 'Artwork', title: 'Artwork library', group: 'library' as Group }] : []), ...(config.worldPanel ? [{ details: mapHost, label: 'City map', title: 'City map · open a place to edit it', group: 'world' as Group }] : []),
     // Wiring panels follow the logic panels under Logic.
-    ...[...workbenches].sort((a, b) => Number(a.config.mode === 'wiring') - Number(b.config.mode === 'wiring')).map(item => ({ details: item.details, label: item.config.label ?? item.config.title.split(' · ')[0], title: item.config.title, group: panelGroup(item.config) }))];
+    // Play is not a panel: it runs on the Scene stage in place of the canvas.
+    ...[...workbenches].filter(item => !(item.config.area === 'scene' && item.config.mode === 'play')).sort((a, b) => Number(a.config.mode === 'wiring') - Number(b.config.mode === 'wiring')).map(item => ({ details: item.details, label: item.config.label ?? item.config.title.split(' · ')[0], title: item.config.title, group: panelGroup(item.config) }))];
   const chosen = new Map<Group, HTMLDetailsElement>(); let group: Group = 'layout';
   const subtools = element('nav', 'subtools'); subtools.setAttribute('aria-label', 'Panels in this mode'); root.insertBefore(subtools, status);
   const showLayout = () => { group = 'layout'; panels.forEach(item => item.details.open = false); refreshTools(); };
-  const openPanel = (details: HTMLDetailsElement) => { const item = panels.find(p => p.details === details); if (!item) return; group = item.group; chosen.set(group, details); details.open = true; refreshTools(); };
+  const openPanel = (details: HTMLDetailsElement) => { const item = panels.find(p => p.details === details); if (!item) return; stopPlay(); group = item.group; chosen.set(group, details); details.open = true; refreshTools(); };
   /** Scene toolbar's Play: open the Play panel and start the scene immediately. */
   const playWorkbench = () => workbenches.find(item => item.config.area === 'scene' && item.config.mode === 'play');
   const canPlay = () => { const item = playWorkbench(), scene = sceneId(); return !!item && !!scene && (!item.config.supports || item.config.supports(scene, model.list())); };
-  const playScene = () => { const item = playWorkbench(); if (!item) return; animating = false; item.autostart = true; if (item.details.open) { item.dispose?.(); item.dispose = undefined; refreshWorkbench(item); } else openPanel(item.details); };
+  /** Play runs the game on the Scene stage, in place of the canvas; Stop returns to editing at the same spot. */
+  let playHandle: WorkbenchHandle | undefined;
+  const playScene = () => {
+    const item = playWorkbench(), scene = sceneId(); if (!item || !canPlay()) return; stopPlay(); animating = false; showLayout();
+    playHost.hidden = false; stage.hidden = true; viewportTools.hidden = true; root.dataset.playing = '';
+    item.config.showScene?.(scene, model.list());
+    try { playHandle = item.config.mount(playHost, { documents: model.list(), openScene, openInstance, scene, autostart: true, ...(item.config.authoring ? { authoring: authoringApi() } : {}) }); }
+    catch (error) { playHost.replaceChildren(element('p', 'error', `Play unavailable: ${message(error)}`)); }
+    refreshOptions();
+  };
+  function stopPlay() {
+    if (playHost.hidden) return; playHandle?.(); playHandle = undefined; playHost.replaceChildren(); playHost.hidden = true; stage.hidden = false; delete root.dataset.playing;
+    refreshViewportTools(); refreshOptions(); void draw();
+  }
   const showGroup = (id: Group) => { if (id === 'layout') { showLayout(); return; } const target = chosen.get(id) ?? panels.find(p => p.group === id)?.details; if (target) openPanel(target); };
   function refreshTools() {
     const active = panels.find(item => item.details.open); root.dataset.tool = active?.details.dataset.tool ?? 'scene'; root.dataset.group = group;
@@ -341,8 +370,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     finally { saving = false; refresh(); }
   }
   function syncSequence() { const doc = currentTimeline(); if (!doc?.sequences.some(s => s.id === sequenceId)) sequenceId = doc?.sequences[0]?.id ?? ''; const seq = sequence(); time = Math.min(time, seq?.duration ?? time); loopFrom = 0; loopTo = seq?.duration ?? 0; }
-  function openDocument(id: string) { currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }
-  function openScene(scene: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { showLayout(); openDocument(doc.id); } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
+  function openDocument(id: string) { if (id !== currentId) { compareId = ''; stopPlay(); } currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }
+  function openScene(scene: string, compare?: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
   function refreshHeader() {
     const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand);
     const actions = element('div', 'actions'), menu = element('details', 'menu'), menuItems = element('div', 'menu-items'); menu.append(element('summary', '', 'More'), menuItems);
@@ -368,9 +397,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const importButton = button('Import JSON', () => file.click()); importButton.disabled = activeDocument()?.kind === 'world'; menuItems.append(importButton, file);
   }
   function refreshOptions() {
-    options.replaceChildren(); ambientLabel = undefined;
+    options.replaceChildren(); ambientLabel = undefined; syncWorldState();
     const bar = element('div', 'scene-toolbar'), composition = current()?.kind === 'composition';
     const cluster = (name: string) => { const node = element('div', 'toolbar-group'); node.setAttribute('role', 'group'); node.setAttribute('aria-label', name); bar.append(node); return node; };
+    if (!playHost.hidden) {
+      const stop = button('■ Stop', stopPlay, 'Stop playing and return to editing this scene'); stop.className = 'play-button';
+      bar.append(element('span', 'toolbar-label', `Playing ${sceneName(sceneId())}`), stop); options.append(bar); return;
+    }
     if (composition) {
       const add = button('＋ Add artwork', () => openPicker(), 'Add a piece of artwork where you are looking (A)'); add.className = 'primary'; cluster('Artwork').append(add);
       const animation = cluster('Scene animation'), toggle = button(animating ? '❚❚ Pause' : '▶ Animate', () => { animating = !animating; refreshOptions(); }, animating ? 'Pause the scene’s ambient animation (Space)' : 'Run the scene’s ambient animation, such as people, lights and signs, without playing the game (Space)');
@@ -379,20 +412,38 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     }
     const controls: EnvironmentControl[] = config.environmentControls ?? [{ key: 'cameraX', label: 'Camera X', kind: 'number', step: 10 }, { key: 'zoom', label: 'Zoom', kind: 'number', min: 0.1, max: 8, step: 0.1 }];
     const quick = controls.filter(control => control.quick);
-    if (quick.length) { const preview = cluster('Preview as'); preview.append(element('span', 'toolbar-label', 'Preview')); for (const control of quick) preview.append(environmentControl(control, true)); }
+    const states = composition && config.worldStates ? config.worldStates.list(sceneId(), model.list()) : [];
+    if (states.length) {
+      const scene = sceneId(), chosen = config.worldStates!.selected(scene, model.list());
+      const pick = select([...states.map(state => ({ value: state.id, label: `State · ${state.name}` })), { value: '', label: 'State · preview only' }], chosen, value => { config.worldStates!.select(scene, value); refreshOptions(); void draw(); });
+      pick.title = 'The world this scene is shown in and Play starts from: time, weather and story flags. Changing time or weather edits this state; "preview only" changes nothing saved.';
+      pick.setAttribute('aria-label', 'Starting state'); cluster('Starting state').append(pick);
+    }
+    if (quick.length) { const preview = cluster('Preview as'); preview.append(element('span', 'toolbar-label', states.length ? '' : 'Preview')); for (const control of quick) preview.append(environmentControl(control, true)); }
     if (composition) {
       const grid = select([{ value: '0', label: 'Grid off' }, ...[1, 2, 4, 8, 16].map(n => ({ value: String(n), label: `Grid ${n} px` }))], String(snap), value => { snap = Number(value); });
       grid.title = 'Dragging and arrow keys snap to this grid'; grid.setAttribute('aria-label', 'Grid'); cluster('Grid').append(grid);
+    }
+    const comparable = composition ? compareOptions() : [];
+    if (comparable.length) {
+      const pick = select([{ value: '', label: 'Compare · off' }, ...comparable.map(o => ({ value: o.id, label: `Compare · ${o.label}` }))], compareId, value => { compareId = value; void draw(); });
+      pick.title = 'Show another version beside this one, with the same camera, zoom, time and weather'; pick.setAttribute('aria-label', 'Compare'); cluster('Compare').append(pick);
     }
     const more = element('details', 'more-menu'), panel = element('div', 'more-panel'); more.open = moreOpen; more.ontoggle = () => { moreOpen = more.open; };
     more.append(element('summary', '', 'More preview settings'), panel); bar.append(more);
     const motion = element('input'); motion.type = 'checkbox'; motion.checked = reduced; motion.onchange = () => { reduced = motion.checked; void draw(); }; panel.append(label('Reduced motion', motion));
     for (const control of controls) if (!control.quick) panel.append(environmentControl(control, false));
-    if (canPlay()) { const play = button('▶ Play scene', playScene, 'Run this scene in the game from its starting state'); play.className = 'play-button'; bar.append(play); }
+    if (canPlay()) { const play = button('▶ Play scene', playScene, 'Run this scene in the game from its starting state, here on the stage'); play.className = 'play-button'; bar.append(play); }
     options.append(bar);
   }
   function environmentControl(control: EnvironmentControl, inToolbar: boolean): HTMLElement {
-    const change = (value: string | number | boolean) => { environment[control.key] = value; void draw(); if (inToolbar) refreshOptions(); };
+    const change = (value: string | number | boolean) => {
+      environment[control.key] = value;
+      // With a starting state chosen, time and weather are part of it: the change is a saved, undoable edit.
+      const state = worldState(), stored = state && config.worldStates!.edit(sceneId(), state.id, control.key, value, model.list());
+      if (state && stored) { run(() => model.edit(stored.id, `${state.name}: ${control.label}`, () => stored.value)); return; }
+      void draw(); if (inToolbar) refreshOptions();
+    };
     if (control.choices) {
       const row = element('div', 'segmented'); row.setAttribute('role', 'group'); row.setAttribute('aria-label', control.label);
       for (const choice of control.choices) { const pick = button(choice.label, () => change(choice.value), `${control.label}: ${choice.label}`); pick.setAttribute('aria-pressed', String(environment[control.key] === choice.value)); row.append(pick); }
@@ -628,7 +679,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   async function draw() {
     if (disposed) return; if (previewPending) { renderAgain = true; return; } const doc = compositionDocument(); if (!doc) { preview = undefined; previewError.textContent = current()?.kind === 'world' ? 'World structure is read-only. Open a scene from the world panel to preview it.' : 'No composition selected.'; previewError.hidden = false; canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); return; }
-    previewPending = true; const generation = ++previewGeneration;
+    previewPending = true; const generation = ++previewGeneration; syncWorldState();
     try {
       const timeline = currentTimeline(); const frame = timeline && sequence() ? evaluateTimeline(timeline, sequenceId, time, evaluationContext(), { reduced }) : undefined;
       const composition = dragging?.pending ?? frame?.composition ?? doc.value as Composition;
@@ -642,10 +693,23 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       sizeCanvas(baseWidth, zoomable() ? Math.round((crop && cropHeight ? cropHeight : baseHeight) * viewZoom) : baseHeight);
       const result = await config.preview.render(canvas, request(overlays, viewZoom));
       if (!disposed && generation === previewGeneration) { preview = result; previewError.hidden = true; placeHover(); }
+      // Compare: the other version through the same renderer and request, only the composition differs.
+      const other = comparing() ? model.list().find(d => d.id === compareId) : undefined;
+      stage.classList.toggle('comparing', !!other); compareCanvas.hidden = !other;
+      if (other && !disposed && generation === previewGeneration) {
+        if (compareCanvas.width !== canvas.width || compareCanvas.height !== canvas.height) { compareCanvas.width = canvas.width; compareCanvas.height = canvas.height; }
+        for (const key of ['--ratio', '--fit-ratio']) compareCanvas.style.setProperty(key, canvas.style.getPropertyValue(key));
+        await config.preview.render(compareCanvas, { ...request(false, viewZoom), composition: copy(other.value as Composition), selectedId: undefined });
+      }
     } catch (e) { preview = undefined; previewError.textContent = `Preview unavailable: ${message(e)}`; previewError.hidden = false; }
     finally { previewPending = false; if (renderAgain) { renderAgain = false; void draw(); } }
   }
   function refresh() { if (disposed) return; if(currentId&&!model.list().some(d=>d.id===currentId)){currentId=model.list().find(d=>d.kind==='composition')?.id??'';selectedId='';} const timeline = currentTimeline(); if (timeline && !timeline.sequences.some(s => s.id === sequenceId)) sequenceId = timeline.sequences[0]?.id ?? ''; const seq = sequence(); if (seq) { time = Math.max(0, Math.min(time, seq.duration)); loopTo = Math.min(loopTo || seq.duration, seq.duration); if (loopFrom >= loopTo) loopFrom = 0; } refreshHeader(); refreshOptions(); refreshViewportTools(); refreshLeft(); refreshRight(); refreshTimeline(); void draw(); }
+  /** The chosen saved world state, if any; its values override the preview environment on every draw. */
+  function syncWorldState() { const state = worldState(); if (state) Object.assign(environment, state.environment); }
+  function worldState() { const scene = sceneId(); if (!config.worldStates || !scene || current()?.kind !== 'composition') return undefined; const id = config.worldStates.selected(scene, model.list()); return id ? config.worldStates.list(scene, model.list()).find(state => state.id === id) : undefined; }
+  function compareOptions() { const doc = compositionDocument(); return doc && config.compareWith ? config.compareWith((doc.value as Composition).scene, model.list()) : []; }
+  function comparing() { return !!compareId && zoomable() && compareOptions().some(o => o.id === compareId); }
   function zoomable() { return current()?.kind === 'composition'; }
   function sizeCanvas(width: number, height: number) { if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; } canvas.style.setProperty('--ratio', String(width / height)); canvas.style.setProperty('--fit-ratio', String(width / (zoomable() && crop && cropHeight ? cropHeight : baseHeight))); }
   const coordinates = (event: { clientX: number; clientY: number }) => { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; };
