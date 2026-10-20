@@ -3,6 +3,7 @@ import type {BindingContext} from '../binding-sources';
 import {mallProvider} from './mall';
 import {marketBindings} from './market';
 import {laundry} from './laundry';
+import {station} from './station';
 /**
  * Registered binding providers: a source name `<provider>.<key>` asks the provider for `key`.
  * A provider works out everything it offers once per frame from the scene as it stands (its
@@ -20,4 +21,5 @@ export const BINDING_PROVIDERS:Readonly<Record<string,BindingProvider>>={
  shift:shiftProvider,
  market:marketBindings,
  laundry,
+ station,
 };

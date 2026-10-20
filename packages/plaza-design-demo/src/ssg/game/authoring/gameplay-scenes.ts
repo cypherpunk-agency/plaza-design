@@ -27,10 +27,6 @@ import {stacksScene} from '../scenes/stacks';
 import {content as stacksContent} from '../scenes/stacks/scene-document';
 import {metroScene} from '../scenes/metro';
 import {content as metroContent} from '../scenes/metro/scene-document';
-import {galleriaStationScene} from '../scenes/galleriaStation';
-import {content as galleriaStationContent} from '../scenes/galleriaStation/scene-document';
-import {harborStationScene} from '../scenes/harborStation';
-import {content as harborStationContent} from '../scenes/harborStation/scene-document';
 import {trainScene} from '../scenes/train';
 import {content as trainContent} from '../scenes/train/scene-document';
 const metroAuthoredScene=(...args:Parameters<typeof trainScene>)=>metroScene(args[0],args[1],args[2],undefined,args[3],args[4]);
@@ -62,8 +58,6 @@ const definitions=[
 
  {id:'stacks',prefix:'stacks',bindingGroups:['uses','readables','rests','exits'] as const,data:STACKS,validateScene:stacksContent.validateScene,validateGameplay:stacksContent.validateGameplay,definition:stacksScene,definitionWithDevices:stacksWithDevices},
  {id:'metro',prefix:'metro',validateScene:metroContent.validateScene,validateGameplay:metroContent.validateGameplay,definition:metroAuthoredScene},
- {id:'galleriaStation',prefix:'galleriaStation',validateScene:galleriaStationContent.validateScene,validateGameplay:galleriaStationContent.validateGameplay,definition:galleriaStationScene},
- {id:'harborStation',prefix:'harborStation',validateScene:harborStationContent.validateScene,validateGameplay:harborStationContent.validateGameplay,definition:harborStationScene},
  {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene,definitionWithDevices:trainWithDevices},
 
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},

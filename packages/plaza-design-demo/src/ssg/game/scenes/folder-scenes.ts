@@ -31,6 +31,14 @@ import laundromatComposition from './laundromat/composition.json';
 import laundromatScene from './laundromat/scene.json';
 import laundromatGameplay from './laundromat/gameplay.json';
 import laundromatDevices from './laundromat/devices.json';
+import galleriaStationComposition from './galleriaStation/composition.json';
+import galleriaStationScene from './galleriaStation/scene.json';
+import galleriaStationGameplay from './galleriaStation/gameplay.json';
+import galleriaStationDevices from './galleriaStation/devices.json';
+import harborStationComposition from './harborStation/composition.json';
+import harborStationScene from './harborStation/scene.json';
+import harborStationGameplay from './harborStation/gameplay.json';
+import harborStationDevices from './harborStation/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -45,6 +53,8 @@ export const FOLDER_SOURCES={
  harborShift:{composition:harborShiftComposition,scene:harborShiftScene,gameplay:harborShiftGameplay,devices:harborShiftDevices},
  market:{composition:marketComposition,scene:marketScene,gameplay:marketGameplay,devices:marketDevices},
  laundromat:{composition:laundromatComposition,scene:laundromatScene,gameplay:laundromatGameplay,devices:laundromatDevices},
+ galleriaStation:{composition:galleriaStationComposition,scene:galleriaStationScene,gameplay:galleriaStationGameplay,devices:galleriaStationDevices},
+ harborStation:{composition:harborStationComposition,scene:harborStationScene,gameplay:harborStationGameplay,devices:harborStationDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */
 export const FOLDER_DIRS:Readonly<Record<string,string>>={harborShift:'harbor-shift'};

@@ -25,12 +25,6 @@ import s7scene from './stacks/scene.json';
 import s13data from './metro/devices.json';
 import s13art from './metro/composition.json';
 import s13scene from './metro/scene.json';
-import s14data from './galleriaStation/devices.json';
-import s14art from './galleriaStation/composition.json';
-import s14scene from './galleriaStation/scene.json';
-import s15data from './harborStation/devices.json';
-import s15art from './harborStation/composition.json';
-import s15scene from './harborStation/scene.json';
 import s16data from './train/devices.json';
 import s16art from './train/composition.json';
 import s16scene from './train/scene.json';
@@ -47,8 +41,6 @@ export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Co
  harbor:{devices:s6data as unknown as SceneData,composition:s6art as unknown as Composition,scene:s6scene as unknown as SceneDocument},
  stacks:{devices:s7data as unknown as SceneData,composition:s7art as unknown as Composition,scene:s7scene as unknown as SceneDocument},
  metro:{devices:s13data as unknown as SceneData,composition:s13art as unknown as Composition,scene:s13scene as unknown as SceneDocument},
- galleriaStation:{devices:s14data as unknown as SceneData,composition:s14art as unknown as Composition,scene:s14scene as unknown as SceneDocument},
- harborStation:{devices:s15data as unknown as SceneData,composition:s15art as unknown as Composition,scene:s15scene as unknown as SceneDocument},
  train:{devices:s16data as unknown as SceneData,composition:s16art as unknown as Composition,scene:s16scene as unknown as SceneDocument},
  sandbox:{devices:s17data as unknown as SceneData,composition:s17art as unknown as Composition,scene:s17scene as unknown as SceneDocument},
  // folder scenes (folder-scenes.ts) keep the same three documents in their folder
