@@ -63,7 +63,7 @@ const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
 const KEYS: Record<string, string[]> = {
   scene: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog', 'observations','controller'],
   logic: ['modules'],
-  net: ['nodes', 'cables', 'keyring', 'watchdog', 'networks', 'programs'],
+  net: ['nodes', 'cables', 'keyring', 'watchdog', 'networks', 'programs', 'scanProgram'],
   network: ['id', 'name', 'note', 'from', 'need', 'machines'],
   machine: ['id', 'in', 'node'],
   program: ['id', 'name', 'look', 'foundIn'],
@@ -85,7 +85,7 @@ const KEYS: Record<string, string[]> = {
   sector: ['id', 'label', 'seal'],
   seal: [...SEAL_KEYS, 'withinMs', 'signal'],
   layout: ['spot', 'board', 'dir', 'vision', 'row'],
-  spot: ['x', 'w', 'h', 'y'],
+  spot: ['x', 'w', 'h', 'y', 'presence'],
   pt: ['x', 'y'],
   item: ['id', 'kind', 'label', 'text', 'rule', 'from', 'card'],
   case: ['if', 'when', 'do', 'say'],
@@ -196,6 +196,7 @@ export function checkGame(scenes: SceneCheck[], logic: LogicData, net: NetData, 
       else if (!by.includes(m.foundIn)) errs.push(`${w} › foundIn: ${m.foundIn === 'net' ? 'net.json' : m.foundIn + '.json'} has no { "give": "${m.id}" } step`);
     } else if (by.length && !m.start) errs.push(`${w}: ${by.map((f) => (f === 'net' ? 'net.json' : f + '.json')).join(', ')} hands it out; say so in "foundIn"`);
   });
+  if (net.scanProgram !== null && (typeof net.scanProgram !== 'string' || !world.programs.has(net.scanProgram))) errs.push('net.json › scanProgram: must name a registered program or be null');
   // programs: like modules, where each is found must hand it out
   (net.programs ?? []).forEach((p, i) => {
     const w = `net.json › programs[${p.id ?? i}]`, by = [...(world.gives.get(p.id) ?? [])];
@@ -535,7 +536,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     if (d.layout) {
       const wl = `${where} › layout`, l = d.layout;
       keys(l, 'layout', wl);
-      if (l.spot) { keys(l.spot, 'spot', wl + ' › spot'); if (![l.spot.x, l.spot.w, l.spot.h].every(num)) err(wl + ' › spot', 'x, w and h are numbers (world units)'); if (l.spot.y !== undefined && !(num(l.spot.y) && l.spot.y >= 0)) err(wl + ' › spot', 'y is a height above the street, 0 or more'); }
+      if (l.spot) { keys(l.spot, 'spot', wl + ' › spot'); if(l.spot.presence!==undefined&&(typeof l.spot.presence!=='string'||!env.code.derived.includes(l.spot.presence)))err(wl+' › spot','presence must name a declared shared query'); if (![l.spot.x, l.spot.w, l.spot.h].every(num)) err(wl + ' › spot', 'x, w and h are numbers (world units)'); if (l.spot.y !== undefined && !(num(l.spot.y) && l.spot.y >= 0)) err(wl + ' › spot', 'y is a height above the street, 0 or more'); }
       if (l.board) { keys(l.board, 'pt', wl + ' › board'); if (![l.board.x, l.board.y].every((v) => num(v) && v >= 0 && v <= 1)) err(wl + ' › board', 'x and y are fractions of the board, 0 to 1'); }
       const ids = new Set([...d.nouns.map((n) => n.id), ...sectors.filter((s) => 'sequence' in s.seal).map((s) => s.id)]);
       for (const f of ['dir', 'vision'] as const) for (const [nid, dir] of Object.entries(l[f] ?? {})) {

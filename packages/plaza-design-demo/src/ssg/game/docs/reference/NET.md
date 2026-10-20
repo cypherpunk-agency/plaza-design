@@ -42,6 +42,22 @@ You start with nothing and earn programs (`.so` modules) over time:
 2. Later: `sniff` (listen on a network), `spoof` (wear someone else's identity), `decrypt` (the
    lock toys), `proxy` (slower trace), `worm`. Where each is earned: with Act II.
 
+### Existing scanner binding in the editor
+
+`net.json.scanProgram` names the program that grants the existing scanner capability, or is
+`null` to disable that capability. The shipping binding remains `scan.so`. Edit it through
+**World → Networks → Scanner program**. It must reference a registered program; owning a
+similarly named file does not grant access. Known-node connections retain their existing rules.
+The device model, runtime NET access, acquisition announcement, net-map header and terminal
+manual use the same binding. New scene/Play starting states use the pending binding; existing
+starting states keep their explicitly authored inventory.
+
+Program distribution, story guidance and starting-state inventory are separate authored
+references. Rebind or remove those references in the same grouped edit before deleting a
+program. Network and program entries have no protected historical-ID list. Dangling references
+reject the edit atomically; Undo, bundles and protected Save use the ordinary document system.
+No save-format translation or second persisted ability state is involved.
+
 ## The NET button and the net map
 
 - **NET** in hack vision's bar (EXIT, BOARD, LOGIC, NET, UNFOLD) and the **N** key; it appears

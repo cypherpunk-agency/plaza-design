@@ -21,7 +21,7 @@ export function nativeSayKey(value:Exclude<NativeSay,null|unknown[]>,session:Gam
  return typeof key==='string'&&own(model.texts,key)&&lineValue(model.texts[key])?key:undefined;
 }
 /** Native formatting receives the real noun/verb/signal context after the commit. */
-export function nativeSourceLine(key:string,model:SceneModel,context:Ctx){return model.lineFor(key,context);}
+export function nativeSourceLine(key:string,model:SceneModel,context:Ctx){return model.responseFor(key,context);}
 
 /** Explicit query tokens are references; ordinary native placeholders keep their existing semantics. */
 export function validateNativeTextQueries(definition:GameplayDefinition,data:SceneData){

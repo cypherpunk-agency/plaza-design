@@ -89,8 +89,6 @@ function effects(): Record<string, Effect> {
   };
 }
 
-let jokes = 0;
-
 /** Downtown's rules, reading and writing the player's save through `p`. */
 export function downtownRules(p: PlayerServices): SceneRules {
   const s = () => p.save();
@@ -108,8 +106,6 @@ export function downtownRules(p: PlayerServices): SceneRules {
       till: () => !!s().flags.till,
       end: () => !!s().flags.end,
       nodes: () => p.nodes(),
-      /** The denied jokes, in turn. */
-      joke: (m) => m.label('joke.' + (jokes++ % 3)),
     },
     place: (m: SceneModel, home: Spot) => {
       if (home.id !== downtownController(m.data).devices.vehicle) return home;
@@ -120,7 +116,6 @@ export function downtownRules(p: PlayerServices): SceneRules {
       devices:[],
       state: [],
       texts: {
-        'joke.0': 'label', 'joke.1': 'label', 'joke.2': 'label',
 
         // shell.ts (the deck's keyboard)
         'login.none': 'line', 'login.baduser': 'line',

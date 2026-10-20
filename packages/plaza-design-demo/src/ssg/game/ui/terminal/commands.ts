@@ -25,6 +25,8 @@ export interface Shell {
 
 
 export interface Ctx {
+  /** The network source binding, including when hacking is currently locked. */
+  scanProgram:string|null;
   save: Save;
   /** The machine the deck talks to: the one whose schematic is open, else the one you stand at. Null: your own deck. */
   machine: string | null;
@@ -63,7 +65,7 @@ const MAN: Record<string, string> = {
   whoami: 'whoami: who the city thinks you are.',
   set: 'set handle <name>: picks your name. 2 to 16 letters, digits, _ or -.',
   nodes: 'nodes: how many nodes run outside the Registry, and which of them answer to you.',
-  scan: 'scan: lists the machines you reach from where you are plugged in. needs scan.so.',
+  scan: 'scan: lists the machines you reach from where you are plugged in. needs {scanProgram}.',
   connect: 'connect <machine>: brings a machine you reach onto your board. the deck talks to it after.',
   map: 'map: what you know of Downtown.',
   sound: 'sound: chiptune on or off. M does the same.',
@@ -152,7 +154,7 @@ export function run(c: Ctx, line: string) {
       if (!c.machine) c.print('stand at a machine and the deck talks to it. E or a tap opens its schematic.', 'dim');
       return;
     }
-    case 'man': c.print(MAN[(args[0] || '').toLowerCase()] ?? 'man <command>: explains a command. Try: man login', 'dim'); return;
+    case 'man': c.print((MAN[(args[0] || '').toLowerCase()] ?? 'man <command>: explains a command. Try: man login').replace('{scanProgram}',c.scanProgram??'an installed scanner program'), 'dim'); return;
     case 'ls': c.print(at ? at.sh.ls(at.dev) : Object.keys(c.deck?.files ?? DECK).join('   ')); return;
     case 'cat': {
       if (at) { at.sh.cat(at.dev, args[0] || ''); return; }

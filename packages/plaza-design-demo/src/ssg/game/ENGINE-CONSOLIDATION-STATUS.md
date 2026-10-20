@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `531dc71` on main and production.
-Homepage jobs39359560451/39359560942 and design job39359560487 succeeded.
+Last verified deployment: `cca059c` on main and production.
+Homepage jobs39376188849/39376189044 and design job39376189019 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -32,7 +32,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
 | G10 | IN PROGRESS | Typed actor CRUD/source bindings now cover all19 native scenes; catalogue creation/history/bundles/Save are checked. Current combined source still requires all-scene browser Play, controller/network/device entity controls and complete lifecycle acceptance |
 | G11 | IN PROGRESS | Moth Act transition authored through shared handoffs; full world/story/transport source integration pending |
-| G12 | IN PROGRESS | Latest published native raster173/173 has zero differing pixels/errors; focused immutable outcome/current-save checks pass. Full state/actor/HUD/save acceptance remains pending |
+| G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
 | G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
 
 Package `tsc -b` and `check-communication.mts` pass after the initial communication clock/lane change.
@@ -2882,3 +2882,166 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
 - Full gate audit and individual commands/results: `docs/reference/LIFECYCLE-ACCEPTANCE.md`.
   G5 promoted to PASS. G1/G2/G3/G5/G6 now PASS; nine gates remain open. This does not promote
   authoring/controller/network/current-save or full preservation acceptance.
+
+## 2026-10-20 network entity deletion
+
+- Removed the historical network/program ID floor from network-source validation and the matching
+  disabled Remove buttons. Original entries obey the same prospective reference checks as newly
+  authored entries. No baseline network/program definitions, IDs, saves or gameplay changed.
+- `check-network-forms.mts` exercises the actual typed controls: original buttons are enabled;
+  deleting referenced Public Net or the granted scanner rejects atomically; replacing Home's
+  ports/members permits removing Home; removing a program with no remaining device grant is valid
+  within that device/network context. Full source validation still checks story references.
+- `check-network-source.mts` verifies valid original deletion, dangling dependent-network rejection
+  and the existing reference/model/inspector/reach checks. These tests no longer mistake the old
+  identity floor for semantic rejection.
+- `check-network-source-save.mts` replaces Home with an authored network and proves actual port
+  reach, grouped pending/native model and inspector changes, invalid-import rollback, bundles,
+  history, protected Save, fresh source import and byte-exact Undo. A referenced program deletion
+  remains invalid. Artifact: `.scene-system/network-source-save/run-X92uMK`.
+  Reload uses one validated store snapshot instead of validating all documents once per read.
+- Included upstream main `8219bdf` (editor/artwork additions) without overlapping edits. Combined
+  runtime source `11781838a5699f9af346a07bed771323dc8eca380c781f5e7385b81de337c1c5`:
+  both builds/TypeScript and all three network checks PASS. Public package app-HLLVTCB7.js /
+  play-KFS5PYVM.js. Actual packaged editor original Home removal enables Undo, removes the section,
+  and Undo restores it; campaign/source stores are untouched.
+- This is bounded G4/G9/G10/G13 progress. No additional whole-goal gate is promoted. Scanner
+  capability role configuration and complete controller/network authoring audit remain open.
+  Earlier raster evidence retains its original source identity; this authoring-only change does
+  not claim a new combined-source raster result for the upstream artwork additions.
+
+## 2026-10-20 shared scanner capability binding
+
+- `net.json.scanProgram` is now the single explicit binding for the existing scanner capability.
+  It references a registered program or is null; missing, malformed and dangling bindings reject.
+  Shipping data keeps `scan.so`. The old exported SCAN constant and duplicate filename-based
+  permission checks are removed. No old-save translation, new remote mechanic or ability state.
+- World → Networks has a typed Scanner program selector. The SceneModel, Game capability/debug
+  view, NET admission and acquisition feedback, actual map header, terminal manual and refusal
+  wording resolve this same source binding. New Play/scene fixtures use the pending binding;
+  existing fixture inventories remain explicit source content.
+- `check-scanner-binding.mts` PASS:54 model/capability/actual-Game ownership/lock assertions,
+  acquisition deduplication, null/rebound defaults, real terminal manual and map draw header.
+  Existing network source/forms checks PASS, including typed rebinding and invalid-edit rollback.
+- Expanded `check-network-source-save.mts` PASS in `.scene-system/network-source-save/run-BRelLN`:
+  new distributed program and scanner binding, actual native scan refusal/ownership/success and
+  Game map state, grouped model history/bundle/protected Save/fresh source import/byte Undo.
+- Actual public editor app-UU4GTK6B.js/play-JVBBOCWD.js:Library Play owns scan.so/network=true;
+  changing pending scanner to none yields network=false while still owning scan.so. Creating a
+  new Beach starting state under the disabled binding grants no scan.so. All three Stop operations
+  remove every iframe, console warnings/errors empty. These are isolated technical fixtures.
+- Package TypeScript/both builds, shared scene batch, scene catalogue/source Save
+  (`scene-catalogue-check/run-Jy84ku`), opening42, Play startup, native private-storage and
+  acquisition/history checks PASS. ENG04/05 fixtures were stale:Beach supported source permissions
+  are editable, Downtown's removed stage module is replaced by the actual shared objective
+  evaluator, map admission takes its existing exitAccess callback, and demo scene validation
+  opts into its registered manifest/actors. Original outcome/order/refusal oracles retained.
+  ENG04 now PASSes48 Beach cases and source transactions; ENG05 PASSes64 Downtown stages and2048
+  Harbor objective/attention cases plus map/access/demo checks.
+- Raster result is explicitly FAIL against the immutable original, not rebaselined:172/173 cases
+  unchanged, Mall case1(time2.25/rain/960x540) differs282pixels(max82). Current sourcef146f18f:
+  `.scene-system/all-game-pixel-check/evidence/f146f18f70dfd255ca5b693070f95202202c89cf4c8cbe1a428e1480eddad14c-1792466343470.json`.
+  A read-only git archive of published aebc591 reproduces the identical sole delta:
+  `.scene-system/all-game-pixel-check/evidence/f0a2bd96f9fedfb8232c63ed92ff98ca0db5f42163e39b2ffd256335489a3453-1792466503921.json`.
+  That upstream commit already includes the newer walk-turn animation. Its preservation delta
+  needs explicit final reconciliation; no artwork or frozen fixture was changed in this batch.
+- Final runtime fingerprint45279058a1de38a399f22b022c52699c59ebbf2cd54d6c330b034082ddd606de
+  differs from f146f18f only by the source-template documentation comment. No gate promotion;
+  G4/G9/G10/G13 advance, all19 completion and the final removal/inventory audit remain mandatory.
+
+## 2026-10-20 device world presence
+
+- Removed Stacks' reefer-specific native `rules.place` branch. Its existing predicate is now
+  the ordinary shared query `stacks.reefer.present`, referenced by `layout.spot.presence`.
+  Source/editor can change or remove this binding without a per-scene code edit. Source
+  validation rejects missing query references; the common model requires boolean true and
+  omits source predicate metadata from returned world geometry. No additional state owner.
+- Logic → Devices has a typed World presence query selector, including bound artwork devices.
+  The existing shared query editor owns the predicate. This controls device world interaction/
+  hack targets; physical cargo trajectories and procedural art retain their registered owner.
+- `check-device-presence.mts` PASS (`.scene-system/device-presence-Yd12Pb`):all six declared
+  original box-location/departure states, actual typed query rebinding, old query deletion,
+  actual pending model and disposed-query behavior, atomic invalid refs, history/bundle,
+  paired protected source Save/native reload/fresh shipping import and byte-exact Undo.
+- Stacks default spots/geometry check,288 immutable permission histories and21x101 return
+  timeline frames PASS. ENG04 PASS48 original Beach cases and protected source transactions.
+  Package TypeScript and both builds PASS; app-DRP233SN.js/play-TZWMK3MT.js.
+- Real packaged native Stacks Play at x1453:removing the presence binding exposes NRLU4040451
+  in hack vision with the box still at stack; restoring the original source query removes it.
+  Each Stop removes the iframe; warning/error log empty. Only disposable pending fixtures used.
+- Runtime checkpoint c4d3cb3f8f6e17189701950af207ea4c9ad54869041a529899d0d57e61f94265 has
+  the same173 raster-row results as the prior published-source diagnostic:172 unchanged and
+  the previously recorded sole282-pixel Mall animation delta. Raw report:
+  `.scene-system/all-game-pixel-check/evidence/c4d3cb3f8f6e17189701950af207ea4c9ad54869041a529899d0d57e61f94265-1792467262517.json`.
+  Stacks matrix evidence appended afterwards; the checkpoint's source identity remains pinned.
+- No new gate promotion. Remaining ordinary-code audit includes Downtown's side-effecting joke
+  formatter and Stacks' foreign Sprat state read; these were identified, not silently retained
+  as accepted controller primitives. Final all19 inventory/removal and G0-G13 signoff remain open.
+
+## 2026-10-20: typed cross-owner state reads
+
+- `gameplay.stateReads` declares qualified, typed read-only references. Shared queries and
+  scalar controls read the same runtime owner blocks; consumers introduce no foreign defaults,
+  copied values, native read callbacks or save-format adapters. Registry/source validation
+  checks prospective owner declarations and rejects missing/type-mismatched imports.
+- Stacks' Sprat conversation now reads `moth.fed` through the authored `stacks.spratFed`
+  query. Removed the native derived flag and the unused PlayerServices.sceneState bridge.
+- Logic's integrated reference controls support Add/Remove/type selection and the common
+  scalar selectors. Actual packaged editor verification: wrong type rejected without history;
+  adding `moth.fern` as string and Undo succeeded with no console warnings/errors.
+- Current checks PASS: package TypeScript, check-state-reads, check-state-reads-save,
+  check-stacks-conversation (312 original cases / 256 transitions). Protected source Save,
+  grouped owner/consumer changes, missing/type rejection, bundle/history, fresh shipping
+  import/current-state reload and byte restoration are covered by
+  `.scene-system/state-reads-save-qnQDSQ`. Earlier regression checks also passed:
+  check-device-presence, check-stacks-source-permissions and check-eng05; both root builds passed.
+- Raster checkpoint source `d12f94605abcdcf8266221add53f613586290f8aec7e78f83862f3a01102616b`:
+  raw report `.scene-system/all-game-pixel-check/evidence/d12f94605abcdcf8266221add53f613586290f8aec7e78f83862f3a01102616b-1792468122198.json`.
+  Independent comparison confirms rows/deviceRows/boundRows/mapRows exactly equal the
+  pre-change published-source diagnostic `f0a2bd96...-1792466503921.json`.
+  Original-baseline status remains FAIL: 172 unchanged cases, one pre-existing Mall
+  animation frame with 282 differing pixels / max delta 82. No baseline was replaced.
+- No whole-goal gate promoted. Downtown's side-effecting denial-text rotation and the
+  final all-scene source/editor/preservation/removal audits remain outstanding.
+
+## 2026-10-20: Downtown denial responses use shared conversations
+
+- Removed Downtown's module-global `jokes` counter and its side-effecting derived formatter.
+  Both generic password refusal and till username refusal bind to one authored conversation;
+  the existing joke.0/1/2 text IDs remain the sole wording source through label queries.
+  Toy failure uses the same explicit delivery boundary. Near-miss and successful responses
+  keep their existing behavior. The cursor follows the approved persistent-conversation policy.
+- `native.responseConversations` binds a source line, graph and variable. Ordinary line()
+  formatting previews the shared entry without commands; response() explicitly enters the
+  same ConversationSession. Preview sessions reject navigation. No second dialogue runner,
+  progress map, scheduler or native cursor remains. Disposal releases the model hook.
+- Typed Response conversations controls are integrated under Logic / Commands & dialogue:
+  Add/Remove/text rebind/graph rebind/slot edits use prospective validation and existing
+  history. Actual packaged app-Z6TQKHZO.js: invalid slot rejected with no history; Remove
+  and Undo restored the original binding; console warnings/errors empty.
+- PASS: check-response-conversations (12 interleaved actual password/username refusals,
+  original phrases/order, repeated pure previews, near-miss exclusion, persistence/reload,
+  invalid graphs/slots, disposal and typed controls); check-response-conversations-save
+  (paired graph rename/text edit, atomic invalid deletion rejection, bundle/history,
+  actual pending native refusal, protected Save/reload/fresh shipping import/byte Undo).
+  Save evidence: `.scene-system/response-conversations-save-oY3oFE`.
+- Regression PASS: check-unified-conversations, check-downtown-shared-dialogue (76,230
+  original/current target comparisons), check-downtown-registry-control (128 original
+  histories), check-eng04 and both root builds. The first fresh-module test fixture omitted
+  native physical inputs; it was corrected to instantiate the registered Downtown rules.
+  Runtime validation was not weakened.
+- Raster source `4be942646219033eda15b01e6d6c39d86fc1b4b7fd619fd2cac7fcd9180b860c`:
+  `.scene-system/all-game-pixel-check/evidence/4be942646219033eda15b01e6d6c39d86fc1b4b7fd619fd2cac7fcd9180b860c-1792475436799.json`.
+  All four row arrays exactly match the pre-change published-source diagnostic. Original
+  baseline status remains FAIL solely for the previously recorded Mall frame (282 pixels,
+  max delta82). No baseline replacement or whole-goal gate promotion.
+- Final delivery integration also covers committed shared verb/event source replies and native
+  authored case/guard replies through responseFor()/the same formatter boundary. Focused response
+  and ENG-04 checks were repeated after that change; both final builds pass
+  (app-ZCEMJ3HG.js / play-XADKKRXH.js).
+- Final-source raster evidence supersedes the earlier response checkpoint above:
+  `.scene-system/all-game-pixel-check/evidence/ff6fff6b54506f5c6cdc994db794981c392d555aec17fcdcfec4013e0673a20e-1792475595248.json`.
+  All four result arrays still exactly equal the pre-change diagnostic; the sole Mall baseline
+  difference remains open. Conversation entry-failure, free-input and bot regression checks pass.
+- Final-source protected Save/fresh-module/byte-Undo rerun PASS:
+  `.scene-system/response-conversations-save-pkdsOt`.

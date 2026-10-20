@@ -1,3 +1,4 @@
+import {renderStateReadsAuthoring} from './state-reads-authoring';
 import {renderConversationStructure} from './conversation-structure-authoring';
 import {renderGameplayPurchasesAuthoring} from './gameplay-purchases-authoring';
 import {domainActionOptions,initialDomainAction,renderDomainAction} from './domain-actions-authoring';
@@ -53,6 +54,7 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     root.replaceChildren();root.append(element('p','Edits join the editor history; Undo, Redo and Save are in the header.'));
     root.append(error);
     const form=new TypedForm(report);form.objectiveIds=options.objectiveIdsSource?.()??[];
+    renderStateReadsAuthoring(root,doc,{form,section,edit,draft:bindingDraft,refresh});
     renderGameplayPurchasesAuthoring(root,doc,{form,section,edit,draft:bindingDraft,refresh});
     renderCheckpointAuthoring(root,doc,{section,edit,report,owner:nativeData?.id});
     renderGameplayBindingsAuthoring(root,doc,{data:nativeData,derived:nativeDerived,edit,section,form,draft:bindingDraft,refresh});

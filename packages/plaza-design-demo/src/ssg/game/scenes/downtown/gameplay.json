@@ -2044,6 +2044,39 @@
           "emit": "downtown.end.present"
         }
       ]
+    },
+    "downtown.denial.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "downtown.denial.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "downtown.denial.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "downtown.denial.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "downtown.denial.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "downtown.denial.cursor",
+          "set": 0
+        }
+      ]
     }
   },
   "reactions": [],
@@ -2748,6 +2781,53 @@
           ]
         }
       }
+    },
+    "downtown.denial": {
+      "entry": [
+        {
+          "when": {
+            "state": "downtown.denial.cursor",
+            "is": 0
+          },
+          "node": "reply-0"
+        },
+        {
+          "when": {
+            "state": "downtown.denial.cursor",
+            "is": 1
+          },
+          "node": "reply-1"
+        },
+        {
+          "node": "reply-2"
+        }
+      ],
+      "nodes": {
+        "reply-0": {
+          "speaker": "REGISTRY",
+          "pages": [
+            "{query:downtown.denial.0}"
+          ],
+          "onEnter": "downtown.denial.advance-0",
+          "template": true
+        },
+        "reply-1": {
+          "speaker": "REGISTRY",
+          "pages": [
+            "{query:downtown.denial.1}"
+          ],
+          "onEnter": "downtown.denial.advance-1",
+          "template": true
+        },
+        "reply-2": {
+          "speaker": "REGISTRY",
+          "pages": [
+            "{query:downtown.denial.2}"
+          ],
+          "onEnter": "downtown.denial.advance-2",
+          "template": true
+        }
+      }
     }
   },
   "state": {
@@ -2818,6 +2898,14 @@
       "lifetime": "save",
       "type": "string",
       "default": "ads"
+    },
+    "downtown.denial.cursor": {
+      "owner": "downtown.denial",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
     }
   },
   "purchases": {
@@ -3135,6 +3223,18 @@
           }
         }
       ]
+    },
+    "downtown.denial.0": {
+      "kind": "label",
+      "key": "joke.0"
+    },
+    "downtown.denial.1": {
+      "kind": "label",
+      "key": "joke.1"
+    },
+    "downtown.denial.2": {
+      "kind": "label",
+      "key": "joke.2"
     }
   },
   "native": {
@@ -3477,6 +3577,16 @@
     "reads": {
       "downtown.dlv.through": "dlvThrough",
       "downtown.dlv.inside": "dlvInside"
+    },
+    "responseConversations": {
+      "guard.wrong.last": {
+        "conversation": "downtown.denial",
+        "variable": "joke"
+      },
+      "login.baduser.till": {
+        "conversation": "downtown.denial",
+        "variable": "joke"
+      }
     }
   },
   "handoffs": [

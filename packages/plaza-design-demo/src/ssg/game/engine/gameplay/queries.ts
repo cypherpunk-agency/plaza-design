@@ -55,23 +55,23 @@ const name=(v:unknown):string=>{if(typeof v!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9
 export function validateScalarRead(read:unknown,d:GameplayDefinition){
  const r=fields(read,['literal','state','query'],[]);if(Object.keys(r).length!==1)fail('one scalar source required');
  if('literal'in r){if(r.literal!==null&&!['string','number','boolean'].includes(typeof r.literal)||typeof r.literal==='number'&&!Number.isFinite(r.literal)||typeof r.literal==='string'&&r.literal.length>2000)fail('finite bounded literal');}
- else if('state'in r){if(!own(d.state??{},name(r.state)))fail('state reference '+r.state);}
+ else if('state'in r){if(!own(d.state??{},name(r.state))&&!own(d.stateReads??{},name(r.state)))fail('state reference '+r.state);}
  else if(!own(d.queries??{},name(r.query)))fail('query reference '+r.query);
 }
 export function numericScalarRead(read:ScalarRead,d:GameplayDefinition,depth=0):boolean{
  if(depth>=32)return false;
  if('literal'in read)return typeof read.literal==='number';
- if('state'in read)return d.state?.[read.state]?.type==='number';
+ if('state'in read)return stateReadType(d,read.state)==='number';
  const q=d.queries?.[read.query];if(!q)return false;
  return q.kind==='remainder'||q.kind==='sceneTime'||q.kind==='count'||q.kind==='tuning'||q.kind==='duration'||q.kind==='select'&&Array.isArray(q.cases)&&q.cases.every(row=>row.value&&numericScalarRead(row.value,d,depth+1));
 }
 export function stringScalarRead(read:ScalarRead,d:GameplayDefinition,depth=0):boolean{
- if(depth>=32)return false;if('literal'in read)return typeof read.literal==='string';if('state'in read)return ['string','enum'].includes(d.state?.[read.state]?.type??'');const q=d.queries?.[read.query];return q?.kind==='label'||q?.kind==='collection'&&q.read.kind==='lineRef'||q?.kind==='select'&&Array.isArray(q.cases)&&q.cases.every(row=>row.value&&stringScalarRead(row.value,d,depth+1));
+ if(depth>=32)return false;if('literal'in read)return typeof read.literal==='string';if('state'in read)return ['string','enum'].includes(stateReadType(d,read.state)??'');const q=d.queries?.[read.query];return q?.kind==='label'||q?.kind==='collection'&&q.read.kind==='lineRef'||q?.kind==='select'&&Array.isArray(q.cases)&&q.cases.every(row=>row.value&&stringScalarRead(row.value,d,depth+1));
 }
 export function validateGameplayQueries(d:GameplayDefinition,condition:(v:unknown)=>void){
  const queries=d.queries??{};object(queries);if(Object.keys(queries).length>64)fail('query count');
  for(const[id,raw]of Object.entries(queries)){
-  name(id);if(own(d.state??{},id))fail('query shadows state '+id);const q=object(raw);
+  name(id);if(own(d.state??{},id)||own(d.stateReads??{},id))fail('query shadows state '+id);const q=object(raw);
   if(q.kind==='remainder'){fields(q,['kind','value','divisor']);validateScalarRead(q.value,d);if(typeof q.divisor!=='number'||!Number.isFinite(q.divisor)||q.divisor===0)fail('finite nonzero divisor');}
   else if(q.kind==='sceneTime'){fields(q,['kind']);}
   else if(q.kind==='collection'){fields(q,['kind','source','id','read']);if(q.source!=='camera.crates')fail('registered collection source');validateScalarRead(q.id,d);if(!stringScalarRead(q.id as ScalarRead,d))fail('collection ID requires string read');const r=object(q.read);if(r.kind==='exists')fields(r,['kind']);else if(r.kind==='lineRef'){fields(r,['kind','prefix','fallback']);name(r.fallback);if(typeof r.prefix!=='string'||!/^[-a-zA-Z0-9_.:]{0,128}$/.test(r.prefix))fail('line prefix');}else fail('collection read');}
@@ -100,3 +100,7 @@ export function validateGameplayQuerySources(d:GameplayDefinition,data:Pick<Scen
 /** Line metadata stays in the existing source library; no second formatter. */
 export function lineValue(value:unknown):value is [string,string,('ok'|'err'|'dim')?]{return Array.isArray(value)&&value.length>=2&&value.length<=3&&value.slice(0,2).every((v,i)=>typeof v==='string'&&(i===0||v.length>0)&&v.length<=2000)&&(value[2]===undefined||['ok','err','dim'].includes(value[2]));}
 export function lineReferenceQuery(d:Pick<GameplayDefinition,'queries'>,id:string){const q=d.queries?.[id];return q?.kind==='collection'&&q.read.kind==='lineRef';}
+
+/** Type lookup never initializes a foreign block or permits writing it. */
+export const stateReadType=(d:GameplayDefinition,id:string)=>d.state?.[id]?.type??d.stateReads?.[id];
+export const stateReadIds=(d:GameplayDefinition)=>[...Object.keys(d.state??{}),...Object.keys(d.stateReads??{})];

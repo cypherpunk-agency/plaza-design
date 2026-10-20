@@ -43,7 +43,7 @@ import type {TerminalGeometry} from '../../art/assemblies/terminal-state';
 import type { SceneData } from "../../data/types";
 import type { PlayerServices } from "../../runtime/player";
 import type { Effect, SceneRules, World } from "../../engine/rules";
-import type { SceneModel, Spot } from "../../engine/model";
+import type { SceneModel } from "../../engine/model";
 
 /** Save flags the end of Act I sets (ROADMAP: the ending). */
 export const ACT1_FLAG = 'act1:done';
@@ -122,7 +122,7 @@ const busy = (m: SceneModel) => m.scratch.liftT0 !== undefined || m.scratch.retT
 /** A lift's ticket: an alarm or a reload makes a lift in flight forget to land. */
 let ticket = 0;
 
-function stacksRules(player: PlayerServices,geometry:TerminalGeometry={X,H}): SceneRules {
+function stacksRules(_player: PlayerServices,geometry:TerminalGeometry={X,H}): SceneRules {
 const {X}=geometry;
   const effects: Record<string, Effect> = {
     /** STS-2's spreader: a cable lifts (the Registry's clearance), a finger does not. */
@@ -186,16 +186,10 @@ const {X}=geometry;
       /** Physical trajectory occupancy; source cases own permission/refusal policy. */
       craneBusy: (m) => busy(m),
       reeferTrajectory: (m) => m.scratch.liftKind===KIND.box,
-      /** Moth's question has an answer: did you feed Sprat (Moth's place, the feeder)? */
-      spratFed: () => !!player.sceneState?.('moth', 'fed'),
       portFrozen: (m) => m.frozen(stacksController(m.data).scannerDevice),
       craneReturning: (m) => m.scratch.retT0 !== undefined,
     },
     tick,
-    place: (m: SceneModel, home: Spot) => {
-      if (home.id === 'reefer') return stacksState(m,'boxAt') === 'ferry' && !stacksState(m,'departed') ? home : null;
-      return home;
-    },
     needs: {
       devices:[],
       texts: {

@@ -63,3 +63,6 @@ export function nextTo(nets: readonly NetworkData[], ids: Iterable<string>): Set
   }
   return out;
 }
+
+/** Capability comes from the source binding and ordinary program ownership, never a file-name convention. */
+export const ownsScanner = (owned:readonly string[],program:string|null):boolean => program!==null&&owned.includes(program);

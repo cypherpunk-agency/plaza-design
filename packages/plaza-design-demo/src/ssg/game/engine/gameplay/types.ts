@@ -59,6 +59,8 @@ export interface GameplayDefinition {
   /** Ordered current-save normalization, evaluated on a copy through shared state commands. */
   checkpoint?:{when?:Condition;command:string}[];
   state?:Record<string,StateDeclaration>;
+  /** Read-only references to another declaration; no defaults, ownership or stored copies. */
+  stateReads?:Record<string,StateDeclaration['type']>;
   /** Pure reads derived from the current draft and its source; never persisted. */
   queries?:Record<string,QueryDefinition>;
   purchases?:Record<string,PurchaseDefinition>;
@@ -74,6 +76,8 @@ export interface NativeReplyLine {from:string;say:[string,string,('ok'|'err'|'di
 export type NativeReply=NativeReplyLine|{cases:(NativeReplyLine&{when?:Condition})[]};
 export type NativeSay=[string,string,('ok'|'err'|'dim')?]|{text:string|{query:string}}|null;
 export interface NativeBindings {
+  /** One-page shared conversations fill a response slot; previews never enter the graph. */
+  responseConversations?:Record<string,{conversation:string;variable:string}>;
   inputs?:Record<string,NativeInput>;
   /** Read-only live truthiness; never persisted as a second flag. */
   reads?:Record<string,string>;

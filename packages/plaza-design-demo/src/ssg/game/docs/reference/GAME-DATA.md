@@ -30,6 +30,22 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
   device sources omit scene scalar defaults. `Save.gameplay` contains owner
   blocks shared by native models and commands (`gameplay.yard.found`, for example).
   `save.scenes.yard` stores engine progress such as goals, cables and board state.
+- **Read another owner's state without copying it.** `gameplay.stateReads` maps qualified
+  IDs to expected types, for example `{"moth.fed":"boolean"}`. Scalar reads in queries,
+  comparisons and action values read that owner's block in the common runtime state.
+  The reader creates no defaults and cannot write imported keys; a missing owner block
+  yields an absent value. The prospective source registry validates each reference against
+  its owner's declaration, including grouped edits before Save. Logic exposes typed
+  **Read state from other owners** controls and includes references in scalar selectors.
+- **Rotating device responses use conversations too.** `native.responseConversations`
+  binds a response text ID to a shared one-page conversation and a placeholder variable.
+  `SceneModel.line()` previews the current entry without running its command;
+  `SceneModel.response()` explicitly enters it when the outcome is delivered. Guard
+  refusal, terminal username refusal and toy failure delivery use this boundary.
+  The graph owns its ordinary saved cursor, entry conditions and commands. Its wording
+  can read existing label queries, preserving text IDs without another text catalogue.
+  Logic exposes typed response text/graph/slot bindings; the normal conversation editor
+  edits the graph. Multi-page/choice graphs and missing text slots are rejected here.
 - **No authored hints in the yard yet.** Goals stay (the GOAL line in the HUD; the deck's JOBS
   tab). The game has a hint lane now (ui/hints.ts, 2026-10-18), used so far only for control
   hints; when a goal or place gives a hint is a separate design question. Downtown's fixer hints
@@ -67,6 +83,12 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   game hosts every scene with `new SceneHost(…, def, rules)`.
 - Where devices stand in the world (`layout.spot`), their board home (`layout.board`) and noun
   directions (`layout.dir`, `layout.vision`): **data**.
+  Optional `layout.spot.presence` references a shared gameplay query. The world device is
+  present only while that query returns boolean `true`; no binding means always present.
+  Edit the binding in Logic → Devices → World presence query and its predicate in the shared
+  query editor. It controls world interaction/hack targets; procedural cargo artwork keeps
+  its own physical trajectory presentation. Missing references reject source edits; a
+  disposed/unavailable query cannot expose the device. It adds no persisted visibility flag.
 - Hack vision's noun order (`layout.row`): **data**, optional; the default order by kind is
   **code** (`RANK` in `schematic.ts`). Where a logic part floats in the world: the **save**
   (`logic[].at`), placed beside the player by the host. Where the player dragged a device's

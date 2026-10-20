@@ -2,7 +2,7 @@ import {attachGameplayHandoffs} from '../engine/gameplay/handoffs';
 import {registryLabels} from '../engine/gameplay/rewards';
 import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/gameplay/state';
 import {capsuleController} from '../engine/controllers/capsule';
-import {SCAN,type SceneModel} from '../engine/model';
+import {type SceneModel} from '../engine/model';
 import {withCompanionConversations,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import type {GameRuntimeSources} from './game-sources';
 import {runtimeSequenceDocuments} from '../story/sequence-documents';
@@ -328,8 +328,6 @@ export class Game {
       end: () => { this.showEnd = true; },
       // a story beat's cutscene (the stacks' ACT II card) waits for the screen to be free (`loop`)
       cutscene: (cut) => { this.pendingCut = cut; },
-      // another scene's state: its live model if it is hosted, else its save
-      sceneState: (scene, key) => this.save.gameplay?.[scene]?.[key],
     }) : def.rules ?? NO_RULES;
     const zh = new SceneHost(this.host.windowEl, print, {
       notice:(text,tone,receipt)=>{this.hints.notify(text,tone,receipt);},
@@ -605,7 +603,7 @@ export class Game {
       engine:EDITOR_PLAY?this.zh.model.inspect():undefined,
       gameplay:shared?{state:shared.state(),purchases:Object.fromEntries(Object.keys(shared.definition.purchases??{}).map(id=>[id,shared.quote(id)]))}:null,conversation:this.zh.conversationFrame,
       environment:{weather:this.weatherHere().kind,clock:this.editorClock},
-      capabilities:capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags)),access:{exits:this.def.exits.map(e=>({id:e.id,visibility:exitVisibility(e,this.save.flags),permission:exitPermission(e,this.save.keyring)})),interactions:this.def.uses?.map(u=>({id:u.id,result:u.eligibility?.(this.save.flags,shared)??{ok:true}}))},
+      capabilities:capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags),this.networkContext.net),access:{exits:this.def.exits.map(e=>({id:e.id,visibility:exitVisibility(e,this.save.flags),permission:exitPermission(e,this.save.keyring)})),interactions:this.def.uses?.map(u=>({id:u.id,result:u.eligibility?.(this.save.flags,shared)??{ok:true}}))},
       objective:this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()), paused:this.enginesPaused,
       dialogue:this.bubble?{speaker:this.bubble.name,pages:this.bubble.pages,page:this.bubble.page}:null, popup:this.zh.popupOpen,
       events:[...this.gameplaySessions].flatMap(([scene,session])=>session.events().map(event=>({scene,...event}))) });
@@ -985,6 +983,7 @@ export class Game {
     const zh = this.zh;
     return {
       save: this.save,
+      scanProgram:this.networkContext.net.scanProgram,
       machine: this.termMachine(),
       // the deck's commands reach the scene's machines, when it has any
       shell: zh.model.devices.size && !this.openingStory.hackLocked(this.save.flags) ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
@@ -2346,7 +2345,7 @@ export class Game {
   // ---------- the net map (netmap.ts, NET.md) ----------
 
   /** NET is yours: scan.so owned, and hacking yours (not in the opening's locked part). */
-  private get netOk() { return capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags)).network; }
+  private get netOk() { return capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags),this.networkContext.net).network; }
 
   /** A program came (scan.so from the library): saved, and NET shows in hack vision's bar, pinging until used. */
   private grantProgram(id: string,receipt?:FeedbackReceipt) {
@@ -2354,7 +2353,7 @@ export class Game {
     if (acquired) this.save.programs.push(id);
     this.persistSave();
     this.syncHud();
-    if (id === SCAN&&acquired) {
+    if (id === this.networkContext.net.scanProgram&&acquired) {
       this.flash(this.touch ? 'NET: in hack vision, the net map' : 'NET: N, the net map'); sound.feedback(receipt??mintFeedback(this.here,'program','success'));
       // This program already announced its acquisition. Advance only that word in the
       // ownership observer so its next pass still reports any other simultaneous gains.
@@ -2416,7 +2415,7 @@ export class Game {
       return model.net.get(m.id) === 'connected' ? 'board' : 'reach';
     };
     return {
-      view: this.netView ?? openNet(), nets: this.networkContext.net.networks, reached, plugged, found: new Set(this.save.nets),
+      view: this.netView ?? openNet(), scanner: this.networkContext.net.scanProgram, nets: this.networkContext.net.networks, reached, plugged, found: new Set(this.save.nets),
       where: sceneTitle(this.def), ports: [...new Set(model.ports().map((p) => model.devices.get(p.dev)?.name ?? p.dev))],
       controlled: this.save.controlled, name: (m) => this.machineName(m), state, touch: this.touch,
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k, avoid: this.mapAvoid(), t: this.clock,
