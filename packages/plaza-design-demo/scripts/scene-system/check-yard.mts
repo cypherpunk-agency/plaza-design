@@ -1,10 +1,16 @@
+import bindingSource from '../../src/ssg/game/scenes/yard/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import assert from 'node:assert/strict';
-import {yardComposition,yardArt,yardDeviceData,validateYardComposition,createYardPresentationState,prepareYardFrame,yardVisualSnapshot,yardEnvironment,drawYardComposition} from '../../src/ssg/game/scenes/yard/composition';
+import {yardComposition,yardArt,yardGeometry,validateYardComposition,createYardPresentationState,prepareYardFrame,yardVisualSnapshot,yardEnvironment,drawYardComposition} from '../../src/ssg/game/scenes/yard/composition';
 import {yardScene} from '../../src/ssg/game/scenes/yard';
 import type {EngineDraw} from '../../src/ssg/game/engine/host';
 import type {SceneData} from '../../src/ssg/game/data/types';
 import devices from '../../src/ssg/game/scenes/yard/devices.json';
-const doc=validateYardComposition(structuredClone(yardComposition));assert.deepEqual(doc,yardComposition);assert.deepEqual(yardDeviceData(devices as SceneData),devices);
+const yardDeviceData=(data:SceneData,composition=yardComposition,source=bindingSource as unknown as SceneDocument)=>{const rows=yardGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalize=(data:SceneData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
+const doc=validateYardComposition(structuredClone(yardComposition));assert.deepEqual(doc,yardComposition);assert.deepEqual(yardDeviceData(devices as SceneData),normalize(devices as SceneData));
 const edit=structuredClone(doc);edit.instances.find(i=>i.id==='crane')!.placement.x+=20;edit.instances.find(i=>i.id==='tray')!.placement.x+=8;
 assert.equal(yardDeviceData(devices as SceneData,edit).devices.find(d=>d.id==='crane')!.layout!.spot!.x,370);assert.equal(yardScene(edit).targets!({get:()=> 'tray',label:()=> 'take',cond:()=>true} as never)[0].x,676);
 const values:Record<string,unknown>={armAt:'C-7',parcelAt:'hook',pan:1,gateAllowed:true};

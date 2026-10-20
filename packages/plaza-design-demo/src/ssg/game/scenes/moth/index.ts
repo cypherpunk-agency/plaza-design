@@ -1,3 +1,4 @@
+import {projectDeviceBindings} from '../../engine/gameplay/device-bindings';
 import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import type {NativeTargetValidationContext} from '../../engine/gameplay/native-targets';
 import {compileSceneActors} from '../../engine/gameplay/actors';
@@ -22,7 +23,6 @@ import { mothComposition, validateMothComposition, mothGeometry, mothEnvironment
 
 import { MOTH } from "../../data/index";
 import type { SceneDef } from "../kit";
-import { mothDeviceData } from './composition';
 import { MOTH_RULES } from './rules';
 
 export { MOTH_KEY, UPLINK } from './rules';
@@ -34,7 +34,7 @@ export function mothScene(document: Composition = mothComposition, state: Enviro
   const doc=validateMothComposition(document),geometry=mothGeometry(doc);
   const authored=content.validateScene(sceneDocument,gameplay,validationContext),actors=compileSceneActors(authored,geometry);
  const compiled=compileManifestDocument(authored,geometry,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true}),roles=compiled.geometry.artwork,door=roles.door?.placement;
-  return {id:'moth',rules:MOTH_RULES,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),facing:Number(roles.orientation?.props.facing??0),data:mothDeviceData(projectSceneState({...deviceSource,dialogue:nativeDeviceDialogues(gameplay,deviceSource)},gameplay),doc,authored),
+  return {id:'moth',rules:MOTH_RULES,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),facing:Number(roles.orientation?.props.facing??0),data:projectDeviceBindings(authored,geometry,projectSceneState({...deviceSource,dialogue:nativeDeviceDialogues(gameplay,deviceSource)},gameplay),compiled.content.width),
     ...compileNativeTargets(authored,{...(door?{door}:{})},{reset:content.nativeTargetBindings?.reset===true,anchors:door?['door']:[]}),
     visualEnvironment:(view,engine)=>mothEnvironment(doc,view,engine.m,engine.hover,actors,authored),
     drawBackdrop:(ctx,view,engine)=>drawMothComposition(ctx,view,engine.m,engine.hover,doc,state,options,actors,authored),

@@ -1,10 +1,11 @@
+import {projectDeviceBindings} from '../../engine/gameplay/device-bindings';
 import {laundryController} from '../../engine/controllers/laundromat';
 import {validateLaundryGeometry} from './composition';
 import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import {projectSceneState} from '../../engine/gameplay/scene-state';
 import type {SceneData} from '../../data/types';
 import type { Composition,Environment } from '../../art/core/composition';
-import { laundromatComposition,laundromatDeviceData,laundromatGeometry,validateLaundromatComposition,type LaundromatRenderOptions } from './composition';
+import { laundromatComposition,laundromatGeometry,validateLaundromatComposition,type LaundromatRenderOptions } from './composition';
 /**
  * The laundromat (story Level 5, P13 Washer 3): a narrow shop in the Neon
  * Market, between the stalls, where Moth left a jacket in washer 3 with a
@@ -41,7 +42,7 @@ export function laundromatScene(document:Composition=laundromatComposition,state
   const compiled=compileManifestDocument(logic,rows,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:laundromatBindingGroups,groundExits:false});
   return {id:'laundromat',name:logic.name,facing:laundryController(deviceSource)?Number(get(laundryController(deviceSource)!.geometry.window).props.facing??180):180,...compiled.content,
    intro:logic.introTouch?(touch:boolean)=>[...(touch?logic.introTouch!:logic.intro)]:logic.intro.length?[...logic.intro]:undefined,
-   gameplay:withSceneConversations(gameplay,logic),data:laundromatDeviceData({...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource)},doc,logic),rules:LAUNDROMAT_RULES,
+   gameplay:withSceneConversations(gameplay,logic),data:projectDeviceBindings(logic,rows,{...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource)},compiled.content.width),rules:LAUNDROMAT_RULES,
    people:logic.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
    drawBackdrop:(ctx,v,e)=>drawLaundromat(ctx,v,e,doc,state,options,actors,gameplay),visualEnvironment:(v,e)=>laundromatFrameEnvironment(v,e,doc,actors,gameplay)};
 

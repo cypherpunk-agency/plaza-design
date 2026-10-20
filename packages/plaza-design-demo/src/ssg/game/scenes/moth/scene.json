@@ -42,6 +42,7 @@
     }
   ],
   "manifest": {
+    "devices": {"mail": "device-mail", "board": "device-board", "turntable": "device-turntable", "desk": "device-desk", "tank": "device-tank", "pot": "device-pot", "phone": "device-phone"},
     "artwork": {"orientation":"window","deskSurface":"desk","door":"door"},
     "version": 1,
     "width": {

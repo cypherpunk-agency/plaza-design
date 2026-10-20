@@ -5,8 +5,6 @@ import { drawComposition, resolveComposition, type Composition, type Environment
 import type { View } from '../../art/core/view';
 import { prepareCharacter, type Character, type PreparedCharacter } from '../../runtime/characters';
 import type { EngineDraw } from '../../engine/host';
-import type { SceneData } from '../../data/types';
-import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import document from './composition.json';
 
 import { art } from '../../art';
@@ -34,17 +32,6 @@ function defaults(doc: Composition): Record<string, Value> {
 }
 export function libraryGeometry(doc: Composition = libraryComposition) {
   return resolveComposition(libraryArt, doc, { view: geometryView, state: {}, bindings: defaults(doc), reduced: false });
-}
-/** Unbound original devices retain their art positions; explicit manifest bindings own replacement geometry. */
-export function libraryDeviceData(source:SceneData,doc:Composition=libraryComposition,scene?:Pick<SceneDocument,'manifest'>):SceneData{
- const result=structuredClone(source),geometry=libraryGeometry(doc);
- for(const id of deviceIds){
-  if(scene?.manifest?.devices?.[id])continue;
-  const position=geometry.find(row=>row.instance.id===id)?.placement,spot=result.devices.find(device=>device.id===id)?.layout?.spot;
-  if(!position||!spot)continue;
-  spot.x=position.x;const h=id==='printer'?position.h-2:position.h;if(spot.y!==undefined||h!==0)spot.y=h;
- }
- return result;
 }
 const value = (input: unknown): Value => input as Value;
 /** Build explicit preview/runtime snapshots. Seeking or drawing never changes gameplay. */

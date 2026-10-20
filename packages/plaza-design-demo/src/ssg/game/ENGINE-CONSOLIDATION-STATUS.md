@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `5423982` on main and production.
-Production/main homepage jobs39346356942/39346356599 and design job39346356952 succeeded.
+Last verified deployment: `ffe3d4a` on main and production.
+Production/main homepage jobs39346800192/39346800107 and design job39346800184 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2474,3 +2474,23 @@ cases with zero differences/errors (independently verified), and actual packaged
 without warning/error logs; app-OD4X3KIY.js / play-GDHEXZY7.js / play-4f0f47722d7714b3.html.
 Remaining nine device geometry adapters still need migration, including property-driven extents
 and offsets in Downtown/Beach/Sandbox/Train. Whole-goal gates and final all19 inventory remain open.
+
+## 2026-10-20 Five more shared device-placement migrations
+
+Yard, Moth, Library, Laundromat and Stacks now declare their24 device positions through the same
+manifest.devices projection. Library printer height offset is explicit source data. Removed all
+five per-scene adapters and authoring geometry entries; default source remains byte-owned by its
+normal documents, with no new state owner or old-save conversion. Real device bindings/attachments
+still validate; detachment explicitly restores source coordinates rather than silently finding old
+artwork. Fixture-only helpers use the shared projector and normalize absent zero-height metadata.
+
+Actual Device artwork fields in all five scenes rebind to replacements, then delete former markers.
+Native models observe the changed spots; dangling refs reject atomically; grouped history/bundle,
+protected Save/fresh shipping import/byte Undo PASS (`shared-device-geometry-9tc9nJ`). All ten
+native device default/primitive/cable checks PASS. The five original geometry/visual fixtures,
+interiors10 original outcome/current-save cases, Stacks22 NPC/tea/refusal cases and Yard controller
+source proof (`yard-controller-source-LXzjZf`) PASS. tsc/both builds PASS. Sourcead7e72626a906c81000462950bb46ede3ea751c43a0408588d0f09b3f7c53cd7 has173/173 browser raster rows with zero
+differences/errors (independently verified). Actual Yard/Moth/Library/Laundry/Stacks packaged native
+Play/Stop PASS, no warning/error logs. Package app-O4XKOBGX.js / play-Q4T6C5OV.js /
+play-90c93642992aeee9.html. Remaining device adapters: Downtown, Beach, Sandbox, Train (property-driven
+size/height inputs). All remaining whole-goal gates remain open.

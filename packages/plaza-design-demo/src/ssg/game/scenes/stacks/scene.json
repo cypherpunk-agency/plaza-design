@@ -380,6 +380,7 @@
     }
   ],
   "manifest": {
+    "devices": {"sts2": "device-sts2", "port": "device-port", "ferry": "device-ferry", "reefer": "device-reefer"},
     "version": 1,
     "width": {
       "instance": "scene",

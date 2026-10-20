@@ -66,6 +66,7 @@
     }
   ],
   "manifest": {
+    "devices": {"cam": "device-cam", "crane": "device-crane", "gate": "device-gate"},
     "version": 1,
     "width": {
       "instance": "side-walls",

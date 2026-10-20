@@ -61,3 +61,19 @@ controller/current-save proof PASS (`capsule-controller/run-UKFs3u`), interiors1
 builds PASS; source3c2235688a3d has173 zero-difference/error raster rows and native Capsule Play/Stop.
 Nine other scene geometry adapters remain; size/height property sources must migrate through a
 shared typed contract before those adapters are removed. No old-save conversion or new owner.
+
+## Five further geometry adapters removed
+
+Yard3, Moth7, Library3, Laundry7 and Stacks4 positions now use explicit shared manifest.devices
+bindings. The Library printer's -2 offset belongs to that source binding. The five corresponding
+shipping helpers and editor adapter registry entries are deleted. Native factories and pending
+Play consume the same common projector. Actual bound artwork must exist; detaching uses explicit
+device source coordinates. It never infers a marker name from a device ID.
+
+check-shared-device-geometry.mts PASS (`shared-device-geometry-9tc9nJ`) through actual typed forms,
+old-marker deletion, native models, invalid refs, history/bundle/protected Save/fresh import/byte
+Undo. Ten device source defaults/cables/primitive checks and the five original scene fixtures PASS.
+Interiors10, Stacks22/NPC/tea, Yard native source/controller proof and both builds/tsc PASS.
+Sourcead7e72626a90 passes173 original raster rows without differences/errors and targeted five-scene
+native Play/Stop without warnings. Four size/offset-derived adapters remain to migrate through a
+shared typed device extent/property contract; none is declared complete by this checkpoint.

@@ -11,13 +11,11 @@ import type {TerminalGeometry,TerminalVisual} from '../../art/assemblies/termina
 import type {TerminalLayout} from '../../art/assemblies/container-terminal';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../../engine/host';
-import type {SceneData} from '../../data/types';
 import {prepareCharacter,type Character,type PreparedCharacter} from '../../runtime/characters';
 import {light} from '../../world/light';
 import {trolley} from './rules';
 import document from './composition.json';
 export const stacksArt=art,stacksComposition=art.validate(document);
-const deviceIds=['sts2','port','ferry','reefer'];
 const required=['scene','booth','lane','gate','deck-reefer','ferry-kiosk','bridge','ferry-hatch','ladder-panel','gantry-back','gantry-front',...[0,1,2].map(i=>'block-'+i),...['rest','slot','chassis','hatch','deck'].map(k=>'rule-'+k)];
 export function validateStacksComposition(input:unknown):Composition{const doc=art.validate(input);if(doc.scene!=='stacks')throw new Error('Expected stacks composition');for(const id of required)if(!doc.instances.some(i=>i.id===id))throw new Error('Missing gameplay-bound Stacks instance '+id);for(const i of doc.instances)for(const [key,source]of Object.entries(i.bindings??{}))if(i.type==='character.prepared'?source!=='terminal.'+(key==='pose'?'actor.':'clip.')+i.props.actor:source!=='terminal.snapshot')throw new Error(i.id+': unknown Stacks binding '+source);return doc;}
 validateStacksComposition(stacksComposition);
@@ -27,8 +25,6 @@ export const stacksGeometry=(doc:Composition=stacksComposition)=>resolveComposit
 export function stacksPlacement(id:string,doc:Composition=stacksComposition){const row=stacksGeometry(doc).find(r=>r.instance.id===id);if(!row)throw new Error('Unknown Stacks instance '+id);return row.placement;}
 export function terminalLayout(doc:Composition=stacksComposition):TerminalLayout{const rows=stacksGeometry(doc),row=(id:string)=>rows.find(r=>r.instance.id===id)!,p=(id:string)=>row(id).placement;return{booth:{x:p('booth').x,w:Number(row('booth').props.width),h:70},lane:p('lane').x,blocks:[0,1,2].map(i=>({x:p('block-'+i).x,tiers:Number(row('block-'+i).props.tiers)})),legs:[p('gantry-front').x,p('gantry-front').x+256],ladder:p('ladder-panel').x,quay:p('quay-floor').x,kiosk:p('ferry-kiosk').x,hatch:{x0:p('ferry-hatch').x,x1:p('ferry-hatch').x+Number(row('ferry-hatch').props.width)},bridge:{x0:p('bridge').x,x1:p('bridge').x+Number(row('bridge').props.width)},boom:206};}
 export function terminalRuleGeometry(doc:Composition=stacksComposition):TerminalGeometry{const p=(id:string)=>stacksPlacement('rule-'+id,doc);return{X:{rest:p('rest').x,slot:p('slot').x,chassis:p('chassis').x,gate:stacksPlacement('gate',doc).x,hatch:p('hatch').x,deck:p('deck').x},H:{carry:p('rest').h,chassis:p('chassis').h,slot:p('slot').h,deck:p('deck').h,hold:p('hatch').h}};}
-/** Optional legacy pictures supply anchors only when no explicit shared binding owns the device. */
-export function stacksDeviceData(source:SceneData,doc:Composition=stacksComposition,scene?:Pick<import('../../engine/gameplay/scene-document').SceneDocument,'manifest'>):SceneData{const result=structuredClone(source),rows=stacksGeometry(doc);for(const id of deviceIds){if(scene?.manifest?.devices?.[id])continue;const p=rows.find(r=>r.instance.id==='device-'+id)?.placement,spot=result.devices.find(d=>d.id===id)?.layout?.spot;if(!p||!spot)continue;spot.x=p.x;if(spot.y!==undefined||p.h!==0)spot.y=p.h;}return result;}
 export type StacksRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
 export function stacksEnvironment(view:View,engine:EngineDraw,actors:Readonly<Record<string,Character>>,doc:Composition=stacksComposition,gameplay:GameplayDefinition=defaultGameplay as unknown as GameplayDefinition):Environment{
  const rows=stacksGeometry(doc),row=(id:string)=>rows.find(r=>r.instance.id===id)!,m=engine.m,geometry=terminalRuleGeometry(doc),layout=terminalLayout(doc),tr=trolley(m,geometry),width=Number(row('scene').props.width),horizon=Number(row('scene').props.horizon),loadVisible=view.sx(tr.x)+90>-4&&view.sx(tr.x)-90<view.viewW+4,deckReefer=stacksState(m,'boxAt')==='ferry'&&!stacksState(m,'departed')&&tr.carry!==2;

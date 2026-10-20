@@ -15,7 +15,6 @@ import {yardVisualFields} from '../../art/assemblies/yard-elements';
 import type {YardVisual} from '../../art/assemblies/fixer-yard';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../../engine/host';
-import type {SceneData} from '../../data/types';
 import type {SceneModel} from '../../engine/model';
 import {light} from '../../world/light';
 import document from './composition.json';
@@ -29,7 +28,6 @@ const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:64
 export function yardGeometry(doc:Composition=yardComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(doc),reduced:false});}
 export function yardPlacement(id:string,doc:Composition=yardComposition){const row=yardGeometry(doc).find(r=>r.instance.id===id);if(!row)throw new Error('Unknown Yard instance '+id);return row.placement;}
 export function yardWidth(doc:Composition=yardComposition){return manifestGeometry(sceneSource as unknown as SceneDocument,yardGeometry(doc),[],{groundSpawn:false}).width;}
-export function yardDeviceData(source:SceneData,doc:Composition=yardComposition,scene?:Pick<SceneDocument,'manifest'>):SceneData{const result=structuredClone(source),rows=yardGeometry(doc);for(const d of result.devices){if(scene?.manifest?.devices?.[d.id])continue;const p=rows.find(row=>row.instance.id==='device-'+d.id)?.placement,spot=d.layout?.spot;if(!p||!spot)continue;spot.x=p.x;if(spot.y!==undefined||p.h!==0)spot.y=p.h;}return result;}
 export interface YardPresentationState {hookX:number;hookVisible:boolean}
 const defaultController=deviceSource.controller as unknown as YardController,defaultGameplay=gameplaySource as unknown as GameplayDefinition;
 export const createYardPresentationState=(doc:Composition=yardComposition,c:YardController|null=defaultController):YardPresentationState=>({hookX:c?yardPlacement(c.slots[c.places.home],doc).x:0,hookVisible:!!c});

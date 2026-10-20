@@ -253,6 +253,7 @@
     }
   ],
   "manifest": {
+    "devices": {"clock": "device-clock", "washer1": "device-washer1", "washer2": "device-washer2", "washer3": "device-washer3", "washer4": "device-washer4", "breaker": "device-breaker", "suds": "device-suds"},
     "version": 1,
     "width": {
       "instance": "room",
