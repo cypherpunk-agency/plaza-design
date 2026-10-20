@@ -6,7 +6,28 @@ import { SETS } from '../art/catalog';
 
 export interface AssetUsage { document: string; scene: string; instance: string; parent?: string; path: string[]; node: Instance }
 /** `family` is the broad kind (layer-roles.ts); the registered category remains a tag. */
-export interface AssetEntry { id: string; label: string; family: string; tags: string[]; preview: 'local' | 'prepared-context' | 'structural'; usages: AssetUsage[] }
+/**
+ * Where a piece comes from, which says whether it is a building block:
+ * `kit` pieces are made to be reused anywhere; `scene` pieces were made for one place and draw with its artwork;
+ * `cutscene` parts are numbered pieces of one cutscene picture, not isolated elements; `engine` rows are markers
+ * and the player row.
+ */
+export type AssetOrigin = 'kit' | 'scene' | 'cutscene' | 'engine';
+export const ORIGINS: readonly { id: AssetOrigin; label: string; badge: string; hint: string }[] = [
+  { id: 'kit', label: 'Kit pieces', badge: 'Kit', hint: 'Made to be reused: place it in any scene' },
+  { id: 'scene', label: 'Scene pieces', badge: 'Scene', hint: 'Made for one place and drawn with that place’s artwork' },
+  { id: 'cutscene', label: 'Cutscene parts', badge: 'Cutscene part', hint: 'A numbered part of one cutscene picture, not an isolated element' },
+  { id: 'engine', label: 'Markers & engine', badge: 'Engine', hint: 'Markers and the player row: logic, not artwork' },
+];
+/** Namespaces of the shared kits (people, buildings, signs, vehicles, furniture, the station kit). */
+const KIT_NAMESPACES = new Set(['actor', 'building', 'character', 'furniture', 'sign', 'station', 'vehicle']);
+const originOf = (type: string, family: string, usages: AssetUsage[]): AssetOrigin => {
+  const namespace = type.split('.')[0];
+  if (family === 'Marker' || namespace === 'scene' || namespace === 'assembly') return 'engine';
+  if (namespace === 'sequence' || usages.length > 0 && usages.every(u => u.scene.startsWith('sequence-'))) return 'cutscene';
+  return KIT_NAMESPACES.has(namespace) ? 'kit' : 'scene';
+};
+export interface AssetEntry { id: string; label: string; family: string; origin: AssetOrigin; tags: string[]; preview: 'local' | 'prepared-context' | 'structural'; usages: AssetUsage[] }
 export interface AssetPreviewReport { message: string; snapshot?: unknown }
 export function assetInventory(registry: ArtRegistry, documents: EditorDocument[]): AssetEntry[] {
   const usages = new Map<string, AssetUsage[]>();
@@ -19,14 +40,15 @@ export function assetInventory(registry: ArtRegistry, documents: EditorDocument[
     });
     visit(composition.instances, []);
   }
-  return registry.catalog().map<AssetEntry>(element => ({
-    id: element.type, label: element.label, family: layerRole(element.type, element.label, element.category),
-    tags: [...new Set([element.category, ...element.type.split('.'), ...element.parts,
+  return registry.catalog().map<AssetEntry>(element => {
+    const family = layerRole(element.type, element.label, element.category), used = usages.get(element.type) ?? [], origin = originOf(element.type, family, used);
+    return { id: element.type, label: element.label, family, origin,
+    tags: [...new Set([ORIGINS.find(o => o.id === origin)!.badge.toLowerCase(), element.category, ...element.type.split('.'), ...element.parts,
       ...(element.animationClips ? ['animated'] : []), ...(element.visualFields ? ['visual-state'] : []),
       ...(element.coordinates === 'world' ? ['world'] : ['local'])])],
     preview: !element.parts.length ? 'structural' : element.coordinates === 'world' ? 'prepared-context' : 'local',
-    usages: usages.get(element.type) ?? [],
-  })).sort((a, b) => a.id.localeCompare(b.id));
+    usages: used };
+  }).sort((a, b) => a.id.localeCompare(b.id));
 }
 export function filterAssets(entries: AssetEntry[], query = '', family = '') {
   const terms = query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
@@ -45,7 +67,7 @@ export interface AssetBrowserOptions {
   /** City districts for the filter bar; `of` names a scene's district. */
   districts?: { list: { id: string; name: string }[]; of(scene: string): string | undefined };
 }
-export interface AssetBrowserSession { query?: string; family?: string; district?: string; selected?: string; usage?: string; zoom?: number }
+export interface AssetBrowserSession { query?: string; family?: string; district?: string; origin?: AssetOrigin | ''; selected?: string; usage?: string; zoom?: number }
 /** No model edit/save API is accepted by this panel. All preview changes are temporary. */
 export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOptions, session: AssetBrowserSession) {
   let disposed = false, generation = 0;
@@ -65,7 +87,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   navigation.append(sets); host.classList.add('asset-browser-grid'); host.classList.add('with-districts'); host.append(bar); host.append(navigation, inspector);
   function inspect(entry: AssetEntry) {
     if (session.selected !== entry.id) session.usage = undefined;
-    session.selected = entry.id; inspector.replaceChildren(el('h3', entry.label), el('code', entry.id), el('p', `Tags: ${entry.tags.join(', ')}`));
+    session.selected = entry.id; const source = ORIGINS.find(o => o.id === entry.origin)!; inspector.replaceChildren(el('h3', entry.label), el('code', entry.id), el('p', `${source.badge}: ${source.hint}.`), el('p', `Tags: ${entry.tags.join(', ')}`));
     if (options.useInScene) { const use = button(options.useInScene.label, () => options.useInScene!.run(entry)); use.className = 'primary'; inspector.append(use); }
     for (const card of list.children) (card as HTMLElement).setAttribute('aria-pressed', String((card as HTMLElement).dataset.asset === entry.id));
     const definition = options.registry.get(entry.id), detail = el('pre');
@@ -105,21 +127,26 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     // Left column: District, then Kind, then Other. Each count reflects the other filters.
     const chip = (name: string, n: number, pressed: boolean, choose: () => void, title = name) => { const b = button('', choose); b.append(el('span', name), el('small', String(n))); b.className = 'chip'; b.title = title; b.setAttribute('aria-pressed', String(pressed)); b.disabled = !n && !pressed; return b; };
     const heading = (text: string) => { const h = el('div', text); h.className = 'bar-heading'; return h; };
-    const sections: HTMLElement[] = [];
+    const sections: HTMLElement[] = [], fromOriginEarly = (e: AssetEntry) => !session.origin || e.origin === session.origin;
     if (options.districts) {
-      const districtChip = (id: string, name: string) => chip(name, id ? matching.filter(e => inDistrict(e, id)).length : matching.length, id === district, () => { session.district = id; refresh(); });
+      const districtChip = (id: string, name: string) => chip(name, matching.filter(e => fromOriginEarly(e) && (!id || inDistrict(e, id))).length, id === district, () => { session.district = id; refresh(); });
       sections.push(heading('District'), districtChip('', 'All'), ...options.districts.list.map(d => districtChip(d.id, d.name)), districtChip('__none__', 'Elsewhere'));
     }
-    const located = filterAssets(entries, search.value, '').filter(e => !district || inDistrict(e, district));
+    const origin = session.origin ?? '', fromOrigin = (e: AssetEntry) => !origin || e.origin === origin;
+    const located = filterAssets(entries, search.value, '').filter(e => (!district || inDistrict(e, district)) && fromOrigin(e));
     const kindChip = (kind: string, name: string, title?: string) => chip(name, kind ? located.filter(e => e.family === kind).length : located.length, family === kind, () => { family = kind === family ? '' : kind; refresh(); }, title);
     sections.push(heading('Kind'), kindChip('', 'All'), ...kinds.map(kind => kindChip(kind, kind, KIND_HINTS[kind])));
+    const byPlace = filterAssets(entries, search.value, family).filter(e => !district || inDistrict(e, district));
+    const originChip = (id: AssetOrigin | '', name: string, title?: string) => chip(name, byPlace.filter(e => !id || e.origin === id).length, origin === id, () => { session.origin = id === origin ? '' : id; refresh(); }, title);
+    sections.push(heading('Source'), originChip('', 'All'), ...ORIGINS.map(o => originChip(o.id, o.label, o.hint)));
     sections.push(heading('Other'), chip('Embedded components', SETS.length, family === '__embedded__', () => { family = family === '__embedded__' ? '' : '__embedded__'; refresh(); }, 'Code-drawn component sets that are not registered artwork'));
     bar.replaceChildren(...sections);
-    const filtered = district ? matching.filter(entry => inDistrict(entry, district)) : matching; count.textContent = `${filtered.length} / ${entries.length} registered assets`; list.replaceChildren();
+    const filtered = matching.filter(entry => (!district || inDistrict(entry, district)) && fromOrigin(entry)); count.textContent = `${filtered.length} / ${entries.length} registered assets`; list.replaceChildren();
     list.classList.toggle('asset-grid', !!options.thumbnail);
     for (const entry of filtered) {
       const pick = button('', () => inspect(entry)); pick.dataset.asset = entry.id; pick.title = `${entry.id} · ${entry.preview}`; pick.setAttribute('aria-pressed', String(entry.id === session.selected));
-      if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', entry.label)); } else { pick.textContent = entry.label; pick.style.display = 'block'; pick.style.width = '100%'; }
+      const source = ORIGINS.find(o => o.id === entry.origin)!, badge = el('small', source.badge); badge.className = `origin origin-${entry.origin}`; badge.title = source.hint;
+      if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', entry.label), badge); } else { pick.textContent = entry.label; pick.style.display = 'block'; pick.style.width = '100%'; }
       list.append(pick);
     }
     const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
