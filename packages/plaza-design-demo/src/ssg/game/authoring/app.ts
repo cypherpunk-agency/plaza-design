@@ -262,7 +262,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
-  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); root.append(header, tools, status, workspace); host.append(root);
+  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); header.append(tools, status); root.append(header, workspace); host.append(root);
   /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
   const linkedPanel = decodeURIComponent(location.hash.slice(1)); let linked = false;
   let compareId = '', currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
@@ -287,7 +287,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /**
    * Scene is the editor itself: outline, viewport and an inspector for the selection. Logic lists all of
    * the scene's logic at once and Play runs it; both act on the scene chosen in the header. Library,
-   * World and Labs are not tied to a scene.
+   * World and Labs are not tied to a scene. The header has one tab for the scene (Layout and Logic are its two views,
+   * chosen in the row below beside the scene picker) and one each for Library, World and Labs.
    */
   const groups = [
     { id: 'layout', label: 'Scene', title: 'Edit this scene: select artwork to change how it looks and what it does' },
@@ -303,7 +304,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     // Play is not a panel: it runs on the Scene stage in place of the canvas.
     ...[...workbenches].filter(item => !(item.config.area === 'scene' && item.config.mode === 'play')).sort((a, b) => Number(a.config.mode === 'wiring') - Number(b.config.mode === 'wiring')).map(item => ({ details: item.details, label: item.config.label ?? item.config.title.split(' · ')[0], title: item.config.title, group: panelGroup(item.config) }))];
   const chosen = new Map<Group, HTMLDetailsElement>(); let group: Group = 'layout';
-  const subtools = element('nav', 'subtools'); subtools.setAttribute('aria-label', 'Panels in this mode'); root.insertBefore(subtools, status);
+  const subtools = element('nav', 'subtools'); subtools.setAttribute('aria-label', 'Panels in this mode'); root.insertBefore(subtools, header.nextSibling);
+  /** The scene picker, filled by refreshHeader; it leads the second row while the Scene tab is open. */
+  const sceneContext = element('div', 'scene-context');
+  const sceneGroup = (id: Group) => id === 'layout' || id === 'logic';
+  let sceneView: 'layout' | 'logic' = 'layout';
   const showLayout = () => { group = 'layout'; panels.forEach(item => item.details.open = false); refreshTools(); };
   const openPanel = (details: HTMLDetailsElement) => { const item = panels.find(p => p.details === details); if (!item) return; stopPlay(); group = item.group; chosen.set(group, details); details.open = true; refreshTools(); };
   /** Scene toolbar's Play: open the Play panel and start the scene immediately. */
@@ -323,16 +328,29 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (playHost.hidden) return; playHandle?.(); playHandle = undefined; playHost.replaceChildren(); playHost.hidden = true; stage.hidden = false; delete root.dataset.playing;
     refreshViewportTools(); refreshOptions(); void draw();
   }
-  const showGroup = (id: Group) => { if (id === 'layout') { showLayout(); return; } const target = chosen.get(id) ?? panels.find(p => p.group === id)?.details; if (target) openPanel(target); };
+  const showGroup = (id: Group) => { if (id === 'layout') { showLayout(); return; } if (id === 'logic' && !panels.some(p => p.group === 'logic')) { showLayout(); return; } const target = chosen.get(id) ?? panels.find(p => p.group === id)?.details; if (target) openPanel(target); };
   function refreshTools() {
     const active = panels.find(item => item.details.open), beside = !!active?.details.classList.contains('stage-panel');
     // The open panel is in the URL (#style-frames, #characters, …) so it can be linked and survives reloads.
     const hash = active?.details.dataset.tool ? `#${active.details.dataset.tool}` : ''; if (linked && location.hash !== hash) history.replaceState(null, '', hash || location.pathname + location.search);
     root.dataset.tool = active && !beside ? active.details.dataset.tool ?? 'scene' : 'scene'; root.dataset.group = group; if (beside) root.dataset.stagePanel = active!.details.dataset.tool!; else delete root.dataset.stagePanel;
+    if (sceneGroup(group)) sceneView = group as 'layout' | 'logic';
     tools.replaceChildren();
-    for (const item of groups) { if (item.id !== 'layout' && !panels.some(p => p.group === item.id)) continue; const tab = button(item.label, () => showGroup(item.id), item.title); tab.dataset.group = item.id; tab.setAttribute('aria-pressed', String(item.id === group)); if (item.id === 'library') tab.classList.add('secondary'); tools.append(tab); }
-    const members = panels.filter(p => p.group === group); subtools.replaceChildren(); subtools.hidden = members.length < 2;
-    for (const item of members) { const tab = button(item.label, () => openPanel(item.details), item.title); tab.dataset.tool = item.details.dataset.tool; tab.setAttribute('aria-pressed', String(item.details.open)); subtools.append(tab); }
+    for (const item of groups) {
+      if (item.id === 'logic' || item.id !== 'layout' && !panels.some(p => p.group === item.id)) continue;
+      const scene = item.id === 'layout', tab = button(item.label, () => showGroup(scene ? sceneView : item.id), scene ? 'Edit the scene chosen in the row below: its layout and its logic' : item.title);
+      tab.dataset.group = item.id; tab.setAttribute('aria-pressed', String(scene ? sceneGroup(group) : item.id === group)); tools.append(tab);
+    }
+    const members = panels.filter(p => p.group === group); subtools.replaceChildren();
+    if (sceneGroup(group)) {
+      subtools.hidden = false; subtools.append(sceneContext);
+      if (panels.some(p => p.group === 'logic')) {
+        const views = element('div', 'scene-views'); views.setAttribute('role', 'group'); views.setAttribute('aria-label', 'Scene view');
+        for (const item of groups.filter(g => sceneGroup(g.id))) { const tab = button(item.id === 'layout' ? 'Layout' : item.label, () => showGroup(item.id), item.title); tab.dataset.group = item.id; tab.setAttribute('aria-pressed', String(item.id === group)); views.append(tab); }
+        subtools.append(views);
+      }
+    } else subtools.hidden = members.length < 2;
+    if (group !== 'layout' && members.length > 1 || group === 'logic') for (const item of members) { const tab = button(item.label, () => openPanel(item.details), item.title); tab.dataset.tool = item.details.dataset.tool; tab.setAttribute('aria-pressed', String(item.details.open)); subtools.append(tab); }
   }
   const sceneName = (scene:string)=>{const doc=model.list().find(d=>d.id.startsWith('authored.')&&d.kind==='scene'&&(d.value as {id?:string}).id===scene);return doc?(doc.value as {name:string}).name:config.sceneLabel?.(scene)??scene;};
   const sceneId = () => { const doc = compositionDocument(); return doc ? (doc.value as Composition).scene : ''; };
@@ -382,7 +400,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   assetHost.ontoggle = () => { closeOthers(assetHost); refreshLibrary(); refreshTools(); };
   mapHost.ontoggle = () => { closeOthers(mapHost); refreshMap(); refreshTools(); };
   refreshTools();
-  const notice = (text: string, error = false) => { status.textContent = text; status.className = 'status' + (error ? ' error' : ''); };
+  const notice = (text: string, error = false) => { status.textContent = text; status.title = text; status.className = 'status' + (error ? ' error' : ''); };
   const run = (action: () => void) => { try { notice(''); action(); refresh(); } catch (e) { notice(message(e), true); } };
   const current = () => currentId ? model.get(currentId) : undefined;
   /** The document an open panel edits (Export/Import JSON), otherwise the scene's composition or timeline. */
@@ -428,7 +446,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function openDocument(id: string) { if (id !== currentId) { compareId = ''; stopPlay(); } currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }
   function openScene(scene: string, compare?: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { if (!root.dataset.stagePanel) showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
   function refreshHeader() {
-    const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand);
+    const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand, tools);
     const actions = element('div', 'actions'), menu = element('details', 'menu'), menuItems = element('div', 'menu-items'); menu.append(element('summary', '', 'More'), menuItems);
     const docs = model.list(), chooser = element('select', 'document-picker'); chooser.setAttribute('aria-label', 'Scene');
     const unsaved = (doc: EditorDocument) => model.dirty(doc.id) || doc.kind === 'composition' && (config.sceneDocuments?.((doc.value as Composition).scene,docs) ?? []).some(id => model.dirty(id));
@@ -455,10 +473,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       for (const doc of list) optgroup.append(option(doc));
       chooser.append(optgroup);
     }
-    chooser.value = currentId; chooser.onchange = () => openDocument(chooser.value); header.append(chooser);
-    const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(dirty, actions);
+    chooser.value = currentId; chooser.onchange = () => openDocument(chooser.value); sceneContext.replaceChildren(chooser);
+    const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(actions);
     const saveButton = button(saving ? 'Saving…' : config.api ? 'Save to source' : 'Download edits', () => void save()); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
-    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; actions.append(undo, redo, saveButton, menu);
+    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; actions.append(status, dirty, undo, redo, saveButton, menu);
     menuItems.append(button(config.api ? 'Reload source' : 'Reset edits', () => { if (!model.dirty() || window.confirm('Discard unsaved edits and reload the source snapshot? Download or export first to keep them.')) void load(); }));
     const bundleFile = element('input'); bundleFile.type = 'file'; bundleFile.accept = 'application/json,.json'; bundleFile.hidden = true; bundleFile.setAttribute('aria-label', 'Import downloaded edits');
     bundleFile.onchange = async () => { const file = bundleFile.files?.[0]; if (!file) return; try { if (file.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const changes = readDocumentBundle(JSON.parse(await file.text()), model.list()); run(() => { model.importDocuments(changes); syncSequence(); }); } catch (error) { notice(`Import failed: ${message(error)}`, true); } finally { bundleFile.value = ''; } };

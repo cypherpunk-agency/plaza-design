@@ -28,22 +28,22 @@ export const composerStyles = `
 @media(max-width:760px){.scene-composer .logic-layout{grid-template-columns:1fr;gap:12px}.scene-composer .logic-nav{position:static;max-height:38vh;border-right:0;border-bottom:1px solid var(--line);padding:0 0 8px}}
 
 /* Top bar */
-.scene-composer>header{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+.scene-composer>header{display:flex;align-items:stretch;gap:16px;min-height:42px;padding:0 12px;border-bottom:1px solid var(--line);background:var(--panel)}.scene-composer>header>.brand{align-self:center}
 .scene-composer .brand{display:flex;align-items:baseline;gap:6px;font-family:var(--mono);white-space:nowrap}.scene-composer .brand strong{color:var(--accent);letter-spacing:.06em}.scene-composer .brand span{color:var(--muted)}
-.scene-composer .document-picker{flex:0 1 280px;font-family:var(--mono);font-size:12px}
+.scene-composer .document-picker{width:280px;max-width:100%;min-height:26px;font-family:var(--mono);font-size:12px}
 .scene-composer .state{font-family:var(--mono);font-size:11px;white-space:nowrap}.scene-composer .state.dirty::before{content:'● ';color:var(--warn)}
-.scene-composer .actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.scene-composer .actions{margin-left:auto;display:flex;align-items:center;gap:6px;min-width:0;padding:6px 0}.scene-composer .actions>.state{margin-right:4px}
 .scene-composer .menu{position:relative;border:0;padding:0;margin:0}.scene-composer .menu>summary{list-style:none;color:var(--ink);font:inherit;border:1px solid var(--line);background:var(--raised);border-radius:4px;padding:5px 10px;min-height:30px;display:flex;align-items:center}.scene-composer .menu>summary::-webkit-details-marker{display:none}.scene-composer .menu>summary::after{content:'▾';margin-left:6px;color:var(--muted)}.scene-composer .menu[open]>summary{border-color:var(--accent)}
 .scene-composer .menu-items{position:absolute;right:0;top:calc(100% + 4px);z-index:20;min-width:180px;display:flex;flex-direction:column;padding:4px;background:var(--raised);border:1px solid var(--line-strong);border-radius:6px;box-shadow:0 10px 30px #0009}.scene-composer .menu-items button{border:0;background:none;text-align:left;padding:8px 10px}.scene-composer .menu-items button:hover:not(:disabled){background:#22303f}
 
 /* Tool tabs */
-.scene-composer .tools{display:flex;gap:2px;padding:0 8px;border-bottom:1px solid var(--line);background:var(--panel);overflow-x:auto;scrollbar-width:none}.scene-composer .tools::-webkit-scrollbar{display:none}
-.scene-composer .tools button{flex:none;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);padding:8px 12px;font-family:var(--mono);font-size:12px}.scene-composer .tools button:hover{color:var(--ink)}.scene-composer .tools button[aria-pressed=true]{color:var(--accent);border-bottom-color:var(--accent)}
-.scene-composer .tools .secondary{margin-left:auto}.scene-composer .tools .secondary~button{margin-left:0}
-.scene-composer .subtools{display:flex;gap:4px;padding:6px 12px;border-bottom:1px solid var(--line);background:var(--bg);overflow-x:auto;scrollbar-width:none}.scene-composer .subtools[hidden]{display:none}
+.scene-composer .tools{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}.scene-composer .tools::-webkit-scrollbar{display:none}
+.scene-composer .tools button{flex:none;min-height:0;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);padding:0 12px;font-family:var(--mono);font-size:12px}.scene-composer .tools button:hover{color:var(--ink)}.scene-composer .tools button[aria-pressed=true]{color:var(--accent);border-bottom-color:var(--accent)}
+.scene-composer .subtools{display:flex;align-items:center;gap:4px;padding:6px 12px;border-bottom:1px solid var(--line);background:var(--bg);overflow-x:auto;scrollbar-width:none}.scene-composer .subtools[hidden]{display:none}
 .scene-composer .subtools button{flex:none;min-height:26px;padding:3px 12px;border-radius:999px;background:none;color:var(--muted);font-size:12px}.scene-composer .subtools button[aria-pressed=true]{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
 .scene-composer .empty-state{max-width:560px;margin:48px auto;padding:0 16px}.scene-composer .empty-state h2{margin-top:0}.scene-composer .empty-state p{font-size:14px}.scene-composer .empty-state .row>button{flex:0 0 auto}
-.scene-composer .status{padding:5px 12px;font-size:12px;border-bottom:1px solid var(--line);color:var(--muted)}.scene-composer .status:empty{display:none}.scene-composer .status.error{color:#ffc8c8;background:#3a1f2c}
+.scene-composer .status{min-width:0;max-width:44ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--muted)}.scene-composer .status:empty{display:none}.scene-composer .status.error{color:#ffc8c8;background:#3a1f2c;padding:3px 8px;border-radius:3px}
+.scene-composer .scene-context{display:flex;align-items:center;flex:none}.scene-composer .scene-views{display:flex;gap:4px;flex:none;padding:0 10px 0 6px;margin-right:6px;border-right:1px solid var(--line)}.scene-composer .scene-views:last-child{border-right:0}
 .scene-composer .tool-panel{margin:0;padding:0;border:0;flex:1;min-height:0;overflow:auto}.scene-composer .tool-panel:not([open]){display:none}.scene-composer .tool-panel>summary{display:none}
 .scene-composer .tool-panel>section,.scene-composer .tool-panel>div{padding:12px 16px}
 .scene-composer:not([data-tool=scene]) .workspace{display:none}
@@ -147,8 +147,9 @@ export const composerStyles = `
   .scene-composer button,.scene-composer input,.scene-composer select,.scene-composer .menu>summary{min-height:40px}
   .scene-composer input:not([type=checkbox]),.scene-composer select,.scene-composer textarea{font-size:16px}
   .scene-composer input[type=checkbox]{width:20px;height:20px}
-  .scene-composer>header{flex-wrap:wrap;gap:8px;padding:8px 10px}
-  .scene-composer .brand,.scene-composer .state{display:none}.scene-composer .document-picker{order:2;flex:1 1 100%}
+  .scene-composer>header{flex-wrap:wrap;gap:0 8px;padding:0 10px}
+  .scene-composer .brand,.scene-composer .state,.scene-composer>header .status:not(.error){display:none}.scene-composer .scene-context{flex:1 1 100%}.scene-composer .document-picker{width:100%}.scene-composer .subtools{flex-wrap:wrap}
+  .scene-composer .tools{order:2;flex:1 1 100%}
   .scene-composer .actions{order:1;flex:1 1 100%;margin:0}.scene-composer .actions .primary{flex:1}
   .scene-composer .actions>button:not(.primary){width:44px;font-size:0;padding:0}.scene-composer .actions>button:not(.primary)::before{font-size:18px;content:'↶'}.scene-composer .actions>button:not(.primary)+button:not(.primary)::before{content:'↷'}
   .scene-composer .menu>summary{font-size:0;width:44px;justify-content:center;padding:0}.scene-composer .menu>summary::after{content:'⋯';font-size:20px;margin:0;color:var(--ink)}
