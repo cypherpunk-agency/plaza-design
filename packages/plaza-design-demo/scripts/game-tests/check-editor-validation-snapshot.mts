@@ -28,7 +28,7 @@ assert.equal(JSON.stringify(rows), before, 'validation must not modify source sn
 let calls = 0;
 const model = new ComposerModel(art, {}, (_doc, docs) => { calls++; assert.equal((docs.find(d => d.id === 'rules')!.value as any).ok, true); }, [], undefined,
   docs => [docs.find(d => d.id === 'rules')!.value]);
-model.load([{ id: 'proposal', kind: 'composition', revision: 'test', value: { version: 1, scene: 'proposal', instances: [{ id: 'sign', type: 'sign.plate', props: {}, placement: { x: 0, h: 0 }, order: 0, pass: 'backdrop' }] } }, { id: 'rules', kind: 'gameplay', revision: 'test', value: { ok: true } }]);
+model.load([{ id: 'proposal', kind: 'composition', revision: 'test', value: { version: 1, scene: 'proposal', instances: [{ id: 'sign', type: 'sign.plate', props: {}, placement: { x: 0, h: 0 }, order: 0, layer: 'backdrop' }] } }, { id: 'rules', kind: 'gameplay', revision: 'test', value: { ok: true } }]);
 const initialCalls = calls;
 model.updateInstance('proposal', 'sign', 'Move sign', n => { n.placement.x = 12; });
 assert.equal(calls, initialCalls, 'unchanged declared semantic inputs may reuse successful checks');
