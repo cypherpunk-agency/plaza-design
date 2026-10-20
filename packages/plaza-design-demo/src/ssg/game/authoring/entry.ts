@@ -223,7 +223,7 @@ async function start() {
       {id:'demo-world',area:'labs',label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true)},
       { id: 'characters', area: 'library', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
 
-      { id: 'style-frames', area: 'library', label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
+      { id: 'style-frames', area: 'library', beside: true, label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
         return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => proposalScene(scene)?.label ?? (isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene));
       } },
       { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },

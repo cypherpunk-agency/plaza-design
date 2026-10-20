@@ -77,7 +77,10 @@ export interface ComposerConfig {
  */
 export interface WorkbenchConfig {
   id: string; title: string; label?: string; documentDependent?: boolean; documentIds?: string[]; primaryDocumentId?: string; authoring?: boolean;
-  area?: 'scene' | 'library' | 'world' | 'labs'; mode?: 'logic' | 'wiring' | 'play'; supports?(scene: string,documents:readonly EditorDocument[]): boolean; showScene?(scene: string,documents:readonly EditorDocument[]): void; unsupported?: string;
+  area?: 'scene' | 'library' | 'world' | 'labs';
+  /** Shown beside the Scene stage (in place of the outline) instead of replacing it, so the panel can use the stage. */
+  beside?: boolean;
+  mode?: 'logic' | 'wiring' | 'play'; supports?(scene: string,documents:readonly EditorDocument[]): boolean; showScene?(scene: string,documents:readonly EditorDocument[]): void; unsupported?: string;
   mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle;
 }
 interface Snapshot { id: string; value: unknown }
@@ -255,6 +258,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
   stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); root.append(header, tools, status, workspace); host.append(root);
+  /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
+  const linkedPanel = decodeURIComponent(location.hash.slice(1)); let linked = false;
   let compareId = '', currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
   let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
   /** Editor-only framing: renderScale zoom, native camera pan and a crop to the artwork's height. Never saved. */
@@ -271,7 +276,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** Artwork pictures for the Add picker and the Library, drawn by the same isolated game preview. */
   const thumbnails = config.assetPreview ? createThumbnails((target, entry) => config.assetPreview!(target, entry, entry.preview === 'local' ? undefined : entry.usages.find(usage => !usage.scene.startsWith('sequence-')) ?? entry.usages[0], model.list(), { time: 0, reduced: true, environment: { ...config.initialEnvironment, renderScale: 1 } })) : undefined;
   const workbenches = (config.workbenches ?? []).map(workbench => {
-    const details = element('details', 'workbench-screen tool-panel'), panel = element('section'); details.dataset.workbench = details.dataset.tool = workbench.id; details.append(element('summary', '', workbench.title), panel); root.insertBefore(details, workspace);
+    const details = element('details', 'workbench-screen tool-panel'), panel = element('section'); details.dataset.workbench = details.dataset.tool = workbench.id; details.append(element('summary', '', workbench.title), panel); if (workbench.beside) { details.classList.add('stage-panel'); workspace.append(details); } else root.insertBefore(details, workspace);
     return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '', scene: '', autostart: false };
   });
   /**
@@ -315,7 +320,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   const showGroup = (id: Group) => { if (id === 'layout') { showLayout(); return; } const target = chosen.get(id) ?? panels.find(p => p.group === id)?.details; if (target) openPanel(target); };
   function refreshTools() {
-    const active = panels.find(item => item.details.open); root.dataset.tool = active?.details.dataset.tool ?? 'scene'; root.dataset.group = group;
+    const active = panels.find(item => item.details.open), beside = !!active?.details.classList.contains('stage-panel');
+    // The open panel is in the URL (#style-frames, #characters, …) so it can be linked and survives reloads.
+    const hash = active?.details.dataset.tool ? `#${active.details.dataset.tool}` : ''; if (linked && location.hash !== hash) history.replaceState(null, '', hash || location.pathname + location.search);
+    root.dataset.tool = active && !beside ? active.details.dataset.tool ?? 'scene' : 'scene'; root.dataset.group = group; if (beside) root.dataset.stagePanel = active!.details.dataset.tool!; else delete root.dataset.stagePanel;
     tools.replaceChildren();
     for (const item of groups) { if (item.id !== 'layout' && !panels.some(p => p.group === item.id)) continue; const tab = button(item.label, () => showGroup(item.id), item.title); tab.dataset.group = item.id; tab.setAttribute('aria-pressed', String(item.id === group)); if (item.id === 'library') tab.classList.add('secondary'); tools.append(tab); }
     const members = panels.filter(p => p.group === group); subtools.replaceChildren(); subtools.hidden = members.length < 2;
@@ -378,12 +386,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const response = await fetch(config.api.url + path, { method: body === undefined ? 'GET' : 'POST', headers: { 'x-authoring-token': config.api.token, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, body: body === undefined ? undefined : JSON.stringify(body), credentials: 'omit' });
     const value = await response.json(); if (!response.ok) throw new Error(response.status === 409 ? `Source changed outside the editor. Pending edits are kept. Export them or reload. ${value.error ?? ''}` : value.error ?? `Authoring service returned ${response.status}`); return value;
   }
+  /** Opens the panel named in the URL once, on the first load. */
+  function openLinkedPanel() { if (linked) return; linked = true; const tool = linkedPanel; const target = tool && panels.find(p => p.details.dataset.tool === tool); if (target) openPanel(target.details); }
   async function load() {
     playing = false;
     try {
       const documents = config.api ? await api('/documents') as EditorDocument[] : copy(config.documents ?? []); model.load(documents);
       if (!documents.some(d => d.id === currentId)) currentId = documents.find(d => d.kind === 'composition')?.id ?? documents[0]?.id ?? '';
-      selectedId = ''; syncSequence(); refresh(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
+      selectedId = ''; syncSequence(); refresh(); openLinkedPanel(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
     } catch (e) { notice(`Could not load authoring documents: ${message(e)}`, true); }
   }
   async function save() {
@@ -403,7 +413,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   function syncSequence() { const doc = currentTimeline(); if (!doc?.sequences.some(s => s.id === sequenceId)) sequenceId = doc?.sequences[0]?.id ?? ''; const seq = sequence(); time = Math.min(time, seq?.duration ?? time); loopFrom = 0; loopTo = seq?.duration ?? 0; }
   function openDocument(id: string) { if (id !== currentId) { compareId = ''; stopPlay(); } currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }
-  function openScene(scene: string, compare?: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
+  function openScene(scene: string, compare?: string) { const doc = model.list().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { if (!root.dataset.stagePanel) showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
   function refreshHeader() {
     const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand);
     const actions = element('div', 'actions'), menu = element('details', 'menu'), menuItems = element('div', 'menu-items'); menu.append(element('summary', '', 'More'), menuItems);
@@ -877,7 +887,15 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   const select_ = (id: string) => { selectedId = id; hoverId = ''; if (compact.matches && id) showPanel('properties'); refreshRight(); refreshLeft(); refreshTimeline(); void draw(); };
   // Clicking the dark area around the scene deselects, like clicking empty space in it.
-  stage.addEventListener('pointerdown', event => { if (event.target !== stage || event.button !== 0) return; closePicker(); if (selectedId) select_(''); });
+  // The empty stage around the pictures pans like the picture itself; a click without moving deselects.
+  stage.addEventListener('pointerdown', event => {
+    if (event.target !== stage || (event.button !== 0 && event.button !== 1)) return; closePicker();
+    if (!zoomable()) { if (event.button === 0 && selectedId) select_(''); return; }
+    event.preventDefault(); panning = { x: event.clientX, y: event.clientY, camera: Number(environment.cameraX ?? 0), scroll: stage.scrollTop, moved: false, target: event.button === 0 ? '' : undefined }; stage.setPointerCapture(event.pointerId); canvas.dataset.panning = ''; stage.dataset.panning = '';
+  });
+  stage.addEventListener('pointermove', event => { if (panning && event.target === stage) canvas.onpointermove?.call(canvas, event); });
+  stage.addEventListener('pointerup', event => { if (!stage.hasPointerCapture(event.pointerId)) return; stage.releasePointerCapture(event.pointerId); delete stage.dataset.panning; canvas.onpointerup?.call(canvas, event); });
+  stage.addEventListener('pointercancel', event => { if (stage.hasPointerCapture(event.pointerId)) { delete stage.dataset.panning; canvas.onpointercancel?.call(canvas, event); } });
   canvas.onpointerdown = event => {
     closePicker();
     if (event.pointerType === 'touch') { touches.set(event.pointerId, { x: event.clientX, y: event.clientY }); if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { distance: Math.hypot(a.x - b.x, a.y - b.y), zoom: viewZoom }; dragging = undefined; panning = undefined; return; } }
@@ -907,11 +925,23 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   canvas.onpointercancel = event => { touches.delete(event.pointerId); pinch = undefined; panning = undefined; delete canvas.dataset.panning; dragging = undefined; void draw(); };
   stage.addEventListener('scroll', () => placeHover(), { passive: true });
   canvas.onpointerleave = () => { if (hoverId) { hoverId = ''; placeHover(); } };
-  canvas.addEventListener('wheel', event => {
+  // The comparison picture shares the camera: dragging it pans and wheel/pinch zooms both, but it never selects.
+  compareCanvas.onpointerdown = event => {
+    if (event.button !== 0 && event.button !== 1) return; event.preventDefault(); closePicker();
+    panning = { x: event.clientX, y: event.clientY, camera: Number(environment.cameraX ?? 0), scroll: stage.scrollTop, moved: false, target: undefined }; compareCanvas.setPointerCapture(event.pointerId); canvas.dataset.panning = '';
+  };
+  compareCanvas.onpointermove = event => canvas.onpointermove?.call(canvas, event);
+  compareCanvas.onpointerup = event => { if (compareCanvas.hasPointerCapture(event.pointerId)) compareCanvas.releasePointerCapture(event.pointerId); canvas.onpointerup?.call(canvas, event); };
+  compareCanvas.onpointercancel = event => canvas.onpointercancel?.call(canvas, event);
+  /** Maps a point on the comparison picture to the same spot on the main one (both show the same view). */
+  const onMain = (event: WheelEvent) => { if (event.target !== compareCanvas) return event; const from = compareCanvas.getBoundingClientRect(), to = canvas.getBoundingClientRect(); return { clientX: to.left + (event.clientX - from.left) * to.width / from.width, clientY: to.top + (event.clientY - from.top) * to.height / from.height }; };
+  const onWheel = (event: WheelEvent) => {
     if (!zoomable()) return;
-    if (event.ctrlKey || event.metaKey) { event.preventDefault(); zoomTo(viewZoom * Math.exp(-event.deltaY * .002), event); }
+    if (event.ctrlKey || event.metaKey) { event.preventDefault(); zoomTo(viewZoom * Math.exp(-event.deltaY * .002), onMain(event)); }
     else if (event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) { event.preventDefault(); environment.cameraX = Math.round(Number(environment.cameraX ?? 0) + (event.deltaX || event.deltaY) / viewZoom); void draw(); }
-  }, { passive: false });
+  };
+  // One listener on the stage covers both pictures and the empty area around them.
+  stage.addEventListener('wheel', onWheel, { passive: false });
   canvas.onkeydown = event => {
     if (event.ctrlKey || event.metaKey || event.altKey) return; const key = event.key;
     if (key === 'Escape' && selectedId) { event.preventDefault(); select_(''); }
