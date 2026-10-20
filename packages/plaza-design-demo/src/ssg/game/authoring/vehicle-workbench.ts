@@ -22,6 +22,7 @@ import { paintRoadVehicle,roadVehicleKinds } from '../art/vehicles/road-vehicle'
 import { SIZE,M } from '../art/vehicles/vehicles';
 import { drawPlayer } from '../art/characters/player';
 import { DEPTH_BANDS,DEPTH_ORDER,type DepthBand } from '../art/core/depth';
+import { createFrame } from './frame';
 
 export interface VehiclePreviewState {
  id:string;time:number;reduced:boolean;facing:1|-1;speed:number;route:'stationary'|'linear';
@@ -117,11 +118,11 @@ export function paintVehicleLineup(ctx:CanvasRenderingContext2D,width:number,hei
  return spans;
 }
 export function mountVehicleWorkbench(host:HTMLElement):()=>void{
- const root=document.createElement('section'),heading=document.createElement('h2'),select=document.createElement('select'),details=document.createElement('p'),controls=document.createElement('div'),transport=document.createElement('div'),canvas=document.createElement('canvas'),status=document.createElement('output');
+ const heading=document.createElement('h2'),select=document.createElement('select'),details=document.createElement('p'),controls=document.createElement('div'),transport=document.createElement('div'),canvas=document.createElement('canvas'),status=document.createElement('output');
  const modes=document.createElement('div'),lineupControls=document.createElement('div');modes.className='segmented';modes.setAttribute('role','group');modes.setAttribute('aria-label','View');modes.style.margin='8px 0';
  heading.textContent='Vehicle workbench';select.setAttribute('aria-label','Vehicle family');canvas.width=960;canvas.height=360;canvas.style.maxWidth='100%';canvas.style.background='#0c0a12';
  for(const f of VEHICLE_FAMILIES){const option=document.createElement('option');option.value=f.id;option.textContent=f.group+' / '+f.label;select.append(option);}
- root.append(heading,modes,lineupControls,select,details,controls,transport,canvas,status);host.append(root);let state=vehicleState(select.value),disposed=false,raf=0,mode:'lineup'|'single'='lineup',spans:{kind:string;x0:number;x1:number}[]=[];
+ const frame=createFrame(host,{nav:[heading,modes,select],stage:[transport,canvas,status],inspector:[lineupControls,details,controls]},'Vehicles');let state=vehicleState(select.value),disposed=false,raf=0,mode:'lineup'|'single'='lineup',spans:{kind:string;x0:number;x1:number}[]=[];
  const line={depth:'play' as DepthBand,moving:true,lights:false,paint:'#3f5f7a'};
  const ctx=canvas.getContext('2d')!;let ui:ReturnType<typeof mountWorkbenchPlayback>|undefined;
  const draw=()=>{if(disposed)return;state.time=clock.time;state.reduced=clock.reduced;try{
@@ -151,5 +152,5 @@ export function mountVehicleWorkbench(host:HTMLElement):()=>void{
   numeric('seed','Passenger seed',0,1000000,1,f.controls.includes('seed'));numeric('minute','Minute of day',0,1439,1,f.id==='train.interior'||f.id.startsWith('opening.')||f.id==='canal.boat');numeric('camera','Camera X',-20000,20000,10);numeric('panY','Camera vertical',-1000,1000,10);numeric('zoom','Zoom',.1,8,.1);
   const reset=document.createElement('button');reset.textContent='Reset camera';reset.onclick=()=>{state={...state,camera:f.camera,panY:0,zoom:1};refresh();draw();};controls.append(reset);draw();};
  select.onchange=()=>{state=vehicleState(select.value);refresh();};refresh();setMode('lineup');const loop=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);
- return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();root.remove();};
+ return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();frame.root.remove();host.classList.remove('framed');};
 }

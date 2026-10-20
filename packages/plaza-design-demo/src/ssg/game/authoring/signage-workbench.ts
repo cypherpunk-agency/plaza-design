@@ -9,6 +9,7 @@ import{prepareSignage,paintSignage,signageState,signageFamily,type SignageState}
 import{SIGNAGE_FAMILIES}from'./inventories/S11';
 import frozen from'./inventories/S11.embedded.json';
 import nativeStates from'./inventories/S11.states.json';
+import { createFrame } from './frame';
 export{prepareSignage,paintSignage,signageState,signageFamily};export type{SignageState};
 export interface SignageWorkbenchConfig{registry:ArtRegistry;documents:EditorDocument[];openUsage(usage:AssetUsage):void;renderNative(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult;renderSequence?(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult|null}
 export interface EmbeddedSignage{entry:AssetEntry;usages:AssetUsage[]}
@@ -31,12 +32,12 @@ export function renderEmbeddedSignage(canvas:HTMLCanvasElement,config:SignageWor
  return{message:'Actual native scene frame. Overlaps, shadows, light, grading, reflections and weather use the game render path.'+(focus&&Math.abs(focus.x)+Math.abs(focus.y)>2?' Native bounds may be camera-insensitive; current source context and camera offsets are retained.':''),...focused,focus};
 }
 export function mountSignageWorkbench(host:HTMLElement,config?:SignageWorkbenchConfig):()=>void{
- const root=document.createElement('section'),title=document.createElement('h2'),select=document.createElement('select'),usageSelect=document.createElement('select'),mode=document.createElement('select'),info=document.createElement('p'),controls=document.createElement('div'),transport=document.createElement('div'),canvas=document.createElement('canvas'),output=document.createElement('p'),open=document.createElement('button');
+ const title=document.createElement('h2'),select=document.createElement('select'),usageSelect=document.createElement('select'),mode=document.createElement('select'),info=document.createElement('p'),controls=document.createElement('div'),transport=document.createElement('div'),canvas=document.createElement('canvas'),output=document.createElement('p'),open=document.createElement('button');
  title.textContent='Signs, lighting and architecture';select.setAttribute('aria-label','Signage or architecture family');usageSelect.setAttribute('aria-label','Architecture source usage');mode.setAttribute('aria-label','Artwork context mode');canvas.width=960;canvas.height=540;canvas.style.maxWidth='100%';open.textContent='Open source instance';
  const add=(value:string,label:string)=>{const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);};for(const f of SIGNAGE_FAMILIES)add(f.id,'Kernel / '+f.label);
  let embedded:EmbeddedSignage[]=[];try{if(config)embedded=embeddedSignageInventory(config);}catch(e){info.textContent=String(e);}for(const e of embedded)add('embedded:'+e.entry.id,'Source / '+e.entry.label);
  for(const value of ['composed','isolated']){const o=document.createElement('option');o.value=value;o.textContent=value==='composed'?'Native composed frame':'Isolated artwork (frame effects excluded)';mode.append(o);}
- root.append(title,select,usageSelect,mode,open,info,controls,transport,canvas,output);host.append(root);let state=signageState(),weather:EmbeddedSignageSettings['weather']='clear',disposed=false,raf=0,ui:ReturnType<typeof mountWorkbenchPlayback>|undefined;
+ const frame=createFrame(host,{nav:[title,select,usageSelect,mode,open],stage:[transport,canvas,output],inspector:[info,controls]},'Signs & light');let state=signageState(),weather:EmbeddedSignageSettings['weather']='clear',disposed=false,raf=0,ui:ReturnType<typeof mountWorkbenchPlayback>|undefined;
  let sourceState:Record<string,boolean|string>={};const clock=new WorkbenchPlayback(90,()=>draw());ui=mountWorkbenchPlayback(transport,clock);
  const current=()=>embedded.find(e=>'embedded:'+e.entry.id===select.value),usage=()=>current()?.usages[Number(usageSelect.value)];
  const draw=()=>{if(disposed)return;state={...state,time:clock.time,reduced:clock.reduced};try{const row=current(),u=usage();if(row&&u&&config){const r=renderEmbeddedSignage(canvas,config,row,u,{...state,weather,state:sourceState,mode:mode.value as 'composed'|'isolated'});output.textContent=r.message;}else{paintSignage(canvas.getContext('2d')!,prepareSignage(state,canvas.width,canvas.height));output.textContent='Actual typed kernel; temporary preview only. Scene-wide weather/light passes are available in source usage mode.';}}catch(e){output.textContent='Preview unavailable: '+String(e);}ui?.refresh();};
@@ -53,5 +54,5 @@ export function mountSignageWorkbench(host:HTMLElement,config?:SignageWorkbenchC
   if(sequence){mode.value='composed';(mode.options[1] as HTMLOptionElement).disabled=true;}else(mode.options[1] as HTMLOptionElement).disabled=false;
   draw();};
  select.onchange=()=>{const row=current();usageSelect.replaceChildren();for(const[u,i]of(row?.usages??[]).map((u,i)=>[u,i] as const)){const o=document.createElement('option');o.value=String(i);o.textContent=u.document+' / '+u.path.join(' / ');usageSelect.append(o);}sourceState={};state={...state,cameraX:0,cameraH:0,zoom:1};refresh();};usageSelect.onchange=()=>{sourceState={};refresh();};mode.onchange=draw;open.onclick=()=>{const u=usage();if(u)config?.openUsage(u);};refresh();const loop=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);
- return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();root.remove();};
+ return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();frame.root.remove();host.classList.remove('framed');};
 }

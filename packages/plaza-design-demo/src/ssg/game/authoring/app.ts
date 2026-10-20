@@ -4,6 +4,7 @@ import type {DocumentProjection} from './document-projection';
 import { ArtRegistry, type Composition, type Instance, type Field, type Value, type Point, type Properties } from '../art/core/composition';
 import { evaluateTimeline, validateTimeline, type TimelineContext, type TimelineDocument, type TimelineFrame, type Sequence, type Target, type Keyframe } from '../art/core/timeline';
 import { composerStyles } from './styles';
+import { createFrame, frameStyles, sectionNavigator } from './frame';
 import { preserveBoundIdentity } from './bound-identity';
 import type { Light } from '../world/light';
 import type { Climate, Weather } from '../world/weather';
@@ -80,6 +81,8 @@ export interface WorkbenchConfig {
   area?: 'scene' | 'library' | 'world' | 'labs';
   /** Shown beside the Scene stage (in place of the outline) instead of replacing it, so the panel can use the stage. */
   beside?: boolean;
+  /** `sections`: a long form is shown in the editor frame, its top-level sections listed on the left, one at a time. */
+  layout?: 'sections';
   mode?: 'logic' | 'wiring' | 'play'; supports?(scene: string,documents:readonly EditorDocument[]): boolean; showScene?(scene: string,documents:readonly EditorDocument[]): void; unsupported?: string;
   mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle;
 }
@@ -215,7 +218,7 @@ const label = (text: string, control: HTMLElement) => { const node = element('la
 export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const model = new ComposerModel(config.registry, { destinations: config.destinations, clips: config.clips, motionTracks: config.motionTracks }, config.validateDocument, config.projections,config.destinationsFor);
   const root = element('section', 'scene-composer'); root.setAttribute('aria-label', 'Scene and animation composer');
-  const style = element('style'); style.textContent = composerStyles + chipStyles; root.append(style);
+  const style = element('style'); style.textContent = composerStyles + frameStyles + chipStyles; root.append(style);
   const header = element('header'), status = element('div', 'status', 'Loading authoring documents…'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const workspace = element('div', 'workspace'), left = element('aside'), center = element('div', 'preview-column'), right = element('aside');
   left.setAttribute('aria-label', 'Scene outline'); right.setAttribute('aria-label', 'Inspector');
@@ -338,6 +341,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (others.length) { box.append(element('p', 'muted', 'Available for')); const row = element('div', 'row'); for (const doc of others) row.append(button(sceneName((doc.value as Composition).scene), () => openDocument(doc.id))); box.append(row); }
     return box;
   }
+  /** Sectioned forms mount into the frame's stage; the navigator lists their sections and follows re-renders. */
+  const mountWorkbench = (item: typeof workbenches[number], context: WorkbenchContext): WorkbenchHandle => {
+    if (item.config.layout !== 'sections') return item.config.mount(item.panel, context);
+    const frame = createFrame(item.panel, {}, item.config.label ?? item.config.title), handle = item.config.mount(frame.stage, context), stop = sectionNavigator(frame.nav, frame.stage, item.config.id);
+    const dispose = (() => { stop(); handle(); item.panel.classList.remove('framed'); item.panel.replaceChildren(); }) as WorkbenchHandle;
+    if (handle.refresh) dispose.refresh = () => handle.refresh!();
+    return dispose;
+  };
   const refreshWorkbench = (item: typeof workbenches[number], changed = false) => {
     const documents = model.list(), relevant = item.config.documentIds ? documents.filter(doc => item.config.documentIds!.includes(doc.id)) : documents;
     const version = item.config.documentDependent ? JSON.stringify(relevant) : '', scene = sceneId(), sceneBound = item.config.area === 'scene';
@@ -352,7 +363,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       if (sceneBound && item.config.supports && !item.config.supports(scene,documents)) { item.panel.replaceChildren(emptyState(item.config, scene)); item.dispose = (() => item.panel.replaceChildren()) as WorkbenchHandle; return; }
       if (sceneBound) item.config.showScene?.(scene,documents);
       const autostart = item.autostart; item.autostart = false;
-      try { item.dispose = item.config.mount(item.panel, { documents, openScene, openInstance, ...(sceneBound ? { scene } : {}), ...(autostart ? { autostart } : {}), ...(item.config.authoring ? { authoring: authoringApi() } : {}) }); }
+      try { item.dispose = mountWorkbench(item, { documents, openScene, openInstance, ...(sceneBound ? { scene } : {}), ...(autostart ? { autostart } : {}), ...(item.config.authoring ? { authoring: authoringApi() } : {}) }); }
       catch (error) { item.panel.replaceChildren(element('p', 'error', `Workbench unavailable: ${message(error)}`)); }
     }
   };
