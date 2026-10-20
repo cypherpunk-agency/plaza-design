@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `348cdde` on main and production.
-Production/main homepage jobs39345556298/39345556254 and design job39345556235 succeeded.
+Last verified deployment: `5423982` on main and production.
+Production/main homepage jobs39346356942/39346356599 and design job39346356952 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2456,3 +2456,21 @@ has173/173 zero-difference/error browser raster cases, independently verified; a
 editor Play/Stop PASS with no warning/error logs (`editor-native-play-2992ba89-20261020.json`).
 Actual Mall inspector exposes slot/phase fields and vendor pickers. Package app-BDLUXCO5.js /
 play-JG6OLUHC.js / play-69c30798feecc0b3.html. Remaining whole-goal gates remain open.
+
+## 2026-10-20 Capsule shared device placement
+
+Capsule's seven native device placements are explicit manifest.devices bindings consumed by the
+existing common projectDeviceBindings path in shipping and pending Play. Deleted capsuleDeviceData
+and its authoring geometry registry entry; no per-scene fallback finds old marker names. Native
+device-scene enumeration now derives from registered definitions with physical devices. Current
+layout dimensions remain source-owned; normal missing zero-height metadata is materialized as0.
+Actual Device router artwork control rebinds to a new source instance; deleting the old marker
+then follows that new geometry in native runtime, portable bundle, protected Save/fresh shipping
+import and byte Undo (`capsule-actor-role-source-MRYxoN`). Ten device-source default/primitive/cable
+checks PASS with full source context, Capsule boot/notice/current-format reload PASS
+(`capsule-controller/run-UKFs3u`), ten interior outcome/save cases PASS. tsc/both builds PASS.
+Source3c2235688a3dd90b12605cc08948677e8989a01c043cec3cd855469f44dedbfe passes173/173 browser raster
+cases with zero differences/errors (independently verified), and actual packaged Capsule Play/Stop
+without warning/error logs; app-OD4X3KIY.js / play-GDHEXZY7.js / play-4f0f47722d7714b3.html.
+Remaining nine device geometry adapters still need migration, including property-driven extents
+and offsets in Downtown/Beach/Sandbox/Train. Whole-goal gates and final all19 inventory remain open.

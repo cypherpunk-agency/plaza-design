@@ -10,7 +10,6 @@ import { drawComposition, resolveComposition, type Composition, type Environment
 import { capsuleVisualFields } from '../../art/assemblies/capsule-elements';
 import type { View } from '../../art/core/view';
 import type { SceneModel } from '../../engine/model';
-import type { SceneData } from '../../data/types';
 import { routerUp,capsuleState } from './rules';
 import document from './composition.json';
 import { art } from '../../art';
@@ -28,16 +27,6 @@ const defaultBindings=(doc:Composition):Record<string,Value>=>({...Object.fromEn
 const geometryView: View = {...frameView(0), sx: x => x, y: h => -h, gy: 0, cam: 0, t: 0, viewW: 640, viewH: 360, flags: {} };
 export function capsuleGeometry(doc: Composition = capsuleComposition) { return resolveComposition(capsuleArt, doc, { view: geometryView, state: {}, reduced: false, bindings: defaultBindings(doc) }); }
 export function capsulePlacement(id: string, doc: Composition = capsuleComposition) { const row = capsuleGeometry(doc).find(row => row.instance.id === id); if (!row) throw new Error('Unknown capsule instance ' + id); return row.placement; }
-export function capsuleDeviceData(source: SceneData, doc: Composition = capsuleComposition,scene?:Pick<SceneDocument,'manifest'>): SceneData {
-  const result = structuredClone(source), geometry = capsuleGeometry(doc);
-  for (const device of result.devices) {
-    if(scene?.manifest?.devices?.[device.id]||!device.layout?.spot)continue;
-    const marker=geometry.find(row=>row.instance.id==='device-'+device.id);if(!marker)continue;
-    const spot=device.layout.spot,placement=marker.placement;spot.x=placement.x;
-    if (spot.y !== undefined || placement.h !== 0) spot.y = placement.h;
-  }
-  return result;
-}
 export type CapsuleRenderOptions = Partial<Pick<Environment, 'visibility' | 'opacity' | 'clips' | 'sequenceTime' | 'reduced'>>;
 export function capsuleEnvironment(doc: Composition, view: View, model: SceneModel, hover: string | null,actors:Readonly<Record<string,Character>>=compileSceneActors(sceneSource as unknown as SceneDocument,capsuleGeometry(doc)),source:SceneDocument=sceneSource as unknown as SceneDocument): Environment {
   const geometry = capsuleGeometry(doc),roles=resolveArtworkRoles('capsule',source.manifest?.artwork,geometry),desk=roles.deskSurface,patch=roles.sunPatch,router=roles.router;
