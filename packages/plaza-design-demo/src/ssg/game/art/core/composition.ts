@@ -244,19 +244,36 @@ export function compositionAppearance(doc: Composition, env: Pick<Environment, '
   nodes.forEach((_node, id) => resolve(id)); return result;
 }
 
-/** The identity transform leaves the original draw operations and fractional coordinates intact. */
+/** The identity transform leaves the original draw operations and fractional coordinates intact.
+ * A layered document maps `backdrop` to everything behind the player and `foreground` to its
+ * foreground layer; drawing `backdrop` also queues the rows over the player and the foreground
+ * for the shared frame to draw at their own moments (see beginLayeredFrame / flushLayeredSlot). */
 export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, pass: Pass) {
-  if (isLayered(doc)) { if (pass === 'backdrop' || pass === 'foreground') drawCompositionSlot(ctx, registry, doc, env, pass === 'backdrop' ? 'behind-player' : 'foreground'); return; }
+  if (isLayered(doc)) {
+    if (pass === 'backdrop') { drawCompositionSlot(ctx, registry, doc, env, 'behind-player'); queueLayeredSlots(ctx, registry, doc, env); }
+    else if (pass === 'foreground') { pending.foreground.delete(doc); drawCompositionSlot(ctx, registry, doc, env, 'foreground'); }
+    return;
+  }
   paint(ctx, doc, env, resolveComposition(registry, doc, env).filter(r => r.element.parts.length && (r.element.parts.length === 1 ? r.instance.pass === pass : r.element.parts.includes(pass))), () => pass);
 }
-/** Layered scenes: distance, backdrop, set and the playfield up to the player row; then the rest of the playfield; then the foreground. */
-export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot) {
-  const rows = resolveComposition(registry, doc, env), player = rows.findIndex(r => r.element.role === 'player');
+/** Layered scenes: distance, backdrop, set and the playfield up to the player row; then the rest of the playfield; then the foreground.
+ * `only` limits the slot to some layers, for scenes that draw layers into different engine moments. */
+export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean)) {
+  const keep = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer!);
+  const rows = resolveComposition(registry, doc, env), found = rows.findIndex(r => r.element.role === 'player'), player = found < 0 ? rows.length : found;
   const inSlot = (r: Resolved, index: number) => slot === 'foreground' ? r.instance.layer === 'foreground'
     : r.instance.layer === 'playfield' ? (slot === 'behind-player') === (index < player)
     : slot === 'behind-player' && r.instance.layer !== 'foreground' && r.instance.layer !== 'logic';
-  paint(ctx, doc, env, rows.filter((r, index) => r.element.parts.length === 1 && inSlot(r, index)), r => r.element.parts[0]);
+  paint(ctx, doc, env, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && inSlot(r, index)), r => r.element.parts[0]);
 }
+/** Rows over the player and the foreground, waiting for their moment in the current frame (keyed by document, latest wins). */
+const pending = { 'over-player': new Map<Composition, () => void>(), foreground: new Map<Composition, () => void>() };
+export function queueLayeredSlots(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment) {
+  for (const slot of ['over-player', 'foreground'] as const)
+    if (slotHasContent(doc, slot)) pending[slot].set(doc, () => drawCompositionSlot(ctx, registry, doc, env, slot)); else pending[slot].delete(doc);
+}
+export function beginLayeredFrame() { pending['over-player'].clear(); pending.foreground.clear(); }
+export function flushLayeredSlot(slot: 'over-player' | 'foreground') { const draws = [...pending[slot].values()]; pending[slot].clear(); for (const draw of draws) draw(); }
 /** Cheap check from the document alone, so scenes can skip preparing an environment for an empty slot. */
 export function slotHasContent(doc: Readonly<Composition>, slot: LayerSlot): boolean {
   const nodes = flat(doc.instances);

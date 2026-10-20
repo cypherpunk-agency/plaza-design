@@ -19,7 +19,7 @@ export function isolateArtwork(registry: ArtRegistry, composition: Composition, 
   } }
   const selected = rows.filter(row => included.has(row.instance.id));
   const document: Composition = { version: 1, scene: composition.scene, instances: selected.map(row => ({
-    id: row.instance.id, type: row.instance.type, props: row.props, placement: row.placement, pass: row.instance.pass, order: row.instance.order,
+    id: row.instance.id, type: row.instance.type, props: row.props, placement: row.placement, pass: row.instance.pass ?? row.element.parts[0] ?? 'backdrop', order: row.instance.order,
   })) };
   const appearance = compositionAppearance(composition, environment);
   return { composition: document, environment: { ...environment, clips: undefined,

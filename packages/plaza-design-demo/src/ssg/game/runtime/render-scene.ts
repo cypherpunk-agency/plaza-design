@@ -11,11 +11,12 @@ import { drawSky } from '../art/environment/sky';
 import { puddles, weatherFront, weatherMid, weatherSky } from '../art/atmosphere/weather';
 import { createLightingFrame, drawCasters, drawGrade, drawLights, drawShade } from '../art/atmosphere/lighting';
 import { muteWorld } from '../art/atmosphere/hack-vision';
+import { beginLayeredFrame, flushLayeredSlot } from '../art/core/composition';
 
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 export interface SceneFrame {
   context: CanvasRenderingContext2D; scale: number; view: View; scene: SceneDef; sceneId: string;
-  host: Pick<SceneHost, 'visionOn' | 'draw' | 'model'> & Partial<Pick<SceneHost, 'drawLayer'>>;
+  host: Pick<SceneHost, 'visionOn' | 'draw' | 'model'>;
   reduced: boolean; clock: number; weather: () => Weather;
   /** Also installs native shared light/shade inputs before any artwork runs. */
   lighting: (weather: Weather | null) => Light;
@@ -32,6 +33,7 @@ export interface SceneFrame {
 export function renderSceneFrame(frame:SceneFrame){const span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);}finally{perfEnd(span);}}
 function renderMeasuredFrame(frame: SceneFrame) {
   let pass=perfBegin('render.prepare');
+  beginLayeredFrame();
   const x = frame.context, k = frame.scale, s = frame.scene, zh = frame.host, amb = s.ambient ?? {};
   x.setTransform(k, 0, 0, k, 0, 0);
   const v = frame.view;
@@ -66,11 +68,11 @@ function renderMeasuredFrame(frame: SceneFrame) {
   frame.roomWash?.(x, v);
   s.drawActors?.(x, v);
   frame.actors?.(x, v);
-  zh.drawLayer?.(x, v, 'over-player');
+  flushLayeredSlot('over-player');
   perfEnd(pass);pass=perfBegin('render.finish');
   if (!vision) drawShade(x, v);
-  zh.drawLayer?.(x, v, 'foreground');
   s.drawFront?.(x, v);
+  flushLayeredSlot('foreground');
   if (!vision) { drawGrade(x, v, L); drawLights(x, v, s.lights, L); }
   if (look && !vision) weatherFront(x, v, look);
   frame.prompts?.(x, v);

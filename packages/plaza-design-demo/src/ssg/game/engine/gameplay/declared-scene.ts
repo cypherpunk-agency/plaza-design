@@ -21,7 +21,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  const walk=(nodes:Composition['instances']):void=>{for(const n of nodes){if(n.bindings&&Object.keys(n.bindings).length)throw new Error('Scene-specific visual bindings need a declared adapter');walk(n.children??[]);}};walk(doc.instances);
  const rows=resolveComposition(art,doc,{view:frameView(0),state:{},bindings:{},reduced:false});
  const geometry=manifestGeometry(d,rows),bindings=geometry.bindings;
- const people=(d.people??[]).map(p=>{const point=bindings.people[p.id],r=point.row;if(r.element.type!=='character.resident'||r.instance.pass!=='people')throw new Error('Person requires visible character.resident artwork in the people pass: '+p.id);return {...residentCharacter(r.props,point),...p,...(p.conversation!==undefined?{talk:[]}:{}),conversation:p.conversation??actorConversationId(d.id,p.id)};});
+ const people=(d.people??[]).map(p=>{const point=bindings.people[p.id],r=point.row;if(r.element.type!=='character.resident'||(r.instance.layer?r.instance.layer!=='playfield':r.instance.pass!=='people'))throw new Error('Person requires visible character.resident artwork in the playfield (or the older people pass): '+p.id);return {...residentCharacter(r.props,point),...p,...(p.conversation!==undefined?{talk:[]}:{}),conversation:p.conversation??actorConversationId(d.id,p.id)};});
  const positions=Object.fromEntries(Object.entries(bindings.uses).map(([id,r])=>[id,r.x]));
  return {scene:d,composition:doc,positions,people,rows,...geometry};
 }
