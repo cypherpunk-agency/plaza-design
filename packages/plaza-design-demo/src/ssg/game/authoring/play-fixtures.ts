@@ -12,7 +12,7 @@ import {LOGIC,NET,KEYRING} from '../data';
 
 import {OPENING,openingStoryModel} from '../story/opening';
 
-import {SHIFT_GAMEPLAY} from '../scenes/harbor-shift/gameplay';
+import shiftGameplay from '../scenes/harbor-shift/gameplay.json';
 
 import {WEATHER_KINDS,type WeatherKind} from '../world/weather';
 
@@ -36,7 +36,7 @@ export function fixtureStateDeclarations(scene:string,vocabulary?:PlayFixtureVoc
 
 export function validateFixtureBounds(doc:PlayFixtures,widths:Readonly<Record<string,number>>){for(const f of doc.fixtures)if(f.spawn!==null&&(!Number.isFinite(widths[f.scene])||f.spawn>widths[f.scene]-12))throw new Error('Play fixture '+f.id+': starting X is outside the pending scene');return doc;}
 
-export const fixtureFlags=Array.from(new Set([...SHIFT_GAMEPLAY.flags,...Object.values(OPENING),...openingStoryModel.GAMEPLAY.flags,...Object.values(SCENES).flatMap(s=>s.gameplay?.flags??[]),...Object.values(SCENES).flatMap(s=>s.exits.flatMap(e=>[...(e.requires?[e.requires]:[]),...(e.sets?[e.sets]:[])])),defaultCity.HARBOR_FLAG,'shop:bought','end','pixel']));
+export const fixtureFlags=Array.from(new Set([...shiftGameplay.flags,...Object.values(OPENING),...openingStoryModel.GAMEPLAY.flags,...Object.values(SCENES).flatMap(s=>s.gameplay?.flags??[]),...Object.values(SCENES).flatMap(s=>s.exits.flatMap(e=>[...(e.requires?[e.requires]:[]),...(e.sets?[e.sets]:[])])),defaultCity.HARBOR_FLAG,'shop:bought','end','pixel']));
 
 export const fixtureModules=LOGIC.modules.map(m=>m.id),fixturePrograms=(NET.programs??[]).map(p=>p.id),fixtureKeys=[...KEYRING.keys()];
 

@@ -1,4 +1,8 @@
-import { shiftAttention, shiftGoal } from "../scenes/harbor-shift/index";
+import { SCENES } from "../scenes/index";
+type Flags = Readonly<Record<string, boolean>>;
+/** The night shift's goal line and attention target, as the compiled scene gives them. */
+const shiftGoal = (flags: Flags) => SCENES.harborShift.objective!(flags);
+const shiftAttention = (flags: Flags) => SCENES.harborShift.attention!(flags);
 
 /** Brief goal introduction, then the original quiet HUD line. Menus pause its clock. */
 export class ShiftGuidance {

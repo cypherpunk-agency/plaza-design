@@ -7,8 +7,11 @@ import {evaluateAccess,validateAccess} from '../../src/ssg/game/engine/gameplay/
 import {capabilityView,exitPermission,exitVisibility,harborTransportPermission} from '../../src/ssg/game/world/access';
 import {compileSceneDocument,validateSceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
 import {matches} from '../../src/ssg/game/engine/gameplay/validation';
-import {SHIFT_SCENE} from '../../src/ssg/game/scenes/harbor-shift/scene-document';
-import {shiftGoal,shiftAttention,SHIFT_USES} from '../../src/ssg/game/scenes/harbor-shift';
+import shiftSceneJson from '../../src/ssg/game/scenes/harbor-shift/scene.json';
+import shiftGameplayJson from '../../src/ssg/game/scenes/harbor-shift/gameplay.json';
+import {SCENES} from '../../src/ssg/game/scenes/index';
+import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
+const SHIFT_SCENE=validateSceneDocument(shiftSceneJson,validateGameplay(shiftGameplayJson),{manifest:true,actors:true}),SHIFT_USES=SCENES.harborShift.uses!,shiftGoal=SCENES.harborShift.objective!,shiftAttention=SCENES.harborShift.attention!;
 import {demoContent,DEMO_GAMEPLAY,DEMO_COUNTER} from '../../src/ssg/game/demo';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {ConversationSession} from '../../src/ssg/game/engine/gameplay/conversation';

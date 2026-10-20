@@ -30,7 +30,7 @@ export interface StageActorRules {
  /** An actor (presentation role) is hidden when an artwork role is off screen by more than `margin` px. */
  cull?:{actor:string;role:string;margin?:number}[];
 }
-export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;engine?:EngineDraw}
+export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;uses?:readonly import('../../scenes/kit').SceneUse[];engine?:EngineDraw}
 const POSE=/^actor\.([-a-zA-Z0-9_.]+)\.pose$/,CLIP=/^actor\.([-a-zA-Z0-9_.]+)\.clip$/,HOVER=/^device\.([-a-zA-Z0-9_]+)\.hover$/,VALUE=/^value\.([-a-zA-Z0-9_.:]+)$/,SPANS=/^artwork\.([-a-zA-Z0-9_.]+)\.spans$/;
 const providerOf=(name:string)=>{const dot=name.indexOf('.');return dot>0&&Object.prototype.hasOwnProperty.call(BINDING_PROVIDERS,name.slice(0,dot))?name.slice(0,dot):undefined;};
 export const knownBindingSource=(name:string)=>name==='world.light'||[POSE,CLIP,HOVER,VALUE,SPANS].some(r=>r.test(name))||!!providerOf(name);

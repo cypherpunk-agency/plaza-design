@@ -8,8 +8,10 @@ import { sourceDocuments,validateSourceDocuments } from '../../src/ssg/game/auth
 import { AuthoringStore,StoreError } from '../../src/ssg/game/authoring/server/store';
 import { startAuthoringServer } from '../../src/ssg/game/authoring/server/http';
 import { createDocumentBundle,readDocumentBundle } from '../../src/ssg/game/authoring/document-bundle';
-import { validateShiftGameplay } from '../../src/ssg/game/scenes/harbor-shift/gameplay-contract';
-import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
+import { validateGameplay } from '../../src/ssg/game/engine/gameplay/validation';
+import shiftGameplayJson from '../../src/ssg/game/scenes/harbor-shift/gameplay.json';
+const validateShiftGameplay=(value:unknown)=>{const doc=validateGameplay(value);if(doc.native)throw new Error('Native bindings are not registered for this gameplay document');return doc;};
+const SHIFT_GAMEPLAY=validateShiftGameplay(shiftGameplayJson);
 import { createHarborGameplayFixture } from './harbor-gameplay-fixture.mts';
 import type { GameplayDefinition } from '../../src/ssg/game/engine/gameplay/types';
 const id='harbor-shift-gameplay';

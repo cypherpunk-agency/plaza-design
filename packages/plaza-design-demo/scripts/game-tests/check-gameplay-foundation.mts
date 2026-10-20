@@ -4,9 +4,11 @@ import { GameplaySession,cloneState } from '../../src/ssg/game/engine/gameplay/s
 import { ConversationSession } from '../../src/ssg/game/engine/gameplay/conversation';
 import { validateGameplay } from '../../src/ssg/game/engine/gameplay/validation';
 import { createHarborGameplayFixture } from './harbor-gameplay-fixture.mts';
-import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
+import shiftGameplayJson from '../../src/ssg/game/scenes/harbor-shift/gameplay.json';
+import { SCENES } from '../../src/ssg/game/scenes/index';
+const SHIFT_GAMEPLAY=validateGameplay(shiftGameplayJson);
 const SHIFT=Object.fromEntries(SHIFT_GAMEPLAY.flags.filter(id=>id.startsWith('shift:')).map(id=>[id.slice(6),id]));
-import { SHIFT_USES,shiftGoal,shiftMinute } from '../../src/ssg/game/scenes/harbor-shift';
+const SHIFT_USES=SCENES.harborShift.uses!,shiftGoal=SCENES.harborShift.objective!,shiftMinute=SCENES.harborShift.storyMinute!;
 import type { GameplayDefinition,GameplayState } from '../../src/ssg/game/engine/gameplay/types';
 import type { UseCtx,SceneUse } from '../../src/ssg/game/scenes/kit';
 const fresh=():GameplayState=>({flags:{},items:{},tokens:0});
