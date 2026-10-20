@@ -12,7 +12,7 @@ import{drawMetroStairs}from'../art/architecture/metro-stairs';
 import{frameView,type View}from'../art/core/view';
 import{lightAt}from'../world/light';
 import{prepareCharacter}from'../runtime/characters';
-import{SIGNAGE_FAMILIES,type SignageFamily}from'./inventories/S11';
+import{SIGNAGE_FAMILIES,type SignageFamily}from'./catalogues/signage';
 export interface SignageState{id:string;variant:string;time:number;minute:number;reduced:boolean;text:string;power:boolean;seed:number;zoom:number;cameraX:number;cameraH:number}
 export function signageState(id=SIGNAGE_FAMILIES[0].id):SignageState{const f=signageFamily(id);return{id,variant:f.variants[0],time:0,minute:580,reduced:false,text:'VERIFY TODAY',power:true,seed:41,zoom:1,cameraX:0,cameraH:0};}
 export function signageFamily(id:string):SignageFamily{const f=SIGNAGE_FAMILIES.find(f=>f.id===id);if(!f)throw new Error('Unknown signage family '+id);return f;}

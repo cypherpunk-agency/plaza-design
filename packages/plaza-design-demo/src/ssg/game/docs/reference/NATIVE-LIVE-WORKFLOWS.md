@@ -60,16 +60,5 @@ creation/deletion/device/text/tone/template edits.
 
 Evidence:
 
-- `check-beach-live-workflows.mts`: 512 immutable original-code comparisons of
-  manual/signal actions, resource success/refusal, repetition, replies/order,
-  hold/reset, overshoot, simultaneous due rows, hidden/pause/reentry/restore,
-  scratch/state ownership and disposal. Also checks independent causal receipts
-  and absence of added wall timers.
-- `check-beach-workflow-forms.mts`: actual typed-control callbacks, prospective
-  validation and edited pending-scene execution.
-- `check-beach-workflow-save.mts`: actual typed outputs, paired registered source
-  Save, invalid-reference atomic rejection, fresh saved-JSON shipping import and
-  exact byte Undo. Evidence: `.scene-system/beach-workflow-save-ILGaRO`.
-
 Continuous simulations and cancelable washer deadlines are separate work. This
 primitive adds no player-save format conversion or storage migration machinery.

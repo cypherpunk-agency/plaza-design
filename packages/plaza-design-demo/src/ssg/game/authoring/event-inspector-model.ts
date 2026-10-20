@@ -25,7 +25,7 @@ import type{TimelineDocument}from'../art/core/timeline';
 
 import type{EditorDocument}from'./app';
 
-import frozen from'./inventories/S12.inventory.json';
+
 
 export type InspectionStatus='declared'|'active'|'inactive'|'blocked'|'missing'|'unbound'|'opaque';
 
@@ -89,7 +89,8 @@ export function buildEventInspection(options:EventInspectionOptions={}):EventIns
   sceneData.set(id,definition?.native?.wires?{...data,cables:definition.native.wires}:data);
  }
 
- const actual=Object.keys(SCENES);if(JSON.stringify(actual)!==JSON.stringify(frozen.scenes))diagnostics.push('Runtime scene inventory differs from frozen S12 inventory.');
+ const actual=Object.keys(SCENES);
+
 
  for(const[id,data]of sceneData)for(const[item,i]of(data.keyring??[]).map((k,i)=>[k,i]as const))put(`item:${item.id}`,id,'keyring-item',item.label,source(id,'/keyring/'+i),item);
 

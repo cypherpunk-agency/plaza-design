@@ -244,20 +244,20 @@ Existing implementations remain available as material; the proposed progression 
 
 | Existing material | Relationship to this concept | Design work needed |
 | --- | --- | --- |
-| [Opening controller](./opening.ts), [game controller](./game.ts), `title/` | Glide currently hands off to the train; opening flags progress home → sleep → Moth's uplink | Add harbor shift and new timing; redesign handoff and capability progression |
+| [Opening controller](../../story/opening.ts), [game controller](../../runtime/game.ts), `title/` | Glide currently hands off to the train; opening flags progress home → sleep → Moth's uplink | Add harbor shift and new timing; redesign handoff and capability progression |
 | [STORY.md](./STORY.md) | Registry, Moth, fixer, Pixel, Kessel and institutional tone fit | Clarify deletion/body logic; add boss; integrate body recovery with larger conflict |
 | [ROADMAP.md](../../ROADMAP.md), [LEVELS.md](./LEVELS.md) | Older opening and multi-district Act I conflict with the new pacing | Replace future sequence after scene design; preserve implementation records |
-| [CITY.md](../reference/CITY.md), [city.ts](./city.ts) | Current harbor restriction assumes first access after P14; clinic proposed in Neon Market/Act II | Distinguish prologue permission from later access; provide Downtown clinic; revise act/place assignments |
+| [CITY.md](../reference/CITY.md), [city.ts](../../world/city.ts) | Current harbor restriction assumes first access after P14; clinic proposed in Neon Market/Act II | Distinguish prologue permission from later access; provide Downtown clinic; revise act/place assignments |
 | [PUZZLES.md](../reference/PUZZLES.md): P01–03 | Domestic objects and simple wires are useful; current home combines several concepts | Split teaching encounters; solve clinic/locked-home dependency |
 | P04–06, P16 | Fixer, identity, clue guards, library and upgrades fit Downtown | Reduce simultaneous rewards; library need not grant scan and map immediately |
 | P07–10 | Yard, Moth and rooftop content provide local depth; timers, trace, switches and watchdogs arrive too tightly | Keep simpler local interactions; move or simplify advanced versions for later acts |
 | P12 | DLV-9 can remain a relationship and local access challenge | Reconsider market-opening reward and multi-system difficulty |
 | P13–15 | Laundromat, train and stacks are useful later combinations | Defer, simplify or select for a finale; do not relocate every advanced puzzle into Downtown |
-| [Mall](./scenes/mall.ts), metro/taxi and quick travel | Existing routes expose Galleria and market during Act I | Make every travel mode obey the revised progression consistently |
+| [Mall](../../scenes/mall/index.ts), metro/taxi and quick travel | Existing routes expose Galleria and market during Act I | Make every travel mode obey the revised progression consistently |
 | [NET.md](../reference/NET.md), [logic data](../../data/logic.json) | Known connections before scan are useful; TIMER currently starts owned | Stage discovery, map and logic tools independently; remote embodiment is new design |
 | [TIME.md](../reference/TIME.md) | Scripted opening time and later time-window teaching fit | Extend authored night shift; separate narrative time, city time and device timing |
-| [ART-GUIDE.md](../reference/ART-GUIDE.md), [SCENES.md](../history/SCENES.md) | Shared scenery, readable consequences and populated scenes support the approach | Establish ordinary human, robot and remote-presence visuals with clear fictional causes |
-| [GAME-DATA.md](../reference/GAME-DATA.md), [save model](./level.ts) | Flags, equipment, scene goals and saves exist | Plan separate story/capability/learning/access state; preserve or migrate older progress deliberately |
+| [ART-GUIDE.md](../reference/ART-GUIDE.md), [SCENES.md](./SCENE-IDEAS.md) | Shared scenery, readable consequences and populated scenes support the approach | Establish ordinary human, robot and remote-presence visuals with clear fictional causes |
+| [GAME-DATA.md](../reference/GAME-DATA.md), [save model](../../ui/sudo.ts) | Flags, equipment, scene goals and saves exist | Plan separate story/capability/learning/access state; preserve or migrate older progress deliberately |
 | Sandbox and optional puzzle catalogue | Useful demonstrations and future material | Engine availability is not a requirement to teach a mechanic in Act I |
 
 Older claims superseded as future direction include “no new opening scenes”, the harbor job

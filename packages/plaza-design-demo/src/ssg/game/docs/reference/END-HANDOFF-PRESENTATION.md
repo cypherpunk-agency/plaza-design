@@ -23,12 +23,3 @@ The presentation callback is optional on a general SceneStore. A session whose
 source requires a presentation handoff must have a real presentation host;
 attachment rejects a missing host before registering its observer. This avoids
 silently treating an unavailable presentation as delivered.
-
-Proofs: `check-end-handoff.mts`, `check-end-handoff-forms.mts`, and
-`check-end-handoff-save.mts`. The actual Game -> SceneHost path verifies ordered
-goal/caption/END delivery and saved completion without automatic reopening.
-Save evidence: `.scene-system/end-handoff-save-IjLi10/evidence.json` covers real
-typed edits, prospective registered sources, invalid operation/event/mixed
-presentation rejection, protected source target refusal, fresh shipping JSON
-imports and byte-exact Undo. Existing handoff timing and cancellation proofs
-also pass; broad goal integration remains a separate checkpoint.

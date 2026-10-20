@@ -1,5 +1,5 @@
 /** Read-only character viewer. Native controllers prepare private actors; native artwork paints them. */
-import inventory from './inventories/S9.json';
+import inventory from './catalogues/characters.json';
 import {prepareCharacter,type Act,type Character,type Look,type PreparedCharacter,type BotLook} from '../runtime/characters';
 import {type Bot,drawCharacterFrame} from '../art/characters/appearance';
 import {preparedCharacterElement} from '../art/characters/prepared';

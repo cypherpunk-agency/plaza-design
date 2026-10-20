@@ -33,15 +33,6 @@ deleting a referenced declaration/query, or renaming only its declaration, fails
 atomically. Existing state/query authoring uses creation, explicit rebinding and
 removal; this change does not invent a second rename mechanism.
 
-`check-action-expressions.mts` covers 46 transaction, type, bound, nullable-copy,
-reaction, rollback, eligibility and nested-reference cases.
-`check-action-expression-forms.mts` drives the real workbench callbacks for all
-four action fields and checks numeric filtering, invalid edits and exact
-Undo/Redo. `check-action-expression-save.mts` uses those edited values through a
-pending native scene, paired registered source Save, fresh saved JSON imports and
-byte-exact Undo. Evidence:
-`.scene-system/action-expression-save-420kPg/evidence.json`.
-
 Native dialogue's read-only metadata projection still accepts literal entry
 actions only. Actual conversation execution uses the shared session; a later
 scene migration using expression-valued conversation entry actions must remove

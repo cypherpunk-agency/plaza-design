@@ -9,11 +9,3 @@ This retains the actual manual/signal action context, command prefix, speaker, t
 The native effect's hardcoded brake text selection and its static text requirements were deleted. Source authors can rebind those responses and delete replaced text keys. The subsequent TRAIN-POSITION-SOURCE.md slice removes the native position report effect too. The spontaneous mechanical tick remains native.
 
 ## Verification
-
-- `check-train-paid-brake.mts`: 630 histories compared with immutable original Train rules and the actual LineSystem, including all four physical return values, inclusive/exclusive siding-window boundaries, repeated manual/signal actions, lock/watchdog refusals, exact state/transport/reply/change order and receipt ownership. Also verifies that the actual `brakeRide` implementation body matches the immutable original and that eligibility never calls it.
-- Existing regressions: 840 unpaid command histories, 188 live halt/cable/timing histories and 672 door permission histories pass.
-- `check-train-paid-brake-forms.mts`: real device/gameplay workbench callbacks create/rebind/delete response text, change the ordinary query and readonly physical mapping, preserve action context and reject invalid edits. Undo/Redo restores the authored behaviour.
-- `check-train-paid-brake-save.mts`: bundle roundtrip, protected paired source Save, invalid-reference atomicity, actual pending model, fresh saved-JSON shipping imports and byte-exact Undo.
-- Package `tsc -b` passes.
-
-Paid-brake Save evidence: `.scene-system/train-paid-brake-save-qxesTb/evidence.json`.

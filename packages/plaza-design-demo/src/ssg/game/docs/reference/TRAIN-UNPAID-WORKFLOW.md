@@ -38,15 +38,3 @@ This is a partial Train migration. Paid brake physics and paid wording and posit
 The subsequent live-source slice moved halt/resume replies and the ordinary
 harbor flag write into source; see `TRAIN-LIVE-SOURCE-WORKFLOWS.md`. Door physics
 remains native. No outcome interpreter or new physical simulation was added.
-
-`check-train-command-steps.mts` covers 840 immutable phase/halt/pass/count/manual
-and signal histories, pure eligibility, refusal ordering, invalid source
-permissions/sites, missing session and explicit numeric-bound refusal. Existing
-Train door permission tests retain 672 immutable histories. The real typed
-workbench proof rebinds, removes and adds command steps, changes the divisor,
-executes the result and rejects invalid edits.
-
-Paired Save evidence: `.scene-system/train-command-save-YKg6rr/evidence.json`.
-It verifies pending source execution, strict reference and permission rejection,
-fresh saved JSON shipping imports, and byte-exact Undo. Integrated build and
-raster verification remains a separate goal checkpoint.

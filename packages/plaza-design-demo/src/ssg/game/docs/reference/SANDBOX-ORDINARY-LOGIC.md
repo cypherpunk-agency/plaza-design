@@ -32,17 +32,3 @@ nonfinite and unsafe numeric counters; the shared numeric state contract rejects
 Shipping defaults and increment-only paths produce integers. This migration does not
 claim compatibility for manually altered fractional/nonfinite/unsafe counters, or an
 increment beyond `Number.MAX_SAFE_INTEGER`.
-
-The historical `check-sandbox-ordinary.mts` run captured 109 model/session cases against immutable
-original code: both manual and signal execution, resource success/refusal, repeated
-actions, replies, native saves, pulse timestamps/fades/pause and reset/reload. It also
-checks numeric boundaries, unchanged transaction limits, source validation, removed
-effect references and actual typed-control edits with atomic rejection. The original
-Sandbox composition/content checks remain in place; only these five intentional
-source-layout changes are excluded from structural equality, with runtime parity
-checked separately against the original implementation.
-
-Sandbox daylight/weather reactions now use source-owned live condition triggers;
-see `scenes/sandbox/LIVE-CONDITIONS-MIGRATION.md`. Other `sbx.pulse` callbacks
-remain cosmetic adapters. Current state source/editor/Save evidence is in
-`check-scene-state-source.mts` and `check-scene-state-source-save.mts`.

@@ -37,10 +37,3 @@ The Stacks repair is a beforeNative source trigger. It uses the registered physi
 Lift-start, thermal scan visibility/presentation expiry and reefer world presence remain separate known native work. This slice does not claim the entire Stacks controller is authored.
 
 ## Evidence
-
-- `check-scene-domains.mts`: eligibility purity; staged query reads and route lock authorization; late/base-commit failure rollback; fixed/cuts/live identities; queued signals; lock deadlines/spans/refresh, pause and restore; delivery order and disposal.
-- `check-stacks-watchdog-source.mts`: 480 immutable histories over live/offscreen/frozen/wires/repeated repairs/trace/locks/tuning. Canonical links/cuts/trace, wall locks, SceneTime pending work, caption/kick order and published receipt causes match.
-- `check-scene-domains-forms.mts`: actual typed action kinds, finite endpoint/verb/device controls, decimal read editing, invalid reference atomicity and Undo/Redo.
-- `check-scene-domains-save.mts`: new ordinary catalogue/city source, actual lazy Game/SceneHost session reuse and refresh, rollback, canonical current Save/reload without a shadow store, fresh saved shipping JSON import and byte Undo. Evidence `.scene-system/scene-domains-save-bD4ELU`.
-- Extended Stacks typed and paired Save proof consumes edited wire/trace command controls and restore caption in pending and fresh shipping models. Evidence `.scene-system/stacks-permission-save-9e3YN1`.
-- `check-session-startup.mts`, `check-common-state-context.mts`, `check-common-game-state.mts`, `check-causal-feedback.mts` and the existing 288 Stacks permission histories pass. The stale common-state fixture now supplies a real model instead of requesting a native host from an incomplete fake Game.

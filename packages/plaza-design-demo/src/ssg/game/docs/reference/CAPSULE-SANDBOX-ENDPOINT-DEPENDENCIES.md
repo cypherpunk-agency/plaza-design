@@ -10,15 +10,6 @@ Sandbox's visual snapshot derives machine spots from present artwork definitions
 
 ## Proof
 
-- `check-capsule-source-workflows.mts`: 1,728 immutable-original thermal/boot/wire/Pixel/door/goal histories.
-- `check-sandbox-ordinary.mts`: 109 immutable-original ordinary action, reply, pulse, inventory and lifecycle cases.
-- `check-native-target-crud.mts`: existing all-five target authoring regression.
-- `check-capsule-sandbox-actual-source.mts`: immutable default endpoint geometry; actual pending source in direct factories and native previews; present-art snapshots and orphan-connector drawing.
-- `check-capsule-sandbox-rebind-save.mts`: protected Save of explicit bindings after original marker removal, actual pending geometry, fresh shipping `SCENES`/model interaction spots, invalid Save atomicity and byte Undo.
-- `check-capsule-sandbox-endpoint-crud.mts`: explicit binding priority, rebinding after old marker removal, endpoint deletion, actual model/frame, required physical anchors, strict dangling cables/controller references, real typed controls, Composer Undo/Redo, bundle, protected Save, fresh shipping JSON import and byte Undo.
-
 Capsule's fridge is referenced by the authored opening's everyday interactions. Deleting it while keeping that reference is rejected. The proof removes the corresponding opening source entry as part of the prospective edit. It does not silently erase story references or add an exception.
 
 Shipping source JSON remains unchanged. Broad pixel verification belongs to the combined integration checkpoint.
-
-Evidence: `.scene-system/capsule-sandbox-endpoint-crud-lepyU3/evidence.json` and `.scene-system/capsule-sandbox-rebind-save-wJ63aU/evidence.json`. The registered factory owns primitive geometry; final explicit binding projection stays in the existing shipping/pending assembly wrappers. It is not duplicated in each factory.

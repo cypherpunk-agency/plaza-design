@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "compose-scenes": "tsx scripts/scene-system/compose.mts",
-    "generate-demos": "tsx scripts/generate-demos.tsx"
+    "generate-demos": "tsx scripts/generate-demos.tsx",
+    "test:game": "tsx scripts/game-tests/run.mts",
+    "test:game:visuals": "tsx scripts/game-tests/visuals.mts"
   },
   "dependencies": {
     "plaza-cms": "workspace:*",
