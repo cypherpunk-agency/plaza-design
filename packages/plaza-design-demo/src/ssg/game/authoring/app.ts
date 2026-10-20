@@ -250,6 +250,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const tools = element('nav', 'tools'); tools.setAttribute('aria-label', 'Editor tools');
   const compact = window.matchMedia('(max-width: 760px)');
   let layerQuery = '', layerSort: 'kind' | 'order' = 'kind'; const roleOpen = new Map<string, boolean>();
+  /** The selection the outline last unfolded for; a section folded after that stays folded. */
+  let revealed = '';
   /** The outline's eyes: objects hidden in the editor preview, per composition document. View state only. */
   const hiddenByDocument = new Map<string, Set<string>>();
   const hiddenIn = (id: string | undefined) => { if (!id) return new Set<string>(); let set = hiddenByDocument.get(id); if (!set) hiddenByDocument.set(id, set = new Set()); return set; };
@@ -577,15 +579,23 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       };
       // Hovering a row outlines the artwork in the preview, the same box the preview shows on hover.
       const item = (node: Instance, depth: number) => {
-        const li = element('li'), pick = button('', () => select_(node.id === selectedId ? '' : node.id), `${art(node).label} · ${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
+        const li = element('li'), pick = button('', () => { revealed = node.id; select_(node.id === selectedId ? '' : node.id); }, `${art(node).label} · ${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
         pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
         pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId));
         if (hidden.has(node.id)) li.classList.add('is-hidden');
         li.append(pick, eye(() => [node.id], node.id)); return li;
       };
+      /** A new selection (often picked in the preview) unfolds the section that holds it, so the row can be scrolled to. */
+      const reveal = () => {
+        if (!selectedId || selectedId === revealed) return false; const node = rows.find(row => row.node.id === selectedId)?.node; if (!node) return false; revealed = selectedId;
+        let top = node; for (let at = parents.get(node.id); at; at = parents.get(at)) top = rows.find(row => row.node.id === at)?.node ?? top;
+        const layer = node.layer ?? top.layer;
+        if (layerSort === 'kind') roleOpen.set(kind(top), true); else if (layer === 'logic') roleOpen.set('logic-layer', true); else if (layer) roleOpen.set('stack:' + layer, true);
+        return true;
+      };
       function renderLayers() {
-        listHost.replaceChildren(); let shown = 0;
+        const fresh = reveal(); listHost.replaceChildren(); let shown = 0;
         layerTools.querySelector('.show-all')?.remove();
         if (hidden.size) { const reveal = button(`Show all (${hidden.size})`, () => { hidden.clear(); renderLayers(); void draw(); }, 'Show everything hidden with the eyes'); reveal.className = 'show-all'; layerTools.append(reveal); }
         if (layerSort === 'order' && layered(composition)) shown = renderStack();
@@ -601,7 +611,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           const summary = element('summary', '', `${role} · ${count}`); summary.title = KIND_HINTS[role]; group.append(summary, list); listHost.append(group);
         }
         if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'Nothing matches this filter.' : 'This scene has no artwork yet. Use ＋ Add artwork in the toolbar.'));
-        listHost.querySelector<HTMLElement>('button[aria-pressed=true]')?.scrollIntoView({ block: 'nearest' });
+        // Once the outline is attached (the left column is rebuilt around this list). A new selection is centred; later refreshes only keep it in view.
+        queueMicrotask(() => listHost.querySelector<HTMLElement>('.hierarchy button[aria-pressed=true]')?.scrollIntoView({ block: fresh ? 'center' : 'nearest' }));
       }
       /** Front at the top, like a paint program's layer list. */
       function renderStack() {
