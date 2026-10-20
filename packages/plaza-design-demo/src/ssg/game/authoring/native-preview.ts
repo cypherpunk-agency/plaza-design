@@ -7,7 +7,7 @@ import {readQuery} from '../engine/gameplay/queries';
 import {resolveValues} from '../engine/gameplay/state';
 import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
-import { renderSceneFrame, type SceneFrame } from '../runtime/render-scene';
+import { renderSceneFrame } from '../runtime/render-scene';
 import { city } from '../world/clock';
 import { light, lightAt, setLight } from '../world/light';
 import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
@@ -23,7 +23,6 @@ export interface NativeSceneAdapter {
   /** Resolve authored content before construction, so removed default bindings are never evaluated. */
   pendingDefinition?(document:Composition,state:Environment['state'],options:NativeOptions,documents:ReadonlyMap<string,unknown>):SceneDef;
   environment?(document: Composition, view: View, engine: EngineDraw): Environment;
-  frame?(document: Composition, state: Environment['state'], options: NativeOptions): Partial<Pick<SceneFrame, 'reflections' | 'city' | 'street' | 'actors' | 'roomWash' | 'skyTraffic'>>;
 }
 export type NativeOptions = Pick<Environment, 'reduced'> & Partial<Pick<Environment, 'visibility' | 'opacity' | 'clips' | 'sequenceTime'>>;
 const number = (value: unknown, fallback: number) => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -130,7 +129,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
           const ambient = def.ambient ?? {}, outdoor = def.outdoor ?? !!(ambient.weather || ambient.sky);
           const light = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor);
           setLight(light); return light;
-        }, skyTraffic: (ctx, view) => drawSkyShips(ctx, view, ships), ...adapter.frame?.(document, state, options),
+        }, skyTraffic: (ctx, view) => drawSkyShips(ctx, view, ships),
       });
       const preparedEnvironment = def.visualEnvironment?.(view, engine) ?? adapter.environment?.(document, view, engine);
       if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);

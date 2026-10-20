@@ -47,9 +47,9 @@ function renderMeasuredFrame(frame: SceneFrame) {
   const rain = W?.wet ?? 0;
   perfEnd(pass);pass=perfBegin('render.world');
   if (amb.sky) { drawSky(x, v, L, { horizon: v.y(s.horizon ?? 0) }); if (look) weatherSky(x, v, look); frame.skyTraffic?.(x, v); }
-  if (amb.city) frame.city?.(x, v);
-  if (amb.street) frame.street?.(x, v, rain, !!amb.city);
-  const mid = () => { if (look) { puddles(x, v, look, { width: s.width, seed: frame.sceneId.length * 97 + s.width, lights: amb.city ? frame.reflections : undefined }); weatherMid(x, v, look); } };
+  if (amb.city) (s.artworkFrame?.city??frame.city)?.(x, v);
+  if (amb.street) (s.artworkFrame?.street??frame.street)?.(x, v, rain, !!amb.city);
+  const mid = () => { if (look) { puddles(x, v, look, { width: s.width, seed: frame.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections??frame.reflections : undefined }); weatherMid(x, v, look); } };
   if (vision && s.layers) {
     zh.draw(x, v, 'world');
     mid();

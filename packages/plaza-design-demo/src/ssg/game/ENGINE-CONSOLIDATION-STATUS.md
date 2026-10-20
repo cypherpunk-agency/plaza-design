@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `769d300` on main and production.
-Homepage jobs39351137007/39351136491 and design job39351137144 succeeded.
+Last verified deployment: `edcfa44` on main and production.
+Homepage jobs39352020586/39352019888 and design job39352020495 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2621,3 +2621,30 @@ warning/error logs (`editor-native-play-6c855527-20261020.json`). Real Stacks ge
 controls are mounted in the package. app-HNPAQ5LL.js / play-Y5LRZJBG.js /
 play-092db9c168930c06.html. Downtown/transit geometry and final whole-corpus lifecycle/current-save/
 world/network/removal reconciliation remain open; this checkpoint does not promote whole-goal gates.
+
+## 2026-10-20 One scene-owned frame for Game, preview and Play
+
+Found a real pending-source gap: Game supplied Downtown city/street/reflections from the default
+composition while editor preview used pending artwork. SceneDef now carries registered artwork
+frame passes. Both shipping Game and editor preview use that same scene-owned frame. Downtown's
+factory captures its actual document/appearance/options/reflections; Yard selects its existing
+shared ground pass. Removed all Downtown drawing imports/callbacks from Game and both duplicate
+editor frame hooks, including the now-unused NativeSceneAdapter.frame extension. The renderer's
+caller frame inputs remain available for technical fixtures; scenes take precedence.
+
+check-scene-artwork-frame.mts PASS (`downtown-frame-source-9tbBHx`): a changed source stall and
+reflection enter the actual Game.prototype.drawWorld path, model history/bundle/protected Save,
+fresh shipping import and exact byte Undo. Default143 Downtown Canvas command cases and native
+preview contracts PASS. Downtown visual source (`downtown-visual-source-aerDq8`) and Yard controller
+source (`yard-controller-source-UKDhOH`) regressions PASS. Also reconciled the older Stacks primitive
+fixture with current explicit source dependencies: no fixed scanner ID lock, live refs rebound
+before marker deletion; ordinary topology/endpoint changes, protected Save/fresh native/Undo PASS
+(`stacks-roles-save-I9PH5c`).288 original manual/signal/found/location/busy/alarm histories PASS.
+
+Sourcee943774fbef77feba48473e735f1e329aa5d74668d7f02c127768f99ddb799ab passes tsc/both builds and173 zero-difference/error
+browser raster rows (independently asserted). Actual rebuilt public editor accepted a disposable
+stall width edit241 through keyboard/change controls; native pending Downtown Play/Stop and Yard
+Play/Stop PASS with no warning/error logs. This is bounded native execution evidence; the modified
+pixels are covered by source/actual-Game draw tests, not claimed as a screenshot coordinate assertion.
+Package app-REOOQEM3.js / play-NH6HP3MK.js / play-899e35851c2275ab.html. Remaining Downtown fixed
+geometry/reflections and transit/source/lifecycle/current-state/world/network/removal work stay open.

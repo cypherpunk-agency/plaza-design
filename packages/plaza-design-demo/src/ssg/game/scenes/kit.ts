@@ -178,7 +178,14 @@ export type ItemId = keyof typeof ITEMS;
  * hack vision shows nothing to hack), people, uses, readables, exits and its
  * own drawing. Which place it belongs to is the city's data (city.ts).
  */
+/** Registered scene artwork passes, shared by shipping Game and isolated editor Play/preview. */
+export interface SceneArtworkFrame {
+  city?:(ctx:CanvasRenderingContext2D,view:View)=>void;
+  street?:(ctx:CanvasRenderingContext2D,view:View,rain:number,lit:boolean)=>void;
+  reflections?:[number,string][];
+}
 export interface SceneDef {
+  artworkFrame?:SceneArtworkFrame;
   /** Pure registered dockworker presentation, reading the current source's flag roles. */
   dockworkerCarry?:(flags:Readonly<Record<string,boolean>>)=>'parcel'|'case'|null;
   readonly nativeTargetBindings?:import('../engine/gameplay/native-targets').NativeTargetBindings;

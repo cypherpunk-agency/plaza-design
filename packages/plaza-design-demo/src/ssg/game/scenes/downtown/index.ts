@@ -24,7 +24,7 @@ import { downtownLayout } from "./layout";
 import type { SceneDef } from "../kit";
 import { cam3Panel } from './camera';
 import { downtownRules, dlvX } from './rules';
-import {  downtownComposition, downtownLights, downtownCasters, downtownGeometry, renderDowntownDevices,renderDowntownPeople,downtownEnvironment, validateDowntownComposition, type DowntownRenderOptions } from './composition';
+import {  downtownComposition,downtownReflections,renderDowntownCity,renderDowntownStreet, downtownLights, downtownCasters, downtownGeometry, renderDowntownDevices,renderDowntownPeople,downtownEnvironment, validateDowntownComposition, type DowntownRenderOptions } from './composition';
 import type { Composition, Properties } from '../../art/core/composition';
 
 export { MAP_KIOSK_X } from './scene';
@@ -58,7 +58,7 @@ export function downtownScene(document:Composition=downtownComposition,overrides
  const doc=validateDowntownComposition(document),authored=content.validateScene(sceneDocument,gameplay),layout=downtownLayout(doc,authored),data=projectDeviceBindings(authored,downtownGeometry(doc),projectSceneState(deviceSource,gameplay),layout.width),home=(m:import('../../engine/model').SceneModel)=>m.data.devices.find(d=>d.id===downtownController(m.data).devices.vehicle)!.layout!.spot!.x;
  const actors=compileSceneActors(authored,downtownGeometry(doc));
  const compiled=compileManifestDocument(authored,downtownGeometry(doc),(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:downtownBindingGroups,groundExits:false,transformedExits:true});
- return{...baseDowntown,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),drawActors:(x,v)=>renderDowntownPeople(x,v,doc,overrides,options,actors),visualEnvironment:v=>downtownEnvironment(doc,v,{overrides,options,actors}),platforms:layout.platforms,data,lights:downtownLights(doc),casters:downtownCasters(doc),
+ return{...baseDowntown,...compiled.content,artworkFrame:{reflections:downtownReflections(doc),city:(x,v)=>renderDowntownCity(x,v,doc,overrides,options),street:(x,v,rain,lit)=>renderDowntownStreet(x,v,rain,lit,doc,overrides,options)},name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),drawActors:(x,v)=>renderDowntownPeople(x,v,doc,overrides,options,actors),visualEnvironment:v=>downtownEnvironment(doc,v,{overrides,options,actors}),platforms:layout.platforms,data,lights:downtownLights(doc),casters:downtownCasters(doc),
   drawBackdrop:(x,v,e)=>renderDowntownDevices(x,v,e.m,e.hover,dlvX(e.m,home(e.m)),doc,overrides,options),
  };
 }

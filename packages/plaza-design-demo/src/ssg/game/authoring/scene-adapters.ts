@@ -25,7 +25,7 @@ import { capsuleScene, capsuleFrameEnvironment, validateCapsuleComposition } fro
 import { mothScene, mothFrameEnvironment, validateMothComposition } from '../scenes/moth';
 import { laundromatScene, laundromatFrameEnvironment, validateLaundromatComposition } from '../scenes/laundromat';
 import { downtownScene } from '../scenes/downtown';
-import { downtownEnvironment, downtownReflections, renderDowntownCity, renderDowntownStreet, validateDowntownComposition } from '../scenes/downtown/composition';
+import { validateDowntownComposition } from '../scenes/downtown/composition';
 import { galleriaStationScene } from '../scenes/galleriaStation';
 import { harborStationScene } from '../scenes/harborStation';
 import { galleriaStationAdapter } from '../scenes/galleriaStation/composition';
@@ -63,7 +63,6 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   beach: { validate: validateBeachComposition, definition: beachScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('beach',doc,documents,{...beachContent,validateGameplay:validateBeachGameplay},(source,gameplay,context)=>beachScene(doc,state,options,gameplay,source,context,documents.get('beach-devices') as import('../data/types').SceneData|undefined));} },
   warehouse: { validate: validateWarehouseComposition, definition: warehouseScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateWarehouseGameplay(documents.get('warehouse-gameplay'));return warehouseScene(doc,state,options,validateWarehouseScene(documents.get('warehouse-scene'),gameplay),gameplay);}, environment: (doc, v, e) => warehouseFrameEnvironment(v, e, doc) },
   yard: { validate: validateYardComposition, definition: yardScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('yard',doc,documents,yardContent,(source,gameplay,context)=>yardScene(doc,state,options,source,gameplay,context,documents.get('yard-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => yardFrameEnvironment(v, e, doc),
-    frame: () => ({ street: (ctx, view, rain, lit) => renderDowntownStreet(ctx, view, rain, lit) }),
   },
   stacks: { validate: validateStacksComposition, definition: stacksScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=stacksContent.validateGameplay(documents.get('stacks-gameplay'));return stacksScene(doc,state,options,stacksContent.validateScene(documents.get('stacks-scene'),gameplay),gameplay,documents.get('stacks-devices') as import('../data/types').SceneData);} },
   harbor: { validate: validateHarborComposition, definition: harborScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=harborContent.validateGameplay(documents.get('harbor-gameplay'));return harborScene(doc,state,options,harborContent.validateScene(documents.get('harbor-scene'),gameplay),gameplay);} },
@@ -75,10 +74,5 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   train: { validate: validateTrainComposition, definition: trainScene,pendingDefinition:(doc,state,options,documents)=>{const gameplay=trainContent.validateGameplay(documents.get('train-gameplay'));return trainScene(doc,state,options,trainContent.validateScene(documents.get('train-scene'),gameplay),gameplay,documents.get('train-devices') as import('../data/types').SceneData|undefined);} },
   downtown: {
     validate: validateDowntownComposition, definition: downtownScene, pendingDefinition:(doc,_state,options,documents)=>{const gameplay=downtownContent.validateGameplay(documents.get('downtown-gameplay'));return downtownScene(doc,undefined,options,downtownContent.validateScene(documents.get('downtown-scene'),gameplay),gameplay);},
-    environment: (doc, v, e) => downtownEnvironment(doc, v, { model: e.m, hover: e.hover }),
-    frame: (doc, state, options) => ({ reflections: downtownReflections(doc),
-      city: (x, v) => renderDowntownCity(x, v, doc, state, options),
-      street: (x, v, rain, lit) => renderDowntownStreet(x, v, rain, lit, doc, state, options),
-    }),
   },
 };

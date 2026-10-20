@@ -1,3 +1,4 @@
+import {renderDowntownStreet} from '../downtown/composition';
 import {projectDeviceBindings} from '../../engine/gameplay/device-bindings';
 import {yardController} from '../../engine/controllers/yard';
 import {validateYardControllerGeometry} from './composition';
@@ -63,7 +64,7 @@ export function yardScene(document:Composition=yardComposition,state:Environment
  if(!config&&authored.nativeTargets?.some(t=>t.anchor==='tray'))throw Error('Yard tray target requires its controller artwork binding');
  const compiled=compileManifestDocument(authored,yardGeometry(doc),(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true});
  let prepared:YardVisual|undefined;
- return{...base,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:projectNativeDeviceData(projectDeviceBindings(authored,yardGeometry(doc),{...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource)},compiled.content.width),gameplay),
+ return{...base,...compiled.content,artworkFrame:{street:renderDowntownStreet},name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),data:projectNativeDeviceData(projectDeviceBindings(authored,yardGeometry(doc),{...projectSceneState(deviceSource,gameplay),dialogue:nativeDeviceDialogues(gameplay,deviceSource)},compiled.content.width),gameplay),
   presentationState:{capture:()=>({...controller}),restore(value){
    if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!['hookX','hookVisible'].includes(k))||typeof value.hookX!=='number'||!Number.isFinite(value.hookX)||typeof value.hookVisible!=='boolean')throw new Error('Invalid Yard presentation state');
    controller.hookX=value.hookX;controller.hookVisible=value.hookVisible;prepared=undefined;

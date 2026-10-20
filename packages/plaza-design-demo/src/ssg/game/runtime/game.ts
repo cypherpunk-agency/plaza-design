@@ -44,7 +44,6 @@ import { clearWorld } from '../art/core/canvas';
  * is drawn at an integer pixel scale so the sprites stay crisp.
  */
 
-import { SMEARS, renderDowntownCity, renderDowntownStreet } from "../scenes/downtown/composition";
 import { SPR } from "../art/core/sprites";
 import { drawFlight,taxiDurationFor } from '../story/cutscenes/taxi';
 import type { Handoff } from '../art/core/timeline';
@@ -1179,11 +1178,9 @@ export class Game {
     const v = this.view();
     renderSceneFrame({ context: this.x, scale: this.k, view: v, scene: this.def, sceneId: this.here,
       host: this.zh, reduced: this.reduced, clock: this.clock,
-      weather: () => this.weatherHere(), lighting: W => this.lightHere(W), reflections: SMEARS,
+      weather: () => this.weatherHere(), lighting: W => this.lightHere(W),
       preparePresentation: () => this.zh.preparePresentation(v, this.zh.visionOn && this.def.layers ? 'devices' : 'all'),
       skyTraffic: (x, view) => drawSkyShips(x, view, this.ships),
-      city: (x, view) => renderDowntownCity(x, view),
-      street: (x, view, rain, lit) => renderDowntownStreet(x, view, rain, lit),
       roomWash: () => this.drawLight(), actors: () => this.drawCharacters(),
       prompts: () => this.drawPrompt(), bubbles: () => this.drawBubble(),
     });
