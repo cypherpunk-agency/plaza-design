@@ -6,7 +6,14 @@ export const devicePropertyFields=['widthProperty','heightProperty','heightOffse
 export type DevicePropertyFields=Partial<Record<typeof devicePropertyFields[number],string>>;
 export type DeviceManifestTarget=string|(Exclude<ManifestTarget,string>&DevicePropertyFields);
 export type ManifestWidth=number|{instance:string;property:string};
-export interface SceneManifest {exitCheckpoints?:Record<string,ManifestTarget>;artwork?:Record<string,string>;devices?:Record<string,DeviceManifestTarget>;version:1;width:ManifestWidth;spawn:ManifestTarget;uses:Record<string,ManifestTarget>;people?:Record<string,ManifestTarget>;readables?:Record<string,ManifestTarget>;rests?:Record<string,ManifestTarget>;exits?:Record<string,ManifestTarget>}
+/**
+ * How the scene's bindings compile (manifest-content-compiler.ts): which groups bind artwork,
+ * whether exits and the spawn stand on the ground, rest heights, and whether responses rise
+ * above the artwork. Scenes that do not say keep the declared path's default.
+ */
+export interface ManifestCompile {groups?:ManifestGroup[];groundExits?:boolean;groundSpawn?:boolean;transformedExits?:boolean;elevatedResponses?:boolean;omitGroundRestHeight?:boolean}
+export const MANIFEST_COMPILE_FLAGS=['groundExits','groundSpawn','transformedExits','elevatedResponses','omitGroundRestHeight'] as const;
+export interface SceneManifest {compile?:ManifestCompile;exitCheckpoints?:Record<string,ManifestTarget>;artwork?:Record<string,string>;devices?:Record<string,DeviceManifestTarget>;version:1;width:ManifestWidth;spawn:ManifestTarget;uses:Record<string,ManifestTarget>;people?:Record<string,ManifestTarget>;readables?:Record<string,ManifestTarget>;rests?:Record<string,ManifestTarget>;exits?:Record<string,ManifestTarget>}
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(v)&&!['constructor','prototype','__proto__'].includes(v);
 export const targetInstance=(target:ManifestTarget)=>typeof target==='string'?target:target.instance;
@@ -19,7 +26,8 @@ export function validateManifestTarget(target:unknown):asserts target is Manifes
 }
 export function validateManifest(value:unknown):SceneManifest{
  if(!object(value))throw new Error('Manifest must be a plain object');const m=value as unknown as SceneManifest;
- if(Object.keys(m).some(k=>!['version','width','spawn','devices','artwork','exitCheckpoints',...manifestGroups].includes(k))||m.version!==1)throw new Error('Invalid scene manifest header');
+ if(Object.keys(m).some(k=>!['version','width','spawn','devices','artwork','exitCheckpoints','compile',...manifestGroups].includes(k))||m.version!==1)throw new Error('Invalid scene manifest header');
+ if(m.compile!==undefined){const c=m.compile;if(!object(c)||Object.keys(c).some(k=>k!=='groups'&&!(MANIFEST_COMPILE_FLAGS as readonly string[]).includes(k))||MANIFEST_COMPILE_FLAGS.some(k=>c[k]!==undefined&&typeof c[k]!=='boolean')||c.groups!==undefined&&(!Array.isArray(c.groups)||c.groups.some(g=>!(manifestGroups as readonly string[]).includes(g))||new Set(c.groups).size!==c.groups.length))throw Error('Invalid manifest compile options');}
  if(typeof m.width==='number'){if(!Number.isFinite(m.width)||m.width<240||m.width>10000)throw new Error('Invalid manifest width');}
  else if(!object(m.width)||Object.keys(m.width).sort().join()!=='instance,property'||!id(m.width.instance)||!id(m.width.property))throw new Error('Invalid manifest width binding');
  if(m.artwork!==undefined&&(!object(m.artwork)||Object.keys(m.artwork).length>128||Object.entries(m.artwork).some(([role,ref])=>!id(role)||!id(ref))))throw Error('Invalid manifest artwork roles');

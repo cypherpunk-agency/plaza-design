@@ -128,6 +128,16 @@ uses the spawn's or the exit marker's height (`spawnH`, `SceneExit.arriveH`). Th
 `View.level` (reveal, lift cars); the editor previews it at rest or opened (environment `inside`).
 Check with `pnpm test:game levels`; the Tower lab (scenes/authored.json) is the example.
 
+## Recipe: a scene made of JSON only (folder scenes)
+
+A folder scene is `scenes/<id>/` with `composition.json`, `scene.json`, `gameplay.json` and
+`devices.json`, and no TypeScript. List it in scenes/folder-scenes.ts; engine/gameplay/folder-scene.ts
+builds it on the declared path and the editor registers it generically (scene-adapters.ts,
+gameplay-scenes.ts). `scene.json` `manifest.compile` holds what scenes used to pass in code (binding
+groups, ground exits and spawn, rest heights, raised responses). Moving a scene off its own code:
+record its fingerprint first (`npx tsx scripts/scene-parity-record.mts <id>`), make the move, then
+`pnpm test:game scene-parity` proves it compiles and paints as before. The Tower lab is the example.
+
 ## Recipe: something that moves, or a place that notices
 
 Give a device an `act` part with a `mover` (stops, speed, axis) or a `sense` part with a `zone`

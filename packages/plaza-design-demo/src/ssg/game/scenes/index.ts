@@ -31,6 +31,8 @@ import { train } from "./train/index";
 import { warehouse } from "./warehouse/index";
 import authored from './authored.json';
 import {createSceneRegistry} from '../engine/gameplay/scene-catalogue';
+import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
+import {FOLDER_SOURCES} from './folder-scenes';
 
 export type { ItemId, SceneDef, SceneExit, SceneReadable, SceneRest, SceneSaid, SceneUse, UseCtx, View as SceneView } from './kit';
 export { ITEMS, priceTag } from './kit';
@@ -41,7 +43,11 @@ const nativeDefinitions = {
   // sudo only (index.ts refuses `?play=sandbox` without `?sudo`): the engine's test bay, outside the story
   sandbox, harborShift,
 } satisfies Record<string, SceneDef>;
-export const NATIVE_SCENES=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
+const codeScenes=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
+/** Scenes of the repository: those still built by their own code, and folder scenes built from JSON alone (folder-scenes.ts). */
+export const NATIVE_SCENES={...codeScenes,...Object.fromEntries(Object.entries(FOLDER_SOURCES).map(([id,source])=>[id,folderSceneDefinition(id,source)]))} as typeof nativeDefinitions;
+/** Scenes that have no code: the folder scenes. */
+export const FOLDER_SCENE_IDS=Object.keys(FOLDER_SOURCES);
 export const SCENES=createSceneRegistry(NATIVE_SCENES,authored);
 export type SceneId = keyof typeof NATIVE_SCENES | (string & {readonly __sceneId:unique symbol});
 

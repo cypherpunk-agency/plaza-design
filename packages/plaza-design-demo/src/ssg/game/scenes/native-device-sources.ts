@@ -1,3 +1,5 @@
+import {FOLDER_SOURCES} from './folder-scenes';
+import {emptyDeviceSource} from '../engine/empty-data';
 import type {SceneData} from '../data/types';import type {Composition} from '../art';import type {SceneDocument} from '../engine/gameplay/scene-document';
 import s0data from './capsule/devices.json';
 import s0art from './capsule/composition.json';
@@ -77,4 +79,6 @@ export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Co
  train:{devices:s16data as unknown as SceneData,composition:s16art as unknown as Composition,scene:s16scene as unknown as SceneDocument},
  sandbox:{devices:s17data as unknown as SceneData,composition:s17art as unknown as Composition,scene:s17scene as unknown as SceneDocument},
  harborShift:{devices:s18data as unknown as SceneData,composition:s18art as unknown as Composition,scene:s18scene as unknown as SceneDocument},
+ // folder scenes (folder-scenes.ts) keep the same three documents in their folder
+ ...Object.fromEntries(Object.entries(FOLDER_SOURCES).map(([id,f])=>[id,{devices:(f.devices??emptyDeviceSource(id,(f.scene as SceneDocument).name)) as unknown as SceneData,composition:f.composition as Composition,scene:f.scene as SceneDocument}])),
 };
