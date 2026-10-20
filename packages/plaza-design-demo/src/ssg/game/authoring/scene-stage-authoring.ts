@@ -31,8 +31,18 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
   form.button(box,'Add '+key.slice(0,-1),()=>stageEdit('Add '+key,s=>{((s[key]??=[]) as unknown as T[]).push(fresh());}),list.length>=16);
  };
  sourceRows<StageLightSource>(form.section(host,'Lights'),'lights',stage.lights??[],(row,item,i)=>{
-  form.select(row,'Light style',['element','lamp'],item.style,v=>stageEdit('Edit light',s=>{s.lights![i].style=v as 'element'|'lamp';}));
-  if(item.style==='lamp')form.text(row,'Lamp colour (r,g,b)',item.color??'',v=>stageEdit('Edit light',s=>{if(v.trim())s.lights![i].color=v.trim();else delete s.lights![i].color;}));
+  form.select(row,'Light style',['element','lamp'],item.style,v=>stageEdit('Edit light',s=>{const l=s.lights![i];l.style=v as 'element'|'lamp';if(v==='element'){delete l.centre;delete l.lift;delete l.radius;delete l.tint;}}));
+  if(item.style==='lamp'){
+   form.text(row,'Lamp colour (r,g,b)',item.color??'',v=>stageEdit('Edit light',s=>{if(v.trim())s.lights![i].color=v.trim();else delete s.lights![i].color;}));
+   form.check(row,'Lamp hangs over the middle of the row',!!item.centre,on=>stageEdit('Edit light',s=>{if(on)s.lights![i].centre=true;else delete s.lights![i].centre;}));
+   form.decimal(row,'Lamp height above the row',item.lift??0,v=>stageEdit('Edit light',s=>{if(v)s.lights![i].lift=v;else delete s.lights![i].lift;}),-1000,1000);
+   form.decimal(row,'Lamp radius (0 = the row width)',item.radius??0,v=>stageEdit('Edit light',s=>{if(v>0)s.lights![i].radius=v;else delete s.lights![i].radius;}),0,2000);
+   form.text(row,'Colour by row property',item.tint?.prop??'',v=>stageEdit('Edit light',s=>{const l=s.lights![i];if(v.trim())l.tint={...(l.tint??{}),prop:v.trim()};else delete l.tint;}));
+   if(item.tint){
+    form.text(row,'No light when the property is',item.tint.without??'',v=>stageEdit('Edit light',s=>{const t=s.lights![i].tint!;if(v.trim())t.without=v.trim();else delete t.without;}));
+    form.text(row,'Colours by value (value=r,g,b; …)',Object.entries(item.tint.tints??{}).map(([k,c])=>k+'='+c).join('; '),v=>stageEdit('Edit light',s=>{const t=s.lights![i].tint!,pairs=v.split(';').map(p=>p.trim()).filter(Boolean).map(p=>[p.slice(0,p.indexOf('=')).trim(),p.slice(p.indexOf('=')+1).trim()] as const).filter(([k,c])=>k&&c);if(pairs.length)t.tints=Object.fromEntries(pairs);else delete t.tints;}));
+   }
+  }
  },()=>({type:types[0],style:'element'}));
  sourceRows<StageCasterSource>(form.section(host,'Shadow casters'),'casters',stage.casters??[],(row,item,i)=>{
   form.select(row,'Width from role',[none,...roles],item.widthRole??none,v=>stageEdit('Edit caster',s=>{if(v===none)delete s.casters![i].widthRole;else s.casters![i].widthRole=v;}));

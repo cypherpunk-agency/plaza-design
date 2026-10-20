@@ -23,6 +23,10 @@ import harborShiftComposition from './harbor-shift/composition.json';
 import harborShiftScene from './harbor-shift/scene.json';
 import harborShiftGameplay from './harbor-shift/gameplay.json';
 import harborShiftDevices from './harbor-shift/devices.json';
+import marketComposition from './market/composition.json';
+import marketScene from './market/scene.json';
+import marketGameplay from './market/gameplay.json';
+import marketDevices from './market/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -35,6 +39,7 @@ export const FOLDER_SOURCES={
  library:{composition:libraryComposition,scene:libraryScene,gameplay:libraryGameplay,devices:libraryDevices},
  mall:{composition:mallComposition,scene:mallScene,gameplay:mallGameplay,devices:mallDevices},
  harborShift:{composition:harborShiftComposition,scene:harborShiftScene,gameplay:harborShiftGameplay,devices:harborShiftDevices},
+ market:{composition:marketComposition,scene:marketScene,gameplay:marketGameplay,devices:marketDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */
 export const FOLDER_DIRS:Readonly<Record<string,string>>={harborShift:'harbor-shift'};

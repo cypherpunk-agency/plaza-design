@@ -1320,6 +1320,16 @@
         "instance": "exit-laundromat",
         "promptH": 92
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
     }
   },
   "environment": {
@@ -1352,5 +1362,24 @@
     "flags": {
       "exitOpen": "end"
     }
+  },
+  "stage": {
+    "lights": [
+      {
+        "type": "market.stall",
+        "style": "lamp",
+        "color": "255,200,120",
+        "centre": true,
+        "lift": 64,
+        "radius": 54,
+        "tint": {
+          "prop": "light",
+          "without": "none",
+          "tints": {
+            "tube": "235,240,255"
+          }
+        }
+      }
+    ]
   }
 }

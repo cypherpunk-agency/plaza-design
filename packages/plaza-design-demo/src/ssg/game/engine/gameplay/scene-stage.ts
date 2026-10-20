@@ -13,6 +13,12 @@ export interface StageLightSource {
  type?:string;role?:string;
  /** `element`: the row's own light fields (kind, radius, width, height, color, alpha); `lamp`: a lamp as wide as the row, in `color`. */
  style:'element'|'lamp';color?:string;
+ /** Lamp only: the lamp hangs over the middle of the row (its `width`) instead of at its start. */
+ centre?:boolean;
+ /** Lamp only: the lamp's height above the row's base, and its radius (default: the row's `width`). */
+ lift?:number;radius?:number;
+ /** Lamp only: the row's property `prop` picks the colour from `tints` (else `color`); rows whose property is `without` give no light. */
+ tint?:{prop:string;without?:string;tints?:Record<string,string>};
 }
 export interface StageCasterSource {type?:string;role?:string;
  /** An artwork role whose `width` (scaled) every caster takes. */
@@ -40,8 +46,11 @@ export function validateSceneStage(value:unknown):SceneStage{
  if(s.horizon!==undefined){const h=s.horizon as Record<string,unknown>;if(!object(h)||Object.keys(h).join()!=='role'||!name(h.role))fail('horizon');}
  if(s.shade!==undefined){const sh=s.shade as Record<string,unknown>;if(!object(sh)||Object.keys(sh).some(k=>k!=='front'))fail('shade');const fr=sh.front as Record<string,unknown>|undefined;if(fr!==undefined&&(!object(fr)||!name(fr.role)||fr.gapFrom!==undefined&&typeof fr.gapFrom!=='number'))fail('shade front');}
  const sources=(list:unknown,what:string,keys:string[])=>{if(list===undefined)return;if(!Array.isArray(list)||list.length>16)fail(what);for(const l of list as unknown[]){const r=l as Record<string,unknown>;if(!object(r)||Object.keys(r).some(k=>!keys.includes(k))||(r.type===undefined)===(r.role===undefined)||r.type!==undefined&&!name(r.type)||r.role!==undefined&&!name(r.role))fail(what);}};
- sources(s.lights,'lights',['type','role','style','color']);
- for(const l of (s.lights as StageLightSource[]|undefined)??[])if(l.style!=='element'&&l.style!=='lamp'||l.color!==undefined&&typeof l.color!=='string')fail('light style');
+ sources(s.lights,'lights',['type','role','style','color','centre','lift','radius','tint']);
+ for(const l of (s.lights as StageLightSource[]|undefined)??[]){if(l.style!=='element'&&l.style!=='lamp'||l.color!==undefined&&typeof l.color!=='string')fail('light style');
+  if(l.centre!==undefined&&typeof l.centre!=='boolean'||[l.lift,l.radius].some(n=>n!==undefined&&(typeof n!=='number'||!Number.isFinite(n)))||l.radius!==undefined&&l.radius<0)fail('light placement');
+  if((l.centre!==undefined||l.lift!==undefined||l.radius!==undefined||l.tint!==undefined)&&l.style!=='lamp')fail('light fields need the lamp style');
+  if(l.tint!==undefined){const t=l.tint as unknown as Record<string,unknown>;if(!object(t)||Object.keys(t).some(k=>!['prop','without','tints'].includes(k))||!name(t.prop)||t.without!==undefined&&typeof t.without!=='string'||t.tints!==undefined&&(!object(t.tints)||Object.values(t.tints).some(v=>typeof v!=='string')))fail('light tint');}}
  sources(s.casters,'casters',['type','role','widthRole']);
  return structuredClone(s) as SceneStage;
 }
@@ -54,8 +63,8 @@ export function stageContent(stage:SceneStage|undefined,rows:readonly Resolved[]
  if(stage.horizon){const r=roles[stage.horizon.role];if(r)out.horizon=r.placement.h;}
  const wall=stage.shade?.front?roles[stage.shade.front.role]:undefined;
  if(wall)out.shade={front:{h:wall.placement.h+Number(wall.props.height)*wall.placement.scale,gaps:[[stage.shade!.front!.gapFrom??-400,wall.placement.x]]}};
- if(stage.lights)out.lights=stage.lights.flatMap(src=>pick(rows,src).map((row):SceneLight=>{const p=row.props,at=row.placement;
-  return src.style==='lamp'?{x:at.x,h:at.h,kind:'lamp',r:Number(p.width),col:src.color}:{x:at.x,h:at.h,kind:p.kind as SceneLight['kind'],r:Number(p.radius)*at.scale,...(Number(p.width)?{w:Number(p.width)*at.scale}:{}),...(Number(p.height)?{hh:Number(p.height)*at.scale}:{}),...(p.color?{col:String(p.color)}:{}),...(Number(p.alpha)>=0?{a:Number(p.alpha)}:{})};}));
+ if(stage.lights)out.lights=stage.lights.flatMap(src=>pick(rows,src).filter(row=>src.tint?.without===undefined||String(row.props[src.tint.prop])!==src.tint.without).map((row):SceneLight=>{const p=row.props,at=row.placement;
+  return src.style==='lamp'?{x:at.x+(src.centre?Number(p.width)*at.scale/2:0),h:at.h+(src.lift??0),kind:'lamp',r:src.radius??Number(p.width),col:src.tint?.tints?.[String(p[src.tint.prop])]??src.color}:{x:at.x,h:at.h,kind:p.kind as SceneLight['kind'],r:Number(p.radius)*at.scale,...(Number(p.width)?{w:Number(p.width)*at.scale}:{}),...(Number(p.height)?{hh:Number(p.height)*at.scale}:{}),...(p.color?{col:String(p.color)}:{}),...(Number(p.alpha)>=0?{a:Number(p.alpha)}:{})};}));
  if(stage.casters)out.casters=stage.casters.flatMap(src=>{const width=src.widthRole?roles[src.widthRole]:undefined;if(src.widthRole&&!width)return[];return pick(rows,src).map((row):Caster=>({x:row.placement.x,h:row.placement.h,w:width?Number(width.props.width)*width.placement.scale:Number(row.props.width)*row.placement.scale}));});
  return out;
 }
