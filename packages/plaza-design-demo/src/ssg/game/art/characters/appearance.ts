@@ -87,7 +87,7 @@ export function lookFrom(seed: number, fix: Look = {}): Full {
     const r = rnd(seed + 5);
     return { ...legacyLook(seed, { body: pick(r, A.body), hair: pick(r, A.hair), garb: pick(r, A.garb), extras: [...(A.extras ?? [])], ...fix }), archetype: fix.archetype };
   }
-  return curatedLook(seed, fix, peopleStyle() === 'vivid');
+  return curatedLook(seed, fix, (fix.style ?? peopleStyle()) === 'vivid');
 }
 
 /** The kit before named looks (people style `legacy`): every part and colour at random. */

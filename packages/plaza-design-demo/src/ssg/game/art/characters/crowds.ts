@@ -1,14 +1,16 @@
 /**
  * District crowd mixes (art direction, 2026-10-20). Every district keeps ordinary people and adds
  * "kitted" ones: the same people with visible tech. The mix is one of the things that tells districts
- * apart, so it lives here as data: which named looks (art/characters/archetypes.ts) walk its streets and
+ * apart: which named looks (art/characters/archetypes.ts) walk its streets and
  * how often, how much of the crowd is kitted, what they do, and which robots share the street. Clothes
  * come from the district's palette (people-style.ts).
  *
- * Read by the editor's crowd lineup and style frames. Nothing in the running game reads it yet.
+ * The data lives in the People document (`people.json`, edited in Library › People; validated by
+ * `people-source.ts`). Read by the editor's crowd lineup and style frames. Nothing in the running game reads it yet.
  */
 import type {Act, Look} from '../../runtime/characters';
 import {ARCHETYPES, type ArchetypeId} from './archetypes';
+import PEOPLE from './people.json';
 
 type Weights<T extends string> = Partial<Record<T, number>>;
 export interface CrowdMix {
@@ -27,35 +29,10 @@ export interface CrowdMix {
  bots: Record<string, number>;
 }
 
-export const CROWD_MIXES: CrowdMix[] = [
- {district: 'downtown', note: 'Commuters, couriers and shift workers. Tech is common but cheap.', kitted: .4, robots: .15,
-  people: {commuter: 4, office: 2, courier: 2, reader: 1, student: 1, teen: 1, elder: 1, dockworker: 1, punk: .5, kid: .5},
-  acts: {walk: 4, stand: 2, phone: 2, queue: 1, smoke: 1, talk: 1, read: 1}, bots: {deliverybot: 2, sweeper: 1, courier: 1, marshal: 1, scandrone: 1}},
- {district: 'market', note: 'Vendors, hagglers and fixers. Most wear tech, mostly second-hand.', kitted: .6, robots: .15,
-  people: {vendor: 4, fixer: 3, punk: 1, commuter: 1, elder: 1, kid: 1, teen: 1, courier: 1},
-  acts: {haggle: 3, vend: 2, argue: 1, stand: 2, walk: 2, talk: 2}, bots: {adbot: 2, litterbot: 1, servbot: 1, busker: 1}},
- {district: 'galleria', note: 'Shoppers with money. Their tech is the kind you cannot see.', kitted: .1, robots: .25,
-  people: {shopper: 5, office: 2, plazastaff: 1, elder: .5, teen: .5},
-  acts: {walk: 4, stand: 2, phone: 1, talk: 2}, bots: {valet: 2, waiter: 1, marshal: 1, android: 1}},
- {district: 'harbor', note: 'Dockers and the Tide. Work gear, not fashion.', kitted: .35, robots: .25,
-  people: {dockworker: 5, tide: 3, courier: 1, elder: .5},
-  acts: {walk: 3, stand: 2, smoke: 2, lean: 1, talk: 1}, bots: {loader: 3, porter: 1, mech: 1}},
- {district: 'oldq', note: 'The old and the Ghosts. Almost nobody shows tech; that is the point.', kitted: .05, robots: .03,
-  people: {elder: 4, ghost: 2, reader: 1, kid: 1, vendor: 1, church: .5},
-  acts: {sit: 2, smoke: 1, talk: 2, stand: 2, walk: 2, read: 1}, bots: {cleaner: 1}},
- {district: 'undercity', note: 'The deleted. Salvaged tech, worn openly because nobody checks.', kitted: .3, robots: .1,
-  people: {drifter: 4, ghost: 1, sleeper: 1, punk: 1, teen: .5},
-  acts: {sit: 2, sleep: 1, lean: 2, stand: 2, talk: 1, doze: 1}, bots: {wreck: 1, crawler: 1, litterbot: 1}},
- {district: 'spire', note: 'Very few people, none showing tech. Robots outnumber them.', kitted: 0, robots: .6,
-  people: {office: 3, plazastaff: 2, shopper: 1, church: 1},
-  acts: {walk: 3, stand: 2, phone: 1}, bots: {android: 2, valet: 1, marshal: 1, servbot: 1, scandrone: 1}},
- {district: 'fringe', note: 'Machines only, and the odd technician in a mask.', kitted: .5, robots: .8,
-  people: {technician: 4, dockworker: 1},
-  acts: {walk: 2, stand: 2, sweep: 1}, bots: {loader: 2, mech: 1, crawler: 1, sweeper: 1}},
- {district: 'skyport', note: 'Guards and ground crew behind the fence.', kitted: .45, robots: .4,
-  people: {guard: 3, technician: 2, office: 1, courier: 1},
-  acts: {walk: 2, stand: 3, talk: 1}, bots: {marshal: 2, porter: 1, valet: 1}},
-];
+/** The mixes in the People document (`people.json`, Library › People); the editor swaps in pending edits. */
+export const CROWD_MIXES: CrowdMix[] = structuredClone(PEOPLE.crowds) as unknown as CrowdMix[];
+/** Replaces the mixes in place (everyone holding CROWD_MIXES sees the new ones). */
+export function setCrowdMixes(mixes: readonly CrowdMix[]) { CROWD_MIXES.splice(0, CROWD_MIXES.length, ...structuredClone(mixes) as CrowdMix[]); }
 export const crowdMix = (district: string) => CROWD_MIXES.find(m => m.district === district);
 
 export type CrowdMember =

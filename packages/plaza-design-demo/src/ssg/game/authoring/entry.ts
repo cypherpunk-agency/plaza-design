@@ -81,6 +81,8 @@ import { mountSourceViewer } from './source-viewer';
 
 
 import { mountSignageWorkbench } from './signage-workbench';
+import { applyPeople, validatePeople } from '../art/characters/people-source';
+import { mountPeopleAuthoring } from './people-authoring';
 
 
 
@@ -173,6 +175,7 @@ async function start() {
       if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,new Map(documents.map(d=>[d.id,d.value])));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
       if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(new Map(documents.map(d=>[d.id,d.value]))));}
+      if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroSource(document.value);}
       if(document.kind==='city')validatePendingCity(document.value,new Map(documents.map(d=>[d.id,d.value])));
       if(document.kind==='conversations'){if(document.id!=='bot-reactions')throw new Error('Unsupported conversation library');validateBotReactions(document.value);}
@@ -222,6 +225,7 @@ async function start() {
         unsupported:'Play runs scenes whose starting state can be set up in the editor. This scene is not one of them yet; play it in the game build instead.',
         mount:(host,context)=>mountPlayWorkbench(host,context,playSelection,false,context.scene==='demo-manifest')},
       {id:'demo-world',area:'labs',label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true)},
+      {id:'people',area:'library',label:'People',title:'People defaults and district crowd mixes',authoring:true,documentDependent:true,primaryDocumentId:'people',mount:mountPeopleAuthoring},
       { id: 'characters', area: 'library', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
 
       { id: 'style-frames', area: 'library', beside: true, label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
@@ -246,7 +250,7 @@ async function start() {
 
     ],
 
-    preview: { render: (canvas, request) => sequences.render(canvas, request) ?? native.render(canvas, request) },
+    preview: { render: (canvas, request) => { if (request.documents?.has('people')) applyPeople(request.documents.get('people')); return sequences.render(canvas, request) ?? native.render(canvas, request); } },
 
     inspector: (scene, instance, documents) => inspectorSections(scene, instance, documents),
 

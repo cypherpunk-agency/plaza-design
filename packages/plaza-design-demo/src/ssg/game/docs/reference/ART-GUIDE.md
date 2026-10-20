@@ -69,15 +69,20 @@ Algorithm, Tide, kid, teen, shopper, technician, guard, fixer, drifter, and the 
 (commuter with phone, reader with paper, sleeper), which keep the old hand-drawn riders' silhouettes.
 An archetype fixes the parts that make it recognisable; the seed varies build, colours and minor
 parts; a scene's own parts still win (`look: { archetype: 'elder', hair: 'beanie' }`). A seed with no
-look and no fixed parts is an everyday archetype. Crowd mixes (`crowds.ts`) are weighted archetypes per
+look and no fixed parts is an everyday archetype. Crowd mixes (`people.json`, sampled by `crowds.ts`) are weighted archetypes per
 district, keeping the plain vs kitted share. Colours are curated (`people-style.ts`): a wide realistic
 skin range, natural, grey and dyed hair, and a clothing palette per district; a top and its trousers
 are kept apart in lightness. Tech extras (AR glasses with a glint, respirator, lit wrist screen, LED
-trim, earpiece light, exo-brace) use one warm tech light per person, never cyan. Two review switches
-live in `people-style.ts` and in Library › Characters: **people style** `muted` (default: everyday
-colours, ordinary clothes plus one or two pieces of tech), `vivid` (stronger colour per person) or
-`legacy` (the kit before named looks); **seated** `front` (default), `threeQuarter` or `side` for
-everyone sitting on a bench or a seat that faces the camera (a person's `sitView` overrides it). The
+trim, earpiece light, exo-brace) use one warm tech light per person, never cyan. The game-wide defaults and
+the district crowd mixes live in the People document (`art/characters/people.json`, edited in
+Library › People, validated by `people-source.ts`). Two switches, saved there and previewable without
+saving in Library › Characters: **people style** `vivid` (default, Tommi's pick:
+ordinary clothes plus one or two pieces of tech, stronger colour per person), `muted` (everyday
+colours; a quieter scene sets `look: { style: 'muted' }` on its people) or `legacy` (the kit before
+named looks); **seated** `mixed` (default: each person sitting on a bench or a seat that faces the
+camera picks front, three-quarter or side and shifts to another every 12 to 26 seconds), or `front`,
+`threeQuarter` or `side` for everyone, for review (a person's `sitView` fixes one pose). Per person, the
+Scene inspector's Behaviour tab sets colour style, district palette, visible tech, seated and sitting pose. The
 act `wait` stands facing the camera (a queue seen from the front). Characters › Archetypes shows
 every look; Crowd › Show 30 samples thirty people of a district and marks near-duplicates.
 

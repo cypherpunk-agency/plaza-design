@@ -77,7 +77,7 @@ import type { TimeWindow } from "../data/types";
 import type {WeatherKind} from "../world/weather";
 import type { BODY_KINDS, HAIR_KINDS, GARB_KINDS, EXTRA_KINDS } from "../art/characters/parts";
 import type { ArchetypeId, Facial } from "../art/characters/archetypes";
-import { peopleRevision, seatedView, type SeatedView } from "../art/characters/people-style";
+import { peopleRevision, seatedView, sittingView, type SitPose } from "../art/characters/people-style";
 
 /** Parts (art/characters/parts.ts lists them once). */
 export type Body = typeof BODY_KINDS[number];
@@ -117,6 +117,8 @@ export interface Look {
   archetype?: ArchetypeId;
   /** Whose clothing palette (a world/city.json district id); default the city's. */
   district?: string;
+  /** This person's colour style, instead of the people-style switch (a quieter scene sets 'muted'). */
+  style?: 'muted' | 'vivid';
   /** Shows visible tech (one or two pieces). Default: the archetype's chance. */
   kitted?: boolean;
   body?: Body; hair?: Hair; garb?: Garb; extras?: Extra[]; facial?: Facial;
@@ -159,8 +161,8 @@ export interface Character {
   gap?: number;
   /** Do the act sitting down (bench, train seat): read, phone, doze, stand. */
   seated?: boolean;
-  /** How this person sits (front, three-quarter or side on), instead of the people-style `seated` switch. */
-  sitView?: SeatedView;
+  /** How this person always sits (front, three-quarter or side on), instead of the people-style `seated` switch. */
+  sitView?: SitPose;
   /** A robot's status light, drawn live over its sprite (state-driven: green, red). CSS colour. */
   light?: string;
   /** The scan beam of a scanning drone (act 'scan'). */
@@ -260,8 +262,12 @@ function frameOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
   if (R.bot || R.critter) return f;
   // seated: an in-place act done sitting down
   if (p.seated && f.legs !== 'lie' && !f.moving) f.legs = 'sit';
-  // sitting on a bench or a seat that faces the camera: the people-style switch (or the person's own sitView)
-  if (f.legs === 'sit') { const view = p.sitView ?? seatedView(); if (view !== 'side') f.legs = view === 'front' ? 'sitFront' : 'sit3q'; }
+  // sitting on a bench or a seat that faces the camera: the person's own sitView, else the people-style switch
+  // (`mixed`: their own pose, changing now and then)
+  if (f.legs === 'sit') {
+    const sw = seatedView(), view = p.sitView ?? (sw === 'mixed' ? sittingView(R.seed, t) : sw);
+    if (view !== 'side') f.legs = view === 'front' ? 'sitFront' : 'sit3q';
+  }
   return f;
 }
 function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {

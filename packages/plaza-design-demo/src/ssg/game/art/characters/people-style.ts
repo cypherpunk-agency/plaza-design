@@ -2,24 +2,30 @@
  * PEOPLE STYLE: the two review switches for the people kit, and its curated colours.
  *
  * - `style`: how a seeded person is coloured and dressed.
- *   `muted` (default): realistic everyday colours from the district's clothing palette; ordinary
- *   clothes plus one or two pieces of tech (art direction 2026-10-20).
- *   `vivid`: the same people with stronger colour, one bold piece each.
+ *   `vivid` (default, Tommi's pick 2026-10-20): ordinary clothes plus one or two pieces of tech, in
+ *   stronger colour, one bold piece each.
+ *   `muted`: the same people in realistic everyday colours from the district's clothing palette. A
+ *   scene that wants a quieter crowd sets `style: 'muted'` on those people's looks.
  *   `legacy`: the kit before named looks: fully random parts and colours (kept for comparison).
- * - `seated`: how people sit on benches and train seats that face the camera: `front` (default),
- *   `threeQuarter` (turned a little toward where they face) or `side` (the profile pose).
+ * - `seated`: how people sit on benches and train seats that face the camera. `mixed` (default): each
+ *   person picks front, three-quarter or side and now and then shifts to another (`sittingView`).
+ *   `front`, `threeQuarter` or `side` put everyone in that one pose, for review.
  *   A person's own `sitView` wins over it.
  *
- * The game never changes them; the Characters workbench (Library › Characters) does, live, for review.
+ * The game's defaults come from the People document (`people.json`, edited in Library › People). The
+ * Characters workbench (Library › Characters) changes them live for review without saving.
  * Changing a switch bumps `peopleRevision()`, which re-dresses every person on their next draw.
  */
+import PEOPLE from './people.json';
 
-export const PEOPLE_STYLES = ['muted', 'vivid', 'legacy'] as const;
+export const PEOPLE_STYLES = ['vivid', 'muted', 'legacy'] as const;
 export type PeopleStyle = typeof PEOPLE_STYLES[number];
-export const SEATED_VIEWS = ['front', 'threeQuarter', 'side'] as const;
+export const SEATED_VIEWS = ['mixed', 'front', 'threeQuarter', 'side'] as const;
 export type SeatedView = typeof SEATED_VIEWS[number];
+/** The poses a seated person can be in. */
+export type SitPose = Exclude<SeatedView, 'mixed'>;
 
-const settings: { style: PeopleStyle; seated: SeatedView } = { style: 'muted', seated: 'front' };
+const settings: { style: PeopleStyle; seated: SeatedView } = { style: PEOPLE.style as PeopleStyle, seated: PEOPLE.seated as SeatedView };
 let revision = 0;
 
 export const peopleStyle = (): PeopleStyle => settings.style;
@@ -28,6 +34,27 @@ export const seatedView = (): SeatedView => settings.seated;
 export const peopleRevision = () => revision;
 export function setPeopleStyle(style: PeopleStyle) { if (settings.style !== style) { settings.style = style; revision++; } }
 export function setSeatedView(view: SeatedView) { if (settings.seated !== view) { settings.seated = view; revision++; } }
+
+/** How often each pose comes up: front and three-quarter twice as often as side on. */
+const SIT_WEIGHTS: readonly [SitPose, number][] = [['front', 2], ['threeQuarter', 2], ['side', 1]];
+/** Frames a seated person holds a pose: 12 to 26 seconds at 60 fps, different for everyone. */
+const SIT_HOLD = 720, SIT_HOLD_SPREAD = 840;
+const mix = (a: number, b: number) => { let h = Math.imul(a ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(b + 0x632be5ab, 0xc2b2ae35); h ^= h >>> 15; h = Math.imul(h, 0x2c1b3c6d); h ^= h >>> 12; return (h >>> 0) / 4294967296; };
+/** The weighted pose for a person's `n`th hold, never the one before it. */
+function poseAt(seed: number, n: number, prev?: SitPose): SitPose {
+  const rows = SIT_WEIGHTS.filter(([p]) => p !== prev), total = rows.reduce((a, [, w]) => a + w, 0);
+  let x = mix(seed, n) * total; for (const [p, w] of rows) if ((x -= w) < 0) return p; return rows[0][0];
+}
+
+/**
+ * Where a seated person is looking at frame `t` under the `mixed` switch: a pose from their seed, held
+ * for a while, then a shift to another. Deterministic, so a paused picture and a replay agree.
+ */
+export function sittingView(seed: number, t: number): SitPose {
+  const hold = SIT_HOLD + (seed * 37) % SIT_HOLD_SPREAD, k = Math.floor((t + (seed * 131) % hold) / hold);
+  // the previous hold's pose only depends on its own number, so neighbours differ without a chain back to 0
+  return poseAt(seed, k, poseAt(seed, k - 1));
+}
 
 // ---------- colours ----------
 

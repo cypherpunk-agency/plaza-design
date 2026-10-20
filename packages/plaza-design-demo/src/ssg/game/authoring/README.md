@@ -81,8 +81,10 @@ The tab row has Scene and Logic, plus Library, World and Labs. Play runs on the 
   district's crowd mix (`art/characters/crowds.ts`: plain vs kitted people, named looks, acts, robots)
   across the back, play and near rows; **Show 30** samples thirty of its people and marks near-duplicates.
   **Archetypes** lists every named look (`art/characters/archetypes.ts`) standing and seated. The
-  **People style** (muted, vivid, legacy) and **Seated** (front, threeQuarter, side) selects switch every
-  person in the editor for comparison (`art/characters/people-style.ts`; the game uses muted and front). **Style frames** pairs each district's card (`style-frames.ts`:
+  **People style** (vivid, muted, legacy) and **Seated** (mixed, front, threeQuarter, side) selects switch every
+  person in the editor for comparison without saving. **People** edits what the game uses: the default
+  colour style and seated pose, and each district's crowd mix (named looks, actions and robots with weights,
+  visible-tech and robot shares), saved to `art/characters/people.json`. **Style frames** pairs each district's card (`style-frames.ts`:
   proposed palette, light, materials, signage, landmark, crowd) with its scenes rendered at a chosen
   time, weather and camera. All three are read-only previews of the 2026-10-20 art direction.
 - **Proposal scenes** (`proposal-scenes.ts`) are editor-only redraws of an existing scene with their own
