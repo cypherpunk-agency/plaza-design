@@ -1,7 +1,8 @@
 /** Shared world artwork extracted without changing drawing bodies. */
 import type { View } from '../core/view';
 import { box, C, O, onScreen, sign, tell } from '../core/primitives';
-import { drawCab } from '../vehicles/cab';
+import { drawCab } from '../vehicles/air-traffic';
+import { bobAt } from '../vehicles/kit';
 
 
 
@@ -25,5 +26,5 @@ export function drawTaxiPad(x: CanvasRenderingContext2D, v: View, wx: number) {
   x.fillStyle = 'rgba(' + C + ',.35)'; x.fillRect(s - 34, y(51), 6, 4);
   tell(x, t, s - 31, y(44), 1);
   // a cab waiting over the pad, beside where you stand to hail it
-  drawCab(x, s + 28, y(20 + Math.sin(t * 0.04) * 2), 1, t);
+  drawCab(x, s + 28, y(20 + bobAt(t, 2, 0.04)), 1, t);
 }

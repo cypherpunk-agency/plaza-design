@@ -1,34 +1,16 @@
 /** Independent Downtown electronics kernels. Visual snapshots never read a scene model. */
 import type { View } from '../core/view';
 import { box,C,GREEN,RED,sign,tell,text } from '../core/primitives';
+import { neonPlate } from '../signage/kit';
+import { drawDriven, type Character } from '../../runtime/characters';
+/** DLV-9 is the kit's kerb delivery robot; the device keeps its cyan port, its label and its state. */
+const DLV9: Character = { seed: 9, look: { bot: 'deliverybot', paint: '#3a3e44', trim: '#d86a1a', v: 0, wear: 0.3 }, x: 0, ps: 2 };
 export interface DowntownDeviceState { controlled:boolean;gateHeld:boolean;lock:string;scanned:boolean;feed:string;dlvAt:string;trace:number;signTestMs:number;signSince:number;visible:boolean;hoverSpot:{x:number;y:number;w:number;h:number}|null }
 const live = (t: number, i: number) => (t + i * 13) % 50 < 25;
-function verticalNeon(x: CanvasRenderingContext2D, t: number, s: string, cx: number, top: number, dead: number, lit: number | null) {
-  const size = 12;
-  x.save();
-  x.font = '600 ' + size + 'px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  const flick = lit === null && t % 240 > 232 && Math.floor(t) % 4 < 2;
-  [...s].forEach((ch, i) => {
-    const off = flick || i === dead || (lit !== null && i !== lit);
-    x.fillStyle = 'rgba(' + C + ',' + (off ? 0.13 : 0.95) + ')';
-    x.shadowColor = 'rgba(' + C + ',.9)'; x.shadowBlur = off ? 0 : 8;
-    x.fillText(ch, cx, top + i * (size + 2));
-  });
-  x.restore();
-}
-function plate(x: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, col: string) {
-  const x0 = Math.round(cx - w / 2), y0 = Math.round(cy - h / 2), r = Math.max(w, h) * 0.75;
-  const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
-  g.addColorStop(0, 'rgba(' + col + ',.1)'); g.addColorStop(1, 'rgba(' + col + ',0)');
-  x.fillStyle = g; x.fillRect(cx - r, cy - r, r * 2, r * 2);
-  box(x, x0, y0, w, h, '#080403', 'rgba(' + col + ',.4)');
-  x.fillStyle = 'rgba(255,217,165,.45)';
-  for (const [px, py] of [[x0 + 2, y0 + 2], [x0 + w - 3, y0 + 2], [x0 + 2, y0 + h - 3], [x0 + w - 3, y0 + h - 3]]) x.fillRect(px, py, 1, 1);
-}
 export function drawDeviceSign(x: CanvasRenderingContext2D, v: View, wx: number, state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};if (seen(wx)) {
     const s = sx(wx), ms = state.signTestMs, since = state.signSince;
-    plate(x, s, y(114), 20, 90, C);
-    verticalNeon(x, t, 'VERIFY', s, y(150), 1, since < ms ? Math.floor((since / ms) * 6) : null);
+    // the hackable sign: a vertical neon plate; under test, one letter at a time sweeps down it
+    neonPlate(x, t, s, y(114), { text: 'VERIFY', col: C, size: 12, w: 20, h: 90, vertical: true, dead: 1, lit: since < ms ? Math.floor((since / ms) * 6) : null });
   }}
 export function drawDeviceBox(x: CanvasRenderingContext2D, v: View, wx: number, state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};const leds=(lx:number,ly:number,n:number,ok:boolean)=>{for(let i=0;i<n;i++){x.fillStyle=live(t,i)?(ok?'rgba(34,197,94,.95)':'rgba(255,42,68,.95)'):'rgba(34,197,94,.18)';x.fillRect(lx+i*6,ly,3,2);}};if (seen(wx)) {
     const s = sx(wx);
@@ -107,14 +89,12 @@ export function drawDeviceBillboard(x: CanvasRenderingContext2D, v: View, wx: nu
     }
   }}
 export function drawDeviceDlv9(x: CanvasRenderingContext2D, v: View, wx: number, state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};if (state.visible && seen(wx)) {
-    const s = sx(wx), rolling = state.dlvAt === 'driving', bump = rolling ? Math.round(Math.sin(t * 0.6)) : 0;
-    box(x, s - 11, y(24) + bump, 22, 16, '#1c2226', 'rgba(255,136,0,.7)');
-    box(x, s - 9, y(21) + bump, 10, 6, '#0e1214', 'rgba(255,217,165,.35)');
-    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillRect(s + 4, y(20) + bump, 4, 2);
-    x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(s + 7, y(30) + bump, 1, 6);
-    x.fillStyle = live(t, 2) ? 'rgba(255,170,60,.95)' : 'rgba(255,170,60,.3)'; x.fillRect(s + 6, y(31) + bump, 3, 2);
-    for (const wx of [-7, 5]) { x.fillStyle = '#0a0a0a'; x.fillRect(s + wx, y(8), 6, 6); x.fillStyle = 'rgba(255,217,165,.4)'; x.fillRect(s + wx + 2, y(6) + (rolling ? Math.floor(t / 4) % 2 : 0), 2, 2); }
-    text(x, 'DLV-9', s - 4, y(14) + bump, 'rgba(255,217,165,.75)', 5, '600');
+    const s = sx(wx), rolling = state.dlvAt === 'driving';
+    drawDriven(x, v, DLV9, { x: wx, moving: rolling, act: rolling ? 'roll' : 'stand' });
+    // the device's own marks over the kit body: its cyan port (you can use it), the beacon on the flag, its label
+    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillRect(s + 6, y(9), 2, 2);
+    x.fillStyle = live(t, 2) ? 'rgba(255,170,60,.95)' : 'rgba(255,170,60,.3)'; x.fillRect(s - 10, y(28), 2, 2);
+    text(x, 'DLV-9', s - 2, y(8), 'rgba(255,217,165,.75)', 5, '600');
   }}
 export function drawDeviceMap(x: CanvasRenderingContext2D, v: View, wx: number, _state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};if (seen(wx)) {
     const s = sx(wx);

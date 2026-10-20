@@ -7,6 +7,7 @@ import { type View } from "../../scenes/kit";
 
 import type { RiderKind } from "../characters/riders";
 import { box,O,onScreen,PAPER,RED,rng,tell,text } from "../core/primitives";
+import { nameplate } from "../signage/kit";
 
 
 export interface MetroLayout { width: number; spawn: number; canopy: { under: number; fascia: number; truss: number; }; deck: number; horizon: number; signs: number[]; cityMap: number; pillars: { x: number; cam?: boolean; }[]; lamps: number[]; board: number; benches: { x: number; who?: RiderKind; }[]; pierStep: number; boardAt: number; screen: number; waiting: number[]; }
@@ -84,13 +85,7 @@ function drawPillar(x: CanvasRenderingContext2D, v: View, p: { x: number; cam?: 
 
 /** The station's name on a plate hung from the roof. */
 function drawSign(x: CanvasRenderingContext2D, v: View, wx: number) {
-  const { y } = v, s = v.sx(wx), C = L.canopy;
-  if (!onScreen(v, s - 60, 120)) return;
-  x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s - 40, y(C.under), 1, C.under - 152); x.fillRect(s + 39, y(C.under), 1, C.under - 152);
-  box(x, s - 52, y(152), 104, 20, '#0e0a08', 'rgba(' + O + ',.75)');
-  box(x, s - 49, y(149), 16, 14, 'rgba(' + O + ',.85)');
-  text(x, '0', s - 41, y(142), '#0e0a08', 9, '700');
-  text(x, 'DOWNTOWN', s + 8, y(142), 'rgba(' + PAPER + ',.92)', 9, '600');
+  nameplate(x, v, v.sx(wx), 152, 'DOWNTOWN', L.canopy.under);
 }
 
 

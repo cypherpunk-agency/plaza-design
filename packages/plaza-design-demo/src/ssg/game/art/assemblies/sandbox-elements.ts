@@ -6,6 +6,7 @@ import type { Anchor,Bounds,Element,Field,Placement,Properties,Value } from '../
 import type { View } from '../core/view';
 import { exitDoor,notice,onScreen,text } from '../core/primitives';
 import { camera,ticker } from '../signage/screens';
+import { ALARM } from '../signage/kit';
 const num=(label:string,value:number,min=-10000):Field=>({kind:'number',label,default:value,min,max:10000,step:1});
 const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
 const n=(p:Properties,k:string)=>Number(p[k]);
@@ -272,7 +273,7 @@ element('test-card','QA test card','signage',{number:num('Station number',1,1)},
 element('workbench','QA machine workbench','furniture',{width:num('Width',100,1),height:num('Height',28,4)},p=>box(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>kernel(s).bench(x,raised(v,at.h),at.x,at.x+n(p,'width'),n(p,'height')),p=>({origin,top:{x:0,h:n(p,'height'),role:'surface'}})),
 element('door','QA exit door','architecture',{},()=>box(36,74,-18),(x,v,_p,_s,at)=>exitDoor(x,raised(v,at.h),at.x,'#0a0705','< EXIT'),()=>({origin,entrance:{...origin,role:'entrance'}})),
 element('plan','QA test plan notice','signage',{},()=>({x:-23,h:0,w:46,tall:30}),(x,v,_p,_s,at)=>notice(x,v.t,v.sx(at.x),v.y(at.h),46,30,['TEST','PLAN'])),
-element('ticker','QA scrolling information','signage',{width:num('Width',150,1),text:str('Text'),speed:num('Scroll speed',.4,0)},p=>box(n(p,'width'),10),(x,v,p,_s,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,mount:'wall',text:String(p.text),col:'255,90,70',speed:n(p,'speed')})),
+element('ticker','QA scrolling information','signage',{width:num('Width',150,1),text:str('Text'),speed:num('Scroll speed',.4,0)},p=>box(n(p,'width'),10),(x,v,p,_s,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,mount:'wall',text:String(p.text),col:ALARM,speed:n(p,'speed')})),
 element('camera','QA surveillance camera','electronics',{phase:num('Idle phase',3),direction:{kind:'select',label:'Direction',default:1,options:[-1,1]}},()=>box(28,16,-14),(x,v,p,_s,at)=>camera(x,v,{x:at.x,h:at.h,facing:n(p,'direction') as 1|-1,phase:n(p,'phase')})),
 element('window-back','QA window sky, skyline and weather','architecture',windowFields,p=>box(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>windowKernel(p,at,s).windowBack(x,v,new SandboxViewState(s))),
 element('window-front','QA window frame and sill','architecture',windowFields,p=>box(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>windowKernel(p,at,s).windowFront(x,v)),

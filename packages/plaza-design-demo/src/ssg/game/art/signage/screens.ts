@@ -12,7 +12,9 @@
  *
  * Screens:
  *   ticker        a strip of scrolling text (`text`, `col`, `speed`)
- *   adScreen      cycles ads (`ads`, default a few from ADS by `seed`), with a wipe between them
+ *   adScreen      cycles ads (`ads`, default a few from ADS by `seed`), with a wipe between them;
+ *                 `rec`, `scan`, `tell`, `size`, `wipe` serve the Registry's own screens
+ *   sloganScreen  the Registry's platform/train screen: SLOGANS, pale letters, REC light
  *   brokenScreen  dead pixels, a crack, static, the ghost of an old ad (`ghost`)
  *   camera        a surveillance camera with a blinking red light; `pole: true` stands it on its own pole
  *   registryBoard the Registry's official notice board: seal, printed notices, a compliance strip
@@ -29,14 +31,15 @@
  *   billboard     a big ad on a steel frame with lamps, for rooftops and the middle band
  *   taped         a hand-written paper note taped on, slightly crooked (`text` lines)
  *
- * Copy pools: ADS, NOTICES, TICKER, CRIMES. The world's text is DRY: bureaucratic, deadpan, specific
+ * Copy pools: ADS, NOTICES, TICKER, CRIMES, SLOGANS. Plates, scrolls and printed signs: kit.ts. The world's text is DRY: bureaucratic, deadpan, specific
  * ("IDENTITY CHECK AHEAD", "RENT DUE 03:00"). No puns or winks on signs; the dystopia is in what it
  * plainly states. Jokes belong in people's mouths (their `talk`), never on a sign.
  */
 
 import { drawPortrait } from "../characters/appearance";
 import { type View } from '../core/view';
-import { box, GREEN, mono, O, onScreen, PAPER, RED, rng, sign, text } from '../core/primitives';
+import { box, GREEN, mono, O, onScreen, PAPER, RED, rng, sign, tell, text } from '../core/primitives';
+import { recLight, scroll } from './kit';
 
 export const YELLOW = '255,210,58';
 
@@ -145,17 +148,26 @@ function clip(x: CanvasRenderingContext2D, r: Rect) { x.save(); x.beginPath(); x
 export function ticker(x: CanvasRenderingContext2D, v: View, m: Mounted & { text: string; col?: string; speed?: number }) {
   const col = m.col ?? O, r = housing(x, v, m, col);
   if (!r) return;
-  const s = m.text + '   ·   ';
-  clip(x, r);
-  x.font = mono(Math.min(9, r.h - 3), '600'); x.textBaseline = 'middle'; x.fillStyle = rgba(col, 0.92);
-  const tw = x.measureText(s).width, off = ((v.t * (m.speed ?? 0.5) + (m.phase ?? 0)) % tw);
-  for (let k = -1; k < 3; k++) { const tx = r.l + r.w - off + (k - 1) * tw; if (tx < r.l + r.w && tx + tw > r.l) x.fillText(s, tx, r.t + r.h / 2 + 0.5); }
-  x.restore();
+  scroll(x, v.t, m.text + '   ·   ', r.l, r.t + r.h / 2 + 0.5, r.w, { col, alpha: 0.92, speed: m.speed ?? 0.5, phase: m.phase ?? 0, size: Math.min(9, r.h - 3), tall: r.h + 1 });
   glass(x, r);
 }
 
+/** Options shared by the paging screens (ads, the Registry's slogans). */
+export interface PagingScreen {
+  ads?: string[][]; period?: number; cols?: string[];
+  /** Fixed letter size (default: the largest that fits, 7–11). */
+  size?: number;
+  /** The wipe between pages (default true). */
+  wipe?: boolean;
+  /** A red REC light in the top-right corner: the Registry's screens record. */
+  rec?: boolean;
+  /** A slow bright line running down the glass. */
+  scan?: boolean;
+  /** The cyan tell under the bottom-left corner: its phase (a screen you can use). */
+  tell?: number;
+}
 /** Cycles ads with a wipe; a dead row of pixels now and then. */
-export function adScreen(x: CanvasRenderingContext2D, v: View, m: Mounted & { ads?: string[][]; period?: number; cols?: string[] }) {
+export function adScreen(x: CanvasRenderingContext2D, v: View, m: Mounted & PagingScreen) {
   const R = rng(m.seed ?? Math.round(m.x)), ads = m.ads ?? [ADS[Math.floor(R() * ADS.length)], ADS[Math.floor(R() * ADS.length)], ADS[Math.floor(R() * ADS.length)]];
   const cols = m.cols ?? [PAPER, O, RED, YELLOW, GREEN];
   const period = m.period ?? 260, u = v.t + (m.phase ?? 0), k = Math.floor(u / period) % ads.length, f = (u % period) / period;
@@ -165,11 +177,21 @@ export function adScreen(x: CanvasRenderingContext2D, v: View, m: Mounted & { ad
   clip(x, r);
   x.fillStyle = rgba(col, 0.1); x.fillRect(r.l, r.t, r.w, r.h);
   const lines = ads[k], longest = Math.max(...lines.map((l) => l.length));
-  const size = Math.max(7, Math.min(11, Math.floor((r.h - 6) / lines.length) - 1, Math.floor((r.w - 6) / (longest * 0.62))));
+  const size = m.size ?? Math.max(7, Math.min(11, Math.floor((r.h - 6) / lines.length) - 1, Math.floor((r.w - 6) / (longest * 0.62))));
   lines.forEach((ln, i) => text(x, ln, r.l + r.w / 2, r.t + r.h / 2 + (i - (lines.length - 1) / 2) * (size + 2), rgba(col, 0.95), size, '600'));
-  if (f > 0.93) { x.fillStyle = rgba(col, 0.6); x.fillRect(r.l, r.t, Math.round(r.w * (f - 0.93) / 0.07), r.h); }
+  if (m.scan) { x.fillStyle = rgba(col, 0.06); x.fillRect(r.l, Math.round(r.t + ((v.t * 0.4) % r.h)), r.w, 2); }
+  if (m.wipe !== false && f > 0.93) { x.fillStyle = rgba(col, 0.6); x.fillRect(r.l, r.t, Math.round(r.w * (f - 0.93) / 0.07), r.h); }
   x.restore();
   glass(x, r);
+  if (m.rec) recLight(x, v.t, r.l + r.w - 5, r.t + 3);
+  if (m.tell !== undefined) tell(x, v.t, r.l + 3, r.t + r.h - 3, m.tell);
+}
+
+/** What the Registry's screens say on platforms and trains, a pair of lines at a time. */
+export const SLOGANS: string[][] = [['COMPLIANCE', 'IS COMFORT'], ['REGISTRY ID', 'REQUIRED'], ['ALL JOURNEYS', 'ARE RECORDED'], ['REPORT', 'IRREGULARITIES'], ['STAND BEHIND', 'THE LINE']];
+/** The Registry's slogan screen: pale letters, a scan line, a REC light; pages every three seconds, no wipe. */
+export function sloganScreen(x: CanvasRenderingContext2D, v: View, m: Mounted & PagingScreen) {
+  adScreen(x, v, { ads: SLOGANS, cols: ['255,205,175'], period: 180, size: 7, wipe: false, rec: true, scan: true, ...m });
 }
 
 /** A screen nobody fixes. */
@@ -334,18 +356,18 @@ export function wallSign(x: CanvasRenderingContext2D, v: View, s: { x: number; h
   x.fillStyle = 'rgba(160,120,90,.6)'; x.fillRect(Math.round(cx - w / 2) + 2, Math.round(cy - size / 2 - 2), 1, 1); x.fillRect(Math.round(cx + w / 2) - 3, Math.round(cy - size / 2 - 2), 1, 1);
 }
 
-/** A vertical sign on a bracket out of a wall: letters top to bottom. */
-export function bladeSign(x: CanvasRenderingContext2D, v: View, s: { x: number; h: number; text: string; col?: string; parallax?: number; dim?: number; phase?: number; dead?: number }) {
-  const cx = v.sx(s.x, s.parallax ?? 1), top = v.y(s.h), n = s.text.length, col = s.col ?? O, a = s.dim ?? 1;
+/** A vertical sign on a bracket out of a wall: letters top to bottom, `size` (default 9) and `size + 2` apart. */
+export function bladeSign(x: CanvasRenderingContext2D, v: View, s: { x: number; h: number; text: string; col?: string; size?: number; parallax?: number; dim?: number; phase?: number; dead?: number }) {
+  const cx = v.sx(s.x, s.parallax ?? 1), top = v.y(s.h), n = s.text.length, col = s.col ?? O, a = s.dim ?? 1, size = s.size ?? 9, pitch = size + 2;
   if (!onScreen(v, cx - 16, 32)) return;
-  x.fillStyle = METAL; x.fillRect(cx - 16, top + 4, 8, 2); x.fillRect(cx - 16, top + n * 11, 8, 2);
-  box(x, cx - 9, top, 18, n * 11 + 8, '#0d0604', rgba(col, 0.3 * a));
+  x.fillStyle = METAL; x.fillRect(cx - size - 7, top + 4, 8, 2); x.fillRect(cx - size - 7, top + n * pitch, 8, 2);
+  box(x, cx - size, top, size * 2, n * pitch + 8, '#0d0604', rgba(col, 0.3 * a));
   const flick = (v.t + (s.phase ?? 0)) % 400 > 390;
-  x.save(); x.font = mono(9, '600'); x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.save(); x.font = mono(size, '600'); x.textAlign = 'center'; x.textBaseline = 'middle';
   for (let k = 0; k < n; k++) {
     const off = flick || k === s.dead;
     x.fillStyle = rgba(col, (off ? 0.15 : 0.9) * a); if (!off && a > 0.6) { x.shadowColor = rgba(col, 0.8); x.shadowBlur = 6; } else x.shadowBlur = 0;
-    x.fillText(s.text[k], cx, top + 8 + k * 11);
+    x.fillText(s.text[k], cx, top + 8 + k * pitch);
   }
   x.restore();
 }

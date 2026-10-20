@@ -10,6 +10,12 @@
  */
 
 import { O } from '../core/primitives';
+import { drawDriven, type Character } from '../../runtime/characters';
+import { frameView, type View } from '../core/view';
+
+/** The DJ: the character kit's djbot (a busker box with headphones), working the deck. */
+const DJ: Character = { seed: 61, look: { bot: 'djbot', paint: '#8b9099', trim: '#2a2a30', screen: '#ff8800', face: 'eyes', v: 2, wear: 0.15 }, x: 0, shadow: false };
+let LOCAL: View | null = null;
 
 const y = (h: number) => -h;
 const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
@@ -66,17 +72,10 @@ export function drawBonfire(x: CanvasRenderingContext2D, o: { t: number; still?:
 
 /** The DJ booth: speaker stack, the deck on trestles with its lights, the DJ bot behind it. `beat` in frames per beat. */
 export function drawDjBooth(x: CanvasRenderingContext2D, o: { t: number; still?: boolean; beat?: number }) {
-  const t = o.still ? 0 : o.t, B = o.beat ?? 16, on = Math.floor(t / B) % 2 === 0, k = (t % B) / B;
-  // the DJ bot: a box head with a visor, headphones, nodding on the beat; arms on the deck
-  const nod = o.still ? 0 : Math.round(Math.max(0, 1 - k * 3) * 2);
-  x.fillStyle = '#5a5f66'; x.fillRect(-12, y(40), 22, 16);
-  x.fillStyle = '#8b9099'; x.fillRect(-10, y(60) + nod, 18, 18);
-  x.fillStyle = 'rgba(220,230,240,.6)'; x.fillRect(-10, y(60) + nod, 18, 1);
-  x.fillStyle = '#1a1e24'; x.fillRect(-8, y(55) + nod, 14, 7);
-  x.fillStyle = on ? '#ff3df2' : '#ff8800'; x.fillRect(-6, y(52) + nod, 3, 2); x.fillRect(1, y(52) + nod, 3, 2);
-  x.fillStyle = '#2a2a30'; x.fillRect(-12, y(62) + nod, 22, 2); x.fillRect(-13, y(57) + nod, 3, 7); x.fillRect(8, y(57) + nod, 3, 7);
-  x.fillStyle = '#5a5f66'; x.fillRect(-2, y(66) + nod, 2, 5); x.fillStyle = on ? '#ffd23a' : '#7a6020'; x.fillRect(-3, y(68) + nod, 4, 2);
-  x.fillStyle = '#8b9099'; x.fillRect(-16, y(34) - (on ? 1 : 0), 6, 3); x.fillRect(8, y(34) + (on ? 1 : 0), 6, 3);
+  const t = o.still ? 0 : o.t, B = o.beat ?? 16, on = Math.floor(t / B) % 2 === 0;
+  // the DJ bot behind the deck (kit body, its arms working the platters, notes rising while it plays)
+  LOCAL ??= frameView(0);
+  drawDriven(x, { ...LOCAL, t }, DJ, { x: -1, h: 14, act: o.still ? 'stand' : 'play' });
   // the deck: a table on trestles, two platters, a strip of lights along its front
   x.fillStyle = '#2a1a20'; x.fillRect(-26, y(30), 52, 6);
   x.fillStyle = '#1a0e14'; x.fillRect(-22, y(24), 3, 24); x.fillRect(19, y(24), 3, 24); x.fillRect(-22, y(14), 44, 2);

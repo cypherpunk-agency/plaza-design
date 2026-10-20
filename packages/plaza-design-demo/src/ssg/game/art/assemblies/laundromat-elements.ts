@@ -4,6 +4,7 @@ import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../c
 import type { View } from '../core/view';
 import { box, exitDoor, notice } from '../core/primitives';
 import { adScreen,camera,taped,ticker } from '../signage/screens';
+import { ALARM } from '../signage/kit';
 const num=(label:string,value:number,min=-10000):Field=>({kind:'number',label,default:value,min,max:10000,step:1});
 const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
 const bool=(label:string):Field=>({kind:'boolean',label,default:false});
@@ -28,7 +29,7 @@ element('room','Tiled shop walls and ceiling','architecture',roomFields,p=>recta
 element('window-back','Market window scenery','architecture',windowFields,p=>rectangle(n(p,'width'),n(p,'height')),(x,v,p,_s,at)=>windowKernel(p,at).frontWindowBack(x,v)),
 element('window-front','Market window glass, frame and light','architecture',windowFields,p=>rectangle(n(p,'width'),n(p,'height')),(x,v,p,_s,at)=>windowKernel(p,at).frontWindowFront(x,v)),
 element('tube','Fluorescent tube','electronics',{index:{kind:'select',label:'Tube number',default:0,options:[0,1,2,3]}},()=>({x:-100,h:4,w:200,tall:150}),(x,v,p,s,at)=>{const i=n(p,'index'),dim=(i===1&&(!!s.tripped||(!!s.nextRunning&&n(s,'nextMs')>23000)))||(i===3&&v.t%260>248);kernel(undefined,undefined,undefined,at.h+2).tube(x,v,at.x,dim);}),
-element('ticker','Wash identity information strip','signage',{width:num('Width',300,1),text:str('Text','WASH CYCLES ARE LOGGED TO YOUR IDENTITY   ·   WATER 40 L PER CYCLE PER ID   ·   UNATTENDED LAUNDRY IS REPORTED AFTER 72 H   ·   ABANDONED PROPERTY IS SCANNED FOR IDENTITY')},p=>rectangle(n(p,'width'),10),(x,v,p,_s,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,text:String(p.text),col:'255,90,70',speed:.4})),
+element('ticker','Wash identity information strip','signage',{width:num('Width',300,1),text:str('Text','WASH CYCLES ARE LOGGED TO YOUR IDENTITY   ·   WATER 40 L PER CYCLE PER ID   ·   UNATTENDED LAUNDRY IS REPORTED AFTER 72 H   ·   ABANDONED PROPERTY IS SCANNED FOR IDENTITY')},p=>rectangle(n(p,'width'),10),(x,v,p,_s,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,text:String(p.text),col:ALARM,speed:.4})),
 element('advert','Laundromat wall television','electronics',{width:num('Width',70,1),height:num('Height',22,1)},p=>rectangle(n(p,'width'),n(p,'height')),(x,v,p,_s,at)=>adScreen(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:n(p,'height'),mount:'wall',ads:[['REGISTRY PREMIUM','PRIORITY SLOTS'],['DETERGENT','TAXED AT SOURCE'],['VERIFIED RESIDENTS','WASH FIRST']],period:260})),
 element('camera','Washer surveillance camera','electronics',{},()=>rectangle(28,16,-14),(x,v,_p,_s,at)=>camera(x,v,{x:at.x,h:at.h,facing:1,phase:7})),
 element('dryer','Dead stacked dryer','electronics',{index:{kind:'select',label:'Dryer number',default:0,options:[0,1,2,3]}},()=>rectangle(46,40,-23),(x,v,p,_s,at)=>kernel().dryer(x,raised(v,at.h-60),at.x,n(p,'index'))),

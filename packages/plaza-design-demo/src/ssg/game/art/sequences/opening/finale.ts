@@ -21,6 +21,7 @@ import type { Character } from "../../../runtime/characters";
 import { drawCanalGlimpse, drawGroundSection } from "../../architecture/cutaway";
 import { drawBore, drawTunnelPortal, drawViaduct, drawWallPortal, LINE0 } from "../../architecture/line0";
 import { drawMetroCar, METRO } from "../../vehicles/train-car";
+import { drawBogies } from "../../vehicles/rail";
 import { frameView, placed } from "../../core/view";
 import { type CoastView, type Lines, ORANGE, PAPER, R, S } from "./coast";
 import { DROP2, glideDist, NOSE_IN, PLACES, TOWER_X, TRAIN_V } from "./path";
@@ -104,8 +105,7 @@ function train(x: CanvasRenderingContext2D, c: CoastView, nose: number, floor: (
     if (Math.max(ax, bx) < -40 || Math.min(ax, bx) > c.W + 40) continue;
     const ay = floor(Xa), by = floor(Xb), mx = (ax + bx) / 2, my = (ay + by) / 2, ang = Math.atan2(by - ay, bx - ax);
     x.save(); x.translate(mx, my); x.rotate(ang); x.scale(S, S); x.translate(-METRO.len / 2, 0);
-    // the bogies under its ends
-    for (const kk of [40, METRO.len - 40]) { x.fillStyle = '#0a0a0c'; x.fillRect(kk - 34, -16, 68, 14); x.fillStyle = '#26262a'; x.beginPath(); x.arc(kk - 18, -7, 7, 0, 7); x.arc(kk + 18, -7, 7, 0, 7); x.fill(); }
+    drawBogies(x, METRO.len);
     drawMetroCar(x, 0, (h) => -h, { t: c.f, c: k, seed: 77, dest: 'DOWNTOWN', ox: Xw, plate: k === 2 ? 'CAR 3' : undefined, still: c.still });
     x.restore();
   }

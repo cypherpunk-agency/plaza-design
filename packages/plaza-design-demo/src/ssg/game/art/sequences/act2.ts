@@ -8,6 +8,7 @@
 
 import { drawSpire } from "../architecture/spire";
 import { placed } from "../core/view";
+import { drawBoat } from "../vehicles/boats";
 import type { CutView } from "../core/view";
 
 const PAPER = '255,217,165', ORANGE = '255,136,0', RED = '255,42,68', GREEN = '34,197,94';
@@ -57,13 +58,7 @@ export function act2Frame(x: CanvasRenderingContext2D, v: CutView, t: number, du
   paint('ferry', () => {
   // NIGHT FERRY 7, pulling out across the bay towards open water, its lights on the water
   const u = options.ferryProgress ?? Math.min(1, a / duration), fx = Math.round(W * (0.2 + 0.36 * u)), fy = Math.round(hz + (bottom - hz) * 0.28), fl = Math.max(26, Math.round(W * 0.07));
-  x.fillStyle = options.ferryPaint??'#0a0504'; x.beginPath(); x.moveTo(fx - fl, fy - 5); x.lineTo(fx + fl, fy - 5); x.lineTo(fx + fl - 5, fy); x.lineTo(fx - fl + 4, fy); x.closePath(); x.fill();
-  x.fillRect(fx + fl * 0.4, fy - 13, fl * 0.5, 8);
-  x.fillStyle = 'rgba(' + PAPER + ',.75)'; for (let i = -fl + 6; i < fl * 0.3; i += 7) x.fillRect(fx + i, fy - 9, 4, 3);
-  x.fillStyle = '#c8c4b8'; x.fillRect(fx - fl * 0.15, fy - 12, fl * 0.45, 7);
-  x.fillStyle = 'rgba(' + GREEN + ',.9)'; x.fillRect(fx + fl - 2, fy - 8, 2, 2);
-  x.fillStyle = 'rgba(' + RED + ',.9)'; x.fillRect(fx - fl, fy - 8, 2, 2);
-  for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(' + PAPER + ',' + (0.09 - i * 0.013) + ')'; x.fillRect(fx - fl * 0.8 + Math.sin(a * 2 + i) * 2, fy + 2 + i * 4, fl * 1.4, 1); }
+  placed(x, fx, fy, fl / 96, () => drawBoat(x, 'ferry', { t: a * 60, paint: options.ferryPaint ?? '#0a0504', nav: true, wake: true, reflection: true }));
 
   });
   paint('titles', () => {

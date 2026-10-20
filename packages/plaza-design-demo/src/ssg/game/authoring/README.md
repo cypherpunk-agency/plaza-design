@@ -57,6 +57,15 @@ Their catalogues live under `authoring/catalogues/`; they are current configurat
 acceptance records. Event/source inspection describes hooks and references without executing them.
 Captured runtime observations must match the declared scene/expression before being shown as live.
 
+Library holds the artwork explorer and the kit viewers. **Characters** edits the People document
+(`art/characters/people.json`: default colour style and seated pose, and each district's people mix of
+named looks, actions and robots with weights and tech/robot shares) above a lineup, an Archetypes sheet
+and a district mix sample; its preview selects switch styles without saving. **Style frames** pairs each
+district's card with its scenes on the stage, including the `downtown-next` proposal built from the
+building kit. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
+show the building, vehicle and sign kits. Kit pieces are placed from **＋ Add artwork** on the Scene
+stage like any other artwork (ART-GUIDE §2 and §12).
+
 ## Isolation and source safety
 
 Private Play uses an opaque-origin frame and memory storage. The static public bundle contains no

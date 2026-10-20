@@ -17,7 +17,7 @@ import { chipStyles, filterChips } from './kind-chips';
 import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
-export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices'; revision: string; value: unknown }
+export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people'; revision: string; value: unknown }
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 /** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
@@ -125,7 +125,7 @@ export class ComposerModel {
     for (const doc of this.expanded(documents).values()) if (doc.kind === 'timeline') validateTimeline(doc.value, ctx);
     const all = [...this.expanded(documents).values()];
     for (const doc of all) {
-      if ((['behavior','gameplay','scene','fixtures','conversations','city','transport','devices'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
+      if ((['behavior','gameplay','scene','fixtures','conversations','city','transport','devices','people'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
       this.validateDocument?.(doc, all);
     }
   }

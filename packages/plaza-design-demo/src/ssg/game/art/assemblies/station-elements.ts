@@ -5,7 +5,7 @@ import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../c
 import type { View } from '../core/view';
 import { box,notice,onScreen,RED,reflect } from '../core/primitives';
 import { drawRider,KINDS,type RiderKind } from '../characters/riders';
-import { drawPlatformTrain,type PlatformTrainVisual } from '../vehicles/platform-train';
+import { drawPlatformTrain,type PlatformTrainVisual } from '../vehicles/rail';
 import { drawDepartures,type DepartureVisual } from '../signage/line-departures';
 import { drawBench,drawCam,drawScreen,drawSlab,drawTrackBase,drawTrackEdge,nameplate } from './station-platform';
 import { createStationArtwork as galleriaKernels,type StationLayout as GLayout } from './galleria-station';

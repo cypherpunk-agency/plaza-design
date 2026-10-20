@@ -1,6 +1,7 @@
 /** Pure Galleria architectural and shop kernels. Scene adapters prepare heights, riders and light. */
 import type { PreparedCharacter } from '../../runtime/characters';
 import { box,C,exitDoor,GREEN,notice,O,onScreen,PAPER,RED,reflect,rng,sign,tell,text } from '../core/primitives';
+import { paperSign } from '../signage/kit';
 import type { View } from '../core/view';
 import { drawPane,glass } from '../environment/sky';
 import { menuBoard,ticker,wallSign,YELLOW } from '../signage/screens';
@@ -224,9 +225,7 @@ function registry(x:CanvasRenderingContext2D,v:View){
   tell(x, t, kx + 9, y(46));
   box(x, kx - 8, y(42), 16, 4, '#202024');
   // the seal and the header plate over it
-  box(x, kx - 48, y(112), 96, 22, '#e8e4dc', 'rgba(40,30,20,.9)');
-  text(x, 'VERIFY YOUR IDENTITY', kx, y(106), 'rgba(110,20,20,.95)', 7, '700');
-  text(x, 'FOR MEMBER PRICES', kx, y(97), 'rgba(30,18,8,.95)', 7, '700');
+  paperSign(x, t, kx, y(112), 96, 22, { style: 'paper', fill: '#e8e4dc', first: 6, lines: [{ text: 'VERIFY YOUR IDENTITY', ink: 'rgba(110,20,20,.95)' }, 'FOR MEMBER PRICES'] });
   x.fillStyle = '#2a2622'; x.fillRect(kx - 1, y(90), 2, 6);
 
 }

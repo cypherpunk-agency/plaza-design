@@ -9,15 +9,16 @@ import type {TimeWindow} from '../../data/types';
 import {windowProblem} from '../../world/clock';
 import type {resolveComposition} from '../../art/core/composition';
 import {DEPTH_BANDS,isDepthBand,type DepthBand} from '../../art/core/depth';
+import {BODY_KINDS,HAIR_KINDS,GARB_KINDS,EXTRA_KINDS,FACIAL_KINDS} from '../../art/characters/parts';
+import {ARCHETYPE_IDS} from '../../art/characters/archetypes';
+import {DISTRICT_PALETTES,type SitPose} from '../../art/characters/people-style';
 export const actorAxes={
- body:['avg','tall','short','wide','slim','kid','old'],
- hair:['bald','short','long','bun','mohawk','cap','beanie','hood','brim','helmet','scarf'],
- garb:['tee','jacket','coat','dress','apron','hivis','suit','robe'],
- extras:['umbrella','bag','backpack','cyberarm','visor','mask','phone','headphones','glasses','cane'],
- critter:['cat','pigeon','gull','cleaner','drone','courier'],
- bot:['android','valet','marshal','servbot','sweeper','busker','waiter','loader','porter','mech','litterbot','deliverybot','adbot','crawler','wreck','minidrone','cargodrone','flyerdrone'],
- act:['stand','walk','run','talk','sit','lean','smoke','phone','haggle','argue','sweep','queue','sleep','dance','vend','steal','scan','carry','roll','patrol','serve','crawl','hover','direct','play','weld','scrub','charge','glitch','blink','slump'],
+ body:BODY_KINDS,hair:HAIR_KINDS,garb:GARB_KINDS,extras:EXTRA_KINDS,facial:FACIAL_KINDS,archetype:ARCHETYPE_IDS as readonly string[],
+ critter:['cat','pigeon','gull','cleaner','drone','courier','crab','robogull'],
+ bot:['android','valet','marshal','servbot','sweeper','busker','waiter','loader','porter','mech','litterbot','deliverybot','adbot','crawler','wreck','minidrone','cargodrone','flyerdrone','scandrone','djbot'],
+ act:['stand','walk','run','talk','sit','lean','smoke','phone','haggle','argue','sweep','queue','sleep','dance','vend','steal','scan','carry','roll','patrol','serve','crawl','hover','direct','play','weld','scrub','charge','glitch','blink','slump','read','doze','wait','dig','fly'],
  face:['eyes','happy','blink','sad','dots','off','crack'],
+ style:['vivid','muted'],sitView:['front','threeQuarter','side'],
 } as const;
 export interface ActorDefinition {
  id:string;instance:string;target?:string;reaction?:string;band:'world'|'background';
@@ -26,6 +27,8 @@ export interface ActorDefinition {
  /** Depth band (art/core/depth.ts): its pixel size, parallax and dimming, unless ps/parallax/dim are set. */
  depth?:DepthBand;ps?:number;dim?:number;parallax?:number;
  height?:'artwork'|'automatic';follow?:string;gap?:number;presentation?:ActorPresentation;
+ /** Does the act sitting down; `sitView` fixes the pose, otherwise the people-style switch (mixed: it changes now and then). */
+ seated?:boolean;sitView?:SitPose;
 }
 const fail=(s:string):never=>{throw new Error('Invalid actor source: '+s);};
 function object(v:unknown):Record<string,unknown>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.getPrototypeOf(v)!==Object.prototype)fail('plain object required');return v as Record<string,unknown>;}
@@ -35,18 +38,18 @@ const id=(v:unknown)=>{if(typeof v!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(v)
 const choice=(v:unknown,values:readonly unknown[])=>{if(!values.includes(v))fail('unknown appearance or action');};
 export function validateActorLook(value:unknown):void {
  if(typeof value==='string'){choice(value,[...actorAxes.critter,...actorAxes.bot]);return;}
- const robot=!!object(value).bot,look=fields(value,robot?['bot','paint','trim','screen','wear','face','v']:['body','hair','garb','extras','skin','hairCol','top','bottom','acc']);
+ const robot=!!object(value).bot,look=fields(value,robot?['bot','paint','trim','screen','wear','face','v']:['archetype','district','kitted','style','body','hair','garb','extras','facial','skin','hairCol','top','bottom','acc']);
  if(robot){choice(look.bot,actorAxes.bot);if(look.v!==undefined)choice(look.v,[0,1,2]);if(look.face!==undefined)choice(look.face,actorAxes.face);if(look.wear!==undefined)number(look.wear,0,1);}
- else{for(const k of ['body','hair','garb'] as const)if(look[k]!==undefined)choice(look[k],actorAxes[k]);if(look.extras!==undefined){if(!Array.isArray(look.extras)||look.extras.length>10||new Set(look.extras).size!==look.extras.length)fail('extras');(look.extras as unknown[]).forEach(v=>choice(v,actorAxes.extras));}}
+ else{for(const k of ['archetype','body','hair','garb','facial'] as const)if(look[k]!==undefined)choice(look[k],actorAxes[k]);if(look.district!==undefined)choice(look.district,Object.keys(DISTRICT_PALETTES));if(look.kitted!==undefined&&typeof look.kitted!=='boolean')fail('kitted boolean');if(look.style!==undefined)choice(look.style,actorAxes.style);if(look.extras!==undefined){if(!Array.isArray(look.extras)||look.extras.length>10||new Set(look.extras).size!==look.extras.length)fail('extras');(look.extras as unknown[]).forEach(v=>choice(v,actorAxes.extras));}}
  for(const k of robot?['paint','trim','screen']:['skin','hairCol','top','bottom','acc'])if(look[k]!==undefined&&(typeof look[k]!=='string'||!/^#[0-9a-f]{6}$/i.test(look[k] as string)))fail('hex color');
 }
 export function validateActors(value:unknown):ActorDefinition[]{
  if(!Array.isArray(value)||value.length>128)fail('bounded actor array');const rows=value as unknown[],ids=new Set<string>(),instances=new Set<string>(),targets=new Set<string>(),reactions=new Set<string>();
- for(const raw of rows){const a=fields(raw,['id','instance','target','reaction','band','seed','bakeSeed','look','act','range','facing','speed','when','key','depth','ps','dim','parallax','height','follow','gap','presentation']);id(a.id);id(a.instance);if(ids.has(String(a.id))||instances.has(String(a.instance)))fail('duplicate actor or placement');ids.add(String(a.id));instances.add(String(a.instance));choice(a.band,['world','background']);
+ for(const raw of rows){const a=fields(raw,['id','instance','target','reaction','band','seed','bakeSeed','look','act','range','facing','speed','when','key','depth','ps','dim','parallax','height','follow','gap','presentation','seated','sitView']);id(a.id);id(a.instance);if(ids.has(String(a.id))||instances.has(String(a.instance)))fail('duplicate actor or placement');ids.add(String(a.id));instances.add(String(a.instance));choice(a.band,['world','background']);
  if(a.reaction!==undefined&&(typeof a.reaction!=='string'||!/^[-a-zA-Z0-9_.]{1,128}$/.test(a.reaction)||['__proto__','constructor','prototype'].includes(a.reaction)))fail('reaction identity');const reaction=a.reaction??'actor.'+String(a.id);if(reactions.has(String(reaction)))fail('duplicate reaction identity');reactions.add(String(reaction));
  if(a.target!==undefined){id(a.target);if(targets.has(String(a.target)))fail('duplicate interaction target');targets.add(String(a.target));}if(a.follow!==undefined)id(a.follow);
  if(a.presentation!==undefined){validateActorPresentation(a.presentation);if(['look','seed','act','range','speed','follow','gap','parallax','key','depth'].some(k=>a[k]!==undefined))fail('rider recipes cannot also declare Character appearance or motion');}
- if(a.depth!==undefined&&!isDepthBand(a.depth))fail('unknown depth band');if(a.look!==undefined)validateActorLook(a.look);if(a.act!==undefined)choice(a.act,actorAxes.act);if(a.facing!==undefined)choice(a.facing,[1,-1]);if(a.height!==undefined)choice(a.height,['artwork','automatic']);if(a.key!==undefined&&typeof a.key!=='boolean')fail('key boolean');
+ if(a.depth!==undefined&&!isDepthBand(a.depth))fail('unknown depth band');if(a.look!==undefined)validateActorLook(a.look);if(a.act!==undefined)choice(a.act,actorAxes.act);if(a.facing!==undefined)choice(a.facing,[1,-1]);if(a.seated!==undefined&&typeof a.seated!=='boolean')fail('seated boolean');if(a.sitView!==undefined)choice(a.sitView,actorAxes.sitView);if(a.height!==undefined)choice(a.height,['artwork','automatic']);if(a.key!==undefined&&typeof a.key!=='boolean')fail('key boolean');
  for(const[k,min,max,integer]of [['seed',0,1000000,true],['bakeSeed',0,1000000,true],['speed',0,100,false],['ps',1,5,true],['dim',0,1,false],['parallax',0,4,false],['gap',0,10000,false]] as const)if(a[k]!==undefined)number(a[k],min,max,integer);
  if(a.range!==undefined){if(Array.isArray(a.range)){if(a.range.length!==2)fail('range pair');a.range.forEach(v=>number(v,-10000,10000));}else number(a.range,-10000,10000);}
  if(a.when!==undefined){fields(a.when,['from','to','days']);if(windowProblem(a.when))fail('time window');}

@@ -33,7 +33,10 @@
         "sleep",
         "dance",
         "vend",
-        "steal"
+        "steal",
+        "read",
+        "doze",
+        "wait"
       ]
     },
     {
@@ -67,7 +70,20 @@
       ],
       "actions": [
         "stand",
-        "walk"
+        "walk",
+        "fly"
+      ]
+    },
+    {
+      "id": "crab",
+      "group": "Animals",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "dig"
       ]
     },
     {
@@ -90,6 +106,18 @@
       "actions": [
         "stand",
         "hover",
+        "scan"
+      ]
+    },
+    {
+      "id": "robogull",
+      "group": "Legacy robots",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "fly",
         "scan"
       ]
     },
@@ -355,6 +383,33 @@
       ]
     },
     {
+      "id": "scandrone",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "hover",
+        "scan"
+      ]
+    },
+    {
+      "id": "djbot",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "play"
+      ]
+    },
+    {
       "id": "rider",
       "group": "Metro riders",
       "variants": [
@@ -444,17 +499,6 @@
       "actions": [
         "serve"
       ]
-    },
-    {
-      "id": "flying-gull",
-      "group": "Special animals and robots",
-      "variants": [
-        "natural",
-        "robot"
-      ],
-      "actions": [
-        "fly"
-      ]
     }
   ],
   "humanAppearanceAxes": {
@@ -465,7 +509,11 @@
       "wide",
       "slim",
       "kid",
-      "old"
+      "old",
+      "teen",
+      "heavy",
+      "broad",
+      "frail"
     ],
     "hair": [
       "bald",
@@ -478,7 +526,14 @@
       "hood",
       "brim",
       "helmet",
-      "scarf"
+      "scarf",
+      "afro",
+      "ponytail",
+      "buzz",
+      "beret",
+      "hardhat",
+      "headwrap",
+      "peaked"
     ],
     "garb": [
       "tee",
@@ -488,7 +543,12 @@
       "apron",
       "hivis",
       "suit",
-      "robe"
+      "robe",
+      "hoodie",
+      "shell",
+      "oilskin",
+      "uniform",
+      "patched"
     ],
     "extra": [
       "umbrella",
@@ -500,7 +560,48 @@
       "phone",
       "headphones",
       "glasses",
-      "cane"
+      "cane",
+      "briefcase",
+      "parcel",
+      "armband",
+      "arglasses",
+      "respirator",
+      "wristscreen",
+      "ledtrim",
+      "earpiece",
+      "exobrace",
+      "patches",
+      "muffler"
+    ],
+    "facial": [
+      "none",
+      "stubble",
+      "moustache",
+      "beard"
+    ],
+    "archetype": [
+      "commuter",
+      "reader",
+      "office",
+      "courier",
+      "elder",
+      "punk",
+      "inspector",
+      "sleeper",
+      "dockworker",
+      "vendor",
+      "student",
+      "plazastaff",
+      "ghost",
+      "church",
+      "tide",
+      "kid",
+      "teen",
+      "shopper",
+      "technician",
+      "guard",
+      "fixer",
+      "drifter"
     ]
   },
   "humanColorCases": {
@@ -541,14 +642,16 @@
       "loader",
       "deliverybot",
       "adbot",
-      "wreck"
+      "wreck",
+      "djbot"
     ],
     "faceKinds": [
       "servbot",
       "sweeper",
       "busker",
       "waiter",
-      "adbot"
+      "adbot",
+      "djbot"
     ],
     "faces": [
       "eyes",

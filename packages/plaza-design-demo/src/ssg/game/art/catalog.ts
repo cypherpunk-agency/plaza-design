@@ -16,8 +16,11 @@ export { CAR, drawMetroCar, drawTrainCar, METRO } from "./vehicles/train-car";
 export { drawStringLights, SALT, saltBack, saltCounter, saltLights, saltLime, saltShell, saltUnder } from "./assemblies/beach-bar";
 export { drawBonfire, drawDjBooth, drawLounger } from "./props/beach-party";
 export { drawSea, type SeaLook } from "./environment/sea";
-export { drawCar, drawForklift, drawReachStacker, drawStraddle, drawTruck, M, SIZE } from "./vehicles/vehicles";
-export { BLIMP_SCALE, CRAFT_LEN, drawBlimp, drawCraft, drawDrone, type CraftKind } from "./vehicles/air-traffic";
+export { drawCar, drawForklift, drawReachStacker, drawStraddle, drawTruck, M, PORT_SCALE, PORT_TRAILER_SCALE, SIZE } from "./vehicles/vehicles";
+export { bobAt, drawLivery, laneAt, laneSlots, paintBanded, type Lane, type Livery } from "./vehicles/kit";
+export { BOAT_KINDS, drawBoat, type BoatKind } from "./vehicles/boats";
+export { drawBogies, drawConsist, drawPlatformTrain, PLATFORM_TRAIN, RAIL_CAR } from "./vehicles/rail";
+export { AIR_KINDS, BLIMP_SCALE, CRAFT_LEN, drawAircraft, drawBlimp, drawCab, drawCraft, drawDrone, type AirKind, type CraftKind } from "./vehicles/air-traffic";
 export { drawPalm } from "./environment/palm";
 export { drawGalleriaDome } from "./architecture/galleria-dome";
 export { drawTower, NEON, SIGN_COPY, signGlows, towerRow, type Tower, type TowerSign } from "./architecture/downtown-towers";
@@ -57,7 +60,7 @@ export const SETS: SetEntry[] = [
   {
     id: 'train-car', file: 'art/vehicles/train-car.ts',
     what: 'A LINE 0 car from outside: body, waist stripe, doors that slide open, lit windows with riders, headlight and destination on the lead car (`drawTrainCar`, the platforms\' own scale). `drawMetroCar`: the same car true to the player\'s scale (20 m), four doors, long windows onto a warm inside with seated and standing riders at their real size, empty seats, reflections sliding on the glass.',
-    users: ['world/transport/line.ts drawPlatformTrain: the platforms (metro, galleriaStation, harborStation): drawTrainCar, unchanged', 'story/title/finale.ts: the glide\'s train out of its tower, down the ramp, in the bore: drawMetroCar'],
+    users: ['art/vehicles/rail.ts drawConsist/drawPlatformTrain (the rail class, `vehicle.rail`): the platforms (metro, galleriaStation, harborStation) from the transport snapshot', 'story/title/finale.ts: the glide\'s train out of its tower, down the ramp, in the bore: drawMetroCar with the rail class\'s bogies'],
   },
   {
     id: 'beach-bar', file: 'art/assemblies/beach-bar.ts',
@@ -78,6 +81,11 @@ export const SETS: SetEntry[] = [
     id: 'downtown-towers', file: 'art/architecture/downtown-towers.ts',
     what: 'Downtown\'s towers, every one seeded and different: skins (punched concrete, glass curtain wall, stacked capsules, panel blocks with balconies, brick walk-ups with fire escapes), setbacks, crowns (needle, stepped, slant, lattice antenna, halo, pyramid), roof gear (tanks, antennas, dishes, AC, gardens, taxi pads), grime; signs of six kinds (plate, neon blade, stacked letters, scrolling ticker, holo ad over its emitter, rooftop billboard on a truss), flickering, a dead letter now and then, dry copy; `signGlows` for wet-street reflections. `storey` sizes the details: 9 for small skylines, 85 true to the player\'s scale.',
     users: ['story/title/town.ts: Downtown\'s street row (true scale, shopfronts, signs), the portal tower, four skyline rows behind it thickening toward the tunnel', 'scenes/library/scene.ts: through the reading room\'s tall windows (varied massing now, no signs, on the city clock)'],
+  },
+  {
+    id: 'building-kit', file: 'art/buildings/front.ts',
+    what: 'The building kit: seeded street fronts (skins brick, concrete, tenement, panel, glass; punched, framed or curtained windows; flat, parapet, cornice, stepped or ledge roofs with tanks, vents, dishes and AC; door, shopfront, shutter, tagged or sealed bays; retrofit: AC units, pipes, cable runs, fire escapes, balconies with laundry, bolted-on screens, ID scanners), rows of buildings at a distance (the downtown-towers generator) and single attachments. Registered as building.front, building.row and building.attachment. Shared bodies in art/buildings/parts.ts.',
+    users: ['art/proposals/downtown-next.composition.json: the street fronts (editor-only proposal)', 'parts.ts bodies: art/assemblies/downtown.ts (windows, bays, trim), art/assemblies/construction.ts (Market tenement facades), art/assemblies/fixer-yard.ts (fire escape, AC unit, wall textures)'],
   },
   {
     id: 'weather', file: 'art/atmosphere/weather.ts',
@@ -124,12 +132,17 @@ export const SETS: SetEntry[] = [
   {
     id: 'vehicles', file: 'art/vehicles/vehicles.ts',
     what: 'Ground vehicles side on, true to the player\'s scale (a sedan 4.5 x 1.5 m, the bus 12 m, a road truck with its 40 ft box 17.5 m), with their lights: cars (sedan, hatch, van, cab), bus 7, a truck (with a container or empty, or the port\'s yard tractor), and the port\'s straddle carrier, reach stacker and forklift with beacons.',
-    users: ['story/title/traffic.ts: the road\'s traffic (trucks out of the port gate, cars and bus 7 from the side streets)', 'story/title/coast.ts: the port office\'s cars, the car shell in the buffer, the yard tractors, the port\'s machines', 'art/architecture/ring-highway.ts: the Ring\'s traffic'],
+    users: ['story/title/traffic.ts: the road\'s traffic (trucks out of the port gate, cars and bus 7 from the side streets)', 'story/title/coast.ts: the port office\'s cars, the car shell in the buffer, the yard tractors, the port\'s machines', 'art/architecture/ring-highway.ts: the Ring\'s traffic', 'art/vehicles/road-vehicle.ts: `vehicle.road`', 'art/assemblies/warehouse.ts: the Registry evidence van (van, decal livery)', 'art/assemblies/container-terminal.ts: straddle carrier SC-11 (shuttle lane, back band) and the chassis (trailer)', 'art/assemblies/harbor-pier.ts: the customs chassis (trailer) and the forklift (body and roof parts)'],
   },
   {
     id: 'air-traffic', file: 'art/vehicles/air-traffic.ts',
     what: 'The sky\'s traffic, true to scale, each kind with its look: private pods, yellow sky taxis, Registry patrols (red and blue strobes, a searchlight), corporate shuttles, slow cargo haulers with a box slung under, the medevac, a military dropship and its escort drones; delivery drones; the ad blimp cycling the Registry\'s dry adverts.',
-    users: ['story/title/air.ts: the glide\'s lanes, patrol loops, the drone stream from the logistics hub, the hauler, the medevac, the dropship, the blimp', 'story/title/coast.ts: the taxi landing on the public pad by the Galleria', 'art/architecture/spire.ts: the shuttles docking at the Spire and its patrol'],
+    users: ['story/title/air.ts: the glide\'s lanes, patrol loops, the drone stream from the logistics hub, the hauler, the medevac, the dropship, the blimp', 'story/title/coast.ts: the taxi landing on the public pad by the Galleria', 'art/architecture/spire.ts: the shuttles docking at the Spire and its patrol', 'art/assemblies/taxi-pad.ts and art/sequences/taxi-picture.ts: drawCab, the taxi at a stand\'s scale', 'art/environment/sky-ships.ts: the far sky traffic', 'art/vehicles/air-vehicle.ts: `vehicle.air`'],
+  },
+  {
+    id: 'boats', file: 'art/vehicles/boats.ts',
+    what: 'The water class: the lamp boat, the cabin boat, REGISTRY MARINE\'s patrol (strobe, sweeping searchlight) and NIGHT FERRY 7, with waterline heave, wake, reflections, lamp and nav lights, names that read the right way round.',
+    users: ['art/assemblies/harbor-pier.ts: the lamp boat, the patrol, the ferry', 'art/assemblies/beach.ts: the moored NOT FISHING boat', 'art/sequences/act2.ts: the ferry pulling out', 'art/vehicles/boats.ts: `vehicle.boat`'],
   },
   {
     id: 'ring-highway', file: 'art/architecture/ring-highway.ts',

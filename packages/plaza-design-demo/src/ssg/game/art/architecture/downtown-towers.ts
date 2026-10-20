@@ -120,6 +120,8 @@ export interface RowOpts {
   shops?: boolean;
   /** How many signs a tower carries, at most (street rows: more). Default: one when `signs` are given, else none. */
   signs?: number;
+  /** Skins to pick from (the building kit's rows); default the four tower skins. Low buildings stay brick. */
+  skins?: readonly Skin[];
 }
 
 /** A row of towers for a stretch of skyline: widths and heights in ranges, every one varied by its seed; signs from `signs` (or the city's copy). */
@@ -130,7 +132,7 @@ export function towerRow(seed: number, n: number, w: [number, number], h: [numbe
     const low = r() < (opt.low ?? 0);
     let tw = Math.round(w[0] + r() * (w[1] - w[0])), th = Math.round(h[0] + r() * (h[1] - h[0]));
     if (low) { th = Math.round(st * (3 + Math.floor(r() * 4)) + st * 0.6); tw = Math.round(tw * (0.6 + r() * 0.4)); }
-    const skin: Skin = low ? 'brick' : SKINS[Math.floor(r() * 4)];
+    const skin: Skin = low ? 'brick' : opt.skins ? opt.skins[Math.floor(r() * opt.skins.length)] : SKINS[Math.floor(r() * 4)];
     const roof = (['mast', 'tank', 'boxes', 'none'] as const)[Math.floor(r() * 4)];
     const t: Tower & { x: number } = { x, w: tw, h: th, seed: seed * 100 + i, roof, skin, shop: opt.shops };
     // massing: setbacks on the tall ones, a crown, gear on the roof
@@ -164,7 +166,7 @@ const hexRgb = (c: string) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 
 const mixRgb = (a: string, b: string, f: number) => { const A = hexRgb(a), B = hexRgb(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * f)).join(',') + ')'; };
 
 /** The visible band of heights in this frame (rows outside it are skipped). */
-function visible(x: CanvasRenderingContext2D): [number, number] {
+export function visible(x: CanvasRenderingContext2D): [number, number] {
   const m = x.getTransform();
   if (m.b !== 0 || m.c !== 0 || m.d === 0) return [-1e9, 1e9];
   const a = -m.f / m.d, b = (x.canvas.height - m.f) / m.d;

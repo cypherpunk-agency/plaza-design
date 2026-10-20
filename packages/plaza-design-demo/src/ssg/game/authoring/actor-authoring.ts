@@ -8,6 +8,7 @@ import {actorBindingController} from '../engine/gameplay/native-actor-bindings';
 import {actorRemovalImpact,duplicateSceneActor,removeSceneActor,setActorDialogue,bindSceneActor} from '../engine/gameplay/actor-content';
 import {actorAxes,moveSceneActor,type ActorDefinition} from '../engine/gameplay/actors';
 import type {Look,BotLook} from '../runtime/characters';
+import {DISTRICT_PALETTES} from '../art/characters/people-style';
 import type {SceneDocument} from '../engine/gameplay/scene-document';
 import {TypedForm} from './typed-form';
 /** Body controls write the same scene source consumed by native Game and preview. */
@@ -73,7 +74,12 @@ export function renderActor(form:TypedForm,host:HTMLElement,source:SceneDocument
  form.select(host,'Actor family',['human',...actorAxes.critter,...actorAxes.bot],family,v=>{change('Edit actor family',b=>{b.look=v==='human'?{}:v as ActorDefinition['look'];});refresh();});
  if(family==='human'){
   const look=(a.look??{}) as Look;
-  for(const k of ['body','hair','garb'] as const)form.select(host,'Actor '+k,['',...actorAxes[k]],look[k]??'',v=>change('Edit actor '+k,b=>{b.look??={};const l=b.look as Look;if(v)l[k]=v as never;else delete l[k];}));
+  form.select(host,'Actor colour style',['automatic',...actorAxes.style],look.style??'automatic',v=>change('Edit actor colour style',b=>{b.look??={};const l=b.look as Look;if(v==='automatic')delete l.style;else l.style=v as Look['style'];}));
+  form.select(host,'Actor district palette',['',...Object.keys(DISTRICT_PALETTES)],look.district??'',v=>change('Edit actor district',b=>{b.look??={};const l=b.look as Look;if(v)l.district=v;else delete l.district;}));
+  form.select(host,'Actor visible tech',['automatic','yes','no'],look.kitted===undefined?'automatic':look.kitted?'yes':'no',v=>change('Edit actor tech',b=>{b.look??={};const l=b.look as Look;if(v==='automatic')delete l.kitted;else l.kitted=v==='yes';}));
+  form.check(host,'Actor seated',!!a.seated,on=>{change('Set actor seated',b=>{if(on)b.seated=true;else{delete b.seated;delete b.sitView;}});refresh();});
+  if(a.seated)form.select(host,'Actor sitting pose',['mixed',...actorAxes.sitView],a.sitView??'mixed',v=>change('Edit actor sitting pose',b=>{if(v==='mixed')delete b.sitView;else b.sitView=v as ActorDefinition['sitView'];}));
+  for(const k of ['archetype','body','hair','garb','facial'] as const)form.select(host,'Actor '+k,['',...actorAxes[k]],look[k]??'',v=>change('Edit actor '+k,b=>{b.look??={};const l=b.look as Look;if(v)l[k]=v as never;else delete l[k];}));
   for(const extra of actorAxes.extras)form.check(host,'Actor extra '+extra,look.extras?.includes(extra)??false,on=>change('Edit actor extras',b=>{b.look??={};const l=b.look as Look;const extras=new Set(l.extras??[]);if(on)extras.add(extra);else extras.delete(extra);if(extras.size)l.extras=[...extras];else delete l.extras;}));
   for(const k of ['skin','hairCol','top','bottom','acc'] as const)form.text(host,'Actor color '+k,look[k]??'',v=>change('Edit actor color',b=>{b.look??={};if(v)(b.look as Look)[k]=v;else delete(b.look as Look)[k];}));
  }else if((actorAxes.bot as readonly string[]).includes(family)){

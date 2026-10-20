@@ -14,6 +14,7 @@
 
 import { text } from '../core/primitives';
 import { drawCar, drawTruck, type CarKind } from "../vehicles/vehicles";
+import { laneSlots } from "../vehicles/kit";
 import type { Crate } from "../props/containers";
 
 /** Heights (scene units): the deck's underside, its road surface, the barrier's and the railing's tops; the span between columns. */
@@ -90,11 +91,9 @@ const LOADS: Crate[] = [{ w: 320, p: 2, seed: 171 }, { w: 320, p: 5, seed: 172 }
  */
 export function ringTraffic(x: CanvasRenderingContext2D, a: number, b: number, f: number, still: boolean, lights: boolean) {
   for (const [dir, v, lift, gap] of [[-1, 4.2, 18, 560], [1, 3.6, 0, 600]] as const) {
-    const off = still ? 0 : f * v * dir, k0 = Math.floor((a - off) / gap) - 1, k1 = Math.ceil((b - off) / gap) + 1;
-    for (let k = k0; k <= k1; k++) {
+    for (const { k, x: fx } of laneSlots(a, b, still ? 0 : f * v * dir, gap, 1)) {
       const h = ((k * 2654435761) >>> 0) % 1000 / 1000;
       if (h < 0.3) continue;
-      const fx = k * gap + off;
       x.save(); x.translate(fx, -RING.road - lift);
       const kind: 'truck' | CarKind = h < 0.5 ? 'truck' : h < 0.56 ? 'bus' : (['sedan', 'hatch', 'van', 'cab', 'sedan'] as const)[Math.floor(h * 97) % 5];
       if (kind === 'truck') drawTruck(x, { t: f, paint: PAINTS[k & 7], box: h < 0.42 ? LOADS[k & 3] : null, face: dir, lights, still });

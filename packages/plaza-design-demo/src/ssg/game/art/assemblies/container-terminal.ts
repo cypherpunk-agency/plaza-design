@@ -1,9 +1,17 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { type View } from "../../scenes/kit";
 import { drawSpire } from "../architecture/spire";
-import { gullFlying } from "../characters/gull";
+import { drawDriven, type Character } from "../../runtime/characters";
+import { drawFlock, type FlockOptions } from "../characters/flock";
 import { box,C,drawTowers,GREEN,notice,O,onScreen,PAPER,RED,rng,sign,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
+import { DEPTH_BANDS } from "../core/depth";
+import { laneAt, type Lane } from "../vehicles/kit";
+import { paintRoadVehicle } from "../vehicles/road-vehicle";
+import { drawTruck, PORT_SCALE, PORT_TRAILER_SCALE } from "../vehicles/vehicles";
+
+/** The yard's straddle carrier: 270 units west and back, 800 frames each way, holding 300 at each end. */
+export const STRADDLE_LANE: Lane = { mode: 'shuttle', dir: -1, speed: 270 / 800, length: 270, dwell: 300 };
 import { seaCols,sunPath } from "../environment/sky";
 import { drawGantry,STS2 } from "../machinery/crane";
 import { CH,container } from "../props/containers";
@@ -11,6 +19,10 @@ import { camera as securityCamera,taped,ticker,YELLOW } from "../signage/screens
 import { TerminalViewState,type TerminalVisual } from './terminal-state';
 export interface TerminalLayout {blocks:{x:number}[];ladder:number;quay:number;kiosk:number;bridge:{x0:number};boom:number}
 export interface ArtworkInputs {L:TerminalLayout;STACKS_W:number;STACKS_HZ:number;x:number;width:number;visual:TerminalVisual;part?:'far'|'near';open?:boolean;}
+/** Gulls high over the terminal, drifting east at different speeds (the kit's flock). */
+const TERMINAL_FLOCK: FlockOptions = { kind: 'gull', span: 2200, margin: 200, birds: Array.from({ length: 5 }, (_, i) => ({ x: i * 431, h: 150 + i * 22, speed: 0.3 + i * 0.07, parallax: 0.8, phase: i })) };
+/** The port watchdog: the kit's scan drone in Registry grey; the terminal owns its route and the device it checks. */
+const WATCHDOG: Character = { seed: 17, look: { bot: 'scandrone', paint: '#4a4e58', trim: '#2a2e36', v: 1, wear: 0.2 }, x: 0, shadow: false };
 export function createContainerTerminalArtwork(inputs:ArtworkInputs){
 const {L,STACKS_W}=inputs,HZ=inputs.STACKS_HZ;
 const SKYLINE=towers(57,1700,[16,40],[18,66],.08);
@@ -45,10 +57,7 @@ const m=new TerminalViewState(inputs.visual);
     if (onScreen(v, fx - 40, 80)) { x.fillStyle = '#060403'; x.fillRect(fx - 30, wl - 6, 60, 6); x.fillStyle = 'rgba(255,217,165,.6)'; for (let i = -24; i < 24; i += 6) x.fillRect(fx + i, wl - 4, 2, 2); x.fillStyle = 'rgba(' + GREEN + ',.7)'; x.fillRect(fx + 28, wl - 8, 2, 2); }
   }
   // gulls high up
-  for (let i = 0; i < 5; i++) {
-    const wx = ((i * 431 + t * (0.3 + i * 0.07)) % 2200) - 200, s = v.sx(wx, 0.8);
-    if (s > -10 && s < v.viewW + 10) gullFlying(x, s, y(150 + i * 22 + Math.sin(t * 0.02 + i) * 8), t + i * 9, 1);
-  }
+  drawFlock(x, v, TERMINAL_FLOCK);
 
 }
 function sky_glow(x:CanvasRenderingContext2D,v:View){
@@ -187,15 +196,9 @@ const m=new TerminalViewState(inputs.visual),X=inputs.visual.geometry.X;
   const hh = d.at ? 132 + Math.sin(v.t * 0.05) * 3 : 150 + Math.sin(Math.PI * d.progress) * 24;
   const s = v.sx(wx), sy = v.y(hh);
   if (!onScreen(v, s - 30, 60)) return;
-  if (d.at) {
-    // sitting: it looks the device over, a cone of grey light
-    x.fillStyle = 'rgba(200,205,220,.07)'; x.beginPath(); x.moveTo(s - 2, sy + 4); x.lineTo(s - 26, v.y(0)); x.lineTo(s + 26, v.y(0)); x.lineTo(s + 2, sy + 4); x.closePath(); x.fill();
-  }
-  box(x, s - 9, sy - 3, 18, 6, '#4a4e58', 'rgba(220,225,235,.6)');
-  x.fillStyle = '#2a2e36'; x.fillRect(s - 15, sy - 5, 6, 1); x.fillRect(s + 9, sy - 5, 6, 1);
-  const spin = Math.floor(v.t / 2) % 2;
-  x.fillStyle = 'rgba(220,225,235,.5)'; x.fillRect(s - 17 + spin * 2, sy - 6, 6, 1); x.fillRect(s + 11 - spin * 2, sy - 6, 6, 1);
-  x.fillStyle = 'rgba(' + RED + ',' + (Math.floor(v.t / 10) % 2 ? 1 : 0.4) + ')'; x.fillRect(s - 1, sy + 1, 3, 2);
+  // sitting (d.at): it looks the device over with a cone of grey light; travelling, it just hovers
+  drawDriven(x, v, WATCHDOG, { x: wx, air: hh - 8, moving: !d.at, act: d.at ? 'scan' : 'hover', facing: !d.at && d.to && at[d.to] < at[d.from] ? -1 : 1,
+    light: 'rgba(' + RED + ',' + (Math.floor(v.t / 10) % 2 ? 1 : 0.4) + ')', beam: { rgb: '200,205,220', alpha: 0.07, spread: 26, sweep: 0, line: false } });
   text(x, 'REGISTRY', s, sy - 9, 'rgba(' + PAPER + ',.45)', 7, '600');
 
 }
@@ -295,30 +298,18 @@ function lane(x:CanvasRenderingContext2D,v:View){
 
 }
 function straddle(x:CanvasRenderingContext2D,v:View){
-
-  const P = 2200, u = v.t % P, a = inputs.x, b = inputs.x-270;
-  const k = u < 800 ? u / 800 : u < 1100 ? 1 : u < 1900 ? 1 - (u - 1100) / 800 : 0;
-  const e = k * k * (3 - 2 * k), wx = a + (b - a) * e, loaded = u < 1100 || u > 2100;
-  const s = v.sx(wx, 0.92), { y } = v;
-  if (!onScreen(v, s - 50, 100)) return;
-  const col = '#8a5a1a', edge = 'rgba(' + YELLOW + ',.55)';
-  box(x, s - 36, y(96), 72, 6, col, edge);
-  for (const lx of [-36, 32]) box(x, s + lx, y(96), 4, 96, col, edge);
-  box(x, s + 14, y(110), 18, 14, '#1a0e06', edge);
-  x.fillStyle = 'rgba(255,200,130,.3)'; x.fillRect(s + 16, y(108), 14, 6);
-  x.fillStyle = Math.floor(v.t / 9) % 2 ? 'rgba(255,170,40,.95)' : 'rgba(255,170,40,.3)'; x.fillRect(s - 2, y(100), 4, 3);
-  for (const lx of [-34, 34]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(s + lx, y(5), 5, 0, 7); x.fill(); }
-  if (loaded) { x.save(); x.globalAlpha = 0.9; box(x, s - 30, y(78), 60, 30, '#2c2824', 'rgba(225,215,200,.5)'); x.restore(); }
-  text(x, 'SC-11', s, y(92), 'rgba(20,12,6,.9)', 7, '700');
-
+  // straddle carrier SC-11 (the kit's, back band, port scale) shuttling a box 270 units west and back
+  const at = laneAt(STRADDLE_LANE, v.t), wx = inputs.x - STRADDLE_LANE.length + at.offset, s = v.sx(wx, DEPTH_BANDS.back.parallax);
+  if (!onScreen(v, s - 60, 120)) return;
+  const loaded = at.leg === 'out' || at.leg === 'far' || (at.leg === 'home' && at.legT > 200);
+  placed(x, s, v.y(0), PORT_SCALE, () => paintRoadVehicle(x, { kind: 'straddle', depth: 'back', motion: 'shuttle', cargo: loaded, pose: 0.2, fleetNo: 'SC-11', stripe: '#1a1206' }, v.t, at.face, at.driven));
 }
 function chassis(x:CanvasRenderingContext2D,v:View){
 const m=new TerminalViewState(inputs.visual),H=inputs.visual.geometry.H,KIND={none:0,regular:1,box:2};
 
   const { sx, y } = v, c = sx(inputs.x - 64), s = m.scratch;
   if (!onScreen(v, c - 10, 150)) return;
-  box(x, c - 4, y(12), 136, 4, '#2a2622', 'rgba(220,200,160,.5)');
-  for (const k of [6, 18, 104, 116]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(c + k, y(5), 5, 0, 7); x.fill(); x.strokeStyle = 'rgba(220,200,160,.4)'; x.stroke(); }
+  placed(x, sx(inputs.x), y(0), PORT_TRAILER_SCALE, () => drawTruck(x, { t: v.t, paint: '#2a2622', box: null, tractor: false }));
   const taken = s.liftT0 !== undefined && s.liftKind === KIND.regular && m.now() - s.liftT0 > 1000;
   if (!taken) container(x, v, inputs.x - 64, H.chassis, { w: 128, p: [5, 0, 3, 6, 2][(Number(m.get('loaded') ?? 0) + 1) % 5], seed: 71 + Number(m.get('loaded') ?? 0) % 9 });
 

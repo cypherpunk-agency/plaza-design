@@ -1,6 +1,7 @@
 /** Shared world artwork extracted without changing drawing bodies. */
 import { rng, O, PAPER, text } from '../core/primitives';
-import { drawCab } from '../vehicles/cab';
+import { drawCab } from '../vehicles/air-traffic';
+import { bobAt } from '../vehicles/kit';
 
 
 
@@ -38,7 +39,7 @@ export function flightFrame(x: CanvasRenderingContext2D, vw: number, vh: number,
   }
   });
   paint('cab', () => {
-  drawCab(x, options.cabX ?? vw / 2, options.cabY ?? vh * 0.45 + Math.sin(t * 0.08) * 3, 2, t);
+  drawCab(x, options.cabX ?? vw / 2, options.cabY ?? vh * 0.45 + bobAt(t, 3, 0.08), 2, t);
   });
   paint('destination', () => {
   text(x, 'SKY TAXI  >>  ' + dest, vw / 2, vh * 0.45 + 30, 'rgba(' + PAPER + ',.9)', 9, '600');

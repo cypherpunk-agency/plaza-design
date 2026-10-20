@@ -26,18 +26,29 @@ export function box(x: CanvasRenderingContext2D, sx: number, top: number, w: num
 
 export const onScreen = (v: View, sx: number, w: number) => sx + w > -4 && sx < v.viewW + 4;
 
+export interface NeonOptions {
+  size?: number; dead?: number; phase?: number;
+  /** Letters top to bottom from `cy` (a blade), `size + 2` apart. */
+  vertical?: boolean;
+  /** Only this letter lit (a test sweep); `null`/undefined: all lit, normal flicker. */
+  lit?: number | null;
+  /** Downtown's brighter tube: faster flicker, deeper glow. */
+  bright?: boolean;
+}
 /** Neon letters with a glow, like the street's signs. Always put a plate or bracket behind them. */
-export function neon(x: CanvasRenderingContext2D, t: number, s: string, cx: number, cy: number, col: string, opt: { size?: number; dead?: number; phase?: number } = {}) {
-  const size = opt.size ?? 9, dead = opt.dead ?? -1;
-  const flick = (t + (opt.phase ?? 0)) % 300 > 293 && Math.floor(t) % 4 < 2;
+export function neon(x: CanvasRenderingContext2D, t: number, s: string, cx: number, cy: number, col: string, opt: NeonOptions = {}) {
+  const size = opt.size ?? 9, dead = opt.dead ?? -1, bright = !!opt.bright, lit = opt.lit ?? null;
+  const flick = lit === null && (t + (opt.phase ?? 0)) % (bright ? 240 : 300) > (bright ? 232 : 293) && Math.floor(t) % 4 < 2;
   x.save();
   x.font = mono(size, '600'); x.textAlign = 'center'; x.textBaseline = 'middle';
-  for (let i = 0; i < s.length; i++) {
-    const off = flick || i === dead;
-    x.fillStyle = 'rgba(' + col + ',' + (off ? 0.15 : 0.95) + ')';
-    x.shadowColor = 'rgba(' + col + ',.85)'; x.shadowBlur = off ? 0 : 7;
-    x.fillText(s[i], cx + (i - (s.length - 1) / 2) * size * 0.64, cy);
-  }
+  const chars = [...s];
+  chars.forEach((ch, i) => {
+    const off = flick || i === dead || (lit !== null && i !== lit);
+    x.fillStyle = 'rgba(' + col + ',' + (off ? (bright ? 0.13 : 0.15) : 0.95) + ')';
+    x.shadowColor = 'rgba(' + col + (bright ? ',.9)' : ',.85)'); x.shadowBlur = off ? 0 : bright ? 8 : 7;
+    if (opt.vertical) x.fillText(ch, cx, cy + i * (size + 2));
+    else x.fillText(ch, cx + (i - (chars.length - 1) / 2) * size * 0.64, cy);
+  });
   x.restore();
 }
 
@@ -61,12 +72,45 @@ export function tell(x: CanvasRenderingContext2D, t: number, cx: number, cy: num
   x.restore();
 }
 
+export interface PaperLine { text: string; ink?: string; size?: number; weight?: string }
+export interface PaperSignOptions {
+  lines: (string | PaperLine)[];
+  /** 'board': a dark board, orange edge, paper letters (default). 'paper': official paper, dark ink. */
+  style?: 'board' | 'paper';
+  fill?: string; edge?: string; ink?: string; size?: number; weight?: string;
+  /** Line pitch (default 9) and the first line's centre below the top (default: lines centred). */
+  lineH?: number; first?: number;
+  /** A red band across the top with its own light letters (an official notice). */
+  header?: string; headerFill?: string; headerInk?: string; headerH?: number;
+  /** A lighter paper sheet inside the board's edge. */
+  inset?: boolean;
+  /** The cyan tell (ART-GUIDE §7) at `tellAt` [dx from cx, dy from top]; false or absent: none. */
+  tell?: number | false; tellAt?: [number, number];
+}
+/** A printed sign: a dark board with paper letters, or official paper with dark ink and a red header. Screen coordinates. */
+export function paperSign(x: CanvasRenderingContext2D, t: number, cx: number, top: number, w: number, h: number, o: PaperSignOptions) {
+  const paper = o.style === 'paper';
+  box(x, cx - w / 2, top, w, h, o.fill ?? (paper ? '#e0d4b8' : '#1a120b'), o.edge ?? (paper ? 'rgba(40,30,20,.9)' : 'rgba(' + O + ',.7)'));
+  if (o.inset) box(x, cx - w / 2 + 3, top + 3, w - 6, h - 6, 'rgba(' + PAPER + ',.16)');
+  let body = top, bodyH = h;
+  if (o.header !== undefined) {
+    const hh = o.headerH ?? 9;
+    x.fillStyle = o.headerFill ?? 'rgba(' + RED + ',.85)'; x.fillRect(cx - w / 2, top, w, hh);
+    text(x, o.header, cx, top + Math.round(hh * 0.78), o.headerInk ?? 'rgba(250,240,225,.95)', 7, '700');
+    body = top + hh; bodyH = h - hh;
+  }
+  const pitch = o.lineH ?? 9, first = o.first ?? (bodyH - (o.lines.length - 1) * pitch) / 2;
+  const ink = o.ink ?? (paper ? 'rgba(30,18,8,.95)' : 'rgba(' + PAPER + ',.9)'), weight = o.weight ?? (paper ? '700' : '600');
+  o.lines.forEach((l, i) => {
+    const line = typeof l === 'string' ? { text: l } : l;
+    text(x, line.text, cx, body + first + i * pitch, line.ink ?? ink, line.size ?? o.size ?? 7, line.weight ?? weight);
+  });
+  if (o.tell !== undefined && o.tell !== false) { const [dx, dy] = o.tellAt ?? [w / 2 - 5, h - 4]; tell(x, t, cx + dx, top + dy, o.tell); }
+}
+
 /** A paper notice on a board, with a cyan LED so it reads as something to read. */
 export function notice(x: CanvasRenderingContext2D, t: number, cx: number, top: number, w: number, h: number, lines: string[], phase = 0) {
-  box(x, cx - w / 2, top, w, h, '#1a120b', 'rgba(' + O + ',.7)');
-  box(x, cx - w / 2 + 3, top + 3, w - 6, h - 6, 'rgba(' + PAPER + ',.16)');
-  lines.forEach((l, i) => text(x, l, cx, top + 9 + i * 9, 'rgba(' + PAPER + ',.9)', 7, '600'));
-  tell(x, t, cx + w / 2 - 5, top + h - 4, phase);
+  paperSign(x, t, cx, top, w, h, { lines, inset: true, first: 9, tell: phase });
 }
 
 /** The way back to Downtown at a scene's left edge: a door in the wall with a cyan plate. */

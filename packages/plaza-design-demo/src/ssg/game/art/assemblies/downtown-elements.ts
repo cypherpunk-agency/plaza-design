@@ -3,8 +3,9 @@ import { DowntownArtwork, type Front } from './downtown';
 import { drawLibraryFront } from './library';
 import { drawMetroStairs } from '../architecture/metro-stairs';
 import { drawTaxiPad } from './taxi-pad';
-import { SPR } from '../core/sprites';
 import { ticker, YELLOW } from '../signage/screens';
+import { neonPlate } from '../signage/kit';
+import { windowMask } from '../signage/kit-elements';
 import type { Anchor, Bounds, Element, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import * as devices from '../electronics/downtown-devices';
@@ -21,7 +22,7 @@ function element(type:string,label:string,category:string,fields:Record<string,F
  return {type:'downtown.'+type,version:1,label,category,coordinates:'world',fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},right:{x:Number(p.width??0),h:0,role:'mount'},topCenter:{x:Number(p.width??0)/2,h:Number(p.height??0),role:'surface'}}),
   draw(x,v,p,s,_pass,at){kernel.set(x,raised(v,at.h));draw(x,v,p,s,at);}};
 }
-const mask:Field={kind:'json',label:'Window exclusion [left,right,bottom,top]',default:[],validate:value=>{if(!Array.isArray(value)||![0,4].includes(value.length)||value.some(q=>typeof q!=='number'||!Number.isFinite(q)))throw new Error('Invalid sign window mask');}};
+const mask:Field=windowMask;
 const enabled={enabled:bool('Visible on parent front',true)};
 const metrics:Field={kind:'json',label:'Resolved parent dimensions and visibility',default:[0,0,false,true],validate:v=>{if(!Array.isArray(v)||v.length!==4||typeof v[0]!=='number'||typeof v[1]!=='number'||typeof v[2]!=='boolean'||typeof v[3]!=='boolean')throw new Error('Invalid front metrics');}};
 const front=(s:Properties,at:Required<Placement>):Front=>{const m=s.metrics as Value[];return{x:at.x,w:Number(m[0]),h:Number(m[1]),roof:!!m[2]};};
@@ -35,7 +36,7 @@ export const downtownElements:Element[]=[
  element('window','Storey window, blinds and AC','architecture',{light:num('Seeded room light',-1,-1,8),ac:bool('Air conditioner'),seed:num('Stable light seed',0,0,1000000000)},()=>({x:-1,h:0,w:16,tall:38}),(_x,v,p,s,at)=>{kernel.set(_x,v);if(s.enabled)kernel.drawWindow(v.sx(at.x),v.y(at.h),n(p,'light'),!!p.ac,n(p,'seed'));},enabled),
  element('bay','Ground-floor opening','architecture',{width:num('Width',24,1),kind:{kind:'select',label:'Opening',default:'door',options:['door','glass','shutter','sealed']}},p=>box(n(p,'width'),64),(_x,v,p,s,at)=>{if(s.enabled)kernel.drawBay(v.sx(at.x),n(p,'width'),p.kind as 'door'|'glass'|'shutter'|'sealed');},enabled),
  element('penthouse','Penthouse window and plate','architecture',{},()=>box(60,280,-30),(_x,_v,_p,_s,at)=>kernel.drawPenthouse(at.x)),
- element('neon-sign','Bolted neon plate','signage',{width:num('Plate width',96,1),height:num('Plate height',15,1),text:str('Letters'),color:str('RGB color','0,255,255'),size:num('Letter size',10,1,64),phase:num('Flicker phase'),mask,smear:bool('Street reflection')},p=>box(n(p,'width'),n(p,'height'),-n(p,'width')/2),(_x,v,p,_s,at)=>{kernel.set(_x,v);kernel.plate(v.sx(at.x),v.y(at.h),n(p,'width'),n(p,'height'),String(p.color));kernel.neon(String(p.text),v.sx(at.x),v.y(at.h),String(p.color),{size:n(p,'size'),phase:n(p,'phase')});}),
+ element('neon-sign','Bolted neon plate','signage',{width:num('Plate width',96,1),height:num('Plate height',15,1),text:str('Letters'),color:str('RGB color','0,255,255'),size:num('Letter size',10,1,64),phase:num('Flicker phase'),dead:num('Burnt-out letter (-1 none)',-1,-1,64),mask,smear:bool('Street reflection')},p=>box(n(p,'width'),n(p,'height'),-n(p,'width')/2),(x,v,p,_s,at)=>neonPlate(x,v.t,v.sx(at.x),v.y(at.h),{text:String(p.text),col:String(p.color),size:n(p,'size'),w:n(p,'width'),h:n(p,'height'),phase:n(p,'phase'),dead:n(p,'dead')})),
  element('weather-ticker','Registry weather ticker','signage',{width:num('Width',80,1),height:num('Height',11,1),mask,smear:bool('Street reflection')},p=>box(n(p,'width'),n(p,'height'),-n(p,'width')/2),(x,v,p,s,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:n(p,'height'),text:String(s.text),col:YELLOW,speed:0.4,phase:60}),{text:str('Live weather text')}),
  element('billboard','Registry billboard frame','signage',{mask,smearColor:str('Reflection RGB')},()=>box(132,160,-66),(_x,_v,_p,_s,at)=>kernel.drawBillboard(at.x)),
  element('stall','Noodle stall and lamps','furniture',{width:num('Width',140,1),mask},p=>box(n(p,'width')+40,150,-20),(_x,_v,p,_s,at)=>kernel.drawStall({x:at.x,w:n(p,'width')})),
@@ -48,7 +49,7 @@ export const downtownElements:Element[]=[
  element('smear','Wet street neon reflection','atmosphere',{source:str('Light instance')},()=>box(16,44,-8),(_x,_v,_p,s)=>{if(s.city)kernel.drawSmear(n(s,'x'),String(s.color),n(s,'rain'));},{x:num('Resolved lamp x'),color:str('Resolved RGB'),rain:num('Wetness',0,0,1),city:bool('City reflections')}),
  element('fixer','Noodle stall fixer','characters',{},()=>box(36,60,-18),(_x,_v,_p,_s,at)=>kernel.drawFixer(at.x)),
  element('counter','Stall counter and steam','furniture',{},(_p,s)=>box(Number((s.metrics as Value[])[1]),66),(_x,_v,_p,s,at)=>kernel.drawCounter({x:at.x,w:Number((s.metrics as Value[])[1])}),{metrics:{kind:'json',label:'Stall x and width',default:[0,140],validate:v=>{if(!Array.isArray(v)||v.length!==2||v.some(q=>typeof q!=='number'))throw new Error('Invalid counter metrics');}}}),
- element('pedestrian','Street resident','characters',{sprite:{kind:'select',label:'Appearance',default:'hood',options:['hood','umbrella','hat']},flip:bool('Face left')},()=>box(48,60,-24),(_x,_v,p,_s,at)=>kernel.drawPedestrian(at.x,SPR[p.sprite as 'hood'|'umbrella'|'hat'],!!p.flip)),
+ element('pedestrian','Street resident','characters',{sprite:{kind:'select',label:'Appearance',default:'hood',options:['hood','umbrella','hat']},flip:bool('Face left')},()=>box(48,60,-24),(_x,_v,p,_s,at)=>kernel.drawPedestrian(at.x,p.sprite as 'hood'|'umbrella'|'hat',!!p.flip)),
  element('library-front','Public library entrance','architecture',{},()=>box(100,120,-50),(x,v,_p,_s,at)=>drawLibraryFront(x,raised(v,at.h),at.x)),
  element('metro-stairs','Metro street stairs','architecture',{mask},()=>box(100,110,-50),(x,v,_p,_s,at)=>drawMetroStairs(x,raised(v,at.h),at.x)),
  element('taxi-pad','Sky taxi street stand','vehicles',{mask},()=>box(120,130,-60),(x,v,_p,_s,at)=>drawTaxiPad(x,raised(v,at.h),at.x)),

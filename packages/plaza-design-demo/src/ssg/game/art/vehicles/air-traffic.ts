@@ -17,12 +17,18 @@
  * length. Drawn in its own frame, origin at the craft's middle, heights up (y = -h); `face` 1 flies
  * right. `t` is the animation clock in frames; `still` holds rotors and strobes. `scale`: the screen
  * size of one unit (the caller's), so the lights never shrink below a pixel or two far off.
- * Register: sets/index.ts (`air-traffic`).
+ *
+ * The AIR class of the vehicle kit: `drawAircraft` takes any kind (the craft, the drone, the blimp);
+ * `livery` (kit.ts) adds a fleet stripe, number, QR plate and the autonomy cues; `thrust` lights the
+ * fans of a hovering pod; `phase` offsets its strobes. `drawCab` is the same sky taxi at a stand's
+ * small scale (the taxi pads and the taxi flight). Placeable as `vehicle.air` (air-vehicle.ts).
  */
 
-import { RED } from '../core/primitives';
+import { box, O, PAPER, RED } from '../core/primitives';
+import { drawSprite, HULL, SPR } from '../core/sprites';
 import { BOX40, container, type Crate } from "../props/containers";
 import { frameView } from "../core/view";
+import { drawLivery, type Livery, type LiveryBox, type Extent } from "./kit";
 
 const R = Math.round;
 
@@ -42,6 +48,28 @@ export interface CraftLook {
   box?: Crate | null;
   /** The patrol's searchlight on. */
   beam?: boolean;
+  /** Fleet livery and autonomy cues. */
+  livery?: Livery;
+  /** Hovering: the fans glow and flicker under a pod. */
+  thrust?: boolean;
+  /** Frames added to the strobes' clock, so a lane of craft does not blink in step. */
+  phase?: number;
+}
+
+/** Each craft's extent (units, heights up), for bounds and the depth bands' darkening. Light washes are outside it. */
+export const CRAFT_EXTENT: Record<CraftKind, Extent> = {
+  pod: { x0: -70, x1: 70, top: 47, bottom: 33 }, taxi: { x0: -80, x1: 80, top: 54, bottom: 38 },
+  patrol: { x0: -90, x1: 90, top: 36, bottom: 22 }, shuttle: { x0: -190, x1: 190, top: 44, bottom: 6 },
+  hauler: { x0: -235, x1: 235, top: 54, bottom: 139 }, medevac: { x0: -120, x1: 120, top: 50, bottom: 18 },
+  dropship: { x0: -350, x1: 350, top: 102, bottom: 46 }, escort: { x0: -75, x1: 75, top: 34, bottom: 10 },
+};
+/** Where a livery sits on each hull. */
+function liveryBox(kind: CraftKind): Omit<LiveryBox, 'face' | 't' | 'still'> {
+  if (kind === 'pod' || kind === 'taxi') { const k = kind === 'taxi' ? 4.2 : 3.7; return { l: -16 * k, len: 32 * k, belt: 2 * k, roof: 10 * k }; }
+  const L = CRAFT_LEN[kind] / 2;
+  return ({ patrol: { l: -L + 10, len: 2 * L - 40, belt: 8, roof: 27 }, shuttle: { l: -L + 20, len: 2 * L - 80, belt: 16, roof: 39 },
+    hauler: { l: -L + 60, len: 2 * L - 120, belt: 4, roof: 46 }, medevac: { l: -L + 10, len: 2 * L - 20, belt: 24, roof: 41 },
+    dropship: { l: -L + 40, len: 2 * L - 120, belt: 30, roof: 94 }, escort: { l: -L + 10, len: 2 * L - 30, belt: 2, roof: 16 } } as const)[kind];
 }
 
 /** A light at (lx, ly), at least `min` screen units across. */
@@ -57,7 +85,8 @@ function halo(x: CanvasRenderingContext2D, lx: number, ly: number, rgb: string, 
 const blinkOn = (o: CraftLook, period: number, phase = 0) => o.still || Math.floor((o.t + phase) / period) % 2 === 0;
 
 /** Any craft of the city's sky, by kind. */
-export function drawCraft(x: CanvasRenderingContext2D, kind: CraftKind, o: CraftLook) {
+export function drawCraft(x: CanvasRenderingContext2D, kind: CraftKind, look: CraftLook) {
+  const o = look.phase ? { ...look, t: look.t + look.phase } : look;
   x.save(); if ((o.face ?? 1) < 0) x.scale(-1, 1);
   if (kind === 'pod' || kind === 'taxi') pod(x, o, kind === 'taxi');
   else if (kind === 'patrol') patrol(x, o);
@@ -66,12 +95,18 @@ export function drawCraft(x: CanvasRenderingContext2D, kind: CraftKind, o: Craft
   else if (kind === 'medevac') medevac(x, o);
   else if (kind === 'dropship') dropship(x, o);
   else escort(x, o);
+  drawLivery(x, o.livery, { ...liveryBox(kind), face: o.face ?? 1, t: o.t, still: o.still });
   x.restore();
 }
 
 /** A pod: rounded body, cabin glass, ducted fans fore and aft, a warm trail. The taxi: yellow, the TAXI light. */
 function pod(x: CanvasRenderingContext2D, o: CraftLook, taxi: boolean) {
-  const k = taxi ? 4.2 : 3.7, p = taxi ? '#e8b830' : o.paint ?? '#e8e0d0';
+  const k = taxi ? 4.2 : 3.7, p = taxi ? o.paint ?? '#e8b830' : o.paint ?? '#e8e0d0';
+  if (o.thrust) {
+    // the fans' downwash, lit warm, flickering
+    const on = o.still || Math.sin(o.t * 0.3) > 0, a = on ? 0.38 : 0.26;
+    for (const fx of [-15 * k, 13 * k]) { const g = x.createRadialGradient(fx, 9 * k, 1, fx, 9 * k, 7 * k); g.addColorStop(0, 'rgba(255,190,110,' + a + ')'); g.addColorStop(1, 'rgba(255,190,110,0)'); x.fillStyle = g; x.fillRect(fx - 7 * k, 2 * k, 14 * k, 14 * k); }
+  }
   const g = x.createLinearGradient(-40 * k, 0, -14 * k, 0); g.addColorStop(0, 'rgba(255,120,170,0)'); g.addColorStop(1, 'rgba(255,120,170,.4)');
   x.fillStyle = g; x.fillRect(-40 * k, 1 * k, 26 * k, 3 * k);
   x.save(); x.scale(k, k);
@@ -221,4 +256,50 @@ export function drawBlimp(x: CanvasRenderingContext2D, o: { t: number; still?: b
   x.save(); x.font = '600 7px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
   x.fillStyle = n % 2 ? 'rgba(255,217,165,.9)' : 'rgba(255,150,40,.95)'; x.fillText(msg, 0, -1, 108); x.restore();
   x.fillStyle = o.still || Math.floor(o.t / 20) % 2 ? 'rgba(' + RED + ',1)' : 'rgba(' + RED + ',.3)'; x.fillRect(R(L - 3), -1, 2, 2);
+}
+
+/**
+ * The city's classic sky ships: pixel-sprite craft that fly the far sky lanes of every outdoor scene
+ * (the `spinner` car, the long `freighter`, the red-eyed `skydrone`), and the old sky `cab` of the taxi
+ * stands (a squat cab with a warm lit cabin, a yellow roof light and glowing thrusters). They keep their
+ * own hand-drawn look inside the air class. `SPRITE_PX` units per sprite pixel puts a spinner near a pod's length.
+ */
+const SPRITE_PX = 9;
+const SPRITE_SHIPS = { spinner: { rows: SPR.spinner, glow: 'rgba(0,255,255,.3)' }, freighter: { rows: SPR.freighter, glow: 'rgba(0,255,255,.3)' }, skydrone: { rows: SPR.drone, glow: 'rgba(255,42,68,.5)' } } as const;
+type SpriteShip = keyof typeof SPRITE_SHIPS;
+/** Units per pixel of the old cab drawing (about 30 pixels across). */
+const CAB_K = 4.2;
+/** The air class: every kind the kit flies. */
+export type AirKind = CraftKind | 'drone' | 'blimp' | SpriteShip | 'cab';
+export const AIR_KINDS: readonly AirKind[] = ['pod', 'taxi', 'patrol', 'shuttle', 'hauler', 'medevac', 'dropship', 'escort', 'drone', 'blimp', 'spinner', 'freighter', 'skydrone', 'cab'];
+const spriteExtent = (rows: readonly string[]): Extent => ({ x0: -rows[0].length * SPRITE_PX / 2, x1: rows[0].length * SPRITE_PX / 2, top: rows.length * SPRITE_PX / 2, bottom: rows.length * SPRITE_PX / 2 });
+/** Each kind's extent in units (the drone about 1 m, the blimp about 70 m). */
+export const AIR_EXTENT: Record<AirKind, Extent> = { ...CRAFT_EXTENT, drone: { x0: -13, x1: 13, top: 6, bottom: 17 }, blimp: { x0: -1020, x1: 920, top: 280, bottom: 310 },
+  spinner: spriteExtent(SPR.spinner), freighter: spriteExtent(SPR.freighter), skydrone: spriteExtent(SPR.drone), cab: { x0: -16 * CAB_K, x1: 16 * CAB_K, top: 17 * CAB_K, bottom: 3 * CAB_K } };
+/** Height of a sprite ship in sprite pixels (its frame's middle sits half of this above its underside). */
+export const spriteShipRows = (kind: AirKind) => kind in SPRITE_SHIPS ? SPRITE_SHIPS[kind as SpriteShip].rows.length : 0;
+/** Any aircraft by kind, in its own frame (origin at its middle). The drone and blimp take no facing (the blimp's adverts stay readable). */
+export function drawAircraft(x: CanvasRenderingContext2D, kind: AirKind, o: CraftLook & { cargo?: boolean }) {
+  const t = o.t + (o.phase ?? 0);
+  if (kind in SPRITE_SHIPS) { const ship = SPRITE_SHIPS[kind as SpriteShip]; drawSprite(x, ship.rows, 0, ship.rows.length * SPRITE_PX / 2, { ps: SPRITE_PX, flip: (o.face ?? 1) < 0, pal: HULL, glow: ship.glow }); return; }
+  if (kind === 'cab') { drawCab(x, 0, 0, CAB_K, t); return; }
+  if (kind === 'drone') drawDrone(x, { t, still: o.still, cargo: o.cargo });
+  else if (kind === 'blimp') { x.save(); x.scale(BLIMP_SCALE, BLIMP_SCALE); drawBlimp(x, { t, still: o.still }); x.restore(); }
+  else drawCraft(x, kind as CraftKind, kind === 'hauler' && o.cargo === false ? { ...o, box: null } : o);
+}
+
+/** A sky taxi: a small hovering cab, warm lit cabin, its roof light, thrusters glowing under it (the taxi stands' cab). */
+export function drawCab(x: CanvasRenderingContext2D, cx: number, base: number, k = 1, t = 0) {
+  const u = (n: number) => Math.round(n * k), c = Math.round(cx), b = Math.round(base);
+  const g = x.createRadialGradient(c, b + u(3), 1, c, b + u(3), u(16));
+  g.addColorStop(0, 'rgba(255,190,110,.35)'); g.addColorStop(1, 'rgba(255,190,110,0)');
+  x.fillStyle = g; x.fillRect(c - u(16), b - u(4), u(32), u(22));
+  box(x, c - u(15), b - u(8), u(30), u(8), '#2a1608', 'rgba(' + O + ',.9)');
+  box(x, c - u(8), b - u(14), u(15), u(7), '#1a0e06', 'rgba(' + O + ',.8)');
+  x.fillStyle = 'rgba(' + PAPER + ',.55)'; x.fillRect(c - u(6), b - u(12), u(5), u(4)); x.fillRect(c + u(1), b - u(12), u(4), u(4));
+  x.fillStyle = 'rgba(255,210,58,.95)'; x.fillRect(c - u(3), b - u(16), u(6), u(2));
+  const on = Math.sin(t * 0.3) > 0;
+  x.fillStyle = on ? 'rgba(255,220,170,.95)' : 'rgba(255,170,80,.7)';
+  x.fillRect(c - u(12), b, u(5), Math.max(1, u(1))); x.fillRect(c + u(7), b, u(5), Math.max(1, u(1)));
+  x.fillStyle = 'rgba(255,240,215,.95)'; x.fillRect(c + u(13), b - u(6), u(2), u(2));
 }

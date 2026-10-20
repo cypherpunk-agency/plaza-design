@@ -5,6 +5,8 @@ import { LINE,STATIONS } from "../../world/city";
 import type { Light } from '../../world/light';
 import { clock, LOOP, SEG, SIDING, type trainVisualState } from '../../world/transport/line';
 import { ticker } from '../signage/line-departures';
+import { paperSign, scroll } from '../signage/kit';
+import { sloganScreen } from '../signage/screens';
 import { drawGalleriaDome } from "../architecture/galleria-dome";
 import { drawGrade } from "../atmosphere/lighting";
 import { crowd,drawRider,SEAT_H,type RiderKind } from "../characters/riders";
@@ -467,11 +469,7 @@ function advert(x:CanvasRenderingContext2D,v:View,a:{x:number;text:string},i:num
       if (home && i === 1) {
         // LINE 0's news: its name, then the morning's item scrolling past
         text(x, 'NEWS', s - 56, y(148), 'rgba(' + PAPER + ',.9)', 7, '600');
-        x.save(); x.beginPath(); x.rect(s - 44, y(154), 108, 12); x.clip();
-        x.font = '600 7px "IBM Plex Mono", monospace'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(255,200,170,.85)';
-        const msg = L.news + '   ·   ', len = x.measureText(msg).width, off = (t * 0.4) % len;
-        x.fillText(msg, Math.round(s + 64 - off), y(148)); x.fillText(msg, Math.round(s + 64 - off + len), y(148));
-        x.restore();
+        scroll(x, t, L.news + '   ·   ', s - 44, y(148), 108, { col: '255,200,170', alpha: 0.85, speed: 0.4 });
       } else text(x, home ? L.adsHome[i] : a.text, s - 2, y(148), 'rgba(' + PAPER + ',.75)', 7, '600');
 }
 function adTell(x:CanvasRenderingContext2D,v:View,wx:number){tell(x,v.t,v.sx(wx)+65,v.y(148));
@@ -497,9 +495,7 @@ function gangwayDoor(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx
       x.fillStyle = 'rgba(' + RED + ',.9)'; x.fillRect(gd + 10, y(30), 3, 3);
 
 }
-function carPlate(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;      box(x, gw + 2, y(D + 18), 66, 12, '#1a120b', 'rgba(' + O + ',.5)');
-      text(x, 'CAR 3 OF 3', gw + 35, y(D + 12), 'rgba(' + PAPER + ',.8)', 7, '600');
-      tell(x, t, gw + 64, y(D + 8), 3);
+function carPlate(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;      paperSign(x, t, gw + 35, y(D + 18), 66, 12, { lines: ['CAR 3 OF 3'], edge: 'rgba(' + O + ',.5)', ink: 'rgba(' + PAPER + ',.8)', tell: 3, tellAt: [29, 10] });
 
 }
 function brake(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;      const pulled = visual.ride.phase === 'braking' || visual.ride.phase === 'halted';
@@ -513,10 +509,8 @@ function brake(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1
       if (inputs.hover === 'train') { x.save(); x.strokeStyle = 'rgba(255,61,242,.85)'; x.shadowColor = 'rgba(255,61,242,.8)'; x.shadowBlur = 8; x.strokeRect(bk - 15.5, y(62) - 3.5, 31, 47); x.restore(); }
 
 }
-function registryScreen(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;const home=visual.home;      box(x, gw + 4, y(124), 62, 30, '#0a0604', 'rgba(' + O + ',.6)');
-      const lines = (home ? [['REGISTRY AUDIT', 'COMPLETE'], ['1,204 RECORDS', 'RETIRED'], ['NO ACTION', 'NEEDED']] : [['KEEP YOUR ID', 'VISIBLE'], ['ALL JOURNEYS', 'RECORDED'], ['REPORT', 'IRREGULARITIES']])[Math.floor(t / 180) % 3];
-      text(x, lines[0], gw + 35, y(114), 'rgba(255,200,170,.85)', 7, '600'); text(x, lines[1], gw + 35, y(104), 'rgba(255,200,170,.85)', 7, '600');
-      x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(gw + 60, y(121), 2, 2);
+function registryScreen(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;const home=visual.home;      // the Registry's slogan screen (sign kit), its own lines for the morning after
+      sloganScreen(x, v, { x: L.gangway + 35, h: 96, w: 58, tall: 26, ads: home ? [['REGISTRY AUDIT', 'COMPLETE'], ['1,204 RECORDS', 'RETIRED'], ['NO ACTION', 'NEEDED']] : [['KEEP YOUR ID', 'VISIBLE'], ['ALL JOURNEYS', 'RECORDED'], ['REPORT', 'IRREGULARITIES']], cols: ['255,200,170'], scan: false });
 
 }
 function door(x:CanvasRenderingContext2D,v:View,d:number){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;      const s = sx(d);
