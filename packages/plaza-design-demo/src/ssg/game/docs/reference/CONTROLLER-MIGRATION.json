@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "status": "inventory-only",
+  "status": "historical-inventory",
   "pathBase": "packages/plaza-design-demo/src/ssg/game",
   "gatePolicy": "No G0/G9 or scene completion promotion. Source-backed inventory, not implementation or browser verification.",
   "sceneCount": 19,
@@ -676,5 +676,11 @@
     "requirement": "Every existing scene and newly created ordinary scene must be able to author ordinary devices/nouns/verbs/starting wiring without adding TypeScript geometry/scene registration. Existing native controller vocabularies remain registered and validated.",
     "implementationDirection": "Generalize the shared device source validator/assembly/editor to empty native scenes and authored scenes, use prospective network/keyring references, add source projections and atomic grouped creation/Save/bundle/private Play coverage. Preserve existing geometry adapters as registered native parameter bindings, not eligibility gates.",
     "scopeLimit": "Does not complete all specialized controller inputs or final whole-goal authoring gates."
+  },
+  "currentReconciliation": {
+    "reference": "docs/reference/NATIVE-EXECUTION-AUDIT.json",
+    "check": "scripts/scene-system/check-controller-inventory.mts",
+    "scope": "Current registered SceneRules surface; historical remainingAuthoredFields below describe the initial audit and must not be treated as current outstanding tasks. Runtime/composition/panel and full authoring audits remain separate.",
+    "ordinaryAudit": "docs/reference/ORDINARY-CONTROLLER-CONSOLIDATION.md"
   }
 }

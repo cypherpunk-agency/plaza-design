@@ -80,7 +80,6 @@ export const CAPSULE_RULES: SceneRules = {
     temp: (m) => Math.round(tempOf(m)),
     /** Too hot to send anything: packets drop. */
     hot: (m) => tempOf(m) >= tune(m, 'hotTemp'),
-    pixelOnRouter: (m) => capsuleState(m,'pixelAt') === 'router',
   },
   tick,
   // Controller-owned references are checked by the registered source contract.

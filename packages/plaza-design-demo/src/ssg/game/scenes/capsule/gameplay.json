@@ -745,6 +745,25 @@
           }
         }
       ]
+    },
+    "pixelOnRouter": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "state": "capsule.pixelAt",
+            "is": "router"
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
     }
   }
 }

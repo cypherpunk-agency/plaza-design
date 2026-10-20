@@ -23,4 +23,5 @@ The original/current producer mapping and exact 66-row conversation reconciliati
 [COMMUNICATION-ACCEPTANCE.md](./COMMUNICATION-ACCEPTANCE.md). They derive from the untouched capture.
 The all-scene inventory remains `scripts/scene-system/fixtures/all-game-initial-inventory.json`;
 the six fixed technical workload definitions remain `scripts/performance/workloads.ts`.
-Their existence does not substitute for the still-incomplete current workload measurements.
+Their existence alone is not measurement evidence. G6 was subsequently accepted in
+PERFORMANCE-CHECKPOINT-2026-10-19-C.md; the historical G0 chronology limitations above remain open.

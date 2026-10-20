@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `571ac3e` on main and production.
-Homepage jobs39379509408/39379509537 and design job39379509549 succeeded.
+Last verified deployment: `47c4b95` on main and production.
+Homepage jobs39381123804/39381123569 and design job39381123817 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -3142,3 +3142,39 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   diagnostic. Original-baseline status remains FAIL solely for the existing Mall animation
   frame. Matrix/status acceptance metadata was updated after that runtime raster capture;
   no rendering/layer/object implementation changed and no baseline was overwritten.
+
+
+## 2026-10-20: current rule-surface audit and Pixel predicate removal
+
+- Reconciled the current registered SceneRules surface against all19 native scenes, including
+  the Downtown/Stacks player-bound rule factories:51 callable entries with explicit simulation,
+  presentation, canonical-read, validation or ordinary-gap classifications. The check emits source
+  identity and callable hashes. `CONTROLLER-MIGRATION.json` is now explicitly historical, rather
+  than presenting already-migrated fields as current work. See NATIVE-EXECUTION-AUDIT.json and
+  ORDINARY-CONTROLLER-CONSOLIDATION.md. This audit does not cover every runtime/composition/panel
+  body and does not sign G0/G8/G9/G13.
+- Deleted Capsule's ordinary native `pixelOnRouter` predicate. Its existing ID now resolves through
+  a shared source select over canonical capsule.pixelAt; all existing device bindings are retained.
+  No rendering, layer, object or composition implementation changed.
+- PASS:1,728 immutable-original thermal/boot/wire/Pixel/door/goal histories; all3 Pixel positions
+  in actual router status and temperature actions;108 router online histories;12 shared-off cases;
+  12 kettle timelines; strict controller validation; package TypeScript; both production builds.
+- Actual typed query edit changes native status in pending and freshly bundled shipping SCENES;
+  protected paired Save, invalid-reference atomic rejection and exact-byte Undo PASS.
+  Latest Save evidence: `.scene-system/capsule-workflow-save-zbJ6qM`.
+- Source-bound inventory report: `.scene-system/controller-inventory-p1vykb/evidence.json`,
+  source `sha256:184454b78adb72550f74842786440a22fab8ed39911eb9c1e58568f6a7362042`.
+  Four ordinary gaps remain within this bounded surface: Capsule reboot response dispatch,
+  Train where/haltWhere text selection, Sandbox night predicate. This is not all remaining goal work.
+- Build outputs: app-SIEFRVFR.js, play-SRV437B5.js, play-429fe2af05f716a0.html;
+  public editor97 documents/128 references. Only the known Vite large-chunk advisory remains.
+  Full raster/state/save acceptance remains G12 work; no frozen baseline was changed.
+- Six of14 gates remain accepted (G1/G2/G3/G5/G6/G11). Goal remains ACTIVE.
+
+Combined-source verification after fast-forwarding the user's editor changes at eb3c095:
+both builds and the same inventory/typed Save checks PASS. Current inventory raw report:
+`.scene-system/controller-inventory-XHS4Mx/evidence.json`, source
+`sha256:61268ed613e301fcc02f6e26bd2b0aec206427e90b4f8216d6db05c20bba7b21`.
+Current Save evidence: `.scene-system/capsule-workflow-save-eDGnpc`.
+Combined editor app-7PAWGMDI.js / play-SRV437B5.js / play-80d345ad82462556.html,
+98 documents/129 references. The earlier checkpoint artifacts remain scoped to their own source.

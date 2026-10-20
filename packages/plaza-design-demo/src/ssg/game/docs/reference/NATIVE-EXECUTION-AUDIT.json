@@ -1,0 +1,444 @@
+{
+  "version": 1,
+  "status": "current-surface-audit",
+  "scope": "Registered SceneRules callables for the exact 19-scene native corpus, resolving player-bound rule factories. This is not whole-controller, runtime, composition, panel or editor acceptance.",
+  "reviewedFrom": "47c4b95",
+  "classificationPolicy": "Every callable is explicitly classified. Ordinary gaps block removal acceptance; simulation/presentation retention does not by itself prove parameter/editor coverage. Raw reports record current source and callable body hashes.",
+  "scenes": [
+    {
+      "scene": "capsule",
+      "controller": "capsule",
+      "inputs": [
+        "capsule.router.onlineDue"
+      ],
+      "panels": [],
+      "functions": {
+        "effect:router.boot": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "effect:kettle.boil": {
+          "classification": "presentation",
+          "reason": "Sets the transient steam deadline from typed controller tuning; no reward, permission or dialogue progression."
+        },
+        "read:routerUp": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:routerUpAtTickStart": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:booting": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:temp": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:hot": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "tick": {
+          "classification": "ordinary-gap",
+          "reason": "Retain thermal integration and threshold timing, but reboot response dispatch still calls native say/line through the controller text binding."
+        },
+        "check": {
+          "classification": "validation",
+          "reason": "Validates native camera or mechanical requirements against the assembled current source; executes no gameplay content."
+        }
+      },
+      "sourcePaths": [
+        "scenes/capsule/rules.ts",
+        "engine/controllers/capsule.ts",
+        "scenes/capsule/gameplay.json"
+      ]
+    },
+    {
+      "scene": "downtown",
+      "controller": "downtown",
+      "inputs": [
+        "downtown.dlv.started",
+        "downtown.dlv.scanned",
+        "downtown.dlv.door",
+        "downtown.dlv.completed"
+      ],
+      "panels": [
+        "cam3"
+      ],
+      "functions": {
+        "effect:dlv.inward": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "effect:dlv.outward": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:dlvThrough": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:dlvInside": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:handle": {
+          "classification": "canonical-read",
+          "reason": "Read-only access to the canonical player save or node-count service; no second state block, mutation or progress cursor."
+        },
+        "read:named": {
+          "classification": "canonical-read",
+          "reason": "Read-only access to the canonical player save or node-count service; no second state block, mutation or progress cursor."
+        },
+        "read:tokens": {
+          "classification": "canonical-read",
+          "reason": "Read-only access to the canonical player save or node-count service; no second state block, mutation or progress cursor."
+        },
+        "read:jump": {
+          "classification": "canonical-read",
+          "reason": "Read-only access to the canonical player save or node-count service; no second state block, mutation or progress cursor."
+        },
+        "read:till": {
+          "classification": "canonical-read",
+          "reason": "Read-only access to the canonical player save or node-count service; no second state block, mutation or progress cursor."
+        },
+        "read:end": {
+          "classification": "canonical-read",
+          "reason": "Read-only access to the canonical player save or node-count service; no second state block, mutation or progress cursor."
+        },
+        "read:nodes": {
+          "classification": "canonical-read",
+          "reason": "Read-only access to the canonical player save or node-count service; no second state block, mutation or progress cursor."
+        },
+        "place": {
+          "classification": "presentation",
+          "reason": "Samples the current DLV trajectory for its world position; source bindings select the vehicle and geometry."
+        },
+        "check": {
+          "classification": "validation",
+          "reason": "Validates native camera or mechanical requirements against the assembled current source; executes no gameplay content."
+        }
+      },
+      "sourcePaths": [
+        "scenes/downtown/rules.ts",
+        "engine/controllers/motion.ts",
+        "scenes/downtown/gameplay.json"
+      ]
+    },
+    {
+      "scene": "library",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/library/index.ts"
+      ]
+    },
+    {
+      "scene": "yard",
+      "controller": "yard",
+      "inputs": [],
+      "panels": [
+        "camera"
+      ],
+      "functions": {
+        "check": {
+          "classification": "validation",
+          "reason": "Validates native camera or mechanical requirements against the assembled current source; executes no gameplay content."
+        }
+      },
+      "sourcePaths": [
+        "scenes/yard/effects.ts",
+        "engine/controllers/yard.ts",
+        "scenes/yard/gameplay.json"
+      ]
+    },
+    {
+      "scene": "moth",
+      "controller": "moth",
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/moth/index.ts"
+      ]
+    },
+    {
+      "scene": "beach",
+      "controller": "beach",
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/beach/index.ts"
+      ]
+    },
+    {
+      "scene": "harbor",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/harbor/index.ts"
+      ]
+    },
+    {
+      "scene": "stacks",
+      "controller": "stacks",
+      "inputs": [
+        "stacks.crane.started",
+        "stacks.crane.scanned",
+        "stacks.crane.landed",
+        "stacks.crane.return.started",
+        "stacks.crane.returned"
+      ],
+      "panels": [
+        "scope"
+      ],
+      "functions": {
+        "effect:sts2.lift": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "effect:port.return": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:craneBusy": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:reeferTrajectory": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:portFrozen": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:craneReturning": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "tick": {
+          "classification": "presentation",
+          "reason": "Expires only the transient cold scan highlight after its current 1200ms lifetime; no puzzle progress is evaluated here."
+        },
+        "check": {
+          "classification": "validation",
+          "reason": "Validates native camera or mechanical requirements against the assembled current source; executes no gameplay content."
+        }
+      },
+      "sourcePaths": [
+        "scenes/stacks/rules.ts",
+        "engine/controllers/motion.ts",
+        "scenes/stacks/gameplay.json"
+      ]
+    },
+    {
+      "scene": "warehouse",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/warehouse/index.ts"
+      ]
+    },
+    {
+      "scene": "market",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/market/index.ts"
+      ]
+    },
+    {
+      "scene": "laundromat",
+      "controller": "laundromat",
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/laundromat/index.ts"
+      ]
+    },
+    {
+      "scene": "shop",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/shop/index.ts"
+      ]
+    },
+    {
+      "scene": "mall",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/mall/index.ts"
+      ]
+    },
+    {
+      "scene": "metro",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/metro/index.ts"
+      ]
+    },
+    {
+      "scene": "galleriaStation",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/galleriaStation/index.ts"
+      ]
+    },
+    {
+      "scene": "harborStation",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/harborStation/index.ts"
+      ]
+    },
+    {
+      "scene": "train",
+      "controller": null,
+      "inputs": [
+        "train.halted",
+        "train.resumed",
+        "train.doors.opened"
+      ],
+      "panels": [],
+      "functions": {
+        "effect:train.brake": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "effect:train.doors": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "effect:train.lock": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainBetween": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainAtStation": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainStopName": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainNextName": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainKilometres": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainDoorsOpen": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainStanding": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainBraking": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainCanBrake": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainHalted": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainAtSiding": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainHaltSiding": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:haltWhere": {
+          "classification": "ordinary-gap",
+          "reason": "Geographic measurements remain physical; label selection and station-name interpolation still execute inside the native derived callback."
+        },
+        "read:where": {
+          "classification": "ordinary-gap",
+          "reason": "Geographic measurements remain physical; label selection and station-name interpolation still execute inside the native derived callback."
+        },
+        "tick": {
+          "classification": "simulation",
+          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        }
+      },
+      "sourcePaths": [
+        "scenes/train/rules.ts",
+        "world/transport/line.ts",
+        "scenes/train/gameplay.json"
+      ]
+    },
+    {
+      "scene": "sandbox",
+      "controller": "sandbox",
+      "inputs": [],
+      "panels": [],
+      "functions": {
+        "effect:sbx.pulse": {
+          "classification": "presentation",
+          "reason": "Writes only transient pulse timestamps and requests a redraw; source-owned commands perform counter/resource/environment changes."
+        },
+        "read:night": {
+          "classification": "ordinary-gap",
+          "reason": "Ordinary 18:00-06:00 policy is still a native predicate; shared time conditions already govern environmental gameplay reactions."
+        }
+      },
+      "sourcePaths": [
+        "scenes/sandbox/rules.ts",
+        "engine/controllers/sandbox.ts",
+        "scenes/sandbox/gameplay.json"
+      ]
+    },
+    {
+      "scene": "harborShift",
+      "controller": null,
+      "inputs": [],
+      "panels": [],
+      "functions": {},
+      "sourcePaths": [
+        "scenes/harbor-shift/index.ts"
+      ]
+    }
+  ]
+}

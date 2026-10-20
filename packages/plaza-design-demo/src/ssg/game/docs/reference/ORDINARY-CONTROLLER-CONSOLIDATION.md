@@ -32,23 +32,49 @@ The schedule now uses an explicit `beforeNative` interval on the same scene tick
 pre-thermal event ordering, protected Save/fresh import/Undo pass in
 `.scene-system/capsule-workflow-save-3BbuuD`. Complete scene acceptance remains open.
 
-## Remaining semantic work
+## Current reconciliation, 2026-10-20
 
-| Area | Ordinary behavior to move | Calculation to retain |
+The original remaining-field lists in CONTROLLER-MIGRATION.json are historical. The current
+registered SceneRules surface is enumerated in [NATIVE-EXECUTION-AUDIT.json](./NATIVE-EXECUTION-AUDIT.json)
+and checked by `check-controller-inventory.mts`. The check resolves player-bound rule factories
+(Downtown and Stacks), rather than accidentally counting their factory functions as empty rules.
+Every registered effect, derived read, tick, place and check has an explicit classification.
+
+This scope is deliberately narrower than whole-controller acceptance. Composition controllers,
+actor/companion behavior, native camera/scope panels, shared engine operations and Game orchestration
+need their existing separate audits. An empty SceneRules surface does not imply an empty scene.
+The report records source identity and callable body hashes; those hashes identify the inspected
+implementation, rather than proving behavioral parity or detecting new policy hidden inside an
+existing function. A changed body needs semantic review.
+
+| Area | Current ordinary ownership | Retained native operation / remaining gap |
 | --- | --- | --- |
-| Sandbox | Counter/resource commands and ordered environmental reactions migrated with common state | Cosmetic pulse rendering |
-| Beach | Rent/end/billing/danger-clear workflows migrated with common state | Existing physical presentation |
-| Laundromat | Start/stop, completion, overload and jacket rewards moved to commands/deadlines; full scene acceptance remains | Machine animation |
-| Downtown | Till, legs installation, Registry ownership, billboard/peer timers and controlled-status queries migrated; gate and delivery outcomes remain | Delivery interpolation and scanner geometry |
-| Yard | Grab/drop, hatch permission/deadline, parcel rewards and camera discovery migrated; final scene acceptance remains | Crane/parcel movement and collision |
-| Stacks | Discovery, lift/alarm refusal, lift-kind selection and landing rewards migrated; alarm/return/watchdog/trace integration remains | Trolley/lift trajectories and thermal calculation |
-| Train | Pass/door permissions and unpaid refusal alternation migrated; paid responses, halt/resume and harbor unlock remain | Travel/braking/siding geometry and rider motion |
-| Harbor Shift | Supervisor conversation and acceptance/tag decisions migrated; verify full lifecycle and common state integration | Existing staging/animation |
-| Capsule | Schedule, door reaction, goals, Pixel delayed choices and online readiness/replies migrated; full scene gates remain | Temperature integration, boot timers and companion movement |
-| Opening | Flag/reward/phase orchestration currently in Game and opening model | Cinematic playback and camera motion |
+| Capsule | Plug actions, schedule, door reaction, Pixel target/wait, goals, online readiness/reply and Pixel-on-router predicate are shared source | Thermal integration, boot timers and steam remain native; reboot response dispatch remains in thermal tick |
+| Downtown | Till, legs, Registry, billboard/peer timers, denial rotation, DLV access/milestone outcomes and finale are shared | DLV trajectory/scanner/collision sampling; read-only canonical player services; camera panel |
+| Yard | Grab/drop, hatch deadline, camera discovery and parcel outcomes are shared | Registered camera validation and source-bound presentation; no rule effect/tick body remains |
+| Stacks | Lift permissions/selection, alarm/return outcomes, watchdog/trace, discovery, landing rewards and cross-owner Sprat state are shared | Trajectories and milestone timing, transient highlight expiry, scope panel |
+| Train | Pass/door/paid/unpaid cases, halt/resume and harbor unlock are shared | Travel/braking/siding calculations; `where` and `haltWhere` wording selection remain native |
+| Sandbox | Counter/resource commands and environmental reactions are shared | Cosmetic pulse stamping; the night predicate remains native |
+| Beach / Laundromat / Moth / Library | Ordinary workflows and observed goal awards are shared | No registered rule effect, derived read or tick remains; shared engines and source-bound presentation still apply |
+| Harbor / Warehouse / Market / Shop / Mall / platforms / Harbor Shift | Source-authored ordinary content; no additional registered SceneRules callables | Art, actor, travel and presentation bindings require their own scope checks |
+| Opening | Phase rules, targets, access policy, timing and cinematic handoff source have G11 evidence | Existing orchestration/primitive playback remains code; G11 does not sign every other gate |
 
-The other ten native scenes had no additional imperative scene-rule bodies in this read-only audit.
-That does not prove full editor coverage, transport integration, cleanup or all-scene acceptance.
+The bounded SceneRules audit now exposes four ordinary gaps (Capsule thermal response,
+two Train wording selectors, Sandbox night). This is not a count of all remaining goal tasks.
+
+### Pixel predicate removal
+
+`pixelOnRouter` is now the existing shared `select` query over canonical `capsule.pixelAt`.
+The native derived predicate is deleted; existing device conditions keep their IDs. Thermal
+integration still reads its typed physical controller binding. No drawing or layer code changed.
+
+`check-capsule-source-workflows.mts` compares 1,728 immutable-original thermal/boot/wire/Pixel/door/
+goal histories and additionally compares all three Pixel positions in actual router status and
+native temperature actions. `check-capsule-source-workflow-save.mts` edits the predicate through
+the actual typed query controls and proves changed native status for all three positions in pending
+and fresh shipping imports, protected paired Save, invalid-reference atomic rejection and exact-byte
+Undo. Raw Save evidence: `.scene-system/capsule-workflow-save-zbJ6qM`.
+No whole-goal gate is promoted by this bounded removal.
 
 ## Contract policy
 
