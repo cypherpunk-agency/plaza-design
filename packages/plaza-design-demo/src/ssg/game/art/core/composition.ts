@@ -38,7 +38,9 @@ export interface Field {
  */
 export type FieldEditor =
   | { kind: 'list'; item: Record<string, Field>; auto?: string; addLabel?: string; next?: (rows: Properties[]) => Properties }
-  | { kind: 'set'; options: readonly string[]; auto?: string };
+  | { kind: 'set'; options: readonly string[]; auto?: string }
+  /** An optional colour: "" (shown as a checkbox labelled `empty`) or a #rrggbb colour. */
+  | { kind: 'colour'; empty: string };
 export interface Placement extends Point { scale?: number; facing?: 1 | -1; parallax?: number }
 export interface Instance {
   id: string; type: string; props: Properties; placement: Placement;

@@ -679,6 +679,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** Structured JSON fields with an inspector editor: rows of small fields, or a set of checkboxes. */
   function structuredInput(editor: NonNullable<Field["editor"]>, value: Value, apply: (v: Value) => void): HTMLElement {
     const wrap = element('div', 'structured-field'), auto = value === 'auto';
+    if (editor.kind === 'colour') {
+      const box = element('input'), pick = element('input'), own = typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value); box.type = 'checkbox'; box.checked = !own; pick.type = 'color'; pick.value = own ? value as string : '#808080'; pick.disabled = !own;
+      box.onchange = () => apply(box.checked ? '' : pick.value); pick.onchange = () => apply(pick.value); wrap.append(label(editor.empty, box), pick); return wrap;
+    }
     if (editor.auto) { const box = element('input'); box.type = 'checkbox'; box.checked = auto; box.onchange = () => apply(box.checked ? 'auto' : editor.kind === 'set' ? [] : []); wrap.append(label(editor.auto, box)); }
     if (auto) return wrap;
     if (editor.kind === 'set') {
