@@ -78,6 +78,8 @@ export class WorldMapPreview {
   private selected: PlaceId | null = null;
   private width: number;
   private height: number;
+  /** Device pixels per view unit: the canvas holds width × ratio pixels and draw() scales to it. */
+  private ratio = 1;
   constructor(private readonly options: WorldMapPreviewOptions) {
     const context=options.canvas.getContext('2d');
     if(!context) throw new Error('map.canvas: a 2D canvas is required');
@@ -103,8 +105,9 @@ export class WorldMapPreview {
     if(action.kind==='go') this.selectPlace(action.place.id);
     this.preview.layer=this.map.view.layer;this.preview.flat=this.map.view.flat;
   }
-  setViewport(width: number, height: number): void {
-    finite(width,'width',1);finite(height,'height',1);this.width=width;this.height=height;
+  /** The map's size in view units (CSS pixels) and the device pixel ratio the canvas is backed at. */
+  setViewport(width: number, height: number, ratio = 1): void {
+    finite(width,'width',1);finite(height,'height',1);finite(ratio,'ratio',.1);this.width=width;this.height=height;this.ratio=ratio;
   }
   setPreview(patch: Partial<WorldMapPreviewState>): void {
     const old=this.preview;
@@ -118,8 +121,10 @@ export class WorldMapPreview {
   getPreview(): WorldMapPreviewState { return structuredClone(this.preview); }
   /** Call from the composer's own render loop; this adapter starts no RAF/timer. */
   draw(): void {
+    this.context.setTransform(this.ratio,0,0,this.ratio,0,0);
     this.options.drawBackground?.(this.context,this.width,this.height);
     this.renderer.drawCityMap(this.context,this.width,this.height,this.map);
+    this.context.setTransform(1,0,0,1,0,0);
   }
   key(key: string): void { this.act(this.renderer.mapKey(this.map,key)); }
   /** Coordinates are canvas view units, matching draw(), rather than client/screen pixels. */

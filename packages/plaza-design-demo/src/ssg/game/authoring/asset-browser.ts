@@ -144,7 +144,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     const filtered = matching.filter(entry => (!district || inDistrict(entry, district)) && fromOrigin(entry)); count.textContent = `${filtered.length} / ${entries.length} registered assets`; list.replaceChildren();
     list.classList.toggle('asset-grid', !!options.thumbnail);
     for (const entry of filtered) {
-      const pick = button('', () => inspect(entry)); pick.dataset.asset = entry.id; pick.title = `${entry.id} · ${entry.preview}`; pick.setAttribute('aria-pressed', String(entry.id === session.selected));
+      const pick = button('', () => inspect(entry)); pick.dataset.asset = entry.id; if (options.useInScene) pick.ondblclick = () => options.useInScene!.run(entry); pick.title = `${entry.id} · ${entry.preview}`; pick.setAttribute('aria-pressed', String(entry.id === session.selected));
       const source = ORIGINS.find(o => o.id === entry.origin)!, badge = el('small', source.badge); badge.className = `origin origin-${entry.origin}`; badge.title = source.hint;
       if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', entry.label), badge); } else { pick.textContent = entry.label; pick.style.display = 'block'; pick.style.width = '100%'; }
       list.append(pick);

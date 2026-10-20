@@ -64,7 +64,16 @@ and a district mix sample; its preview selects switch styles without saving. **S
 district's card with its scenes on the stage, including the `downtown-next` proposal built from the
 building kit. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
 show the building, vehicle and sign kits. Kit pieces are placed from **＋ Add artwork** on the Scene
-stage like any other artwork (ART-GUIDE §2 and §12).
+stage like any other artwork (ART-GUIDE §2 and §12); it opens the same artwork browser as the Library,
+with the same filters, and adds a piece with its Add button or a double-click.
+
+On the Scene stage a left press on artwork selects it and drags it once the pointer moves; a left press
+on empty space deselects. Middle or right drag pans (right also covers a pen's barrel button), one
+finger pans on touch and two fingers zoom. Delete or Backspace deletes the selection; when attached
+artwork would go with it, a dialog lists it first, and gameplay-bound pieces refuse with the reason.
+**＋ New scene** beside the scene picker creates a scene the same way as World › Scenes. Play on a
+scene without a starting state adds the default one and starts. World › Districts creates, renames,
+places and removes districts.
 
 ## Isolation and source safety
 

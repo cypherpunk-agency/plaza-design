@@ -63,7 +63,7 @@ export const composerStyles = `
 .scene-composer .environment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px;padding-top:6px}.scene-composer .environment-grid label{margin:2px 0}.scene-composer .environment-grid label.wide{grid-column:span 2}.scene-composer .environment-grid label>input:not([type=checkbox]),.scene-composer .environment-grid label>select{width:auto;flex:0 1 120px}.scene-composer .environment-grid label.wide>input{flex-basis:220px}
 .scene-composer .stage-wrap{position:relative;flex:1;min-height:200px;overflow:hidden}
 .scene-composer .preview-stage{position:absolute;inset:0;overflow:auto;display:grid;align-items:safe center;justify-items:safe center;background:#05080c;container-type:size;padding:8px;overscroll-behavior:contain}
-.scene-composer .preview-stage>canvas[data-hover=artwork]{cursor:pointer}.scene-composer .preview-stage>canvas[data-hover=selected]{cursor:move}.scene-composer .preview-stage>canvas[data-hover=empty]{cursor:grab}.scene-composer .preview-stage>canvas[data-panning]{cursor:grabbing}
+.scene-composer .preview-stage>canvas[data-hover=artwork]{cursor:pointer}.scene-composer .preview-stage>canvas[data-dragging]{cursor:move}.scene-composer .preview-stage>canvas[data-hover=empty]{cursor:default}.scene-composer .preview-stage>canvas[data-panning]{cursor:grabbing}
 .scene-composer .stage-play{position:absolute;inset:0;overflow:auto;padding:8px 12px;background:var(--bg)}.scene-composer .stage-play[hidden],.scene-composer .preview-stage[hidden]{display:none}
 .scene-composer .preview-stage.comparing{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.scene-composer .preview-stage.comparing>canvas{width:min(50cqw - 12px,(100cqh - 16px) * var(--fit-ratio,var(--ratio,1.7778)))}.scene-composer .preview-stage>canvas.compare{cursor:grab}.scene-composer .preview-stage{cursor:grab}.scene-composer .preview-stage[data-panning]{cursor:grabbing}.scene-composer .preview-stage>canvas[hidden]{display:none}
 .scene-composer .hover-box{position:absolute;pointer-events:none;outline:1px solid #ffd27acc;outline-offset:1px}.scene-composer .hover-box[hidden]{display:none}
@@ -89,8 +89,9 @@ export const composerStyles = `
 .scene-composer .more-panel label>input:not([type=checkbox]),.scene-composer .more-panel label>select{width:170px}.scene-composer .more-panel label.wide{flex-wrap:wrap}.scene-composer .more-panel label.wide>input{width:100%}
 
 /* Add picker and artwork tiles */
-.scene-composer .add-picker{position:absolute;inset:10px;z-index:6;display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:#0f1620f5;border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 14px 40px #000c}.scene-composer .add-picker[hidden]{display:none}
+.scene-composer .add-picker{position:fixed;inset:var(--picker-top,92px) 16px 16px;z-index:40;display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:#0f1620f5;border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 14px 40px #000c}.scene-composer .add-picker[hidden]{display:none}
 .scene-composer .picker-head{display:flex;align-items:center;gap:8px}.scene-composer .picker-head input[type=search]{flex:1}.scene-composer .picker-head strong{font:600 12px var(--mono);color:var(--accent);white-space:nowrap}
+.scene-composer .picker-head .muted{font-size:11px;margin-right:auto}.scene-composer .picker-browser{flex:1;min-height:0;overflow:auto}.scene-composer .picker-browser .catalog-list{max-height:none}
 .scene-composer .picker-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-auto-rows:max-content;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;align-content:start}
 .scene-composer .asset-card{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:6px;white-space:normal;text-align:left;background:var(--field);min-height:0}.scene-composer .asset-card span{font-size:12px;line-height:1.3;overflow-wrap:anywhere}.scene-composer .asset-card small{color:var(--accent);font-size:10px}
 .scene-composer .asset-card[aria-pressed=true]{border-color:var(--accent);background:#173238}
@@ -133,7 +134,14 @@ export const composerStyles = `
 .scene-composer .binding-row{display:flex;justify-content:space-between;gap:8px;margin:4px 0}.scene-composer .binding-row code{font:11px/1.4 var(--mono);color:var(--ink);overflow-wrap:anywhere;text-align:right}
 .scene-composer .tool-panel label{justify-content:flex-start;gap:12px}.scene-composer .tool-panel label>input:not([type=checkbox]),.scene-composer .tool-panel label>select{width:auto;min-width:140px}
 .scene-composer .debug-drawer{margin-top:14px}.scene-composer .debug-drawer>summary{color:var(--muted)}.scene-composer .debug-drawer pre{font:11px/1.45 var(--mono);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:8px}
-.scene-composer .danger{color:var(--danger)}.scene-composer .dirty{color:var(--warn)}.scene-composer .readonly{border:1px solid var(--line);padding:8px;border-radius:4px;margin-top:10px}
+.scene-composer .danger{color:var(--danger)}
+.scene-composer .confirm-dialog{width:min(440px,calc(100vw - 32px));padding:18px 20px;border:1px solid var(--line-strong);border-radius:6px;background:var(--panel);color:var(--ink);font:13px/1.5 system-ui,sans-serif}
+.scene-composer .confirm-dialog::backdrop{background:rgba(3,6,10,.6)}
+.scene-composer .confirm-dialog h2{margin:0 0 6px;font:600 15px/1.3 var(--mono);color:var(--ink)}.scene-composer .confirm-dialog p{margin:0 0 8px;color:var(--muted)}
+.scene-composer .confirm-dialog ul{margin:0;padding:6px 10px 6px 26px;max-height:220px;overflow:auto;background:var(--field);border:1px solid var(--line);border-radius:4px;font:12px/1.6 var(--mono)}
+.scene-composer .confirm-dialog details>summary{cursor:pointer;margin-bottom:6px;font-family:var(--mono);font-size:12px}
+.scene-composer .confirm-dialog label{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;text-align:left;gap:4px;margin:0 0 10px}.scene-composer .confirm-dialog label>input,.scene-composer .confirm-dialog label>select{width:100%!important;min-width:0}
+.scene-composer .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.scene-composer .dialog-actions .danger{border-color:var(--danger)}.scene-composer .dirty{color:var(--warn)}.scene-composer .readonly{border:1px solid var(--line);padding:8px;border-radius:4px;margin-top:10px}
 
 /* Asset browser and workbenches */
 .scene-composer .asset-browser-grid{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;padding:4px 0}.scene-composer .asset-browser-grid input,.scene-composer .asset-browser-grid select{width:100%;margin:4px 0}.scene-composer .asset-browser-grid .catalog-list{max-height:55vh}.scene-composer .asset-browser-grid canvas{background:#05080c;max-width:960px;width:100%}.scene-composer .asset-browser-grid pre{font:12px/1.5 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap}.scene-composer .asset-browser-grid section{min-width:0}

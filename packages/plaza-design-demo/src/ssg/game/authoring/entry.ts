@@ -6,7 +6,8 @@ import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {mountNetworkAuthoring} from './network-authoring';
 import {pendingRegistry} from './pending-registry';
 import {validatePendingFixtures} from './pending-fixtures';
-import {mountSceneCatalogue} from './scene-catalogue-authoring';
+import {createAuthoredScene,mountSceneCatalogue,sceneCreationBlocked,scenePlaces} from './scene-catalogue-authoring';
+import {mountDistrictAuthoring} from './district-authoring';
 import {declaredScene} from '../engine/gameplay/declared-scene';
 import {type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {sceneCatalogueProjection} from './scene-catalogue-projection';
@@ -196,12 +197,14 @@ async function start() {
 
     },
 
+    newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene },
     workbenches: [
       {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: opening scenes, arrivals and first guidance',authoring:true,documentDependent:true,primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
       {id:'companion-gameplay',area:'world',layout:'sections',label:'Companion dialogue',title:'Shared companion conversations',authoring:true,documentDependent:true,primaryDocumentId:'companion-gameplay',mount:(host,context)=>mountSharedGameplay(host,context,'companion-gameplay',validateCompanionGameplay,publicEditor)},
       {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},
       {id:'scene-catalogue',area:'world',label:'Scenes',title:'Create and manage authored scenes',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-fixtures','city-source'],primaryDocumentId:'authored-scenes',mount:mountSceneCatalogue},
       {id:'scene-connections',area:'scene',mode:'wiring',label:'Starting cables',title:'Authored scene connections',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){wireSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,wireSelection,true,()=>pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))))},
+      {id:'districts',area:'world',label:'Districts',title:'Districts · create, rename, place on the map and remove',authoring:true,documentDependent:true,documentIds:['city-source'],primaryDocumentId:'city-source',layout:'sections',mount:mountDistrictAuthoring},
       {id:'city-source',area:'world',layout:'sections',label:'City & travel',title:'City places, discovery and transport',authoring:true,documentDependent:true,primaryDocumentId:'city-source',mount:mountCityAuthoring},
       {id:'bot-reactions',area:'world',label:'Bot dialogue',title:'Robot reactions · shared conversations',authoring:true,documentDependent:true,documentIds:[...deviceSceneIds.map(deviceDocumentId),'metro-source','city-source','bot-reactions'],mount:mountBotReactionAuthoring},
       {id:'manifest-pilot',area:'labs',label:'Manifest pilot',title:'Declared scene: pending source in private Play',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,manifestSelection,false,true,'Lab · the declared demo scene, built only from its pending manifest source, running in private Play. A test bed for the scene manifest format, not part of the scene workflow.')},

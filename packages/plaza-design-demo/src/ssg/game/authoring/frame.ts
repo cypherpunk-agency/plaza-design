@@ -28,9 +28,9 @@ export function sectionNavigator(nav: HTMLElement, content: HTMLElement, key: st
   const list = document.createElement('ul'); list.className = 'frame-sections'; nav.replaceChildren(list);
   const sections = () => [...content.querySelectorAll('details')].filter(d => { const outer = d.parentElement?.closest('details'); return (!outer || !content.contains(outer)) && !!d.querySelector(':scope > summary'); });
   const titleOf = (d: HTMLDetailsElement) => d.querySelector(':scope > summary')!.textContent!.trim();
-  let frameRequest = 0;
+  let pending = false, stopped = false;
   const render = () => {
-    frameRequest = 0; const all = sections(), current = remembered.get(key);
+    pending = false; if (stopped) return; const all = sections(), current = remembered.get(key);
     const chosen = all.find(d => titleOf(d) === current) ?? (current === '' ? undefined : all[0]);
     content.classList.toggle('one-section', !!chosen);
     for (const d of all) { const on = d === chosen; d.classList.add('frame-section'); d.classList.toggle('frame-current', on); if (on && !d.open) d.open = true; }
@@ -38,9 +38,10 @@ export function sectionNavigator(nav: HTMLElement, content: HTMLElement, key: st
     list.replaceChildren(item('Everything', !chosen, () => { remembered.set(key, ''); render(); }, 'Show every section in one list'), ...all.map(d => item(titleOf(d), d === chosen, () => { remembered.set(key, titleOf(d)); render(); content.scrollTop = 0; })));
     if (!all.length) list.replaceChildren();
   };
-  const observer = new MutationObserver(() => { if (!frameRequest) frameRequest = requestAnimationFrame(render); });
+  // Coalesce a re-render's many mutations into one update, right after it (not on the next frame, which hidden pages skip).
+  const observer = new MutationObserver(() => { if (!pending) { pending = true; queueMicrotask(render); } });
   observer.observe(content, { childList: true, subtree: true }); render();
-  return () => { observer.disconnect(); if (frameRequest) cancelAnimationFrame(frameRequest); content.classList.remove('one-section'); };
+  return () => { stopped = true; observer.disconnect(); content.classList.remove('one-section'); };
 }
 
 export const frameStyles = `.scene-composer .tool-panel>section.framed,.scene-composer .tool-panel>div.framed{padding:0;height:100%}

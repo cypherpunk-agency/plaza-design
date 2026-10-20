@@ -8,12 +8,12 @@ import { createFrame, frameStyles, sectionNavigator } from './frame';
 import { preserveBoundIdentity } from './bound-identity';
 import type { Light } from '../world/light';
 import type { Climate, Weather } from '../world/weather';
-import { mountAssetBrowser, assetInventory, filterAssets, type AssetBrowserSession, type AssetEntry, type AssetUsage, type AssetPreviewReport } from './asset-browser';
+import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type AssetUsage, type AssetPreviewReport } from './asset-browser';
 import { createThumbnails } from './asset-thumbnails';
 import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { KIND_HINTS, LAYER_ROLES, layerRole } from './layer-roles';
-import { chipStyles, filterChips } from './kind-chips';
+import { chipStyles } from './kind-chips';
 import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
@@ -67,6 +67,8 @@ export interface ComposerConfig {
   /** The scene picker's structure: districts, their places, each place's scenes. Scenes left out are listed under "Other scenes". */
   sceneTree?(documents: readonly EditorDocument[]): { label: string; places: { label: string; scenes: string[] }[] }[];
   workbenches?: WorkbenchConfig[];
+  /** The Scene view's New scene dialog: the places a scene can belong to, why creation is blocked ('' when it is not), and creation as one undoable edit. */
+  newScene?: { places(api: NonNullable<WorkbenchContext['authoring']>): { places: string[]; initial: string }; blocked(api: NonNullable<WorkbenchContext['authoring']>): string; create(api: NonNullable<WorkbenchContext['authoring']>, id: string, name: string, place: string): void };
   /** Tabs for the Scene inspector. Called for the open scene with the selected instance, or none for the scene itself. */
   inspector?(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[];
 }
@@ -200,11 +202,34 @@ export class ComposerModel {
       duplicate.placement.x += 12; duplicate.order += 1; siblings(doc.instances)!.push(duplicate); created = duplicate.id; return doc;
     }); return created;
   }
-  remove(id: string, instanceId: string) {
-    this.edit(id, 'Delete artwork', value => {
-      const doc = value as Composition, source = flatten(doc).find(x => x.node.id === instanceId)?.node; if (!source) throw new Error('Missing instance');
-      const removed = new Set<string>(); const visit = (node: Instance) => { if (Object.keys(node.bindings ?? {}).length&&!mutableActorArtwork(doc.scene,node)&&this.registry.get(node.type).bindingIdentity!=='presentation') throw new Error('Resolve gameplay bindings before deleting this artwork'); removed.add(node.id); node.children?.forEach(visit); }; visit(source);
-      for (const { node } of flatten(doc)) if (!removed.has(node.id) && node.attach && removed.has(node.attach.instance)) throw new Error(`${node.id} is attached here; detach it first`);
+  /**
+   * What deleting an instance takes with it: its children and, with `cascade`, everything attached to anything removed
+   * (and their children), in document order. Gameplay-bound artwork refuses with the reason.
+   */
+  removal(id: string, instanceId: string, cascade = false): string[] {
+    const doc = this.get(id).value as Composition, rows = flatten(doc), source = rows.find(x => x.node.id === instanceId)?.node; if (!source) throw new Error('Missing instance');
+    const removed = new Set<string>();
+    const visit = (node: Instance) => {
+      if (removed.has(node.id)) return;
+      if (Object.keys(node.bindings ?? {}).length&&!mutableActorArtwork(doc.scene,node)&&this.registry.get(node.type).bindingIdentity!=='presentation') throw new Error(`${node.id} is used by gameplay; resolve its bindings in Logic before deleting${node.id === instanceId ? '' : ` ${instanceId}`}`);
+      removed.add(node.id); node.children?.forEach(visit);
+    };
+    visit(source);
+    for (let grew = true; grew;) { grew = false; for (const { node } of rows) if (!removed.has(node.id) && node.attach && removed.has(node.attach.instance)) {
+      if (!cascade) throw new Error(`${node.id} is attached here; detach it first`);
+      visit(node); grew = true;
+    } }
+    return rows.map(row => row.node.id).filter(nodeId => removed.has(nodeId));
+  }
+  /** Runs edits and rolls them back: the reason they would be refused, or '' when they would apply. */
+  trial(change: () => void): string {
+    const documents = this.documents, past = [...this.past], future = [...this.future];
+    try { change(); return ''; } catch (error) { return message(error); } finally { this.documents = documents; this.past = past; this.future = future; }
+  }
+  remove(id: string, instanceId: string, cascade = false) {
+    const removed = new Set(this.removal(id, instanceId, cascade));
+    this.edit(id, removed.size > 1 ? `Delete artwork and ${removed.size - 1} attached` : 'Delete artwork', value => {
+      const doc = value as Composition;
       const filter = (nodes: Instance[]): Instance[] => nodes.filter(node => !removed.has(node.id)).map(node => { if (node.children) node.children = filter(node.children); return node; }); doc.instances = filter(doc.instances); return doc;
     });
   }
@@ -271,7 +296,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let viewZoom = compact.matches ? 2 : 1, crop = true, cropHeight = 0, cropFor = '', hoverId = '';
   let panning: { x: number; y: number; camera: number; scroll: number; moved: boolean; target?: string } | undefined;
   const touches = new Map<number, { x: number; y: number }>(); let pinch: { distance: number; zoom: number } | undefined;
-  let dragging: { before: Composition; pending: Composition; x: number; y: number; id: string; delta: PreviewResult['deltaToLocal'] } | undefined;
+  let dragging: { before: Composition; pending: Composition; x: number; y: number; id: string; delta: PreviewResult['deltaToLocal']; armed: boolean; clientX: number; clientY: number } | undefined;
   let scrub: HTMLInputElement | undefined, timeLabel: HTMLElement | undefined;
   const environment: Record<string, string | number | boolean> = { cameraX: 0, zoom: 1, ...config.initialEnvironment };
   let cleanupWorld: void | (() => void);
@@ -474,6 +499,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       chooser.append(optgroup);
     }
     chooser.value = currentId; chooser.onchange = () => openDocument(chooser.value); sceneContext.replaceChildren(chooser);
+    if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ New scene', openNewScene, blocked || 'Create a scene and open it here'); add.className = 'new-scene'; add.disabled = !!blocked; sceneContext.append(add); }
     const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(actions);
     const saveButton = button(saving ? 'Saving…' : config.api ? 'Save to source' : 'Download edits', () => void save()); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
     const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; actions.append(status, dirty, undo, redo, saveButton, menu);
@@ -546,16 +572,20 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     input.onchange = () => { const value = control.kind === 'boolean' ? input.checked : control.kind === 'text' ? input.value : Number(input.value); if (typeof value === 'number' && !Number.isFinite(value)) return; change(value); };
     const row = label(control.label, input); if (control.kind === 'text') row.classList.add('wide'); return row;
   }
-  function refreshLibrary() {
-    cleanupAssets?.(); cleanupAssets = undefined; assetPanel.replaceChildren(); if (!config.assetPreview || !assetHost.open) return;
-    const scene = current()?.kind === 'composition' ? sceneId() : '';
-    cleanupAssets = mountAssetBrowser(assetPanel, { registry: config.registry, documents: model.list(),
-      openUsage(usage) { openInstance(usage.document, usage.instance); },
+  /** The artwork browser, shared by Library › Artwork and the Scene view's Add artwork picker (same filters, same session). */
+  function mountArtwork(host: HTMLElement, scene: string, add: (entry: AssetEntry) => void) {
+    return mountAssetBrowser(host, { registry: config.registry, documents: model.list(),
+      openUsage(usage) { closePicker(); openInstance(usage.document, usage.instance); },
       preview: (canvas, entry, usage, zoom) => config.assetPreview!(canvas, entry, usage, model.list(), { time, reduced, environment: { ...environment, renderScale: zoom } }),
       ...(config.assetDistricts ? { districts: config.assetDistricts(model.list()) } : {}),
       ...(thumbnails ? { thumbnail: (entry: AssetEntry) => thumbnails.thumbnail(entry) } : {}),
-      ...(scene ? { useInScene: { label: `Add to ${sceneName(scene)}`, run: (entry: AssetEntry) => { showLayout(); void addAtView(entry.id); } } } : {}),
+      ...(scene ? { useInScene: { label: `Add to ${sceneName(scene)}`, run: add } } : {}),
     }, assetSession);
+  }
+  function refreshLibrary() {
+    cleanupAssets?.(); cleanupAssets = undefined; assetPanel.replaceChildren(); if (!config.assetPreview || !assetHost.open) return;
+    const scene = current()?.kind === 'composition' ? sceneId() : '';
+    cleanupAssets = mountArtwork(assetPanel, scene, entry => { showLayout(); void addAtView(entry.id); });
   }
   function refreshMap() { cleanupWorld?.(); cleanupWorld = undefined; mapPanel.replaceChildren(); if (config.worldPanel && mapHost.open) cleanupWorld = config.worldPanel(mapPanel, openScene, model.list(), sceneId()); }
   function refreshLeft() {
@@ -695,7 +725,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (node) {
       const art = config.registry.get(node.type), actions = element('div', 'row');
       head.append(element('h2', '', node.id), element('p', 'muted', `${art.label} · ${node.type}`));
-      actions.append(button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), button('Delete', () => run(() => { model.remove(doc.id, selectedId); selectedId = ''; }), 'Delete this artwork (Delete)'), button('Deselect', () => select_(''), 'Back to the scene’s own settings (Esc)'));
+      actions.append(button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), button('Delete', () => deleteSelected(), 'Delete this artwork (Delete)'), button('Deselect', () => select_(''), 'Back to the scene’s own settings (Esc)'));
       if (current()?.kind === 'timeline') actions.querySelectorAll('button').forEach((b, i) => { if (i < 2) (b as HTMLButtonElement).disabled = true; });
       head.append(actions);
     } else head.append(element('h2', '', sceneName(scene) || 'Scene'), element('p', 'muted', 'Nothing selected, so these are the scene’s own settings. Click artwork in the preview or the outline to inspect it.'));
@@ -748,21 +778,15 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (Object.keys(node.bindings ?? {}).length) { const choices=art.bindingIdentity==='presentation'?art.bindingChoices?.(composition):undefined,binding = part(choices?'Visual inputs':'Gameplay bindings · read-only', false); for (const [key, value] of Object.entries(node.bindings ?? {})) { const sources=choices?.[key];if(sources){binding.append(label(art.visualFields?.[key]?.label??key,select(sources.map(value=>({value,label:value})),value,source=>editInstance('Rebind '+key,n=>{n.bindings![key]=source;}))));}else{const row = element('p', 'binding-row'); row.append(element('span', 'muted', key), element('code', '', value)); binding.append(row);} } }
   }
   /** The Add picker: searchable pictures of every registered piece, placed at the centre of the view. */
-  let pickerQuery = '', pickerFamily = '';
-  function openPicker() { if (current()?.kind !== 'composition') return; picker.hidden = false; renderPicker(); picker.querySelector<HTMLInputElement>('input[type=search]')?.focus(); }
-  function closePicker() { if (picker.hidden) return; picker.hidden = true; picker.replaceChildren(); }
+  let cleanupPicker: void | (() => void);
+  function openPicker() { if (current()?.kind !== 'composition' || !config.assetPreview) return; picker.style.setProperty('--picker-top', `${Math.round(workspace.getBoundingClientRect().top + 8)}px`); picker.hidden = false; renderPicker(); picker.querySelector<HTMLInputElement>('input[type=search]')?.focus(); }
+  function closePicker() { if (picker.hidden) return; picker.hidden = true; cleanupPicker?.(); cleanupPicker = undefined; picker.replaceChildren(); }
+  /** Add artwork shows the Library's browser over the stage: pick with its button or a double-click on a card. */
   function renderPicker() {
-    const entries = assetInventory(config.registry, model.list()), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
-    const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
-    search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
-    const kinds = filterChips('Kind', LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(e => e.family === kind).length })), pickerFamily, value => { pickerFamily = value; fill(); });
-    head.append(element('strong', '', 'Add artwork'), search, button('✕', closePicker, 'Close (Esc)')); const body = element('div', 'picker-body'), results = element('div', 'picker-results'); kinds.classList.add('vertical'); results.append(count, grid); body.append(kinds, results); picker.replaceChildren(head, body);
-    function fill() {
-      const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id))), shown = list.slice(0, 300);
-      count.textContent = `${list.length} pieces${list.length > shown.length ? ` · showing ${shown.length}, search to narrow` : ''} · pieces already in this scene come first`; grid.replaceChildren();
-      for (const entry of shown) { const card = button('', () => { closePicker(); void addAtView(entry.id); }, entry.id); card.className = 'asset-card'; if (thumbnails) card.append(thumbnails.thumbnail(entry)); card.append(element('span', '', entry.label)); if (used.has(entry.id)) card.append(element('small', '', 'in this scene')); grid.append(card); }
-    }
-    fill();
+    const scene = sceneId(), head = element('div', 'picker-head'), body = element('div', 'picker-browser');
+    head.append(element('strong', '', `Add artwork to ${sceneName(scene)}`), element('span', 'muted', 'Double-click a piece, or select it and use Add'), button('✕', closePicker, 'Close (Esc)'));
+    picker.replaceChildren(head, body); cleanupPicker?.();
+    cleanupPicker = mountArtwork(body, scene, entry => { closePicker(); void addAtView(entry.id); });
   }
   picker.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); closePicker(); canvas.focus(); } });
   async function addAtView(type: string) {
@@ -919,13 +943,71 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const cropToggle = button('Crop', () => { crop = !crop; cropFor = ''; refreshViewportTools(); void draw(); }, 'Crop the preview to the artwork height'); cropToggle.setAttribute('aria-pressed', String(crop));
     viewportTools.replaceChildren(button('−', () => zoomTo(viewZoom / 1.25), 'Zoom out (−)'), level, button('+', () => zoomTo(viewZoom * 1.25), 'Zoom in (+)'), button('Fit', fit, 'Fit the scene (F)'), cropToggle);
   }
+  /** A small dialog beside the scene picker: name, ID (follows the name until edited) and place, then the scene opens. */
+  function openNewScene() {
+    const setup = config.newScene; if (!setup) return; const api = authoringApi(), where = setup.places(api);
+    const dialog = element('dialog', 'confirm-dialog'), error = element('p', 'error'), name = element('input'), id = element('input'), place = select(where.places.map(value => ({ value, label: value })), where.initial, () => {});
+    error.setAttribute('role', 'alert'); name.value = 'New scene'; let idEdited = false;
+    const slug = (text: string) => text.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    id.value = slug(name.value); name.oninput = () => { if (!idEdited) id.value = slug(name.value); }; id.oninput = () => { idEdited = true; };
+    const field = (text: string, input: HTMLElement) => { const row = element('label'); row.append(element('span', '', text), input); return row; };
+    const cancel = button('Cancel', () => dialog.close()), create = button('Create scene', () => {
+      try { setup.create(api, id.value.trim(), name.value.trim(), place.value); } catch (e) { error.textContent = message(e); return; }
+      dialog.close(); refresh(); openScene(id.value.trim());
+    }); create.className = 'primary';
+    const actions = element('div', 'dialog-actions'); actions.append(cancel, create);
+    const form = element('form'); form.onsubmit = event => { event.preventDefault(); create.click(); };
+    form.append(element('h2', '', 'New scene'), element('p', '', 'An ordinary scene with a default starting state, in the place you choose. Build it with Layout, Logic and Play.'), field('Name', name), field('ID', id), field('Place', place), error, actions);
+    dialog.append(form); dialog.onclose = () => dialog.remove(); root.append(dialog); dialog.showModal(); name.select();
+  }
+  /** Validation reasons for a refused deletion, in the terms of the editor. */
+  function deletionProblem(problem: string, removed: Instance[]) {
+    const actors = removed.filter(node => { try { const e = config.registry.get(node.type); return ['Human', 'Animal', 'Robot'].includes(layerRole(node.type, e.label, e.category)); } catch { return false; } }).map(node => node.id);
+    if (/Actor source\/artwork count mismatch/.test(problem) && actors.length) return `${actors.join(', ')} ${actors.length === 1 ? 'is a character' : 'are characters'} of this scene. Remove ${actors.length === 1 ? 'it' : 'them'} in Logic › Interactions & story first, or attach ${actors.length === 1 ? 'it' : 'them'} to something else.`;
+    const missing = /Missing (manifest|device) artwork: (\S+)/.exec(problem);
+    if (missing) return `${missing[2]} is used by ${missing[1] === 'device' ? 'a device' : 'the scene’s manifest (an exit, device or spawn)'} in Logic. Remove that use there first, or attach ${missing[2]} to something else.`;
+    return `${problem}. Remove or move that use first (in Logic, or the scene’s exits).`;
+  }
+  /** Deletes the selection. When attached artwork would go with it, a dialog lists it and asks first. */
+  function deleteSelected() {
+    const doc = compositionDocument(), id = selectedId; if (!doc || !id) return;
+    let ids: string[]; try { ids = model.removal(doc.id, id, true); } catch (error) { notice(message(error), true); return; }
+    const remove = () => run(() => { model.remove(doc.id, id, true); if (selectedId === id) selectedId = ''; });
+    if (ids.length === 1) { remove(); return; }
+    // Attached pieces first (what the user may not expect to lose), then the piece's own parts.
+    const nodes = flatten(doc.value as Composition).map(row => row.node), own = new Set<string>(), collect = (node: Instance) => { own.add(node.id); node.children?.forEach(collect); }; collect(nodes.find(node => node.id === id)!);
+    const others = [...ids.filter(other => !own.has(other)), ...ids.filter(other => own.has(other) && other !== id)].map(other => nodes.find(node => node.id === other)!), problem = model.trial(() => model.remove(doc.id, id, true));
+    const dialog = element('dialog', 'confirm-dialog'), list = element('ul');
+    for (const node of others) { let label = node.type; try { label = config.registry.get(node.type).label; } catch { /* unregistered: show the type */ } list.append(element('li', '', `${node.id} · ${label}`)); }
+    let body: HTMLElement = list;
+    if (others.length > 6) { const fold = element('details'); fold.append(element('summary', '', `${others.slice(0, 3).map(node => node.id).join(', ')} and ${others.length - 3} more`), list); body = fold; }
+    const cancel = button('Cancel', () => dialog.close()), confirm = button('Delete all', () => { dialog.close(); remove(); }); confirm.className = 'danger'; confirm.disabled = !!problem;
+    const actions = element('div', 'dialog-actions'), attached = ids.length - own.size; actions.append(cancel, confirm);
+    dialog.append(element('h2', '', `Delete ${id}?`), element('p', '', `Deleting this will also delete ${others.length} other item${others.length === 1 ? '' : 's'}${attached ? ` (${attached} attached to it)` : ''}:`), body);
+    if (problem) dialog.append(element('p', 'error', `It can’t be deleted yet: ${deletionProblem(problem, others)}`));
+    dialog.append(actions);
+    dialog.onclose = () => { dialog.remove(); canvas.focus({ preventScroll: true }); }; root.append(dialog); dialog.showModal(); cancel.focus();
+  }
   const select_ = (id: string) => { selectedId = id; hoverId = ''; if (compact.matches && id) showPanel('properties'); refreshRight(); refreshLeft(); refreshTimeline(); void draw(); };
-  // Clicking the dark area around the scene deselects, like clicking empty space in it.
-  // The empty stage around the pictures pans like the picture itself; a click without moving deselects.
+  /**
+   * Stage input: a left press on artwork selects it at once and drags it after a 3 px move; a left press on empty
+   * space (the picture, the dark area around it or the comparison) deselects. Middle and right drag pan (right also
+   * covers a pen's barrel button); one finger pans on empty space and two fingers pinch-zoom.
+   */
+  const panButton = (event: PointerEvent) => event.button === 1 || event.button === 2;
+  const startPan = (event: PointerEvent, surface: HTMLElement, target: string | undefined) => {
+    event.preventDefault(); if (!zoomable()) return;
+    panning = { x: event.clientX, y: event.clientY, camera: Number(environment.cameraX ?? 0), scroll: stage.scrollTop, moved: false, target }; surface.setPointerCapture(event.pointerId); canvas.dataset.panning = ''; if (surface === stage) stage.dataset.panning = '';
+  };
+  /** A press on empty space: touch pans (a tap deselects on release), a mouse or pen click deselects straight away. */
+  const pressEmpty = (event: PointerEvent, surface: HTMLElement) => {
+    if (event.pointerType === 'touch') { startPan(event, surface, ''); if (!zoomable() && selectedId) select_(''); return; }
+    event.preventDefault(); if (selectedId) select_('');
+  };
+  stage.addEventListener('contextmenu', event => event.preventDefault());
   stage.addEventListener('pointerdown', event => {
-    if (event.target !== stage || (event.button !== 0 && event.button !== 1)) return; closePicker();
-    if (!zoomable()) { if (event.button === 0 && selectedId) select_(''); return; }
-    event.preventDefault(); panning = { x: event.clientX, y: event.clientY, camera: Number(environment.cameraX ?? 0), scroll: stage.scrollTop, moved: false, target: event.button === 0 ? '' : undefined }; stage.setPointerCapture(event.pointerId); canvas.dataset.panning = ''; stage.dataset.panning = '';
+    if (event.target !== stage) return; closePicker();
+    if (panButton(event)) startPan(event, stage, undefined); else if (event.button === 0) pressEmpty(event, stage);
   });
   stage.addEventListener('pointermove', event => { if (panning && event.target === stage) canvas.onpointermove?.call(canvas, event); });
   stage.addEventListener('pointerup', event => { if (!stage.hasPointerCapture(event.pointerId)) return; stage.releasePointerCapture(event.pointerId); delete stage.dataset.panning; canvas.onpointerup?.call(canvas, event); });
@@ -933,36 +1015,33 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   canvas.onpointerdown = event => {
     closePicker();
     if (event.pointerType === 'touch') { touches.set(event.pointerId, { x: event.clientX, y: event.clientY }); if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { distance: Math.hypot(a.x - b.x, a.y - b.y), zoom: viewZoom }; dragging = undefined; panning = undefined; return; } }
-    // Only the already-selected artwork can be dragged; any other press selects on release and pans while moving.
-    const pressed = event.button === 0 ? hitTest(coordinates(event)) : undefined;
-    if (event.button === 1 || (event.button === 0 && (!pressed || pressed.id !== selectedId))) {
-      event.preventDefault(); if (!zoomable()) { if (event.button === 0) select_(pressed?.id ?? ''); return; }
-      panning = { x: event.clientX, y: event.clientY, camera: Number(environment.cameraX ?? 0), scroll: stage.scrollTop, moved: false, target: event.button === 0 ? pressed?.id ?? '' : undefined }; canvas.setPointerCapture(event.pointerId); canvas.dataset.panning = ''; return;
-    }
-    if (event.button !== 0) return; const hit = pressed!; const point = coordinates(event);
-    const doc = compositionDocument(); if (!doc) return;
-    if (current()?.kind === 'timeline') { notice('Timeline preview selection is enabled. Edit local placement in the inspector or add transform keys; dragging is available in the scene document.'); return; }
-    if (!preview?.deltaToLocal) { notice('This renderer has not supplied coordinate conversion; numeric transforms remain available.', true); return; }
-    dragging = { before: copy(doc.value as Composition), pending: copy(doc.value as Composition), x: point.x, y: point.y, id: hit.id, delta: preview.deltaToLocal }; canvas.setPointerCapture(event.pointerId);
+    if (panButton(event)) { startPan(event, canvas, undefined); return; }
+    if (event.button !== 0) return;
+    const point = coordinates(event), hit = hitTest(point);
+    if (!hit) { pressEmpty(event, canvas); return; }
+    event.preventDefault(); canvas.focus({ preventScroll: true });
+    if (hit.id !== selectedId) select_(hit.id);
+    const doc = compositionDocument(); if (!doc || current()?.kind === 'timeline' || !preview?.deltaToLocal) return;
+    dragging = { before: copy(doc.value as Composition), pending: copy(doc.value as Composition), x: point.x, y: point.y, id: hit.id, delta: preview.deltaToLocal, armed: false, clientX: event.clientX, clientY: event.clientY }; canvas.setPointerCapture(event.pointerId);
   };
   canvas.onpointermove = event => {
     if (touches.has(event.pointerId)) { touches.set(event.pointerId, { x: event.clientX, y: event.clientY }); if (pinch && touches.size === 2) { const [a, b] = [...touches.values()]; zoomTo(pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(1, pinch.distance), { clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 }); return; } }
     if (panning) { const rect = canvas.getBoundingClientRect(), dx = event.clientX - panning.x, dy = event.clientY - panning.y; if (Math.abs(dx) + Math.abs(dy) > 3) panning.moved = true; environment.cameraX = Math.round(panning.camera - dx * canvas.width / rect.width / viewZoom); stage.scrollTop = panning.scroll - dy; void draw(); return; }
-    if (!dragging) { if (event.pointerType === 'mouse') { const hit = hitTest(coordinates(event)); canvas.dataset.hover = hit?.id === selectedId ? 'selected' : hit ? 'artwork' : 'empty'; if ((hit?.id ?? '') !== hoverId) { hoverId = hit?.id ?? ''; placeHover(); } } return; }
+    if (!dragging) { if (event.pointerType === 'mouse') { const hit = hitTest(coordinates(event)); canvas.dataset.hover = hit ? 'artwork' : 'empty'; if ((hit?.id ?? '') !== hoverId) { hoverId = hit?.id ?? ''; placeHover(); } } return; }
+    if (!dragging.armed) { if (Math.hypot(event.clientX - dragging.clientX, event.clientY - dragging.clientY) < 3) return; dragging.armed = true; canvas.dataset.dragging = ''; }
     try { const point = coordinates(event), delta = dragging.delta!(dragging.id, point.x - dragging.x, point.y - dragging.y), source = flatten(dragging.before).find(x => x.node.id === dragging!.id)!.node, next = copy(dragging.before), target = flatten(next).find(x => x.node.id === dragging!.id)!.node; target.placement.x = snap ? Math.round((source.placement.x + delta.x) / snap) * snap : source.placement.x + delta.x; target.placement.h = snap ? Math.round((source.placement.h + delta.h) / snap) * snap : source.placement.h + delta.h; dragging.pending = config.registry.validate(next); void draw(); } catch (e) { notice(message(e), true); }
   };
   canvas.onpointerup = event => {
     touches.delete(event.pointerId); if (touches.size < 2) pinch = undefined;
     if (panning) { const { moved, target } = panning; panning = undefined; delete canvas.dataset.panning; if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); if (!moved && target !== undefined) select_(target); else refreshOptions(); return; }
-    if (!dragging) return; const pending = dragging.pending, unchanged = equal(pending, dragging.before); dragging = undefined; if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); if (!unchanged) run(() => model.edit(compositionDocument()!.id, 'Drag artwork', () => pending));
+    if (!dragging) return; const pending = dragging.pending, unchanged = !dragging.armed || equal(pending, dragging.before); dragging = undefined; delete canvas.dataset.dragging; if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); if (!unchanged) run(() => model.edit(compositionDocument()!.id, 'Drag artwork', () => pending));
   };
-  canvas.onpointercancel = event => { touches.delete(event.pointerId); pinch = undefined; panning = undefined; delete canvas.dataset.panning; dragging = undefined; void draw(); };
+  canvas.onpointercancel = event => { touches.delete(event.pointerId); pinch = undefined; panning = undefined; delete canvas.dataset.panning; dragging = undefined; delete canvas.dataset.dragging; void draw(); };
   stage.addEventListener('scroll', () => placeHover(), { passive: true });
   canvas.onpointerleave = () => { if (hoverId) { hoverId = ''; placeHover(); } };
-  // The comparison picture shares the camera: dragging it pans and wheel/pinch zooms both, but it never selects.
+  // The comparison picture shares the camera and never selects: a left press is empty space, middle/right drag pans both.
   compareCanvas.onpointerdown = event => {
-    if (event.button !== 0 && event.button !== 1) return; event.preventDefault(); closePicker();
-    panning = { x: event.clientX, y: event.clientY, camera: Number(environment.cameraX ?? 0), scroll: stage.scrollTop, moved: false, target: undefined }; compareCanvas.setPointerCapture(event.pointerId); canvas.dataset.panning = '';
+    closePicker(); if (panButton(event)) startPan(event, compareCanvas, undefined); else if (event.button === 0) pressEmpty(event, compareCanvas);
   };
   compareCanvas.onpointermove = event => canvas.onpointermove?.call(canvas, event);
   compareCanvas.onpointerup = event => { if (compareCanvas.hasPointerCapture(event.pointerId)) compareCanvas.releasePointerCapture(event.pointerId); canvas.onpointerup?.call(canvas, event); };
@@ -979,7 +1058,6 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   canvas.onkeydown = event => {
     if (event.ctrlKey || event.metaKey || event.altKey) return; const key = event.key;
     if (key === 'Escape' && selectedId) { event.preventDefault(); select_(''); }
-    else if ((key === 'Delete' || key === 'Backspace') && selectedId && current()?.kind === 'composition') { event.preventDefault(); const doc = compositionDocument()!; run(() => { model.remove(doc.id, selectedId); selectedId = ''; }); }
     else if (key.toLowerCase() === 'a' && current()?.kind === 'composition') { event.preventDefault(); openPicker(); }
     else if (key === ' ' && current()?.kind === 'composition') { event.preventDefault(); animating = !animating; refreshOptions(); }
     else if (zoomable() && (key === '+' || key === '=')) { event.preventDefault(); zoomTo(viewZoom * 1.25); }
@@ -999,10 +1077,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     else if (event.key.toLowerCase() === 'z') { event.preventDefault(); run(() => event.shiftKey ? model.redo() : model.undo()); }
     else if (event.key.toLowerCase() === 'y') { event.preventDefault(); run(() => model.redo()); }
   };
-  /** Single-key preview toggles (H: hack vision) in the Scene view, unless the user is typing in a field. */
+  /** Single keys in the Scene view (Delete, H for hack vision…), unless the user is typing in a field or a dialog is open. */
   const shortcuts = (event: KeyboardEvent) => {
     if (event.ctrlKey || event.metaKey || event.altKey || event.repeat || group !== 'layout' || !root.isConnected) return;
-    const target = event.target as HTMLElement; if (target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]')) return;
+    const target = event.target as HTMLElement; if (target.closest('input, textarea, select, dialog, [contenteditable=""], [contenteditable="true"]')) return;
+    if ((event.key === 'Delete' || event.key === 'Backspace') && selectedId && current()?.kind === 'composition' && playHost.hidden) { event.preventDefault(); deleteSelected(); return; }
     const control = (config.environmentControls ?? []).find(c => c.kind === 'boolean' && c.shortcut?.toLowerCase() === event.key.toLowerCase()); if (!control) return;
     event.preventDefault(); environment[control.key] = !environment[control.key]; refreshOptions(); void draw();
   };
