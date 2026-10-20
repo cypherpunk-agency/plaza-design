@@ -7,7 +7,7 @@ import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
 import type {Composition,Environment} from '../art';
-import {CAPSULE,YARD,LAUNDROMAT,STACKS,type SceneData} from '../data';
+import {CAPSULE,YARD,LAUNDROMAT,type SceneData} from '../data';
 import {downtownScene} from '../scenes/downtown';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
 import {harborScene} from '../scenes/harbor';
@@ -26,8 +26,6 @@ import {content as mothContent} from '../scenes/moth/scene-document';
 import {marketScene} from '../scenes/market';
 import {validateMarketScene} from '../scenes/market/scene-document';
 import {validateMarketGameplay} from '../scenes/market/gameplay';
-import {stacksScene} from '../scenes/stacks';
-import {content as stacksContent} from '../scenes/stacks/scene-document';
 import {metroScene} from '../scenes/metro';
 import {content as metroContent} from '../scenes/metro/scene-document';
 import {galleriaStationScene} from '../scenes/galleriaStation';
@@ -61,7 +59,6 @@ const beachWithDevices=(...args:DeviceSourceArguments)=>beachScene(args[0],args[
 const yardWithDevices=(...args:DeviceSourceArguments)=>yardScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const mothWithDevices=(...args:DeviceSourceArguments)=>mothScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const laundromatWithDevices=(...args:DeviceSourceArguments)=>laundromatScene(args[0],args[1],args[2],args[3],args[4],args[5]);
-const stacksWithDevices=(...args:DeviceSourceArguments)=>stacksScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const trainWithDevices=(...args:DeviceSourceArguments)=>trainScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const definitions=[
  {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
@@ -73,7 +70,6 @@ const definitions=[
  {id:'moth',prefix:'moth',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:mothContent.validateScene,validateGameplay:mothContent.validateGameplay,definition:mothScene,definitionWithDevices:mothWithDevices},
 
  {id:'market',prefix:'market',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMarketScene,validateGameplay:validateMarketGameplay,definition:marketAuthoredScene},
- {id:'stacks',prefix:'stacks',bindingGroups:['uses','readables','rests','exits'] as const,data:STACKS,validateScene:stacksContent.validateScene,validateGameplay:stacksContent.validateGameplay,definition:stacksScene,definitionWithDevices:stacksWithDevices},
  {id:'metro',prefix:'metro',validateScene:metroContent.validateScene,validateGameplay:metroContent.validateGameplay,definition:metroAuthoredScene},
  {id:'galleriaStation',prefix:'galleriaStation',validateScene:galleriaStationContent.validateScene,validateGameplay:galleriaStationContent.validateGameplay,definition:galleriaStationScene},
  {id:'harborStation',prefix:'harborStation',validateScene:harborStationContent.validateScene,validateGameplay:harborStationContent.validateGameplay,definition:harborStationScene},

@@ -18,6 +18,8 @@ import type {EngineDraw} from '../host';
 import {compileSceneActors} from './actors';
 import {bindingDefaults,bindingValues,unknownBindingSources} from './binding-sources';
 import {stageContent} from './scene-stage';
+import {sceneRuleContract} from '../scene-rule-contract';
+import {mechanicsContent} from './scene-mechanics';
 
 export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
@@ -45,8 +47,10 @@ export function validateDeclaredDestinations(scene:SceneDocument,destinations:Re
 /** The same factory handles every instance; source contains no executable scripts or renderer selection. */
 export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,options:Partial<Environment>={},devices?:SceneDeviceSource):SceneDef{
  const validated=validateDeclaredScene(scene,composition,gameplay),d=validated.scene,rows=validated.rows;
- const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay);
  const compiled=compileManifestDocument(d,rows,(_c,id)=>({name:d.name,pages:[],conversation:id}),d.manifest!.compile??{elevatedResponses:true}),roles=compiled.geometry.artwork;
+ // a mechanism's rules widen what the device document may read and emit (derived values, physical milestones)
+ const mechanics=mechanicsContent(d.stage?.mechanics,{scene:d,gameplay,roles,rows}),contract=mechanics.rules?sceneRuleContract(mechanics as SceneDef):undefined;
+ const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay,Object.keys(contract?.derived??{}),contract?.inputs,contract?.derivedTypes);
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
  const level=compileLevel(rows),manifest=d.manifest!;
  // the grey review room stands in for a room until the composition paints its own backdrop
@@ -57,6 +61,6 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
    bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,engine},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...mechanics,...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
 }

@@ -16,7 +16,6 @@ import {content as harborContent} from '../scenes/harbor/scene-document';
 import {validateMallScene,validateMallGameplay} from '../scenes/mall/scene-document';
 import {validateBeachGameplay} from '../scenes/beach/gameplay';
 import {content as beachContent} from '../scenes/beach/scene-document';
-import {content as stacksContent} from '../scenes/stacks/scene-document';
 import {content as mothContent} from '../scenes/moth/scene-document';
 import {content as yardContent} from '../scenes/yard/scene-document';
 import {content as capsuleContent} from '../scenes/capsule/scene-document';
@@ -37,7 +36,6 @@ import { sandboxScene, sandboxFrameEnvironment, validateSandboxComposition } fro
 import { beachScene } from '../scenes/beach';
 import { validateBeachComposition } from '../scenes/beach/composition';
 import { yardScene, yardFrameEnvironment, validateYardComposition } from '../scenes/yard';
-import { stacksScene, validateStacksComposition } from '../scenes/stacks';
 import { harborScene } from '../scenes/harbor';
 import { validateHarborComposition } from '../scenes/harbor/composition';
 import { harborShiftScene, HARBOR_SHIFT_ACTORS, SHIFT_USES } from '../scenes/harbor-shift';
@@ -72,7 +70,6 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   beach: { validate: validateBeachComposition, definition: beachScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('beach',doc,documents,{...beachContent,validateGameplay:validateBeachGameplay},(source,gameplay,context)=>beachScene(doc,state,options,gameplay,source,context,documents.get('beach-devices') as import('../data/types').SceneData|undefined));} },
   yard: { validate: validateYardComposition, definition: yardScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('yard',doc,documents,yardContent,(source,gameplay,context)=>yardScene(doc,state,options,source,gameplay,context,documents.get('yard-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => yardFrameEnvironment(v, e, doc),
   },
-  stacks: { validate: validateStacksComposition, definition: stacksScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=stacksContent.validateGameplay(documents.get('stacks-gameplay'));return stacksScene(doc,state,options,stacksContent.validateScene(documents.get('stacks-scene'),gameplay),gameplay,documents.get('stacks-devices') as import('../data/types').SceneData);} },
   harbor: { validate: validateHarborComposition, definition: harborScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=harborContent.validateGameplay(documents.get('harbor-gameplay'));return harborScene(doc,state,options,harborContent.validateScene(documents.get('harbor-scene'),gameplay),gameplay);} },
   harborShift: { validate: validateHarborShiftComposition, definition: harborShiftScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateShiftGameplay(documents.get('harbor-shift-gameplay'));return harborShiftScene(doc,state,options,validateShiftScene(documents.get('harbor-shift-scene'),gameplay),gameplay);}, environment: (doc, v) => harborShiftEnvironment(doc, v, HARBOR_SHIFT_ACTORS, SHIFT_USES) },
   market: { validate: validateMarketComposition, definition: marketScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateMarketGameplay(documents.get('market-gameplay'));return marketScene(doc,state,options,gameplay,validateMarketScene(documents.get('market-scene'),gameplay));}, environment: (doc, v, e) => marketFrameEnvironment(v, e, doc) },
