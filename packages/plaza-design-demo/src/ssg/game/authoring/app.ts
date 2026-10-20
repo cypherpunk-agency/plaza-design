@@ -12,6 +12,8 @@ import type { Light } from '../world/light';
 import type { Climate, Weather } from '../world/weather';
 import { mountAssetBrowser, assetInventory, filterAssets, type AssetBrowserSession, type AssetEntry, type AssetUsage, type AssetPreviewReport } from './asset-browser';
 import { createThumbnails } from './asset-thumbnails';
+import { ORIGINS } from './asset-browser';
+import { PRESETS_DOCUMENT, presetId, presetProps, presetsFor, type KitPreset, type KitPresets } from './kit-presets';
 import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { KIND_HINTS, LAYER_ROLES, layerRole } from './layer-roles';
@@ -19,7 +21,7 @@ import { chipStyles, filterChips } from './kind-chips';
 import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
-export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people'; revision: string; value: unknown }
+export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets'; revision: string; value: unknown }
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 /** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
@@ -132,7 +134,7 @@ export class ComposerModel {
     const all = [...this.expanded(documents).values()], inputs = this.validationInputs?.(all);
     const unchanged = inputs && this.validatedInputs && inputs.length === this.validatedInputs.length && inputs.every((value, i) => value === this.validatedInputs![i]);
     for (const doc of unchanged ? [] : all) {
-      if ((['behavior','gameplay','scene','fixtures','conversations','city','transport','devices','people'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
+      if ((['behavior','gameplay','scene','fixtures','conversations','city','transport','devices','people','presets'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
       this.validateDocument?.(doc, all);
     }
     if (inputs) this.validatedInputs = inputs;
@@ -178,15 +180,16 @@ export class ComposerModel {
   updateInstance(id: string, instanceId: string, label: string, edit: (node: Instance) => void) {
     this.edit(id, label, value => { const doc = value as Composition, node = flatten(doc).find(x => x.node.id === instanceId)?.node; if (!node) throw new Error('Selected instance no longer exists'); edit(node); return doc; });
   }
-  add(id: string, type: string, placement: Instance['placement'] = { x: 0, h: 0 }) {
+  add(id: string, type: string, placement: Instance['placement'] = { x: 0, h: 0 }, settings?: Properties) {
     let instanceId = '';
-    this.edit(id, 'Add artwork', value => { const doc = value as Composition; instanceId = this.insert(doc, type, placement); return doc; }); return instanceId;
+    this.edit(id, 'Add artwork', value => { const doc = value as Composition; instanceId = this.insert(doc, type, placement, settings); return doc; }); return instanceId;
   }
   /** The composition as it would be after `add`, without touching history (used to measure placement). */
-  draftAdd(id: string, type: string) { const doc = copy(this.get(id).value as Composition), instanceId = this.insert(doc, type, { x: 0, h: 0 }); return { composition: this.registry.validate(doc), instanceId }; }
-  private insert(doc: Composition, type: string, placement: Instance['placement']) {
+  draftAdd(id: string, type: string, settings?: Properties) { const doc = copy(this.get(id).value as Composition), instanceId = this.insert(doc, type, { x: 0, h: 0 }, settings); return { composition: this.registry.validate(doc), instanceId }; }
+  /** `settings`: a kit preset's settings over the element's defaults. */
+  private insert(doc: Composition, type: string, placement: Instance['placement'], settings: Properties = {}) {
     const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
-    for (const [key, field] of Object.entries(element.fields)) props[key] = copy(field.default) as Value;
+    for (const [key, field] of Object.entries(element.fields)) props[key] = copy(settings[key] ?? field.default) as Value;
     const bindings=element.bindingIdentity==='presentation'?Object.fromEntries(Object.entries(element.bindingChoices?.(doc)??{}).filter(([,choices])=>choices.length).map(([key,choices])=>[key,choices[0]])):{};
     const layer: Layer | undefined = layered(doc) ? element.parts.length || element.role === 'group' ? 'set' : 'logic' : undefined;
     const order = layer ? frontOrder(doc, layer) : Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1;
@@ -221,6 +224,8 @@ export class ComposerModel {
 const element = <K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
 const button = (text: string, action: () => void, title?: string) => { const node = element('button', '', text); node.type = 'button'; node.onclick = action; if (title) node.title = title; return node; };
 const select = (values: { value: string; label: string }[], value: string, onChange: (v: string) => void) => { const node = element('select'); for (const item of values) { const option = element('option', '', item.label); option.value = item.value; node.append(option); } node.value = value; node.onchange = () => onChange(node.value); return node; };
+/** Add artwork's kit groups, in order (a prefix of the element type; '' for any other kit). */
+const KIT_GROUPS: [string, string][] = [['Buildings', 'building.'], ['People, animals and robots', 'character.'], ['Signs', 'sign.'], ['Vehicles', 'vehicle.'], ['Other kits', '']];
 const label = (text: string, control: HTMLElement) => { const node = element('label'); node.append(element('span', '', text), control); return node; };
 
 export function mountComposer(host: HTMLElement, config: ComposerConfig) {
@@ -757,6 +762,25 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     disposeInspector(); const host = element('div', 'inspector-mount'); body.append(host); inspectorMount = { key, host };
     try { inspectorMount.handle = section.mount(host, liveContext(scene)); } catch (e) { host.replaceChildren(element('p', 'error', `Unavailable: ${message(e)}`)); }
   }
+  /** Save this kit piece's settings as a named preset, or update, rename and delete this kit's presets. */
+  function renderPresets(host: HTMLElement, node: Instance) {
+    const doc = presetsDoc()!, mine = presetsFor(doc, node.type), settings = presetProps(config.registry, node.type, config.registry.properties(node.type, node.props));
+    const editPresets = (labelText: string, change: (d: KitPresets) => void) => run(() => model.edit(PRESETS_DOCUMENT, labelText, value => { const next = copy(value) as KitPresets; change(next); return next; }));
+    const same = mine.find(p => JSON.stringify(presetProps(config.registry, node.type, config.registry.properties(node.type, p.props))) === JSON.stringify(settings));
+    host.append(element('p', 'muted', same ? `These settings are the preset “${same.label}”.` : 'A preset saves these settings under a name; Add artwork lists it under this kit.'));
+    const name = element('input'); name.type = 'text'; name.placeholder = 'Preset name'; name.setAttribute('aria-label', 'Preset name');
+    host.append(label('Name', name), button('Save as new preset', () => { const text = name.value.trim(); if (!text) { notice('Give the preset a name first.', true); return; } editPresets('Save preset', d => { d.presets.push({ id: presetId(d, text), label: text, kit: node.type, props: settings }); }); }));
+    if (!mine.length) return;
+    let chosen = same?.id ?? mine[0].id;
+    const pick = select(mine.map(p => ({ value: p.id, label: p.label })), chosen, v => { chosen = v; }); host.append(label('Existing preset', pick));
+    const row = element('div', 'row');
+    row.append(
+      button('Update with these settings', () => editPresets('Update preset', d => { d.presets.find(p => p.id === chosen)!.props = settings; }), 'Replace the chosen preset’s settings with this piece’s'),
+      button('Rename', () => { const text = name.value.trim(); if (!text) { notice('Type the new name in Name first.', true); return; } editPresets('Rename preset', d => { d.presets.find(p => p.id === chosen)!.label = text; }); }, 'Give the chosen preset the name typed above'),
+      button('Delete', () => editPresets('Delete preset', d => { d.presets = d.presets.filter(p => p.id !== chosen); }), 'Delete the chosen preset (pieces placed from it stay as they are)'),
+    );
+    host.append(row);
+  }
   function renderAppearance(host: HTMLElement, node: Instance) {
     const art = config.registry.get(node.type), part = (title: string, open: boolean) => { const box = element('details', 'inspector-part'), inner = element('div'); box.open = open; box.append(element('summary', '', title), inner); host.append(box); return inner; };
     if (current()?.kind === 'timeline') host.append(element('p', 'muted', 'These edit the base composition. Timeline keys can override these values; use track keyframes to animate.'));
@@ -779,6 +803,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     }
     const fields = Object.entries(art.fields);
     if (fields.length) { const look = part('Look', true); const shown = config.registry.properties(node.type, node.props); for (const [key, field] of fields) { if (field.showIf && !field.showIf(shown)) continue; const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
+    if (art.libraryUse === 'reusable' && presetsDoc()) renderPresets(part('Preset', false), node);
     const composition = compositionDocument()!.value as Composition, anchorDetails = part('Attachment and anchors', !!node.attach);
     const candidates = flatten(composition).map(x => x.node).filter(n => n.id !== node.id);
     const attachTo = select([{ value: '', label: 'None / parent origin' }, ...candidates.map(n => ({ value: n.id, label: n.id }))], node.attach?.instance ?? '', v => editInstance('Change attachment', n => { if (!v) { delete n.attach; return; } const owner = candidates.find(x => x.id === v)!; const anchors = config.registry.get(owner.type).anchors(config.registry.properties(owner.type, owner.props), {}); const anchor = Object.keys(anchors)[0]; if (!anchor) throw new Error('The selected owner exposes no anchors'); n.attach = { instance: v, anchor }; })); anchorDetails.append(label('Attach to', attachTo));
@@ -796,26 +821,51 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
     search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
     const kinds = filterChips('Kind', LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(e => e.family === kind).length })), pickerFamily, value => { pickerFamily = value; fill(); });
-    head.append(element('strong', '', 'Add artwork'), search, button('✕', closePicker, 'Close (Esc)')); const body = element('div', 'picker-body'), results = element('div', 'picker-results'); kinds.classList.add('vertical'); results.append(count, grid); body.append(kinds, results); picker.replaceChildren(head, body);
+    head.append(element('strong', '', 'Add artwork'), search, button('✕', closePicker, 'Close (Esc)')); const body = element('div', 'picker-body'), results = element('div', 'picker-results'), kitsHost = element('div', 'picker-kits'), restHeading = element('h4', '', 'Scene pieces and others'); kinds.classList.add('vertical'); results.append(count, kitsHost, restHeading, grid); body.append(kinds, results); picker.replaceChildren(head, body);
     function fill() {
-      const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id))), shown = list.slice(0, 300);
-      count.textContent = `${list.length} reusable artwork entries · ready to add to this scene`; grid.replaceChildren();
-      for (const entry of shown) { const card = button('', () => { closePicker(); void addAtView(entry.id); }, entry.id); card.className = 'asset-card'; if (thumbnails) card.append(thumbnails.thumbnail(entry)); card.append(element('span', '', entry.label)); if (used.has(entry.id)) card.append(element('small', '', 'in this scene')); grid.append(card); }
+      const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id)));
+      grid.replaceChildren(); kitsHost.replaceChildren();
+      const card = (entry: AssetEntry, text: string, add: () => void, badge: string, hint: string, title = entry.id) => {
+        const node = button('', () => { closePicker(); add(); }, title); node.className = 'asset-card'; if (thumbnails) node.append(thumbnails.thumbnail(entry));
+        const tag = element('small', 'origin', badge); tag.title = hint; node.append(element('span', '', text), tag); if (used.has(entry.id) && badge !== 'Preset') node.append(element('small', '', 'in this scene')); return node;
+      };
+      const origin = (entry: AssetEntry) => ORIGINS.find(o => o.id === entry.origin)!;
+      // Kits first: each kit piece, then its presets (saved settings), grouped by kit.
+      const q = pickerQuery.trim().toLowerCase(), kits = entries.filter(e => e.origin === 'kit'), presets = presetsDoc();
+      let shownKits = 0;
+      for (const [title, prefix] of KIT_GROUPS) {
+        const rows: HTMLElement[] = [];
+        for (const kit of kits.filter(e => prefix ? e.id.startsWith(prefix) : !KIT_GROUPS.some(([, p]) => p && e.id.startsWith(p)))) {
+          const kitShown = list.includes(kit), own = presetsFor(presets, kit.id).filter(pr => (!q || `${pr.label} ${pr.note ?? ''} ${kit.label}`.toLowerCase().includes(q)) && (!pickerFamily || presetFamily(pr, kit) === pickerFamily));
+          if (kitShown) rows.push(card(kit, kit.label, () => void addAtView(kit.id), 'Kit', origin(kit).hint));
+          for (const pr of own) rows.push(card(kit, pr.label, () => void addAtView(kit.id, pr.props), 'Preset', `${kit.label} with saved settings${pr.note ? ': ' + pr.note : ''}`, `${kit.id} · ${pr.id}`));
+        }
+        if (!rows.length) continue; shownKits += rows.length;
+        const group = element('div', 'picker-grid'); group.append(...rows); kitsHost.append(element('h4', '', title), group);
+      }
+      const rest = list.filter(e => e.origin !== 'kit'), shown = rest.slice(0, 300);
+      for (const entry of shown) grid.append(card(entry, entry.label, () => void addAtView(entry.id), origin(entry).badge, origin(entry).hint));
+      restHeading.hidden = !shown.length;
+      count.textContent = `${shownKits} kit pieces and presets · ${rest.length} other pieces · ready to add to this scene`;
     }
     fill();
   }
   picker.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); closePicker(); canvas.focus(); } });
-  async function addAtView(type: string) {
+  /** The editable kit presets document, when this editor has one. */
+  const presetsDoc = () => model.list().find(d => d.id === PRESETS_DOCUMENT)?.value as KitPresets | undefined;
+  /** A people-kit preset is a human, an animal or a robot by its body kind; other presets share their kit's kind. */
+  const presetFamily = (preset: KitPreset, kit: AssetEntry) => kit.id !== 'character.resident' ? kit.family : preset.props.kind === undefined || preset.props.kind === 'human' ? 'Human' : ['cat', 'pigeon', 'gull', 'crab'].includes(String(preset.props.kind)) ? 'Animal' : 'Robot';
+  async function addAtView(type: string, settings?: Properties) {
     const doc = compositionDocument(); if (!doc || current()?.kind !== 'composition') { notice('Open a scene to add artwork.', true); return; }
     let x = 0;
     try {
       // Draw the new piece once off-screen at x = 0, then move it by its measured distance to the centre of the view.
-      const draft = model.draftAdd(doc.id, type), probe = element('canvas'); probe.width = canvas.width; probe.height = canvas.height;
+      const draft = model.draftAdd(doc.id, type, settings), probe = element('canvas'); probe.width = canvas.width; probe.height = canvas.height;
       const result = await config.preview.render(probe, previewRequest(draft.composition, false, viewZoom)), box = result.bounds.find(b => b.id === draft.instanceId);
       if (box && result.deltaToLocal) { const rect = canvas.getBoundingClientRect(), view = stage.getBoundingClientRect(), centre = ((Math.max(rect.left, view.left) + Math.min(rect.right, view.right)) / 2 - rect.left) * canvas.width / Math.max(1, rect.width); x = result.deltaToLocal(draft.instanceId, centre - (box.x + box.width / 2), 0).x; }
     } catch { x = 0; }
     x = snap ? Math.round(x / snap) * snap : Math.round(x);
-    let added = false; run(() => { selectedId = model.add(doc.id, type, { x, h: 0 }); inspectorTab = 'appearance'; added = true; });
+    let added = false; run(() => { selectedId = model.add(doc.id, type, { x, h: 0 }, settings); inspectorTab = 'appearance'; added = true; });
     if (added) { if (compact.matches) showPanel('properties'); notice(`Added ${config.registry.get(type).label}. Drag it into place or set its position in the inspector.`); }
   }
   function editArray<T>(container: HTMLElement, title: string, value: T, apply: (v: T) => void, help?: string) {

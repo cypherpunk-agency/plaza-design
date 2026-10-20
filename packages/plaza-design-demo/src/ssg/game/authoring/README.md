@@ -84,7 +84,10 @@ and a district mix sample; its preview selects switch styles without saving. **S
 district's card with its scenes on the stage, including the `downtown-next` proposal built from the
 building kit. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
 show the building, vehicle and sign kits. Kit pieces are placed from **＋ Add artwork** on the Scene
-stage like any other artwork (ART-GUIDE §2 and §12).
+stage, which lists the kits first, each with its **presets**: named, saved settings of a kit piece
+(`art/presets/kit-presets.json`, validated by `kit-presets.ts`). A placed kit piece's **Preset** section in
+the inspector saves its settings as a new preset, or updates, renames or deletes one of its kit's presets.
+A preset is only settings: what it places is an ordinary kit piece (ART-GUIDE §2 and §12).
 
 ## Isolation and source safety
 

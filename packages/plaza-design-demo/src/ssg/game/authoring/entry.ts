@@ -83,6 +83,7 @@ import { mountSourceViewer } from './source-viewer';
 
 import { mountSignageWorkbench } from './signage-workbench';
 import { applyPeople, validatePeople } from '../art/characters/people-source';
+import { validatePresets } from './kit-presets';
 import { mountPeopleAuthoring } from './people-authoring';
 
 
@@ -185,6 +186,7 @@ async function start() {
       if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,validationSnapshot(documents));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
       if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
+      if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroSource(document.value);}
       if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
