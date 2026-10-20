@@ -253,7 +253,15 @@
     }
   ],
   "manifest": {
-    "devices": {"clock": "device-clock", "washer1": "device-washer1", "washer2": "device-washer2", "washer3": "device-washer3", "washer4": "device-washer4", "breaker": "device-breaker", "suds": "device-suds"},
+    "devices": {
+      "clock": "device-clock",
+      "washer1": "device-washer1",
+      "washer2": "device-washer2",
+      "washer3": "device-washer3",
+      "washer4": "device-washer4",
+      "breaker": "device-breaker",
+      "suds": "device-suds"
+    },
     "version": 1,
     "width": {
       "instance": "room",
@@ -283,6 +291,18 @@
         "instance": "exit-market",
         "promptH": 82
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
+    },
+    "artwork": {
+      "window": "window"
     }
   },
   "environment": {},
@@ -305,6 +325,12 @@
           "companion.pet.idle.3"
         ]
       }
+    }
+  },
+  "stage": {
+    "facing": {
+      "role": "window",
+      "fallback": 180
     }
   }
 }
