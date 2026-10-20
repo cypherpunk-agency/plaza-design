@@ -11,6 +11,7 @@ import type {GameplayDefinition} from './types';
 import {art,resolveComposition,type Composition,type Environment} from '../../art';
 import {frameView} from '../../art/core/view';
 import {bindingDefaults} from './binding-sources';
+import {mechanismsRulesShape} from './scene-mechanisms';
 import type {SceneDef} from '../../scenes/kit';
 /**
  * A folder scene: `scenes/<id>/` holds only JSON (composition, scene, gameplay, devices) and the
@@ -27,7 +28,8 @@ export function folderSceneDefinition(id:string,source:FolderSceneSource,over:Fo
  const raw=over.devices??source.devices??emptyDeviceSource(id,scene.name);
  // devices that open a conversation (`open: talk`) read it from the scene's gameplay graphs
  const dialogue=opensTalk(raw)?nativeDeviceDialogues(gameplay,raw as SceneData):undefined;
- const checked=validateDeviceDocument(id,raw,{gameplay,network:over.network??defaultNetworkContext,...(dialogue?{dialogue}:{})});
+ // a named mechanism's rules are part of the contract the device document is checked against
+ const shape=mechanismsRulesShape(scene.stage?.mechanisms),checked=validateDeviceDocument(id,raw,{gameplay,network:over.network??defaultNetworkContext,...(dialogue?{dialogue}:{}),...(shape?{rules:shape}:{})});
  const devices=(dialogue?{...checked,dialogue:{...checked.dialogue,...dialogue}}:checked) as SceneDeviceSource;
  return declaredScene(scene,over.composition??source.composition,gameplay,{...(over.options??{}),...(over.state?{state:over.state}:{})},devices);
 }

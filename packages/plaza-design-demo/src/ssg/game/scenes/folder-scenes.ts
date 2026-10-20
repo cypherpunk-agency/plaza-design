@@ -31,6 +31,10 @@ import laundromatComposition from './laundromat/composition.json';
 import laundromatScene from './laundromat/scene.json';
 import laundromatGameplay from './laundromat/gameplay.json';
 import laundromatDevices from './laundromat/devices.json';
+import stacksComposition from './stacks/composition.json';
+import stacksScene from './stacks/scene.json';
+import stacksGameplay from './stacks/gameplay.json';
+import stacksDevices from './stacks/devices.json';
 import galleriaStationComposition from './galleriaStation/composition.json';
 import galleriaStationScene from './galleriaStation/scene.json';
 import galleriaStationGameplay from './galleriaStation/gameplay.json';
@@ -53,6 +57,7 @@ export const FOLDER_SOURCES={
  harborShift:{composition:harborShiftComposition,scene:harborShiftScene,gameplay:harborShiftGameplay,devices:harborShiftDevices},
  market:{composition:marketComposition,scene:marketScene,gameplay:marketGameplay,devices:marketDevices},
  laundromat:{composition:laundromatComposition,scene:laundromatScene,gameplay:laundromatGameplay,devices:laundromatDevices},
+ stacks:{composition:stacksComposition,scene:stacksScene,gameplay:stacksGameplay,devices:stacksDevices},
  galleriaStation:{composition:galleriaStationComposition,scene:galleriaStationScene,gameplay:galleriaStationGameplay,devices:galleriaStationDevices},
  harborStation:{composition:harborStationComposition,scene:harborStationScene,gameplay:harborStationGameplay,devices:harborStationDevices},
 } satisfies Record<string,FolderSceneSource>;

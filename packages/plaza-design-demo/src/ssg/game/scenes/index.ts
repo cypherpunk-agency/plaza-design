@@ -13,7 +13,6 @@ import { beach } from "./beach/index";
 import { capsule } from "./capsule/index";
 import { downtown } from "./downtown/index";
 import { moth } from "./moth/index";
-import { stacks } from "./stacks/index";
 import { yard } from "./yard/index";
 import { sandbox } from "./sandbox/index";
 import { harbor } from "./harbor/index";
@@ -30,7 +29,7 @@ export { ITEMS, priceTag } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 const nativeDefinitions = {
-  capsule, downtown, yard, moth, beach, harbor, stacks, metro, train,
+  capsule, downtown, yard, moth, beach, harbor, metro, train,
   // sudo only (index.ts refuses `?play=sandbox` without `?sudo`): the engine's test bay, outside the story
   sandbox,
 } satisfies Record<string, SceneDef>;

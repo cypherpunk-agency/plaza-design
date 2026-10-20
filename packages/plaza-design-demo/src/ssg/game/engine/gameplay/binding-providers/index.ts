@@ -3,6 +3,7 @@ import type {BindingContext} from '../binding-sources';
 import {mallProvider} from './mall';
 import {marketBindings} from './market';
 import {laundry} from './laundry';
+import {terminal} from './terminal';
 import {station} from './station';
 /**
  * Registered binding providers: a source name `<provider>.<key>` asks the provider for `key`.
@@ -21,5 +22,6 @@ export const BINDING_PROVIDERS:Readonly<Record<string,BindingProvider>>={
  shift:shiftProvider,
  market:marketBindings,
  laundry,
+ terminal,
  station,
 };

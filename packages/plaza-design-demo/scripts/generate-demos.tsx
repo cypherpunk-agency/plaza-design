@@ -37,7 +37,6 @@ import { planProblems } from "../src/ssg/game/world/cityplan";
 import { TRAIN } from "../src/ssg/game/data/index";
 import { TRAIN_RULES_SHAPE } from "../src/ssg/game/scenes/train/rules";
 import { STACKS } from "../src/ssg/game/data/index";
-import { STACKS_RULES_SHAPE } from "../src/ssg/game/scenes/stacks/rules";
 import { LIBRARY } from "../src/ssg/game/data/index";
 import { SANDBOX } from "../src/ssg/game/data/index";
 import { SANDBOX_RULES } from "../src/ssg/game/scenes/sandbox/rules";

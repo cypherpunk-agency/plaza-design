@@ -27,8 +27,8 @@ export interface StageCasterSource {type?:string;role?:string;
 export interface SceneStage {
  /** The direction the scene's light comes in from: an artwork role's `facing` property. */
  facing?:{role:string;prop?:string;fallback?:number};
- /** The horizon line: the height of an artwork role's placement. */
- horizon?:{role:string};
+ /** The horizon line: an artwork role's height, or its property `prop` (e.g. `horizon`) when named. */
+ horizon?:{role:string;prop?:string};
  /** Shade lines from walls: the top of a role's artwork (h + height), open before its x. */
  shade?:{front?:{role:string;gapFrom?:number}};
  lights?:StageLightSource[];
@@ -46,7 +46,7 @@ export function validateSceneStage(value:unknown):SceneStage{
  if(Object.keys(s).some(k=>!['facing','horizon','shade','lights','casters','actors','mechanisms'].includes(k)))fail('unknown field');
  if(s.actors!==undefined){const a=s.actors as Record<string,unknown>;if(!object(a)||Object.keys(a).some(k=>k!=='clip'&&k!=='cull'))fail('actors');for(const c of (a.clip??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).sort().join()!=='actors,to'||!name(c.actors)||!name(c.to))fail('actors clip');for(const c of (a.cull??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).some(k=>!['actor','role','margin'].includes(k))||!name(c.actor)||!name(c.role)||c.margin!==undefined&&typeof c.margin!=='number')fail('actors cull');if(a.clip!==undefined&&!Array.isArray(a.clip)||a.cull!==undefined&&!Array.isArray(a.cull))fail('actors lists');}
  if(s.facing!==undefined){const f=s.facing as Record<string,unknown>;if(!object(f)||!name(f.role)||f.prop!==undefined&&!name(f.prop)||f.fallback!==undefined&&typeof f.fallback!=='number')fail('facing');}
- if(s.horizon!==undefined){const h=s.horizon as Record<string,unknown>;if(!object(h)||Object.keys(h).join()!=='role'||!name(h.role))fail('horizon');}
+ if(s.horizon!==undefined){const h=s.horizon as Record<string,unknown>;if(!object(h)||Object.keys(h).some(k=>k!=='role'&&k!=='prop')||!name(h.role)||h.prop!==undefined&&!name(h.prop))fail('horizon');}
  if(s.shade!==undefined){const sh=s.shade as Record<string,unknown>;if(!object(sh)||Object.keys(sh).some(k=>k!=='front'))fail('shade');const fr=sh.front as Record<string,unknown>|undefined;if(fr!==undefined&&(!object(fr)||!name(fr.role)||fr.gapFrom!==undefined&&typeof fr.gapFrom!=='number'))fail('shade front');}
  const sources=(list:unknown,what:string,keys:string[])=>{if(list===undefined)return;if(!Array.isArray(list)||list.length>16)fail(what);for(const l of list as unknown[]){const r=l as Record<string,unknown>;if(!object(r)||Object.keys(r).some(k=>!keys.includes(k))||(r.type===undefined)===(r.role===undefined)||r.type!==undefined&&!name(r.type)||r.role!==undefined&&!name(r.role))fail(what);}};
  if(s.mechanisms!==undefined&&(!Array.isArray(s.mechanisms)||new Set(s.mechanisms).size!==s.mechanisms.length||s.mechanisms.some(m=>typeof m!=='string'||!Object.prototype.hasOwnProperty.call(SCENE_MECHANISMS,m))))fail('mechanisms');
@@ -64,7 +64,7 @@ export function stageContent(stage:SceneStage|undefined,rows:readonly Resolved[]
  if(!stage)return{};
  const out:Pick<SceneDef,'facing'|'horizon'|'shade'|'lights'|'casters'>={};
  if(stage.facing){const r=roles[stage.facing.role];out.facing=Number(r?.props[stage.facing.prop??'facing']??stage.facing.fallback??0);}
- if(stage.horizon){const r=roles[stage.horizon.role];if(r)out.horizon=r.placement.h;}
+ if(stage.horizon){const r=roles[stage.horizon.role];if(r)out.horizon=stage.horizon.prop?Number(r.props[stage.horizon.prop]):r.placement.h;}
  const wall=stage.shade?.front?roles[stage.shade.front.role]:undefined;
  if(wall)out.shade={front:{h:wall.placement.h+Number(wall.props.height)*wall.placement.scale,gaps:[[stage.shade!.front!.gapFrom??-400,wall.placement.x]]}};
  if(stage.lights)out.lights=stage.lights.flatMap(src=>pick(rows,src).filter(row=>src.tint?.without===undefined||String(row.props[src.tint.prop])!==src.tint.without).map((row):SceneLight=>{const p=row.props,at=row.placement;
