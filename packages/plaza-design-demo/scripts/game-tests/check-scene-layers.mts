@@ -1,4 +1,4 @@
-/** Layered compositions: validation rules (per-instance passes are rejected), slot drawing, editor restacking and the editor's player figure and eyes. */
+/** Layered compositions: validation rules, slot drawing, editor restacking and the editor's player figure and eyes. */
 import assert from 'node:assert/strict';
 import {canonicalPaint} from './canonical-paint.mts';
 import {art} from '../../src/ssg/game/art';
@@ -21,10 +21,8 @@ const node=(d:Composition,id:string)=>flat(d.instances).find(n=>n.id===id)!;
 assert.equal(node(doc,'spawn').type,'scene.player','the spawn is the player row');
 assert.equal(libraryScene().spawn,74,'the player row is still where the player arrives');
 
-// Validation: a layer on every instance, no drawing passes, drawn artwork in visual layers, markers in logic, at most one player row, in the playfield.
+// Validation: a layer on every instance, drawn artwork in visual layers, markers in logic, at most one player row, in the playfield.
 const rejects=(edit:(d:Composition)=>void,pattern:RegExp)=>{const d=copy(doc);edit(d);assert.throws(()=>art.validate(d),pattern);};
-rejects(d=>{const n=node(d,'counter');delete (n as Partial<Instance>).layer;(n as any).pass='backdrop';},/drawing passes are retired/);
-rejects(d=>{(node(d,'counter') as any).pass='backdrop';},/drawing passes are retired/);
 rejects(d=>{delete (node(d,'counter') as Partial<Instance>).layer;},/missing layer/);
 rejects(d=>{node(d,'counter').layer='logic';},/visual layer/);
 rejects(d=>{d.instances.push({id:'marker',type:'library.spawn-marker',props:{},placement:{x:90,h:0},order:0,layer:'set'});},/logic layer/);
@@ -65,4 +63,4 @@ const base=paint(doc,configs[0],0),withPlayer=paint(doc,configs[0],0,{player:tru
 const placed=copy(doc);node(placed,'spawn').placement.x=300;assert.notEqual(paint(placed,configs[0],0,{player:true}),withPlayer,'the figure follows the player row');
 assert.equal(paint(doc,configs[0],0,{player:true,hidden:['spawn']}),base,'hiding the player row hides the figure');
 assert.notEqual(paint(doc,configs[0],0,{hidden:['notice']}),base,'a hidden object drops out of the frame');
-console.log('Scene layers PASS: validation, layer-then-order sorting, slots, restacking, drawing passes rejected, the editor player figure and hidden objects.');
+console.log('Scene layers PASS: validation, layer-then-order sorting, slots, restacking, the editor player figure and hidden objects.');

@@ -82,9 +82,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   draw over the player. Every scene's manifest `spawn` is its player row (id `spawn`), so one Player
   sets both draw order and arrival point. Sequences (cutscenes, the title) have no player row.
   Drawn artwork cannot be in `logic` and non-drawing markers must be; named groups may sit in any
-  visual layer. Per-instance drawing passes (`pass`) are retired (2026-10-20): validation rejects
-  them with a message asking for a layer. The renderer's own passes (the `pass` argument to an
-  element's `draw()` and to `drawComposition`) remain. Drawing `backdrop` from a document
+  visual layer. Drawing `backdrop` from a document
   draws everything behind the player and queues the rows over the player and the foreground; the
   shared frame (`runtime/render-scene.ts`) draws those after the actors and after the scene's own
   front. Downtown keeps its engine moments: city (distance and backdrop), the street surface and its

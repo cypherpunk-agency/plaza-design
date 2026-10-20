@@ -61,7 +61,7 @@ for(const id of ['shop','library','laundromat','sandbox','stacks','beach','mall'
  mutate((s,c)=>addSceneActor(s,c,'new-resident',{garb:'hivis'},260,0),id);
  mutate((s,c)=>{duplicateSceneActor(s,c,'new-resident','resident-copy');bindSceneActor(s,c,'new-resident',['capsule','moth'].includes(id)?'neighbors':id==='yard'?'sky':id==='shop'?'wall':id==='sandbox'?'hall':['stacks','beach','mall','harbor','market','harborShift','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'].includes(id)?'scene':'room','origin',240,0);},id);
  const pending=pendingRegistry(new Map(model.list().map(d=>[d.id,d.value])))[id];
- if(id==='library'){const composition=model.get(id).value as Composition,created=composition.instances.find(n=>n.id==='actor-new-resident')!,copy=composition.instances.find(n=>n.id==='actor-resident-copy')!;assert.equal(created.layer,'playfield');assert.equal((created as {pass?:unknown}).pass,undefined);assert.equal(copy.layer,'playfield');art.validate(composition);}
+ if(id==='library'){const composition=model.get(id).value as Composition,created=composition.instances.find(n=>n.id==='actor-new-resident')!,copy=composition.instances.find(n=>n.id==='actor-resident-copy')!;assert.equal(created.layer,'playfield');assert.equal(copy.layer,'playfield');art.validate(composition);}
  assert(pending.people!.some(p=>p.id==='new-resident'));assert(pending.people!.some(p=>p.id==='resident-copy'));
  mutate((s,c)=>removeSceneActor(s,c,'resident-copy'),id);
  assert(!pendingRegistry(new Map(model.list().map(d=>[d.id,d.value])))[id].people!.some(p=>p.id==='resident-copy'));

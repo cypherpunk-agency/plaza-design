@@ -1,5 +1,4 @@
-/** Every composition document is layered, with no per-instance drawing pass left: each scene's manifest spawn is
- * its single player row, sequences (cutscenes, the title) have none, and proposals keep their base scene's spawn. */
+/** Every composition document is layered: each scene's manifest spawn is its single player row, sequences (cutscenes, the title) have none, and proposals keep their base scene's spawn. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,7 +12,6 @@ const files=(dir:string):string[]=>fs.readdirSync(dir,{withFileTypes:true}).flat
 const scenes:string[]=[],sequences:string[]=[],others:string[]=[];
 for(const file of files(game).sort()){
  const raw=JSON.parse(fs.readFileSync(file,'utf8'));
- assert.ok(flat(raw.instances).every(n=>!('pass' in n)),`${file}: no instance keeps a drawing pass`);
  const doc=art.validate(raw) as Composition,rows=flat(doc.instances),players=rows.filter(n=>n.type===PLAYER_ROW);
  assert.ok(rows.every(n=>LAYERS.includes(n.layer)),`${file}: every instance has a layer`);
  if(doc.scene.startsWith('sequence-')){assert.equal(players.length,0,`${file}: a sequence has no player row`);sequences.push(doc.scene);continue;}
@@ -26,6 +24,4 @@ for(const file of files(game).sort()){
  } else { assert.ok(players.length<=1,`${file}: at most one player row`);others.push(doc.scene); }
 }
 assert.ok(scenes.length>=19,'all scenes found');
-// A document in the retired pass format is refused with a clear message, not read silently.
-assert.throws(()=>art.validate({version:1,scene:'old',instances:[{id:'a',type:'furniture.stool',props:{},placement:{x:0,h:0},order:0,pass:'backdrop'}]}),/drawing passes are retired; give it a layer/);
-console.log(`All scene layers PASS: no drawing passes left; ${scenes.length} scenes with their spawn as the player row (${scenes.join(', ')}); ${sequences.length} sequences without one (${sequences.join(', ')}); also ${others.join(', ')}.`);
+console.log(`All scene layers PASS: ${scenes.length} scenes with their spawn as the player row (${scenes.join(', ')}); ${sequences.length} sequences without one (${sequences.join(', ')}); also ${others.join(', ')}.`);

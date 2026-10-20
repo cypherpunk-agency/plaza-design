@@ -32,7 +32,7 @@ export interface Instance {
   id: string; type: string; props: Properties; placement: Placement;
   /** Draw order within the layer: a hidden sort key behind the editor's layer stack. */
   order: number;
-  /** Where the instance draws (art/core/composition.ts LAYERS). Per-instance drawing passes are retired. */
+  /** Where the instance draws (LAYERS). */
   layer: Layer;
   attach?: { instance: string; anchor: string };
   children?: Instance[];
@@ -143,7 +143,6 @@ export class ArtRegistry {
         this.properties(raw.type, raw.props as Properties);
         const p = raw.placement;
         if (!object(p) || !finite(p.x) || !finite(p.h) || p.scale !== undefined && (!finite(p.scale) || p.scale <= 0) || p.facing !== undefined && p.facing !== 1 && p.facing !== -1 || p.parallax !== undefined && (!finite(p.parallax) || p.parallax < 0)) throw new Error(`${raw.id}: invalid placement`);
-        if (raw.pass !== undefined) throw new Error(`${raw.id}: per-instance drawing passes are retired; give it a layer instead (${LAYERS.join(', ')})`);
         if (!finite(raw.order)) throw new Error(`${raw.id}: invalid drawing order`);
         if (!LAYERS.includes(raw.layer as Layer)) throw new Error(`${raw.id}: ${raw.layer === undefined ? 'missing layer' : `unknown layer ${String(raw.layer)}`} (${LAYERS.join(', ')})`);
         if (raw.bindings !== undefined && (!object(raw.bindings) || Object.values(raw.bindings).some(v => typeof v !== 'string'))) throw new Error(`${raw.id}: invalid bindings`);
