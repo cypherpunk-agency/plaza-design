@@ -1,3 +1,4 @@
+import {rotationStateIds} from '../engine/gameplay/scene-document';
 import {scenePresentationRoles,scenePresentationActorRoles} from '../engine/gameplay/scene-presentation';
 import {renderScenePresentation} from './scene-presentation-authoring';
 import {pendingScene} from './pending-scene';
@@ -37,7 +38,7 @@ export interface SceneLogicFocus {only?:readonly string[];groups?:readonly strin
 /** One part of the scene document at a time: a grouped list on the left, its fields on the right. */
 export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,selection:{scene?:string;use?:string;item?:string;fixed?:boolean;focus?:SceneLogicFocus}={}):WorkbenchHandle {
  const api=context.authoring!,error=document.createElement('p'),body=document.createElement('section');error.setAttribute('role','alert');error.className='error';host.replaceChildren(error,body);let use=selection.use??'boss';
- const form=new TypedForm(e=>error.textContent=e instanceof Error?e.message:String(e)),focusOpen=new Map<string,boolean>();
+ const form=new TypedForm(e=>error.textContent=e instanceof Error?e.message:String(e)),focusOpen=new Map<string,boolean>(),rotationDraft=new Map<string,string>();
  const selected=()=>gameplayScene(selection.scene??'harborShift',context.documents);
  const identity=()=>deviceSourceIdentity(selected().id);
  const gameplay=()=>selected().validateGameplay(api.get(selected().gameplayId).value);
@@ -117,9 +118,10 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
    form.select(h,'Interaction purchase',['',...Object.keys(g.purchases??{})],u.purchase??'',purchase=>{edit('Bind interaction purchase',d=>{const row=d.uses.find(v=>v.id===uid)!;if(purchase){row.purchase=purchase;delete row.price;}else delete row.purchase;});refresh();});
    if(u.purchase)note(h,'The prompt quotes this shared purchase. Choose an outcome command that performs the same purchase to charge it. Edit its goods and price in Commands & dialogue.');
    if(!u.purchase){form.check(h,'Interaction fixed displayed price',u.price!==undefined,on=>{edit('Set displayed price',d=>{const row=d.uses.find(v=>v.id===uid)!;if(on)row.price=0;else delete row.price;});refresh();});if(u.price!==undefined){form.number(h,'Displayed price',u.price,price=>edit('Edit interaction price',d=>{d.uses.find(u=>u.id===uid)!.price=price;}));note(h,'Displayed price labels the prompt. Set the actual charge in Commands & dialogue.');}}
-   form.check(h,'Interaction rotating outcomes',!!u.cycle,on=>{edit('Set interaction rotation',d=>setInteractionRotation(d.uses.find(v=>v.id===uid)!,on));refresh();});
+   form.check(h,'Interaction rotating outcomes',!!u.cycle,on=>{edit('Set interaction rotation',d=>setInteractionRotation(d.uses.find(v=>v.id===uid)!,on,rotationDraft.get(d.id+':'+uid)));refresh();});
    note(h,u.cycle?'Turning rotation off creates always-matching conditions before the final fallback; edit these conditions to choose the desired order.':'Rotation requires command/page outcomes with no conditions or conversations. The final ordered outcome is the fallback and stays last.');
-   if(u.cycle){note(h,'Rotating outcomes advance after successful actions. Choose a numeric state advanced by these outcome commands to keep this position across sessions.');form.select(h,'Interaction rotation state',['',...Object.entries(g.state??{}).filter(([,v])=>v.type==='number').map(([id])=>id)],u.cycleState??'',id=>edit('Bind interaction rotation state',d=>{const row=d.uses.find(v=>v.id===uid)!;if(id)row.cycleState=id;else delete row.cycleState;}));}
+   note(h,'Choose a shared rotation state before enabling rotation. Outcome commands must advance it; its declared lifetime controls persistence.');
+   form.select(h,'Interaction rotation state',['',...rotationStateIds(g)],u.cycleState??rotationDraft.get(d.id+':'+uid)??'',id=>{if(u.cycle)edit('Bind interaction rotation state',d=>{d.uses.find(v=>v.id===uid)!.cycleState=id;});else rotationDraft.set(d.id+':'+uid,id);});
    form.select(h,'Interaction target order',['after-devices','before-devices'],u.targetOrder??'after-devices',value=>edit('Edit interaction target order',d=>{d.uses.find(v=>v.id===uid)!.targetOrder=value as 'after-devices'|'before-devices';}));
    form.text(h,'Priced prompt label',u.pricedLabel??'',value=>edit('Edit priced interaction label',d=>{const row=d.uses.find(v=>v.id===uid)!;if(value)row.pricedLabel=value;else delete row.pricedLabel;}));
    form.select(h,'Conversation presentation',['panel','bubble'],u.conversationPresentation??'panel',value=>edit('Edit interaction conversation presentation',d=>{d.uses.find(v=>v.id===uid)!.conversationPresentation=value as 'panel'|'bubble';}));

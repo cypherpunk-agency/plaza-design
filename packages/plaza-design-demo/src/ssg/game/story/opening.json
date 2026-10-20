@@ -918,8 +918,7 @@
     "homeRun": {
       "from": "harbor",
       "to": "downtown",
-      "announcement": "NEXT: DOWNTOWN",
-      "scene": "train"
+      "announcement": "NEXT: DOWNTOWN"
     },
     "home": {
       "scene": "capsule",

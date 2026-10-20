@@ -1,4 +1,5 @@
 import {renderNativeInputsAuthoring} from './native-inputs-authoring';
+import {renderResponseConversationsAuthoring} from './response-conversations-authoring';
 import {renderNativeDeadlinesAuthoring} from './native-deadlines-authoring';
 import {renderNativeRepliesAuthoring} from './native-replies-authoring';
 import {renderNativeLiveConditionsAuthoring} from './native-live-conditions-authoring';
@@ -28,4 +29,5 @@ export function renderNativeWorkflowAuthoring(parent:HTMLElement,doc:GameplayDef
  renderNativeInputsAuthoring(parent,doc,ui);
  renderNativeDeadlinesAuthoring(parent,doc,ui);
  renderNativeRepliesAuthoring(parent,doc,ui);
+ renderResponseConversationsAuthoring(parent,doc,ui);
 }

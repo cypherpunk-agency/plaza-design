@@ -26,7 +26,7 @@ export interface OpeningSource extends Omit<typeof baseline,'OPENING_TIME'|'OPEN
  OPENING_LINES:PerScene<{name?:string;pages:string[]}>;OPENING_EVERYDAY:PerScene<StoryChip[]>;OPENING_EXITS:PerScene<ExitRule>;
  OPENING_TARGETS:PerScene<OpeningTarget>;OPENING_PINGS:PerScene<PingTarget>;PHASES:Record<OpeningState,OpeningPhase>;
  DECK_BEFORE:{files:Record<string,string>;whoami:string};
- CONTROLLER:Omit<typeof baseline.CONTROLLER,'start'|'fallback'|'homeRun'|'releaseClock'>&{start:Handoff;fallback:Handoff;homeRun:{scene:'train';from:Station;to:Station;announcement:string};releaseClock:{phase:OpeningState;scene:string}};
+ CONTROLLER:Omit<typeof baseline.CONTROLLER,'start'|'fallback'|'homeRun'|'releaseClock'>&{start:Handoff;fallback:Handoff;homeRun:{from:Station;to:Station;announcement:string};releaseClock:{phase:OpeningState;scene:string}};
 }
 /** Supplied only after prospective registry assembly; no registry import or live game dependency. */
 export interface OpeningSourceContext {
@@ -90,7 +90,7 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
  const uplink=fields(d.UPLINK_LINES,'UPLINK_LINES',['pages','touchPages']);pages(uplink.pages,'UPLINK_LINES/pages');pages(uplink.touchPages,'UPLINK_LINES/touchPages');
  const deck=fields(d.DECK_BEFORE,'DECK_BEFORE',['files','whoami']);text(deck.whoami,'DECK_BEFORE/whoami');const files=object(deck.files,'DECK_BEFORE/files');if(Object.keys(files).length>32)fail('DECK_BEFORE/files','file limit');for(const[k,v]of Object.entries(files)){id(k,'DECK_BEFORE/file');text(v,'DECK_BEFORE/'+k);}
  const c=fields(d.CONTROLLER,'CONTROLLER',CONTROLLER_FIELDS);for(const k of['start','fallback'])destination(c[k],'CONTROLLER/'+k);
- const run=fields(c.homeRun,'CONTROLLER/homeRun',['from','to','announcement','scene']);if(run.scene!=='train')fail('homeRun/scene','registered train scene is protected');scene(run.scene,'homeRun/scene');for(const k of['from','to']){id(run[k],'homeRun/'+k);if(context?.stations&&!context.stations.includes(run[k]))fail('homeRun/'+k,'unknown station');}if(run.from===run.to)fail('homeRun','distinct stations required');text(run.announcement,'homeRun/announcement');
+ const run=fields(c.homeRun,'CONTROLLER/homeRun',['from','to','announcement']);for(const k of['from','to']){id(run[k],'homeRun/'+k);if(context?.stations&&!context.stations.includes(run[k]))fail('homeRun/'+k,'unknown station');}if(run.from===run.to)fail('homeRun','distinct stations required');text(run.announcement,'homeRun/announcement');
  const home=fields(c.home,'CONTROLLER/home',['scene','jackDevice']);const homeScene=scene(home.scene,'CONTROLLER/home/scene');device(homeScene,home.jackDevice,'CONTROLLER/home/jackDevice');
  const release=fields(c.releaseClock,'CONTROLLER/releaseClock',['phase','scene']);if(!phases.includes(release.phase))fail('CONTROLLER/releaseClock','unknown phase');scene(release.scene,'CONTROLLER/releaseClock/scene');
  const card=fields(c.sleep,'CONTROLLER/sleep',['target','label']);id(card.target,'CONTROLLER/sleep/target');text(card.label,'CONTROLLER/sleep/label');if(!d.OPENING_TARGETS.flat?.[homeScene+'/'+card.target])fail('CONTROLLER/sleep/target','unknown authored flat-phase story target');for(const rows of Object.values(d.OPENING_TARGETS)as Record<string,unknown>[])for(const ref of Object.keys(rows))if(ref.split('/')[1]!==card.target)fail('OPENING_TARGETS/'+ref,'only the registered sleep target has a native action');text(c.playerBefore,'CONTROLLER/playerBefore');

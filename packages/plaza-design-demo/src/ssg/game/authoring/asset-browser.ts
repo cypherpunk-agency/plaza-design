@@ -40,8 +40,10 @@ export interface AssetBrowserOptions {
   thumbnail?(entry: AssetEntry): HTMLCanvasElement;
   /** Adds the piece to the scene open in the editor (label names that scene). */
   useInScene?: { label: string; run(entry: AssetEntry): void };
+  /** City districts for the filter bar; `of` names a scene's district. */
+  districts?: { list: { id: string; name: string }[]; of(scene: string): string | undefined };
 }
-export interface AssetBrowserSession { query?: string; family?: string; selected?: string; usage?: string; zoom?: number }
+export interface AssetBrowserSession { query?: string; family?: string; district?: string; selected?: string; usage?: string; zoom?: number }
 /** No model edit/save API is accepted by this panel. All preview changes are temporary. */
 export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOptions, session: AssetBrowserSession) {
   let disposed = false, generation = 0;
@@ -54,8 +56,12 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   family.value = session.family ?? ''; family.setAttribute('aria-label', 'Asset family');
   const count = el('p'), list = el('div'), inspector = el('section'); list.className = 'catalog-list'; inspector.setAttribute('aria-label', 'Asset inspection');
   const navigation = el('div'); navigation.append(search, family, count, list);
+  // District bar: a piece belongs to every district whose scenes use it. "Elsewhere" is unused or sequence-only artwork.
+  const districtsOf = (entry: AssetEntry) => new Set(entry.usages.flatMap(u => { const d = options.districts?.of(u.scene); return d ? [d] : []; }));
+  const bar = el('nav'); bar.className = 'district-bar'; bar.setAttribute('aria-label', 'Filter by district');
+  const inDistrict = (entry: AssetEntry, id: string) => id === '__none__' ? districtsOf(entry).size === 0 : districtsOf(entry).has(id);
   const sets = el('details');
-  navigation.append(sets); host.classList.add('asset-browser-grid'); host.append(navigation, inspector);
+  navigation.append(sets); host.classList.add('asset-browser-grid'); if (options.districts) { host.classList.add('with-districts'); host.append(bar); } host.append(navigation, inspector);
   function inspect(entry: AssetEntry) {
     if (session.selected !== entry.id) session.usage = undefined;
     session.selected = entry.id; inspector.replaceChildren(el('h3', entry.label), el('code', entry.id), el('p', `Tags: ${entry.tags.join(', ')}`));
@@ -94,7 +100,12 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   }
   function refresh() {
     session.query = search.value; session.family = family.value;
-    const filtered = filterAssets(entries, search.value, family.value); count.textContent = `${filtered.length} / ${entries.length} registered assets`; list.replaceChildren();
+    const matching = filterAssets(entries, search.value, family.value), district = session.district ?? '';
+    if (options.districts) {
+      const chip = (id: string, name: string) => { const n = id ? matching.filter(e => inDistrict(e, id)).length : matching.length, b = button('', () => { session.district = id; refresh(); }); b.append(el('span', name), el('small', String(n))); b.className = 'chip'; b.title = name; b.setAttribute('aria-pressed', String(id === district)); b.disabled = !n && id !== district; return b; };
+      bar.replaceChildren(chip('', 'All'), ...options.districts.list.map(d => chip(d.id, d.name)), chip('__none__', 'Elsewhere'));
+    }
+    const filtered = district ? matching.filter(entry => inDistrict(entry, district)) : matching; count.textContent = `${filtered.length} / ${entries.length} registered assets`; list.replaceChildren();
     list.classList.toggle('asset-grid', !!options.thumbnail);
     for (const entry of filtered) {
       const pick = button('', () => inspect(entry)); pick.dataset.asset = entry.id; pick.title = `${entry.id} · ${entry.preview}`; pick.setAttribute('aria-pressed', String(entry.id === session.selected));

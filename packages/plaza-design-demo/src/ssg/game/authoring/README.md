@@ -68,8 +68,26 @@ The tab row has three views of the selected scene, then three areas that are not
   *Commands & dialogue* (the gameplay document), *Devices* (native parameters, nouns and seals), then
   the wiring panels *Starting cables* and the read-only *Events* inspector. Its supported scenes follow
   the registered content list above; Commands also covers the native Beach device slice.
-- **Play** runs the selected scene from one of its starting states; the game view comes first.
-- **Library** holds the artwork explorer and the Characters/Vehicles/Signs viewers.
+- **Play** is not a tab: ▶ Play scene in the Scene toolbar runs the scene from one of its starting states
+  on the Scene stage, in place of the canvas, and ■ Stop returns to editing. The **Compare** select shows
+  another version (a proposal and its base) beside the scene with the same camera, zoom, time and weather.
+- The Scene toolbar's **State** select picks the scene's saved world state: Play's starting states in
+  `play-fixtures.json` (day, minute, weather, seed, story flags). The stage shows the scene in that state and
+  ▶ Play starts from it. With a state chosen, the time and weather controls edit it (saved, undoable);
+  "preview only" changes nothing saved. A proposal scene uses its base scene's states.
+- **Library** holds the artwork explorer and the Characters/Style frames/Vehicles/Signs viewers.
+  Artwork has a district bar on the left: a piece belongs to every district whose scenes use it
+  ("Elsewhere" is unused or sequence-only artwork). Characters has a **Crowd** view that samples a
+  district's crowd mix (`art/characters/crowds.ts`: plain vs kitted people, wardrobe, acts, robots)
+  across the back, play and near rows. **Style frames** pairs each district's card (`style-frames.ts`:
+  proposed palette, light, materials, signage, landmark, crowd) with its scenes rendered at a chosen
+  time, weather and camera. All three are read-only previews of the 2026-10-20 art direction.
+- **Proposal scenes** (`proposal-scenes.ts`) are editor-only redraws of an existing scene with their own
+  composition file under `art/proposals/`. Each borrows its base scene's native definition (sky, weather,
+  lighting, devices, people), so it renders exactly as the base would with different artwork. Style frames
+  shows a scene and its proposal one above the other. They are not registered with the game, the city or Play.
+  `downtown-next` is the first: today's Downtown made taller and denser (extra storeys, AC units, stacked
+  plates, blade signs, ad screens, cameras, Market tenements in the midground, a street crowd).
 - **World** holds what is shared between scenes: the **City map** (opening a place switches the
   editor to that scene), Game opening, Companion dialogue, Networks, Scenes, City & travel and
   Bot dialogue.

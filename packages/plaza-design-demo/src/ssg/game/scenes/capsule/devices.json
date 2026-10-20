@@ -894,21 +894,19 @@
       "conciergeConnected": {
         "kind": "nodeConnected",
         "node": "concierge"
-      }
-    },
-    "goals": [
-      {
-        "when": "capsule.routerGoalReady",
+      },
+      "goal.router": {
+        "kind": "goalComplete",
         "goal": "router"
       },
-      {
-        "when": "conciergeConnected",
+      "goal.concierge": {
+        "kind": "goalComplete",
         "goal": "concierge"
       },
-      {
-        "when": "capsule.pixelGoalReady",
+      "goal.pixel": {
+        "kind": "goalComplete",
         "goal": "pixel"
       }
-    ]
+    }
   }
 }

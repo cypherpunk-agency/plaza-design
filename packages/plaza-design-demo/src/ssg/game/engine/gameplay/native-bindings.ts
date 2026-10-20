@@ -1,4 +1,5 @@
 import {validateNativeCommandSteps} from './native-command-steps';
+import {validateResponseConversations,attachResponseConversations} from './response-conversations';
 import {validateYardGameplayBindings} from '../controllers/yard';
 import {validateDowntownVisualBindings} from '../controllers/downtown-visual';
 import {validateLaundryGameplayBindings} from '../controllers/laundromat';
@@ -23,7 +24,8 @@ const record=(v:unknown):Record<string,any>=>{if(!v||typeof v!=='object'||Array.
 const fields=(v:unknown,allowed:string[])=>{const r=record(v);if(Object.keys(r).some(k=>!allowed.includes(k)))fail('unsupported field');return r;};
 const name=(s:unknown)=>{if(typeof s!=='string'||!s.trim()||s.length>128||['__proto__','constructor','prototype'].includes(s))fail('name');};
 export function validateNativeShape(d:GameplayDefinition,condition:(v:unknown)=>void){
- if(d.native===undefined)return;const b=fields(d.native,['verbs','events','goals','wires','reads','presentation','intervals','replies','triggers','deadlines','inputs']);
+ if(d.native===undefined)return;const b=fields(d.native,['verbs','events','goals','wires','reads','presentation','intervals','replies','triggers','deadlines','inputs','responseConversations']);
+ validateResponseConversations(d);
  for(const[flag,key]of Object.entries(b.reads===undefined?{}:record(b.reads))){if(!d.flags.includes(flag))fail('read flag reference');name(key);if(Object.values(d.commands).some(c=>c.actions.some(a=>'flag'in a&&a.flag===flag)))fail('read-only native flag');}
  const routes=new Set<string>();if(!Array.isArray(b.verbs)||b.verbs.length>128)fail('verb list');
  for(const raw of b.verbs){const r=fields(raw,['device','noun','verb','cases','denied']);[r.device,r.noun,r.verb].forEach(name);const key=r.device+'.'+r.noun+':'+r.verb;if(routes.has(key))fail('duplicate verb');routes.add(key);if(!Array.isArray(r.cases)||!r.cases.length||r.cases.length>32)fail('cases');
@@ -39,6 +41,7 @@ export function validateNativeShape(d:GameplayDefinition,condition:(v:unknown)=>
 function noun(data:SceneData,key:string){const i=key.indexOf('.');return [...data.devices,...(data.nodes??[])].find(d=>d.id===key.slice(0,i))?.nouns.find(n=>n.id===key.slice(i+1));}
 export function nativeVocabulary(data:SceneData){return [...data.devices,...(data.nodes??[])].flatMap(d=>[...d.nouns.map(n=>({key:d.id+'.'+n.id,verbs:[...(n.clock?['start','stop']:[]),...(n.link?['scan',...Array.from(new Set([...(n.link.reach??[]),...(n.link.known??[])])).map(id=>'connect '+id)]:[]),...(n.verbs??[])],events:n.events??[]})),...(d.sectors??[]).filter(s=>'sequence'in s.seal).map(s=>({key:d.id+'.'+s.id,verbs:'sequence'in s.seal?s.seal.sequence:[],events:[]})),...((data.watchdog?.route??[]).includes(d.id)?[{key:d.id+'.watchdog',verbs:[],events:['arrives','leaves']}]:[])]);}
 export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[],physical:readonly string[]=[]):GameplayDefinition {
+ validateResponseConversations(d,data);
  validateYardGameplayBindings(data,d);
  validateDowntownVisualBindings(data,d);
  validateLaundryGameplayBindings(data,d);
@@ -76,6 +79,7 @@ export function nativeRoute(d:GameplayDefinition,c:Pick<Ctx,'dev'|'noun'|'verb'>
 export function attachNativeGameplay(model:SceneModel,session:GameplaySession){
  model.installGameplaySource(session.definition as GameplayDefinition);
  validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}),model.rules.inputs);
+ attachResponseConversations(model,session);
  const domain=()=>model.beginDomainTransaction();session.domain=domain;session.onDispose(()=>{if(session.domain===domain)session.domain=undefined;});
  const queryIds=new Set(Object.keys(session.definition.queries??{})),readContext=()=>({tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates}),query=(id:string)=>queryIds.has(id)?session.query(id):undefined;session.readContext=readContext;model.gameplayQuery=query;model.gameplayQueryIds=queryIds;
  session.onDispose(()=>{if(session.readContext===readContext)session.readContext=undefined;if(model.gameplayQuery===query)model.gameplayQuery=undefined;if(model.gameplayQueryIds===queryIds)model.gameplayQueryIds=undefined;});

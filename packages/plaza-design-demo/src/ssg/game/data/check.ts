@@ -631,7 +631,6 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
   errs.push(...controllerProblems(z,world.netNodes,code.derived));
   const observationErrors=observationProblems(z,code.derived,{nodes:world.netNodes,keys:new Set(world.keyring.keys())});
   errs.push(...observationErrors);
-  if(z.observations&&!observationErrors.length)for(const row of z.observations.goals)c.cond(row.when,env.known,'observations goal '+row.goal);
 
   // ---------- the watchdog ----------
   if (z.watchdog) {
