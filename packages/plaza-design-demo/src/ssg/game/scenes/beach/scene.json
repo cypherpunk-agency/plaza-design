@@ -636,8 +636,49 @@
     }
   ],
   "manifest": {
-    "devices": {"kiosk": {"instance": "device-kiosk", "widthProperty": "width", "heightProperty": "height"}, "jukebox": {"instance": "device-jukebox", "widthProperty": "width", "heightProperty": "height"}, "mixer": {"instance": "device-mixer", "widthProperty": "width", "heightProperty": "height"}, "drone": {"instance": "device-drone", "widthProperty": "width", "heightProperty": "height"}, "pier": {"instance": "device-pier", "widthProperty": "width", "heightProperty": "height"}, "boat": {"instance": "device-boat", "widthProperty": "width", "heightProperty": "height"}},
-    "artwork": {"horizon": "horizon", "waterline": "waterline", "bar": "bar", "pier": "pier", "boardwalk": "boardwalk", "tower": "tower", "drink": "drink", "shore": "shore-edge", "stairs": "stairs-exit"},
+    "devices": {
+      "kiosk": {
+        "instance": "device-kiosk",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "jukebox": {
+        "instance": "device-jukebox",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "mixer": {
+        "instance": "device-mixer",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "drone": {
+        "instance": "device-drone",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "pier": {
+        "instance": "device-pier",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "boat": {
+        "instance": "device-boat",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      }
+    },
+    "artwork": {
+      "horizon": "horizon",
+      "waterline": "waterline",
+      "bar": "bar",
+      "pier": "pier",
+      "boardwalk": "boardwalk",
+      "tower": "tower",
+      "drink": "drink",
+      "shore": "shore-edge",
+      "stairs-exit": "stairs-exit"
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -672,6 +713,16 @@
     "exits": {
       "stairs": "stairs-exit",
       "harbor": "edge-exit"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
     }
   },
   "environment": {
@@ -727,5 +778,21 @@
         "ashore-6"
       ]
     }
+  },
+  "stage": {
+    "lights": [
+      {
+        "type": "beach.light",
+        "style": "element"
+      }
+    ],
+    "casters": [
+      {
+        "role": "caster"
+      }
+    ],
+    "targetAnchors": [
+      "stairs-exit"
+    ]
   }
 }

@@ -11,9 +11,6 @@ import type {Composition,Environment} from '../art';
 import {CAPSULE,YARD,type SceneData} from '../data';
 import {downtownScene} from '../scenes/downtown';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
-import {beachScene} from '../scenes/beach';
-import {validateBeachScene} from '../scenes/beach/scene-document';
-import {validateBeachGameplay} from '../scenes/beach/gameplay';
 import {sandboxScene} from '../scenes/sandbox';
 import {content as sandboxContent} from '../scenes/sandbox/scene-document';
 import {capsuleScene} from '../scenes/capsule';
@@ -31,18 +28,15 @@ import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} f
 /** The arguments every scene factory takes: composition, preview state, render options, scene and gameplay documents. */
 type SceneFactoryArgs=[document?:Composition,state?:Environment['state'],options?:Partial<Environment>,content?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition];
 const sandboxAuthoredScene=(...args:[...SceneFactoryArgs,NativeTargetValidationContext?])=>sandboxScene(args[0],args[1],args[2],undefined,args[3],args[4],args[5]);
-const beachAuthoredScene=(...args:[...SceneFactoryArgs,NativeTargetValidationContext?])=>beachScene(args[0],args[1],args[2],args[4],args[3],args[5]);
 const downtownAuthoredScene=(...args:SceneFactoryArgs)=>downtownScene(args[0],undefined,args[2],args[3],args[4]);
 type DeviceSourceArguments=[...SceneFactoryArgs,SceneData?,NativeTargetValidationContext?];
 const capsuleWithDevices=(...args:DeviceSourceArguments)=>capsuleScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const sandboxWithDevices=(...args:DeviceSourceArguments)=>sandboxScene(args[0],args[1],args[2],args[5],args[3],args[4],args[6]);
 const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
-const beachWithDevices=(...args:DeviceSourceArguments)=>beachScene(args[0],args[1],args[2],args[4],args[3],args[6],args[5]);
 const yardWithDevices=(...args:DeviceSourceArguments)=>yardScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const trainWithDevices=(...args:DeviceSourceArguments)=>trainScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const definitions=[
  {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
- {id:'beach',prefix:'beach',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateBeachScene,validateGameplay:validateBeachGameplay,definition:beachAuthoredScene,definitionWithDevices:beachWithDevices},
  {id:'sandbox',prefix:'sandbox',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:sandboxContent.validateScene,validateGameplay:sandboxContent.validateGameplay,definition:sandboxAuthoredScene,definitionWithDevices:sandboxWithDevices},
  {id:'capsule',prefix:'capsule',bindingGroups:['uses','readables','rests','exits'] as const,data:CAPSULE,validateScene:capsuleContent.validateScene,validateGameplay:capsuleContent.validateGameplay,definition:capsuleScene,definitionWithDevices:capsuleWithDevices},
  {id:'yard',prefix:'yard',bindingGroups:['uses','readables','rests','exits'] as const,data:YARD,validateScene:yardContent.validateScene,validateGameplay:yardContent.validateGameplay,definition:yardScene,definitionWithDevices:yardWithDevices},

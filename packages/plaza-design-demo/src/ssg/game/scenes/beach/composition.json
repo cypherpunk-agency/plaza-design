@@ -575,7 +575,7 @@
       "order": 1,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.ashore-0.pose"
+        "pose": "beach.actor.ashore-0"
       }
     },
     {
@@ -591,7 +591,7 @@
       "order": 2,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.ashore-1.pose"
+        "pose": "beach.actor.ashore-1"
       }
     },
     {
@@ -607,7 +607,7 @@
       "order": 3,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.ashore-2.pose"
+        "pose": "beach.actor.ashore-2"
       }
     },
     {
@@ -623,7 +623,7 @@
       "order": 4,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.ashore-3.pose"
+        "pose": "beach.actor.ashore-3"
       }
     },
     {
@@ -639,7 +639,7 @@
       "order": 5,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.ashore-4.pose"
+        "pose": "beach.actor.ashore-4"
       }
     },
     {
@@ -655,7 +655,7 @@
       "order": 6,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.ashore-5.pose"
+        "pose": "beach.actor.ashore-5"
       }
     },
     {
@@ -671,7 +671,7 @@
       "order": 7,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.ashore-6.pose"
+        "pose": "beach.actor.ashore-6"
       }
     },
     {
@@ -953,7 +953,7 @@
       "order": 15,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.sunbed-person-0.pose"
+        "pose": "beach.actor.sunbed-person-0"
       },
       "attach": {
         "instance": "sunbed-0",
@@ -973,7 +973,7 @@
       "order": 16,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.sunbed-person-1.pose"
+        "pose": "beach.actor.sunbed-person-1"
       },
       "attach": {
         "instance": "sunbed-2",
@@ -993,7 +993,7 @@
       "order": 17,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.sunbather.pose"
+        "pose": "beach.actor.sunbather"
       },
       "attach": {
         "instance": "sunbed-1",
@@ -1199,7 +1199,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.lime-talk.pose"
+        "pose": "beach.actor.lime-talk"
       }
     },
     {
@@ -1685,7 +1685,7 @@
       "order": 36,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.guard.pose"
+        "pose": "beach.actor.guard"
       },
       "attach": {
         "instance": "tower",
@@ -1808,7 +1808,7 @@
       "order": 40,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.beachgoer-0.pose"
+        "pose": "beach.actor.beachgoer-0"
       }
     },
     {
@@ -1824,7 +1824,7 @@
       "order": 41,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.beachgoer-1.pose"
+        "pose": "beach.actor.beachgoer-1"
       }
     },
     {
@@ -1840,7 +1840,7 @@
       "order": 42,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.beachgoer-2.pose"
+        "pose": "beach.actor.beachgoer-2"
       }
     },
     {
@@ -1856,7 +1856,7 @@
       "order": 43,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.beachgoer-3.pose"
+        "pose": "beach.actor.beachgoer-3"
       }
     },
     {
@@ -1872,7 +1872,7 @@
       "order": 44,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.beachgoer-4.pose"
+        "pose": "beach.actor.beachgoer-4"
       }
     },
     {
@@ -1888,7 +1888,7 @@
       "order": 45,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.beachgoer-5.pose"
+        "pose": "beach.actor.beachgoer-5"
       }
     },
     {
@@ -1904,7 +1904,7 @@
       "order": 46,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.beachgoer-6.pose"
+        "pose": "beach.actor.beachgoer-6"
       }
     },
     {
@@ -1920,7 +1920,7 @@
       "order": 47,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.volley.pose"
+        "pose": "beach.actor.volley"
       },
       "attach": {
         "instance": "net",
@@ -1940,7 +1940,7 @@
       "order": 48,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.kid.pose"
+        "pose": "beach.actor.kid"
       },
       "attach": {
         "instance": "castle",
@@ -1960,7 +1960,7 @@
       "order": 49,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.surfer.pose"
+        "pose": "beach.actor.surfer"
       }
     },
     {
@@ -2230,7 +2230,7 @@
       "order": 57,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.fisher.pose"
+        "pose": "beach.actor.fisher"
       },
       "attach": {
         "instance": "pier",
@@ -2287,7 +2287,7 @@
       "order": 59,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.cat.pose"
+        "pose": "beach.actor.cat"
       },
       "attach": {
         "instance": "pier",

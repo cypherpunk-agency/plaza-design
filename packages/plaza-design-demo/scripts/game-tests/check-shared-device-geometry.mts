@@ -1,4 +1,3 @@
-import {beachGeometry} from '../../src/ssg/game/scenes/beach/composition';
 import {compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {frameView} from '../../src/ssg/game/art/core/view';
