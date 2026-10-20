@@ -22,7 +22,7 @@ export function harborScene(doc:Composition=harborComposition,state:Environment[
  const native=adaptHarbor({id:'harbor',name:authored.name,
   intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,
   ...compiled.content,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
- },actors,()=>signals.read('craneCall'),doc,state,options);
- return {presentationTargets:content.presentationTargets,...native,gameplayEvent:signals.event,presentationState:signals,visualEnvironment:view=>harborEnvironment(doc,view,actors,signals.read('craneCall'))};
+ },actors,()=>signals.read('craneCall'),doc,state,options,authored);
+ return {presentationTargets:content.presentationTargets,...native,gameplayEvent:signals.event,presentationState:signals,visualEnvironment:view=>harborEnvironment(doc,view,actors,signals.read('craneCall'),authored)};
 }
 export const harbor=harborScene();

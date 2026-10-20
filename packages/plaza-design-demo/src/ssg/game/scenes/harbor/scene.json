@@ -1014,6 +1014,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"arch": "arch", "hut": "hut", "bonded": "bonded", "notice": "notice", "podium": "podium", "manifest": "manifest", "call-box": "call-box", "crane0": "crane0", "crane1": "crane1", "fish": "fish", "drinks": "drinks", "den": "den", "bonded-gate": "bonded-gate", "ghost": "ghost", "berth": "berth", "rails": "rails", "beacon": "beacon", "metro": "metro", "terminal": "terminal", "taxi": "taxi", "ferry": "ferry", "forklift": "forklift", "horizon-height": "horizon-height", "shade0": "shade0", "stack0": "stack0", "stack1": "stack1", "stack2": "stack2", "stack3": "stack3", "crane0-load": "crane0-load", "crane1-load": "crane1-load"},
     "version": 1,
     "width": {
       "instance": "scene",

@@ -162,3 +162,21 @@ and all173 zero-difference/error raster cases PASS at sourceed098aacf729; actual
 and packaged controls PASS without warnings. The inspector's prefix/composition-ID bug is fixed
 with the shared document identity helper; all19 actual manifest/companion/actor form mounts pass
 (`scene-inspector-identities-5FDHpk`).
+
+## Harbor registered geometry
+
+Harbor's30 inputs now select source artwork for its regions, booths, crane slots/loads, forklift,
+stack culling, horizon/shade and decorative positions. Shared property contracts include finite
+numbers/positive dimensions, text and explicit numeric/string choices. Slot filters prevent the
+first crane/load from binding the second index; gantry choices are the existing registered types.
+Required native inputs reject absent refs. Width comes from the manifest; actual actor/ordinary/
+attachment dependencies must be rebound before deleting old artwork. Six unused layout fields
+were removed. Native actor IDs/prefixes remain a separate continuation, explicitly still open.
+
+check-harbor-artwork-roles.mts PASS (`harbor-actor-role-source-eA6F29`) through actual forms, nine
+replacement inputs, attachment rebind/deletion, native layout/motion/loads/clips/vendor/culling/
+shade, strict index/ref validation, history/bundle/protected Save/fresh shipping/byte Undo.
+Original Harbor40/tea14/foreground5/shift36 drawing cases and1674 coastal bounds cases PASS;
+26 interactions/37 NPC pages/weather/persistence and five crane-flight paint transcripts PASS.
+Both builds/tsc, all19 inspector mounts and173 zero-difference/error raster rows PASS at
+source6a0fdc397d3e; actual packaged Harbor Play/Stop/slot-filter controls pass without warnings.

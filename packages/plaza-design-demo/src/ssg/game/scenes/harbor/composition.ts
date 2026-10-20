@@ -1,3 +1,7 @@
+import {manifestGeometry} from '../../engine/gameplay/manifest-geometry';
+import {artworkRoleContracts} from '../../engine/gameplay/artwork-roles';
+import type {SceneDocument} from '../../engine/gameplay/scene-document';
+import sceneSource from './scene.json';
 import {actorPoseSource} from '../../engine/gameplay/native-actor-bindings';
 import { frameView } from '../../art/core/view';
 /** Harbor authoring adapter: geometry and visual simulation resolve before artwork paints. */
@@ -13,26 +17,21 @@ import source from './composition.json';
 export type HarborRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>>;
 export const harborMarkerPolicy={exitAxes:['x'] as const,description:'Exits use horizontal triggers. Other interaction, light and shadow markers resolve their authored heights.'};
 const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
-// Only the remaining native assembly/controller inputs are protected. Newly authored
-// furniture, actors and interaction markers must stay removable after a real reload.
-const requiredIds=['scene','arch','hut','bonded','notice','podium','manifest','call-box','crane0','crane1','fish','drinks','den','bonded-gate','ghost','berth','rails','beacon','metro','terminal','taxi','ferry','forklift','stack0','stack1','stack2','stack3','crane0-load','crane1-load','horizon-height','shade0'];
-const required=new Map(source.instances.filter(n=>requiredIds.includes(n.id)).map(n=>[n.id,n.type]));
+const flatten=(nodes:Composition['instances']):Composition['instances']=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 const bindings=new Set(['layout','visual','fishPose','teaPose','loads','stackOrigins','forkliftOrigin','archVisible','bondedVisible'].map(k=>'harbor.'+k).concat(['clip.hut','clip.crane0','clip.crane1']));
 export function validateHarborComposition(input:unknown):Composition{
  const doc=art.validate(input);if(doc.scene!=='harbor')throw new Error('Expected harbor composition');
- for(const[id,type]of required)if(doc.instances.find(n=>n.id===id)?.type!==type)throw new Error('harbor: missing/changed instance '+id);
- for(const n of doc.instances){if(n.type==='character.prepared'){
+ for(const n of flatten(doc.instances)){if(n.type==='character.prepared'){
   if(typeof n.props.actor!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(n.props.actor)||n.bindings?.pose!==actorPoseSource('harbor',n.props.actor)||Object.entries(n.bindings).some(([k,b])=>k!=='pose'&&(k!=='clip'||!bindings.has(b))))throw new Error(n.id+': invalid harbor actor binding');
  }else for(const b of Object.values(n.bindings??{}))if(!bindings.has(b))throw new Error(n.id+': unknown harbor binding '+b);}
  return doc;
 }
 export const harborComposition=validateHarborComposition(source);
-function defaults(doc:Composition){const out:Record<string,Value>={};for(const n of doc.instances)for(const[k,b]of Object.entries(n.bindings??{}))out[b]=art.get(n.type).visualFields![k].default;return out;}
+function defaults(doc:Composition){const out:Record<string,Value>={};for(const n of flatten(doc.instances))for(const[k,b]of Object.entries(n.bindings??{}))out[b]=art.get(n.type).visualFields![k].default;return out;}
 export function harborGeometry(doc:Composition=harborComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(doc),reduced:false});}
-export function harborLayout(doc:Composition=harborComposition):HarborLayout{
- const rows=harborGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,x=(id:string)=>get(id).placement.x,arch=get('arch'),hut=get('hut'),bonded=get('bonded');
- return{width:Number(get('scene').props.width),spawn:rows.find(r=>r.instance.id==='spawn')?.placement.x??0,hut:{x:x('hut'),w:Number(hut.props.width),h:Number(hut.props.height)},notice:x('notice'),arch:{x0:x('arch'),x1:x('arch')+Number(arch.props.width),h:Number(arch.props.height)},podium:x('podium'),manifest:x('manifest'),callBox:x('call-box'),cranes:[0,1].map(i=>({x:x('crane'+i),id:String(get('crane'+i).props.gantry) as 'sts1'|'sts3',phase:Number(get('crane'+i).props.phase)})),fish:{x:x('fish'),w:Number(get('fish').props.width),use:rows.find(r=>r.instance.id==='fish-use')?.placement.x??0},drinks:{x:x('drinks'),w:Number(get('drinks').props.width),use:rows.find(r=>r.instance.id==='drink-use')?.placement.x??0},den:x('den'),fence:{x0:x('bonded'),x1:x('bonded')+Number(bonded.props.width),gate:x('bonded-gate')},ghost:x('ghost'),bribe:rows.find(r=>r.instance.id==='bribe-use')?.placement.x??0,ghostUse:rows.find(r=>r.instance.id==='ghost-use')?.placement.x??0,bollards:rows.filter(r=>r.instance.type==='harbor.bollard').map(r=>r.placement.x),berth:x('berth'),rails:x('rails'),beacon:x('beacon'),metro:x('metro'),terminal:x('terminal'),taxi:x('taxi'),ferry:x('ferry')};
-}
+function harborInputs(doc:Composition,source:SceneDocument){const rows=harborGeometry(doc),geometry=manifestGeometry(source,rows,[],{groundExits:false});for(const role of Object.keys(artworkRoleContracts.harbor))if(!geometry.artwork[role])throw Error('Harbor controller requires artwork role '+role);return{rows,geometry,get:(role:string)=>geometry.artwork[role]};}
+function harborLayoutFrom(input:ReturnType<typeof harborInputs>):HarborLayout{const{get,geometry}=input,x=(role:string)=>get(role).placement.x,arch=get('arch'),hut=get('hut'),bonded=get('bonded');return{width:geometry.width,hut:{x:x('hut'),w:Number(hut.props.width),h:Number(hut.props.height)},notice:x('notice'),arch:{x0:x('arch'),x1:x('arch')+Number(arch.props.width),h:Number(arch.props.height)},podium:x('podium'),manifest:x('manifest'),callBox:x('call-box'),cranes:[0,1].map(i=>({x:x('crane'+i),id:String(get('crane'+i).props.gantry) as 'sts1'|'sts2'|'sts3',phase:Number(get('crane'+i).props.phase)})),fish:{x:x('fish'),w:Number(get('fish').props.width)},drinks:{x:x('drinks'),w:Number(get('drinks').props.width)},den:x('den'),fence:{x0:x('bonded'),x1:x('bonded')+Number(bonded.props.width),gate:x('bonded-gate')},ghost:x('ghost'),berth:x('berth'),rails:x('rails'),beacon:x('beacon'),metro:x('metro'),terminal:x('terminal'),taxi:x('taxi'),ferry:x('ferry')};}
+export function harborLayout(doc:Composition=harborComposition,source:SceneDocument=sceneSource as unknown as SceneDocument):HarborLayout{return harborLayoutFrom(harborInputs(doc,source));}
 /** The established tea visit and forklift shuttle, now a pure controller snapshot. */
 export function harborVisual(layout:HarborLayout,t:number,craneCall:number,bribed:boolean,forklift:{x:number;travel:number}):HarborVisual{
  const cranes:CraneVisual[]=layout.cranes.map((c,ci)=>{let twx=c.x-40+Math.sin(t*.004+c.phase)*150,hang=128+Math.round(Math.sin(t*.01+c.phase)*6),carry=true;const u=t-craneCall,CALL=820;if(ci===0&&u>=0&&u<CALL){const k=u<160?u/160:u<CALL-160?1:(CALL-u)/160,ease=k*k*(3-2*k);twx=twx+(layout.callBox+14-twx)*ease;const dn=u<160?0:u<360?(u-160)/200:u<470?1:u<660?1-(u-470)/190:0;hang=Math.round(hang+(14-hang)*dn*dn*(3-2*dn));carry=false;}return{twx,hang,carry,u};});
@@ -40,30 +39,30 @@ export function harborVisual(layout:HarborLayout,t:number,craneCall:number,bribe
  return{cranes,forklift:{x:forklift.x+forklift.travel*k*k*(3-2*k),dir:u<500||u>=1250?1:-1},bribed,weatherLine:screenLine('harbor')};
 }
 const value=(v:unknown)=>v as Value;
-export function harborEnvironment(doc:Composition,view:View,actorMap:Readonly<Record<string,Character>>,craneCall:number):Environment{
- const rows=harborGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,attached=(row:typeof rows[number],parent:string)=>row.instance.attach?.instance===parent,L=harborLayout(doc),fork=get('forklift'),vis=harborVisual(L,view.t,craneCall,!!view.flags['harbor:bribed'],{x:fork.placement.x,travel:Number(fork.props.travel)}),b=defaults(doc);
+export function harborEnvironment(doc:Composition,view:View,actorMap:Readonly<Record<string,Character>>,craneCall:number,source:SceneDocument=sceneSource as unknown as SceneDocument):Environment{
+ const input=harborInputs(doc,source),{rows,get}=input,attached=(row:typeof rows[number],parent:string)=>row.instance.attach?.instance===parent,L=harborLayoutFrom(input),fork=get('forklift'),vis=harborVisual(L,view.t,craneCall,!!view.flags['harbor:bribed'],{x:fork.placement.x,travel:Number(fork.props.travel)}),b=defaults(doc);
  b['harbor.archVisible']=onScreen(view,view.sx(L.arch.x0)-20,view.sx(L.arch.x1)-view.sx(L.arch.x0)+60);b['harbor.bondedVisible']=onScreen(view,view.sx(L.fence.x0)-20,view.sx(L.fence.x1)-view.sx(L.fence.x0)+40);b['harbor.layout']=value(L);b['harbor.visual']=value(vis);b['harbor.stackOrigins']=[0,1,2,3].map(i=>get('stack'+i).placement.x);b['harbor.forkliftOrigin']=fork.placement.x;
  b['harbor.loads']=[0,1].map(i=>{const p=get('crane'+i+'-load').props;return{w:Number(p.width),p:Number(p.paint),seed:Number(p.seed),code:String(p.code),label:String(p.label)};});
  for(const row of rows.filter(r=>r.instance.type==='character.prepared')){
   const id=String(row.props.actor),actor=actorMap[id];if(!actor)throw new Error('Missing harbor actor '+id);let at={...row.placement},override:Parameters<typeof prepareCharacter>[2];let visible=true;
-  if((id==='operator0'||id==='operator1')&&row.instance.id===id&&attached(row,'crane'+id.slice(-1))){const i=Number(id.slice(-1)),c=L.cranes[i],cv=vis.cranes[i];at.x+=cv.twx-c.x;visible=onScreen(view,view.sx(c.x-230),460);override={x:at.x,h:at.h};}
-  if(id==='driver'&&row.instance.id==='driver'&&attached(row,'forklift')){at.x+=vis.forklift.x-fork.placement.x+(vis.forklift.dir<0?8:0);visible=onScreen(view,view.sx(vis.forklift.x)-50,100);override={x:at.x,h:at.h,facing:vis.forklift.dir};}
-  if(id==='watchman'&&row.instance.id==='watchman'&&attached(row,'hut'))visible=onScreen(view,view.sx(L.hut.x),L.hut.w);
-  if(id.startsWith('den-person')&&row.instance.id===id&&attached(row,'den'))visible=onScreen(view,view.sx(L.den)-60,248);
+  if((id==='operator0'||id==='operator1')&&row.instance.id===id&&attached(row,get('crane'+id.slice(-1)).instance.id)){const i=Number(id.slice(-1)),c=L.cranes[i],cv=vis.cranes[i];at.x+=cv.twx-c.x;visible=onScreen(view,view.sx(c.x-230),460);override={x:at.x,h:at.h};}
+  if(id==='driver'&&row.instance.id==='driver'&&attached(row,get('forklift').instance.id)){at.x+=vis.forklift.x-fork.placement.x+(vis.forklift.dir<0?8:0);visible=onScreen(view,view.sx(vis.forklift.x)-50,100);override={x:at.x,h:at.h,facing:vis.forklift.dir};}
+  if(id==='watchman'&&row.instance.id==='watchman'&&attached(row,get('hut').instance.id))visible=onScreen(view,view.sx(L.hut.x),L.hut.w);
+  if(id.startsWith('den-person')&&row.instance.id===id&&attached(row,get('den').instance.id))visible=onScreen(view,view.sx(L.den)-60,248);
   if(id==='guard')override={act:vis.bribed?'smoke':'stand',facing:vis.bribed?1:-1};
   let pose:PreparedCharacter=visible?prepareCharacter(actor,view.t,override):{visible:false,character:{x:actor.x}};
-  if(pose.visible&&!((id==='operator0'||id==='operator1')&&row.instance.id===id&&attached(row,'crane'+id.slice(-1))||id==='driver'&&row.instance.id==='driver'&&attached(row,'forklift'))){const dx=at.x-actor.x,dh=at.h-(actor.h??0);pose={...pose,character:{...pose.character,x:at.x,h:at.h},frame:{...pose.frame,x:pose.frame.x+dx},height:pose.height+dh};}
-  b['actor.'+id+'.pose']=value((id==='fishSeller'&&attached(row,'fish')||id==='teaMan'&&attached(row,'drinks'))&&row.instance.id===id?{visible:false,character:{x:actor.x}}:pose);
+  if(pose.visible&&!((id==='operator0'||id==='operator1')&&row.instance.id===id&&attached(row,get('crane'+id.slice(-1)).instance.id)||id==='driver'&&row.instance.id==='driver'&&attached(row,get('forklift').instance.id))){const dx=at.x-actor.x,dh=at.h-(actor.h??0);pose={...pose,character:{...pose.character,x:at.x,h:at.h},frame:{...pose.frame,x:pose.frame.x+dx},height:pose.height+dh};}
+  b['actor.'+id+'.pose']=value((id==='fishSeller'&&attached(row,get('fish').instance.id)||id==='teaMan'&&attached(row,get('drinks').instance.id))&&row.instance.id===id?{visible:false,character:{x:actor.x}}:pose);
  }
- const vendor=(id:string):PreparedCharacter=>{const row=rows.find(r=>r.instance.type==='character.prepared'&&r.props.actor===id&&r.instance.id===id&&attached(r,id==='fishSeller'?'fish':'drinks')),actor=actorMap[id];return row&&actor?prepareCharacter(actor,view.t,{x:row.placement.x,h:row.placement.h}):{visible:false,character:{x:0}};};
+ const vendor=(id:string):PreparedCharacter=>{const row=rows.find(r=>r.instance.type==='character.prepared'&&r.props.actor===id&&r.instance.id===id&&attached(r,get(id==='fishSeller'?'fish':'drinks').instance.id)),actor=actorMap[id];return row&&actor?prepareCharacter(actor,view.t,{x:row.placement.x,h:row.placement.h}):{visible:false,character:{x:0}};};
  b['harbor.fishPose']=value(vendor('fishSeller'));b['harbor.teaPose']=value(vendor('teaMan'));
- b['clip.hut']=rows.some(r=>r.instance.id==='watchman'&&attached(r,'hut'))?[view.sx(L.hut.x)+41,view.y(60)+1,26,22]:null;for(const i of[0,1])b['clip.crane'+i]=rows.some(r=>r.instance.id==='operator'+i&&attached(r,'crane'+i))?[view.sx(vis.cranes[i].twx)-41,view.y(188)+4,20,22]:null;
+ b['clip.hut']=rows.some(r=>r.instance.id==='watchman'&&attached(r,get('hut').instance.id))?[view.sx(L.hut.x)+41,view.y(60)+1,26,22]:null;for(const i of[0,1])b['clip.crane'+i]=rows.some(r=>r.instance.id==='operator'+i&&attached(r,get('crane'+i).instance.id))?[view.sx(vis.cranes[i].twx)-41,view.y(188)+4,20,22]:null;
  return{view,state:{},bindings:b,reduced:false};
 }
-export function drawHarborComposition(ctx:CanvasRenderingContext2D,view:View,actorMap:Readonly<Record<string,Character>>,craneCall:number,pass:'backdrop'|'foreground',doc=harborComposition,state:Environment['state']={},options:HarborRenderOptions={}){drawComposition(ctx,art,doc,{...harborEnvironment(doc,view,actorMap,craneCall),state,...options},pass);}
+export function drawHarborComposition(ctx:CanvasRenderingContext2D,view:View,actorMap:Readonly<Record<string,Character>>,craneCall:number,pass:'backdrop'|'foreground',doc=harborComposition,state:Environment['state']={},options:HarborRenderOptions={},source:SceneDocument=sceneSource as unknown as SceneDocument){drawComposition(ctx,art,doc,{...harborEnvironment(doc,view,actorMap,craneCall,source),state,...options},pass);}
 export function harborLights(doc:Composition=harborComposition):NonNullable<SceneDef['lights']>{return harborGeometry(doc).filter(r=>r.props.role==='light').map(r=>({x:r.placement.x,h:r.placement.h,kind:r.props.kind as 'lamp'|'window'|'neon',r:Number(r.props.r),...(r.props.color?{col:String(r.props.color)}:{}),...(r.props.width?{w:Number(r.props.width),hh:Number(r.props.lightHeight)}:{})}));}
 export function harborCasters(doc:Composition=harborComposition):NonNullable<SceneDef['casters']>{return harborGeometry(doc).filter(r=>r.props.role==='caster').map(r=>({x:r.placement.x,h:r.placement.h,w:Number(r.props.width)}));}
-export function adaptHarbor(scene:Omit<SceneDef,'drawBackdrop'|'drawFront'>,actorMap:Readonly<Record<string,Character>>,call:()=>number,document=harborComposition,state:Environment['state']={},options:HarborRenderOptions={}):SceneDef{
- const doc=validateHarborComposition(document),rows=harborGeometry(doc),at=(id:string)=>rows.find(r=>r.instance.id===id)!.placement;
- return{...scene,horizon:at('horizon-height').h,shade:{back:{h:at('shade0').h,gaps:rows.filter(r=>r.props.role==='shade-gap').map(r=>[r.placement.x,r.placement.x+Number(r.props.width)] as [number,number])}},lights:harborLights(doc),casters:harborCasters(doc),drawBackdrop:(ctx,v)=>drawHarborComposition(ctx,v,actorMap,call(),'backdrop',doc,state,options),drawFront:(ctx,v)=>drawHarborComposition(ctx,v,actorMap,call(),'foreground',doc,state,options)};
+export function adaptHarbor(scene:Omit<SceneDef,'drawBackdrop'|'drawFront'>,actorMap:Readonly<Record<string,Character>>,call:()=>number,document=harborComposition,state:Environment['state']={},options:HarborRenderOptions={},source:SceneDocument=sceneSource as unknown as SceneDocument):SceneDef{
+ const doc=validateHarborComposition(document),input=harborInputs(doc,source),{rows,get}=input,at=(role:string)=>get(role).placement;
+ return{...scene,horizon:at('horizon-height').h,shade:{back:{h:at('shade0').h,gaps:rows.filter(r=>r.props.role==='shade-gap').map(r=>[r.placement.x,r.placement.x+Number(r.props.width)] as [number,number])}},lights:harborLights(doc),casters:harborCasters(doc),drawBackdrop:(ctx,v)=>drawHarborComposition(ctx,v,actorMap,call(),'backdrop',doc,state,options,source),drawFront:(ctx,v)=>drawHarborComposition(ctx,v,actorMap,call(),'foreground',doc,state,options,source)};
 }

@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `bd5c4f7` on main and production.
-Production/main homepage jobs39348149294/39348149006 and design job39348149225 succeeded.
+Last verified deployment: `150889b` on main and production.
+Production/main homepage jobs39348693894/39348693514 and design job39348693783 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2542,3 +2542,28 @@ tsc/both builds PASS. Sourceed098aacf729f4fe70893bb2fa2ce9f206a3c1e25cbbdc7cb373
 differences/errors (independently verified), and actual packaged native Harbor Shift Play/Stop
 without warning/error logs. Package app-Y34BTBQN.js / play-FC4K5IAZ.js /
 play-3886959c7ab68470.html. Remaining whole-goal gates and final inventory remain open.
+
+## 2026-10-20 Harbor geometry role continuation
+
+Harbor's remaining30 native geometry/configuration inputs use typed source artwork roles instead
+of the broad prop identity/type floor. Enum/index and text-property contracts filter compatible
+crane/load inputs; ordinary positional roles reference actual chosen artwork. Scene width uses the
+shared manifest. Removed six unused layout fields/dependencies (spawn, bribe, ghostUse, bollards,
+fish.use and drinks.use). One prepared geometry result feeds native layout/motion; attachment-owner
+checks follow the current role's artwork. The default kernels, call timing and actor IDs stay
+unchanged. Actor-role identities remain the next Harbor continuation.
+
+Actual Scene controls replace hut/crane/forklift/stack/load/horizon/shade/fish/arch, reattach real
+children and delete original artwork. Native output/clip/vendor/culling/load changes, index/ref
+rejection atomicity, history/bundle/protected Save/fresh shipping/byte Undo PASS
+(`harbor-actor-role-source-eA6F29`). Original Harbor40/tea14/foreground5/shift36 command cases,
+1674 coastal bounds cases, all19 inspector mounts (`scene-inspector-identities-be8uHR`) and Harbor
+26 interaction/quote/resource cases +37 NPC pages/three weather variants +five crane-flight paint
+transcripts PASS. Harbor fixture now uses common owner-block values and actual Game.prepareSave
+for current session/save semantics; no runtime compatibility path was added.
+
+tsc/both builds PASS. Source6a0fdc397d3e23ccd4c39731ce8821ba052975dcdae4a1ea056aa8961fde336e passes173/173 browser raster rows with zero
+differences/errors (independently verified). Real packaged inspector filters crane0/load0 slots
+correctly and exposes motion/horizon refs; native Harbor Play/Stop PASS without warnings/errors.
+Package app-RBQAFZPC.js / play-FYWKWAH3.js / play-29327c92340e1075.html. Remaining whole-goal gates
+and the final all19/lifecycle/current-state/world/network/removal acceptance reconciliation stay open.
