@@ -11,7 +11,7 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "distance"
     },
     {
       "id": "facade-0",
@@ -24,8 +24,8 @@
         "x": -60,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop"
+      "order": 0,
+      "layer": "backdrop"
     },
     {
       "id": "facade-1",
@@ -38,8 +38,8 @@
         "x": 58,
         "h": 0
       },
-      "order": 2,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "backdrop"
     },
     {
       "id": "facade-2",
@@ -52,8 +52,8 @@
         "x": 208,
         "h": 0
       },
-      "order": 3,
-      "pass": "backdrop"
+      "order": 2,
+      "layer": "backdrop"
     },
     {
       "id": "facade-3",
@@ -66,8 +66,8 @@
         "x": 381,
         "h": 0
       },
-      "order": 4,
-      "pass": "backdrop"
+      "order": 3,
+      "layer": "backdrop"
     },
     {
       "id": "facade-4",
@@ -80,8 +80,8 @@
         "x": 509,
         "h": 0
       },
-      "order": 5,
-      "pass": "backdrop"
+      "order": 4,
+      "layer": "backdrop"
     },
     {
       "id": "facade-5",
@@ -94,8 +94,8 @@
         "x": 647,
         "h": 0
       },
-      "order": 6,
-      "pass": "backdrop"
+      "order": 5,
+      "layer": "backdrop"
     },
     {
       "id": "facade-6",
@@ -108,8 +108,8 @@
         "x": 752,
         "h": 0
       },
-      "order": 7,
-      "pass": "backdrop"
+      "order": 6,
+      "layer": "backdrop"
     },
     {
       "id": "facade-7",
@@ -122,8 +122,8 @@
         "x": 849,
         "h": 0
       },
-      "order": 8,
-      "pass": "backdrop"
+      "order": 7,
+      "layer": "backdrop"
     },
     {
       "id": "facade-8",
@@ -136,8 +136,8 @@
         "x": 997,
         "h": 0
       },
-      "order": 9,
-      "pass": "backdrop"
+      "order": 8,
+      "layer": "backdrop"
     },
     {
       "id": "facade-9",
@@ -150,8 +150,8 @@
         "x": 1097,
         "h": 0
       },
-      "order": 10,
-      "pass": "backdrop"
+      "order": 9,
+      "layer": "backdrop"
     },
     {
       "id": "facade-10",
@@ -164,8 +164,8 @@
         "x": 1236,
         "h": 0
       },
-      "order": 11,
-      "pass": "backdrop"
+      "order": 10,
+      "layer": "backdrop"
     },
     {
       "id": "facade-11",
@@ -178,8 +178,8 @@
         "x": 1371,
         "h": 0
       },
-      "order": 12,
-      "pass": "backdrop"
+      "order": 11,
+      "layer": "backdrop"
     },
     {
       "id": "facade-12",
@@ -192,8 +192,8 @@
         "x": 1476,
         "h": 0
       },
-      "order": 13,
-      "pass": "backdrop"
+      "order": 12,
+      "layer": "backdrop"
     },
     {
       "id": "facade-13",
@@ -206,8 +206,8 @@
         "x": 1592,
         "h": 0
       },
-      "order": 14,
-      "pass": "backdrop"
+      "order": 13,
+      "layer": "backdrop"
     },
     {
       "id": "facade-14",
@@ -220,8 +220,8 @@
         "x": 1711,
         "h": 0
       },
-      "order": 15,
-      "pass": "backdrop"
+      "order": 14,
+      "layer": "backdrop"
     },
     {
       "id": "facade-15",
@@ -234,8 +234,8 @@
         "x": 1853,
         "h": 0
       },
-      "order": 16,
-      "pass": "backdrop"
+      "order": 15,
+      "layer": "backdrop"
     },
     {
       "id": "facade-16",
@@ -248,8 +248,8 @@
         "x": 1997,
         "h": 0
       },
-      "order": 17,
-      "pass": "backdrop"
+      "order": 16,
+      "layer": "backdrop"
     },
     {
       "id": "facade-17",
@@ -262,8 +262,8 @@
         "x": 2128,
         "h": 0
       },
-      "order": 18,
-      "pass": "backdrop"
+      "order": 17,
+      "layer": "backdrop"
     },
     {
       "id": "facade-18",
@@ -276,8 +276,8 @@
         "x": 2283,
         "h": 0
       },
-      "order": 19,
-      "pass": "backdrop"
+      "order": 18,
+      "layer": "backdrop"
     },
     {
       "id": "facade-19",
@@ -290,8 +290,8 @@
         "x": 2436,
         "h": 0
       },
-      "order": 20,
-      "pass": "backdrop"
+      "order": 19,
+      "layer": "backdrop"
     },
     {
       "id": "ticker",
@@ -301,8 +301,8 @@
         "x": 330,
         "h": 176
       },
-      "order": 21,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "set",
       "bindings": {
         "text": "market.weather"
       }
@@ -315,8 +315,8 @@
         "x": 700,
         "h": 168
       },
-      "order": 22,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "set"
     },
     {
       "id": "ad-1",
@@ -326,8 +326,8 @@
         "x": 1010,
         "h": 172
       },
-      "order": 23,
-      "pass": "backdrop"
+      "order": 2,
+      "layer": "set"
     },
     {
       "id": "registry",
@@ -337,8 +337,8 @@
         "x": 1330,
         "h": 166
       },
-      "order": 24,
-      "pass": "backdrop"
+      "order": 3,
+      "layer": "set"
     },
     {
       "id": "ad-2",
@@ -353,8 +353,8 @@
         "x": 1660,
         "h": 178
       },
-      "order": 25,
-      "pass": "backdrop"
+      "order": 4,
+      "layer": "set"
     },
     {
       "id": "camera-1",
@@ -364,8 +364,8 @@
         "x": 470,
         "h": 196
       },
-      "order": 26,
-      "pass": "backdrop"
+      "order": 5,
+      "layer": "set"
     },
     {
       "id": "camera-2",
@@ -378,8 +378,8 @@
         "x": 1190,
         "h": 214
       },
-      "order": 27,
-      "pass": "backdrop"
+      "order": 6,
+      "layer": "set"
     },
     {
       "id": "blade-0",
@@ -392,8 +392,8 @@
         "x": 150,
         "h": 210
       },
-      "order": 28,
-      "pass": "backdrop"
+      "order": 7,
+      "layer": "set"
     },
     {
       "id": "blade-1",
@@ -406,8 +406,8 @@
         "x": 520,
         "h": 200
       },
-      "order": 29,
-      "pass": "backdrop"
+      "order": 8,
+      "layer": "set"
     },
     {
       "id": "blade-2",
@@ -420,8 +420,8 @@
         "x": 860,
         "h": 220
       },
-      "order": 30,
-      "pass": "backdrop"
+      "order": 9,
+      "layer": "set"
     },
     {
       "id": "blade-3",
@@ -434,8 +434,8 @@
         "x": 1180,
         "h": 230
       },
-      "order": 31,
-      "pass": "backdrop"
+      "order": 10,
+      "layer": "set"
     },
     {
       "id": "blade-4",
@@ -448,8 +448,8 @@
         "x": 1520,
         "h": 205
       },
-      "order": 32,
-      "pass": "backdrop"
+      "order": 11,
+      "layer": "set"
     },
     {
       "id": "bulbs-0",
@@ -459,8 +459,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 33,
-      "pass": "backdrop"
+      "order": 12,
+      "layer": "set"
     },
     {
       "id": "bulbs-1",
@@ -470,8 +470,8 @@
         "x": 220,
         "h": 0
       },
-      "order": 34,
-      "pass": "backdrop"
+      "order": 13,
+      "layer": "set"
     },
     {
       "id": "bulbs-2",
@@ -481,8 +481,8 @@
         "x": 440,
         "h": 0
       },
-      "order": 35,
-      "pass": "backdrop"
+      "order": 14,
+      "layer": "set"
     },
     {
       "id": "bulbs-3",
@@ -492,8 +492,8 @@
         "x": 660,
         "h": 0
       },
-      "order": 36,
-      "pass": "backdrop"
+      "order": 15,
+      "layer": "set"
     },
     {
       "id": "bulbs-4",
@@ -503,8 +503,8 @@
         "x": 880,
         "h": 0
       },
-      "order": 37,
-      "pass": "backdrop"
+      "order": 16,
+      "layer": "set"
     },
     {
       "id": "bulbs-5",
@@ -514,8 +514,8 @@
         "x": 1100,
         "h": 0
       },
-      "order": 38,
-      "pass": "backdrop"
+      "order": 17,
+      "layer": "set"
     },
     {
       "id": "bulbs-6",
@@ -525,8 +525,8 @@
         "x": 1320,
         "h": 0
       },
-      "order": 39,
-      "pass": "backdrop"
+      "order": 18,
+      "layer": "set"
     },
     {
       "id": "bulbs-7",
@@ -536,8 +536,8 @@
         "x": 1540,
         "h": 0
       },
-      "order": 40,
-      "pass": "backdrop"
+      "order": 19,
+      "layer": "set"
     },
     {
       "id": "bulbs-8",
@@ -547,8 +547,8 @@
         "x": 1760,
         "h": 0
       },
-      "order": 41,
-      "pass": "backdrop"
+      "order": 20,
+      "layer": "set"
     },
     {
       "id": "bulbs-9",
@@ -558,8 +558,8 @@
         "x": 1980,
         "h": 0
       },
-      "order": 42,
-      "pass": "backdrop"
+      "order": 21,
+      "layer": "set"
     },
     {
       "id": "bulbs-10",
@@ -569,8 +569,8 @@
         "x": 2200,
         "h": 0
       },
-      "order": 43,
-      "pass": "backdrop"
+      "order": 22,
+      "layer": "set"
     },
     {
       "id": "bulbs-11",
@@ -580,8 +580,8 @@
         "x": 2420,
         "h": 0
       },
-      "order": 44,
-      "pass": "backdrop"
+      "order": 23,
+      "layer": "set"
     },
     {
       "id": "bulbs-12",
@@ -591,8 +591,8 @@
         "x": 2640,
         "h": 0
       },
-      "order": 45,
-      "pass": "backdrop"
+      "order": 24,
+      "layer": "set"
     },
     {
       "id": "bulbs-13",
@@ -602,8 +602,8 @@
         "x": 2860,
         "h": 0
       },
-      "order": 46,
-      "pass": "backdrop"
+      "order": 25,
+      "layer": "set"
     },
     {
       "id": "bulbs-14",
@@ -613,8 +613,8 @@
         "x": 3080,
         "h": 0
       },
-      "order": 47,
-      "pass": "backdrop"
+      "order": 26,
+      "layer": "set"
     },
     {
       "id": "bulbs-15",
@@ -624,8 +624,8 @@
         "x": 3300,
         "h": 0
       },
-      "order": 48,
-      "pass": "backdrop"
+      "order": 27,
+      "layer": "set"
     },
     {
       "id": "back-0",
@@ -637,8 +637,8 @@
         "x": 1842.902707654472,
         "h": 8
       },
-      "order": 49,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-0",
         "clip": "market.clip.back-0"
@@ -654,8 +654,8 @@
         "x": 285.281290479601,
         "h": 8
       },
-      "order": 50,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-1",
         "clip": "market.clip.back-1"
@@ -671,8 +671,8 @@
         "x": 1026.3046742073748,
         "h": 8
       },
-      "order": 51,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-2",
         "clip": "market.clip.back-2"
@@ -688,8 +688,8 @@
         "x": -69.1087805522181,
         "h": 8
       },
-      "order": 52,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-3",
         "clip": "market.clip.back-3"
@@ -705,8 +705,8 @@
         "x": 1131.974441573012,
         "h": 8
       },
-      "order": 53,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-4",
         "clip": "market.clip.back-4"
@@ -722,8 +722,8 @@
         "x": 2002.8928883852868,
         "h": 8
       },
-      "order": 54,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-5",
         "clip": "market.clip.back-5"
@@ -739,8 +739,8 @@
         "x": -91.3683318492809,
         "h": 8
       },
-      "order": 55,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-6",
         "clip": "market.clip.back-6"
@@ -756,8 +756,8 @@
         "x": 133.8901725755493,
         "h": 8
       },
-      "order": 56,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-7",
         "clip": "market.clip.back-7"
@@ -773,8 +773,8 @@
         "x": 1001.0439005219582,
         "h": 8
       },
-      "order": 57,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-8",
         "clip": "market.clip.back-8"
@@ -790,8 +790,8 @@
         "x": 1205.913755067584,
         "h": 8
       },
-      "order": 58,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-9",
         "clip": "market.clip.back-9"
@@ -807,8 +807,8 @@
         "x": 650.2955646022668,
         "h": 8
       },
-      "order": 59,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-10",
         "clip": "market.clip.back-10"
@@ -824,8 +824,8 @@
         "x": 2065.86035106604,
         "h": 8
       },
-      "order": 60,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-11",
         "clip": "market.clip.back-11"
@@ -841,8 +841,8 @@
         "x": 615.1798069082106,
         "h": 8
       },
-      "order": 61,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-12",
         "clip": "market.clip.back-12"
@@ -858,8 +858,8 @@
         "x": 1710.33075536151,
         "h": 8
       },
-      "order": 62,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-13",
         "clip": "market.clip.back-13"
@@ -875,8 +875,8 @@
         "x": 1141.8381734014667,
         "h": 8
       },
-      "order": 63,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-14",
         "clip": "market.clip.back-14"
@@ -892,8 +892,8 @@
         "x": 804.1963018030842,
         "h": 8
       },
-      "order": 64,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.back-15",
         "clip": "market.clip.back-15"
@@ -907,8 +907,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 65,
-      "pass": "backdrop"
+      "order": 16,
+      "layer": "playfield"
     },
     {
       "id": "service",
@@ -918,8 +918,8 @@
         "x": 32,
         "h": 0
       },
-      "order": 66,
-      "pass": "backdrop"
+      "order": 17,
+      "layer": "playfield"
     },
     {
       "id": "lamp",
@@ -929,8 +929,8 @@
         "x": 64,
         "h": 0
       },
-      "order": 67,
-      "pass": "backdrop"
+      "order": 18,
+      "layer": "playfield"
     },
     {
       "id": "stall-0",
@@ -952,8 +952,8 @@
         "x": 96,
         "h": 0
       },
-      "order": 68,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-0"
       }
@@ -978,8 +978,8 @@
         "x": 290,
         "h": 0
       },
-      "order": 69,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-1"
       }
@@ -1007,8 +1007,8 @@
         "x": 424,
         "h": 0
       },
-      "order": 70,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-2"
       }
@@ -1033,8 +1033,8 @@
         "x": 640,
         "h": 0
       },
-      "order": 71,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-3"
       }
@@ -1063,8 +1063,8 @@
         "x": 820,
         "h": 0
       },
-      "order": 72,
-      "pass": "backdrop",
+      "order": 27,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-4"
       }
@@ -1089,8 +1089,8 @@
         "x": 1000,
         "h": 0
       },
-      "order": 73,
-      "pass": "backdrop",
+      "order": 29,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-5"
       }
@@ -1115,8 +1115,8 @@
         "x": 1290,
         "h": 0
       },
-      "order": 74,
-      "pass": "backdrop",
+      "order": 31,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-6"
       }
@@ -1141,8 +1141,8 @@
         "x": 1500,
         "h": 0
       },
-      "order": 75,
-      "pass": "backdrop",
+      "order": 33,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-7"
       }
@@ -1170,8 +1170,8 @@
         "x": 1750,
         "h": 0
       },
-      "order": 76,
-      "pass": "backdrop",
+      "order": 35,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-8"
       }
@@ -1199,8 +1199,8 @@
         "x": 1878,
         "h": 0
       },
-      "order": 77,
-      "pass": "backdrop",
+      "order": 36,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.stall-9"
       }
@@ -1226,8 +1226,8 @@
         "x": 1170,
         "h": 0
       },
-      "order": 78,
-      "pass": "backdrop",
+      "order": 37,
+      "layer": "playfield",
       "bindings": {
         "vendorPose": "market.vendor.fortune"
       }
@@ -1242,8 +1242,8 @@
         "x": 1806,
         "h": 27
       },
-      "order": 79,
-      "pass": "backdrop",
+      "order": 39,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.sleeper",
         "clip": "market.clip.sleeper"
@@ -1257,8 +1257,8 @@
         "x": 552,
         "h": 0
       },
-      "order": 80,
-      "pass": "backdrop"
+      "order": 40,
+      "layer": "playfield"
     },
     {
       "id": "rules",
@@ -1268,8 +1268,8 @@
         "x": 22,
         "h": 0
       },
-      "order": 81,
-      "pass": "backdrop",
+      "order": 41,
+      "layer": "playfield",
       "attach": {
         "instance": "laundry",
         "anchor": "origin"
@@ -1283,8 +1283,8 @@
         "x": 250,
         "h": 0
       },
-      "order": 82,
-      "pass": "backdrop"
+      "order": 42,
+      "layer": "playfield"
     },
     {
       "id": "clutter-1",
@@ -1294,8 +1294,8 @@
         "x": 556,
         "h": 0
       },
-      "order": 83,
-      "pass": "backdrop"
+      "order": 43,
+      "layer": "playfield"
     },
     {
       "id": "clutter-2",
@@ -1311,8 +1311,8 @@
         "x": 1128,
         "h": 0
       },
-      "order": 84,
-      "pass": "backdrop"
+      "order": 44,
+      "layer": "playfield"
     },
     {
       "id": "bin",
@@ -1322,8 +1322,8 @@
         "x": 1258,
         "h": 0
       },
-      "order": 85,
-      "pass": "backdrop"
+      "order": 45,
+      "layer": "playfield"
     },
     {
       "id": "odds",
@@ -1333,8 +1333,8 @@
         "x": 1448,
         "h": 64
       },
-      "order": 86,
-      "pass": "backdrop"
+      "order": 46,
+      "layer": "playfield"
     },
     {
       "id": "score",
@@ -1344,8 +1344,8 @@
         "x": 1744,
         "h": 70
       },
-      "order": 87,
-      "pass": "backdrop"
+      "order": 47,
+      "layer": "playfield"
     },
     {
       "id": "end-wall",
@@ -1355,8 +1355,8 @@
         "x": 1990,
         "h": 0
       },
-      "order": 88,
-      "pass": "backdrop",
+      "order": 48,
+      "layer": "playfield",
       "bindings": {
         "open": "market.exitOpen"
       }
@@ -1371,8 +1371,8 @@
         "x": 236,
         "h": 0
       },
-      "order": 89,
-      "pass": "backdrop",
+      "order": 49,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-0",
         "clip": "market.clip.street-0"
@@ -1388,8 +1388,8 @@
         "x": 262,
         "h": 0
       },
-      "order": 90,
-      "pass": "backdrop",
+      "order": 50,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-1",
         "clip": "market.clip.street-1"
@@ -1405,8 +1405,8 @@
         "x": 70,
         "h": 0
       },
-      "order": 91,
-      "pass": "backdrop",
+      "order": 51,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-2",
         "clip": "market.clip.street-2"
@@ -1422,8 +1422,8 @@
         "x": 250,
         "h": 10
       },
-      "order": 92,
-      "pass": "backdrop",
+      "order": 52,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-3",
         "clip": "market.clip.street-3"
@@ -1439,8 +1439,8 @@
         "x": 330,
         "h": 0
       },
-      "order": 93,
-      "pass": "backdrop",
+      "order": 53,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-4",
         "clip": "market.clip.street-4"
@@ -1456,8 +1456,8 @@
         "x": 520,
         "h": 0
       },
-      "order": 94,
-      "pass": "backdrop",
+      "order": 54,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-5",
         "clip": "market.clip.street-5"
@@ -1473,8 +1473,8 @@
         "x": 716,
         "h": 0
       },
-      "order": 95,
-      "pass": "backdrop",
+      "order": 55,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-6",
         "clip": "market.clip.street-6"
@@ -1490,8 +1490,8 @@
         "x": 800,
         "h": 0
       },
-      "order": 96,
-      "pass": "backdrop",
+      "order": 56,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-7",
         "clip": "market.clip.street-7"
@@ -1507,8 +1507,8 @@
         "x": 962,
         "h": 66
       },
-      "order": 97,
-      "pass": "backdrop",
+      "order": 57,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-8",
         "clip": "market.clip.street-8"
@@ -1524,8 +1524,8 @@
         "x": 962,
         "h": 0
       },
-      "order": 98,
-      "pass": "backdrop",
+      "order": 58,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-9",
         "clip": "market.clip.street-9"
@@ -1541,8 +1541,8 @@
         "x": 1138,
         "h": 0
       },
-      "order": 99,
-      "pass": "backdrop",
+      "order": 59,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-10",
         "clip": "market.clip.street-10"
@@ -1558,8 +1558,8 @@
         "x": 660,
         "h": 0
       },
-      "order": 100,
-      "pass": "backdrop",
+      "order": 60,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-11",
         "clip": "market.clip.street-11"
@@ -1575,8 +1575,8 @@
         "x": 1436,
         "h": 0
       },
-      "order": 101,
-      "pass": "backdrop",
+      "order": 61,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-12",
         "clip": "market.clip.street-12"
@@ -1592,8 +1592,8 @@
         "x": 1460,
         "h": 0
       },
-      "order": 102,
-      "pass": "backdrop",
+      "order": 62,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-13",
         "clip": "market.clip.street-13"
@@ -1609,8 +1609,8 @@
         "x": 1668,
         "h": 0
       },
-      "order": 103,
-      "pass": "backdrop",
+      "order": 63,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-14",
         "clip": "market.clip.street-14"
@@ -1626,8 +1626,8 @@
         "x": 1688,
         "h": 0
       },
-      "order": 104,
-      "pass": "backdrop",
+      "order": 64,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-15",
         "clip": "market.clip.street-15"
@@ -1643,8 +1643,8 @@
         "x": 1706,
         "h": 0
       },
-      "order": 105,
-      "pass": "backdrop",
+      "order": 65,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-16",
         "clip": "market.clip.street-16"
@@ -1660,8 +1660,8 @@
         "x": 1722,
         "h": 0
       },
-      "order": 106,
-      "pass": "backdrop",
+      "order": 66,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-17",
         "clip": "market.clip.street-17"
@@ -1677,8 +1677,8 @@
         "x": 1900,
         "h": 0
       },
-      "order": 107,
-      "pass": "backdrop",
+      "order": 67,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-18",
         "clip": "market.clip.street-18"
@@ -1694,8 +1694,8 @@
         "x": 1978,
         "h": 0
       },
-      "order": 108,
-      "pass": "backdrop",
+      "order": 68,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-19",
         "clip": "market.clip.street-19"
@@ -1711,8 +1711,8 @@
         "x": 1220,
         "h": 0
       },
-      "order": 109,
-      "pass": "backdrop",
+      "order": 69,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-20",
         "clip": "market.clip.street-20"
@@ -1728,8 +1728,8 @@
         "x": 300,
         "h": 0
       },
-      "order": 110,
-      "pass": "backdrop",
+      "order": 70,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-21",
         "clip": "market.clip.street-21"
@@ -1745,8 +1745,8 @@
         "x": 140,
         "h": 0
       },
-      "order": 111,
-      "pass": "backdrop",
+      "order": 71,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-22",
         "clip": "market.clip.street-22"
@@ -1762,8 +1762,8 @@
         "x": 664,
         "h": 0
       },
-      "order": 112,
-      "pass": "backdrop",
+      "order": 72,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-23",
         "clip": "market.clip.street-23"
@@ -1779,8 +1779,8 @@
         "x": 300,
         "h": 0
       },
-      "order": 113,
-      "pass": "backdrop",
+      "order": 73,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-24",
         "clip": "market.clip.street-24"
@@ -1796,8 +1796,8 @@
         "x": 1240,
         "h": 0
       },
-      "order": 114,
-      "pass": "backdrop",
+      "order": 74,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-25",
         "clip": "market.clip.street-25"
@@ -1813,8 +1813,8 @@
         "x": 660,
         "h": 0
       },
-      "order": 115,
-      "pass": "backdrop",
+      "order": 75,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-26",
         "clip": "market.clip.street-26"
@@ -1830,8 +1830,8 @@
         "x": 1150,
         "h": 0
       },
-      "order": 116,
-      "pass": "backdrop",
+      "order": 76,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-27",
         "clip": "market.clip.street-27"
@@ -1847,8 +1847,8 @@
         "x": 1250,
         "h": 0
       },
-      "order": 117,
-      "pass": "backdrop",
+      "order": 77,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-28",
         "clip": "market.clip.street-28"
@@ -1864,8 +1864,8 @@
         "x": 200,
         "h": 0
       },
-      "order": 118,
-      "pass": "backdrop",
+      "order": 78,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-29",
         "clip": "market.clip.street-29"
@@ -1881,8 +1881,8 @@
         "x": 1600,
         "h": 0
       },
-      "order": 119,
-      "pass": "backdrop",
+      "order": 79,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-30",
         "clip": "market.clip.street-30"
@@ -1898,8 +1898,8 @@
         "x": 1764,
         "h": 0
       },
-      "order": 120,
-      "pass": "backdrop",
+      "order": 80,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-31",
         "clip": "market.clip.street-31"
@@ -1915,8 +1915,8 @@
         "x": 1906,
         "h": 0
       },
-      "order": 121,
-      "pass": "backdrop",
+      "order": 81,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-32",
         "clip": "market.clip.street-32"
@@ -1932,8 +1932,8 @@
         "x": 1404,
         "h": 101
       },
-      "order": 122,
-      "pass": "backdrop",
+      "order": 82,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-33",
         "clip": "market.clip.street-33"
@@ -1949,8 +1949,8 @@
         "x": 400,
         "h": 20
       },
-      "order": 123,
-      "pass": "backdrop",
+      "order": 83,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-34",
         "clip": "market.clip.street-34"
@@ -1966,8 +1966,8 @@
         "x": -200,
         "h": 40
       },
-      "order": 124,
-      "pass": "backdrop",
+      "order": 84,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-35",
         "clip": "market.clip.street-35"
@@ -1983,8 +1983,8 @@
         "x": 1900,
         "h": 30
       },
-      "order": 125,
-      "pass": "backdrop",
+      "order": 85,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.street-36",
         "clip": "market.clip.street-36"
@@ -2000,8 +2000,8 @@
         "x": 158.44315353708487,
         "h": -58
       },
-      "order": 126,
-      "pass": "foreground",
+      "order": 0,
+      "layer": "foreground",
       "bindings": {
         "pose": "market.actor.near-0",
         "clip": "market.clip.near-0"
@@ -2017,8 +2017,8 @@
         "x": 1865.4665989174816,
         "h": -58
       },
-      "order": 127,
-      "pass": "foreground",
+      "order": 1,
+      "layer": "foreground",
       "bindings": {
         "pose": "market.actor.near-1",
         "clip": "market.clip.near-1"
@@ -2034,8 +2034,8 @@
         "x": 702.666241723423,
         "h": -58
       },
-      "order": 128,
-      "pass": "foreground",
+      "order": 2,
+      "layer": "foreground",
       "bindings": {
         "pose": "market.actor.near-2",
         "clip": "market.clip.near-2"
@@ -2051,8 +2051,8 @@
         "x": 1653.0277534634934,
         "h": -58
       },
-      "order": 129,
-      "pass": "foreground",
+      "order": 3,
+      "layer": "foreground",
       "bindings": {
         "pose": "market.actor.near-3",
         "clip": "market.clip.near-3"
@@ -2068,21 +2068,19 @@
         "x": 0,
         "h": 0
       },
-      "order": 130,
-      "pass": "backdrop"
+      "order": 0,
+      "layer": "logic"
     },
     {
       "id": "spawn",
-      "type": "market.marker",
-      "props": {
-        "role": "spawn"
-      },
+      "type": "scene.player",
+      "props": {},
       "placement": {
         "x": 86,
         "h": 0
       },
-      "order": 131,
-      "pass": "backdrop"
+      "order": 86,
+      "layer": "playfield"
     },
     {
       "id": "exit-mall",
@@ -2094,8 +2092,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 132,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "logic",
       "attach": {
         "instance": "service",
         "anchor": "origin"
@@ -2111,8 +2109,8 @@
         "x": 46,
         "h": 0
       },
-      "order": 133,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "logic",
       "attach": {
         "instance": "end-wall",
         "anchor": "origin"
@@ -2128,8 +2126,8 @@
         "x": 64,
         "h": 0
       },
-      "order": 134,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "logic",
       "attach": {
         "instance": "laundry",
         "anchor": "origin"
@@ -2145,8 +2143,8 @@
         "x": 62,
         "h": 0
       },
-      "order": 135,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "logic",
       "attach": {
         "instance": "stall-2",
         "anchor": "origin"
@@ -2162,8 +2160,8 @@
         "x": 38,
         "h": 0
       },
-      "order": 136,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "logic",
       "attach": {
         "instance": "fortune",
         "anchor": "origin"
@@ -2179,8 +2177,8 @@
         "x": 52,
         "h": 0
       },
-      "order": 137,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "logic",
       "attach": {
         "instance": "stall-1",
         "anchor": "origin"
@@ -2196,8 +2194,8 @@
         "x": 80,
         "h": 0
       },
-      "order": 138,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "logic",
       "attach": {
         "instance": "stall-4",
         "anchor": "origin"
@@ -2217,8 +2215,8 @@
         "instance": "stall-0",
         "anchor": "vendor"
       },
-      "order": 68.1,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.cook"
       }
@@ -2237,8 +2235,8 @@
         "instance": "stall-1",
         "anchor": "vendor"
       },
-      "order": 69.1,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.simVendor"
       }
@@ -2257,8 +2255,8 @@
         "instance": "stall-2",
         "anchor": "vendor"
       },
-      "order": 70.1,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.brolly"
       }
@@ -2277,8 +2275,8 @@
         "instance": "stall-3",
         "anchor": "vendor"
       },
-      "order": 71.1,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.fruitVendor"
       }
@@ -2297,8 +2295,8 @@
         "instance": "stall-4",
         "anchor": "vendor"
       },
-      "order": 72.1,
-      "pass": "backdrop",
+      "order": 28,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.implantVendor"
       }
@@ -2317,8 +2315,8 @@
         "instance": "stall-5",
         "anchor": "vendor"
       },
-      "order": 73.1,
-      "pass": "backdrop",
+      "order": 30,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.fishmonger"
       }
@@ -2337,8 +2335,8 @@
         "instance": "stall-6",
         "anchor": "vendor"
       },
-      "order": 74.1,
-      "pass": "backdrop",
+      "order": 32,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.fixer2"
       }
@@ -2357,8 +2355,8 @@
         "instance": "stall-7",
         "anchor": "vendor"
       },
-      "order": 75.1,
-      "pass": "backdrop",
+      "order": 34,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.dumplingCook"
       }
@@ -2377,8 +2375,8 @@
         "instance": "fortune",
         "anchor": "vendor"
       },
-      "order": 78.1,
-      "pass": "backdrop",
+      "order": 38,
+      "layer": "playfield",
       "bindings": {
         "pose": "market.actor.fortuneBot"
       }

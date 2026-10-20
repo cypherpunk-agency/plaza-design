@@ -8,7 +8,7 @@ import {validateActorPresentationNode} from '../../engine/gameplay/actor-present
 import {prepareActor} from '../../engine/gameplay/actor-frame';
 import type {Character} from '../../runtime/characters';
 /** Downtown layout and state adapter. All drawing follows the same editable composition path. */
-import { drawComposition, resolveComposition, type Composition, type Environment, type Instance, type Properties, type Value } from '../../art/core/composition';
+import { drawComposition, drawCompositionSlot, isLayered, queueLayeredSlots, resolveComposition, type Composition, type Resolved, type Environment, type Instance, type Properties, type Value } from '../../art/core/composition';
 import { art as downtownArt } from '../../art';
 import type { DowntownDeviceState } from '../../art/electronics/downtown-devices';
 import { frameView, type View } from '../../art/core/view';
@@ -84,7 +84,18 @@ export function downtownEnvironment(doc:Composition,view:View,input:DowntownRend
  const dlv=roles.vehicleHome;bindings['device.dlv9.position']=input.dlv??dlv.placement.x;
  return{view,state:input.overrides??{},bindings,reduced:false,...input.options};
 }
-export function renderDowntownCity(ctx:CanvasRenderingContext2D,view:View,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},source:SceneDocument=sourceScene){drawComposition(ctx,downtownArt,doc,downtownEnvironment(doc,view,{overrides,options,source}),'backdrop');}
-export function renderDowntownStreet(ctx:CanvasRenderingContext2D,view:View,rain:number,city:boolean,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},source:SceneDocument=sourceScene){drawComposition(ctx,downtownArt,doc,downtownEnvironment(doc,view,{rain,city,overrides,options,source}),'foreground');}
-export function renderDowntownPeople(ctx:CanvasRenderingContext2D,view:View,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},actors:Readonly<Record<string,Character>>={},source:SceneDocument=sourceScene){drawComposition(ctx,downtownArt,doc,downtownEnvironment(doc,view,{overrides,options,actors,source}),'people');}
-export function renderDowntownDevices(ctx:CanvasRenderingContext2D,view:View,model:SceneModel,hover:string|null,dlv:number|null,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},source:SceneDocument=sourceScene){drawComposition(ctx,downtownArt,doc,downtownEnvironment(doc,view,{model,hover,dlv,overrides,options,source}),'devices');}
+/** The street surface and its reflections: drawn in the engine's street moment (Yard borrows it too). */
+const STREET_TYPES=new Set(['downtown.street','downtown.stall-pool','downtown.smear']);
+const street=(r:Resolved)=>STREET_TYPES.has(r.instance.type);
+/** Layered Downtown keeps its engine moments: city (distance and backdrop, without the street), street, devices (set), people (playfield). */
+function drawDowntown(ctx:CanvasRenderingContext2D,doc:Composition,env:Environment,pass:'backdrop'|'foreground'|'devices'|'people'){
+ if(!isLayered(doc)){drawComposition(ctx,downtownArt,doc,env,pass);return;}
+ if(pass==='backdrop')drawCompositionSlot(ctx,downtownArt,doc,env,'behind-player',r=>(r.instance.layer==='distance'||r.instance.layer==='backdrop')&&!street(r));
+ else if(pass==='foreground')drawCompositionSlot(ctx,downtownArt,doc,env,'behind-player',street);
+ else if(pass==='devices')drawCompositionSlot(ctx,downtownArt,doc,env,'behind-player',['set']);
+ else{drawCompositionSlot(ctx,downtownArt,doc,env,'behind-player',['playfield']);queueLayeredSlots(ctx,downtownArt,doc,env);}
+}
+export function renderDowntownCity(ctx:CanvasRenderingContext2D,view:View,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},source:SceneDocument=sourceScene){drawDowntown(ctx,doc,downtownEnvironment(doc,view,{overrides,options,source}),'backdrop');}
+export function renderDowntownStreet(ctx:CanvasRenderingContext2D,view:View,rain:number,city:boolean,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},source:SceneDocument=sourceScene){drawDowntown(ctx,doc,downtownEnvironment(doc,view,{rain,city,overrides,options,source}),'foreground');}
+export function renderDowntownPeople(ctx:CanvasRenderingContext2D,view:View,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},actors:Readonly<Record<string,Character>>={},source:SceneDocument=sourceScene){drawDowntown(ctx,doc,downtownEnvironment(doc,view,{overrides,options,actors,source}),'people');}
+export function renderDowntownDevices(ctx:CanvasRenderingContext2D,view:View,model:SceneModel,hover:string|null,dlv:number|null,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},source:SceneDocument=sourceScene){drawDowntown(ctx,doc,downtownEnvironment(doc,view,{model,hover,dlv,overrides,options,source}),'devices');}

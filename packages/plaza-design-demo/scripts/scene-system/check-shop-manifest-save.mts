@@ -17,7 +17,7 @@ const validate=(d:any,docs:any[])=>{if(d.id==='shop-scene')validateSourceDocumen
 const make=()=>{const m=new ComposerModel(art,context,validate);m.load(documents);return m;};
 const model=make(),composition=model.get('shop').value as Composition,scene=structuredClone(SHOP_SCENE),gameplay=structuredClone(SHOP_GAMEPLAY);
 scene.actors!.find(a=>a.id==='browser')!.look={body:'wide',top:'#123456'};scene.actors!.find(a=>a.id==='browser')!.speed=.7;scene.actors!.find(a=>a.id==='browser')!.when={from:'18:00',to:'06:00',days:['odd']};
-composition.instances.push({id:'review-console',type:'furniture.stool',props:{seed:9},placement:{x:610,h:0},order:500,pass:'backdrop'});
+composition.instances.push({id:'review-console',type:'furniture.stool',props:{seed:9},placement:{x:610,h:0},order:500,layer:'set'});
 composition.instances.find(i=>i.id==='vending')!.props.width=60;composition.instances.find(i=>i.id==='vending')!.props.height=90;
 composition.instances.find(i=>i.id==='wall')!.props.width=980;
 addManifestContent(scene,'uses','review-action','review-console');scene.uses.at(-1)!.routes=[{command:'shop.review-action',pages:['Action committed.']}];

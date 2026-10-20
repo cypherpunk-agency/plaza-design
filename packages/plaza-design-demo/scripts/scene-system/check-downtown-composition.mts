@@ -79,7 +79,7 @@ modified.instances.find(n=>n.id==='dumpster')!.props.width=60;modified.instances
 const baselineScene=downtownScene(),editedScene=downtownScene(modified);
 assert.deepEqual(editedScene.platforms![0],{x:1000,w:60,h:30});assert.deepEqual(editedScene.casters![0],{x:1030,h:30,w:60});
 assert.deepEqual(editedScene.exits.map(({x,...rest})=>rest),baselineScene.exits.map(({x,...rest})=>rest),'marker edits must preserve destinations/rules');
-const shared=structuredClone(downtownComposition);shared.instances.push({id:'shared-seat',type:'furniture.stool',props:{},placement:{x:500,h:0,scale:2,facing:-1},order:10000,pass:'backdrop'});
+const shared=structuredClone(downtownComposition);shared.instances.push({id:'shared-seat',type:'furniture.stool',props:{},placement:{x:500,h:0,scale:2,facing:-1},order:10000,layer:'set'});
 const shop=shared.instances.find(n=>n.id==='exit-shop')!;shop.attach={instance:'shared-seat',anchor:'seat'};shop.placement={x:10,h:0};
 const coreShop=downtownGeometry(shared).find(r=>r.instance.id==='exit-shop')!.placement;
 assert.equal(downtownPlacements(shared).get('exit-shop').x,coreShop.x,'shared-kit anchor uses same source/runtime geometry');

@@ -14,18 +14,18 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "logic"
     },
     {
       "id": "spawn",
-      "type": "harbor.marker",
+      "type": "scene.player",
       "props": {},
       "placement": {
         "x": 76,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop"
+      "order": 27,
+      "layer": "playfield"
     },
     {
       "id": "horizon-height",
@@ -37,8 +37,8 @@
         "x": 0,
         "h": 84
       },
-      "order": 2,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "logic"
     },
     {
       "id": "farSky",
@@ -48,8 +48,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 3,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "distance",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -68,8 +68,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 4,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "distance",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -88,8 +88,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 5,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "distance",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -108,8 +108,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 6,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -128,8 +128,8 @@
         "x": 1650,
         "h": 56
       },
-      "order": 7,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -148,8 +148,8 @@
         "x": 0,
         "h": 34
       },
-      "order": 8,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -168,8 +168,8 @@
         "x": 0,
         "h": 46
       },
-      "order": 9,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -188,8 +188,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 10,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -211,8 +211,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 11,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -233,8 +233,8 @@
         "x": 56,
         "h": 30
       },
-      "order": 12,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "set",
       "attach": {
         "instance": "hut",
         "anchor": "origin"
@@ -252,8 +252,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 13,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "set",
       "attach": {
         "instance": "hut",
         "anchor": "origin"
@@ -276,8 +276,8 @@
         "x": 26,
         "h": 0
       },
-      "order": 14,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -296,8 +296,8 @@
         "x": 118,
         "h": 0
       },
-      "order": 15,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -320,8 +320,8 @@
         "x": 780,
         "h": 0
       },
-      "order": 16,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -342,8 +342,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 17,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "set",
       "attach": {
         "instance": "crane0",
         "anchor": "origin"
@@ -368,8 +368,8 @@
         "x": -31,
         "h": 158
       },
-      "order": 18,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "set",
       "attach": {
         "instance": "crane0",
         "anchor": "origin"
@@ -389,8 +389,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 19,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "set",
       "attach": {
         "instance": "crane0",
         "anchor": "origin"
@@ -415,8 +415,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 20,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "set",
       "attach": {
         "instance": "crane0",
         "anchor": "origin"
@@ -446,8 +446,8 @@
         "x": -64,
         "h": -58
       },
-      "order": 21,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "set",
       "attach": {
         "instance": "crane0",
         "anchor": "origin"
@@ -472,8 +472,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 22,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "set",
       "attach": {
         "instance": "crane0",
         "anchor": "origin"
@@ -500,8 +500,8 @@
         "x": 1880,
         "h": 0
       },
-      "order": 23,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -522,8 +522,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 24,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "set",
       "attach": {
         "instance": "crane1",
         "anchor": "origin"
@@ -548,8 +548,8 @@
         "x": -31,
         "h": 158
       },
-      "order": 25,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "set",
       "attach": {
         "instance": "crane1",
         "anchor": "origin"
@@ -569,8 +569,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 26,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "set",
       "attach": {
         "instance": "crane1",
         "anchor": "origin"
@@ -595,8 +595,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 27,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "set",
       "attach": {
         "instance": "crane1",
         "anchor": "origin"
@@ -626,8 +626,8 @@
         "x": -64,
         "h": -58
       },
-      "order": 28,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "set",
       "attach": {
         "instance": "crane1",
         "anchor": "origin"
@@ -652,8 +652,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 29,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "set",
       "attach": {
         "instance": "crane1",
         "anchor": "origin"
@@ -680,8 +680,8 @@
         "x": 390,
         "h": 0
       },
-      "order": 30,
-      "pass": "backdrop"
+      "order": 2,
+      "layer": "logic"
     },
     {
       "id": "stack0-box0",
@@ -699,8 +699,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 31,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "set",
       "attach": {
         "instance": "stack0",
         "anchor": "origin"
@@ -731,8 +731,8 @@
         "x": -6,
         "h": 58
       },
-      "order": 32,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "set",
       "attach": {
         "instance": "stack0",
         "anchor": "origin"
@@ -763,8 +763,8 @@
         "x": 28,
         "h": 116
       },
-      "order": 33,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "set",
       "attach": {
         "instance": "stack0",
         "anchor": "origin"
@@ -791,8 +791,8 @@
         "x": 524,
         "h": 0
       },
-      "order": 34,
-      "pass": "backdrop"
+      "order": 3,
+      "layer": "logic"
     },
     {
       "id": "stack1-box0",
@@ -810,8 +810,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 35,
-      "pass": "backdrop",
+      "order": 27,
+      "layer": "set",
       "attach": {
         "instance": "stack1",
         "anchor": "origin"
@@ -842,8 +842,8 @@
         "x": 5,
         "h": 58
       },
-      "order": 36,
-      "pass": "backdrop",
+      "order": 28,
+      "layer": "set",
       "attach": {
         "instance": "stack1",
         "anchor": "origin"
@@ -870,8 +870,8 @@
         "x": 1660,
         "h": 0
       },
-      "order": 37,
-      "pass": "backdrop"
+      "order": 4,
+      "layer": "logic"
     },
     {
       "id": "stack2-box0",
@@ -889,8 +889,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 38,
-      "pass": "backdrop",
+      "order": 29,
+      "layer": "set",
       "attach": {
         "instance": "stack2",
         "anchor": "origin"
@@ -921,8 +921,8 @@
         "x": -4,
         "h": 58
       },
-      "order": 39,
-      "pass": "backdrop",
+      "order": 30,
+      "layer": "set",
       "attach": {
         "instance": "stack2",
         "anchor": "origin"
@@ -953,8 +953,8 @@
         "x": 3,
         "h": 116
       },
-      "order": 40,
-      "pass": "backdrop",
+      "order": 31,
+      "layer": "set",
       "attach": {
         "instance": "stack2",
         "anchor": "origin"
@@ -981,8 +981,8 @@
         "x": 2000,
         "h": 0
       },
-      "order": 41,
-      "pass": "backdrop"
+      "order": 5,
+      "layer": "logic"
     },
     {
       "id": "stack3-box0",
@@ -1000,8 +1000,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 42,
-      "pass": "backdrop",
+      "order": 32,
+      "layer": "set",
       "attach": {
         "instance": "stack3",
         "anchor": "origin"
@@ -1032,8 +1032,8 @@
         "x": 3,
         "h": 58
       },
-      "order": 43,
-      "pass": "backdrop",
+      "order": 33,
+      "layer": "set",
       "attach": {
         "instance": "stack3",
         "anchor": "origin"
@@ -1060,8 +1060,8 @@
         "x": 160,
         "h": 0
       },
-      "order": 44,
-      "pass": "backdrop"
+      "order": 6,
+      "layer": "logic"
     },
     {
       "id": "arch-chassis",
@@ -1071,8 +1071,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 45,
-      "pass": "backdrop",
+      "order": 34,
+      "layer": "set",
       "attach": {
         "instance": "arch",
         "anchor": "origin"
@@ -1105,8 +1105,8 @@
         "x": 11,
         "h": 14
       },
-      "order": 46,
-      "pass": "backdrop",
+      "order": 35,
+      "layer": "set",
       "attach": {
         "instance": "arch",
         "anchor": "origin"
@@ -1131,8 +1131,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 47,
-      "pass": "backdrop",
+      "order": 36,
+      "layer": "set",
       "attach": {
         "instance": "arch",
         "anchor": "origin"
@@ -1157,8 +1157,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 48,
-      "pass": "backdrop",
+      "order": 37,
+      "layer": "set",
       "attach": {
         "instance": "arch",
         "anchor": "origin"
@@ -1183,8 +1183,8 @@
         "x": 352,
         "h": 0
       },
-      "order": 49,
-      "pass": "backdrop",
+      "order": 38,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1203,8 +1203,8 @@
         "x": 600,
         "h": 0
       },
-      "order": 50,
-      "pass": "backdrop",
+      "order": 39,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1223,8 +1223,8 @@
         "x": 688,
         "h": 0
       },
-      "order": 51,
-      "pass": "backdrop",
+      "order": 40,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1245,8 +1245,8 @@
         "x": 900,
         "h": 0
       },
-      "order": 52,
-      "pass": "backdrop",
+      "order": 41,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1267,8 +1267,8 @@
         "x": 40,
         "h": 0
       },
-      "order": 53,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "logic",
       "attach": {
         "instance": "fish",
         "anchor": "origin"
@@ -1284,8 +1284,8 @@
         "x": 1032,
         "h": 0
       },
-      "order": 54,
-      "pass": "backdrop",
+      "order": 42,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1306,8 +1306,8 @@
         "x": 50,
         "h": 0
       },
-      "order": 55,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "logic",
       "attach": {
         "instance": "drinks",
         "anchor": "origin"
@@ -1321,8 +1321,8 @@
         "x": 1112,
         "h": 0
       },
-      "order": 56,
-      "pass": "backdrop",
+      "order": 43,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1341,8 +1341,8 @@
         "x": 1200,
         "h": 0
       },
-      "order": 57,
-      "pass": "backdrop",
+      "order": 44,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1363,8 +1363,8 @@
         "x": 34,
         "h": 14
       },
-      "order": 58,
-      "pass": "backdrop",
+      "order": 45,
+      "layer": "set",
       "attach": {
         "instance": "den",
         "anchor": "origin"
@@ -1384,8 +1384,8 @@
         "x": 96,
         "h": 14
       },
-      "order": 59,
-      "pass": "backdrop",
+      "order": 46,
+      "layer": "set",
       "attach": {
         "instance": "den",
         "anchor": "origin"
@@ -1403,8 +1403,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 60,
-      "pass": "backdrop",
+      "order": 47,
+      "layer": "set",
       "attach": {
         "instance": "den",
         "anchor": "origin"
@@ -1427,8 +1427,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 61,
-      "pass": "backdrop",
+      "order": 48,
+      "layer": "set",
       "attach": {
         "instance": "den",
         "anchor": "origin"
@@ -1451,8 +1451,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 62,
-      "pass": "backdrop",
+      "order": 49,
+      "layer": "set",
       "attach": {
         "instance": "den",
         "anchor": "origin"
@@ -1478,8 +1478,8 @@
         "x": 1418,
         "h": 0
       },
-      "order": 63,
-      "pass": "backdrop"
+      "order": 9,
+      "layer": "logic"
     },
     {
       "id": "ghost-container0",
@@ -1496,8 +1496,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 64,
-      "pass": "backdrop",
+      "order": 50,
+      "layer": "set",
       "attach": {
         "instance": "ghost",
         "anchor": "origin"
@@ -1529,8 +1529,8 @@
         "x": 12,
         "h": 58
       },
-      "order": 65,
-      "pass": "backdrop",
+      "order": 51,
+      "layer": "set",
       "attach": {
         "instance": "ghost",
         "anchor": "origin"
@@ -1557,8 +1557,8 @@
         "x": 66,
         "h": 0
       },
-      "order": 66,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "logic",
       "attach": {
         "instance": "bonded",
         "anchor": "origin"
@@ -1574,8 +1574,8 @@
         "x": 12,
         "h": 0
       },
-      "order": 67,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "logic",
       "attach": {
         "instance": "bonded",
         "anchor": "origin"
@@ -1589,8 +1589,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 68,
-      "pass": "backdrop",
+      "order": 52,
+      "layer": "set",
       "attach": {
         "instance": "bonded",
         "anchor": "origin"
@@ -1613,8 +1613,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 69,
-      "pass": "backdrop",
+      "order": 53,
+      "layer": "set",
       "attach": {
         "instance": "bonded",
         "anchor": "origin"
@@ -1639,8 +1639,8 @@
         "x": 1600,
         "h": 0
       },
-      "order": 70,
-      "pass": "backdrop",
+      "order": 54,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1661,8 +1661,8 @@
         "x": -4,
         "h": 12
       },
-      "order": 71,
-      "pass": "backdrop",
+      "order": 55,
+      "layer": "set",
       "attach": {
         "instance": "forklift",
         "anchor": "origin"
@@ -1680,8 +1680,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 72,
-      "pass": "backdrop",
+      "order": 56,
+      "layer": "set",
       "attach": {
         "instance": "forklift",
         "anchor": "origin"
@@ -1704,8 +1704,8 @@
         "x": 140,
         "h": 0
       },
-      "order": 73,
-      "pass": "backdrop",
+      "order": 57,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1724,8 +1724,8 @@
         "x": 664,
         "h": 0
       },
-      "order": 74,
-      "pass": "backdrop",
+      "order": 58,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1744,8 +1744,8 @@
         "x": 1176,
         "h": 0
       },
-      "order": 75,
-      "pass": "backdrop",
+      "order": 59,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1764,8 +1764,8 @@
         "x": 1396,
         "h": 0
       },
-      "order": 76,
-      "pass": "backdrop",
+      "order": 60,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1784,8 +1784,8 @@
         "x": 1660,
         "h": 0
       },
-      "order": 77,
-      "pass": "backdrop",
+      "order": 61,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1804,8 +1804,8 @@
         "x": 2210,
         "h": 0
       },
-      "order": 78,
-      "pass": "backdrop",
+      "order": 62,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1824,8 +1824,8 @@
         "x": 2350,
         "h": 0
       },
-      "order": 79,
-      "pass": "backdrop",
+      "order": 63,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1846,8 +1846,8 @@
         "x": 2128,
         "h": 22
       },
-      "order": 80,
-      "pass": "backdrop",
+      "order": 64,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1868,8 +1868,8 @@
         "x": 2172,
         "h": 30
       },
-      "order": 81,
-      "pass": "backdrop",
+      "order": 65,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1888,8 +1888,8 @@
         "x": 2112,
         "h": 0
       },
-      "order": 82,
-      "pass": "backdrop",
+      "order": 66,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1908,8 +1908,8 @@
         "x": 2092,
         "h": 0
       },
-      "order": 83,
-      "pass": "backdrop",
+      "order": 67,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1928,8 +1928,8 @@
         "x": 1975,
         "h": 0
       },
-      "order": 84,
-      "pass": "backdrop",
+      "order": 68,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1948,8 +1948,8 @@
         "x": 2280,
         "h": 0
       },
-      "order": 85,
-      "pass": "backdrop",
+      "order": 69,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1968,8 +1968,8 @@
         "x": 2370,
         "h": 0
       },
-      "order": 86,
-      "pass": "backdrop",
+      "order": 70,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -1988,8 +1988,8 @@
         "x": 2396,
         "h": 0
       },
-      "order": 87,
-      "pass": "backdrop",
+      "order": 71,
+      "layer": "set",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -2008,8 +2008,8 @@
         "x": 70,
         "h": 0
       },
-      "order": 88,
-      "pass": "backdrop",
+      "order": 72,
+      "layer": "set",
       "attach": {
         "instance": "rails",
         "anchor": "origin"
@@ -2034,8 +2034,8 @@
         "x": 806,
         "h": 0
       },
-      "order": 89,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person0.pose",
         "clip": "clip.actor.pier-person0"
@@ -2051,8 +2051,8 @@
         "x": 420,
         "h": 0
       },
-      "order": 90,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person1.pose",
         "clip": "clip.actor.pier-person1"
@@ -2068,8 +2068,8 @@
         "x": 1128,
         "h": 18
       },
-      "order": 91,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person2.pose",
         "clip": "clip.actor.pier-person2"
@@ -2085,8 +2085,8 @@
         "x": 990,
         "h": 0
       },
-      "order": 92,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person3.pose",
         "clip": "clip.actor.pier-person3"
@@ -2102,8 +2102,8 @@
         "x": 1250,
         "h": 0
       },
-      "order": 93,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person4.pose",
         "clip": "clip.actor.pier-person4"
@@ -2119,8 +2119,8 @@
         "x": 2118,
         "h": 8
       },
-      "order": 94,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person5.pose",
         "clip": "clip.actor.pier-person5"
@@ -2136,8 +2136,8 @@
         "x": 236,
         "h": 78
       },
-      "order": 95,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person6.pose",
         "clip": "clip.actor.pier-person6"
@@ -2153,8 +2153,8 @@
         "x": 1180,
         "h": 0
       },
-      "order": 96,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person7.pose",
         "clip": "clip.actor.pier-person7"
@@ -2170,8 +2170,8 @@
         "x": 2040,
         "h": 0
       },
-      "order": 97,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.pier-person8.pose",
         "clip": "clip.actor.pier-person8"
@@ -2187,8 +2187,8 @@
         "x": 1452,
         "h": 0
       },
-      "order": 98,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.guard.pose",
         "clip": "clip.actor.guard"
@@ -2204,8 +2204,8 @@
         "x": 336,
         "h": 0
       },
-      "order": 99,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.customs.pose",
         "clip": "clip.actor.customs"
@@ -2221,8 +2221,8 @@
         "x": 1150,
         "h": 0
       },
-      "order": 100,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.docker.pose",
         "clip": "clip.actor.docker"
@@ -2238,8 +2238,8 @@
         "x": 1374,
         "h": 0
       },
-      "order": 101,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.tide.pose",
         "clip": "clip.actor.tide"
@@ -2255,8 +2255,8 @@
         "x": 2160,
         "h": 0
       },
-      "order": 102,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.fisher.pose",
         "clip": "clip.actor.fisher"
@@ -2272,8 +2272,8 @@
         "x": 1500,
         "h": 0
       },
-      "order": 103,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.jogger.pose",
         "clip": "clip.actor.jogger"
@@ -2289,8 +2289,8 @@
         "x": 430,
         "h": 174
       },
-      "order": 104,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.bird0.pose",
         "clip": "clip.actor.bird0"
@@ -2306,8 +2306,8 @@
         "x": 1730,
         "h": 174
       },
-      "order": 105,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.bird1.pose",
         "clip": "clip.actor.bird1"
@@ -2323,8 +2323,8 @@
         "x": 1660,
         "h": 12
       },
-      "order": 106,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.bird2.pose",
         "clip": "clip.actor.bird2"
@@ -2340,8 +2340,8 @@
         "x": 2420,
         "h": 25
       },
-      "order": 107,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.bird3.pose",
         "clip": "clip.actor.bird3"
@@ -2357,8 +2357,8 @@
         "x": 760,
         "h": 0
       },
-      "order": 108,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.bird4.pose",
         "clip": "clip.actor.bird4"
@@ -2374,8 +2374,8 @@
         "x": 480,
         "h": 0
       },
-      "order": 109,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.bird5.pose",
         "clip": "clip.actor.bird5"
@@ -2391,8 +2391,8 @@
         "x": 2212,
         "h": 12
       },
-      "order": 110,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.cat.pose",
         "clip": "clip.actor.cat"
@@ -2406,8 +2406,8 @@
         "x": 156,
         "h": 136
       },
-      "order": 111,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "playfield",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -2426,8 +2426,8 @@
         "x": 1460,
         "h": 128
       },
-      "order": 112,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "playfield",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -2446,8 +2446,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 113,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "playfield",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -2466,8 +2466,8 @@
         "x": 360,
         "h": 0
       },
-      "order": 114,
-      "pass": "foreground",
+      "order": 0,
+      "layer": "foreground",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -2486,8 +2486,8 @@
         "x": 1040,
         "h": 0
       },
-      "order": 115,
-      "pass": "foreground",
+      "order": 1,
+      "layer": "foreground",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -2506,8 +2506,8 @@
         "x": 1900,
         "h": 0
       },
-      "order": 116,
-      "pass": "foreground",
+      "order": 2,
+      "layer": "foreground",
       "bindings": {
         "layout": "harbor.layout",
         "visual": "harbor.visual",
@@ -2528,8 +2528,8 @@
         "x": 34,
         "h": 0
       },
-      "order": 117,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "logic",
       "attach": {
         "instance": "bonded",
         "anchor": "origin"
@@ -2545,8 +2545,8 @@
         "x": 142,
         "h": 0
       },
-      "order": 118,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "logic",
       "attach": {
         "instance": "bonded",
         "anchor": "origin"
@@ -2562,8 +2562,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 119,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "logic",
       "attach": {
         "instance": "cat",
         "anchor": "origin"
@@ -2579,8 +2579,8 @@
         "x": 2450,
         "h": 0
       },
-      "order": 120,
-      "pass": "backdrop"
+      "order": 15,
+      "layer": "logic"
     },
     {
       "id": "light0",
@@ -2597,8 +2597,8 @@
         "x": 0,
         "h": 150
       },
-      "order": 121,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "logic",
       "attach": {
         "instance": "crane0",
         "anchor": "origin"
@@ -2619,8 +2619,8 @@
         "x": 0,
         "h": 150
       },
-      "order": 122,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "logic",
       "attach": {
         "instance": "crane1",
         "anchor": "origin"
@@ -2641,8 +2641,8 @@
         "x": 56,
         "h": 60
       },
-      "order": 123,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "logic",
       "attach": {
         "instance": "fish",
         "anchor": "origin"
@@ -2663,8 +2663,8 @@
         "x": 48,
         "h": 60
       },
-      "order": 124,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "logic",
       "attach": {
         "instance": "drinks",
         "anchor": "origin"
@@ -2685,8 +2685,8 @@
         "x": 40,
         "h": 30
       },
-      "order": 125,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "logic",
       "attach": {
         "instance": "den",
         "anchor": "origin"
@@ -2707,8 +2707,8 @@
         "x": 37,
         "h": 50
       },
-      "order": 126,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "logic",
       "attach": {
         "instance": "hut",
         "anchor": "origin"
@@ -2729,8 +2729,8 @@
         "x": 0,
         "h": 40
       },
-      "order": 127,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "logic",
       "attach": {
         "instance": "beacon",
         "anchor": "origin"
@@ -2747,8 +2747,8 @@
         "x": 64,
         "h": 139.20000000000002
       },
-      "order": 128,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "logic",
       "attach": {
         "instance": "stack0",
         "anchor": "origin"
@@ -2765,8 +2765,8 @@
         "x": 64,
         "h": 92.80000000000001
       },
-      "order": 129,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "logic",
       "attach": {
         "instance": "stack1",
         "anchor": "origin"
@@ -2783,8 +2783,8 @@
         "x": 64,
         "h": 139.20000000000002
       },
-      "order": 130,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "logic",
       "attach": {
         "instance": "stack2",
         "anchor": "origin"
@@ -2801,8 +2801,8 @@
         "x": 64,
         "h": 92.80000000000001
       },
-      "order": 131,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "logic",
       "attach": {
         "instance": "stack3",
         "anchor": "origin"
@@ -2819,8 +2819,8 @@
         "x": 75,
         "h": 100
       },
-      "order": 132,
-      "pass": "backdrop",
+      "order": 27,
+      "layer": "logic",
       "attach": {
         "instance": "arch",
         "anchor": "origin"
@@ -2837,8 +2837,8 @@
         "x": 37,
         "h": 72
       },
-      "order": 133,
-      "pass": "backdrop",
+      "order": 28,
+      "layer": "logic",
       "attach": {
         "instance": "hut",
         "anchor": "origin"
@@ -2855,8 +2855,8 @@
         "x": 640,
         "h": 150
       },
-      "order": 134,
-      "pass": "backdrop"
+      "order": 29,
+      "layer": "logic"
     },
     {
       "id": "shade1",
@@ -2869,8 +2869,8 @@
         "x": 1300,
         "h": 150
       },
-      "order": 135,
-      "pass": "backdrop"
+      "order": 30,
+      "layer": "logic"
     },
     {
       "id": "shade2",
@@ -2883,8 +2883,8 @@
         "x": 2100,
         "h": 150
       },
-      "order": 136,
-      "pass": "backdrop"
+      "order": 31,
+      "layer": "logic"
     },
     {
       "id": "fishSeller",
@@ -2896,8 +2896,8 @@
         "x": 58,
         "h": 2
       },
-      "order": 137,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "playfield",
       "attach": {
         "instance": "fish",
         "anchor": "origin"
@@ -2917,8 +2917,8 @@
         "x": 48,
         "h": 0
       },
-      "order": 138,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "playfield",
       "attach": {
         "instance": "drinks",
         "anchor": "origin"

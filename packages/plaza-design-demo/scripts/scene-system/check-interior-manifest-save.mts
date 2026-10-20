@@ -20,13 +20,13 @@ const make=()=>{const m=new ComposerModel(art,context,(d,docs)=>{if(d.id===docum
 const model=make(),ids=['capsule','yard','moth'];
 for(const id of ids){
  const composition=structuredClone(model.get(id).value) as Composition,scene=structuredClone(model.get(id+'-scene').value) as SceneDocument,gameplay=structuredClone(model.get(id+'-gameplay').value) as GameplayDefinition;
- composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,pass:'backdrop'});
+ composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,layer:'set'});
  scene.manifest!.spawn='review-stool';scene.manifest!.exits![scene.exits![0].id]='review-stool';
  if(id==='capsule')scene.manifest!.rests!.bed={instance:'review-stool',promptH:46};
  addManifestContent(scene,'readables','review-note','review-stool');scene.readables![0].pages=['Pending test note.'];
  addManifestContent(scene,'uses','review-action','review-stool');scene.uses[0].routes=[{command:'review.grant',pages:['Two tokens.']}];
  gameplay.commands['review.grant']={sources:['interaction'],actions:[{tokens:2}]};
- composition.instances=composition.instances.filter(i=>!['spawn','exit-door','exit-downtown','rest-bed'].includes(i.id));
+ composition.instances=composition.instances.filter(i=>!['exit-door','exit-downtown','rest-bed'].includes(i.id));
  model.importDocuments([{id,value:composition},{id:id+'-scene',value:scene},{id:id+'-gameplay',value:gameplay}]);
  const edits=structuredClone(model.edits());
  const invalid=structuredClone(composition);invalid.instances=invalid.instances.filter(i=>i.id!==(id==='yard'?'crane':'door'));

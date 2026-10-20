@@ -39,7 +39,7 @@ const readOnly=new SandboxViewState(state);assert.equal(readOnly.opened.has('cab
 assert.deepEqual(rows.find(r=>r.instance.id==='outside')!.state.clip,[252,148,260,122]);
 const malformed=structuredClone(state);malformed.weather.wind=NaN;assert.throws(()=>validateSandboxSnapshot(malformed as unknown as Value),/weather/);
 const nested=structuredClone(doc),nestedLamp=nested.instances.find(i=>i.id==='lamp')!;nested.instances=nested.instances.filter(i=>i!==nestedLamp);(nested.instances.find(i=>i.id==='workbench-1')!.children??=[]).push(nestedLamp);assert.doesNotThrow(()=>validateSandboxComposition(nested));const nestedEnv=sandboxFrameEnvironment(view,engine,nested);assert.equal((resolveComposition(sandboxArt,nested,nestedEnv).find(r=>r.instance.id==='lamp')!.state.snapshot as unknown as SandboxSnapshot).values.lampOn,true);
-const shared=structuredClone(doc);shared.instances.push({id:'extra-stool',type:'furniture.stool',props:{seed:1},placement:{x:100,h:0},order:1000,pass:'backdrop'});assert.doesNotThrow(()=>sandboxScene(shared));
+const shared=structuredClone(doc);shared.instances.push({id:'extra-stool',type:'furniture.stool',props:{seed:1},placement:{x:100,h:0},order:1000,layer:'set'});assert.doesNotThrow(()=>sandboxScene(shared));
 assert.equal(sandboxGeometry(edit).find(r=>r.instance.id==='sensor')!.placement.h,32);
 
 // Frozen pre-composition tea-table commands: the stool was positioned by SB.tech,

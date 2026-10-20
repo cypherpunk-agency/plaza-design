@@ -33,16 +33,14 @@ Their ordinary content, existing controller parameters and world/story links use
 responses, native action fields and exit routing in Logic. Touch-specific arrival pages are editable.
 Actor and ordinary-content creation/deletion/rebinding, controller forms and world editing are
 implemented, with separate evidence for content, controllers and world links. All19 scenes have
-native Play; pending edits, Undo/private snapshot isolation and Reset are checked. Whole-goal
-editor, preservation and cleanup acceptance remains separate. See
-[the active execution ledger](../ENGINE-CONSOLIDATION-STATUS.md).
+native Play; pending edits, Undo/private snapshot isolation and Reset are checked. All19 editor, preservation and cleanup gates are accepted. See
+[the completion evidence](../ENGINE-CONSOLIDATION-STATUS.md).
 
 Native device editing now checks actual controller/source dependencies rather than protecting
 every original device or noun. Native targets and presentation cues support collection editing
 within their registered capabilities. The actor inspector also exposes reaction and appearance
 overrides; deleting optional source settings keeps them deleted. World access policies bind map
-admission and gate visuals to actual scene-exit permissions. These changes have focused source
-Save/native runtime evidence; final editor integration and removal acceptance remains separate.
+admission and gate visuals to actual scene-exit permissions. These changes have source Save/native runtime and final integration/removal acceptance evidence.
 
 Historical S0–S13 evidence remains in [the scene-system ledger](../SCENE-SYSTEM-STATUS.md) and
 [stretch evidence](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
@@ -147,12 +145,12 @@ from type name and label, with the registered category as a fallback. They are n
 compositions. The artwork library and the Add artwork picker filter by the same kinds; the old
 per-artwork category ("family") is still searchable as a tag.
 
-**Order** shows how the scene is drawn. For a layered scene (Library so far) it is the layer stack,
+**Order** shows how the scene is drawn. For a layered scene (every scene now) it is the layer stack,
 front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the engine's own layers
 (sky/city/street, shade, light and grade, prompts) as greyed dividers and the Logic layer (markers)
 listed separately. The **Player** in the Playfield is drawn in the preview: its place in the stack
 is where the player and engine-drawn walkers are drawn (rows above it draw over them), and its
-position is where the player arrives (Library's manifest spawn points at it). Drag rows within or
+position is where the player arrives (each scene's manifest spawn points at it). Drag rows within or
 between layers, or use **Layer**, **Bring forward** and **Send backward** in the inspector. The stack
 is in `layer-stack.ts`.
 
@@ -161,8 +159,8 @@ shows only that row or layer, and **Show all** clears it. Hiding is view state: 
 applied in Play.
 
 Drag the inner edge of the outline or the inspector to resize it; double-click the edge to reset. The
-widths are remembered per browser. Scenes not yet migrated still show document order and the older Drawing
-pass/Draw order fields.
+widths are remembered per browser. Documents still in the older pass format show document order and the
+Drawing pass/Draw order fields.
 
 Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and an
 Outline/Inspector switch; the Add picker covers the screen.

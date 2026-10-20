@@ -32,7 +32,7 @@ const root=path.resolve('src/ssg/game'),documents=sourceDocuments.map(d=>({id:d.
 const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
 const make=()=>{const m=new ComposerModel(art,context,(d,docs)=>{if(d.id==='mall-scene')validateSourceDocuments(new Map(docs.map(d=>[d.id,d.value])));});m.load(documents);return m;};
 const model=make(),composition=model.get('mall').value as Composition,scene=structuredClone(MALL_SCENE),gameplay=structuredClone(MALL_GAMEPLAY);
-composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,pass:'backdrop'});
+composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,layer:'set'});
 scene.manifest!.spawn='review-stool';scene.manifest!.exits!.metro={instance:'review-stool',promptH:82};scene.manifest!.uses.kiosk={instance:'review-stool',promptH:96};
 removeManifestContent(scene,'readables','kiosk');addManifestContent(scene,'readables','review-note','review-stool');scene.readables!.find(r=>r.id==='review-note')!.pages=['Pending test note.'];
 addManifestContent(scene,'rests','review-seat','review-stool');

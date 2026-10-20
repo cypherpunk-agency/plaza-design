@@ -723,5 +723,4 @@ export class SceneHost {
   /** Draw the scene; in hack vision the game draws 'world', mutes it, then 'devices' (see `DrawLayer`). */
   preparePresentation(v: View, layer: DrawLayer = 'all') { this.def.preparePresentation?.(v, { m: this.model, hover: this.hover, layer }); }
   draw(x: CanvasRenderingContext2D, v: View, layer: DrawLayer = 'all') { this.def.drawBackdrop(x, v, { m: this.model, hover: this.hover, layer }); }
-  drawLayer(x: CanvasRenderingContext2D, v: View, slot: 'over-player' | 'foreground') { this.def.drawLayer?.(x, v, { m: this.model, hover: this.hover, layer: 'all' }, slot); }
 }

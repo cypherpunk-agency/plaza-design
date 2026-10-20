@@ -7,6 +7,14 @@ The whole game is in active design. Implemented behavior, story, mechanics, visu
 architecture can all change. "Built" means present in the current code, not final or approved
 forever. Historical "decided" notes record context, not constraints on further design.
 
+## Engine work: start here
+
+Agents: read [AGENTS.md](./AGENTS.md). Practical extension recipes and the verification map:
+[ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md). All19 existing scenes completed the
+shared-engine/editor consolidation; [final acceptance](./docs/reference/FINAL-INTEGRATION-ACCEPTANCE.md)
+records its scope. Start ordinary behavior in authored source and the shared engine, not in Game.
+Historical pilot notes elsewhere do not limit current scene creation or editor support.
+
 ## Build and preview
 
 From the repository root:
@@ -72,7 +80,7 @@ This separate saved demo world has three plain review areas: Purchases, Conversa
 Only the people and objects needed for an example remain. Use **Review shortcuts** to jump directly;
 **Buy at counter**, **Pricing & stock**, both **Talk** buttons, and **Hatch permissions** work in place.
 H opens hacking; L offers timer and switch parts. MENU -> NEW GAME resets only the demo autosave.
-Demo slots and resume are separate too. The editor's **Demo world** tab uses these compact areas
+Demo slots and resume are separate too. The editor's **Demo world** lab uses these compact areas
 and previews pending definitions with disposable private progress.
 
 Feedback to focus on:
@@ -116,8 +124,9 @@ also use composition documents. This coverage does not establish completion of t
 plan. `SCENE-SYSTEM-STATUS.md` records verified evidence and remaining gates.
 
 The enclosing `../render.tsx` supplies the static page and shared game styles.
-`../../../scripts/generate-demos.tsx` validates data and bundles the homepage; the generator
-and the scene/data registries must include new content where applicable.
+`../../../scripts/generate-demos.tsx` validates data and bundles the homepage. Ordinary scenes
+use the authored catalogue without per-scene TypeScript registration; new native implementations
+need their appropriate registered contracts.
 
 ## Documentation guide
 
@@ -131,7 +140,8 @@ the user's latest direction, not whichever old note sounds most authoritative.
 | [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md) | Milestone 1: encounter matrices, teaching dependencies, access and puzzle dispositions |
 | [ROADMAP.md](./ROADMAP.md) | Single project priority/status overview, preserving story M1-M9 and engineering ENG IDs |
 | [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md) | Shared engine, authoring, demo-world and migration execution gates |
-| [GAMEPLAY-ENGINE-STATUS.md](./GAMEPLAY-ENGINE-STATUS.md) | Current goal scope, gate evidence, exceptions and pending feedback |
+| [ENGINE-CONSOLIDATION-STATUS.md](./ENGINE-CONSOLIDATION-STATUS.md) | Completed all19-scene scope, gate evidence and explicit exceptions |
+| [ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md) | Current engine ownership, extension recipes, examples and focused verification |
 | [SCENE-SYSTEM-PLAN.md](./SCENE-SYSTEM-PLAN.md) | Executable artwork-library migration and visual composer plan, with appearance-preservation gates |
 | [GAME-EDITOR-PLAN.md](./GAME-EDITOR-PLAN.md) | Approved direction from composer to full game editor: play mode, data-driven scenes, logic, story and world authoring |
 | [GAME-DATA.md](./docs/reference/GAME-DATA.md) | Technical authoring reference: data/code boundary, engine and saves |

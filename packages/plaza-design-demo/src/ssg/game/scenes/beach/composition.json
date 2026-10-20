@@ -14,20 +14,18 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "logic"
     },
     {
       "id": "spawn",
-      "type": "beach.marker",
-      "props": {
-        "role": "spawn"
-      },
+      "type": "scene.player",
+      "props": {},
       "placement": {
         "x": 70,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop"
+      "order": 62,
+      "layer": "playfield"
     },
     {
       "id": "edge-exit",
@@ -39,8 +37,8 @@
         "x": 44,
         "h": 0
       },
-      "order": 2,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "logic"
     },
     {
       "id": "horizon",
@@ -52,8 +50,8 @@
         "x": 0,
         "h": 122
       },
-      "order": 3,
-      "pass": "backdrop"
+      "order": 2,
+      "layer": "logic"
     },
     {
       "id": "waterline",
@@ -65,8 +63,8 @@
         "x": 0,
         "h": 30
       },
-      "order": 4,
-      "pass": "backdrop"
+      "order": 3,
+      "layer": "logic"
     },
     {
       "id": "shore-edge",
@@ -78,8 +76,8 @@
         "x": 1096,
         "h": 0
       },
-      "order": 5,
-      "pass": "backdrop"
+      "order": 4,
+      "layer": "logic"
     },
     {
       "id": "sky",
@@ -89,8 +87,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 6,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -122,8 +120,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 7,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -155,8 +153,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 8,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -188,8 +186,8 @@
         "x": 1210,
         "h": 84
       },
-      "order": 9,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -221,8 +219,8 @@
         "x": 760,
         "h": 0
       },
-      "order": 10,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -257,8 +255,8 @@
         "x": 610,
         "h": 0
       },
-      "order": 11,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -293,8 +291,8 @@
         "x": 680,
         "h": 0
       },
-      "order": 12,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -329,8 +327,8 @@
         "x": 740,
         "h": 0
       },
-      "order": 13,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -365,8 +363,8 @@
         "x": 830,
         "h": 0
       },
-      "order": 14,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -401,8 +399,8 @@
         "x": 960,
         "h": 0
       },
-      "order": 15,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -437,8 +435,8 @@
         "x": 1180,
         "h": 0
       },
-      "order": 16,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -473,8 +471,8 @@
         "x": 1250,
         "h": 0
       },
-      "order": 17,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -506,8 +504,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 18,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "distance",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -539,8 +537,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 19,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -574,8 +572,8 @@
         "x": 610,
         "h": 28
       },
-      "order": 20,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.ashore-0.pose"
       }
@@ -590,8 +588,8 @@
         "x": 680,
         "h": 28
       },
-      "order": 21,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.ashore-1.pose"
       }
@@ -606,8 +604,8 @@
         "x": 740,
         "h": 28
       },
-      "order": 22,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.ashore-2.pose"
       }
@@ -622,8 +620,8 @@
         "x": 830,
         "h": 28
       },
-      "order": 23,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.ashore-3.pose"
       }
@@ -638,8 +636,8 @@
         "x": 960,
         "h": 28
       },
-      "order": 24,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.ashore-4.pose"
       }
@@ -654,8 +652,8 @@
         "x": 1180,
         "h": 28
       },
-      "order": 25,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.ashore-5.pose"
       }
@@ -670,8 +668,8 @@
         "x": 1250,
         "h": 28
       },
-      "order": 26,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.ashore-6.pose"
       }
@@ -684,8 +682,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 27,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -719,8 +717,8 @@
         "x": 22,
         "h": 0
       },
-      "order": 28,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "logic",
       "attach": {
         "instance": "stairs",
         "anchor": "origin"
@@ -736,8 +734,8 @@
         "x": -10,
         "h": 0
       },
-      "order": 29,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -769,8 +767,8 @@
         "x": 118,
         "h": 0
       },
-      "order": 30,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -806,8 +804,8 @@
         "x": 292,
         "h": 0
       },
-      "order": 31,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -843,8 +841,8 @@
         "x": 334,
         "h": 0
       },
-      "order": 32,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -880,8 +878,8 @@
         "x": 376,
         "h": 0
       },
-      "order": 33,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -917,8 +915,8 @@
         "x": 418,
         "h": 0
       },
-      "order": 34,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -952,8 +950,8 @@
         "x": 0,
         "h": 9
       },
-      "order": 35,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.sunbed-person-0.pose"
       },
@@ -972,8 +970,8 @@
         "x": 0,
         "h": 10
       },
-      "order": 36,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.sunbed-person-1.pose"
       },
@@ -992,8 +990,8 @@
         "x": 0,
         "h": 9
       },
-      "order": 37,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.sunbather.pose"
       },
@@ -1010,8 +1008,8 @@
         "x": 236,
         "h": 0
       },
-      "order": 38,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -1045,8 +1043,8 @@
         "x": 436,
         "h": 0
       },
-      "order": 39,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -1078,8 +1076,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 40,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1115,8 +1113,8 @@
         "x": 64,
         "h": 0
       },
-      "order": 41,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1152,8 +1150,8 @@
         "x": 96,
         "h": 0
       },
-      "order": 42,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1194,8 +1192,8 @@
         "x": 0,
         "h": 4
       },
-      "order": 43,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "playfield",
       "attach": {
         "instance": "bartender",
         "anchor": "origin"
@@ -1212,8 +1210,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 44,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1249,8 +1247,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 45,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1286,8 +1284,8 @@
         "x": 140,
         "h": 0
       },
-      "order": 46,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1325,8 +1323,8 @@
         "x": 8,
         "h": 70
       },
-      "order": 47,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "logic",
       "attach": {
         "instance": "menu",
         "anchor": "origin"
@@ -1340,8 +1338,8 @@
         "x": 64,
         "h": 0
       },
-      "order": 48,
-      "pass": "backdrop",
+      "order": 27,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1377,8 +1375,8 @@
         "x": 124,
         "h": 0
       },
-      "order": 49,
-      "pass": "backdrop",
+      "order": 28,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1414,8 +1412,8 @@
         "x": 164,
         "h": 0
       },
-      "order": 50,
-      "pass": "backdrop",
+      "order": 29,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1451,8 +1449,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 51,
-      "pass": "backdrop",
+      "order": 30,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1488,8 +1486,8 @@
         "x": 30,
         "h": 0
       },
-      "order": 52,
-      "pass": "backdrop",
+      "order": 31,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1525,8 +1523,8 @@
         "x": 190,
         "h": 0
       },
-      "order": 53,
-      "pass": "backdrop",
+      "order": 32,
+      "layer": "playfield",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -1564,8 +1562,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 54,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "logic",
       "attach": {
         "instance": "stool-2",
         "anchor": "origin"
@@ -1579,8 +1577,8 @@
         "x": 694,
         "h": 0
       },
-      "order": 55,
-      "pass": "backdrop",
+      "order": 33,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -1612,8 +1610,8 @@
         "x": 770,
         "h": 0
       },
-      "order": 56,
-      "pass": "backdrop",
+      "order": 34,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -1645,8 +1643,8 @@
         "x": 28,
         "h": 0
       },
-      "order": 57,
-      "pass": "backdrop",
+      "order": 35,
+      "layer": "playfield",
       "attach": {
         "instance": "tower",
         "anchor": "origin"
@@ -1684,8 +1682,8 @@
         "x": -14,
         "h": 62
       },
-      "order": 58,
-      "pass": "backdrop",
+      "order": 36,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.guard.pose"
       },
@@ -1702,8 +1700,8 @@
         "x": 908,
         "h": 0
       },
-      "order": 59,
-      "pass": "backdrop",
+      "order": 37,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -1735,8 +1733,8 @@
         "x": 1004,
         "h": 0
       },
-      "order": 60,
-      "pass": "backdrop",
+      "order": 38,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -1768,8 +1766,8 @@
         "x": 12,
         "h": 0
       },
-      "order": 61,
-      "pass": "backdrop",
+      "order": 39,
+      "layer": "playfield",
       "attach": {
         "instance": "surfer",
         "anchor": "origin"
@@ -1807,8 +1805,8 @@
         "x": 936,
         "h": 0
       },
-      "order": 62,
-      "pass": "backdrop",
+      "order": 40,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-0.pose"
       }
@@ -1823,8 +1821,8 @@
         "x": 966,
         "h": 0
       },
-      "order": 63,
-      "pass": "backdrop",
+      "order": 41,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-1.pose"
       }
@@ -1839,8 +1837,8 @@
         "x": 852,
         "h": 0
       },
-      "order": 64,
-      "pass": "backdrop",
+      "order": 42,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-2.pose"
       }
@@ -1855,8 +1853,8 @@
         "x": 990,
         "h": 0
       },
-      "order": 65,
-      "pass": "backdrop",
+      "order": 43,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-3.pose"
       }
@@ -1871,8 +1869,8 @@
         "x": 300,
         "h": 0
       },
-      "order": 66,
-      "pass": "backdrop",
+      "order": 44,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-4.pose"
       }
@@ -1887,8 +1885,8 @@
         "x": 600,
         "h": 0
       },
-      "order": 67,
-      "pass": "backdrop",
+      "order": 45,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-5.pose"
       }
@@ -1903,8 +1901,8 @@
         "x": 290,
         "h": 56
       },
-      "order": 68,
-      "pass": "backdrop",
+      "order": 46,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-6.pose"
       }
@@ -1919,8 +1917,8 @@
         "x": -30,
         "h": 0
       },
-      "order": 69,
-      "pass": "backdrop",
+      "order": 47,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.volley.pose"
       },
@@ -1939,8 +1937,8 @@
         "x": 18,
         "h": 0
       },
-      "order": 70,
-      "pass": "backdrop",
+      "order": 48,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.kid.pose"
       },
@@ -1959,8 +1957,8 @@
         "x": 1066,
         "h": 0
       },
-      "order": 71,
-      "pass": "backdrop",
+      "order": 49,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.surfer.pose"
       }
@@ -1973,8 +1971,8 @@
         "x": 1440,
         "h": 0
       },
-      "order": 72,
-      "pass": "backdrop",
+      "order": 50,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -2009,8 +2007,8 @@
         "x": 1078,
         "h": 0
       },
-      "order": 73,
-      "pass": "backdrop",
+      "order": 51,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -2042,8 +2040,8 @@
         "x": 110,
         "h": 0
       },
-      "order": 74,
-      "pass": "backdrop",
+      "order": 52,
+      "layer": "playfield",
       "attach": {
         "instance": "pier",
         "anchor": "origin"
@@ -2079,8 +2077,8 @@
         "x": 176,
         "h": 0
       },
-      "order": 75,
-      "pass": "backdrop",
+      "order": 53,
+      "layer": "playfield",
       "attach": {
         "instance": "pier",
         "anchor": "origin"
@@ -2116,8 +2114,8 @@
         "x": 242,
         "h": 0
       },
-      "order": 76,
-      "pass": "backdrop",
+      "order": 54,
+      "layer": "playfield",
       "attach": {
         "instance": "pier",
         "anchor": "origin"
@@ -2153,8 +2151,8 @@
         "x": 68,
         "h": 0
       },
-      "order": 77,
-      "pass": "backdrop",
+      "order": 55,
+      "layer": "playfield",
       "attach": {
         "instance": "pier",
         "anchor": "origin"
@@ -2190,8 +2188,8 @@
         "x": 118,
         "h": 0
       },
-      "order": 78,
-      "pass": "backdrop",
+      "order": 56,
+      "layer": "playfield",
       "attach": {
         "instance": "pier",
         "anchor": "origin"
@@ -2229,8 +2227,8 @@
         "x": 222,
         "h": 8
       },
-      "order": 79,
-      "pass": "backdrop",
+      "order": 57,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.fisher.pose"
       },
@@ -2247,8 +2245,8 @@
         "x": 0,
         "h": -8
       },
-      "order": 80,
-      "pass": "backdrop",
+      "order": 58,
+      "layer": "playfield",
       "attach": {
         "instance": "fisher",
         "anchor": "origin"
@@ -2286,8 +2284,8 @@
         "x": 174,
         "h": 0
       },
-      "order": 81,
-      "pass": "backdrop",
+      "order": 59,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.cat.pose"
       },
@@ -2304,8 +2302,8 @@
         "x": 274,
         "h": 0
       },
-      "order": 82,
-      "pass": "backdrop",
+      "order": 60,
+      "layer": "playfield",
       "attach": {
         "instance": "pier",
         "anchor": "origin"
@@ -2341,8 +2339,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 83,
-      "pass": "backdrop",
+      "order": 61,
+      "layer": "playfield",
       "bindings": {
         "palette": "beach.palette",
         "horizon": "beach.horizon",
@@ -2378,8 +2376,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 84,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "logic",
       "attach": {
         "instance": "kiosk",
         "anchor": "origin"
@@ -2397,8 +2395,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 85,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "logic",
       "attach": {
         "instance": "jukebox",
         "anchor": "origin"
@@ -2416,8 +2414,8 @@
         "x": 0,
         "h": 26
       },
-      "order": 86,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "logic",
       "attach": {
         "instance": "mixer",
         "anchor": "origin"
@@ -2435,8 +2433,8 @@
         "x": 0,
         "h": 112
       },
-      "order": 87,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "logic",
       "attach": {
         "instance": "drone",
         "anchor": "origin"
@@ -2454,8 +2452,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 88,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "logic",
       "attach": {
         "instance": "pier-controller",
         "anchor": "origin"
@@ -2473,8 +2471,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 89,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "logic",
       "attach": {
         "instance": "boat",
         "anchor": "origin"
@@ -2494,8 +2492,8 @@
         "x": 114,
         "h": 92
       },
-      "order": 90,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "logic",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -2513,8 +2511,8 @@
         "x": 124,
         "h": 116
       },
-      "order": 91,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "logic",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -2532,8 +2530,8 @@
         "x": 34,
         "h": 64
       },
-      "order": 92,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "logic",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -2551,8 +2549,8 @@
         "x": 204,
         "h": 64
       },
-      "order": 93,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "logic",
       "attach": {
         "instance": "bar",
         "anchor": "origin"
@@ -2569,8 +2567,8 @@
         "x": 0,
         "h": 52
       },
-      "order": 94,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "logic",
       "attach": {
         "instance": "pier-controller",
         "anchor": "origin"
@@ -2589,8 +2587,8 @@
         "x": 0,
         "h": 30
       },
-      "order": 95,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "logic",
       "attach": {
         "instance": "boat",
         "anchor": "origin"
@@ -2607,8 +2605,8 @@
         "x": 0,
         "h": 76
       },
-      "order": 96,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "logic",
       "attach": {
         "instance": "kiosk",
         "anchor": "origin"
@@ -2625,8 +2623,8 @@
         "x": 0,
         "h": 110
       },
-      "order": 97,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "logic",
       "attach": {
         "instance": "tower",
         "anchor": "origin"
@@ -2643,8 +2641,8 @@
         "x": 0,
         "h": 46
       },
-      "order": 98,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "logic",
       "attach": {
         "instance": "net",
         "anchor": "origin"
@@ -2661,8 +2659,8 @@
         "x": 0,
         "h": 14
       },
-      "order": 99,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "logic",
       "attach": {
         "instance": "castle",
         "anchor": "origin"
@@ -2679,8 +2677,8 @@
         "x": 0,
         "h": 60
       },
-      "order": 100,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "logic",
       "attach": {
         "instance": "notice",
         "anchor": "origin"

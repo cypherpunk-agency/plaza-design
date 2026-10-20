@@ -16,13 +16,13 @@ const root=path.resolve('src/ssg/game'),documents=sourceDocuments.map(d=>({id:d.
 const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
 const make=()=>{const m=new ComposerModel(art,context,(d,docs)=>{if(d.id==='sandbox-scene')validateSourceDocuments(new Map(docs.map(d=>[d.id,d.value])));});m.load(documents);return m;};
 const model=make(),composition=model.get('sandbox').value as Composition,scene=structuredClone(content.scene),gameplay=structuredClone(content.gameplay);
-composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,pass:'backdrop'});
+composition.instances.push({id:'review-stool',type:'furniture.stool',props:{seed:1},placement:{x:180,h:0},order:200,layer:'set'});
 scene.manifest!.spawn='review-stool';scene.manifest!.exits!.out={instance:'review-stool',promptH:82};scene.manifest!.uses.chips={instance:'review-stool',promptH:100,responseH:80};scene.manifest!.rests!.bench={instance:'review-stool',promptH:52};
 removeManifestContent(scene,'readables','plan');removeManifestContent(scene,'readables','card1');
 addManifestContent(scene,'readables','review-note','review-stool');scene.readables!.find(r=>r.id==='review-note')!.pages=['Pending test note.'];
 addManifestContent(scene,'uses','review-action','review-stool');scene.uses.find(u=>u.id==='review-action')!.routes=[{command:'review.grant',pages:['Two chips.']}];
 gameplay.commands['review.grant']={sources:['interaction'],actions:[{item:'blankchip',add:2}]};
-composition.instances=composition.instances.filter(i=>!['spawn','exit-out','plan','card1','chip-dispenser','wait-bench'].includes(i.id));
+composition.instances=composition.instances.filter(i=>!['exit-out','plan','card1','chip-dispenser','wait-bench'].includes(i.id));
 const tech=scene.actors!.find(a=>a.id==='tech')!;tech.look={body:'old',garb:'robe'};tech.when={from:'18:00',to:'06:00'};
 model.importDocuments([{id:'sandbox',value:composition},{id:'sandbox-scene',value:scene},{id:'sandbox-gameplay',value:gameplay}]);
 const inspect=(native:ReturnType<typeof sandboxScene>)=>{
@@ -32,7 +32,7 @@ const inspect=(native:ReturnType<typeof sandboxScene>)=>{
 };
 inspect(pendingRegistry(new Map(model.list().map(d=>[d.id,d.value]))).sandbox);
 const edits=structuredClone(model.edits());
-for(const mutate of [(d:any)=>{d.instances=d.instances.filter((i:any)=>i.id!=='sensor');},(d:any)=>{const row=d.instances.find((i:any)=>i.id==='sensor');d.instances=d.instances.filter((i:any)=>i.id!=='sensor');d.instances.push({id:'review-replacement',type:'furniture.stool',props:{seed:1},placement:{...row.placement},order:row.order,pass:row.pass});}]){const optional=structuredClone(composition);mutate(optional);assert.doesNotThrow(()=>model.importDocuments([{id:'sandbox',value:optional}]),'optional source artwork has no historical identity floor');model.undo();assert.deepEqual(model.edits(),edits);}
+for(const mutate of [(d:any)=>{d.instances=d.instances.filter((i:any)=>i.id!=='sensor');},(d:any)=>{const row=d.instances.find((i:any)=>i.id==='sensor');d.instances=d.instances.filter((i:any)=>i.id!=='sensor');d.instances.push({id:'review-replacement',type:'furniture.stool',props:{seed:1},placement:{...row.placement},order:row.order,...(row.layer?{layer:row.layer}:{pass:row.pass})});}]){const optional=structuredClone(composition);mutate(optional);assert.doesNotThrow(()=>model.importDocuments([{id:'sandbox',value:optional}]),'optional source artwork has no historical identity floor');model.undo();assert.deepEqual(model.edits(),edits);}
 const badBinding=structuredClone(scene);badBinding.manifest!.spawn='missing';assert.throws(()=>model.importDocuments([{id:'sandbox-scene',value:badBinding}]));assert.deepEqual(model.edits(),edits);
 const retainedType=structuredClone(composition),retained=retainedType.instances.find(i=>i.id==='sensor')!;retained.type='furniture.stool';retained.props={seed:1};delete retained.bindings;assert.throws(()=>model.importDocuments([{id:'sandbox',value:retainedType}]),/preserve gameplay identity/,'retained runtime bindings cannot silently change kernel');assert.deepEqual(model.edits(),edits);
 for(const field of ['actors','manifest']as const){const missing=structuredClone(content.scene);delete missing[field];assert.throws(()=>sandboxScene(undefined,{},{},undefined,missing),'incomplete '+field+' source must be rejected');}
