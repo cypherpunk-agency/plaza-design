@@ -309,6 +309,8 @@ export class Game {
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
     this.onResize = this.onResize.bind(this);
+    // Downtown is already the initial scene, so starting there does not call enter().
+    this.p.x = this.def.spawn;
   }
 
   /**

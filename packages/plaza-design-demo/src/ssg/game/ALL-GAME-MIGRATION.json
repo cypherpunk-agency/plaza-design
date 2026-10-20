@@ -31,7 +31,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -149,6 +149,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "thermal/boot/Pixel and shared workflows",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -179,7 +185,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -322,6 +328,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "DLV/Registry/timers/camera",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -352,7 +364,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -484,6 +496,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared network and observed-goal contracts",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -517,7 +535,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -643,6 +661,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "cargo/hatch/camera",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -673,7 +697,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -775,6 +799,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared network/companion and visual inputs",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -805,7 +835,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -908,6 +938,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared billing/danger and visual inputs",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -937,7 +973,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1018,6 +1054,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "source actor motion and presentation cues",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1048,7 +1090,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1190,6 +1232,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "lift/return/watchdog/scope",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1218,7 +1266,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1315,6 +1363,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared actors/devices; no independent simulator",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1345,7 +1399,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1429,6 +1483,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared commerce/actors/devices; no independent simulator",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1458,7 +1518,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1593,6 +1653,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared washer/breaker/jacket deadlines and picture inputs",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1623,7 +1689,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1733,6 +1799,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared commerce/actors/devices; no independent simulator",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1763,7 +1835,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1841,6 +1913,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared commerce/actors/devices and typed adaptive procedural art",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1871,7 +1949,7 @@
       "layout": "NOT RUN",
       "logic": "NOT RUN",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "NOT RUN",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -1962,6 +2040,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "injected metro, platform queues, source world routes",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -1990,7 +2074,7 @@
       "layout": "NOT RUN",
       "logic": "NOT RUN",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "NOT RUN",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -2081,6 +2165,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "injected metro, platform queues, source world routes",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -2109,7 +2199,7 @@
       "layout": "NOT RUN",
       "logic": "NOT RUN",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "NOT RUN",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -2200,6 +2290,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "injected metro, platform queues, source world routes",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -2231,7 +2327,7 @@
       "layout": "NOT RUN",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "IN PROGRESS",
       "pixels": "NOT RUN",
@@ -2370,6 +2466,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "injected metro physics, source permissions/workflows/status",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -2400,7 +2502,7 @@
       "layout": "NOT RUN",
       "logic": "IN PROGRESS",
       "wiring": "IN PROGRESS",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -2496,6 +2598,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared timed/logic/security/environment contracts and picture inputs",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     },
@@ -2527,7 +2635,7 @@
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
       "wiring": "NOT RUN",
-      "play": "IN PROGRESS",
+      "play": "PASS",
       "saveBundle": "IN PROGRESS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
@@ -2603,6 +2711,12 @@
           "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
           "family": "shared tasks/day/carry presentation; no independent carry simulator",
           "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
+        },
+        "pendingPlayAcceptance": {
+          "status": "PASS",
+          "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
+          "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
+          "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
         }
       }
     }
