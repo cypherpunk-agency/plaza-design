@@ -322,7 +322,193 @@
     }
   ],
   "manifest": {
-    "devices": {"sensor": {"instance": "sensor", "widthProperty": "width", "heightProperty": "height"}, "lamp": {"instance": "lamp", "widthProperty": "width", "heightProperty": "height"}, "memo": {"instance": "memo", "widthProperty": "width", "heightProperty": "height"}, "port": {"instance": "port", "widthProperty": "width", "heightProperty": "height"}, "unit7": {"instance": "unit7", "widthProperty": "width", "heightProperty": "height"}, "metronome": {"instance": "metronome", "widthProperty": "width", "heightProperty": "height"}, "recorder": {"instance": "recorder", "widthProperty": "width", "heightProperty": "height"}, "button": {"instance": "button", "widthProperty": "width", "heightProperty": "height"}, "beacon": {"instance": "beacon", "widthProperty": "width", "heightProperty": "height"}, "horn": {"instance": "horn", "widthProperty": "width", "heightProperty": "height"}, "counter": {"instance": "counter", "widthProperty": "width", "heightProperty": "height"}, "plate": {"instance": "plate", "widthProperty": "width", "heightProperty": "height"}, "hatch": {"instance": "hatch", "widthProperty": "width", "heightProperty": "height"}, "fan": {"instance": "fan", "widthProperty": "width", "heightProperty": "height"}, "login": {"instance": "login", "widthProperty": "width", "heightProperty": "height"}, "rings": {"instance": "rings", "widthProperty": "width", "heightProperty": "height"}, "cipher": {"instance": "cipher", "widthProperty": "width", "heightProperty": "height"}, "cryptex": {"instance": "cryptex", "widthProperty": "width", "heightProperty": "height"}, "morse": {"instance": "morse", "widthProperty": "width", "heightProperty": "height"}, "cutter": {"instance": "cutter", "widthProperty": "width", "heightProperty": "height"}, "cabinet": {"instance": "cabinet", "widthProperty": "width", "heightProperty": "height"}, "rgb": {"instance": "rgb", "widthProperty": "width", "heightProperty": "height"}, "mains": {"instance": "mains", "widthProperty": "width", "heightProperty": "height"}, "audit": {"instance": "audit", "widthProperty": "width", "heightProperty": "height"}, "spool": {"instance": "spool", "widthProperty": "width", "heightProperty": "height"}, "netjack": {"instance": "netjack", "widthProperty": "width", "heightProperty": "height"}, "bell": {"instance": "bell", "widthProperty": "width", "heightProperty": "height"}, "printer": {"instance": "printer", "widthProperty": "width", "heightProperty": "height"}, "stamp": {"instance": "stamp", "widthProperty": "width", "heightProperty": "height"}, "conveyor": {"instance": "conveyor", "widthProperty": "width", "heightProperty": "height"}, "siren": {"instance": "siren", "widthProperty": "width", "heightProperty": "height"}, "coffee": {"instance": "coffee", "widthProperty": "width", "heightProperty": "height"}, "reader": {"instance": "reader", "widthProperty": "width", "heightProperty": "height"}, "till": {"instance": "till", "widthProperty": "width", "heightProperty": "height"}, "nightlight": {"instance": "nightlight", "widthProperty": "width", "heightProperty": "height"}, "rain": {"instance": "rain", "widthProperty": "width", "heightProperty": "height"}, "vent": {"instance": "vent", "widthProperty": "width", "heightProperty": "height"}},
+    "devices": {
+      "sensor": {
+        "instance": "sensor",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "lamp": {
+        "instance": "lamp",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "memo": {
+        "instance": "memo",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "port": {
+        "instance": "port",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "unit7": {
+        "instance": "unit7",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "metronome": {
+        "instance": "metronome",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "recorder": {
+        "instance": "recorder",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "button": {
+        "instance": "button",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "beacon": {
+        "instance": "beacon",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "horn": {
+        "instance": "horn",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "counter": {
+        "instance": "counter",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "plate": {
+        "instance": "plate",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "hatch": {
+        "instance": "hatch",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "fan": {
+        "instance": "fan",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "login": {
+        "instance": "login",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "rings": {
+        "instance": "rings",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "cipher": {
+        "instance": "cipher",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "cryptex": {
+        "instance": "cryptex",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "morse": {
+        "instance": "morse",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "cutter": {
+        "instance": "cutter",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "cabinet": {
+        "instance": "cabinet",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "rgb": {
+        "instance": "rgb",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "mains": {
+        "instance": "mains",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "audit": {
+        "instance": "audit",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "spool": {
+        "instance": "spool",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "netjack": {
+        "instance": "netjack",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "bell": {
+        "instance": "bell",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "printer": {
+        "instance": "printer",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "stamp": {
+        "instance": "stamp",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "conveyor": {
+        "instance": "conveyor",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "siren": {
+        "instance": "siren",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "coffee": {
+        "instance": "coffee",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "reader": {
+        "instance": "reader",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "till": {
+        "instance": "till",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "nightlight": {
+        "instance": "nightlight",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "rain": {
+        "instance": "rain",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "vent": {
+        "instance": "vent",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      }
+    },
     "version": 1,
     "width": {
       "instance": "hall",
@@ -393,6 +579,19 @@
         "instance": "wait-bench",
         "promptH": 52
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
+    },
+    "artwork": {
+      "reset": "reset"
     }
   },
   "rests": [
@@ -404,5 +603,15 @@
   "environment": {},
   "companion": {
     "mode": "off"
+  },
+  "stage": {
+    "targetAnchors": [
+      "reset"
+    ],
+    "mechanisms": [
+      "devicePulse",
+      "targetReset",
+      "sandboxBay"
+    ]
   }
 }

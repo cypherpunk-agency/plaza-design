@@ -10,16 +10,11 @@ import type {Composition} from '../art/core/composition';
 import {gameplayScenes} from './gameplay-scenes';
 import {nativeGameplayScene} from './native-gameplay-scenes';
 import {nativeSceneAdapters} from './scene-adapters';
-import {sandboxScene,validateSandboxComposition} from '../scenes/sandbox';
 
 function buildPendingScene(id:string,composition:unknown,content:{gameplay?:unknown;sceneDocument?:unknown;behavior?:unknown;devices?:unknown}){
  const structural:NativeTargetValidationContext={phase:'structural'};
  const authored=gameplayScenes.find(s=>s.id===id)??nativeGameplayScene(id);
- if(id==='sandbox'){
-  const registered=gameplayScenes.find(s=>s.id==='sandbox')!,gameplay=registered.validateGameplay(content.gameplay);
-  return sandboxScene(validateSandboxComposition(composition),{},{},(content.devices??content.behavior) as SceneData|undefined,registered.validateScene(content.sceneDocument,gameplay,structural),gameplay,structural);
- }
- if(authored){const gameplay=authored.validateGameplay(content.gameplay);if('definitionWithDevices'in authored)return authored.definitionWithDevices(composition as Composition,{},{},authored.validateScene(content.sceneDocument,gameplay,structural),gameplay,content.devices as SceneData|undefined,structural);return 'validateScene'in authored?authored.definition(composition as Parameters<typeof authored.definition>[0],{},{},authored.validateScene(content.sceneDocument,gameplay,structural),gameplay,structural):authored.definition(composition as Parameters<typeof authored.definition>[0],gameplay);}
+ if(authored){const gameplay=authored.validateGameplay(content.gameplay);if('definitionWithDevices'in authored)return authored.definitionWithDevices(composition as Composition,{},{},authored.validateScene(content.sceneDocument,gameplay,structural),gameplay,(content.devices??content.behavior) as SceneData|undefined,structural);return 'validateScene'in authored?authored.definition(composition as Parameters<typeof authored.definition>[0],{},{},authored.validateScene(content.sceneDocument,gameplay,structural),gameplay,structural):authored.definition(composition as Parameters<typeof authored.definition>[0],gameplay);}
  const native=nativeSceneAdapters[id];if(!native)throw new Error('Unknown Play scene '+id);
  return native.definition(native.validate(composition),{},{reduced:false});
 }
