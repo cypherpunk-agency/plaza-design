@@ -371,6 +371,7 @@ export class SceneModel {
   gameplayEligibility?:(context:Ctx)=>import('./gameplay/types').GameplayResult|undefined;
   gameplayQueryIds?:ReadonlySet<string>;
   gameplayQuery?:(id:string)=>Value|undefined;
+  gameplayResponse?:(ref:string,commit:boolean)=>Vars|undefined;
   gameplayTick?:(dt:number,cause:(run:()=>void)=>void,phase:'beforeNative'|'afterNative')=>void;
   /** Registered panel inputs dispatch ordinary shared commands; panels own only hit testing. */
   gameplayInput?:(id:string,origin:import('./gameplay/native-inputs').NativeInputOrigin)=>import('./gameplay/types').GameplayResult;
@@ -454,8 +455,10 @@ export class SceneModel {
   label(key: string, vars?: Vars) { const t = this.texts[key]; return typeof t === 'string' ? this.fmt(t, this.ctx(''), vars) : '[' + key + ']'; }
   /** A terminal line from the texts. */
   line(ref: LineRef, vars?: Vars) { return this.lineIn(ref, this.ctx(''), vars); }
-  /** Shared source-backed replies keep the action's existing native formatter context. */
-  lineFor(ref:LineRef,context:Ctx,vars?:Vars){return this.lineIn(ref,context,vars);}
+  /** Explicit outcome delivery; unlike line(), this may enter a bound shared conversation. */
+  response(ref:LineRef,vars?:Vars){return this.lineIn(ref,this.ctx(''),vars,true);}
+  /** Committed shared source replies keep the action's existing native formatter context. */
+  responseFor(ref:LineRef,context:Ctx,vars?:Vars){return this.lineIn(ref,context,vars,true);}
 
   // ---------- events and cables ----------
 
@@ -690,7 +693,7 @@ export class SceneModel {
   /** Try a password on a guard, and say how it went (then any sector it opens, then any kick its trace causes). */
   private check(dev: string, noun: string, text: string, bySignal = false) {
     const key = dev + '.' + noun, g = this.nounData(dev, noun)?.guard, vars: Vars = { noun, guess: text };
-    const say = (k: string, more?: Vars) => this.sayLine(this.line(k, { ...vars, ...more }));
+    const say = (k: string, more?: Vars) => this.sayLine(this.response(k, { ...vars, ...more }));
     if (!g) return;
     if (this.passed.has(key)) return say('guard.passed');
     if (bySignal) return say('guard.signal');
@@ -704,7 +707,7 @@ export class SceneModel {
   private pass(dev: string, noun: string) {
     const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, c = this.ctx(dev, noun);
     this.passed.add(key); this.fails.delete(key);
-    this.sayLine(this.lineIn(g.say ?? 'guard.ok', c, { noun }));
+    this.sayLine(this.lineIn(g.say ?? 'guard.ok', c, { noun },true));
     (g.do ?? []).forEach((a) => { const l = this.doAction(a, c, {kind:'guard',device:dev,noun}); if (l) this.sayLine(l); });
     if (this.nounData(dev, noun)!.events?.includes('opened')) this.emit(key + ':opened');
     (this.devices.get(dev)?.data.sectors ?? []).filter((s) => 'guard' in s.seal && s.seal.guard === noun)
@@ -714,12 +717,12 @@ export class SceneModel {
   /** A wrong guess (or a wrong answer on a toy): a near-miss line, tries, the lock, trace. */
   private fail(dev: string, noun: string, text: string) {
     const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, vars: Vars = { noun, guess: text };
-    const say = (k: string, more?: Vars) => this.sayLine(this.line(k, { ...vars, ...more }));
+    const say = (k: string, more?: Vars) => this.sayLine(this.response(k, { ...vars, ...more }));
     const fails = (this.fails.get(key) ?? 0) + 1, tries = g.tries ?? 1, lockMs = g.lockMs ?? GUARD_LOCK_MS;
     this.fails.set(key, fails);
     // a near miss gets its own reply (still a wrong guess)
     const near = Object.entries(g.near ?? {}).find(([k]) => norm(k) === norm(text));
-    if (near) this.sayLine(this.lineIn(near[1], this.ctx(dev, noun), vars));
+    if (near) this.sayLine(this.lineIn(near[1], this.ctx(dev, noun), vars,true));
     if (lockMs > 0 && fails >= tries) {
       this.fails.delete(key);
       this.lock(key, lockMs);
@@ -1280,10 +1283,10 @@ export class SceneModel {
       const result=!commands||k.do?.length!==1||Object.keys(command).join()!=='command'?{ok:false as const,reason:'forbidden' as const}:this.gameplayStep?.(c,command.command,false)??{ok:false as const,reason:'unknown-command' as const};
       this.observe('result',c,{action:command,state:this.state,result});
       if(!result.ok)return[(c.bySignal?'signal → ':'')+'use '+c.noun+' --'+c.verb,'ACTION REFUSED: '+result.reason+'.','err'];
-      return k.say===undefined?null:this.lineIn(k.say,c);
+      return k.say===undefined?null:this.lineIn(k.say,c,undefined,true);
     }
     let out:Line|null=null;const keep=(line:Line|null)=>{if(!line)return;if(out)this.sayLine(out);out=line;};
-    for(const action of k.do??[])keep(this.doAction(action,c));if(k.say!==undefined)keep(this.lineIn(k.say,c));return out;
+    for(const action of k.do??[])keep(this.doAction(action,c));if(k.say!==undefined)keep(this.lineIn(k.say,c,undefined,true));return out;
   }
 
   private doAction(a: Action, c: Ctx,origin?:import('./gameplay/native-inputs').NativeInputOrigin): Line | null {
@@ -1393,9 +1396,10 @@ export class SceneModel {
     });
   }
 
-  private lineIn(ref: LineRef, c: Ctx, vars?: Vars): Line {
+  private lineIn(ref: LineRef, c: Ctx, vars?: Vars,commit=false): Line {
     const raw = typeof ref === 'string' ? this.texts[ref] : ref;
     if (!Array.isArray(raw)) return ['', '[missing text ' + ref + ']', 'err'];
+    if(typeof ref==='string'){const response=this.gameplayResponse?.(ref,commit);if(response)vars={...vars,...response};}
     const l: Line = [this.fmt(raw[0], c, vars), this.fmt(raw[1], c, vars)];
     if (raw.length > 2) l.push(raw[2]);
     return l;

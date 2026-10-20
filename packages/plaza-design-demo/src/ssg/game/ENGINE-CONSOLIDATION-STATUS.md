@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `c33d639` on main and production.
-Homepage jobs39365323551/39365323420 and design job39365323131 succeeded.
+Last verified deployment: `cca059c` on main and production.
+Homepage jobs39376188849/39376189044 and design job39376189019 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -3003,3 +3003,45 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   animation frame with 282 differing pixels / max delta 82. No baseline was replaced.
 - No whole-goal gate promoted. Downtown's side-effecting denial-text rotation and the
   final all-scene source/editor/preservation/removal audits remain outstanding.
+
+## 2026-10-20: Downtown denial responses use shared conversations
+
+- Removed Downtown's module-global `jokes` counter and its side-effecting derived formatter.
+  Both generic password refusal and till username refusal bind to one authored conversation;
+  the existing joke.0/1/2 text IDs remain the sole wording source through label queries.
+  Toy failure uses the same explicit delivery boundary. Near-miss and successful responses
+  keep their existing behavior. The cursor follows the approved persistent-conversation policy.
+- `native.responseConversations` binds a source line, graph and variable. Ordinary line()
+  formatting previews the shared entry without commands; response() explicitly enters the
+  same ConversationSession. Preview sessions reject navigation. No second dialogue runner,
+  progress map, scheduler or native cursor remains. Disposal releases the model hook.
+- Typed Response conversations controls are integrated under Logic / Commands & dialogue:
+  Add/Remove/text rebind/graph rebind/slot edits use prospective validation and existing
+  history. Actual packaged app-Z6TQKHZO.js: invalid slot rejected with no history; Remove
+  and Undo restored the original binding; console warnings/errors empty.
+- PASS: check-response-conversations (12 interleaved actual password/username refusals,
+  original phrases/order, repeated pure previews, near-miss exclusion, persistence/reload,
+  invalid graphs/slots, disposal and typed controls); check-response-conversations-save
+  (paired graph rename/text edit, atomic invalid deletion rejection, bundle/history,
+  actual pending native refusal, protected Save/reload/fresh shipping import/byte Undo).
+  Save evidence: `.scene-system/response-conversations-save-oY3oFE`.
+- Regression PASS: check-unified-conversations, check-downtown-shared-dialogue (76,230
+  original/current target comparisons), check-downtown-registry-control (128 original
+  histories), check-eng04 and both root builds. The first fresh-module test fixture omitted
+  native physical inputs; it was corrected to instantiate the registered Downtown rules.
+  Runtime validation was not weakened.
+- Raster source `4be942646219033eda15b01e6d6c39d86fc1b4b7fd619fd2cac7fcd9180b860c`:
+  `.scene-system/all-game-pixel-check/evidence/4be942646219033eda15b01e6d6c39d86fc1b4b7fd619fd2cac7fcd9180b860c-1792475436799.json`.
+  All four row arrays exactly match the pre-change published-source diagnostic. Original
+  baseline status remains FAIL solely for the previously recorded Mall frame (282 pixels,
+  max delta82). No baseline replacement or whole-goal gate promotion.
+- Final delivery integration also covers committed shared verb/event source replies and native
+  authored case/guard replies through responseFor()/the same formatter boundary. Focused response
+  and ENG-04 checks were repeated after that change; both final builds pass
+  (app-ZCEMJ3HG.js / play-XADKKRXH.js).
+- Final-source raster evidence supersedes the earlier response checkpoint above:
+  `.scene-system/all-game-pixel-check/evidence/ff6fff6b54506f5c6cdc994db794981c392d555aec17fcdcfec4013e0673a20e-1792475595248.json`.
+  All four result arrays still exactly equal the pre-change diagnostic; the sole Mall baseline
+  difference remains open. Conversation entry-failure, free-input and bot regression checks pass.
+- Final-source protected Save/fresh-module/byte-Undo rerun PASS:
+  `.scene-system/response-conversations-save-pkdsOt`.

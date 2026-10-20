@@ -37,6 +37,15 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
   yields an absent value. The prospective source registry validates each reference against
   its owner's declaration, including grouped edits before Save. Logic exposes typed
   **Read state from other owners** controls and includes references in scalar selectors.
+- **Rotating device responses use conversations too.** `native.responseConversations`
+  binds a response text ID to a shared one-page conversation and a placeholder variable.
+  `SceneModel.line()` previews the current entry without running its command;
+  `SceneModel.response()` explicitly enters it when the outcome is delivered. Guard
+  refusal, terminal username refusal and toy failure delivery use this boundary.
+  The graph owns its ordinary saved cursor, entry conditions and commands. Its wording
+  can read existing label queries, preserving text IDs without another text catalogue.
+  Logic exposes typed response text/graph/slot bindings; the normal conversation editor
+  edits the graph. Multi-page/choice graphs and missing text slots are rejected here.
 - **No authored hints in the yard yet.** Goals stay (the GOAL line in the HUD; the deck's JOBS
   tab). The game has a hint lane now (ui/hints.ts, 2026-10-18), used so far only for control
   hints; when a goal or place gives a hint is a separate design question. Downtown's fixer hints

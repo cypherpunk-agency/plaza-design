@@ -82,7 +82,7 @@ export function toyFrame(kit: PanelKit, key: string, title: string, hint: string
     wrong: (answer) => {
       if(disposed||over)return false;
       m.toyWrong(key, answer);
-      say(m.line('guard.wrong.last', { noun, guess: answer }), true);
+      say(m.response('guard.wrong.last', { noun, guess: answer }), true);
       if (!m.toyBlocked(key)) return true;
       end('err', m.label('toy.locked'));
       return false;

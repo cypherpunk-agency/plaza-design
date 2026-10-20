@@ -76,6 +76,8 @@ export interface NativeReplyLine {from:string;say:[string,string,('ok'|'err'|'di
 export type NativeReply=NativeReplyLine|{cases:(NativeReplyLine&{when?:Condition})[]};
 export type NativeSay=[string,string,('ok'|'err'|'dim')?]|{text:string|{query:string}}|null;
 export interface NativeBindings {
+  /** One-page shared conversations fill a response slot; previews never enter the graph. */
+  responseConversations?:Record<string,{conversation:string;variable:string}>;
   inputs?:Record<string,NativeInput>;
   /** Read-only live truthiness; never persisted as a second flag. */
   reads?:Record<string,string>;

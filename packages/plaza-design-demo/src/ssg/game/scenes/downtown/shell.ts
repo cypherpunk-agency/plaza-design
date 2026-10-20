@@ -66,7 +66,7 @@ export function sceneShell(host: SceneHost, print: (text: string, kind?: LineKin
       if (!g) { say(m.line(('login.none.' + dev) in m.texts ? 'login.none.' + dev : 'login.none')); return; }
       const want = m.texts['login.user.' + dev];
       if (typeof want === 'string' && want.toLowerCase() !== user.toLowerCase()) {
-        say(m.line(('login.baduser.' + dev) in m.texts ? 'login.baduser.' + dev : 'login.baduser', { user }));
+        say(m.response(('login.baduser.' + dev) in m.texts ? 'login.baduser.' + dev : 'login.baduser', { user }));
         return;
       }
       host.typed(() => m.guess(dev, g.id, pass));
