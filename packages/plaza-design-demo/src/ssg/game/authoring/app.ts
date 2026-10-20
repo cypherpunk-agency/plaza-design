@@ -712,7 +712,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
     search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
     const kinds = filterChips('Kind', LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(e => e.family === kind).length })), pickerFamily, value => { pickerFamily = value; fill(); });
-    head.append(element('strong', '', 'Add artwork'), search, button('✕', closePicker, 'Close (Esc)')); picker.replaceChildren(head, kinds, count, grid);
+    head.append(element('strong', '', 'Add artwork'), search, button('✕', closePicker, 'Close (Esc)')); const body = element('div', 'picker-body'), results = element('div', 'picker-results'); kinds.classList.add('vertical'); results.append(count, grid); body.append(kinds, results); picker.replaceChildren(head, body);
     function fill() {
       const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id))), shown = list.slice(0, 300);
       count.textContent = `${list.length} pieces${list.length > shown.length ? ` · showing ${shown.length}, search to narrow` : ''} · pieces already in this scene come first`; grid.replaceChildren();

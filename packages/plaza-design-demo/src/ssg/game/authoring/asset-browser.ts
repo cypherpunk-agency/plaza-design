@@ -1,6 +1,5 @@
 /** Read-only catalog projections. References point into source documents, never a second scene graph. */
 import { LAYER_ROLES, KIND_HINTS, layerRole } from './layer-roles';
-import { filterChips } from './kind-chips';
 import { type ArtRegistry, type Composition, type Instance } from '../art/core/composition';
 import type { EditorDocument } from './app';
 import { SETS } from '../art/catalog';
@@ -55,20 +54,15 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   const entries = assetInventory(options.registry, options.documents), search = el('input');
   let family = session.family ?? '';
   search.type = 'search'; search.placeholder = 'Find type, name or tag'; search.setAttribute('aria-label', 'Search artwork assets'); search.value = session.query ?? '';
-  const kinds = LAYER_ROLES.filter(kind => entries.some(entry => entry.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(entry => entry.family === kind).length }));
-  let kindBlock: HTMLElement, otherBlock: HTMLElement;
-  const choose = (value: string) => { family = value; kindBlock.replaceWith(kindBlock = kindChipsBlock()); otherBlock.replaceWith(otherBlock = otherChipsBlock()); refresh(); };
-  const kindChipsBlock = () => filterChips('Kind', kinds, family, choose);
-  const otherChipsBlock = () => filterChips('Other', [{ value: '__embedded__', label: 'Embedded library components', title: 'Code-drawn component sets that are not registered artwork' }], family, choose, null);
-  kindBlock = kindChipsBlock(); otherBlock = otherChipsBlock();
+  const kinds = LAYER_ROLES.filter(kind => entries.some(entry => entry.family === kind));
   const count = el('p'), list = el('div'), inspector = el('section'); list.className = 'catalog-list'; inspector.setAttribute('aria-label', 'Asset inspection');
-  const navigation = el('div'); navigation.append(search, kindBlock, otherBlock, count, list);
+  const navigation = el('div'); navigation.append(search, count, list);
   // District bar: a piece belongs to every district whose scenes use it. "Elsewhere" is unused or sequence-only artwork.
   const districtsOf = (entry: AssetEntry) => new Set(entry.usages.flatMap(u => { const d = options.districts?.of(u.scene); return d ? [d] : []; }));
-  const bar = el('nav'); bar.className = 'district-bar'; bar.setAttribute('aria-label', 'Filter by district');
+  const bar = el('nav'); bar.className = 'district-bar'; bar.setAttribute('aria-label', 'Filter by district and kind');
   const inDistrict = (entry: AssetEntry, id: string) => id === '__none__' ? districtsOf(entry).size === 0 : districtsOf(entry).has(id);
   const sets = el('details');
-  navigation.append(sets); host.classList.add('asset-browser-grid'); if (options.districts) { host.classList.add('with-districts'); host.append(bar); } host.append(navigation, inspector);
+  navigation.append(sets); host.classList.add('asset-browser-grid'); host.classList.add('with-districts'); host.append(bar); host.append(navigation, inspector);
   function inspect(entry: AssetEntry) {
     if (session.selected !== entry.id) session.usage = undefined;
     session.selected = entry.id; inspector.replaceChildren(el('h3', entry.label), el('code', entry.id), el('p', `Tags: ${entry.tags.join(', ')}`));
@@ -108,10 +102,19 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   function refresh() {
     session.query = search.value; session.family = family;
     const matching = filterAssets(entries, search.value, family), district = session.district ?? '';
+    // Left column: District, then Kind, then Other. Each count reflects the other filters.
+    const chip = (name: string, n: number, pressed: boolean, choose: () => void, title = name) => { const b = button('', choose); b.append(el('span', name), el('small', String(n))); b.className = 'chip'; b.title = title; b.setAttribute('aria-pressed', String(pressed)); b.disabled = !n && !pressed; return b; };
+    const heading = (text: string) => { const h = el('div', text); h.className = 'bar-heading'; return h; };
+    const sections: HTMLElement[] = [];
     if (options.districts) {
-      const chip = (id: string, name: string) => { const n = id ? matching.filter(e => inDistrict(e, id)).length : matching.length, b = button('', () => { session.district = id; refresh(); }); b.append(el('span', name), el('small', String(n))); b.className = 'chip'; b.title = name; b.setAttribute('aria-pressed', String(id === district)); b.disabled = !n && id !== district; return b; };
-      bar.replaceChildren(chip('', 'All'), ...options.districts.list.map(d => chip(d.id, d.name)), chip('__none__', 'Elsewhere'));
+      const districtChip = (id: string, name: string) => chip(name, id ? matching.filter(e => inDistrict(e, id)).length : matching.length, id === district, () => { session.district = id; refresh(); });
+      sections.push(heading('District'), districtChip('', 'All'), ...options.districts.list.map(d => districtChip(d.id, d.name)), districtChip('__none__', 'Elsewhere'));
     }
+    const located = filterAssets(entries, search.value, '').filter(e => !district || inDistrict(e, district));
+    const kindChip = (kind: string, name: string, title?: string) => chip(name, kind ? located.filter(e => e.family === kind).length : located.length, family === kind, () => { family = kind === family ? '' : kind; refresh(); }, title);
+    sections.push(heading('Kind'), kindChip('', 'All'), ...kinds.map(kind => kindChip(kind, kind, KIND_HINTS[kind])));
+    sections.push(heading('Other'), chip('Embedded components', SETS.length, family === '__embedded__', () => { family = family === '__embedded__' ? '' : '__embedded__'; refresh(); }, 'Code-drawn component sets that are not registered artwork'));
+    bar.replaceChildren(...sections);
     const filtered = district ? matching.filter(entry => inDistrict(entry, district)) : matching; count.textContent = `${filtered.length} / ${entries.length} registered assets`; list.replaceChildren();
     list.classList.toggle('asset-grid', !!options.thumbnail);
     for (const entry of filtered) {
