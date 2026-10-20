@@ -77,9 +77,9 @@ export function fixtureSave(fixture:PlayFixture,additionalScenes:readonly string
 
 
 
-/** Also supplies defaults when an older portable bundle contains only the original two scenes. */
+/** Source-based starting state template for newly created Play fixtures. */
 
-export function defaultPlayFixture(scene:PlayScene):PlayFixture {return {id:scene==='harborShift'?'harbor-start':scene.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'-start',name:scene==='harborShift'?'Harbor Shift · start':scene==='sandbox'?'Sandbox · QA start':scene[0].toUpperCase()+scene.slice(1)+' · start',scene,flags:{},items:{},tokens:scene==='harborShift'?0:5,modules:scene==='harborShift'?['timer.so']:['timer.so','switch.so'],programs:scene==='harborShift'?[]:['scan.so'],keyring:[],state:{},day:1,minute:scene==='harborShift'?1120:580,seed:3,weather:'forecast',clock:scene==='harborShift'?'story':'fixed',spawn:null};}
+export function defaultPlayFixture(scene:PlayScene,scanner:string|null=NET.scanProgram):PlayFixture {return {id:scene==='harborShift'?'harbor-start':scene.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'-start',name:scene==='harborShift'?'Harbor Shift · start':scene==='sandbox'?'Sandbox · QA start':scene[0].toUpperCase()+scene.slice(1)+' · start',scene,flags:{},items:{},tokens:scene==='harborShift'?0:5,modules:scene==='harborShift'?['timer.so']:['timer.so','switch.so'],programs:scene==='harborShift'||scanner===null?[]:[scanner],keyring:[],state:{},day:1,minute:scene==='harborShift'?1120:580,seed:3,weather:'forecast',clock:scene==='harborShift'?'story':'fixed',spawn:null};}
 
 /** Route and phase-offset validation uses the complete prospective world/transport source. */
 export function validateFixtureMetro(doc:PlayFixtures,world:CityModel=defaultCity,source:MetroSource=METRO_SOURCE){for(const f of doc.fixtures)if(f.metro)validateMetroSnapshot(f.metro,{line:world.LINE,source});return doc;}

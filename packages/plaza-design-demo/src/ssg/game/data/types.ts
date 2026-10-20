@@ -414,7 +414,7 @@ export interface LogicData { modules: LogicModule[] }
  * pre-wired between them (they appear when a node they touch is connected),
  * and keyring items found on them.
  */
-export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[]; watchdog?: WatchdogData; networks: NetworkData[]; programs: ProgramData[] }
+export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[]; watchdog?: WatchdogData; networks: NetworkData[]; programs: ProgramData[]; scanProgram: string | null }
 
 /**
  * A network (NET.md): a group of machines with its own access rule. Any one rule in `from` is

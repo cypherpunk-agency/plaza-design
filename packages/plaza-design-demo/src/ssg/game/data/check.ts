@@ -63,7 +63,7 @@ const SEAL_KEYS = ['key', 'guard', 'sequence', 'if'];
 const KEYS: Record<string, string[]> = {
   scene: ['id', 'name', 'state', 'tuning', 'devices', 'nodes', 'cables', 'keyring', 'bench', 'camera', 'dialogue', 'goals', 'texts', 'watchdog', 'observations','controller'],
   logic: ['modules'],
-  net: ['nodes', 'cables', 'keyring', 'watchdog', 'networks', 'programs'],
+  net: ['nodes', 'cables', 'keyring', 'watchdog', 'networks', 'programs', 'scanProgram'],
   network: ['id', 'name', 'note', 'from', 'need', 'machines'],
   machine: ['id', 'in', 'node'],
   program: ['id', 'name', 'look', 'foundIn'],
@@ -196,6 +196,7 @@ export function checkGame(scenes: SceneCheck[], logic: LogicData, net: NetData, 
       else if (!by.includes(m.foundIn)) errs.push(`${w} › foundIn: ${m.foundIn === 'net' ? 'net.json' : m.foundIn + '.json'} has no { "give": "${m.id}" } step`);
     } else if (by.length && !m.start) errs.push(`${w}: ${by.map((f) => (f === 'net' ? 'net.json' : f + '.json')).join(', ')} hands it out; say so in "foundIn"`);
   });
+  if (net.scanProgram !== null && (typeof net.scanProgram !== 'string' || !world.programs.has(net.scanProgram))) errs.push('net.json › scanProgram: must name a registered program or be null');
   // programs: like modules, where each is found must hand it out
   (net.programs ?? []).forEach((p, i) => {
     const w = `net.json › programs[${p.id ?? i}]`, by = [...(world.gives.get(p.id) ?? [])];

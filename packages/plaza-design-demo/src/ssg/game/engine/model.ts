@@ -27,7 +27,7 @@ import type {
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
 // [the net] networks and what you reach from where you are plugged in (NET.md)
-import { machinesOf, reachNets } from './net';
+import { machinesOf, reachNets, ownsScanner } from './net';
 // [engine features: watchdog, clocks] (scene/watchdog.ts, scene/clock.ts)
 import { Clocks } from './clock';
 import { type DogView, Watchdogs } from './watchdog';
@@ -169,7 +169,6 @@ const LOG_LINGER_MS = 3000;
 /** Trace raised on a device without a log (a wrong guess) drains at this rate, %/s. */
 const BARE_FALL = 5;
 /** The program that lets a LINK scan, and connect beyond what it knows (NET.md). */
-export const SCAN = 'scan.so';
 /** The noun the engine puts on every device of a watchdog's route. */
 export const WATCH_NOUN = 'watchdog';
 /** A pre-wired cable's id: its own, or `from>to`. */
@@ -222,6 +221,7 @@ export class SceneModel {
   /** The net's networks and the programs there are (net.json). */
   readonly nets: NetworkData[];
   private programList: ProgramData[];
+  private scanProgram: string|null;
   readonly texts: Record<string, string | LineData>;
   /** Per-device state (a SWITCH's on/off), keyed by device id. */
   private local = new Map<string, Record<string, Value>>();
@@ -248,6 +248,7 @@ export class SceneModel {
     this.texts = { ...ENGINE.texts, ...data.texts };
     this.nets = net.networks ?? [];
     this.programList = net.programs ?? [];
+    this.scanProgram = net.scanProgram;
     for (const n of [...net.nodes, ...(data.nodes ?? [])]) this.nodeData.set(n.id, n);
     this.prewired = [...data.cables, ...net.cables];
     this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
@@ -492,7 +493,7 @@ export class SceneModel {
   /** The programs the player owns (scan.so). */
   programs(): string[] { return this.hooks.programs?.() ?? this.ownPrograms; }
   /** scan.so: LINKs scan, and connect beyond what they already know. */
-  get canScan() { return this.programs().includes(SCAN); }
+  get canScan() { return ownsScanner(this.programs(),this.scanProgram); }
   /** The module that places a part kind (`timer` → timer.so's entry). */
   module(kind: string) { return this.logic.modules.find((m) => m.part.id === kind); }
   /** Does the player own the module for this part kind? */
@@ -1001,7 +1002,7 @@ export class SceneModel {
     // [programs] without scan.so a port only connects to the nodes it already knows
     const known = n.link!.known ?? [];
     if ((c.verb === 'scan' || (id && !known.includes(id))) && !this.canScan) {
-      return this.line(known.length ? 'net.noscan' : 'net.noscan.none', { via, verb: c.verb });
+      return this.line(known.length ? 'net.noscan' : 'net.noscan.none', { via, verb: c.verb, scanProgram:this.scanProgram??'scanner' });
     }
     if (c.verb === 'scan') {
       const fresh = reach.filter((x) => !this.net.has(x));
@@ -1048,7 +1049,7 @@ export class SceneModel {
 
   /** The deck's `scan`, or opening the net map: every node you reach from here shows on the board. Needs scan.so. */
   scanHere(): Line {
-    if (!this.canScan) return this.line('net.noscan.none', { via: '', verb: 'scan' });
+    if (!this.canScan) return this.line('net.noscan.none', { via: '', verb: 'scan',scanProgram:this.scanProgram??'scanner' });
     if (!this.ports().length && !this.netsHere().size) return this.line('net.unplugged');
     const fresh = this.nodesHere().filter((x) => !this.net.has(x));
     fresh.forEach((x) => this.net.set(x, 'seen'));
@@ -1065,7 +1066,7 @@ export class SceneModel {
     const vars = { via: '', node: id, name: this.nodeName(id) };
     const known = this.ports().some((p) => (this.nounData(p.dev, p.noun)!.link!.known ?? []).includes(id));
     if (this.devices.has(id) && !this.devices.get(id)!.node) return this.line('net.here', vars);
-    if (!known && !this.canScan) return this.line('net.noscan.none', { via: '', verb: 'connect' });
+    if (!known && !this.canScan) return this.line('net.noscan.none', { via: '', verb: 'connect',scanProgram:this.scanProgram??'scanner' });
     if (this.nodesHere().includes(id)) {
       if (this.net.get(id) === 'connected') return this.line('net.connected', vars);
       this.join(id);

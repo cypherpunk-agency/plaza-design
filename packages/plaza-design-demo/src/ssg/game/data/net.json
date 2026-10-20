@@ -98,6 +98,7 @@
       ]
     }
   ],
+  "scanProgram": "scan.so",
   "programs": [
     { "id": "scan.so", "name": "SCAN", "look": "finds the machines a port can reach, and connects to them.", "foundIn": "library" }
   ],

@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `d499f78` on main and production.
-Homepage jobs39362047070/39362047502 and design job39362047552 succeeded.
+Last verified deployment: `aebc591` on main and production.
+Homepage jobs39363089272/39363089965 and design job39363089914 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -32,7 +32,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
 | G10 | IN PROGRESS | Typed actor CRUD/source bindings now cover all19 native scenes; catalogue creation/history/bundles/Save are checked. Current combined source still requires all-scene browser Play, controller/network/device entity controls and complete lifecycle acceptance |
 | G11 | IN PROGRESS | Moth Act transition authored through shared handoffs; full world/story/transport source integration pending |
-| G12 | IN PROGRESS | Latest published native raster173/173 has zero differing pixels/errors; focused immutable outcome/current-save checks pass. Full state/actor/HUD/save acceptance remains pending |
+| G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
 | G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
 
 Package `tsc -b` and `check-communication.mts` pass after the initial communication clock/lane change.
@@ -2909,3 +2909,42 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   capability role configuration and complete controller/network authoring audit remain open.
   Earlier raster evidence retains its original source identity; this authoring-only change does
   not claim a new combined-source raster result for the upstream artwork additions.
+
+## 2026-10-20 shared scanner capability binding
+
+- `net.json.scanProgram` is now the single explicit binding for the existing scanner capability.
+  It references a registered program or is null; missing, malformed and dangling bindings reject.
+  Shipping data keeps `scan.so`. The old exported SCAN constant and duplicate filename-based
+  permission checks are removed. No old-save translation, new remote mechanic or ability state.
+- World → Networks has a typed Scanner program selector. The SceneModel, Game capability/debug
+  view, NET admission and acquisition feedback, actual map header, terminal manual and refusal
+  wording resolve this same source binding. New Play/scene fixtures use the pending binding;
+  existing fixture inventories remain explicit source content.
+- `check-scanner-binding.mts` PASS:54 model/capability/actual-Game ownership/lock assertions,
+  acquisition deduplication, null/rebound defaults, real terminal manual and map draw header.
+  Existing network source/forms checks PASS, including typed rebinding and invalid-edit rollback.
+- Expanded `check-network-source-save.mts` PASS in `.scene-system/network-source-save/run-BRelLN`:
+  new distributed program and scanner binding, actual native scan refusal/ownership/success and
+  Game map state, grouped model history/bundle/protected Save/fresh source import/byte Undo.
+- Actual public editor app-UU4GTK6B.js/play-JVBBOCWD.js:Library Play owns scan.so/network=true;
+  changing pending scanner to none yields network=false while still owning scan.so. Creating a
+  new Beach starting state under the disabled binding grants no scan.so. All three Stop operations
+  remove every iframe, console warnings/errors empty. These are isolated technical fixtures.
+- Package TypeScript/both builds, shared scene batch, scene catalogue/source Save
+  (`scene-catalogue-check/run-Jy84ku`), opening42, Play startup, native private-storage and
+  acquisition/history checks PASS. ENG04/05 fixtures were stale:Beach supported source permissions
+  are editable, Downtown's removed stage module is replaced by the actual shared objective
+  evaluator, map admission takes its existing exitAccess callback, and demo scene validation
+  opts into its registered manifest/actors. Original outcome/order/refusal oracles retained.
+  ENG04 now PASSes48 Beach cases and source transactions; ENG05 PASSes64 Downtown stages and2048
+  Harbor objective/attention cases plus map/access/demo checks.
+- Raster result is explicitly FAIL against the immutable original, not rebaselined:172/173 cases
+  unchanged, Mall case1(time2.25/rain/960x540) differs282pixels(max82). Current sourcef146f18f:
+  `.scene-system/all-game-pixel-check/evidence/f146f18f70dfd255ca5b693070f95202202c89cf4c8cbe1a428e1480eddad14c-1792466343470.json`.
+  A read-only git archive of published aebc591 reproduces the identical sole delta:
+  `.scene-system/all-game-pixel-check/evidence/f0a2bd96f9fedfb8232c63ed92ff98ca0db5f42163e39b2ffd256335489a3453-1792466503921.json`.
+  That upstream commit already includes the newer walk-turn animation. Its preservation delta
+  needs explicit final reconciliation; no artwork or frozen fixture was changed in this batch.
+- Final runtime fingerprint45279058a1de38a399f22b022c52699c59ebbf2cd54d6c330b034082ddd606de
+  differs from f146f18f only by the source-template documentation comment. No gate promotion;
+  G4/G9/G10/G13 advance, all19 completion and the final removal/inventory audit remain mandatory.

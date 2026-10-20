@@ -41,6 +41,8 @@ export interface NetView {
 
 /** Everything the map draws from (game.ts fills it in each frame). */
 export interface NetState {
+  /** Configured scanner filename, or no scanner capability. */
+  scanner: string|null;
   view: NetView;
   nets: readonly NetworkData[];
   /** Networks reached from here, and the ones reached straight from a port here (plugged in). */
@@ -198,7 +200,7 @@ function draw(x: CanvasRenderingContext2D, vw: number, vh: number, st: NetState)
 
   // the head: what this is, where you are plugged in
   text(x, 'NET MAP', L.panel.x + 8, L.panel.y + 9, 'rgba(255,61,242,.95)', 9, '600', 'left');
-  text(x, 'scan.so · ' + st.where, L.panel.x + L.panel.w - 8, L.panel.y + 9, 'rgba(' + PAPER + ',.7)', 7, '', 'right');
+  text(x, (st.scanner??'') + ' · ' + st.where, L.panel.x + L.panel.w - 8, L.panel.y + 9, 'rgba(' + PAPER + ',.7)', 7, '', 'right');
   const plug = st.ports.length ? 'PLUGGED IN AT ' + st.ports.join(', ') : 'NOT PLUGGED IN: NO PORT HERE';
   text(x, plug + (st.controlled.length ? '  ·  YOURS: ' + st.controlled.join(' ') : ''), L.panel.x + 8, L.panel.y + 19, st.ports.length ? 'rgba(' + C + ',.85)' : 'rgba(' + PAPER + ',.55)', 7, '', 'left');
 
