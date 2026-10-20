@@ -31,7 +31,6 @@ import { contractOf } from '../src/ssg/game/engine/rules';
 import { cityProblems } from '../src/ssg/game/world/city';
 import { planProblems } from "../src/ssg/game/world/cityplan";
 import { TRAIN } from "../src/ssg/game/data/index";
-import { TRAIN_RULES_SHAPE } from "../src/ssg/game/scenes/train/rules";
 import { STACKS } from "../src/ssg/game/data/index";
 import { LIBRARY } from "../src/ssg/game/data/index";
 import { SANDBOX } from "../src/ssg/game/data/index";

@@ -1,3 +1,4 @@
+import type {SceneDef} from '../scenes/kit';
 import {isValidationContext} from './validation-snapshot';
 import type {NativeTargetValidationContext} from '../engine/gameplay/native-targets';
 import type {EngineNetworkContext} from '../engine/network-context';
@@ -14,7 +15,7 @@ import {nativeSceneAdapters} from './scene-adapters';
 function buildPendingScene(id:string,composition:unknown,content:{gameplay?:unknown;sceneDocument?:unknown;behavior?:unknown;devices?:unknown}){
  const structural:NativeTargetValidationContext={phase:'structural'};
  const authored=gameplayScenes.find(s=>s.id===id)??nativeGameplayScene(id);
- if(authored){const gameplay=authored.validateGameplay(content.gameplay);if('definitionWithDevices'in authored)return authored.definitionWithDevices(composition as Composition,{},{},authored.validateScene(content.sceneDocument,gameplay,structural),gameplay,(content.devices??content.behavior) as SceneData|undefined,structural);return 'validateScene'in authored?authored.definition(composition as Parameters<typeof authored.definition>[0],{},{},authored.validateScene(content.sceneDocument,gameplay,structural),gameplay,structural):authored.definition(composition as Parameters<typeof authored.definition>[0],gameplay);}
+ if(authored){const gameplay=authored.validateGameplay(content.gameplay);if('definitionWithDevices'in authored)return authored.definitionWithDevices(composition as Composition,{},{},authored.validateScene(content.sceneDocument,gameplay,structural),gameplay,(content.devices??content.behavior) as SceneData|undefined,structural);return 'validateScene'in authored?(authored.definition as (...args:unknown[])=>SceneDef)(composition,{},{},(authored.validateScene as (...args:unknown[])=>unknown)(content.sceneDocument,gameplay,structural),gameplay,structural):authored.definition(composition as Parameters<typeof authored.definition>[0],gameplay);}
  const native=nativeSceneAdapters[id];if(!native)throw new Error('Unknown Play scene '+id);
  return native.definition(native.validate(composition),{},{reduced:false});
 }

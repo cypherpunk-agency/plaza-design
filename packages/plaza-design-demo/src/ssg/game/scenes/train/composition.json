@@ -676,7 +676,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider0-0.pose"
+        "pose": "train.pose.seat-rider0-0"
       }
     },
     {
@@ -696,7 +696,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider0-1.pose"
+        "pose": "train.pose.seat-rider0-1"
       }
     },
     {
@@ -716,7 +716,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider1-0.pose"
+        "pose": "train.pose.seat-rider1-0"
       }
     },
     {
@@ -736,7 +736,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider1-1.pose"
+        "pose": "train.pose.seat-rider1-1"
       }
     },
     {
@@ -756,7 +756,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider2-0.pose"
+        "pose": "train.pose.seat-rider2-0"
       }
     },
     {
@@ -776,7 +776,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider2-1.pose"
+        "pose": "train.pose.seat-rider2-1"
       }
     },
     {
@@ -796,7 +796,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider3-0.pose"
+        "pose": "train.pose.seat-rider3-0"
       }
     },
     {
@@ -816,7 +816,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider3-1.pose"
+        "pose": "train.pose.seat-rider3-1"
       }
     },
     {
@@ -836,7 +836,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider4-0.pose"
+        "pose": "train.pose.seat-rider4-0"
       }
     },
     {
@@ -856,7 +856,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider4-1.pose"
+        "pose": "train.pose.seat-rider4-1"
       }
     },
     {
@@ -876,7 +876,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider5-0.pose"
+        "pose": "train.pose.seat-rider5-0"
       }
     },
     {
@@ -896,7 +896,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.seat-rider5-1.pose"
+        "pose": "train.pose.seat-rider5-1"
       }
     },
     {
@@ -912,7 +912,7 @@
       "order": 18,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.standing-rider0.pose"
+        "pose": "train.pose.standing-rider0"
       }
     },
     {
@@ -928,7 +928,7 @@
       "order": 19,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.standing-rider1.pose"
+        "pose": "train.pose.standing-rider1"
       }
     },
     {
@@ -944,7 +944,7 @@
       "order": 20,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.standing-rider2.pose"
+        "pose": "train.pose.standing-rider2"
       }
     },
     {
@@ -960,7 +960,7 @@
       "order": 21,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.suit.pose"
+        "pose": "train.pose.suit"
       }
     },
     {
@@ -976,7 +976,7 @@
       "order": 22,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.courier.pose"
+        "pose": "train.pose.courier"
       }
     },
     {
@@ -992,7 +992,7 @@
       "order": 23,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.elder.pose"
+        "pose": "train.pose.elder"
       }
     },
     {
@@ -1008,7 +1008,7 @@
       "order": 24,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.punk.pose"
+        "pose": "train.pose.punk"
       }
     },
     {

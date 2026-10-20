@@ -4,11 +4,12 @@ export interface ActorBindingController {element:string;prefix:string;suffix:str
 /** Registered renderer bindings; source records own actor identity, placement references and dialogue. */
 const controllers:Record<string,ActorBindingController>={
  downtown:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
- metro:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ // the LINE 0 scenes are folder scenes: riders come from the `station` and `train` binding providers
+ metro:{element:'actor.prepared',prefix:'station.pose.',suffix:'',mutable:true},
  // the stations are folder scenes: their riders come from the `station` binding provider (binding-providers/station.ts)
  galleriaStation:{element:'actor.prepared',prefix:'station.pose.',suffix:'',mutable:true},
  harborStation:{element:'actor.prepared',prefix:'station.pose.',suffix:'',mutable:true},
- train:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ train:{element:'actor.prepared',prefix:'train.pose.',suffix:'',mutable:true},
  capsule:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  yard:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  moth:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},

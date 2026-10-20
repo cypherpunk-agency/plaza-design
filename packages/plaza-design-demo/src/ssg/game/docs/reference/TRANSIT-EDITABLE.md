@@ -23,3 +23,7 @@ A station bench owns a drawing slot, not a second passenger. It receives the pre
 This migration does not replace the native transit state machine, captured skyline animation, braking logic, turnstile checkpoint or world route controllers with fully authored controller graphs. Their existing behavior and presentation remain active. Required architectural/controller composition IDs remain protected. These specialist controls need their own typed editor contracts before transit can be described as wholly authored gameplay.
 
 The one-time transit extraction scripts were retired after the source lift. Their history remains in Git; use the authored documents and preservation checks for ongoing work.
+
+## Where the transit code lives
+
+Metro and Train are folder scenes (JSON only). The platform pictures come from the `station` binding provider (`station.train`, `station.departure`, `station.roof`, `station.pose.<actor>`, and for Downtown's platform `station.city`, `station.daylight`, `station.truss`, `station.roofLocal`), the car from the `train` provider (`train.frame`, `train.pose.<actor>`). The `transitPlatform` mechanism owns the train stop and the canopy cover, `citySkyline` the animated skyline that is saved with the scene, and `lineRide` the car's brake, doors and tunnel rules (engine/gameplay/mechanisms/line-ride.ts). Rider preparation is engine/gameplay/transit-actors.ts and the platform frame world/transport/platform-frame.ts.

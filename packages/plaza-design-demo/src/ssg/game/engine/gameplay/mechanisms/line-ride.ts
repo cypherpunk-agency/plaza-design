@@ -1,5 +1,5 @@
 /**
- * TRAIN-0, the code side of the metro car's one device (data/train.json): P14, "the stop that
+ * Mechanism `lineRide` (scene.json `stage.mechanisms`): the metro car you ride on LINE 0. TRAIN-0, the code side of the metro car's one device (data/train.json): P14, "the stop that
  * isn't on the map". The ride itself is line.ts; these rules read it and pull on it.
  *
  * - `position` raises `tunnel` as the train runs into the tunnel under the mall, and `harbor
@@ -16,11 +16,13 @@
  * Pure: no DOM, so node can run it (the build's check).
  */
 
-import * as defaultCity from '../../world/city';
-import type {CityModel} from '../../world/city';
-import type { Effect, SceneRules, World } from "../../engine/rules";
-import * as defaultMetro from '../../world/transport/line';
-import type {LineSystem} from '../../world/transport/line';
+import * as defaultCity from '../../../world/city';
+import type {CityModel} from '../../../world/city';
+import type { Effect, SceneRules, World } from "../../rules";
+import * as defaultMetro from '../../../world/transport/line';
+import type {LineSystem} from '../../../world/transport/line';
+import type {SceneMechanism} from '../scene-mechanisms';
+import {trainLayoutOf,prepareTrainFrame,trainVisual,TRAIN_LAYOUT_KEY,TRAIN_FRAME_KEY} from '../binding-providers/train';
 
 /** The save's item that makes the brake take your pull (P13 hands it over). */
 export const PASS = 'maglev.pass';
@@ -113,6 +115,18 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
   };
 }
 
-export const TRAIN_RULES = createTrainRules();
-/** The build-time check's name for them (generate-demos). */
-export const TRAIN_RULES_SHAPE = TRAIN_RULES;
+/** The ride and its car: the brake, doors and tunnel rules over the line system, the car's layout and the frame it paints (the `train` binding provider reads both). The scene's artwork roles place the car's fittings. */
+export const lineRide:SceneMechanism={
+ label:'LINE 0 car (ride, brake, doors, passengers)',
+ requires:['ceiling','roof','news','windowStyle','lineMap','handrail','staff','gangway','gangDoor','brake'],world:true,ownsRoom:true,
+ rulesShape:()=>createTrainRules(),
+ check:({roles})=>{const w=roles.windowStyle;if(Number(w.props.h1)<=Number(w.props.h0)+6||Number(w.props.width)<=6)throw Error('Train requires a valid window style');},
+ apply:({scene,rows,roles,actors,width,content,world,shared})=>{
+  const layout=trainLayoutOf(scene,rows,roles,width,content.spawn),context={metro:world?.metro,city:world?.city};
+  shared.set(TRAIN_LAYOUT_KEY,layout);
+  return{
+   rules:createTrainRules(world?.metro,world?.city),
+   preparePresentation:(v,e)=>{shared.set(TRAIN_FRAME_KEY,prepareTrainFrame({source:scene,rows,roles,actors,layout},v,e.hover,trainVisual(v,world),context));},
+  };
+ },
+};

@@ -35,7 +35,9 @@ export interface StageActorRules {
  cull?:{actor:string;role:string;margin?:number}[];
 }
 /** `world`: the city and line system a world-bound scene was rebuilt with (a scene mechanism with `world`, scene-mechanisms.ts); absent until the game binds them. */
-export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;uses?:readonly import('../../scenes/kit').SceneUse[];engine?:EngineDraw;world?:{city:CityModel;metro:LineSystem};signals?:PresentationSignals;presentation?:Readonly<Record<string,MechanismPresentation>>}
+export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;uses?:readonly import('../../scenes/kit').SceneUse[];engine?:EngineDraw;world?:{city:CityModel;metro:LineSystem};signals?:PresentationSignals;presentation?:Readonly<Record<string,MechanismPresentation>>;
+ /** State the scene's mechanisms keep for its providers (scene-mechanisms.ts SceneMechanismContext.shared). */
+ shared?:ReadonlyMap<string,unknown>}
 const POSE=/^actor\.([-a-zA-Z0-9_.]+)\.pose$/,CLIP=/^actor\.([-a-zA-Z0-9_.]+)\.clip$/,HOVER=/^device\.([-a-zA-Z0-9_]+)\.hover$/,VALUE=/^value\.([-a-zA-Z0-9_.:]+)$/,SPANS=/^artwork\.([-a-zA-Z0-9_.]+)\.spans$/;
 const providerOf=(name:string)=>{const dot=name.indexOf('.');return dot>0&&Object.prototype.hasOwnProperty.call(BINDING_PROVIDERS,name.slice(0,dot))?name.slice(0,dot):undefined;};
 export const knownBindingSource=(name:string)=>name==='world.light'||[POSE,CLIP,HOVER,VALUE,SPANS].some(r=>r.test(name))||!!providerOf(name);

@@ -11,8 +11,6 @@ import {nativeDeviceSources} from './native-device-sources';
 
 import { downtown } from "./downtown/index";
 import type { SceneDef } from './kit';
-import { metro } from "./metro/index";
-import { train } from "./train/index";
 import authored from './authored.json';
 import {createSceneRegistry} from '../engine/gameplay/scene-catalogue';
 import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
@@ -23,7 +21,7 @@ export { ITEMS, priceTag } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 const nativeDefinitions = {
-  downtown, metro, train,
+  downtown,
 } satisfies Record<string, SceneDef>;
 const codeScenes=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
 /** Scenes of the repository: those still built by their own code, and folder scenes built from JSON alone (folder-scenes.ts). */

@@ -971,7 +971,7 @@ Decided (save details):
 - `game/scenes/beach/`: rules for billing and the drone flag; actors, device data for SALT and
   beach machines; composition source/adapters and scene factory. Pictures are in `art/assemblies/`.
 - `game/scenes/downtown/`: rules, save reconciliation, shell, camera, layout, dialogue,
-  progression, composition source/adapters and scene factory. `scenes/train/rules.ts` owns car rules.
+  progression, composition source/adapters and scene factory. `engine/gameplay/mechanisms/line-ride.ts` (the `lineRide` scene mechanism) owns car rules.
 - `game/scenes/sandbox/`: REGISTRY QA BAY 3 (sudo only; see **Sandbox**).
 - `game/scenes/kit.ts`: `SceneDef`, exits/uses/readables, presentation preparation and visual
   environment contracts. `game/scenes/index.ts`: `SCENES`, including locations without devices.

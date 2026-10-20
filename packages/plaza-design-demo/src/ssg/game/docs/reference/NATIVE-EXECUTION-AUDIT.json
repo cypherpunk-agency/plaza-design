@@ -298,7 +298,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/metro/index.ts"
+        "scenes/metro/scene.json"
       ]
     },
     {
@@ -401,7 +401,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/train/rules.ts",
+        "engine/gameplay/mechanisms/line-ride.ts",
         "world/transport/line.ts",
         "scenes/train/gameplay.json"
       ]

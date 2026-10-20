@@ -67,6 +67,14 @@ import beachComposition from './beach/composition.json';
 import beachScene from './beach/scene.json';
 import beachGameplay from './beach/gameplay.json';
 import beachDevices from './beach/devices.json';
+import metroComposition from './metro/composition.json';
+import metroScene from './metro/scene.json';
+import metroGameplay from './metro/gameplay.json';
+import metroDevices from './metro/devices.json';
+import trainComposition from './train/composition.json';
+import trainScene from './train/scene.json';
+import trainGameplay from './train/gameplay.json';
+import trainDevices from './train/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -90,6 +98,8 @@ export const FOLDER_SOURCES={
  yard:{composition:yardComposition,scene:yardScene,gameplay:yardGameplay,devices:yardDevices},
  capsule:{composition:capsuleComposition,scene:capsuleScene,gameplay:capsuleGameplay,devices:capsuleDevices},
  beach:{composition:beachComposition,scene:beachScene,gameplay:beachGameplay,devices:beachDevices},
+ metro:{composition:metroComposition,scene:metroScene,gameplay:metroGameplay,devices:metroDevices},
+ train:{composition:trainComposition,scene:trainScene,gameplay:trainGameplay,devices:trainDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */
 export const FOLDER_DIRS:Readonly<Record<string,string>>={harborShift:'harbor-shift'};

@@ -5,16 +5,11 @@ import { FOLDER_SCENE_IDS } from '../scenes';
 import { validateGameplay } from '../engine/gameplay/validation';
 import type { SceneDocument } from '../engine/gameplay/scene-document';
 import { deviceSourceIdentity } from './device-document-ids';
-import {content as trainContent} from '../scenes/train/scene-document';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
 /** Canonical scene adapters: the editor supplies documents to shipping SceneDef factories. */
 import type { NativeSceneAdapter } from './native-preview';
 import { downtownScene } from '../scenes/downtown';
 import { validateDowntownComposition } from '../scenes/downtown/composition';
-import { metroScene } from '../scenes/metro';
-import { validateMetroComposition } from '../scenes/metro/composition';
-import { trainScene } from '../scenes/train';
-import { validateTrainComposition } from '../scenes/train/composition';
 
 /** Folder scenes share one adapter: their documents go straight to the declared path. */
 const folderAdapter = (id: string): NativeSceneAdapter => ({
@@ -29,8 +24,6 @@ const folderAdapter = (id: string): NativeSceneAdapter => ({
 export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   ...Object.fromEntries(FOLDER_SCENE_IDS.map(id => [id, folderAdapter(id)])),
 
-  metro: { validate: validateMetroComposition, definition: metroScene },
-  train: { validate: validateTrainComposition, definition: trainScene,pendingDefinition:(doc,state,options,documents)=>{const gameplay=trainContent.validateGameplay(documents.get('train-gameplay'));return trainScene(doc,state,options,trainContent.validateScene(documents.get('train-scene'),gameplay),gameplay,documents.get('train-devices') as import('../data/types').SceneData|undefined);} },
   downtown: {
     validate: validateDowntownComposition, definition: downtownScene, pendingDefinition:(doc,_state,options,documents)=>{const gameplay=downtownContent.validateGameplay(documents.get('downtown-gameplay'));return downtownScene(doc,undefined,options,downtownContent.validateScene(documents.get('downtown-scene'),gameplay),gameplay);},
   },

@@ -61,7 +61,7 @@ export function validateDeclaredDestinations(scene:SceneDocument,destinations:Re
 type RulesOf=NonNullable<SceneDef['rules']>;
 const combine=(a:RulesOf,b:RulesOf):RulesOf=>player=>mergeRules([typeof a==='function'?a(player):a,typeof b==='function'?b(player):b]);
 export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,options:Partial<Environment>={},devices?:SceneDeviceSource,world?:{city:CityModel;metro:LineSystem}):SceneDef{
- const validated=validateDeclaredScene(scene,composition,gameplay),d=validated.scene,rows=validated.rows;
+ const validated=validateDeclaredScene(scene,composition,gameplay),d=validated.scene,rows=validated.rows,shared=new Map<string,unknown>();
  const compiled=compileManifestDocument(d,rows,(_c,id)=>({name:d.name,pages:[],conversation:id}),d.manifest!.compile??{elevatedResponses:true}),roles=compiled.geometry.artwork;
  // a mechanism's rules widen what the device document may read and emit (derived values, physical milestones)
  const mechanisms=(d.stage?.mechanisms??[]).map(name=>SCENE_MECHANISMS[name]),contract=mechanismsRulesShape(d.stage?.mechanisms);
@@ -85,13 +85,13 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const signals=Object.keys(validated.signals).length?new PresentationSignals(d.cues??[],validated.signals):undefined;
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
   return {...options,view,state:{...(options.state??{}),...(live?Object.fromEntries(Object.entries(live.lifts).map(([id,c])=>[id,{car:c.car,doors:c.doors}])):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
-   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,presentation:presentations},d.stage?.actors),reduced:options.reduced??false};};
+   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,presentation:presentations,shared},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
  const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(presented.length?(()=>{if(signals)throw new Error('A scene cannot have both presentation signals and a presentation mechanism');const p=presented[0];return{preparePresentation:p.prepare,presentationState:{capture:()=>p.capture(),restore:(v:import('../../art/core/composition').Value)=>p.restore(v)}};})():{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
- const built=mechanisms.reduce<SceneDef>((acc,m)=>{const part=m.apply({scene:d,gameplay,rows,roles,width:validated.width,content:acc});
+ const built=mechanisms.reduce<SceneDef>((acc,m)=>{const part=m.apply({scene:d,gameplay,rows,roles,width:validated.width,content:acc,actors:validated.actors,world,shared});
   // mechanisms that run code each supply rules; they combine
   return{...acc,...part,...(acc.rules&&part.rules?{rules:combine(acc.rules,part.rules)}:{})};},base);
  return mechanisms.some(m=>m.world)?{...built,bindWorld:services=>declaredScene(scene,composition,gameplay,options,devices,services)}:built;
