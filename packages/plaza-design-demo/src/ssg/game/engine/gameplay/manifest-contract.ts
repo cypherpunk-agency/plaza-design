@@ -6,7 +6,7 @@ export const devicePropertyFields=['widthProperty','heightProperty','heightOffse
 export type DevicePropertyFields=Partial<Record<typeof devicePropertyFields[number],string>>;
 export type DeviceManifestTarget=string|(Exclude<ManifestTarget,string>&DevicePropertyFields);
 export type ManifestWidth=number|{instance:string;property:string};
-export interface SceneManifest {artwork?:Record<string,string>;devices?:Record<string,DeviceManifestTarget>;version:1;width:ManifestWidth;spawn:ManifestTarget;uses:Record<string,ManifestTarget>;people?:Record<string,ManifestTarget>;readables?:Record<string,ManifestTarget>;rests?:Record<string,ManifestTarget>;exits?:Record<string,ManifestTarget>}
+export interface SceneManifest {exitCheckpoints?:Record<string,ManifestTarget>;artwork?:Record<string,string>;devices?:Record<string,DeviceManifestTarget>;version:1;width:ManifestWidth;spawn:ManifestTarget;uses:Record<string,ManifestTarget>;people?:Record<string,ManifestTarget>;readables?:Record<string,ManifestTarget>;rests?:Record<string,ManifestTarget>;exits?:Record<string,ManifestTarget>}
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(v)&&!['constructor','prototype','__proto__'].includes(v);
 export const targetInstance=(target:ManifestTarget)=>typeof target==='string'?target:target.instance;
@@ -19,10 +19,11 @@ export function validateManifestTarget(target:unknown):asserts target is Manifes
 }
 export function validateManifest(value:unknown):SceneManifest{
  if(!object(value))throw new Error('Manifest must be a plain object');const m=value as unknown as SceneManifest;
- if(Object.keys(m).some(k=>!['version','width','spawn','devices','artwork',...manifestGroups].includes(k))||m.version!==1)throw new Error('Invalid scene manifest header');
+ if(Object.keys(m).some(k=>!['version','width','spawn','devices','artwork','exitCheckpoints',...manifestGroups].includes(k))||m.version!==1)throw new Error('Invalid scene manifest header');
  if(typeof m.width==='number'){if(!Number.isFinite(m.width)||m.width<240||m.width>10000)throw new Error('Invalid manifest width');}
  else if(!object(m.width)||Object.keys(m.width).sort().join()!=='instance,property'||!id(m.width.instance)||!id(m.width.property))throw new Error('Invalid manifest width binding');
  if(m.artwork!==undefined&&(!object(m.artwork)||Object.keys(m.artwork).length>128||Object.entries(m.artwork).some(([role,ref])=>!id(role)||!id(ref))))throw Error('Invalid manifest artwork roles');
+ if(m.exitCheckpoints!==undefined){if(!object(m.exitCheckpoints)||Object.keys(m.exitCheckpoints).length>32)throw Error('Invalid exit checkpoint bindings');for(const[key,target]of Object.entries(m.exitCheckpoints)){if(!id(key))throw Error('Invalid exit checkpoint ID');validateManifestTarget(target);if(typeof target!=='string'&&Object.keys(target).some(k=>!['instance','anchor','x','h'].includes(k)))throw Error('Exit checkpoint has no text-height properties');}}
  validateManifestTarget(m.spawn);
  for(const group of manifestGroups){const bindings=m[group];if(bindings===undefined&&group!=='uses')continue;
  if(!object(bindings)||Object.keys(bindings).length>32)throw new Error('Invalid manifest '+group+' bindings');

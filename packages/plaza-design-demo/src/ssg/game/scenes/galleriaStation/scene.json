@@ -38,7 +38,7 @@
       "id": "linemap",
       "name": "LINE MAP",
       "pages": [
-        "LINE 0: DOWNTOWN \u00b7 GALLERIA \u00b7 HARBOR.",
+        "LINE 0: DOWNTOWN · GALLERIA · HARBOR.",
         "YOU ARE HERE: GALLERIA. THE LINE IS A LOOP."
       ],
       "promptH": 86
@@ -59,7 +59,7 @@
       "id": "mall",
       "to": "mall",
       "at": "metro",
-      "label": "[E] UP \u00b7 GALLERIA MALL",
+      "label": "[E] UP · GALLERIA MALL",
       "promptH": 92
     },
     {
@@ -108,6 +108,10 @@
       "regular": {
         "instance": "regular"
       }
+    },
+    "artwork": {
+      "roof": "roof",
+      "stop": "platform-train"
     }
   },
   "rests": [

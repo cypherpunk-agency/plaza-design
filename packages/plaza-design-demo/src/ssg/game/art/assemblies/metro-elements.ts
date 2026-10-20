@@ -36,3 +36,9 @@ export const metroElements:Element[]=[
  E('turnstile','Exit identity reader and flap',{},(ctx,v,p,s,at)=>kernels(p,s).drawTurnstile(ctx,v,at.x)),
 ];
 export const metroSnapshotValue=(v:MetroCityVisual):Value=>v as unknown as Value;
+
+for(const element of metroElements){element.bindingIdentity='presentation';element.bindingChoices=composition=>{
+ if(composition.scene!=='metro')return{};
+ const sources:Record<string,string[]>={city:['metro.city'],daylight:['metro.daylight'],truss:['metro.truss'],roof:['metro.roofLocal','metro.roof']};
+ return Object.fromEntries(Object.keys(element.visualFields??{}).filter(key=>sources[key]).map(key=>[key,sources[key]]));
+};}

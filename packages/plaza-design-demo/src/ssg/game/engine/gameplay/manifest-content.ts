@@ -20,6 +20,7 @@ export function removeManifestContent(doc:SceneDocument,group:ManifestGroup,id:s
  if(!doc.manifest)throw new Error('Scene requires a manifest');
  const rows=doc[group];if(!rows?.some(r=>r.id===id))throw new Error('Unknown content ID: '+id);
  rows.splice(rows.findIndex(r=>r.id===id),1);delete doc.manifest[group]?.[id];
+ if(group==='exits'&&doc.manifest.exitCheckpoints){delete doc.manifest.exitCheckpoints[id];if(!Object.keys(doc.manifest.exitCheckpoints).length)delete doc.manifest.exitCheckpoints;}
  if(group!=='uses'&&!rows.length)delete doc[group];
  if(group==='uses')for(const objective of doc.objectives??[])if(objective.target===id)delete objective.target;
 }

@@ -35,7 +35,8 @@ export function manifestGeometry(scene:SceneDocument,rows:readonly Resolved[],gr
  }
  for(const target of Object.values(manifest.devices??{}))resolveDevicePoint(rows,target,width);
  if(typeof manifest.spawn!=='string'&&(manifest.spawn.promptH!==undefined||manifest.spawn.responseH!==undefined))throw new Error('Spawn has no text height');
- return{artwork:resolveArtworkRoles(scene.id,manifest.artwork,rows,width),width,spawn:point(manifest.spawn,options.groundSpawn!==false).x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
+ const exitCheckpoints=Object.fromEntries(Object.entries(manifest.exitCheckpoints??{}).map(([id,target])=>{if(!scene.exits?.some(e=>e.id===id))throw Error('Exit checkpoint refers to absent exit: '+id);return[id,point(target)];}));
+ return{exitCheckpoints,artwork:resolveArtworkRoles(scene.id,manifest.artwork,rows,width),width,spawn:point(manifest.spawn,options.groundSpawn!==false).x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
 }
 /** Geometry-only preview: registered visual defaults resolve bindings without stepping controllers. */
 export function manifestCompositionRows(composition:Composition){

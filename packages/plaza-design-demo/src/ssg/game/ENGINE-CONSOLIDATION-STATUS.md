@@ -2731,3 +2731,31 @@ seat previews and runs through pending native Train Play/Stop with zero warning/
 app-HRWOLHP6.js / play-ATVUIKUD.js / play-44e7534948514b62.html. Source-bound actor/inspector evidence
 above is retained at its earlier checkpoint, not relabelled as a final-source rerun. No whole-goal
 gate promotion; final integrated corpus acceptance follows the remaining platform migrations.
+
+## 2026-10-20 continuation: three platform geometry sources
+
+- Metro/GalleriaStation/HarborStation roof, train-stop and relevant skyline/water inputs now resolve
+  typed artwork roles from each actual scene document. Removed fixed original-artwork ID/type floors
+  and unused native layout copies. Shared manifest width, attachments, actor sources and presentation
+  bindings remain the owners of ordinary positions. Rail stops retain their existing horizontal-only
+  transform policy; no transport timing or simulation changes.
+- Exit sequence checkpoints now use an optional shared manifest point binding with typed editor
+  enable/rebind/offset controls. Metro's original turnstile point is source-authored; its hard-coded
+  exit-ID injection is removed. Missing exit/artwork and text-height data reject atomically; deleting
+  an exit removes its checkpoint binding. This is interaction geometry, not save migration plumbing.
+- Registered Metro/station artwork exposes finite visual-source choices. Adding a departure board
+  assigns its existing native departure and roof sources, without per-instance code changes.
+- `check-platform-artwork-roles.mts`: actual typed width/roof/horizon/stop/checkpoint forms, replacement
+  and original-artwork removal after dependent rebinding, runtime geometry, invalid-role atomicity,
+  new departure-board defaults, bundles, protected six-document Save, fresh shipping import and byte
+  Undo PASS. Evidence: `.scene-system/platform-artwork-role-source-wr3hJl`.
+- Default preservation: Metro72 and stations144 original draw-command cases; real Game transport
+  marker540 default+540 moved-door comparisons and15 checkpoint paint cases; opening42 immutable
+  original controller/transcript/timing/paint comparisons PASS. The marker test now invokes the real
+  Game prototype; opening timing is covered by its dedicated immutable-original runtime suite.
+- Source `sha256:2fbd3e99e5c704483c7dc5456d70092a1d9ba103e8f1e5252d2607a349026867`: TypeScript,
+  both builds,173 actual raster comparisons with zero differences/errors PASS. Packaged editor
+  app-AZSSBH43.js/play-37LPXRUY.js: actual Metro checkpoint rebinding, Add departure board, and
+  private native Play/Stop for Metro/GalleriaStation/HarborStation PASS; no console warnings/errors.
+- Full world acceptance remains open: native platform transport station selection still contains
+  scene-to-station assumptions that must follow pending world documents. No whole-goal gate promoted.
