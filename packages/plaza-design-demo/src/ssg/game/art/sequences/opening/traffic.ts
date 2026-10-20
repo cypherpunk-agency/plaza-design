@@ -16,6 +16,7 @@ import { BOX40, type Crate } from "../../props/containers";
 import { placed } from "../../core/view";
 import { type CoastView, type Lines, R, S } from "./coast";
 import { PLACES } from "./path";
+import { laneSlots } from "../../vehicles/kit";
 
 /** Downtown's side streets (X): where cars come from and go to (town.ts draws their mouths). */
 export const SIDE_STREETS = [3420, 3720, 4130, 4480, 4800];
@@ -44,8 +45,8 @@ export function drawTraffic(x: CanvasRenderingContext2D, c: CoastView, L: Lines)
     const ly = ln.lane === 'far' ? L.FAR_LANE : L.NEAR_LANE, off = f * ln.v * -ln.dir;
     // the slots on screen: X from the view's east edge to its west edge
     const Xe = c.g - c.W / 2 - 200, Xw = c.g + c.W / 2 + 200;
-    for (let k = Math.floor((Xe - off) / ln.gap); k <= Math.ceil((Xw - off) / ln.gap); k++) {
-      const X = k * ln.gap + off, end = endOf(k, ln.seed);
+    for (const { k, x: X } of laneSlots(Xe, Xw, off, ln.gap)) {
+      const end = endOf(k, ln.seed);
       if (end === null || X < end) continue;
       const gate = end === PLACES.road, kind = gate ? 'truck' : (['sedan', 'hatch', 'cab', 'van', 'sedan', 'bus', 'hatch', 'cab'] as const)[Math.floor(h01(k + ln.seed * 3) * 8)];
       // turning in from (or off into) a side street, rolling out under (or in through) the gate: fade and slide

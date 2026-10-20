@@ -2,6 +2,7 @@
 import { type View } from "../core/view";
 import { box,C,drawTowers,GREEN,O,onScreen,PAPER,RED,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
+import { drawBoat } from "../vehicles/boats";
 import { drawSky,seaCols,sunPath } from "../environment/sky";
 import { drawLounger } from "../props/beach-party";
 import { adScreen,registryBoard,YELLOW } from "../signage/screens";
@@ -158,16 +159,10 @@ function rod(x: CanvasRenderingContext2D, V: View) {
 function boat(x: CanvasRenderingContext2D, V: View, hover: string | null, p: number) {
   const c = V.sx(L.boat), y = V.y, bob = Math.round(Math.sin(V.t * 0.03) * 1.5);
   if (!onScreen(V, c - 80, 160)) return;
-  const by = y(0) + bob, hull = mix([214, 206, 190], [130, 120, 124], p);
-  // the hull, its waterline stripe and its name, hand-painted
-  x.fillStyle = hull;
-  x.beginPath(); x.moveTo(c - 60, by - 24); x.lineTo(c + 64, by - 28); x.lineTo(c + 50, by); x.lineTo(c - 52, by); x.closePath(); x.fill();
-  x.strokeStyle = 'rgba(' + O + ',.75)'; x.stroke();
-  x.fillStyle = '#2e4a5e'; x.fillRect(c - 56, by - 8, 110, 3);
-  text(x, 'NOT FISHING', c - 4, by - 16, 'rgba(40,24,48,.95)', 8, '600');
-  // the cabin: cover tied down over the back, a dark window, the hatch with two padlocks
-  box(x, c - 34, by - 54, 50, 30, mix([180, 172, 160], [110, 100, 104], p), 'rgba(' + O + ',.65)');
-  box(x, c - 30, by - 50, 16, 10, 'rgba(20,24,30,.92)', 'rgba(' + O + ',.4)');
+  const by = y(0) + bob;
+  // the boat (the kit's cabin boat): hull, waterline stripe, its hand-painted name, the cabin and the bare mast
+  placed(x, c, y(0), 1, () => drawBoat(x, 'cabin', { t: V.t, heave: -bob, paint: mix([214, 206, 190], [130, 120, 124], p), trim: mix([180, 172, 160], [110, 100, 104], p), name: 'NOT FISHING' }));
+  // the cover tied down over the back, the hatch with two padlocks
   box(x, c - 8, by - 50, 14, 24, '#3a2a22', 'rgba(' + O + ',.5)');
   x.fillStyle = '#d8b040'; x.fillRect(c + 2, by - 40, 3, 4); x.fillRect(c + 2, by - 34, 3, 4);
   x.fillStyle = '#4a5a3a'; x.fillRect(c + 18, by - 40, 40, 14);
@@ -176,8 +171,7 @@ function boat(x: CanvasRenderingContext2D, V: View, hover: string | null, p: num
   box(x, c - 30, by - 37, 16, 11, 'rgba(232,222,196,.92)');
   for (let k = 0; k < 3; k++) { x.fillStyle = 'rgba(40,20,10,.6)'; x.fillRect(c - 28, by - 35 + k * 3, 12, 1); }
   x.fillStyle = 'rgba(' + RED + ',.9)'; x.fillRect(c - 19, by - 30, 4, 3);
-  // the mast with no flag, the mooring line to the post
-  x.fillStyle = '#2a1d14'; x.fillRect(c - 22, by - 88, 2, 34);
+  // the mooring line to the post
   x.strokeStyle = 'rgba(200,180,140,.6)'; x.beginPath(); x.moveTo(c - 58, by - 22); x.quadraticCurveTo(c - 70, by - 8, c - 76, y(8)); x.stroke();
   tell(x, V.t, c + 58, by - 22, 6);
   if (hover === 'boat') glow(x, c - 60, by - 54, 124, 54);

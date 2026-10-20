@@ -3,8 +3,8 @@ import type {VehiclePreviewState}from'../../src/ssg/game/authoring/vehicle-workb
 import {VEHICLE_FAMILIES,VEHICLE_MATRIX}from'../../src/ssg/game/authoring/inventories/S10';
 import{drawCar,drawTruck,drawStraddle,drawReachStacker,drawForklift,type CarKind}from'../../src/ssg/game/art/vehicles/vehicles';
 import{drawCraft,drawDrone,drawBlimp,type CraftKind}from'../../src/ssg/game/art/vehicles/air-traffic';
-import{drawCab}from'../../src/ssg/game/art/vehicles/cab';
-import{drawPlatformTrain}from'../../src/ssg/game/art/vehicles/platform-train';
+import{drawCab}from'../../src/ssg/game/art/vehicles/air-traffic';
+import{drawPlatformTrain}from'../../src/ssg/game/art/vehicles/rail';
 import{drawMetroCar}from'../../src/ssg/game/art/vehicles/train-car';
 import{drawSkyShips}from'../../src/ssg/game/art/environment/sky-ships';
 import{SPR}from'../../src/ssg/game/art/core/sprites';
@@ -42,7 +42,7 @@ export function paintVehicleNativeReference(ctx:CanvasRenderingContext2D,s:Vehic
   else if(id==='blimp')drawBlimp(ctx,{t,still:s.reduced});
   else drawCraft(ctx,id as CraftKind,{t,still:s.reduced,face:s.facing,scale,paint:s.paint,box:s.cargo?box:null,beam:s.lights});
  }else if(s.id==='cab.legacy')drawCab(ctx,0,0,1,t);
- else if(s.id.startsWith('fleet.'))drawSkyShips(ctx,v,[{sprite:SPR[id as 'spinner'|'freighter'|'drone'],ps:2,y:68,speed:s.speed/60,offset:W/2+130,flip:s.facing<0,depth:.55}]);
+ else if(s.id.startsWith('fleet.'))drawSkyShips(ctx,v,[{kind:({spinner:'pod',freighter:'hauler',drone:'drone'} as const)[id as 'spinner'|'freighter'|'drone'],ps:2,y:68,speed:s.speed/60,offset:W/2+130,flip:s.facing<0,depth:.55}]);
  else if(s.id==='train.platform')drawPlatformTrain(ctx,v,{x:40,open:s.doors,moving:s.doors===0,riderSeed:s.passengers?s.seed:0,destination:'GALLERIA'});
  else if(s.id==='train.metro')drawMetroCar(ctx,0,h=>-h,{t,c:0,seed:s.passengers?s.seed:s.seed+1,dest:'GALLERIA',ox:offset,plate:'CAR 3',still:s.reduced});
  else if(s.id==='train.interior'){

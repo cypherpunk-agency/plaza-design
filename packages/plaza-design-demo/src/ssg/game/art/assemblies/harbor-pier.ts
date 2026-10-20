@@ -6,6 +6,9 @@ import { drawTaxiPad } from './taxi-pad';
 import { gullFlying } from "../characters/gull";
 import { box,C,drawTowers,exitDoor,GREEN,notice,O,onScreen,PAPER,RED,rng,sign,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
+import { drawBoat } from "../vehicles/boats";
+import { drawForklift, drawTruck, PORT_TRAILER_SCALE } from "../vehicles/vehicles";
+import { bobAt, laneAt, type Lane } from "../vehicles/kit";
 import { drawHorizon,drawSkyDepth,drawWater,HZ } from "../environment/harbor-distance";
 import { drawGantry,GANTRIES } from "../machinery/crane";
 import { CH,container,PAL,type Crate } from "../props/containers";
@@ -35,69 +38,33 @@ const HANGING3=inputs.loads[1];
 
 
 const y0=(v:View,h:number)=>v.y(h);
+/** The harbor's boats and machines draw through the vehicle kit (boats.ts, vehicles.ts); routes and timing stay the harbor's. */
+const PATROL_LANE: Lane = { mode: 'run', dir: 1, speed: 3600 / 1700, length: 3600, dwell: 900 };
+const FERRY_LANE: Lane = { mode: 'loop', dir: 1, speed: 0.16, length: 2600 };
+/** The forklift a little over the port scale, so it still reads beside the harbor's people. */
+const FORKLIFT_SCALE = 0.55;
 function drawLampBoat(x:CanvasRenderingContext2D,v:View){
   const s = v.sx(1650, 0.3), wl = y0(v, 56);
   if (!onScreen(v, s - 30, 60)) return;
-  const bob = Math.round(Math.sin(v.t * 0.03) * 1);
-  x.fillStyle = '#050403'; x.beginPath(); x.moveTo(s - 22, wl - 5 + bob); x.lineTo(s + 22, wl - 5 + bob); x.lineTo(s + 17, wl + bob); x.lineTo(s - 18, wl + bob); x.closePath(); x.fill();
-  x.fillRect(s - 6, wl - 11 + bob, 12, 6); x.fillRect(s + 2, wl - 22 + bob, 1, 11);
-  const u = v.t % 1100, on = u < 150 ? (u % 50) < 36 : false;
-  x.fillStyle = on ? 'rgba(255,230,170,.95)' : 'rgba(255,230,170,.12)'; x.fillRect(s + 1, wl - 24 + bob, 3, 3);
-  if (on) {
-    const g = x.createRadialGradient(s + 2, wl - 22, 1, s + 2, wl - 22, 18);
-    g.addColorStop(0, 'rgba(255,230,170,.25)'); g.addColorStop(1, 'rgba(255,230,170,0)');
-    x.fillStyle = g; x.fillRect(s - 16, wl - 40, 36, 36);
-    x.fillStyle = 'rgba(255,230,170,.2)'; for (let i = 0; i < 4; i++) x.fillRect(s - 1 + Math.sin(v.t * 0.05 + i) * 2, wl + 2 + i * 3, 5, 1);
-  }
-
+  placed(x, s, wl, 1, () => drawBoat(x, 'lamp', { t: v.t, heave: -bobAt(v.t, 1), lamp: 'signal' }));
 }
 function drawPatrol(x:CanvasRenderingContext2D,v:View){
-  const P = 2600, u = v.t % P, run = 1700;
-  if (u > run) return;
-  const bx = -500 + (u / run) * 3600, s = v.sx(bx, 0.5), wl = v.y(46), bob = Math.round(Math.sin(v.t * 0.05));
+  const at = laneAt(PATROL_LANE, v.t);
+  if (!at.visible) return;
+  const s = v.sx(-500 + at.offset, 0.5), wl = v.y(46);
   if (!onScreen(v, s - 140, 280)) return;
-  // the searchlight on the water ahead of it
-  const sw = Math.sin(v.t * 0.02) * 60;
-  const g = x.createLinearGradient(s + 30, wl - 30, s + 150 + sw, wl + 4);
-  g.addColorStop(0, 'rgba(235,240,255,.22)'); g.addColorStop(1, 'rgba(235,240,255,.02)');
-  x.fillStyle = g; x.beginPath(); x.moveTo(s + 32, wl - 30 + bob); x.lineTo(s + 120 + sw, wl + 6); x.lineTo(s + 190 + sw, wl + 6); x.closePath(); x.fill();
-  x.fillStyle = 'rgba(235,240,255,.18)'; x.fillRect(Math.round(s + 120 + sw), wl + 4, 70, 2);
-  // wake
-  for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(220,230,240,' + (0.12 - i * 0.018) + ')'; x.fillRect(Math.round(s - 70 - i * 18 + Math.sin(v.t * 0.06 + i) * 3), wl + 1 + (i % 2), 20 - i * 2, 1); }
-  // hull, cabin, mast
-  x.fillStyle = '#20232a'; x.beginPath(); x.moveTo(s - 66, wl - 12 + bob); x.lineTo(s + 58, wl - 12 + bob); x.lineTo(s + 70, wl - 16 + bob); x.lineTo(s + 56, wl + bob); x.lineTo(s - 62, wl + bob); x.closePath(); x.fill();
-  x.strokeStyle = 'rgba(200,205,215,.3)'; x.stroke();
-  box(x, s - 30, wl - 26 + bob, 52, 14, '#22262e', 'rgba(200,205,215,.3)');
-  x.fillStyle = 'rgba(235,240,255,.55)'; for (let i = -24; i < 18; i += 9) x.fillRect(s + i, wl - 22 + bob, 6, 4);
-  x.fillStyle = '#2a2e36'; x.fillRect(s - 4, wl - 40 + bob, 2, 14); x.fillRect(s + 24, wl - 30 + bob, 8, 5);
-  x.fillStyle = Math.floor(v.t / 14) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.25)'; x.fillRect(s - 5, wl - 43 + bob, 4, 3);
-  text(x, 'REGISTRY MARINE', s - 4, wl - 6 + bob, 'rgba(' + PAPER + ',.4)', 7, '600');
-  x.fillStyle = 'rgba(' + RED + ',.7)'; x.fillRect(s - 60, wl - 9 + bob, 6, 2);
-
+  placed(x, s, wl, 1, () => drawBoat(x, 'patrol', { t: v.t, heave: -bobAt(v.t, 1, 0.05), searchlight: true, wake: true }));
 }
 function drawFerry(x:CanvasRenderingContext2D,v:View){
-  const { t, y } = v, fspan = 2600, fx = ((t * 0.16) % fspan) - 400, f = v.sx(fx, 0.45), wl = y(34);
+  const f = v.sx(laneAt(FERRY_LANE, v.t).offset - 400, 0.45), wl = v.y(34);
   if (!onScreen(v, f - 100, 200)) return;
-  x.fillStyle = '#0a0705'; x.beginPath(); x.moveTo(f - 96, wl - 14); x.lineTo(f + 96, wl - 14); x.lineTo(f + 84, wl); x.lineTo(f - 88, wl); x.closePath(); x.fill();
-  x.strokeStyle = 'rgba(' + O + ',.45)'; x.stroke();
-  box(x, f - 60, wl - 28, 120, 14, '#0c0806', 'rgba(' + O + ',.35)');
-  box(x, f - 36, wl - 38, 64, 10, '#0c0806', 'rgba(' + O + ',.35)');
-  x.fillStyle = 'rgba(255,217,165,.55)';
-  for (let i = -54; i < 56; i += 8) x.fillRect(f + i, wl - 24, 4, 4);
-  for (let i = -30; i < 24; i += 8) x.fillRect(f + i, wl - 35, 4, 3);
-  x.fillStyle = 'rgba(255,217,165,.9)'; x.fillRect(f + 20, wl - 48, 2, 10); x.fillRect(f + 19, wl - 50, 4, 2);
-  text(x, 'NIGHT FERRY 7', f, wl - 8, 'rgba(' + PAPER + ',.45)', 7);
-  for (let i = 0; i < 5; i++) { x.fillStyle = 'rgba(255,217,165,' + (0.07 - i * 0.012) + ')'; x.fillRect(f - 56 + Math.sin(t * 0.05 + i) * 2, wl + 2 + i * 3, 112, 1); }
-
+  placed(x, f, wl, 1, () => drawBoat(x, 'ferry', { t: v.t, reflection: true }));
 }
 function archChassis(x:CanvasRenderingContext2D,v:View){
   const { sx, y } = v, A = L.arch, a0 = sx(A.x0), a1 = sx(A.x1);
   if (!onScreen(v, a0 - 20, a1 - a0 + 60)) return;
-  // the chassis and its container, inching through
-  const cw = sx(A.x0 + 11);
-  box(x, cw - 4, y(12), 136, 4, '#2a2622', 'rgba(220,200,160,.5)');
-  for (const k of [6, 18, 104, 116]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(cw + k, y(5), 5, 0, 7); x.fill(); x.strokeStyle = 'rgba(220,200,160,.4)'; x.stroke(); }
-
+  // the customs chassis (a trailer without its tractor), its container inching through
+  placed(x, sx(A.x0 + 11) + 64, y(0), PORT_TRAILER_SCALE, () => drawTruck(x, { t: v.t, paint: '#2a2622', box: null, tractor: false }));
 }
 function archScan(x:CanvasRenderingContext2D,v:View){
   const { sx, y, t } = v, A = L.arch, a0 = sx(A.x0), a1 = sx(A.x1);
@@ -254,22 +221,12 @@ function bondedFence(x:CanvasRenderingContext2D,v:View){const {sx,y,t}=v,F=L.fen
   void t;void y;
 
 }
-function forkliftBody(x:CanvasRenderingContext2D,v:View){const fwx=inputs.visual.forklift.x,dir=inputs.visual.forklift.dir,s=v.sx(fwx),{y}=v;if(!onScreen(v,s-50,100))return;const front=s+dir*18;void front;  // mast, forks and a pallet of sacks
-  box(x, front - (dir > 0 ? 0 : 4), y(46), 4, 46, '#2a2622', 'rgba(220,200,160,.5)');
-  const lift = 6 + Math.round(Math.sin(v.t * 0.01) * 2);
-  x.fillStyle = '#5a5048'; x.fillRect(dir > 0 ? front + 4 : front - 22, y(lift), 18, 2);
-  box(x, dir > 0 ? front + 4 : front - 22, y(lift + 14), 18, 12, '#6a5034', 'rgba(255,217,165,.4)');
-  // body, counterweight, wheels
-  box(x, s - 18, y(18), 36, 12, '#5a4210', 'rgba(' + YELLOW + ',.7)');
-  box(x, s - dir * 18 - (dir > 0 ? 6 : 0), y(22), 6, 16, '#3a2a0a', 'rgba(' + YELLOW + ',.5)');
-  for (const wx of [-11, 11]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(s + wx, y(5), 5, 0, 7); x.fill(); x.strokeStyle = 'rgba(220,200,160,.4)'; x.stroke(); }
-
+/** The forklift in two parts so the composition layers its driver between them; its pose (x, direction) comes from the scene. */
+function forklift(x:CanvasRenderingContext2D,v:View,part:'body'|'roof'){const {x:fwx,dir}=inputs.visual.forklift,s=v.sx(fwx);if(!onScreen(v,s-50,100))return;
+  placed(x, s + dir * 5, v.y(0), FORKLIFT_SCALE, () => drawForklift(x, { t: v.t, face: dir, part, load: true, lift: 0.08 + 0.05 * Math.sin(v.t * 0.01), paint: '#c89a1c' }));
 }
-function forkliftRoof(x:CanvasRenderingContext2D,v:View){const fwx=inputs.visual.forklift.x,dir=inputs.visual.forklift.dir,s=v.sx(fwx),{y}=v;if(!onScreen(v,s-50,100))return;const front=s+dir*18;void front;  // the roof cage over the driver, a beacon on it
-  x.strokeStyle = 'rgba(220,200,160,.6)'; x.beginPath(); x.moveTo(s - 14.5, y(18)); x.lineTo(s - 14.5, y(56)); x.lineTo(s + 12.5, y(56)); x.lineTo(s + 12.5, y(18)); x.stroke();
-  x.fillStyle = Math.floor(v.t / 10) % 2 ? 'rgba(255,170,40,.95)' : 'rgba(255,170,40,.3)'; x.fillRect(s - 2, y(60), 4, 3);
-
-}
+function forkliftBody(x:CanvasRenderingContext2D,v:View){forklift(x,v,'body');}
+function forkliftRoof(x:CanvasRenderingContext2D,v:View){forklift(x,v,'roof');}
 function hutBack(x:CanvasRenderingContext2D,v:View){const {sx,y,t}=v,hx=sx(L.hut.x);if(!onScreen(v,hx,L.hut.w))return;void t;void y;  box(x, hx, y(L.hut.h), L.hut.w, L.hut.h, '#140b06', 'rgba(' + O + ',.8)');
   box(x, hx + 40, y(60), 28, 24, '#2a1a0c', 'rgba(' + O + ',.6)');
   x.save(); x.beginPath(); x.rect(hx + 41, y(60) + 1, 26, 22); x.clip();

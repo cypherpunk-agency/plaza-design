@@ -40,6 +40,13 @@ size, parallax and dimming by hand:
 | Play | 3 | 1 | 1 | 0 | the player's band; everything the player can use |
 | Near | 5 | 1⅔ | 1.3 | 0.78 | in front of the play band, a dark silhouette (Market's foreground) |
 
+**One vehicle kit (2026-10-20).** Ground (`vehicles.ts`), air (`air-traffic.ts`), water (`boats.ts`)
+and rail (`rail.ts`, `train-car.ts`) vehicles live in `art/vehicles/` and share `kit.ts`: lane motion,
+depth-band painting and fleet liveries (stripe, number, QR plate; autonomous fleet cars and craft
+carry a roof sensor puck and a status light bar). Scenes draw boats, taxis, vans, chassis, forklifts
+and straddle carriers through these kernels rather than their own copies; the port scenes, drawn
+below true scale, place them with `PORT_SCALE`.
+
 People change size only in whole pixels, so Far and Back share pixel size 2 and differ in
 parallax and darkness. Vehicles scale smoothly but use the same factor, so a back-band bus
 matches back-band people. Something the player can use belongs in the play band. "Custom" is

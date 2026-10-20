@@ -5,7 +5,9 @@ import { lightAt } from '../../world/light';
 import type { Element,Field,Value } from '../core/composition';
 import { box,onScreen,text } from '../core/primitives';
 import { container } from '../props/containers';
-import { createContainerTerminalArtwork,type ArtworkInputs } from './container-terminal';
+import { createContainerTerminalArtwork,STRADDLE_LANE,type ArtworkInputs } from './container-terminal';
+import { DEPTH_BANDS } from '../core/depth';
+import { laneAt } from '../vehicles/kit';
 import { validateTerminalVisual,type TerminalVisual } from './terminal-state';
 const n=(label:string,value:number):Field=>({kind:'number',label,default:value,min:-10000,max:10000,step:1});
 export const emptyTerminalVisual:TerminalVisual={width:1760,horizon:76,layer:'all',hover:'',now:0,departed:false,boxAt:'stack',loaded:0,scratch:{},portFrozen:false,watchdogs:[],trolley:{x:0,h:120,carry:0},geometry:{X:{rest:0,slot:0,chassis:0,gate:0,hatch:0,deck:0},H:{carry:120,chassis:14,slot:58,deck:4,hold:-64}},layout:{blocks:[],ladder:0,quay:0,kiosk:0,bridge:{x0:0},boom:206},light:lightAt(1,0,90,null),deckReefer:false,loadVisible:false,ferryVisible:false};
@@ -67,7 +69,7 @@ for(const e of terminalElements){e.bindingIdentity='presentation';const id=e.typ
  if(id==='carried-load')e.bounds=(_p,state)=>{const s=(state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual;return{x:s.trolley.x-64,h:s.trolley.h+58,w:128,tall:s.trolley.carry?58:0};};
  if(id==='chassis'){e.bounds=(_p,state)=>{const s=(state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual,taken=s.scratch.liftT0!==undefined&&s.scratch.liftKind===1&&s.now-s.scratch.liftT0>1000;return{x:-68,h:taken?12:s.geometry.H.chassis+58,w:136,tall:taken?12:s.geometry.H.chassis+58};};e.anchors=(_p,state)=>({origin,load:{x:0,h:((state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual).geometry.H.chassis,role:'surface'}});}
  if(id==='watchdog')e.bounds=(_p,state,c)=>{const s=(state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual,d=s.watchdogs[0];if(!d)return{x:0,h:0,w:0,tall:0};const at:Record<string,number>={port:s.geometry.X.gate-4,sts2:s.layout.ladder+40,ferry:s.layout.kiosk+6},k=d.progress*d.progress*(3-2*d.progress),x=(d.at?at[d.at]:at[d.from]+(at[d.to]-at[d.from])*k)-(c?.placement.x??0),hh=d.at?132+Math.sin((c?.view.t??0)*.05)*3:150+Math.sin(Math.PI*d.progress)*24;return{x:x-(d.at?26:17),h:hh+13,w:d.at?52:34,tall:d.at?hh+13:18};};
- if(id==='straddle')e.bounds=(_p,_s,c)=>{const t=c?.view.t??0,u=t%2200,k=u<800?u/800:u<1100?1:u<1900?1-(u-1100)/800:0,ease=k*k*(3-2*k),world=(c?.placement.x??1060)-270*ease;return c?screenBounds(c,{x:c.view.sx(world,.92)-36,y:c.view.y(c.placement.h+110),w:72,h:110},{x:-36,h:110,w:72,tall:110}):{x:-36,h:110,w:72,tall:110};};
+ if(id==='straddle')e.bounds=(_p,_s,c)=>{const at=laneAt(STRADDLE_LANE,c?.view.t??0),world=(c?.placement.x??1060)-STRADDLE_LANE.length+at.offset;return c?screenBounds(c,{x:c.view.sx(world,DEPTH_BANDS.back.parallax)-52,y:c.view.y(c.placement.h+108),w:104,h:108},{x:-52,h:108,w:104,tall:108}):{x:-52,h:108,w:104,tall:108};};
  if(id==='bulwark')e.bounds=(_p,state,c)=>{const s=(state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual;return{x:10,h:17,w:Math.max(0,s.layout.bridge.x0-(c?.placement.x??s.layout.quay)-10),tall:17};};
  if(id==='hull')e.bounds=(_p,state)=>{const s=(state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual;return{x:-8,h:0,w:s.width+20-s.layout.quay+2,tall:40};};
  if(id==='reefer-outline')e.bounds=(_p,state)=>({x:-67,h:((state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual).geometry.H.deck+60.5,w:134,tall:62});

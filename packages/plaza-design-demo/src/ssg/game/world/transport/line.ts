@@ -1,7 +1,7 @@
 import {validateMetroSnapshot,type MetroSnapshot,type MetroRide} from './metro-snapshot';
 export type {RidePhase} from './metro-snapshot';
 import {METRO_SOURCE,validateMetroSource,type MetroSource} from './metro-source';
-import { PLATFORM_TRAIN, type PlatformTrainVisual } from '../../art/vehicles/platform-train';
+import { PLATFORM_TRAIN, type PlatformTrainVisual } from '../../art/vehicles/rail';
 
 import type { DepartureVisual } from '../../art/signage/line-departures';
 import * as defaultCity from '../city';

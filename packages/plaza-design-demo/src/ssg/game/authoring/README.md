@@ -177,15 +177,21 @@ from resolved transforms/visibility/anchors. Cinematic-only pieces open their na
 context; conditional or non-painting pieces report invisible snapshots. See the
 [stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
 
-Characters and Vehicles open on a **Lineup**: up to eight variants (or every placeable road
-vehicle) side by side at true scale next to the player, on a metre ruler, with a **Depth** band
+Characters and Vehicles open on a **Lineup**: up to eight variants (or every placeable vehicle of
+one **Class**: Ground, Air, Water, Rail) side by side at true scale next to the player, on a metre ruler, with a **Depth** band
 switch (Far, Back, Play, Near; see ART-GUIDE §2 and `art/core/depth.ts`). Clicking one opens it in
 **Single** view. Actors in Logic use the same **Depth** choice instead of separate pixel size,
 parallax and dimming ("custom" shows those numbers), and their action list offers the actions their
 body really animates (`KIT_ACTS` in `runtime/characters.ts`; a value a scene already uses stays
-selectable). **Road vehicle** (`vehicle.road`) places a car, cab, van, bus, truck, yard tractor or
-forklift in any scene: parked (optionally with the driver's door open) or driving along a lane,
-with turning wheels and exhaust, at a depth band.
+selectable). The vehicle kit has four placeable classes, all at true scale and a depth band, sharing
+one lane motion (`art/vehicles/kit.ts`: parked, loop, shuttle out and back, one-way runs with a gap)
+and one livery set (fleet stripe, number, QR plate, decal, autonomy sensor puck and status bar):
+**Road vehicle** (`vehicle.road`: car, cab, van, bus, truck, yard tractor, trailer, straddle carrier,
+reach stacker, forklift; door, cargo, lift/reach pose), **Air vehicle** (`vehicle.air`: pods, sky
+taxis, patrol, shuttle, hauler, medevac, dropship, escort, drone, blimp; altitude, hover bob, strobe
+phase, cargo, searchlight, lit fans), **Boat** (`vehicle.boat`: lamp boat, cabin boat, patrol, ferry;
+waterline, bob, wake, reflection, searchlight, lamp, nav lights, name) and **Train** (`vehicle.rail`:
+platform or metro cars, car count, doors, rider seed, destination board, plate).
 
 Open one workbench panel at a time. Characters offers the supported humans, animals and robots,
 appearance controls and actual native animation inputs. Vehicles offers ground, flying, rail
