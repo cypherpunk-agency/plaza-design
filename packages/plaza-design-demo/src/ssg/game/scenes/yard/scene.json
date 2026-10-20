@@ -66,7 +66,11 @@
     }
   ],
   "manifest": {
-    "devices": {"cam": "device-cam", "crane": "device-crane", "gate": "device-gate"},
+    "devices": {
+      "cam": "device-cam",
+      "crane": "device-crane",
+      "gate": "device-gate"
+    },
     "version": 1,
     "width": {
       "instance": "side-walls",
@@ -78,6 +82,20 @@
     "rests": {},
     "exits": {
       "downtown": "exit-downtown"
+    },
+    "artwork": {
+      "tray": "tray"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "groundSpawn": false,
+      "omitGroundRestHeight": true
     }
   },
   "actors": [],
@@ -128,6 +146,14 @@
         },
         "rest": "sleep"
       }
+    ]
+  },
+  "stage": {
+    "mechanisms": [
+      "yardCrane"
+    ],
+    "targetAnchors": [
+      "tray"
     ]
   }
 }

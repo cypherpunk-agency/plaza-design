@@ -7,9 +7,6 @@ import s0scene from './capsule/scene.json';
 import s1data from './downtown/devices.json';
 import s1art from './downtown/composition.json';
 import s1scene from './downtown/scene.json';
-import s3data from './yard/devices.json';
-import s3art from './yard/composition.json';
-import s3scene from './yard/scene.json';
 import s5data from './beach/devices.json';
 import s5art from './beach/composition.json';
 import s5scene from './beach/scene.json';
@@ -26,7 +23,6 @@ import s17scene from './sandbox/scene.json';
 export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Composition;scene:SceneDocument}>={
  capsule:{devices:s0data as unknown as SceneData,composition:s0art as unknown as Composition,scene:s0scene as unknown as SceneDocument},
  downtown:{devices:s1data as unknown as SceneData,composition:s1art as unknown as Composition,scene:s1scene as unknown as SceneDocument},
- yard:{devices:s3data as unknown as SceneData,composition:s3art as unknown as Composition,scene:s3scene as unknown as SceneDocument},
  beach:{devices:s5data as unknown as SceneData,composition:s5art as unknown as Composition,scene:s5scene as unknown as SceneDocument},
  metro:{devices:s13data as unknown as SceneData,composition:s13art as unknown as Composition,scene:s13scene as unknown as SceneDocument},
  train:{devices:s16data as unknown as SceneData,composition:s16art as unknown as Composition,scene:s16scene as unknown as SceneDocument},

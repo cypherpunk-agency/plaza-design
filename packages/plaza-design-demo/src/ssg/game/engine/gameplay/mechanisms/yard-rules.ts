@@ -1,8 +1,8 @@
 /** Yard gameplay outcomes are authored commands, queries and SceneTime deadlines.
  * This module retains the camera panel's native schema requirements only. */
 
-import type { SceneData } from "../../data/types";
-import type { SceneRules } from "../../engine/rules";
+import type { SceneData } from "../../../data/types";
+import type { SceneRules } from "../../rules";
 
 // ---------- the contract with yard.json ----------
 

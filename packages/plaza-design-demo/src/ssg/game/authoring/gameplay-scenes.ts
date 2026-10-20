@@ -8,7 +8,7 @@ import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
 import type {Composition,Environment} from '../art';
-import {CAPSULE,YARD,type SceneData} from '../data';
+import {CAPSULE,type SceneData} from '../data';
 import {downtownScene} from '../scenes/downtown';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
 import {beachScene} from '../scenes/beach';
@@ -18,8 +18,6 @@ import {sandboxScene} from '../scenes/sandbox';
 import {content as sandboxContent} from '../scenes/sandbox/scene-document';
 import {capsuleScene} from '../scenes/capsule';
 import {content as capsuleContent} from '../scenes/capsule/scene-document';
-import {yardScene} from '../scenes/yard';
-import {content as yardContent} from '../scenes/yard/scene-document';
 import {metroScene} from '../scenes/metro';
 import {content as metroContent} from '../scenes/metro/scene-document';
 import {trainScene} from '../scenes/train';
@@ -38,14 +36,12 @@ const capsuleWithDevices=(...args:DeviceSourceArguments)=>capsuleScene(args[0],a
 const sandboxWithDevices=(...args:DeviceSourceArguments)=>sandboxScene(args[0],args[1],args[2],args[5],args[3],args[4],args[6]);
 const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
 const beachWithDevices=(...args:DeviceSourceArguments)=>beachScene(args[0],args[1],args[2],args[4],args[3],args[6],args[5]);
-const yardWithDevices=(...args:DeviceSourceArguments)=>yardScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const trainWithDevices=(...args:DeviceSourceArguments)=>trainScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const definitions=[
  {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
  {id:'beach',prefix:'beach',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateBeachScene,validateGameplay:validateBeachGameplay,definition:beachAuthoredScene,definitionWithDevices:beachWithDevices},
  {id:'sandbox',prefix:'sandbox',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:sandboxContent.validateScene,validateGameplay:sandboxContent.validateGameplay,definition:sandboxAuthoredScene,definitionWithDevices:sandboxWithDevices},
  {id:'capsule',prefix:'capsule',bindingGroups:['uses','readables','rests','exits'] as const,data:CAPSULE,validateScene:capsuleContent.validateScene,validateGameplay:capsuleContent.validateGameplay,definition:capsuleScene,definitionWithDevices:capsuleWithDevices},
- {id:'yard',prefix:'yard',bindingGroups:['uses','readables','rests','exits'] as const,data:YARD,validateScene:yardContent.validateScene,validateGameplay:yardContent.validateGameplay,definition:yardScene,definitionWithDevices:yardWithDevices},
 
  {id:'metro',prefix:'metro',validateScene:metroContent.validateScene,validateGameplay:metroContent.validateGameplay,definition:metroAuthoredScene},
  {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene,definitionWithDevices:trainWithDevices},
