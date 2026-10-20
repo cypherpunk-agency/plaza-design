@@ -5,6 +5,13 @@ ENG IDs do not renumber story M1-M9 or completed artwork/workbench S0-S13.
 The target is one programmable world with specialized simulation and presentation subsystems.
 Current implementation is a foundation, not a reason to start again.
 
+## Current use
+
+All19-scene consolidation completed2026-10-20; see ENGINE-CONSOLIDATION-STATUS.md.
+Use [ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md) to extend the current system.
+The dated starting-foundation/gap tables below are execution history, not a current backlog.
+ROADMAP.md still owns future priorities.
+
 ## Authorized all-game consolidation (2026-10-18)
 
 [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md) supersedes the smaller proposal:

@@ -1,14 +1,15 @@
 # Game module organization
 
-The directories express ownership. This is an evolving structure; the scene-system plan at
-the game root tracks the artwork and composer work still outstanding.
+The directories express ownership. For current extension recipes read
+[ENGINE-HANDBOOK.md](./ENGINE-HANDBOOK.md) and [AGENTS.md](../../AGENTS.md).
+The all19-scene consolidation is complete; historical pilot descriptions are not current limits.
 
 | Location | Owns |
 | --- | --- |
 | `index.ts` at the game root | Homepage integration and launch controls |
 | `runtime/` | Game lifecycle, input/movement orchestration, saves, slots, audio and actor simulation |
-| `engine/` | Reusable device execution, signals, rules, scene time and hacking interfaces |
-| `scenes/<id>/` | One location's definition, local effects/rules, data, layout and interactions |
+| `engine/` | Shared commands, conditions, conversations, purchases and state; device execution, signals, scene time and hacking interfaces |
+| `scenes/<id>/` | Authored scene/gameplay/device/composition definitions, source adapters and registered physical/presentation primitives |
 | `world/` | Geography, climate, clock, lighting and transport shared between locations |
 | `story/` | Cross-scene progression, contacts and presentation controllers |
 | `art/` | Procedural artwork and visual construction/composition contracts |
@@ -25,25 +26,24 @@ and execution ledger. New location code belongs in its scene package, not at the
 ## Packaging logic
 
 A reusable mechanism belongs in `engine/`: evaluating a condition, sending a signal, delaying
-an action or running a device verb. A particular machine's story effect belongs beside its
-scene: `scenes/stacks/rules.ts`, for example, decides what loading that ferry means.
+an action or running a device verb. A particular machine's story conditions/rewards/dialogue belong in its scene's authored
+gameplay document. Native rules retain physical calculation and observation, not an alternate
+story evaluator. Stacks lift/return outcomes, for example, are shared source commands.
 Cross-location timetables belong in `world/transport/`; campaign progression belongs in
 `story/`. Do not put unrelated logic in a generic helpers directory.
 
-`engine/gameplay/` owns the shared command/event/conversation pilot. Scene-owned gameplay
-documents define operations; `runtime/game.ts` supplies their player-state ports. Native
-device rules may call the same commands through explicit adapters. The isolated editor
-Gameplay laboratory demonstrates this without extending S13 source editing. See
-[GAMEPLAY-SYSTEM.md](./GAMEPLAY-SYSTEM.md) for implemented scope and limitations.
+`engine/gameplay/` owns the common command, condition, event, conversation, commerce and state
+contracts across all19 scenes. The runtime supplies player/world ports; native device integration
+uses explicit authorized bindings to the same owner blocks. Ordinary content is not a pilot-only
+capability. engine/shell.ts is the shared terminal adapter onto SceneModel.
 
-`authoring/play-workbench.ts` owns the editor's disposable sandboxed Game frame;
-`play-frame.ts` constructs Harbor Shift or Sandbox from pending immutable content and authored
-`play-fixtures`. `scene-authoring.ts` edits the Harbor scene document compiled by
-`engine/gameplay/scene-document.ts`. Native inspection exposes bounded evaluator history and
-read-only timer/signal/clock/device snapshots; it is enabled only for editor Game hosts. The
-`runtime/storage.ts` boundary selects private memory in that realm and native storage in
-shipping pages. `ui/touch-controls.ts` is shared by the homepage and Play entry. Runtime state
-inspection returns copies; it does not expose control hooks or mutate source documents.
+`authoring/play-workbench.ts` owns disposable sandboxed Game frames. Pending scene/gameplay/
+device/world documents feed the actual native Game and authored Play fixtures. All19 existing
+scenes and catalogue-created ordinary scenes use that route. Typed source editing uses one
+ComposerModel history, validated portable bundles and protected grouped source Save. Native
+inspection returns bounded copies; it does not mutate source or supply a second evaluator.
+`runtime/storage.ts` selects private memory for opaque-origin Play and native storage for the
+shipping mode. `ui/touch-controls.ts` is shared by the homepage and Play entry.
 
 `scenes/kit.ts` defines the shared scene contract. Rule factories receive the neutral
 `runtime/player.ts` services contract; they do not import Downtown's implementation or the
@@ -58,8 +58,8 @@ The old `level.ts` mixed several owners. Its responsibilities are now:
 | Launch modes and storage key selection | `runtime/mode.ts` |
 | Player save schema, initialization, loading and persistence | `runtime/save.ts` |
 | Downtown world coordinates and readable/NPC placement | `scenes/downtown/layout.ts` |
-| Downtown NPC/fixer dialogue | `scenes/downtown/dialogue.ts` |
-| Downtown objective selection | `scenes/downtown/progression.ts` |
+| Downtown NPC/fixer dialogue | `scenes/downtown/scene.json` and `gameplay.json`, compiled into shared conversations |
+| Downtown objectives/progress markers | Authored objectives and gameplay onPersist triggers, shared evaluators |
 | Deck command execution and completion | `ui/terminal/commands.ts` |
 
 Filesystem moves do not rename scene IDs, storage keys, device/noun/verb/event IDs,
@@ -101,9 +101,9 @@ and gameplay handoffs; their pictures use `art/sequences/`. Preview seeking uses
 
 The editor uses these same scene factories, native frame path and sequence dispatchers through
 `authoring/scene-adapters.ts`, `native-preview.ts` and `sequence-preview.ts`. The source allowlist is
-`authoring/source-documents.ts`: 19 scenes, four sequence compositions and two timelines. Validated
-saves update those JSON sources; they do not change TypeScript, player saves or world geography.
-The world panel derives its inspection model from `world/city.ts` and current source documents.
+`authoring/source-documents.ts`: composition, scene, gameplay, devices, world/network/transport,
+fixtures and timeline documents. Validated saves update those authored sources, including supported
+world edits; they do not rewrite TypeScript or player saves. World uses the same source model.
 
 See [local composer instructions](../../authoring/README.md) for startup and save behavior and
 [the execution ledger](../../SCENE-SYSTEM-STATUS.md) for accepted coverage and remaining gates.
