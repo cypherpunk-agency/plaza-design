@@ -141,7 +141,7 @@ export function paintBoatVehicle(ctx: CanvasRenderingContext2D, raw: Properties,
 }
 
 export const boatVehicleElement: Element = {
-  type: 'vehicle.boat', version: 1, label: 'Boat', category: 'vehicles', parts: ['backdrop'], fields,
+  type: 'vehicle.boat', libraryUse: 'reusable', version: 1, label: 'Boat', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);
     return bandBounds(props, BOAT_EXTENT[kindOf(props)], offset, Number(props.waterline), context);

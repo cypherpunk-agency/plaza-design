@@ -53,6 +53,26 @@ commit a scene transition. A runtime sequence commits its handoff once on comple
 Environmental animation uses prepared time, weather and lighting, preserving deterministic seeds.
 
 Asset, character, vehicle and signage viewers show the registered library and supported states.
+The artwork gallery separates **Structure** (Object or Composition), **Usability** (Reusable anywhere
+or Requires source context), **Kind**, District and Source. All filter sections collapse independently.
+It opens on reusable artwork. Invisible markers, light/shadow sources, the player layer and the empty
+grouping tool live in the separate **Scene helpers** section. Cutscene origin belongs under Source,
+not Structure. There are no reusable prefab compositions in the current registered catalogue; the
+empty group is a helper, not a finished composition to place.
+
+Artwork explicitly declares `Element.libraryUse: 'reusable'` only when it can be placed using its
+own authored properties and shared environment inputs, without source-scene bindings or controller
+snapshots. Current reusable entries cover buildings/attachments, authored characters/flocks, stools,
+signs and vehicles. A working gallery example, local coordinates or a shared folder is not evidence
+of that contract. Other entries remain source-context artwork until extracted and verified. Add
+buttons offer reusable entries only. Existing source-context
+instances remain editable through their scenes. The gallery fits standalone bounds, uses prepared
+context for other previews and skips black opening frames in cinematic thumbnails.
+The gallery uses display examples from `asset-examples.ts`: it shows conditional props in their
+visible state, removes character window clipping and represents invisible helpers with labeled
+diagrams. Unused artwork receives a temporary example in its source scene. These are disposable
+preview inputs, never source edits or gameplay commands. Native scene inspection retains actual
+state. Off-screen cinematic parts are reframed in a cloned composition for the gallery.
 Their catalogues live under `authoring/catalogues/`; they are current configuration, not milestone
 acceptance records. Event/source inspection describes hooks and references without executing them.
 Captured runtime observations must match the declared scene/expression before being shown as live.
@@ -65,7 +85,11 @@ district's card with its scenes on the stage, including the `downtown-next` prop
 building kit. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
 show the building, vehicle and sign kits. Kit pieces are placed from **＋ Add artwork** on the Scene
 stage like any other artwork (ART-GUIDE §2 and §12); it opens the same artwork browser as the Library,
-with the same filters, and adds a piece with its Add button or a double-click.
+with the same filters, and adds a piece with its Add button or a double-click. Kits list first, each
+followed by its **presets**: named, saved settings of a kit piece (`art/presets/kit-presets.json`,
+validated by `kit-presets.ts`), marked Preset. A placed kit piece's **Preset** section in the inspector
+saves its settings as a new preset, or updates, renames or deletes one of its kit's presets. A preset is
+only settings: what it places is an ordinary kit piece.
 
 On the Scene stage a left press on artwork selects it and drags it once the pointer moves; a left press
 on empty space deselects. Middle or right drag pans (right also covers a pen's barrel button), one
@@ -83,6 +107,21 @@ prospective whole graph and protects revisions. A source panel or preview alone 
 that edits work: verify actual private Play and the relevant Save/fresh reload/bundle/Undo paths.
 
 ## Testing and feedback
+
+For local edit profiling, open the composer with `#profile-editor`, then select the scene and
+expand **Performance · local CPU recording**. Start, make a few edits, Stop, and download JSON.
+The existing recorder measures command/validation, document copies, header/options, outline,
+inspector and timeline CPU work alongside the shared render spans. It is inactive by default.
+Local recordings may report source identity as unavailable; record the current commit/dirty state
+with the file. Timings are CPU work, not GPU completion or end-to-end presentation latency.
+
+View refreshes reuse one detached document snapshot synchronously, then discard it. Validation
+derivations are scoped to a prospective pass. `validationInputs` declares the complete immutable
+inputs read by semantic validators; a successful semantic result may be reused only while all
+those identities remain unchanged. Composition/timeline checks always run. Proposal artwork is
+excluded from gameplay dependencies because proposals borrow their base scene's gameplay; native
+scene sources and authored catalogue owners remain dependencies. Do not exclude a source that a
+validator actually reads. Protected Save still validates the complete prospective source graph.
 
 Use `?demo` for compact Purchases, Conversations and Devices & wiring examples. Review shortcuts
 jump directly to the example. The Demo world lab uses real pending definitions with disposable

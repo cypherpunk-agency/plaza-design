@@ -1,7 +1,7 @@
 import {startPerformance,stopPerformance,calibratePerformance,type PerformanceReport} from './performance';
 /** Explicit local opt-in; no telemetry endpoint and no player-save fixture changes. */
-export function mountPerformancePanel(host:HTMLElement,snapshot:()=>Record<string,unknown>=()=>({})){
-  if(!new URLSearchParams(location.search).has('perf'))return ()=>{};
+export function mountPerformancePanel(host:HTMLElement,snapshot:()=>Record<string,unknown>=()=>({}),enabled=new URLSearchParams(location.search).has('perf')){
+  if(!enabled)return ()=>{};
   const root=document.createElement('details');root.style.cssText='position:absolute;right:8px;bottom:50px;z-index:80;background:#111e;color:#eee;padding:8px;font:12px monospace;max-width:min(700px,90%);max-height:40%;overflow:auto;overflow-wrap:anywhere';
   const summary=document.createElement('summary');summary.textContent='Performance · local CPU recording';root.append(summary);
   const status=document.createElement('p');status.textContent='Use a disposable demo/editor session. Export stays local.';root.append(status);

@@ -21,6 +21,7 @@ import {nativeGameplayScenes} from './native-gameplay-scenes';
 import {gameplayScenes} from './gameplay-scenes';
 import {validatePlayFixtures} from './play-fixtures';
 import {validatePeople} from '../art/characters/people-source';
+import {validatePresets} from './kit-presets';
 /** Explicit source allowlist shared by the local launcher and focused save checks. */
 import { art, type Composition } from '../art';
 import { validateTimeline } from '../art/core/timeline';
@@ -58,6 +59,7 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'network',file:'data/net.json',kind:'devices',validate:validateNetworkShape,validateContext:(value,documents)=>validatePendingNetwork(new Map([...documents,['network',value]]),pendingRegistry(new Map([...documents,['network',value]])))},
   {id:'authored-scenes',file:'scenes/authored.json',kind:'scene',validate:value=>validateSceneCatalogue(value,NATIVE_SCENES),validateContext:validatePendingSceneCatalogue},
   ...deviceSceneIds.map(id=>({id:deviceDocumentId(id),file:deviceSourceIdentity(id).file!,kind:(id==='sandbox'?'behavior':'devices') as 'behavior'|'devices',validate:(value:unknown)=>validateDeviceSource(id,value),validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>pendingScene(id,documents.get(id),{devices:value,sceneDocument:documents.get(deviceSourceIdentity(id).scene),gameplay:documents.get(deviceSourceIdentity(id).gameplay)},pendingNetworkContext(documents)).data})),
+  {id:'kit-presets',file:'art/presets/kit-presets.json',kind:'presets',validate:value=>validatePresets(value,art)},
   {id:'people',file:'art/characters/people.json',kind:'people',validate:validatePeople},
   {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource},
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},

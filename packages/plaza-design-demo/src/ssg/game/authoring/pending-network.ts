@@ -7,8 +7,11 @@ import {createNetworkContext} from '../engine/network-context';
 import {contractOf} from '../engine/rules';
 import {deviceRules,deviceSceneIds,deviceDocumentId} from './device-sources';
 import {validateNetworkShape,validateNetworkSource} from './network-source';
+import {isValidationSnapshot,markValidationContext} from './validation-snapshot';
+const validationNetworks = new WeakMap<ReadonlyMap<string,unknown>,ReturnType<typeof createNetworkContext>>();
 /** Resolve pending key metadata before validating scene references; semantic validation follows assembly. */
 export function pendingNetworkContext(documents:ReadonlyMap<string,unknown>){
+ const cached=isValidationSnapshot(documents)?validationNetworks.get(documents):undefined;if(cached)return cached;
  const net=validateNetworkShape(documents.get('network')??NET);
  const scenes=Object.entries(NATIVE_SCENES).flatMap(([id,scene])=>{
   const source=deviceSceneIds.includes(id)?documents.get(deviceDocumentId(id)):undefined;
@@ -16,7 +19,7 @@ export function pendingNetworkContext(documents:ReadonlyMap<string,unknown>){
  });
  const catalogue=documents.get('authored-scenes') as {scenes?:{devices?:SceneData}[]}|undefined;
  const authored=(catalogue?.scenes??[]).flatMap(entry=>entry.devices?[entry.devices]:[]);
- return createNetworkContext(net,[...scenes,...authored]);
+ const context=createNetworkContext(net,[...scenes,...authored]);if(isValidationSnapshot(documents)){markValidationContext(context);validationNetworks.set(documents,context);}return context;
 }
 export function validatePendingNetwork(documents:ReadonlyMap<string,unknown>,registry:Record<string,SceneDef>){
  const scenes=Object.values(registry).filter((s):s is SceneDef&{data:SceneData}=>!!s.data);

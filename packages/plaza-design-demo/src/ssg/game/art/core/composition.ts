@@ -26,7 +26,21 @@ export interface Field {
   animatable?: boolean;
   /** Required for structured JSON fields; reject malformed nested data with a concrete error. */
   validate?: (value: Value) => void;
+  /** How the inspector edits a structured JSON field instead of a text box (the stored value is unchanged). */
+  editor?: FieldEditor;
+  /** Shown in the inspector only when this holds for the instance's current props. */
+  showIf?: (props: Properties) => boolean;
 }
+/**
+ * Inspector controls for structured JSON values. `list`: rows of small fields (an array of objects), with
+ * add and remove. `set`: checkboxes over `options` (an array of strings). With `auto`, the value can also be
+ * the string "auto", shown as a checkbox with that label.
+ */
+export type FieldEditor =
+  | { kind: 'list'; item: Record<string, Field>; auto?: string; addLabel?: string; next?: (rows: Properties[]) => Properties }
+  | { kind: 'set'; options: readonly string[]; auto?: string }
+  /** An optional colour: "" (shown as a checkbox labelled `empty`) or a #rrggbb colour. */
+  | { kind: 'colour'; empty: string };
 export interface Placement extends Point { scale?: number; facing?: 1 | -1; parallax?: number }
 export interface Instance {
   id: string; type: string; props: Properties; placement: Placement;
@@ -75,6 +89,8 @@ export interface Element {
   validateVisual?: (state: Properties) => void;
   /** World kernels use explicit placement and retain the native viewport and canvas state. */
   coordinates?: 'local' | 'world';
+  /** Independently placeable using authored properties and shared environment inputs. No source scene or controller bindings required. Omitted entries require source context. */
+  libraryUse?: 'reusable';
   animationClips?: Record<string, AnimationClip>;
   parts: Pass[];
   /** Non-drawing elements that still belong in a visual layer: named groups and the player row. */

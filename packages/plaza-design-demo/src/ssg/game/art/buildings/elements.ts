@@ -11,7 +11,7 @@ import { addLight } from '../atmosphere/lighting';
 import { adScreen } from '../signage/screens';
 import { PACKS } from '../assemblies/construction';
 import { rng } from '../core/primitives';
-import { BAY_KINDS, FRONT_DEFAULTS, GEAR, ROOFS, SIDES, SKINS, WINDOW_KINDS, frontAnchors, paintFront, shapeOf, wallTop, type FrontSpec, type Rect } from './front';
+import { BAY_KINDS, FRONT_DEFAULTS, type FrontBayKind, GEAR, ROOFS, SIDES, SKINS, WINDOW_KINDS, frontAnchors, paintFront, shapeOf, wallTop, type FrontSpec, type Rect } from './front';
 import { ROW_SKINS, paintRow, rowLook, type RowSpec } from './row';
 import * as P from './parts';
 
@@ -20,22 +20,35 @@ const select = (label: string, options: readonly string[], value = options[0]): 
 const isRect = (v: unknown) => Array.isArray(v) && v.length === 4 && v.every(n => typeof n === 'number' && Number.isFinite(n));
 const rects = (label: string): Field => ({ kind: 'json', label, default: [], validate: v => { if (!Array.isArray(v) || !v.every(isRect)) throw new Error(label + ': expected [[left,right,bottom,top], …]'); } });
 
+const BAY_LABELS: Record<string, string> = { door: 'door', glass: 'shop window', shutter: 'shutter', tagged: 'tagged shutter', sealed: 'sealed' };
+const bayItem: Record<string, Field> = {
+  kind: { kind: 'select', label: 'Bay', options: [...BAY_KINDS], default: 'door' },
+  from: num('From the left', 8, 0, 2000, 1, 'units'), width: num('Width', 24, 4, 600, 1, 'units'),
+};
+/** Ground-floor bays as stored: "auto", or bays from the left (kind, from, width). */
+const validBays = (v: Value) => {
+  if (v === 'auto') return;
+  if (!Array.isArray(v) || !v.every(b => !!b && typeof b === 'object' && !Array.isArray(b) && (BAY_KINDS as readonly string[]).includes((b as Properties).kind as string)
+    && Number.isFinite((b as Properties).from) && Number((b as Properties).width) > 0)) throw new Error('Ground floor: expected "auto" or bays of ' + Object.values(BAY_LABELS).join(', ') + ' with a position and width');
+};
+
 const frontFields: Record<string, Field> = {
-  width: num('Width', 150, 20, 2000, 1, 'units'), height: num('Height (roof)', 340, 20, 3000, 1, 'units'),
-  storey: num('Storey height', 66, 20, 200, 1, 'units'), ground: num('Ground floor height', 76, 0, 400, 1, 'units'),
+  width: num('Width', 150, 20, 2000, 1, 'units'),
+  floors: num('Floors above the ground floor', 4, 0, 40),
+  storey: num('Floor height', 66, 20, 200, 1, 'units'), ground: num('Ground floor height', 76, 0, 400, 1, 'units'),
+  top: num('Wall above the top floor', 0, 0, 400, 1, 'units'),
   skin: select('Skin', ['auto', ...SKINS]), windows: select('Windows', ['auto', ...WINDOW_KINDS]),
-  columns: num('Windows per storey (0 auto)', 0, 0, 40),
-  bays: { kind: 'json', label: 'Ground floor: "auto" or [[x, width, kind], …] (' + BAY_KINDS.join(', ') + ')', default: 'auto', validate: v => {
-    if (v === 'auto') return;
-    if (!Array.isArray(v) || !v.every(b => Array.isArray(b) && b.length === 3 && typeof b[0] === 'number' && Number.isFinite(b[0]) && typeof b[1] === 'number' && b[1] > 0 && (BAY_KINDS as readonly string[]).includes(b[2] as string))) throw new Error('Bays: expected "auto" or [[x, width, kind], …]');
-  } },
+  columns: num('Windows per floor (0 auto)', 0, 0, 40),
+  fascia: { kind: 'boolean', label: 'Shop fascia over the ground floor', default: true },
+  bays: { kind: 'json', label: 'Ground floor (doors, shop windows, shutters)', default: 'auto', validate: validBays,
+    editor: { kind: 'list', item: bayItem, auto: 'Seeded layout', addLabel: 'Add bay',
+      next: rows => { const last = rows[rows.length - 1]; return { kind: 'door', from: last ? Number(last.from) + Number(last.width) + 12 : 8, width: 24 }; } } },
   roof: select('Roof', ['auto', ...ROOFS]),
-  gear: { kind: 'json', label: 'Roof gear: "auto" or a list of ' + GEAR.join(', '), default: 'auto', validate: v => {
+  gear: { kind: 'json', label: 'Roof gear', default: 'auto', validate: v => {
     if (v === 'auto') return;
     if (!Array.isArray(v) || !v.every(g => (GEAR as readonly string[]).includes(g as string))) throw new Error('Roof gear: expected "auto" or a list of ' + GEAR.join(', '));
-  } },
+  }, editor: { kind: 'set', options: GEAR, auto: 'Seeded gear' } },
   escape: select('Fire escape', SIDES), balconies: select('Balconies', ['auto', 'none', 'some']),
-  fascia: { kind: 'boolean', label: 'Shop fascia', default: true },
   density: num('Retrofit density (AC, pipes, cables, screens)', 0.5, 0, 1, 0.05),
   lit: num('Rooms with a light', 0.45, 0, 1, 0.05),
   seed: num('Seed', 1, 0, 1000000000),
@@ -44,8 +57,8 @@ const frontFields: Record<string, Field> = {
 /** The element's stored props as a front spec. */
 export function frontSpec(p: Properties): FrontSpec {
   return {
-    w: Number(p.width), h: Number(p.height), storey: Number(p.storey), ground: Number(p.ground), skin: p.skin as FrontSpec['skin'], windows: p.windows as FrontSpec['windows'],
-    columns: Number(p.columns), bays: p.bays as FrontSpec['bays'], roof: p.roof as FrontSpec['roof'], gear: p.gear as FrontSpec['gear'], escape: p.escape as FrontSpec['escape'],
+    w: Number(p.width), h: Number(p.ground) + Number(p.floors) * Number(p.storey) + Number(p.top), storey: Number(p.storey), ground: Number(p.ground), skin: p.skin as FrontSpec['skin'], windows: p.windows as FrontSpec['windows'],
+    columns: Number(p.columns), bays: p.bays === 'auto' ? 'auto' : (p.bays as Properties[]).map(b => [Number(b.from), Number(b.width), b.kind as FrontBayKind]), roof: p.roof as FrontSpec['roof'], gear: p.gear as FrontSpec['gear'], escape: p.escape as FrontSpec['escape'],
     balconies: p.balconies as FrontSpec['balconies'], fascia: p.fascia !== false, density: Number(p.density), lit: Number(p.lit), seed: Number(p.seed), clear: (p.clear ?? []) as Rect[],
   };
 }
@@ -53,7 +66,7 @@ export function frontSpec(p: Properties): FrontSpec {
 const frameOf = (v: View): View => ({ ...v, sx: x => x, y: h => -h, cam: 0, gy: 0, viewW: 1e5, viewH: 1e5 });
 
 export const buildingFrontElement: Element = {
-  type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', parts: ['backdrop'],
+  type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: frontFields, visualFields: { masks: rects('Windows hidden behind attached signs (resolved)') },
   bounds: p => { const f = frontSpec(p), top = wallTop(f) + (shapeOf(f).gear.length ? 30 : 0); return { x: -2, h: top, w: f.w + 4, tall: top }; },
   anchors: p => frontAnchors(frontSpec(p)),
@@ -79,7 +92,7 @@ export const rowSpec = (p: Properties): RowSpec => ({ width: Number(p.width), se
   minWidth: Number(p.minWidth), maxWidth: Math.max(Number(p.minWidth), Number(p.maxWidth)), gap: Number(p.gap), low: Number(p.low), skin: p.skin as RowSpec['skin'], lit: Number(p.lit), haze: Number(p.haze), signs: Number(p.signs) });
 
 export const buildingRowElement: Element = {
-  type: 'building.row', version: 1, label: 'Building row (kit, distance)', category: 'environment', coordinates: 'world', parts: ['backdrop'], fields: rowFields,
+  type: 'building.row', version: 1, label: 'Building row (kit, distance)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'], fields: rowFields,
   bounds: (p, _s, c) => {
     const par = Number(p.parallax), at = c?.placement, shift = at && c ? c.view.cam * (at.parallax - par) / (at.scale * at.facing) : 0, tall = Number(p.maxHeight) + 40;
     return { x: shift, h: tall, w: Number(p.width), tall };
@@ -98,7 +111,7 @@ const attachmentBox = (k: Attachment, w: number, h: number) => k === 'ac' ? { x:
   : k === 'scanner' ? { x: -3, h: 10, w: 7, tall: 16 } : k === 'conduit' ? { x: -2, h, w: w + 4, tall: h + 10 } : k === 'planter' ? { x: 0, h: 10, w, tall: 10 }
   : { x: -w / 2 - 2, h: w + 18, w: w + 4, tall: w + 18 };
 export const buildingAttachmentElement: Element = {
-  type: 'building.attachment', version: 1, label: 'Building attachment (kit)', category: 'architecture', parts: ['backdrop'],
+  type: 'building.attachment', libraryUse: 'reusable', version: 1, label: 'Building attachment (kit)', category: 'architecture', parts: ['backdrop'],
   fields: {
     kind: select('Piece', ATTACHMENTS), width: num('Width', 40, 2, 400, 1, 'units'), height: num('Height (pipe, escape, screen, riser)', 120, 2, 3000, 1, 'units'),
     storey: num('Storey height (fire escape)', 66, 20, 200, 1, 'units'), seed: num('Seed', 1, 0, 1000000000), color: { kind: 'color', label: 'Body colour (roof gear)', default: '#0e0806' },
