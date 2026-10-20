@@ -1,5 +1,6 @@
 /** Read-only catalog projections. References point into source documents, never a second scene graph. */
 import { LAYER_ROLES, KIND_HINTS, layerRole } from './layer-roles';
+import { filterChips } from './kind-chips';
 import { type ArtRegistry, type Composition, type Instance } from '../art/core/composition';
 import type { EditorDocument } from './app';
 import { SETS } from '../art/catalog';
@@ -51,14 +52,17 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   let disposed = false, generation = 0;
   const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; return node; };
   const button = (text: string, action: () => void) => { const node = el('button', text); node.type = 'button'; node.onclick = action; return node; };
-  const entries = assetInventory(options.registry, options.documents), search = el('input'), family = el('select');
+  const entries = assetInventory(options.registry, options.documents), search = el('input');
+  let family = session.family ?? '';
   search.type = 'search'; search.placeholder = 'Find type, name or tag'; search.setAttribute('aria-label', 'Search artwork assets'); search.value = session.query ?? '';
-  const present = new Set(entries.map(entry => entry.family));
-  for (const value of ['', ...LAYER_ROLES.filter(kind => present.has(kind))]) { const option = el('option', value || 'All kinds'); option.value = value; if (value) option.title = KIND_HINTS[value as keyof typeof KIND_HINTS]; family.append(option); }
-  const embeddedOption = el('option', 'Embedded library components'); embeddedOption.value = '__embedded__'; family.append(embeddedOption);
-  family.value = session.family ?? ''; family.setAttribute('aria-label', 'Kind of artwork');
+  const kinds = LAYER_ROLES.filter(kind => entries.some(entry => entry.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(entry => entry.family === kind).length }));
+  let kindBlock: HTMLElement, otherBlock: HTMLElement;
+  const choose = (value: string) => { family = value; kindBlock.replaceWith(kindBlock = kindChipsBlock()); otherBlock.replaceWith(otherBlock = otherChipsBlock()); refresh(); };
+  const kindChipsBlock = () => filterChips('Kind', kinds, family, choose);
+  const otherChipsBlock = () => filterChips('Other', [{ value: '__embedded__', label: 'Embedded library components', title: 'Code-drawn component sets that are not registered artwork' }], family, choose, null);
+  kindBlock = kindChipsBlock(); otherBlock = otherChipsBlock();
   const count = el('p'), list = el('div'), inspector = el('section'); list.className = 'catalog-list'; inspector.setAttribute('aria-label', 'Asset inspection');
-  const navigation = el('div'); navigation.append(search, family, count, list);
+  const navigation = el('div'); navigation.append(search, kindBlock, otherBlock, count, list);
   // District bar: a piece belongs to every district whose scenes use it. "Elsewhere" is unused or sequence-only artwork.
   const districtsOf = (entry: AssetEntry) => new Set(entry.usages.flatMap(u => { const d = options.districts?.of(u.scene); return d ? [d] : []; }));
   const bar = el('nav'); bar.className = 'district-bar'; bar.setAttribute('aria-label', 'Filter by district');
@@ -102,8 +106,8 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     inspector.append(metadata, snapshot, el('h3', `Usages (${entry.usages.length})`), usages); void render();
   }
   function refresh() {
-    session.query = search.value; session.family = family.value;
-    const matching = filterAssets(entries, search.value, family.value), district = session.district ?? '';
+    session.query = search.value; session.family = family;
+    const matching = filterAssets(entries, search.value, family), district = session.district ?? '';
     if (options.districts) {
       const chip = (id: string, name: string) => { const n = id ? matching.filter(e => inDistrict(e, id)).length : matching.length, b = button('', () => { session.district = id; refresh(); }); b.append(el('span', name), el('small', String(n))); b.className = 'chip'; b.title = name; b.setAttribute('aria-pressed', String(id === district)); b.disabled = !n && id !== district; return b; };
       bar.replaceChildren(chip('', 'All'), ...options.districts.list.map(d => chip(d.id, d.name)), chip('__none__', 'Elsewhere'));
@@ -116,12 +120,12 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
       list.append(pick);
     }
     const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    const embedded = SETS.filter(set => (!family.value || family.value === '__embedded__') && terms.every(term => `${set.id} ${set.file} ${set.what}`.toLowerCase().includes(term)));
+    const embedded = SETS.filter(set => (!family || family === '__embedded__') && terms.every(term => `${set.id} ${set.file} ${set.what}`.toLowerCase().includes(term)));
     sets.replaceChildren(el('summary', `Embedded library components (${embedded.length} / ${SETS.length})`));
     for (const set of embedded) { const row = el('details'); row.append(el('summary', set.id), el('code', set.file), el('p', set.what), el('p', 'Embedded component; inspect a registered assembly or source usage. No independent registered preview.')); sets.append(row); }
-    if (family.value === '__embedded__') sets.open = true;
+    if (family === '__embedded__') sets.open = true;
   }
-  search.oninput = refresh; family.onchange = refresh; refresh();
+  search.oninput = refresh; refresh();
   const selected = entries.find(entry => entry.id === session.selected); if (selected) inspect(selected);
   return () => { disposed = true; generation++; };
 }

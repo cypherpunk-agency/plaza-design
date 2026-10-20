@@ -12,6 +12,7 @@ import { createThumbnails } from './asset-thumbnails';
 import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { KIND_HINTS, LAYER_ROLES, layerRole } from './layer-roles';
+import { chipStyles, filterChips } from './kind-chips';
 import { ENGINE_LAYERS, LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
@@ -211,7 +212,7 @@ const label = (text: string, control: HTMLElement) => { const node = element('la
 export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const model = new ComposerModel(config.registry, { destinations: config.destinations, clips: config.clips, motionTracks: config.motionTracks }, config.validateDocument, config.projections,config.destinationsFor);
   const root = element('section', 'scene-composer'); root.setAttribute('aria-label', 'Scene and animation composer');
-  const style = element('style'); style.textContent = composerStyles; root.append(style);
+  const style = element('style'); style.textContent = composerStyles + chipStyles; root.append(style);
   const header = element('header'), status = element('div', 'status', 'Loading authoring documents…'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const workspace = element('div', 'workspace'), left = element('aside'), center = element('div', 'preview-column'), right = element('aside');
   left.setAttribute('aria-label', 'Scene outline'); right.setAttribute('aria-label', 'Inspector');
@@ -710,8 +711,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const entries = assetInventory(config.registry, model.list()), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
     const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
     search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
-    const family = select([{ value: '', label: 'All kinds' }, ...LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(f => ({ value: f, label: f }))], pickerFamily, value => { pickerFamily = value; fill(); }); family.setAttribute('aria-label', 'Kind of artwork');
-    head.append(element('strong', '', 'Add artwork'), search, family, button('✕', closePicker, 'Close (Esc)')); picker.replaceChildren(head, count, grid);
+    const kinds = filterChips('Kind', LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(e => e.family === kind).length })), pickerFamily, value => { pickerFamily = value; fill(); });
+    head.append(element('strong', '', 'Add artwork'), search, button('✕', closePicker, 'Close (Esc)')); picker.replaceChildren(head, kinds, count, grid);
     function fill() {
       const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id))), shown = list.slice(0, 300);
       count.textContent = `${list.length} pieces${list.length > shown.length ? ` · showing ${shown.length}, search to narrow` : ''} · pieces already in this scene come first`; grid.replaceChildren();
