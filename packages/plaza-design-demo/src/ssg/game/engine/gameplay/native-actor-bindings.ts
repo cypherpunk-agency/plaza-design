@@ -16,7 +16,7 @@ const controllers:Record<string,ActorBindingController>={
  beach:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
  mall:{element:'character.prepared',prefix:'mall.actor.',suffix:'',mutable:true,pass:'backdrop'},
  harbor:{element:'character.prepared',prefix:'actor.',suffix:'.pose',clipPrefix:'clip.actor.',mutable:true,pass:'backdrop'},
- stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',mutable:true,pass:'backdrop'},
+ stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',clipPrefix:'terminal.clip.',mutable:true,pass:'backdrop'},
  shop:{element:'character.prepared',prefix:'shop.actor.',suffix:'',clipPrefix:'shop.clip.',mutable:true,pass:'backdrop'},
  library:{element:'library.person',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},
  laundromat:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true,pass:'backdrop'},

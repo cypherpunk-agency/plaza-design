@@ -180,3 +180,14 @@ Original Harbor40/tea14/foreground5/shift36 drawing cases and1674 coastal bounds
 26 interactions/37 NPC pages/weather/persistence and five crane-flight paint transcripts PASS.
 Both builds/tsc, all19 inspector mounts and173 zero-difference/error raster rows PASS at
 source6a0fdc397d3e; actual packaged Harbor Play/Stop/slot-filter controls pass without warnings.
+
+## Stacks terminal geometry
+
+Stacks uses shared artwork roles for rest/slot/chassis/gate/hatch/deck trajectory geometry,
+three cargo-bay culling origins, ladder/kiosk watchdog positions, quay and bridge. Required
+controller inputs reject absent refs; width uses the shared manifest and horizon is optional.
+The native crane/ferry simulation remains the sole registered implementation. Removed unused
+layout inputs and fixed artwork identity/type restrictions. Actual typed source edits, removal,
+protected Save/fresh shipping/Undo proof: check-stacks-artwork-roles.mts,
+`stacks-actor-role-source-442wyn`. Original drawings/outcomes and173 browser raster rows unchanged
+at source6c855527c33d. Actor roles are documented in SCENE-PRESENTATION-ACTORS.md.

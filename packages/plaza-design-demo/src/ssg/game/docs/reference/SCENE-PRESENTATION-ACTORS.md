@@ -98,3 +98,13 @@ removal, absent/invalid source, history/bundle/protected Save/fresh shipping/byt
 helper checks, all19 inspector mounts, Mall/Shop role proofs and Harbor original drawings/content/
 weather/current-save/flight/bounds suites PASS. Both builds/tsc and173 zero-difference/error raster
 rows PASS at source648c38e100b2; all19 actual packaged native Play/Stop pass without warning/error logs.
+
+## Stacks terminal actors
+
+Optional stacks presentation refs select craneOperator and rescuedPassenger. The operator follows
+the existing trolley, with authored position/elevation offsets and a matching cab clip; the passenger
+follows the existing reefer reveal condition. Unselected actors use ordinary presentation regardless
+of their IDs. Shared creation/duplication supplies terminal.clip.<actor>; removal prunes refs.
+No separate state or conversation evaluator. Actual forms/native behavior/absence/Save/fresh import/
+Undo: check-stacks-artwork-roles.mts (`stacks-actor-role-source-442wyn`). All19 actor/inspector and
+actual native Play/Stop checks pass at source6c855527c33d, with173 zero-difference raster rows.

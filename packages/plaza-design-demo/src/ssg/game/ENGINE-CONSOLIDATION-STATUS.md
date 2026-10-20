@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `0142536` on main and production.
-Production/main homepage jobs39349703607/39349702253 and design job39349702311 succeeded.
+Last verified deployment: `769d300` on main and production.
+Homepage jobs39351137007/39351136491 and design job39351137144 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2593,3 +2593,31 @@ logs (`editor-native-play-648c38e1-20261020.json`). Actual Harbor role/flag pick
 app-EDXPJ44N.js / play-YQTCQNGC.js / play-e5d0f0af1029afc6.html. Remaining geometry/actor consumers in
 Stacks, Downtown and transit plus the final all19 world/network/current-state/lifecycle/removal
 inventory remain open; no whole-goal gate promotion from this bounded checkpoint.
+
+## 2026-10-20 Stacks native geometry and actor roles
+
+Terminal trolley route/height, thermal gate, cargo bay culling and ferry/watchdog anchors now
+consume shared typed artwork references. Width uses the common manifest; the optional horizon
+uses a typed artwork property. Required simulation geometry rejects absent references. Removed
+the fixed instance/type floor and unused booth/lane/legs/hatch/tiers/bridge-end layout fields.
+Crane operator and rescued passenger presentation select source actors. Former actor IDs have
+no implicit motion, clip or reveal behavior. Shared actor creation/duplication supplies clipping;
+the clip follows the selected actor's authored offset/elevation. No new state owner or save
+compatibility was added. Removed the editor's redundant default-actor environment adapter.
+
+check-stacks-artwork-roles.mts PASS (`stacks-actor-role-source-442wyn`): actual geometry/width/actor
+forms, replacement refs and former geometry deletion after attachment rebinding, native trolley/
+gate/height/culling/quay/operator/reveal outputs, invalid refs/required roles atomic rejection,
+optional presentation absence, history/bundle/protected Save/fresh shipping import/byte Undo.
+Original nine operator/Moth paint transcripts, current geometry/device spots/content and22 NPC
+pages,1674 coastal bounds cases,480 watchdog histories and21x101 return timeline frames PASS.
+An older permission-form fixture now addresses the existing four lift branches correctly;
+actual forms and protected source Save/fresh runtime/byte Undo PASS (`stacks-permission-save-hwIQPv`).
+All19 actor CRUD/Save/native reload PASS (`actor-entities/run-4HbpIb`) and all19 actual scene
+inspector forms PASS (`scene-inspector-identities-25TDnY`). tsc and both builds PASS.
+Source6c855527c33dff01533fde7340ed8766e45712d708164ade5569d67d1f25287a passes173/173 zero-difference/error browser
+raster rows (independently asserted) and all19 actual packaged editor Play/Stop checks without
+warning/error logs (`editor-native-play-6c855527-20261020.json`). Real Stacks geometry/actor
+controls are mounted in the package. app-HNPAQ5LL.js / play-Y5LRZJBG.js /
+play-092db9c168930c06.html. Downtown/transit geometry and final whole-corpus lifecycle/current-save/
+world/network/removal reconciliation remain open; this checkpoint does not promote whole-goal gates.

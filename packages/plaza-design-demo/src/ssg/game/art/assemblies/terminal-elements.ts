@@ -8,7 +8,7 @@ import { container } from '../props/containers';
 import { createContainerTerminalArtwork,type ArtworkInputs } from './container-terminal';
 import { validateTerminalVisual,type TerminalVisual } from './terminal-state';
 const n=(label:string,value:number):Field=>({kind:'number',label,default:value,min:-10000,max:10000,step:1});
-export const emptyTerminalVisual:TerminalVisual={width:1760,horizon:76,layer:'all',hover:'',now:0,departed:false,boxAt:'stack',loaded:0,scratch:{},portFrozen:false,watchdogs:[],trolley:{x:0,h:120,carry:0},geometry:{X:{rest:0,slot:0,chassis:0,gate:0,hatch:0,deck:0},H:{carry:120,chassis:14,slot:58,deck:4,hold:-64}},layout:{"booth":{"x":0,"w":62,"h":70},"lane":0,"blocks":[],"legs":[0,0],"ladder":0,"quay":0,"kiosk":0,"hatch":{"x0":0,"x1":0},"bridge":{"x0":0,"x1":0},"boom":206},light:lightAt(1,0,90,null),deckReefer:false,loadVisible:false,ferryVisible:false};
+export const emptyTerminalVisual:TerminalVisual={width:1760,horizon:76,layer:'all',hover:'',now:0,departed:false,boxAt:'stack',loaded:0,scratch:{},portFrozen:false,watchdogs:[],trolley:{x:0,h:120,carry:0},geometry:{X:{rest:0,slot:0,chassis:0,gate:0,hatch:0,deck:0},H:{carry:120,chassis:14,slot:58,deck:4,hold:-64}},layout:{blocks:[],ladder:0,quay:0,kiosk:0,bridge:{x0:0},boom:206},light:lightAt(1,0,90,null),deckReefer:false,loadVisible:false,ferryVisible:false};
 export const terminalVisualFields:Record<string,Field>={snapshot:{kind:'json',label:'Terminal visual snapshot',default:emptyTerminalVisual as unknown as Value,validate:validateTerminalVisual}};
 const raised=(v:import('../core/view').View,h:number)=>h===0?v:({...v,gy:v.gy-h,y:(value:number)=>v.y(value+h)});
 const cache=new Map<string,{inputs:ArtworkInputs;art:ReturnType<typeof createContainerTerminalArtwork>}>();
@@ -55,7 +55,7 @@ export const terminalElements:Element[]=[
 
 const terminalBoxes:Record<string,Bounds>={garden:{x:0,h:135,w:75,tall:19},'gantry-back':{x:-516,h:310,w:1510,tall:310},'gantry-front':{x:-8,h:232,w:288,tall:232},'ladder-panel':{x:-9,h:170,w:18,tall:170},'berth-ticker':{x:-45,h:132,w:90,tall:24},'deck-lamp':{x:-40,h:76,w:80,tall:76},'ferry-kiosk':{x:-16,h:62,w:32,tall:62},lane:{x:-24,h:104,w:48,tall:104},urn:{x:-12,h:56,w:54,tall:56},board:{x:-28,h:78,w:56,tall:78},'crane-outline':{x:-23,h:111,w:46,tall:113},camera:{x:-18,h:158,w:36,tall:18},'tea-note':{x:-21,h:74,w:42,tall:40},'reefer-cable':{x:-101,h:17,w:42,tall:16},bollard:{x:-14,h:-24,w:145,tall:32}};
 const terminalFields:Record<string,string[]>={bridge:['width'],'ferry-hatch':['width'],booth:['width'],'thermal-gate':['part'],reefer:['open'],container:['width','paint','seed','dx','block','dim'],'bay-sign':['letter','block']};
-for(const e of terminalElements){const id=e.type.slice(9);if(id==='marker')continue;for(const name of Object.keys(e.fields))if(!(terminalFields[id]??[]).includes(name))delete e.fields[name];if(terminalBoxes[id])e.bounds=()=>terminalBoxes[id];
+for(const e of terminalElements){e.bindingIdentity='presentation';const id=e.type.slice(9);if(id==='marker')continue;for(const name of Object.keys(e.fields))if(!(terminalFields[id]??[]).includes(name))delete e.fields[name];if(terminalBoxes[id])e.bounds=()=>terminalBoxes[id];
  const origin={x:0,h:0,role:'origin' as const};e.anchors=()=>({origin});
  if(id==='bridge')e.bounds=p=>({x:0,h:213,w:Number(p.width),tall:213});
  if(id==='ferry-hatch'){e.bounds=p=>({x:0,h:22,w:Number(p.width),tall:22});e.anchors=p=>({origin,center:{x:Number(p.width)/2,h:0,role:'origin'},coaming:{x:0,h:22,role:'surface'}});}

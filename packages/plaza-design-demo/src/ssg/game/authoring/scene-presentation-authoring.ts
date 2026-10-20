@@ -5,7 +5,7 @@ import type {TypedForm} from './typed-form';
 /** Finite picture inputs reference shared flags or source actors; no second gameplay state. */
 export function renderScenePresentation(form:TypedForm,host:HTMLElement,source:SceneDocument,gameplay:GameplayDefinition,edit:(label:string,change:(d:SceneDocument)=>void)=>void,refresh:()=>void){
  const kind=source.id as keyof typeof scenePresentationRoles;if(!Object.prototype.hasOwnProperty.call(scenePresentationRoles,kind))return;
- const title=kind==='harborShift'?'shift':kind==='market'?'Market':kind==='shop'?'Shop':kind==='mall'?'Mall':kind==='harbor'?'Harbor':'Beach';
+ const title=kind==='harborShift'?'shift':kind==='market'?'Market':kind==='shop'?'Shop':kind==='mall'?'Mall':kind==='harbor'?'Harbor':kind==='stacks'?'Stacks':'Beach';
  form.check(host,'Enable '+title+' visual bindings',!!source.presentation,on=>{edit('Edit '+title+' presentation',d=>{if(on)d.presentation={kind,flags:{}};else delete d.presentation;});refresh();});
  if(!source.presentation)return;
  if(kind==='shop'){const description=document.createElement('p');description.textContent='Choose the keeper and the actors viewed through the window.';host.append(description);}

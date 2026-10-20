@@ -9,7 +9,7 @@ import { drawGantry,STS2 } from "../machinery/crane";
 import { CH,container } from "../props/containers";
 import { camera as securityCamera,taped,ticker,YELLOW } from "../signage/screens";
 import { TerminalViewState,type TerminalVisual } from './terminal-state';
-export interface TerminalLayout {booth:{x:number;w:number;h:number};lane:number;blocks:{x:number;tiers:number}[];legs:number[];ladder:number;quay:number;kiosk:number;hatch:{x0:number;x1:number};bridge:{x0:number;x1:number};boom:number}
+export interface TerminalLayout {blocks:{x:number}[];ladder:number;quay:number;kiosk:number;bridge:{x0:number};boom:number}
 export interface ArtworkInputs {L:TerminalLayout;STACKS_W:number;STACKS_HZ:number;x:number;width:number;visual:TerminalVisual;part?:'far'|'near';open?:boolean;}
 export function createContainerTerminalArtwork(inputs:ArtworkInputs){
 const {L,STACKS_W}=inputs,HZ=inputs.STACKS_HZ;
