@@ -113,3 +113,86 @@ migrations settle. No optimization candidate was retained or claimed: the schedu
 and lack of matched interleaved A/B evidence do not establish a safe improvement. Renderer quality,
 DPR,population,clock policy and source baselines were not altered to obtain these measurements.
 Final representative-cadence performance acceptance remains open alongside the full engine goal.
+
+### Standard editor tasks, 2026-10-20
+
+Measured against `6a47840` with additional opt-in task spans in a separate composer session;
+no source documents were saved. Downtown proposal, animation stopped, 1280×720 viewport,
+DPR1.25, 960×540 preview canvas. These are short diagnostic samples of instrumented work,
+not input-to-presented-frame latency, GPU timings, or a statistical performance gate.
+
+| Task | Samples | Median / observed duration |
+| --- | --- | --- |
+| Open Downtown proposal, first use | 1 | 157.9ms |
+| Select a building | 3 | 110.8ms |
+| Change X by one unit | 3 | 176.7ms |
+| Change height by one unit | 3 | 174.4ms |
+| Undo | 3 | 163.7ms |
+| Redo | 3 | 168.2ms |
+| Add a stool | 1 | 269.7ms elapsed, including preview probe |
+| Delete stool | 1 | 190.9ms |
+| Open library, partly warmed thumbnail cache | 1 | 35.6ms synchronous library rebuild |
+| Switch Downtown ↔ proposal | 2 | 138.6ms and 222.0ms |
+
+Task spans: `editor.scene-switch`, `editor.selection`, `editor.command`, `editor.library`,
+`editor.add`, and `editor.thumbnail`. Add/thumbnail spans include asynchronous waits and
+must not be ranked as exclusive CPU. The first Add operation overlapped queued thumbnail
+work. Library timing excludes later asynchronous thumbnail painting. All nested totals overlap.
+These measurements used UI controls in a separate browser tab; automation round-trip time is excluded.
+
+Review findings, in suggested investigation order (1–3 addressed below):
+
+1. `authoring/app.ts:refreshWorkbench` serializes document dependencies even for closed panels.
+   `refreshLeft` invokes every workbench on each refresh. Position edits spend about 40ms in
+   the whole outline/workbench refresh; serialization's isolated share has not been measured.
+2. Selection rebuilds the inspector, outline and timeline; coordinate edits rebuild the whole
+   header/options/outline. Update unchanged UI in place, retaining full rebuilds for structural changes.
+3. Queued thumbnails call `documentsForView()` outside the synchronous view snapshot. Opening
+   Add caused ten complete document copies totaling 73.9ms and nine thumbnail operations totaling
+   132.3ms, with copying nested inside thumbnail work. Share a versioned snapshot for each batch;
+   cancel obsolete queued tiles when their view closes or changes. Preserve state-dependent previews.
+4. `authoring/native-preview.ts` validates, assembles a definition and creates a fresh SceneModel
+   on every preview render. Investigate reuse of immutable compiled inputs while preserving preview
+   isolation, pending edits and animation clocks. No isolated saving is established yet.
+5. `art/core/composition.ts` resolves composition rows separately for drawing slots, and native
+   preview resolves them again for bounds. Investigate frame-scoped reuse across drawing and picking.
+6. `authoring/server/store.ts:read` loads and validates the entire document set through `list()`;
+   save validates the prospective set and reloads/revalidates it afterward. Investigate transaction-scoped
+   reuse; retain cross-document validation, conflict detection and recovery guarantees. Not timed here.
+
+The task measurements confirm aggregate delays; code inspection identifies the repeated operations.
+It does not establish how much each proposed change would save. Compare matched before/after task
+recordings and behavior checks before retaining an optimization.
+
+### Editor refresh and thumbnail improvements, 2026-10-20
+
+Closed workbenches now dispose/return before reading or serializing documents. The outline keeps
+its DOM when composition structure, non-placement fields and scene companion documents are unchanged;
+selection updates pressed states in place. Selecting a hidden row can still rebuild to reveal it.
+Timeline selection still refreshes target controls. The inspector continues to read current documents,
+and structural edits continue to rebuild rows. Validation and protected Save behavior are unchanged.
+
+Thumbnails share one detached document snapshot until the next successful edit or source reload.
+Source edits invalidate the thumbnail generation, including in-flight results. Disconnected queued
+and offscreen tiles are pruned; disposal prevents later painting. An open Add picker rebuilds after
+an edit so it cannot retain invalidated thumbnails.
+
+Repeated the same Downtown proposal UI tasks in a fresh isolated editor session, same viewport/DPR
+and stopped animation. Three samples each, medians; these are diagnostic comparisons between runs,
+not controlled interleaved benchmarks or presented-frame guarantees.
+
+| Task | Before | After |
+| --- | --- | --- |
+| Select building | 110.8ms | 52.9ms |
+| Change X | 176.7ms | 130.0ms |
+| Undo | 163.7ms | 126.4ms |
+| Redo | 168.2ms | 110.3ms |
+| Outline refresh during X edit | 41.5ms | 0.8ms |
+
+First Add picker: full document copies decreased from ten (73.9ms cumulative) to two (16.9ms).
+Nine thumbnail operations decreased from 132.3ms to 68.8ms cumulative; document copying is nested
+inside thumbnail work, so these totals must not be added. This is not the entire picker latency.
+UI checks confirmed added rows, delete/undo restoration, selection highlighting and switching to
+Order mode. Focused thumbnail checks cover cache reuse, invalidation during asynchronous rendering,
+detached queued/offscreen tiles and disposal. Preview/model rebuilds, repeated composition resolution
+and source-store work (findings4–6) remain separate follow-up work.

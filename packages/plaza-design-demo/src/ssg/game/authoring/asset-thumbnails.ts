@@ -1,3 +1,4 @@
+import {perfBegin,perfEnd} from '../runtime/diagnostics/performance';
 import type { AssetEntry, AssetPreviewReport } from './asset-browser';
 
 export type ThumbnailRender = (canvas: HTMLCanvasElement, entry: AssetEntry) => Promise<string | AssetPreviewReport> | string | AssetPreviewReport;
@@ -11,7 +12,16 @@ export type ThumbnailRender = (canvas: HTMLCanvasElement, entry: AssetEntry) => 
 export function createThumbnails(render: ThumbnailRender, size = { width: 160, height: 96 }) {
   type Thumbnail = { image: HTMLCanvasElement | null; message: string; label: string };
   const cache = new Map<string, Thumbnail>(), waiting = new Map<string, Set<HTMLCanvasElement>>();
-  const queue: AssetEntry[] = []; let busy = false, disposed = false;
+  const observed = new Set<HTMLCanvasElement>();
+  const queue: AssetEntry[] = []; let busy = false, disposed = false, generation = 0;
+  const prune = () => {
+    for (const target of observed) if (!target.isConnected) { observer.unobserve(target); observed.delete(target); }
+    for (const [id, targets] of waiting) {
+      for (const target of targets) if (!target.isConnected) { observer.unobserve(target); targets.delete(target); }
+      if (!targets.size) waiting.delete(id);
+    }
+    for (let i = queue.length - 1; i >= 0; i--) if (!waiting.has(queue[i].id)) queue.splice(i, 1);
+  };
   const work = document.createElement('canvas'); work.width = 960; work.height = 540;
   const paint = (target: HTMLCanvasElement, result: Thumbnail) => {
     const ctx = target.getContext('2d'); if (!ctx) return; ctx.clearRect(0, 0, target.width, target.height);
@@ -35,14 +45,19 @@ export function createThumbnails(render: ThumbnailRender, size = { width: 160, h
     if (busy || disposed) return; busy = true;
     try {
       while (queue.length && !disposed) {
+        prune(); if (!queue.length) break;
         const entry = queue.shift()!; if (cache.has(entry.id)) continue;
+        const version = generation;
         let image: HTMLCanvasElement | null = null, message = '', label = entry.preview === 'structural' ? 'No drawing of its own' : 'Needs scene state';
+        const token = perfBegin('editor.thumbnail', entry.id);
         try {
           work.getContext('2d')?.clearRect(0, 0, work.width, work.height);
           const report = await render(work, entry); message = typeof report === 'string' ? report : report.message;
+          if (disposed || version !== generation) continue;
           image = crop(work);
           if (!image && entry.usages.length && entry.preview !== 'structural') label = 'Not visible in this state';
-        } catch (error) { message = error instanceof Error ? error.message : String(error); label = 'Preview error'; }
+        } catch (error) { message = error instanceof Error ? error.message : String(error); label = 'Preview error'; } finally { perfEnd(token); }
+        if (disposed || version !== generation) continue;
         const result = { image, message, label };
         cache.set(entry.id, result); for (const target of waiting.get(entry.id) ?? []) paint(target, result); waiting.delete(entry.id);
         await new Promise(resolve => setTimeout(resolve, 0));
@@ -51,7 +66,7 @@ export function createThumbnails(render: ThumbnailRender, size = { width: 160, h
   }
   const observer = new IntersectionObserver(rows => {
     for (const row of rows) {
-      if (!row.isIntersecting) continue; const canvas = row.target as HTMLCanvasElement & { entry?: AssetEntry }; observer.unobserve(canvas);
+      if (!row.isIntersecting) continue; const canvas = row.target as HTMLCanvasElement & { entry?: AssetEntry }; observer.unobserve(canvas); observed.delete(canvas); if (!canvas.isConnected) continue;
       const entry = canvas.entry; if (!entry) continue;
       if (cache.has(entry.id)) { paint(canvas, cache.get(entry.id)!); continue; }
       const set = waiting.get(entry.id) ?? new Set(); set.add(canvas); waiting.set(entry.id, set); if (!queue.some(e => e.id === entry.id)) queue.push(entry);
@@ -59,11 +74,14 @@ export function createThumbnails(render: ThumbnailRender, size = { width: 160, h
     void pump();
   }, { rootMargin: '120px' });
   return {
+    prune,
+    /** Source changes invalidate scene-dependent previews and any in-flight result. */
+    invalidate() { generation++; cache.clear(); queue.length = 0; waiting.clear(); observer.disconnect(); observed.clear(); },
     /** A canvas that fills in once it becomes visible. */
     thumbnail(entry: AssetEntry) {
       const canvas = Object.assign(document.createElement('canvas'), { entry }); canvas.width = size.width; canvas.height = size.height; canvas.className = 'asset-thumb'; canvas.setAttribute('aria-hidden', 'true');
-      if (cache.has(entry.id)) paint(canvas, cache.get(entry.id)!); else observer.observe(canvas); return canvas;
+      if (cache.has(entry.id)) paint(canvas, cache.get(entry.id)!); else { observed.add(canvas); observer.observe(canvas); } return canvas;
     },
-    dispose() { disposed = true; observer.disconnect(); queue.length = 0; waiting.clear(); },
+    dispose() { disposed = true; generation++; observer.disconnect(); observed.clear(); queue.length = 0; waiting.clear(); },
   };
 }

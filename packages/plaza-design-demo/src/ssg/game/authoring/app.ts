@@ -1,4 +1,4 @@
-import {perfMeasure} from '../runtime/diagnostics/performance';
+import {perfMeasure,perfBegin,perfEnd} from '../runtime/diagnostics/performance';
 import {mountPerformancePanel} from '../runtime/diagnostics/performance-panel';
 import {mutableActorArtwork} from '../engine/gameplay/native-actor-bindings';
 import type {DocumentProjection} from './document-projection';
@@ -299,7 +299,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const assetHost = element('details', 'asset-browser tool-panel'); assetHost.dataset.tool = 'assets'; assetHost.append(element('summary', '', 'Artwork library')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
   const mapHost = element('details', 'world-map tool-panel'); mapHost.dataset.tool = 'world-map'; mapHost.append(element('summary', '', 'City map')); const mapPanel = element('div'); mapHost.append(mapPanel); if (config.worldPanel) root.insertBefore(mapHost, workspace);
   /** Artwork pictures for the Add picker and the Library, drawn by the same isolated game preview. */
-  const thumbnails = config.assetPreview ? createThumbnails((target, entry) => config.assetPreview!(target, entry, entry.preview === 'standalone' ? undefined : entry.usages.find(usage => !usage.scene.startsWith('sequence-')) ?? entry.usages[0], documentsForView(), { time: 0, reduced: true, environment: { ...config.initialEnvironment, renderScale: 1 } })) : undefined;
+  let thumbnailDocuments: EditorDocument[] | undefined;
+  const thumbnails = config.assetPreview ? createThumbnails((target, entry) => config.assetPreview!(target, entry, entry.preview === 'standalone' ? undefined : entry.usages.find(usage => !usage.scene.startsWith('sequence-')) ?? entry.usages[0], thumbnailDocuments ??= model.list(), { time: 0, reduced: true, environment: { ...config.initialEnvironment, renderScale: 1 } })) : undefined;
   const workbenches = (config.workbenches ?? []).map(workbench => {
     const details = element('details', 'workbench-screen tool-panel'), panel = element('section'); details.dataset.workbench = details.dataset.tool = workbench.id; details.append(element('summary', '', workbench.title), panel); if (workbench.beside) { details.classList.add('stage-panel'); workspace.append(details); } else root.insertBefore(details, workspace);
     return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '', scene: '', autostart: false };
@@ -390,10 +391,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     return dispose;
   };
   const refreshWorkbench = (item: typeof workbenches[number], changed = false) => {
+    if (!item.details.open) { item.dispose?.(); item.dispose = undefined; return; }
     const documents = documentsForView(), relevant = item.config.documentIds ? documents.filter(doc => item.config.documentIds!.includes(doc.id)) : documents;
     const version = item.config.documentDependent ? JSON.stringify(relevant) : '', scene = sceneId(), sceneBound = item.config.area === 'scene';
-    if (!item.details.open) { item.dispose?.(); item.dispose = undefined; }
-    else if (sceneBound && item.dispose && item.scene !== scene) { item.dispose(); item.dispose = undefined; }
+    if (sceneBound && item.dispose && item.scene !== scene) { item.dispose(); item.dispose = undefined; }
     else if (changed && item.config.documentDependent && version !== item.documentsVersion && item.dispose) {
       if (item.dispose.refresh) { item.documentsVersion = version; item.dispose.refresh(); }
       else { item.dispose(); item.dispose = undefined; }
@@ -421,7 +422,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   mapHost.ontoggle = () => { closeOthers(mapHost); refreshMap(); refreshTools(); };
   refreshTools();
   const notice = (text: string, error = false) => { status.textContent = text; status.title = text; status.className = 'status' + (error ? ' error' : ''); };
-  const run = (action: () => void) => perfMeasure('editor.command', () => { try { notice(''); perfMeasure('editor.action', action); refresh(); } catch (e) { notice(message(e), true); } });
+  const run = (action: () => void) => perfMeasure('editor.command', () => { try { notice(''); perfMeasure('editor.action', action); thumbnailDocuments = undefined; thumbnails?.invalidate(); refresh(); if (!picker.hidden) renderPicker(); } catch (e) { notice(message(e), true); } });
   const current = () => currentId ? model.get(currentId) : undefined;
   /** The document an open panel edits (Export/Import JSON), otherwise the scene's composition or timeline. */
   const activeDocument = () => { const id = workbenches.find(item => item.details.open)?.config.primaryDocumentId; return id && documentsForView().some(doc => doc.id === id) ? model.get(id) : current(); };
@@ -442,7 +443,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   async function load() {
     playing = false;
     try {
-      const documents = config.api ? await api('/documents') as EditorDocument[] : copy(config.documents ?? []); model.load(documents);
+      const documents = config.api ? await api('/documents') as EditorDocument[] : copy(config.documents ?? []); model.load(documents); thumbnailDocuments = undefined; thumbnails?.invalidate();
       if (!documents.some(d => d.id === currentId)) currentId = documents.find(d => d.kind === 'composition')?.id ?? documents[0]?.id ?? '';
       selectedId = ''; syncSequence(); refresh(); openLinkedPanel(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
     } catch (e) { notice(`Could not load authoring documents: ${message(e)}`, true); }
@@ -463,7 +464,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     finally { saving = false; refresh(); }
   }
   function syncSequence() { const doc = currentTimeline(); if (!doc?.sequences.some(s => s.id === sequenceId)) sequenceId = doc?.sequences[0]?.id ?? ''; const seq = sequence(); time = Math.min(time, seq?.duration ?? time); loopFrom = 0; loopTo = seq?.duration ?? 0; }
-  function openDocument(id: string) { if (id !== currentId) { compareId = ''; stopPlay(); } currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }
+  function openDocument(id: string) { return perfMeasure('editor.scene-switch', () => { if (id !== currentId) { compareId = ''; stopPlay(); } currentId = id; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }); }
   function openScene(scene: string, compare?: string) { const doc = documentsForView().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { if (!root.dataset.stagePanel) showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
   function refreshHeader() {
     const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand, tools);
@@ -566,8 +567,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     input.onchange = () => { const value = control.kind === 'boolean' ? input.checked : control.kind === 'text' ? input.value : Number(input.value); if (typeof value === 'number' && !Number.isFinite(value)) return; change(value); };
     const row = label(control.label, input); if (control.kind === 'text') row.classList.add('wide'); return row;
   }
-  function refreshLibrary() {
-    cleanupAssets?.(); cleanupAssets = undefined; assetPanel.replaceChildren(); if (!config.assetPreview || !assetHost.open) return;
+  function refreshLibrary() { return perfMeasure('editor.library', refreshLibraryContent); }
+  function refreshLibraryContent() {
+    cleanupAssets?.(); cleanupAssets = undefined; assetPanel.replaceChildren(); thumbnails?.prune(); if (!config.assetPreview || !assetHost.open) return;
     const scene = current()?.kind === 'composition' ? sceneId() : '';
     cleanupAssets = mountAssetBrowser(assetPanel, { registry: config.registry, documents: documentsForView(),
       openUsage(usage) { openInstance(usage.document, usage.instance); },
@@ -578,9 +580,15 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     }, assetSession);
   }
   function refreshMap() { cleanupWorld?.(); cleanupWorld = undefined; mapPanel.replaceChildren(); if (config.worldPanel && mapHost.open) cleanupWorld = config.worldPanel(mapPanel, openScene, documentsForView(), sceneId()); }
+  let outlineVersion = '', updateOutlineSelection = () => {};
   function refreshLeft() {
-    left.replaceChildren();
     workbenches.forEach(item => refreshWorkbench(item, true)); refreshLibrary(); refreshMap();
+    const source = compositionDocument(), docs = documentsForView();
+    // Position, size and facing do not change outline rows; parallax is shown in Order mode.
+    const version = JSON.stringify([source?.id, source?.value], (key, value) => key === 'placement' ? { ...value, x: undefined, h: undefined, scale: undefined, facing: undefined } : value) + JSON.stringify((config.sceneDocuments?.(sceneId(), docs) ?? []).map(id => docs.find(d => d.id === id)));
+    if (version === outlineVersion) { updateOutlineSelection(); return; }
+    outlineVersion = version; updateOutlineSelection = () => {};
+    left.replaceChildren();
     left.append(element('h2', '', 'Outline'));
     const doc = compositionDocument();
     if (doc) {
@@ -620,7 +628,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         const li = element('li'), pick = button('', () => { revealed = node.id; select_(node.id === selectedId ? '' : node.id); }, `${art(node).label} · ${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
         pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
-        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId));
+        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.dataset.instance = node.id; pick.setAttribute('aria-pressed', String(node.id === selectedId));
         if (hidden.has(node.id)) li.classList.add('is-hidden');
         li.append(pick, eye(() => [node.id], node.id)); return li;
       };
@@ -692,6 +700,12 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         logic.append(summary, logicList); logic.title = LAYER_HINTS.logic;
         listHost.append(stack, logic); return shown;
       }
+      updateOutlineSelection = () => {
+        const fresh = reveal(); let selectedRow: HTMLElement | undefined;
+        left.querySelectorAll<HTMLElement>('[data-instance]').forEach(row => { const active = row.dataset.instance === selectedId; row.setAttribute('aria-pressed', String(active)); if (active) selectedRow = row; });
+        if (fresh && selectedRow && (selectedRow.closest('details:not([open])') || selectedRow.closest('[hidden]'))) { renderLayers(); return; }
+        if (fresh) selectedRow?.scrollIntoView({ block: 'center' });
+      };
       renderLayers();
     } else left.append(element('p', 'muted', 'Open a scene, or a timeline that refers to one.'));
   }
@@ -815,7 +829,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** The Add picker: searchable pictures of every registered piece, placed at the centre of the view. */
   let pickerQuery = '', pickerFamily = '';
   function openPicker() { if (current()?.kind !== 'composition') return; picker.hidden = false; renderPicker(); picker.querySelector<HTMLInputElement>('input[type=search]')?.focus(); }
-  function closePicker() { if (picker.hidden) return; picker.hidden = true; picker.replaceChildren(); }
+  function closePicker() { if (picker.hidden) return; picker.hidden = true; picker.replaceChildren(); thumbnails?.prune(); }
   function renderPicker() {
     const entries = assetInventory(config.registry, documentsForView()).filter(e => e.usability === 'reusable'), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
     const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
@@ -855,7 +869,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const presetsDoc = () => model.list().find(d => d.id === PRESETS_DOCUMENT)?.value as KitPresets | undefined;
   /** A people-kit preset is a human, an animal or a robot by its body kind; other presets share their kit's kind. */
   const presetFamily = (preset: KitPreset, kit: AssetEntry) => kit.id !== 'character.resident' ? kit.family : preset.props.kind === undefined || preset.props.kind === 'human' ? 'Human' : ['cat', 'pigeon', 'gull', 'crab'].includes(String(preset.props.kind)) ? 'Animal' : 'Robot';
-  async function addAtView(type: string, settings?: Properties) {
+  async function addAtView(type: string, settings?: Properties) { const token = perfBegin('editor.add'); try {
     const doc = compositionDocument(); if (!doc || current()?.kind !== 'composition') { notice('Open a scene to add artwork.', true); return; }
     let x = 0;
     try {
@@ -867,6 +881,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     x = snap ? Math.round(x / snap) * snap : Math.round(x);
     let added = false; run(() => { selectedId = model.add(doc.id, type, { x, h: 0 }, settings); inspectorTab = 'appearance'; added = true; });
     if (added) { if (compact.matches) showPanel('properties'); notice(`Added ${config.registry.get(type).label}. Drag it into place or set its position in the inspector.`); }
+  } finally { perfEnd(token); }
   }
   function editArray<T>(container: HTMLElement, title: string, value: T, apply: (v: T) => void, help?: string) {
     const details = element('details'); details.append(element('summary', '', title)); if (help) details.append(element('p', 'muted', help)); const input = element('textarea'); input.value = JSON.stringify(value, null, 2); input.setAttribute('aria-label', title + ' JSON'); details.append(input, button('Apply ' + title.toLowerCase(), () => { try { apply(JSON.parse(input.value) as T); } catch (e) { notice(`Invalid ${title.toLowerCase()}: ${message(e)}`, true); } })); container.append(details);
@@ -1009,7 +1024,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const cropToggle = button('Crop', () => { crop = !crop; cropFor = ''; refreshViewportTools(); void draw(); }, 'Crop the preview to the artwork height'); cropToggle.setAttribute('aria-pressed', String(crop));
     viewportTools.replaceChildren(button('−', () => zoomTo(viewZoom / 1.25), 'Zoom out (−)'), level, button('+', () => zoomTo(viewZoom * 1.25), 'Zoom in (+)'), button('Fit', fit, 'Fit the scene (F)'), cropToggle);
   }
-  const select_ = (id: string) => withViewDocuments(() => { selectedId = id; hoverId = ''; if (compact.matches && id) showPanel('properties'); refreshRight(); refreshLeft(); refreshTimeline(); void draw(); });
+  const select_ = (id: string) => perfMeasure('editor.selection', () => withViewDocuments(() => { selectedId = id; hoverId = ''; if (compact.matches && id) showPanel('properties'); refreshRight(); updateOutlineSelection(); if (current()?.kind === 'timeline') refreshTimeline(); void draw(); }));
   // Clicking the dark area around the scene deselects, like clicking empty space in it.
   // The empty stage around the pictures pans like the picture itself; a click without moving deselects.
   stage.addEventListener('pointerdown', event => {
