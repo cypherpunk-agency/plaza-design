@@ -37,7 +37,7 @@ export interface PreparedVehiclePreview { state:Readonly<VehiclePreviewState>;fa
 const LOAD:Crate={...BOX40,p:2,seed:71,code:'PLZU 610 0041'};
 /** The inspection fleet livery: stripe, number, QR plate and the autonomy cues. */
 const FLEET:Livery={stripe:'#d8b040',number:'F 207',qr:true,sensor:true};
-const FLEET_SHIP:Record<string,Ship['kind']>={spinner:'pod',freighter:'hauler',drone:'drone'};
+const FLEET_SHIP:Record<string,Ship['kind']>={spinner:'spinner',freighter:'freighter',drone:'skydrone'};
 const nil={visible:false as const,character:{x:0}};
 export function vehicleFamily(id:string){const f=VEHICLE_FAMILIES.find(f=>f.id===id);if(!f)throw new Error('Unknown vehicle family: '+id);return f;}
 export function vehicleState(id:string):VehiclePreviewState{const f=vehicleFamily(id);return{...DEFAULT_VEHICLE_STATE,id,camera:f.camera};}
@@ -64,7 +64,7 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
  }else if(state.id.startsWith('air.')){
   const blimp=kind==='blimp',o={t,still:state.reduced,face:state.facing,scale:Math.min(width/W,height/H)*state.zoom*(blimp?10:1),...(family.controls.includes('paint')?{paint:state.paint}:{}),cargo:state.cargo,box:state.cargo?{...LOAD}:null,beam:state.lights,livery};
   job('drawAircraft',{kind,...o},x=>{if(blimp){x.save();x.scale(.1,.1);drawAircraft(x,'blimp',o);x.restore();}else drawAircraft(x,kind as AirKind,o);});
- }else if(state.id==='cab.legacy'){const look={still:state.reduced,face:state.facing,livery};job('drawCab',{cx:0,base:0,k:1,t,...look},x=>drawCab(x,0,0,1,t,look));
+ }else if(state.id==='cab.legacy'){job('drawCab',{cx:0,base:0,k:1,t},x=>drawCab(x,0,0,1,t));
  }else if(state.id.startsWith('water.')){const o={t,still:state.reduced,face:state.facing,...(family.controls.includes('paint')?{paint:state.paint}:{}),wake:state.route==='linear',reflection:true,searchlight:state.lights,lamp:kind==='lamp'?(state.lights?true:'signal' as const):state.lights};job('drawBoat',{kind,...o},x=>drawBoat(x,kind as BoatKind,o));
  }else if(state.id.startsWith('fleet.')){
   const ship:Ship={kind:FLEET_SHIP[kind],ps:2,y:68,speed:state.speed/60,offset:W/2+130,flip:state.facing<0,depth:.55};job('drawSkyShips',{ships:[ship]},x=>drawSkyShips(x,view,[ship]));
