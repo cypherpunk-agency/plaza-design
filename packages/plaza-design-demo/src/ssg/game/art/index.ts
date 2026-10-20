@@ -26,6 +26,7 @@ import { marketElements } from './assemblies/market-elements';
 import { mallElements } from './assemblies/mall-elements';
 import { trainElements } from './assemblies/train-elements';
 import { shopElements } from './assemblies/shop-elements';
+import { buildingElements } from './buildings/elements';
 export * from './core/composition';
 export const art = new ArtRegistry().register(stoolElement).register(groupElement).register(playerRowElement).register(residentElement).register(roadVehicleElement);
-for (const element of [...libraryElements, ...capsuleElements, ...downtownElements, ...openingElements, ...mothElements, ...cinematicElements, ...stationElements, ...laundromatElements, ...beachElements, ...sandboxElements, ...dockworkElements, ...yardElements, ...warehouseElements, ...harborElements, ...terminalElements, ...metroElements, ...marketElements, ...mallElements, ...trainElements, ...shopElements, preparedCharacterElement,preparedActorElement]) art.register(element);
+for (const element of [...libraryElements, ...capsuleElements, ...downtownElements, ...openingElements, ...mothElements, ...cinematicElements, ...stationElements, ...laundromatElements, ...beachElements, ...sandboxElements, ...dockworkElements, ...yardElements, ...warehouseElements, ...harborElements, ...terminalElements, ...metroElements, ...marketElements, ...mallElements, ...trainElements, ...shopElements, ...buildingElements, preparedCharacterElement,preparedActorElement]) art.register(element);

@@ -240,6 +240,39 @@ after you are deleted. A change to one of them must reach every place it appears
   P14's train are the same train. The state switches lines, colours and what works, never the
   layout.
 
+### Building kit (2026-10-20)
+
+Building exteriors have one configurable kit in `art/buildings/`, like the character and vehicle kits.
+So far it is used only by the editor-only `downtown-next` proposal; shipped scenes keep their own pieces.
+
+- **`building.front`**: a street front at the player's scale (storey 66, ground floor 76 by default).
+  Seeded: every field left on `auto` (skin, windows, roof, gear, bays, fire escape, balconies) comes
+  from the seed, so a row of fronts varies on its own. Skins `brick`, `concrete`, `tenement`, `panel`,
+  `glass`; windows `punched`, `framed` (blinds, Downtown's), `curtained` (curtain, TV, someone at the
+  window, the Market's) or `none`; roofs `flat`, `parapet`, `cornice`, `stepped`, `ledge` (a climbable
+  annex edge); gear `tank`, `vent`, `dish`, `ac`; bays `door`, `glass` (shopfront with awning), `shutter`,
+  `tagged`, `sealed`. **Retrofit density** adds AC units, pipes, cable runs with a junction box, fire
+  escapes, balconies with laundry and plants, a screen bolted to the wall, ID scanners by the doors.
+  Room lights follow the city clock (`windowLit`) and lit windows and screens join the light layer.
+  Anchors: `roof`, `ground`, `fascia`, `storey1`…, `bay0`… (centre of each ground-floor opening, where
+  entrances attach), plus `origin`, `top`, `right`, `topCenter`.
+- **Signs hide windows**: anything with a `mask` ([left, right, bottom, top] in its own units) attached
+  to a front, directly or through other pieces, hides that front's windows there (`art/buildings/masks.ts`,
+  `frontMasks`); the scene adapter merges the result into the environment state (the proposal adapter does
+  this). `clear` on the front keeps an area free by hand.
+- **`building.row`**: buildings at a distance with their own parallax, drawn by the Downtown tower
+  generator (`architecture/downtown-towers.ts`) at a small storey from the same skins.
+- **`building.attachment`**: one retrofit piece (AC, pipe, fire escape, balcony, screen, scanner, cable run,
+  planter, tank, vent, dish) to hang on any anchor, e.g. a custom balcony on `storey3`.
+- **Library › Buildings** shows a lineup of skins at true scale beside the player, one front with every
+  choice, and rows at three distances.
+
+To extend it, add the name to the list at the top of `art/buildings/front.ts` (or `ATTACHMENTS` in
+`elements.ts`), give `shapeOf` its seeded default and draw it in `paintFront`; the editor fields read the
+lists. Shared drawing bodies live in `art/buildings/parts.ts`: Downtown's window, bays and trim, the
+Market tenement's windows, balconies and shutter, the yard's fire escape, AC unit and wall textures.
+Those scenes call the same functions, so a change there reaches them too; check them when you edit a part.
+
 ## 13. Before you call a scene done
 
 - [ ] Squint, silhouette and phone tests pass.

@@ -77,7 +77,7 @@ The tab row has Scene and Logic, plus Library, World and Labs. Play runs on the 
   `play-fixtures.json` (day, minute, weather, seed, story flags). The stage shows the scene in that state and
   ▶ Play starts from it. With a state chosen, the time and weather controls edit it (saved, undoable);
   "preview only" changes nothing saved. A proposal scene uses its base scene's states.
-- **Library** holds the artwork explorer and the Characters/Style frames/Vehicles/Signs viewers.
+- **Library** holds the artwork explorer and the Characters/Style frames/Vehicles/Buildings/Signs viewers.
   Artwork has a district bar on the left: a piece belongs to every district whose scenes use it
   ("Elsewhere" is unused or sequence-only artwork). Characters has a **Crowd** view that samples a
   district's crowd mix (`art/characters/crowds.ts`: plain vs kitted people, wardrobe, acts, robots)
@@ -89,7 +89,10 @@ The tab row has Scene and Logic, plus Library, World and Labs. Play runs on the 
   lighting, devices, people), so it renders exactly as the base would with different artwork. Style frames
   shows a scene and its proposal one above the other. They are not registered with the game, the city or Play.
   `downtown-next` is the first: today's Downtown made taller and denser (extra storeys, AC units, stacked
-  plates, blade signs, ad screens, cameras, Market tenements in the midground, a street crowd).
+  plates, blade signs, ad screens, cameras, Market tenements in the midground, a street crowd). Its street
+  fronts are `building.front` pieces from the building kit (ART-GUIDE §12, "Building kit"): each with its own
+  skin, windows, roof and retrofit, the same widths, positions and door bays as before, with the entrances
+  attached to the fronts' `bay` anchors. The proposal adapter supplies the fronts' sign masks.
 - **World** holds what is shared between scenes: the **City map** (opening a place switches the
   editor to that scene), Game opening, Companion dialogue, Networks, Scenes, City & travel and
   Bot dialogue.
@@ -176,6 +179,10 @@ the open scene. Metadata distinguishes defaults
 from resolved transforms/visibility/anchors. Cinematic-only pieces open their native sequence
 context; conditional or non-painting pieces report invisible snapshots. See the
 [stretch evidence ledger](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
+
+**Buildings** shows the building kit (`art/buildings/`): a **Lineup** of one seeded front per skin beside the
+player, **Single** (one front with skin, windows, roof, fire escape, balconies and size) and **Rows** (`building.row`
+at three distances); seed, time of day, retrofit density and lit rooms apply to all three.
 
 Characters and Vehicles open on a **Lineup**: up to eight variants (or every placeable road
 vehicle) side by side at true scale next to the player, on a metre ruler, with a **Depth** band

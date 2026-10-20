@@ -80,6 +80,11 @@ export const SETS: SetEntry[] = [
     users: ['story/title/town.ts: Downtown\'s street row (true scale, shopfronts, signs), the portal tower, four skyline rows behind it thickening toward the tunnel', 'scenes/library/scene.ts: through the reading room\'s tall windows (varied massing now, no signs, on the city clock)'],
   },
   {
+    id: 'building-kit', file: 'art/buildings/front.ts',
+    what: 'The building kit: seeded street fronts (skins brick, concrete, tenement, panel, glass; punched, framed or curtained windows; flat, parapet, cornice, stepped or ledge roofs with tanks, vents, dishes and AC; door, shopfront, shutter, tagged or sealed bays; retrofit: AC units, pipes, cable runs, fire escapes, balconies with laundry, bolted-on screens, ID scanners), rows of buildings at a distance (the downtown-towers generator) and single attachments. Registered as building.front, building.row and building.attachment. Shared bodies in art/buildings/parts.ts.',
+    users: ['art/proposals/downtown-next.composition.json: the street fronts (editor-only proposal)', 'parts.ts bodies: art/assemblies/downtown.ts (windows, bays, trim), art/assemblies/construction.ts (Market tenement facades), art/assemblies/fixer-yard.ts (fire escape, AC unit, wall textures)'],
+  },
+  {
     id: 'weather', file: 'art/atmosphere/weather.ts',
     what: "The weather over an outdoor scene, from its district's forecast (world/weather.ts): cloud deck and lightning behind, puddles, smog and fog banks in the middle, rain, low fog, heat shimmer and the storm's flash in front.",
     users: [

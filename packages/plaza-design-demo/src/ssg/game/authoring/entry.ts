@@ -66,6 +66,7 @@ import type { PlayFixtures } from './play-fixtures';
 import { mountStyleFrames, type StyleFrameSession } from './style-frames';
 
 import { mountVehicleWorkbench } from './vehicle-workbench';
+import { mountBuildingWorkbench } from './building-workbench';
 
 
 
@@ -227,6 +228,7 @@ async function start() {
         return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => proposalScene(scene)?.label ?? (isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene));
       } },
       { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
+      { id: 'buildings', area: 'library', label: 'Buildings', title: 'Building kit · fronts and rows · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountBuildingWorkbench(panel); } },
 
       { id: 'signage', area: 'library', label: 'Signs & light', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
 
