@@ -15,6 +15,14 @@ import libraryComposition from './library/composition.json';
 import libraryScene from './library/scene.json';
 import libraryGameplay from './library/gameplay.json';
 import libraryDevices from './library/devices.json';
+import galleriaStationComposition from './galleriaStation/composition.json';
+import galleriaStationScene from './galleriaStation/scene.json';
+import galleriaStationGameplay from './galleriaStation/gameplay.json';
+import galleriaStationDevices from './galleriaStation/devices.json';
+import harborStationComposition from './harborStation/composition.json';
+import harborStationScene from './harborStation/scene.json';
+import harborStationGameplay from './harborStation/gameplay.json';
+import harborStationDevices from './harborStation/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -25,6 +33,8 @@ export const FOLDER_SOURCES={
  warehouse:{composition:warehouseComposition,scene:warehouseScene,gameplay:warehouseGameplay,devices:warehouseDevices},
  shop:{composition:shopComposition,scene:shopScene,gameplay:shopGameplay,devices:shopDevices},
  library:{composition:libraryComposition,scene:libraryScene,gameplay:libraryGameplay,devices:libraryDevices},
+ galleriaStation:{composition:galleriaStationComposition,scene:galleriaStationScene,gameplay:galleriaStationGameplay,devices:galleriaStationDevices},
+ harborStation:{composition:harborStationComposition,scene:harborStationScene,gameplay:harborStationGameplay,devices:harborStationDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** The same sources by any scene id (undefined for scenes that still have code). */
 export const FOLDER_BY_ID:Readonly<Record<string,FolderSceneSource>>=FOLDER_SOURCES;

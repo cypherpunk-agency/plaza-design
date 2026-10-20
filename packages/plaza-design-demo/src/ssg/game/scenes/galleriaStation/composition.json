@@ -365,7 +365,7 @@
       "order": 16,
       "layer": "set",
       "bindings": {
-        "train": "transit.train"
+        "train": "station.train"
       }
     },
     {
@@ -625,7 +625,7 @@
         "anchor": "underside"
       },
       "bindings": {
-        "roof": "architecture.roof"
+        "roof": "station.roof"
       }
     },
     {
@@ -643,8 +643,8 @@
         "anchor": "underside"
       },
       "bindings": {
-        "roof": "architecture.roof",
-        "departure": "transit.departure"
+        "roof": "station.roof",
+        "departure": "station.departure"
       }
     },
     {
@@ -679,7 +679,7 @@
       "order": 35,
       "layer": "set",
       "bindings": {
-        "rider": "actor.regular.pose.embedded"
+        "rider": "station.pose.regular.embedded"
       }
     },
     {
@@ -719,7 +719,7 @@
       "order": 38,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting-0.pose"
+        "pose": "station.pose.waiting-0"
       }
     },
     {
@@ -735,7 +735,7 @@
       "order": 39,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting-1.pose"
+        "pose": "station.pose.waiting-1"
       }
     },
     {
@@ -751,7 +751,7 @@
       "order": 40,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting-2.pose"
+        "pose": "station.pose.waiting-2"
       }
     },
     {
@@ -767,7 +767,7 @@
       "order": 41,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting-3.pose"
+        "pose": "station.pose.waiting-3"
       }
     },
     {
@@ -783,7 +783,7 @@
       "order": 42,
       "layer": "set",
       "bindings": {
-        "pose": "actor.waiting-4.pose"
+        "pose": "station.pose.waiting-4"
       }
     },
     {
@@ -797,7 +797,7 @@
       "order": 43,
       "layer": "set",
       "bindings": {
-        "roof": "architecture.roof"
+        "roof": "station.roof"
       }
     },
     {
@@ -975,7 +975,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.regular.pose"
+        "pose": "station.pose.regular"
       }
     }
   ]

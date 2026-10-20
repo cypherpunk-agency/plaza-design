@@ -8,6 +8,8 @@ import type {SceneDocument} from './scene-document';
 import type {EngineDraw} from '../host';
 import type {GameplayDefinition} from './types';
 import {BINDING_PROVIDERS} from './binding-providers';
+import type {CityModel} from '../../world/city';
+import type {LineSystem} from '../../world/transport/line';
 /**
  * Binding sources of declared scenes: the names a composition's `bindings` may use, each worked
  * out by the engine every frame. A scene's artwork asks for `actor.keeper.pose` or `world.light`;
@@ -30,7 +32,8 @@ export interface StageActorRules {
  /** An actor (presentation role) is hidden when an artwork role is off screen by more than `margin` px. */
  cull?:{actor:string;role:string;margin?:number}[];
 }
-export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;engine?:EngineDraw}
+/** `world`: the city and line system a world-bound scene was rebuilt with (a scene mechanism with `world`, scene-mechanisms.ts); absent until the game binds them. */
+export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;engine?:EngineDraw;world?:{city:CityModel;metro:LineSystem}}
 const POSE=/^actor\.([-a-zA-Z0-9_.]+)\.pose$/,CLIP=/^actor\.([-a-zA-Z0-9_.]+)\.clip$/,HOVER=/^device\.([-a-zA-Z0-9_]+)\.hover$/,VALUE=/^value\.([-a-zA-Z0-9_.:]+)$/,SPANS=/^artwork\.([-a-zA-Z0-9_.]+)\.spans$/;
 const providerOf=(name:string)=>{const dot=name.indexOf('.');return dot>0&&Object.prototype.hasOwnProperty.call(BINDING_PROVIDERS,name.slice(0,dot))?name.slice(0,dot):undefined;};
 export const knownBindingSource=(name:string)=>name==='world.light'||[POSE,CLIP,HOVER,VALUE,SPANS].some(r=>r.test(name))||!!providerOf(name);
