@@ -1,3 +1,4 @@
+import {PointerGesture} from '../pointer-gesture';
 /**
  * What every lock toy's panel shares: the frame (title, hint, play area,
  * status line, controls), the keyboard while it is open, a canvas that fits
@@ -13,6 +14,8 @@ import type { Line } from '../model';
 import { button, el, type PanelKit } from '../panels';
 
 export interface ToyFrame {
+  /** Pointer work is canceled with this toy panel. */
+  gesture:(start:PointerEvent,move:(e:PointerEvent)=>void,finish?:(e:PointerEvent)=>void)=>void;
   /** The play area: a canvas or the toy's own DOM goes here. */
   area: HTMLDivElement;
   /** The row of buttons under it. */
@@ -44,22 +47,24 @@ export function toyFrame(kit: PanelKit, key: string, title: string, hint: string
   const area = el('div', 'toy-area'), controls = el('div', 'toy-controls'), status = el('div', 'toy-status', hint);
   wrap.append(head, area, status, controls);
   body.appendChild(wrap);
-  let over = false;
+  let over = false,disposed=false,endTimer=0;
+  const gesture=new PointerGesture();
   const say = (l: Line, quiet = false) => {
+    if(disposed)return;
     status.textContent = l[1]; status.className = 'toy-status ' + (l[2] ?? '');
     if (!quiet) kit.say(l);
   };
   const end = (cls: string, text: string) => {
-    over = true;
+    over = true;gesture.cancel();
     wrap.classList.add(cls);
     const stamp = el('div', 'toy-stamp', text); area.appendChild(stamp);
     controls.querySelectorAll('button').forEach((b) => { b.disabled = true; });
-    window.setTimeout(() => { if (wrap.isConnected) kit.close(); }, 1300);
+    endTimer=window.setTimeout(() => { if(!disposed&&wrap.isConnected)kit.close(); },1300);
   };
   const keyFns: ((e: KeyboardEvent, down: boolean) => boolean)[] = [];
   // capture on window, before the game's own keys (B and H must not leave while you type a cryptex word)
   const onKey = (e: KeyboardEvent) => {
-    if (!wrap.isConnected) { window.removeEventListener('keydown', onKey, true); window.removeEventListener('keyup', onKey, true); return; }
+    if(disposed||!wrap.isConnected)return;
     if (e.key === 'Escape') return;
     const down = e.type === 'keydown';
     // every key down stays here; a key up only when the toy used it (the game must hear a walking key let go)
@@ -69,19 +74,20 @@ export function toyFrame(kit: PanelKit, key: string, title: string, hint: string
   };
   window.addEventListener('keydown', onKey, true);
   window.addEventListener('keyup', onKey, true);
+  kit.cleanup(()=>{disposed=true;clearTimeout(endTimer);gesture.cancel();window.removeEventListener('keydown',onKey,true);window.removeEventListener('keyup',onKey,true);});
   return {
-    area, controls, say,
-    btn: (text, fn, cls = '') => { const b = button(text, 'hack-btn toy-btn ' + cls, () => { if (!over) fn(); }); controls.appendChild(b); return b; },
-    solved: () => { if (over) return; m.toySolved(key); end('ok', m.label('toy.solved')); },
+    area, controls, say,gesture:(start,move,finish=()=>{})=>{if(!disposed&&!over&&wrap.isConnected)gesture.start(start,move,finish);},
+    btn: (text, fn, cls = '') => { const b = button(text, 'hack-btn toy-btn ' + cls, () => { if(!disposed&&!over&&wrap.isConnected)fn(); }); controls.appendChild(b); return b; },
+    solved: () => { if(disposed||over)return; m.toySolved(key); end('ok', m.label('toy.solved')); },
     wrong: (answer) => {
-      if (over) return false;
+      if(disposed||over)return false;
       m.toyWrong(key, answer);
       say(m.line('guard.wrong.last', { noun, guess: answer }), true);
       if (!m.toyBlocked(key)) return true;
       end('err', m.label('toy.locked'));
       return false;
     },
-    live: () => !over && wrap.isConnected,
+    live: () => !disposed&&!over&&wrap.isConnected,
     keys: (fn) => keyFns.push(fn),
   };
 }

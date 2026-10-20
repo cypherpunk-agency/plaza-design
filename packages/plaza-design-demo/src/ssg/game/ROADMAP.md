@@ -345,3 +345,9 @@ phase rules are authored source. Both builds, focused behavior/persistence/edito
 native Play startups and the173-case raster repeat pass at source2b006c0. See the execution status
 for scoped evidence and the retained first-run two-pixel map discrepancy. Next: washer deadlines/
 rewards, Capsule ordinary choices/edge/goal timing, remaining scene decisions and final acceptance.
+
+2026-10-20 lifecycle checkpoint: G5 now PASS with source-bound repeated scene/private Play,
+callback/listener/timer ownership, reset/restore, cached Game resume and preserved simulation-policy
+evidence. See docs/reference/LIFECYCLE-ACCEPTANCE.md. G1/G2/G3/G5/G6 are accepted; G0/G4/G7–G13
+remain open. Latest all19 actor source CRUD/Save and native Play evidence is recorded separately in
+ENGINE-CONSOLIDATION-STATUS.md; no story milestone is advanced by this technical checkpoint.

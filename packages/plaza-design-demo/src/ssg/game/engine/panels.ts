@@ -25,6 +25,8 @@ export interface PanelKit {
   close: () => void;
   /** requestAnimationFrame, cancelled on close. Return false to stop. */
   frame: (fn: (t: number) => boolean | void) => void;
+  /** Owned resources are released on close or replacement; return unregisters cleanup. */
+  cleanup: (release:()=>void)=>()=>void;
 }
 
 /** A scene's own panel (`camera`), opened by `{ "open": "camera" }`. `arg` is the step's `with`. */
@@ -34,6 +36,8 @@ export class Panels {
   private root: HTMLDivElement;
   private body: HTMLDivElement;
   private raf = 0;
+  private generation=0;
+  private cleanups=new Set<()=>void>();
   private talking?:ConversationSession;
   onClose: () => void = () => {};
 
@@ -46,8 +50,9 @@ export class Panels {
 
   get conversationFrame(){return this.talking?.frame()??null;}
   get isOpen() { return !this.root.hidden; }
-  close() { if (this.root.hidden) return; this.root.hidden = true;this.talking?.close();this.talking=undefined; cancelAnimationFrame(this.raf); this.body.textContent = ''; this.onClose(); }
-  private show(cls: string) { cancelAnimationFrame(this.raf); this.body.textContent = ''; this.body.className = 'hack-panel-body ' + cls; this.root.hidden = false; }
+  private release(){this.generation++;cancelAnimationFrame(this.raf);this.talking?.close();this.talking=undefined;const cleanups=[...this.cleanups];this.cleanups.clear();for(const release of cleanups)try{release();}catch{/* release remaining owned resources */}}
+  close() { if (this.root.hidden) return; this.root.hidden = true;this.release();this.body.textContent = ''; this.onClose(); }
+  private show(cls: string) { this.release();this.body.textContent = ''; this.body.className = 'hack-panel-body ' + cls; this.root.hidden = false; }
 
   /** Open a panel by name: `talk` (arg: the dialogue), or one of the scene's own. */
   open(name: string, arg?: string) {
@@ -55,16 +60,19 @@ export class Panels {
     const fn = this.own[name];
     if (!fn) return;
     this.show(name);
+    const generation=this.generation,live=()=>!this.root.hidden&&generation===this.generation;
     const loop = (fn: (t: number) => boolean | void) => {
-      const step = (t: number) => { if (this.root.hidden || fn(t) === false) return; this.raf = requestAnimationFrame(step); };
-      this.raf = requestAnimationFrame(step);
+      const step = (t: number) => { if(!live()||fn(t)===false||!live())return;this.raf=requestAnimationFrame(step); };
+      if(live())this.raf=requestAnimationFrame(step);
     };
-    fn({ body: this.body, m: this.m, say: this.say, close: () => this.close(), frame: loop }, arg);
+    try{fn({ body:this.body,m:this.m,say:l=>{if(live())this.say(l);},close:()=>{if(live())this.close();},frame:loop,
+      cleanup:release=>{if(!live()){release();return()=>{};}this.cleanups.add(release);return()=>{this.cleanups.delete(release);};},
+    },arg);}catch(error){this.close();throw error;}
   }
 
   /** Branching and simple dialogue use the same runner; this adapter only paints panel controls. */
   presentConversation(session:ConversationSession,onChoice?:(label:string)=>void){
-    this.talking?.close();this.show('dlg');this.talking=session;const box=el('div','dlg-box');this.body.append(box);
+    this.show('dlg');this.talking=session;const box=el('div','dlg-box');this.body.append(box);
     const render=()=>{
       const f=session.frame();this.history?.(f.speaker,f.pages);box.replaceChildren(el('b','dlg-name',f.speaker),el('p','dlg-text',f.pages.join('\n')));const choices=el('div','dlg-choices');box.append(choices);
       for(const choice of f.choices??[])choices.append(button(choice.label,'dlg-choice',()=>{const result=session.choose(choice.id);if(result.ok&&choice.echo!==false)onChoice?.(choice.label);if(result.ok)render();else choices.append(el('p','error','Operation refused: '+result.reason));}));

@@ -1,6 +1,6 @@
 # Runtime lifetime and clock ownership
 
-2026-10-20. Source audit and bounded evidence; full G5 remains open.
+2026-10-20. G5 PASS; source identity and results in [LIFECYCLE-ACCEPTANCE.md](./LIFECYCLE-ACCEPTANCE.md).
 
 | Owner | Lifetime and clock | Release / suspension |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ empty scene introduction is also verified to create no invalid speech bubble.
 reset/restore cycles, failed commits, repeat guards and disposal. Communication callsite checks
 cover22 actual Game loop/HUD/guidance cases including hidden/covered/reduced-motion conditions.
 
-## Remaining audit
+## Additional scoped owners
 
 All seven schematic gesture paths now use one per-layer temporary listener owner. Close, reset,
 restore, mode changes, replacement and pointercancel cancel work without invoking its tap/drop.
@@ -43,5 +43,14 @@ to the cached schematic/page, not individual gestures.
 `check-schematic-gesture-lifecycle.mts` passes567 actual gesture cases across seven paths and eight
 interruptions, including stale callback rejection, foreign pointers, normal completion and replacement.
 The packaged browser verifies real core/noun taps, native wave and layer close with no errors.
-Full combined lifecycle repetition, clock/persistence inventory reconciliation and final scene/network/
-controller acceptance remain separate; these bounded checks do not sign G5.
+Panels now own explicit cleanup callbacks and a generation for their RAF/say/close adapters. Toy
+keys, solved-card timer, Morse pause and shared pointer drags release on close/replacement; detached
+controls cannot act. Menu fade/load timers and Schematic focus timers cancel on owner changes.
+Popup removes its capture listener on close; transport/touch handlers belong to cached DOM and
+handle pointercancel. Boot owns its initial-page element, cancels line timers/removes global keys
+on finish, and its final380ms callback removes that captured element only. Diagnostics removes its
+visibility listener on stop. Pure sampled presentation controllers own no asynchronous resources.
+
+The combined acceptance now includes38 real native Play/Stop cycles, repeated actual scene visits,
+current private/native storage checks and the full source ownership inventory. G5 is accepted;
+full entity/controller/network/save/preservation requirements remain in their own open gates.

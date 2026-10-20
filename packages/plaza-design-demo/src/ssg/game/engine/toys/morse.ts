@@ -75,11 +75,13 @@ export function morsePanel(kit: PanelKit, key: string) {
   f.area.appendChild(tape);
   // a pause of a few units ends the letter by itself
   let pause = 0;
-  const later = () => { clearTimeout(pause); pause = window.setTimeout(() => { toy.next(); draw(); }, Math.max(900, toy.unit * 5)); };
+  kit.cleanup(()=>clearTimeout(pause));
+  const later = () => { clearTimeout(pause); pause = window.setTimeout(() => { if(f.live()){toy.next();draw();} }, Math.max(900, toy.unit * 5)); };
   const draw = () => { tape.textContent = toy.codes() ? toy.text() + '   ' + toy.codes() : '_'; };
   let downAt = 0;
   const press = () => { if (!downAt && f.live()) { downAt = performance.now(); clearTimeout(pause); tapBtn.classList.add('down'); } };
   const release = () => {
+    if(!f.live()){downAt=0;tapBtn.classList.remove('down');return;}
     if (!downAt) return;
     toy.tap(toy.mark(performance.now() - downAt)); downAt = 0; tapBtn.classList.remove('down');
     draw(); later();

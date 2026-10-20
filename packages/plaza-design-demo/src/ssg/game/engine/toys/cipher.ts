@@ -75,8 +75,7 @@ export function cipherPanel(kit: PanelKit, key: string) {
       while (acc >= step) { toy.turnBy(1); acc -= step; }
       while (acc <= -step) { toy.turnBy(-1); acc += step; }
     };
-    const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
-    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+    f.gesture(e,mv);
   });
 
   kit.frame(() => {

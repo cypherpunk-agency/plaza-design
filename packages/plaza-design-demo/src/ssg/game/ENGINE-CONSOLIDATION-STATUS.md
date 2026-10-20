@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `9e09c92` on main and production.
-Homepage jobs39358735544/39358735886 and design job39358735539 succeeded.
+Last verified deployment: `531dc71` on main and production.
+Homepage jobs39359560451/39359560942 and design job39359560487 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -25,7 +25,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G2 | PASS | Actual readable-clock, reduced-motion/covered-screen, bounded priority/cancellation/guidance and on/off-screen device checks; COMMUNICATION-ACCEPTANCE.md |
 | G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
 | G4 | IN PROGRESS | Contextual source Save/history/bundles/recovery and bot source checks pass; full authoring/isolation acceptance pending |
-| G5 | IN PROGRESS | Shared handoff reset/restore/disposal checks pass; whole-runtime lifecycle inventory/cases pending |
+| G5 | PASS | Sourcea3fac97e: cached Game20 cycles, panel/menu/focus/gesture cancellation, actual38 native private Play/Stop cycles, repeated scene visits and complete ownership/preserved simulation inventory. See LIFECYCLE-ACCEPTANCE.md |
 | G6 | PASS | Source839777ab5e10: all six workloads, three eligible repeats each, raw samples/environment/calibration and independent summary validation; top-three exclusive contributor inspection, no optimization retained. See PERFORMANCE-CHECKPOINT-2026-10-19-C.md. Earlier failed Chrome diagnostics remain immutable |
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
 | G8 | IN PROGRESS | 19/19 ordinary manifests and actor collections now support source CRUD/rebinding/Save; new ordinary catalogue scenes run without TS registration. Native controllers/world/network/story and integrated acceptance remain |
@@ -2851,3 +2851,34 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   dwell/timer18 to running/position2972, clean Stop and empty warning/error log PASS. This tests the
   existing role rebinding, not a new story/remote mechanic or campaign playthrough.
 - Whole world/story/controller/editor/removal gates remain open; no completion promotion.
+
+## 2026-10-20 combined editor/source verification at92178ea5
+
+- Actual packaged app-6H4SD2MJ.js/play-SCTVE7I4.js: all19 scenes selected in the editor, private
+  starting fixtures created, native runtime/Terminal plus running acknowledgment observed, Stop
+  removes iframe each time; warning/error log empty. Report:
+  `.scene-system/evidence/all19-private-play-92178ea5-20261020.json`. This covers startup and frame
+  cleanup, not every interaction or full authoring acceptance.
+- `check-actor-entities.mts`: all19 source actor CRUD/binding/dialogue/identity, invalid edits,
+  history/bundles/protected Save/native reload/byte Undo PASS; artifact
+  `.scene-system/actor-entities/run-IKhYfJ`. Actual all19 manifest/companion/actor inspector identities
+  PASS in `.scene-system/scene-inspector-identities-gdQfQX`.
+- `check-scene-batch.mts` and `check-communication.mts` PASS on this same runtime checkpoint.
+  Full coverage reconciliation and remaining mandatory controller/entity/state gates stay open.
+
+## 2026-10-20 lifecycle gate closure
+
+- PanelKit now owns cleanup callbacks and generation guards for frame/reply/close adapters. Lock
+  toys immediately release keyboard handlers, solved-card/Morse timers and drags when closed or
+  replaced. Cipher/Cryptex and Schematic reuse one PointerGesture owner. Old controls/callbacks
+  cannot affect a replacement panel. Existing drawing, puzzle rules and timing boundaries retained.
+- Schematic focus timers and Menu title-fade/slot-load timers cancel with their owner. Actual slot
+  load249/250ms and fade899/900ms/reduced-motion0ms checks pass; no new storage format.
+- Sourcea3fac97efcb8b300260b1b12296586cf5ae150629c617b2694749001f34f92a4: both builds,173 zero-
+  difference/error raster cases,38 real packaged native Play/Stop operations across all19 scenes,
+  three cipher panel reopen cycles, nine verified repeated Test District visits with stable cached
+  UI counts and empty warning/error logs PASS. Report:
+  `.scene-system/evidence/lifecycle-a3fac97e-20261020.json`.
+- Full gate audit and individual commands/results: `docs/reference/LIFECYCLE-ACCEPTANCE.md`.
+  G5 promoted to PASS. G1/G2/G3/G5/G6 now PASS; nine gates remain open. This does not promote
+  authoring/controller/network/current-save or full preservation acceptance.

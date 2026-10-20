@@ -1,3 +1,4 @@
+import {PointerGesture} from './pointer-gesture';
 import type {Hints} from '../ui/hints';
 import { gameStorage } from '../runtime/storage';
 /**
@@ -104,7 +105,10 @@ export class Schematic {
   /** The GUARD whose keyboard input is open, and what is typed so far (it survives a redraw). */
   private typing: string | null = null;
   private draft = '';
-  private cancelGesture?:()=>void;
+  private gesture?:PointerGesture;
+  private focusTimers?:Map<string,number>;
+  private clearFocus(){for(const timer of this.focusTimers?.values()??[])clearTimeout(timer);this.focusTimers?.clear();}
+  private cancelGesture(){this.gesture?.cancel();}
   private offsets = new Map<string, P>();
   private boardPos = new Map<string, P>();
   private slots: { kind: string; btn: HTMLButtonElement }[] = [];
@@ -208,19 +212,19 @@ export class Schematic {
   presentHint(busy=false){const text=this.isOpen?this.hints?.boardHint(busy||!!this.hintBusy?.()):null;this.hint.textContent=text??'';this.hint.hidden=!text;}
   private show() {this.root.hidden=false;this.presentHint();}
   openDevice(id: string) {
-    this.cancelGesture?.();
+    this.cancelGesture?.();this.clearFocus();
     this.known.add(id); this.mode = 'device'; this.dev = id;
     this.show(); this.pending = null; this.armed = null; this.chip = null;
     this.render();
   }
   openBoard() {
-    this.cancelGesture?.();
+    this.cancelGesture?.();this.clearFocus();
     if (!this.known.size) return;
     this.mode = 'board'; this.show(); this.render();
   }
   /** Hack vision (the vision instance only): every device on screen, wired in place. */
   openVision() {
-    this.cancelGesture?.();
+    this.cancelGesture?.();this.clearFocus();
     this.root.hidden = false; this.armed = null; this.pending = null; this.chip = null; this.drawer = false;
     this.presentHint();
     this.render();
@@ -265,7 +269,8 @@ export class Schematic {
     const core = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"] .sch-core`);
     if (!core) return;
     core.classList.add('focus');
-    window.setTimeout(() => this.stage.querySelector(`.sch.vis[data-dev="${id}"] .sch-core`)?.classList.remove('focus'), 1400);
+    const timers=this.focusTimers??=new Map();clearTimeout(timers.get(id));
+    const timer=window.setTimeout(()=>{if(timers.get(id)!==timer)return;timers.delete(id);this.stage.querySelector(`.sch.vis[data-dev="${id}"] .sch-core`)?.classList.remove('focus');},1400);timers.set(id,timer);
   }
 
   /** Hack vision: the LOGIC drawer open or shut (LOGIC, L). */
@@ -497,7 +502,7 @@ export class Schematic {
     return Object.fromEntries([...[...this.moved].map(([k, p]) => [k, r(p)]), ...[...this.voff].map(([k, p]) => [k, r(p)])]);
   }
   restorePieces(rec: Record<string, Pt> | undefined, keep: (id: string) => boolean) {
-    this.cancelGesture?.();
+    this.cancelGesture?.();this.clearFocus();
     this.moved.clear(); this.voff.clear();
     for (const [k, p] of Object.entries(rec ?? {})) {
       if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
@@ -509,7 +514,7 @@ export class Schematic {
     this.render();
   }
   toggleBoard() { if (this.mode === 'board' && this.isOpen) this.openDevice(this.dev || [...this.known][0]); else this.openBoard(); }
-  close() { this.cancelGesture?.(); if (this.root.hidden) return; this.root.hidden = true; this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.onClose(); }
+  close() { this.cancelGesture?.();this.clearFocus(); if (this.root.hidden) return; this.root.hidden = true; this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.onClose(); }
   note(l: Line) { this.status.textContent = (l[0] ? '> ' + l[0] + '   ' : '') + l[1]; this.status.className = 'hack-status ' + (l[2] ?? ''); }
 
   /**
@@ -544,7 +549,7 @@ export class Schematic {
     return { pos: obj(this.boardPos), offsets: obj(this.offsets) };
   }
   restoreLayout(l: { pos?: Record<string, Pt>; offsets?: Record<string, Pt> }) {
-    this.cancelGesture?.();
+    this.cancelGesture?.();this.clearFocus();
     const ok = (p: unknown): p is P => !!p && typeof (p as P).x === 'number' && typeof (p as P).y === 'number';
     this.boardPos.clear(); this.offsets.clear();
     for (const [k, p] of Object.entries(l.pos ?? {})) if (ok(p)) this.boardPos.set(k, { x: p.x, y: p.y });
@@ -553,7 +558,7 @@ export class Schematic {
   }
   /** Forget where everything sat and which verbs were open (a scene reset). The shared `known` is the owner's to clear. */
   resetLayout() {
-    this.cancelGesture?.();
+    this.cancelGesture?.();this.clearFocus();
     this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear(); this.moved.clear(); this.voff.clear();
     this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.dev = '';
     this.render();
@@ -877,16 +882,9 @@ export class Schematic {
     t.setAttribute('x', String(mx));
   }
 
-  /** One temporary window gesture per layer; interruption never runs a tap/drop action. */
+  /** Shared UI gesture lifetime; closing a layer never runs its pending tap/drop. */
   private trackGesture(start:PointerEvent,move:(e:PointerEvent)=>void,finish:(e:PointerEvent)=>void,canceled:()=>void=()=>{}) {
-    this.cancelGesture?.();let active=true;
-    const release=()=>{if(!active)return;active=false;window.removeEventListener('pointermove',moving);window.removeEventListener('pointerup',ending);window.removeEventListener('pointercancel',canceling);if(this.cancelGesture===cancel)this.cancelGesture=undefined;};
-    const cancel=()=>{if(!active)return;release();canceled();};
-    const owns=(e:PointerEvent)=>e.pointerId===start.pointerId;
-    const moving=(e:PointerEvent)=>{if(active&&owns(e))move(e);};
-    const ending=(e:PointerEvent)=>{if(!active||!owns(e))return;release();finish(e);};
-    const canceling=(e:PointerEvent)=>{if(owns(e))cancel();};
-    this.cancelGesture=cancel;window.addEventListener('pointermove',moving);window.addEventListener('pointerup',ending);window.addEventListener('pointercancel',canceling);
+    (this.gesture??=new PointerGesture()).start(start,move,finish,canceled);
   }
 
   // ---------- gestures ----------
