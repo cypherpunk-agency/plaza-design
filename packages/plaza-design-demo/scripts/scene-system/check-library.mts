@@ -16,7 +16,7 @@ const libraryDeviceData=(data:SceneData,composition=libraryComposition,source=bi
 const normalize=(data:SceneData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 const doc = validateLibraryComposition(JSON.parse(JSON.stringify(libraryComposition)));
 assert.deepEqual(doc, libraryComposition);
-assert.equal(doc.instances.length, 41);
+assert.equal(doc.instances.length, 42);
 assert.deepEqual(libraryDeviceData(devices as SceneData), normalize(devices as SceneData), 'shipping device geometry must remain exact');
 assert.equal(libraryScene().spawn, 74);
 const changed = structuredClone(doc);

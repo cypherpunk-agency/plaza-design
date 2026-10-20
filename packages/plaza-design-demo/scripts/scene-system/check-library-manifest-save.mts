@@ -17,7 +17,7 @@ const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.e
 const validate=(d:any,docs:any[])=>{if(d.id==='library-scene')validateSourceDocuments(new Map(docs.map(row=>[row.id,row.value])));};
 const make=()=>{const m=new ComposerModel(art,context,validate);m.load(documents);return m;};
 const model=make(),composition=model.get('library').value as Composition,scene=structuredClone(LIBRARY_SCENE),gameplay=structuredClone(LIBRARY_GAMEPLAY);
-composition.instances.push({id:'review-console',type:'furniture.stool',props:{seed:9},placement:{x:610,h:0},order:500,pass:'backdrop'});
+composition.instances.push({id:'review-console',type:'furniture.stool',props:{seed:9},placement:{x:610,h:0},order:500,layer:'set'});
 composition.instances.find(i=>i.id==='room')!.props.width=1000;composition.instances.find(i=>i.id==='terminal-3')!.props.seatOffset=-22;
 addManifestContent(scene,'uses','review-action','review-console');scene.uses.at(-1)!.routes=[{command:'library.review-action',pages:['Action committed.']}];
 scene.manifest!.uses.chair={instance:'review-console',x:6,promptH:40,responseH:20};
