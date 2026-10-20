@@ -676,8 +676,29 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     } else left.append(element('p', 'muted', 'Open a scene, or a timeline that refers to one.'));
   }
   function numberInput(value: number, apply: (n: number) => void, min?: number, step = 'any') { const input = element('input'); input.type = 'number'; input.step = step; if (min !== undefined) input.min = String(min); input.value = String(value); input.onchange = () => { const number = Number(input.value); if (!Number.isFinite(number) || min !== undefined && number < min) { notice('Enter a finite number within the field range.', true); return; } apply(number); }; return input; }
+  /** Structured JSON fields with an inspector editor: rows of small fields, or a set of checkboxes. */
+  function structuredInput(editor: NonNullable<Field["editor"]>, value: Value, apply: (v: Value) => void): HTMLElement {
+    const wrap = element('div', 'structured-field'), auto = value === 'auto';
+    if (editor.auto) { const box = element('input'); box.type = 'checkbox'; box.checked = auto; box.onchange = () => apply(box.checked ? 'auto' : editor.kind === 'set' ? [] : []); wrap.append(label(editor.auto, box)); }
+    if (auto) return wrap;
+    if (editor.kind === 'set') {
+      const chosen = new Set(Array.isArray(value) ? value.map(String) : []);
+      for (const option of editor.options) { const box = element('input'); box.type = 'checkbox'; box.checked = chosen.has(option); box.onchange = () => apply(editor.options.filter(o => o === option ? box.checked : chosen.has(o))); wrap.append(label(option, box)); }
+      return wrap;
+    }
+    const rows = (Array.isArray(value) ? value : []) as Properties[];
+    rows.forEach((row, i) => {
+      const line = element('div', 'structured-row');
+      for (const [key, sub] of Object.entries(editor.item)) line.append(label(sub.label + (sub.unit ? ` (${sub.unit})` : ''), fieldInput(sub, row[key] ?? sub.default, v => apply(rows.map((r, j) => j === i ? { ...r, [key]: v } : r)))));
+      line.append(button('Remove', () => apply(rows.filter((_, j) => j !== i)), 'Remove this row'));
+      wrap.append(line);
+    });
+    wrap.append(button(editor.addLabel ?? 'Add', () => apply([...rows, editor.next?.(rows) ?? Object.fromEntries(Object.entries(editor.item).map(([k, f]) => [k, copy(f.default) as Value]))])));
+    return wrap;
+  }
   function fieldInput(field: Field, value: Value, apply: (v: Value) => void): HTMLElement {
     const kind = field.kind as string;
+    if (field.editor) return structuredInput(field.editor, value, apply);
     if (kind === 'select') return select((field.options ?? []).map(v => ({ value: String(v), label: String(v) })), String(value), v => { const actual = field.options?.find(x => String(x) === v); if (actual !== undefined) apply(actual); });
     if (kind === 'number') { const input = numberInput(value as number, apply, field.min, String(field.step ?? 'any')); if (field.max !== undefined) input.max = String(field.max); return input; }
     if (kind === 'boolean') { const input = element('input'); input.type = 'checkbox'; input.checked = value as boolean; input.onchange = () => apply(input.checked); return input; }
@@ -738,7 +759,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       position.append(label('Drawing pass', select(['backdrop', 'devices', 'people', 'foreground'].map(v => ({ value: v, label: v })), node.pass ?? 'backdrop', v => editInstance('Change drawing pass', n => n.pass = v as Instance['pass']))));
     }
     const fields = Object.entries(art.fields);
-    if (fields.length) { const look = part('Look', true); for (const [key, field] of fields) { const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
+    if (fields.length) { const look = part('Look', true); const shown = config.registry.properties(node.type, node.props); for (const [key, field] of fields) { if (field.showIf && !field.showIf(shown)) continue; const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
     const composition = compositionDocument()!.value as Composition, anchorDetails = part('Attachment and anchors', !!node.attach);
     const candidates = flatten(composition).map(x => x.node).filter(n => n.id !== node.id);
     const attachTo = select([{ value: '', label: 'None / parent origin' }, ...candidates.map(n => ({ value: n.id, label: n.id }))], node.attach?.instance ?? '', v => editInstance('Change attachment', n => { if (!v) { delete n.attach; return; } const owner = candidates.find(x => x.id === v)!; const anchors = config.registry.get(owner.type).anchors(config.registry.properties(owner.type, owner.props), {}); const anchor = Object.keys(anchors)[0]; if (!anchor) throw new Error('The selected owner exposes no anchors'); n.attach = { instance: v, anchor }; })); anchorDetails.append(label('Attach to', attachTo));

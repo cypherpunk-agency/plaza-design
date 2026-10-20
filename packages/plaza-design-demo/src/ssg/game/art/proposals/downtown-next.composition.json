@@ -248,17 +248,18 @@
       "type": "building.front",
       "props": {
         "width": 150,
-        "height": 340,
         "bays": [
-          [
-            116,
-            24,
-            "door"
-          ]
+          {
+            "kind": "door",
+            "from": 116,
+            "width": 24
+          }
         ],
         "skin": "tenement",
         "density": 0.8,
-        "seed": 101
+        "seed": 101,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 0,
@@ -272,24 +273,25 @@
       "type": "building.front",
       "props": {
         "width": 120,
-        "height": 340,
         "bays": [
-          [
-            10,
-            56,
-            "glass"
-          ],
-          [
-            80,
-            24,
-            "door"
-          ]
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 56
+          },
+          {
+            "kind": "door",
+            "from": 80,
+            "width": 24
+          }
         ],
         "skin": "brick",
         "windows": "framed",
         "roof": "cornice",
         "density": 0.5,
-        "seed": 102
+        "seed": 102,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 150,
@@ -303,22 +305,23 @@
       "type": "building.front",
       "props": {
         "width": 150,
-        "height": 406,
         "bays": [
-          [
-            6,
-            34,
-            "tagged"
-          ],
-          [
-            112,
-            24,
-            "door"
-          ]
+          {
+            "kind": "tagged",
+            "from": 6,
+            "width": 34
+          },
+          {
+            "kind": "door",
+            "from": 112,
+            "width": 24
+          }
         ],
         "skin": "concrete",
         "density": 0.7,
-        "seed": 103
+        "seed": 103,
+        "floors": 5,
+        "top": 0
       },
       "placement": {
         "x": 270,
@@ -332,23 +335,24 @@
       "type": "building.front",
       "props": {
         "width": 130,
-        "height": 340,
         "bays": [
-          [
-            14,
-            24,
-            "door"
-          ],
-          [
-            50,
-            64,
-            "glass"
-          ]
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 50,
+            "width": 64
+          }
         ],
         "skin": "tenement",
         "balconies": "some",
         "density": 0.6,
-        "seed": 104
+        "seed": 104,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 420,
@@ -362,27 +366,28 @@
       "type": "building.front",
       "props": {
         "width": 170,
-        "height": 406,
         "bays": [
-          [
-            8,
-            54,
-            "glass"
-          ],
-          [
-            70,
-            26,
-            "door"
-          ],
-          [
-            104,
-            58,
-            "glass"
-          ]
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 54
+          },
+          {
+            "kind": "door",
+            "from": 70,
+            "width": 26
+          },
+          {
+            "kind": "glass",
+            "from": 104,
+            "width": 58
+          }
         ],
         "skin": "panel",
         "density": 0.5,
-        "seed": 105
+        "seed": 105,
+        "floors": 5,
+        "top": 0
       },
       "placement": {
         "x": 550,
@@ -396,12 +401,13 @@
       "type": "building.front",
       "props": {
         "width": 140,
-        "height": 340,
         "bays": [],
         "skin": "brick",
         "windows": "curtained",
         "density": 0.7,
-        "seed": 106
+        "seed": 106,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 720,
@@ -415,17 +421,18 @@
       "type": "building.front",
       "props": {
         "width": 90,
-        "height": 340,
         "bays": [
-          [
-            24,
-            50,
-            "glass"
-          ]
+          {
+            "kind": "glass",
+            "from": 24,
+            "width": 50
+          }
         ],
         "skin": "glass",
         "density": 0.3,
-        "seed": 107
+        "seed": 107,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 860,
@@ -439,18 +446,17 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "height": 62,
         "bays": [
-          [
-            16,
-            52,
-            "shutter"
-          ],
-          [
-            124,
-            24,
-            "door"
-          ]
+          {
+            "kind": "shutter",
+            "from": 16,
+            "width": 52
+          },
+          {
+            "kind": "door",
+            "from": 124,
+            "width": 24
+          }
         ],
         "skin": "concrete",
         "roof": "ledge",
@@ -459,7 +465,10 @@
         "escape": "none",
         "balconies": "none",
         "density": 0.6,
-        "seed": 108
+        "seed": 108,
+        "floors": 0,
+        "top": 0,
+        "ground": 62
       },
       "placement": {
         "x": 1040,
@@ -473,17 +482,18 @@
       "type": "building.front",
       "props": {
         "width": 60,
-        "height": 406,
         "bays": [
-          [
-            18,
-            24,
-            "door"
-          ]
+          {
+            "kind": "door",
+            "from": 18,
+            "width": 24
+          }
         ],
         "skin": "panel",
         "density": 0.6,
-        "seed": 109
+        "seed": 109,
+        "floors": 5,
+        "top": 0
       },
       "placement": {
         "x": 1200,
@@ -497,23 +507,22 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "height": 406,
         "bays": [
-          [
-            10,
-            46,
-            "glass"
-          ],
-          [
-            68,
-            24,
-            "sealed"
-          ],
-          [
-            104,
-            46,
-            "glass"
-          ]
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 46
+          },
+          {
+            "kind": "sealed",
+            "from": 68,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 104,
+            "width": 46
+          }
         ],
         "skin": "concrete",
         "windows": "punched",
@@ -527,7 +536,9 @@
             180,
             300
           ]
-        ]
+        ],
+        "floors": 5,
+        "top": 0
       },
       "placement": {
         "x": 1260,
@@ -541,23 +552,24 @@
       "type": "building.front",
       "props": {
         "width": 100,
-        "height": 340,
         "bays": [
-          [
-            10,
-            44,
-            "shutter"
-          ],
-          [
-            64,
-            24,
-            "door"
-          ]
+          {
+            "kind": "shutter",
+            "from": 10,
+            "width": 44
+          },
+          {
+            "kind": "door",
+            "from": 64,
+            "width": 24
+          }
         ],
         "skin": "tenement",
         "escape": "right",
         "density": 0.9,
-        "seed": 111
+        "seed": 111,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 1420,
@@ -571,17 +583,18 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "height": 340,
         "bays": [
-          [
-            8,
-            64,
-            "glass"
-          ]
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 64
+          }
         ],
         "skin": "glass",
         "density": 0.4,
-        "seed": 112
+        "seed": 112,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 1680,
@@ -595,17 +608,18 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "height": 340,
         "bays": [
-          [
-            104,
-            44,
-            "tagged"
-          ]
+          {
+            "kind": "tagged",
+            "from": 104,
+            "width": 44
+          }
         ],
         "skin": "brick",
         "density": 0.8,
-        "seed": 113
+        "seed": 113,
+        "floors": 4,
+        "top": 0
       },
       "placement": {
         "x": 1840,
