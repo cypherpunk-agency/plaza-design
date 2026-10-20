@@ -39,6 +39,8 @@ export interface SceneMechanism {
  /** The scene's engine targets (scene.json nativeTargets) may use the `reset` step. */
  targetReset?:boolean;
  apply(ctx:SceneMechanismContext):Partial<SceneDef>;
+ /** Artwork rows an engine target may anchor to that the mechanism's own data names (a controller's geometry), beside the scene's artwork roles. */
+ anchors?(ctx:{data:SceneData;rows:readonly Resolved[]}):Readonly<Record<string,Resolved>>;
  /** Picture-side state, if the mechanism keeps any (at most one such mechanism per scene). */
  presentation?(ctx:Pick<SceneMechanismContext,'scene'|'gameplay'|'rows'|'roles'>&{data:SceneData}):MechanismPresentation;
  /**

@@ -66,9 +66,12 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  // a mechanism's rules widen what the device document may read and emit (derived values, physical milestones)
  const mechanisms=(d.stage?.mechanisms??[]).map(name=>SCENE_MECHANISMS[name]),contract=mechanismsRulesShape(d.stage?.mechanisms);
  const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay,Object.keys(contract?.derived??{}),contract?.inputs,contract?.derivedTypes);
+ // a controller's geometry names artwork by id: it must exist, and a window must be a rectangle
+ for(const[role,ref]of Object.entries((data.controller as {geometry?:Record<string,unknown>}|undefined)?.geometry??{})){const row=typeof ref==='string'?rows.find(r=>r.instance.id===ref):undefined;if(!row)throw new Error('Controller geometry '+role+' names missing artwork '+String(ref));if(role==='window'&&!(Number(row.props.width)>0&&Number(row.props.height)>0))throw new Error('Controller window requires rectangle dimensions');}
  // engine targets (scene.nativeTargets) anchor to the stage's artwork roles and open the scene's engine exits
- const anchors=(d.stage?.targetAnchors??[]).filter(a=>roles[a]);
- const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,roles[a].placement])),{reset:resetPermitted(d),anchors}):{};
+ const anchorRows:Record<string,import('../../art/core/composition').Resolved>={...roles,...Object.assign({},...mechanisms.map(m=>m.anchors?.({data,rows})??{}))};
+ const anchors=(d.stage?.targetAnchors??[]).filter(a=>anchorRows[a]);
+ const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,anchorRows[a].placement])),{reset:resetPermitted(d),anchors}):{};
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
  const level=compileLevel(rows),manifest=d.manifest!;
  // the grey review room stands in for a room until the composition paints its own backdrop

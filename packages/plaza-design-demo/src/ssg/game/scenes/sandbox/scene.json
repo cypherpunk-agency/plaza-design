@@ -589,9 +589,6 @@
       ],
       "groundExits": false,
       "omitGroundRestHeight": true
-    },
-    "artwork": {
-      "reset": "reset"
     }
   },
   "rests": [
