@@ -671,6 +671,9 @@
         "style": "lamp",
         "color": "255,217,165"
       }
+    ],
+    "mechanisms": [
+      "dockworkerCarry"
     ]
   }
 }

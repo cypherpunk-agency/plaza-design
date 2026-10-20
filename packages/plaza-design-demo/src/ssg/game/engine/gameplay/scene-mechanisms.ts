@@ -4,6 +4,7 @@ import type {SceneDocument} from './scene-document';
 import type {GameplayDefinition} from './types';
 import type {SceneRules} from '../rules';
 import {gantryLift} from './mechanisms/gantry-lift';
+import {dockworkerCarry} from './mechanisms/dockworker-carry';
 /**
  * Registered scene mechanisms: what a declared scene takes from the engine beyond its documents,
  * named in scene.json `stage.mechanisms` and edited under Scene › Stage & compile. A mechanism
@@ -70,5 +71,5 @@ const transitPlatform:SceneMechanism={
   return{platformStop:stop.placement.x,...(water?{horizon:Number(water.props.horizon??0),ambient:{...content.ambient,covers:[{from:-60,to:width+60,under:Number(roof.props.under)+roof.placement.h}]}}:{})};},
 };
 export const SCENE_MECHANISMS:Readonly<Record<string,SceneMechanism>>={
- transitPlatform,gantryLift,
+ transitPlatform,gantryLift,dockworkerCarry,
 };

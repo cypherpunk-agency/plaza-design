@@ -59,7 +59,7 @@ const folderDefinitions=FOLDER_SCENE_IDS.map(id=>({id,prefix:FOLDER_DIRS[id]??id
  validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_BY_ID[id].gameplay),context?:NativeTargetValidationContext)=>{const d=validateSceneDocument(value,g,declaredSceneOptions(value,context,FOLDER_BY_ID[id].composition));if(d.id!==id)throw new Error('Scene identity is protected');return d;},
  validateGameplay,
  definition:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay}),
- definitionWithDevices:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition,devices?:unknown,_context?:unknown)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay,devices}),
+ definitionWithDevices:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition,devices?:unknown,context?:NativeTargetValidationContext)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay,devices,...(devices!==undefined&&context?.phase!=='assembled'?{deviceCheck:'deferred' as const}:context?.phase==='assembled'?{network:context.network}:{})}),
 }));
 export const gameplayScenes=[...definitions,...folderDefinitions].map(s=>({...s,gameplayId:'gameplayId'in s?s.gameplayId:s.prefix+'-gameplay'}));
 export const authoredDocumentIds=gameplayScenes.flatMap(s=>[s.prefix+'-scene',s.gameplayId]);

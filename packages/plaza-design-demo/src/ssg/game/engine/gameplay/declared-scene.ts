@@ -19,7 +19,6 @@ import {compileSceneActors} from './actors';
 import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources} from './binding-sources';
 import {PresentationSignals} from './presentation-signals';
 import {stageContent} from './scene-stage';
-import {dockworkerCarry} from './scene-presentation';
 import {SCENE_MECHANISMS,mergeRules,mechanismsRulesShape} from './scene-mechanisms';
 import type {CityModel} from '../../world/city';
 import type {LineSystem} from '../../world/transport/line';
@@ -80,7 +79,6 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
  const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
-  ...(d.presentation?.kind==='harborShift'?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>)=>dockworkerCarry(d.presentation,flags)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
  const built=mechanisms.reduce<SceneDef>((acc,m)=>{const part=m.apply({scene:d,gameplay,rows,roles,width:validated.width,content:acc});
