@@ -223,6 +223,15 @@
       "scenes": [
         "sandbox"
       ]
+    },
+    {
+      "id": "tower",
+      "name": "LEVEL LAB · TOWER",
+      "district": null,
+      "entrance": "tower",
+      "scenes": [
+        "tower"
+      ]
     }
   ],
   "START_SCENE": "capsule",

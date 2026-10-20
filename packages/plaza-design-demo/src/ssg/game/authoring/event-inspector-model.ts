@@ -1,4 +1,5 @@
 import {stateAddress} from '../engine/gameplay/state';
+import authoredCatalogue from '../scenes/authored.json';
 import {projectSceneState} from '../engine/gameplay/scene-state';
 import {defaultNetworkContext,type EngineNetworkContext} from '../engine/network-context';
 import type {GameplayDefinition} from '../engine/gameplay/types';
@@ -51,7 +52,9 @@ const dirs=(id:string)=>id==='harborShift'?'harbor-shift':id;
 
 const source=(scene:string,pointer?:string):EventSource=>scene==='library'&&pointer?.startsWith('/dialogue/catalog')?{file:'scenes/library/gameplay.json',pointer:'/conversations/catalog'}:({file:scene==='@net'?'data/net.json':scene==='@logic'?'data/logic.json':`scenes/${dirs(scene)}/devices.json`,...(pointer?{pointer}:{})});
 
-const code=(scene:string,symbol:string):EventSource=>({file:`scenes/${dirs(scene)}/${symbol.startsWith('SceneRules')?(scene==='yard'?'effects':'rules'):'index'}.ts`,symbol});
+/** Catalogue scenes have no code of their own: their source is their entry in scenes/authored.json. */
+const AUTHORED=new Map((authoredCatalogue as {scenes:{scene:{id:string}}[]}).scenes.map((s,i)=>[s.scene.id,i]));
+const code=(scene:string,symbol:string):EventSource=>AUTHORED.has(scene)?{file:'scenes/authored.json',pointer:'/scenes/'+AUTHORED.get(scene),symbol}:({file:`scenes/${dirs(scene)}/${symbol.startsWith('SceneRules')?(scene==='yard'?'effects':'rules'):'index'}.ts`,symbol});
 
 const pointer=(part:string|number)=>String(part).replace(/~/g,'~0').replace(/\//g,'~1');
 

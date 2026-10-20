@@ -11,6 +11,7 @@ import {manifestGeometry} from './manifest-geometry';
 import {withSceneConversations,actorConversationId} from './scene-conversations';
 import type {SceneDef} from '../../scenes/kit';
 import {validateSceneDocument,type SceneDocument} from './scene-document';
+import {compileLevel,levelOpacity,restingLevelView} from '../level';
 import type {GameplayDefinition} from './types';
 
 export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
@@ -36,6 +37,12 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const validated=validateDeclaredScene(scene,composition,gameplay),d=validated.scene;
  const data=nativeDeviceData(projectDeviceBindings(d,validated.rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay);
  const compiled=compileManifestDocument(d,validated.rows,(_c,id)=>({name:d.name,pages:[],conversation:id}),{elevatedResponses:true});
- const draw=(ctx:CanvasRenderingContext2D,view:import('../../art/core/view').View,front=false)=>{const env={...options,view,state:options.state??{},bindings:{},reduced:options.reduced??false};if(!front){drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
- return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,outdoor:false,ambient:{},...compiled.content,people:validated.people,gameplay:withSceneConversations(gameplay,d),visualEnvironment:view=>({...options,view,state:options.state??{},bindings:{},reduced:options.reduced??false}),drawBackdrop:(ctx,v)=>draw(ctx,v),drawFront:(ctx,v)=>draw(ctx,v,true)};
+ // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
+ const level=compileLevel(validated.rows),manifest=d.manifest!;
+ const instanceOf=(t:unknown)=>typeof t==='string'?t:(t as {instance:string}).instance,heightOf=(t:unknown)=>validated.rows.find(r=>r.instance.id===instanceOf(t))?.placement.h??0;
+ const environment=(view:import('../../art/core/view').View)=>{const live=level?view.level??restingLevelView(level,false):undefined;
+  return {...options,view,state:{...(options.state??{}),...(live?Object.fromEntries(Object.entries(live.lifts).map(([id,c])=>[id,{car:c.car,doors:c.doors}])):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),bindings:{},reduced:options.reduced??false};};
+ const draw=(ctx:CanvasRenderingContext2D,view:import('../../art/core/view').View,front=false)=>{const env=environment(view);if(!front){if(!level)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
+ const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
+ return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,outdoor:false,ambient:{},...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),visualEnvironment:view=>environment(view),drawBackdrop:(ctx,v)=>draw(ctx,v),drawFront:(ctx,v)=>draw(ctx,v,true)};
 }

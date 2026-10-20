@@ -292,6 +292,7 @@ async function start() {
       { key: 'minute', label: 'Time of day', kind: 'number', min: 0, max: 1439, step: 10, quick: true, choices: [{ label: 'Morning', value: 480 }, { label: 'Noon', value: 720 }, { label: 'Evening', value: 1110 }, { label: 'Night', value: 1320 }] },
       { key: 'weather', label: 'Weather', kind: 'select', options: ['forecast', ...WEATHER_KINDS], quick: true },
       { key: 'hack', label: 'Hack vision', kind: 'boolean', quick: true, shortcut: 'h' },
+      { key: 'inside', label: 'Inside buildings', kind: 'boolean', quick: true, shortcut: 'i' },
       { key: 'minute', label: 'City minute', kind: 'number', min: 0, max: 1439, step: 10 }, { key: 'day', label: 'City day', kind: 'number', min: 1, step: 1 },
       { key: 'seed', label: 'Weather seed', kind: 'number', min: 0, step: 1 }, { key: 'hover', label: 'Hovered device id', kind: 'text' },
 

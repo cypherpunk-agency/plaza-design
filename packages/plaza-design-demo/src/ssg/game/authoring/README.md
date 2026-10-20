@@ -84,7 +84,9 @@ and a district mix sample; its preview selects switch styles without saving. **S
 district's card with its scenes on the stage, including the `downtown-next` proposal built from the
 building kit. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
 show the building, vehicle and sign kits. Kit pieces are placed from **＋ Add artwork** on the Scene
-stage like any other artwork (ART-GUIDE §2 and §12).
+stage like any other artwork (ART-GUIDE §2 and §12). The level kit's floors, doors and building
+handles are placed the same way; the stage draws them as a diagram (dashed floors with their names,
+doors, flight ends, lift stops), and **Inside buildings** (I) previews every building opened.
 
 ## Isolation and source safety
 

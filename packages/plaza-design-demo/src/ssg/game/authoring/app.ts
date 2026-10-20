@@ -773,7 +773,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function openPicker() { if (current()?.kind !== 'composition') return; picker.hidden = false; renderPicker(); picker.querySelector<HTMLInputElement>('input[type=search]')?.focus(); }
   function closePicker() { if (picker.hidden) return; picker.hidden = true; picker.replaceChildren(); }
   function renderPicker() {
-    const entries = assetInventory(config.registry, model.list()).filter(e => e.usability === 'reusable'), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
+    const entries = assetInventory(config.registry, model.list()).filter(e => e.usability === 'reusable' || e.usability === 'helper' && config.registry.get(e.id).libraryUse === 'reusable'), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
     const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
     search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
     const kinds = filterChips('Kind', LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(e => e.family === kind).length })), pickerFamily, value => { pickerFamily = value; fill(); });

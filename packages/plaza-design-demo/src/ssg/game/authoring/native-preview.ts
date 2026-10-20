@@ -1,4 +1,6 @@
 /** Local editor preview. Uses the shipping frame renderer with an isolated, non-persistent model. */
+import { drawLevelOverlay } from './level-overlay';
+import { restingLevelView } from '../engine/level';
 import { art, compositionAppearance, resolveComposition, type Composition, type Environment, type Resolved } from '../art';
 import type { View } from '../art/core/view';
 import { frameView } from '../art/core/view';
@@ -96,7 +98,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       for (const v of Object.values(flags)) if (typeof v !== 'boolean') throw new Error('Flags must contain booleans');
       const view: View = { ...frameView(request.time * 60), viewW: width, viewH: height, cam, gy: height - 54,
         sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom), y: h => height - 54 - (h - cameraH) * zoom,
-        flags: flags as Record<string, boolean> };
+        flags: flags as Record<string, boolean>, ...(def.level ? { level: restingLevelView(def.level, settings.inside === true) } : {}) };
       const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
       const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
@@ -144,6 +146,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const bounds = previewBounds(resolveComposition(art, document, env), view, options, document);
       const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * renderScale, y: b.y * renderScale, width: b.width * renderScale, height: b.height * renderScale })),
         deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / renderScale, dy / renderScale) };
+      if (request.overlays && def.level) drawLevelOverlay(context, def.level, view, renderScale);
       if (request.overlays) drawSelectionOverlay(context, result, request.selectedId);
       return result;
   };

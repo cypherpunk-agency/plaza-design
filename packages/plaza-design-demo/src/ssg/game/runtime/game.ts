@@ -82,6 +82,7 @@ import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './cha
 import { Companion } from './companion';
 import { EDITOR_PLAY,SAVE_KEY,SHIFT_PROTOTYPE } from "./mode";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
+import { LevelRuntime } from "../engine/level";
 
 /** What petting a scene's cat, or shooing its pigeon, gets you. */
 const PET_CAT = [
@@ -99,7 +100,7 @@ const PET_PIGEON = [
  * to talk to, an animal, a robot), a device or the scene's own target on the engine (`device`),
  * Pixel (`pixel`), and Downtown's street people and the fixer (`talk`, level.ts).
  */
-type Target = { kind: 'exit' | 'life' | 'device' | 'pixel'; id: string; x: number; h: number; label: string; promptH?: number };
+type Target = { kind: 'exit' | 'life' | 'device' | 'pixel' | 'level'; id: string; x: number; h: number; label: string; promptH?: number };
 /** A speech bubble; `then` runs once its last page is read (the fixer's question opens the deck). */
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number; then?: () => void }
 
@@ -130,6 +131,11 @@ export class Game {
   private viewW = 640;
   private viewH = 320;
   private gy = 270;
+  /** The ground line before the camera looks up or down (`camH`, world units: the floor height it follows in a level). */
+  private gyBase = 270;
+  private camH = 0;
+  /** Floors, stairs, escalators, lifts and buildings of a level scene (engine/level.ts); null: one street line. */
+  private level: LevelRuntime | null = null;
   private cam = 0;
   private t = 0;
   private last = 0;
@@ -694,7 +700,8 @@ export class Game {
     // On phones the ground sits above the touch buttons, so the floor and what stands on it stay in view.
     const pad = document.getElementById('touch');
     const padTop = this.touch && pad ? Math.max(0, this.canvas.getBoundingClientRect().bottom - pad.getBoundingClientRect().top) : 0;
-    this.gy = Math.round(this.viewH - Math.max(54, (padTop * dpr) / this.k + 8));
+    this.gyBase = Math.round(this.viewH - Math.max(54, (padTop * dpr) / this.k + 8));
+    this.gy = this.gyBase + Math.round(this.camH);
   }
 
   /** The level width the view was fitted to; a new place refits (see onResize). */
@@ -814,7 +821,10 @@ export class Game {
     if ((k === 'n' || k === 'N') && this.netOk) { this.showNet(); return; }
     if (zh.visionOn && k === '0') { this.resetVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
-    if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble) this.jump();
+    // in a level, ↑ and ↓ first mean a door, a flight, an escalator or the lift car; otherwise ↑ jumps
+    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.level && !this.levelLocked() && this.level.up(this.p)) { this.keys.clear(); return; }
+    if ((k === 'ArrowDown' || k === 's' || k === 'S') && !this.bubble && this.level && !this.levelLocked() && this.level.down(this.p)) { this.keys.clear(); return; }
+    if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && !this.level?.riding) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }
 
@@ -839,6 +849,9 @@ export class Game {
     const t = this.nearest();
     return t?.kind === 'device' && zh.model.devices.has(t.id) ? t.id : null;
   }
+
+  /** Overlays, the deck, travel and talk hold the level's ↑/↓ as they hold walking. */
+  private levelLocked() { return this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep; }
 
   private jump() {
     if (SHIFT_PROTOTYPE) return;
@@ -907,6 +920,10 @@ export class Game {
     this.markSeen(id);
     const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
+    // a level scene: arrive on the floor at the exit's (or the spawn's) height; the camera looks there at once
+    this.level = s.level ? new LevelRuntime(s.level) : null;
+    if (this.level) this.level.arrive(this.p, (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0);
+    this.camH = this.level ? Math.max(this.level.source.low, Math.min(this.level.source.high, this.p.y)) : 0; this.gy = this.gyBase + Math.round(this.camH);
     this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
@@ -1056,6 +1073,8 @@ export class Game {
       const [scene, id] = key.split('/');
       if(scene===this.here){const target=this.openingStory.resolveTarget(t,this.def);if(target)list.push({kind:'life',id:'story:'+id,...target});}
     }
+    // a level's doors, flights, escalators and lifts where the player stands
+    if (this.level) for (const t of this.level.hints(this.p)) list.push({ kind: 'level', ...t });
     // Pixel can always be petted, wherever it is with you
     if (this.pixelHere&&this.def.companion?.pet) list.push({ kind: 'pixel', id: 'pixel', x: this.pixel.x, h: 0, label: this.def.companion.pet.prompt, promptH: this.pixel.h + 24 });
     return list;
@@ -1100,6 +1119,7 @@ export class Game {
     if(this.zh.acknowledgmentPending){this.zh.advanceAcknowledgment();return;}
     const target = this.nearest();
     if (!target) return;
+    if (target.kind === 'level') { this.level?.interact(target.id, this.p); return; }
     if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
     if (target.kind === 'device') {
@@ -1127,21 +1147,25 @@ export class Game {
     const dir = (right ? 1 : 0) - (left ? 1 : 0);
     if (dir) { p.face = dir; if (this.bubble && Math.abs(p.x - this.bubble.x) > 140) this.bubble = null; }
     p.moving = !!dir;
-    p.x = Math.max(12, Math.min(this.levelW - 12, p.x + dir * speed * dt));
+    // a level ride (stairs, escalator, lift) carries the player; walking waits until it ends
+    const riding = !!this.level?.update(dt, p, locked ? 0 : dir);
+    const [minX, maxX] = this.level && !riding ? this.level.bounds(this.levelW) : [12, this.levelW - 12];
+    if (!riding) p.x = Math.max(minX, Math.min(maxX, p.x + dir * speed * dt));
     // Walking into an open border (the yard's passage, a street's end) leaves without E.
     if (dir < 0 && p.x <= 12) this.walkOff('left');
     else if (dir > 0 && p.x >= this.levelW - 12) this.walkOff('right');
 
-    // Vertical: gravity, platforms and the street.
-    const prevY = p.y;
-    if (!p.onGround) {
+    // Vertical: gravity, platforms and the street (a level's floor under the player)
+    const prevY = p.y, floorH = this.level ? this.level.floor.h : 0;
+    if (riding) { /* the ride sets the height */ }
+    else if (!p.onGround) {
       p.y += p.vy * dt;
       p.vy -= 0.22 * dt;
       for (const pl of this.platforms) {
         if (p.vy <= 0 && prevY >= pl.h && p.y <= pl.h && p.x > pl.x + 2 && p.x < pl.x + pl.w - 2) { p.y = pl.h; p.vy = 0; p.onGround = true; }
       }
-      if (p.y <= 0) { p.y = 0; p.vy = 0; p.onGround = true; }
-    } else if (p.y > 0 && !this.platforms.some((pl) => pl.h === p.y && p.x > pl.x + 2 && p.x < pl.x + pl.w - 2)) {
+      if (p.y <= floorH) { p.y = floorH; p.vy = 0; p.onGround = true; }
+    } else if (p.y > floorH && !this.platforms.some((pl) => pl.h === p.y && p.x > pl.x + 2 && p.x < pl.x + pl.w - 2)) {
       p.onGround = false; p.vy = 0;
     }
 
@@ -1158,6 +1182,11 @@ export class Game {
     if (p.moving || Math.abs(goal - this.cam) < 0.5) this.easeBack = false;
     this.cam += (goal - this.cam) * Math.min(1, (nudging || this.easeBack ? NUDGE_EASE : 0.12) * dt);
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
+    // a level's camera also follows the height of the floor (or the ride), within its lowest and highest floor
+    if (this.level) {
+      const goalH = Math.max(this.level.source.low, Math.min(this.level.source.high, p.onGround || riding ? p.y : this.level.floor.h));
+      this.camH += (goalH - this.camH) * Math.min(1, 0.1 * dt); this.gy = this.gyBase + Math.round(this.camH);
+    }
     if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: this.def.companion?.warm });
     this.host.setNodes(nodeCount(this.save));
     // the opening's idle ping: standing still a while, the next goal's target pings (opening.ts)
@@ -1227,7 +1256,7 @@ export class Game {
 
   /** The ground under the player at world x (a ledge they are over, or the street): where their shadow lies. */
   private groundUnder(wx: number, h: number) {
-    return Math.max(0, ...this.platforms.filter((pl) => wx > pl.x && wx < pl.x + pl.w && pl.h <= h + 0.5).map((pl) => pl.h));
+    return Math.max(this.level ? Math.min(h, this.level.floor.h) : 0, ...this.platforms.filter((pl) => wx > pl.x && wx < pl.x + pl.w && pl.h <= h + 0.5).map((pl) => pl.h));
   }
 
   /**
@@ -2184,7 +2213,7 @@ export class Game {
   /** The scene view, refreshed for this frame. */
   private view(): SceneView {
     const v = (this.sceneView ??= { ...frameView(0), sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), flags: this.save.flags });
-    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags;
+    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags; v.level = this.level?.view();
     return v;
   }
 

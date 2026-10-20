@@ -71,6 +71,8 @@ export interface SceneExit {
   engine?: boolean;
   /** A save flag set when you leave through it (the flat's door: Pixel comes along from now on). */
   sets?: string;
+  /** Where you stand arriving through it in a level scene: its height (the floor there). */
+  arriveH?: number;
   /** A keyring item it needs; without it, E is refused with these words. */
   needs?: { key: string; name: string; pages: string[]; h: number };
 }
@@ -257,6 +259,10 @@ export interface SceneDef {
   keepFace?: boolean;
   /** Ledges to stand on (Downtown's low roof). */
   platforms?: { x: number; w: number; h: number }[];
+  /** Floors, stairs, escalators, lifts and buildings to step into (engine/level.ts); none: one street line. */
+  level?: import('../engine/level').LevelSource;
+  /** The spawn's height (a level scene can start on an upper floor). */
+  spawnH?: number;
   /** Track-world x of this station's stopped train nose. The timetable and door geometry share this marker. */
   platformStop?: number;
   /** Pixel: 'home' where it lives (`perch`: where it wants to be), 'along' where it follows you once it does. */

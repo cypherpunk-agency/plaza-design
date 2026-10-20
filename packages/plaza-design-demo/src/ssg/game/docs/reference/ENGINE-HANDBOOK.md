@@ -118,6 +118,16 @@ is insufficient. Never silently ignore an unsupported field or reconstitute dele
 Keep opaque-origin private Play and memory storage; the public editor downloads bundles while the
 local loopback service alone writes validated source. See [composer workflow](../../authoring/README.md).
 
+## Recipe: floors, stairs, lifts and buildings (levels)
+
+Place the level kit in the composition (ART-GUIDE §12, "Levels"); no code. Declared scenes compile it
+with engine/level.ts `compileLevel` into `SceneDef.level`; `LevelRuntime` is the single owner of
+vertical movement there (the floor under the player, rides, lift cars, building reveal) and
+runtime/game.ts only asks it. A scene without floors keeps one street line and its jump ledges. Arrival
+uses the spawn's or the exit marker's height (`spawnH`, `SceneExit.arriveH`). The renderer receives
+`View.level` (reveal, lift cars); the editor previews it at rest or opened (environment `inside`).
+Check with `pnpm test:game levels`; the Tower lab (scenes/authored.json) is the example.
+
 ## Choose verification by what changed
 
 Run from packages/plaza-design-demo:
