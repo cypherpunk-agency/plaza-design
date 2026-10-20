@@ -119,7 +119,7 @@ type Look = 'lit' | 'dark' | 'veiled';
 interface Cache { key: string; canvas: HTMLCanvasElement; cam: Cam; box: Box }
 /** Map rendering/input and caches consume one isolated city/plan pair. */
 export function createCityMap(world:CityModel=defaultCity,geography:ReturnType<typeof createCityPlan>=createCityPlan(world)){
- const {DISTRICT_MAP,DISTRICT_REVEAL,DISTRICTS,districtName,districtPlaces,districtStage,FARE,knownPlaces,LINES_PLANNED,lineKnownFlag,linkKnown,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_MAP,placeBlocked,placeKnown,placeOf,seenPlace,STAND_IDS,STANDS,standOf,STATION_MAP,stationKnown,STATIONS}=world;
+ const {DISTRICT_MAP,DISTRICT_REVEAL,DISTRICTS,districtName,districtPlaces,districtStage,FARE,knownPlaces,LINES_PLANNED,lineKnownFlag,linkKnown,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_MAP,placeBlocked,placeKnown,placeOf,seenPlace,STAND_IDS,STANDS,standOf,STATION_MAP,stationKnown,STATIONS,TRANSPORT}=world;
  type Layout = ReturnType<typeof layout>;
  const {CANAL,CANAL_W,COAST,coastX,districtAt,FENCE,hash,ISLE,onIsle,PARK,plan}=geography;
 
@@ -149,7 +149,7 @@ function hereDistrict(scene: SceneId, rideFrom: Station | null): number {
 /** A map opening on the city view, your district picked (taxi: the next stand along, ABOVE; on the train: METRO). */
  function openMap(mode: 'view' | 'taxi', scene: SceneId, rideFrom: Station | null): MapView {
   const here = standOf(scene), i = here ? STAND_IDS.indexOf(here) : -1;
-  const layer: Layer = mode === 'taxi' ? 'above' : scene === 'train' ? 'metro' : lastLayer;
+  const layer: Layer = mode === 'taxi' ? 'above' : scene === TRANSPORT.boarding.scene ? 'metro' : lastLayer;
   return {
     mode, index: mode === 'taxi' ? (i + 1) % STAND_IDS.length : -1, hover: -1, tip: -1,
     district: layer === 'below' ? UNDER : hereDistrict(scene, rideFrom), zoomed: false, zoomAt: -1e9, layer, flat: lastFlat,
@@ -464,7 +464,7 @@ function lookOf(d: DistrictId, k: Knowledge): Look {
 const shows = (d: DistrictId, k: Knowledge) => lookOf(d, k) !== 'veiled';
 
 /** You know LINE 0's map once you have stood on a platform or ridden it (from the street you see only the stairs). */
-const lineKnown = (st: MapState) => (Object.keys(STATIONS) as Station[]).some((s) => st.seen(STATIONS[s].scene)) || st.seen('train') || !!st.ride;
+const lineKnown = (st: MapState) => (Object.keys(STATIONS) as Station[]).some((s) => st.seen(STATIONS[s].scene)) || st.seen(TRANSPORT.boarding.scene) || !!st.ride;
 
 
 // ---------- the ground, painted once per view ----------

@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `b37cf04` on main and production.
-Homepage jobs39354892369/39354892819 and design job39354892881 succeeded.
+Last verified deployment: `9e09c92` on main and production.
+Homepage jobs39358735544/39358735886 and design job39358735539 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2828,3 +2828,26 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
  173 actual raster cases with zero differences/errors. Packaged app-YRUXHJ64.js/play-S3STHPFI.js:
   real hack-layer open, core unfold, noun open, native wave and layer close PASS; console warnings/
   errors empty. `LIFECYCLE-OWNERSHIP.md` updated; full G5 remains open pending combined reconciliation.
+
+## 2026-10-20 continuation: authored ride scene and obsolete wrappers
+
+- Game ride advancement, current-stop map context, riding map state, map starting layer and LINE0
+  discovery now use CitySource.TRANSPORT.boarding.scene instead of assuming the ID `train`. The
+  same source field already owns boarding destination. Default transport algorithms/timing unchanged.
+- Expanded `check-platform-world-source.mts`: actual typed boarding-scene edit, source Save/bundle/
+  fresh shipping import and Game.updateTravel verify the newly authored scene advances the ride,
+  while the old scene name no longer does. All three rearranged platform presenters remain checked.
+  Protected Save evidence: `.scene-system/platform-world-source-ad7Lom`.
+- `check-transport-destinations.mts` now also checks actual Game ride dispatch and map opening in
+  the authored destination. Original city26 registry/13,824 knowledge/7,752 refusal/532 map input
+  comparisons pass; default Downtown143/Train270 drawing comparisons pass.
+- Removed unused Train regular-dialogue compatibility view and Downtown draw wrapper. The latter's
+  sole reexport of an unused map-kiosk position was removed together with its eager fixed-ID lookup.
+  The actual source manifest and shared device renderer remain the only runtime placement owners.
+- Both builds, opening42, demo isolation and schematic567 gesture cases PASS. Source
+  92178ea583a8d225a708b3ec95c44391d363777e8e053683e5051cf195306127:
+  all173 raster cases PASS with zero differing pixels/errors. Packaged app-6H4SD2MJ.js/play-SCTVE7I4.js:
+  actual World boarding edit to Capsule, native private Capsule Play, visible ride changing from
+  dwell/timer18 to running/position2972, clean Stop and empty warning/error log PASS. This tests the
+  existing role rebinding, not a new story/remote mechanic or campaign playthrough.
+- Whole world/story/controller/editor/removal gates remain open; no completion promotion.

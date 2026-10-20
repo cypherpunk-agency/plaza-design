@@ -27,7 +27,6 @@ import { downtownRules, dlvX } from './rules';
 import {  downtownComposition,downtownReflections,renderDowntownCity,renderDowntownStreet, downtownLights, downtownCasters, downtownGeometry, renderDowntownDevices,renderDowntownPeople,downtownEnvironment, validateDowntownComposition, type DowntownRenderOptions } from './composition';
 import type { Composition, Properties } from '../../art/core/composition';
 
-export { MAP_KIOSK_X } from './scene';
 export { syncGoals } from './save';
 export { sceneShell, type SceneShell } from './shell';
 

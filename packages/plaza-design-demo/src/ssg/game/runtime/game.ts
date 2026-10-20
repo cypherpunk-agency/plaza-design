@@ -2214,7 +2214,7 @@ export class Game {
       this.driverReply(this.world.DRIVER_BROKE);
       return;
     }
-    this.mapView = this.worldMap.openMap('taxi', this.here, this.here === 'train' ? this.metro.rideStop() : null);
+    this.mapView = this.worldMap.openMap('taxi', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop() : null);
     this.keys.clear();
     this.syncEnginePause();
     sound.open();
@@ -2228,7 +2228,7 @@ export class Game {
     this.bubble = null;
     // the map takes the screen: hack vision closes first
     if (this.zh.visionOn) this.zh.toggleVision();
-    this.mapView = this.worldMap.openMap('view', this.here, this.here === 'train' ? this.metro.rideStop() : null);
+    this.mapView = this.worldMap.openMap('view', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop() : null);
     this.syncEnginePause();
   }
 
@@ -2277,7 +2277,7 @@ export class Game {
       // the smallest touch target, 44 CSS px, in view units
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
       avoid: this.mapAvoid(),
-      ride: this.here === 'train' ? { from: this.metro.rideStop(), to: this.metro.rideNext(), f: this.metro.rideRun() } : null,
+      ride: this.here === this.world.TRANSPORT.boarding.scene ? { from: this.metro.rideStop(), to: this.metro.rideNext(), f: this.metro.rideRun() } : null,
       seen: (z) => !!this.save.flags[this.world.seenFlag(z)], flag: (f) => !!this.save.flags[f], exitAccess:(scene,id)=>sceneExitAccess(this.hasScene(scene)?this.sceneDefinition(scene).exits.find(e=>e.id===id):undefined,this.save.flags,this.save.keyring), harborOpen: this.world.harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
     };
   }
@@ -2332,7 +2332,7 @@ export class Game {
       if (!this.hop.done && e >= this.world.HOP / 2) { this.hop.done = true; city.advance(TRAVEL.quick); this.travel(this.hop.place.entrance, this.hop.place.at); }
       if (e >= this.world.HOP) this.hop = null;
     }
-    if (this.here !== 'train') return;
+    if (this.here !== this.world.TRANSPORT.boarding.scene) return;
     const ev = this.metro.stepRide(dt);
     // the train home stands at Downtown with its doors open until you get off
     if (this.story === 'home' && this.metro.ride.phase === 'dwell' && this.metro.rideStop() === this.openingStory.CONTROLLER.homeRun.to) this.metro.ride.timer = 0;
