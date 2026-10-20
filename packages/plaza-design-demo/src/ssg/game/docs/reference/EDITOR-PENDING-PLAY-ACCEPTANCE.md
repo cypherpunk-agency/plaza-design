@@ -38,7 +38,25 @@ Additional checks at this implementation checkpoint:
   `native.reads` and shared state declaration editor; no removed schema support was restored.
 - Package TypeScript, homepage build and design-demo build PASS. The existing large-bundle
   advisory remains.
+- `check-scene-inspector-identities.mts`: all19 actual manifest/companion/actor forms mount
+  with the current source IDs; `.scene-system/scene-inspector-identities-apSBo5/evidence.json`.
+- `check-source-authoring.mts`:98 real documents, actual Library runtime placement after
+  protected Save, conflicts, grouped invalid-reference rejection, exact Undo and shared
+  artwork catalogue PASS. Its added stool fixture now follows Library's current layer system.
+
+## Browser-created connected scene
+
+On the same packaged implementation, World / Scenes created `review-created-room` and its
+starting fixture and Downtown membership. Native Play ran it at120. Logic / Content & bindings
+added `review-door` on its spawn marker; the exit destination control was changed to Library.
+In real native Play, E entered Library at74, with both scene seen flags in the visible state.
+Stop and three Undo operations removed the destination edit, exit and grouped scene creation;
+no created scene option or iframe remained, Undo was empty and Redo available.
+Observed receipt: `.scene-system/editor-pending-play/run-lw8To1/new-scene-browser.json`.
+This used only UI controls, without TS registration or injected application state. A browser
+input transport stall was recovered with the documented accessible controls. No protected
+repository Save was attempted by the public browser; the separate catalogue test proves it.
 
 This accepts the per-scene **Play** column. It does not substitute for all entity/control
-authoring, protected Save or preservation requirements in G4/G10/G12. Browser new-scene
-creation/connection remains to be checked alongside the existing catalogue source test.
+authoring, protected Save or preservation requirements in G4/G10/G12. Complete the combined
+entity/control/source-path coverage audit before promoting those gates.

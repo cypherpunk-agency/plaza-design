@@ -5,6 +5,7 @@ import { sourceDocuments, validateSourceDocuments } from '../../src/ssg/game/aut
 import { AuthoringStore, StoreError } from '../../src/ssg/game/authoring/server/store';
 import { libraryScene } from '../../src/ssg/game/scenes/library';
 import type { Composition } from '../../src/ssg/game/art';
+import {isLayered} from '../../src/ssg/game/art/core/composition';
 import type { TimelineDocument } from '../../src/ssg/game/art/core/timeline';
 import { preserveBoundIdentity } from '../../src/ssg/game/authoring/bound-identity';
 
@@ -42,7 +43,7 @@ assert.equal(store.read('library').revision, accepted, 'failed cross-document va
 store.undo(saved.transaction, { library: accepted });
 assert.equal(store.read('library').revision, before.revision, 'journal undo restores the exact source bytes');
 const decorated = structuredClone(before.value) as Composition;
-decorated.instances.push({ id: 'shared-stool', type: 'furniture.stool', props: {}, placement: { x: 750, h: 0 }, order: 40, pass: 'backdrop' });
+decorated.instances.push({ id: 'shared-stool', type: 'furniture.stool', props: {}, placement: { x: 750, h: 0 }, order: 40, ...(isLayered(decorated)?{layer:'playfield'}:{pass:'backdrop' as const}) });
 store.save([{ id: 'library', revision: before.revision, value: decorated }]);
 assert.ok((store.read('library').value as Composition).instances.some(n => n.type === 'furniture.stool'), 'other kits remain available through the same registry');
 console.log(`Source authoring checks passed: ${sourceDocuments.length} real documents; runtime placement, stable gameplay ids, conflicts, grouped reference rejection, exact undo, shared catalog.`);

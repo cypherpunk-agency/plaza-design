@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `9898d74` on main and production.
-Homepage jobs39389669429/39389670121 and design job39389669359 succeeded.
+Last verified deployment: `02f35b5` on main and production.
+Homepage jobs39397026012/39397025763 and design job39397025886 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -30,7 +30,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
 | G8 | PASS | All19 source content ownership, actual pending ordinary-content CRUD/rebind/permission/outcome dispatch,38-document bundle/history/protected Save/fresh shipping/byte Undo; all19 actor CRUD and removed Downtown native prompt callback. CONTENT-ACCEPTANCE.md. Other matrix categories remain independent |
 | G9 | PASS | All19 controller/device/network rows reconciled to typed source, real native edits and lifecycle/parity evidence; network/motion/camera/Yard/Laundry/Sandbox protected-source checks and Metro11088 platform/211200 ride cases pass. CONTROLLER-NETWORK-ACCEPTANCE.md; full authoring/preservation remain separate |
-| G10 | IN PROGRESS | All19 packaged Scene spawn edits/native Play/private snapshot after source Undo/Reset/Stop now PASS; Downtown initial pending spawn fixed. Typed actor CRUD/source bindings cover all19; catalogue creation/history/bundles/Save pass. Full entity/control authoring acceptance and browser-created connected-scene verification remain. See EDITOR-PENDING-PLAY-ACCEPTANCE.md |
+| G10 | IN PROGRESS | All19 packaged Scene spawn edits/native Play/private snapshot after source Undo/Reset/Stop now PASS; Downtown initial pending spawn fixed. All19 manifest/companion/actor forms mount; actor CRUD/source bindings cover all19; catalogue creation/history/bundles/Save pass. Browser-created ordinary scene runs, its typed exit reaches Library, and grouped creation Undo cleans up. Combined entity/control/source-path acceptance audit remains. See EDITOR-PENDING-PLAY-ACCEPTANCE.md |
 | G11 | PASS | All19 declared route collections,41 native exit dispatches and30 pending destination/arrival edits; current world/access/map/transport/opening/cinematic source and atomic Save/import evidence. See WORLD-STORY-ACCEPTANCE.md. Other scene categories and whole-goal acceptance remain open |
 | G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
 | G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
