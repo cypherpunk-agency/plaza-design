@@ -8,7 +8,7 @@ Only roles supported by the actual registered panel appear or validate; Stacks c
 use its existing cargo controller roles.
 
 Moth and Beach have registered read-only visual controllers under `devices.json → controller`.
-Their typed fields select existing state, display comparison values and Moth's actual CLOCK noun.
+Their typed fields select existing state, display comparison values and Moth's actual clock part (`clock`).
 Moth's fish/plant/tape/record picture and Beach's rental/billing/danger/lamps read those references.
 There is no new gameplay state, action interpreter or save owner. Procedural artwork and frame
 timing remain native. Disabling these inputs leaves the empty visual policy rather than silently

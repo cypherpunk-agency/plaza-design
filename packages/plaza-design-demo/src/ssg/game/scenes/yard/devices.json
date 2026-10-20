@@ -38,7 +38,8 @@
       "nouns": [
         {
           "id": "lens",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "view"
           ],
@@ -58,7 +59,8 @@
         },
         {
           "id": "motor",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "left",
             "centre",
@@ -97,7 +99,8 @@
         },
         {
           "id": "footage",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -149,7 +152,8 @@
       "nouns": [
         {
           "id": "arm",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "A-3",
             "B-5",
@@ -179,7 +183,8 @@
         },
         {
           "id": "claw",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "grab",
             "drop"
@@ -190,7 +195,8 @@
         },
         {
           "id": "job.log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -247,14 +253,16 @@
       "nouns": [
         {
           "id": "lock",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ]
         },
         {
           "id": "log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -269,7 +277,8 @@
         },
         {
           "id": "hinge",
-          "kind": "DAEMON",
+          "layer": "software",
+          "function": "talk",
           "verbs": [
             "talk"
           ],

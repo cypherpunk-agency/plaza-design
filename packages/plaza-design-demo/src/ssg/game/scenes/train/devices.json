@@ -66,7 +66,8 @@
       "nouns": [
         {
           "id": "position",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -100,7 +101,8 @@
         },
         {
           "id": "emergency.reg",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -115,7 +117,8 @@
         },
         {
           "id": "plate",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -130,7 +133,8 @@
         },
         {
           "id": "brake",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "pull"
           ],
@@ -196,7 +200,8 @@
         },
         {
           "id": "doors",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "lock"

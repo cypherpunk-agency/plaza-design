@@ -40,7 +40,8 @@
       "nouns": [
         {
           "id": "eye",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "wave",
             "read"
@@ -115,7 +116,8 @@
       "nouns": [
         {
           "id": "lamp",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "on",
             "off"
@@ -187,7 +189,8 @@
       "nouns": [
         {
           "id": "memo",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "write"
@@ -293,7 +296,8 @@
       "nouns": [
         {
           "id": "lan",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "link": {
             "known": [
               "qasrv"
@@ -302,7 +306,8 @@
         },
         {
           "id": "label",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -346,7 +351,8 @@
       "nouns": [
         {
           "id": "unit7",
-          "kind": "DAEMON",
+          "layer": "software",
+          "function": "talk",
           "verbs": [
             "talk"
           ],
@@ -400,7 +406,8 @@
       "nouns": [
         {
           "id": "beat",
-          "kind": "CLOCK",
+          "layer": "hardware",
+          "function": "time",
           "verbs": [
             "read"
           ],
@@ -423,7 +430,8 @@
         },
         {
           "id": "dial",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -475,7 +483,8 @@
       "nouns": [
         {
           "id": "log",
-          "kind": "LOG",
+          "layer": "software",
+          "function": "record",
           "verbs": [
             "off",
             "on"
@@ -521,7 +530,8 @@
         },
         {
           "id": "reel",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "store"
@@ -573,7 +583,8 @@
       "nouns": [
         {
           "id": "button",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "press"
           ],
@@ -641,7 +652,8 @@
       "nouns": [
         {
           "id": "beacon",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "on",
             "off"
@@ -708,7 +720,8 @@
       "nouns": [
         {
           "id": "horn",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "buzz"
           ],
@@ -764,7 +777,8 @@
       "nouns": [
         {
           "id": "count",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "logic",
           "verbs": [
             "count",
             "read",
@@ -823,7 +837,8 @@
       "nouns": [
         {
           "id": "plate",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "step"
           ],
@@ -890,7 +905,8 @@
       "nouns": [
         {
           "id": "hatch",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "shut"
@@ -984,7 +1000,8 @@
       "nouns": [
         {
           "id": "fan",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "spin",
             "stop"
@@ -1059,7 +1076,8 @@
       "nouns": [
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "events": [
             "opened"
           ],
@@ -1092,7 +1110,8 @@
         },
         {
           "id": "note",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1115,7 +1134,8 @@
         },
         {
           "id": "results",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "sector": "results",
           "verbs": [
             "read"
@@ -1177,7 +1197,8 @@
       "nouns": [
         {
           "id": "shields",
-          "kind": "GUARD",
+          "layer": "hardware",
+          "function": "gate",
           "guard": {
             "toy": "rings",
             "tries": 3,
@@ -1217,7 +1238,8 @@
         },
         {
           "id": "tag",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1269,7 +1291,8 @@
       "nouns": [
         {
           "id": "wheel",
-          "kind": "GUARD",
+          "layer": "hardware",
+          "function": "gate",
           "guard": {
             "toy": "cipher",
             "tries": 2,
@@ -1293,7 +1316,8 @@
         },
         {
           "id": "tag",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1345,7 +1369,8 @@
       "nouns": [
         {
           "id": "case",
-          "kind": "GUARD",
+          "layer": "hardware",
+          "function": "gate",
           "guard": {
             "toy": "cryptex",
             "tries": 2,
@@ -1381,7 +1406,8 @@
         },
         {
           "id": "tag",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1433,7 +1459,8 @@
       "nouns": [
         {
           "id": "bulb",
-          "kind": "GUARD",
+          "layer": "hardware",
+          "function": "gate",
           "guard": {
             "toy": "morse",
             "tries": 2,
@@ -1457,7 +1484,8 @@
         },
         {
           "id": "tag",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1502,7 +1530,8 @@
       "nouns": [
         {
           "id": "blank",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "cut"
           ],
@@ -1559,7 +1588,8 @@
       "nouns": [
         {
           "id": "panel",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1574,7 +1604,8 @@
         },
         {
           "id": "a",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "sector": "keyed",
           "verbs": [
             "read"
@@ -1591,7 +1622,8 @@
         },
         {
           "id": "b",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "sector": "seq",
           "verbs": [
             "read"
@@ -1608,7 +1640,8 @@
         },
         {
           "id": "c",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "sector": "cond",
           "verbs": [
             "read"
@@ -1696,7 +1729,8 @@
       "nouns": [
         {
           "id": "red",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "press"
           ],
@@ -1723,7 +1757,8 @@
         },
         {
           "id": "green",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "press"
           ],
@@ -1750,7 +1785,8 @@
         },
         {
           "id": "blue",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "press"
           ],
@@ -1818,7 +1854,8 @@
       "nouns": [
         {
           "id": "lever",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "up",
             "down"
@@ -1894,7 +1931,8 @@
       "nouns": [
         {
           "id": "log",
-          "kind": "LOG",
+          "layer": "software",
+          "function": "record",
           "verbs": [
             "off",
             "on"
@@ -1940,7 +1978,8 @@
         },
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "guard": {
             "password": [
               "auditor"
@@ -1964,7 +2003,8 @@
         },
         {
           "id": "policy",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1979,7 +2019,8 @@
         },
         {
           "id": "wipe",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "sector": "root",
           "verbs": [
             "wipe"
@@ -2040,7 +2081,8 @@
       "nouns": [
         {
           "id": "reel",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "store",
             "read"
@@ -2095,7 +2137,8 @@
       "nouns": [
         {
           "id": "lan",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "link": {
             "known": [
               "qasrv"
@@ -2104,7 +2147,8 @@
         },
         {
           "id": "label",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -2149,7 +2193,8 @@
       "nouns": [
         {
           "id": "bell",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "ring"
           ],
@@ -2200,7 +2245,8 @@
       "nouns": [
         {
           "id": "feed",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "print"
           ],
@@ -2250,7 +2296,8 @@
       "nouns": [
         {
           "id": "press",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "stamp"
           ],
@@ -2298,7 +2345,8 @@
       "nouns": [
         {
           "id": "belt",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "run",
             "stop"
@@ -2365,7 +2413,8 @@
       "nouns": [
         {
           "id": "siren",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "test"
           ],
@@ -2429,7 +2478,8 @@
       "nouns": [
         {
           "id": "cup",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "brew"
           ],
@@ -2437,7 +2487,8 @@
         },
         {
           "id": "boiler",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "descale"
           ],
@@ -2458,7 +2509,8 @@
         },
         {
           "id": "screen",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -2473,7 +2525,8 @@
         },
         {
           "id": "firmware",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -2524,7 +2577,8 @@
       "nouns": [
         {
           "id": "slot",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "insert"
           ],
@@ -2532,7 +2586,8 @@
         },
         {
           "id": "screen",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -2583,7 +2638,8 @@
       "nouns": [
         {
           "id": "drawer",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "pay"
           ],
@@ -2591,7 +2647,8 @@
         },
         {
           "id": "receipt",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -2652,7 +2709,8 @@
       "nouns": [
         {
           "id": "lamp",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "on",
             "off"
@@ -2702,7 +2760,8 @@
         },
         {
           "id": "cell",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -2759,7 +2818,8 @@
       "nouns": [
         {
           "id": "gauge",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -2859,7 +2919,8 @@
       "nouns": [
         {
           "id": "louvre",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "shut"
@@ -2943,7 +3004,8 @@
       "nouns": [
         {
           "id": "motd",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -2958,7 +3020,8 @@
         },
         {
           "id": "ping",
-          "kind": "ACT",
+          "layer": "software",
+          "function": "act",
           "verbs": [
             "ping"
           ],
@@ -2982,7 +3045,8 @@
         },
         {
           "id": "hop",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "link": {}
         }
       ]
@@ -3004,7 +3068,8 @@
       "nouns": [
         {
           "id": "job",
-          "kind": "ACT",
+          "layer": "software",
+          "function": "act",
           "verbs": [
             "print"
           ],
@@ -3045,7 +3110,8 @@
       "nouns": [
         {
           "id": "readme",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],

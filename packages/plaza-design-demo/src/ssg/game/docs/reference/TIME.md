@@ -39,7 +39,7 @@ Anything in a scene's data can carry a time window:
   **exits** (the shop's door), **verbs** (the till only takes cash before 08:00), **goals** and
   **story beats** ("meet Lux at VOID after 23:00").
 - **The city clock as a noun:** a CITY CLOCK device in hack vision with events at the hour
-  (`clock:06:00`, `clock:hour`), so a cable can fire at a time. The existing CLOCK nouns stay for
+  (`clock:06:00`, `clock:hour`), so a cable can fire at a time. The existing clock parts (`clock`) stay for
   device-local rhythms.
 - **Schedules** of devices become real: the smart plug's "schedule: night" switches at 22:00, the
   laundromat's opening hours are opening hours.
@@ -130,7 +130,7 @@ hour in any weather.
   dialogue variants (GAME-DATA.md); `when` and `lines` on people.
 - **Sudo:** the time control's second mode in a scene (transport.ts `ClockBar`): day, time
   slider, speed (■, 1×, 10×, 60×), weather override per climate or the whole city.
-- **Not yet:** the CITY CLOCK noun and schedules; sound. (The sky, grade and light: step 2, below.)
+- **Not yet:** the CITY clock part (`clock`) and schedules; sound. (The sky, grade and light: step 2, below.)
 
 ## Sun, moon, shadows (decided, Tommi 2026-10-15)
 

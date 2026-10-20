@@ -24,7 +24,7 @@ import {readObservation} from './native-observations';
 
 import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from "../data/index";
 import type {
-  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, MachineData, NetData, NetworkData, NounData, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
+  Action, CableData, Case, DeviceData, KeyItem, Layer, LineData, LineRef, LogicData, MachineData, NetData, NetworkData, NounData, PartFunction, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
 // [the net] networks and what you reach from where you are plugged in (NET.md)
@@ -35,10 +35,13 @@ import { type DogView, Watchdogs } from './watchdog';
 import { SceneTime } from './time';
 
 /**
- * Data kinds, plus two the engine makes: SEAL (the input of a sector sealed
- * with a sequence) and WATCH (the watchdog's noun on each device of its route).
+ * Engine behaviour a live noun carries: the data's settings blocks (`guard`, `link`, `clock`,
+ * `log`), plus two the engine makes: a seal (the input of a sector sealed with a sequence) and
+ * the watch (the watchdog's noun on each device of its route).
  */
-export type NounKind = Kind | 'SEAL' | 'WATCH';
+export type NounBehaviour = 'guard' | 'link' | 'clock' | 'log' | 'seal' | 'watch';
+/** A data noun's behaviour: the settings block it carries, if any. */
+export const behaviourOf = (n: NounData): NounBehaviour | undefined => n.guard ? 'guard' : n.link ? 'link' : n.clock ? 'clock' : n.log ? 'log' : undefined;
 
 /**
  * The city, as every scene's conditions see it (TIME.md): the game plugs it in (game.ts). `read`:
@@ -52,8 +55,10 @@ export type Line = [cmd: string, reply: string, tone?: 'ok' | 'err' | 'dim'];
 
 export interface Noun {
   id: string;
-  kind: NounKind;
-  /** Its verbs now (a GUARD's grow with the keyring, a LINK's with what it has scanned). */
+  layer: Layer;
+  function: PartFunction;
+  behaviour?: NounBehaviour;
+  /** Its verbs now (a login's grow with the keyring, a port's with what it has scanned). */
   readonly verbs: string[];
   /** Events this noun raises; cables start here. */
   events?: string[];
@@ -203,7 +208,7 @@ export class SceneModel {
   private inspecting=false;
   private recent:Readonly<SceneTrace>[]=[];
   enableInspection(){this.inspecting=true;}
-  inspect(){return structuredClone({state:this.state,goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.kind==='CLOCK').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,kind:n.kind,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
+  inspect(){return structuredClone({state:this.state,goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.behaviour==='clock').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,layer:n.layer,function:n.function,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
 
   /** Scene time: held while paused. A focused check can swap it. */
   now: () => number = () => this.time.now();
@@ -389,7 +394,7 @@ export class SceneModel {
   nativeEligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
     const n=this.noun(dev+'.'+noun);if(!n)return{ok:false,reason:'unknown-noun'};
     if(!n.verbs.includes(verb))return{ok:false,reason:'unknown-verb'};
-    if(n.kind!=='WATCH'&&this.frozen(dev))return{ok:false,reason:'watchdog'};
+    if(n.behaviour!=='watch'&&this.frozen(dev))return{ok:false,reason:'watchdog'};
     if(!bySignal&&this.lockLeft(dev))return{ok:false,reason:'lockout'};
     if(!bySignal&&n.sector&&this.sealed(dev,n.sector))return{ok:false,reason:'sealed'};
     return{ok:true};
@@ -407,7 +412,7 @@ export class SceneModel {
   private actAs(dev: string, noun: string, verb: string, bySignal: boolean) {
     const n = this.noun(dev + '.' + noun);
     // [watchdog] a frozen device refuses every verb, and a signal into it is dropped (its own watchdog noun still answers)
-    if (n && n.kind !== 'WATCH' && this.frozen(dev)) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'watchdog available',matches:false});this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
+    if (n && n.behaviour !== 'watch' && this.frozen(dev)) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'watchdog available',matches:false});this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
     if (!bySignal) {
       const d = this.devices.get(dev), left = this.lockLeft(dev);
       if (d && left) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'device lock expired',matches:false,remainingMs:left});this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
@@ -667,7 +672,7 @@ export class SceneModel {
     let l: Line | null = null;
     if (n.sector && this.sealed(dev, n.sector)) l = this.trySeal(dev, n.sector, id);
     else if (this.frozen(dev)) l = this.frozenLine(dev, nid, 'login', false);
-    else if (n.kind === 'GUARD') {
+    else if (n.behaviour === 'guard') {
       this.touched.set(dev, this.now());
       if (this.nounData(dev, nid)?.guard?.toy) l = this.line('toy.hands', { noun: nid, verb: this.toyVerb });
       else if (k.kind === 'fragment') this.check(dev, nid, k.text ?? '');
@@ -843,7 +848,7 @@ export class SceneModel {
   traceOf(dev: string) { return this.trace.get(dev) ?? 0; }
   /** Does this device keep a log of you (so the schematic shows its meter)? */
   logged(dev: string) { return this.logsOf(dev).length > 0; }
-  private logsOf(dev: string) { return (this.devices.get(dev)?.data.nouns ?? []).filter((n) => n.kind === 'LOG' && n.log); }
+  private logsOf(dev: string) { return (this.devices.get(dev)?.data.nouns ?? []).filter((n) => n.log); }
 
   /** A log records while its `when` holds and its cable to the archive is still there. */
   recording(dev: string, n: NounData) {
@@ -1030,7 +1035,7 @@ export class SceneModel {
   ports(): { dev: string; noun: string; key: string }[] {
     const out: { dev: string; noun: string; key: string }[] = [];
     for (const d of this.devices.values()) for (const n of d.data.nouns) {
-      if (n.kind !== 'LINK' || !n.link) continue;
+      if (!n.link) continue;
       if (n.sector && this.sealed(d.id, n.sector)) continue;
       if (n.link.when && !this.test(n.link.when, this.ctx(d.id, n.id))) continue;
       out.push({ dev: d.id, noun: n.id, key: this.port(d.id, n.id) });
@@ -1204,11 +1209,11 @@ export class SceneModel {
     for (const s of d.sectors ?? []) {
       if (!('sequence' in s.seal)) continue;
       const verbs = s.seal.sequence.filter((v, i, a) => a.indexOf(v) === i);
-      dev.nouns.push({ id: s.id, kind: 'SEAL', verbs, run: (verb, bySignal) => this.sealStep(id, s, verb, bySignal) });
+      dev.nouns.push({ id: s.id, layer: 'software', function: 'gate', behaviour: 'seal', verbs, run: (verb, bySignal) => this.sealStep(id, s, verb, bySignal) });
     }
     // [watchdog] a device on a watchdog's route carries its noun: read it, wire from arrives / leaves
     if (this.dogs.routes().has(id)) {
-      dev.nouns.push({ id: WATCH_NOUN, kind: 'WATCH', verbs: ['read'], events: ['arrives', 'leaves'], run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }) });
+      dev.nouns.push({ id: WATCH_NOUN, layer: 'software', function: 'record', behaviour: 'watch', verbs: ['read'], events: ['arrives', 'leaves'], run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }) });
     }
     // [clocks] its CLOCK nouns start beating
     this.clocks.add(id, d.nouns);
@@ -1220,13 +1225,13 @@ export class SceneModel {
   private nounOf(n: NounData, dev: string): Noun {
     const m = this;
     const noun: Noun = {
-      id: n.id, kind: n.kind,
+      id: n.id, layer: n.layer, function: n.function, behaviour: behaviourOf(n),
       get verbs() { return m.verbsOf(n, dev); },
       run: (verb, bySignal) => {
         const c: Ctx = { dev, noun: n.id, verb, bySignal };
-        if (n.kind === 'GUARD' && n.guard) return this.runGuard(n, c);
-        if (n.kind === 'LINK' && n.link) return this.runLink(n, c);
-        if (n.kind === 'CLOCK' && n.clock) return this.runClock(n, c);
+        if (n.guard) return this.runGuard(n, c);
+        if (n.link) return this.runLink(n, c);
+        if (n.clock) return this.runClock(n, c);
         return this.perform(n, c);
       },
     };
@@ -1239,10 +1244,10 @@ export class SceneModel {
   /** A GUARD's verbs grow with the keyring (a toy guard's are `probe`); a LINK's with the nodes it has seen; a CLOCK starts and stops. */
   private verbsOf(n: NounData, dev: string): string[] {
     const own = n.verbs ?? [];
-    if (n.kind === 'GUARD' && n.guard?.toy) return [this.toyVerb, ...own.filter((v) => v !== this.toyVerb)];
-    if (n.kind === 'CLOCK' && n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
-    if (n.kind === 'GUARD' && n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
-    if (n.kind === 'LINK' && n.link) {
+    if (n.guard?.toy) return [this.toyVerb, ...own.filter((v) => v !== this.toyVerb)];
+    if (n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
+    if (n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
+    if (n.link) {
       // what it knows it connects to straight away (no scan.so needed); what a scan found besides
       const reach = this.reachOf(n, dev), known = (n.link.known ?? []).filter((id) => reach.includes(id) && this.net.get(id) !== 'connected');
       const seen = reach.filter((id) => this.net.get(id) === 'seen' && !known.includes(id));

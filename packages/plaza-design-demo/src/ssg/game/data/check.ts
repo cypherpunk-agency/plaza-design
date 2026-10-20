@@ -16,15 +16,16 @@ import {observationProblems,observationAliases} from '../engine/native-observati
  */
 
 import type {
-  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
+  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, LineData, PartFunction, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
 } from './types';
+import { BEHAVIOUR_FUNCTION, LAYERS, PART_FUNCTIONS } from './types';
 import { windowProblem } from "../world/clock";
 import { ITEMS } from '../scenes/kit';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
 export interface CodeContract {
   /** Current registered primitive roles; ordinary source endpoints are not historical requirements. */
-  devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;kind?:Kind;events?:readonly string[]}[]}[];
+  devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;function?:PartFunction;events?:readonly string[]}[]}[];
   /** Verbs implemented by validated shared native routes, rather than legacy on steps. */
   nativeVerbs?: string[];
   /** Named effects implemented in code. */
@@ -44,9 +45,8 @@ export interface CodeContract {
 /** One scene to check: its file, what its code provides, and checks only its code knows. */
 export interface SceneCheck { data: SceneData; code: CodeContract; extra?: (z: SceneData) => string[] }
 
-const KINDS = ['SENSE', 'ACT', 'STORE', 'DAEMON', 'GUARD', 'LOG', 'LINK', 'CLOCK'];
-/** Kinds whose verbs the engine supplies, so they may list none. */
-const ENGINE_VERBS = ['GUARD', 'LINK', 'CLOCK'];
+/** Settings blocks whose verbs the engine supplies, so their parts may list none. */
+const ENGINE_VERBS = ['guard', 'link', 'clock'] as const;
 const TOYS = ['rings', 'cipher', 'cryptex', 'morse'] as const;
 /** The noun the engine puts on each device of a watchdog's route (scene/model.ts WATCH_NOUN). */
 const WATCH_NOUN = 'watchdog';
@@ -71,7 +71,7 @@ const KEYS: Record<string, string[]> = {
   device: ['targetQuery', 'id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'items', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
   itemUse: ['item', 'noun', 'label', 'on'],
-  noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
+  noun: ['id', 'layer', 'function', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
   guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
   rings: ['rings', 'tolerance'],
   ring: ['speed', 'gap', 'start'],
@@ -243,7 +243,7 @@ function checkNetworks(net: NetData, scenes: SceneData[], world: World): string[
         if (!m) { e(`${wr}: a port is "scene:device.noun"`); return; }
         const d = thing(m[1], m[2]), noun = d?.nouns.find((x) => x.id === m[3]);
         if (!d) e(`${wr}: "${m[1]}" has no device or node "${m[2]}"`);
-        else if (!noun || noun.kind !== 'LINK') e(`${wr}: ${m[2]}.${m[3]} is not a LINK noun`);
+        else if (!noun || !noun.link) e(`${wr}: ${m[2]}.${m[3]} is not a port (a part with a link)`);
       }
     });
     if (!Array.isArray(n.machines) || !n.machines.length) e('"machines": what is on it');
@@ -377,7 +377,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     }
     if ('guard' in s) {
       const g = d.nouns.find((n) => n.id === s.guard);
-      if (!g || g.kind !== 'GUARD') err(w, `guard "${s.guard}": not a GUARD noun of this device`);
+      if (!g || !g.guard) err(w, `guard "${s.guard}": not a login (a part with a guard) of this device`);
       else if (g.sector === sector) err(w, `guard "${s.guard}" sits inside the sector it opens (it could never be reached)`);
     }
     if ('sequence' in s) {
@@ -467,9 +467,10 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     for (const n of d.nouns) {
       const w = `${where} › nouns[${n.id}]`;
       keys(n, 'noun', w);
-      if (!KINDS.includes(n.kind)) err(w, `kind "${n.kind}" is not one of ${KINDS.join(' / ')}`);
+      if (!LAYERS.includes(n.layer)) err(w, `layer "${n.layer}" is not one of ${LAYERS.join(' / ')}`);
+      if (!PART_FUNCTIONS.includes(n.function)) err(w, `function "${n.function}" is not one of ${PART_FUNCTIONS.join(' / ')}`);
       const verbs = n.verbs ?? [];
-      if (!verbs.length && !ENGINE_VERBS.includes(n.kind)) err(w, 'has no verbs');
+      if (!verbs.length && !ENGINE_VERBS.some((f) => n[f])) err(w, 'has no verbs');
       dupes(verbs, w, 'verb');
       if (verbs.length && !n.on && verbs.some(v=>!env.code.nativeVerbs?.includes(d.id+'.'+n.id+':'+v))) err(w, 'has verbs but no "on" (what they do)');
       if (n.current !== undefined && !known.has(n.current)) err(w, `current: unknown key "${n.current}"`);
@@ -477,10 +478,8 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       for (const v of verbs) if (!(v in (n.on ?? {})) && !('*' in (n.on ?? {})) && !env.code.nativeVerbs?.includes(d.id+'.'+n.id+':'+v)) err(`${w} › on`, `verb "${v}" does nothing (add it, or a "*" entry)`);
       if (n.sector !== undefined && !sectors.some((s) => s.id === n.sector)) err(w, `sector "${n.sector}" is not one of this device's sectors`);
       if (n.id === WATCH_NOUN && env.routes.has(d.id)) err(w, `"${WATCH_NOUN}" is the engine's noun on a device the watchdog visits: rename this one`);
-      for (const [f, kind] of [['guard', 'GUARD'], ['log', 'LOG'], ['link', 'LINK'], ['clock', 'CLOCK']] as const) {
-        if (n.kind === kind && !n[f]) err(w, `a ${kind} noun needs "${f}"`);
-        if (n[f] && n.kind !== kind) err(w, `"${f}" only goes on a ${kind} noun`);
-      }
+      for (const [f, fn] of Object.entries(BEHAVIOUR_FUNCTION) as [keyof typeof BEHAVIOUR_FUNCTION, PartFunction][])
+        if (n[f] && n.function !== fn) err(w, `"${f}" only goes on a ${fn} part (this one is ${n.function})`);
       if (n.guard) {
         const g = n.guard, wg = `${w} › guard`;
         keys(g, 'guard', wg);
@@ -564,7 +563,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     const nounAt = (key: string): NounData | undefined => {
       const [d, n] = split(key);
       // the engine's watchdog noun, on a device the watchdog visits: it raises arrives / leaves and takes no orders
-      if (n === WATCH_NOUN && env.routes.has(d) && all.has(d)) return { id: WATCH_NOUN, kind: 'WATCH' as Kind, events: WATCH_EVENTS, verbs: [] };
+      if (n === WATCH_NOUN && env.routes.has(d) && all.has(d)) return { id: WATCH_NOUN, layer: 'software', function: 'record', watch: true, events: WATCH_EVENTS, verbs: [] } as NounData & { watch: true };
       return all.get(d)?.nouns.find((x) => x.id === n);
     };
     const sealAt = (key: string) => { const [d, n] = split(key); const s = all.get(d)?.sectors?.find((x) => x.id === n); return s && 'sequence' in s.seal ? s.seal : undefined; };
@@ -580,8 +579,8 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       const to = nounAt(cb.to), sq = sealAt(cb.to);
       if (sq) { if (!sq.sequence.includes(cb.verb)) err(w, `verb "${cb.verb}" is not in the seal's sequence`); return; }
       if (!to) { err(w, `to "${cb.to}": no such device.noun`); return; }
-      if (to.kind === 'GUARD') { err(w, `to "${cb.to}": a GUARD wants a person at the keyboard, not a cable`); return; }
-      if ((to.kind as string) === 'WATCH') { err(w, `to "${cb.to}": the watchdog takes no orders (wire from its arrives / leaves)`); return; }
+      if (to.guard) { err(w, `to "${cb.to}": a login wants a person at the keyboard, not a cable`); return; }
+      if ('watch' in to) { err(w, `to "${cb.to}": the watchdog takes no orders (wire from its arrives / leaves)`); return; }
       const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...[...(to.link.reach ?? []), ...(to.link.known ?? [])].map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : [])];
       if (!verbs.includes(cb.verb)) err(w, `verb "${cb.verb}" is not one of ${cb.to}'s verbs`);
     });
@@ -643,7 +642,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
   keys(z, 'scene', '');
 
   // ---------- state ----------
-  for(const role of code.devices??[]){const d=[...z.devices,...(z.nodes??[])].find(d=>d.id===role.id);if(!d){err('devices',`missing primitive device "${role.id}"`);continue;}if(role.spot&&!d.layout?.spot)err('devices',`primitive device "${role.id}" needs world spot geometry`);for(const requirement of role.nouns??[]){const noun=d.nouns.find(n=>n.id===requirement.id);if(!noun||requirement.kind&&noun.kind!==requirement.kind)err('devices',`missing/changed primitive noun "${role.id}.${requirement.id}"`);for(const event of requirement.events??[])if(!noun?.events?.includes(event))err('devices',`missing primitive event "${role.id}.${requirement.id}:${event}"`);}}
+  for(const role of code.devices??[]){const d=[...z.devices,...(z.nodes??[])].find(d=>d.id===role.id);if(!d){err('devices',`missing primitive device "${role.id}"`);continue;}if(role.spot&&!d.layout?.spot)err('devices',`primitive device "${role.id}" needs world spot geometry`);for(const requirement of role.nouns??[]){const noun=d.nouns.find(n=>n.id===requirement.id);if(!noun||requirement.function&&noun.function!==requirement.function)err('devices',`missing/changed primitive noun "${role.id}.${requirement.id}"`);for(const event of requirement.events??[])if(!noun?.events?.includes(event))err('devices',`missing primitive event "${role.id}.${requirement.id}:${event}"`);}}
   for(const problem of stateRequirementProblems(code.state,z.state,z.id))err('state',problem);
   for (const k of code.derived) if (k in z.state) err('state', `"${k}" is computed by the code; it cannot be a state key too`);
 
@@ -658,9 +657,9 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
 
   /**
    * A device's everyday actions (its popup in the world): each a noun's own verb. Hacking verbs
-   * are not everyday: no GUARD, LINK, LOG, SEAL or CLOCK nouns, nothing in a sealed sector.
+   * are not everyday: no logins, ports, recorders or clocks (parts with a guard, link, log or clock), nothing in a sealed sector.
    */
-  const HACKING = ['GUARD', 'LINK', 'LOG', 'SEAL', 'CLOCK'];
+  const hacking = (n: NounData) => !!(n.guard || n.link || n.log || n.clock);
   const MAX_EVERYDAY = 3;
   const everyday = (d: DeviceData, where: string) => {
     if (d.deck !== undefined && typeof d.deck !== 'boolean') err(where + ' › deck', 'true or false: a computer you can jack into');
@@ -677,7 +676,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
       c.keys(e, 'everyday', w);
       const n = d.nouns.find((x) => x.id === e.noun);
       if (!n) { err(w, `"${e.noun}" is not one of its nouns`); return; }
-      if (HACKING.includes(n.kind)) err(w, `${n.id} is a ${n.kind}: hacking, not everyday (it stays in hack view)`);
+      if (hacking(n)) err(w, `${n.id} is a ${n.function} part with engine behaviour: hacking, not everyday (it stays in hack view)`);
       if (n.sector) err(w, `${n.id} sits in sector "${n.sector}": sealed things are not everyday`);
       if (!(n.verbs ?? []).includes(e.verb)) err(w, `"${e.verb}" is not one of ${n.id}'s verbs (${(n.verbs ?? []).join(', ') || 'none'})`);
       if (e.label !== undefined && (typeof e.label !== 'string' || !e.label.trim())) err(w, 'label is the words on the popup (a string)');
@@ -702,7 +701,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
       if (typeof u.label !== 'string' || !u.label.trim()) err(w, 'label is the words on the popup ("pour in soap")');
       const n = d.nouns.find((x) => x.id === u.noun);
       if (!n) { err(w, `noun "${u.noun}" is not one of its nouns`); return; }
-      if (HACKING.includes(n.kind)) err(w, `${n.id} is a ${n.kind}: hacking, not everyday`);
+      if (hacking(n)) err(w, `${n.id} is a ${n.function} part with engine behaviour: hacking, not everyday`);
       if (n.sector) err(w, `${n.id} sits in sector "${n.sector}": sealed things are not everyday`);
       if (u.on === undefined) { err(w, 'needs "on": what happens (a case, or a list of them)'); return; }
       list<Case>(u.on).forEach((k, j) => {

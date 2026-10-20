@@ -107,7 +107,7 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
       trainRegion: () => region(ride.pos),
     },
     needs: {
-      devices:[{id:'train',nouns:[{id:'position',kind:'SENSE',events:['tunnel','harbor siding']},{id:'brake',kind:'ACT',events:['stopped']}]}],
+      devices:[{id:'train',nouns:[{id:'position',function:'sense',events:['tunnel','harbor siding']},{id:'brake',function:'act',events:['stopped']}]}],
     },
 
   };

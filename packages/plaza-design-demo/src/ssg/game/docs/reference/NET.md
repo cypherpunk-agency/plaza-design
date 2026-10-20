@@ -38,7 +38,7 @@ is `controlled` (saves reset, no migration).
 You start with nothing and earn programs (`.so` modules) over time:
 
 1. **`scan.so`** (the library, the first hacking job): find the machines reachable from where you
-   are plugged in, and connect to them. Until you own it, LINK nouns don't scan or connect.
+   are plugged in, and connect to them. Until you own it, port parts (`link`) don't scan or connect.
 2. Later: `sniff` (listen on a network), `spoof` (wear someone else's identity), `decrypt` (the
    lock toys), `proxy` (slower trace), `worm`. Where each is earned: with Act II.
 

@@ -10,7 +10,7 @@ import type {FeedbackReceipt} from './feedback-receipt';
 
 import { ENGINE } from "../data/index";
 import type { CodeContract } from '../data/check';
-import type { Value, SceneData, Kind } from '../data/types';
+import type { Value, SceneData, PartFunction } from '../data/types';
 import type { Ctx, Line, Spot, SceneModel } from './model';
 
 export type Vars = Record<string, string | number>;
@@ -46,7 +46,7 @@ export interface SceneRules {
   /** Scalar types of physical observations available to authored read-only queries. */
   derivedTypes?:Readonly<Record<string,import('./gameplay/queries').NativeReadType>>;
   /** What the code relies on: state keys, goals it ticks, text keys it asks for. */
-  needs?: { devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;kind?:Kind;events?:readonly string[]}[]}[]; state?: readonly StateRequirement[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
+  needs?: { devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;function?:PartFunction;events?:readonly string[]}[]}[]; state?: readonly StateRequirement[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
   /** Extra checks only this scene's code knows (a crate the parcel sits in). One message per problem. */
   check?: (z: SceneData) => string[];
   /**

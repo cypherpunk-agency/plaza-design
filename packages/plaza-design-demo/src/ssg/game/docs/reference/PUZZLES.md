@@ -125,8 +125,8 @@ open question 4 records the alignment.)
 | Sealed sectors | Device `sectors`: `[{ "id", "label", "seal": { "key": "moth.key" } \| { "guard": "login" } \| { "if": "stateKey" } \| { "sequence": [...] } }]`; each noun in it says `"sector": "<id>"` (**Sealed sectors**). | data |
 | Chips, modules, tokens | `{ "give": "moth.key" }` (a key chip), `{ "give": "switch.so" }` (a module into `Save.modules`; `foundIn` in `logic.json` names the scene), `{ "give": "tokens", "count": 3 }` (**Giving things**). | data + save |
 | Pre-wired cables | `cables`, cut by tapping. `"fixed": true` for a conduit you cannot cut; optional `id` (**Pre-wired cables**). | data |
-| Clocks | A CLOCK noun: `{ "kind": "CLOCK", "events": ["night", "day"], "clock": { "every": 4000, "set": "phase" } }` raises its events in turn (**Clocks**). | data; the beat is engine code |
-| Trace | A LOG noun: `{ "kind": "LOG", "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" } }` plus the pre-wired cable `log:entry → archive.store`. `rate` is % per second (a `fillMs` of 20000 is `rate` 5). Full meter: kicked out, locked out for `log.lockMs` (**Trace**). | data; meter is code |
+| Clocks | A clock part: `{ "layer": "hardware", "function": "time", "events": ["night", "day"], "clock": { "every": 4000, "set": "phase" } }` raises its events in turn (**Clocks**). | data; the beat is engine code |
+| Trace | A recorder part: `{ "layer": "software", "function": "record", "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" } }` plus the pre-wired cable `log:entry → archive.store`. `rate` is % per second (a `fillMs` of 20000 is `rate` 5). Full meter: kicked out, locked out for `log.lockMs` (**Trace**). | data; meter is code |
 | Net | Nodes in a scene's `nodes` or `net.json`; a LINK's `reach` lists which it can `scan` (**The net**). | data |
 | Watchdog | `"watchdog": { "route": [...], "dwellMs", "moveMs" }` in a scene or `net.json`. The device it sits on freezes. Each route device gets the engine noun `watchdog` with events `arrives` / `leaves` (**The watchdog**). | data; freezing is code |
 | Hints | Downtown's stepped fixer hints, per goal, cost a token each (`hints` comes back for Downtown, GAME-DATA.md). Not built. | data |
@@ -167,16 +167,16 @@ run exactly as below. The flat's cold light lifts when the door opens.
   off`. Turning the plug on by hand works for a few seconds, then the clock says night again
   ("the plug obeys its schedule. it is night. again."). Tap the cable to cut it, turn the plug
   on, the router wakes.
-- **Mechanics:** pre-wired cable, cutting, an ACT verb, a clock (a CLOCK noun).
+- **Mechanics:** pre-wired cable, cutting, an ACT verb, a clock (a clock part (`clock`)).
 - **Unlocks / teaches:** cables exist before you. Reading the wiring is half the game.
 - **Data sketch:** (the clock says night every 6 s, so a plug turned on by hand goes off again)
 
 ```json
 { "id": "clock", "name": "SCHEDULE", "look": "A timer app with one rule and no doubts.",
-  "nouns": [{ "id": "clock", "kind": "CLOCK", "events": ["night"], "clock": { "every": 6000 }, "verbs": ["read"],
+  "nouns": [{ "id": "clock", "layer": "hardware", "function": "time", "events": ["night"], "clock": { "every": 6000 }, "verbs": ["read"],
     "on": { "read": { "say": ["cat clock", "rule 1: at night, plug off. it is night."] } } }] },
 { "id": "plug", "name": "SMART PLUG",
-  "nouns": [{ "id": "power", "kind": "ACT", "verbs": ["on", "off"], "current": "plugOn",
+  "nouns": [{ "id": "power", "layer": "hardware", "function": "act", "verbs": ["on", "off"], "current": "plugOn",
     "on": { "on": { "do": [{ "set": "plugOn", "to": true }], "say": ["use power --on", "click. the router blinks awake."] },
             "off": { "do": [{ "set": "plugOn", "to": false }], "say": ["{via}use power --off", "click. dark again.", "dim"] } } }] }
 ```
@@ -212,16 +212,16 @@ The router's uplink sits in a sector that opens once the plug is on; CONCIERGE i
 ```json
 { "id": "router", "name": "ROUTER",
   "sectors": [{ "id": "net", "label": "uplink", "seal": { "if": "plugOn" } }],
-  "nouns": [{ "id": "uplink", "kind": "LINK", "sector": "net", "link": { "reach": ["concierge"] } }] },
+  "nouns": [{ "id": "uplink", "layer": "hardware", "function": "connect", "sector": "net", "link": { "reach": ["concierge"] } }] },
 { "id": "pc", "name": "HOME-PC",
-  "nouns": [{ "id": "outbox", "kind": "STORE", "verbs": ["read", "open"], "events": ["ready"],
+  "nouns": [{ "id": "outbox", "layer": "data", "function": "hold", "verbs": ["read", "open"], "events": ["ready"],
     "on": { "open": { "do": [{ "emit": "ready" }], "say": ["open outbox", "receipt_rent.pdf: ready to send."] } } }] },
 { "id": "concierge", "name": "CONCIERGE",
   "nouns": [
-    { "id": "desk", "kind": "ACT", "verbs": ["verify"], "on": { "verify": [
+    { "id": "desk", "layer": "hardware", "function": "act", "verbs": ["verify"], "on": { "verify": [
       { "if": "!signal", "say": ["use desk --verify", "CONCIERGE: \"verification requires a document. you are not a document.\"", "err"] },
       { "do": [{ "set": "doorOpen", "to": true }, { "goal": "door" }], "say": ["signal → desk --verify", "CONCIERGE: \"payment verified. how unexpected.\"", "ok"] } ] } },
-    { "id": "concierge", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "concierge" }] } } }] }
+    { "id": "concierge", "layer": "software", "function": "talk", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "concierge" }] } } }] }
 ```
 
 ### P03 Pixel and the warm router
@@ -241,9 +241,9 @@ The router's uplink sits in a sector that opens once the plug is on; CONCIERGE i
 - **Data sketch:**
 
 ```json
-{ "id": "kettle", "name": "KETTLE", "nouns": [{ "id": "kettle", "kind": "ACT", "verbs": ["boil"], "events": ["boiled"],
+{ "id": "kettle", "name": "KETTLE", "nouns": [{ "id": "kettle", "layer": "hardware", "function": "act", "verbs": ["boil"], "events": ["boiled"],
   "on": { "boil": { "do": [{ "emit": "boiled" }], "say": ["use kettle --boil", "it boils. it says so."] } } }] },
-{ "id": "blinds", "name": "BLINDS", "nouns": [{ "id": "motor", "kind": "ACT", "verbs": ["open", "close"], "on": { "open": [
+{ "id": "blinds", "name": "BLINDS", "nouns": [{ "id": "motor", "layer": "hardware", "function": "act", "verbs": ["open", "close"], "on": { "open": [
   { "if": "!signal", "say": ["use motor --open", "privacy mode. only your morning routine may open the blinds.", "err"] },
   { "do": [{ "set": "sun", "to": true }, { "effect": "pixel.move" }], "say": ["signal → motor --open", "sun. Pixel relocates.", "ok"] } ] } }] }
 ```
@@ -304,7 +304,7 @@ module, controlled nodes, the fixer's hints.*
 **Built** (`data/downtown.json`, `game/downtown/`). Where it differs from the sketches below:
 the till's login opens the `drawer` sector and the drawer pays the tokens (that sets `flags.till`,
 as before); the sketches' `clue` steps are `give`, `accepts` is `password`, the relay's trace is a
-LOG noun (`rate` 4 %/s, wrong guess +15 %) with its archive as a noun on the relay; the login
+recorder part (`log`) (`rate` 4 %/s, wrong guess +15 %) with its archive as a noun on the relay; the login
 users (`admin`, `maint`) are checked by the deck's `login <user> <pass>` only (dragging a clue
 needs no user). P12 is playable with a stand-in for the rings toy (see P12). O02 and O06 are in.
 The fixer keeps his bubbles and his hints (`level.ts`); his first question opens the deck with
@@ -317,10 +317,10 @@ and the save stay the same.
 | Old (`level.ts`) | New |
 |---|---|
 | `ls` on a machine | SCAN: the schematic shows the nouns |
-| `cat file` | READ on a STORE noun |
-| `login user pass` | a GUARD noun: drag a fragment from the keyring or type (`try`) |
+| `cat file` | READ on a hold part |
+| `login user pass` | a login part (`guard`): drag a fragment from the keyring or type (`try`) |
 | files that appear after login | a sealed sector that unfolds after the guard opens |
-| `install legs.so` | `install` verb on the `legs.so` STORE noun |
+| `install legs.so` | `install` verb on the `legs.so` hold part |
 | `set handle`, `sudo`, `rm`, `hack`, `enter` | stay as keyboard lines on your own deck (the keyboard is the last resort, and the jokes live there) |
 | `flags.till`, `controlled`, `jump`, `tokens`, `hints` | scene `state` + the existing save fields (keep `Save.jump`, `Save.controlled` so old saves load) |
 | `objective()` | `goals`: `handle`, `till`, `box`, `install`, `relay`, `gate` (same ids) |
@@ -358,11 +358,11 @@ lifestyle."), `enter` ("nice try.").
 ```json
 { "id": "till", "name": "NOODLE TILL", "look": "A till on factory settings. It is not ashamed.",
   "nouns": [
-    { "id": "receipts.log", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat receipts.log", "#0412 ramen, extra egg ...... 1 token · #0413 ramen, no logs ........ 1 token · #0414 ramen, for a ghost .... on the house"] } } },
-    { "id": "quickstart", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "give": "admin" }], "say": ["cat quickstart", "1. log in: admin / admin. 2. change password (optional)."] } } },
-    { "id": "login", "kind": "GUARD", "guard": { "password": "admin",
+    { "id": "receipts.log", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat receipts.log", "#0412 ramen, extra egg ...... 1 token · #0413 ramen, no logs ........ 1 token · #0414 ramen, for a ghost .... on the house"] } } },
+    { "id": "quickstart", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "do": [{ "give": "admin" }], "say": ["cat quickstart", "1. log in: admin / admin. 2. change password (optional)."] } } },
+    { "id": "login", "layer": "software", "function": "gate", "guard": { "password": "admin",
       "say": ["login admin ****", "ACCESS GRANTED. Hello, admin.", "ok"], "do": [{ "set": "till", "to": true }, { "goal": "till" }] } },
-    { "id": "drawer", "kind": "ACT", "sector": "drawer", "verbs": ["open"], "on": { "open": [
+    { "id": "drawer", "layer": "hardware", "function": "act", "sector": "drawer", "verbs": ["open"], "on": { "open": [
       { "if": "paid", "say": ["use drawer --open", "empty. the till looks at you.", "dim"] },
       { "do": [{ "set": "paid", "to": true }, { "give": "tokens", "count": 3 }], "say": ["use drawer --open", "credited to {handle}. Spend them on hints at the stall.", "ok"] } ] } }],
   "sectors": [{ "id": "drawer", "label": "cash drawer", "seal": { "guard": "login" } }] }
@@ -394,19 +394,19 @@ lifestyle."), `enter` ("nice try.").
 
 ```json
 { "id": "sign", "name": "VERIFY SIGN", "look": "Six tubes. Five work.",
-  "nouns": [{ "id": "tubes", "kind": "SENSE", "verbs": ["read", "test"],
+  "nouns": [{ "id": "tubes", "layer": "hardware", "function": "sense", "verbs": ["read", "test"],
     "on": { "read": { "do": [{ "give": "vrify" }], "say": ["cat tubes", "V·RIFY. the E has been dark since forever."] },
             "test": { "do": [{ "give": "vrify" }], "say": ["use tubes --test", "V ok · E dead · R ok · I ok · F ok · Y ok"] } } }] },
 { "id": "box", "name": "JUNCTION BOX 0x2F",
   "nouns": [
-    { "id": "README", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat README", "Registry Utilities. Maintenance login only. Password set per sign policy 7."] } } },
-    { "id": "login", "kind": "GUARD",
+    { "id": "README", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat README", "Registry Utilities. Maintenance login only. Password set per sign policy 7."] } } },
+    { "id": "login", "layer": "software", "function": "gate",
       "guard": { "password": "vrify",
         "near": { "verify": ["login maint verify", "ACCESS DENIED. Close. Count the letters again.", "err"],
                   "admin": ["login maint admin", "ACCESS DENIED. Not everyone is the noodle stall.", "err"] },
         "say": ["login maint *****", "ACCESS GRANTED. Welcome back, maintenance.", "ok"],
         "do": [{ "effect": "node.free" }, { "goal": "box" }] } },
-    { "id": "legs.so", "kind": "STORE", "sector": "modules", "verbs": ["read", "install"], "on": {
+    { "id": "legs.so", "layer": "data", "function": "hold", "sector": "modules", "verbs": ["read", "install"], "on": {
       "read": { "say": ["cat legs.so", "[binary module] install to use."] },
       "install": [{ "if": "jump", "say": ["install legs.so", "legs.so is already installed. You have legs.", "dim"] },
                   { "do": [{ "set": "jump", "to": true }, { "goal": "install" }], "say": ["install legs.so", "installed legs.so. SPACE to jump.", "ok"] }] } }],
@@ -507,19 +507,19 @@ long as its cable to the archive is there; each wrong guess adds 15 %.
 ```json
 { "id": "relay", "name": "ROOFTOP RELAY 0x31",
   "nouns": [
-    { "id": "notes.txt", "kind": "STORE", "verbs": ["read"], "on": { "read": { "do": [{ "give": "rule.reverse" }], "say": ["cat notes.txt", "maint: password rotated per policy 7. new password = old password, reversed. -J"] } } },
-    { "id": "log", "kind": "LOG", "verbs": ["read"], "events": ["entry"], "log": { "rate": 2.5, "archive": "archive.store" },
+    { "id": "notes.txt", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "do": [{ "give": "rule.reverse" }], "say": ["cat notes.txt", "maint: password rotated per policy 7. new password = old password, reversed. -J"] } } },
+    { "id": "log", "layer": "software", "function": "record", "verbs": ["read"], "events": ["entry"], "log": { "rate": 2.5, "archive": "archive.store" },
       "on": { "read": { "say": ["cat log", "visitor: unknown. recording: yes. archive: nightly."] } } },
-    { "id": "login", "kind": "GUARD",
+    { "id": "login", "layer": "software", "function": "gate",
       "guard": { "password": "yfirv", "trace": 15,
         "near": { "vrify": ["login maint vrify", "ACCESS DENIED. That was the old one. Policy 7 says rotate.", "err"] },
         "say": ["login maint *****", "ACCESS GRANTED. Rotation is not security. Noted.", "ok"],
         "do": [{ "effect": "node.free" }, { "goal": "relay" }] } },
-    { "id": "gate.memo", "kind": "STORE", "sector": "maint", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat gate.memo", "NEON MARKET GATE: scanner signature required. Scanner modules are sold in the Market. Irony noted."] }, "copy": { "say": ["cp gate.memo ~/deck", "copied. irony included."] } } },
-    { "id": "root.frag", "kind": "STORE", "sector": "maint", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat root.frag", "root fragment 1/7 · 9f2c 41ab e07d 3c55 · keep it."] }, "copy": { "do": [{ "give": "root.frag.1" }], "say": ["cp root.frag ~/deck", "root fragment 1/7. keep it.", "ok"] } } },
-    { "id": "uplink", "kind": "LINK", "sector": "maint", "link": { "reach": ["friendnet", "maglev", "weathersat", "undernet", "dispatch"] } }],
+    { "id": "gate.memo", "layer": "data", "function": "hold", "sector": "maint", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat gate.memo", "NEON MARKET GATE: scanner signature required. Scanner modules are sold in the Market. Irony noted."] }, "copy": { "say": ["cp gate.memo ~/deck", "copied. irony included."] } } },
+    { "id": "root.frag", "layer": "data", "function": "hold", "sector": "maint", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat root.frag", "root fragment 1/7 · 9f2c 41ab e07d 3c55 · keep it."] }, "copy": { "do": [{ "give": "root.frag.1" }], "say": ["cp root.frag ~/deck", "root fragment 1/7. keep it.", "ok"] } } },
+    { "id": "uplink", "layer": "hardware", "function": "connect", "sector": "maint", "link": { "reach": ["friendnet", "maglev", "weathersat", "undernet", "dispatch"] } }],
   "sectors": [{ "id": "maint", "label": "maintenance", "seal": { "guard": "login" } }] },
-{ "id": "archive", "name": "ARCHIVE", "nouns": [{ "id": "store", "kind": "STORE", "verbs": ["save"], "on": { "save": { "say": ["{via}archive save", "your visit, filed.", "dim"] } } }] }
+{ "id": "archive", "name": "ARCHIVE", "nouns": [{ "id": "store", "layer": "data", "function": "hold", "verbs": ["save"], "on": { "save": { "say": ["{via}archive save", "your visit, filed.", "dim"] } } }] }
 ```
 ```json
 "cables": [{ "from": "relay.log:entry", "to": "archive.store", "verb": "save" }],
@@ -559,7 +559,7 @@ FRIENDNET's `home` LINK reaches MOTH-PC. The drawer holds `notes.txt` (Moth's hi
   Moth: "gone fishing (not fishing)". You: "{handle}: pretending to be busy". The fixer:
   "serving noodles to the dead". A contact called REGISTRY-WD: "just checking".
 - **Solution:** `connect` FRIENDNET (from the relay's uplink). READ Moth's profile; its `home`
-  LINK noun `connect`s MOTH-PC. MOTH-PC shows a core, a `motd` ("if you're not my friend, go
+  port part (`link`) `connect`s MOTH-PC. MOTH-PC shows a core, a `motd` ("if you're not my friend, go
   away. if you are, you know where the key is.") and two sealed sectors: `drawer` and `journal`.
   The key chip from the yard opens `drawer`: notes, `photos`, and `switch.so`. Install it.
 - **Mechanics:** scan/connect hops, a key chip seal, a module found in the story.
@@ -577,12 +577,12 @@ note under P11). Installing `switch.so` is a `give`; `logic.json` then says `"fo
 ```json
 { "id": "mothpc", "name": "MOTH-PC", "look": "A computer that smells of solder and fish food.",
   "nouns": [
-    { "id": "motd", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat motd", "if you're not my friend, go away. if you are, you know where the key is."] } } },
-    { "id": "photos", "kind": "STORE", "sector": "drawer", "verbs": ["read"], "on": { "read": { "do": [{ "give": "sprat" }], "say": ["cat photos", "SPRAT, day 1 (he's a fish. he's fine.) · karaoke: our song, High, Low, Middle."] } } },
-    { "id": "switch.so", "kind": "STORE", "sector": "drawer", "verbs": ["read", "install"], "on": {
+    { "id": "motd", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat motd", "if you're not my friend, go away. if you are, you know where the key is."] } } },
+    { "id": "photos", "layer": "data", "function": "hold", "sector": "drawer", "verbs": ["read"], "on": { "read": { "do": [{ "give": "sprat" }], "say": ["cat photos", "SPRAT, day 1 (he's a fish. he's fine.) · karaoke: our song, High, Low, Middle."] } } },
+    { "id": "switch.so", "layer": "data", "function": "hold", "sector": "drawer", "verbs": ["read", "install"], "on": {
       "read": { "say": ["cat switch.so", "[logic module] SWITCH. install to use."] },
       "install": { "do": [{ "give": "switch.so" }] } } },
-    { "id": "journal.txt", "kind": "STORE", "sector": "journal", "verbs": ["read"], "on": { "read": { "say": "journal.last" } } }],
+    { "id": "journal.txt", "layer": "data", "function": "hold", "sector": "journal", "verbs": ["read"], "on": { "read": { "say": "journal.last" } } }],
   "sectors": [
     { "id": "drawer", "label": "drawer", "seal": { "key": "moth.key" } },
     { "id": "journal", "label": "journal", "seal": { "sequence": ["high", "low", "mid"], "withinMs": 1500, "signal": true } }] }
@@ -664,13 +664,13 @@ good name); typing `sprat0412` works too.
 ```json
 { "id": "neobank", "name": "NEOBANK",
   "nouns": [
-    { "id": "hint", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat hint", "password hint: who I feed + when I hatched"] } } },
-    { "id": "login", "kind": "GUARD", "guard": { "password": "sprat0412", "lockMs": 20000, "trace": 25,
+    { "id": "hint", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat hint", "password hint: who I feed + when I hatched"] } } },
+    { "id": "login", "layer": "software", "function": "gate", "guard": { "password": "sprat0412", "lockMs": 20000, "trace": 25,
       "say": ["login moth *********", "Welcome back, Moth. You look different.", "ok"], "do": [{ "goal": "bank" }] } },
-    { "id": "log", "kind": "LOG", "verbs": ["read"], "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" },
+    { "id": "log", "layer": "software", "function": "record", "verbs": ["read"], "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" },
       "on": { "read": { "say": ["cat log", "session: moth. device: unfamiliar. NEO is worried."] } } },
-    { "id": "neo", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "neo" }] } } },
-    { "id": "statement", "kind": "STORE", "sector": "statements", "verbs": ["read", "copy"],
+    { "id": "neo", "layer": "software", "function": "talk", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "neo" }] } } },
+    { "id": "statement", "layer": "data", "function": "hold", "sector": "statements", "verbs": ["read", "copy"],
       "on": { "read": { "say": "bank.statement" }, "copy": { "do": [{ "give": "tab.receipt" }], "say": ["cp statement ~/deck", "copied. the fixer will want to see this."] } } }],
   "sectors": [{ "id": "statements", "label": "statements", "seal": { "guard": "login" } }] }
 ```
@@ -740,21 +740,21 @@ off). DLV-9's `hatch` gives the left glove (a key chip). Not used yet: the watch
 ```json
 { "id": "gate", "name": "NEON MARKET GATE",
   "nouns": [
-    { "id": "scanner", "kind": "SENSE", "verbs": ["read"], "events": ["matched"], "on": { "read": { "say": ["cat scanner", "signatures on file: delivery robots, staff. you: no."] } } },
-    { "id": "lock", "kind": "ACT", "verbs": ["open", "shut"], "current": "gateOpen", "on": {
+    { "id": "scanner", "layer": "hardware", "function": "sense", "verbs": ["read"], "events": ["matched"], "on": { "read": { "say": ["cat scanner", "signatures on file: delivery robots, staff. you: no."] } } },
+    { "id": "lock", "layer": "hardware", "function": "act", "verbs": ["open", "shut"], "current": "gateOpen", "on": {
       "open": [{ "if": "!signal", "say": ["use lock --open", "ACCESS DENIED. Scanner signature required. Passwords are so last decade.", "err"] },
                { "do": [{ "set": "gateOpen", "to": true }], "say": ["signal → lock --open", "the gate slides open.", "ok"] }],
       "shut": { "do": [{ "set": "gateOpen", "to": false }], "say": ["{via}use lock --shut", "clunk. shut.", "dim"] } } },
-    { "id": "door", "kind": "SENSE", "verbs": ["read"], "events": ["passed"], "on": { "read": { "say": ["cat door", "counts what goes through. today: nothing."] } } },
-    { "id": "deliveries.log", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat deliveries.log", "expected: DLV-9 (dumplings), overdue 41 days. registered robots need no scanner module."] } } }] },
+    { "id": "door", "layer": "hardware", "function": "sense", "verbs": ["read"], "events": ["passed"], "on": { "read": { "say": ["cat door", "counts what goes through. today: nothing."] } } },
+    { "id": "deliveries.log", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat deliveries.log", "expected: DLV-9 (dumplings), overdue 41 days. registered robots need no scanner module."] } } }] },
 { "id": "dlv9", "name": "DLV-9", "look": "A delivery robot. Lost. Says it isn't.",
   "nouns": [
-    { "id": "route.dat", "kind": "STORE", "verbs": ["read", "copy"], "on": { "read": [
+    { "id": "route.dat", "layer": "data", "function": "hold", "verbs": ["read", "copy"], "on": { "read": [
       { "if": "routeFixed", "say": ["cat route.dat", "destination: NEON MARKET · DUMPLINGS. ETA: soon. (it is beside itself)"] },
       { "say": ["cat route.dat", "destination \"somewhere warm\". ETA: never."] }] } },
-    { "id": "wheels", "kind": "ACT", "verbs": ["go home", "follow you", "spin"], "on": { "go home": { "do": [{ "effect": "dlv.drive" }] } } },
-    { "id": "hatch", "kind": "ACT", "verbs": ["open", "close"], "on": { "open": { "do": [{ "give": "glove.left" }], "say": ["use hatch --open", "hatch: open. inside: one glove. left hand."] }, "close": { "say": ["use hatch --close", "hatch: shut. the glove stays with you.", "dim"] } } },
-    { "id": "uplink", "kind": "LINK", "link": { "reach": ["dispatch"] } }] }
+    { "id": "wheels", "layer": "hardware", "function": "act", "verbs": ["go home", "follow you", "spin"], "on": { "go home": { "do": [{ "effect": "dlv.drive" }] } } },
+    { "id": "hatch", "layer": "hardware", "function": "act", "verbs": ["open", "close"], "on": { "open": { "do": [{ "give": "glove.left" }], "say": ["use hatch --open", "hatch: open. inside: one glove. left hand."] }, "close": { "say": ["use hatch --close", "hatch: shut. the glove stays with you.", "dim"] } } },
+    { "id": "uplink", "layer": "hardware", "function": "connect", "link": { "reach": ["dispatch"] } }] }
 ```
 
 DISPATCH is a node (Downtown's `nodes`): `connect` brings it onto the board, sealed behind its
@@ -763,11 +763,11 @@ shields.
 ```json
 { "id": "dispatch", "name": "DISPATCH", "look": "Every delivery robot's boss. Behind three spinning shields.", "status": "routing",
   "nouns": [
-    { "id": "shields", "kind": "GUARD",
+    { "id": "shields", "layer": "software", "function": "gate",
       "guard": { "toy": "rings", "rings": { "rings": [
           { "speed": 70, "gap": 50, "start": 30 }, { "speed": -95, "gap": 50, "start": 150 }, { "speed": 120, "gap": 50, "start": 260 }], "tolerance": 20 },
         "say": ["probe dispatch", "guard down. DISPATCH uplink reachable.", "ok"] } },
-    { "id": "routes", "kind": "STORE", "sector": "routes", "verbs": ["read", "copy"], "on": {
+    { "id": "routes", "layer": "data", "function": "hold", "sector": "routes", "verbs": ["read", "copy"], "on": {
       "read": { "say": ["cat routes", "DLV-9 → NEON MARKET · DUMPLINGS (warm)"] },
       "copy": { "do": [{ "set": "routeFixed", "to": true }], "say": ["cp routes/dlv9 dlv9:route.dat", "copied. DLV-9 knows where it is going. it is overjoyed. flatly.", "ok"] } } }],
   "sectors": [{ "id": "routes", "label": "routes", "seal": { "guard": "shields" } }] }
@@ -843,12 +843,12 @@ scaffold (Act II).
 ```json
 { "id": "washer3", "name": "WASHER 3", "status": [{ "if": "w3Done", "then": "door open", "else": "door locked · 1 cycle left" }],
   "nouns": [
-    { "id": "drum", "kind": "ACT", "verbs": ["start", "stop"], "events": ["done"], "on": { "start": { "do": [{ "effect": "washer.run" }] }, "stop": { "do": [{ "effect": "washer.stop" }] } } },
-    { "id": "queue", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat queue", "1. jacket (prepaid, 9 cycles) · 1 left"] } } }] },
-{ "id": "breaker", "name": "BREAKER", "nouns": [{ "id": "load", "kind": "SENSE", "verbs": ["read", "reset"], "events": ["tripped"],
+    { "id": "drum", "layer": "hardware", "function": "act", "verbs": ["start", "stop"], "events": ["done"], "on": { "start": { "do": [{ "effect": "washer.run" }] }, "stop": { "do": [{ "effect": "washer.stop" }] } } },
+    { "id": "queue", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat queue", "1. jacket (prepaid, 9 cycles) · 1 left"] } } }] },
+{ "id": "breaker", "name": "BREAKER", "nouns": [{ "id": "load", "layer": "hardware", "function": "sense", "verbs": ["read", "reset"], "events": ["tripped"],
   "on": { "read": { "say": ["cat load", "running: {running}/2. it has opinions about three."] }, "reset": { "say": ["use load --reset", "reset. it sighs in amps."] } } }] },
-{ "id": "suds", "name": "SUDS", "nouns": [{ "id": "suds", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "suds" }] } } }] },
-{ "id": "clock", "name": "OPENING HOURS", "nouns": [{ "id": "clock", "kind": "CLOCK", "events": ["open"], "clock": { "every": 30000, "first": 2000 } }] }
+{ "id": "suds", "name": "SUDS", "nouns": [{ "id": "suds", "layer": "software", "function": "talk", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "suds" }] } } }] },
+{ "id": "clock", "name": "OPENING HOURS", "nouns": [{ "id": "clock", "layer": "hardware", "function": "time", "events": ["open"], "clock": { "every": 30000, "first": 2000 } }] }
 ```
 
 The breaker's stop goes to every washer by fan-out (decided: one event, several cables). It is
@@ -881,8 +881,8 @@ wired in the walls, so those four are `fixed`: the puzzle is the schedule, not t
 
 ```json
 { "id": "mbillboard", "name": "MARKET BILLBOARD", "nouns": [
-  { "id": "screen", "kind": "SENSE", "verbs": ["read"], "on": { "read": { "say": ["cat screen", "KVU'A AYBZA. CLYPMF."] } } },
-  { "id": "cipher", "kind": "GUARD",
+  { "id": "screen", "layer": "hardware", "function": "sense", "verbs": ["read"], "on": { "read": { "say": ["cat screen", "KVU'A AYBZA. CLYPMF."] } } },
+  { "id": "cipher", "layer": "software", "function": "gate",
     "guard": { "toy": "cipher", "cipher": { "text": "KVU'A AYBZA. CLYPMF.", "shift": 7 }, "lockMs": 8000,
       "say": ["rotor --shift 7", "DON'T TRUST. VERIFY. [SIG OK]", "ok"], "do": [{ "effect": "node.free" }] } }] }
 ```
@@ -925,10 +925,10 @@ READING IT · SMILE · YOU ARE ON CAMERA. CAR 3 OF 3. EMERGENCY BRAKE.
 ```json
 { "id": "train", "name": "TRAIN-0", "look": "LINE 0. It goes round. It never says where.",
   "nouns": [
-    { "id": "position", "kind": "SENSE", "verbs": ["read"], "events": ["tunnel", "harbor siding"], "on": { "read": { "say": ["cat position", "between PLAZA CENTRAL and PLAZA CENTRAL."] } } },
-    { "id": "emergency.reg", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat emergency.reg", "#0451 · registered by MOTH · 2 days ago · reason: a friend needs to get off at the harbor. they'll know when."] } } },
-    { "id": "brake", "kind": "ACT", "verbs": ["pull"], "events": ["stopped"], "on": { "pull": { "do": [{ "effect": "train.brake" }] } } },
-    { "id": "doors", "kind": "ACT", "verbs": ["open", "lock"], "on": { "open": { "do": [{ "effect": "train.doors" }] } } }] }
+    { "id": "position", "layer": "hardware", "function": "sense", "verbs": ["read"], "events": ["tunnel", "harbor siding"], "on": { "read": { "say": ["cat position", "between PLAZA CENTRAL and PLAZA CENTRAL."] } } },
+    { "id": "emergency.reg", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat emergency.reg", "#0451 · registered by MOTH · 2 days ago · reason: a friend needs to get off at the harbor. they'll know when."] } } },
+    { "id": "brake", "layer": "hardware", "function": "act", "verbs": ["pull"], "events": ["stopped"], "on": { "pull": { "do": [{ "effect": "train.brake" }] } } },
+    { "id": "doors", "layer": "hardware", "function": "act", "verbs": ["open", "lock"], "on": { "open": { "do": [{ "effect": "train.doors" }] } } }] }
 ```
 ```json
 "cables": [{ "from": "train.brake:stopped", "to": "train.doors", "verb": "lock" }]
@@ -956,7 +956,7 @@ the plate; add "your emergency has been registered. it will be ready in 48 hours
 - Doors open at the siding: the save flag `harbor:open` is set (the harbor lock is off for good),
   and STEP OUT · SIDING leads up a service stair to the harbor (its `metro` exit).
 - A stop anywhere else: "the train stops {on the bridge / in the tunnel / …}." then "a voice
-  apologises for the delay. the train restarts." The plate is a STORE noun on the device.
+  apologises for the delay. the train restarts." The plate is a hold part on the device.
 - A new regular in the car, the old woman by the door, hints at it: "Nobody plans an emergency.
   Well. Some people do."
 
@@ -978,13 +978,13 @@ the plate; add "your emergency has been registered. it will be ready in 48 hours
 
 ```json
 { "id": "cabinet", "name": "JUNCTION CABINET", "nouns": [
-  { "id": "cam.in", "kind": "SENSE", "verbs": ["read"], "events": ["frame"], "on": { "read": { "say": ["cat cam.in", "the platform, 24 frames a second, mostly pigeons."] } } },
-  { "id": "ads.in", "kind": "SENSE", "verbs": ["read"], "events": ["frame"] },
-  { "id": "departures.in", "kind": "SENSE", "verbs": ["read"], "events": ["frame"] },
-  { "id": "archive", "kind": "STORE", "verbs": ["save"] },
-  { "id": "mesh", "kind": "STORE", "verbs": ["save"] },
-  { "id": "board", "kind": "ACT", "verbs": ["show"] },
-  { "id": "speakers", "kind": "ACT", "verbs": ["say"] }] }
+  { "id": "cam.in", "layer": "hardware", "function": "sense", "verbs": ["read"], "events": ["frame"], "on": { "read": { "say": ["cat cam.in", "the platform, 24 frames a second, mostly pigeons."] } } },
+  { "id": "ads.in", "layer": "hardware", "function": "sense", "verbs": ["read"], "events": ["frame"] },
+  { "id": "departures.in", "layer": "hardware", "function": "sense", "verbs": ["read"], "events": ["frame"] },
+  { "id": "archive", "layer": "data", "function": "hold", "verbs": ["save"] },
+  { "id": "mesh", "layer": "data", "function": "hold", "verbs": ["save"] },
+  { "id": "board", "layer": "hardware", "function": "act", "verbs": ["show"] },
+  { "id": "speakers", "layer": "hardware", "function": "act", "verbs": ["say"] }] }
 ```
 ```json
 "cables": [
@@ -1046,12 +1046,12 @@ SIDE UP (ANY) · NRLU 404 0451.
 ```json
 { "id": "sts2", "name": "STS-2", "look": "A gantry crane. It has moved everything. It has asked nothing.",
   "nouns": [
-    { "id": "spreader", "kind": "ACT", "verbs": ["lift", "set down"], "events": ["lifted"], "on": { "*": { "do": [{ "effect": "gantry.move" }] } } },
-    { "id": "camera", "kind": "SENSE", "verbs": ["view"], "on": { "view": { "do": [{ "open": "camera" }] } } },
-    { "id": "schedule", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat schedule", "next lift: NRLU 404 0451 → NIGHT FERRY 7"] } } }] },
+    { "id": "spreader", "layer": "hardware", "function": "act", "verbs": ["lift", "set down"], "events": ["lifted"], "on": { "*": { "do": [{ "effect": "gantry.move" }] } } },
+    { "id": "camera", "layer": "hardware", "function": "sense", "verbs": ["view"], "on": { "view": { "do": [{ "open": "camera" }] } } },
+    { "id": "schedule", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat schedule", "next lift: NRLU 404 0451 → NIGHT FERRY 7"] } } }] },
 { "id": "port", "name": "PORT AUTHORITY", "nouns": [
-    { "id": "scanner", "kind": "SENSE", "verbs": ["read"], "events": ["warm"], "on": { "read": { "say": ["cat scanner", "inspects: the outside of things."] } } },
-    { "id": "alarm", "kind": "ACT", "verbs": ["sound"] }] }
+    { "id": "scanner", "layer": "hardware", "function": "sense", "verbs": ["read"], "events": ["warm"], "on": { "read": { "say": ["cat scanner", "inspects: the outside of things."] } } },
+    { "id": "alarm", "layer": "hardware", "function": "act", "verbs": ["sound"] }] }
 ```
 ```json
 "cables": [{ "from": "port.scanner:warm", "to": "port.alarm", "verb": "sound" }],
@@ -1156,12 +1156,12 @@ and the choices made:
 ```json
 { "id": "snackomat", "name": "SNACKOMAT", "look": "A vending machine. It remembers.", "state": { "grudge": 7 },
   "nouns": [
-    { "id": "coil 4", "kind": "ACT", "verbs": ["spin", "spin twice"], "on": { "spin": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin", "clunk. raisins."] }, "spin twice": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin-twice", "clunk clunk. two raisins. it is making a point."] } } },
-    { "id": "display", "kind": "ACT", "verbs": ["say hi", "say sorry"], "on": { "say hi": { "say": ["use display --say-hi", "display: \"hi.\" (reluctantly)"] }, "say sorry": { "say": ["use display --say-sorry", "display: \"for what. specifically.\""] } } },
-    { "id": "grudge.log", "kind": "STORE", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat grudge.log", "kicked (2019) · kicked (2021) · today: being stared at · THIRST.EXE: looked at me funny (daily)"] }, "copy": { "say": ["cp grudge.log ~/deck", "copied. you now also hold a grudge. 4 KB."] } } },
-    { "id": "snackomat", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "snackomat" }] } } },
-    { "id": "coils", "kind": "ACT", "sector": "service", "verbs": ["coil 1", "coil 2", "coil 3"], "on": { "*": { "say": ["use coils --{verb}", "clunk. not raisins. a miracle.", "ok"] } } },
-    { "id": "mood.cfg", "kind": "STORE", "sector": "service", "verbs": ["read"], "on": { "read": { "say": ["cat mood.cfg", "grudge: {grudge}. font: custom 5×7. font compliments: rare."] } } }],
+    { "id": "coil 4", "layer": "hardware", "function": "act", "verbs": ["spin", "spin twice"], "on": { "spin": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin", "clunk. raisins."] }, "spin twice": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin-twice", "clunk clunk. two raisins. it is making a point."] } } },
+    { "id": "display", "layer": "hardware", "function": "act", "verbs": ["say hi", "say sorry"], "on": { "say hi": { "say": ["use display --say-hi", "display: \"hi.\" (reluctantly)"] }, "say sorry": { "say": ["use display --say-sorry", "display: \"for what. specifically.\""] } } },
+    { "id": "grudge.log", "layer": "data", "function": "hold", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat grudge.log", "kicked (2019) · kicked (2021) · today: being stared at · THIRST.EXE: looked at me funny (daily)"] }, "copy": { "say": ["cp grudge.log ~/deck", "copied. you now also hold a grudge. 4 KB."] } } },
+    { "id": "snackomat", "layer": "software", "function": "talk", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "snackomat" }] } } },
+    { "id": "coils", "layer": "hardware", "function": "act", "sector": "service", "verbs": ["coil 1", "coil 2", "coil 3"], "on": { "*": { "say": ["use coils --{verb}", "clunk. not raisins. a miracle.", "ok"] } } },
+    { "id": "mood.cfg", "layer": "data", "function": "hold", "sector": "service", "verbs": ["read"], "on": { "read": { "say": ["cat mood.cfg", "grudge: {grudge}. font: custom 5×7. font compliments: rare."] } } }],
   "sectors": [{ "id": "service", "label": "service panel", "seal": { "key": "snack.key" } }] }
 ```
 
@@ -1205,8 +1205,8 @@ is what makes them yours: the fragment comes from the guard.
 
 ```json
 { "id": "jlamp", "name": "SMART LAMP (penthouse)", "nouns": [
-  { "id": "lamp.cfg", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat lamp.cfg", "brightness 40%, mood 12%. mode: morse reminder (J keeps forgetting)."] } } },
-  { "id": "bulb", "kind": "GUARD", "guard": { "toy": "morse", "morse": { "message": "ghost", "unitMs": 240 }, "tries": 3, "lockMs": 6000,
+  { "id": "lamp.cfg", "layer": "data", "function": "hold", "verbs": ["read"], "on": { "read": { "say": ["cat lamp.cfg", "brightness 40%, mood 12%. mode: morse reminder (J keeps forgetting)."] } } },
+  { "id": "bulb", "layer": "software", "function": "gate", "guard": { "toy": "morse", "morse": { "message": "ghost", "unitMs": 240 }, "tries": 3, "lockMs": 6000,
     "say": ["echo --. .... --- ... -", "the lamp blinks back: GHOST. it seems relieved someone listened.", "ok"], "do": [{ "give": "ghost" }] } }] }
 ```
 ```json
@@ -1230,10 +1230,10 @@ is what makes them yours: the fragment comes from the guard.
 ```json
 { "id": "jcase", "name": "J's CASE", "look": "Five reels. The case of a man who writes everything down.",
   "nouns": [
-    { "id": "reels", "kind": "GUARD", "guard": { "toy": "cryptex", "cryptex": { "word": "ghost", "rings": ["BGKPSW", "AEHLOR", "CIMORU", "DHLNST", "EKPTXZ"] },
+    { "id": "reels", "layer": "software", "function": "gate", "guard": { "toy": "cryptex", "cryptex": { "word": "ghost", "rings": ["BGKPSW", "AEHLOR", "CIMORU", "DHLNST", "EKPTXZ"] },
       "lockMs": 10000, "say": ["pull reels", "click. GHOST. the case opens like it was waiting.", "ok"] } },
-    { "id": "revocation.list", "kind": "STORE", "sector": "inside", "verbs": ["read"], "on": { "read": { "say": "jcase.list" } } },
-    { "id": "root.frag", "kind": "STORE", "sector": "inside", "verbs": ["copy"], "on": { "copy": { "do": [{ "give": "root.frag.2" }], "say": ["cp root.frag ~/deck", "root fragment 2/7. keep it.", "ok"] } } }],
+    { "id": "revocation.list", "layer": "data", "function": "hold", "sector": "inside", "verbs": ["read"], "on": { "read": { "say": "jcase.list" } } },
+    { "id": "root.frag", "layer": "data", "function": "hold", "sector": "inside", "verbs": ["copy"], "on": { "copy": { "do": [{ "give": "root.frag.2" }], "say": ["cp root.frag ~/deck", "root fragment 2/7. keep it.", "ok"] } } }],
   "sectors": [{ "id": "inside", "label": "case", "seal": { "guard": "reels" } }] }
 ```
 

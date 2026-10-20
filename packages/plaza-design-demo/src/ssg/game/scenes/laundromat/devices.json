@@ -38,7 +38,8 @@
       "nouns": [
         {
           "id": "clock",
-          "kind": "CLOCK",
+          "layer": "hardware",
+          "function": "time",
           "verbs": [
             "read"
           ],
@@ -60,7 +61,8 @@
         },
         {
           "id": "hours",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -149,7 +151,8 @@
       "nouns": [
         {
           "id": "drum",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "start",
             "stop"
@@ -160,7 +163,8 @@
         },
         {
           "id": "queue",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -249,7 +253,8 @@
       "nouns": [
         {
           "id": "drum",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "start",
             "stop"
@@ -260,7 +265,8 @@
         },
         {
           "id": "queue",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -358,7 +364,8 @@
       "nouns": [
         {
           "id": "drum",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "start",
             "stop"
@@ -369,7 +376,8 @@
         },
         {
           "id": "queue",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -384,7 +392,8 @@
         },
         {
           "id": "door",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ]
@@ -465,7 +474,8 @@
       "nouns": [
         {
           "id": "drum",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "start",
             "stop"
@@ -476,7 +486,8 @@
         },
         {
           "id": "queue",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -535,7 +546,8 @@
       "nouns": [
         {
           "id": "load",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read",
             "reset"
@@ -621,7 +633,8 @@
       "nouns": [
         {
           "id": "suds",
-          "kind": "DAEMON",
+          "layer": "software",
+          "function": "talk",
           "verbs": [
             "talk"
           ],
@@ -637,7 +650,8 @@
         },
         {
           "id": "rules",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],

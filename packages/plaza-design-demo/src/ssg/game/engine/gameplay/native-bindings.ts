@@ -5,6 +5,7 @@ import {validateYardGameplayBindings} from '../controllers/yard';
 import {validateDowntownVisualBindings} from '../controllers/downtown-visual';
 import {validateLaundryGameplayBindings} from '../controllers/laundromat';
 import engineSource from '../../data/engine.json';
+import {nativeBindable} from '../../data/types';
 import {validateNativeTextQueries,validateNativeSayShape,validateNativeSaySources,nativeSayKey,nativeSourceLine} from './native-text-source';
 import {validateNativeInputsShape,validateNativeInputSources,dispatchNativeInput} from './native-inputs';
 import {validateCheckpointOwner} from './checkpoint-source';
@@ -59,7 +60,7 @@ export function validateNativeBindings(d:GameplayDefinition,data:SceneData,deriv
  for(const device of [...data.devices,...data.nodes??[]])if(device.targetQuery!==undefined&&!Object.prototype.hasOwnProperty.call(d.queries??{},device.targetQuery))fail('interaction target query '+device.targetQuery);
  for(const device of data.devices){const ref=device.layout?.spot?.presence;if(ref!==undefined&&!Object.prototype.hasOwnProperty.call(d.queries??{},ref))fail('world presence query '+ref);}
  const b=d.native;if(!b)return d;for(const key of Object.values(b.reads??{}))if(!Object.prototype.hasOwnProperty.call(data.state,key)&&!derived.includes(key)&&!Object.prototype.hasOwnProperty.call(data.observations?.aliases??{},key))fail('native read '+key);
- for(const r of b.verbs){for(const c of r.cases)validateNativeSaySources(c.say,{...engineSource.texts,...data.texts}as unknown as SceneData['texts']);const n=noun(data,r.device+'.'+r.noun);if(!n?.verbs?.includes(r.verb)||!['ACT','SENSE','STORE'].includes(n.kind))fail('unsupported native verb');}
+ for(const r of b.verbs){for(const c of r.cases)validateNativeSaySources(c.say,{...engineSource.texts,...data.texts}as unknown as SceneData['texts']);const n=noun(data,r.device+'.'+r.noun);if(!n?.verbs?.includes(r.verb)||!nativeBindable(n))fail('unsupported native verb');}
  const vocabulary=nativeVocabulary(data),event=(key:string)=>{const i=key.lastIndexOf(':');return i>0&&!!vocabulary.find(n=>n.key===key.slice(0,i))?.events.includes(key.slice(i+1));};
  for(const p of Object.values(b.presentation??{}))if(!data.devices.some(d=>d.id===p.target)&&!vocabulary.some(n=>n.key===p.target))fail('presentation target '+p.target);
  for(const key of Object.values(b.events))if(!event(key))fail('native event '+key);

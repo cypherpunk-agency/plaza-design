@@ -65,7 +65,8 @@
       "nouns": [
         {
           "id": "scanner",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -83,7 +84,8 @@
         },
         {
           "id": "lock",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "shut"
@@ -164,7 +166,8 @@
         },
         {
           "id": "door",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -182,7 +185,8 @@
         },
         {
           "id": "deliveries.log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -241,7 +245,8 @@
       "nouns": [
         {
           "id": "README",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -256,7 +261,8 @@
         },
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "guard": {
             "password": "vrify",
             "lockMs": 0,
@@ -284,7 +290,8 @@
         },
         {
           "id": "legs.so",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "program",
           "verbs": [
             "read",
             "install"
@@ -343,7 +350,8 @@
       "nouns": [
         {
           "id": "tubes",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read",
             "test"
@@ -391,7 +399,8 @@
       "nouns": [
         {
           "id": "lens",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "view",
             "loop"
@@ -426,7 +435,8 @@
         },
         {
           "id": "footage",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -495,7 +505,8 @@
       "nouns": [
         {
           "id": "screen",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "show ad",
             "show feed"
@@ -519,7 +530,8 @@
         },
         {
           "id": "ads",
-          "kind": "SENSE",
+          "layer": "software",
+          "function": "time",
           "verbs": [
             "read"
           ],
@@ -537,7 +549,8 @@
         },
         {
           "id": "terms",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -598,7 +611,8 @@
       "nouns": [
         {
           "id": "receipts.log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -613,7 +627,8 @@
         },
         {
           "id": "quickstart",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -633,7 +648,8 @@
         },
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "guard": {
             "password": "admin",
             "lockMs": 0
@@ -641,7 +657,8 @@
         },
         {
           "id": "drawer",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ],
@@ -714,7 +731,8 @@
       "nouns": [
         {
           "id": "eyes",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -729,7 +747,8 @@
         },
         {
           "id": "route.dat",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -760,7 +779,8 @@
         },
         {
           "id": "wheels",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "go home",
             "follow you",
@@ -817,7 +837,8 @@
         },
         {
           "id": "hatch",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "close"
@@ -845,7 +866,8 @@
         },
         {
           "id": "speaker",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "say hi"
           ],
@@ -860,7 +882,8 @@
         },
         {
           "id": "uplink",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "link": {}
         }
       ]
@@ -910,7 +933,8 @@
       "nouns": [
         {
           "id": "notes.txt",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -930,7 +954,8 @@
         },
         {
           "id": "log",
-          "kind": "LOG",
+          "layer": "software",
+          "function": "record",
           "verbs": [
             "read"
           ],
@@ -955,7 +980,8 @@
         },
         {
           "id": "archive",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "save",
             "read"
@@ -978,7 +1004,8 @@
         },
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "guard": {
             "password": "yfirv",
             "lockMs": 0,
@@ -1007,7 +1034,8 @@
         },
         {
           "id": "gate.memo",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1023,7 +1051,8 @@
         },
         {
           "id": "root.frag",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -1052,7 +1081,8 @@
         },
         {
           "id": "uplink",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "sector": "maint",
           "link": {}
         }
@@ -1102,7 +1132,8 @@
       "nouns": [
         {
           "id": "plate",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1117,7 +1148,8 @@
         },
         {
           "id": "gate",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ],
@@ -1168,7 +1200,8 @@
       "nouns": [
         {
           "id": "scanner",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -1183,7 +1216,8 @@
         },
         {
           "id": "door",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "enter"
           ],
@@ -1226,7 +1260,8 @@
       "nouns": [
         {
           "id": "fleet",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1241,7 +1276,8 @@
         },
         {
           "id": "manual",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1256,7 +1292,8 @@
         },
         {
           "id": "routes",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "send to dlv9"
@@ -1318,7 +1355,8 @@
       "nouns": [
         {
           "id": "feed",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1341,7 +1379,8 @@
       "nouns": [
         {
           "id": "board",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1364,7 +1403,8 @@
       "nouns": [
         {
           "id": "forecast",
-          "kind": "SENSE",
+          "layer": "software",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -1387,7 +1427,8 @@
       "nouns": [
         {
           "id": "rumours",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],

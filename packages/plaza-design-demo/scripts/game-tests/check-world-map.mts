@@ -15,6 +15,8 @@ for(const descriptor of sourceDocuments.filter(d=>d.kind==='composition')){
   const value=JSON.parse(fs.readFileSync(path.resolve('src/ssg/game',descriptor.file),'utf8'));
   compositions[descriptor.id]=descriptor.validate(value) as Composition;
 }
+// authored scenes keep their composition inside the catalogue (scenes/authored.json)
+for(const entry of JSON.parse(fs.readFileSync(path.resolve('src/ssg/game/scenes/authored.json'),'utf8')).scenes)compositions[entry.scene.id]=entry.composition as Composition;
 const sequences=[{id:'test:handoff',handoff:{scene:'capsule',entrance:'door'}}];
 const context={compositions,sequences};
 const doc=snapshotWorld(refs,[{id:'test:handoff',scene:'capsule',entrance:'door'}]);

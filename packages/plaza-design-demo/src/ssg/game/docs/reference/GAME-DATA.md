@@ -112,7 +112,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   query editor. It controls world interaction/hack targets; procedural cargo artwork keeps
   its own physical trajectory presentation. Missing references reject source edits; a
   disposed/unavailable query cannot expose the device. It adds no persisted visibility flag.
-- Hack vision's noun order (`layout.row`): **data**, optional; the default order by kind is
+- Hack vision's noun order (`layout.row`): **data**, optional; the default order by function is
   **code** (`RANK` in `schematic.ts`). Where a logic part floats in the world: the **save**
   (`logic[].at`), placed beside the player by the host. Where the player dragged a device's
   core or a noun in hack vision: the **save** (`board.vision`: `device` → the core's offset from
@@ -178,10 +178,10 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
 - The watchdog: **engine code** (`engine/watchdog.ts`: its walk, the freeze, its sprite) with a
   **data** switch (`watchdog: { route, dwellMs, moveMs }` in a scene or `net.json`). What freezing
   means (no verbs, no signals in or out, sequence seals forget) is a fixed engine rule; where it
-  walks and how fast is data. Its events are an **engine noun** (`watchdog`, kind WATCH) on each
+  walks and how fast is data. Its events are an **engine noun** (`watchdog`, a software record part the engine adds) on each
   device of the route, so puzzles wire "while it's away" with ordinary cables.
-- Clocks: **engine code** (`engine/clock.ts`), a noun kind (`CLOCK`) with **data** `clock: { every }`.
-  PUZZLES.md had proposed a named effect `clock.every`; a noun kind won because the schedule must
+- Clocks: **engine code** (`engine/clock.ts`), a `time` part with **data** `clock: { every }`.
+  PUZZLES.md had proposed a named effect `clock.every`; a part with a clock won because the schedule must
   be a thing on the schematic you can read, stop and cut cables from, and it needs no scene code.
 - Lock toys: **engine code** (`engine/toys/`, one panel and one pure rule per toy: rings, cipher,
   cryptex, morse) with **data** parameters on the guard (`toy` plus `rings` / `cipher` / `cryptex`
@@ -323,7 +323,7 @@ data change. A new kind of behaviour is a code change: one new effect.
 - `schematic.ts`, `panels.ts`: the overlay (device, board, hack vision) and the full-screen
   panels (the engine's `talk`; a scene's own, like the yard's `camera`, via `PanelFn`).
 - `watchdog.ts` (its walk, pure), `watchdog-view.ts` (its sprite and badge on the schematic),
-  `clock.ts` (CLOCK nouns, pure), `toys/` (the lock toys: `rings.ts`, `cipher.ts`, `cryptex.ts`,
+  `clock.ts` (clock parts (`clock`), pure), `toys/` (the lock toys: `rings.ts`, `cipher.ts`, `cryptex.ts`,
   `morse.ts`, each a pure rule plus its panel; `index.ts` is the engine panel `toy`),
   `styles.ts` (their CSS, inlined by `render.tsx`).
 - `host.ts` (`SceneHost`): one scene on screen: model, overlays, HACK/BOARD buttons, trace
@@ -367,14 +367,15 @@ The logic modules are one shared file, `game/data/logic.json`: `modules`, each w
 now) and `part`, a device like a scene's. A placed copy is `timer1`, `timer2`, … and gets
 its own `state`. The check runs it in each scene it is used in, and reports it as `logic.json`.
 
-A **noun** has an `id`, a `kind` (SENSE / ACT / STORE / DAEMON; GUARD, LOG, LINK and CLOCK
-add engine behaviour, below), `verbs`, optional
+A **noun** (a part) has an `id`, a `layer` (`hardware`, `software` or `data`: where it lives),
+a `function` (`sense`, `act`, `hold`, `program`, `time`, `gate`, `connect`, `record`, `talk`,
+`logic`: what it does; see design/CIRCUIT-VOCABULARY.md), `verbs`, optional
 `events`, optional `current` (the state key the highlighted verb follows) and `on`:
 what each verb does. A verb runs a **case**: optional `if`, some `do` steps, and a line
 to `say`. A list of cases means "the first whose `if` holds":
 
 ```json
-"lock": { "kind": "ACT", "verbs": ["open"], "on": { "open": [
+"lock": { "layer": "hardware", "function": "act", "verbs": ["open"], "on": { "open": [
   { "if": "!signal",      "say": ["use lock --open", "HINGE: \"hands off the lock…\"", "err"] },
   { "if": "!gateAllowed", "say": ["signal → lock --open", "HINGE ignores the signal…", "err"] },
   { "do": [{ "effect": "hatch.open" }], "say": ["signal → lock --open", "HINGE: \"opening. one second.\""] }
@@ -422,8 +423,8 @@ Each device may carry `layout`:
 ```
 
 In hack vision a device's nouns sit in one row above its name plate. Without `row` (or for
-nouns it leaves out) they go by kind: SENSE and STORE, then ACT, then LINK / GUARD / LOG,
-then DAEMON. The old `vision` directions are still accepted but no longer read.
+nouns it leaves out) they go by function: sense, hold and program, then act and logic, then
+time, gate, connect and record, then talk. The old `vision` directions are still accepted but no longer read.
 
 A scene device needs `spot`; a node must not have one. Without `board`, devices and nodes take
 the next free slot under the scene's own; logic parts land by the palette.
@@ -442,7 +443,7 @@ do with the thing without hacking anything, then `⌁ jack in` for a computer, t
 
 - An everyday action runs the noun's verb exactly as a tap on its schematic would (same cases,
   same effects, `signal` false). `label` is the popup's wording (default: the verb).
-- Hacking is not everyday: the check refuses GUARD, LINK, LOG, SEAL and CLOCK nouns and nouns in
+- Hacking is not everyday: the check refuses logins, ports, recorders, seals and clocks (parts with a guard, link, log or clock) and nouns in
   a sector. A device with no everyday action shows only `⌁ hack it`. Talking to a daemon is
   everyday (`hinge: talk`).
 - `deck: true`: a computer or terminal; `⌁ jack in` opens the full device screen (the
@@ -470,7 +471,7 @@ A device says what it takes with `items`:
 
 - `item`: an `ITEMS` id. `label`: the popup's words (`{tokens}` and state keys are filled in).
   `noun`: whose voice it speaks in and whose events `emit` raises; it must be everyday (no
-  GUARD / LINK / LOG / SEAL / CLOCK, nothing in a sector), like `everyday`.
+  no login, port, recorder, seal or clock, nothing in a sector), like `everyday`.
 - `on`: a case or a list of cases, exactly like a verb's (`if`, `when`, `do`, `say`). It runs as a
   finger would (`signal` is false); a device frozen by the watchdog or locked out by trace refuses.
 - **Take or keep**: a `take` step uses the item up (`count`, default 1); without one you keep it
@@ -570,12 +571,12 @@ or `net.json`'s `keyring`; ids are global (the check refuses a duplicate across 
 
 ## Guards
 
-A GUARD noun is a login. Its verbs come from the engine: `try <label>` per fragment on the
+A login part (`guard`) is a login. Its verbs come from the engine: `try <label>` per fragment on the
 keyring, and `type…` (a small input in the schematic). Dragging a fragment chip onto it
 tries the fragment too.
 
 ```json
-{ "id": "login", "kind": "GUARD", "events": ["opened"],
+{ "id": "login", "layer": "software", "function": "gate", "events": ["opened"],
   "guard": { "password": ["pixel0412"], "tries": 2, "lockMs": 4000, "trace": 30,
              "near": { "pixel": ["login pixel", "half right. the other half is a date.", "err"] },
              "do": [{ "goal": "in" }] } }
@@ -601,11 +602,11 @@ answer (a cryptex word, a Morse message, a cipher read out at the wrong shift) i
 mouse and touch all work; Escape closes the panel.
 
 ```json
-{ "id": "shields", "kind": "GUARD", "guard": { "toy": "rings", "say": ["probe dispatch", "guard down. DISPATCH uplink reachable.", "ok"],
+{ "id": "shields", "layer": "software", "function": "gate", "guard": { "toy": "rings", "say": ["probe dispatch", "guard down. DISPATCH uplink reachable.", "ok"],
   "rings": { "rings": [{ "speed": 70, "gap": 50, "start": 30 }, { "speed": -95, "gap": 50, "start": 150 }, { "speed": 120, "gap": 50, "start": 260 }], "tolerance": 20 } } }
-{ "id": "cipher", "kind": "GUARD", "guard": { "toy": "cipher", "cipher": { "text": "KVU'A AYBZA. CLYPMF.", "shift": 7 }, "lockMs": 8000 } }
-{ "id": "case", "kind": "GUARD", "guard": { "toy": "cryptex", "cryptex": { "word": "ghost", "rings": ["FGHJ", "AEHO", "OUIA", "RSTN", "TKLM"] } } }
-{ "id": "bulb", "kind": "GUARD", "guard": { "toy": "morse", "morse": { "message": "ghost", "unitMs": 220 } } }
+{ "id": "cipher", "layer": "software", "function": "gate", "guard": { "toy": "cipher", "cipher": { "text": "KVU'A AYBZA. CLYPMF.", "shift": 7 }, "lockMs": 8000 } }
+{ "id": "case", "layer": "software", "function": "gate", "guard": { "toy": "cryptex", "cryptex": { "word": "ghost", "rings": ["FGHJ", "AEHO", "OUIA", "RSTN", "TKLM"] } } }
+{ "id": "bulb", "layer": "software", "function": "gate", "guard": { "toy": "morse", "morse": { "message": "ghost", "unitMs": 220 } } }
 ```
 
 | Toy | Parameters | How it plays |
@@ -640,11 +641,11 @@ holds. A step `{ "unseal": "core" }` opens one from data (a root verb). Opened s
 
 ## Trace
 
-A LOG noun records you while you are inside its device: its schematic is open, or you used one
+A recorder part (`log`) records you while you are inside its device: its schematic is open, or you used one
 of its verbs on the board in the last `linger` ms.
 
 ```json
-{ "id": "log", "kind": "LOG", "verbs": ["off", "on"], "events": ["entry"],
+{ "id": "log", "layer": "software", "function": "record", "verbs": ["off", "on"], "events": ["entry"],
   "log": { "rate": 20, "fall": 10, "when": "logging", "archive": "relay.archive", "lockMs": 10000 },
   "on": { "off": { "do": [{ "set": "logging", "to": false }], "say": ["log --off", "log: off."] }, … } }
 ```
@@ -682,7 +683,7 @@ kind of place you would plug in from (the net map says it when you can't reach t
 | `friendnet` FRIENDNET | FRIENDNET (Downtown's view and Moth's) | the public net; `moth:desk.net` |
 | `mothnet` FLAT 4C | MOTH-PC | `moth:friendnet.home` (a hop) |
 
-**A LINK noun** (`"link": {}`, optional `reach`, `known`, `when`) has the engine's verbs
+**A port part (`link`)** (`"link": {}`, optional `reach`, `known`, `when`) has the engine's verbs
 `scan` (nodes in reach appear on the board as dashed silhouettes) and `connect <node>` (the node
 comes in as a full schematic, on the board only, with its pre-wired cables). What it reaches: the
 nodes of the networks its own port leads to (and theirs, by `net` and `controlled` rules), plus
@@ -737,11 +738,11 @@ fixed rhythm; the one it sits on is **frozen**.
 
 ## Clocks
 
-A CLOCK noun is an event source on a rhythm (PUZZLES P01's schedule, P10's music box clock, P13's
+A clock part (`clock`) is an event source on a rhythm (PUZZLES P01's schedule, P10's music box clock, P13's
 laundromat opening).
 
 ```json
-{ "id": "clock", "kind": "CLOCK", "events": ["night", "day"],
+{ "id": "clock", "layer": "hardware", "function": "time", "events": ["night", "day"],
   "clock": { "every": 4000, "first": 1000, "set": "phase", "start": true },
   "verbs": ["read"], "on": { "read": { "say": ["cat clock", "rule 1: at night, plug off."] } } }
 ```
@@ -875,7 +876,7 @@ interface SceneSave {
   cut?: string[]                                    // pre-wired cables the player cut, by id
   trace?: { [device]: number }                      // trace %, above 0
   locks?: { [device | "device.noun"]: number }      // running lockouts: when they end (Date.now ms)
-  clocks?: { ["device.noun"]: { next, ms, off? } }  // CLOCK nouns: next event, ms into the beat, stopped
+  clocks?: { ["device.noun"]: { next, ms, off? } }  // clock parts (`clock`): next event, ms into the beat, stopped
   watchdog?: { [id]: number }                       // each watchdog: ms into its loop
   board?: { known: string[]; pos; offsets; vision } // board positions, noun offsets, devices known
 }
@@ -1017,7 +1018,7 @@ allowlist updates where applicable, rather than only adding an arbitrary drawing
 3. **Localisation**: when, if ever, do `texts` move to `texts.en.json`?
 4. ~~PUZZLES.md's format sketches~~ **Closed (2026-10-14):** the sketches now use the engine's
    format (`give`, `password`, LOG with `rate`, `sector` on each noun, `seal.key`, `link.reach`,
-   CLOCK nouns, the engine's `watchdog` noun, `guard.toy`). Where a sketch was clearly better the
+   clock parts (`clock`), the engine's `watchdog` noun, `guard.toy`). Where a sketch was clearly better the
    engine took it: a guard's own success line (`guard.say`, from the sketches' `on.opened` lines).
 5. Built since: the watchdog, `give` for modules and tokens, the lock toys, `fixed` cables, CLOCK
    nouns. Not built: the `effect`s the sketches name (`node.control`, `pixel.move`,

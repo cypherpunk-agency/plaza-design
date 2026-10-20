@@ -60,7 +60,8 @@
       "nouns": [
         {
           "id": "bolt",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ],
@@ -86,7 +87,8 @@
         },
         {
           "id": "plate",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -149,7 +151,8 @@
       "nouns": [
         {
           "id": "note",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -164,7 +167,8 @@
         },
         {
           "id": "inside",
-          "kind": "STORE",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ],
@@ -212,7 +216,8 @@
       "nouns": [
         {
           "id": "kettle",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "boil"
           ],
@@ -286,7 +291,8 @@
       "nouns": [
         {
           "id": "motor",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "close"
@@ -397,7 +403,8 @@
       "nouns": [
         {
           "id": "outbox",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "open"
@@ -437,7 +444,8 @@
         },
         {
           "id": "inbox",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -452,7 +460,8 @@
         },
         {
           "id": "notes",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -467,7 +476,8 @@
         },
         {
           "id": "net",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "link": {
             "known": [
               "concierge"
@@ -526,7 +536,8 @@
       "nouns": [
         {
           "id": "power",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "on",
             "off"
@@ -562,7 +573,8 @@
         },
         {
           "id": "schedule",
-          "kind": "SENSE",
+          "layer": "software",
+          "function": "time",
           "verbs": [
             "read"
           ],
@@ -635,7 +647,8 @@
       "nouns": [
         {
           "id": "uplink",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "link": {
             "known": [
               "concierge"
@@ -645,7 +658,8 @@
         },
         {
           "id": "temp",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -710,7 +724,8 @@
       "nouns": [
         {
           "id": "desk",
-          "kind": "ACT",
+          "layer": "software",
+          "function": "act",
           "verbs": [
             "verify"
           ],
@@ -773,7 +788,8 @@
         },
         {
           "id": "ledger",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -797,7 +813,8 @@
         },
         {
           "id": "concierge",
-          "kind": "DAEMON",
+          "layer": "software",
+          "function": "talk",
           "verbs": [
             "talk"
           ],

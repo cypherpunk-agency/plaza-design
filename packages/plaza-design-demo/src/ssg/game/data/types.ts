@@ -14,8 +14,22 @@ import type {NativeObservations} from '../engine/native-observations';
  * Inside a device, its own `state` keys come before the scene's.
  */
 
-/** Noun kinds. GUARD, LOG, LINK and CLOCK have engine behaviour (see `guard`, `log`, `link`, `clock`). */
-export type Kind = 'SENSE' | 'ACT' | 'STORE' | 'DAEMON' | 'GUARD' | 'LOG' | 'LINK' | 'CLOCK';
+/**
+ * Where a part (noun) lives: a physical component, a program, or information
+ * (docs/design/CIRCUIT-VOCABULARY.md). Shown to the player; the engine does not read it.
+ */
+export type Layer = 'hardware' | 'software' | 'data';
+export const LAYERS: readonly Layer[] = ['hardware', 'software', 'data'];
+/**
+ * What a part does. Some functions have engine behaviour when the part carries their settings
+ * block: gate (`guard`), time (`clock`), connect (`link`), record (`log`), act (`mover`), sense (`zone`).
+ */
+export type PartFunction = 'sense' | 'act' | 'hold' | 'program' | 'time' | 'gate' | 'connect' | 'record' | 'talk' | 'logic';
+export const PART_FUNCTIONS: readonly PartFunction[] = ['sense', 'act', 'hold', 'program', 'time', 'gate', 'connect', 'record', 'talk', 'logic'];
+/** The settings block each engine behaviour needs, and the one function it may sit on. */
+export const BEHAVIOUR_FUNCTION = { guard: 'gate', clock: 'time', link: 'connect', log: 'record', mover: 'act', zone: 'sense' } as const satisfies Record<string, PartFunction>;
+/** Parts whose verbs shared gameplay commands may bind: everything but characters and parts with engine behaviour. */
+export const nativeBindable = (n: { function: PartFunction; guard?: unknown; link?: unknown; clock?: unknown; log?: unknown; mover?: unknown; zone?: unknown }) => n.function !== 'talk' && !n.guard && !n.link && !n.clock && !n.log && !n.mover && !n.zone;
 export type Tone = 'ok' | 'err' | 'dim';
 export type Value = string | number | boolean | null;
 export type Dir = 'up' | 'down' | 'left' | 'right';
@@ -158,6 +172,38 @@ export interface MorseToyData {
  * repeats). Engine verbs: `start`, `stop`. Saved: which event is next, how far
  * into the beat, and whether it is stopped.
  */
+/**
+ * A mover (on an act part): it travels between named stops (engine/movers.ts). Engine verbs:
+ * `go <stop>` for each stop, and `return`. Events it may raise: `started`, `arrived`.
+ */
+export interface MoverData {
+  /** Stop name → position along the axis (world units). The first is where it starts unless `start` says. */
+  stops: Record<string, number>;
+  /** `x` across the scene (default) or `h` up it (a lift). */
+  axis?: 'x' | 'h';
+  /** World units per second. */
+  speed: number;
+  start?: string;
+  /** A state key that holds the stop it is at, or `moving`. */
+  set?: string;
+}
+
+/**
+ * A zone (on a sense part): a stretch of the scene that notices the player or a mover crossing
+ * its edge (engine/zones.ts). Engine verbs: `arm`, `disarm`. Events it may raise: `enters`, `leaves`.
+ */
+export interface ZoneData {
+  from: number;
+  to: number;
+  /** `player`, or a mover as `device.noun`. */
+  watch: string;
+  axis?: 'x' | 'h';
+  /** A state key that holds whether something is inside. */
+  set?: string;
+  /** Raising events when the scene starts (default true). */
+  armed?: boolean;
+}
+
 export interface ClockData {
   /** The beat, ms. */
   every: number;
@@ -189,8 +235,9 @@ export interface WatchdogData {
 
 export interface NounData {
   id: string;
-  kind: Kind;
-  /** Verbs. GUARD and LINK nouns get theirs from the engine and may add more. */
+  layer: Layer;
+  function: PartFunction;
+  /** Verbs. Logins (`guard`), ports (`link`) and clocks get theirs from the engine and may add more. */
   verbs?: string[];
   /** Events this noun raises; cables start here. */
   events?: string[];
@@ -202,6 +249,8 @@ export interface NounData {
   log?: LogData;
   link?: LinkData;
   clock?: ClockData;
+  mover?: MoverData;
+  zone?: ZoneData;
   /** Verb → what it does. `*` handles every verb without its own entry. */
   on?: Record<string, Case | Case[]>;
 }
@@ -238,7 +287,8 @@ export interface LayoutData {
   vision?: Record<string, Dir>;
   /**
    * Hack vision: the order of its nouns in the row over the device, left to right.
-   * Nouns not listed follow, by kind: SENSE and STORE, then ACT, then LINK / GUARD / LOG, then DAEMON.
+   * Nouns not listed follow, by function: sense, hold and program, then act and logic, then
+   * time, gate, connect and record, then talk.
    */
   row?: string[];
 }

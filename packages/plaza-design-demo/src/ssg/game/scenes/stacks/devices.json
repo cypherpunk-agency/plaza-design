@@ -52,7 +52,8 @@
       "nouns": [
         {
           "id": "camera",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "view"
           ],
@@ -72,7 +73,8 @@
         },
         {
           "id": "schedule",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -110,7 +112,8 @@
         },
         {
           "id": "spreader",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "lift"
           ],
@@ -191,7 +194,8 @@
       "nouns": [
         {
           "id": "scanner",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -209,7 +213,8 @@
         },
         {
           "id": "log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -224,7 +229,8 @@
         },
         {
           "id": "alarm",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "sound"
           ],
@@ -293,7 +299,8 @@
       "nouns": [
         {
           "id": "manifest",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -317,7 +324,8 @@
         },
         {
           "id": "horn",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "sound"
           ],
@@ -381,7 +389,8 @@
       "nouns": [
         {
           "id": "panel",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -405,7 +414,8 @@
         },
         {
           "id": "intercom",
-          "kind": "DAEMON",
+          "layer": "software",
+          "function": "talk",
           "verbs": [
             "talk"
           ],

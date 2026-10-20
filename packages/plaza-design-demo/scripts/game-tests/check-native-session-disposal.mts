@@ -12,7 +12,7 @@ const definition:GameplayDefinition={version:1,flags:[],items:[],events:[],
  state:{'cleanup.count':{owner:'cleanup',lifetime:'save',type:'number',default:0,min:0,max:100}},
  commands:{increment:{sources:['interaction','signal'],actions:[{state:'cleanup.count',add:1}]}},
  reactions:[],conversations:{},native:{verbs:[{device:'machine',noun:'button',verb:'push',cases:[{command:'increment',say:['push','ACK','ok']}]}],events:{},goals:{}}};
-const lines:string[]=[],data={...emptyData('cleanup','Cleanup'),state:{count:0},devices:[{id:'machine',name:'Machine',look:'',nouns:[{id:'button',kind:'ACT' as const,verbs:['push']}]}]};
+const lines:string[]=[],data={...emptyData('cleanup','Cleanup'),state:{count:0},devices:[{id:'machine',name:'Machine',look:'',nouns:[{id:'button',layer:'hardware',function:'act' as const,verbs:['push']}]}]};
 const model=new SceneModel({say:line=>lines.push(line[1]),changed(){},open(){}},data,{effects:{}});
 let state:GameplayState={flags:{},items:{},tokens:0,values:{cleanup:model.state}};
 const port={read:()=>state,write:(next:GameplayState)=>{mergeValues(state.values!,next.values??{});state={...next,values:state.values};}};

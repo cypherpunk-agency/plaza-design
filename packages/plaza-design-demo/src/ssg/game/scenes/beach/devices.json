@@ -57,7 +57,8 @@
       "nouns": [
         {
           "id": "rent",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "rent",
             "end"
@@ -66,7 +67,8 @@
         },
         {
           "id": "meter",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "run",
             "pause"
@@ -103,7 +105,8 @@
         },
         {
           "id": "terms",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -153,7 +156,8 @@
       "nouns": [
         {
           "id": "songs",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "play"
           ],
@@ -214,7 +218,8 @@
         },
         {
           "id": "card",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -267,7 +272,8 @@
       "nouns": [
         {
           "id": "lights",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "flash"
           ],
@@ -283,7 +289,8 @@
         },
         {
           "id": "pump",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "pour"
           ],
@@ -337,7 +344,8 @@
         },
         {
           "id": "menu",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -389,7 +397,8 @@
       "nouns": [
         {
           "id": "eye",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -430,7 +439,8 @@
         },
         {
           "id": "flag",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "danger",
             "clear"
@@ -527,7 +537,8 @@
       "nouns": [
         {
           "id": "clock",
-          "kind": "CLOCK",
+          "layer": "hardware",
+          "function": "time",
           "events": [
             "on",
             "off"
@@ -550,7 +561,8 @@
         },
         {
           "id": "lamps",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "on",
             "off"
@@ -607,7 +619,8 @@
         },
         {
           "id": "plate",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -663,7 +676,8 @@
       "nouns": [
         {
           "id": "notice",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -678,7 +692,8 @@
         },
         {
           "id": "name",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -693,7 +708,8 @@
         },
         {
           "id": "hatch",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ],

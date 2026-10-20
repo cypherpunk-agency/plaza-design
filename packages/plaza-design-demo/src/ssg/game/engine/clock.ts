@@ -30,7 +30,7 @@ export class Clocks {
   /** Add the clocks of a device that is here now (a scene device at the start, a node when it connects). */
   add(dev: string, nouns: NounData[]) {
     for (const n of nouns) {
-      if (n.kind !== 'CLOCK' || !n.clock) continue;
+      if (!n.clock) continue;
       const key = dev + '.' + n.id;
       if (this.clocks.has(key)) continue;
       this.clocks.set(key, { key, dev, noun: n.id, data: n.clock, events: n.events ?? [], next: 0, last: this.now(), on: n.clock.start !== false, first: true });
