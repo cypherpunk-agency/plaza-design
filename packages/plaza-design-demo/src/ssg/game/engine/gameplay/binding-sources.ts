@@ -10,6 +10,7 @@ import type {GameplayDefinition} from './types';
 import {BINDING_PROVIDERS} from './binding-providers';
 import type {CityModel} from '../../world/city';
 import type {LineSystem} from '../../world/transport/line';
+import type {PresentationSignals} from './presentation-signals';
 /**
  * Binding sources of declared scenes: the names a composition's `bindings` may use, each worked
  * out by the engine every frame. A scene's artwork asks for `actor.keeper.pose` or `world.light`;
@@ -33,13 +34,15 @@ export interface StageActorRules {
  cull?:{actor:string;role:string;margin?:number}[];
 }
 /** `world`: the city and line system a world-bound scene was rebuilt with (a scene mechanism with `world`, scene-mechanisms.ts); absent until the game binds them. */
-export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;uses?:readonly import('../../scenes/kit').SceneUse[];engine?:EngineDraw;world?:{city:CityModel;metro:LineSystem}}
+export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;uses?:readonly import('../../scenes/kit').SceneUse[];engine?:EngineDraw;world?:{city:CityModel;metro:LineSystem};signals?:PresentationSignals}
 const POSE=/^actor\.([-a-zA-Z0-9_.]+)\.pose$/,CLIP=/^actor\.([-a-zA-Z0-9_.]+)\.clip$/,HOVER=/^device\.([-a-zA-Z0-9_]+)\.hover$/,VALUE=/^value\.([-a-zA-Z0-9_.:]+)$/,SPANS=/^artwork\.([-a-zA-Z0-9_.]+)\.spans$/;
 const providerOf=(name:string)=>{const dot=name.indexOf('.');return dot>0&&Object.prototype.hasOwnProperty.call(BINDING_PROVIDERS,name.slice(0,dot))?name.slice(0,dot):undefined;};
 export const knownBindingSource=(name:string)=>name==='world.light'||[POSE,CLIP,HOVER,VALUE,SPANS].some(r=>r.test(name))||!!providerOf(name);
 const flatten=(nodes:readonly Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 /** Every binding name the composition uses, with its artwork field's default. */
 export function bindingDefaults(doc:Composition):Record<string,Value>{const out:Record<string,Value>={};for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{}))out[source]=art.get(node.type).visualFields![field].default;return out;}
+/** The presentation signals (name and starting stamp) the composition's providers offer: the targets a scene's cues may name. */
+export function providerSignals(doc:Composition):Record<string,number>{const out:Record<string,number>={};for(const name of Object.keys(bindingDefaults(doc))){const p=providerOf(name);if(p)Object.assign(out,BINDING_PROVIDERS[p].signals);}return out;}
 export function unknownBindingSources(doc:Composition):string[]{return [...new Set(flatten(doc.instances).flatMap(n=>Object.values(n.bindings??{})))].filter(s=>!knownBindingSource(s));}
 const roleList=(source:SceneDocument,role:string):readonly string[]=>{const ref=(source.presentation?.actors as Record<string,unknown>|undefined)?.[role];return Array.isArray(ref)?ref as string[]:typeof ref==='string'?[ref]:[];};
 /** This frame's values for every binding the composition uses. */

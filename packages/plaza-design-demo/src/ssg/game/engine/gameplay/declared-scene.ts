@@ -16,7 +16,8 @@ import type {GameplayDefinition} from './types';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../host';
 import {compileSceneActors} from './actors';
-import {bindingDefaults,bindingValues,unknownBindingSources} from './binding-sources';
+import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources} from './binding-sources';
+import {PresentationSignals} from './presentation-signals';
 import {stageContent} from './scene-stage';
 import {dockworkerCarry} from './scene-presentation';
 import {SCENE_MECHANISMS,mergeRules,mechanismsRulesShape} from './scene-mechanisms';
@@ -26,11 +27,13 @@ import {nativeTargetValidator,compileNativeTargets,type NativeTargetValidationCo
 import type {SceneData} from '../../data/types';
 
 /** validateSceneDocument options of a declared scene: its engine targets anchor to the artwork roles its stage lists. Without a context the check is structural; the editor's assembled context checks them against the scene's devices and network. */
-export const declaredSceneOptions=(value:unknown,context:NativeTargetValidationContext={phase:'structural'})=>({manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors),
+/** Scene document options of declared scenes; `composition` lets its providers' signals be cue targets. */
+export const declaredSceneOptions=(value:unknown,context:NativeTargetValidationContext={phase:'structural'},composition?:unknown)=>({manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors),
+ ...(()=>{const targets=composition?Object.keys(providerSignals(art.validate(composition))):[];return targets.length?{presentationTargets:targets}:{};})(),
  nativeTargets:(doc:SceneDocument,gameplay:GameplayDefinition)=>nativeTargetValidator(context.phase==='assembled'?context.data:{id:doc.id} as SceneData,{effects:{}},doc.stage?.targetAnchors??[])(doc,gameplay,context)});
 export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
- const d=validateSceneDocument(scene,gameplay,declaredSceneOptions(scene)),doc=art.validate(composition);
+ const doc=art.validate(composition),signals=providerSignals(doc),d=validateSceneDocument(scene,gameplay,declaredSceneOptions(scene,undefined,doc));
  if(!d.manifest)throw new Error('Declared scene requires manifest bindings');
  // transport exits (`action`) are the runtime's; engine exits are opened by engine targets (stage.targetAnchors)
  if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)))throw new Error('Exit sets an undeclared gameplay flag');
@@ -44,7 +47,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  const people=withActors?d.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]):(d.people??[]).filter(p=>bindings.people?.[p.id]).map(p=>{const point=bindings.people[p.id],r=point.row;if(r.element.type!=='character.resident'||r.instance.layer!=='playfield')throw new Error('Person requires visible character.resident artwork in the playfield layer: '+p.id);return {...residentCharacter(r.props,point),...p,...(p.conversation!==undefined?{talk:[]}:{}),conversation:p.conversation??actorConversationId(d.id,p.id)};});
  for(const name of d.stage?.mechanisms??[]){for(const role of SCENE_MECHANISMS[name].requires)if(!geometry.artwork[role])throw new Error('Scene mechanism '+name+' requires artwork role '+role);SCENE_MECHANISMS[name].check?.({scene:d,gameplay,roles:geometry.artwork});}
  const positions=Object.fromEntries(Object.entries(bindings.uses).map(([id,r])=>[id,r.x]));
- return {scene:d,composition:doc,positions,people,actors,rows,...geometry};
+ return {scene:d,composition:doc,signals,positions,people,actors,rows,...geometry};
 }
 /** Validate against the prospective registry; the same rule supports existing and newly authored scenes. */
 export function validateDeclaredDestinations(scene:SceneDocument,destinations:Readonly<Record<string,readonly string[]>>){
@@ -69,12 +72,14 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  // the grey review room stands in for a room until the composition paints its own backdrop
  const ownRoom=rows.some(r=>r.instance.layer==='backdrop'||r.instance.layer==='distance')||mechanisms.some(m=>m.ownsRoom),front=rows.some(r=>r.instance.layer==='foreground');
  const instanceOf=(t:unknown)=>typeof t==='string'?t:(t as {instance:string}).instance,heightOf=(t:unknown)=>rows.find(r=>r.instance.id===instanceOf(t))?.placement.h??0;
+ // presentation signals: cosmetic event stamps a provider's artwork reads (a crane call), set by the scene's cues
+ const signals=Object.keys(validated.signals).length?new PresentationSignals(d.cues??[],validated.signals):undefined;
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
   return {...options,view,state:{...(options.state??{}),...(live?Object.fromEntries(Object.entries(live.lifts).map(([id,c])=>[id,{car:c.car,doors:c.doors}])):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
-   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world},d.stage?.actors),reduced:options.reduced??false};};
+   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...targets,...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   ...(d.presentation?.kind==='harborShift'?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>)=>dockworkerCarry(d.presentation,flags)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
