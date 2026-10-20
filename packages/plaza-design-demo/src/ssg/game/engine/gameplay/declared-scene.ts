@@ -18,6 +18,7 @@ import type {EngineDraw} from '../host';
 import {compileSceneActors} from './actors';
 import {bindingDefaults,bindingValues,unknownBindingSources} from './binding-sources';
 import {stageContent} from './scene-stage';
+import {dockworkerCarry} from './scene-presentation';
 
 export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
@@ -54,9 +55,10 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const instanceOf=(t:unknown)=>typeof t==='string'?t:(t as {instance:string}).instance,heightOf=(t:unknown)=>rows.find(r=>r.instance.id===instanceOf(t))?.placement.h??0;
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
   return {...options,view,state:{...(options.state??{}),...(live?Object.fromEntries(Object.entries(live.lifts).map(([id,c])=>[id,{car:c.car,doors:c.doors}])):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
-   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,engine},d.stage?.actors),reduced:options.reduced??false};};
+   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(validated.people.length||!Array.isArray((d as {actors?:unknown}).actors)?{people:validated.people}:{}),gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+  ...(d.presentation?.kind==='harborShift'?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>)=>dockworkerCarry(d.presentation,flags)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
 }

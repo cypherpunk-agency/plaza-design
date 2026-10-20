@@ -218,7 +218,7 @@
       "order": 8,
       "layer": "backdrop",
       "bindings": {
-        "visible": "shift.parcelPresent"
+        "visible": "flag.not.parcel"
       },
       "attach": {
         "instance": "dispatch-counter",
@@ -254,7 +254,7 @@
       "order": 10,
       "layer": "backdrop",
       "bindings": {
-        "visible": "shift.returned"
+        "visible": "flag.returned"
       },
       "attach": {
         "instance": "rack",
@@ -312,7 +312,7 @@
       "order": 13,
       "layer": "backdrop",
       "bindings": {
-        "visible": "shift.delivered"
+        "visible": "flag.delivered"
       },
       "attach": {
         "instance": "receiving-counter",
@@ -373,7 +373,7 @@
       "order": 17,
       "layer": "backdrop",
       "bindings": {
-        "released": "shift.released"
+        "released": "flag.released"
       },
       "attach": {
         "instance": "trolley",
@@ -391,7 +391,7 @@
       "order": 18,
       "layer": "backdrop",
       "bindings": {
-        "released": "shift.released",
+        "released": "flag.released",
         "trolleyX": "shift.trolleyX",
         "restX": "shift.trolleyRestX"
       },
@@ -411,7 +411,7 @@
       "order": 19,
       "layer": "backdrop",
       "bindings": {
-        "checked": "shift.checked"
+        "checked": "flag.checked"
       },
       "attach": {
         "instance": "checkout-post",
@@ -429,7 +429,7 @@
       "order": 20,
       "layer": "backdrop",
       "bindings": {
-        "checked": "shift.checked"
+        "checked": "flag.checked"
       },
       "attach": {
         "instance": "checkout",
@@ -609,7 +609,7 @@
       "order": 0,
       "layer": "set",
       "bindings": {
-        "done": "shift.done"
+        "done": "flag.done"
       },
       "attach": {
         "instance": "checkout",

@@ -46,9 +46,6 @@ import s16scene from './train/scene.json';
 import s17data from './sandbox/devices.json';
 import s17art from './sandbox/composition.json';
 import s17scene from './sandbox/scene.json';
-import s18data from './harbor-shift/devices.json';
-import s18art from './harbor-shift/composition.json';
-import s18scene from './harbor-shift/scene.json';
 /** Plain authored JSON inputs; no scene constructors or authoring dependencies. */
 export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Composition;scene:SceneDocument}>={
  capsule:{devices:s0data as unknown as SceneData,composition:s0art as unknown as Composition,scene:s0scene as unknown as SceneDocument},
@@ -66,7 +63,6 @@ export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Co
  harborStation:{devices:s15data as unknown as SceneData,composition:s15art as unknown as Composition,scene:s15scene as unknown as SceneDocument},
  train:{devices:s16data as unknown as SceneData,composition:s16art as unknown as Composition,scene:s16scene as unknown as SceneDocument},
  sandbox:{devices:s17data as unknown as SceneData,composition:s17art as unknown as Composition,scene:s17scene as unknown as SceneDocument},
- harborShift:{devices:s18data as unknown as SceneData,composition:s18art as unknown as Composition,scene:s18scene as unknown as SceneDocument},
  // folder scenes (folder-scenes.ts) keep the same three documents in their folder
  ...Object.fromEntries(Object.entries(FOLDER_SOURCES).map(([id,f])=>[id,{devices:(f.devices??emptyDeviceSource(id,(f.scene as SceneDocument).name)) as unknown as SceneData,composition:f.composition as Composition,scene:f.scene as SceneDocument}])),
 };

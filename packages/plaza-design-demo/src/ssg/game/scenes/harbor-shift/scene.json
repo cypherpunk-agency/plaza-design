@@ -537,7 +537,11 @@
     }
   ],
   "manifest": {
-    "artwork": {"trolley":"trolley","bay":"bay","horizon":"horizon"},
+    "artwork": {
+      "trolley": "trolley",
+      "bay": "bay",
+      "horizon": "horizon"
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -611,7 +615,17 @@
     },
     "readables": {},
     "rests": {},
-    "exits": {}
+    "exits": {},
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
+    }
   },
   "environment": {
     "ambient": {
@@ -646,5 +660,17 @@
     {
       "day": 1
     }
-  ]
+  ],
+  "stage": {
+    "horizon": {
+      "role": "horizon"
+    },
+    "lights": [
+      {
+        "role": "light",
+        "style": "lamp",
+        "color": "255,217,165"
+      }
+    ]
+  }
 }

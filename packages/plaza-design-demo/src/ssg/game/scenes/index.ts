@@ -17,7 +17,6 @@ import { moth } from "./moth/index";
 import { stacks } from "./stacks/index";
 import { yard } from "./yard/index";
 import { sandbox } from "./sandbox/index";
-import { harborShift } from "./harbor-shift/index";
 import { harbor } from "./harbor/index";
 import type { SceneDef } from './kit';
 import { mall } from "./mall/index";
@@ -38,7 +37,7 @@ export { ITEMS, priceTag } from './kit';
 const nativeDefinitions = {
   capsule, downtown, yard, moth, beach, harbor, stacks, market, laundromat, mall, metro, galleriaStation, harborStation, train,
   // sudo only (index.ts refuses `?play=sandbox` without `?sudo`): the engine's test bay, outside the story
-  sandbox, harborShift,
+  sandbox,
 } satisfies Record<string, SceneDef>;
 const codeScenes=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
 /** Scenes of the repository: those still built by their own code, and folder scenes built from JSON alone (folder-scenes.ts). */

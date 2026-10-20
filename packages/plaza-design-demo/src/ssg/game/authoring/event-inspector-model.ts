@@ -57,7 +57,7 @@ const source=(scene:string,pointer?:string):EventSource=>AUTHORED.has(scene)?{fi
 const AUTHORED=new Map((authoredCatalogue as {scenes:{scene:{id:string}}[]}).scenes.map((s,i)=>[s.scene.id,i]));
 /** Folder scenes have no code either: their source is their scene document. */
 const FOLDER=new Set(Object.keys(FOLDER_SOURCES));
-const code=(scene:string,symbol:string):EventSource=>AUTHORED.has(scene)?{file:'scenes/authored.json',pointer:'/scenes/'+AUTHORED.get(scene),symbol}:FOLDER.has(scene)?{file:`scenes/${scene}/scene.json`,symbol}:({file:`scenes/${dirs(scene)}/${symbol.startsWith('SceneRules')?(scene==='yard'?'effects':'rules'):'index'}.ts`,symbol});
+const code=(scene:string,symbol:string):EventSource=>AUTHORED.has(scene)?{file:'scenes/authored.json',pointer:'/scenes/'+AUTHORED.get(scene),symbol}:FOLDER.has(scene)?{file:`scenes/${dirs(scene)}/scene.json`,symbol}:({file:`scenes/${dirs(scene)}/${symbol.startsWith('SceneRules')?(scene==='yard'?'effects':'rules'):'index'}.ts`,symbol});
 
 const pointer=(part:string|number)=>String(part).replace(/~/g,'~0').replace(/\//g,'~1');
 

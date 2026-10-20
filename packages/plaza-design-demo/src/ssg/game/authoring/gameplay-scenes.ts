@@ -2,7 +2,7 @@ import type {NativeTargetValidationContext} from '../engine/gameplay/native-targ
 import {authoredDocumentId,type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {declaredScene} from '../engine/gameplay/declared-scene';
 import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
-import {FOLDER_BY_ID} from '../scenes/folder-scenes';
+import {FOLDER_BY_ID,FOLDER_DIRS} from '../scenes/folder-scenes';
 import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
@@ -42,9 +42,6 @@ import {validateMallScene,validateMallGameplay} from '../scenes/mall/scene-docum
 import {validateManifestScene,validateManifestGameplay,manifestDemoScene} from '../scenes/demo-manifest';
 import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} from '../demo';
 /** Explicit migrated-scene registry shared by authoring, protected saves and isolated Play. */
-import {validateShiftScene} from '../scenes/harbor-shift/scene-document';
-import {validateShiftGameplay} from '../scenes/harbor-shift/gameplay-contract';
-import {harborShiftScene} from '../scenes/harbor-shift';
 import {laundromatScene} from '../scenes/laundromat';
 import {validateLaundromatScene,validateLaundromatGameplay} from '../scenes/laundromat/scene-document';
 /** The arguments every scene factory takes: composition, preview state, render options, scene and gameplay documents. */
@@ -81,13 +78,12 @@ const definitions=[
 
  {id:'mall',prefix:'mall',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMallScene,validateGameplay:validateMallGameplay,definition:mallScene},
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},
- {id:'harborShift',prefix:'harbor-shift',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateShiftScene,validateGameplay:validateShiftGameplay,definition:harborShiftScene},
  {id:'laundromat',prefix:'laundromat',bindingGroups:['uses','readables','rests','exits'] as const,data:LAUNDROMAT,validateScene:validateLaundromatScene,validateGameplay:validateLaundromatGameplay,definition:laundromatScene,definitionWithDevices:laundromatWithDevices},
  {id:'demoCounter',prefix:'demo-counter',validateScene:(v:unknown,g?:import('../engine/gameplay/types').GameplayDefinition)=>{const d=validateDemoScene(v,g);if(d.id!=='shop')throw new Error('Demo counter identity');return d;},validateGameplay:validateDemoGameplay,definition:demoCounterScene},
  {id:'demoDesk',prefix:'demo-desk',gameplayId:'demo-counter-gameplay',validateScene:(v:unknown,g?:import('../engine/gameplay/types').GameplayDefinition)=>{const d=validateDemoScene(v,g);if(d.id!=='library')throw new Error('Demo desk identity');return d;},validateGameplay:validateDemoGameplay,definition:demoDeskScene},
 ] as const;
 /** Folder scenes (engine/gameplay/folder-scene.ts): one generic registration each, no scene code. */
-const folderDefinitions=FOLDER_SCENE_IDS.map(id=>({id,prefix:id,
+const folderDefinitions=FOLDER_SCENE_IDS.map(id=>({id,prefix:FOLDER_DIRS[id]??id,
  validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_BY_ID[id].gameplay))=>{const d=validateSceneDocument(value,g,{manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors)});if(d.id!==id)throw new Error('Scene identity is protected');return d;},
  validateGameplay,
  definition:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay}),

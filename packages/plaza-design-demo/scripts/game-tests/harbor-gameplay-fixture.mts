@@ -3,7 +3,9 @@ import { GameplaySession, cloneState } from '../../src/ssg/game/engine/gameplay/
 import { ConversationSession } from '../../src/ssg/game/engine/gameplay/conversation';
 import { DELIVERY_TERMINAL,deliveryTerminalRules } from './shift-delivery-fixture.mts';
 import { SceneModel,type Line } from '../../src/ssg/game/engine/model';
-import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
+import shiftGameplayJson from '../../src/ssg/game/scenes/harbor-shift/gameplay.json';
+import { validateGameplay as validateShiftGameplayJson } from '../../src/ssg/game/engine/gameplay/validation';
+const SHIFT_GAMEPLAY=validateShiftGameplayJson(shiftGameplayJson);
 import type { GameplayState } from '../../src/ssg/game/engine/gameplay/types';
 export function createHarborGameplayFixture(initial:GameplayState={flags:{},items:{},tokens:0},definition:unknown=SHIFT_GAMEPLAY){
   const baseline=cloneState(initial);

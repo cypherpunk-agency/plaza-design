@@ -1,6 +1,6 @@
 import { art } from '../art';
 import { folderSceneDefinition } from '../engine/gameplay/folder-scene';
-import { FOLDER_BY_ID } from '../scenes/folder-scenes';
+import { FOLDER_BY_ID, FOLDER_DIRS } from '../scenes/folder-scenes';
 import { FOLDER_SCENE_IDS } from '../scenes';
 import { validateGameplay } from '../engine/gameplay/validation';
 import type { SceneDocument } from '../engine/gameplay/scene-document';
@@ -8,8 +8,6 @@ import { deviceSourceIdentity } from './device-document-ids';
 import {content as trainContent} from '../scenes/train/scene-document';
 import {pendingNativeTargetScene} from './native-target-pending';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
-import {validateShiftScene} from '../scenes/harbor-shift/scene-document';
-import {validateShiftGameplay} from '../scenes/harbor-shift/gameplay-contract';
 import {validateMarketScene} from '../scenes/market/scene-document';
 import {validateMarketGameplay} from '../scenes/market/gameplay';
 import {content as harborContent} from '../scenes/harbor/scene-document';
@@ -40,8 +38,6 @@ import { yardScene, yardFrameEnvironment, validateYardComposition } from '../sce
 import { stacksScene, validateStacksComposition } from '../scenes/stacks';
 import { harborScene } from '../scenes/harbor';
 import { validateHarborComposition } from '../scenes/harbor/composition';
-import { harborShiftScene, HARBOR_SHIFT_ACTORS, SHIFT_USES } from '../scenes/harbor-shift';
-import { harborShiftEnvironment, validateHarborShiftComposition } from '../scenes/harbor-shift/composition';
 import { marketScene, marketFrameEnvironment } from '../scenes/market';
 import { validateMarketComposition } from '../scenes/market/composition';
 import { mallScene, mallFrameEnvironment } from '../scenes/mall';
@@ -56,8 +52,8 @@ const folderAdapter = (id: string): NativeSceneAdapter => ({
   validate: value => { const doc = art.validate(value); if (doc.scene !== id) throw new Error('Expected ' + id + ' composition'); return doc; },
   definition: (doc, state, options) => folderSceneDefinition(id, FOLDER_BY_ID[id], { composition: doc, state, options }),
   pendingDefinition: (doc, state, options, documents) => {
-    const gameplay = validateGameplay(documents.get(id + '-gameplay') ?? FOLDER_BY_ID[id].gameplay);
-    return folderSceneDefinition(id, FOLDER_BY_ID[id], { composition: doc, state, options, gameplay, scene: (documents.get(id + '-scene') ?? FOLDER_BY_ID[id].scene) as SceneDocument, devices: documents.get(deviceSourceIdentity(id).devices) ?? FOLDER_BY_ID[id].devices });
+    const dir = FOLDER_DIRS[id] ?? id, gameplay = validateGameplay(documents.get(dir + '-gameplay') ?? FOLDER_BY_ID[id].gameplay);
+    return folderSceneDefinition(id, FOLDER_BY_ID[id], { composition: doc, state, options, gameplay, scene: (documents.get(dir + '-scene') ?? FOLDER_BY_ID[id].scene) as SceneDocument, devices: documents.get(deviceSourceIdentity(id).devices) ?? FOLDER_BY_ID[id].devices });
   },
 });
 /** This explicit table grows as each real scene document passes its migration checks. */
@@ -74,7 +70,6 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   },
   stacks: { validate: validateStacksComposition, definition: stacksScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=stacksContent.validateGameplay(documents.get('stacks-gameplay'));return stacksScene(doc,state,options,stacksContent.validateScene(documents.get('stacks-scene'),gameplay),gameplay,documents.get('stacks-devices') as import('../data/types').SceneData);} },
   harbor: { validate: validateHarborComposition, definition: harborScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=harborContent.validateGameplay(documents.get('harbor-gameplay'));return harborScene(doc,state,options,harborContent.validateScene(documents.get('harbor-scene'),gameplay),gameplay);} },
-  harborShift: { validate: validateHarborShiftComposition, definition: harborShiftScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateShiftGameplay(documents.get('harbor-shift-gameplay'));return harborShiftScene(doc,state,options,validateShiftScene(documents.get('harbor-shift-scene'),gameplay),gameplay);}, environment: (doc, v) => harborShiftEnvironment(doc, v, HARBOR_SHIFT_ACTORS, SHIFT_USES) },
   market: { validate: validateMarketComposition, definition: marketScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateMarketGameplay(documents.get('market-gameplay'));return marketScene(doc,state,options,gameplay,validateMarketScene(documents.get('market-scene'),gameplay));}, environment: (doc, v, e) => marketFrameEnvironment(v, e, doc) },
   mall: { validate: validateMallComposition, definition: mallScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateMallGameplay(documents.get('mall-gameplay'));return mallScene(doc,state,options,validateMallScene(documents.get('mall-scene'),gameplay),gameplay);}, environment: (doc, v, e) => mallFrameEnvironment(v, e, doc) },
   metro: { validate: validateMetroComposition, definition: metroScene },
