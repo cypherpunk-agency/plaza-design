@@ -112,7 +112,7 @@ Panels are registered by name (`engine/host.ts:224`) and opened by an `open` ste
 | `talk` | engine, any scene | conversations; opened by DAEMON `talk` verbs |
 | `toy` | engine | lock toys for GUARDs: rings, cipher, cryptex, morse; share `engine/toys/common.ts` |
 | `camera` | yard (`scenes/yard/camera.ts`) | the gate camera: aim, zoom reads a crate, TAG; zooming on the owned parcel runs a command |
-| `scope` | stacks (`scenes/stacks/scope.ts`) | STS-2's top-down camera over blocks A–C: zoom to read roof codes, TAG FOR LIFT runs a command; reefer slots hard-coded |
+| `scope` | stacks (`scenes/stacks/scope.ts`) | STS-2's top-down camera over blocks A–C: zoom to read roof codes, TAG FOR LIFT runs a command; reefer slots in `camera.bindings.reefers` |
 | `cam3` | downtown (`scenes/downtown/camera.ts`) | street camera: aim, zoom, TAG, LOOP fires the lens `loop` verb, which emits `frame` (cable it to the billboard) |
 
 The toys already share one frame. **The three camera panels share nothing but the CSS**: the

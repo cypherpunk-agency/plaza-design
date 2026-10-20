@@ -184,6 +184,8 @@ export interface MoverData {
   /** World units per second. */
   speed: number;
   start?: string;
+  /** Where it runs on the other axis: a lift shaft's x, a trolley's height (default 0). */
+  across?: number;
   /** A state key that holds the stop it is at, or `moving`. */
   set?: string;
 }
@@ -198,6 +200,8 @@ export interface ZoneData {
   /** `player`, or a mover as `device.noun`. */
   watch: string;
   axis?: 'x' | 'h';
+  /** Optional limits on the other axis (a zone on one floor: `[0, 60]` in height). */
+  within?: [number, number];
   /** A state key that holds whether something is inside. */
   set?: string;
   /** Raising events when the scene starts (default true). */
@@ -213,6 +217,8 @@ export interface ClockData {
   set?: string;
   /** Running when the scene starts (default true). */
   start?: boolean;
+  /** Raise one event after `first` (or `every`) ms, then stop; `start` runs it again. A timer instead of a schedule. */
+  once?: boolean;
 }
 
 /**
@@ -533,6 +539,10 @@ export interface SceneSave {
   locks?: Record<string, number>;
   /** CLOCK nouns (`device.noun`): the next event's index, ms into the beat, stopped. */
   clocks?: Record<string, { next: number; ms: number; off?: boolean }>;
+  /** Movers: the stop each is at, and where one on its way was going (engine/movers.ts). */
+  movers?: Record<string, { at: string; to?: string; pos?: number }>;
+  /** Zones switched off with `disarm`. */
+  zones?: Record<string, { off: true }>;
   /** Watchdogs, by id: ms into their loop. */
   watchdog?: Record<string, number>;
   /**

@@ -6,8 +6,10 @@ export interface CameraBindings {
  parcel?:string;
  feed?:{state:string;equals:string};
  loop?:{device:string;noun:string;verb:string};
+ /** Feed things (`camera.crates` ids) the picture draws as reefers (the stacks' scope). */
+ reefers?:string[];
 }
-export const cameraBindingRoles=(scene:string):readonly (keyof CameraBindings)[]=>scene==='yard'?['pan','parcel']:scene==='downtown'?['feed','loop']:[];
+export const cameraBindingRoles=(scene:string):readonly (keyof CameraBindings)[]=>scene==='yard'?['pan','parcel']:scene==='downtown'?['feed','loop']:scene==='stacks'?['reefers']:[];
 export function cameraBindingProblems(data:SceneData):string[]{
  const errors:string[]=[],b=data.camera?.bindings;
  if(b===undefined)return errors;
@@ -18,6 +20,7 @@ export function cameraBindingProblems(data:SceneData):string[]{
  if(b.parcel!==undefined&&!state(b.parcel,'string'))errors.push('camera.bindings.parcel: string state required');
  if(b.feed!==undefined&&(!object(b.feed)||Object.keys(b.feed).sort().join()!=='equals,state'||!state(b.feed.state,'string')||typeof b.feed.equals!=='string'||b.feed.equals.length>2000))errors.push('camera.bindings.feed: string state/comparison required');
  if(b.loop!==undefined){const p=b.loop;if(!object(p)||Object.keys(p).sort().join()!=='device,noun,verb'||![p.device,p.noun,p.verb].every(v=>typeof v==='string')||![...data.devices,...data.nodes??[]].find(d=>d.id===p.device)?.nouns.find(n=>n.id===p.noun)?.verbs?.includes(String(p.verb)))errors.push('camera.bindings.loop: current device/noun/verb required');}
+ if(b.reefers!==undefined){const ids=new Set(data.camera?.crates.map(c=>c.id));if(!Array.isArray(b.reefers)||b.reefers.some(id=>typeof id!=='string'||!ids.has(id))||new Set(b.reefers).size!==b.reefers.length)errors.push('camera.bindings.reefers: distinct camera crate ids required');}
  return errors;
 }
 export const cameraPan=(m:SceneModel)=>{const b=m.data.camera?.bindings?.pan;return b?Number(m.get(b.state))*b.scale:0;};

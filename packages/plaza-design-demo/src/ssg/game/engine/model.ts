@@ -31,6 +31,8 @@ import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules'
 import { machinesOf, reachNets, ownsScanner } from './net';
 // [engine features: watchdog, clocks] (scene/watchdog.ts, scene/clock.ts)
 import { Clocks } from './clock';
+import { Movers, moverVerbs } from './movers';
+import { Zones, ZONE_VERBS } from './zones';
 import { type DogView, Watchdogs } from './watchdog';
 import { SceneTime } from './time';
 
@@ -39,9 +41,9 @@ import { SceneTime } from './time';
  * `log`), plus two the engine makes: a seal (the input of a sector sealed with a sequence) and
  * the watch (the watchdog's noun on each device of its route).
  */
-export type NounBehaviour = 'guard' | 'link' | 'clock' | 'log' | 'seal' | 'watch';
+export type NounBehaviour = 'guard' | 'link' | 'clock' | 'log' | 'mover' | 'zone' | 'seal' | 'watch';
 /** A data noun's behaviour: the settings block it carries, if any. */
-export const behaviourOf = (n: NounData): NounBehaviour | undefined => n.guard ? 'guard' : n.link ? 'link' : n.clock ? 'clock' : n.log ? 'log' : undefined;
+export const behaviourOf = (n: NounData): NounBehaviour | undefined => n.guard ? 'guard' : n.link ? 'link' : n.clock ? 'clock' : n.log ? 'log' : n.mover ? 'mover' : n.zone ? 'zone' : undefined;
 
 /**
  * The city, as every scene's conditions see it (TIME.md): the game plugs it in (game.ts). `read`:
@@ -217,6 +219,10 @@ export class SceneModel {
   // [engine features] the watchdog, clocks, cuts of pre-wired cables, lockout lengths, modules and tokens without a save
   readonly dogs: Watchdogs;
   readonly clocks: Clocks;
+  readonly movers: Movers;
+  readonly zones = new Zones();
+  /** Where the player stands in this scene (world x, height over the street), for zones; the game sets it each frame. */
+  player: { x: number; h: number } | null = null;
   private cuts = new Set<string>();
   private spans = new Map<string, number>();
   private ownModules: string[] = [];
@@ -260,6 +266,7 @@ export class SceneModel {
     this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
     this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
     this.clocks = new Clocks(() => this.now());
+    this.movers = new Movers(() => this.now());
     if(gameplay)this.installGameplaySource(gameplay);
     const initial={...ownedState};if(ownedState)this.state=ownedState;
     this.init();
@@ -272,7 +279,7 @@ export class SceneModel {
     this.reservations=new WeakMap();
     this.recent=[];
     this.time.clear();
-    this.clocks.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
+    this.clocks.clear(); this.movers.clear(); this.zones.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
@@ -534,7 +541,7 @@ export class SceneModel {
   /** Remove a placed logic part and every cable touching it. The scene's own devices stay. */
   removeDevice(id: string): void {
     if (!this.devices.get(id)?.logic) return;
-    this.devices.delete(id); this.local.delete(id); this.logicAt.delete(id); this.clocks.remove(id);
+    this.devices.delete(id); this.local.delete(id); this.logicAt.delete(id); this.clocks.remove(id); this.movers.remove(id); this.zones.remove(id);
     const on = (key: string) => split(key)[0] === id;
     this.links = this.links.filter((l) => { const hit = on(l.from) || on(l.to); if (hit) this.live.delete(l); return !hit; });
     this.changed();
@@ -893,7 +900,8 @@ export class SceneModel {
 
   /** The watchdogs step along their routes (raising arrives / leaves), the clocks beat. True when something happened. */
   private tickEngine(): boolean {
-    const steps = this.dogs.tick(), beats = this.clocks.tick();
+    const steps = this.dogs.tick(), beats = this.clocks.tick(), arrivals = this.movers.tick();
+    const crossings = this.zones.tick((watch) => watch === 'player' ? this.player ?? undefined : this.movers.place(watch));
     for (const s of steps) {
       const dev = s.arrives ?? s.leaves!;
       if (!this.devices.has(dev)) continue;
@@ -905,8 +913,16 @@ export class SceneModel {
       if (b.set) this.write(b.set, b.event, b.dev);
       this.emit(b.dev + '.' + b.noun + ':' + b.event);
     }
-    if (steps.length || beats.some((b) => b.set)) this.changed();
-    return steps.length > 0 || beats.length > 0;
+    for (const a of arrivals) {
+      if (a.set) this.write(a.set, a.stop, a.dev);
+      this.emit(a.dev + '.' + a.noun + ':arrived');
+    }
+    for (const z of crossings) {
+      if (z.set) this.write(z.set, z.event === 'enters', z.dev);
+      this.emit(z.dev + '.' + z.noun + ':' + z.event);
+    }
+    if (steps.length || beats.some((b) => b.set) || arrivals.length || crossings.length) this.changed();
+    return steps.length > 0 || beats.length > 0 || arrivals.length > 0 || crossings.length > 0 || this.movers.anyMoving();
   }
 
   // ---------- the watchdog (scene/watchdog.ts) ----------
@@ -934,6 +950,38 @@ export class SceneModel {
       return this.line(changed ? 'clock.' + c.verb : 'clock.already', { via, noun: n.id, verb: c.verb });
     }
     return this.perform(n, c);
+  }
+
+  // ---------- movers and zones (engine/movers.ts, engine/zones.ts) ----------
+
+  private runMover(n: NounData, c: Ctx): Line | null {
+    const key = c.dev + '.' + n.id, via = c.bySignal ? 'signal → ' : '';
+    const stop = c.verb === 'return' ? this.movers.home(key) : c.verb.startsWith('go ') ? c.verb.slice(3) : undefined;
+    if (stop === undefined) return this.perform(n, c);
+    const r = this.moveTo(c.dev, n.id, stop);
+    return this.line(r === 'started' ? 'mover.go' : 'mover.already', { via, noun: n.id, verb: c.verb, stop });
+  }
+
+  /**
+   * Send a mover to a stop without a terminal line (a lift called in the world). A frozen device
+   * does not move. Raises `started` and writes `moving` like the verb does.
+   */
+  moveTo(dev: string, noun: string, stop: string): 'started' | 'already' | 'unknown' {
+    const key = dev + '.' + noun, n = this.nounData(dev, noun);
+    if (!n?.mover || this.frozen(dev)) return 'unknown';
+    const r = this.movers.go(key, stop);
+    if (r === 'started') {
+      if (n.mover.set) this.write(n.mover.set, 'moving', dev);
+      this.emit(key + ':started');
+      this.changed();
+    }
+    return r;
+  }
+
+  private runZone(n: NounData, c: Ctx): Line | null {
+    if (c.verb !== 'arm' && c.verb !== 'disarm') return this.perform(n, c);
+    const changed = this.zones.arm(c.dev + '.' + n.id, c.verb === 'arm');
+    return this.line(changed ? 'zone.' + c.verb : 'zone.already', { via: c.bySignal ? 'signal → ' : '', noun: n.id, verb: c.verb });
   }
 
   /** Raise (or lower) a device's trace; a full one kicks. */
@@ -1127,6 +1175,10 @@ export class SceneModel {
     if (locks.length) z.locks = Object.fromEntries(locks);
     const clocks = this.clocks.snapshot();
     if (Object.keys(clocks).length) z.clocks = clocks;
+    const movers = this.movers.snapshot();
+    if (Object.keys(movers).length) z.movers = movers;
+    const zones = this.zones.snapshot();
+    if (Object.keys(zones).length) z.zones = zones;
     if (this.dogs.any) z.watchdog = this.dogs.snapshot();
     return z;
   }
@@ -1188,6 +1240,8 @@ export class SceneModel {
       if (left > 0 && this.devices.has(key.includes('.') ? dev : key) && (!key.includes('.') || this.nounData(dev, noun)?.guard)) this.lock(key, left);
     }
     this.clocks.restore(s.clocks);
+    this.movers.restore(s.movers);
+    this.zones.restore(s.zones);
     this.dogs.restore(s.watchdog);
   }
 
@@ -1215,8 +1269,10 @@ export class SceneModel {
     if (this.dogs.routes().has(id)) {
       dev.nouns.push({ id: WATCH_NOUN, layer: 'software', function: 'record', behaviour: 'watch', verbs: ['read'], events: ['arrives', 'leaves'], run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }) });
     }
-    // [clocks] its CLOCK nouns start beating
+    // [clocks, movers, zones] its clocks start beating, its movers stand at their first stop, its zones watch
     this.clocks.add(id, d.nouns);
+    this.movers.add(id, d.nouns);
+    this.zones.add(id, d.nouns);
     if (as === 'logic') { dev.crafted = true; dev.logic = true; }
     if (as === 'node') dev.node = true;
     return dev;
@@ -1232,6 +1288,8 @@ export class SceneModel {
         if (n.guard) return this.runGuard(n, c);
         if (n.link) return this.runLink(n, c);
         if (n.clock) return this.runClock(n, c);
+        if (n.mover) return this.runMover(n, c);
+        if (n.zone) return this.runZone(n, c);
         return this.perform(n, c);
       },
     };
@@ -1246,6 +1304,8 @@ export class SceneModel {
     const own = n.verbs ?? [];
     if (n.guard?.toy) return [this.toyVerb, ...own.filter((v) => v !== this.toyVerb)];
     if (n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
+    if (n.mover) { const engine = moverVerbs(n.mover); return [...engine, ...own.filter((v) => !engine.includes(v))]; }
+    if (n.zone) return [...ZONE_VERBS, ...own.filter((v) => !(ZONE_VERBS as readonly string[]).includes(v))];
     if (n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
     if (n.link) {
       // what it knows it connects to straight away (no scan.so needed); what a scan found besides

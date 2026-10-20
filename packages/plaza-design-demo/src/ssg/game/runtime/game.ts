@@ -82,7 +82,7 @@ import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './cha
 import { Companion } from './companion';
 import { EDITOR_PLAY,SAVE_KEY,SHIFT_PROTOTYPE } from "./mode";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { LevelRuntime } from "../engine/level";
+import { LevelRuntime, type LiftDrive } from "../engine/level";
 
 /** What petting a scene's cat, or shooing its pigeon, gets you. */
 const PET_CAT = [
@@ -850,6 +850,22 @@ export class Game {
     return t?.kind === 'device' && zh.model.devices.has(t.id) ? t.id : null;
   }
 
+  /** Lifts whose car is a Circuit mover (the elevator's `device`): the level asks the scene's model to move them. */
+  private liftDrives(level: NonNullable<SceneDef['level']>): Record<string, LiftDrive> {
+    const m = this.zh.model, out: Record<string, LiftDrive> = {};
+    for (const lift of level.lifts) {
+      if (!lift.device) continue;
+      const i = lift.device.indexOf('.'), dev = lift.device.slice(0, i), noun = lift.device.slice(i + 1), key = dev + '.' + noun;
+      const stops = m.devices.get(dev)?.data.nouns.find((n) => n.id === noun)?.mover?.stops;
+      if (!stops) continue;
+      out[lift.id] = {
+        position: () => m.movers.position(key),
+        target: () => { const t = m.movers.moving(key) ? m.movers.target(key) : undefined; return t === undefined ? null : stops[t]; },
+        go: (h) => { const stop = Object.keys(stops).find((k) => Math.abs(stops[k] - h) < 0.75); if (stop) m.moveTo(dev, noun, stop); },
+      };
+    }
+    return out;
+  }
   /** Overlays, the deck, travel and talk hold the level's ↑/↓ as they hold walking. */
   private levelLocked() { return this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep; }
 
@@ -921,7 +937,7 @@ export class Game {
     const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
     // a level scene: arrive on the floor at the exit's (or the spawn's) height; the camera looks there at once
-    this.level = s.level ? new LevelRuntime(s.level) : null;
+    this.level = s.level ? new LevelRuntime(s.level, this.liftDrives(s.level)) : null;
     if (this.level) this.level.arrive(this.p, (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0);
     this.camH = this.level ? Math.max(this.level.source.low, Math.min(this.level.source.high, this.p.y)) : 0; this.gy = this.gyBase + Math.round(this.camH);
     this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
@@ -1169,6 +1185,8 @@ export class Game {
       p.onGround = false; p.vy = 0;
     }
 
+    // zones (engine/zones.ts) watch where the player stands
+    this.zh.model.player = { x: p.x, h: p.y };
     // Camera follows, eased, clamped to the level. A nudge leans it towards something that reacted
     // off the view for a moment (walking, talking or the deck cancel it), then it eases back.
     if (this.zh.visionOn) this.nudge = null;

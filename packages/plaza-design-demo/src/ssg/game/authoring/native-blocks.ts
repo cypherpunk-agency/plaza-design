@@ -1,6 +1,6 @@
 import {KEYRING,type DeviceData,type NounData,type SceneData,type SectorData,type KeyItem,type Layer,type PartFunction} from '../data';
 /** Part templates by what they are (docs/design/CIRCUIT-VOCABULARY.md): each sets a layer and a function. */
-export const nativeBlockKinds=['file','sensor','actuator','character','clock','port','recorder','login','lock-rings','lock-cipher','lock-cryptex','lock-morse'] as const;
+export const nativeBlockKinds=['file','sensor','actuator','mover','zone','character','clock','port','recorder','login','lock-rings','lock-cipher','lock-cryptex','lock-morse'] as const;
 export type NativeBlockKind=typeof nativeBlockKinds[number];
 export const nativeSealKinds=['key','guard','sequence','condition'] as const;
 export type NativeSealKind=typeof nativeSealKinds[number];
@@ -13,6 +13,8 @@ export function addNativeBlock(device:DeviceData,kind:NativeBlockKind,name?:stri
  if(kind==='file')noun=plain('data','hold','read');
  else if(kind==='sensor')noun=plain('hardware','sense','sense','seen');
  else if(kind==='actuator')noun=plain('hardware','act','activate','done');
+ else if(kind==='mover')noun={...part('hardware','act'),events:['started','arrived'],mover:{stops:{a:0,b:100},speed:60}};
+ else if(kind==='zone')noun={...part('hardware','sense'),events:['enters','leaves'],zone:{from:0,to:60,watch:'player'}};
  else if(kind==='character')noun=plain('software','talk','run','done');
  else if(kind==='clock')noun={...part('hardware','time'),events:['tick'],clock:{every:1000,first:1000,start:false}};
  else if(kind==='port')noun={...part('hardware','connect'),link:{}};

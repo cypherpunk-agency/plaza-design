@@ -50,7 +50,7 @@ export interface EventInspection{nodes:EventNode[];edges:EventEdge[];scenes:stri
 
 const dirs=(id:string)=>id==='harborShift'?'harbor-shift':id;
 
-const source=(scene:string,pointer?:string):EventSource=>scene==='library'&&pointer?.startsWith('/dialogue/catalog')?{file:'scenes/library/gameplay.json',pointer:'/conversations/catalog'}:({file:scene==='@net'?'data/net.json':scene==='@logic'?'data/logic.json':`scenes/${dirs(scene)}/devices.json`,...(pointer?{pointer}:{})});
+const source=(scene:string,pointer?:string):EventSource=>AUTHORED.has(scene)?{file:'scenes/authored.json',pointer:'/scenes/'+AUTHORED.get(scene)+'/devices'+(pointer??'')}:scene==='library'&&pointer?.startsWith('/dialogue/catalog')?{file:'scenes/library/gameplay.json',pointer:'/conversations/catalog'}:({file:scene==='@net'?'data/net.json':scene==='@logic'?'data/logic.json':`scenes/${dirs(scene)}/devices.json`,...(pointer?{pointer}:{})});
 
 /** Catalogue scenes have no code of their own: their source is their entry in scenes/authored.json. */
 const AUTHORED=new Map((authoredCatalogue as {scenes:{scene:{id:string}}[]}).scenes.map((s,i)=>[s.scene.id,i]));

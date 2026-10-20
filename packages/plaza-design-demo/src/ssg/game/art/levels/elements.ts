@@ -109,7 +109,7 @@ export const escalatorElement: Element = {
  */
 export const elevatorElement: Element = {
   type: 'level.elevator', version: 1, label: 'Lift between floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
-  fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units') },
+  fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units'), device: text('Driven by a mover (device.part; empty: it drives itself)') },
   visualFields: { car: num('Car height over the bottom stop', 0, -100, 4000, 0.01), doors: num('Doors open', 0, 0, 1, 0.01) },
   bounds: p => ({ x: -Number(p.width) / 2 - 4, h: -4, w: Number(p.width) + 8, tall: Number(p.height) + 58 }),
   anchors: p => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),

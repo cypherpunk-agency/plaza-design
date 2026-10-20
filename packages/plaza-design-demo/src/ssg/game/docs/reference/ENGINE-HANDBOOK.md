@@ -128,6 +128,15 @@ uses the spawn's or the exit marker's height (`spawnH`, `SceneExit.arriveH`). Th
 `View.level` (reveal, lift cars); the editor previews it at rest or opened (environment `inside`).
 Check with `pnpm test:game levels`; the Tower lab (scenes/authored.json) is the example.
 
+## Recipe: something that moves, or a place that notices
+
+Give a device an `act` part with a `mover` (stops, speed, axis) or a `sense` part with a `zone`
+(from, to, watch); GAME-DATA.md "Movers" and "Zones". No code: the engine adds the verbs
+(`go <stop>`, `return`, `arm`, `disarm`) and events (`started`, `arrived`, `enters`, `leaves`), so
+pre-wired cables, hack vision and the editor treat them like any part. A level elevator rides a
+mover named in its `device` field. Check with `pnpm test:game circuit-movers`; the Tower lab's lift
+and lobby sensor are the example. Words: docs/design/CIRCUIT-VOCABULARY.md.
+
 ## Choose verification by what changed
 
 Run from packages/plaza-design-demo:

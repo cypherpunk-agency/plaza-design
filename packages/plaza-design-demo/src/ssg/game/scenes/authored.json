@@ -424,7 +424,8 @@
             "type": "level.elevator",
             "props": {
               "height": 480,
-              "width": 34
+              "width": 34,
+              "device": "lift.car"
             },
             "placement": {
               "x": 940,
@@ -638,6 +639,120 @@
         "events": [],
         "reactions": [],
         "conversations": {}
+      },
+      "devices": {
+        "id": "tower",
+        "name": "Tower (level lab)",
+        "tuning": {},
+        "devices": [
+          {
+            "id": "lift",
+            "name": "LIFT 1 \u00b7 TOWER",
+            "look": "A goods lift that took passengers once and never stopped. Six stops, one car, an inspection sticker from a year that has passed.",
+            "status": "six stops \u00b7 wired to the lobby sensor",
+            "layout": {
+              "spot": {
+                "x": 940,
+                "y": 0,
+                "w": 34,
+                "h": 46
+              },
+              "board": {
+                "x": 0.62,
+                "y": 0.3
+              }
+            },
+            "nouns": [
+              {
+                "id": "car",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "axis": "h",
+                  "across": 940,
+                  "speed": 84,
+                  "stops": {
+                    "metro": -190,
+                    "b1": -90,
+                    "lobby": 0,
+                    "f2": 110,
+                    "f3": 200,
+                    "roof": 290
+                  }
+                }
+              },
+              {
+                "id": "panel",
+                "layer": "data",
+                "function": "hold",
+                "verbs": [
+                  "read"
+                ],
+                "on": {
+                  "read": {
+                    "say": [
+                      "cat panel",
+                      "LIFT 1. STOPS: METRO, B1, LOBBY, 2, 3, ROOF. CAPACITY 8 PERSONS OR 630 KG. INSPECTION: OVERDUE."
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "sensor",
+            "name": "LOBBY SENSOR",
+            "look": "A ceiling sensor over the lift doors. It notices people waiting so the lift can come down for them. It has been doing that for the empty lobby since the tenants left.",
+            "status": "watches the lobby by the lift",
+            "layout": {
+              "spot": {
+                "x": 900,
+                "y": 84,
+                "w": 12,
+                "h": 8
+              },
+              "board": {
+                "x": 0.42,
+                "y": 0.3
+              }
+            },
+            "nouns": [
+              {
+                "id": "eye",
+                "layer": "hardware",
+                "function": "sense",
+                "events": [
+                  "enters",
+                  "leaves"
+                ],
+                "zone": {
+                  "from": 890,
+                  "to": 975,
+                  "watch": "player",
+                  "within": [
+                    -5,
+                    60
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "cables": [
+          {
+            "id": "lobby-call",
+            "from": "sensor.eye:enters",
+            "to": "lift.car",
+            "verb": "go lobby"
+          }
+        ],
+        "dialogue": {},
+        "goals": [],
+        "texts": {}
       }
     }
   ]

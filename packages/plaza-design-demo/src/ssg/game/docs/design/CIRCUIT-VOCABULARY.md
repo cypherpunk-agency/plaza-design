@@ -25,8 +25,8 @@ label (below).
 
 | Function | What it does | Engine behaviour when the part carries |
 |---|---|---|
-| `sense` | notices something | a `zone` (planned) |
-| `act` | does something to the world | a `mover` (planned) |
+| `sense` | notices something | a `zone` |
+| `act` | does something to the world | a `mover` |
 | `hold` | keeps information | – |
 | `program` | a file that becomes a capability once taken | – |
 | `time` | waits or repeats | a `clock` |
@@ -37,7 +37,8 @@ label (below).
 | `logic` | works on signals (counting, combining) | – |
 
 A settings block belongs to one function: `guard` only on a gate part, `clock` only on a
-time part, `link` only on a connect part, `log` only on a record part. A part with that
+time part, `link` only on a connect part, `log` only on a record part, `mover` only on an act
+part, `zone` only on a sense part. A part with that
 function but no block is ordinary: SWITCH is a gate without a guard, TIMER and the library's
 session timer are time parts without a clock.
 

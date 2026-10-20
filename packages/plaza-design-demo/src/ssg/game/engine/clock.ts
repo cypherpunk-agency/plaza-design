@@ -1,7 +1,7 @@
 /**
  * CLOCK nouns: event sources on a rhythm. Every `clock.every` ms a clock
  * raises its next event (its `events` in turn, so `["night", "day"]`
- * alternate and a single `tick` repeats). The engine gives it the verbs
+ * alternate and a single `tick` repeats; with `once` it raises one and stops, a timer). The engine gives it the verbs
  * `start` and `stop`, so a cable can stop the schedule; cutting its cables
  * is the other way to make it harmless.
  *
@@ -50,6 +50,8 @@ export class Clocks {
       const late = t - c.last - this.beat(c);
       out.push({ dev: c.dev, noun: c.noun, event: c.events[c.next % c.events.length], set: c.data.set });
       c.next = (c.next + 1) % c.events.length; c.first = false;
+      // a one-shot clock stops after its beat; `start` sets it going from the top
+      if (c.data.once) { c.on = false; c.first = true; continue; }
       // keep the rhythm unless it fell a whole beat behind (a tab in the background)
       c.last = late < c.data.every ? t - late : t;
     }
@@ -61,7 +63,7 @@ export class Clocks {
     const c = this.clocks.get(key);
     if (!c || c.on === on) return false;
     c.on = on;
-    if (on) { c.last = this.now(); c.first = false; }
+    if (on) { c.last = this.now(); c.first = !!c.data.once; }
     return true;
   }
 

@@ -14,5 +14,6 @@ export function renderCameraBindings(host:HTMLElement,form:TypedForm,data:SceneD
  const endpoints=[...data.devices,...data.nodes??[]].flatMap(d=>d.nouns.filter(n=>n.verbs?.length).map(n=>({key:d.id+'.'+n.id,device:d.id,noun:n.id,verbs:n.verbs!}))),current=b.loop?b.loop.device+'.'+b.loop.noun:'';
  if(roles.includes('loop'))form.select(host,'Camera loop endpoint',['',...endpoints.map(e=>e.key)],current,key=>change('Rebind camera loop endpoint',b=>{const e=endpoints.find(e=>e.key===key);if(e)b.loop={device:e.device,noun:e.noun,verb:e.verbs[0]};else delete b.loop;}));
  if(b.loop)form.select(host,'Camera loop verb',endpoints.find(e=>e.key===current)?.verbs??[],b.loop.verb,verb=>change('Rebind camera loop verb',b=>{b.loop!.verb=verb;}));
+ if(roles.includes('reefers')){const reefers=new Set(b.reefers??[]);for(const crate of data.camera?.crates??[])form.check(host,'Camera reefer '+crate.id,reefers.has(crate.id),on=>change(on?'Mark camera reefer':'Unmark camera reefer',b=>{const next=(data.camera?.crates??[]).map(c=>c.id).filter(id=>id===crate.id?on:(b.reefers??[]).includes(id));if(next.length)b.reefers=next;else delete b.reefers;}));}
  form.button(host,'Remove camera bindings',()=>edit('Remove camera bindings',d=>{delete d.camera!.bindings;}),data.camera?.bindings===undefined);
 }

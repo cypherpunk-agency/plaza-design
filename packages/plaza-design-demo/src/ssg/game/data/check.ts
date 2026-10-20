@@ -19,6 +19,8 @@ import type {
   Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, LineData, PartFunction, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
 } from './types';
 import { BEHAVIOUR_FUNCTION, LAYERS, PART_FUNCTIONS } from './types';
+import { moverVerbs } from '../engine/movers';
+import { ZONE_VERBS } from '../engine/zones';
 import { windowProblem } from "../world/clock";
 import { ITEMS } from '../scenes/kit';
 
@@ -46,7 +48,7 @@ export interface CodeContract {
 export interface SceneCheck { data: SceneData; code: CodeContract; extra?: (z: SceneData) => string[] }
 
 /** Settings blocks whose verbs the engine supplies, so their parts may list none. */
-const ENGINE_VERBS = ['guard', 'link', 'clock'] as const;
+const ENGINE_VERBS = ['guard', 'link', 'clock', 'mover', 'zone'] as const;
 const TOYS = ['rings', 'cipher', 'cryptex', 'morse'] as const;
 /** The noun the engine puts on each device of a watchdog's route (scene/model.ts WATCH_NOUN). */
 const WATCH_NOUN = 'watchdog';
@@ -71,14 +73,16 @@ const KEYS: Record<string, string[]> = {
   device: ['targetQuery', 'id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'items', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
   itemUse: ['item', 'noun', 'label', 'on'],
-  noun: ['id', 'layer', 'function', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
+  noun: ['id', 'layer', 'function', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'mover', 'zone', 'on'],
   guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
   rings: ['rings', 'tolerance'],
   ring: ['speed', 'gap', 'start'],
   cipher: ['text', 'shift'],
   cryptex: ['word', 'rings'],
   morse: ['message', 'unitMs'],
-  clock: ['every', 'first', 'set', 'start'],
+  clock: ['every', 'first', 'set', 'start', 'once'],
+  mover: ['stops', 'axis', 'speed', 'start', 'across', 'set'],
+  zone: ['from', 'to', 'watch', 'axis', 'within', 'set', 'armed'],
   watchdog: ['id', 'name', 'route', 'dwellMs', 'moveMs'],
   log: ['rate', 'fall', 'when', 'archive', 'linger', 'lockMs'],
   link: ['reach', 'known', 'when'],
@@ -526,9 +530,34 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         if (!(num(c.every) && c.every >= 100)) err(wc, 'every is the beat in ms, 100 or more');
         if (c.first !== undefined && !(num(c.first) && c.first >= 0)) err(wc, 'first is ms before the first beat, 0 or more');
         if (c.start !== undefined && typeof c.start !== 'boolean') err(wc, 'start is true or false (running when the scene starts)');
+        if (c.once !== undefined && typeof c.once !== 'boolean') err(wc, 'once is true or false (one event, then it stops)');
         if (c.set !== undefined && !writable.has(c.set)) err(wc, `set "${c.set}": not a state key (it holds the last event)`);
         if (!(n.events ?? []).length) err(w, 'a CLOCK needs events: what it raises, in turn (["tick"], or ["night", "day"])');
         for (const v of ['start', 'stop']) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a CLOCK: leave it out of verbs`);
+      }
+      if (n.mover) {
+        const mv = n.mover, wm = `${w} › mover`, stops = Object.entries(mv.stops ?? {});
+        keys(mv, 'mover', wm);
+        if (!stops.length || stops.some(([k, v]) => !k.trim() || !num(v))) err(wm, 'stops is { name: position } with at least one stop (world units)');
+        if (!(num(mv.speed) && mv.speed > 0)) err(wm, 'speed is world units per second, more than 0');
+        if (mv.axis !== undefined && mv.axis !== 'x' && mv.axis !== 'h') err(wm, 'axis is "x" (across) or "h" (up)');
+        if (mv.across !== undefined && !num(mv.across)) err(wm, 'across is where it runs on the other axis (world units)');
+        if (mv.start !== undefined && !(mv.start in (mv.stops ?? {}))) err(wm, `start "${mv.start}" is not one of its stops`);
+        if (mv.set !== undefined && !writable.has(mv.set)) err(wm, `set "${mv.set}": not a state key (it holds the stop, or "moving")`);
+        for (const v of [...moverVerbs(mv), 'return']) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a mover: leave it out of verbs`);
+        for (const e of n.events ?? []) if (e !== 'started' && e !== 'arrived') err(w, `a mover raises "started" and "arrived", not "${e}"`);
+      }
+      if (n.zone) {
+        const zn = n.zone, wz = `${w} › zone`;
+        keys(zn, 'zone', wz);
+        if (!num(zn.from) || !num(zn.to) || zn.from === zn.to) err(wz, 'from and to are two different positions (world units)');
+        if (typeof zn.watch !== 'string' || !(zn.watch === 'player' || /^[\w-]+\.[\w.-]+$/.test(zn.watch))) err(wz, 'watch is "player" or a mover as "device.noun"');
+        if (zn.axis !== undefined && zn.axis !== 'x' && zn.axis !== 'h') err(wz, 'axis is "x" (across) or "h" (up)');
+        if (zn.within !== undefined && !(Array.isArray(zn.within) && zn.within.length === 2 && zn.within.every(num))) err(wz, 'within is [low, high] on the other axis (world units)');
+        if (zn.armed !== undefined && typeof zn.armed !== 'boolean') err(wz, 'armed is true or false (raising events when the scene starts)');
+        if (zn.set !== undefined && !writable.has(zn.set)) err(wz, `set "${zn.set}": not a state key (it holds whether something is inside)`);
+        for (const v of ZONE_VERBS) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a zone: leave it out of verbs`);
+        for (const e of n.events ?? []) if (e !== 'enters' && e !== 'leaves') err(w, `a zone raises "enters" and "leaves", not "${e}"`);
       }
       cases(n, w, known, writable, d);
     }
@@ -581,7 +610,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       if (!to) { err(w, `to "${cb.to}": no such device.noun`); return; }
       if (to.guard) { err(w, `to "${cb.to}": a login wants a person at the keyboard, not a cable`); return; }
       if ('watch' in to) { err(w, `to "${cb.to}": the watchdog takes no orders (wire from its arrives / leaves)`); return; }
-      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...[...(to.link.reach ?? []), ...(to.link.known ?? [])].map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : [])];
+      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...[...(to.link.reach ?? []), ...(to.link.known ?? [])].map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : []), ...(to.mover ? moverVerbs(to.mover) : []), ...(to.zone ? ZONE_VERBS : [])];
       if (!verbs.includes(cb.verb)) err(w, `verb "${cb.verb}" is not one of ${cb.to}'s verbs`);
     });
     dupes(cbs.map((cb) => cb.from + ' → ' + cb.to), field, 'cable');
@@ -752,6 +781,13 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
 
   // ---------- cables (pre-wired) ----------
   c.cables(z.cables, 'cables', [...z.devices, ...nodes]);
+  // a zone watches the player or a mover of this scene, on the mover's axis
+  for (const d of [...z.devices, ...nodes]) for (const n of d.nouns) {
+    const watch = n.zone?.watch;
+    if (!watch || watch === 'player') continue;
+    const [md, mn] = split(watch), mover = all.get(md)?.nouns.find((x) => x.id === mn)?.mover;
+    if (!mover) err(`devices[${d.id}] › nouns[${n.id}] › zone`, `watch "${watch}": no mover there`);
+  }
 
   // ---------- bench (crafting, later) ----------
   if (z.bench) {

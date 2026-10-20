@@ -755,7 +755,47 @@ laundromat opening).
   schedule is beaten by cutting its cables, stopping it, or by the watchdog freezing its device.
 - A long pause (a tab in the background) does not make it catch up: one beat, then on rhythm.
 - Clocks of a node start when the node is connected; a logic part may carry one too.
+- `once: true` makes it a timer: one event after `first` (or `every`) ms, then it stops; `start`
+  runs it again from the top.
 - Saved: which event is next, how far into the beat, stopped or not.
+
+## Movers
+
+A mover (`mover`, on an `act` part) travels between named stops: a lift car, a crane trolley, a
+delivery robot (engine/movers.ts). The Tower lab's lift car:
+
+```json
+{ "id": "car", "layer": "hardware", "function": "act", "events": ["started", "arrived"],
+  "mover": { "axis": "h", "across": 940, "speed": 84,
+             "stops": { "metro": -190, "b1": -90, "lobby": 0, "f2": 110, "f3": 200, "roof": 290 } } }
+```
+
+- `stops`: name → position along `axis` (`x` across the scene, the default, or `h` up it), world
+  units. It starts at the first, or at `start`. `across`: where it runs on the other axis (the
+  shaft's x). `speed`: units per second; it eases out of and into each stop.
+- Engine verbs `go <stop>` for every stop and `return`; your own verbs come after. A new order on
+  the way turns it round from where it is.
+- Events `started` and `arrived`; `set` writes the stop it is at, or `moving`, into a state key.
+- A level's elevator names its mover in its `device` field (`lift.car`): the level then rides the
+  mover, and cables, hack vision and the world all move the same car.
+- Saved: the stop it is at, and where it was going.
+
+## Zones
+
+A zone (`zone`, on a `sense` part) watches a stretch of the scene for the player or a mover crossing
+its edge (engine/zones.ts).
+
+```json
+{ "id": "eye", "layer": "hardware", "function": "sense", "events": ["enters", "leaves"],
+  "zone": { "from": 890, "to": 975, "watch": "player", "within": [-5, 60] } }
+```
+
+- `from`..`to` along `axis` (default `x`); `within`: optional limits on the other axis (one floor).
+  `watch`: `player`, or a mover as `device.part`.
+- Events `enters` and `leaves`, only on a crossing: standing inside when the scene starts raises
+  nothing. `set` writes true or false into a state key.
+- Engine verbs `arm` and `disarm`; `armed: false` starts it disarmed. Saved: which zones are
+  disarmed.
 
 ## Giving things
 
