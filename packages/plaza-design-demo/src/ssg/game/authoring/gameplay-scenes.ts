@@ -23,9 +23,6 @@ import {yardScene} from '../scenes/yard';
 import {content as yardContent} from '../scenes/yard/scene-document';
 import {mothScene} from '../scenes/moth';
 import {content as mothContent} from '../scenes/moth/scene-document';
-import {marketScene} from '../scenes/market';
-import {validateMarketScene} from '../scenes/market/scene-document';
-import {validateMarketGameplay} from '../scenes/market/gameplay';
 import {stacksScene} from '../scenes/stacks';
 import {content as stacksContent} from '../scenes/stacks/scene-document';
 import {metroScene} from '../scenes/metro';
@@ -49,7 +46,6 @@ import {laundromatScene} from '../scenes/laundromat';
 import {validateLaundromatScene,validateLaundromatGameplay} from '../scenes/laundromat/scene-document';
 /** The arguments every scene factory takes: composition, preview state, render options, scene and gameplay documents. */
 type SceneFactoryArgs=[document?:Composition,state?:Environment['state'],options?:Partial<Environment>,content?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition];
-const marketAuthoredScene=(...args:SceneFactoryArgs)=>marketScene(args[0],args[1],args[2],args[4],args[3]);
 const sandboxAuthoredScene=(...args:[...SceneFactoryArgs,NativeTargetValidationContext?])=>sandboxScene(args[0],args[1],args[2],undefined,args[3],args[4],args[5]);
 const beachAuthoredScene=(...args:[...SceneFactoryArgs,NativeTargetValidationContext?])=>beachScene(args[0],args[1],args[2],args[4],args[3],args[5]);
 const downtownAuthoredScene=(...args:SceneFactoryArgs)=>downtownScene(args[0],undefined,args[2],args[3],args[4]);
@@ -72,7 +68,6 @@ const definitions=[
  {id:'yard',prefix:'yard',bindingGroups:['uses','readables','rests','exits'] as const,data:YARD,validateScene:yardContent.validateScene,validateGameplay:yardContent.validateGameplay,definition:yardScene,definitionWithDevices:yardWithDevices},
  {id:'moth',prefix:'moth',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:mothContent.validateScene,validateGameplay:mothContent.validateGameplay,definition:mothScene,definitionWithDevices:mothWithDevices},
 
- {id:'market',prefix:'market',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMarketScene,validateGameplay:validateMarketGameplay,definition:marketAuthoredScene},
  {id:'stacks',prefix:'stacks',bindingGroups:['uses','readables','rests','exits'] as const,data:STACKS,validateScene:stacksContent.validateScene,validateGameplay:stacksContent.validateGameplay,definition:stacksScene,definitionWithDevices:stacksWithDevices},
  {id:'metro',prefix:'metro',validateScene:metroContent.validateScene,validateGameplay:metroContent.validateGameplay,definition:metroAuthoredScene},
  {id:'galleriaStation',prefix:'galleriaStation',validateScene:galleriaStationContent.validateScene,validateGameplay:galleriaStationContent.validateGameplay,definition:galleriaStationScene},
