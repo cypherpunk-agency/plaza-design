@@ -43,7 +43,9 @@ Thumbs.db
 # Homepage build (scripts/generate-demos.tsx)
 dist-homepage/
 
-# Local original-render snapshots and pixel evidence
+# Local disposable game test output
+.game-test-output/
+# Obsolete local migration output (older checkouts)
 .scene-system/
 
 # Local source-edit recovery journal (never a player save)

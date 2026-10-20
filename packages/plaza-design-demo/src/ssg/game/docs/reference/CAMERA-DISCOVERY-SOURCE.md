@@ -7,22 +7,12 @@ reference the same live block. Engine scene saves do not duplicate these scalars
 Emitted source events grant the `find` goal through the existing native goal map. Panels
 retain camera aiming, zooming, physical ownership/home checks and their replies.
 
-`check-camera-command-panels.mts` drives the actual frozen and current panels
-through fake DOM/canvas surfaces using real pointer events, frame callbacks and
-button listeners. The current side uses SceneModel, GameplaySession,
-nativeGameplayPort, the registered command hook and a Game-style post-commit
-`model.changed()` notification.
-
 Its 28 histories cover both scenes, initial discovery/goal combinations,
 Yard camera pan, Stacks stack/air/chassis/out positions, ground/wrong/owned
 objects, zoom/tag/repeat actions, current scene-save reload and disposed command
 sessions. Replies, state, goals and effective canvas commands match the immutable
 original panels exactly. An edited pending source command that sets found but
 omits the goal proves that panels no longer own discovery outcomes.
-
-`check-camera-command-forms.mts` exercises actual typed command selectors,
-removal/rebinding controls, atomic invalid command rejection, real panel execution
-against the edited pending scene and exact history undo.
 
 Redundant redraw counts differ as expected: across the full histories including
 fixture setup/reload/reset, Yard original/current counts are 33/30 and Stacks

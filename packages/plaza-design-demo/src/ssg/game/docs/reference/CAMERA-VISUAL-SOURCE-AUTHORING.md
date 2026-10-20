@@ -16,22 +16,5 @@ restoring the original vocabulary. Their old fixed-state requirement lists are r
 
 ## Evidence
 
-- `check-camera-bindings-source.mts`: `.scene-system/camera-bindings-source-XN3kIE`.
-  Typed rebinding, 21 original input cases, actual registered panel buttons/native actions,
-  optional-binding removal, invalid references, pending/history/bundle, protected Save, fresh
-  shipping import and exact Undo.
-- `check-visual-controller-source.mts`: `.scene-system/visual-controller-source-MOhueR`.
-  120 original state snapshots, all typed state/comparison/clock roles, actual native picture
-  environment inputs, explicit disabling, invalid references and the same Save/import/Undo path.
-- Existing `check-moth.mts`, 60 immutable Beach drawing-command comparisons and 512 Beach
-  workflow cases pass. Fixture models now supply the real configuration; original expected
-  drawing/behavior outputs remain unchanged.
-- Both builds and TypeScript pass at source
-  `sha256:50dca405499fc63c4a6cfe2e550cfa508caa0eeb68bcd651495b9a5aef0058fb`.
-  Native browser raster evidence has 173 zero-difference rows:
-  `.scene-system/all-game-pixel-check/evidence/50dca405499fc63c4a6cfe2e550cfa508caa0eeb68bcd651495b9a5aef0058fb-1792444996646.json`.
-  Actual packaged-editor Moth/Beach Play and Stop pass without console errors, using
-  `app-BNQXVGVR.js` / `play-RW6WEHH4.js`. This is a two-scene smoke check, not a new all19 run.
-
 These changes remain local after published checkpoint dbf8dec until the next integrated batch.
 Yard and Downtown's remaining world-picture references and final coverage acceptance are still open.

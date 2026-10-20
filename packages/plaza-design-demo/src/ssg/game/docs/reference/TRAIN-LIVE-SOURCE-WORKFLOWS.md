@@ -31,19 +31,3 @@ modules retain their existing vocabulary. Source validation without prospective
 context retains the existing shipping defaults.
 
 Proofs:
-
-- `check-train-live-workflows.mts`: 188 immutable location/phase/halt/cable/world
-  flag histories, exact stopped/caption/cable boundaries and state/goals/changes,
-  pause, offscreen, reset/restore and disposal.
-- `check-train-world-flag-forms.mts` and `check-train-live-forms.mts`: actual typed
-  grouped flag renaming, source label/input/reply edits, rejected references,
-  deletion without hidden fallback and Undo.
-- `check-pending-fixture-vocabulary.mts`: new prospective flags, keys and programs,
-  fresh Save, removed references and replacement of shipping vocabularies.
-- Existing 672 Train door histories and 840 unpaid brake histories also pass.
-
-Four-source Save evidence:
-`.scene-system/train-live-save-xBgoWH/evidence.json`. It covers actual bound world
-execution, prospective fixture Save, invalid role/input/label/fixture rejection,
-protected source targets, fresh saved JSON shipping import and byte-exact Undo.
-Integrated builds, Play and pixel gates remain a separate goal checkpoint.

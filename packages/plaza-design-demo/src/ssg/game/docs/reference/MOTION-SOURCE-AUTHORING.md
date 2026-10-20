@@ -14,13 +14,5 @@ Stacks lift-start and scanner responses execute ordinary source commands after t
 controller reports a physical milestone. Native trajectories and their clock remain registered
 code. The authored command/event layer owns the resulting reply and ordinary state mutation.
 
-Verification: `check-motion-controller-source.mts` passed at
-`.scene-system/motion-controller-source-MdU0mF/evidence.json`: actual typed edits, changed native
-lift/scan/return and vehicle signal/offset behavior, invalid-reference rejection, pending registry,
-portable bundle, model history, protected Save, fresh shipping import and byte-identical Undo.
-Preservation checks also pass: `check-stacks-source-permissions.mts` (288 histories),
-`check-stacks-return-source.mts` (21 histories across 101 frames),
-`check-stacks-watchdog-source.mts` (480 histories), and `check-downtown-dlv-host.mts`.
-
 This closes this configuration slice. Camera-panel bindings and the final complete controller
 inventory remain separate acceptance work.

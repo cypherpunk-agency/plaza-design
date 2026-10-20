@@ -12,13 +12,4 @@ The obsolete Harbor-only delivery laboratory UI was removed. Its synthetic circu
 
 ## Verification
 
-- `check-shift-authored-floors.mts`: 2048 immutable carry/objective/minute/day combinations and 768 immutable visual snapshots; absent optional source content and wholly replaced ordinary graphs/vocabulary.
-- `check-shift-conversation-source.mts`: 48 actual Game one-press interaction comparisons.
-- `check-scene-pilot-parity.mts`: all 1100 immutable original guidance/time/visibility/interaction/message/state/event cases. The earlier approved move from `shift.replace-tag` interaction authority to `shift.reissue-tag` conversation authority is asserted explicitly; no fixture bytes changed.
-- The broader fixture exposed an earlier source-graph omission: the old supervisor reissued a missing tag while showing off-duty dialogue whenever checkout was false. A source-only `off-duty-reissue` entry/node now restores that behavior, including unusual flag combinations. Assignment/trolley choices still take precedence, as in the original adapter.
-- `check-shift-editable-save.mts`: actual typed choice removal, original graph/command deletion, dialogue cloning/rebinding, edited off-duty reissue, visual-role/day rebinding, registered generic editor, live pending behavior, history, portable bundle, protected paired Save, atomic foreign-reference rejection, fresh shipping JSON import, actual Game clock behavior and byte Undo.
-- `check-gameplay-foundation.mts` and `check-gameplay-authoring.mts` retain the synthetic circuit's test coverage using its relocated test-only helper. Source failure tests now exercise actual invalid references rather than historical permission floors.
-
-Final protected-source evidence: `.scene-system/shift-editable-save-5cRNld/evidence.json`. Package `tsc -b` passes. Integrated builds, browser checks and raster gates remain owned by the overall checkpoint.
-
 No save-format migration or compatibility adapter was added. Native scene pixels, valid tutorial progression, primitive geometry and timing retain their original defaults.

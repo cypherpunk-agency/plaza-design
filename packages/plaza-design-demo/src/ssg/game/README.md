@@ -9,11 +9,8 @@ forever. Historical "decided" notes record context, not constraints on further d
 
 ## Engine work: start here
 
-Agents: read [AGENTS.md](./AGENTS.md). Practical extension recipes and the verification map:
-[ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md). All19 existing scenes completed the
-shared-engine/editor consolidation; [final acceptance](./docs/reference/FINAL-INTEGRATION-ACCEPTANCE.md)
-records its scope. Start ordinary behavior in authored source and the shared engine, not in Game.
-Historical pilot notes elsewhere do not limit current scene creation or editor support.
+Read [AGENTS.md](./AGENTS.md) and the [engine handbook](./docs/reference/ENGINE-HANDBOOK.md).
+Use [ROADMAP.md](./ROADMAP.md) for priorities and current tests for verification.
 
 ## Build and preview
 
@@ -96,7 +93,7 @@ Technical checks for pricing arithmetic, atomic failure, source permissions, sav
 are maintained by the agent; user feedback should focus on clarity, appeal and interaction quality.
 The editor also has an isolated **Manifest pilot**. Edit `demo-manifest` artwork, then
 `demo-manifest-scene` objectives/manifest bindings in Scene logic, and launch the pilot tab.
-It adds no campaign location. [Binding inventory](./docs/reference/SCENE-BINDING-INVENTORY.md).
+It adds no campaign location. [Authoring recipes](./docs/reference/ENGINE-HANDBOOK.md).
 
 Opt-in performance recording: [local workflow](./docs/reference/PERFORMANCE-RECORDING.md).
 See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for system scope.
@@ -116,12 +113,11 @@ See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for sys
 | `world/` | Geography, city time/weather/light and shared transport simulation |
 | `story/` | Contacts, opening progression, title/glide and cutscene controllers |
 | `ui/` | The deck (menu.ts), hint lane, terminal, maps, developer controls, key bar and task guidance |
-| `docs/` | Design concepts, technical references and historical scene feedback |
+| `docs/` | Design concepts and current technical references |
 
 See [module organization](./docs/reference/MODULES.md) for logic ownership and dependency rules.
-All 19 registered scenes have composition adapters; opening, intro, Act II and taxi pictures
-also use composition documents. This coverage does not establish completion of the artwork/composer
-plan. `SCENE-SYSTEM-STATUS.md` records verified evidence and remaining gates.
+All 19 registered scenes have composition adapters and typed source authoring. Opening, intro,
+Act II and taxi pictures also use composition documents. Game and editor share rendering.
 
 The enclosing `../render.tsx` supplies the static page and shared game styles.
 `../../../scripts/generate-demos.tsx` validates data and bundles the homepage. Ordinary scenes
@@ -130,32 +126,17 @@ need their appropriate registered contracts.
 
 ## Documentation guide
 
-These documents have different jobs; none freezes the design. Check code for what actually
-runs and update the relevant document when behavior changes. Resolve disagreements against
-the user's latest direction, not whichever old note sounds most authoritative.
+- [Engine handbook](./docs/reference/ENGINE-HANDBOOK.md): architecture, extension recipes and checks.
+- [Roadmap](./ROADMAP.md): one current priority list and story M1-M9.
+- [Composer guide](./authoring/README.md): scene, animation and gameplay authoring.
+- [Progression concept](./docs/design/PROGRESSION-CONCEPT.md) and
+  [prologue/Act I](./docs/design/PROLOGUE-ACT-I-PLAN.md): story and teaching design.
+- [Art guide](./docs/reference/ART-GUIDE.md), [module map](./docs/reference/MODULES.md),
+  [game data](./docs/reference/GAME-DATA.md): implementation references.
+- [Review guide](./docs/reference/REVIEW-GUIDE.md): compact UX feedback routes.
 
-| Document | Use it for |
-| --- | --- |
-| [PROGRESSION-CONCEPT.md](./docs/design/PROGRESSION-CONCEPT.md) | New story and learning direction: harbor prologue, Downtown Act I, later embodiment proposals; comparison with current material |
-| [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md) | Milestone 1: encounter matrices, teaching dependencies, access and puzzle dispositions |
-| [ROADMAP.md](./ROADMAP.md) | Single project priority/status overview, preserving story M1-M9 and engineering ENG IDs |
-| [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md) | Shared engine, authoring, demo-world and migration execution gates |
-| [ENGINE-CONSOLIDATION-STATUS.md](./ENGINE-CONSOLIDATION-STATUS.md) | Completed all19-scene scope, gate evidence and explicit exceptions |
-| [ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md) | Current engine ownership, extension recipes, examples and focused verification |
-| [SCENE-SYSTEM-PLAN.md](./SCENE-SYSTEM-PLAN.md) | Executable artwork-library migration and visual composer plan, with appearance-preservation gates |
-| [GAME-EDITOR-PLAN.md](./GAME-EDITOR-PLAN.md) | Approved direction from composer to full game editor: play mode, data-driven scenes, logic, story and world authoring |
-| [GAME-DATA.md](./docs/reference/GAME-DATA.md) | Technical authoring reference: data/code boundary, engine and saves |
-| [ART-GUIDE.md](./docs/reference/ART-GUIDE.md) | Working visual and readability principles |
-| [CITY.md](./docs/reference/CITY.md) | Current city structure and proposed places |
-| [NET.md](./docs/reference/NET.md) | Network mechanics, current implementation and future ideas |
-| [GAMEPLAY-SYSTEM.md](./docs/reference/GAMEPLAY-SYSTEM.md) | Implemented command/event/conversation pilot, harbor compatibility and isolated Gameplay editor lab |
-| [HACKING-SYSTEM-REVIEW.md](./docs/reference/HACKING-SYSTEM-REVIEW.md) | Source review of hacking/wiring/network boundaries, confirmed probes and proposed consolidation |
-| [DECK-SCREEN-PLAN.md](./docs/design/DECK-SCREEN-PLAN.md) | The Esc deck (jobs, carry, controls, system; built) replacing the pause menu and key bar, and one hint system; [mockup](./docs/design/deck-mockup.html) |
-| [PERFORMANCE-HARNESS-PLAN.md](./docs/design/PERFORMANCE-HARNESS-PLAN.md) | Proposed live-game, native-render and simulation measurements, milestones and appearance-preservation gates |
-| [TIME.md](./docs/reference/TIME.md) | City time/weather/light design and implemented parts |
-| [PUZZLES.md](./docs/reference/PUZZLES.md) | Puzzle catalogue; distinguish implemented solutions from sketches |
-| [LEVELS.md](./docs/design/LEVELS.md), [STORY.md](./docs/design/STORY.md) | Story/level design, including historical proposals |
-| [SCENES.md](./docs/history/SCENES.md) | Historical scene feedback and ideas for future locations |
+Completed migration plans, source captures and acceptance ledgers are retired. Current tests and
+source define supported behavior; historical Git revisions remain available through Git.
 
 ## Pause and saves: current behavior
 
@@ -165,8 +146,7 @@ expiring while paused or away. The city clock has its own additional pauses (dia
 lock toys and travel/wait transitions); see TIME.md.
 
 The autosave uses `access-denied-save-v3` in localStorage and now remembers its scene for
-Continue. Older v3 saves without a scene keep the existing opening/Downtown fallback; removed
-or invalid scene ids use that fallback too. Resume starts at the scene's spawn, not an exact
+Continue. Missing or invalid scene ids use the current opening/Downtown fallback. Resume starts at the scene's spawn, not an exact
 saved player position or train timestamp. Manual slots also retain their scene. Sudo uses
 separate storage keys. This change does not reset saves or introduce a new save version.
 
@@ -179,17 +159,16 @@ writes remain in the local composer; the public page does not publish edits or c
 The local [scene and animation composer](./authoring/README.md) starts with
 `pnpm --filter plaza-design-demo compose-scenes` from the repository root. Open
 `http://127.0.0.1:4192`; its separate loopback save service uses port 4193. Stop both with Ctrl+C.
-Its preview uses the native game renderer and isolated models. Validated **Save to source** writes
-allowlisted composition/timeline JSON, the narrowly validated Sandbox behavior document and
-Harbor Shift gameplay/scene documents (dialogue, objectives, guidance and ordinary interactions),
-and reusable Play fixtures;
-rebuild the game to use saved edits in the homepage. Asset, character, vehicle, signage and
-event-inspection asset panels are read-only. Play runs Harbor Shift or Sandbox from pending
-source with typed starting fixtures and live native device/signal/condition inspection. See the [stretch evidence ledger](./docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md)
-for their frozen support inventories and acceptance limits.
-The world/map panel inspects registry-derived places and links; geography and access rules remain
-code-owned. Restart the composer after renderer/schema changes. See its README and the execution
-ledger for controls, source-save constraints and outstanding acceptance gates.
+Its preview and private Play use the actual game renderer and pending validated source. Typed
+controls cover all 19 scenes, existing gameplay/device/controller definitions, world/story settings
+and ordinary scene creation. History, bundles and protected source Save validate companion documents
+together. The public editor downloads bundles; it cannot write repository files. New art or physical
+algorithms remain registered code. Restart the composer after renderer/schema changes.
+
+From packages/plaza-design-demo, use `pnpm test:game --list` to discover current checks,
+`pnpm test:game conversation` for a focused selection, or `pnpm test:game` for all.
+Disposable outputs go to `.game-test-output/` at repository root. No old engine, migration evidence,
+or prior output is required. See the handbook for visual checks and expected-image update policy.
 
 `pnpm build:homepage` checks game data and produces the playable page.
 `pnpm build:design-demo` runs TypeScript checking and builds the React showcase.

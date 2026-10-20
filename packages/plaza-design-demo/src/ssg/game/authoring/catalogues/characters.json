@@ -1,0 +1,598 @@
+{
+  "version": 1,
+  "scope": "Read-only character workbench using existing runtime preparation and artwork; no shipping changes or source Save",
+  "timeSamplesSeconds": [
+    0,
+    1.25,
+    7.5
+  ],
+  "facings": [
+    1,
+    -1
+  ],
+  "families": [
+    {
+      "id": "human",
+      "group": "Humans",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "run",
+        "talk",
+        "sit",
+        "lean",
+        "smoke",
+        "phone",
+        "haggle",
+        "argue",
+        "sweep",
+        "queue",
+        "sleep",
+        "dance",
+        "vend",
+        "steal"
+      ]
+    },
+    {
+      "id": "cat",
+      "group": "Animals",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "sit"
+      ]
+    },
+    {
+      "id": "pigeon",
+      "group": "Animals",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "walk"
+      ]
+    },
+    {
+      "id": "gull",
+      "group": "Animals",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "walk"
+      ]
+    },
+    {
+      "id": "cleaner",
+      "group": "Legacy robots",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "walk"
+      ]
+    },
+    {
+      "id": "drone",
+      "group": "Legacy robots",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "hover",
+        "scan"
+      ]
+    },
+    {
+      "id": "courier",
+      "group": "Legacy robots",
+      "variants": [
+        "seeded"
+      ],
+      "actions": [
+        "stand",
+        "walk"
+      ]
+    },
+    {
+      "id": "android",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "carry"
+      ]
+    },
+    {
+      "id": "valet",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk"
+      ]
+    },
+    {
+      "id": "marshal",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "direct"
+      ]
+    },
+    {
+      "id": "servbot",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "carry",
+        "vend",
+        "blink",
+        "charge",
+        "glitch"
+      ]
+    },
+    {
+      "id": "sweeper",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "sweep"
+      ]
+    },
+    {
+      "id": "busker",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "play"
+      ]
+    },
+    {
+      "id": "waiter",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "serve"
+      ]
+    },
+    {
+      "id": "loader",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "carry"
+      ]
+    },
+    {
+      "id": "porter",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "follow"
+      ]
+    },
+    {
+      "id": "mech",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "patrol"
+      ]
+    },
+    {
+      "id": "litterbot",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "roll",
+        "sweep"
+      ]
+    },
+    {
+      "id": "deliverybot",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "roll"
+      ]
+    },
+    {
+      "id": "adbot",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "roll",
+        "blink"
+      ]
+    },
+    {
+      "id": "crawler",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "crawl",
+        "weld",
+        "scrub"
+      ]
+    },
+    {
+      "id": "wreck",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "slump",
+        "glitch"
+      ]
+    },
+    {
+      "id": "minidrone",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "hover"
+      ]
+    },
+    {
+      "id": "cargodrone",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "hover"
+      ]
+    },
+    {
+      "id": "flyerdrone",
+      "group": "Robots",
+      "variants": [
+        "0",
+        "1",
+        "2"
+      ],
+      "actions": [
+        "stand",
+        "hover"
+      ]
+    },
+    {
+      "id": "rider",
+      "group": "Metro riders",
+      "variants": [
+        "phone",
+        "paper",
+        "suit",
+        "courier",
+        "elder",
+        "punk",
+        "inspector",
+        "sleeper"
+      ],
+      "actions": [
+        "stand",
+        "sit"
+      ]
+    },
+    {
+      "id": "pixel",
+      "group": "Companion",
+      "variants": [
+        "original"
+      ],
+      "actions": [
+        "sit",
+        "walk",
+        "sleep",
+        "sun",
+        "stretch",
+        "hop"
+      ]
+    },
+    {
+      "id": "player",
+      "group": "Player",
+      "variants": [
+        "original"
+      ],
+      "actions": [
+        "stand",
+        "walk",
+        "jump",
+        "jack"
+      ]
+    },
+    {
+      "id": "downtown-pedestrian",
+      "group": "Legacy people",
+      "variants": [
+        "hood",
+        "hat",
+        "umbrella"
+      ],
+      "actions": [
+        "stand"
+      ]
+    },
+    {
+      "id": "downtown-fixer",
+      "group": "Legacy people",
+      "variants": [
+        "original"
+      ],
+      "actions": [
+        "stand"
+      ]
+    },
+    {
+      "id": "dockworker",
+      "group": "Player",
+      "variants": [
+        "empty",
+        "parcel",
+        "case"
+      ],
+      "actions": [
+        "stand",
+        "walk"
+      ]
+    },
+    {
+      "id": "lime",
+      "group": "Special robots",
+      "variants": [
+        "original"
+      ],
+      "actions": [
+        "serve"
+      ]
+    },
+    {
+      "id": "flying-gull",
+      "group": "Special animals and robots",
+      "variants": [
+        "natural",
+        "robot"
+      ],
+      "actions": [
+        "fly"
+      ]
+    }
+  ],
+  "humanAppearanceAxes": {
+    "body": [
+      "avg",
+      "tall",
+      "short",
+      "wide",
+      "slim",
+      "kid",
+      "old"
+    ],
+    "hair": [
+      "bald",
+      "short",
+      "long",
+      "bun",
+      "mohawk",
+      "cap",
+      "beanie",
+      "hood",
+      "brim",
+      "helmet",
+      "scarf"
+    ],
+    "garb": [
+      "tee",
+      "jacket",
+      "coat",
+      "dress",
+      "apron",
+      "hivis",
+      "suit",
+      "robe"
+    ],
+    "extra": [
+      "umbrella",
+      "bag",
+      "backpack",
+      "cyberarm",
+      "visor",
+      "mask",
+      "phone",
+      "headphones",
+      "glasses",
+      "cane"
+    ]
+  },
+  "humanColorCases": {
+    "skin": "#a96b42",
+    "hairCol": "#665599",
+    "top": "#345678",
+    "bottom": "#786543",
+    "acc": "#ac5732"
+  },
+  "robotColorCases": {
+    "paint": "#345678",
+    "trim": "#786543",
+    "screen": "#ac5732"
+  },
+  "robotAppearance": {
+    "variant": [
+      0,
+      1,
+      2
+    ],
+    "colors": [
+      "paint",
+      "trim",
+      "screen"
+    ],
+    "wearRange": [
+      0,
+      1
+    ],
+    "screenKinds": [
+      "android",
+      "valet",
+      "marshal",
+      "servbot",
+      "sweeper",
+      "busker",
+      "waiter",
+      "loader",
+      "deliverybot",
+      "adbot",
+      "wreck"
+    ],
+    "faceKinds": [
+      "servbot",
+      "sweeper",
+      "busker",
+      "waiter",
+      "adbot"
+    ],
+    "faces": [
+      "eyes",
+      "happy",
+      "blink",
+      "sad",
+      "dots",
+      "off",
+      "crack"
+    ]
+  },
+  "transitions": [
+    "human walk endpoint/turn/return",
+    "human steal approach/grab/run/wait",
+    "loader carry loaded outbound/empty return",
+    "waiter tray/offer",
+    "marshal stop/go",
+    "crawler weld/scrub phases",
+    "servbot charge/blink/glitch phases",
+    "porter following isolated leader"
+  ],
+  "playback": [
+    "play",
+    "pause",
+    "step at 60Hz",
+    "seek",
+    "loop",
+    "reduced-motion frozen effective time"
+  ],
+  "environment": [
+    "explicit day/night lighting and isolated shadow frame",
+    "facing",
+    "pixel scale",
+    "dimming",
+    "camera"
+  ],
+  "exclusions": [
+    "No character/source editing or Save",
+    "No live player or scene models, dialogue, quest effects, storage or rewards",
+    "No invented universal held-item slot; existing extras/payloads are rendered by their original APIs",
+    "Pixel supports deterministic supplied pose/particle snapshots; Companion.update random nap selection and automatic particle generation are not simulated",
+    "No arbitrary cross-product of every garment/color/action/robot: listed axes and representative transitions define coverage",
+    "Reduced motion freezes effective time to zero; no claim of native action-specific reduced animations",
+    "No runtime behavior fixes: dockworker walk retains the current controller recipe without inventing a walking range",
+    "Generic unsupported action/class combinations are unavailable"
+  ]
+}

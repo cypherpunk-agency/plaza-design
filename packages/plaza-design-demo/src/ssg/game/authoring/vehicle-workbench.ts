@@ -1,5 +1,5 @@
 /** Viewing only. Native paint kernels consume explicit, disposable presentation inputs. */
-import { VEHICLE_FAMILIES,type VehicleFamily } from './inventories/S10';
+import { VEHICLE_FAMILIES,type VehicleFamily } from './catalogues/vehicles';
 import { WorkbenchPlayback,mountWorkbenchPlayback } from './workbench-playback';
 import { drawCar,drawTruck,drawStraddle,drawReachStacker,drawForklift,type CarKind } from '../art/vehicles/vehicles';
 import { drawCraft,drawDrone,drawBlimp,type CraftKind } from '../art/vehicles/air-traffic';
@@ -16,7 +16,7 @@ import { harborLayout } from '../scenes/harbor/composition';
 import { openingFrame,paintOpeningPieces } from '../art/sequences/opening/glide';
 import { BOATER,drawCanalGlimpse } from '../art/architecture/cutaway';
 import { prepareCharacter } from '../runtime/characters';
-import { trainComposition,prepareTrainFrame,drawTrainComposition } from '../scenes/train/composition';
+import { trainComposition,trainGeometry,prepareTrainFrame,drawTrainComposition } from '../scenes/train/composition';
 import type { TrainVisualState } from '../art/assemblies/train-interior';
 import { paintRoadVehicle,roadVehicleKinds } from '../art/vehicles/road-vehicle';
 import { SIZE,M } from '../art/vehicles/vehicles';
@@ -72,7 +72,8 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
  }else if(state.id==='train.interior'){
   const visual:TrainVisualState={ride:{at:0,to:1,phase:state.doors>0?'dwell':'running',timer:0,dwell:330,pos:0,d:0,span:3000,frames:780,v:0,open:state.doors,doors:false,halt:null,haltFor:0,decel:.032,say:'DOWNTOWN'},lineOpen:{downtown:true,galleria:true,harbor:true},between:state.doors===0,atSiding:false,due:0,next:'galleria',open:state.doors>.6,run:0,lighting,home:false};
   const f=prepareTrainFrame(trainComposition,view,null,visual);if(!state.passengers)for(const rider of Object.values(f.riders))rider.on=false;
-  job('drawTrainComposition',f,x=>{drawTrainComposition(x,view,f,'backdrop');drawTrainComposition(x,view,f,'foreground');});
+  const visibility=state.passengers?undefined:Object.fromEntries(trainGeometry().filter(row=>Object.prototype.hasOwnProperty.call(f.riders,String(row.props.actor))).map(row=>[row.instance.id,false]));
+  job('drawTrainComposition',f,x=>{drawTrainComposition(x,view,f,'backdrop',trainComposition,{}, {visibility});drawTrainComposition(x,view,f,'foreground',trainComposition,{}, {visibility});});
  }else if(state.id.startsWith('harbor.')){
   const L=harborLayout(),inputs:ArtworkInputs={L,visual:{cranes:[],forklift:{x:70,dir:1},bribed:false,weatherLine:''},fishPose:nil,teaPose:nil,loads:[]},k=createHarborPierArtwork(inputs);
   if(kind==='lamp')job('drawLampBoat',{view},x=>k.drawLampBoat(x,view));

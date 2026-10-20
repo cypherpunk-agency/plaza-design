@@ -141,17 +141,10 @@ latch, not a global save or progression mechanism.
 From the repository root:
 
 ```powershell
-pnpm --filter plaza-design-demo exec tsx scripts/scene-system/check-timeline.mts
-pnpm --filter plaza-design-demo exec tsx scripts/scene-system/check-authoring-save.mts
-pnpm --filter plaza-design-demo exec tsx scripts/scene-system/check-composer-model.mts
+pnpm --filter plaza-design-demo exec tsx scripts/game-tests/check-timeline.mts
+pnpm --filter plaza-design-demo exec tsx scripts/game-tests/check-authoring-save.mts
+pnpm --filter plaza-design-demo exec tsx scripts/game-tests/check-composer-model.mts
 ```
-
-The save test creates isolated workspace fixtures under ignored
-`.scene-system/authoring-save-tests/` and removes its own temporary files. It
-never edits shipping documents or player saves. Windows sandbox networking may
-require an authorized unsandboxed run for the self-loopback HTTP portion. These
-checks cover the contracts/backend; they do not by themselves demonstrate the
-composer UI, shipping sequence migration, runtime parity or the full G7 gate.
 
 ## Browser editor integration
 

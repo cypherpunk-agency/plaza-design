@@ -2,7 +2,7 @@
 
 The directories express ownership. For current extension recipes read
 [ENGINE-HANDBOOK.md](./ENGINE-HANDBOOK.md) and [AGENTS.md](../../AGENTS.md).
-The all19-scene consolidation is complete; historical pilot descriptions are not current limits.
+All 19 existing scenes use the shared engine and editor contracts.
 
 | Location | Owns |
 | --- | --- |
@@ -18,10 +18,8 @@ The all19-scene consolidation is complete; historical pilot descriptions are not
 | `data/` | Shared schemas, validation, loading and global engine/network/logic definitions |
 | `docs/design/` | Current design proposals and progression concepts |
 | `docs/reference/` | Technical authoring references and visual principles |
-| `docs/history/`, `archive/` | Earlier feedback and superseded plans |
 
-The root keeps the entry point, README, agent guidance and active roadmap/scene-system plan
-and execution ledger. New location code belongs in its scene package, not at the root.
+The root keeps the entry point, README, agent guidance and active roadmap. New location code belongs in its scene package, not at the root.
 
 ## Packaging logic
 
@@ -104,8 +102,3 @@ The editor uses these same scene factories, native frame path and sequence dispa
 `authoring/source-documents.ts`: composition, scene, gameplay, devices, world/network/transport,
 fixtures and timeline documents. Validated saves update those authored sources, including supported
 world edits; they do not rewrite TypeScript or player saves. World uses the same source model.
-
-See [local composer instructions](../../authoring/README.md) for startup and save behavior and
-[the execution ledger](../../SCENE-SYSTEM-STATUS.md) for accepted coverage and remaining gates.
-A directory move or finite bounds check alone does not establish pixel identity, full editable
-addressability, editor-operation acceptance or overall plan completion.

@@ -1,3 +1,4 @@
+import { createFrame } from './frame';
 /** Viewing shell: typed kernels and existing source compositions share their native renderers. */
 import type {ArtRegistry,Composition}from'../art/core/composition';
 import type {EditorDocument,PreviewRequest,PreviewResult}from'./app';
@@ -6,19 +7,18 @@ import{createAssetPreview}from'./asset-preview';
 import{centerNativePreview}from'./native-camera';
 import{WorkbenchPlayback,mountWorkbenchPlayback}from'./workbench-playback';
 import{prepareSignage,paintSignage,signageState,signageFamily,type SignageState}from'./signage-kernels';
-import{SIGNAGE_FAMILIES}from'./inventories/S11';
-import frozen from'./inventories/S11.embedded.json';
-import nativeStates from'./inventories/S11.states.json';
-import { createFrame } from './frame';
+import{SIGNAGE_FAMILIES}from'./catalogues/signage';
+import catalogue from'./catalogues/embedded-signage.json';
+import nativeStates from'./catalogues/signage-states.json';
 export{prepareSignage,paintSignage,signageState,signageFamily};export type{SignageState};
 export interface SignageWorkbenchConfig{registry:ArtRegistry;documents:EditorDocument[];openUsage(usage:AssetUsage):void;renderNative(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult;renderSequence?(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult|null}
 export interface EmbeddedSignage{entry:AssetEntry;usages:AssetUsage[]}
-/** Only frozen ids/placements are admitted; missing source references are concrete errors. */
-export function embeddedSignageInventory(config:Pick<SignageWorkbenchConfig,'registry'|'documents'>):EmbeddedSignage[]{const all=assetInventory(config.registry,config.documents);return frozen.registered.map(row=>{const entry=all.find(e=>e.id===row.id);if(!entry)throw new Error('Missing frozen S11 asset '+row.id);const usages=row.usages.map(ref=>{const u=entry.usages.find(u=>u.document===ref.document&&u.instance===ref.instance);if(!u)throw new Error('Missing frozen S11 source '+ref.document+'/'+ref.instance);return u;});return{entry,usages};});}
+/** Supported catalogue bindings are resolved against current source; missing references are errors. */
+export function embeddedSignageInventory(config:Pick<SignageWorkbenchConfig,'registry'|'documents'>):EmbeddedSignage[]{const all=assetInventory(config.registry,config.documents);return catalogue.registered.map(row=>{const entry=all.find(e=>e.id===row.id);if(!entry)throw new Error('Missing signage asset '+row.id);const usages=row.usages.map(ref=>{const u=entry.usages.find(u=>u.document===ref.document&&u.instance===ref.instance);if(!u)throw new Error('Missing signage source '+ref.document+'/'+ref.instance);return u;});return{entry,usages};});}
 export interface EmbeddedSignageSettings{time:number;minute:number;seed:number;reduced:boolean;weather:'clear'|'rain'|'storm'|'fog';zoom:number;cameraX:number;cameraH:number;mode:'composed'|'isolated';state?:Record<string,boolean|string>}
 export function embeddedSignageRequest(config:SignageWorkbenchConfig,usage:AssetUsage,s:EmbeddedSignageSettings):PreviewRequest{
  const document=config.documents.find(d=>d.id===usage.document&&d.kind==='composition');if(!document)throw new Error('Missing source composition '+usage.document);
- for(const[key,value]of Object.entries(s.state??{})){const control=nativeStates.controls.find(c=>c.scene===usage.scene&&c.key===key);if(!control||!control.values.includes(value as never))throw new Error('Unsupported S11 source light state '+usage.scene+'.'+key);if(key==='nightLight'&&value===true&&s.minute>=360&&s.minute<1080)throw new Error('Night light on preview requires its real 18:00–06:00 window.');}
+ for(const[key,value]of Object.entries(s.state??{})){const control=nativeStates.controls.find(c=>c.scene===usage.scene&&c.key===key);if(!control||!control.values.includes(value as never))throw new Error('Unsupported signage source light state '+usage.scene+'.'+key);if(key==='nightLight'&&value===true&&s.minute>=360&&s.minute<1080)throw new Error('Night light on preview requires its real 18:00–06:00 window.');}
  return{composition:document.value as Composition,time:s.reduced?0:s.time,reduced:s.reduced,overlays:false,selectedId:usage.instance,environment:{day:1,minute:s.minute,seed:s.seed,weather:s.weather,cameraX:s.cameraX,cameraH:s.cameraH,zoom:1,renderScale:s.zoom,flags:'{}',state:JSON.stringify(s.state??{})}};
 }
 /** Whole-scene mode preserves overlapping artwork, grading, reflections and frame-local lights. */

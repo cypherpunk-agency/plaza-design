@@ -20,7 +20,7 @@ const option = (name: string, fallback: number) => {
 };
 const port = option('--port', 4192), apiPort = option('--api-port', 4193), origin = `http://127.0.0.1:${port}`;
 if (port === apiPort) throw new Error('Editor and API ports must differ');
-const output = path.join(workspace, `.scene-system/composer-${port}`);
+const output = path.join(workspace, `.game-test-output/composer-${port}`);
 fs.mkdirSync(output, { recursive: true });
 const play=await buildPlayRuntime(game,output);
 await build({ entryPoints: [path.join(game, 'authoring/entry.ts')], outfile: path.join(output, 'app.js'), define:{EDITOR_PLAY_ENTRY:JSON.stringify('./'+play.entry)},bundle: true, format: 'esm', sourcemap: true });
