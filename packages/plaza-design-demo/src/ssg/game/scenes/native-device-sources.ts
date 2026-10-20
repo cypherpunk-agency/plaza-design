@@ -7,9 +7,6 @@ import s0scene from './capsule/scene.json';
 import s1data from './downtown/devices.json';
 import s1art from './downtown/composition.json';
 import s1scene from './downtown/scene.json';
-import s2data from './library/devices.json';
-import s2art from './library/composition.json';
-import s2scene from './library/scene.json';
 import s3data from './yard/devices.json';
 import s3art from './yard/composition.json';
 import s3scene from './yard/scene.json';
@@ -56,7 +53,6 @@ import s18scene from './harbor-shift/scene.json';
 export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Composition;scene:SceneDocument}>={
  capsule:{devices:s0data as unknown as SceneData,composition:s0art as unknown as Composition,scene:s0scene as unknown as SceneDocument},
  downtown:{devices:s1data as unknown as SceneData,composition:s1art as unknown as Composition,scene:s1scene as unknown as SceneDocument},
- library:{devices:s2data as unknown as SceneData,composition:s2art as unknown as Composition,scene:s2scene as unknown as SceneDocument},
  yard:{devices:s3data as unknown as SceneData,composition:s3art as unknown as Composition,scene:s3scene as unknown as SceneDocument},
  moth:{devices:s4data as unknown as SceneData,composition:s4art as unknown as Composition,scene:s4scene as unknown as SceneDocument},
  beach:{devices:s5data as unknown as SceneData,composition:s5art as unknown as Composition,scene:s5scene as unknown as SceneDocument},

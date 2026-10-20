@@ -1,6 +1,8 @@
 import {declaredScene} from './declared-scene';
 import {validateGameplay} from './validation';
 import {validateDeviceDocument} from './device-source-validation';
+import {nativeDeviceDialogues} from './native-dialogue';
+import type {SceneData} from '../../data/types';
 import {emptyDeviceSource} from '../empty-data';
 import {defaultNetworkContext,type EngineNetworkContext} from '../network-context';
 import type {SceneDeviceSource} from './scene-state';
@@ -23,8 +25,12 @@ export function folderSceneDefinition(id:string,source:FolderSceneSource,over:Fo
  const gameplay=validateGameplay(over.gameplay??source.gameplay),scene=(over.scene??source.scene) as SceneDocument;
  if(scene.id!==id)throw new Error('Folder scene identity must remain '+id);
  const raw=over.devices??source.devices??emptyDeviceSource(id,scene.name);
- const devices=validateDeviceDocument(id,raw,{gameplay,network:over.network??defaultNetworkContext}) as SceneDeviceSource;
+ // devices that open a conversation (`open: talk`) read it from the scene's gameplay graphs
+ const dialogue=opensTalk(raw)?nativeDeviceDialogues(gameplay,raw as SceneData):undefined;
+ const checked=validateDeviceDocument(id,raw,{gameplay,network:over.network??defaultNetworkContext,...(dialogue?{dialogue}:{})});
+ const devices=(dialogue?{...checked,dialogue:{...checked.dialogue,...dialogue}}:checked) as SceneDeviceSource;
  return declaredScene(scene,over.composition??source.composition,gameplay,{...(over.options??{}),...(over.state?{state:over.state}:{})},devices);
 }
+const opensTalk=(v:unknown):boolean=>!!v&&typeof v==='object'&&(Array.isArray(v)?v.some(opensTalk):(v as Record<string,unknown>).open==='talk'||Object.values(v).some(opensTalk));
 /** A composition's artwork as placed (bindings at their defaults): what geometry checks and editors measure. */
 export function compositionRows(composition:unknown){const doc=art.validate(composition);return resolveComposition(art,doc,{view:frameView(0),state:{},bindings:bindingDefaults(doc),reduced:false});}

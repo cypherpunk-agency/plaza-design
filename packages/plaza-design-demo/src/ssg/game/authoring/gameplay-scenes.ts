@@ -7,7 +7,7 @@ import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
 import type {Composition,Environment} from '../art';
-import {CAPSULE,YARD,LIBRARY,LAUNDROMAT,STACKS,type SceneData} from '../data';
+import {CAPSULE,YARD,LAUNDROMAT,STACKS,type SceneData} from '../data';
 import {downtownScene} from '../scenes/downtown';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
 import {harborScene} from '../scenes/harbor';
@@ -45,8 +45,6 @@ import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} f
 import {validateShiftScene} from '../scenes/harbor-shift/scene-document';
 import {validateShiftGameplay} from '../scenes/harbor-shift/gameplay-contract';
 import {harborShiftScene} from '../scenes/harbor-shift';
-import {libraryScene} from '../scenes/library';
-import {validateLibraryScene,validateLibraryGameplay} from '../scenes/library/scene-document';
 import {laundromatScene} from '../scenes/laundromat';
 import {validateLaundromatScene,validateLaundromatGameplay} from '../scenes/laundromat/scene-document';
 /** The arguments every scene factory takes: composition, preview state, render options, scene and gameplay documents. */
@@ -61,7 +59,6 @@ const sandboxWithDevices=(...args:DeviceSourceArguments)=>sandboxScene(args[0],a
 const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
 const beachWithDevices=(...args:DeviceSourceArguments)=>beachScene(args[0],args[1],args[2],args[4],args[3],args[6],args[5]);
 const yardWithDevices=(...args:DeviceSourceArguments)=>yardScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
-const libraryWithDevices=(...args:DeviceSourceArguments)=>libraryScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const mothWithDevices=(...args:DeviceSourceArguments)=>mothScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const laundromatWithDevices=(...args:DeviceSourceArguments)=>laundromatScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const stacksWithDevices=(...args:DeviceSourceArguments)=>stacksScene(args[0],args[1],args[2],args[3],args[4],args[5]);
@@ -85,7 +82,6 @@ const definitions=[
  {id:'mall',prefix:'mall',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMallScene,validateGameplay:validateMallGameplay,definition:mallScene},
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},
  {id:'harborShift',prefix:'harbor-shift',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateShiftScene,validateGameplay:validateShiftGameplay,definition:harborShiftScene},
- {id:'library',prefix:'library',bindingGroups:['uses','readables','rests','exits'] as const,data:LIBRARY,validateScene:validateLibraryScene,validateGameplay:validateLibraryGameplay,definition:libraryScene,definitionWithDevices:libraryWithDevices},
  {id:'laundromat',prefix:'laundromat',bindingGroups:['uses','readables','rests','exits'] as const,data:LAUNDROMAT,validateScene:validateLaundromatScene,validateGameplay:validateLaundromatGameplay,definition:laundromatScene,definitionWithDevices:laundromatWithDevices},
  {id:'demoCounter',prefix:'demo-counter',validateScene:(v:unknown,g?:import('../engine/gameplay/types').GameplayDefinition)=>{const d=validateDemoScene(v,g);if(d.id!=='shop')throw new Error('Demo counter identity');return d;},validateGameplay:validateDemoGameplay,definition:demoCounterScene},
  {id:'demoDesk',prefix:'demo-desk',gameplayId:'demo-counter-gameplay',validateScene:(v:unknown,g?:import('../engine/gameplay/types').GameplayDefinition)=>{const d=validateDemoScene(v,g);if(d.id!=='library')throw new Error('Demo desk identity');return d;},validateGameplay:validateDemoGameplay,definition:demoDeskScene},

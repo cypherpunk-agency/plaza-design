@@ -11,6 +11,10 @@ import shopComposition from './shop/composition.json';
 import shopScene from './shop/scene.json';
 import shopGameplay from './shop/gameplay.json';
 import shopDevices from './shop/devices.json';
+import libraryComposition from './library/composition.json';
+import libraryScene from './library/scene.json';
+import libraryGameplay from './library/gameplay.json';
+import libraryDevices from './library/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -20,6 +24,7 @@ export const FOLDER_SOURCES={
  tower:{composition:towerComposition,scene:towerScene,gameplay:towerGameplay,devices:towerDevices},
  warehouse:{composition:warehouseComposition,scene:warehouseScene,gameplay:warehouseGameplay,devices:warehouseDevices},
  shop:{composition:shopComposition,scene:shopScene,gameplay:shopGameplay,devices:shopDevices},
+ library:{composition:libraryComposition,scene:libraryScene,gameplay:libraryGameplay,devices:libraryDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** The same sources by any scene id (undefined for scenes that still have code). */
 export const FOLDER_BY_ID:Readonly<Record<string,FolderSceneSource>>=FOLDER_SOURCES;

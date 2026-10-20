@@ -316,8 +316,17 @@
     }
   ],
   "manifest": {
-    "devices": {"reader": "reader", "session": "session", "printer": {"instance": "printer", "h": -2}},
-    "artwork": {"orientation":"window-1"},
+    "devices": {
+      "reader": "reader",
+      "session": "session",
+      "printer": {
+        "instance": "printer",
+        "h": -2
+      }
+    },
+    "artwork": {
+      "orientation": "window-1"
+    },
     "version": 1,
     "width": {
       "instance": "room",
@@ -354,6 +363,15 @@
         "instance": "downtown-door",
         "promptH": 82
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
     }
   },
   "environment": {},
@@ -376,6 +394,11 @@
           "companion.pet.idle.3"
         ]
       }
+    }
+  },
+  "stage": {
+    "facing": {
+      "role": "orientation"
     }
   }
 }

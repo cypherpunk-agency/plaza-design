@@ -1,6 +1,6 @@
 /** Regression: full native editor frames must not inherit prior canvas/probe paint state. */
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
-import {createNativePreview} from '../../src/ssg/game/authoring/native-preview';import {nativeSceneAdapters} from '../../src/ssg/game/authoring/scene-adapters';import {libraryComposition} from '../../src/ssg/game/scenes/library/composition';
+import {createNativePreview} from '../../src/ssg/game/authoring/native-preview';import {nativeSceneAdapters} from '../../src/ssg/game/authoring/scene-adapters';import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';import {art} from '../../src/ssg/game/art';const libraryComposition=art.validate(FOLDER_SOURCES.library.composition);
 class Canvas {
  private w=960; height=540;resets=0;operations:unknown[]=[];
  private initial(){return{globalAlpha:1,globalCompositeOperation:'source-over',fillStyle:'#000000',strokeStyle:'#000000',lineWidth:1,lineCap:'butt',lineJoin:'miter',miterLimit:10,font:'10px sans-serif',textAlign:'start',textBaseline:'alphabetic',shadowBlur:0,shadowColor:'rgba(0, 0, 0, 0)',shadowOffsetX:0,shadowOffsetY:0,imageSmoothingEnabled:true,transform:[] as unknown[],clipped:false};}
