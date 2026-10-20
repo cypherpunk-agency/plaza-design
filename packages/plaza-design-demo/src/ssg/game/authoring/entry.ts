@@ -61,6 +61,7 @@ import { mountWorldPanel, type WorldPanelSession } from './world-panel';
 import { createAssetPreview } from './asset-preview';
 
 import { mountCharacterWorkbench } from './character-workbench';
+import { mountStyleFrames, type StyleFrameSession } from './style-frames';
 
 import { mountVehicleWorkbench } from './vehicle-workbench';
 
@@ -109,6 +110,8 @@ async function start() {
 
   await document.fonts.ready;
 
+  const initialEnvironment = { cameraX: 0, zoom: 1, day: 1, minute: 720, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' };
+  const styleFrameSession: StyleFrameSession = {};
   const native = createNativePreview({...nativeSceneAdapters,'demo-manifest':{validate:validateManifestComposition,definition:manifestDemoScene,pendingDefinition:(composition,state,options,documents)=>{const gameplay=validateManifestGameplay(documents.get('demo-manifest-gameplay'));return manifestDemoScene(composition,state,options,validateManifestScene(documents.get('demo-manifest-scene'),gameplay),gameplay);}}},(scene,request)=>{if(!request.documents)return scene;const deviceId=deviceDocumentId(request.composition.scene);if(request.documents.has(deviceId))scene=applyDeviceSource(request.composition.scene,scene,request.frame?.composition??request.composition,request.documents.get(deviceId),pendingNetworkContext(request.documents),request.documents.get(deviceSourceIdentity(request.composition.scene).scene) as import('../engine/gameplay/scene-document').SceneDocument);if(!scene.bindWorld)return scene;const city=createPendingCity(request.documents.get('city-source'),request.documents),metro=createLineSystem(city,validateMetroSource(request.documents.get('metro-source')));return scene.bindWorld({city,metro});},(id,request)=>{const catalogue=request.documents?.get('authored-scenes') as SceneCatalogue|undefined,entry=catalogue?.scenes.find(s=>s.scene.id===id);if(!entry)return;return{validate:value=>{const c=art.validate(value);if(c.scene!==id)throw new Error('Authored composition identity');return c;},definition:(composition,_state,options)=>declaredScene(entry.scene,composition,entry.gameplay,options,entry.devices)};}), sequences = createSequencePreview(art);
 
   const mapSession: WorldPanelSession = {};
@@ -126,6 +129,11 @@ async function start() {
     sceneLabel: scene => isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene.startsWith('sequence-') ? 'Sequence · ' + scene.slice('sequence-'.length) : scene,
     sceneDocuments:(scene,documents)=>{try{const entry=gameplayScene(scene,documents);return[entry.prefix+'-scene',entry.gameplayId,...(scene==='sandbox'?['sandbox-behavior']:[])];}catch{return nativeGameplayScene(scene)?[nativeGameplayScene(scene)!.gameplayId]:[];}},
 
+    assetDistricts(documents) {
+      const city = documents.find(d => d.id === 'city-source')?.value as { DISTRICTS: { id: string; name: string }[]; PLACES: { district: string; scenes: string[] }[] } | undefined;
+      const sceneDistrict = new Map((city?.PLACES ?? []).flatMap(p => p.scenes.map(scene => [scene, p.district] as const)));
+      return { list: (city?.DISTRICTS ?? []).map(d => ({ id: d.id, name: d.name })), of: scene => sceneDistrict.get(scene) };
+    },
     assetPreview: createAssetPreview(art, native),
 
     validateDocument(document,documents) {
@@ -186,6 +194,9 @@ async function start() {
       {id:'demo-world',area:'labs',label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true)},
       { id: 'characters', area: 'library', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
 
+      { id: 'style-frames', area: 'library', label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
+        return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene);
+      } },
       { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
 
       { id: 'signage', area: 'library', label: 'Signs & light', title: 'Signs, lighting and architecture · read-only', documentDependent: true, mount(panel, context) {
@@ -229,7 +240,7 @@ async function start() {
     destinationsFor:documents=>pendingDestinations(new Map(documents.map(d=>[d.id,d.value]))),
     destinations: Object.fromEntries(Object.entries(SCENES).map(([scene, def]) => [scene, def.exits.map(exit => exit.id)])),
 
-    initialEnvironment: { cameraX: 0, zoom: 1, day: 1, minute: 720, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' },
+    initialEnvironment,
 
     environmentControls: [
 

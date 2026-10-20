@@ -93,6 +93,13 @@ export const composerStyles = `
 .scene-composer canvas.asset-thumb{width:100%;height:84px;flex:none;object-fit:contain;background:#05080c;border-radius:3px;image-rendering:pixelated}.scene-composer canvas.asset-thumb[data-empty]{background:repeating-linear-gradient(45deg,#0a0f15 0 6px,#0d141c 6px 12px)}
 .scene-composer .asset-grid{display:grid;grid-auto-rows:max-content;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;align-content:start}
 .scene-composer .asset-browser-grid:has(.asset-grid){grid-template-columns:minmax(0,1fr) minmax(320px,38%)}.scene-composer .asset-browser-grid:has(.asset-grid) .catalog-list{max-height:calc(100vh - 260px)}
+.scene-composer .asset-browser-grid.with-districts,.scene-composer .asset-browser-grid.with-districts:has(.asset-grid){grid-template-columns:150px minmax(0,1fr) minmax(320px,36%)}
+.scene-composer .district-bar{display:flex;flex-direction:column;gap:4px;align-content:start}.scene-composer .district-bar .chip{display:flex;justify-content:space-between;width:100%;text-align:left;font-size:12px;padding:5px 8px;border-radius:999px;background:var(--field)}.scene-composer .district-bar .chip[aria-pressed=true]{border-color:var(--accent);background:#173238;color:var(--ink,inherit)}.scene-composer .district-bar .chip:disabled{opacity:.4}.scene-composer .district-bar .chip{gap:6px}.scene-composer .district-bar .chip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.scene-composer .district-bar .chip small{flex:none;color:var(--muted)}
+.scene-composer .style-frames{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;padding:4px 0}.scene-composer .style-frame{display:grid;gap:10px;min-width:0;align-content:start}.scene-composer .style-frame h3{margin:0}.scene-composer .style-frame .motto{margin:2px 0 0;font-style:italic;color:#ffd9a5}
+.scene-composer .style-frame .swatches{display:flex;gap:4px;max-width:420px}.scene-composer .style-frame .swatches span{flex:1;height:14px;border-radius:2px}
+.scene-composer .frame-body{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}.scene-composer .frame-body canvas{width:100%;height:auto;background:#05080c;display:block;margin-top:8px}.scene-composer .frame-body .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.scene-composer .frame-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}.scene-composer .frame-strip canvas{margin:0}
+.scene-composer .style-frame dl{display:grid;grid-template-columns:80px minmax(0,1fr);gap:6px 10px;margin:0;font-size:13px}.scene-composer .style-frame dt{color:var(--muted);font:600 11px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.05em}.scene-composer .style-frame dd{margin:0}
 .scene-composer .asset-browser-grid .primary{margin:6px 0 10px}
 
 /* Inspector */
@@ -157,7 +164,7 @@ export const composerStyles = `
   .scene-composer .hierarchy button{min-height:40px;font-size:13px}
   .scene-composer .tool-panel{overflow:visible}.scene-composer .tool-panel>section,.scene-composer .tool-panel>div{padding:10px 12px}
   .scene-composer .workbench-screen :has(>canvas){display:flex;flex-direction:column;align-items:stretch}.scene-composer .workbench-screen :has(>canvas)>canvas{order:-1;position:sticky;top:0;z-index:2;margin-bottom:8px;box-shadow:0 6px 12px #000a}
-  .scene-composer .asset-browser-grid,.scene-composer .asset-browser-grid:has(.asset-grid){grid-template-columns:1fr}.scene-composer .asset-browser-grid .catalog-list{max-height:40vh}
+  .scene-composer .asset-browser-grid,.scene-composer .asset-browser-grid:has(.asset-grid),.scene-composer .asset-browser-grid.with-districts,.scene-composer .asset-browser-grid.with-districts:has(.asset-grid){grid-template-columns:1fr}.scene-composer .district-bar{flex-direction:row;flex-wrap:wrap}.scene-composer .style-frames,.scene-composer .frame-body{grid-template-columns:1fr}.scene-composer .district-bar .chip{width:auto;gap:6px}.scene-composer .asset-browser-grid .catalog-list{max-height:40vh}
   .scene-composer .add-picker{position:fixed;inset:0;z-index:50;border-radius:0}.scene-composer .play-button{margin-left:0}
   .scene-composer .timeline-grid{grid-template-columns:1fr}
 }

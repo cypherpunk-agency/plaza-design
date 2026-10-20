@@ -69,7 +69,13 @@ The tab row has three views of the selected scene, then three areas that are not
   the wiring panels *Starting cables* and the read-only *Events* inspector. Its supported scenes follow
   the registered content list above; Commands also covers the native Beach device slice.
 - **Play** runs the selected scene from one of its starting states; the game view comes first.
-- **Library** holds the artwork explorer and the Characters/Vehicles/Signs viewers.
+- **Library** holds the artwork explorer and the Characters/Style frames/Vehicles/Signs viewers.
+  Artwork has a district bar on the left: a piece belongs to every district whose scenes use it
+  ("Elsewhere" is unused or sequence-only artwork). Characters has a **Crowd** view that samples a
+  district's crowd mix (`art/characters/crowds.ts`: plain vs kitted people, wardrobe, acts, robots)
+  across the back, play and near rows. **Style frames** pairs each district's card (`style-frames.ts`:
+  proposed palette, light, materials, signage, landmark, crowd) with its scenes rendered at a chosen
+  time, weather and camera. All three are read-only previews of the 2026-10-20 art direction.
 - **World** holds what is shared between scenes: the **City map** (opening a place switches the
   editor to that scene), Game opening, Companion dialogue, Networks, Scenes, City & travel and
   Bot dialogue.

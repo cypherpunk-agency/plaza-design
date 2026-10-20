@@ -39,6 +39,8 @@ export interface ComposerConfig {
   validateDocument?(document: EditorDocument, documents: EditorDocument[]): void;
   initialEnvironment?: Record<string, string | number | boolean>; environmentControls?: EnvironmentControl[];
   worldPanel?(host: HTMLElement, openScene: (scene: string) => void, documents: EditorDocument[], scene?: string): void | (() => void);
+  /** Districts and which one each scene is in, for the artwork library's filter bar. */
+  assetDistricts?(documents: EditorDocument[]): { list: { id: string; name: string }[]; of(scene: string): string | undefined };
   assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
   /** Display name for a composition's scene id in the scene picker and empty states. */
   sceneLabel?(scene: string): string;
@@ -409,6 +411,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     cleanupAssets = mountAssetBrowser(assetPanel, { registry: config.registry, documents: model.list(),
       openUsage(usage) { openInstance(usage.document, usage.instance); },
       preview: (canvas, entry, usage, zoom) => config.assetPreview!(canvas, entry, usage, model.list(), { time, reduced, environment: { ...environment, renderScale: zoom } }),
+      ...(config.assetDistricts ? { districts: config.assetDistricts(model.list()) } : {}),
       ...(thumbnails ? { thumbnail: (entry: AssetEntry) => thumbnails.thumbnail(entry) } : {}),
       ...(scene ? { useInScene: { label: `Add to ${sceneName(scene)}`, run: (entry: AssetEntry) => { showLayout(); void addAtView(entry.id); } } } : {}),
     }, assetSession);
