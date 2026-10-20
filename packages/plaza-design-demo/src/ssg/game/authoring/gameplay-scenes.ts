@@ -11,9 +11,6 @@ import type {Composition,Environment} from '../art';
 import type {SceneData} from '../data';
 import {downtownScene} from '../scenes/downtown';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
-import {beachScene} from '../scenes/beach';
-import {validateBeachScene} from '../scenes/beach/scene-document';
-import {validateBeachGameplay} from '../scenes/beach/gameplay';
 import {metroScene} from '../scenes/metro';
 import {content as metroContent} from '../scenes/metro/scene-document';
 import {trainScene} from '../scenes/train';
@@ -24,15 +21,12 @@ import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} f
 /** Explicit migrated-scene registry shared by authoring, protected saves and isolated Play. */
 /** The arguments every scene factory takes: composition, preview state, render options, scene and gameplay documents. */
 type SceneFactoryArgs=[document?:Composition,state?:Environment['state'],options?:Partial<Environment>,content?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition];
-const beachAuthoredScene=(...args:[...SceneFactoryArgs,NativeTargetValidationContext?])=>beachScene(args[0],args[1],args[2],args[4],args[3],args[5]);
 const downtownAuthoredScene=(...args:SceneFactoryArgs)=>downtownScene(args[0],undefined,args[2],args[3],args[4]);
 type DeviceSourceArguments=[...SceneFactoryArgs,SceneData?,NativeTargetValidationContext?];
 const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
-const beachWithDevices=(...args:DeviceSourceArguments)=>beachScene(args[0],args[1],args[2],args[4],args[3],args[6],args[5]);
 const trainWithDevices=(...args:DeviceSourceArguments)=>trainScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const definitions=[
  {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
- {id:'beach',prefix:'beach',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateBeachScene,validateGameplay:validateBeachGameplay,definition:beachAuthoredScene,definitionWithDevices:beachWithDevices},
 
  {id:'metro',prefix:'metro',validateScene:metroContent.validateScene,validateGameplay:metroContent.validateGameplay,definition:metroAuthoredScene},
  {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene,definitionWithDevices:trainWithDevices},

@@ -9,7 +9,6 @@ import {nativeDeviceSources} from './native-device-sources';
  * objects in each module; drawing is code.
  */
 
-import { beach } from "./beach/index";
 import { downtown } from "./downtown/index";
 import type { SceneDef } from './kit';
 import { metro } from "./metro/index";
@@ -24,7 +23,7 @@ export { ITEMS, priceTag } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 const nativeDefinitions = {
-  downtown, beach, metro, train,
+  downtown, metro, train,
 } satisfies Record<string, SceneDef>;
 const codeScenes=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
 /** Scenes of the repository: those still built by their own code, and folder scenes built from JSON alone (folder-scenes.ts). */

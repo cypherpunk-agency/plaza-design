@@ -5,14 +5,12 @@ import {SceneModel,type Line} from '../../src/ssg/game/engine/model';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {ConversationSession} from '../../src/ssg/game/engine/gameplay/conversation';
 import {attachNativeGameplay} from '../../src/ssg/game/engine/gameplay/native-bindings';import {fixtureGameplayPort} from './model-gameplay-fixture.mts';
-import {BEACH_GAMEPLAY,validateBeachGameplay} from '../../src/ssg/game/scenes/beach/gameplay';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {folderSceneDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
 const MARKET_GAMEPLAY=validateGameplay(FOLDER_SOURCES.market.gameplay),marketScene=()=>folderSceneDefinition('market',FOLDER_SOURCES.market);
-import {beachScene} from '../../src/ssg/game/scenes/beach';
+const BEACH_GAMEPLAY=validateGameplay(FOLDER_SOURCES.beach.gameplay),validateBeachGameplay=validateGameplay,beachScene=()=>folderSceneDefinition('beach',FOLDER_SOURCES.beach);
 import {BEACH} from '../../src/ssg/game/data';
-import {BEACH_RULES} from '../../src/ssg/game/scenes/beach/rules';
 import {WORKSHOP_GAMEPLAY,workshopScene,validateWorkshopGameplay} from '../../src/ssg/game/demo/workshop';
 import {demoContent} from '../../src/ssg/game/demo';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
@@ -28,7 +26,7 @@ import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 
 function harness(scene:SceneDef,shared=true){
  let state:GameplayState={flags:{},items:{soap:2},tokens:8},now=0;const lines:Line[]=[],queue:{at:number;run:()=>void}[]=[];
- const m=new SceneModel({say:l=>lines.push(l),open:()=>{},changed:()=>{},tokens:n=>(state.tokens+=n),modules:()=>['timer.so','switch.so']},scene.data!,scene.rules as typeof BEACH_RULES);m.setPaused(true);m.now=()=>now;m.wall=()=>1000;
+ const m=new SceneModel({say:l=>lines.push(l),open:()=>{},changed:()=>{},tokens:n=>(state.tokens+=n),modules:()=>['timer.so','switch.so']},scene.data!,scene.rules as SceneDef['rules'] as never);m.setPaused(true);m.now=()=>now;m.wall=()=>1000;
  m.later=(ms,run)=>{queue.push({at:now+ms,run});};
  const port={read:()=>state,write:(next:GameplayState)=>{state=next;}};
  const session=shared?new GameplaySession(scene.gameplay!,fixtureGameplayPort(scene.gameplay!,port,()=>m)):undefined;if(session)attachNativeGameplay(m,session);
@@ -85,7 +83,7 @@ const bundle=createDocumentBundle(model.edits(),model.list());model.undo();model
 const scratch=path.resolve('../../.game-test-output/eng04-source');fs.mkdirSync(scratch,{recursive:true});const root=fs.mkdtempSync(path.join(scratch,'run-'));
 try{for(const descriptor of sourceDocuments){const p=path.join(root,descriptor.file);fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,fs.readFileSync(path.join(game,descriptor.file)));}const store=new AuthoringStore({root,documents:sourceDocuments,validateAll:validateSourceDocuments}),before=store.list();const workshopEdit=structuredClone(WORKSHOP_GAMEPLAY);workshopEdit.native!.wires[0].to='hatch.hatch';workshopEdit.native!.wires[0].verb='open';const committed=store.save([{id:'beach-gameplay',revision:store.read('beach-gameplay').revision,value:edit},{id:'demo-workshop-gameplay',revision:store.read('demo-workshop-gameplay').revision,value:workshopEdit}]);assert.deepEqual(new AuthoringStore({root,documents:sourceDocuments,validateAll:validateSourceDocuments}).read('beach-gameplay').value,edit);const stableSources=store.list();assert.throws(()=>store.save([{id:'demo-workshop-gameplay',revision:store.read('demo-workshop-gameplay').revision,value:WORKSHOP_GAMEPLAY},{id:'beach-gameplay',revision:store.read('beach-gameplay').revision,value:invalid}]));assert.deepEqual(store.list(),stableSources);assert.deepEqual(store.read('beach-gameplay').value,edit);store.undo(committed.transaction,Object.fromEntries(committed.documents.map(d=>[d.id,d.revision])));assert.deepEqual(store.list(),before);}finally{assert(root.startsWith(scratch+path.sep));fs.rmSync(root,{recursive:true,force:true});}
 // Exercise the actual pausable scheduler, not just the deterministic timing fixture.
-let realState:GameplayState={flags:{},items:{},tokens:8};const def=workshopScene();const real=new SceneModel({say:()=>{},open:()=>{},changed:()=>{}},def.data!,def.rules as typeof BEACH_RULES);real.setPaused(true);const realSession=new GameplaySession(def.gameplay!,fixtureGameplayPort(def.gameplay!,{read:()=>realState,write:s=>{realState=s;}},()=>real));attachNativeGameplay(real,realSession);
+let realState:GameplayState={flags:{},items:{},tokens:8};const def=workshopScene();const real=new SceneModel({say:()=>{},open:()=>{},changed:()=>{}},def.data!,def.rules as never);real.setPaused(true);const realSession=new GameplaySession(def.gameplay!,fixtureGameplayPort(def.gameplay!,{read:()=>realState,write:s=>{realState=s;}},()=>real));attachNativeGameplay(real,realSession);
 real.act('hatch','hatch','open');await new Promise(r=>setTimeout(r,180));assert.equal(real.state.fanOn,false);real.setPaused(false);await new Promise(r=>setTimeout(r,190));assert.equal(real.state.fanOn,true);
 real.reset();real.setPaused(true);real.act('hatch','hatch','open');real.reset();real.setPaused(false);await new Promise(r=>setTimeout(r,180));assert.equal(real.state.fanOn,false,'reset cancels in-flight native signals');realSession.dispose();real.reset();real.setPaused(true);
 const district=demoContent();assert.equal(district.library.exits.length+district.sandbox.exits.length,0);assert.deepEqual(district.sandbox.gameplay,WORKSHOP_GAMEPLAY);
