@@ -1,9 +1,6 @@
 import {FOLDER_SOURCES} from './folder-scenes';
 import {emptyDeviceSource} from '../engine/empty-data';
 import type {SceneData} from '../data/types';import type {Composition} from '../art';import type {SceneDocument} from '../engine/gameplay/scene-document';
-import s0data from './capsule/devices.json';
-import s0art from './capsule/composition.json';
-import s0scene from './capsule/scene.json';
 import s1data from './downtown/devices.json';
 import s1art from './downtown/composition.json';
 import s1scene from './downtown/scene.json';
@@ -18,7 +15,6 @@ import s16art from './train/composition.json';
 import s16scene from './train/scene.json';
 /** Plain authored JSON inputs; no scene constructors or authoring dependencies. */
 export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Composition;scene:SceneDocument}>={
- capsule:{devices:s0data as unknown as SceneData,composition:s0art as unknown as Composition,scene:s0scene as unknown as SceneDocument},
  downtown:{devices:s1data as unknown as SceneData,composition:s1art as unknown as Composition,scene:s1scene as unknown as SceneDocument},
  beach:{devices:s5data as unknown as SceneData,composition:s5art as unknown as Composition,scene:s5scene as unknown as SceneDocument},
  metro:{devices:s13data as unknown as SceneData,composition:s13art as unknown as Composition,scene:s13scene as unknown as SceneDocument},

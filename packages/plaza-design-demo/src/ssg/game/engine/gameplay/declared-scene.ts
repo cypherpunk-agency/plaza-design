@@ -24,6 +24,7 @@ import type {CityModel} from '../../world/city';
 import type {LineSystem} from '../../world/transport/line';
 import {nativeTargetValidator,compileNativeTargets,type NativeTargetValidationContext} from './native-targets';
 import type {SceneData} from '../../data/types';
+import {DEFAULT_COMPANION_FLAG} from './scene-companion';
 
 /** A named mechanism lets the scene's engine targets use the `reset` step (scene-mechanisms.ts `targetReset`). */
 const resetPermitted=(doc:SceneDocument)=>(doc.stage?.mechanisms??[]).some(name=>SCENE_MECHANISMS[name]?.targetReset===true);
@@ -37,7 +38,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  const doc=art.validate(composition),signals=providerSignals(doc),d=validateSceneDocument(scene,gameplay,declaredSceneOptions(scene,undefined,doc));
  if(!d.manifest)throw new Error('Declared scene requires manifest bindings');
  // transport exits (`action`) are the runtime's; engine exits are opened by engine targets (stage.targetAnchors)
- if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)))throw new Error('Exit sets an undeclared gameplay flag');
+ if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)&&e.sets!==DEFAULT_COMPANION_FLAG&&e.sets!==d.companion?.unlockFlag))throw new Error('Exit sets an undeclared gameplay flag');
  // artwork binds only to sources the engine works out (binding-sources.ts)
  if(!withActors&&JSON.stringify(doc.instances).match(/"actor\.[^"]+\.pose"/))throw new Error('Actor artwork requires scene.actors source definitions');
  const unknown=unknownBindingSources(doc);if(unknown.length)throw new Error('Unknown binding sources: '+unknown.join(', '));

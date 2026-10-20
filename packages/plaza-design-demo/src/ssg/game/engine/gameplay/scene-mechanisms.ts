@@ -13,6 +13,7 @@ import type {EngineDraw} from '../host';
 import type {View} from '../../art/core/view';
 import type {Value} from '../../art/core/composition';
 import type {SceneData} from '../../data/types';
+import {thermal} from './mechanisms/thermal';
 /**
  * Registered scene mechanisms: what a declared scene takes from the engine beyond its documents,
  * named in scene.json `stage.mechanisms` and edited under Scene › Stage & compile. A mechanism
@@ -89,5 +90,5 @@ const transitPlatform:SceneMechanism={
   return{platformStop:stop.placement.x,...(water?{horizon:Number(water.props.horizon??0),ambient:{...content.ambient,covers:[{from:-60,to:width+60,under:Number(roof.props.under)+roof.placement.h}]}}:{})};},
 };
 export const SCENE_MECHANISMS:Readonly<Record<string,SceneMechanism>>={
- transitPlatform,gantryLift,dockworkerCarry,devicePulse,targetReset,sandboxBay,yardCrane,
+ transitPlatform,gantryLift,dockworkerCarry,devicePulse,targetReset,sandboxBay,yardCrane,thermal,
 };
