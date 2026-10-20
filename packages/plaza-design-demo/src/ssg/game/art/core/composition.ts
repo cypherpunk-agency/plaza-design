@@ -76,6 +76,8 @@ export interface Element {
   validateVisual?: (state: Properties) => void;
   /** World kernels use explicit placement and retain the native viewport and canvas state. */
   coordinates?: 'local' | 'world';
+  /** Independently placeable using authored properties and shared environment inputs. No source scene or controller bindings required. Omitted entries require source context. */
+  libraryUse?: 'reusable';
   animationClips?: Record<string, AnimationClip>;
   parts: Pass[];
   /** Non-drawing elements that still belong in a visual layer: named groups and the player row. */

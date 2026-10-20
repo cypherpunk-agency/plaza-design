@@ -23,7 +23,7 @@ export function residentCharacter(props:Properties,point:Point):Character{
  cache.set(key,actor);if(cache.size>256)cache.delete(cache.keys().next().value!);return actor;
 }
 export const residentElement:Element={
- type:'character.resident',version:1,label:'Authored person, animal or robot',category:'characters',coordinates:'world',parts:['people'],
+ type:'character.resident',version:1,label:'Authored person, animal or robot',category:'characters',coordinates:'world', libraryUse: 'reusable',parts:['people'],
  fields:{kind:{kind:'select',label:'Body kind',options:residentKinds,default:'human'},archetype:{kind:'select',label:'Named look (humans)',options:['',...ARCHETYPE_IDS],default:''},seed:{kind:'number',label:'Appearance seed',default:1,min:0,max:1000000,step:1},act:{kind:'select',label:'Activity',options:residentActs,default:'stand'},style:{kind:'select',label:'Colour style (humans)',options:['automatic','vivid','muted'],default:'automatic'},district:{kind:'select',label:'District clothes (humans)',options:['',...DISTRICTS],default:''},tech:{kind:'select',label:'Visible tech (humans)',options:['automatic','yes','no'],default:'automatic'},sitting:{kind:'select',label:'Sitting (humans)',options:['no',...SEATED_VIEWS],default:'no'},depth:{kind:'select',label:'Depth',options:[...DEPTH_ORDER],default:'play'}},
  bounds:props=>({x:-32,h:characterHeight(residentCharacter(props,{x:0,h:0})),w:64,tall:characterHeight(residentCharacter(props,{x:0,h:0}))}),
  anchors:()=>({origin:{x:0,h:0,role:'origin'}}),

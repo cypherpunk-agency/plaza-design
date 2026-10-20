@@ -4,11 +4,19 @@ import { art, ArtRegistry, resolveComposition, compositionAppearance, type Compo
 import { frameView } from '../../src/ssg/game/art/core/view';
 import { assetInventory, filterAssets } from '../../src/ssg/game/authoring/asset-browser';
 import { isolateArtwork } from '../../src/ssg/game/authoring/asset-preview';
+import { exampleState } from '../../src/ssg/game/authoring/asset-examples';
 import { sourceDocuments } from '../../src/ssg/game/authoring/source-documents';
 const documents = sourceDocuments.map(doc => ({ id: doc.id, kind: doc.kind, revision: 'test', value: JSON.parse(fs.readFileSync(`src/ssg/game/${doc.file}`, 'utf8')) }));
 const before = JSON.stringify(documents), entries = assetInventory(art, documents);
 assert.deepEqual(entries.map(e => e.id).sort(), art.catalog().map(e => e.type).sort());
 assert.ok(entries.length > 0);
+for (const entry of entries) {
+  if (entry.usability === 'reusable') assert.equal(art.get(entry.id).libraryUse, 'reusable', `${entry.id}: placement must be explicitly declared`);
+}
+assert.equal(entries.find(e => e.id === 'assembly.group')!.usability, 'helper');
+assert.equal(entries.find(e => e.id === 'actor.prepared')!.usability, 'context');
+assert.equal(entries.find(e => e.id === 'sign.billboard')!.usability, 'reusable');
+assert.equal(entries.find(e => e.id === 'sequence.intro.hero')!.structure, 'object');
 let usages = 0;
 for (const entry of entries) {
   assert.equal(filterAssets(entries, entry.id).some(e => e.id === entry.id), true);
@@ -41,4 +49,12 @@ const originalAppearance = compositionAppearance(doc, env), projectedAppearance 
 for (const row of isolatedRows) assert.deepEqual(projectedAppearance.get(row.instance.id), originalAppearance.get(row.instance.id));
 assert.equal(JSON.stringify(doc), untouched);
 assert.throws(() => isolateArtwork(registry, doc, env, 'missing'), /Missing source/);
+// Gallery examples must produce valid native visual inputs without mutating the source snapshot.
+for (const type of ['actor.prepared', 'character.prepared', 'dockwork.case', 'dockwork.statement', 'dockwork.complete', 'station.waiting-passenger', 'sandbox.hover']) {
+  const sample: Composition = { version: 1, scene: 'gallery-check', instances: [{ id: 'piece', type, props: {}, placement: { x: 300, h: 0 }, pass: art.get(type).parts[0], order: 0 }] };
+  const row = resolveComposition(art, sample, { view: frameView(0), state: {}, reduced: true })[0];
+  const untouchedState = JSON.stringify(row.state), display = exampleState(row);
+  assert.doesNotThrow(() => art.visualProperties(type, display), type);
+  assert.equal(JSON.stringify(row.state), untouchedState, `${type}: gallery must not mutate native state`);
+}
 console.log(JSON.stringify({ status: 'PASS', registered: entries.length, usages, assertions: ['complete current registry', 'search and family filtering', 'every exact usage path', 'read-only documents', 'resolved attachment transforms', 'inherited visibility/opacity', 'descendants without ancestor artwork'] }));

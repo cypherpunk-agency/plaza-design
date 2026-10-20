@@ -40,7 +40,7 @@ const MOUNTS = ['wall', 'pole', 'hang', 'bracket'];
 const ICONS = ['bowl', 'fish', 'eye', 'arrow', 'heart', 'chip'];
 type Draw = (x: CanvasRenderingContext2D, v: View, p: Properties, at: Required<Placement>) => void;
 function element(type: string, label: string, fields: Record<string, Field>, bounds: (p: Properties) => Bounds, draw: Draw): Element {
-  return { type: 'sign.' + type, version: 1, label, category: 'sign kit', coordinates: 'world', bindingIdentity: 'presentation', fields, parts: ['backdrop'], bounds: p => bounds(p),
+  return { type: 'sign.' + type, version: 1, label, category: 'sign kit', coordinates: 'world', libraryUse: 'reusable', bindingIdentity: 'presentation', fields, parts: ['backdrop'], bounds: p => bounds(p),
     anchors: p => { const b = bounds(p); return { origin: { x: 0, h: 0, role: 'origin' }, top: { x: b.x + b.w / 2, h: b.h, role: 'mount' }, bottom: { x: b.x + b.w / 2, h: b.h - b.tall, role: 'mount' } }; },
     draw: (x, v, p, _s, _pass, at) => draw(x, v, p, at) };
 }

@@ -97,7 +97,7 @@ export function flockOptions(p: Properties): FlockOptions {
 }
 const n = (label: string, d: number, min?: number, max?: number, step?: number) => ({ kind: 'number' as const, label, default: d, ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}), ...(step !== undefined ? { step } : {}) });
 export const flockElement: Element = {
-  type: 'character.flock', version: 1, label: 'Flock of gulls (kit)', category: 'characters', coordinates: 'world', parts: ['backdrop'],
+  type: 'character.flock', version: 1, label: 'Flock of gulls (kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     kind: { kind: 'select', label: 'Bird', options: ['gull', 'robogull'], default: 'gull' },
     count: n('Birds', 7, 1, 60, 1), seed: n('Seed', 1, 0, 1000000, 1),

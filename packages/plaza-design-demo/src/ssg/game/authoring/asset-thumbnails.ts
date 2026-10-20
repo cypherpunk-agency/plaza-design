@@ -9,12 +9,17 @@ export type ThumbnailRender = (canvas: HTMLCanvasElement, entry: AssetEntry) => 
  * only once their tile scrolls into view, so opening a list of 800 types stays cheap.
  */
 export function createThumbnails(render: ThumbnailRender, size = { width: 160, height: 96 }) {
-  const cache = new Map<string, HTMLCanvasElement | null>(), waiting = new Map<string, Set<HTMLCanvasElement>>();
+  type Thumbnail = { image: HTMLCanvasElement | null; message: string; label: string };
+  const cache = new Map<string, Thumbnail>(), waiting = new Map<string, Set<HTMLCanvasElement>>();
   const queue: AssetEntry[] = []; let busy = false, disposed = false;
   const work = document.createElement('canvas'); work.width = 960; work.height = 540;
-  const paint = (target: HTMLCanvasElement, source: HTMLCanvasElement | null) => {
+  const paint = (target: HTMLCanvasElement, result: Thumbnail) => {
     const ctx = target.getContext('2d'); if (!ctx) return; ctx.clearRect(0, 0, target.width, target.height);
-    if (!source) { target.dataset.empty = ''; return; } delete target.dataset.empty;
+    const source = result.image; target.title = result.message;
+    if (!source) {
+      target.dataset.empty = ''; ctx.fillStyle = '#a9b9c9'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(result.label, target.width / 2, target.height / 2, target.width - 12); return;
+    } delete target.dataset.empty;
     const scale = Math.min(target.width / source.width, target.height / source.height, 6), w = source.width * scale, h = source.height * scale;
     ctx.imageSmoothingEnabled = false; ctx.drawImage(source, Math.round((target.width - w) / 2), Math.round((target.height - h) / 2), Math.round(w), Math.round(h));
   };
@@ -31,8 +36,14 @@ export function createThumbnails(render: ThumbnailRender, size = { width: 160, h
     try {
       while (queue.length && !disposed) {
         const entry = queue.shift()!; if (cache.has(entry.id)) continue;
-        let result: HTMLCanvasElement | null = null;
-        try { work.getContext('2d')?.clearRect(0, 0, work.width, work.height); await render(work, entry); result = crop(work); } catch { result = null; }
+        let image: HTMLCanvasElement | null = null, message = '', label = entry.preview === 'structural' ? 'No drawing of its own' : 'Needs scene state';
+        try {
+          work.getContext('2d')?.clearRect(0, 0, work.width, work.height);
+          const report = await render(work, entry); message = typeof report === 'string' ? report : report.message;
+          image = crop(work);
+          if (!image && entry.usages.length && entry.preview !== 'structural') label = 'Not visible in this state';
+        } catch (error) { message = error instanceof Error ? error.message : String(error); label = 'Preview error'; }
+        const result = { image, message, label };
         cache.set(entry.id, result); for (const target of waiting.get(entry.id) ?? []) paint(target, result); waiting.delete(entry.id);
         await new Promise(resolve => setTimeout(resolve, 0));
       }

@@ -279,7 +279,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const assetHost = element('details', 'asset-browser tool-panel'); assetHost.dataset.tool = 'assets'; assetHost.append(element('summary', '', 'Artwork library')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
   const mapHost = element('details', 'world-map tool-panel'); mapHost.dataset.tool = 'world-map'; mapHost.append(element('summary', '', 'City map')); const mapPanel = element('div'); mapHost.append(mapPanel); if (config.worldPanel) root.insertBefore(mapHost, workspace);
   /** Artwork pictures for the Add picker and the Library, drawn by the same isolated game preview. */
-  const thumbnails = config.assetPreview ? createThumbnails((target, entry) => config.assetPreview!(target, entry, entry.preview === 'local' ? undefined : entry.usages.find(usage => !usage.scene.startsWith('sequence-')) ?? entry.usages[0], model.list(), { time: 0, reduced: true, environment: { ...config.initialEnvironment, renderScale: 1 } })) : undefined;
+  const thumbnails = config.assetPreview ? createThumbnails((target, entry) => config.assetPreview!(target, entry, entry.preview === 'standalone' ? undefined : entry.usages.find(usage => !usage.scene.startsWith('sequence-')) ?? entry.usages[0], model.list(), { time: 0, reduced: true, environment: { ...config.initialEnvironment, renderScale: 1 } })) : undefined;
   const workbenches = (config.workbenches ?? []).map(workbench => {
     const details = element('details', 'workbench-screen tool-panel'), panel = element('section'); details.dataset.workbench = details.dataset.tool = workbench.id; details.append(element('summary', '', workbench.title), panel); if (workbench.beside) { details.classList.add('stage-panel'); workspace.append(details); } else root.insertBefore(details, workspace);
     return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '', scene: '', autostart: false };
@@ -752,14 +752,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function openPicker() { if (current()?.kind !== 'composition') return; picker.hidden = false; renderPicker(); picker.querySelector<HTMLInputElement>('input[type=search]')?.focus(); }
   function closePicker() { if (picker.hidden) return; picker.hidden = true; picker.replaceChildren(); }
   function renderPicker() {
-    const entries = assetInventory(config.registry, model.list()), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
+    const entries = assetInventory(config.registry, model.list()).filter(e => e.usability === 'reusable'), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
     const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
     search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
     const kinds = filterChips('Kind', LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(kind => ({ value: kind, label: kind, title: KIND_HINTS[kind], count: entries.filter(e => e.family === kind).length })), pickerFamily, value => { pickerFamily = value; fill(); });
     head.append(element('strong', '', 'Add artwork'), search, button('✕', closePicker, 'Close (Esc)')); const body = element('div', 'picker-body'), results = element('div', 'picker-results'); kinds.classList.add('vertical'); results.append(count, grid); body.append(kinds, results); picker.replaceChildren(head, body);
     function fill() {
       const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id))), shown = list.slice(0, 300);
-      count.textContent = `${list.length} pieces${list.length > shown.length ? ` · showing ${shown.length}, search to narrow` : ''} · pieces already in this scene come first`; grid.replaceChildren();
+      count.textContent = `${list.length} reusable artwork entries · ready to add to this scene`; grid.replaceChildren();
       for (const entry of shown) { const card = button('', () => { closePicker(); void addAtView(entry.id); }, entry.id); card.className = 'asset-card'; if (thumbnails) card.append(thumbnails.thumbnail(entry)); card.append(element('span', '', entry.label)); if (used.has(entry.id)) card.append(element('small', '', 'in this scene')); grid.append(card); }
     }
     fill();

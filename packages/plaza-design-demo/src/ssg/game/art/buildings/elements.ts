@@ -53,7 +53,7 @@ export function frontSpec(p: Properties): FrontSpec {
 const frameOf = (v: View): View => ({ ...v, sx: x => x, y: h => -h, cam: 0, gy: 0, viewW: 1e5, viewH: 1e5 });
 
 export const buildingFrontElement: Element = {
-  type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', parts: ['backdrop'],
+  type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: frontFields, visualFields: { masks: rects('Windows hidden behind attached signs (resolved)') },
   bounds: p => { const f = frontSpec(p), top = wallTop(f) + (shapeOf(f).gear.length ? 30 : 0); return { x: -2, h: top, w: f.w + 4, tall: top }; },
   anchors: p => frontAnchors(frontSpec(p)),
@@ -79,7 +79,7 @@ export const rowSpec = (p: Properties): RowSpec => ({ width: Number(p.width), se
   minWidth: Number(p.minWidth), maxWidth: Math.max(Number(p.minWidth), Number(p.maxWidth)), gap: Number(p.gap), low: Number(p.low), skin: p.skin as RowSpec['skin'], lit: Number(p.lit), haze: Number(p.haze), signs: Number(p.signs) });
 
 export const buildingRowElement: Element = {
-  type: 'building.row', version: 1, label: 'Building row (kit, distance)', category: 'environment', coordinates: 'world', parts: ['backdrop'], fields: rowFields,
+  type: 'building.row', version: 1, label: 'Building row (kit, distance)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'], fields: rowFields,
   bounds: (p, _s, c) => {
     const par = Number(p.parallax), at = c?.placement, shift = at && c ? c.view.cam * (at.parallax - par) / (at.scale * at.facing) : 0, tall = Number(p.maxHeight) + 40;
     return { x: shift, h: tall, w: Number(p.width), tall };
@@ -98,7 +98,7 @@ const attachmentBox = (k: Attachment, w: number, h: number) => k === 'ac' ? { x:
   : k === 'scanner' ? { x: -3, h: 10, w: 7, tall: 16 } : k === 'conduit' ? { x: -2, h, w: w + 4, tall: h + 10 } : k === 'planter' ? { x: 0, h: 10, w, tall: 10 }
   : { x: -w / 2 - 2, h: w + 18, w: w + 4, tall: w + 18 };
 export const buildingAttachmentElement: Element = {
-  type: 'building.attachment', version: 1, label: 'Building attachment (kit)', category: 'architecture', parts: ['backdrop'],
+  type: 'building.attachment', libraryUse: 'reusable', version: 1, label: 'Building attachment (kit)', category: 'architecture', parts: ['backdrop'],
   fields: {
     kind: select('Piece', ATTACHMENTS), width: num('Width', 40, 2, 400, 1, 'units'), height: num('Height (pipe, escape, screen, riser)', 120, 2, 3000, 1, 'units'),
     storey: num('Storey height (fire escape)', 66, 20, 200, 1, 'units'), seed: num('Seed', 1, 0, 1000000000), color: { kind: 'color', label: 'Body colour (roof gear)', default: '#0e0806' },

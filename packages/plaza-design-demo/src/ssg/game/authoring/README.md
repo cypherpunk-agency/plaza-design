@@ -53,6 +53,26 @@ commit a scene transition. A runtime sequence commits its handoff once on comple
 Environmental animation uses prepared time, weather and lighting, preserving deterministic seeds.
 
 Asset, character, vehicle and signage viewers show the registered library and supported states.
+The artwork gallery separates **Structure** (Object or Composition), **Usability** (Reusable anywhere
+or Requires source context), **Kind**, District and Source. All filter sections collapse independently.
+It opens on reusable artwork. Invisible markers, light/shadow sources, the player layer and the empty
+grouping tool live in the separate **Scene helpers** section. Cutscene origin belongs under Source,
+not Structure. There are no reusable prefab compositions in the current registered catalogue; the
+empty group is a helper, not a finished composition to place.
+
+Artwork explicitly declares `Element.libraryUse: 'reusable'` only when it can be placed using its
+own authored properties and shared environment inputs, without source-scene bindings or controller
+snapshots. Current reusable entries cover buildings/attachments, authored characters/flocks, stools,
+signs and vehicles. A working gallery example, local coordinates or a shared folder is not evidence
+of that contract. Other entries remain source-context artwork until extracted and verified. Both
+the Add artwork picker and gallery Add buttons offer reusable entries only. Existing source-context
+instances remain editable through their scenes. The gallery fits standalone bounds, uses prepared
+context for other previews and skips black opening frames in cinematic thumbnails.
+The gallery uses display examples from `asset-examples.ts`: it shows conditional props in their
+visible state, removes character window clipping and represents invisible helpers with labeled
+diagrams. Unused artwork receives a temporary example in its source scene. These are disposable
+preview inputs, never source edits or gameplay commands. Native scene inspection retains actual
+state. Off-screen cinematic parts are reframed in a cloned composition for the gallery.
 Their catalogues live under `authoring/catalogues/`; they are current configuration, not milestone
 acceptance records. Event/source inspection describes hooks and references without executing them.
 Captured runtime observations must match the declared scene/expression before being shown as live.

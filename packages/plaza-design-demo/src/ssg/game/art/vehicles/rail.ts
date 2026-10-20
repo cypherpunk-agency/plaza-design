@@ -102,7 +102,7 @@ export function paintRailVehicle(ctx: CanvasRenderingContext2D, raw: Properties,
 }
 
 export const railVehicleElement: Element = {
-  type: 'vehicle.rail', version: 1, label: 'Train', category: 'vehicles', parts: ['backdrop'], fields,
+  type: 'vehicle.rail', libraryUse: 'reusable', version: 1, label: 'Train', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);
     return bandBounds(props, extentOf(props), offset, Number(props.elevation), context);
