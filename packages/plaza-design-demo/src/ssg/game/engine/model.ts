@@ -1302,7 +1302,7 @@ export class SceneModel {
     if (!matches) return null;
     if ('input'in a){if(origin?.kind==='guard')this.gameplayInput?.(a.input,origin);}
     else if ('set' in a) this.write(a.set, typeof a.to === 'string' ? this.fmt(a.to, c) : a.to, c.dev);
-    else if ('open' in a) this.hooks.open(a.open, a.open === 'talk' ? a.with ?? this.dialogueFor(c.noun) : a.with);
+    else if ('open' in a) this.hooks.open(a.open, a.with);
     else if ('emit' in a) this.emit(c.dev + '.' + c.noun + ':' + a.emit);
     else if ('goal' in a) this.goal(a.goal);
     else if ('effect' in a) return (this.rules.effects[a.effect] ?? ENGINE_EFFECTS[a.effect])(this.world(c), c) ?? null;
@@ -1313,8 +1313,6 @@ export class SceneModel {
     return null;
   }
 
-  /** `{ "open": "talk" }` on a noun: the dialogue named like the noun, else the scene's first. */
-  private dialogueFor(noun: string) { return noun in this.data.dialogue ? noun : Object.keys(this.data.dialogue)[0]; }
 
   private world(c: Ctx): World {
     return {

@@ -24,16 +24,22 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G1 | PASS | Retired producer/source routing audit and actual Game/Host/Panels/Schematic/history/causal checks; exact scope and source identity in docs/reference/COMMUNICATION-ACCEPTANCE.md |
 | G2 | PASS | Actual readable-clock, reduced-motion/covered-screen, bounded priority/cancellation/guidance and on/off-screen device checks; COMMUNICATION-ACCEPTANCE.md |
 | G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
-| G4 | IN PROGRESS | Contextual source Save/history/bundles/recovery and bot source checks pass; full authoring/isolation acceptance pending |
+| G4 | PASS | All19 source paths and integrated typed editor/native Play; portable atomic history/import and protected Save/conflict/recovery/HTTP boundaries; actual private Play and demo save/slot isolation. Current full-corpus device forms and new-scene browser flow pass. See AUTHORING-ACCEPTANCE.md |
 | G5 | PASS | Sourcea3fac97e: cached Game20 cycles, panel/menu/focus/gesture cancellation, actual38 native private Play/Stop cycles, repeated scene visits and complete ownership/preserved simulation inventory. See LIFECYCLE-ACCEPTANCE.md |
 | G6 | PASS | Source839777ab5e10: all six workloads, three eligible repeats each, raw samples/environment/calibration and independent summary validation; top-three exclusive contributor inspection, no optimization retained. See PERFORMANCE-CHECKPOINT-2026-10-19-C.md. Earlier failed Chrome diagnostics remain immutable |
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
 | G8 | PASS | All19 source content ownership, actual pending ordinary-content CRUD/rebind/permission/outcome dispatch,38-document bundle/history/protected Save/fresh shipping/byte Undo; all19 actor CRUD and removed Downtown native prompt callback. CONTENT-ACCEPTANCE.md. Other matrix categories remain independent |
 | G9 | PASS | All19 controller/device/network rows reconciled to typed source, real native edits and lifecycle/parity evidence; network/motion/camera/Yard/Laundry/Sandbox protected-source checks and Metro11088 platform/211200 ride cases pass. CONTROLLER-NETWORK-ACCEPTANCE.md; full authoring/preservation remain separate |
-| G10 | IN PROGRESS | All19 packaged Scene spawn edits/native Play/private snapshot after source Undo/Reset/Stop now PASS; Downtown initial pending spawn fixed. All19 manifest/companion/actor forms mount; actor CRUD/source bindings cover all19; catalogue creation/history/bundles/Save pass. Browser-created ordinary scene runs, its typed exit reaches Library, and grouped creation Undo cleans up. Combined entity/control/source-path acceptance audit remains. See EDITOR-PENDING-PLAY-ACCEPTANCE.md |
+| G10 | PASS | All19 Layout/Logic/Wiring/Play/source Save-bundle rows accepted: full-corpus device forms, source-bound ordinary/actor transactions, typed controller/network/world families, actual inspector lookup and pending native Play. Browser-created scene and typed exit reach Library without TS; grouped Undo cleans up. Explicit graph references and fixed-cable author controls close final audit gaps. See AUTHORING-ACCEPTANCE.md |
 | G11 | PASS | All19 declared route collections,41 native exit dispatches and30 pending destination/arrival edits; current world/access/map/transport/opening/cinematic source and atomic Save/import evidence. See WORLD-STORY-ACCEPTANCE.md. Other scene categories and whole-goal acceptance remain open |
 | G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
 | G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
+
+Current authoring acceptance:11/14 gates PASS. All19 matrix rows pass content,
+devices/controllers,world,Layout,Logic,Wiring,Play and source Save/bundles. This audit fixed
+implicit native conversation references, manifest-bound inspector lookup and fixed-cable
+author controls. Current shared-form/source/security/isolation checks and both builds pass;
+see docs/reference/AUTHORING-ACCEPTANCE.md. G7/G12/G13 remain open.
 
 Package `tsc -b` and `check-communication.mts` pass after the initial communication clock/lane change.
 These are focused implementation checks, not campaign playthrough or final visual acceptance.

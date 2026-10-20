@@ -25,15 +25,16 @@ allowlisted read-only source text. The game page does not import it, and the pub
 bundle never includes the local write service, credentials or a filesystem endpoint.
 
 The selector includes all 19 scene compositions, four sequence compositions, two timeline
-documents. Tool panels also use ten native device sources, city/metro/bot sources, reusable Play
-fixtures and registered scene/gameplay documents. Current packaging: 97 source documents / 128 source references. Scene-content registration
+documents. Tool panels also use per-scene device sources, city/metro/bot sources, reusable Play
+fixtures and registered scene/gameplay documents. Current packaging: 98 source documents / 129 source references. Scene-content registration
 covers Harbor Shift, Shop, Library, Laundromat, Warehouse, Mall, Market, Stacks, Metro, Galleria Station,
 Harbor Station, Train, Capsule, Yard, Moth, Sandbox, Beach, Harbor and Downtown. All 19 now have source registrations;
-Downtown's people and ordinary content now use shared source; remaining runtime story and native controller decisions are unfinished. Engine targets expose visibility, labels,
+Their ordinary content, existing controller parameters and world/story links use shared source. Engine targets expose visibility, labels,
 responses, native action fields and exit routing in Logic. Touch-specific arrival pages are editable.
-This is not full entity/controller/world authoring: creation/deletion and
-several native controller contracts remain migration work. All 19 native scenes have private Play
-fixture support; an unmigrated scene's Play does not imply editable content. See
+Actor and ordinary-content creation/deletion/rebinding, controller forms and world editing are
+implemented, with separate evidence for content, controllers and world links. All19 scenes have
+native Play; pending edits, Undo/private snapshot isolation and Reset are checked. Whole-goal
+editor, preservation and cleanup acceptance remains separate. See
 [the active execution ledger](../ENGINE-CONSOLIDATION-STATUS.md).
 
 Native device editing now checks actual controller/source dependencies rather than protecting
@@ -41,7 +42,7 @@ every original device or noun. Native targets and presentation cues support coll
 within their registered capabilities. The actor inspector also exposes reaction and appearance
 overrides; deleting optional source settings keeps them deleted. World access policies bind map
 admission and gate visuals to actual scene-exit permissions. These changes have focused source
-Save/native runtime evidence; full all-scene controller and removal acceptance remains open.
+Save/native runtime evidence; final editor integration and removal acceptance remains separate.
 
 Historical S0–S13 evidence remains in [the scene-system ledger](../SCENE-SYSTEM-STATUS.md) and
 [stretch evidence](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).
@@ -51,7 +52,8 @@ All19 native scenes now expose ordinary source bindings and actor collections in
 Actor removal previews bound content removal and decorative attachment detachment; spawn,width,
 follower and controller dependencies must remain valid. Logic → Environment edits fixed atmosphere
 settings; geometry-derived facing,horizon,shade and weather covers remain in their named Layout
-artwork. Complete specialized controller/world/network/story authoring remains in progress.
+artwork. Existing controller/network contracts and world/story authoring have separate accepted
+evidence; see the execution ledger for final editor and preservation status.
 
 The editor is organised around scenes. The top bar has the **scene picker** (places, then
 sequences and timelines; ● marks unsaved edits in a scene's composition or its scene/gameplay
@@ -59,7 +61,7 @@ documents), one Undo/Redo, Download edits or Save to source, and a **More** menu
 import/export/reset. Export/Import JSON act on the document the open panel edits. Every edit,
 in any panel, joins the same history and is saved by the same button.
 
-The tab row has three views of the selected scene, then three areas that are not tied to a scene:
+The tab row has Scene and Logic, plus Library, World and Labs. Play runs on the Scene stage:
 
 - **Scene** is the editor: an outline on the left, the preview with its toolbar in the middle, and
   an inspector on the right. Select artwork to edit it; with nothing selected the inspector shows the
@@ -105,8 +107,14 @@ presentation cues that target it. Artwork bound to a device (`device.<id>.*`) al
 (that device's nouns, verbs and parameters) and *Wiring* (starting cables to and from it). These
 are the same typed editors as in Logic, mounted in a focused mode
 (`mountSceneAuthoring` `focus`, `mountDeviceAuthoring` `focused`), so every edit goes through the
-same validators and history. The mapping lives in `entry.ts` (`inspectorSections`); the composer
-only knows `ComposerConfig.inspector`. Scenes whose logic is still code-defined say so.
+same validators and history. Manifest artwork bindings and existing artwork state bindings both
+resolve to these tabs. Multiple devices attached to one object get a Device/Wiring pair for each.
+The mapping lives in `entry.ts` (`inspectorSections`); the composer only knows `ComposerConfig.inspector`.
+Procedural drawing and continuous simulation remain registered code with typed inputs.
+
+Starting cables expose their endpoints, verb and **fixed** policy to authors. Fixed prevents
+player rewiring; it does not make source immutable. Talk actions always select an explicit
+conversation graph, so deleting a referenced graph is rejected until its users are rebound.
 
 **Toolbar.** *＋ Add artwork* (or A) opens a searchable picture grid of every registered piece,
 with pieces already in the scene first. The new piece is measured off-screen once and placed at the
@@ -115,7 +123,8 @@ animation clock without playing the game; ⟲ returns to the first frame. *Previ
 (Morning/Noon/Evening/Night), weather and hack vision; everything else (city day and minute, weather
 seed, story flags, device state, presentation controller, reduced motion, camera fields) sits under
 *More preview settings*. *Grid* sets the drag and nudge snap. *▶ Play scene* opens Play and starts
-it. Preview settings are never saved.
+it. With a starting state selected, time/weather edits belong to that state; other preview-only
+options stay outside source.
 
 The preview is cropped to the artwork's height (**Crop**), zooms with Ctrl/⌘+wheel, pinch or the
 −/+ buttons (**Fit** resets), and pans by dragging or with Shift+wheel. Zoom renders natively

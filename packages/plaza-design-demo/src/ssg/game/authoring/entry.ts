@@ -306,7 +306,9 @@ function artworkLogic(scene: SceneDocument, instance: Instance) {
     if (kind === 'device' && id) devices.add(id);
   }
   for (const actor of scene.actors ?? []) if (actor.instance === instance.id) { keys.add('actor:' + actor.id); if (scene.people?.some(p => p.id === actor.id)) keys.add('person:' + actor.id); }
-  for (const [group, rows] of Object.entries(scene.manifest ?? {})) if (prefix[group] && rows && typeof rows === 'object') for (const [id, target] of Object.entries(rows as Record<string, unknown>)) if ((target as { instance?: string } | undefined)?.instance === instance.id) keys.add(prefix[group] + ':' + id);
+  for (const [group, rows] of Object.entries(scene.manifest ?? {})) if ((prefix[group] || group === 'devices') && rows && typeof rows === 'object') for (const [id, target] of Object.entries(rows as Record<string, unknown>)) if ((typeof target === 'string' ? target : (target as { instance?: string } | undefined)?.instance) === instance.id) {
+    if (group === 'devices') devices.add(id); else keys.add(prefix[group] + ':' + id);
+  }
   scene.cues?.forEach((cue, i) => { if (cue.target === instance.id) keys.add('cue:' + i); });
   return { keys: [...keys], devices: [...devices] };
 }
@@ -320,10 +322,10 @@ function inspectorSections(scene: string, instance: Instance | undefined, docume
   const source = documents.find(d => d.id === entry!.prefix + '-scene')?.value as SceneDocument | undefined;
   const linked = source ? artworkLogic(source, instance) : { keys: [], devices: [] };
   const sections: InspectorSection[] = [{ id: 'behaviour', label: 'Behaviour', title: 'What happens when the player uses, talks to or reads this', mount: (host, context) => mountSceneAuthoring(host, context, { scene, fixed: true, focus: { only: linked.keys, empty: `Nothing the player can do involves ${instance.id} yet. Interactions are bound to artwork under Logic › Interactions & story › Content & bindings.` } }) }];
-  const device = scene !== 'demo-manifest' && documents.some(d => d.id === deviceDocumentId(scene)) ? linked.devices[0] : undefined;
-  if (device) sections.push(
-    { id: 'device', label: 'Device', title: `${device}: nouns, verbs and parameters`, mount: (host, context) => mountDeviceAuthoring(host, context, { scene, device, focused: true }, false, network(context)) },
-    { id: 'wiring', label: 'Wiring', title: `Starting cables to and from ${device}`, mount: (host, context) => mountDeviceAuthoring(host, context, { scene, device, focused: true }, true, network(context)) });
+  const devices = scene !== 'demo-manifest' && documents.some(d => d.id === deviceDocumentId(scene)) ? linked.devices : [];
+  for (const device of devices) sections.push(
+    { id: devices.length === 1 ? 'device' : 'device:' + device, label: devices.length === 1 ? 'Device' : 'Device · ' + device, title: `${device}: nouns, verbs and parameters`, mount: (host, context) => mountDeviceAuthoring(host, context, { scene, device, focused: true }, false, network(context)) },
+    { id: devices.length === 1 ? 'wiring' : 'wiring:' + device, label: devices.length === 1 ? 'Wiring' : 'Wiring · ' + device, title: `Starting cables to and from ${device}`, mount: (host, context) => mountDeviceAuthoring(host, context, { scene, device, focused: true }, true, network(context)) });
   return sections;
 }
 

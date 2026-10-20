@@ -316,8 +316,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     if ('open' in a) {
       if (!env.code.panels.includes(a.open)) err(where, `unknown panel "${a.open}" (${env.code.panels.join(', ') || 'none here'})`);
       if (a.open === 'talk') {
-        if (a.with !== undefined && !env.dialogues.includes(a.with)) err(where, `talk with "${a.with}": no such dialogue`);
-        else if (a.with === undefined && !env.dialogues.length) err(where, 'talk: this scene has no dialogue');
+        if (typeof a.with !== 'string' || !env.dialogues.includes(a.with)) err(where, `talk requires an explicit existing dialogue: "${a.with}"`);
       }
     }
     if('command'in a&&(!commandCase||Object.keys(a).length!==1||typeof a.command!=='string'||!/^[-a-zA-Z0-9_.:]{1,128}$/.test(a.command)))err(where,'command requires a sole noun.on case step and a bounded ID');

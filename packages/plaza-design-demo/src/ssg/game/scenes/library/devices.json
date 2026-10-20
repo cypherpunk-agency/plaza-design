@@ -83,7 +83,7 @@
         "vision": { "catalog": "down", "index": "up", "patrons": "right" }
       },
       "nouns": [
-        { "id": "catalog", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } },
+        { "id": "catalog", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "catalog" }] } } },
         {
           "id": "index", "kind": "STORE", "verbs": ["read"],
           "on": { "read": { "say": ["cat index", "BOOKS: 0 (DIGITIZED 2049). CHAIRS: 41. RADIATORS: 2. SOFTWARE LENDING: 1 ITEM, ON LOAN, OVERDUE."] } }

@@ -221,7 +221,7 @@ The router's uplink sits in a sector that opens once the plug is on; CONCIERGE i
     { "id": "desk", "kind": "ACT", "verbs": ["verify"], "on": { "verify": [
       { "if": "!signal", "say": ["use desk --verify", "CONCIERGE: \"verification requires a document. you are not a document.\"", "err"] },
       { "do": [{ "set": "doorOpen", "to": true }, { "goal": "door" }], "say": ["signal → desk --verify", "CONCIERGE: \"payment verified. how unexpected.\"", "ok"] } ] } },
-    { "id": "concierge", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } }] }
+    { "id": "concierge", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "concierge" }] } } }] }
 ```
 
 ### P03 Pixel and the warm router
@@ -669,7 +669,7 @@ good name); typing `sprat0412` works too.
       "say": ["login moth *********", "Welcome back, Moth. You look different.", "ok"], "do": [{ "goal": "bank" }] } },
     { "id": "log", "kind": "LOG", "verbs": ["read"], "events": ["entry"], "log": { "rate": 5, "archive": "archive.store" },
       "on": { "read": { "say": ["cat log", "session: moth. device: unfamiliar. NEO is worried."] } } },
-    { "id": "neo", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } },
+    { "id": "neo", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "neo" }] } } },
     { "id": "statement", "kind": "STORE", "sector": "statements", "verbs": ["read", "copy"],
       "on": { "read": { "say": "bank.statement" }, "copy": { "do": [{ "give": "tab.receipt" }], "say": ["cp statement ~/deck", "copied. the fixer will want to see this."] } } }],
   "sectors": [{ "id": "statements", "label": "statements", "seal": { "guard": "login" } }] }
@@ -847,7 +847,7 @@ scaffold (Act II).
     { "id": "queue", "kind": "STORE", "verbs": ["read"], "on": { "read": { "say": ["cat queue", "1. jacket (prepaid, 9 cycles) · 1 left"] } } }] },
 { "id": "breaker", "name": "BREAKER", "nouns": [{ "id": "load", "kind": "SENSE", "verbs": ["read", "reset"], "events": ["tripped"],
   "on": { "read": { "say": ["cat load", "running: {running}/2. it has opinions about three."] }, "reset": { "say": ["use load --reset", "reset. it sighs in amps."] } } }] },
-{ "id": "suds", "name": "SUDS", "nouns": [{ "id": "suds", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } }] },
+{ "id": "suds", "name": "SUDS", "nouns": [{ "id": "suds", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "suds" }] } } }] },
 { "id": "clock", "name": "OPENING HOURS", "nouns": [{ "id": "clock", "kind": "CLOCK", "events": ["open"], "clock": { "every": 30000, "first": 2000 } }] }
 ```
 
@@ -1159,7 +1159,7 @@ and the choices made:
     { "id": "coil 4", "kind": "ACT", "verbs": ["spin", "spin twice"], "on": { "spin": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin", "clunk. raisins."] }, "spin twice": { "do": [{ "effect": "grudge.add" }], "say": ["use coil4 --spin-twice", "clunk clunk. two raisins. it is making a point."] } } },
     { "id": "display", "kind": "ACT", "verbs": ["say hi", "say sorry"], "on": { "say hi": { "say": ["use display --say-hi", "display: \"hi.\" (reluctantly)"] }, "say sorry": { "say": ["use display --say-sorry", "display: \"for what. specifically.\""] } } },
     { "id": "grudge.log", "kind": "STORE", "verbs": ["read", "copy"], "on": { "read": { "say": ["cat grudge.log", "kicked (2019) · kicked (2021) · today: being stared at · THIRST.EXE: looked at me funny (daily)"] }, "copy": { "say": ["cp grudge.log ~/deck", "copied. you now also hold a grudge. 4 KB."] } } },
-    { "id": "snackomat", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk" }] } } },
+    { "id": "snackomat", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "snackomat" }] } } },
     { "id": "coils", "kind": "ACT", "sector": "service", "verbs": ["coil 1", "coil 2", "coil 3"], "on": { "*": { "say": ["use coils --{verb}", "clunk. not raisins. a miracle.", "ok"] } } },
     { "id": "mood.cfg", "kind": "STORE", "sector": "service", "verbs": ["read"], "on": { "read": { "say": ["cat mood.cfg", "grudge: {grudge}. font: custom 5×7. font compliments: rare."] } } }],
   "sectors": [{ "id": "service", "label": "service panel", "seal": { "key": "snack.key" } }] }

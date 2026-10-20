@@ -17,8 +17,8 @@ export function nativeDialogue(def:GameplayDefinition,id:string,bindings:Record<
 
 /** Static representable metadata for current shared graphs. Panels always runs the complete source graph. */
 export function nativeDeviceDialogues(def:GameplayDefinition,data:SceneData,options:{entryActions?:boolean}={}):SceneData['dialogue']{
- const graphs=Object.keys(def.conversations),first=graphs[0];
- const walk=(value:unknown,noun:string):void=>{if(!value||typeof value!=='object')return;if(Array.isArray(value)){value.forEach(v=>walk(v,noun));return;}const row=value as Record<string,unknown>;if(typeof row.noun==='string')noun=row.noun;if(row.open==='talk'){const id=typeof row.with==='string'?row.with:Object.prototype.hasOwnProperty.call(def.conversations,noun)?noun:first;if(!id||!Object.prototype.hasOwnProperty.call(def.conversations,id))throw Error('Missing native conversation '+String(id));}for(const child of Object.values(row))walk(child,noun);};
- for(const device of [...data.devices,...data.nodes??[]]){for(const noun of device.nouns)walk(noun,noun.id);walk({...device,nouns:undefined},'');}
+ const graphs=Object.keys(def.conversations);
+ const walk=(value:unknown):void=>{if(!value||typeof value!=='object')return;if(Array.isArray(value)){value.forEach(walk);return;}const row=value as Record<string,unknown>;if(row.open==='talk'&&(typeof row.with!=='string'||!Object.prototype.hasOwnProperty.call(def.conversations,row.with)))throw Error('Missing native conversation '+String(row.with));for(const child of Object.values(row))walk(child);};
+ for(const device of [...data.devices,...data.nodes??[]])walk(device);
  return Object.fromEntries(graphs.map(id=>[id,nativeDialogue(def,id,{},undefined,{...options,descriptive:true})]));
 }

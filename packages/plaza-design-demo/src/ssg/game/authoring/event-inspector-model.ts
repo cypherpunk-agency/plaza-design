@@ -127,7 +127,7 @@ export function buildEventInspection(options:EventInspectionOptions={}):EventIns
 
    else if('effect'in a){target=`effect:${scene}:${a.effect}`;if(!all.has(target)&&(a.effect in ENGINE_EFFECTS||a.effect in(rulesFor(scene)?.effects??{})))put(target,scene,'opaque-effect',a.effect,a.effect in ENGINE_EFFECTS?{file:'engine/rules.ts',symbol:'ENGINE_EFFECTS.'+a.effect}:code(scene,'SceneRules.effects.'+a.effect),{},'opaque','Named controller effect; not executed or editable here.');}
 
-   else if('open'in a){target=`panel:${scene}:${a.open}`;if(a.open==='talk'||rulesFor(scene)?.panels?.includes(a.open))put(target,scene,'opaque-panel',a.open,a.open==='talk'?{file:'engine/panels.ts',symbol:'Panels.talk'}:code(scene,'panel.'+a.open),{dialogue:'with'in a?a.with:undefined},'opaque','Controller UI action; not invoked.');if(a.open==='talk'){const data=sceneData.get(scene),name=a.with??(noun in(data?.dialogue??{})?noun:Object.keys(data?.dialogue??{})[0]);if(name)edge(scene,'trigger',id,`dialogue:${scene}:${name}`,'opens dialogue',src);}}
+   else if('open'in a){target=`panel:${scene}:${a.open}`;if(a.open==='talk'||rulesFor(scene)?.panels?.includes(a.open))put(target,scene,'opaque-panel',a.open,a.open==='talk'?{file:'engine/panels.ts',symbol:'Panels.talk'}:code(scene,'panel.'+a.open),{dialogue:'with'in a?a.with:undefined},'opaque','Controller UI action; not invoked.');if(a.open==='talk'){const name=a.with;if(name)edge(scene,'trigger',id,`dialogue:${scene}:${name}`,'opens dialogue',src);}}
 
    else if('unseal'in a){const[d,s]=a.unseal.includes('/')?a.unseal.split('/'):[device,a.unseal];target=`sector:${scene}:${d}/${s}`;}
 

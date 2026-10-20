@@ -28,11 +28,12 @@ and deadlines require system-only commands. Authored command permission changes
 cannot weaken those current consumers. Native query output contracts, current
 references, readonly observations and model-level invocation checks remain active.
 
-Library now projects only graph IDs requested by current native talk actions.
+Library projects read-only metadata from its current shared conversation graphs.
 The shipping bootstrap and scene factory use the same pure projection. A talk
 step can choose an existing graph through a finite typed selector. Shared graph
 controls can create a blank graph or copy a current graph and remove an unused
-graph. The old catalog ID and renewed read mapping are not restored or consulted
+graph. Talk actions require an explicit existing graph; there is no noun/first-graph fallback.
+The old catalog ID and renewed read mapping are not restored or consulted
 when source authors replace them.
 
 `check-editable-native-contract.mts` covers typed orphan vocabulary/state removal,
@@ -43,8 +44,9 @@ the current sources. Paired source Save, fresh shipping import and exact history
 and byte Undo complete the proof. `check-rebound-command-removal.mts` separately
 covers replacing a real Capsule route and deleting the original command.
 
-Remaining custom content restrictions are explicit follow-up work: Shop's fixed
-rotation/invoice rules, Laundromat's soap purchase rule, Harbor Shift's original
-command/vocabulary/choice inventory and hardcoded projections in other registered
-scene factories. This change does not remove those unrelated contracts or add
-save aliases, fallback declaration owners or another evaluator.
+The subsequent all-game work removed the formerly recorded Shop, Laundromat,
+Harbor Shift and other ordinary-content restrictions. Current acceptance is in
+[AUTHORING-ACCEPTANCE.md](./AUTHORING-ACCEPTANCE.md); controller/native dependencies
+have their own G9 evidence. Fixed starting cables are authorable while retaining
+the player's fixed-wire protection. No save aliases, fallback declaration owners
+or second content evaluator were added.

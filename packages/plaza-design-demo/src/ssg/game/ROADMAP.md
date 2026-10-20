@@ -12,14 +12,15 @@ Story M1–M9 and completed artwork/workbench S0–S13 keep their existing IDs.
 
 ### Current acceptance, 2026-10-20
 
-Nine gates are signed: G0/G1/G2/G3/G5/G6/G8/G9/G11. G0 uses the explicitly approved
+Eleven gates are signed: G0/G1/G2/G3/G4/G5/G6/G8/G9/G10/G11. G0 uses the explicitly approved
 retrospective baseline audit; see BASELINE-RECONCILIATION.md. World/story acceptance now covers all19 declared
 route collections, pending destinations/arrivals, map/transport access, opening and cinematic
 handoffs, grouped new-scene imports and atomic invalid-reference rejection. See
 [WORLD-STORY-ACCEPTANCE.md](./docs/reference/WORLD-STORY-ACCEPTANCE.md).
 G8 all-scene content acceptance is recorded in [CONTENT-ACCEPTANCE.md](./docs/reference/CONTENT-ACCEPTANCE.md).
 G9 controller/network acceptance is recorded in [CONTROLLER-NETWORK-ACCEPTANCE.md](./docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md).
-G4/G7/G10/G12/G13 remain open. Current rendering has the separately recorded
+G4/G10 authoring and isolation acceptance is recorded in [AUTHORING-ACCEPTANCE.md](./docs/reference/AUTHORING-ACCEPTANCE.md).
+All19 Layout/Logic/Wiring/Play/source Save-bundle rows now pass. G7/G12/G13 remain open. Current rendering has the separately recorded
 pre-existing Mall animation delta; the original raster baseline remains unchanged.
 The dated checkpoints below retain their original scope; the execution ledger owns current gates.
 

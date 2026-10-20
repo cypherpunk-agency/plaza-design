@@ -277,7 +277,7 @@
             "talk": {
               "do": [
                 {
-                  "open": "talk"
+                  "open": "talk", "with": "hinge"
                 }
               ]
             }

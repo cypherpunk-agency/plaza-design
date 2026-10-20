@@ -47,7 +47,7 @@ export type Action = { if?: Cond; when?: TimeWindow } & (
   | {command:string} // sole noun.on case step; actual interaction/signal permission, never system
   | {input:string}
   | { set: string; to: Value }   // change a state key (strings are templates)
-  | { open: string; with?: string } // open a full-screen panel: talk (with: which dialogue), camera
+  | { open: string; with?: string } // open a panel; talk requires an explicit validated `with` graph
   | { emit: string }             // raise one of this noun's events
   | { goal: string }             // tick a goal
   | { effect: string }           // run a named effect implemented in code

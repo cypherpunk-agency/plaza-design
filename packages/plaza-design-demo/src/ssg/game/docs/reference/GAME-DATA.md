@@ -372,8 +372,8 @@ to `say`. A list of cases means "the first whose `if` holds":
 
 The small vocabulary, all of it:
 
-- **Steps** (`do`): `set` a state key `to` a value, `open` a panel (`talk`, optionally
-  `with` a dialogue id; `camera`), `emit` one of this noun's events, tick a `goal`, run an
+- **Steps** (`do`): `set` a state key `to` a value, `open` a panel (`talk` requires an explicit
+  `with` dialogue id; `camera`), `emit` one of this noun's events, tick a `goal`, run an
   `effect`, `give` something (a keyring item, a module, or `tokens` with a `count`), `take` an item
   the player carries (`{ "take": "soap" }`, optional `count`; see **Using what you carry**), raise or
   lower this device's `trace` (%), `unseal` a sector (`sector` or `device/sector`). Any step may

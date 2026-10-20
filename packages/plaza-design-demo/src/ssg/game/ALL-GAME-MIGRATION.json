@@ -28,11 +28,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -155,6 +155,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -182,11 +188,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -334,6 +340,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -361,11 +373,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -502,6 +514,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -532,11 +550,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -667,6 +685,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -694,11 +718,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -805,6 +829,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -832,11 +862,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -944,6 +974,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -970,11 +1006,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -1060,6 +1096,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -1087,11 +1129,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -1238,6 +1280,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -1263,11 +1311,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -1369,6 +1417,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -1396,11 +1450,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -1489,6 +1543,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -1515,11 +1575,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -1659,6 +1719,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -1686,11 +1752,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -1805,6 +1871,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -1832,11 +1904,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -1919,6 +1991,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -1946,11 +2024,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "NOT RUN",
-      "logic": "NOT RUN",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "NOT RUN",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -2046,6 +2124,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -2071,11 +2155,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "NOT RUN",
-      "logic": "NOT RUN",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "NOT RUN",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -2171,6 +2255,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -2196,11 +2286,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "NOT RUN",
-      "logic": "NOT RUN",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "NOT RUN",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -2296,6 +2386,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -2324,11 +2420,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "NOT RUN",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "IN PROGRESS",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -2472,6 +2568,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -2499,11 +2601,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "NOT RUN",
-      "logic": "IN PROGRESS",
-      "wiring": "IN PROGRESS",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -2604,6 +2706,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     },
@@ -2632,11 +2740,11 @@
       "content": "PASS",
       "devicesControllers": "PASS",
       "world": "PASS",
-      "layout": "IN PROGRESS",
-      "logic": "IN PROGRESS",
-      "wiring": "NOT RUN",
+      "layout": "PASS",
+      "logic": "PASS",
+      "wiring": "PASS",
       "play": "PASS",
-      "saveBundle": "IN PROGRESS",
+      "saveBundle": "PASS",
       "persistence": "NOT RUN",
       "pixels": "NOT RUN",
       "outcomes": "NOT RUN",
@@ -2717,6 +2825,12 @@
           "source": "sha256:8fdb3e4ff807cdce8c4a45efcf0be9cd3787bdf0b028c4e553bfda62f3f47863",
           "report": ".scene-system/editor-pending-play/run-lw8To1/evidence.json",
           "scope": "Actual packaged Scene inspector spawn edit reaches native Play; source Undo preserves running snapshot; Reset consumes restored source; Stop removes iframe. G10 entity/form/Save acceptance remains separate."
+        },
+        "authoringAcceptance": {
+          "status": "PASS",
+          "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
+          "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
+          "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
         }
       }
     }
