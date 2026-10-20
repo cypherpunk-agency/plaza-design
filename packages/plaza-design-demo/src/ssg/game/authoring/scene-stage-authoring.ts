@@ -19,7 +19,10 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
  const room=form.section(host,'From artwork');
  form.select(room,'Facing from role',[none,...roles],stage.facing?.role??none,v=>stageEdit('Edit facing role',s=>{if(v===none)delete s.facing;else s.facing={...(s.facing??{}),role:v};}));
  if(stage.facing){form.text(room,'Facing property',stage.facing.prop??'facing',v=>stageEdit('Edit facing property',s=>{if(v.trim()&&v!=='facing')s.facing!.prop=v.trim();else delete s.facing!.prop;}));form.decimal(room,'Facing when the role is missing',stage.facing.fallback??0,v=>stageEdit('Edit facing fallback',s=>{s.facing!.fallback=v;}),0,360);}
- form.select(room,'Front shade from role',[none,...roles],stage.shade?.front?.role??none,v=>stageEdit('Edit front shade',s=>{if(v===none)delete s.shade;else s.shade={front:{...(s.shade?.front??{}),role:v}};}));
+ form.select(room,'Horizon height from role',[none,...roles],stage.horizon?.role??none,v=>stageEdit('Edit horizon role',s=>{if(v===none)delete s.horizon;else s.horizon={role:v};}));
+ form.select(room,'Front shade from role',[none,...roles],stage.shade?.front?.role??none,v=>stageEdit('Edit front shade',s=>{if(v===none){delete s.shade?.front;}else (s.shade??={}).front={...(s.shade.front??{}),role:v};if(s.shade&&!Object.keys(s.shade).length)delete s.shade;}));
+ form.select(room,'Back shade from role',[none,...roles],stage.shade?.back?.role??none,v=>stageEdit('Edit back shade',s=>{if(v===none){delete s.shade?.back;}else (s.shade??={}).back={gaps:s.shade.back?.gaps??'shade-gap',role:v};if(s.shade&&!Object.keys(s.shade).length)delete s.shade;}));
+ if(stage.shade?.back)form.text(room,'Back shade gaps (rows whose role is)',stage.shade.back.gaps,v=>stageEdit('Edit back shade gaps',s=>{if(v.trim())s.shade!.back!.gaps=v.trim();}));
  // lights and casters
  const sourceRows=<T extends {type?:string;role?:string}>(box:HTMLElement,key:'lights'|'casters',list:readonly T[],extra:(row:HTMLElement,item:T,i:number)=>void,fresh:()=>T)=>{
   list.forEach((item,i)=>{const row=form.section(box,key.slice(0,-1)+' '+(i+1));
@@ -30,7 +33,7 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
   form.button(box,'Add '+key.slice(0,-1),()=>stageEdit('Add '+key,s=>{((s[key]??=[]) as unknown as T[]).push(fresh());}),list.length>=16);
  };
  sourceRows<StageLightSource>(form.section(host,'Lights'),'lights',stage.lights??[],(row,item,i)=>{
-  form.select(row,'Light style',['element','lamp'],item.style,v=>stageEdit('Edit light',s=>{s.lights![i].style=v as 'element'|'lamp';}));
+  form.select(row,'Light style',['element','lamp','marker'],item.style,v=>stageEdit('Edit light',s=>{s.lights![i].style=v as StageLightSource['style'];}));
   if(item.style==='lamp')form.text(row,'Lamp colour (r,g,b)',item.color??'',v=>stageEdit('Edit light',s=>{if(v.trim())s.lights![i].color=v.trim();else delete s.lights![i].color;}));
  },()=>({type:types[0],style:'element'}));
  sourceRows<StageCasterSource>(form.section(host,'Shadow casters'),'casters',stage.casters??[],(row,item,i)=>{

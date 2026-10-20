@@ -15,7 +15,7 @@ const controllers:Record<string,ActorBindingController>={
  harborShift:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  beach:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  mall:{element:'character.prepared',prefix:'mall.actor.',suffix:'',mutable:true},
- harbor:{element:'character.prepared',prefix:'actor.',suffix:'.pose',clipPrefix:'clip.actor.',mutable:true},
+ harbor:{element:'character.prepared',prefix:'harbor.actor.',suffix:'',clipPrefix:'harbor.clip.',mutable:true},
  stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',clipPrefix:'terminal.clip.',mutable:true},
  library:{element:'library.person',prefix:'actor.',suffix:'.pose',mutable:true},
  laundromat:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},

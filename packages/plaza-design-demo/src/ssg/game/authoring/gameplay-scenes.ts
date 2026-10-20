@@ -6,12 +6,11 @@ import {FOLDER_BY_ID} from '../scenes/folder-scenes';
 import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
-import type {Composition,Environment} from '../art';
+import {providerSignals} from '../engine/gameplay/binding-sources';
+import {art,type Composition,type Environment} from '../art';
 import {CAPSULE,YARD,LAUNDROMAT,STACKS,type SceneData} from '../data';
 import {downtownScene} from '../scenes/downtown';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
-import {harborScene} from '../scenes/harbor';
-import {content as harborContent} from '../scenes/harbor/scene-document';
 import {beachScene} from '../scenes/beach';
 import {validateBeachScene} from '../scenes/beach/scene-document';
 import {validateBeachGameplay} from '../scenes/beach/gameplay';
@@ -65,7 +64,6 @@ const stacksWithDevices=(...args:DeviceSourceArguments)=>stacksScene(args[0],arg
 const trainWithDevices=(...args:DeviceSourceArguments)=>trainScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const definitions=[
  {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
- {id:'harbor',prefix:'harbor',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:harborContent.validateScene,validateGameplay:harborContent.validateGameplay,definition:harborScene},
  {id:'beach',prefix:'beach',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateBeachScene,validateGameplay:validateBeachGameplay,definition:beachAuthoredScene,definitionWithDevices:beachWithDevices},
  {id:'sandbox',prefix:'sandbox',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:sandboxContent.validateScene,validateGameplay:sandboxContent.validateGameplay,definition:sandboxAuthoredScene,definitionWithDevices:sandboxWithDevices},
  {id:'capsule',prefix:'capsule',bindingGroups:['uses','readables','rests','exits'] as const,data:CAPSULE,validateScene:capsuleContent.validateScene,validateGameplay:capsuleContent.validateGameplay,definition:capsuleScene,definitionWithDevices:capsuleWithDevices},
@@ -88,7 +86,7 @@ const definitions=[
 ] as const;
 /** Folder scenes (engine/gameplay/folder-scene.ts): one generic registration each, no scene code. */
 const folderDefinitions=FOLDER_SCENE_IDS.map(id=>({id,prefix:id,
- validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_BY_ID[id].gameplay))=>{const d=validateSceneDocument(value,g,{manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors)});if(d.id!==id)throw new Error('Scene identity is protected');return d;},
+ validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_BY_ID[id].gameplay))=>{const targets=Object.keys(providerSignals(art.validate(FOLDER_BY_ID[id].composition))),d=validateSceneDocument(value,g,{manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors),...(targets.length?{presentationTargets:targets}:{})});if(d.id!==id)throw new Error('Scene identity is protected');return d;},
  validateGameplay,
  definition:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay}),
  definitionWithDevices:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition,devices?:unknown,_context?:unknown)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay,devices}),

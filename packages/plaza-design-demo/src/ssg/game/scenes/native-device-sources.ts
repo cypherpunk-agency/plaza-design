@@ -16,9 +16,6 @@ import s4scene from './moth/scene.json';
 import s5data from './beach/devices.json';
 import s5art from './beach/composition.json';
 import s5scene from './beach/scene.json';
-import s6data from './harbor/devices.json';
-import s6art from './harbor/composition.json';
-import s6scene from './harbor/scene.json';
 import s7data from './stacks/devices.json';
 import s7art from './stacks/composition.json';
 import s7scene from './stacks/scene.json';
@@ -56,7 +53,6 @@ export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Co
  yard:{devices:s3data as unknown as SceneData,composition:s3art as unknown as Composition,scene:s3scene as unknown as SceneDocument},
  moth:{devices:s4data as unknown as SceneData,composition:s4art as unknown as Composition,scene:s4scene as unknown as SceneDocument},
  beach:{devices:s5data as unknown as SceneData,composition:s5art as unknown as Composition,scene:s5scene as unknown as SceneDocument},
- harbor:{devices:s6data as unknown as SceneData,composition:s6art as unknown as Composition,scene:s6scene as unknown as SceneDocument},
  stacks:{devices:s7data as unknown as SceneData,composition:s7art as unknown as Composition,scene:s7scene as unknown as SceneDocument},
  market:{devices:s9data as unknown as SceneData,composition:s9art as unknown as Composition,scene:s9scene as unknown as SceneDocument},
  laundromat:{devices:s10data as unknown as SceneData,composition:s10art as unknown as Composition,scene:s10scene as unknown as SceneDocument},

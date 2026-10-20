@@ -16,14 +16,15 @@ import type {GameplayDefinition} from './types';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../host';
 import {compileSceneActors} from './actors';
-import {bindingDefaults,bindingValues,unknownBindingSources} from './binding-sources';
+import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources} from './binding-sources';
+import {PresentationSignals} from './presentation-signals';
 import {stageContent} from './scene-stage';
 
 export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
- const d=validateSceneDocument(scene,gameplay,{manifest:true,actors:withActors}),doc=art.validate(composition);
+ const doc=art.validate(composition),signals=providerSignals(doc),d=validateSceneDocument(scene,gameplay,{manifest:true,actors:withActors,...(Object.keys(signals).length?{presentationTargets:Object.keys(signals)}:{})});
  if(!d.manifest)throw new Error('Declared scene requires manifest bindings');
- if(d.exits?.some(e=>e.engine||e.action))throw new Error('Transport and engine exits require their registered controller');
+ if(d.exits?.some(e=>e.engine))throw new Error('Engine exits require their registered controller');
  if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)))throw new Error('Exit sets an undeclared gameplay flag');
  // artwork binds only to sources the engine works out (binding-sources.ts)
  if(!withActors&&JSON.stringify(doc.instances).match(/"actor\.[^"]+\.pose"/))throw new Error('Actor artwork requires scene.actors source definitions');
@@ -34,7 +35,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  const actors=withActors?compileSceneActors(d,rows):{};
  const people=withActors?d.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]):(d.people??[]).filter(p=>bindings.people?.[p.id]).map(p=>{const point=bindings.people[p.id],r=point.row;if(r.element.type!=='character.resident'||r.instance.layer!=='playfield')throw new Error('Person requires visible character.resident artwork in the playfield layer: '+p.id);return {...residentCharacter(r.props,point),...p,...(p.conversation!==undefined?{talk:[]}:{}),conversation:p.conversation??actorConversationId(d.id,p.id)};});
  const positions=Object.fromEntries(Object.entries(bindings.uses).map(([id,r])=>[id,r.x]));
- return {scene:d,composition:doc,positions,people,actors,rows,...geometry};
+ return {scene:d,composition:doc,signals,positions,people,actors,rows,...geometry};
 }
 /** Validate against the prospective registry; the same rule supports existing and newly authored scenes. */
 export function validateDeclaredDestinations(scene:SceneDocument,destinations:Readonly<Record<string,readonly string[]>>){
@@ -45,6 +46,8 @@ export function validateDeclaredDestinations(scene:SceneDocument,destinations:Re
 /** The same factory handles every instance; source contains no executable scripts or renderer selection. */
 export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,options:Partial<Environment>={},devices?:SceneDeviceSource):SceneDef{
  const validated=validateDeclaredScene(scene,composition,gameplay),d=validated.scene,rows=validated.rows;
+ // presentation signals: cosmetic event stamps a provider's artwork reads (a crane call), set by the scene's cues
+ const signals=Object.keys(validated.signals).length?new PresentationSignals(d.cues??[],validated.signals):undefined;
  const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay);
  const compiled=compileManifestDocument(d,rows,(_c,id)=>({name:d.name,pages:[],conversation:id}),d.manifest!.compile??{elevatedResponses:true}),roles=compiled.geometry.artwork;
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
@@ -54,9 +57,9 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const instanceOf=(t:unknown)=>typeof t==='string'?t:(t as {instance:string}).instance,heightOf=(t:unknown)=>rows.find(r=>r.instance.id===instanceOf(t))?.placement.h??0;
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
   return {...options,view,state:{...(options.state??{}),...(live?Object.fromEntries(Object.entries(live.lifts).map(([id,c])=>[id,{car:c.car,doors:c.doors}])):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
-   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,engine},d.stage?.actors),reduced:options.reduced??false};};
+   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,engine,signals},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ return {id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
 }

@@ -15,7 +15,8 @@ import { frameView,type View } from '../art/core/view';
 import { lightAt } from '../world/light';
 import { BOX40,type Crate } from '../art/props/containers';
 import { createHarborPierArtwork,type ArtworkInputs } from '../art/assemblies/harbor-pier';
-import { harborLayout } from '../scenes/harbor/composition';
+import { harborLayout } from '../engine/gameplay/binding-providers/harbor';
+import { FOLDER_SOURCES } from '../scenes/folder-scenes';
 import { openingFrame,paintOpeningPieces } from '../art/sequences/opening/glide';
 import { BOATER,drawCanalGlimpse } from '../art/architecture/cutaway';
 import { prepareCharacter } from '../runtime/characters';
@@ -81,7 +82,7 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
   const visibility=state.passengers?undefined:Object.fromEntries(trainGeometry().filter(row=>Object.prototype.hasOwnProperty.call(f.riders,String(row.props.actor))).map(row=>[row.instance.id,false]));
   job('drawTrainComposition',f,x=>{drawTrainComposition(x,view,f,'backdrop',trainComposition,{}, {visibility});drawTrainComposition(x,view,f,'foreground',trainComposition,{}, {visibility});});
  }else if(state.id.startsWith('harbor.')){
-  const L=harborLayout(),inputs:ArtworkInputs={L,visual:{cranes:[],forklift:{x:70,dir:1},bribed:false,weatherLine:''},fishPose:nil,teaPose:nil,loads:[]},k=createHarborPierArtwork(inputs);
+  const L=harborLayout(FOLDER_SOURCES.harbor.composition,FOLDER_SOURCES.harbor.scene as never),inputs:ArtworkInputs={L,visual:{cranes:[],forklift:{x:70,dir:1},bribed:false,weatherLine:''},fishPose:nil,teaPose:nil,loads:[]},k=createHarborPierArtwork(inputs);
   if(kind==='lamp')job('drawLampBoat',{view},x=>k.drawLampBoat(x,view));
   else if(kind==='patrol')job('drawPatrol',{view},x=>k.drawPatrol(x,view));
   else if(kind==='ferry')job('drawFerry',{view},x=>k.drawFerry(x,view));
