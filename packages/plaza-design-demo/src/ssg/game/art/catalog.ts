@@ -116,7 +116,7 @@ export const SETS: SetEntry[] = [
       'runtime/game.ts drawWorld: every scene (grade outdoors; lights, casters and shade where declared); the player\'s and the street NPCs\' shadows',
       'runtime/characters.ts drawCharacter: every person, robot and animal\'s shadow',
       'scenes/train (train binding provider), scenes/laundromat/scene.ts, scenes/library/scene.ts, scenes/shop/index.ts: the grade over what their windows show',
-      'declared in: scenes/downtown/index.ts, scenes/harbor/index.ts, scenes/beach/index.ts, scenes/market/index.ts, scenes/warehouse/scene.json (stage), scenes/metro/scene.json (stage)',
+      'declared in: scenes/downtown/scene.json (environment), scenes/harbor/index.ts, scenes/beach/index.ts, scenes/market/index.ts, scenes/warehouse/scene.json (stage), scenes/metro/scene.json (stage)',
     ],
   },
   {

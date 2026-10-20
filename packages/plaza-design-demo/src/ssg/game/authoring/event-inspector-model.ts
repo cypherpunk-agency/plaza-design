@@ -17,7 +17,6 @@ import type{Action,Case,DeviceData,SceneData}from'../data/types';
 
 import {ENGINE_EFFECTS,type SceneRules}from'../engine/rules';
 
-import {DOWNTOWN_RULES_SHAPE}from'../scenes/downtown/rules';
 
 import {mechanismsRulesShape}from'../engine/gameplay/scene-mechanisms';
 
@@ -72,7 +71,7 @@ const actions=['set','open','emit','goal','effect','give','take','trace','unseal
 export function buildEventInspection(options:EventInspectionOptions={}):EventInspection{
  const network=options.network??defaultNetworkContext,net=network.net;
 
- const nodes:EventNode[]=[],edges:EventEdge[]=[],all=new Map<string,EventNode>(),diagnostics:string[]=[],definitions=new Map<string,DeviceData>(),shapes:Record<string,SceneRules>={downtown:DOWNTOWN_RULES_SHAPE,...Object.fromEntries(Object.entries(FOLDER_SOURCES).flatMap(([id,source])=>{const shape=mechanismsRulesShape((source.scene as {stage?:{mechanisms?:string[]}}).stage?.mechanisms);return shape?[[id,shape]]:[];}))};
+ const nodes:EventNode[]=[],edges:EventEdge[]=[],all=new Map<string,EventNode>(),diagnostics:string[]=[],definitions=new Map<string,DeviceData>(),shapes:Record<string,SceneRules>={...Object.fromEntries(Object.entries(FOLDER_SOURCES).flatMap(([id,source])=>{const shape=mechanismsRulesShape((source.scene as {stage?:{mechanisms?:string[]}}).stage?.mechanisms);return shape?[[id,shape]]:[];}))};
 
  const documentSources=new Map(sourceDocuments.map(d=>[d.id,d.file]));
 

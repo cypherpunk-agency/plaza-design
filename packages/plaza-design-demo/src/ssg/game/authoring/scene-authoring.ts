@@ -69,7 +69,7 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
   if(d.manifest)entries.push({key:'manifest',group:'Scene',label:'Content & bindings',render:h=>{
    const composition=api.get(identity().composition).value as import('../art').Composition,instances:import('../art').Instance[]=[];
    const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){instances.push(n);walk(n.children??[]);}};walk(composition.instances);
-   const ids=instances.map(n=>n.id),rows=manifestCompositionRows(composition),registration=selected(),groups=d.manifest!.compile?.groups??('bindingGroups'in registration?registration.bindingGroups:manifestGroups);
+   const ids=instances.map(n=>n.id),rows=manifestCompositionRows(composition),groups=d.manifest!.compile?.groups??manifestGroups;
    renderManifestWidth(form,h,d.manifest!.width,rows,width=>edit('Edit scene width binding',d=>{d.manifest!.width=width;}));
    renderArtworkRoles(form,h,d.id,d.manifest!,rows,(role,instance)=>edit('Rebind scene '+role,d=>{if(instance)(d.manifest!.artwork??={})[role]=instance;else if(d.manifest!.artwork)delete d.manifest!.artwork[role];}));
    renderManifestTarget(form,h,'Spawn',d.manifest!.spawn,rows,target=>edit('Edit manifest spawn',d=>{d.manifest!.spawn=target;}),undefined,'none');

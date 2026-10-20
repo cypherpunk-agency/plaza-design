@@ -9,7 +9,7 @@
 import type {Resolved} from '../../../art/core/composition';
 import type {Value} from '../../../art/core/composition';
 import type {YardVisual} from '../../../art/assemblies/fixer-yard';
-import {renderDowntownStreet} from '../../../scenes/downtown/composition';
+import {renderDowntownStreet} from './street-layers';
 import {light} from '../../../world/light';
 import {yardController,yardRead,type YardController} from '../../controllers/yard';
 import type {EngineDraw} from '../../host';

@@ -8,7 +8,7 @@ import {SceneModel,type Line} from '../../src/ssg/game/engine/model';
 import {SceneHost} from '../../src/ssg/game/engine/host';
 import {mintFeedback,type FeedbackReceipt} from '../../src/ssg/game/engine/feedback-receipt';
 import {sound} from '../../src/ssg/game/runtime/audio';
-import {downtownRules} from '../../src/ssg/game/scenes/downtown/rules';
+import {downtownRules} from '../../src/ssg/game/engine/gameplay/mechanisms/vehicle-run';
 import {DOWNTOWN as downtown} from '../../src/ssg/game/data';
 import fs from 'node:fs';
 import type {SceneData} from '../../src/ssg/game/data/types';

@@ -1,4 +1,8 @@
 import type {FolderSceneSource} from '../engine/gameplay/folder-scene';
+import downtownComposition from './downtown/composition.json';
+import downtownScene from './downtown/scene.json';
+import downtownGameplay from './downtown/gameplay.json';
+import downtownDevices from './downtown/devices.json';
 import towerComposition from './tower/composition.json';
 import towerScene from './tower/scene.json';
 import towerGameplay from './tower/gameplay.json';
@@ -81,6 +85,7 @@ import trainDevices from './train/devices.json';
  * is the migration: its TypeScript goes, the shared declared path builds it.
  */
 export const FOLDER_SOURCES={
+ downtown:{composition:downtownComposition,scene:downtownScene,gameplay:downtownGameplay,devices:downtownDevices},
  tower:{composition:towerComposition,scene:towerScene,gameplay:towerGameplay,devices:towerDevices},
  warehouse:{composition:warehouseComposition,scene:warehouseScene,gameplay:warehouseGameplay,devices:warehouseDevices},
  shop:{composition:shopComposition,scene:shopScene,gameplay:shopGameplay,devices:shopDevices},

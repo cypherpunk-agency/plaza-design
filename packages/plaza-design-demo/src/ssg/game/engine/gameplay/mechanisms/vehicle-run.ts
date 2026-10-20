@@ -1,17 +1,26 @@
-import {downtownController} from '../../engine/controllers/motion';
-/** Downtown's native DLV-9 trajectories and remaining physical
- * callbacks. Registry control, billboard scheduling and controlled status/lamps
- * use authored shared commands, queries and deadlines. The source formatter's
- * nodes read delegates to the existing canonical player node-count service.
- * DLV ordinary decisions, milestone responses and finale use authored shared
- * inputs and an END handoff; only sampled collision and trajectory facts stay native.
+/**
+ * Mechanism `vehicleRun` (scene.json `stage.mechanisms`): Downtown's DLV-9 delivery run. The native
+ * trajectories and the physical callbacks that remain; registry control, billboard scheduling and
+ * controlled status/lamps use authored shared commands, queries and deadlines. The source formatter's
+ * nodes read delegates to the canonical player node-count service. DLV ordinary decisions,
+ * milestone responses and finale use authored shared inputs and an END handoff; only sampled
+ * collision and trajectory facts stay native.
+ *
+ * DLV-9 drives through the market gate, in or out. On the way the gate's scanner reads it
+ * (`gate.scanner:matched`, pre-wired to open the lock); at the door it passes if the lock is open
+ * (`gate.door:passed`, pre-wired to shut it again) or bonks the shutter and backs off. If the gate is
+ * still open once it is through, Downtown is cleared. The scene's devices.json controller (`downtown`)
+ * names the vehicle, its gate and the speed tuning; the scene's gameplay needs the select queries
+ * `controlled2F`, `controlled31`, `controlledTV`, `downtown.dlv.passage` (booleans) and
+ * `downtown.dlv.destination` (market or gate), which `check` insists on.
  */
 
-import type { SceneData } from "../../data/types";
-import type { Spot, SceneModel } from "../../engine/model";
-import type { Effect, World, SceneRules } from "../../engine/rules";
-
-import type { PlayerServices } from "../../runtime/player";
+import {downtownController} from '../../controllers/motion';
+import type {SceneData} from '../../../data/types';
+import type {Spot,SceneModel} from '../../model';
+import type {Effect,World,SceneRules} from '../../rules';
+import type {PlayerServices} from '../../../runtime/player';
+import type {SceneMechanism} from '../scene-mechanisms';
 
 /** Where DLV-9 rests: by the dumpster (its `layout.spot`), outside the market gate, or inside the market (out of the world). */
 export type DlvAt = 'home' | 'gate' | 'market' | 'driving';
@@ -21,10 +30,6 @@ function gateSpan(z: SceneData) {
   const s = z.devices.find((d) => d.id === downtownController(z).devices.gate)?.layout?.spot ?? { x: 70, w: 80 };
   return { door: s.x, left: s.x - s.w / 2, right: s.x + s.w / 2 };
 }
-/** Where DLV-9 waits outside the gate, and where it disappears to inside. */
-
-/** A signal takes 150 ms down a cable (scene/model.ts `emit`): give each one this long to land before looking at the lock. */
-
 
 /** DLV-9's x right now (null: inside the market). `home`: its spot by the dumpster. */
 export function dlvX(m: SceneModel, home: number): number | null {
@@ -45,11 +50,10 @@ function leg(w: World, x0: number, x1: number) {
 }
 
 /**
- * DLV-9 drives through the market gate, in or out. On the way the gate's
- * scanner reads it (`gate.scanner:matched`, pre-wired to open the lock); at the
- * door it passes if the lock is open (`gate.door:passed`, pre-wired to shut it
- * again) or bonks the shutter and backs off. If the gate is still open once it
- * is through, Downtown is cleared.
+ * DLV-9 drives through the market gate, in or out. On the way the gate's scanner reads it
+ * (`gate.scanner:matched`, pre-wired to open the lock); at the door it passes if the lock is open
+ * (`gate.door:passed`, pre-wired to shut it again) or bonks the shutter and backs off. If the gate is
+ * still open once it is through, Downtown is cleared.
  */
 function drive(w: World, inward: boolean) {
   const m = w.m, c=downtownController(m.data),g = gateSpan(w.data);
@@ -95,7 +99,6 @@ export function downtownRules(p: PlayerServices): SceneRules {
   return {
     effects: effects(),
     inputs: ['downtown.dlv.started', 'downtown.dlv.scanned', 'downtown.dlv.door', 'downtown.dlv.completed'],
-    panels: ['cam3'],
     derived: {
       dlvThrough: (m) => m.scratch.dlvThrough === 1,
       dlvInside: (m) => m.scratch.dlvX1 < gateSpan(m.data).door,
@@ -115,27 +118,25 @@ export function downtownRules(p: PlayerServices): SceneRules {
     needs: {
       devices:[],
       state: [],
-      texts: {
-
-        // shell.ts (the deck's keyboard)
-        'login.none': 'line', 'login.baduser': 'line',
-        // camera.ts (CAM-3)
-        'cam.zoom': 'label', 'cam.tag': 'label', 'cam.loop': 'label', 'cam.hud': 'label', 'cam.on': 'label', 'cam.aim': 'label',
-        'cam.zoom.wall': 'line', 'cam.zoom.out': 'line', 'cam.tag.none': 'line', 'cam.tag.ok': 'line',
-      },
-    },
-    /** Downtown's own: CAM-3 needs things to look at, and the moving parts need their devices. */
-    check: (z: SceneData) => {
-      const errs: string[] = [];
-      if (!z.camera?.crates.length) errs.push('camera: CAM-3 needs things under its crosshair ("crates")');
-      for (const c of z.camera?.crates ?? []) if (!(('cam.zoom.' + c.id) in z.texts)) errs.push(`texts: missing "cam.zoom.${c.id}" (what CAM-3 says zoomed onto ${c.id})`);
-      return errs;
+      // shell.ts (the deck's keyboard)
+      texts: { 'login.none': 'line', 'login.baduser': 'line' },
     },
   };
 }
 
-/** For the build-time check: the contract does not depend on whose save it is. */
-export const DOWNTOWN_RULES_SHAPE = downtownRules({
+/** The rules' contract does not depend on whose save it is. */
+const SHAPE = downtownRules({
   save: () => ({ handle: '', tokens: 0, jump: false, controlled: [], flags: {} }),
   persist: () => {}, nodes: () => 42, granted: () => {}, end: () => {},
 });
+
+export const vehicleRun:SceneMechanism={
+  label:'DLV-9 delivery run (market gate, scanner, door)',requires:[],world:false,
+  rulesShape:()=>SHAPE,
+  /** The picture and the run read these select queries as plain booleans (and the destination as market or gate). */
+  check:({gameplay})=>{
+    for(const id of ['controlled2F','controlled31','controlledTV','downtown.dlv.passage']){const q=gameplay.queries?.[id];if(q?.kind!=='select'||q.cases.some(row=>!('literal'in row.value)||typeof row.value.literal!=='boolean'))throw Error('Downtown presentation requires boolean select query '+id);}
+    const destination=gameplay.queries?.['downtown.dlv.destination'];if(destination?.kind!=='select'||destination.cases.some(row=>!('literal'in row.value)||!['market','gate'].includes(String(row.value.literal))))throw Error('DLV-9 destination requires market/gate select output');
+  },
+  apply:()=>({rules:(player:PlayerServices)=>downtownRules(player)}),
+};

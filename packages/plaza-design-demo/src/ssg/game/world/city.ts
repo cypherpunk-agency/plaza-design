@@ -64,7 +64,7 @@ export interface Place extends PlaceData { id: PlaceId; scenes: SceneId[] }
 
 /**
  * Downtown's ways out, by where they sit on the street (world x): its exits
- * (downtown/index.ts). Coming back through one of them lands you in front of it.
+ * (scenes/downtown/scene.json). Coming back through one of them lands you in front of it.
  * - market: the NEON MARKET gate at the west end (opens once Downtown is cleared)
  * - shop: the corner shop's door (the front at 150)
  * - yard: the fixer's back yard, past the noodle stall

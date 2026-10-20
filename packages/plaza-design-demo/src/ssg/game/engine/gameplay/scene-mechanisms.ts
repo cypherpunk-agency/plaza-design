@@ -9,9 +9,12 @@ import {devicePulse} from './mechanisms/device-pulse';
 import {targetReset} from './mechanisms/target-reset';
 import {sandboxBay} from './mechanisms/sandbox-bay';
 import {yardCrane} from './mechanisms/yard-crane';
+import {vehicleRun} from './mechanisms/vehicle-run';
+import {streetCamera} from './mechanisms/street-camera';
+import {streetLayers} from './mechanisms/street-layers';
 import type {EngineDraw} from '../host';
 import type {View} from '../../art/core/view';
-import type {Value} from '../../art/core/composition';
+import type {Value,Composition,Environment} from '../../art/core/composition';
 import type {SceneData} from '../../data/types';
 import {thermal} from './mechanisms/thermal';
 import {citySkyline} from './mechanisms/city-skyline';
@@ -31,7 +34,7 @@ import type {LineSystem} from '../../world/transport/line';
  * built scene keeps for its mechanisms and binding providers (a prepared frame, a simulation);
  * the same map reaches the providers as BindingContext.shared.
  */
-export interface SceneMechanismContext {scene:SceneDocument;gameplay:GameplayDefinition;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;width:number;content:SceneDef;actors:Readonly<Record<string,Character>>;world?:{city:CityModel;metro:LineSystem};shared:Map<string,unknown>}
+export interface SceneMechanismContext {composition:Composition;environment(view:View,engine?:EngineDraw):Environment;scene:SceneDocument;gameplay:GameplayDefinition;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;width:number;content:SceneDef;actors:Readonly<Record<string,Character>>;world?:{city:CityModel;metro:LineSystem};shared:Map<string,unknown>}
 /**
  * A mechanism's picture-side state (a hook that eases toward its target): one per scene, made when the scene is built.
  * Binding providers read `state` (BindingContext.presentation[mechanism]); the scene prepares it once per frame and
@@ -103,5 +106,5 @@ const transitPlatform:SceneMechanism={
   return{platformStop:stop.placement.x,...(water?{horizon:Number(water.props.horizon??0)}:{}),...(water||roles.horizon?{ambient:{...content.ambient,covers:[{from:-60,to:width+60,under:Number(roof.props.under)+roof.placement.h}]}}:{})};},
 };
 export const SCENE_MECHANISMS:Readonly<Record<string,SceneMechanism>>={
- transitPlatform,citySkyline,lineRide,gantryLift,dockworkerCarry,devicePulse,targetReset,sandboxBay,yardCrane,thermal,
+ transitPlatform,citySkyline,lineRide,gantryLift,dockworkerCarry,devicePulse,targetReset,sandboxBay,yardCrane,thermal,vehicleRun,streetCamera,streetLayers,
 };

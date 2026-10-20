@@ -55,7 +55,7 @@ The old `level.ts` mixed several owners. Its responsibilities are now:
 | --- | --- |
 | Launch modes and storage key selection | `runtime/mode.ts` |
 | Player save schema, initialization, loading and persistence | `runtime/save.ts` |
-| Downtown world coordinates and readable/NPC placement | `scenes/downtown/layout.ts` |
+| Downtown world coordinates and readable/NPC placement | `scenes/downtown/composition.json` (artwork) and `scene.json` (manifest bindings) |
 | Downtown NPC/fixer dialogue | `scenes/downtown/scene.json` and `gameplay.json`, compiled into shared conversations |
 | Downtown objectives/progress markers | Authored objectives and gameplay onPersist triggers, shared evaluators |
 | Deck command execution and completion | `ui/terminal/commands.ts` |

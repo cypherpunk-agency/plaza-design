@@ -3,7 +3,8 @@ import type {ActorDefinition} from './actors';
 export interface ActorBindingController {element:string;prefix:string;suffix:string;mutable:boolean;clipPrefix?:string}
 /** Registered renderer bindings; source records own actor identity, placement references and dialogue. */
 const controllers:Record<string,ActorBindingController>={
- downtown:{element:'actor.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
+ // Downtown is a folder scene: its street people come from the `downtown` binding provider (binding-providers/downtown.ts)
+ downtown:{element:'actor.prepared',prefix:'downtown.pose.',suffix:'',mutable:true},
  // the LINE 0 scenes are folder scenes: riders come from the `station` and `train` binding providers
  metro:{element:'actor.prepared',prefix:'station.pose.',suffix:'',mutable:true},
  // the stations are folder scenes: their riders come from the `station` binding provider (binding-providers/station.ts)

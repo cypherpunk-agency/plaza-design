@@ -12,6 +12,7 @@ import {yard} from './yard';
 import {capsule} from './capsule';
 import {beachProvider} from './beach';
 import {trainProvider} from './train';
+import {downtown} from './downtown';
 /**
  * Registered binding providers: a source name `<provider>.<key>` asks the provider for `key`.
  * A provider works out everything it offers once per frame from the scene as it stands (its
@@ -39,4 +40,5 @@ export const BINDING_PROVIDERS:Readonly<Record<string,BindingProvider>>={
  capsule,
  beach:beachProvider,
  train:trainProvider,
+ downtown,
 };

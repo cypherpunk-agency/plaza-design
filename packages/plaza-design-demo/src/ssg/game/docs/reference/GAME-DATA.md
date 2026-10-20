@@ -158,7 +158,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
 - Downtown's progress stays in the save's own fields (`handle`, `tokens`, `jump`, `controlled`,
   `flags.till`, `flags.end`), as before the engine: **code** reads them as derived values
   (`till`, `controlled2F`, `jump`, `end`, `handle`, …) and its effects write them (`node.control`,
-  `legs.install`, `till.pay`, `dlv.drive`), in `downtown/rules.ts`. The scene's own `state` is only
+  `legs.install`, `till.pay`, `dlv.drive`), in `engine/gameplay/mechanisms/vehicle-run.ts`. The scene's own `state` is only
   what is new on the street (the gate's lock, DLV-9, the billboard's feed). Current scalar state
   has one owner in Save.gameplay. Source-authored onPersist triggers synchronize goal markers;
   no historic save reconciliation or duplicate scalar store remains.

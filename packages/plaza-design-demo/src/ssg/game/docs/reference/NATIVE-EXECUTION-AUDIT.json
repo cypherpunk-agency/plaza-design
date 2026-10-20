@@ -124,7 +124,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/downtown/rules.ts",
+        "engine/gameplay/mechanisms/vehicle-run.ts",
         "engine/controllers/motion.ts",
         "scenes/downtown/gameplay.json"
       ]

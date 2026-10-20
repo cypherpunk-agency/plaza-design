@@ -8,19 +8,11 @@ import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
 import type {Composition,Environment} from '../art';
-import type {SceneData} from '../data';
-import {downtownScene} from '../scenes/downtown';
-import {content as downtownContent} from '../scenes/downtown/scene-document';
 import {validateManifestScene,validateManifestGameplay,manifestDemoScene} from '../scenes/demo-manifest';
 import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} from '../demo';
 /** Explicit migrated-scene registry shared by authoring, protected saves and isolated Play. */
 /** The arguments every scene factory takes: composition, preview state, render options, scene and gameplay documents. */
-type SceneFactoryArgs=[document?:Composition,state?:Environment['state'],options?:Partial<Environment>,content?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition];
-const downtownAuthoredScene=(...args:SceneFactoryArgs)=>downtownScene(args[0],undefined,args[2],args[3],args[4]);
-type DeviceSourceArguments=[...SceneFactoryArgs,SceneData?,NativeTargetValidationContext?];
-const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
 const definitions=[
- {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
 
 
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},
