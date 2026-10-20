@@ -58,3 +58,22 @@ optional absence, model history, bundles, protected Save, fresh shipping import 
 Original Shop drawing/purchase/refusal checks and both builds PASS. Source04c1aa71e826 passes
 173 browser raster comparisons with zero differences/errors and actual packaged Shop Play/Stop.
 Next native identity consumers include Mall's adaptive floors, escalator riders and booth actors.
+
+## Mall slots, phases and embedded bodies
+
+The same actor-reference contract now supports maps from actor IDs to explicit numeric slots or
+phases. Mall far entries select the adaptive floor slot; gallery entries name the original artwork
+height from which the gallery-slab offset is measured; rider entries select the escalator phase
+between0 and1. Typed membership/number fields sit under Actor presentation. Duplicate inherits the
+exact value; removal prunes only that actor, preserving every other actor's slot/phase. Single
+vendor roles use the existing actor pickers. An actor attached to a booth with the corresponding
+registered vendor visual binding is painted inside the booth once; neither booth nor actor needs
+its historical ID. Unbound/absent inputs never recover old prefixes or names.
+
+check-mall-actor-roles.mts PASS (`mall-actor-role-source-IhzrYe`) proves actual forms, newly named
+actors, reassignment, old actor/booth removal, unchanged slots after deletion, real native outputs,
+invalid edits/absence, bundle/protected Save/fresh shipping/byte Undo. All19 actor helper regression
+PASS (`actor-entities/run-WyCTmf`). Beach/Shop source role regressions PASS. Original Mall77 body and
+interaction/booth/tall-floor pose checks and both builds PASS. At source2992ba89a94c, all173 browser
+raster rows have zero differences/errors; all19 actual packaged native editor Play/Stop pass without
+warning/error logs. This is bounded presentation evidence, not whole-goal acceptance.

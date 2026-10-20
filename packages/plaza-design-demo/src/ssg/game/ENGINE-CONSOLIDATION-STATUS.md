@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `4c3d49c` on main and production.
-Production/main homepage jobs39345105407/39345105278 and design job39345105274 succeeded.
+Last verified deployment: `348cdde` on main and production.
+Production/main homepage jobs39345556298/39345556254 and design job39345556235 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2434,3 +2434,25 @@ verified). Actual packaged inspector fields/native Mall Play/Stop PASS without w
 app-36ASNHAE.js / play-BHX7EADN.js / play-985a12552f05d6c5.html.
 Mall actor motion grouping/ordinal phases and embedded-vendor identities still need source contracts;
 this geometry checkpoint does not close that scene or any remaining whole-goal gate.
+
+## 2026-10-20 Mall actor-role continuation
+
+Shared presentation now supports validated per-actor slot/phase mappings. Mall adaptive far floors,
+gallery baseline heights, escalator phases and both embedded booth vendors are explicit source
+inputs with typed Scene controls. Removed old actor ID/prefix/ordinal parsing and booth instance-ID
+branches; authored attachment plus registered vendor visual slot determines embedding. Shared CRUD
+copies exact numeric settings and removes deleted references without renumbering other actors.
+Missing optional presentation never restores canonical IDs. Continuous art timing/paint order stays
+with the existing sole Mall implementation; no new state owner or simulation evaluator.
+
+Actual slot/phase/vendor forms, duplicate/removal, noncanonical actor IDs, unbound former IDs,
+replacement booth/delete old booth, native elevations/routes/vendor poses, invalid refs/phase/slots,
+absence/no backfill, history/bundle/protected Save/fresh shipping import/byte Undo PASS
+(`mall-actor-role-source-IhzrYe`). Mall geometry proof PASS (`mall-actor-role-source-O1NvDA`), Beach
+and Shop role regression PASS (`beach-actor-role-source-7kNE0A`, `shop-actor-role-source-YhNeUk`).
+All19 actor CRUD/Save/native reload/Undo PASS (`actor-entities/run-WyCTmf`). Original Mall77 body,
+interaction/booth/height/timing checks PASS, tsc/both builds PASS. Source2992ba89a94c40c8061acf7769869f8572b8f6ec1ea700741aea34864c85f19c
+has173/173 zero-difference/error browser raster cases, independently verified; all19 actual packaged
+editor Play/Stop PASS with no warning/error logs (`editor-native-play-2992ba89-20261020.json`).
+Actual Mall inspector exposes slot/phase fields and vendor pickers. Package app-BDLUXCO5.js /
+play-JG6OLUHC.js / play-69c30798feecc0b3.html. Remaining whole-goal gates remain open.
