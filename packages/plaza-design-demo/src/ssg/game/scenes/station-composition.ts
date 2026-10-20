@@ -1,3 +1,4 @@
+import {platformFrame} from './metro/platform-frame';
 import {resolveArtworkRoles} from '../engine/gameplay/artwork-roles';
 import {transitActors,transitActorBindings,validateTransitActorNode,validateTransitBenchNodes} from './metro/transit-actors';
 import type {Character} from '../runtime/characters';
@@ -12,7 +13,6 @@ import type { SceneDef } from './kit';
 import * as defaultMetro from '../world/transport/line';
 import type {LineSystem} from '../world/transport/line';
 import type {CityModel} from '../world/city';
-import { harborOpen } from '../world/city';
 export type StationRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|'clips'|'sequenceTime'|'reduced'>> & {metro?:LineSystem;city?:CityModel};
 export const stationMarkerPolicy={exitAxes:['x'] as const,platformStopAxes:['x'] as const,platformTrainGeometry:'Horizontal stop position drives artwork, boarding doors and train arrival; height, scale, mirror and parallax remain fixed'} as const;
 const all=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...all(n.children??[])]);
@@ -32,11 +32,9 @@ export function createStationComposition(id:'galleriaStation'|'harborStation',so
  const composition=validate(original);
  function artwork(doc:Composition,sceneDocument:SceneDocument,g=geometry(doc)){const roles=resolveArtworkRoles(id,sceneDocument.manifest?.artwork,g);for(const role of ['roof','stop',...(station==='harbor'?['water']:[])])if(!roles[role])throw Error(id+' requires artwork role '+role);return roles;}
  function environment(doc:Composition,view:View,state:Environment['state']={},options:StationRenderOptions={},sceneDocument:SceneDocument=canonical,actors?:Readonly<Record<string,Character>>):Environment{
-  const {metro=defaultMetro,city,...renderOptions}=options,{platformTrainVisual,departureVisual}=metro;
+  const {metro=defaultMetro,city,...renderOptions}=options;
   const bindings=defaults(doc),g=geometry(doc),roles=artwork(doc,sceneDocument,g),roof=roles.roof;bindings['architecture.roof']=roof.placement.h+Number(roof.props.under);
-  bindings['transit.train']=platformTrainVisual(station,view.t,roles.stop.placement.x) as unknown as Value;
-  const departure=departureVisual(station,view.t);bindings['transit.departure']={...departure,due:Number.isFinite(departure.due)?departure.due:0};
-  const closed=station==='harbor'&&!(city?.harborOpen??harborOpen)(view.flags);bindings['transit.closed']=closed;
+  Object.assign(bindings,platformFrame(id,roles.stop.placement.x,view,metro,city));
   Object.assign(bindings,transitActorBindings(sceneDocument,g,view,{metro,city},actors));
   return{view,bindings,state,reduced:false,...renderOptions};
  }

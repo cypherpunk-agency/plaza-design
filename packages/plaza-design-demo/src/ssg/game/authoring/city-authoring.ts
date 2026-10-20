@@ -9,7 +9,8 @@ import {validatePendingCity} from './pending-city';
 import {validateMetroSource,type MetroSource} from '../world/transport/metro-source';
 /** Typed edits use ordinary history, bundle and protected grouped source Save. */
 export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle{
- const api=context.authoring!;let disposed=false,flagDraft='';
+ const api=context.authoring!;let disposed=false,flagDraft='',stationDraftSource='';
+ let stationDraft:Pick<CitySource,'STATIONS'|'STATION_MAP'>|undefined;
  const error=document.createElement('p');error.setAttribute('role','alert');
  const form=new TypedForm(e=>{error.textContent=String(e);});
  function edit(label:string,change:(source:CitySource)=>void){const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));change(d);api.edit('city-source',label,d);}
@@ -80,7 +81,20 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
    for(const scene of sceneIds){const owner=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));if(owner?.id===place.id)continue;form.button(section,'Move '+scene+' into '+place.id,()=>edit('Move scene between places',d=>{const old=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));if(old){if(old.scenes.length===1)throw Error('Merge the owning place instead of leaving it empty');old.scenes=old.scenes.filter(s=>s!==scene);if(old.entrance===scene){old.entrance=old.scenes[0];delete old.at;}}d.PLACES.find(p=>p.id===place.id)!.scenes.push(scene as typeof place.scenes[number]);}),owner?.scenes.length===1);}
    form.check(section,'Place '+place.id+' map point',!!d.PLACE_MAP[place.id],on=>edit('Set place map marker',d=>{if(on)d.PLACE_MAP[place.id]=[...(Object.entries(d.PLACE_MAP).find(([id,p])=>p&&d.PLACES.find(v=>v.id===id)?.district===place.district)?.[1]??(place.district?d.DISTRICT_MAP[place.district].centre:null)??Object.values(d.PLACE_MAP).find((p):p is [number,number]=>!!p)??d.STATION_MAP[d.LINE[0]])];else delete d.PLACE_MAP[place.id];}));form.check(section,'Place '+place.id+' reveal rule',!!d.PLACE_IN_VIEW[place.id],on=>edit('Set place reveal rule',d=>{if(on)d.PLACE_IN_VIEW[place.id]=[];else delete d.PLACE_IN_VIEW[place.id];}));
   }
-  for(const id of d.LINE){const section=form.section(host,'Station routing '+id),station=d.STATIONS[id];form.select(section,'Station '+id+' scene',sceneIds,station.scene,v=>edit('Rebind station scene',d=>{d.STATIONS[id].scene=v as typeof station.scene;delete d.STATIONS[id].at;}));form.select(section,'Station '+id+' up',sceneIds,station.up,v=>edit('Rebind station surface',d=>{d.STATIONS[id].up=v as typeof station.up;}));form.select(section,'Station '+id+' arrival',['',...refs[station.scene].exits.map(e=>e.id)],station.at??'',v=>edit('Rebind station arrival',d=>{if(v)d.STATIONS[id].at=v;else delete d.STATIONS[id].at;}));}
+  // A route and its geographic point may need to change together. Keep typed drafts until
+  // one atomic commit, so exchanging occupied platforms needs no invalid intermediate source.
+  const stationSource=JSON.stringify([d.STATIONS,d.STATION_MAP]);
+  if(!stationDraft||stationSource!==stationDraftSource){stationDraft=structuredClone({STATIONS:d.STATIONS,STATION_MAP:d.STATION_MAP});stationDraftSource=stationSource;}
+  const routes=form.section(host,'Station routes');
+  const note=document.createElement('p');note.textContent='Stage platform, surface, arrival and map-point changes, then apply all station routes together.';routes.append(note);
+  for(const id of d.LINE){const section=form.section(routes,'Station routing '+id),station=stationDraft.STATIONS[id];
+   form.select(section,'Station '+id+' scene',sceneIds,station.scene,v=>{stationDraft!.STATIONS[id].scene=v as typeof station.scene;delete stationDraft!.STATIONS[id].at;render();});
+   form.select(section,'Station '+id+' up',sceneIds,station.up,v=>{stationDraft!.STATIONS[id].up=v as typeof station.up;});
+   form.select(section,'Station '+id+' arrival',['',...refs[station.scene].exits.map(e=>e.id)],station.at??'',v=>{if(v)stationDraft!.STATIONS[id].at=v;else delete stationDraft!.STATIONS[id].at;});
+   for(const[axis,index]of [['x',0],['y',1]]as const)form.decimal(section,'Station '+id+' map '+axis,stationDraft.STATION_MAP[id][index],v=>{stationDraft!.STATION_MAP[id][index]=v;},-1000000,1000000);
+  }
+  form.button(routes,'Apply station routes',()=>{const draft=structuredClone(stationDraft!);edit('Apply station routes',d=>{d.STATIONS=draft.STATIONS;d.STATION_MAP=draft.STATION_MAP;});error.textContent='';render();});
+  form.button(routes,'Discard station route changes',()=>{stationDraft=undefined;error.textContent='';render();});
   for(const id of d.STAND_IDS){const section=form.section(host,'Taxi routing '+id),stand=d.STANDS[id];form.select(section,'Taxi '+id+' scene',sceneIds,stand.scene,v=>edit('Rebind taxi scene',d=>{d.STANDS[id].scene=v as typeof stand.scene;delete d.STANDS[id].at;}));form.select(section,'Taxi '+id+' arrival',['',...refs[stand.scene].exits.map(e=>e.id)],stand.at??'',v=>edit('Rebind taxi arrival',d=>{if(v)d.STANDS[id].at=v;else delete d.STANDS[id].at;}));}
   const registries=form.section(host,'District and place registries');let newDistrict='';form.text(registries,'New district ID','',v=>{newDistrict=v;});form.button(registries,'Add district',()=>edit('Add district registry',d=>{d.DISTRICTS.push({id:newDistrict as typeof d.DISTRICTS[number]['id'],name:'New district',short:'NEW',stratum:'street'});d.DISTRICT_MAP[newDistrict as keyof typeof d.DISTRICT_MAP]={centre:[0,0],sep:20,dens:1,col:'0,255,255',frame:[0,0,100,100],label:[0,0],note:''};d.DISTRICT_REVEAL[newDistrict as keyof typeof d.DISTRICT_REVEAL]={near:[]};}));
   for(const district of d.DISTRICTS){const inUse=d.PLACES.some(p=>p.district===district.id)||d.LINKS.some(l=>l.from===district.id||l.to===district.id)||d.LINES_PLANNED.some(l=>l.stops.some(s=>s.district===district.id));form.button(registries,'Remove district '+district.id,()=>edit('Remove unused district',d=>{d.DISTRICTS=d.DISTRICTS.filter(v=>v.id!==district.id);delete d.DISTRICT_MAP[district.id];delete d.DISTRICT_REVEAL[district.id];for(const reveal of Object.values(d.DISTRICT_REVEAL))reveal.near=reveal.near.filter(id=>id!==district.id);}),inUse||d.DISTRICTS.length===1);}

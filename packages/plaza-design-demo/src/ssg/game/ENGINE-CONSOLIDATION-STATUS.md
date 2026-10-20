@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `60e1f9a` on main and production.
-Homepage jobs39353540963/39353540880 and design job39353540879 succeeded.
+Last verified deployment: `b37cf04` on main and production.
+Homepage jobs39354892369/39354892819 and design job39354892881 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2759,3 +2759,29 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   private native Play/Stop for Metro/GalleriaStation/HarborStation PASS; no console warnings/errors.
 - Full world acceptance remains open: native platform transport station selection still contains
   scene-to-station assumptions that must follow pending world documents. No whole-goal gate promoted.
+
+## 2026-10-20 continuation: platform/world route consistency
+
+- Native Metro and both platform presenters now resolve station membership through the same bound
+  CityModel used by boarding/arrival logic. The shared platform frame produces train, departure and
+  closed-state inputs; an unregistered platform displays no unrelated station train. Removed the
+  hard-coded Downtown/Galleria/Harbor transport-key selection from these pictures. Architecture
+  remains the registered scene artwork; source actor controllers retain their explicit editable slots.
+- World → City & travel now stages typed station scene/surface/arrival/map-point edits and applies
+  them as one validated history transaction. This permits exchanging occupied stations and map
+  coordinates without invalid intermediate source. Discard clears drafts; Undo restores committed
+  source. Existing immediate map/transport controls remain available.
+- `check-platform-world-source.mts`: three native station assignments rearranged using actual typed
+  controls, no draft mutation before Apply, duplicate membership atomic rejection, four native frame
+  times per platform, detached platform, bundle/protected Save/fresh shipping import/byte Undo PASS.
+  Evidence: `.scene-system/platform-world-source-9wPYZh`. `check-city-forms.mts` PASS.
+- Original city evidence:26 registry values/all19 lookups/13,824 knowledge-name cases/7,752 travel
+  refusals/532 map keyboard-pointer cases PASS. Actual Game boarding/platform/siding/taxi
+  destination checks PASS. Metro72 and station144 immutable draw-command comparisons PASS.
+- Runtime checkpoint `sha256:ad7594d97c95e6c5dbd50e249cd906f807f7040735ed3b45ec4a6096ecb972c5`: both
+  builds and173 zero-difference/error raster cases PASS, independently checked from the saved report.
+  Packaged app-QLDPNTWF.js/play-4IUFXMP2.js: actual typed draft/Apply/Undo, edited world membership
+  plus pending Metro private Play/Stop PASS; console warnings/errors empty. This source identity
+  precedes the subsequent evidence-only matrix update; do not label it final goal acceptance.
+- Matrix now records these bounded platform checks and latest raster evidence separately. All ten
+  previously open gates remain open; remaining world/story/controller coverage needs its own audit.
