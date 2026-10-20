@@ -181,17 +181,11 @@
       "lendingConnected": {
         "kind": "nodeConnected",
         "node": "lending"
-      }
-    },
-    "goals": [
-      {
-        "when": "catalogConnected",
-        "goal": "lan"
       },
-      {
-        "when": "lendingConnected",
+      "goal.lan": {
+        "kind": "goalComplete",
         "goal": "lan"
       }
-    ]
+    }
   }
 }

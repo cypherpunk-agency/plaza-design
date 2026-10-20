@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `6eb2a93` on main and production.
-Homepage jobs39377383977/39377384037 and design job39377384006 succeeded.
+Last verified deployment: `aff0a3b` on main and production.
+Homepage jobs39378162868/39378163155 and design job39378163313 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -3082,3 +3082,32 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   Combined-source raster evidence:
   `.scene-system/all-game-pixel-check/evidence/684d0ff4fa8babdc6566b7bbc1d130f9194079ff5a38d0e307b658a224927eca-1792476136946.json`.
   All four arrays remain identical to the pre-change diagnostic, including the open Mall delta.
+
+## 2026-10-20: observed goals use the shared workflow engine
+
+- Removed observations.goals, its separate condition validation/editor, and the SceneModel
+  post-tick award loop. All nine rows in Capsule (3), Library (2) and Moth (4) now use
+  ordinary shared triggers, system commands, events and native goal bindings.
+- Added a typed read-only goalComplete observation against the existing model goal set.
+  Completion guards prevent repeated awards/commands; no duplicated progress state, old-schema
+  translation or alternate goal evaluator was added. Existing aliases remain read-only.
+- PASS: check-native-observations (128 original tick/save/reload histories, exact redraws,
+  inactive policy, one event per new goal, typed alias CRUD and reference guards);
+  check-native-observation-save (grouped observation + shared goal-target edits, actual
+  pending native execution, history/bundle/protected Save/fresh shipping execution/byte Undo),
+  evidence `.scene-system/native-observation-save/run-nkzR7G`.
+- Capsule original comparison PASS: 1,728 timelines, 108 router timelines, 12 kettle timelines
+  and shared plug-off cases. Instrumentation now observes insertion into the actual goal set
+  on both models; it no longer assumes all writes pass through the old goal() helper.
+  The stale native-only controller mock depended on removed Pixel/goal APIs; its acceptance
+  command now runs the real original/current shared-session suites and current schema guards.
+- Typed Capsule condition edits, rejection and history PASS; protected paired Save/fresh
+  shipping import/Undo PASS in `.scene-system/capsule-workflow-save-QIZMdu`.
+  All ten device-source baselines, ENG-04, package TypeScript and both root builds PASS.
+- Packaged checkpoint: app-H5Y6XXH6.js / play-Q67V2V7E.js, 97 documents / 128 source references.
+  Raster `.scene-system/all-game-pixel-check/evidence/63a82cce53848691cb6dd0b6a0a5baa83591e59b86af3ba6887162572f832f73-1792476763063.json`:
+  all four row arrays exactly equal the prior published-source diagnostic. Original baseline
+  still FAIL solely for the already recorded Mall frame. No baseline replacement or gate promotion.
+- Packaged editor verification PASS: Native goals library.goal.lan changed to scan through
+  its typed selector; history enabled, Undo restored lan and a clean history; no console
+  warnings/errors. No rendering/layer/object changes are included in this batch.

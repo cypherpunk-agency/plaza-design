@@ -1,11 +1,27 @@
 {
   "version": 1,
   "flags": [
-    "library:renewed"
+    "library:renewed",
+    "library:goal.lan",
+    "library:observed.catalogConnected",
+    "library:observed.lendingConnected"
   ],
   "items": [],
-  "events": [],
-  "commands": {},
+  "events": [
+    "library.goal.lan"
+  ],
+  "commands": {
+    "library.goal.lan.award": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "library.goal.lan"
+        }
+      ]
+    }
+  },
   "reactions": [],
   "conversations": {
     "catalog": {
@@ -164,11 +180,50 @@
   },
   "native": {
     "reads": {
-      "library:renewed": "renewed"
+      "library:renewed": "renewed",
+      "library:goal.lan": "goal.lan",
+      "library:observed.catalogConnected": "catalogConnected",
+      "library:observed.lendingConnected": "lendingConnected"
     },
     "verbs": [],
     "events": {},
-    "goals": {}
+    "goals": {
+      "library.goal.lan": "lan"
+    },
+    "triggers": {
+      "goal-1": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "library:observed.catalogConnected"
+            },
+            {
+              "not": {
+                "flag": "library:goal.lan"
+              }
+            }
+          ]
+        },
+        "command": "library.goal.lan.award"
+      },
+      "goal-2": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "library:observed.lendingConnected"
+            },
+            {
+              "not": {
+                "flag": "library:goal.lan"
+              }
+            }
+          ]
+        },
+        "command": "library.goal.lan.award"
+      }
+    }
   },
   "state": {
     "library.renewed": {

@@ -1,13 +1,48 @@
-# Native observations
+# Native observations and shared goal workflows
 
-`SceneData.observations` declares read-only aliases and idempotent goal observations over the existing native model. Moth and Library use this source in their `devices.json`; their former custom goal ticks and Moth derived mappings are removed. Puzzle guard/seal/reward checks remain native.
+2026-10-20. Native observations are read-only projections of existing model state. They
+have no condition list, goal-award loop, scheduler or saved values of their own.
 
-An alias is one of `{kind:"nodeConnected",node}`, `{kind:"sectorOpen",node,sector}` or `{kind:"keyHeld",key}`. Goal rows contain `{when,goal}`. `when` uses the existing native condition grammar (`alias`, `!alias`, `alias=value`), evaluator and state lookups. Two conditions can award the same goal. The model checks these rows at the existing live native tick position; inactive scenes do not acquire goals. It uses the existing idempotent `goal()` method. No alias value, timer, polling loop or separate state store is saved.
+`SceneData.observations` contains only `aliases`. An alias is one of:
 
-Aliases are available through the same native reads used by conditions, templates and shared gameplay read bindings. They cannot shadow scene/device/node state, native derived names, city keys or builtins. Source actions cannot write them. Strict schemas reject unexpected fields, unknown kinds, dangling nodes/sectors/keys/goals and invalid conditions. Pending validation accepts explicit prospective network and key catalogs, rather than mutating the shipping catalog.
+- `{kind:"nodeConnected",node}`
+- `{kind:"sectorOpen",node,sector}`
+- `{kind:"keyHeld",key}`
+- `{kind:"goalComplete",goal}`
 
-The device editor's Scene settings has an Observations section with typed kind/node/sector/key controls, alias CRUD and goal condition/target controls. Edits use the ordinary atomic source transaction. Renaming updates observation goal conditions; other native conditions/templates retain their explicit references, so removing/renaming an alias still used there is rejected until those references are edited too.
+The completed-goal observation reads the model's existing goal set. It does not create a
+second progress flag. Aliases cannot shadow state, native derived names or builtins, and
+source actions cannot write them. Validation uses prospective node/key/sector/goal sources.
+The retired `observations.goals` field is rejected rather than backfilled or translated.
 
-For old editor sources omitting the entire section, device-source validation inherits the canonical scene's observations. Explicit empty configuration is honored and must still satisfy the native content's dependencies. Player saves require no migration: network connections, open sectors, keys and native goals retain their existing owners and load rules.
+Capsule, Library and Moth's nine former observed-goal rows now use the ordinary shared
+workflow: read aliases/queries, test a `native.triggers` condition, dispatch a system-only
+command, emit an event, and bind it through `native.goals` to the existing model goal.
+The condition includes a read of the completed goal, so repeated live ticks do not repeat
+awards or commands. Shared goal state is visible immediately to subsequent ordered triggers.
+The workflows run after the native tick and existing source intervals, preserving the prior
+observation position. Inactive ticks do not award goals.
 
-Verification: `check-native-observations.mts` compares 128 immutable-original combinations of network/opened-sector/keyring state and active/inactive tick/repeat/save/reload behavior, plus reference/collision/read-only guards, prospective catalogs and actual typed-form callbacks. `check-native-observation-save.mts` covers grouped history/bundle/protected Save, pending native execution, a fresh saved-JSON ESM graph, atomic invalid-reference rejection and exact-byte Undo. Evidence: `.scene-system/native-observation-save/run-tlVllF`. Package TypeScript and all ten native device-source baseline projections pass. Broader controller/world/story completion is not claimed.
+The device editor's Observations section offers typed alias kind/node/sector/key/goal CRUD.
+Logic / Commands & dialogue edits the conditions, commands, events and native goal bindings
+through the existing typed shared controls. Removing referenced aliases rejects until their
+shared read bindings are changed in the same grouped transaction. There is no separate
+observed-goal editor or native goal-condition evaluator.
+
+Verification: `check-native-observations.mts` compares 128 immutable-original Library/Moth
+network/sector/keyring combinations with active/inactive/repeated ticks and native save/reload.
+It checks one shared award event per new goal, typed alias CRUD and invalid references.
+`check-native-observation-save.mts` covers grouped history/bundles, observation changes plus
+a shared Library goal-target edit, protected Save, actual pending execution, fresh shipping
+JSON import/execution, atomic invalid reference rejection and byte Undo.
+Current evidence: `.scene-system/native-observation-save/run-nkzR7G`.
+
+Capsule uses 1,728 immutable-original thermal/boot/Pixel/door/goal timelines plus 108 original
+router timelines and 12 kettle timelines. Goal order is recorded at insertion into the
+canonical goal set on both old and current models. The obsolete native-only mock verifier
+has been replaced by those real shared-session suites and current controller schema checks.
+Typed shared goal-condition edits and protected Save/fresh import/Undo are checked by
+`check-capsule-source-workflow-forms.mts` and `check-capsule-source-workflow-save.mts`.
+Evidence: `.scene-system/capsule-workflow-save-QIZMdu`.
+
+These focused checks do not sign the full controller/editor/preservation gates.
