@@ -8,7 +8,7 @@ import type {Composition,Environment} from '../../art';
 import type {EngineDraw} from '../../engine/host';
 import type {Character} from '../../runtime/characters';
 import type {SceneDef,View} from '../kit';
-import {drawMallComposition,drawMallForeground,mallComposition,mallEnvironment,mallGeometry,validateMallComposition,type MallRenderOptions} from './composition';
+import {drawMallComposition,drawMallForeground,mallComposition,mallEnvironment,mallGeometry,mallLayout,validateMallComposition,type MallRenderOptions} from './composition';
 export {mallArt,mallComposition,validateMallComposition} from './composition';
 
 /** Bodies and ordinary interactions are authored source; the atrium controller owns only adaptive storeys and escalator motion. */
@@ -20,10 +20,11 @@ export function drawMall(ctx:CanvasRenderingContext2D,view:View,_engine:EngineDr
 export function drawMallFront(ctx:CanvasRenderingContext2D,view:View,doc:Composition=mallComposition,state:Environment['state']={},options:MallRenderOptions={}){drawMallForeground(ctx,view,frameActors(doc),doc,state,options);}
 export function mallScene(document:Composition=mallComposition,state:Environment['state']={},options:MallRenderOptions={},sceneDocument:SceneDocument=MALL_SCENE,gameplay:GameplayDefinition=MALL_GAMEPLAY):SceneDef{
  const doc=validateMallComposition(document),content=validateMallScene(sceneDocument,validateMallGameplay(gameplay)),rows=mallGeometry(doc),actors=mallActors(doc,content);
+ mallLayout(doc,content);
  const compiled=compileManifestDocument(content,rows,(_context,id)=>({name:'',pages:[],conversation:id}),{groups:mallBindingGroups,groundExits:false});
  return {id:'mall',name:content.name,...compiled.content,
   intro:content.introTouch?(touch:boolean)=>[...(touch?content.introTouch!:content.intro)]:content.intro.length?[...content.intro]:undefined,
   gameplay:withSceneConversations(gameplay,content),people:content.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
-  drawBackdrop:(x,v)=>drawMallComposition(x,v,actors,doc,state,options),drawFront:(x,v)=>drawMallForeground(x,v,actors,doc,state,options),visualEnvironment:v=>mallEnvironment(v,actors,doc)};
+  drawBackdrop:(x,v)=>drawMallComposition(x,v,actors,doc,state,options,content),drawFront:(x,v)=>drawMallForeground(x,v,actors,doc,state,options,content),visualEnvironment:v=>mallEnvironment(v,actors,doc,content)};
 }
 export const mall=mallScene();

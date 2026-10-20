@@ -1686,6 +1686,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"room":"scene","escalator":"escalator"},
     "version": 1,
     "width": {
       "instance": "scene",

@@ -132,3 +132,19 @@ Default Capsule geometry/device/boot/heat/steam checks and ten immutable interio
 cases PASS. Both builds/tsc and173 zero-difference/error browser raster cases PASS at sourcedb81f87e1f74.
 Actual latest packaged Capsule Play/Stop PASS without warnings/errors. Removed baseCapsule and the
 older missing-bed source backfill; no old-save conversion was introduced.
+
+## Mall geometry inputs
+
+Atrium geometry artwork selects the registered room dimension properties; Escalator motion artwork
+selects physical route geometry. Both are typed Scene inspector fields. The scene manifest owns
+width. Room and escalator roles are required by the native atrium controller and missing roles
+reject atomically. Escalator height drives rider elevation; non-unit physical transforms reject.
+Nine unused layout fields/lookup dependencies and the blanket prop ID floor were removed. Existing
+actors/ordinary interactions/attachments remain source validated. Motion group/phase and embedded
+vendor actor references remain a separate open continuation.
+
+check-mall-artwork-roles.mts PASS (`mall-actor-role-source-g546tY`): actual forms, replaced/deleted
+former geometry, native adaptive floors/rider routes, atomic rejection, bundle/protected Save/fresh
+shipping/byte Undo. Original77 bodies/six people/interactions/booth/adaptive poses and tsc/both builds
+PASS. Source8235dad37ca6 passes173 zero-difference/error browser raster cases; actual native Mall
+Play/Stop and inspector fields PASS with no warning/error logs.

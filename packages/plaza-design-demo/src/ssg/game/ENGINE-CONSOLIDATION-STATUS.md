@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `55e6f09` on main and production.
-Production/main homepage jobs39344516154/39344515729 and design job39344516158 succeeded.
+Last verified deployment: `4c3d49c` on main and production.
+Production/main homepage jobs39345105407/39345105278 and design job39345105274 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2415,3 +2415,22 @@ state declarations and native controller role refs, exact boot+notice timing, cu
 scratch clearing/callback cancellation, companion binding, invalid device rejection, grouped
 history/bundle/protected Save/fresh module import/byte Undo. Updated stale fixtures to declare
 state in gameplay and use current controller text/device fields; original timing assertions remain.
+
+## 2026-10-20 Mall geometry continuation
+
+Mall atrium dimensions and escalator motion use two shared typed artwork roles. The broad former
+artwork ID floor is removed; actual manifest/actor/attachment dependencies remain checked. Nine
+unused layout fields and their lookup dependencies were deleted rather than exposed as spurious
+controls. Scene width comes from the shared manifest; moved elevated escalator geometry drives real
+rider positions. Missing required motion roles and unsupported physical transforms reject before
+history/source commit. Actual Scene selectors, replacement/deletion of former room/escalator,
+adaptive floor and escalator native poses, invalid-edit atomicity, bundles, protected Save/fresh
+shipping import and byte Undo PASS (`mall-actor-role-source-g546tY`).
+
+Original Mall77 poses, six people, native interaction coordinates, booth attachments and adaptive
+floor cases PASS; tsc/both builds PASS. Source8235dad37ca6a8bacd3952dea67e65040a43fdd2c11259a2bac3917f575ea664
+passes173/173 original browser raster comparisons with zero differences/errors (independently
+verified). Actual packaged inspector fields/native Mall Play/Stop PASS without warnings/errors;
+app-36ASNHAE.js / play-BHX7EADN.js / play-985a12552f05d6c5.html.
+Mall actor motion grouping/ordinal phases and embedded-vendor identities still need source contracts;
+this geometry checkpoint does not close that scene or any remaining whole-goal gate.
