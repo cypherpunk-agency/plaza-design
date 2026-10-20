@@ -12,11 +12,12 @@ Story M1–M9 and completed artwork/workbench S0–S13 keep their existing IDs.
 
 ### Current acceptance, 2026-10-20
 
-Six gates are signed: G1/G2/G3/G5/G6/G11. World/story acceptance now covers all19 declared
+Seven gates are signed: G0/G1/G2/G3/G5/G6/G11. G0 uses the explicitly approved
+retrospective baseline audit; see BASELINE-RECONCILIATION.md. World/story acceptance now covers all19 declared
 route collections, pending destinations/arrivals, map/transport access, opening and cinematic
 handoffs, grouped new-scene imports and atomic invalid-reference rejection. See
 [WORLD-STORY-ACCEPTANCE.md](./docs/reference/WORLD-STORY-ACCEPTANCE.md).
-G0/G4/G7/G8/G9/G10/G12/G13 remain open. Current rendering has the separately recorded
+G4/G7/G8/G9/G10/G12/G13 remain open. Current rendering has the separately recorded
 pre-existing Mall animation delta; the original raster baseline remains unchanged.
 The dated checkpoints below retain their original scope; the execution ledger owns current gates.
 

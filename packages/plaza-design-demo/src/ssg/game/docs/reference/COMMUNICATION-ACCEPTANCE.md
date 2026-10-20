@@ -62,5 +62,5 @@ reward isolation. Bot parity covers 834 original cases; free-text matching cover
 The free-conversation fixture now reads its counter from the common `values.test` owner; no runtime
 behavior or expected reward/rollback assertion was changed by that fixture correction.
 
-G0 remains open pending its separate starting-diff/inventory evidence reconciliation. All other
-goal gates retain their independent requirements.
+G0 was separately accepted on2026-10-20 under the user-approved retrospective audit condition;
+see BASELINE-RECONCILIATION.md. Other goal gates retain their independent requirements.

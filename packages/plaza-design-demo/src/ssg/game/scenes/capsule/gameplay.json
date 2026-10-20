@@ -18,7 +18,8 @@
     "capsule.router.online",
     "capsule.goal.router",
     "capsule.goal.concierge",
-    "capsule.goal.pixel"
+    "capsule.goal.pixel",
+    "capsule.router.reboot"
   ],
   "commands": {
     "capsule.plug.off": {
@@ -142,6 +143,16 @@
       "actions": [
         {
           "emit": "capsule.goal.pixel"
+        }
+      ]
+    },
+    "capsule.router.reboot": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "capsule.router.reboot"
         }
       ]
     }
@@ -484,6 +495,12 @@
         "say": {
           "text": "router.online"
         }
+      },
+      "capsule.router.reboot": {
+        "from": "router",
+        "say": {
+          "text": "router.reboot"
+        }
       }
     },
     "intervals": {
@@ -649,6 +666,16 @@
             "command": "capsule.router.online"
           }
         ]
+      },
+      "capsule.router.rebooted": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
+          {
+            "command": "capsule.router.reboot"
+          }
+        ]
       }
     }
   },
@@ -734,6 +761,25 @@
                 "is": true
               }
             ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    },
+    "pixelOnRouter": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "state": "capsule.pixelAt",
+            "is": "router"
           },
           "value": {
             "literal": true

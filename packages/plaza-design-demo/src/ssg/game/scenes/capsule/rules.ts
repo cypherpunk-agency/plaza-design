@@ -62,7 +62,8 @@ function tick(w: World, dt: number) {
   s.temp = t;
   if (up && t >= tune(m, 'rebootTemp')) {
     s.bootUntil = m.now() + tune(m, 'rebootMs');
-    w.say(w.line(capsuleController(m.data).texts.reboot, { temp: Math.round(t) }), capsuleController(m.data).devices.router);
+    // Physical threshold/timing stays here; shared source owns the response and speaker.
+    w.input('capsule.router.rebooted');
     m.later(tune(m, 'rebootMs') + capsuleController(m.data).onlineNoticeDelayMs, () => { if (w.input('capsule.router.onlineDue').ok) w.changed(); });
     w.changed();
   } else if (Math.floor(Math.round(t) / capsuleController(m.data).temperatureNoticeStep) !== Math.floor(before / capsuleController(m.data).temperatureNoticeStep)) w.changed();
@@ -72,7 +73,7 @@ function tick(w: World, dt: number) {
 
 export const CAPSULE_RULES: SceneRules = {
   effects: EFFECTS,
-  inputs: ['capsule.router.onlineDue'],
+  inputs: ['capsule.router.onlineDue', 'capsule.router.rebooted'],
   derived: {
     routerUp: (m) => routerUp(m),
     routerUpAtTickStart: (m) => m.scratch.routerUpAtTickStart === 1,
@@ -80,7 +81,6 @@ export const CAPSULE_RULES: SceneRules = {
     temp: (m) => Math.round(tempOf(m)),
     /** Too hot to send anything: packets drop. */
     hot: (m) => tempOf(m) >= tune(m, 'hotTemp'),
-    pixelOnRouter: (m) => capsuleState(m,'pixelAt') === 'router',
   },
   tick,
   // Controller-owned references are checked by the registered source contract.
