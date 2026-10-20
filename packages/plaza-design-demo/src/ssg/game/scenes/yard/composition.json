@@ -11,7 +11,7 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop",
+      "layer": "distance",
       "bindings": {
         "layer": "yard.layer",
         "night": "yard.night"
@@ -36,8 +36,8 @@
         "x": 8,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -60,8 +60,8 @@
         "x": 150,
         "h": 0
       },
-      "order": 2,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -87,8 +87,8 @@
         "x": 250,
         "h": 0
       },
-      "order": 3,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -112,8 +112,8 @@
         "x": 452,
         "h": 0
       },
-      "order": 4,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -137,8 +137,8 @@
         "x": 596,
         "h": 0
       },
-      "order": 5,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -151,8 +151,8 @@
         "x": 38,
         "h": 0
       },
-      "order": 6,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -165,8 +165,8 @@
         "x": 380,
         "h": 0
       },
-      "order": 7,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -179,8 +179,8 @@
         "x": 500,
         "h": 0
       },
-      "order": 8,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -193,8 +193,8 @@
         "x": 690,
         "h": 0
       },
-      "order": 9,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "backdrop",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -207,8 +207,8 @@
         "x": 147,
         "h": 0
       },
-      "order": 10,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -221,8 +221,8 @@
         "x": 594,
         "h": 0
       },
-      "order": 11,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -235,8 +235,8 @@
         "x": 26,
         "h": 0
       },
-      "order": 12,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -249,8 +249,8 @@
         "x": 78,
         "h": 0
       },
-      "order": 13,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -263,8 +263,8 @@
         "x": 156,
         "h": 0
       },
-      "order": 14,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -277,8 +277,8 @@
         "x": 300,
         "h": 0
       },
-      "order": 15,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -291,8 +291,8 @@
         "x": 476,
         "h": 0
       },
-      "order": 16,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -305,8 +305,8 @@
         "x": 552,
         "h": 0
       },
-      "order": 17,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -319,8 +319,8 @@
         "x": 706,
         "h": 0
       },
-      "order": 18,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -333,8 +333,8 @@
         "x": 214,
         "h": 0
       },
-      "order": 19,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -347,8 +347,8 @@
         "x": 158,
         "h": 0
       },
-      "order": 20,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -361,8 +361,8 @@
         "x": 180,
         "h": 0
       },
-      "order": 21,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -375,8 +375,8 @@
         "x": 200,
         "h": 0
       },
-      "order": 22,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -389,8 +389,8 @@
         "x": 731,
         "h": 0
       },
-      "order": 23,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -403,8 +403,8 @@
         "x": 712,
         "h": 0
       },
-      "order": 24,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -417,8 +417,8 @@
         "x": 466,
         "h": 0
       },
-      "order": 25,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -431,8 +431,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 26,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -445,8 +445,8 @@
         "x": 78,
         "h": 0
       },
-      "order": 27,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -459,8 +459,8 @@
         "x": 26,
         "h": 0
       },
-      "order": 28,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -475,8 +475,8 @@
         "x": 290,
         "h": 0
       },
-      "order": 29,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -491,8 +491,8 @@
         "x": 350,
         "h": 0
       },
-      "order": 30,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -507,8 +507,8 @@
         "x": 410,
         "h": 0
       },
-      "order": 31,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -521,8 +521,8 @@
         "x": 586,
         "h": 0
       },
-      "order": 32,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -535,8 +535,8 @@
         "x": 452,
         "h": 0
       },
-      "order": 33,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -549,8 +549,8 @@
         "x": 90,
         "h": 0
       },
-      "order": 34,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer",
         "highlight": "yard.highlight",
@@ -565,8 +565,8 @@
         "x": 262,
         "h": 0
       },
-      "order": 35,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer",
         "highlight": "yard.highlight",
@@ -582,8 +582,8 @@
         "x": 615,
         "h": 0
       },
-      "order": 36,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer",
         "highlight": "yard.highlight",
@@ -599,8 +599,8 @@
         "x": 668,
         "h": 0
       },
-      "order": 37,
-      "pass": "backdrop",
+      "order": 27,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer"
       }
@@ -613,8 +613,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 38,
-      "pass": "backdrop",
+      "order": 28,
+      "layer": "set",
       "bindings": {
         "layer": "yard.layer",
         "held": "yard.held",
@@ -624,16 +624,14 @@
     },
     {
       "id": "spawn",
-      "type": "yard.marker",
-      "props": {
-        "role": "spawn"
-      },
+      "type": "scene.player",
+      "props": {},
       "placement": {
         "x": 48,
         "h": 0
       },
-      "order": 39,
-      "pass": "backdrop"
+      "order": 0,
+      "layer": "playfield"
     },
     {
       "id": "exit-downtown",
@@ -645,8 +643,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 40,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "logic",
       "attach": {
         "instance": "spawn",
         "anchor": "origin"
@@ -662,8 +660,8 @@
         "x": 350,
         "h": 0
       },
-      "order": 41,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "logic"
     },
     {
       "id": "slot-chute",
@@ -675,8 +673,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 42,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "logic",
       "attach": {
         "instance": "chute",
         "anchor": "origin"
@@ -692,8 +690,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 43,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "logic",
       "attach": {
         "instance": "camera",
         "anchor": "origin"
@@ -709,8 +707,8 @@
         "x": 88,
         "h": 0
       },
-      "order": 44,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "logic",
       "attach": {
         "instance": "crane",
         "anchor": "origin"
@@ -726,8 +724,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 45,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "logic",
       "attach": {
         "instance": "hatch",
         "anchor": "origin"

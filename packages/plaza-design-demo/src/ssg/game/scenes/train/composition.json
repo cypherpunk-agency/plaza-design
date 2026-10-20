@@ -14,18 +14,18 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "spawn",
-      "type": "train.marker",
+      "type": "scene.player",
       "props": {},
       "placement": {
         "x": 780,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop"
+      "order": 75,
+      "layer": "playfield"
     },
     {
       "id": "ceiling",
@@ -35,8 +35,8 @@
         "x": 0,
         "h": 166
       },
-      "order": 2,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "backdrop"
     },
     {
       "id": "roof",
@@ -52,8 +52,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 3,
-      "pass": "backdrop"
+      "order": 2,
+      "layer": "backdrop"
     },
     {
       "id": "news",
@@ -66,8 +66,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 4,
-      "pass": "backdrop"
+      "order": 3,
+      "layer": "backdrop"
     },
     {
       "id": "fill",
@@ -77,8 +77,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 5,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -91,8 +91,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 6,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -105,8 +105,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 7,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -123,8 +123,8 @@
         "x": 70,
         "h": 0
       },
-      "order": 8,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -141,8 +141,8 @@
         "x": 200,
         "h": 0
       },
-      "order": 9,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -159,8 +159,8 @@
         "x": 460,
         "h": 0
       },
-      "order": 10,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -177,8 +177,8 @@
         "x": 590,
         "h": 0
       },
-      "order": 11,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -195,8 +195,8 @@
         "x": 860,
         "h": 0
       },
-      "order": 12,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -213,8 +213,8 @@
         "x": 990,
         "h": 0
       },
-      "order": 13,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -227,8 +227,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 14,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -241,8 +241,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 15,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "backdrop",
       "bindings": {
         "frame": "train.frame"
       }
@@ -255,8 +255,8 @@
         "x": 300,
         "h": 0
       },
-      "order": 16,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -269,8 +269,8 @@
         "x": 900,
         "h": 0
       },
-      "order": 17,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -283,8 +283,8 @@
         "x": 610,
         "h": 0
       },
-      "order": 18,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -297,8 +297,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 19,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -315,8 +315,8 @@
         "x": 250,
         "h": 0
       },
-      "order": 20,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -333,8 +333,8 @@
         "x": 640,
         "h": 0
       },
-      "order": 21,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -351,8 +351,8 @@
         "x": 1040,
         "h": 0
       },
-      "order": 22,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -365,8 +365,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 23,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "set",
       "attach": {
         "instance": "ad1",
         "anchor": "origin"
@@ -383,8 +383,8 @@
         "x": 520,
         "h": 0
       },
-      "order": 24,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -397,8 +397,8 @@
         "x": 1000,
         "h": 0
       },
-      "order": 25,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -411,8 +411,8 @@
         "x": 120,
         "h": 0
       },
-      "order": 26,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -425,8 +425,8 @@
         "x": 32,
         "h": 0
       },
-      "order": 27,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -439,8 +439,8 @@
         "x": 1130,
         "h": 0
       },
-      "order": 28,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -453,8 +453,8 @@
         "x": 56,
         "h": 0
       },
-      "order": 29,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "set",
       "attach": {
         "instance": "gangway",
         "anchor": "origin"
@@ -471,8 +471,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 30,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "set",
       "attach": {
         "instance": "gangway",
         "anchor": "origin"
@@ -489,8 +489,8 @@
         "x": 10,
         "h": 0
       },
-      "order": 31,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "set",
       "attach": {
         "instance": "gangway",
         "anchor": "origin"
@@ -507,8 +507,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 32,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "set",
       "attach": {
         "instance": "gangway",
         "anchor": "origin"
@@ -525,8 +525,8 @@
         "x": 380,
         "h": 0
       },
-      "order": 33,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -539,8 +539,8 @@
         "x": 780,
         "h": 0
       },
-      "order": 34,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
       }
@@ -553,8 +553,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 35,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "playfield",
       "attach": {
         "instance": "window0",
         "anchor": "origin"
@@ -572,8 +572,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 36,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "playfield",
       "attach": {
         "instance": "window1",
         "anchor": "origin"
@@ -591,8 +591,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 37,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "playfield",
       "attach": {
         "instance": "window2",
         "anchor": "origin"
@@ -610,8 +610,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 38,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "playfield",
       "attach": {
         "instance": "window3",
         "anchor": "origin"
@@ -629,8 +629,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 39,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "playfield",
       "attach": {
         "instance": "window4",
         "anchor": "origin"
@@ -648,8 +648,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 40,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "playfield",
       "attach": {
         "instance": "window5",
         "anchor": "origin"
@@ -669,8 +669,8 @@
         "x": 25,
         "h": 0
       },
-      "order": 41,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "playfield",
       "attach": {
         "instance": "window0",
         "anchor": "origin"
@@ -689,8 +689,8 @@
         "x": 75,
         "h": 0
       },
-      "order": 42,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "playfield",
       "attach": {
         "instance": "window0",
         "anchor": "origin"
@@ -709,8 +709,8 @@
         "x": 25,
         "h": 0
       },
-      "order": 43,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "playfield",
       "attach": {
         "instance": "window1",
         "anchor": "origin"
@@ -729,8 +729,8 @@
         "x": 75,
         "h": 0
       },
-      "order": 44,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "playfield",
       "attach": {
         "instance": "window1",
         "anchor": "origin"
@@ -749,8 +749,8 @@
         "x": 25,
         "h": 0
       },
-      "order": 45,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "playfield",
       "attach": {
         "instance": "window2",
         "anchor": "origin"
@@ -769,8 +769,8 @@
         "x": 75,
         "h": 0
       },
-      "order": 46,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "playfield",
       "attach": {
         "instance": "window2",
         "anchor": "origin"
@@ -789,8 +789,8 @@
         "x": 25,
         "h": 0
       },
-      "order": 47,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "playfield",
       "attach": {
         "instance": "window3",
         "anchor": "origin"
@@ -809,8 +809,8 @@
         "x": 75,
         "h": 0
       },
-      "order": 48,
-      "pass": "backdrop",
+      "order": 13,
+      "layer": "playfield",
       "attach": {
         "instance": "window3",
         "anchor": "origin"
@@ -829,8 +829,8 @@
         "x": 25,
         "h": 0
       },
-      "order": 49,
-      "pass": "backdrop",
+      "order": 14,
+      "layer": "playfield",
       "attach": {
         "instance": "window4",
         "anchor": "origin"
@@ -849,8 +849,8 @@
         "x": 75,
         "h": 0
       },
-      "order": 50,
-      "pass": "backdrop",
+      "order": 15,
+      "layer": "playfield",
       "attach": {
         "instance": "window4",
         "anchor": "origin"
@@ -869,8 +869,8 @@
         "x": 25,
         "h": 0
       },
-      "order": 51,
-      "pass": "backdrop",
+      "order": 16,
+      "layer": "playfield",
       "attach": {
         "instance": "window5",
         "anchor": "origin"
@@ -889,8 +889,8 @@
         "x": 75,
         "h": 0
       },
-      "order": 52,
-      "pass": "backdrop",
+      "order": 17,
+      "layer": "playfield",
       "attach": {
         "instance": "window5",
         "anchor": "origin"
@@ -909,8 +909,8 @@
         "x": 336,
         "h": 0
       },
-      "order": 53,
-      "pass": "backdrop",
+      "order": 18,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.standing-rider0.pose"
       }
@@ -925,8 +925,8 @@
         "x": 566,
         "h": 0
       },
-      "order": 54,
-      "pass": "backdrop",
+      "order": 19,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.standing-rider1.pose"
       }
@@ -941,8 +941,8 @@
         "x": 956,
         "h": 0
       },
-      "order": 55,
-      "pass": "backdrop",
+      "order": 20,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.standing-rider2.pose"
       }
@@ -957,8 +957,8 @@
         "x": 225,
         "h": 0
       },
-      "order": 56,
-      "pass": "backdrop",
+      "order": 21,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.suit.pose"
       }
@@ -973,8 +973,8 @@
         "x": 556,
         "h": 0
       },
-      "order": 57,
-      "pass": "backdrop",
+      "order": 22,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.courier.pose"
       }
@@ -989,8 +989,8 @@
         "x": 885,
         "h": 0
       },
-      "order": 58,
-      "pass": "backdrop",
+      "order": 23,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.elder.pose"
       }
@@ -1005,8 +1005,8 @@
         "x": 1015,
         "h": 0
       },
-      "order": 59,
-      "pass": "backdrop",
+      "order": 24,
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.punk.pose"
       }
@@ -1019,8 +1019,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 60,
-      "pass": "backdrop",
+      "order": 25,
+      "layer": "playfield",
       "attach": {
         "instance": "window0",
         "anchor": "origin"
@@ -1038,8 +1038,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 61,
-      "pass": "backdrop",
+      "order": 26,
+      "layer": "playfield",
       "attach": {
         "instance": "window1",
         "anchor": "origin"
@@ -1057,8 +1057,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 62,
-      "pass": "backdrop",
+      "order": 27,
+      "layer": "playfield",
       "attach": {
         "instance": "window2",
         "anchor": "origin"
@@ -1076,8 +1076,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 63,
-      "pass": "backdrop",
+      "order": 28,
+      "layer": "playfield",
       "attach": {
         "instance": "window3",
         "anchor": "origin"
@@ -1095,8 +1095,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 64,
-      "pass": "backdrop",
+      "order": 29,
+      "layer": "playfield",
       "attach": {
         "instance": "window4",
         "anchor": "origin"
@@ -1114,8 +1114,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 65,
-      "pass": "backdrop",
+      "order": 30,
+      "layer": "playfield",
       "attach": {
         "instance": "window5",
         "anchor": "origin"
@@ -1133,8 +1133,8 @@
         "x": 0,
         "h": 134
       },
-      "order": 66,
-      "pass": "backdrop",
+      "order": 31,
+      "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1147,8 +1147,8 @@
         "x": 60,
         "h": 0
       },
-      "order": 67,
-      "pass": "backdrop",
+      "order": 32,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1165,8 +1165,8 @@
         "x": 90,
         "h": 0
       },
-      "order": 68,
-      "pass": "backdrop",
+      "order": 33,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1183,8 +1183,8 @@
         "x": 120,
         "h": 0
       },
-      "order": 69,
-      "pass": "backdrop",
+      "order": 34,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1201,8 +1201,8 @@
         "x": 150,
         "h": 0
       },
-      "order": 70,
-      "pass": "backdrop",
+      "order": 35,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1219,8 +1219,8 @@
         "x": 180,
         "h": 0
       },
-      "order": 71,
-      "pass": "backdrop",
+      "order": 36,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1237,8 +1237,8 @@
         "x": 210,
         "h": 0
       },
-      "order": 72,
-      "pass": "backdrop",
+      "order": 37,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1255,8 +1255,8 @@
         "x": 240,
         "h": 0
       },
-      "order": 73,
-      "pass": "backdrop",
+      "order": 38,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1273,8 +1273,8 @@
         "x": 270,
         "h": 0
       },
-      "order": 74,
-      "pass": "backdrop",
+      "order": 39,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1291,8 +1291,8 @@
         "x": 300,
         "h": 0
       },
-      "order": 75,
-      "pass": "backdrop",
+      "order": 40,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1309,8 +1309,8 @@
         "x": 330,
         "h": 0
       },
-      "order": 76,
-      "pass": "backdrop",
+      "order": 41,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1327,8 +1327,8 @@
         "x": 360,
         "h": 0
       },
-      "order": 77,
-      "pass": "backdrop",
+      "order": 42,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1345,8 +1345,8 @@
         "x": 390,
         "h": 0
       },
-      "order": 78,
-      "pass": "backdrop",
+      "order": 43,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1363,8 +1363,8 @@
         "x": 420,
         "h": 0
       },
-      "order": 79,
-      "pass": "backdrop",
+      "order": 44,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1381,8 +1381,8 @@
         "x": 450,
         "h": 0
       },
-      "order": 80,
-      "pass": "backdrop",
+      "order": 45,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1399,8 +1399,8 @@
         "x": 480,
         "h": 0
       },
-      "order": 81,
-      "pass": "backdrop",
+      "order": 46,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1417,8 +1417,8 @@
         "x": 510,
         "h": 0
       },
-      "order": 82,
-      "pass": "backdrop",
+      "order": 47,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1435,8 +1435,8 @@
         "x": 540,
         "h": 0
       },
-      "order": 83,
-      "pass": "backdrop",
+      "order": 48,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1453,8 +1453,8 @@
         "x": 570,
         "h": 0
       },
-      "order": 84,
-      "pass": "backdrop",
+      "order": 49,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1471,8 +1471,8 @@
         "x": 600,
         "h": 0
       },
-      "order": 85,
-      "pass": "backdrop",
+      "order": 50,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1489,8 +1489,8 @@
         "x": 630,
         "h": 0
       },
-      "order": 86,
-      "pass": "backdrop",
+      "order": 51,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1507,8 +1507,8 @@
         "x": 660,
         "h": 0
       },
-      "order": 87,
-      "pass": "backdrop",
+      "order": 52,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1525,8 +1525,8 @@
         "x": 690,
         "h": 0
       },
-      "order": 88,
-      "pass": "backdrop",
+      "order": 53,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1543,8 +1543,8 @@
         "x": 720,
         "h": 0
       },
-      "order": 89,
-      "pass": "backdrop",
+      "order": 54,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1561,8 +1561,8 @@
         "x": 750,
         "h": 0
       },
-      "order": 90,
-      "pass": "backdrop",
+      "order": 55,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1579,8 +1579,8 @@
         "x": 780,
         "h": 0
       },
-      "order": 91,
-      "pass": "backdrop",
+      "order": 56,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1597,8 +1597,8 @@
         "x": 810,
         "h": 0
       },
-      "order": 92,
-      "pass": "backdrop",
+      "order": 57,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1615,8 +1615,8 @@
         "x": 840,
         "h": 0
       },
-      "order": 93,
-      "pass": "backdrop",
+      "order": 58,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1633,8 +1633,8 @@
         "x": 870,
         "h": 0
       },
-      "order": 94,
-      "pass": "backdrop",
+      "order": 59,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1651,8 +1651,8 @@
         "x": 900,
         "h": 0
       },
-      "order": 95,
-      "pass": "backdrop",
+      "order": 60,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1669,8 +1669,8 @@
         "x": 930,
         "h": 0
       },
-      "order": 96,
-      "pass": "backdrop",
+      "order": 61,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1687,8 +1687,8 @@
         "x": 960,
         "h": 0
       },
-      "order": 97,
-      "pass": "backdrop",
+      "order": 62,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1705,8 +1705,8 @@
         "x": 990,
         "h": 0
       },
-      "order": 98,
-      "pass": "backdrop",
+      "order": 63,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1723,8 +1723,8 @@
         "x": 1020,
         "h": 0
       },
-      "order": 99,
-      "pass": "backdrop",
+      "order": 64,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1741,8 +1741,8 @@
         "x": 1050,
         "h": 0
       },
-      "order": 100,
-      "pass": "backdrop",
+      "order": 65,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1759,8 +1759,8 @@
         "x": 1080,
         "h": 0
       },
-      "order": 101,
-      "pass": "backdrop",
+      "order": 66,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1777,8 +1777,8 @@
         "x": 1110,
         "h": 0
       },
-      "order": 102,
-      "pass": "backdrop",
+      "order": 67,
+      "layer": "playfield",
       "attach": {
         "instance": "handrail",
         "anchor": "origin"
@@ -1795,8 +1795,8 @@
         "x": 180,
         "h": 0
       },
-      "order": 103,
-      "pass": "backdrop",
+      "order": 68,
+      "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1809,8 +1809,8 @@
         "x": 330,
         "h": 0
       },
-      "order": 104,
-      "pass": "backdrop",
+      "order": 69,
+      "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1823,8 +1823,8 @@
         "x": 560,
         "h": 0
       },
-      "order": 105,
-      "pass": "backdrop",
+      "order": 70,
+      "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1837,8 +1837,8 @@
         "x": 720,
         "h": 0
       },
-      "order": 106,
-      "pass": "backdrop",
+      "order": 71,
+      "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1851,8 +1851,8 @@
         "x": 950,
         "h": 0
       },
-      "order": 107,
-      "pass": "backdrop",
+      "order": 72,
+      "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1865,8 +1865,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 108,
-      "pass": "backdrop",
+      "order": 73,
+      "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1879,8 +1879,8 @@
         "x": 430,
         "h": 0
       },
-      "order": 109,
-      "pass": "foreground",
+      "order": 0,
+      "layer": "foreground",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1893,8 +1893,8 @@
         "x": 880,
         "h": 0
       },
-      "order": 110,
-      "pass": "foreground",
+      "order": 1,
+      "layer": "foreground",
       "bindings": {
         "frame": "train.frame"
       }
@@ -1911,8 +1911,8 @@
         "x": 0,
         "h": 22
       },
-      "order": 111,
-      "pass": "backdrop",
+      "order": 74,
+      "layer": "playfield",
       "attach": {
         "instance": "brake",
         "anchor": "origin"

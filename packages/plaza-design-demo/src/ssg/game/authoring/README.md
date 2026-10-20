@@ -28,6 +28,9 @@ and `--api-port` to choose others. Ctrl+C stops both. Restart after renderer or 
    Undo; it is separate from player saves and disposable test output.
 6. Rebuild the homepage to use saved edits. Publishing remains a separate action.
 
+The editor uses one shared frame: navigator, stage and inspector. Scene and animation screens,
+viewers and world tools retain that common structure.
+
 ## Available authoring
 
 All 19 existing scenes have composition, ordinary content, device/controller sources and native

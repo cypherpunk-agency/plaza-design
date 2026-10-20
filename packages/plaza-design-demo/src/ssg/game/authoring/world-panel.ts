@@ -3,6 +3,7 @@ import type {CityModel} from '../world/city';
 import { createWorldMapPreview, type WorldPlaceInspection, type WorldMapPreviewState } from './world-map';
 import type { WorldDocument } from '../world/document';
 import type { SceneId } from '../scenes';
+import { createFrame } from './frame';
 
 export interface WorldPanelSession { place?: WorldPlaceInspection['place']['id']; preview?: Partial<WorldMapPreviewState> }
 export function mountWorldPanel(host: HTMLElement, document: WorldDocument, openScene: (id: string) => void, session: WorldPanelSession = {}, scene?: string,world?:CityModel): () => void {
@@ -50,7 +51,7 @@ export function mountWorldPanel(host: HTMLElement, document: WorldDocument, open
   const time = node('input'); time.type = 'number'; time.min = '0'; time.step = '1'; time.value = String(preview.getPreview().time); time.style.width = '65px';
   time.onchange = () => { const value = Number(time.value); if (Number.isFinite(value) && value >= 0) preview.setPreview({ time: value }); }; label('Map frame', time);
   const status = node('p', 'Geography, transport and access rules are read-only. Opening a place switches the editor to its scene.');
-  host.replaceChildren(status, controls, canvas, details);
+  createFrame(host, { stage: [canvas], inspector: [status, controls, details] }, 'City map');
   const coordinates = (event: PointerEvent) => { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; };
   canvas.onpointermove = event => { const p = coordinates(event); canvas.style.cursor = preview.pointer(p.x, p.y, false) ? 'pointer' : 'default'; };
   canvas.onpointerdown = event => { if (event.button !== 0) return; canvas.focus(); const p = coordinates(event); preview.pointer(p.x, p.y, true); };

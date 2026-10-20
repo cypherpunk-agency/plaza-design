@@ -37,13 +37,6 @@ The old window/counter may be removed after actual dependent artwork has been re
 Shop lighting kernels are registered presentation-only consumers; no game logic is unlocked by
 removing them. The common manifest/source validators retain real references.
 
-check-shop-source-roles.mts PASS (`shop-actor-role-source-p3asuo`) covers actual typed controls,
-replacement/removal, scaled clips, source singleton/group reassignment, invalid refs/dimensions,
-optional absence, model history, bundles, protected Save, fresh shipping import and byte Undo.
-Original Shop drawing/purchase/refusal checks and both builds PASS. Source04c1aa71e826 passes
-173 browser raster comparisons with zero differences/errors and actual packaged Shop Play/Stop.
-Next native identity consumers include Mall's adaptive floors, escalator riders and booth actors.
-
 ## Mall slots, phases and embedded bodies
 
 The same actor-reference contract now supports maps from actor IDs to explicit numeric slots or
@@ -54,14 +47,6 @@ exact value; removal prunes only that actor, preserving every other actor's slot
 vendor roles use the existing actor pickers. An actor attached to a booth with the corresponding
 registered vendor visual binding is painted inside the booth once; neither booth nor actor needs
 its historical ID. Unbound/absent inputs never recover old prefixes or names.
-
-check-mall-actor-roles.mts PASS (`mall-actor-role-source-IhzrYe`) proves actual forms, newly named
-actors, reassignment, old actor/booth removal, unchanged slots after deletion, real native outputs,
-invalid edits/absence, bundle/protected Save/fresh shipping/byte Undo. All19 actor helper regression
-PASS (`actor-entities/run-WyCTmf`). Beach/Shop source role regressions PASS. Original Mall77 body and
-interaction/booth/tall-floor pose checks and both builds PASS. At source2992ba89a94c, all173 browser
-raster rows have zero differences/errors; all19 actual packaged native editor Play/Stop pass without
-warning/error logs. This is bounded presentation evidence, not whole-goal acceptance.
 
 ## Harbor assignments and clipping
 
@@ -77,19 +62,4 @@ exactly the same capability. Old role clip aliases are removed. The preview no l
 fallback over default global actors/signal reads; the native scene's own PresentationSignals feeds
 both Game and editor. No state owner, old-save bridge or new animation implementation was added.
 
-check-harbor-actor-roles.mts PASS (`harbor-actor-role-source-1mLI7X`) through actual typed controls,
-new IDs/clipping/group inheritance, motion/clip/vendor/guard effects, unbound former prefixes,
-removal, absent/invalid source, history/bundle/protected Save/fresh shipping/byte Undo. All19 actor
-helper checks, all19 inspector mounts, Mall/Shop role proofs and Harbor original drawings/content/
-weather/current-save/flight/bounds suites PASS. Both builds/tsc and173 zero-difference/error raster
-rows PASS at source648c38e100b2; all19 actual packaged native Play/Stop pass without warning/error logs.
-
 ## Stacks terminal actors
-
-Optional stacks presentation refs select craneOperator and rescuedPassenger. The operator follows
-the existing trolley, with authored position/elevation offsets and a matching cab clip; the passenger
-follows the existing reefer reveal condition. Unselected actors use ordinary presentation regardless
-of their IDs. Shared creation/duplication supplies terminal.clip.<actor>; removal prunes refs.
-No separate state or conversation evaluator. Actual forms/native behavior/absence/Save/fresh import/
-Undo: check-stacks-artwork-roles.mts (`stacks-actor-role-source-442wyn`). All19 actor/inspector and
-actual native Play/Stop checks pass at source6c855527c33d, with173 zero-difference raster rows.

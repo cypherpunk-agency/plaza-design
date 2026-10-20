@@ -4,14 +4,14 @@
   "instances": [
     {
       "id": "spawn",
-      "type": "assembly.group",
+      "type": "scene.player",
       "props": {},
       "placement": {
         "x": 180,
         "h": 0
       },
-      "order": 0,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "playfield"
     },
     {
       "id": "checkpoint",
@@ -23,8 +23,8 @@
         "x": 240,
         "h": 0
       },
-      "order": 1,
-      "pass": "backdrop"
+      "order": 0,
+      "layer": "playfield"
     }
   ]
 }

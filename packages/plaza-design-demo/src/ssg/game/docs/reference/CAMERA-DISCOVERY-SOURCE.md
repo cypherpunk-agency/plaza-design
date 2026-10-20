@@ -14,10 +14,6 @@ sessions. Replies, state, goals and effective canvas commands match the immutabl
 original panels exactly. An edited pending source command that sets found but
 omits the goal proves that panels no longer own discovery outcomes.
 
-`check-camera-command-forms.mts` exercises actual typed command selectors,
-removal/rebinding controls, atomic invalid command rejection, real panel execution
-against the edited pending scene and exact history undo.
-
 Redundant redraw counts differ as expected: across the full histories including
 fixture setup/reload/reset, Yard original/current counts are 33/30 and Stacks
 52/48. Original first discoveries call both `goal()` and `changed()`; shared goals

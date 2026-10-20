@@ -14,7 +14,7 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -44,7 +44,7 @@
         "h": 0
       },
       "order": 1,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -71,7 +71,7 @@
         "h": 86
       },
       "order": 2,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -102,7 +102,7 @@
         "h": 40
       },
       "order": 3,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -129,7 +129,7 @@
         "h": 0
       },
       "order": 4,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -155,8 +155,8 @@
         "x": 76,
         "h": 0
       },
-      "order": 5,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "set",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -185,8 +185,8 @@
         "x": 122,
         "h": 0
       },
-      "order": 6,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "set",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -215,8 +215,8 @@
         "x": 146,
         "h": 0
       },
-      "order": 7,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "set",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -242,8 +242,8 @@
         "x": 40,
         "h": 0
       },
-      "order": 8,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "set",
       "attach": {
         "instance": "counter",
         "anchor": "top"
@@ -273,8 +273,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 9,
-      "pass": "backdrop",
+      "order": 4,
+      "layer": "set",
       "attach": {
         "instance": "pc",
         "anchor": "origin"
@@ -307,8 +307,8 @@
         "x": 326,
         "h": 0
       },
-      "order": 10,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "set",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -334,8 +334,8 @@
         "x": 26,
         "h": 0
       },
-      "order": 11,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "set",
       "attach": {
         "instance": "desk",
         "anchor": "origin"
@@ -365,8 +365,8 @@
         "x": 26,
         "h": 0
       },
-      "order": 12,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "set",
       "attach": {
         "instance": "desk",
         "anchor": "top"
@@ -396,8 +396,8 @@
         "x": 396,
         "h": 0
       },
-      "order": 13,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "set",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -423,8 +423,8 @@
         "x": 112,
         "h": 0
       },
-      "order": 14,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "set",
       "attach": {
         "instance": "desk",
         "anchor": "top"
@@ -456,8 +456,8 @@
         "x": 462,
         "h": 0
       },
-      "order": 15,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "playfield",
       "bindings": {
         "hover": "capsule.hover",
         "plugOn": "capsule.plugOn",
@@ -477,16 +477,14 @@
     },
     {
       "id": "spawn",
-      "type": "capsule.marker",
-      "props": {
-        "role": "spawn"
-      },
+      "type": "scene.player",
+      "props": {},
       "placement": {
         "x": 466,
         "h": 0
       },
-      "order": 16,
-      "pass": "backdrop"
+      "order": 1,
+      "layer": "playfield"
     },
     {
       "id": "exit-door",
@@ -498,8 +496,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 17,
-      "pass": "backdrop",
+      "order": 0,
+      "layer": "logic",
       "attach": {
         "instance": "door",
         "anchor": "entrance"
@@ -515,8 +513,8 @@
         "x": 34,
         "h": 0
       },
-      "order": 18,
-      "pass": "backdrop",
+      "order": 1,
+      "layer": "logic",
       "attach": {
         "instance": "bed",
         "anchor": "origin"
@@ -532,8 +530,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 19,
-      "pass": "backdrop",
+      "order": 2,
+      "layer": "logic",
       "attach": {
         "instance": "bed",
         "anchor": "mattress"
@@ -549,8 +547,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 20,
-      "pass": "backdrop",
+      "order": 3,
+      "layer": "logic",
       "attach": {
         "instance": "router",
         "anchor": "top"
@@ -567,8 +565,8 @@
         "x": 264,
         "h": 0
       },
-      "order": 21,
-      "pass": "backdrop"
+      "order": 4,
+      "layer": "logic"
     },
     {
       "id": "pixel-sun",
@@ -580,8 +578,8 @@
         "x": 36,
         "h": 0
       },
-      "order": 22,
-      "pass": "backdrop",
+      "order": 5,
+      "layer": "logic",
       "attach": {
         "instance": "sun-patch",
         "anchor": "origin"
@@ -597,8 +595,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 23,
-      "pass": "backdrop",
+      "order": 6,
+      "layer": "logic",
       "attach": {
         "instance": "lock",
         "anchor": "origin"
@@ -614,8 +612,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 24,
-      "pass": "backdrop",
+      "order": 7,
+      "layer": "logic",
       "attach": {
         "instance": "fridge",
         "anchor": "origin"
@@ -631,8 +629,8 @@
         "x": 0,
         "h": -30
       },
-      "order": 25,
-      "pass": "backdrop",
+      "order": 8,
+      "layer": "logic",
       "attach": {
         "instance": "kettle",
         "anchor": "origin"
@@ -648,8 +646,8 @@
         "x": 0,
         "h": -40
       },
-      "order": 26,
-      "pass": "backdrop",
+      "order": 9,
+      "layer": "logic",
       "attach": {
         "instance": "blinds",
         "anchor": "origin"
@@ -665,8 +663,8 @@
         "x": 0,
         "h": -30
       },
-      "order": 27,
-      "pass": "backdrop",
+      "order": 10,
+      "layer": "logic",
       "attach": {
         "instance": "pc",
         "anchor": "origin"
@@ -682,8 +680,8 @@
         "x": 0,
         "h": 0
       },
-      "order": 28,
-      "pass": "backdrop",
+      "order": 11,
+      "layer": "logic",
       "attach": {
         "instance": "plug",
         "anchor": "origin"
@@ -699,8 +697,8 @@
         "x": 0,
         "h": -30
       },
-      "order": 29,
-      "pass": "backdrop",
+      "order": 12,
+      "layer": "logic",
       "attach": {
         "instance": "router",
         "anchor": "origin"

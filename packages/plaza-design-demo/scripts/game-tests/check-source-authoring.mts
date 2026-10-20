@@ -9,7 +9,7 @@ import {isLayered} from '../../src/ssg/game/art/core/composition';
 import type { TimelineDocument } from '../../src/ssg/game/art/core/timeline';
 import { preserveBoundIdentity } from '../../src/ssg/game/authoring/bound-identity';
 
-const bound: Composition = { version: 1, scene: 'identity-check', instances: [{ id: 'parent', type: 'assembly.group', props: {}, placement: { x: 0, h: 0 }, pass: 'backdrop', order: 0, children: [{ id: 'actor', type: 'character.prepared', props: { actor: 'keeper' }, bindings: { pose: 'actor.keeper.pose' }, placement: { x: 20, h: 0 }, pass: 'backdrop', order: 1 }] }] };
+const bound: Composition = { version: 1, scene: 'identity-check', instances: [{ id: 'parent', type: 'assembly.group', props: {}, placement: { x: 0, h: 0 }, layer: 'set', order: 0, children: [{ id: 'actor', type: 'character.prepared', props: { actor: 'keeper' }, bindings: { pose: 'actor.keeper.pose' }, placement: { x: 20, h: 0 }, layer: 'set', order: 1 }] }] };
 const relocated = structuredClone(bound); relocated.instances[0].children![0].placement.x += 20;
 preserveBoundIdentity(bound, relocated);
 const retargeted = structuredClone(bound); retargeted.instances[0].children![0].bindings!.pose = 'actor.other.pose';
@@ -43,7 +43,7 @@ assert.equal(store.read('library').revision, accepted, 'failed cross-document va
 store.undo(saved.transaction, { library: accepted });
 assert.equal(store.read('library').revision, before.revision, 'journal undo restores the exact source bytes');
 const decorated = structuredClone(before.value) as Composition;
-decorated.instances.push({ id: 'shared-stool', type: 'furniture.stool', props: {}, placement: { x: 750, h: 0 }, order: 40, ...(isLayered(decorated)?{layer:'playfield'}:{pass:'backdrop' as const}) });
+decorated.instances.push({ id: 'shared-stool', type: 'furniture.stool', props: {}, placement: { x: 750, h: 0 }, order: 40, ...(isLayered(decorated)?{layer:'playfield'}:{layer:'set' as const}) });
 store.save([{ id: 'library', revision: before.revision, value: decorated }]);
 assert.ok((store.read('library').value as Composition).instances.some(n => n.type === 'furniture.stool'), 'other kits remain available through the same registry');
 console.log(`Source authoring checks passed: ${sourceDocuments.length} real documents; runtime placement, stable gameplay ids, conflicts, grouped reference rejection, exact undo, shared catalog.`);

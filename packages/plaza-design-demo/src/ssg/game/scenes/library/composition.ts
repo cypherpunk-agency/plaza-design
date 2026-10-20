@@ -1,7 +1,7 @@
 import {mutableActorArtwork} from '../../engine/gameplay/native-actor-bindings';
 import { frameView } from '../../art/core/view';
 /** Library-specific binding adapter. Compositions own placement; this module owns named runtime bindings. */
-import { drawComposition, drawCompositionSlot, slotHasContent, resolveComposition, type LayerSlot, type Composition, type Environment, type Properties, type Value } from '../../art/core/composition';
+import { drawComposition, resolveComposition, type Composition, type Environment, type Properties, type Value } from '../../art/core/composition';
 import type { View } from '../../art/core/view';
 import { prepareCharacter, type Character, type PreparedCharacter } from '../../runtime/characters';
 import type { EngineDraw } from '../../engine/host';
@@ -57,10 +57,4 @@ export type LibraryRenderOptions = Partial<Pick<Environment, 'visibility' | 'opa
 export function drawLibraryComposition(ctx: CanvasRenderingContext2D, view: View, engine: EngineDraw, actors: Readonly<Record<string, Character>>, doc = libraryComposition, state: Environment['state'] = {}, options: LibraryRenderOptions = {}) {
   const env = libraryEnvironment(doc, view, engine, actors);
   drawComposition(ctx, libraryArt, doc, { ...env, state, ...options }, 'backdrop');
-}
-/** Layered rows over the player and the foreground layer; older pass documents draw nothing here. */
-export function drawLibraryLayer(ctx: CanvasRenderingContext2D, view: View, engine: EngineDraw, actors: Readonly<Record<string, Character>>, slot: Exclude<LayerSlot, 'behind-player'>, doc = libraryComposition, state: Environment['state'] = {}, options: LibraryRenderOptions = {}) {
-  if (!slotHasContent(doc, slot)) return;
-  const env = libraryEnvironment(doc, view, engine, actors);
-  drawCompositionSlot(ctx, libraryArt, doc, { ...env, state, ...options }, slot);
 }

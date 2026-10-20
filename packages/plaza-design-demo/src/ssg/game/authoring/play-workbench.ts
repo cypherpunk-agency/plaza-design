@@ -19,17 +19,20 @@ import {ITEMS} from '../scenes/kit';
 import {NATIVE_SCENES} from '../scenes';
 import {WEATHER_KINDS} from '../world/weather';
 import {gameplayScenes} from './gameplay-scenes';
+import {createFrame} from './frame';
 declare const EDITOR_PLAY_ENTRY:string;
 
 /** Source edits stay in ComposerModel; each run owns a disposable opaque-origin realm. */
-export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,selection:{fixture?:string;device?:string;settingsOpen?:boolean;scene?:string;debugOpen?:boolean}={},district=false,manifest=false):WorkbenchHandle {
+export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,selection:{fixture?:string;device?:string;settingsOpen?:boolean;scene?:string;debugOpen?:boolean}={},district=false,manifest=false,about?:string):WorkbenchHandle {
  const api=context.authoring!,controls=document.createElement('section'),toolbar=document.createElement('div'),viewport=document.createElement('div'),status=document.createElement('p'),error=document.createElement('p'),inspect=document.createElement('pre'),devices=document.createElement('div'),engine=document.createElement('pre'),startupView=document.createElement('pre');
  viewport.style.cssText='width:100%;aspect-ratio:16/9;max-height:calc(100vh - 220px);min-height:300px;background:#05080c';controls.style.marginTop='12px';
  for(const pre of [inspect,engine,startupView])pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto';
  startupView.setAttribute('aria-label','Play startup');inspect.setAttribute('aria-label','Play state');engine.setAttribute('aria-label','Device diagnostics');status.setAttribute('role','status');error.setAttribute('role','alert');error.className='error';
  status.textContent='Play the pending scene. Arrows/A/D move, E interacts, H hacks, B opens the board, Esc pauses. Saves remain private.';
  const debug=document.createElement('details'),debugTitle=document.createElement('summary');debugTitle.textContent='Debug · player state and device diagnostics (JSON)';debug.className='debug-drawer';debug.open=selection.debugOpen??false;debug.ontoggle=()=>{selection.debugOpen=debug.open;};debug.append(debugTitle,devices,inspect,engine,startupView);
- host.replaceChildren(toolbar,status,error,viewport,controls,debug);
+ // Labs show Play in the editor frame (settings on the right); Scene Play fills the Scene stage as it is.
+ if(about!==undefined){const note=document.createElement('p');note.className='muted';note.textContent=about;createFrame(host,{stage:[toolbar,status,error,viewport],inspector:[note,controls,debug]},'Play');controls.style.marginTop='0';}
+ else host.replaceChildren(toolbar,status,error,viewport,controls,debug);
  let frame:HTMLIFrameElement|undefined,generation=0,disposed=false,timer:ReturnType<typeof setTimeout>|undefined,pending:unknown,last:any,deviceSignature='',startup:PlayStartup|undefined;
  const startupDiagnostics=()=>{const snapshot=startup?.snapshot();startupView.textContent=snapshot?JSON.stringify(snapshot,null,2):'';if(snapshot?.waiting)status.textContent=playStartupWaitingMessage(snapshot);};
  const form=new TypedForm(e=>error.textContent=e instanceof Error?e.message:String(e));
@@ -92,7 +95,7 @@ export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,sel
  window.addEventListener('message',receive);fixtureControls();for(const[label,action]of [['Play',()=>void start()],['Stop',stop],['Reset play',()=>void start()]] as const)form.button(toolbar,label,action);
  form.button(toolbar,'Use current metro as starting state',()=>{if(!last?.metro)throw new Error('Start Play before capturing its metro state');const captured=validateMetroSnapshot(last.metro);stop();edit('Capture live metro starting state',f=>{f.metro=captured;});});
  if(context.autostart)void start();
- const handle=(()=>{disposed=true;stop();window.removeEventListener('message',receive);host.replaceChildren();}) as WorkbenchHandle;
+ const handle=(()=>{disposed=true;stop();window.removeEventListener('message',receive);host.replaceChildren();host.classList.remove('framed');}) as WorkbenchHandle;
  // The Scene stage retains this mount while source/history changes. Refresh its controls,
  // and let the next explicit Play take a fresh source snapshot without replacing a running game.
  handle.refresh=()=>{if(disposed)return;const selected=fixture();if(selected){selection.fixture=selected.id;error.textContent='';}fixtureControls();};

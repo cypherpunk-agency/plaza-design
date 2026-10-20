@@ -8,7 +8,9 @@ process.chdir(path.resolve(here,'../..'));
 const args=process.argv.slice(2), selectors=args.filter(a=>!a.startsWith('--'));
 if(args.some(a=>a.startsWith('--')&&!['--list'].includes(a)))throw Error('Supported option: --list');
 const checks=fs.readdirSync(here).filter(n=>/^check-.*\.mts$/.test(n)).sort();
-const selected=selectors.length?checks.filter(n=>selectors.some(s=>n.includes(s))):checks;
+const embedded=new Set(checks.flatMap(n=>Array.from(fs.readFileSync(path.join(here,n),'utf8').matchAll(/from\s*['"]\.\/(check-[^'"]+\.mts)['"]/g),m=>m[1])));
+// Save/integration checks import and execute their form/contract prerequisites themselves.
+const selected=selectors.length?checks.filter(n=>selectors.some(s=>n.includes(s))):checks.filter(n=>!embedded.has(n));
 if(!selected.length)throw Error('No checks match: '+selectors.join(', '));
 if(args.includes('--list')){console.log(selected.join('\n'));process.exit(0);}
 const output=path.resolve('../../.game-test-output');fs.mkdirSync(output,{recursive:true});fs.mkdirSync(path.join(output,'evidence'),{recursive:true});

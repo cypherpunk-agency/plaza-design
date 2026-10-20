@@ -10,7 +10,7 @@ import { startAuthoringServer } from '../../src/ssg/game/authoring/server/http';
 import { createDocumentBundle,readDocumentBundle } from '../../src/ssg/game/authoring/document-bundle';
 import { validateShiftGameplay } from '../../src/ssg/game/scenes/harbor-shift/gameplay-contract';
 import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
-import { createGameplayPilot } from './shift-pilot-fixture.mts';
+import { createHarborGameplayFixture } from './harbor-gameplay-fixture.mts';
 import type { GameplayDefinition } from '../../src/ssg/game/engine/gameplay/types';
 const id='harbor-shift-gameplay';
 const descriptor=sourceDocuments.find(d=>d.id===id)!;assert.equal(descriptor.kind,'gameplay');
@@ -37,7 +37,7 @@ assert.throws(()=>receiver.importDocuments([{id,value:invalid}]),/unknown refere
 const missing=structuredClone(edited);delete missing.commands['shift.deliver'];assert.doesNotThrow(()=>validateShiftGameplay(missing),'cross-document interaction refs validate at assembly');
 const duplicate=structuredClone(edited);duplicate.reactions.push(duplicate.reactions[0]);assert.doesNotThrow(()=>validateShiftGameplay(duplicate),'same shared reaction semantics as all scenes');
 function exercise(definition:GameplayDefinition,signal:boolean){
- const pilot=createGameplayPilot(undefined,definition);
+ const pilot=createHarborGameplayFixture(undefined,definition);
  try{
   const conversation=pilot.talk('supervisor');assert.equal(conversation.frame().pages[0],'A revised delivery assignment.');assert.equal(conversation.frame().choices![0].label,'Accept revised assignment');
   assert.equal(conversation.choose('accept').ok,true);assert.equal(pilot.gameplay.state().items['shift.tag'],2);
@@ -71,7 +71,7 @@ try{
    assert.equal((await fetch(api.url+'/save',{method:'POST',headers,body})).status,200);
    assert.equal((await fetch(api.url+'/save',{method:'POST',headers,body})).status,409,'stale browser save conflicts');
    const after=await(await fetch(api.url+'/documents/'+id,{headers})).json() as {revision:string;value:GameplayDefinition};
-   const p=createGameplayPilot(undefined,after.value);assert.equal(p.talk('supervisor').frame().pages[0],'Protected HTTP save round trip.');p.dispose();
+   const p=createHarborGameplayFixture(undefined,after.value);assert.equal(p.talk('supervisor').frame().pages[0],'Protected HTTP save round trip.');p.dispose();
    assert.equal((await fetch(api.url+'/save',{method:'POST',headers,body:JSON.stringify({edits:[{id,revision:after.revision,value:invalid}]})})).status,422,'dangling flag rejected by HTTP service');
    assert.deepEqual(store.read(id).value,httpEdit);
    console.log('Protected gameplay HTTP PASS: token enforcement, Save→GET reload→native conversation, stale revision 409 and invalid reference 422.');

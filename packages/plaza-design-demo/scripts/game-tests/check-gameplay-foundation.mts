@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { GameplaySession,cloneState } from '../../src/ssg/game/engine/gameplay/session';
 import { ConversationSession } from '../../src/ssg/game/engine/gameplay/conversation';
 import { validateGameplay } from '../../src/ssg/game/engine/gameplay/validation';
-import { createGameplayPilot } from './shift-pilot-fixture.mts';
+import { createHarborGameplayFixture } from './harbor-gameplay-fixture.mts';
 import { SHIFT_GAMEPLAY } from '../../src/ssg/game/scenes/harbor-shift/gameplay';
 const SHIFT=Object.fromEntries(SHIFT_GAMEPLAY.flags.filter(id=>id.startsWith('shift:')).map(id=>[id.slice(6),id]));
 import { SHIFT_USES,shiftGoal,shiftMinute } from '../../src/ssg/game/scenes/harbor-shift';
@@ -40,7 +40,7 @@ const observed=session();let sawCommitted=false;
 observed.gameplay.observe(()=>{sawCommitted=observed.state().items['shift.tag']===1;assert.deepEqual(observed.gameplay.dispatch('shift.accept','conversation'),{ok:false,reason:'busy'});throw new Error('diagnostic failure');});
 assert.equal(observed.gameplay.dispatch('shift.accept','conversation').ok,true);assert.equal(sawCommitted,true);
 // Real SceneModel emits and delivers the cable, retaining its 150 ms native delay.
-function ready(){const p=createGameplayPilot();p.talk('supervisor').choose('accept');p.gameplay.dispatch('shift.collect','interaction');return p;}
+function ready(){const p=createHarborGameplayFixture();p.talk('supervisor').choose('accept');p.gameplay.dispatch('shift.collect','interaction');return p;}
 const wired=ready();wired.model.act('scanner','parcel','scan');wired.advance(149);assert.equal(wired.gameplay.state().flags[SHIFT.delivered],undefined);
 wired.advance(1);assert.equal(wired.gameplay.state().flags[SHIFT.delivered],true);assert.equal(wired.gameplay.state().items['shift.parcel'],undefined);
 assert.equal(wired.gameplay.events().find(e=>e.id==='parcel.transferred')!.source,'signal');

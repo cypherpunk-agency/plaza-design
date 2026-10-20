@@ -142,7 +142,7 @@ isolated copies, not the working game's files or your recovery journal.
 | Scalar ownership/current save | common-state all-game-persistence |
 | Immediate persistence triggers | persist-source |
 | New scenes/routes | scene-catalogue all-scene-world-routes |
-| Appearance and rendering | scene-layers drawing-boundaries art-light lighting-context |
+| Appearance and rendering | all-scene-layers scene-layers drawing-boundaries art-light lighting-context |
 | Communication | communication device-reply |
 | Demo isolation | demo-district |
 | Editor bundles and source service | public-editor-build authoring-save public-document-bundle |

@@ -128,7 +128,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
       renderSceneFrame({ context, scale: renderScale, view, scene: def, sceneId: def.id,
-        host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }), drawLayer: (ctx, v, slot) => def.drawLayer?.(ctx, v, { ...engine, layer: 'all' }, slot) },
+        host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
         preparePresentation: () => def.preparePresentation?.(view, { ...engine, layer: vision && def.layers ? 'devices' : 'all' }),

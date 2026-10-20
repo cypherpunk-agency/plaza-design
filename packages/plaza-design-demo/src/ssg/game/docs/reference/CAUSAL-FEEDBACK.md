@@ -8,7 +8,8 @@ identity. Two separate actions saying the same thing therefore remain audible.
 `SceneModel` supplies one cue scope for a native device action, guess/item action, or shared
 `apply` batch. Nested work shares it; each actual `later` callback starts a new scope.
 This metadata does not alter `Ctx`, authored JSON, saved state, scheduling, or trace fields.
-Native callbacks and their existing timers remain the authority for gameplay.
+Shared gameplay commands own ordinary state changes; native physical calculations retain their
+declared inputs and lifecycle. Receipts carry presentation identity across both paths.
 
 `World.say` returns the actual delivery receipt. A controller that must acknowledge
 success before returning its line uses `World.receipt(line)` and passes that receipt to
@@ -34,10 +35,5 @@ Moth story cues retain their existing ownership.
 Downtown's four success-service paths (controlled node, installed legs, paid till and
 finished gate) explicitly forward their reply receipts. No success service is disabled.
 
-Evidence: `scripts/scene-system/check-causal-feedback.mts` exercises actual model,
-Host and audio functions, timer cancellation, multiple replies, delayed scopes, equal
-text in independent actions, muted receipts, silent controller cues and program grants.
-It also compares Downtown's actual saves, replies, scheduled outcomes, trace fields and
-service/event order against the immutable original source, including final gate success.
-Existing communication ownership/history and device acknowledgment/timing checks cover
-the neighboring presentation and lifecycle contracts.
+Current checks: `check-causal-feedback.mts`, communication ownership/history and device
+acknowledgment/timing checks. Run through `pnpm test:game causal-feedback`.
