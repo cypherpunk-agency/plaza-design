@@ -24,11 +24,9 @@ import type { SceneDef } from './kit';
 import { mall } from "./mall/index";
 import { market } from "./market/index";
 import { metro } from "./metro/index";
-import { shop } from "./shop/index";
 import { galleriaStation } from './galleriaStation/index';
 import { harborStation } from './harborStation/index';
 import { train } from "./train/index";
-import { warehouse } from "./warehouse/index";
 import authored from './authored.json';
 import {createSceneRegistry} from '../engine/gameplay/scene-catalogue';
 import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
@@ -39,13 +37,13 @@ export { ITEMS, priceTag } from './kit';
 
 /** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
 const nativeDefinitions = {
-  capsule, downtown, library, yard, moth, beach, harbor, stacks, warehouse, market, laundromat, shop, mall, metro, galleriaStation, harborStation, train,
+  capsule, downtown, library, yard, moth, beach, harbor, stacks, market, laundromat, mall, metro, galleriaStation, harborStation, train,
   // sudo only (index.ts refuses `?play=sandbox` without `?sudo`): the engine's test bay, outside the story
   sandbox, harborShift,
 } satisfies Record<string, SceneDef>;
 const codeScenes=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
 /** Scenes of the repository: those still built by their own code, and folder scenes built from JSON alone (folder-scenes.ts). */
-export const NATIVE_SCENES={...codeScenes,...Object.fromEntries(Object.entries(FOLDER_SOURCES).map(([id,source])=>[id,folderSceneDefinition(id,source)]))} as typeof nativeDefinitions;
+export const NATIVE_SCENES={...codeScenes,...Object.fromEntries(Object.entries(FOLDER_SOURCES).map(([id,source])=>[id,folderSceneDefinition(id,source)]))} as typeof nativeDefinitions&Record<keyof typeof FOLDER_SOURCES,SceneDef>;
 /** Scenes that have no code: the folder scenes. */
 export const FOLDER_SCENE_IDS=Object.keys(FOLDER_SOURCES);
 export const SCENES=createSceneRegistry(NATIVE_SCENES,authored);

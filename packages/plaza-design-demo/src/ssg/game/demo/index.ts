@@ -9,8 +9,10 @@ import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument} from '../engine/gameplay/scene-document';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import type {Composition} from '../art/core/composition';
-import {shopSceneDefinition} from '../scenes/shop';
-import {shopComposition} from '../scenes/shop/composition';
+import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
+import {FOLDER_SOURCES} from '../scenes/folder-scenes';
+import {art as shopArt} from '../art';
+const shopComposition=shopArt.validate(FOLDER_SOURCES.shop.composition);
 import {librarySceneDefinition} from '../scenes/library';
 import {libraryComposition} from '../scenes/library/composition';
 export function validateDemoGameplay(value:unknown){const d=validateGameplay(value);if(d.native)throw new Error('Native bindings are not registered for this demo role');if(JSON.stringify(d.flags)!==JSON.stringify(source.flags)||JSON.stringify(d.items)!==JSON.stringify(source.items)||JSON.stringify(Object.keys(d.commands))!==JSON.stringify(Object.keys(source.commands))||JSON.stringify(Object.keys(d.purchases??{}))!==JSON.stringify(['demo.goods'])||JSON.stringify(Object.keys(d.state??{}))!==JSON.stringify(Object.keys(source.state))||Object.entries(d.state??{}).some(([id,state])=>state.lifetime!==source.state[id as keyof typeof source.state].lifetime||state.owner!==source.state[id as keyof typeof source.state].owner))throw new Error('Demo identities/lifetime protected. If importing older gameplay edits, reload current sources and reapply those edits; composition-only edits remain compatible.');for(const[id,c]of Object.entries(d.commands))if(JSON.stringify(c.sources)!==JSON.stringify(source.commands[id as keyof typeof source.commands].sources))throw new Error('Demo command permissions protected');return d;}
@@ -19,7 +21,7 @@ export function validateDemoScene(value:unknown,gameplay:GameplayDefinition=DEMO
 export const DEMO_COUNTER=validateDemoScene(counterSource),DEMO_DESK=validateDemoScene(deskSource);
 export function demoCounterScene(composition:Composition=shopComposition,state={},options={},scene=DEMO_COUNTER,gameplay=DEMO_GAMEPLAY){
  const d=validateDemoScene(scene,gameplay);if(d.id!=='shop')throw new Error('Counter identity');
- const base=shopSceneDefinition(composition,state,{...options,visibility:reviewVisibility(composition,['counter','till'])},d,validateDemoGameplay(gameplay));
+ const base=folderSceneDefinition('shop',FOLDER_SOURCES.shop,{composition,state,options:{...options,visibility:reviewVisibility(composition,['counter','till'])},scene:d,gameplay:validateDemoGameplay(gameplay)});
  return {...plainReviewScene(base,[],['buy']),name:'Purchases',spawn:base.uses![0].x-20,attention:(flags:Readonly<Record<string,boolean>>)=>flags['demo.mission']?base.attention?.(flags)??null:null,objective:(flags:Readonly<Record<string,boolean>>)=>flags['demo.mission']?base.objective?.(flags)??'':''};
 }
 export function demoDeskScene(composition:Composition=libraryComposition,state={},options={},scene=DEMO_DESK,gameplay=DEMO_GAMEPLAY){

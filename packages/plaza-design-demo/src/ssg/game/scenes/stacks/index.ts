@@ -17,7 +17,7 @@ import type {GameplayDefinition} from '../../engine/gameplay/types';
  * Its devices are data/stacks.json; the crane's lifts, the gate's timing, the
  * watchdog's wiring check and the end of Act I are rules.ts; STS-2's camera is
  * scope.ts; the drawing is scene.ts. Ways out: the gate booth back to the pier,
- * and the lane to warehouse 4 (scenes/warehouse.ts).
+ * and the lane to warehouse 4 (scenes/warehouse/).
  */
 
 import { STACKS } from "../../data/index";

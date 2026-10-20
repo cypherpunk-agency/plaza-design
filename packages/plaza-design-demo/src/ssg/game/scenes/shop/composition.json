@@ -219,7 +219,7 @@
       "order": 3,
       "layer": "set",
       "bindings": {
-        "lighting": "shop.lighting"
+        "lighting": "world.light"
       }
     },
     {
@@ -235,8 +235,8 @@
       "order": 4,
       "layer": "set",
       "bindings": {
-        "pose": "shop.actor.outside-0",
-        "clip": "shop.clip.outside-0"
+        "pose": "actor.outside-0.pose",
+        "clip": "actor.outside-0.clip"
       },
       "attach": {
         "instance": "window-back",
@@ -256,8 +256,8 @@
       "order": 5,
       "layer": "set",
       "bindings": {
-        "pose": "shop.actor.outside-1",
-        "clip": "shop.clip.outside-1"
+        "pose": "actor.outside-1.pose",
+        "clip": "actor.outside-1.clip"
       },
       "attach": {
         "instance": "window-back",
@@ -278,7 +278,7 @@
       "order": 6,
       "layer": "set",
       "bindings": {
-        "lighting": "shop.lighting"
+        "lighting": "world.light"
       },
       "attach": {
         "instance": "window-back",
@@ -486,7 +486,7 @@
       "order": 20,
       "layer": "set",
       "bindings": {
-        "pose": "shop.actor.keeper"
+        "pose": "actor.keeper.pose"
       },
       "attach": {
         "instance": "counter",
@@ -582,7 +582,7 @@
       "order": 0,
       "layer": "playfield",
       "bindings": {
-        "pose": "shop.actor.browser"
+        "pose": "actor.browser.pose"
       }
     },
     {
@@ -598,7 +598,7 @@
       "order": 1,
       "layer": "playfield",
       "bindings": {
-        "pose": "shop.actor.person-1"
+        "pose": "actor.person-1.pose"
       }
     },
     {
@@ -614,7 +614,7 @@
       "order": 2,
       "layer": "playfield",
       "bindings": {
-        "pose": "shop.actor.cat"
+        "pose": "actor.cat.pose"
       },
       "attach": {
         "instance": "fridge",
@@ -634,7 +634,7 @@
       "order": 3,
       "layer": "playfield",
       "bindings": {
-        "pose": "shop.actor.stockbot"
+        "pose": "actor.stockbot.pose"
       }
     },
     {
@@ -650,7 +650,7 @@
       "order": 4,
       "layer": "playfield",
       "bindings": {
-        "pose": "shop.actor.android"
+        "pose": "actor.android.pose"
       }
     },
     {
@@ -666,7 +666,7 @@
       "order": 5,
       "layer": "playfield",
       "bindings": {
-        "pose": "shop.actor.crawler"
+        "pose": "actor.crawler.pose"
       }
     },
     {

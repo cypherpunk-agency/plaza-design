@@ -6,7 +6,9 @@ import {defaultNetworkContext,type EngineNetworkContext} from '../network-contex
 import type {SceneDeviceSource} from './scene-state';
 import type {SceneDocument} from './scene-document';
 import type {GameplayDefinition} from './types';
-import type {Composition,Environment} from '../../art';
+import {art,resolveComposition,type Composition,type Environment} from '../../art';
+import {frameView} from '../../art/core/view';
+import {bindingDefaults} from './binding-sources';
 import type {SceneDef} from '../../scenes/kit';
 /**
  * A folder scene: `scenes/<id>/` holds only JSON (composition, scene, gameplay, devices) and the
@@ -24,3 +26,5 @@ export function folderSceneDefinition(id:string,source:FolderSceneSource,over:Fo
  const devices=validateDeviceDocument(id,raw,{gameplay,network:over.network??defaultNetworkContext}) as SceneDeviceSource;
  return declaredScene(scene,over.composition??source.composition,gameplay,{...(over.options??{}),...(over.state?{state:over.state}:{})},devices);
 }
+/** A composition's artwork as placed (bindings at their defaults): what geometry checks and editors measure. */
+export function compositionRows(composition:unknown){const doc=art.validate(composition);return resolveComposition(art,doc,{view:frameView(0),state:{},bindings:bindingDefaults(doc),reduced:false});}

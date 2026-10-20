@@ -1,3 +1,4 @@
+import {renderSceneStage} from './scene-stage-authoring';
 import {rotationStateIds} from '../engine/gameplay/scene-document';
 import {scenePresentationRoles,scenePresentationActorRoles} from '../engine/gameplay/scene-presentation';
 import {renderScenePresentation} from './scene-presentation-authoring';
@@ -64,10 +65,11 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
    form.button(h,'Add actor',()=>{actorTransaction('Add actor',(s,c)=>family==='streetSprite'?addSceneStreetSprite(s,c,id,{kind:'streetSprite',sprite:'hood'},x,height,dialogue):family==='rider'?addSceneRider(s,c,id,{kind:'rider',rider:'phone',phase:0},x,height,dialogue):addSceneActor(s,c,id,family==='human'?{}:family as import('../runtime/characters').Character['look'],x,height,dialogue));selection.item='actor:'+id;refresh();},(d.actors?.length??0)>=128);
   }});
   d.actors?.forEach((a,i)=>entries.push({key:'actor:'+a.id,group:'Actors',label:a.id,detail:a.band,render:h=>renderActor(form,h,d,i,edit,refresh,mutableActors?{composition:api.get(identity().composition).value as Composition,transaction:actorTransaction}:undefined)}));
+  if(d.manifest)entries.push({key:'stage',group:'Scene',label:'Stage & compile',render:h=>{const composition=api.get(identity().composition).value as import('../art').Composition,types:string[]=[];const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){types.push(n.type);walk(n.children??[]);}};walk(composition.instances);renderSceneStage(form,h,d,edit,[...new Set(types)].sort());}});
   if(d.manifest)entries.push({key:'manifest',group:'Scene',label:'Content & bindings',render:h=>{
    const composition=api.get(identity().composition).value as import('../art').Composition,instances:import('../art').Instance[]=[];
    const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){instances.push(n);walk(n.children??[]);}};walk(composition.instances);
-   const ids=instances.map(n=>n.id),rows=manifestCompositionRows(composition),registration=selected(),groups='bindingGroups'in registration?registration.bindingGroups:manifestGroups;
+   const ids=instances.map(n=>n.id),rows=manifestCompositionRows(composition),registration=selected(),groups=d.manifest!.compile?.groups??('bindingGroups'in registration?registration.bindingGroups:manifestGroups);
    renderManifestWidth(form,h,d.manifest!.width,rows,width=>edit('Edit scene width binding',d=>{d.manifest!.width=width;}));
    renderArtworkRoles(form,h,d.id,d.manifest!,rows,(role,instance)=>edit('Rebind scene '+role,d=>{if(instance)(d.manifest!.artwork??={})[role]=instance;else if(d.manifest!.artwork)delete d.manifest!.artwork[role];}));
    renderManifestTarget(form,h,'Spawn',d.manifest!.spawn,rows,target=>edit('Edit manifest spawn',d=>{d.manifest!.spawn=target;}),undefined,'none');

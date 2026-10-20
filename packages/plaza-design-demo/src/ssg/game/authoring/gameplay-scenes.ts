@@ -2,7 +2,7 @@ import type {NativeTargetValidationContext} from '../engine/gameplay/native-targ
 import {authoredDocumentId,type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {declaredScene} from '../engine/gameplay/declared-scene';
 import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
-import {FOLDER_SOURCES} from '../scenes/folder-scenes';
+import {FOLDER_BY_ID} from '../scenes/folder-scenes';
 import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
@@ -39,25 +39,23 @@ import {content as trainContent} from '../scenes/train/scene-document';
 const metroAuthoredScene=(...args:Parameters<typeof trainScene>)=>metroScene(args[0],args[1],args[2],undefined,args[3],args[4]);
 import {mallScene} from '../scenes/mall';
 import {validateMallScene,validateMallGameplay} from '../scenes/mall/scene-document';
-import {warehouseScene} from '../scenes/warehouse';
-import {validateWarehouseScene,validateWarehouseGameplay} from '../scenes/warehouse/scene-document';
 import {validateManifestScene,validateManifestGameplay,manifestDemoScene} from '../scenes/demo-manifest';
 import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} from '../demo';
 /** Explicit migrated-scene registry shared by authoring, protected saves and isolated Play. */
 import {validateShiftScene} from '../scenes/harbor-shift/scene-document';
 import {validateShiftGameplay} from '../scenes/harbor-shift/gameplay-contract';
 import {harborShiftScene} from '../scenes/harbor-shift';
-import {shopScene} from '../scenes/shop';
-import {validateShopScene,validateShopGameplay} from '../scenes/shop/scene-document';
 import {libraryScene} from '../scenes/library';
 import {validateLibraryScene,validateLibraryGameplay} from '../scenes/library/scene-document';
 import {laundromatScene} from '../scenes/laundromat';
 import {validateLaundromatScene,validateLaundromatGameplay} from '../scenes/laundromat/scene-document';
-const marketAuthoredScene=(...args:Parameters<typeof warehouseScene>)=>marketScene(args[0],args[1],args[2],args[4],args[3]);
-const sandboxAuthoredScene=(...args:[...Parameters<typeof warehouseScene>,NativeTargetValidationContext?])=>sandboxScene(args[0],args[1],args[2],undefined,args[3],args[4],args[5]);
-const beachAuthoredScene=(...args:[...Parameters<typeof warehouseScene>,NativeTargetValidationContext?])=>beachScene(args[0],args[1],args[2],args[4],args[3],args[5]);
-const downtownAuthoredScene=(...args:Parameters<typeof warehouseScene>)=>downtownScene(args[0],undefined,args[2],args[3],args[4]);
-type DeviceSourceArguments=[...Parameters<typeof warehouseScene>,SceneData?,NativeTargetValidationContext?];
+/** The arguments every scene factory takes: composition, preview state, render options, scene and gameplay documents. */
+type SceneFactoryArgs=[document?:Composition,state?:Environment['state'],options?:Partial<Environment>,content?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition];
+const marketAuthoredScene=(...args:SceneFactoryArgs)=>marketScene(args[0],args[1],args[2],args[4],args[3]);
+const sandboxAuthoredScene=(...args:[...SceneFactoryArgs,NativeTargetValidationContext?])=>sandboxScene(args[0],args[1],args[2],undefined,args[3],args[4],args[5]);
+const beachAuthoredScene=(...args:[...SceneFactoryArgs,NativeTargetValidationContext?])=>beachScene(args[0],args[1],args[2],args[4],args[3],args[5]);
+const downtownAuthoredScene=(...args:SceneFactoryArgs)=>downtownScene(args[0],undefined,args[2],args[3],args[4]);
+type DeviceSourceArguments=[...SceneFactoryArgs,SceneData?,NativeTargetValidationContext?];
 const capsuleWithDevices=(...args:DeviceSourceArguments)=>capsuleScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const sandboxWithDevices=(...args:DeviceSourceArguments)=>sandboxScene(args[0],args[1],args[2],args[5],args[3],args[4],args[6]);
 const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
@@ -85,10 +83,8 @@ const definitions=[
  {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene,definitionWithDevices:trainWithDevices},
 
  {id:'mall',prefix:'mall',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMallScene,validateGameplay:validateMallGameplay,definition:mallScene},
- {id:'warehouse',prefix:'warehouse',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateWarehouseScene,validateGameplay:validateWarehouseGameplay,definition:warehouseScene},
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},
  {id:'harborShift',prefix:'harbor-shift',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateShiftScene,validateGameplay:validateShiftGameplay,definition:harborShiftScene},
- {id:'shop',prefix:'shop',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateShopScene,validateGameplay:validateShopGameplay,definition:shopScene},
  {id:'library',prefix:'library',bindingGroups:['uses','readables','rests','exits'] as const,data:LIBRARY,validateScene:validateLibraryScene,validateGameplay:validateLibraryGameplay,definition:libraryScene,definitionWithDevices:libraryWithDevices},
  {id:'laundromat',prefix:'laundromat',bindingGroups:['uses','readables','rests','exits'] as const,data:LAUNDROMAT,validateScene:validateLaundromatScene,validateGameplay:validateLaundromatGameplay,definition:laundromatScene,definitionWithDevices:laundromatWithDevices},
  {id:'demoCounter',prefix:'demo-counter',validateScene:(v:unknown,g?:import('../engine/gameplay/types').GameplayDefinition)=>{const d=validateDemoScene(v,g);if(d.id!=='shop')throw new Error('Demo counter identity');return d;},validateGameplay:validateDemoGameplay,definition:demoCounterScene},
@@ -96,10 +92,10 @@ const definitions=[
 ] as const;
 /** Folder scenes (engine/gameplay/folder-scene.ts): one generic registration each, no scene code. */
 const folderDefinitions=FOLDER_SCENE_IDS.map(id=>({id,prefix:id,
- validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_SOURCES[id].gameplay))=>{const d=validateSceneDocument(value,g,{manifest:true});if(d.id!==id)throw new Error('Scene identity is protected');return d;},
+ validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_BY_ID[id].gameplay))=>{const d=validateSceneDocument(value,g,{manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors)});if(d.id!==id)throw new Error('Scene identity is protected');return d;},
  validateGameplay,
- definition:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition)=>folderSceneDefinition(id,FOLDER_SOURCES[id],{composition:c,state,options,scene,gameplay}),
- definitionWithDevices:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition,devices?:unknown)=>folderSceneDefinition(id,FOLDER_SOURCES[id],{composition:c,state,options,scene,gameplay,devices}),
+ definition:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay}),
+ definitionWithDevices:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition,devices?:unknown,_context?:unknown)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay,devices}),
 }));
 export const gameplayScenes=[...definitions,...folderDefinitions].map(s=>({...s,gameplayId:'gameplayId'in s?s.gameplayId:s.prefix+'-gameplay'}));
 export const authoredDocumentIds=gameplayScenes.flatMap(s=>[s.prefix+'-scene',s.gameplayId]);
@@ -108,6 +104,6 @@ export function gameplayScene(id:string,documents:readonly {id:string;value:unkn
  const source=documents.find(d=>d.id==='authored-scenes')?.value as SceneCatalogue|undefined,entry=source?.scenes.find(s=>s.scene.id===id||(['composition','scene','gameplay','devices'] as const).some(part=>authoredDocumentId(s.scene.id,part)===id));
  if(!entry)throw new Error('Unsupported authored scene: '+id);
  return {id:entry.scene.id,prefix:authoredDocumentId(entry.scene.id,'composition'),gameplayId:authoredDocumentId(entry.scene.id,'gameplay'),validateGameplay,
- validateScene:(value:unknown,g=entry.gameplay)=>{const d=validateSceneDocument(value,g,{manifest:true});if(d.id!==entry.scene.id)throw new Error('Scene identity is protected');return d;},
+ validateScene:(value:unknown,g=entry.gameplay)=>{const d=validateSceneDocument(value,g,{manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors)});if(d.id!==entry.scene.id)throw new Error('Scene identity is protected');return d;},
  definition:(c:Composition=entry.composition,_state:Environment['state']={},options:Partial<Environment>={},s:SceneDocument=entry.scene,g=entry.gameplay)=>declaredScene(s,c,g,options,entry.devices)};
 }
