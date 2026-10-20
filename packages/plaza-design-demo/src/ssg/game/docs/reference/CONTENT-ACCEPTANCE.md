@@ -52,4 +52,5 @@ This bounded callable inventory alone would not establish all-scene content acce
 
 The matrix marks only `content` PASS for this gate. Device/controller, Layout/Logic/Wiring/Play,
 save/persistence, raster/outcome and final cleanup columns retain their independent requirements.
-G4/G7/G9/G10/G12/G13 remain open. No campaign playthrough or new story/remote mechanics are claimed.
+This G8 signoff does not sign G4/G7/G9/G10/G12/G13; current gate status lives in the execution
+ledger. No campaign playthrough or new story/remote mechanics are claimed.

@@ -682,5 +682,34 @@
     "check": "scripts/scene-system/check-controller-inventory.mts",
     "scope": "Current registered SceneRules surface; historical remainingAuthoredFields below describe the initial audit and must not be treated as current outstanding tasks. Runtime/composition/panel and full authoring audits remain separate.",
     "ordinaryAudit": "docs/reference/ORDINARY-CONTROLLER-CONSOLIDATION.md"
+  },
+  "currentAcceptance": {
+    "gate": "G9",
+    "status": "PASS",
+    "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+    "implementationCheckpoint": "ddfd92a",
+    "source": "sha256:57dd859f7da0da1ae027c29f623b6f5d43b8c0f0d6329da072cbdce836d73e37",
+    "scenes": {
+      "capsule": "thermal/boot/Pixel and shared workflows",
+      "downtown": "DLV/Registry/timers/camera",
+      "library": "shared network and observed-goal contracts",
+      "yard": "cargo/hatch/camera",
+      "moth": "shared network/companion and visual inputs",
+      "beach": "shared billing/danger and visual inputs",
+      "harbor": "source actor motion and presentation cues",
+      "stacks": "lift/return/watchdog/scope",
+      "warehouse": "shared actors/devices; no independent simulator",
+      "market": "shared commerce/actors/devices; no independent simulator",
+      "laundromat": "shared washer/breaker/jacket deadlines and picture inputs",
+      "shop": "shared commerce/actors/devices; no independent simulator",
+      "mall": "shared commerce/actors/devices and typed adaptive procedural art",
+      "metro": "injected metro, platform queues, source world routes",
+      "galleriaStation": "injected metro, platform queues, source world routes",
+      "harborStation": "injected metro, platform queues, source world routes",
+      "train": "injected metro physics, source permissions/workflows/status",
+      "sandbox": "shared timed/logic/security/environment contracts and picture inputs",
+      "harborShift": "shared tasks/day/carry presentation; no independent carry simulator"
+    },
+    "scope": "Initial remainingAuthoredFields above remain historical inventory; current adapter/native behavior acceptance is reconciled in the reference. G10/G12/G13 retain independent requirements."
   }
 }

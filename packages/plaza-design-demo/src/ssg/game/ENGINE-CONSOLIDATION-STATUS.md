@@ -29,7 +29,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G6 | PASS | Source839777ab5e10: all six workloads, three eligible repeats each, raw samples/environment/calibration and independent summary validation; top-three exclusive contributor inspection, no optimization retained. See PERFORMANCE-CHECKPOINT-2026-10-19-C.md. Earlier failed Chrome diagnostics remain immutable |
 | G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
 | G8 | PASS | All19 source content ownership, actual pending ordinary-content CRUD/rebind/permission/outcome dispatch,38-document bundle/history/protected Save/fresh shipping/byte Undo; all19 actor CRUD and removed Downtown native prompt callback. CONTENT-ACCEPTANCE.md. Other matrix categories remain independent |
-| G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
+| G9 | PASS | All19 controller/device/network rows reconciled to typed source, real native edits and lifecycle/parity evidence; network/motion/camera/Yard/Laundry/Sandbox protected-source checks and Metro11088 platform/211200 ride cases pass. CONTROLLER-NETWORK-ACCEPTANCE.md; full authoring/preservation remain separate |
 | G10 | IN PROGRESS | Typed actor CRUD/source bindings now cover all19 native scenes; catalogue creation/history/bundles/Save are checked. Current combined source still requires all-scene browser Play, controller/network/device entity controls and complete lifecycle acceptance |
 | G11 | PASS | All19 declared route collections,41 native exit dispatches and30 pending destination/arrival edits; current world/access/map/transport/opening/cinematic source and atomic Save/import evidence. See WORLD-STORY-ACCEPTANCE.md. Other scene categories and whole-goal acceptance remain open |
 | G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
@@ -3262,3 +3262,14 @@ Source Save checks reuse one revision snapshot instead of repeatedly validating 
 for each individual read. This changes verification cost, not Save validation or conflict rules.
 
 Eight gates accepted: G0/G1/G2/G3/G5/G6/G8/G11. Remaining: G4/G7/G9/G10/G12/G13.
+
+## 2026-10-20: G9 controller/network acceptance
+
+CONTROLLER-NETWORK-ACCEPTANCE.md maps every original controller family to its current source
+contracts, typed controls, native outcomes and lifetime evidence. All19 devicesControllers rows
+now PASS; the original controller inventory remains historical and links to current acceptance.
+Current network/motion/camera/Yard/Laundry/Sandbox protected Save and fresh-import checks pass.
+Metro's obsolete where/effect-position fixture calls were replaced with actual current shared
+Train status/action execution;11088 original platform cases and211200 ride frames pass.
+
+Nine gates accepted: G0/G1/G2/G3/G5/G6/G8/G9/G11. Remaining: G4/G7/G10/G12/G13.

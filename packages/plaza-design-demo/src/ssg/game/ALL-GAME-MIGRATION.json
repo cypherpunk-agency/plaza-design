@@ -26,7 +26,7 @@
         "use"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -143,6 +143,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "thermal/boot/Pixel and shared workflows",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -168,7 +174,7 @@
         "drawBackdrop"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -310,6 +316,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "DLV/Registry/timers/camera",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -335,7 +347,7 @@
         "visualEnvironment"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -466,6 +478,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared network and observed-goal contracts",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -494,7 +512,7 @@
         "visualEnvironment"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -619,6 +637,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "cargo/hatch/camera",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -644,7 +668,7 @@
         "use"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -745,6 +769,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared network/companion and visual inputs",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -770,7 +800,7 @@
         "use"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -872,6 +902,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared billing/danger and visual inputs",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -896,7 +932,7 @@
         "drawFront"
       ],
       "content": "PASS",
-      "devicesControllers": "NOT RUN",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -976,6 +1012,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "source actor motion and presentation cues",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1001,7 +1043,7 @@
         "drawFront"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -1142,6 +1184,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "lift/return/watchdog/scope",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1165,7 +1213,7 @@
         "drawBackdrop"
       ],
       "content": "PASS",
-      "devicesControllers": "NOT RUN",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -1261,6 +1309,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared actors/devices; no independent simulator",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1286,7 +1340,7 @@
         "visualEnvironment"
       ],
       "content": "PASS",
-      "devicesControllers": "NOT RUN",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -1369,6 +1423,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared commerce/actors/devices; no independent simulator",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1393,7 +1453,7 @@
         "visualEnvironment"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -1527,6 +1587,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared washer/breaker/jacket deadlines and picture inputs",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1552,7 +1618,7 @@
         "visualEnvironment"
       ],
       "content": "PASS",
-      "devicesControllers": "NOT RUN",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -1661,6 +1727,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared commerce/actors/devices; no independent simulator",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1686,7 +1758,7 @@
         "visualEnvironment"
       ],
       "content": "PASS",
-      "devicesControllers": "NOT RUN",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -1763,6 +1835,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared commerce/actors/devices and typed adaptive procedural art",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1788,7 +1866,7 @@
         "drawBackdrop"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "NOT RUN",
       "logic": "NOT RUN",
@@ -1878,6 +1956,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "injected metro, platform queues, source world routes",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -1901,7 +1985,7 @@
         "drawBackdrop"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "NOT RUN",
       "logic": "NOT RUN",
@@ -1991,6 +2075,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "injected metro, platform queues, source world routes",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -2014,7 +2104,7 @@
         "drawBackdrop"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "NOT RUN",
       "logic": "NOT RUN",
@@ -2104,6 +2194,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "injected metro, platform queues, source world routes",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -2130,7 +2226,7 @@
         "drawFront"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "NOT RUN",
       "logic": "IN PROGRESS",
@@ -2268,6 +2364,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "injected metro physics, source permissions/workflows/status",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -2293,7 +2395,7 @@
         "use"
       ],
       "content": "PASS",
-      "devicesControllers": "IN PROGRESS",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "NOT RUN",
       "logic": "IN PROGRESS",
@@ -2388,6 +2490,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared timed/logic/security/environment contracts and picture inputs",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     },
@@ -2414,7 +2522,7 @@
         "storyMinute"
       ],
       "content": "PASS",
-      "devicesControllers": "NOT RUN",
+      "devicesControllers": "PASS",
       "world": "PASS",
       "layout": "IN PROGRESS",
       "logic": "IN PROGRESS",
@@ -2489,6 +2597,12 @@
           "check": "check-scene-batch.mts",
           "artifact": ".scene-system/scene-batch-check/run-Z18G1h/evidence.json",
           "scope": "All19 ordinary-content pending CRUD/rebind, actual shared permission/outcome dispatch, 38-document bundle/history/protected Save/fresh shipping/byte Undo; actor/source ownership evidence in reference. Other categories remain separate."
+        },
+        "controllerNetworkAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md",
+          "family": "shared tasks/day/carry presentation; no independent carry simulator",
+          "scope": "Current registered controller/device/network inputs and native behavior; complete authoring and final preservation remain separate."
         }
       }
     }
