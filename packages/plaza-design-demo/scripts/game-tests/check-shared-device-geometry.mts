@@ -1,5 +1,5 @@
 import {beachGeometry} from '../../src/ssg/game/scenes/beach/composition';
-import {mothGeometry} from '../../src/ssg/game/scenes/moth/composition';
+import {compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';import {build} from 'esbuild';

@@ -17,7 +17,6 @@ import {validateMallScene,validateMallGameplay} from '../scenes/mall/scene-docum
 import {validateBeachGameplay} from '../scenes/beach/gameplay';
 import {content as beachContent} from '../scenes/beach/scene-document';
 import {content as stacksContent} from '../scenes/stacks/scene-document';
-import {content as mothContent} from '../scenes/moth/scene-document';
 import {content as yardContent} from '../scenes/yard/scene-document';
 import {content as capsuleContent} from '../scenes/capsule/scene-document';
 import {content as sandboxContent} from '../scenes/sandbox/scene-document';
@@ -25,7 +24,6 @@ import {validateLaundromatGameplay,validateLaundromatScene} from '../scenes/laun
 /** Canonical scene adapters: the editor supplies documents to shipping SceneDef factories. */
 import type { NativeSceneAdapter } from './native-preview';
 import { capsuleScene, capsuleFrameEnvironment, validateCapsuleComposition } from '../scenes/capsule';
-import { mothScene, mothFrameEnvironment, validateMothComposition } from '../scenes/moth';
 import { laundromatScene, laundromatFrameEnvironment, validateLaundromatComposition } from '../scenes/laundromat';
 import { downtownScene } from '../scenes/downtown';
 import { validateDowntownComposition } from '../scenes/downtown/composition';
@@ -64,7 +62,6 @@ const folderAdapter = (id: string): NativeSceneAdapter => ({
 export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   ...Object.fromEntries(FOLDER_SCENE_IDS.map(id => [id, folderAdapter(id)])),
   capsule: { validate: validateCapsuleComposition, definition: capsuleScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('capsule',doc,documents,capsuleContent,(source,gameplay,context)=>capsuleScene(doc,state,options,source,gameplay,context,documents.get('capsule-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => capsuleFrameEnvironment(v, e, doc) },
-  moth: { validate: validateMothComposition, definition: mothScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('moth',doc,documents,mothContent,(source,gameplay,context)=>mothScene(doc,state,options,source,gameplay,context,documents.get('moth-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => mothFrameEnvironment(v, e, doc) },
   laundromat: { validate: validateLaundromatComposition, definition: laundromatScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateLaundromatGameplay(documents.get('laundromat-gameplay'));return laundromatScene(doc,state,options,validateLaundromatScene(documents.get('laundromat-scene'),gameplay),gameplay,documents.get('laundromat-devices') as import('../data/types').SceneData|undefined);}, environment: (doc, v, e) => laundromatFrameEnvironment(v, e, doc) },
   galleriaStation: { validate: galleriaStationAdapter.validate, definition: galleriaStationScene, environment: (doc, v) => galleriaStationAdapter.environment(doc, v) },
   harborStation: { validate: harborStationAdapter.validate, definition: harborStationScene, environment: (doc, v) => harborStationAdapter.environment(doc, v) },

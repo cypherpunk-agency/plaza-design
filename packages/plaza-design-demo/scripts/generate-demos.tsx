@@ -26,7 +26,6 @@ import { build } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
 import { BEACH, CAPSULE, DOWNTOWN, ENGINE, LAUNDROMAT, LOGIC, MOTH, NET, YARD } from "../src/ssg/game/data/index";
 import { CAPSULE_RULES } from "../src/ssg/game/scenes/capsule/rules";
-import { MOTH_RULES } from "../src/ssg/game/scenes/moth/rules";
 import { BEACH_RULES } from "../src/ssg/game/scenes/beach/rules";
 import { LAUNDROMAT_RULES } from "../src/ssg/game/scenes/laundromat/rules";
 import { checkGame } from '../src/ssg/game/data/check';
