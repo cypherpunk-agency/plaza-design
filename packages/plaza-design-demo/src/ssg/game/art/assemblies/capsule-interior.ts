@@ -2,6 +2,7 @@
 import type { View as DrawView } from "../core/view";
 import { type Light,rel } from "../../world/light";
 import { box,C,GREEN,O,PAPER,RED,RUST,tell,text } from "../core/primitives";
+import { paperSign } from '../signage/kit';
 import { drawPane,glass,windowShaft } from "../environment/sky";
 export interface ArtworkInputs { originX?: number; ceiling?: number; slab?: number; wall?: number; posterX?: number; CAPSULE_W: number;
 CAPSULE_FACING: number;
@@ -110,10 +111,9 @@ function drawPoster(x: CanvasRenderingContext2D, v: DrawView, _state: CapsuleVis
   const { sx, y } = v;
   // a poster over the bed: the metro line (Moth's "follow the trains")
   const px = sx(inputs.posterX ?? 487);
-  box(x, px - 18, y(86), 36, 26, '#1c120b', 'rgba(' + PAPER + ',.35)');
+  paperSign(x, v.t, px, y(86), 36, 26, { fill: '#1c120b', edge: 'rgba(' + PAPER + ',.35)', first: 7, lines: [{ text: 'LINE 0', ink: 'rgba(' + PAPER + ',.6)' }] });
   x.fillStyle = 'rgba(' + PAPER + ',.45)'; x.fillRect(px - 12, y(70), 24, 1);
   [-12, 0, 12].forEach((d) => { x.fillStyle = 'rgba(' + PAPER + ',.6)'; x.fillRect(px + d - 1, y(71), 3, 3); });
-  text(x, 'LINE 0', px, y(79), 'rgba(' + PAPER + ',.6)', 7, '600');
   x.fillStyle = 'rgba(' + PAPER + ',.5)'; x.fillRect(px - 1, y(87), 2, 2);
 }
 

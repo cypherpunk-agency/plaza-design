@@ -1,6 +1,7 @@
 import type { View } from '../core/view';
 import type { Properties } from '../core/composition';
 import {box,drawTowers,O,PAPER,RED,text,towers} from '../core/primitives';
+import { paperSign } from '../signage/kit';
 import {YELLOW} from '../signage/screens';
 const FAR=towers(77,1200,[14,36],[20,60],.06);
 export function drawWarehousePiece(part:string,x:CanvasRenderingContext2D,v:View,props:Properties){
@@ -89,19 +90,12 @@ x.fillRect(dr - 30, y(90), 60, 60);
 break;}
 case 'plaque':{const L={plaque:0};
 const pl = sx(L.plaque);
-box(x, pl - 26, y(72), 52, 30, '#e0d4b8', 'rgba(40,30,20,.9)');
-text(x, 'EVIDENCE', pl, y(64), 'rgba(110,20,20,.95)', 7, '700');
-text(x, 'CUSTODY', pl, y(56), 'rgba(110,20,20,.95)', 7, '700');
-text(x, 'REGISTRY', pl, y(48), 'rgba(30,18,8,.95)', 7, '700');
+paperSign(x, v.t, pl, y(72), 52, 30, { style: 'paper', lineH: 8, first: 8, lines: [{ text: 'EVIDENCE', ink: 'rgba(110,20,20,.95)' }, { text: 'CUSTODY', ink: 'rgba(110,20,20,.95)' }, 'REGISTRY'] });
 break;}
 case 'notice':{const L={board:0};
 const nb = sx(L.board);
 box(x, nb - 1, y(36), 3, 36, '#2a2622');
-box(x, nb - 50, y(92), 100, 56, '#d8d0bc', 'rgba(40,30,20,.9)');
-x.fillStyle = 'rgba(' + RED + ',.85)';
-x.fillRect(nb - 50, y(92), 100, 9);
-text(x, 'REGISTRY NOTICE', nb, y(85), 'rgba(250,240,225,.95)', 7, '700');
-['SEIZED PROPERTY', 'HELD PENDING REVIEW', 'BACKLOG: 4 YEARS', 'CLAIMS NOT ACCEPTED'].forEach((l, i) => text(x, l, nb, y(74 - i * 9), 'rgba(30,18,8,.9)', 7, '600'));
+paperSign(x, v.t, nb, y(92), 100, 56, { style: 'paper', fill: '#d8d0bc', header: 'REGISTRY NOTICE', first: 9, ink: 'rgba(30,18,8,.9)', weight: '600', lines: ['SEIZED PROPERTY', 'HELD PENDING REVIEW', 'BACKLOG: 4 YEARS', 'CLAIMS NOT ACCEPTED'] });
 break;}
 case 'van':{const L={van:{x:0,w:Number(props.width)}};
 const vn = sx(L.van.x - L.van.w / 2);

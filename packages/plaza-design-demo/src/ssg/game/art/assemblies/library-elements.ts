@@ -5,6 +5,7 @@ import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../c
 import type { View } from '../core/view';
 import { exitDoor, notice } from '../core/primitives';
 import { camera, taped, ticker } from '../signage/screens';
+import { ALARM } from '../signage/kit';
 import { createLibraryArtwork, type ArtworkInputs } from '../assemblies/library';
 
 const number = (label: string, value: number, min = -10000, max = 10000): Field => ({ kind: 'number', label, default: value, min, max, step: 1, unit: 'world units' });
@@ -52,7 +53,7 @@ export const libraryElements: Element[] = [
   element('ceiling', 'Reading-room ceiling coffers', 'architecture', { width: number('Width', 960, 1), ceiling: number('Ceiling', 176, 1) }, p => rectangle(n(p, 'width'), n(p, 'ceiling') + 12),
     (x, v, p, _s, at) => kernel(undefined, n(p, 'width'), n(p, 'ceiling'), at.x).ceilingCoffers(x, raised(v, at.h), v.sx(at.x), v.sx(at.x + n(p, 'width')))),
   element('ticker', 'Registry information strip', 'signage', { width: number('Width', 280, 1), text: string('Text', 'QUIET PLEASE'), speed: number('Scroll speed', 0.35, 0, 20) }, p => rectangle(n(p, 'width'), 10),
-    (x, v, p, _s, at) => ticker(x, v, { x: at.x, h: at.h, w: n(p, 'width'), tall: 10, text: String(p.text), col: '255,90,70', speed: n(p, 'speed') })),
+    (x, v, p, _s, at) => ticker(x, v, { x: at.x, h: at.h, w: n(p, 'width'), tall: 10, text: String(p.text), col: ALARM, speed: n(p, 'speed') })),
   element('camera', 'Registry room camera', 'electronics', { phase: number('Idle phase', 3), direction: { kind: 'select', label: 'Direction', default: -1, options: [-1, 1] } }, () => ({ x: -14, h: 10, w: 28, tall: 20 }),
     (x, v, p, _s, at) => camera(x, v, { x: at.x, h: at.h, facing: n(p, 'direction') as 1 | -1, phase: n(p, 'phase') })),
   element('clock', 'Stopped wall clock', 'props', {}, () => ({ x: -12, h: 12, w: 24, tall: 24 }), (x, v, _p, _s, at) => kernel().wallClock(x, v, at.x, at.h)),

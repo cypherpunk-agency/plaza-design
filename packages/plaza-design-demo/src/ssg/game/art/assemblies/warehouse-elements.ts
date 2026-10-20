@@ -3,6 +3,7 @@ import type { Bounds, Element, Field, Placement, Properties } from '../core/comp
 import type { View } from '../core/view';
 import { box, O, sign, text } from '../core/primitives';
 import { camera, taped, ticker } from '../signage/screens';
+import { ALARM } from '../signage/kit';
 import { drawWarehousePiece } from './warehouse';
 const num=(label:string,value=0,min=-10000):Field=>({kind:'number',label,default:value,min,max:10000,step:1});
 const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
@@ -32,7 +33,7 @@ export const warehouseElements:Element[]=[
   item('door','Personnel door and warrant reader','architecture',{},()=>rectangle(65,90,-30)),
   item('plaque','Evidence custody plaque','signage',{},()=>rectangle(52,72,-26,42)),
   item('notice','Registry custody notice','signage',{},()=>rectangle(100,92,-50)),
-  item('ticker','Evidence intake ticker','signage',{text:str('Text'),width:num('Width',110,1),speed:num('Scroll speed',.3)},p=>rectangle(n(p,'width'),10,-n(p,'width')/2),(x,v,p,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,mount:'wall',text:String(p.text),col:'255,90,70',speed:n(p,'speed')})),
+  item('ticker','Evidence intake ticker','signage',{text:str('Text'),width:num('Width',110,1),speed:num('Scroll speed',.3)},p=>rectangle(n(p,'width'),10,-n(p,'width')/2),(x,v,p,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,mount:'wall',text:String(p.text),col:ALARM,speed:n(p,'speed')})),
   item('van','Registry evidence van','vehicles',{width:num('Van width',120,60)},p=>rectangle(n(p,'width'),44,-n(p,'width')/2)),
   item('shoe','Single tagged shoe','props',{},()=>rectangle(26,12,-6)),
   item('taped','Mender paper notice','signage',{lines:{kind:'json',label:'Notice lines',default:['NETS MENDED','ASK INSIDE',"(DON'T)"],validate:value=>{if(!Array.isArray(value)||value.some(v=>typeof v!=='string'))throw new Error('Expected notice text lines');}},tilt:num('Tilt radians',.04)},()=>rectangle(90,14,-45,-28),(x,v,p,at)=>taped(x,v,{x:at.x,h:at.h,text:p.lines as string[],tilt:n(p,'tilt')})),

@@ -1,6 +1,7 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { type View } from "../core/view";
 import { box,C,drawTowers,GREEN,O,onScreen,PAPER,RED,tell,text,towers } from "../core/primitives";
+import { paperSign } from '../signage/kit';
 import { placed } from "../core/view";
 import { drawSky,seaCols,sunPath } from "../environment/sky";
 import { drawLounger } from "../props/beach-party";
@@ -416,9 +417,7 @@ function berthSign(x:CanvasRenderingContext2D,V:View,wx:number){const y=V.y;  //
   // the harbour's board, bolted to the railing
   const sg = V.sx(wx);
   x.fillStyle = '#2a1d14'; x.fillRect(sg - 30, y(36), 2, 36); x.fillRect(sg + 28, y(36), 2, 36);
-  box(x, sg - 34, y(44), 68, 20, '#1a120b', 'rgba(' + O + ',.7)');
-  text(x, 'BERTHS 1-9', sg, y(38), 'rgba(' + PAPER + ',.95)', 7, '600');
-  text(x, 'PERMIT HOLDERS', sg, y(30), 'rgba(' + PAPER + ',.8)', 7, '600');
+  paperSign(x, V.t, sg, y(44), 68, 20, { lineH: 8, lines: [{ text: 'BERTHS 1-9', ink: 'rgba(' + PAPER + ',.95)' }, { text: 'PERMIT HOLDERS', ink: 'rgba(' + PAPER + ',.8)' }] });
 }
 return{sky,city,shore,stairs,kiosk,lime,crab,volleyball,castle,board,rod,boat,postGull,gulls,foreground,seaBase,buoy,surfing,swimmer,boardwalk,publicNotice,sunbed,barPhoto,barStool,jukebox,mixer,tower,drone,pierDeck,pierLamp,pierController,berthSign};
 }

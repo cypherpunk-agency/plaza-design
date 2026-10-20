@@ -5,6 +5,7 @@ import { type View } from "../core/view";
 import type { Light } from "../../world/light";
 import { drawGrade } from "../atmosphere/lighting";
 import { box,C,exitDoor,O,onScreen,PAPER,rng,tell,text } from "../core/primitives";
+import { ALARM, paperSign } from '../signage/kit';
 import { drawPane,windowShaft } from "../environment/sky";
 import { adScreen,camera,lotteryScreen,ticker,wallSign } from "../signage/screens";
 import { fridge,shelf,type ShelfSpec } from "./construction";
@@ -141,7 +142,7 @@ function piece_mirror(x:CanvasRenderingContext2D,v:View,_index=0){
 function piece_ticker(x:CanvasRenderingContext2D,v:View,_index=0){
 
     // the back wall's top band: the Registry's strip running over the shelves
-    ticker(x, v, { x: 330, h: 136, w: 290, tall: 10, text: 'ID REQUIRED FOR ALL PURCHASES   ·   CASH TRANSACTIONS ARE LOGGED   ·   SHOPLIFTING IS REPORTED TO THE REGISTRY   ·   CURFEW 01:00', col: '255,90,70', speed: 0.4 });
+    ticker(x, v, { x: 330, h: 136, w: 290, tall: 10, text: 'ID REQUIRED FOR ALL PURCHASES   ·   CASH TRANSACTIONS ARE LOGGED   ·   SHOPLIFTING IS REPORTED TO THE REGISTRY   ·   CURFEW 01:00', col: ALARM, speed: 0.4 });
 
 
 }
@@ -153,9 +154,8 @@ function piece_shelves(x:CanvasRenderingContext2D,v:View,index=0){
 }
 function piece_limit(x:CanvasRenderingContext2D,v:View,_index=0){
 const {sx,y,t}=v;
-    box(x, sx(330) - 26, y(130), 52, 12, '#1a120b', 'rgba(' + O + ',.7)');
-    text(x, (inputs.labels?.limit??'LIMIT 3'), sx(330), y(124), 'rgba(' + PAPER + ',.9)', 7, '600');
-    tell(x, t, sx(330) + 22, y(126));
+    // the shelf's limit: a printed label with the tell (it is something you can use)
+    paperSign(x, t, sx(330), y(130), 52, 12, { lines: [inputs.labels?.limit ?? 'LIMIT 3'], tell: 0, tellAt: [22, 4] });
 
 
 }
@@ -318,8 +318,7 @@ const {sx,y}=v;
     // the counter: lottery behind, the camera over the till, the keeper
     const K = L.counter, kx = sx(K.x);
     if (onScreen(v, kx - 60, K.w + 120)) {
-      box(x, kx + 112, y(K.h - 6), 48, 14, '#1a120b', 'rgba(' + O + ',.6)');
-      text(x, (inputs.labels?.counter??'NO LOGS'), kx + 136, y(K.h - 13), 'rgba(' + PAPER + ',.85)', 7, '600');
+      paperSign(x, v.t, kx + 136, y(K.h - 6), 48, 14, { lines: [inputs.labels?.counter ?? 'NO LOGS'], edge: 'rgba(' + O + ',.6)', ink: 'rgba(' + PAPER + ',.85)' });
     }
 
 }

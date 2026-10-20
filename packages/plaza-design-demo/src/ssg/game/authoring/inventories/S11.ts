@@ -1,4 +1,6 @@
 /** Frozen typed kernel families; embedded ids and source usages are frozen separately. */
+/** The registered sign kit (art/signage/kit-elements.ts) is listed live from the registry under this category, not frozen here. */
+export const SIGN_KIT_CATEGORY='sign kit';
 export interface SignageFamily{id:string;label:string;source:string;variants:string[];text:boolean;power:boolean;note:string;unavailable?:Record<string,string>}
 const screenNames=['ticker','adScreen','brokenScreen','camera','registryBoard','scoreDisplay','menuBoard','oddsBoard','wantedScreen','lotteryScreen','wallSign','bladeSign','hangingSign','neonIcon','billboard','taped'];
 const skins=['concrete','glass','capsule','panel','brick'],crowns=['flat','spire','stepped','slant','antenna','halo','pyramid'],gear=['tank','antenna','dish','ac','garden','pad','billboard'],signs=['plate','blade','stack','ticker','holo','billboard'];

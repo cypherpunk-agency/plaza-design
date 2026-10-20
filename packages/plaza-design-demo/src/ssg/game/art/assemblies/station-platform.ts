@@ -1,8 +1,9 @@
 /** Platform pieces shared by all metro stations. */
 import type { View } from '../core/view';
-import { box, C, O, onScreen, PAPER, RED, tell, text } from '../core/primitives';
+import { box, C, O, onScreen, RED, tell, text } from '../core/primitives';
 import { TRAIN } from '../../world/transport/line';
 import { drawRider, SEAT_H, type RiderKind } from '../characters/riders';
+import { sloganScreen } from '../signage/screens';
 
 
 // ---------- what both platforms share ----------
@@ -35,16 +36,8 @@ export function drawSlab(x: CanvasRenderingContext2D, v: View, width: number, fi
 }
 
 
-/** The station's name on a plate: LINE 0's orange roundel, then the name. Hung on two rods from `roof` when given, else fixed to the wall. */
-export function nameplate(x: CanvasRenderingContext2D, v: View, s: number, h: number, name: string, roof?: number, alpha = 0.92) {
-  const { y } = v, w = 40 + name.length * 7;
-  if (!onScreen(v, s - w / 2 - 4, w + 8)) return;
-  if (roof !== undefined) { x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s - w / 2 + 12, y(roof), 1, roof - h); x.fillRect(s + w / 2 - 13, y(roof), 1, roof - h); }
-  box(x, s - w / 2, y(h), w, 20, '#0e0a08', 'rgba(' + O + ',' + (0.75 * alpha) + ')');
-  box(x, s - w / 2 + 3, y(h - 3), 16, 14, 'rgba(' + O + ',' + (0.85 * alpha) + ')');
-  text(x, '0', s - w / 2 + 11, y(h - 10), '#0e0a08', 9, '700');
-  text(x, name, s + 10, y(h - 10), 'rgba(' + PAPER + ',' + alpha + ')', 9, '600');
-}
+/** The station's name plate lives in the sign kit. */
+export { nameplate } from '../signage/kit';
 
 
 /** A bench, maybe with someone on it (`who`: what kind of person) who has given up waiting. */
@@ -58,25 +51,9 @@ export function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; 
 }
 
 
-/** What the Registry's screens say, a pair of lines at a time. */
-const SLOGANS = [['COMPLIANCE', 'IS COMFORT'], ['REGISTRY ID', 'REQUIRED'], ['ALL JOURNEYS', 'ARE RECORDED'], ['REPORT', 'IRREGULARITIES'], ['STAND BEHIND', 'THE LINE']];
-
-
-/** A Registry screen hung on two rods from `roof`: its slogans, a scan line, a red REC light. Pages through every three seconds. */
+/** A Registry screen hung on two rods from `roof`: its slogans, a scan line, a red REC light, the cyan tell. Pages through every three seconds (sign kit sloganScreen). */
 export function drawScreen(x: CanvasRenderingContext2D, v: View, wx: number, h: number, roof: number, phase = 0) {
-  const { y, t } = v, s = v.sx(wx);
-  if (!onScreen(v, s - 40, 80)) return;
-  x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s - 24, y(roof), 1, roof - h); x.fillRect(s + 23, y(roof), 1, roof - h);
-  const g = x.createRadialGradient(s, y(h - 17), 2, s, y(h - 17), 60);
-  g.addColorStop(0, 'rgba(255,200,170,.08)'); g.addColorStop(1, 'rgba(255,200,170,0)');
-  x.fillStyle = g; x.fillRect(s - 60, y(h + 40), 120, 100);
-  box(x, s - 36, y(h), 72, 34, '#0c0605', 'rgba(' + O + ',.7)');
-  box(x, s - 33, y(h - 3), 66, 28, '#1a0d0a');
-  const lines = SLOGANS[Math.floor((t + phase * 97) / 180) % SLOGANS.length];
-  text(x, lines[0], s, y(h - 11), 'rgba(255,205,175,.9)', 7, '600'); text(x, lines[1], s, y(h - 21), 'rgba(255,205,175,.9)', 7, '600');
-  x.fillStyle = 'rgba(255,205,175,.06)'; x.fillRect(s - 33, Math.round(y(h - 3) + ((t * 0.4) % 28)), 66, 2);
-  x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s + 28, y(h - 5), 2, 2);
-  tell(x, t, s - 30, y(h - 30), phase);
+  sloganScreen(x, v, { x: wx, h: h - 32, w: 68, tall: 30, mount: 'hang', to: roof, phase: phase * 97, tell: phase });
 }
 
 

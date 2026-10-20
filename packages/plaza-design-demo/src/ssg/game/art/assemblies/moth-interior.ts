@@ -2,6 +2,7 @@
 import type { View as DrawView } from "../core/view";
 import { type Light,windowLit } from "../../world/light";
 import { box,C,GREEN,O,PAPER,RED,RUST,tell,text } from "../core/primitives";
+import { paperSign } from '../signage/kit';
 import { drawPane,glass,windowShaft } from "../environment/sky";
 export interface MothLayout { mail:number; board:{x:number;y:number;w:number;h:number}; rod:number; guitar:number; turntable:number; desk:{x0:number;x1:number;h:number}; tank:{x:number;w:number;base:number;h:number}; window:{x0:number;x1:number;h0:number;h1:number}; pot:number; phone:number; sofa:{x0:number;x1:number} }
 export interface MothVisualState { hover:string; playing:boolean;nextMs:number;fed:boolean;wet:boolean;fresh:boolean }
@@ -501,9 +502,7 @@ function drawFlyer(x: CanvasRenderingContext2D, v: DrawView, _state: MothVisualS
   const { sx, y } = v;
   // the flyer, pinned over the sofa
   const fx = sx(inputs.flyerX ?? 0);
-  box(x, fx - 22, y(84), 44, 22, '#1a120b', 'rgba(' + O + ',.6)');
-  text(x, 'KARAOKE', fx, y(78), 'rgba(' + PAPER + ',.85)', 7, '600');
-  text(x, 'BOOTH 3 · THU', fx, y(69), 'rgba(' + PAPER + ',.55)', 7);
+  paperSign(x, v.t, fx, y(84), 44, 22, { edge: 'rgba(' + O + ',.6)', first: 6, lines: [{ text: 'KARAOKE', ink: 'rgba(' + PAPER + ',.85)' }, { text: 'BOOTH 3 · THU', ink: 'rgba(' + PAPER + ',.55)', weight: '' }] });
   x.fillStyle = 'rgba(' + RED + ',.9)'; x.fillRect(fx - 1, y(85), 2, 2);
 }
 

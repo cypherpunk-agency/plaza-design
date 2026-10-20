@@ -12,7 +12,8 @@ import{drawMetroStairs}from'../art/architecture/metro-stairs';
 import{frameView,type View}from'../art/core/view';
 import{lightAt}from'../world/light';
 import{prepareCharacter}from'../runtime/characters';
-import{SIGNAGE_FAMILIES,type SignageFamily}from'./inventories/S11';
+import{SIGNAGE_FAMILIES,SIGN_KIT_CATEGORY,type SignageFamily}from'./inventories/S11';
+import type{ArtRegistry}from'../art/core/composition';
 export interface SignageState{id:string;variant:string;time:number;minute:number;reduced:boolean;text:string;power:boolean;seed:number;zoom:number;cameraX:number;cameraH:number}
 export function signageState(id=SIGNAGE_FAMILIES[0].id):SignageState{const f=signageFamily(id);return{id,variant:f.variants[0],time:0,minute:580,reduced:false,text:'VERIFY TODAY',power:true,seed:41,zoom:1,cameraX:0,cameraH:0};}
 export function signageFamily(id:string):SignageFamily{const f=SIGNAGE_FAMILIES.find(f=>f.id===id);if(!f)throw new Error('Unknown signage family '+id);return f;}
@@ -60,5 +61,13 @@ export function prepareSignage(input:SignageState,width=800,height=420):Prepared
   }
  }
  return{state:Object.freeze(s),family:f,view:v,calls,width,height};
+}
+/** A registered sign-kit element with its default fields (and temporary text), drawn by its own registered kernel. */
+export function paintKitSign(ctx:CanvasRenderingContext2D,registry:ArtRegistry,type:string,input:SignageState,width=800,height=420){
+ const s={...input},e=registry.get(type);if(e.category!==SIGN_KIT_CATEGORY)throw new Error('Not a sign kit element: '+type);
+ const t=s.reduced?0:s.time*60,L=lightAt(1,s.minute,90,null),v:View={...frameView(t,L),viewW:width,viewH:height,gy:height-70,sx:x=>x,y:h=>height-70-h};
+ const over:Record<string,string|number>={};if(e.fields.text?.kind==='string'&&s.text)over.text=s.text;if(e.fields.seed)over.seed=s.seed;const props=registry.properties(type,over);
+ ctx.save();try{ctx.clearRect(0,0,width,height);ctx.fillStyle='#0c0a12';ctx.fillRect(0,0,width,height);ctx.translate(width/2,height/2);ctx.scale(s.zoom,s.zoom);ctx.translate(-width/2-s.cameraX,-height/2+s.cameraH);
+  e.draw(ctx,v,props,{},'backdrop',{x:width/2,h:170,scale:1,facing:1,parallax:1});}finally{ctx.restore();}
 }
 export function paintSignage(ctx:CanvasRenderingContext2D,p:PreparedSignage){const s=p.state;ctx.save();try{ctx.clearRect(0,0,p.width,p.height);ctx.fillStyle='#0c0a12';ctx.fillRect(0,0,p.width,p.height);ctx.translate(p.width/2,p.height/2);ctx.scale(s.zoom,s.zoom);ctx.translate(-p.width/2-s.cameraX,-p.height/2+s.cameraH);if(s.id.startsWith('architecture.')&&s.id!=='architecture.stairs'){ctx.translate(p.width/2,s.id==='architecture.section'?20:p.height*.9);ctx.scale(.85,.85);if(s.id==='architecture.tower')ctx.translate(-70,0);}for(const call of p.calls)call.paint(ctx);}finally{ctx.restore();}}

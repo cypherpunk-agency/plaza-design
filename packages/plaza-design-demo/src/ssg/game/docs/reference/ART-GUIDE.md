@@ -235,6 +235,21 @@ after you are deleted. A change to one of them must reach every place it appears
   shipping renderers. Before replacing a drawing implementation, preserve original pixels across
   the relevant camera, time, environment, state and pass cases recorded in the scene-system plan.
   An editor-visible element or passing build alone is not an appearance-preservation gate.
+- **Signs come from the sign kit.** `art/signage/kit.ts` holds the shared plate, neon plate
+  (horizontal, vertical, printed; dead letters, test sweep), bare scroll, printed paper sign
+  (dark board or official paper with a red header, optional cyan tell) and station nameplate;
+  `art/signage/screens.ts` holds the mounted screens (ads, the Registry's slogan screens with REC,
+  registry board, score, menu, odds, wanted, lottery, broken), tickers, blades, hanging boards,
+  icons, billboards, cameras and taped notes. `art/signage/kit-elements.ts` registers them as
+  scene-independent `sign.*` elements (`sign.plate`, `sign.blade`, `sign.screen` with a `kind`,
+  `sign.ticker`, `sign.paper`, `sign.hanging`, `sign.icon`, `sign.billboard`, `sign.camera`,
+  `sign.taped`, `sign.nameplate`) that any composition can place from the Library; the Signs viewer
+  lists them as *Kit*. Scene-specific element ids (`downtown.neon-sign`, `station.screen`,
+  `metro.sign`, …) stay and call the same code. To extend the kit, add an option to the shared
+  function (never a copy in a scene), expose it as a field on the `sign.*` element, and keep
+  `mask` on anything that can sit over Downtown's storey windows. Unique, state-driven signs (the
+  departure board, the hackable VERIFY sign's logic, kiosks, corkboards, the skyline's tower
+  signs) keep their own kernels but draw their plates and letters with the kit.
 - **A scene that changes with the story is one scene with states,** not a copy: Downtown
   before and after is `downtown` with a `before` state from a save flag; the train home and
   P14's train are the same train. The state switches lines, colours and what works, never the

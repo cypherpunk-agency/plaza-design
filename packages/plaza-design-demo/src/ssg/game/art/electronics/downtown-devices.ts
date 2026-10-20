@@ -1,34 +1,13 @@
 /** Independent Downtown electronics kernels. Visual snapshots never read a scene model. */
 import type { View } from '../core/view';
 import { box,C,GREEN,RED,sign,tell,text } from '../core/primitives';
+import { neonPlate } from '../signage/kit';
 export interface DowntownDeviceState { controlled:boolean;gateHeld:boolean;lock:string;scanned:boolean;feed:string;dlvAt:string;trace:number;signTestMs:number;signSince:number;visible:boolean;hoverSpot:{x:number;y:number;w:number;h:number}|null }
 const live = (t: number, i: number) => (t + i * 13) % 50 < 25;
-function verticalNeon(x: CanvasRenderingContext2D, t: number, s: string, cx: number, top: number, dead: number, lit: number | null) {
-  const size = 12;
-  x.save();
-  x.font = '600 ' + size + 'px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  const flick = lit === null && t % 240 > 232 && Math.floor(t) % 4 < 2;
-  [...s].forEach((ch, i) => {
-    const off = flick || i === dead || (lit !== null && i !== lit);
-    x.fillStyle = 'rgba(' + C + ',' + (off ? 0.13 : 0.95) + ')';
-    x.shadowColor = 'rgba(' + C + ',.9)'; x.shadowBlur = off ? 0 : 8;
-    x.fillText(ch, cx, top + i * (size + 2));
-  });
-  x.restore();
-}
-function plate(x: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, col: string) {
-  const x0 = Math.round(cx - w / 2), y0 = Math.round(cy - h / 2), r = Math.max(w, h) * 0.75;
-  const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
-  g.addColorStop(0, 'rgba(' + col + ',.1)'); g.addColorStop(1, 'rgba(' + col + ',0)');
-  x.fillStyle = g; x.fillRect(cx - r, cy - r, r * 2, r * 2);
-  box(x, x0, y0, w, h, '#080403', 'rgba(' + col + ',.4)');
-  x.fillStyle = 'rgba(255,217,165,.45)';
-  for (const [px, py] of [[x0 + 2, y0 + 2], [x0 + w - 3, y0 + 2], [x0 + 2, y0 + h - 3], [x0 + w - 3, y0 + h - 3]]) x.fillRect(px, py, 1, 1);
-}
 export function drawDeviceSign(x: CanvasRenderingContext2D, v: View, wx: number, state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};if (seen(wx)) {
     const s = sx(wx), ms = state.signTestMs, since = state.signSince;
-    plate(x, s, y(114), 20, 90, C);
-    verticalNeon(x, t, 'VERIFY', s, y(150), 1, since < ms ? Math.floor((since / ms) * 6) : null);
+    // the hackable sign: a vertical neon plate; under test, one letter at a time sweeps down it
+    neonPlate(x, t, s, y(114), { text: 'VERIFY', col: C, size: 12, w: 20, h: 90, vertical: true, dead: 1, lit: since < ms ? Math.floor((since / ms) * 6) : null });
   }}
 export function drawDeviceBox(x: CanvasRenderingContext2D, v: View, wx: number, state: DowntownDeviceState) { const {sx,y,t,viewW}=v;const seen=(point:number,w=60)=>{const s=sx(point);return s > -w && s < viewW+w;};const leds=(lx:number,ly:number,n:number,ok:boolean)=>{for(let i=0;i<n;i++){x.fillStyle=live(t,i)?(ok?'rgba(34,197,94,.95)':'rgba(255,42,68,.95)'):'rgba(34,197,94,.18)';x.fillRect(lx+i*6,ly,3,2);}};if (seen(wx)) {
     const s = sx(wx);

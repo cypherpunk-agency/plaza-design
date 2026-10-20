@@ -1,5 +1,6 @@
 /** Pure yard drawing kernels. Placement and immutable animation state are supplied by the scene adapter. */
 import type { View } from '../core/view';
+import { neonPlate } from '../signage/kit';
 export interface YardVisual {layer:'all'|'world'|'devices';highlight:string;pan:number;gateOpen:boolean;gateAllowed:boolean;held:boolean;hookVisible:boolean;hookX:number;parcel:[number,number]|null;night:number}
 export interface YardWall {width:number;roof:number;brick:boolean;cols:number[];from:number;seed:number}
 export interface YardArtworkInputs {x:number;width:number;height:number;endHeight:number;roof:number;label:string;wall?:YardWall;visual:YardVisual}
@@ -254,17 +255,11 @@ const {sx,y,viewW,viewH}=v,gy=y(0);
 
 function yard_sign(x:CanvasRenderingContext2D,v:View){
 const {sx,y}=v;
-const mono=(size:number,weight='')=>(weight?weight+' ':'')+size+'px "IBM Plex Mono", monospace';
-const text=(s:string,cx:number,cy:number,col:string,size=7,weight='')=>{x.save();x.font=mono(size,weight);x.textAlign='center';x.fillStyle=col;x.fillText(s,cx,cy);x.restore();};
-
-    // the yard sign, a plate bolted to the wall over the camera, lit by its own lamp
+    // the yard sign, a painted plate bolted to the wall over the camera (sign kit), lit by its own lamp
     const sg = sx(inputs.x + 0);
-    x.fillStyle = '#1a0c04'; x.fillRect(sg - 67, y(126), 134, 15);
-    x.strokeStyle = 'rgba(255,136,0,.7)'; x.strokeRect(sg - 66.5, y(126) + 0.5, 133, 14);
-    x.fillStyle = 'rgba(255,217,165,.5)'; [-63, 62].forEach((d) => { x.fillRect(sg + d, y(124), 1, 1); x.fillRect(sg + d, y(114), 1, 1); });
+    neonPlate(x, v.t, sg, y(126) + 7.5, { text: "FIXER'S YARD · NO LOGS KEPT", col: '255,136,0', size: 8, w: 134, h: 15, printed: true, fill: '#1a0c04', edge: 0.7, glow: 0 });
     x.fillStyle = '#4a2408'; x.fillRect(sg - 1, y(134), 2, 8); x.fillRect(sg - 6, y(134), 12, 2);
     x.fillStyle = 'rgba(255,217,165,.85)'; x.fillRect(sg - 4, y(132), 8, 1);
-    text("FIXER'S YARD · NO LOGS KEPT", sg, y(115), 'rgba(255,136,0,.9)', 8, '600');
 
 }
 

@@ -4,6 +4,9 @@ import { drawSprite, SPR, GLOW_THEM, type Sprite } from "../core/sprites";
 import { windowLit } from "../../world/light";
 import { glass } from "../environment/sky";
 import { addLight, castShadow } from "../atmosphere/lighting";
+import { neon } from "../core/primitives";
+import { neonPlate, plate } from "../signage/kit";
+import { bladeSign } from "../signage/screens";
 const O = '255,136,0', C = '0,255,255';
 const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
 export interface Front {x:number;w:number;h:number;roof?:boolean}
@@ -51,18 +54,7 @@ drawAntenna(wx: number) {
     });
   }
 neon(text: string, cx: number, cy: number, col: string, opt: { size?: number; vertical?: boolean; dead?: number; phase?: number } = {}) {
-    const x = this.x, size = opt.size ?? 11, dead = opt.dead ?? -1;
-    const flick = (this.t + (opt.phase ?? 0)) % 240 > 232 && Math.floor(this.t) % 4 < 2;
-    x.save();
-    x.font = '600 ' + size + 'px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
-    [...text].forEach((ch, i) => {
-      const off = flick || i === dead;
-      x.fillStyle = 'rgba(' + col + ',' + (off ? 0.13 : 0.95) + ')';
-      x.shadowColor = 'rgba(' + col + ',.9)'; x.shadowBlur = off ? 0 : 8;
-      if (opt.vertical) x.fillText(ch, cx, cy + i * (size + 2));
-      else x.fillText(ch, cx + (i - (text.length - 1) / 2) * size * 0.64, cy);
-    });
-    x.restore();
+    neon(this.x, this.t, text, cx, cy, col, { size: opt.size ?? 11, vertical: opt.vertical, dead: opt.dead, phase: opt.phase, bright: true });
   }
 drawAlley(origin: number, doorOffset: number) {
     const x = this.x, a0 = this.sx(origin + 0), a1 = this.sx(origin + 90), c = this.sx(origin + doorOffset), P = '255,61,242';
@@ -126,10 +118,7 @@ drawAlley(origin: number, doorOffset: number) {
     }
 
     // the blade sign: sticks out from the corner on a bracket, readable from down the street
-    const sx0 = a0 - 1;
-    x.fillStyle = '#2a160a'; x.fillRect(sx0, this.y(148), 14, 2); x.fillRect(sx0, this.y(110), 14, 2);
-    this.plate(sx0 + 14, this.y(129), 13, 42, P);
-    this.neon('YARD', sx0 + 14, this.y(141), P, { size: 8, phase: 90, vertical: true });
+    bladeSign(x, this.v, { x: origin + 13, h: 150, text: 'YARD', col: P, size: 8, phase: 90 });
   }
 drawWindow(wx: number, wy: number, light: number, ac: boolean, seed: number) {
     const x = this.x;
@@ -190,16 +179,7 @@ drawBay(bx: number, w: number, kind: 'door' | 'glass' | 'shutter' | 'sealed') {
       }
     }
   }
-plate(cx: number, cy: number, w: number, h: number, col: string) {
-    const x = this.x, x0 = Math.round(cx - w / 2), y0 = Math.round(cy - h / 2), r = Math.max(w, h) * 0.75;
-    const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
-    g.addColorStop(0, 'rgba(' + col + ',.1)'); g.addColorStop(1, 'rgba(' + col + ',0)');
-    x.fillStyle = g; x.fillRect(cx - r, cy - r, r * 2, r * 2);
-    x.fillStyle = '#080403'; x.fillRect(x0, y0, w, h);
-    x.strokeStyle = 'rgba(' + col + ',.4)'; x.lineWidth = 1; x.strokeRect(x0 + 0.5, y0 + 0.5, w - 1, h - 1);
-    x.fillStyle = 'rgba(255,217,165,.45)';
-    for (const [px, py] of [[x0 + 2, y0 + 2], [x0 + w - 3, y0 + 2], [x0 + 2, y0 + h - 3], [x0 + w - 3, y0 + h - 3]]) x.fillRect(px, py, 1, 1);
-  }
+plate(cx: number, cy: number, w: number, h: number, col: string) { plate(this.x, cx, cy, w, h, col); }
 drawStall(stall: Stall) {
     const x = this.x, s0 = this.sx(stall.x), sw = stall.w, cx = s0 + sw / 2;
     if (s0 + sw + 20 < 0 || s0 - 20 > this.viewW) return;
@@ -228,8 +208,7 @@ drawStall(stall: Stall) {
     x.save(); x.font = '7px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillStyle = 'rgba(255,217,165,.8)'; x.fillText('NO LOGS KEPT', cx, this.y(87)); x.restore();
     // NOODLES on a plate standing on the awning, on two legs.
     x.fillStyle = 'rgba(255,170,80,.7)'; x.fillRect(cx - 26, this.y(122), 2, 4); x.fillRect(cx + 24, this.y(122), 2, 4);
-    this.plate(cx, this.y(130), 72, 16, C);
-    this.neon('NOODLES', cx, this.y(130), C, { size: 13, phase: 0 });
+    neonPlate(x, this.t, cx, this.y(130), { text: 'NOODLES', col: C, size: 13, w: 72, h: 16, phase: 0 });
   }
 drawFrontBody(f: Front, sx: number) {
     const x = this.x, hv = Math.min(f.h, this.gy + 1), top = this.y(hv);
@@ -261,8 +240,7 @@ drawPenthouse(wx: number) { const x = this.x;     // Penthouse window, out of re
     const tx = this.sx(wx);
     x.fillStyle = 'rgba(0,255,255,' + (0.5 + 0.3 * Math.sin(this.t * 0.02)) + ')'; x.fillRect(tx - 6, this.y(251), 12, 26);
     x.fillStyle = 'rgba(0,60,60,.7)'; x.fillRect(tx - 6, this.y(240), 12, 1);
-    this.plate(tx, this.y(196), 56, 12, O);
-    this.neon('PENTHOUSE', tx, this.y(196), O, { size: 8, phase: 40 });
+    neonPlate(x, this.t, tx, this.y(196), { text: 'PENTHOUSE', col: O, size: 8, w: 56, h: 12, phase: 40 });
  }
 drawBillboard(wx: number) { const x = this.x;     // Billboard, bolted flat to the wall and lit by two lamps on arms above it.
     const bx = this.sx(wx);
@@ -286,8 +264,7 @@ drawFence(wx: number) { const x = this.x;     // Fence at the antenna's foot.
  }
 drawDumpster(wx: number, width: number, height: number) { const x = this.x, dx = this.sx(wx); x.fillStyle = '#10140f'; x.fillRect(dx, this.y(height), width, height); x.strokeStyle = 'rgba(120,160,120,.5)'; x.strokeRect(dx + 0.5, this.y(height) + 0.5, width - 1, height - 1); }
 drawShopDoor(wx: number) { const x=this.x,sh=this.sx(wx),t=this.t;    if (sh > -40 && sh < this.viewW + 40) {
-      this.plate(sh, this.y(70), 34, 11, C);
-      this.neon('SHOP', sh, this.y(70), C, { size: 8, phase: 30 });
+      neonPlate(x, t, sh, this.y(70), { text: 'SHOP', col: C, size: 8, w: 34, h: 11, phase: 30 });
       // a paper sticker on the door's glass, and the cyan handle
       x.fillStyle = 'rgba(255,217,165,.5)'; x.fillRect(sh - 6, this.y(40), 12, 5);
       x.fillStyle = Math.sin(t * 0.05) > -0.3 ? 'rgba(0,255,255,.95)' : 'rgba(0,255,255,.3)'; x.fillRect(sh + 7, this.y(30), 2, 4);
