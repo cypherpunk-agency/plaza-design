@@ -10,7 +10,6 @@ import {pendingNativeTargetScene} from './native-target-pending';
 import {content as downtownContent} from '../scenes/downtown/scene-document';
 import {validateBeachGameplay} from '../scenes/beach/gameplay';
 import {content as beachContent} from '../scenes/beach/scene-document';
-import {content as yardContent} from '../scenes/yard/scene-document';
 import {content as capsuleContent} from '../scenes/capsule/scene-document';
 /** Canonical scene adapters: the editor supplies documents to shipping SceneDef factories. */
 import type { NativeSceneAdapter } from './native-preview';
@@ -19,7 +18,6 @@ import { downtownScene } from '../scenes/downtown';
 import { validateDowntownComposition } from '../scenes/downtown/composition';
 import { beachScene } from '../scenes/beach';
 import { validateBeachComposition } from '../scenes/beach/composition';
-import { yardScene, yardFrameEnvironment, validateYardComposition } from '../scenes/yard';
 import { metroScene } from '../scenes/metro';
 import { validateMetroComposition } from '../scenes/metro/composition';
 import { trainScene } from '../scenes/train';
@@ -39,8 +37,6 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   ...Object.fromEntries(FOLDER_SCENE_IDS.map(id => [id, folderAdapter(id)])),
   capsule: { validate: validateCapsuleComposition, definition: capsuleScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('capsule',doc,documents,capsuleContent,(source,gameplay,context)=>capsuleScene(doc,state,options,source,gameplay,context,documents.get('capsule-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => capsuleFrameEnvironment(v, e, doc) },
   beach: { validate: validateBeachComposition, definition: beachScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('beach',doc,documents,{...beachContent,validateGameplay:validateBeachGameplay},(source,gameplay,context)=>beachScene(doc,state,options,gameplay,source,context,documents.get('beach-devices') as import('../data/types').SceneData|undefined));} },
-  yard: { validate: validateYardComposition, definition: yardScene, pendingDefinition:(doc,state,options,documents)=>{return pendingNativeTargetScene('yard',doc,documents,yardContent,(source,gameplay,context)=>yardScene(doc,state,options,source,gameplay,context,documents.get('yard-devices') as import('../data/types').SceneData|undefined));}, environment: (doc, v, e) => yardFrameEnvironment(v, e, doc),
-  },
 
   metro: { validate: validateMetroComposition, definition: metroScene },
   train: { validate: validateTrainComposition, definition: trainScene,pendingDefinition:(doc,state,options,documents)=>{const gameplay=trainContent.validateGameplay(documents.get('train-gameplay'));return trainScene(doc,state,options,trainContent.validateScene(documents.get('train-scene'),gameplay),gameplay,documents.get('train-devices') as import('../data/types').SceneData|undefined);} },

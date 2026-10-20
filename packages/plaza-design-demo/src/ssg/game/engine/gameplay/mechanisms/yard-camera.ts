@@ -5,8 +5,8 @@
  * `texts`); the picture (the approach, panned by the gate) is this file's.
  */
 
-import { cameraPanel as sharedCameraPanel, registerCameraPainter, zoomButton } from '../../engine/camera-panel';
-import { cameraPan, cameraParcel } from '../../engine/controllers/camera-bindings';
+import { cameraPanel as sharedCameraPanel, registerCameraPainter, zoomButton } from '../../camera-panel';
+import { cameraPan, cameraParcel } from '../../controllers/camera-bindings';
 
 registerCameraPainter('yard.approach', (g, { m, things, tags }) => {
   const dx = cameraPan(m), W = 320, H = 150;

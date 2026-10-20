@@ -8,6 +8,7 @@ import {station} from './station';
 import {moth} from './moth';
 import {harborProvider} from './harbor';
 import {sandbox} from './sandbox';
+import {yard} from './yard';
 /**
  * Registered binding providers: a source name `<provider>.<key>` asks the provider for `key`.
  * A provider works out everything it offers once per frame from the scene as it stands (its
@@ -31,4 +32,5 @@ export const BINDING_PROVIDERS:Readonly<Record<string,BindingProvider>>={
  moth,
  harbor:harborProvider,
  sandbox,
+ yard,
 };

@@ -55,6 +55,10 @@ import sandboxComposition from './sandbox/composition.json';
 import sandboxScene from './sandbox/scene.json';
 import sandboxGameplay from './sandbox/gameplay.json';
 import sandboxDevices from './sandbox/devices.json';
+import yardComposition from './yard/composition.json';
+import yardScene from './yard/scene.json';
+import yardGameplay from './yard/gameplay.json';
+import yardDevices from './yard/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -75,6 +79,7 @@ export const FOLDER_SOURCES={
  moth:{composition:mothComposition,scene:mothScene,gameplay:mothGameplay,devices:mothDevices},
  harbor:{composition:harborComposition,scene:harborScene,gameplay:harborGameplay,devices:harborDevices},
  sandbox:{composition:sandboxComposition,scene:sandboxScene,gameplay:sandboxGameplay,devices:sandboxDevices},
+ yard:{composition:yardComposition,scene:yardScene,gameplay:yardGameplay,devices:yardDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */
 export const FOLDER_DIRS:Readonly<Record<string,string>>={harborShift:'harbor-shift'};
