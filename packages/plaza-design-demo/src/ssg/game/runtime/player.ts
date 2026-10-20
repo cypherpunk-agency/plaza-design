@@ -25,6 +25,4 @@ export interface PlayerServices {
    * is free (no talk, panel or bubble open), then the player is back where they were.
    */
   cutscene?: (id: string) => void;
-  /** Another scene's state key, as its save has it (the stacks ask Moth's place whether Sprat was fed). */
-  sceneState?: (scene: string, key: string) => unknown;
 }

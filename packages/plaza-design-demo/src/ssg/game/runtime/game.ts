@@ -328,8 +328,6 @@ export class Game {
       end: () => { this.showEnd = true; },
       // a story beat's cutscene (the stacks' ACT II card) waits for the screen to be free (`loop`)
       cutscene: (cut) => { this.pendingCut = cut; },
-      // another scene's state: its live model if it is hosted, else its save
-      sceneState: (scene, key) => this.save.gameplay?.[scene]?.[key],
     }) : def.rules ?? NO_RULES;
     const zh = new SceneHost(this.host.windowEl, print, {
       notice:(text,tone,receipt)=>{this.hints.notify(text,tone,receipt);},

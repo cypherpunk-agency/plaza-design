@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `565d6b3` on main and production.
-Homepage jobs39364392109/39364392219 and design job39364392266 succeeded.
+Last verified deployment: `c33d639` on main and production.
+Homepage jobs39365323551/39365323420 and design job39365323131 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2977,3 +2977,29 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
 - No new gate promotion. Remaining ordinary-code audit includes Downtown's side-effecting joke
   formatter and Stacks' foreign Sprat state read; these were identified, not silently retained
   as accepted controller primitives. Final all19 inventory/removal and G0-G13 signoff remain open.
+
+## 2026-10-20: typed cross-owner state reads
+
+- `gameplay.stateReads` declares qualified, typed read-only references. Shared queries and
+  scalar controls read the same runtime owner blocks; consumers introduce no foreign defaults,
+  copied values, native read callbacks or save-format adapters. Registry/source validation
+  checks prospective owner declarations and rejects missing/type-mismatched imports.
+- Stacks' Sprat conversation now reads `moth.fed` through the authored `stacks.spratFed`
+  query. Removed the native derived flag and the unused PlayerServices.sceneState bridge.
+- Logic's integrated reference controls support Add/Remove/type selection and the common
+  scalar selectors. Actual packaged editor verification: wrong type rejected without history;
+  adding `moth.fern` as string and Undo succeeded with no console warnings/errors.
+- Current checks PASS: package TypeScript, check-state-reads, check-state-reads-save,
+  check-stacks-conversation (312 original cases / 256 transitions). Protected source Save,
+  grouped owner/consumer changes, missing/type rejection, bundle/history, fresh shipping
+  import/current-state reload and byte restoration are covered by
+  `.scene-system/state-reads-save-qnQDSQ`. Earlier regression checks also passed:
+  check-device-presence, check-stacks-source-permissions and check-eng05; both root builds passed.
+- Raster checkpoint source `d12f94605abcdcf8266221add53f613586290f8aec7e78f83862f3a01102616b`:
+  raw report `.scene-system/all-game-pixel-check/evidence/d12f94605abcdcf8266221add53f613586290f8aec7e78f83862f3a01102616b-1792468122198.json`.
+  Independent comparison confirms rows/deviceRows/boundRows/mapRows exactly equal the
+  pre-change published-source diagnostic `f0a2bd96...-1792466503921.json`.
+  Original-baseline status remains FAIL: 172 unchanged cases, one pre-existing Mall
+  animation frame with 282 differing pixels / max delta 82. No baseline was replaced.
+- No whole-goal gate promoted. Downtown's side-effecting denial-text rotation and the
+  final all-scene source/editor/preservation/removal audits remain outstanding.

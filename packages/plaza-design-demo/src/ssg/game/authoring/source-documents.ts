@@ -1,3 +1,5 @@
+import {validateStateReadReferences} from '../engine/gameplay/state-reads';
+import type {GameplayDefinition} from '../engine/gameplay/types';
 import {pendingOpeningStory} from './pending-opening';
 import {validateCompanionGameplay} from '../engine/gameplay/companion-conversations';
 import {validateOpeningSource} from '../story/opening-source';
@@ -80,6 +82,7 @@ export function validateSourceDocuments(documents: ReadonlyMap<string, unknown>)
   }
   for(const s of gameplayScenes)validatePendingSceneContent(s,documents.get(s.prefix+'-scene'),documents);
   validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents),validateMetroSource(documents.get('metro-source')));
+  const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}validateStateReadReferences(definitions);
   const context = createSequenceValidationContext(art, compositions, pendingDestinations(documents));
   for (const [id] of Object.entries(timelineFiles)) validateTimeline(documents.get(id), context);
   createRuntimeSequenceDocuments(documents,context);

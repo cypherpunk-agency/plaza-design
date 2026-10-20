@@ -1,3 +1,4 @@
+import {validateStateReadReferences} from './state-reads';
 import {projectSceneState,type SceneDeviceSource} from './scene-state';
 import {emptyDeviceSource} from '../empty-data';
 import type {EngineNetworkContext} from '../network-context';
@@ -35,6 +36,7 @@ export function createSceneRegistry(native:Readonly<Record<string,SceneDef>>,sou
  const catalogue=validateSceneCatalogue(source,native,network),registry={...native};
  for(const entry of catalogue.scenes)registry[entry.scene.id]=declaredScene(entry.scene,entry.composition,entry.gameplay,{},entry.devices);
  for(const scene of Object.values(registry))for(const exit of scene.exits){if(!exit.to&&exit.action)continue;const destination=registry[exit.to];if(!destination||exit.at&&!destination.exits.some(e=>e.id===exit.at))throw new Error('Unknown scene exit destination/arrival: '+scene.id+'/'+exit.id+' -> '+exit.to+(exit.at?'/'+exit.at:''));}
+ validateStateReadReferences(Object.values(registry).flatMap(scene=>scene.gameplay?[scene.gameplay]:[]));
  return registry;
 }
 export function newAuthoredScene(id:string,name:string):AuthoredScene{

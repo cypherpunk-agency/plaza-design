@@ -1,5 +1,5 @@
 import {renderActionValue} from './action-values-authoring';
-import type {ScalarRead} from '../engine/gameplay/queries';
+import {stateReadIds,type ScalarRead} from '../engine/gameplay/queries';
 import {concreteStateValue} from '../engine/gameplay/state';
 import type {StateDeclaration,StateValue} from '../engine/gameplay/types';
 import {WEATHER_KINDS} from '../world/weather';
@@ -34,7 +34,7 @@ export class TypedForm {
   else this.select(parent,name,d.options!,String(value),edit);
  }
  scalarRead(parent:HTMLElement,name:string,value:ScalarRead,edit:(v:ScalarRead)=>void,doc:GameplayDefinition){
-  const kind='literal'in value?'literal':'state'in value?'state':'query',states=Object.keys(doc.state??{}),queries=Object.keys(doc.queries??{});
+  const kind='literal'in value?'literal':'state'in value?'state':'query',states=stateReadIds(doc),queries=Object.keys(doc.queries??{});
   this.select(parent,name+' source',['literal',...(states.length?['state']:[]),...(queries.length&&!this.stateOnly?['query']:[])],kind,kind=>edit(kind==='state'?{state:states[0]}:kind==='query'?{query:queries[0]}:{literal:0}));
   if('state'in value)this.select(parent,name+' state',states,value.state,state=>edit({state}));
   else if('query'in value)this.select(parent,name+' query',queries,value.query,query=>edit({query}));

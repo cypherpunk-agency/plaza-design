@@ -5,7 +5,6 @@
     "heard:spire",
     "contact:moth",
     "stacks:alarms",
-    "stacks:spratFed",
     "stacks:reeferTrajectory",
     "stacks:craneBusy",
     "stacks:craneReturning",
@@ -302,7 +301,15 @@
             },
             {
               "when": {
-                "flag": "stacks:spratFed"
+                "compare": {
+                  "left": {
+                    "query": "stacks.spratFed"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": true
+                  }
+                }
               },
               "node": "start-variant-3"
             }
@@ -594,7 +601,6 @@
   "native": {
     "reads": {
       "stacks:alarms": "alarms",
-      "stacks:spratFed": "spratFed",
       "stacks:reeferTrajectory": "reeferTrajectory",
       "stacks:craneBusy": "craneBusy",
       "stacks:craneReturning": "craneReturning",
@@ -878,6 +884,35 @@
           }
         }
       ]
+    },
+    "stacks.spratFed": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "state": "moth.fed"
+              },
+              "op": "eq",
+              "right": {
+                "literal": true
+              }
+            }
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
     }
+  },
+  "stateReads": {
+    "moth.fed": "boolean"
   }
 }

@@ -59,6 +59,8 @@ export interface GameplayDefinition {
   /** Ordered current-save normalization, evaluated on a copy through shared state commands. */
   checkpoint?:{when?:Condition;command:string}[];
   state?:Record<string,StateDeclaration>;
+  /** Read-only references to another declaration; no defaults, ownership or stored copies. */
+  stateReads?:Record<string,StateDeclaration['type']>;
   /** Pure reads derived from the current draft and its source; never persisted. */
   queries?:Record<string,QueryDefinition>;
   purchases?:Record<string,PurchaseDefinition>;

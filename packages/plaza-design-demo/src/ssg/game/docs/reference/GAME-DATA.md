@@ -30,6 +30,13 @@ here; README.md maps the other documents and ROADMAP.md tracks implemented/propo
   device sources omit scene scalar defaults. `Save.gameplay` contains owner
   blocks shared by native models and commands (`gameplay.yard.found`, for example).
   `save.scenes.yard` stores engine progress such as goals, cables and board state.
+- **Read another owner's state without copying it.** `gameplay.stateReads` maps qualified
+  IDs to expected types, for example `{"moth.fed":"boolean"}`. Scalar reads in queries,
+  comparisons and action values read that owner's block in the common runtime state.
+  The reader creates no defaults and cannot write imported keys; a missing owner block
+  yields an absent value. The prospective source registry validates each reference against
+  its owner's declaration, including grouped edits before Save. Logic exposes typed
+  **Read state from other owners** controls and includes references in scalar selectors.
 - **No authored hints in the yard yet.** Goals stay (the GOAL line in the HUD; the deck's JOBS
   tab). The game has a hint lane now (ui/hints.ts, 2026-10-18), used so far only for control
   hints; when a goal or place gives a hint is a separate design question. Downtown's fixer hints
