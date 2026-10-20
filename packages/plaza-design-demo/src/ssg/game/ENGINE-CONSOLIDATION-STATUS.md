@@ -20,7 +20,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
-| G0 | IN PROGRESS | Immutable451-file capture verified; original game-subtree dirty diff reconstructed with explicit historical timing limits. BASELINE-RECONCILIATION.md records recovered evidence; final inventory reconciliation remains open |
+| G0 | PASS | User approved retrospective audit2026-10-20; all451 captured hashes, exact19 scene snapshots/inventory,66 conversation IDs,15 flash producers and other retired overlays, controller/callback destinations and six workload manifests verified. Chronology/subtree limits remain explicit; BASELINE-RECONCILIATION.md |
 | G1 | PASS | Retired producer/source routing audit and actual Game/Host/Panels/Schematic/history/causal checks; exact scope and source identity in docs/reference/COMMUNICATION-ACCEPTANCE.md |
 | G2 | PASS | Actual readable-clock, reduced-motion/covered-screen, bounded priority/cancellation/guidance and on/off-screen device checks; COMMUNICATION-ACCEPTANCE.md |
 | G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
@@ -3190,3 +3190,39 @@ ORDINARY-CONTROLLER-CONSOLIDATION.md. Inventory report controller-inventory-PT3p
 source `sha256:ccbaef302169cb849196fad646c44d5e9943f7b1859e863615111bfbdd6b8c00`.
 No whole-goal gate promoted. Next work is a combined authoring/isolation acceptance audit using
 existing evidence, with new implementation/checks only for demonstrated missing requirements.
+
+
+## 2026-10-20: combined authoring/isolation audit
+
+G0 accepted under the explicitly revised retrospective condition; see BASELINE-RECONCILIATION.md.
+Fixed two integration gaps in the retained Scene-stage Play mount: source/history edits now refresh
+its fixture controls, and the next explicit Play/Reset takes current document values. A running
+private Game retains its own snapshot. No rendering, layer, object or composition implementation changed.
+
+Actual packaged UI: all19 native scene Play/Stop sessions PASS, including13 starting-state creations.
+Pending Capsule spawn import retained the running466 position; Reset used333. Undo retained the
+running333 then Reset used466; Redo/Reset used333. Every Stop removed its frame; no warning/error logs.
+Source-bound observations: `.scene-system/authoring-stage-audit/observations.json`;
+app-YD4F5ROM.js / play-H3WFLTI2.js / play-d7f0f8908a80ebb9.html, source9f895b8a67cf.
+
+Boundary checks PASS: private/native storage adapters, startup bootstrap/CSP (run-JfY4iv), public
+bundle validation and actual ComposerModel import/history, Test District save/slot/resume sentinels,
+protected Save/conflict/rollback/crash recovery/path/loopback auth, two connected new scenes without
+TS registration (scene-catalogue-check/run-lBKy88), paired source route/command Save/reload/Undo and
+partial-pair crash recovery (contextual-source-save/run-546Ij5). The Windows symlink fixture required
+an unsandboxed retry; the check then passed unchanged. TypeScript and homepage packaging PASS.
+G4/G10 remain open for complete typed-control/source coverage reconciliation, rather than being
+promoted from startup and generic document boundaries alone. Seven of14 gates are accepted.
+
+The same packaged UI created stage-audit-room through World/Scenes and ran its native Game at
+x120 without TypeScript registration. Creation Undo removed the scene and Redo restored it;
+Stop left zero frames. Evidence appended to observations.json. The created room and fixture edits
+were confined to the disposable public-editor test session. Both production builds PASS.
+
+Final Scene-stage lifecycle correction: Undo removing the actively played authored scene now
+stops/disposes its Play mount and returns to a valid existing composition. Composer disposal
+also releases the separately retained stage handle. Actual final-build regression at
+app-CW5KHE4L.js returns to Library with zero frames, Play available and no browser warnings/errors.
+The earlier all19/source-edit observations retain their own9f895b8a67cf checkpoint identity;
+observations.json records final-removal identity and rejected attempts separately. No raster,
+actor, layer or object implementation changed in this batch.

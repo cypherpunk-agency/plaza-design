@@ -10,6 +10,11 @@ is not a completion requirement. This correction supersedes older compatibility 
 the previous three-batch proposal. The user separately authorized pushing a reasonable stable
 checkpoint to main and production on2026-10-19. Publication does not imply goal completion.
 Existing ENG-01–08 and story M1–M9 keep their identities. Communication is ENG-09.
+User decision 2026-10-20: G0 may be accepted through a verified retrospective audit against the
+untouched captured baseline. Do not assert that every fixture/producer ledger existed before
+migration; retain that timing limitation and the captured-subtree diff scope explicitly. This
+supersedes pre-migration chronology wording below. All preservation requirements remain unchanged.
+
 
 ## Goal condition
 
@@ -169,7 +174,7 @@ checks. Provide source/fixture locations for each case and a compact before/afte
 
 | Gate | Reproducible evidence required |
 | --- | --- |
-| G0 Scope/baseline | Capture starting revision/diff identity, exact producer call-site list, reconciled conversation row IDs (including the four stale Market entries), workload manifests and preservation fixtures before dependent migrations; zero implementation claims from inventory alone |
+| G0 Scope/baseline | Verify captured starting revision/diff identity and untouched source bytes; retrospectively reconcile exact producer callsites, conversation IDs (including the four stale Market entries), all19 scene/controller destinations, workload manifests and preservation fixtures. State chronology/subtree limits explicitly; zero implementation claims from inventory alone |
 | G1 Communication routing | Each retired producer has an explicit destination; no remaining display path for the three retired overlays; door/device errors stay out of player speech; meaningful closed-terminal errors are visible; duplicate acquisition/news/control cases occur once; terminal history does not recursively notify |
 | G2 Timing/attention | Controlled-time checks cover normal/reduced motion, pause/resume, hidden tab, scene change, completed objectives, queue bounds, preemption and repeat collapse; immediate feedback is not starved by hints; relevant on-screen and off-screen targets work |
 | G3 Conversation corpus | Every frozen row uses the shared runner; scenario comparisons preserve text/variants/effects/permissions; repeated entry cannot duplicate rewards; cursors survive supported reload; fresh and current-format saves initialize once; procedural bot content uses the registered shared contract |
