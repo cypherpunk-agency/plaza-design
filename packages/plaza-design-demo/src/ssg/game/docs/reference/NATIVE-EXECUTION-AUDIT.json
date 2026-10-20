@@ -9,7 +9,8 @@
       "scene": "capsule",
       "controller": "capsule",
       "inputs": [
-        "capsule.router.onlineDue"
+        "capsule.router.onlineDue",
+        "capsule.router.rebooted"
       ],
       "panels": [],
       "functions": {
@@ -42,8 +43,8 @@
           "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
         },
         "tick": {
-          "classification": "ordinary-gap",
-          "reason": "Retain thermal integration and threshold timing, but reboot response dispatch still calls native say/line through the controller text binding."
+          "classification": "simulation",
+          "reason": "Thermal integration and reboot/temperature thresholds; emits declared physical milestones, while shared commands and replies own every response and speaker."
         },
         "check": {
           "classification": "validation",

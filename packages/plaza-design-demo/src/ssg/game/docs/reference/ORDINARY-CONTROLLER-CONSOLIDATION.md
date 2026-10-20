@@ -49,7 +49,7 @@ existing function. A changed body needs semantic review.
 
 | Area | Current ordinary ownership | Retained native operation / remaining gap |
 | --- | --- | --- |
-| Capsule | Plug actions, schedule, door reaction, Pixel target/wait, goals, online readiness/reply and Pixel-on-router predicate are shared source | Thermal integration, boot timers and steam remain native; reboot response dispatch remains in thermal tick |
+| Capsule | Plug actions, schedule, door reaction, Pixel target/wait, goals, online readiness/reply and Pixel-on-router predicate are shared source | Thermal integration, boot timers and steam remain native; reboot responses now use declared inputs and shared replies |
 | Downtown | Till, legs, Registry, billboard/peer timers, denial rotation, DLV access/milestone outcomes and finale are shared | DLV trajectory/scanner/collision sampling; read-only canonical player services; camera panel |
 | Yard | Grab/drop, hatch deadline, camera discovery and parcel outcomes are shared | Registered camera validation and source-bound presentation; no rule effect/tick body remains |
 | Stacks | Lift permissions/selection, alarm/return outcomes, watchdog/trace, discovery, landing rewards and cross-owner Sprat state are shared | Trajectories and milestone timing, transient highlight expiry, scope panel |
@@ -59,8 +59,8 @@ existing function. A changed body needs semantic review.
 | Harbor / Warehouse / Market / Shop / Mall / platforms / Harbor Shift | Source-authored ordinary content; no additional registered SceneRules callables | Art, actor, travel and presentation bindings require their own scope checks |
 | Opening | Phase rules, targets, access policy, timing and cinematic handoff source have G11 evidence | Existing orchestration/primitive playback remains code; G11 does not sign every other gate |
 
-The bounded SceneRules audit now exposes four ordinary gaps (Capsule thermal response,
-two Train wording selectors, Sandbox night). This is not a count of all remaining goal tasks.
+The bounded SceneRules audit now exposes three ordinary gaps (two Train wording selectors,
+Sandbox night). This is not a count of all remaining goal tasks.
 
 ### Pixel predicate removal
 
@@ -144,3 +144,11 @@ physical timers report one declared input; source commands own readiness and sta
 `.scene-system/capsule-router-online-save-8LHluu` proves actual typed edits, pending execution,
 Save/bundle/fresh import/Undo. One additional success redraw is explicit; original caption times,
 world state, timer ownership and native event/goal order remain unchanged.
+
+
+2026-10-20 reboot completion: the thermal threshold publishes `capsule.router.rebooted`;
+the shared command/event/reply owns its wording and speaker. Removed the controller's obsolete
+texts and router speaker binding. Original1,728 histories and108 router timelines remain unchanged.
+Actual typed rebind, protected Save/bundle/fresh shipping/Undo and cancellation evidence:
+`.scene-system/capsule-router-online-save-cqmIMt`; mechanical controller Save:
+`.scene-system/capsule-controller/run-EjZ2un`. TypeScript and both builds PASS.

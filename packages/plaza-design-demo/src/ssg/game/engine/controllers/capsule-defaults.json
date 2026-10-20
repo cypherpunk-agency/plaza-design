@@ -8,7 +8,6 @@
     "doorOpen": "doorOpen"
   },
   "devices": {
-    "router": "router",
     "pixel": "pixel"
   },
   "tuning": {
@@ -21,9 +20,6 @@
     "heatPerS": "heatPerS",
     "coolPerS": "coolPerS",
     "steamMs": "steamMs"
-  },
-  "texts": {
-    "reboot": "router.reboot"
   },
   "onlineNoticeDelayMs": 20,
   "temperatureNoticeStep": 5

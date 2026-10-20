@@ -3178,3 +3178,15 @@ both builds and the same inventory/typed Save checks PASS. Current inventory raw
 Current Save evidence: `.scene-system/capsule-workflow-save-eDGnpc`.
 Combined editor app-7PAWGMDI.js / play-SRV437B5.js / play-80d345ad82462556.html,
 98 documents/129 references. The earlier checkpoint artifacts remain scoped to their own source.
+
+
+## 2026-10-20: Capsule response ownership completed
+
+Thermal reboot now emits a declared physical input; its source command/event/reply owns wording
+and speaker. Obsolete controller text/router-response fields removed. The original1,728 histories,
+108 router timelines, current controller controls and protected Save/bundle/fresh shipping/Undo
+checks PASS; both builds and TypeScript PASS. Sources/evidence are recorded in
+ORDINARY-CONTROLLER-CONSOLIDATION.md. Inventory report controller-inventory-PT3pVm identifies
+source `sha256:ccbaef302169cb849196fad646c44d5e9943f7b1859e863615111bfbdd6b8c00`.
+No whole-goal gate promoted. Next work is a combined authoring/isolation acceptance audit using
+existing evidence, with new implementation/checks only for demonstrated missing requirements.
