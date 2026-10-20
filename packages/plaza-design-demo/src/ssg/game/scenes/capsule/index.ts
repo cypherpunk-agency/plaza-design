@@ -1,3 +1,4 @@
+import {resolveArtworkRoles} from '../../engine/gameplay/artwork-roles';
 import {nativeDeviceDialogues} from '../../engine/gameplay/native-dialogue';
 import {projectSceneState} from '../../engine/gameplay/scene-state';
 import type {SceneData} from '../../data/types';
@@ -23,36 +24,19 @@ import { CAPSULE } from "../../data/index";
 import type { SceneDef } from "../kit";
 import { capsuleDeviceData } from './composition';
 import { CAPSULE_RULES } from './rules';
-import { drawCapsule } from './scene';
 
 export { CAPSULE_SPAWN, CAPSULE_W, capsulePerch, drawCapsule, capsuleFrameEnvironment } from './scene';
 export { capsuleArt, capsuleComposition, validateCapsuleComposition } from './composition';
 
-/** The flat, complete: data, rules, drawing, the door. */
-const baseCapsule: Omit<SceneDef,'width'|'spawn'|'exits'> = {
-  id: 'capsule',
-  name: content.scene.name,
-  // facing (light.ts): its window looks east, between two towers: the morning sun gets in
-
-  // by the bed; coming in from Downtown you land just inside the door
-  intro: content.scene.intro,
-  // your bed (the opening's sleep is its own: opening.ts OPENING_TARGETS); x as the bed in scene.ts (462–512)
-  data: capsuleDeviceData(CAPSULE),
-  rules: CAPSULE_RULES,
-  drawBackdrop: drawCapsule,
-  // the door: locked until CONCIERGE says otherwise, then the way to Downtown
-
-};
-
 /** Canonical source-derived flat, including Pixel perches and physical device markers. */
 export function capsuleScene(document: Composition = capsuleComposition, state: Environment['state'] = {}, options: CapsuleRenderOptions = {},sceneDocument:SceneDocument=content.scene,gameplay:GameplayDefinition=content.gameplay,validationContext?:NativeTargetValidationContext,deviceSource:SceneData=CAPSULE): SceneDef {
-  const doc=validateCapsuleComposition(document),geometry=capsuleGeometry(doc),byId=(id:string)=>geometry.find(row=>row.instance.id===id)!,door=byId('door').placement;
-  const authored=content.validateScene(sceneDocument,gameplay,validationContext),actors=compileSceneActors(authored,geometry);
+  const doc=validateCapsuleComposition(document),geometry=capsuleGeometry(doc);
+  const authored=content.validateScene(sceneDocument,gameplay,validationContext),actors=compileSceneActors(authored,geometry),roles=resolveArtworkRoles('capsule',authored.manifest?.artwork,geometry),door=roles.door?.placement;
  const compiled=compileManifestDocument(authored,geometry,(_ctx,id)=>({name:'',pages:[],conversation:id}),{groups:['uses','readables','rests','exits'],groundExits:false,groundSpawn:false,omitGroundRestHeight:true});
-  return {...baseCapsule,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),facing:Number(byId('blinds').props.facing),data:projectNativeDeviceData(capsuleDeviceData(projectSceneState({...deviceSource,dialogue:nativeDeviceDialogues(gameplay,deviceSource)},gameplay),doc,authored),gameplay),
-    ...compileNativeTargets(authored,{door},content.nativeTargetBindings),
-    visualEnvironment:(view,engine)=>capsuleEnvironment(doc,view,engine.m,engine.hover,actors),
-    drawBackdrop:(ctx,view,engine)=>drawCapsuleComposition(ctx,view,engine.m,engine.hover,doc,state,options,actors),
+  return {id:'capsule',rules:CAPSULE_RULES,...compiled.content,name:authored.name,intro:authored.introTouch?(touch:boolean)=>[...(touch?authored.introTouch!:authored.intro)]:authored.intro.length?[...authored.intro]:undefined,gameplay:withSceneConversations(gameplay,authored),people:authored.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),...(roles.orientation?{facing:Number(roles.orientation.props.facing)}:{}),data:projectNativeDeviceData(capsuleDeviceData(projectSceneState({...deviceSource,dialogue:nativeDeviceDialogues(gameplay,deviceSource)},gameplay),doc,authored),gameplay),
+    ...compileNativeTargets(authored,door?{door}:{},content.nativeTargetBindings),
+    visualEnvironment:(view,engine)=>capsuleEnvironment(doc,view,engine.m,engine.hover,actors,authored),
+    drawBackdrop:(ctx,view,engine)=>drawCapsuleComposition(ctx,view,engine.m,engine.hover,doc,state,options,actors,authored),
   };
 }
 export const capsule=capsuleScene();

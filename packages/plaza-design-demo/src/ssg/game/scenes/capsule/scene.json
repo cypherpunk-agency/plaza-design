@@ -64,6 +64,7 @@
     }
   ],
   "manifest": {
+    "artwork": {"orientation":"blinds","deskSurface":"desk","sunPatch":"sun-patch","router":"router","door":"door"},
     "version": 1,
     "width": {
       "instance": "shell",

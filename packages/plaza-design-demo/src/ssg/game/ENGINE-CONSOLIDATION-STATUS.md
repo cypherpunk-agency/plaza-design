@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `ed91680` on main and production.
-Production/main homepage jobs39343069196/39343069161 and design job39343069066 succeeded.
+Last verified deployment: `55e6f09` on main and production.
+Production/main homepage jobs39344516154/39344515729 and design job39344516158 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2389,3 +2389,29 @@ with zero differences/errors, independently verified. Actual packaged Shop nativ
 geometry/actor inspector controls PASS without warning/error logs. Package app-KDYDPDLP.js /
 play-QWKO4ICL.js / play-a92368162884aec8.html. All19 actor helper regression PASS (`actor-entities/run-v1pQT7`); all19 actual packaged
 editor Play/Stop PASS with no warning/error logs (`editor-native-play-04c1aa71-20261020.json`). Whole-goal gates remain open; this is bounded Shop evidence, not all-scene signoff.
+
+## 2026-10-20 Capsule artwork-role continuation
+
+Five typed shared roles now own Capsule orientation, desk cable surface, sun extent, cable router
+and physical door placement. The broad canonical artwork identity floor is removed. Dependent
+attachments, manifest exits, companion perches and native target placement remain validated.
+The factory passes actual pending source to the picture adapter; absent optional picture roles
+remain absent. Removing the door role rejects because the registered native target needs its
+placement. New roles may target replacement artwork; former geometry may be deleted after real
+children are reanchored. Removed redundant baseCapsule and old source bed-content backfill.
+
+Actual mounted Scene fields, moved/replaced/deleted artwork, elevated real door target, picture
+endpoints/orientation, invalid ref/physical transform atomic rejection, bundle, protected Save,
+fresh shipping import and byte Undo PASS (`capsule-actor-role-source-Uo3VDz`). Default Capsule
+geometry/device/boot/heat/steam snapshots and ten original interior outcome/current-save cases
+PASS. TypeScript and both builds PASS. Source db81f87e1f74e20577d8667acf2a314b30844bd3358bc2e0c6d8069b971f80fd
+passes all173 browser raster comparisons with zero differences/errors (independently verified).
+Actual packaged Capsule inspector and native Play/Stop PASS, no warnings/errors. Package
+app-3ZSBGOBC.js / play-4ZEX4BOK.js / play-d0be40f1038b0789.html. The previous all19 Play proof remains
+bound to source04c1aa71e826. No remaining whole-goal gate is promoted by this targeted continuation.
+
+Capsule controller persistence proof also PASS (`capsule-controller/run-paLuCP`): changed shared
+state declarations and native controller role refs, exact boot+notice timing, current snapshot
+scratch clearing/callback cancellation, companion binding, invalid device rejection, grouped
+history/bundle/protected Save/fresh module import/byte Undo. Updated stale fixtures to declare
+state in gameplay and use current controller text/device fields; original timing assertions remain.

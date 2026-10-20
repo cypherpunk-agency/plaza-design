@@ -115,3 +115,20 @@ existing scene presentation source with typed actor selectors and atomic actor-r
 The danger predicate remains the one existing source-controlled Beach visual state read.
 
 The Beach actor-role follow-through is now independently verified in [SCENE-PRESENTATION-ACTORS.md](./SCENE-PRESENTATION-ACTORS.md); the earlier geometry-only scope above remains historical.
+
+## Capsule geometry inputs
+
+Capsule now exposes Orientation artwork, Desk cable surface artwork, Sun patch extent artwork,
+Cable router artwork and Door interaction artwork through the shared Scene inspector. The native
+factory and renderer consume these pending references. Physical door bounds/transforms are checked;
+its native capability requires a placement. Optional picture inputs may be absent without finding
+old geometry. The independent exit and dependent device/companion artwork still use real shared
+bindings/attachments, which must be reanchored before removing former geometry.
+
+Source proof check-capsule-artwork-roles.mts (`capsule-actor-role-source-Uo3VDz`) changes the real
+door height/position, cable endpoints, sun extent and orientation through mounted controls, deletes
+former artwork, rejects invalid edits, and covers history/bundle/protected Save/fresh import/Undo.
+Default Capsule geometry/device/boot/heat/steam checks and ten immutable interior outcome/current-save
+cases PASS. Both builds/tsc and173 zero-difference/error browser raster cases PASS at sourcedb81f87e1f74.
+Actual latest packaged Capsule Play/Stop PASS without warnings/errors. Removed baseCapsule and the
+older missing-bed source backfill; no old-save conversion was introduced.
