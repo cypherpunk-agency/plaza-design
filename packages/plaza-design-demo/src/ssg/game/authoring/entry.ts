@@ -1,3 +1,4 @@
+import {validationSnapshot} from './validation-snapshot';
 import {mountOpeningAuthoring} from './opening-authoring';
 import {mountSharedGameplay} from './shared-gameplay-authoring';
 import {validateCompanionGameplay} from '../engine/gameplay/companion-conversations';
@@ -174,22 +175,25 @@ async function start() {
     },
     assetPreview: createAssetPreview(art, native, (canvas, request) => sequences.render(canvas, request), { showcase: true }),
 
+    // Proposals borrow gameplay from their base; validators below never read proposal artwork.
+    // Projected authored.* children are covered by their authored-scenes source owner.
+    validationInputs: documents => documents.filter(d => !proposalScene(d.id) && !d.id.startsWith('authored.')).flatMap(d => [d.id, d.kind, d.value]),
     validateDocument(document,documents) {
-      if(document.id==='companion-gameplay'){validateCompanionGameplay(document.value);pendingRegistry(new Map(documents.map(d=>[d.id,d.value])));return;}
-      if(document.id==='opening-story'){const values=new Map(documents.map(d=>[d.id,d.value]));pendingOpeningStory(values);return;}
-      if(document.id==='network'){const values=new Map(documents.map(d=>[d.id,d.value]));validatePendingNetwork(values,pendingRegistry(values));return;}
-      if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,new Map(documents.map(d=>[d.id,d.value])));return;}
+      if(document.id==='companion-gameplay'){validateCompanionGameplay(document.value);pendingRegistry(validationSnapshot(documents));return;}
+      if(document.id==='opening-story'){const values=validationSnapshot(documents);pendingOpeningStory(values);return;}
+      if(document.id==='network'){const values=validationSnapshot(documents);validatePendingNetwork(values,pendingRegistry(values));return;}
+      if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,validationSnapshot(documents));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
-      if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(new Map(documents.map(d=>[d.id,d.value]))));}
+      if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroSource(document.value);}
-      if(document.kind==='city')validatePendingCity(document.value,new Map(documents.map(d=>[d.id,d.value])));
+      if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
       if(document.kind==='conversations'){if(document.id!=='bot-reactions')throw new Error('Unsupported conversation library');validateBotReactions(document.value);}
-      if(document.id==='demo-manifest-scene'){const declared=validateManifestSources(documents.find(d=>d.id==='demo-manifest')!.value,document.value,documents.find(d=>d.id==='demo-manifest-gameplay')!.value);validateDeclaredDestinations(declared.scene,pendingDestinations(new Map(documents.map(d=>[d.id,d.value]))));}
+      if(document.id==='demo-manifest-scene'){const declared=validateManifestSources(documents.find(d=>d.id==='demo-manifest')!.value,document.value,documents.find(d=>d.id==='demo-manifest-gameplay')!.value);validateDeclaredDestinations(declared.scene,pendingDestinations(validationSnapshot(documents)));}
 
-      if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=new Map(documents.map(d=>[d.id,d.value])),identity=deviceSourceIdentity(s.id),network=pendingNetworkContext(values),scene=pendingScene(s.id,values.get(identity.composition),{sceneDocument:document.value,gameplay,devices:values.get(identity.devices)},network);s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);}
+      if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=validationSnapshot(documents),identity=deviceSourceIdentity(s.id),network=pendingNetworkContext(values),scene=pendingScene(s.id,values.get(identity.composition),{sceneDocument:document.value,gameplay,devices:values.get(identity.devices)},network);s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);}
 
-      if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=new Map(documents.map(d=>[d.id,d.value]));validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot),validateMetroSource(snapshot.get('metro-source')));}
+      if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=validationSnapshot(documents);validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot),validateMetroSource(snapshot.get('metro-source')));}
 
 
       if (document.kind === 'gameplay') (nativeGameplayScene(document.id)??gameplayScene(document.id)).validateGameplay(document.value);
