@@ -1,7 +1,6 @@
 import {plainReviewScene,reviewVisibility} from './review-room';
 /** Test District uses native factories and the shared game; only its source/save namespace differs. */
-import {workshopScene,WORKSHOP_GAMEPLAY} from './workshop';
-import {sandboxComposition} from '../scenes/sandbox/composition';
+import {workshopScene,WORKSHOP_GAMEPLAY,sandboxComposition} from './workshop';
 import source from '../scenes/demo-counter/gameplay.json';
 import counterSource from '../scenes/demo-counter/scene.json';
 import deskSource from '../scenes/demo-desk/scene.json';

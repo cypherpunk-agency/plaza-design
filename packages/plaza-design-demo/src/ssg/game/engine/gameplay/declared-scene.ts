@@ -25,11 +25,13 @@ import type {LineSystem} from '../../world/transport/line';
 import {nativeTargetValidator,compileNativeTargets,type NativeTargetValidationContext} from './native-targets';
 import type {SceneData} from '../../data/types';
 
+/** A named mechanism lets the scene's engine targets use the `reset` step (scene-mechanisms.ts `targetReset`). */
+const resetPermitted=(doc:SceneDocument)=>(doc.stage?.mechanisms??[]).some(name=>SCENE_MECHANISMS[name]?.targetReset===true);
 /** validateSceneDocument options of a declared scene: its engine targets anchor to the artwork roles its stage lists. Without a context the check is structural; the editor's assembled context checks them against the scene's devices and network. */
 /** Scene document options of declared scenes; `composition` lets its providers' signals be cue targets. */
 export const declaredSceneOptions=(value:unknown,context:NativeTargetValidationContext={phase:'structural'},composition?:unknown)=>({manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors),
  ...(()=>{const targets=composition?Object.keys(providerSignals(art.validate(composition))):[];return targets.length?{presentationTargets:targets}:{};})(),
- nativeTargets:(doc:SceneDocument,gameplay:GameplayDefinition)=>nativeTargetValidator(context.phase==='assembled'?context.data:{id:doc.id} as SceneData,{effects:{}},doc.stage?.targetAnchors??[])(doc,gameplay,context)});
+ nativeTargets:(doc:SceneDocument,gameplay:GameplayDefinition)=>nativeTargetValidator(context.phase==='assembled'?context.data:{id:doc.id} as SceneData,{effects:{}},doc.stage?.targetAnchors??[],{reset:resetPermitted(doc)})(doc,gameplay,context)});
 export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
  const doc=art.validate(composition),signals=providerSignals(doc),d=validateSceneDocument(scene,gameplay,declaredSceneOptions(scene,undefined,doc));
@@ -65,7 +67,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay,Object.keys(contract?.derived??{}),contract?.inputs,contract?.derivedTypes);
  // engine targets (scene.nativeTargets) anchor to the stage's artwork roles and open the scene's engine exits
  const anchors=(d.stage?.targetAnchors??[]).filter(a=>roles[a]);
- const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,roles[a].placement])),{reset:false,anchors}):{};
+ const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,roles[a].placement])),{reset:resetPermitted(d),anchors}):{};
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
  const level=compileLevel(rows),manifest=d.manifest!;
  // the grey review room stands in for a room until the composition paints its own backdrop
