@@ -34,7 +34,14 @@ cover22 actual Game loop/HUD/guidance cases including hidden/covered/reduced-mot
 
 ## Remaining audit
 
-Schematic drag handlers install temporary window pointermove/pointerup listeners. They currently
-release on pointerup; interruption by closing/resetting a layer or pointercancel needs explicit
-ownership/cancellation checks. This remains G5 work, not an accepted lifecycle guarantee. Full
-combined browser repetition and final scene/network/controller acceptance remain separate.
+All seven schematic gesture paths now use one per-layer temporary listener owner. Close, reset,
+restore, mode changes, replacement and pointercancel cancel work without invoking its tap/drop.
+Only the initiating pointer can move/finish it. Existing partial placement updates remain intact;
+cancellation removes transient cable/chip painting. The cached drawer listener/ResizeObserver belong
+to the cached schematic/page, not individual gestures.
+
+`check-schematic-gesture-lifecycle.mts` passes567 actual gesture cases across seven paths and eight
+interruptions, including stale callback rejection, foreign pointers, normal completion and replacement.
+The packaged browser verifies real core/noun taps, native wave and layer close with no errors.
+Full combined lifecycle repetition, clock/persistence inventory reconciliation and final scene/network/
+controller acceptance remain separate; these bounded checks do not sign G5.

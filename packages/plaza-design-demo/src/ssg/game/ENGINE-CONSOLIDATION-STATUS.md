@@ -2813,3 +2813,18 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   conditions` afterwards PASS; console warnings/errors empty. app-32GFSBDG.js/play-WRAUES7W.js.
 - `docs/reference/LIFECYCLE-OWNERSHIP.md` records clock/resource owners and preserved off-screen
   policy. Interrupted schematic gestures still need explicit listener cleanup; G5 remains open.
+
+## 2026-10-20 continuation: interrupted schematic gestures
+
+- Seven hacking gesture paths now share one temporary per-layer listener owner. Device/noun/part
+  dragging, cable dragging, key chips and drawer placement release on close/reset/restore/mode
+  changes/replacement/pointercancel. Other pointers cannot move or complete the gesture. Cancellation
+  clears temporary cable/chip paint without executing the old tap/drop; existing movement formulas
+  and completed actions remain unchanged. Replacement cancellation runs before new gesture state.
+- `check-schematic-gesture-lifecycle.mts`:567 actual method cases across seven paths/eight
+  interruptions PASS, including saved stale callbacks, pointer ownership, normal completion and
+  wire replacement. TypeScript, cached-Game20 cycles, shared handoffs and demo checks PASS.
+- Both builds PASS. Sourcea4afce256bf3d65e04e675fc8c174b0b9d08f68e36e8c7435da1df357918710c:
+ 173 actual raster cases with zero differences/errors. Packaged app-YRUXHJ64.js/play-S3STHPFI.js:
+  real hack-layer open, core unfold, noun open, native wave and layer close PASS; console warnings/
+  errors empty. `LIFECYCLE-OWNERSHIP.md` updated; full G5 remains open pending combined reconciliation.

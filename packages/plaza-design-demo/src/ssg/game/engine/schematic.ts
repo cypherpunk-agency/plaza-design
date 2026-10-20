@@ -104,6 +104,7 @@ export class Schematic {
   /** The GUARD whose keyboard input is open, and what is typed so far (it survives a redraw). */
   private typing: string | null = null;
   private draft = '';
+  private cancelGesture?:()=>void;
   private offsets = new Map<string, P>();
   private boardPos = new Map<string, P>();
   private slots: { kind: string; btn: HTMLButtonElement }[] = [];
@@ -207,16 +208,19 @@ export class Schematic {
   presentHint(busy=false){const text=this.isOpen?this.hints?.boardHint(busy||!!this.hintBusy?.()):null;this.hint.textContent=text??'';this.hint.hidden=!text;}
   private show() {this.root.hidden=false;this.presentHint();}
   openDevice(id: string) {
+    this.cancelGesture?.();
     this.known.add(id); this.mode = 'device'; this.dev = id;
     this.show(); this.pending = null; this.armed = null; this.chip = null;
     this.render();
   }
   openBoard() {
+    this.cancelGesture?.();
     if (!this.known.size) return;
     this.mode = 'board'; this.show(); this.render();
   }
   /** Hack vision (the vision instance only): every device on screen, wired in place. */
   openVision() {
+    this.cancelGesture?.();
     this.root.hidden = false; this.armed = null; this.pending = null; this.chip = null; this.drawer = false;
     this.presentHint();
     this.render();
@@ -352,6 +356,7 @@ export class Schematic {
    * up fresh on every move, so a redraw mid-drag (a timer firing) does not drop it.
    */
   private dragPiece(e: PointerEvent, id: string, tap: () => void) {
+    this.cancelGesture?.();
     const sx = e.clientX, sy = e.clientY, u = this.unit || 1;
     const group = () => this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`);
     let base = this.moved.get(id) ?? { x: 0, y: 0 }, moving = false;
@@ -366,11 +371,11 @@ export class Schematic {
       this.lines();
     };
     const up = () => {
-      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+
       if (!moving) { tap(); return; }
       this.render(); this.onLayout();
     };
-    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+    this.trackGesture(e,mv,up);
   }
 
   /**
@@ -471,7 +476,7 @@ export class Schematic {
   private partGestures(box: HTMLElement, id: string) {
     box.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('.sch-x')) return;
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
       const sx = e.clientX, sy = e.clientY, a = this.anchors.get(id), start = { x: a?.x ?? 0, y: a?.y ?? 0 };
       let moved = false;
       const mv = (ev: PointerEvent) => {
@@ -479,10 +484,10 @@ export class Schematic {
         if (moved) this.onMovePart(id, { x: start.x + ev.clientX - sx, y: start.y + ev.clientY - sy });
       };
       const up = () => {
-        window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+
         if (!moved) this.fold(id); else this.onLayout();
       };
-      window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+      this.trackGesture(e,mv,up);
     });
   }
 
@@ -492,6 +497,7 @@ export class Schematic {
     return Object.fromEntries([...[...this.moved].map(([k, p]) => [k, r(p)]), ...[...this.voff].map(([k, p]) => [k, r(p)])]);
   }
   restorePieces(rec: Record<string, Pt> | undefined, keep: (id: string) => boolean) {
+    this.cancelGesture?.();
     this.moved.clear(); this.voff.clear();
     for (const [k, p] of Object.entries(rec ?? {})) {
       if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
@@ -503,7 +509,7 @@ export class Schematic {
     this.render();
   }
   toggleBoard() { if (this.mode === 'board' && this.isOpen) this.openDevice(this.dev || [...this.known][0]); else this.openBoard(); }
-  close() { if (this.root.hidden) return; this.root.hidden = true; this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.onClose(); }
+  close() { this.cancelGesture?.(); if (this.root.hidden) return; this.root.hidden = true; this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.onClose(); }
   note(l: Line) { this.status.textContent = (l[0] ? '> ' + l[0] + '   ' : '') + l[1]; this.status.className = 'hack-status ' + (l[2] ?? ''); }
 
   /**
@@ -538,6 +544,7 @@ export class Schematic {
     return { pos: obj(this.boardPos), offsets: obj(this.offsets) };
   }
   restoreLayout(l: { pos?: Record<string, Pt>; offsets?: Record<string, Pt> }) {
+    this.cancelGesture?.();
     const ok = (p: unknown): p is P => !!p && typeof (p as P).x === 'number' && typeof (p as P).y === 'number';
     this.boardPos.clear(); this.offsets.clear();
     for (const [k, p] of Object.entries(l.pos ?? {})) if (ok(p)) this.boardPos.set(k, { x: p.x, y: p.y });
@@ -546,6 +553,7 @@ export class Schematic {
   }
   /** Forget where everything sat and which verbs were open (a scene reset). The shared `known` is the owner's to clear. */
   resetLayout() {
+    this.cancelGesture?.();
     this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear(); this.moved.clear(); this.voff.clear();
     this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.dev = '';
     this.render();
@@ -869,12 +877,24 @@ export class Schematic {
     t.setAttribute('x', String(mx));
   }
 
+  /** One temporary window gesture per layer; interruption never runs a tap/drop action. */
+  private trackGesture(start:PointerEvent,move:(e:PointerEvent)=>void,finish:(e:PointerEvent)=>void,canceled:()=>void=()=>{}) {
+    this.cancelGesture?.();let active=true;
+    const release=()=>{if(!active)return;active=false;window.removeEventListener('pointermove',moving);window.removeEventListener('pointerup',ending);window.removeEventListener('pointercancel',canceling);if(this.cancelGesture===cancel)this.cancelGesture=undefined;};
+    const cancel=()=>{if(!active)return;release();canceled();};
+    const owns=(e:PointerEvent)=>e.pointerId===start.pointerId;
+    const moving=(e:PointerEvent)=>{if(active&&owns(e))move(e);};
+    const ending=(e:PointerEvent)=>{if(!active||!owns(e))return;release();finish(e);};
+    const canceling=(e:PointerEvent)=>{if(owns(e))cancel();};
+    this.cancelGesture=cancel;window.addEventListener('pointermove',moving);window.addEventListener('pointerup',ending);window.addEventListener('pointercancel',canceling);
+  }
+
   // ---------- gestures ----------
 
   /** Device box (or a silhouette): drag it on the board, or tap it. */
   private coreGestures(core: HTMLElement, g: HTMLElement, id: string, tap: () => void) {
     core.addEventListener('pointerdown', (e) => {
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
       const sx = e.clientX, sy = e.clientY, start = this.boardPos.get(id) ?? { x: 0, y: 0 };
       let moved = false;
       const mv = (ev: PointerEvent) => {
@@ -888,10 +908,10 @@ export class Schematic {
         this.lines();
       };
       const up = () => {
-        window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+
         if (!moved) tap(); else this.onLayout();
       };
-      window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+      this.trackGesture(e,mv,up);
     });
   }
 
@@ -919,7 +939,7 @@ export class Schematic {
   private nounGestures(node: HTMLElement, key: string) {
     node.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('.port, .sch-verb, .sch-guess')) return;
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
       const tap = () => {
         if (this.armed) { this.propose(this.armed, key); return; }
         if (this.chip) { const c = this.chip; this.chip = null; this.m.useItem(c, key); return; }
@@ -945,16 +965,16 @@ export class Schematic {
         this.lines();
       };
       const up = () => {
-        window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+
         if (moved) { this.render(); this.onLayout(); return; }
         tap();
       };
-      window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+      this.trackGesture(e,mv,up);
     });
   }
 
   private startWire(e: PointerEvent, key: string) {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
     this.armed = key; this.pending = null; this.chip = null; this.render();
     const sx = e.clientX, sy = e.clientY;
     let temp: SVGPathElement | null = null;
@@ -964,7 +984,7 @@ export class Schematic {
       temp?.remove(); temp = this.path(this.pt(from), { x: ev.clientX - s.left, y: ev.clientY - s.top }, 'temp', true);
     };
     const up = (ev: PointerEvent) => {
-      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+
       temp?.remove();
       // only this layer's nouns: hack vision may lie under the board
       const target = this.under(ev, '[data-target]'), plate = target ? null : this.under(ev, '[data-plate]');
@@ -978,7 +998,7 @@ export class Schematic {
       else if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 12) { this.armed = null; this.render(); }
       else this.note(['', this.mode === 'device' ? 'cable in hand. tap a noun, or open the BOARD to reach other devices.' : 'cable in hand. tap the noun it should reach.', 'dim']);
     };
-    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+    this.trackGesture(e,mv,up,()=>{temp?.remove();this.armed=null;this.pending=null;});
   }
 
   /** This layer's element under the pointer that matches (hack vision may lie under the board). */
@@ -989,7 +1009,7 @@ export class Schematic {
 
   /** A keyring chip: drag it onto a login or a sealed noun; tap it to type it (input open) or to hold it. */
   private startChip(e: PointerEvent, id: string) {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
     const sx = e.clientX, sy = e.clientY, chip = e.currentTarget as HTMLElement;
     let moved = false;
     const mv = (ev: PointerEvent) => {
@@ -997,7 +1017,7 @@ export class Schematic {
       if (moved) { chip.style.transform = `translate(${ev.clientX - sx}px, ${ev.clientY - sy}px)`; chip.classList.add('dragging'); }
     };
     const up = (ev: PointerEvent) => {
-      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+
       chip.style.transform = ''; chip.classList.remove('dragging');
       if (moved) {
         // onto another chip: combine them; onto a login or a sealed ???: use it
@@ -1014,7 +1034,7 @@ export class Schematic {
       if (this.chip) this.note(['', (k?.label ?? id) + ' in hand. tap a login, or a sealed ???.', 'dim']);
       this.render();
     };
-    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+    this.trackGesture(e,mv,up,()=>{chip.style.transform='';chip.classList.remove('dragging');});
   }
 
   // ---------- logic parts ----------
@@ -1025,7 +1045,7 @@ export class Schematic {
    */
   private dragOut(e: PointerEvent, kind: string) {
     if (e.button > 0) return;
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
     const sx = e.clientX, sy = e.clientY;
     let id: string | null = null;
     const at = (ev: PointerEvent) => { const s = this.stage.getBoundingClientRect(); return { x: ev.clientX - s.left, y: ev.clientY - s.top }; };
@@ -1034,17 +1054,17 @@ export class Schematic {
         if (Math.hypot(ev.clientX - sx, ev.clientY - sy) <= 6) return;
         this.drawer = false; this.onDrawer();
         id = this.addLogic(kind);
-        if (!id) { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); return; }
+        if (!id) { this.cancelGesture?.(); return; }
       }
       this.onMovePart(id, at(ev));
     };
     const up = () => {
-      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+
       if (id) { this.onLayout(); return; }
       this.drawer = false; this.onDrawer();
       this.addLogic(kind);
     };
-    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+    this.trackGesture(e,mv,up);
   }
 
   /** + TIMER / + SWITCH: a new part on the board, next to the palette, its verbs open. */
