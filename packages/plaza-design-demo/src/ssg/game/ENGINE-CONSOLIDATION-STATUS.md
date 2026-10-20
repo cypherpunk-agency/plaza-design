@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `531dc71` on main and production.
-Homepage jobs39359560451/39359560942 and design job39359560487 succeeded.
+Last verified deployment: `d499f78` on main and production.
+Homepage jobs39362047070/39362047502 and design job39362047552 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2882,3 +2882,30 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
 - Full gate audit and individual commands/results: `docs/reference/LIFECYCLE-ACCEPTANCE.md`.
   G5 promoted to PASS. G1/G2/G3/G5/G6 now PASS; nine gates remain open. This does not promote
   authoring/controller/network/current-save or full preservation acceptance.
+
+## 2026-10-20 network entity deletion
+
+- Removed the historical network/program ID floor from network-source validation and the matching
+  disabled Remove buttons. Original entries obey the same prospective reference checks as newly
+  authored entries. No baseline network/program definitions, IDs, saves or gameplay changed.
+- `check-network-forms.mts` exercises the actual typed controls: original buttons are enabled;
+  deleting referenced Public Net or the granted scanner rejects atomically; replacing Home's
+  ports/members permits removing Home; removing a program with no remaining device grant is valid
+  within that device/network context. Full source validation still checks story references.
+- `check-network-source.mts` verifies valid original deletion, dangling dependent-network rejection
+  and the existing reference/model/inspector/reach checks. These tests no longer mistake the old
+  identity floor for semantic rejection.
+- `check-network-source-save.mts` replaces Home with an authored network and proves actual port
+  reach, grouped pending/native model and inspector changes, invalid-import rollback, bundles,
+  history, protected Save, fresh source import and byte-exact Undo. A referenced program deletion
+  remains invalid. Artifact: `.scene-system/network-source-save/run-X92uMK`.
+  Reload uses one validated store snapshot instead of validating all documents once per read.
+- Included upstream main `8219bdf` (editor/artwork additions) without overlapping edits. Combined
+  runtime source `11781838a5699f9af346a07bed771323dc8eca380c781f5e7385b81de337c1c5`:
+  both builds/TypeScript and all three network checks PASS. Public package app-HLLVTCB7.js /
+  play-KFS5PYVM.js. Actual packaged editor original Home removal enables Undo, removes the section,
+  and Undo restores it; campaign/source stores are untouched.
+- This is bounded G4/G9/G10/G13 progress. No additional whole-goal gate is promoted. Scanner
+  capability role configuration and complete controller/network authoring audit remain open.
+  Earlier raster evidence retains its original source identity; this authoring-only change does
+  not claim a new combined-source raster result for the upstream artwork additions.
