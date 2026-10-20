@@ -1,4 +1,5 @@
-import type { View } from '../core/view';
+import { placed, type View } from '../core/view';
+import { drawCar, SIZE } from '../vehicles/vehicles';
 import type { Properties } from '../core/composition';
 import {box,drawTowers,O,PAPER,RED,text,towers} from '../core/primitives';
 import { paperSign } from '../signage/kit';
@@ -98,16 +99,8 @@ box(x, nb - 1, y(36), 3, 36, '#2a2622');
 paperSign(x, v.t, nb, y(92), 100, 56, { style: 'paper', fill: '#d8d0bc', header: 'REGISTRY NOTICE', first: 9, ink: 'rgba(30,18,8,.9)', weight: '600', lines: ['SEIZED PROPERTY', 'HELD PENDING REVIEW', 'BACKLOG: 4 YEARS', 'CLAIMS NOT ACCEPTED'] });
 break;}
 case 'van':{const L={van:{x:0,w:Number(props.width)}};
-const vn = sx(L.van.x - L.van.w / 2);
-box(x, vn, y(44), L.van.w, 36, '#c8c4b8', 'rgba(242,238,228,.7)');
-box(x, vn + L.van.w - 30, y(44), 30, 36, '#b8b4a8', 'rgba(242,238,228,.7)');
-x.fillStyle = 'rgba(20,30,40,.8)';
-x.fillRect(vn + L.van.w - 24, y(40), 18, 12);
-x.fillStyle = 'rgba(' + RED + ',.8)';
-x.fillRect(vn, y(24), L.van.w, 3);
-text(x, 'REGISTRY', vn + 44, y(32), 'rgba(30,24,18,.85)', 7, '700');
-text(x, 'EVIDENCE TRANSPORT', vn + 44, y(16), 'rgba(30,24,18,.7)', 7, '600');
-for (const k of [18, L.van.w - 18]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(vn + k, y(6), 6, 0, 7); x.fill(); }
+// the kit's van (vehicles.ts) scaled to the piece's width, in the Registry's livery
+placed(x, sx(L.van.x), y(0), L.van.w / SIZE.van, () => drawCar(x, { t: v.t, kind: 'van', paint: '#c8c4b8', face: 1, livery: { stripe: '#c8203a', decal: ['REGISTRY', 'EVIDENCE TRANSPORT'], number: 'RX 114', qr: true } }));
 break;}
 case 'shoe':{const L={shoe:0};
 const sh = sx(L.shoe);

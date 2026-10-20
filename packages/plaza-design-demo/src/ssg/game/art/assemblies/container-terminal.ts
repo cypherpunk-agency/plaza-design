@@ -4,6 +4,13 @@ import { drawSpire } from "../architecture/spire";
 import { gullFlying } from "../characters/gull";
 import { box,C,drawTowers,GREEN,notice,O,onScreen,PAPER,RED,rng,sign,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
+import { DEPTH_BANDS } from "../core/depth";
+import { laneAt, type Lane } from "../vehicles/kit";
+import { paintRoadVehicle } from "../vehicles/road-vehicle";
+import { drawTruck, PORT_SCALE, PORT_TRAILER_SCALE } from "../vehicles/vehicles";
+
+/** The yard's straddle carrier: 270 units west and back, 800 frames each way, holding 300 at each end. */
+export const STRADDLE_LANE: Lane = { mode: 'shuttle', dir: -1, speed: 270 / 800, length: 270, dwell: 300 };
 import { seaCols,sunPath } from "../environment/sky";
 import { drawGantry,STS2 } from "../machinery/crane";
 import { CH,container } from "../props/containers";
@@ -295,30 +302,18 @@ function lane(x:CanvasRenderingContext2D,v:View){
 
 }
 function straddle(x:CanvasRenderingContext2D,v:View){
-
-  const P = 2200, u = v.t % P, a = inputs.x, b = inputs.x-270;
-  const k = u < 800 ? u / 800 : u < 1100 ? 1 : u < 1900 ? 1 - (u - 1100) / 800 : 0;
-  const e = k * k * (3 - 2 * k), wx = a + (b - a) * e, loaded = u < 1100 || u > 2100;
-  const s = v.sx(wx, 0.92), { y } = v;
-  if (!onScreen(v, s - 50, 100)) return;
-  const col = '#8a5a1a', edge = 'rgba(' + YELLOW + ',.55)';
-  box(x, s - 36, y(96), 72, 6, col, edge);
-  for (const lx of [-36, 32]) box(x, s + lx, y(96), 4, 96, col, edge);
-  box(x, s + 14, y(110), 18, 14, '#1a0e06', edge);
-  x.fillStyle = 'rgba(255,200,130,.3)'; x.fillRect(s + 16, y(108), 14, 6);
-  x.fillStyle = Math.floor(v.t / 9) % 2 ? 'rgba(255,170,40,.95)' : 'rgba(255,170,40,.3)'; x.fillRect(s - 2, y(100), 4, 3);
-  for (const lx of [-34, 34]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(s + lx, y(5), 5, 0, 7); x.fill(); }
-  if (loaded) { x.save(); x.globalAlpha = 0.9; box(x, s - 30, y(78), 60, 30, '#2c2824', 'rgba(225,215,200,.5)'); x.restore(); }
-  text(x, 'SC-11', s, y(92), 'rgba(20,12,6,.9)', 7, '700');
-
+  // straddle carrier SC-11 (the kit's, back band, port scale) shuttling a box 270 units west and back
+  const at = laneAt(STRADDLE_LANE, v.t), wx = inputs.x - STRADDLE_LANE.length + at.offset, s = v.sx(wx, DEPTH_BANDS.back.parallax);
+  if (!onScreen(v, s - 60, 120)) return;
+  const loaded = at.leg === 'out' || at.leg === 'far' || (at.leg === 'home' && at.legT > 200);
+  placed(x, s, v.y(0), PORT_SCALE, () => paintRoadVehicle(x, { kind: 'straddle', depth: 'back', motion: 'shuttle', cargo: loaded, pose: 0.2, fleetNo: 'SC-11', stripe: '#1a1206' }, v.t, at.face, at.driven));
 }
 function chassis(x:CanvasRenderingContext2D,v:View){
 const m=new TerminalViewState(inputs.visual),H=inputs.visual.geometry.H,KIND={none:0,regular:1,box:2};
 
   const { sx, y } = v, c = sx(inputs.x - 64), s = m.scratch;
   if (!onScreen(v, c - 10, 150)) return;
-  box(x, c - 4, y(12), 136, 4, '#2a2622', 'rgba(220,200,160,.5)');
-  for (const k of [6, 18, 104, 116]) { x.fillStyle = '#0c0a08'; x.beginPath(); x.arc(c + k, y(5), 5, 0, 7); x.fill(); x.strokeStyle = 'rgba(220,200,160,.4)'; x.stroke(); }
+  placed(x, sx(inputs.x), y(0), PORT_TRAILER_SCALE, () => drawTruck(x, { t: v.t, paint: '#2a2622', box: null, tractor: false }));
   const taken = s.liftT0 !== undefined && s.liftKind === KIND.regular && m.now() - s.liftT0 > 1000;
   if (!taken) container(x, v, inputs.x - 64, H.chassis, { w: 128, p: [5, 0, 3, 6, 2][(Number(m.get('loaded') ?? 0) + 1) % 5], seed: 71 + Number(m.get('loaded') ?? 0) % 9 });
 
