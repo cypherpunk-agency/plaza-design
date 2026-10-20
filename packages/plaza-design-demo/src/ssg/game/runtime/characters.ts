@@ -75,11 +75,16 @@ import type { View } from "../scenes/kit";
 import { city } from "../world/clock";
 import type { TimeWindow } from "../data/types";
 import type {WeatherKind} from "../world/weather";
+import type { BODY_KINDS, HAIR_KINDS, GARB_KINDS, EXTRA_KINDS } from "../art/characters/parts";
+import type { ArchetypeId, Facial } from "../art/characters/archetypes";
+import { peopleRevision, seatedView, type SeatedView } from "../art/characters/people-style";
 
-export type Body = 'avg' | 'tall' | 'short' | 'wide' | 'slim' | 'kid' | 'old';
-export type Hair = 'bald' | 'short' | 'long' | 'bun' | 'mohawk' | 'cap' | 'beanie' | 'hood' | 'brim' | 'helmet' | 'scarf';
-export type Garb = 'tee' | 'jacket' | 'coat' | 'dress' | 'apron' | 'hivis' | 'suit' | 'robe';
-export type Extra = 'umbrella' | 'bag' | 'backpack' | 'cyberarm' | 'visor' | 'mask' | 'phone' | 'headphones' | 'glasses' | 'cane' | 'briefcase' | 'parcel' | 'armband';
+/** Parts (art/characters/parts.ts lists them once). */
+export type Body = typeof BODY_KINDS[number];
+export type Hair = typeof HAIR_KINDS[number];
+export type Garb = typeof GARB_KINDS[number];
+export type Extra = typeof EXTRA_KINDS[number];
+export type { Facial } from "../art/characters/archetypes";
 /** Pixel-frame animals and old robots. `drone` is drawn with the robot kit's scan drone (`scandrone`); `robogull` is a gull-shaped Registry drone. */
 export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier' | 'crab' | 'robogull';
 /**
@@ -87,8 +92,11 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
  * lean (legs crossed, arms folded), smoke, phone, haggle (gestures; pair two facing each other),
  * argue (faster, bigger), queue, sleep (lying on `h`), dance, vend (behind a counter, offers and waits),
  * talk (slow gestures and a nod; standing people also switch to it while their speech bubble is open),
- * read (a newspaper held up), doze (asleep on their feet or in a seat, head down).
+ * read (a newspaper held up), doze (asleep on their feet or in a seat, head down), wait (stands facing
+ * the camera, shifting weight, now and then glancing aside: a queue or a crowd seen from the front).
  * `seated: true` does any in-place act sitting down (a bench, a train seat): read, phone, doze, stand.
+ * Sitters face the camera, three-quarter or side on as the people-style `seated` switch says
+ * (art/characters/people-style.ts), unless the person sets `sitView`.
  * Moving between `x` and `range`: walk, run (longer strides, 2.6× as fast), sweep (with a broom), steal
  * (sneaks to the far end, reaches, runs back). Walkers and runners pivot for a few frames at each end.
  * Drones: 'scan' hovers and sweeps a beam down on whoever is below (`beam` tunes it). Gulls: 'fly' (flapping;
@@ -101,11 +109,17 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
  * slump (the derelict: a flicker, a twitch).
  */
 export type Act = 'stand' | 'walk' | 'run' | 'talk' | 'sit' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
-  | 'read' | 'doze' | 'dig' | 'fly'
+  | 'read' | 'doze' | 'wait' | 'dig' | 'fly'
   | 'carry' | 'roll' | 'patrol' | 'serve' | 'crawl' | 'hover' | 'direct' | 'play' | 'weld' | 'scrub' | 'charge' | 'glitch' | 'blink' | 'slump';
 
 export interface Look {
-  body?: Body; hair?: Hair; garb?: Garb; extras?: Extra[];
+  /** A named look (art/characters/archetypes.ts): fixes its defining parts; the seed varies the rest. */
+  archetype?: ArchetypeId;
+  /** Whose clothing palette (a world/city.json district id); default the city's. */
+  district?: string;
+  /** Shows visible tech (one or two pieces). Default: the archetype's chance. */
+  kitted?: boolean;
+  body?: Body; hair?: Hair; garb?: Garb; extras?: Extra[]; facial?: Facial;
   /** Colours (hex): skin, hair, top, bottom (trousers, skirt), acc (hat, bag, umbrella, visor). */
   skin?: string; hairCol?: string; top?: string; bottom?: string; acc?: string;
 }
@@ -145,6 +159,8 @@ export interface Character {
   gap?: number;
   /** Do the act sitting down (bench, train seat): read, phone, doze, stand. */
   seated?: boolean;
+  /** How this person sits (front, three-quarter or side on), instead of the people-style `seated` switch. */
+  sitView?: SeatedView;
   /** A robot's status light, drawn live over its sprite (state-driven: green, red). CSS colour. */
   light?: string;
   /** The scan beam of a scanning drone (act 'scan'). */
@@ -167,13 +183,14 @@ export interface Beam {
 
 // ---------- behaviour ----------
 
-export interface Ready { full?: Full; critter?: Critter; bot?: BotFull; key: string; ph: number; seed: number; a: number; b: number }
+/** `rev`: the people-style revision the look was dressed for (a switch change re-dresses everyone). */
+export interface Ready { full?: Full; critter?: Critter; bot?: BotFull; key: string; ph: number; seed: number; a: number; b: number; rev: number }
 const READY = new WeakMap<Character, Ready>();
 let looks = 0;
 
 function ready(p: Character): Ready {
   let R = READY.get(p);
-  if (R) return R;
+  if (R && R.rev === peopleRevision()) return R;
   const seed = p.seed ?? actorAppearanceSeed(p) ?? Math.round(p.x * 7 + 3);
   const crit = typeof p.look === 'string' && p.look in CRITTERS ? p.look as Critter : undefined;
   // a critter drawn with a robot body (the old drone is the kit's scan drone) keeps its critter name, voice and heights
@@ -181,7 +198,7 @@ function ready(p: Character): Ready {
   const [a, b] = Array.isArray(p.range) ? p.range : [p.x, p.x + (p.range ?? 0)];
   R = {
     critter: crit, bot: bk ? botFrom(seed, bk, alias ?? (typeof p.look === 'object' ? p.look as BotLook : {})) : undefined,
-    full: crit || bk ? undefined : lookFrom(seed, (p.look as Look) ?? {}), key: 'L' + looks++, ph: (seed * 97) % 997, seed, a, b,
+    full: crit || bk ? undefined : lookFrom(seed, (p.look as Look) ?? {}), key: 'L' + looks++, ph: (seed * 97) % 997, seed, a, b, rev: peopleRevision(),
   };
   READY.set(p, R);
   return R;
@@ -212,7 +229,7 @@ const TURN = 8;
  * body's idle) and existing scenes keep them; the editor offers these. Keys: 'human', a critter or a robot kind.
  */
 export const KIT_ACTS: Record<string, readonly Act[]> = {
-  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal', 'read', 'doze'],
+  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal', 'read', 'doze', 'wait'],
   cat: ['stand', 'walk', 'sit'], pigeon: ['stand', 'walk'], gull: ['stand', 'walk', 'fly'], crab: ['stand', 'walk', 'dig'],
   cleaner: ['stand', 'walk'], drone: ['stand', 'hover', 'scan'], courier: ['stand', 'walk'], robogull: ['stand', 'fly', 'scan'],
   android: ['stand', 'walk', 'carry'], valet: ['stand', 'walk'], marshal: ['stand', 'walk', 'direct'],
@@ -240,8 +257,11 @@ export interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arm
 /** `drive`: a controller owns the position (p.x) and says whether the body moves; no range walking. */
 function frameOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
   const f = poseOf(p, R, t, drive);
+  if (R.bot || R.critter) return f;
   // seated: an in-place act done sitting down
-  if (p.seated && !R.bot && !R.critter && f.legs !== 'lie' && !f.moving) f.legs = 'sit';
+  if (p.seated && f.legs !== 'lie' && !f.moving) f.legs = 'sit';
+  // sitting on a bench or a seat that faces the camera: the people-style switch (or the person's own sitView)
+  if (f.legs === 'sit') { const view = p.sitView ?? seatedView(); if (view !== 'side') f.legs = view === 'front' ? 'sitFront' : 'sit3q'; }
   return f;
 }
 function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
@@ -289,7 +309,12 @@ function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
     case 'dance': { const k = slow(16); return { x, face: k % 8 < 4 ? face : (-face as 1 | -1), legs: (['wide', 'stepA', 'wide', 'stepB'] as Legs[])[k % 4], arms: (['up', 'out', 'up', 'point'] as Arms[])[k % 4], bob: k % 2, moving }; }
     case 'vend': { const u = tt % 420; return { x, face, legs: 'stand', arms: u < 60 ? 'out' : u < 120 ? 'down' : u < 170 ? 'hip' : 'down', bob: 0, moving }; }
     case 'read': return { x, face, legs: shift, arms: 'paper', bob: 0, moving };
-    case 'doze': return { x, face, legs: 'stand', arms: 'fold', bob: Math.sin(tt * 0.02) > 0.6 ? -1 : 0, moving };
+    case 'doze': return { x, face, legs: 'stand', arms: 'nod', bob: Math.sin(tt * 0.02) > 0.6 ? -1 : 0, moving };
+    case 'wait': {
+      // facing the camera: weight from foot to foot, arms folded for a while, a glance aside now and then
+      const u = tt % 900;
+      return { x, face: u > 820 ? -face as 1 | -1 : face, legs: u > 700 ? 'front3q' : 'front', arms: R.full?.extras.includes('phone') ? 'phone' : slow(330) % 2 ? 'fold' : 'down', bob: 0, moving };
+    }
     default: {
       // stand: shifts weight, and now and then looks the other way
       const look = tt % 700 > 640 ? -face as 1 | -1 : face;

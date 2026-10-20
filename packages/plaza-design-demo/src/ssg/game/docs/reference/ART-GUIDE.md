@@ -62,6 +62,25 @@ the LINE 0 riders (new acts `read`, `doze`, a `seated` option; extras briefcase,
 bodies. Device logic, hover marks and cyan "you can use it" ports stay with the device, drawn over the
 kit body. Characters with an identity stay one-offs: the player, Pixel, LIME and the Downtown fixer.
 
+**Named looks, curated colours, seated views (Tommi, 2026-10-20; for review).** Random part combos read
+generic, so people now come from named looks (`art/characters/archetypes.ts`): elder, punk, inspector,
+courier, office worker, dock worker, street vendor, student, Plaza staff, Ghost, Church of the
+Algorithm, Tide, kid, teen, shopper, technician, guard, fixer, drifter, and the LINE 0 rider kinds
+(commuter with phone, reader with paper, sleeper), which keep the old hand-drawn riders' silhouettes.
+An archetype fixes the parts that make it recognisable; the seed varies build, colours and minor
+parts; a scene's own parts still win (`look: { archetype: 'elder', hair: 'beanie' }`). A seed with no
+look and no fixed parts is an everyday archetype. Crowd mixes (`crowds.ts`) are weighted archetypes per
+district, keeping the plain vs kitted share. Colours are curated (`people-style.ts`): a wide realistic
+skin range, natural, grey and dyed hair, and a clothing palette per district; a top and its trousers
+are kept apart in lightness. Tech extras (AR glasses with a glint, respirator, lit wrist screen, LED
+trim, earpiece light, exo-brace) use one warm tech light per person, never cyan. Two review switches
+live in `people-style.ts` and in Library › Characters: **people style** `muted` (default: everyday
+colours, ordinary clothes plus one or two pieces of tech), `vivid` (stronger colour per person) or
+`legacy` (the kit before named looks); **seated** `front` (default), `threeQuarter` or `side` for
+everyone sitting on a bench or a seat that faces the camera (a person's `sitView` overrides it). The
+act `wait` stands facing the camera (a queue seen from the front). Characters › Archetypes shows
+every look; Crowd › Show 30 samples thirty people of a district and marks near-duplicates.
+
 ## 3. The player is the unit
 
 Measure everything against the player sprite:

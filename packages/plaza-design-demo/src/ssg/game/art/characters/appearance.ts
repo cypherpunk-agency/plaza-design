@@ -2,10 +2,13 @@
 import type { View } from '../core/view';
 import type { Character, Body, Hair, Garb, Extra, Critter, Look, Act, Ready, Frame, Beam } from "../../runtime/characters";
 import { castShadow } from '../atmosphere/lighting';
+import { ARCHETYPES, EVERYDAY, archetypeOf, type Archetype, type ArchetypeId, type Facial } from './archetypes';
+import { HAIR_GREY, HAIR_NATURAL, SKIN_TONES, lightness, paletteFor, peopleRevision, peopleStyle, vivify } from './people-style';
 
 
 // ---------- parts ----------
 
+// The `legacy` people style draws from these (the kit before named looks); muted and vivid use people-style.ts.
 const SKINS = ['#f2cfae', '#e0b08a', '#c99068', '#a8744c', '#8a5a38', '#6a4228', '#4e2f1c'];
 
 const HAIRS = ['#16100c', '#2e1d12', '#5a3620', '#8a5a2c', '#c09a5a', '#d8d2c6', '#8a2a1a', '#6a3a9a', '#3e7a3a', '#c8b040'];
@@ -15,11 +18,12 @@ const CLOTH = ['#8a3a1a', '#a8642a', '#6e6a2a', '#6a2a3e', '#46506e', '#6a4a3a',
 
 const ACCS = ['#c83a2a', '#d8b040', '#e8e0d0', '#5a8a3a', '#8a3a8a', '#2a2a30', '#d86a2a', '#7a6a5a'];
 
+/** Tech light colours (visors, LED trim, wrist screens, earpieces, AR glints): red, amber, green, paper. Never cyan. */
 const VISORS = ['#ff4a2a', '#ffd23a', '#9cff6a', '#ece4d6'];
 
 const SHOES = ['#120c0a', '#2a1a12', '#3a3a3e', '#5a2a1a', '#d8d0c0'];
 
-export const BODIES: Record<Body, { leg: number; torso: number; tw: number; head: number; hw: number; lw: number; stoop?: number }> = {
+export const BODIES: Record<Body, { leg: number; torso: number; tw: number; head: number; hw: number; lw: number; stoop?: number; belly?: number }> = {
   avg: { leg: 5, torso: 5, tw: 6, head: 4, hw: 5, lw: 2 },
   tall: { leg: 6, torso: 6, tw: 6, head: 4, hw: 5, lw: 2 },
   short: { leg: 4, torso: 4, tw: 6, head: 4, hw: 5, lw: 2 },
@@ -27,6 +31,10 @@ export const BODIES: Record<Body, { leg: number; torso: number; tw: number; head
   slim: { leg: 6, torso: 5, tw: 4, head: 4, hw: 5, lw: 1 },
   kid: { leg: 3, torso: 3, tw: 4, head: 3, hw: 4, lw: 1 },
   old: { leg: 4, torso: 5, tw: 6, head: 4, hw: 5, lw: 2, stoop: 1 },
+  teen: { leg: 5, torso: 4, tw: 5, head: 4, hw: 5, lw: 1 },
+  heavy: { leg: 4, torso: 6, tw: 8, head: 4, hw: 5, lw: 3, belly: 1 },
+  broad: { leg: 6, torso: 6, tw: 8, head: 4, hw: 5, lw: 2 },
+  frail: { leg: 4, torso: 5, tw: 4, head: 4, hw: 5, lw: 1, stoop: 1 },
 };
 
 const BODY_LIST: Body[] = ['avg', 'avg', 'tall', 'short', 'wide', 'slim', 'old', 'avg', 'tall', 'wide'];
@@ -37,17 +45,53 @@ const GARB_LIST: Garb[] = ['tee', 'jacket', 'jacket', 'coat', 'dress', 'hivis', 
 
 const EXTRA_LIST: Extra[] = ['umbrella', 'bag', 'backpack', 'cyberarm', 'visor', 'mask', 'phone', 'headphones', 'glasses', 'phone', 'bag'];
 
+/** Muted/vivid people with fixed parts but no named look: everyday things and tech. */
+const PLAIN_EXTRAS: Extra[] = ['umbrella', 'bag', 'backpack', 'glasses', 'bag', 'muffler'];
+const TECH_EXTRAS: Extra[] = ['phone', 'headphones', 'earpiece', 'arglasses', 'wristscreen', 'cyberarm', 'visor'];
+const SUITS = ['#26262e', '#2e3440', '#3a3438', '#4a4e58'];
+const TIES = ['#a82020', '#2e4a7a', '#6a2a3e', '#b08a3a'];
+const VESTS = ['#c9a227', '#d8702a'];
 
-export interface Full { body: Body; hair: Hair; garb: Garb; extras: Extra[]; skin: string; hairCol: string; top: string; bottom: string; acc: string; shoes: string; visor: string }
+
+/**
+ * A dressed person. `vest`, `suit`, `tie`, `facial`, `patch` and `archetype` are set by the muted and
+ * vivid styles; a legacy look leaves them out and draws exactly as the kit did before.
+ */
+export interface Full {
+  body: Body; hair: Hair; garb: Garb; extras: Extra[]; skin: string; hairCol: string; top: string; bottom: string; acc: string; shoes: string;
+  /** The tech light colour (visor, LED trim, wrist screen, earpiece, AR glint). */
+  visor: string;
+  facial?: Facial; vest?: string; suit?: string; tie?: string; patch?: string[]; archetype?: ArchetypeId;
+}
 
 
 export const rnd = (seed: number) => { let s = (seed * 2654435761) % 2147483647 || 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; };
 
 export const pick = <T,>(r: () => number, a: readonly T[]) => a[Math.floor(r() * a.length)];
 
+const weighted = <T extends string>(r: () => number, w: Partial<Record<T, number>>): T => {
+  const rows = Object.entries(w) as [T, number][], total = rows.reduce((a, [, n]) => a + n, 0);
+  let x = r() * total; for (const [k, n] of rows) if ((x -= n) <= 0) return k; return rows[0][0];
+};
 
-/** A full look from a seed, with any parts the scene fixed. */
+
+/**
+ * A full look from a seed, with any parts the scene fixed, in the current people style
+ * (people-style.ts). A named look (`archetype`) fixes its defining parts; the scene's own parts win.
+ */
 export function lookFrom(seed: number, fix: Look = {}): Full {
+  if (peopleStyle() === 'legacy') {
+    const A = archetypeOf(fix.archetype);
+    if (!A) return legacyLook(seed, fix);
+    // the named look's parts, the old random colours
+    const r = rnd(seed + 5);
+    return { ...legacyLook(seed, { body: pick(r, A.body), hair: pick(r, A.hair), garb: pick(r, A.garb), extras: [...(A.extras ?? [])], ...fix }), archetype: fix.archetype };
+  }
+  return curatedLook(seed, fix, peopleStyle() === 'vivid');
+}
+
+/** The kit before named looks (people style `legacy`): every part and colour at random. */
+function legacyLook(seed: number, fix: Look): Full {
   const r = rnd(seed + 11);
   const body = fix.body ?? pick(r, BODY_LIST);
   const garb = fix.garb ?? pick(r, GARB_LIST);
@@ -67,6 +111,54 @@ export function lookFrom(seed: number, fix: Look = {}): Full {
     hair: fix.hair ?? (body === 'kid' ? pick(r, ['short', 'cap', 'long', 'bun', 'beanie'] as Hair[]) : pick(r, HAIR_LIST)),
     skin: fix.skin ?? pick(r, SKINS), hairCol: fix.hairCol ?? (body === 'old' ? pick(r, ['#d8d2c6', '#a8a29a', '#e8e4dc']) : pick(r, HAIRS)),
     top, bottom, acc: fix.acc ?? pick(r, ACCS), shoes: pick(r, SHOES), visor: pick(r, VISORS),
+    ...(fix.facial ? { facial: fix.facial } : {}),
+  };
+}
+
+/**
+ * Muted and vivid people: a named look (the scene's, else an everyday one when the scene fixed no parts),
+ * curated skin and hair, the district's clothing palette, and no clashes (a top and its trousers stay apart).
+ */
+function curatedLook(seed: number, fix: Look, vivid: boolean): Full {
+  const r = rnd(seed + 17);
+  const fixedParts = fix.body || fix.hair || fix.garb || fix.extras;
+  const id: ArchetypeId | undefined = fix.archetype ?? (fixedParts ? undefined : weighted(r, EVERYDAY));
+  const A: Archetype | undefined = id ? ARCHETYPES[id] : undefined;
+  const body = fix.body ?? (A ? pick(r, A.body) : pick(r, BODY_LIST));
+  const age = A?.age ?? (body === 'kid' ? 'kid' : body === 'teen' ? 'teen' : body === 'old' || body === 'frail' ? 'elder' : 'adult');
+  const garb = fix.garb ?? (A ? pick(r, A.garb) : pick(r, GARB_LIST));
+  const hair = fix.hair ?? (A ? pick(r, A.hair) : age === 'kid' ? pick(r, ['short', 'cap', 'long', 'bun', 'beanie', 'ponytail'] as Hair[]) : pick(r, HAIR_LIST));
+  let extras: Extra[];
+  if (fix.extras) extras = [...fix.extras];
+  else {
+    extras = [...(A?.extras ?? [])];
+    const add = (e: Extra | undefined) => { if (e && !extras.includes(e)) extras.push(e); };
+    const maybe = A ? A.maybe ?? [] : PLAIN_EXTRAS;
+    if (maybe.length && r() < 0.45) add(pick(r, maybe));
+    const tech = A ? A.tech ?? TECH_EXTRAS : TECH_EXTRAS;
+    // ordinary clothes plus one or two pieces of tech
+    if ((fix.kitted ?? r() < (A?.kitted ?? (age === 'kid' ? 0 : 0.35))) && tech.length) { add(pick(r, tech)); if (r() < 0.35) add(pick(r, tech)); }
+    if (!A && age === 'elder' && r() < 0.5) add('cane');
+    if (extras.includes('umbrella') && extras.includes('cane')) extras = extras.filter((e) => e !== 'cane');
+  }
+  const P = paletteFor(fix.district), C = A?.colours ?? {};
+  const cloth = (pinned: string[] | undefined, list: string[], k: number) => pinned ? pick(r, pinned) : vivid ? vivify(pick(r, list), k) : pick(r, list);
+  const top = fix.top ?? cloth(C.top, P.tops, 1);
+  let bottom = fix.bottom ?? cloth(C.bottom, P.bottoms, 0.45);
+  // keep the top and the trousers apart (a dress or a robe is one piece anyway)
+  if (Math.abs(lightness(top) - lightness(bottom)) < 0.07) bottom = shade(bottom, lightness(top) > 0.3 ? 0.62 : 1.5);
+  let acc = fix.acc ?? cloth(C.acc, P.accs, 1.2);
+  if (acc === top && !C.acc) acc = shade(acc, 1.35);
+  const grey = age === 'elder' || body === 'old' || body === 'frail';
+  // an old body goes grey unless its named look has greys of its own to pick from
+  const hairCol = fix.hairCol ?? (grey && !C.hair?.some((h) => HAIR_GREY.includes(h)) ? pick(r, HAIR_GREY) : pick(r, C.hair ?? HAIR_NATURAL));
+  const facial: Facial = fix.facial ?? (age === 'kid' || age === 'teen' ? 'none' : pick(r, A?.facial ?? ['none', 'none', 'none', 'stubble', 'moustache', 'beard']));
+  return {
+    body, garb, hair, extras, skin: fix.skin ?? pick(r, SKIN_TONES), hairCol, top, bottom, acc, shoes: pick(r, SHOES), visor: pick(r, C.light ?? VISORS), facial,
+    ...(garb === 'hivis' ? { vest: C.vest ? pick(r, C.vest) : pick(r, VESTS) } : {}),
+    ...(garb === 'suit' ? { suit: C.top || fix.top ? top : pick(r, SUITS), tie: C.tie ? pick(r, C.tie) : pick(r, TIES) } : {}),
+    ...(garb === 'patched' || extras.includes('patches') ? { patch: [acc, cloth(undefined, P.accs, 1), shade(top, 1.4)] } : {}),
+    ...(id ? { archetype: id } : {}),
   };
 }
 
@@ -93,30 +185,139 @@ const clr = (g: Grid, c: number, r: number) => { if (c >= 0 && c < W && r >= 0 &
 const rect = (g: Grid, c0: number, r0: number, c1: number, r1: number, col: string) => { for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) put(g, c, r, col); };
 
 
-/** Where the hand and mouth ended up (grid cells), for live effects (smoke, phone glow, zzz, a robot's lens and status light). */
-interface Meta { hand: [number, number]; mouth: [number, number]; top: number }
+type Cell = [number, number];
+/**
+ * Where the hand and mouth ended up (grid cells), for live effects (smoke, phone glow, zzz, a robot's lens
+ * and status light); `eye`, `wrist`, `ear`: where AR glasses glint, a wrist screen and an earpiece light.
+ */
+interface Meta { hand: Cell; mouth: Cell; top: number; eye?: Cell; wrist?: Cell; ear?: Cell }
 
 
-export type Legs = 'stand' | 'shift' | 'stepA' | 'stepB' | 'cross' | 'wide' | 'sit' | 'lie';
+/**
+ * Legs: side-on poses, and the front and three-quarter views (`sitFront`, `sit3q` on a bench or a seat that
+ * faces the camera; `front`, `front3q` standing toward the camera).
+ */
+export type Legs = 'stand' | 'shift' | 'stepA' | 'stepB' | 'cross' | 'wide' | 'sit' | 'lie' | 'sitFront' | 'sit3q' | 'front' | 'front3q';
 
-export type Arms = 'down' | 'raise' | 'phone' | 'out' | 'point' | 'reach' | 'up' | 'hip' | 'fold' | 'hold' | 'broomA' | 'broomB' | 'paper';
+/** `nod`: arms folded, eyes shut (dozing). */
+export type Arms = 'down' | 'raise' | 'phone' | 'out' | 'point' | 'reach' | 'up' | 'hip' | 'fold' | 'hold' | 'broomA' | 'broomB' | 'paper' | 'nod';
 
+const FRONTAL: readonly Legs[] = ['sitFront', 'sit3q', 'front', 'front3q'];
+
+/** The colours a garment puts on the body: torso, sleeves and legs. */
+function clothOf(L: Full) {
+  const top = L.garb === 'hivis' ? L.vest ?? '#c9a227' : L.garb === 'suit' ? L.suit ?? '#26262e' : L.top;
+  return { top, sleeve: L.garb === 'tee' ? L.skin : shade(top, 0.82), legCol: L.garb === 'dress' ? shade(L.skin, 0.8) : L.bottom };
+}
+/** Coats that reach the thighs. */
+const LONG: readonly Garb[] = ['coat', 'robe', 'oilskin', 'patched'];
+const METAL = '#8e949e';
+
+/** A few patches sewn on, at the given cells. */
+function patches(g: Grid, L: Full, at: Cell[]) { const cols = L.patch ?? [L.acc, shade(L.top, 1.4)]; at.forEach(([c, r], i) => put(g, c, r, cols[i % cols.length])); }
+
+/**
+ * Hair and headwear, side on (`front` false: the face toward +c) or toward the camera. `q` is the
+ * three-quarter turn (the face one column toward +c).
+ */
+function hairOn(g: Grid, L: Full, front: boolean, hl: number, hr: number, hb: number, ht: number, eye: number, top: string) {
+  const hc = L.hairCol, acc = L.acc, hx = (hl + hr) >> 1;
+  switch (L.hair) {
+    case 'bald': clr(g, hl, ht); clr(g, hr, ht); break;
+    case 'short': rect(g, hl, ht, hr, ht, hc); put(g, hl, ht - 1, hc); if (front) put(g, hr, ht - 1, hc); break;
+    case 'long':
+      rect(g, hl, ht, hr, ht, hc); rect(g, hl - 1, hb - 1, hl, ht - 1, hc); put(g, hr, ht - 1, hc);
+      if (front) { rect(g, hr, hb - 1, hr + 1, ht - 1, hc); put(g, hl, eye, L.skin); put(g, hr, eye, L.skin); }
+      break;
+    case 'bun': rect(g, hl, ht, hr, ht, hc); put(g, hl, ht - 1, hc); if (front) { put(g, hr, ht - 1, hc); rect(g, hx - 1, ht + 1, hx, ht + 1, hc); } else rect(g, hl, ht + 1, hl + 1, ht + 1, hc); break;
+    case 'mohawk':
+      if (front) { clr(g, hl, ht); clr(g, hr, ht); rect(g, hx, ht, hx, ht + 2, hc); put(g, hx - 1, ht + 1, hc); }
+      else { rect(g, hl + 1, ht + 1, hr - 1, ht + 1, hc); put(g, hx, ht + 2, hc); put(g, hx - 1, ht + 2, hc); }
+      break;
+    case 'cap':
+      if (front) { rect(g, hl, ht, hr, ht, shade(acc, 0.75)); rect(g, hl, ht + 1, hr, ht + 1, acc); clr(g, hl, ht + 1); clr(g, hr, ht + 1); put(g, hl, ht - 1, hc); put(g, hr, ht - 1, hc); }
+      else { rect(g, hl, ht, hr, ht, acc); put(g, hr + 1, ht, shade(acc, 0.75)); put(g, hl, ht - 1, hc); }
+      break;
+    case 'beanie': rect(g, hl, ht, hr, ht, shade(acc, 0.8)); rect(g, hl + 1, ht + 1, hr - 1, ht + 1, acc); break;
+    case 'hood':
+      rect(g, hl, ht, hr, ht + 1, top); rect(g, hl - 1, hb, hl, ht, top); put(g, hr, ht, top); clr(g, hl, ht + 1);
+      if (front) { rect(g, hr, hb, hr + 1, ht, top); clr(g, hr, ht + 1); rect(g, hl + 1, hb, hr - 1, ht - 1, shade(L.skin, 0.62)); }
+      break;
+    case 'brim': rect(g, hl + 1, ht + 1, hr - 1, ht + 1, acc); rect(g, hl - 1, ht, hr + 1, ht, shade(acc, 0.75)); break;
+    case 'helmet': rect(g, hl, ht - 1, hr, ht + 1, acc); clr(g, hl, ht + 1); clr(g, hr, ht + 1); rect(g, front ? hl : hl + 1, eye, hr + (front ? 0 : 1), eye, L.visor); break;
+    case 'scarf': rect(g, hl, ht, hr, ht, acc); rect(g, hl, hb, hl, ht, acc); rect(g, hl, hb, hr, hb, shade(acc, 0.8)); if (front) rect(g, hr, hb, hr, ht, acc); break;
+    case 'afro': {
+      const t0 = Math.max(eye + 1, ht - 1);
+      rect(g, hl - 1, t0, hr + (front ? 1 : 0), ht + 1, hc); clr(g, hl - 1, ht + 1); clr(g, hr + (front ? 1 : 0), ht + 1);
+      rect(g, hl - 1, eye, hl - 1, t0, hc); if (front) rect(g, hr + 1, eye, hr + 1, t0, hc);
+      break;
+    }
+    case 'ponytail':
+      rect(g, hl, ht, hr, ht, hc); put(g, hl, ht - 1, hc);
+      if (front) put(g, hr, ht - 1, hc); else { put(g, hl - 1, ht - 1, hc); put(g, hl - 2, ht - 1, hc); put(g, hl - 2, ht - 2, hc); }
+      break;
+    case 'buzz': rect(g, front ? hl + 1 : hl, ht, front ? hr - 1 : hr - 1, ht, shade(hc, 0.85)); clr(g, hl, ht); if (front) clr(g, hr, ht); break;
+    case 'beret': rect(g, hl, ht, hr, ht, acc); rect(g, hl - 1, ht + 1, hr - (front ? 0 : 1), ht + 1, acc); put(g, front ? hr + 1 : hl - 1, ht, shade(acc, 0.8)); break;
+    case 'hardhat':
+      rect(g, hl, ht, hr, ht + 1, acc); clr(g, hl, ht + 1); clr(g, hr, ht + 1); rect(g, hl - 1, ht, hr + 1, ht, shade(acc, 0.8));
+      put(g, hx, ht + 1, shade(acc, 1.25));
+      break;
+    case 'headwrap': rect(g, hl, ht, hr, ht + 1, acc); clr(g, hr, ht + 1); if (front) { clr(g, hl, ht + 1); put(g, hx, ht + 1, shade(acc, 0.8)); } else { put(g, hl - 1, ht, shade(acc, 0.8)); put(g, hl - 1, ht - 1, shade(acc, 0.8)); } break;
+    case 'peaked':
+      // a uniform cap: the crown wider than the head, a dark band, the peak over the eyes
+      rect(g, hl - 1, ht + 1, hr + (front ? 1 : 0), ht + 1, acc); rect(g, hl, ht, hr, ht, shade(acc, 0.6));
+      if (front) rect(g, hl, ht - 1 > eye ? ht - 1 : ht, hr, ht - 1 > eye ? ht - 1 : ht, '#1a1a1e'); else put(g, hr + 1, ht, '#1a1a1e');
+      break;
+  }
+}
+
+/** Face things: eyewear, masks, headphones, an earpiece, facial hair. Side on the face is at hr. */
+function faceOn(g: Grid, L: Full, front: boolean, q: number, hl: number, hr: number, hb: number, ht: number, eye: number, meta: Partial<Meta>) {
+  const has = (e: Extra) => L.extras.includes(e), acc = L.acc, hc = L.hairCol;
+  // facial hair first, so masks go over it
+  if (L.facial && L.facial !== 'none') {
+    if (L.facial === 'beard') { rect(g, front ? hl : hl + 1, hb, hr, hb, hc); if (front) { put(g, hl, eye, hc); put(g, hr, eye, hc); } else put(g, hl + 1, eye, hc); }
+    else if (L.facial === 'moustache') { if (front) rect(g, hl + 1 + q, hb, hr - 1, hb, hc); else rect(g, hr - 1, hb, hr, hb, hc); }
+    else rect(g, front ? hl + 1 : hl + 1, hb, front ? hr - 1 : hr, hb, shade(L.skin, 0.82));
+  }
+  if (has('visor') && L.hair !== 'helmet') rect(g, front ? hl : hl + 1, eye, hr + (front ? 0 : 1), eye, L.visor);
+  if (has('glasses')) { if (front) rect(g, hl + 1 + q, eye, hr - (q ? 0 : 1), eye, '#0d0806'); else rect(g, hr - 2, eye, hr, eye, '#0d0806'); }
+  if (has('arglasses')) {
+    // a dark frame, one lens lit (the glint plays over it live)
+    const lens = shade(L.visor, 0.5);
+    if (front) { rect(g, hl, eye, hr, eye, '#2a2630'); put(g, hl + 1 + q, eye, lens); put(g, hr - 1 + q, eye, lens); meta.eye = [hr - 1 + q, eye]; }
+    else { rect(g, hr - 2, eye, hr + 1, eye, '#2a2630'); put(g, hr, eye, lens); meta.eye = [hr, eye]; }
+  }
+  if (has('mask') && L.hair !== 'scarf') rect(g, hl + 1, hb, front ? hr - 1 : hr, hb, acc === '#2a2a30' ? '#e8e0d0' : acc);
+  if (has('respirator')) {
+    if (front) { rect(g, hl + 1, hb, hr - 1, hb, '#2a2a30'); put(g, hl, hb, '#6a6e78'); put(g, hr, hb, '#6a6e78'); }
+    else { rect(g, hr - 1, hb, hr + 1, hb, '#2a2a30'); put(g, hr + 1, hb + 1 <= eye - 1 ? hb + 1 : hb, '#6a6e78'); put(g, hl + 1, eye, '#2a2a30'); }
+  }
+  if (has('headphones')) {
+    if (front) { put(g, hl - 1, eye, acc); put(g, hr + 1, eye, acc); rect(g, hl, ht + 1, hr, ht + 1, '#2a2a30'); }
+    else { put(g, hl, eye, '#2a2a30'); put(g, hl, eye + 1, '#2a2a30'); rect(g, hl + 1, ht + 1, hr - 1, ht + 1, '#2a2a30'); put(g, hl, eye, acc); }
+  }
+  if (has('earpiece')) { const c: Cell = front ? (q ? [hl, eye] : [hr + 1, eye]) : [hl + 1, eye]; put(g, c[0], c[1], L.visor); meta.ear = c; }
+}
 
 export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
   if (legs === 'lie') return lying(L);
+  if (FRONTAL.includes(legs)) return humanFront(L, legs, arms);
   const B = BODIES[L.body], g = grid(), has = (e: Extra) => L.extras.includes(e);
-  const tw = B.tw, Lc = CX - (tw >> 1), Rc = Lc + tw - 1, T = B.torso;
+  const tw = B.tw, Lc = CX - (tw >> 1), Rc = Lc + tw - 1, T = B.torso, belly = B.belly ?? 0;
   const sit = legs === 'sit', seat = Math.ceil(B.leg / 2);
   const base = sit ? seat + 1 : B.leg, sh = base + T - 1, hb = sh + 1, ht = hb + B.head - 1;
   const hx = CX + (B.stoop ?? 0), hl = hx - 2, hr = hl + B.hw - 1;
-  const legCol = L.garb === 'dress' ? shade(L.skin, 0.8) : L.bottom;
+  const { top, sleeve, legCol } = clothOf(L);
   if (has('umbrella') || has('cane')) { if (arms === 'down' || arms === 'hip') arms = 'hold'; }
+  const meta: Partial<Meta> = {};
 
   // legs
   if (sit) {
     rect(g, Lc, seat, Rc + 3, seat, L.garb === 'dress' || L.garb === 'robe' ? L.top : legCol);
     rect(g, Rc + 2, 1, Rc + 1 + B.lw, seat - 1, legCol);
     rect(g, Rc + 2, 0, Rc + 2 + B.lw, 0, L.shoes);
+    if (has('exobrace')) { rect(g, Rc + 2 + B.lw, 1, Rc + 2 + B.lw, seat - 1, METAL); put(g, Rc + 2 + B.lw, seat, L.visor); }
   } else {
     const [dL, dR] = legs === 'shift' ? [0, 1] : legs === 'stepA' ? [-1, 1] : legs === 'stepB' ? [1, -1] : legs === 'cross' ? [0, -2] : legs === 'wide' ? [-1, 1] : [0, 0];
     const low = legs === 'wide' ? 3 : 2;
@@ -124,57 +325,51 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
       const oL = r < low ? dL : 0, oR = r < low ? dR : 0, col = r === 0 ? L.shoes : legCol;
       rect(g, Lc + oL, r, Lc + B.lw - 1 + oL, r, col);
       rect(g, Rc - B.lw + 1 + oR, r, Rc + oR, r, col);
+      // an exo-brace up the front leg, its knee joint lit
+      if (has('exobrace') && r > 0) put(g, Rc + oR + 1, r, r === Math.ceil(B.leg / 2) ? L.visor : METAL);
     }
     put(g, Rc + dR + 1, 0, L.shoes);
   }
   // torso and clothes
-  const top = L.garb === 'hivis' ? '#c9a227' : L.garb === 'suit' ? '#26262e' : L.top;
   rect(g, Lc, base, Rc, sh, top);
   rect(g, Lc, base, Rc, base, shade(L.bottom, 0.7));
-  if (!sit && (L.garb === 'coat' || L.garb === 'robe')) rect(g, Lc, L.garb === 'robe' ? 1 : Math.max(1, B.leg - 2), Rc, base, top);
+  if (belly) rect(g, Rc + 1, base + 1, Rc + belly, Math.min(sh - 1, base + 3), top);
+  if (!sit && LONG.includes(L.garb)) rect(g, Lc, L.garb === 'robe' ? 1 : Math.max(1, B.leg - 2), Rc, base, top);
   if (!sit && L.garb === 'dress') rect(g, Lc - 1, Math.max(1, B.leg - 3), Rc + 1, base, top);
   if (L.garb === 'jacket') rect(g, CX, base + 1, CX, sh - 1, shade(top, 1.3));
-  if (L.garb === 'coat') { put(g, CX, sh, shade(top, 1.35)); put(g, CX + 1, sh - 1, shade(top, 1.35)); }
+  if (L.garb === 'coat' || L.garb === 'patched') { put(g, CX, sh, shade(top, 1.35)); put(g, CX + 1, sh - 1, shade(top, 1.35)); }
   if (L.garb === 'apron') { rect(g, Lc + 1, sit ? base : Math.max(1, base - 2), Rc - 1, sh - 1, '#cbbd9c'); put(g, Lc + 2, base + 1, '#8a5a3a'); }
   if (L.garb === 'hivis') rect(g, Lc, sh - 2, Rc, sh - 2, '#efe6c8');
-  if (L.garb === 'suit') { put(g, CX, sh, '#ddd5c5'); put(g, CX + 1, sh, '#ddd5c5'); put(g, CX, sh - 1, '#a82020'); put(g, CX, sh - 2, '#a82020'); }
+  if (L.garb === 'suit') { put(g, CX, sh, '#ddd5c5'); put(g, CX + 1, sh, '#ddd5c5'); put(g, CX, sh - 1, L.tie ?? '#a82020'); put(g, CX, sh - 2, L.tie ?? '#a82020'); }
+  if (L.garb === 'hoodie') { rect(g, Lc + 2, base + 1, Rc, base + 1, shade(top, 0.8)); put(g, Lc, sh + 1, shade(top, 0.9)); put(g, Lc + 1, sh + 1, shade(top, 0.9)); }
+  if (L.garb === 'shell') { rect(g, Rc - 1, base + 1, Rc - 1, sh - 1, shade(top, 1.25)); put(g, Rc, sh, shade(top, 1.15)); if (!sit) rect(g, Lc, base - 1, Rc, base - 1, top); }
+  if (L.garb === 'oilskin') { put(g, Rc - 1, base + 2, shade(top, 1.35)); put(g, Rc, sh - 1, shade(top, 1.35)); if (!sit) put(g, Rc - 1, Math.max(1, B.leg - 1), shade(top, 1.3)); put(g, CX, sh, shade(top, 0.7)); }
+  if (L.garb === 'uniform') { rect(g, Lc, base + 1, Rc, base + 1, '#1c1a18'); put(g, Rc, base + 1, '#c8a050'); put(g, Rc, base + 3, shade(top, 1.3)); put(g, CX, sh, shade(top, 1.25)); }
+  if (L.garb === 'patched' || has('patches')) patches(g, L, [[Lc + 1, base + 2], [Rc - 1, sh - 1], [CX, base + (sit ? 1 : -1)]]);
+  if (has('ledtrim')) rect(g, Lc, base, Rc, base, L.visor);
+  if (has('muffler')) { rect(g, Lc + 1, sh, Rc, sh, L.acc); put(g, Lc, sh - 1, L.acc); put(g, Lc, sh - 2, shade(L.acc, 0.8)); }
   if (has('backpack')) { rect(g, Lc - 2, Math.max(base, sh - T + 2), Lc - 1, sh - 1, L.acc); rect(g, Lc - 2, sh - 1, Lc - 1, sh - 1, shade(L.acc, 0.7)); }
   if (has('bag')) { for (let k = 0; k < Math.min(tw, T); k++) put(g, Rc - k, sh - k, shade(L.acc, 0.6)); if (!sit) rect(g, Lc - 2, base - 1, Lc - 1, base + 1, L.acc); }
   // a parcel up on the back shoulder (the head is drawn over its front corner)
   if (has('parcel')) { rect(g, Lc - 2, sh + 1, Lc + 1, sh + 3, '#a07040'); rect(g, Lc - 2, sh + 2, Lc + 1, sh + 2, '#d8c8a0'); }
 
   // arms: the back one (darker) first, then the front one in the pose
-  const sleeve = L.garb === 'tee' ? L.skin : shade(top, 0.82);
-  const cyber = has('cyberarm'), front = cyber ? '#8e949e' : sleeve, hand = cyber ? '#bfc4cc' : L.skin;
+  const cyber = has('cyberarm'), front = cyber ? METAL : sleeve, hand = cyber ? '#bfc4cc' : L.skin;
   const back = shade(sleeve, 0.68);
   if (arms === 'up') { rect(g, Lc - 1, sh, Lc - 1, sh + 2, back); put(g, Lc - 1, sh + 3, shade(L.skin, 0.75)); }
   else { rect(g, Lc - 1, sh - T + 2, Lc - 1, sh, back); put(g, Lc - 1, sh - T + 1, shade(L.skin, 0.75)); }
   if (L.garb === 'tee') { put(g, Lc - 1, sh, shade(top, 0.7)); }
-  const R = Rc + 1;
-  const ARM: Record<Arms, [number, number][]> = {
-    down: Array.from({ length: T }, (_, k) => [0, -k] as [number, number]),
-    raise: [[0, 0], [0, -1], [1, -1], [1, 0], [0, 1]],
-    phone: [[0, 0], [0, -1], [1, -1], [2, -1]],
-    out: [[0, 0], [1, -1], [2, -1], [3, -1]],
-    point: [[0, 0], [1, 0], [2, 1], [3, 2]],
-    reach: [[0, 0], [1, 0], [2, 0], [3, 0]],
-    up: [[0, 0], [0, 1], [0, 2], [0, 3]],
-    hip: [[0, 0], [1, -1], [1, -2], [0, -2]],
-    fold: [[0, 0], [0, -1]],
-    hold: [[0, 0], [0, -1], [1, -1]],
-    broomA: [[0, 0], [1, -1], [1, -2]],
-    broomB: [[0, 0], [1, -1], [2, -1]],
-    paper: [[0, 0], [1, 0], [1, 1]],
-  };
-  const path = ARM[arms];
-  path.forEach(([dc, dr], i) => put(g, R + dc, sh + dr, i === path.length - 1 && arms !== 'fold' ? hand : front));
+  const R = Rc + 1 + belly;
+  const path = arms === 'down' ? armDown(T) : ARM[arms === 'nod' ? 'fold' : arms];
+  path.forEach(([dc, dr], i) => put(g, R + dc, sh + dr, i === path.length - 1 && arms !== 'fold' && arms !== 'nod' ? hand : front));
   if (L.garb === 'tee' && !cyber) put(g, R, sh, shade(top, 0.85));
   if (cyber && path.length > 1) put(g, R + path[1][0], sh + path[1][1], '#ffb030');
   // an inspector's armband, on both upper arms
   if (has('armband')) { put(g, R + path[0][0], sh + path[0][1] - (arms === 'up' ? -1 : 1), '#c83a2a'); put(g, Lc - 1, sh - 1, '#a82020'); }
   let [hc, hrow] = path[path.length - 1];
   hc += R; hrow += sh;
-  if (arms === 'fold') { rect(g, Lc + 1, sh - 2, R, sh - 2, front); put(g, Lc + 1, sh - 2, hand); hc = Lc + 1; hrow = sh - 2; }
+  if (arms === 'fold' || arms === 'nod') { rect(g, Lc + 1, sh - 2, R, sh - 2, front); put(g, Lc + 1, sh - 2, hand); hc = Lc + 1; hrow = sh - 2; }
+  if (has('wristscreen')) { const w: Cell = arms === 'fold' || arms === 'nod' ? [Lc + 2, sh - 2] : path.length > 1 ? [R + path[path.length - 2][0], sh + path[path.length - 2][1]] : [hc, hrow]; put(g, w[0], w[1], L.visor); meta.wrist = w; }
   if (arms === 'phone') put(g, R + 2, sh, '#e4ecff');
   // a newspaper held up in front of the face, columns of print on it
   if (arms === 'paper') { rect(g, R + 2, sh - 2, R + 3, hb + 2, '#d8d0c0'); for (let r = sh - 1; r <= hb + 1; r += 2) put(g, R + 3, r, '#8a8478'); put(g, R + 2, hb + 2, '#b8ad94'); hc = R + 2; hrow = sh + 1; }
@@ -183,14 +378,7 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
     if (sit) { rect(g, Lc - 4, 0, Lc - 1, 2, '#3a2418'); put(g, Lc - 3, 3, '#2a1a10'); put(g, Lc - 2, 1, '#c8a050'); }
     else if (arms === 'down') { const hr0 = sh - T + 1, cc = R; rect(g, cc - 1, Math.max(1, hr0 - 3), cc + 2, Math.max(1, hr0 - 1), '#3a2418'); put(g, cc + 1, Math.max(1, hr0 - 2), '#c8a050'); }
   }
-  if (arms === 'hold') {
-    const S = R + 1;
-    if (has('umbrella')) {
-      rect(g, S, sh, S, ht + 2, '#2a2018');
-      rect(g, S - 5, ht + 3, S + 5, ht + 3, L.acc); rect(g, S - 4, ht + 4, S + 4, ht + 4, L.acc); rect(g, S - 2, ht + 5, S + 2, ht + 5, shade(L.acc, 1.2));
-      put(g, S - 5, ht + 2, shade(L.acc, 0.6)); put(g, S + 5, ht + 2, shade(L.acc, 0.6));
-    } else rect(g, S, 0, S, sh - 2, '#7a5a3a');
-  }
+  if (arms === 'hold') held(g, L, R + 1, sh, ht);
   if (arms === 'broomA' || arms === 'broomB') {
     const lean = arms === 'broomA' ? 3 : 2;
     for (let r = hrow; r >= 1; r--) put(g, hc + 1 + Math.floor((hrow - r) / lean), r, '#6a4a2a');
@@ -199,28 +387,136 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
   }
 
   // head, face, hair
-  const skin = L.hair === 'hood' ? shade(L.skin, 0.62) : L.skin, eye = B.head === 4 ? hb + 1 : hb + 1;
+  const skin = L.hair === 'hood' ? shade(L.skin, 0.62) : L.skin, eye = hb + 1, lid = arms === 'nod' ? shade(skin, 0.55) : '#1a0d05';
   rect(g, hl, hb, hr, ht, skin);
-  put(g, hr - 2, eye, '#1a0d05'); put(g, hr, eye, '#1a0d05');
-  const hcCol = L.hairCol, acc = L.acc;
-  switch (L.hair) {
-    case 'bald': clr(g, hl, ht); clr(g, hr, ht); break;
-    case 'short': rect(g, hl, ht, hr, ht, hcCol); put(g, hl, ht - 1, hcCol); break;
-    case 'long': rect(g, hl, ht, hr, ht, hcCol); rect(g, hl - 1, hb - 1, hl, ht - 1, hcCol); put(g, hr, ht - 1, hcCol); break;
-    case 'bun': rect(g, hl, ht, hr, ht, hcCol); put(g, hl, ht - 1, hcCol); rect(g, hl, ht + 1, hl + 1, ht + 1, hcCol); break;
-    case 'mohawk': rect(g, hl + 1, ht + 1, hr - 1, ht + 1, hcCol); put(g, hx, ht + 2, hcCol); put(g, hx - 1, ht + 2, hcCol); break;
-    case 'cap': rect(g, hl, ht, hr, ht, acc); put(g, hr + 1, ht, shade(acc, 0.75)); put(g, hl, ht - 1, hcCol); break;
-    case 'beanie': rect(g, hl, ht, hr, ht, shade(acc, 0.8)); rect(g, hl + 1, ht + 1, hr - 1, ht + 1, acc); break;
-    case 'hood': rect(g, hl, ht, hr, ht + 1, top); rect(g, hl - 1, hb, hl, ht, top); put(g, hr, ht, top); clr(g, hl, ht + 1); break;
-    case 'brim': rect(g, hl + 1, ht + 1, hr - 1, ht + 1, acc); rect(g, hl - 1, ht, hr + 1, ht, shade(acc, 0.75)); break;
-    case 'helmet': rect(g, hl, ht - 1, hr, ht + 1, acc); clr(g, hl, ht + 1); clr(g, hr, ht + 1); rect(g, hl + 1, eye, hr + 1, eye, L.visor); break;
-    case 'scarf': rect(g, hl, ht, hr, ht, acc); rect(g, hl, hb, hl, ht, acc); rect(g, hl, hb, hr, hb, shade(acc, 0.8)); break;
+  put(g, hr - 2, eye, lid); put(g, hr, eye, lid);
+  hairOn(g, L, false, hl, hr, hb, ht, eye, top);
+  faceOn(g, L, false, 0, hl, hr, hb, ht, eye, meta);
+  return [g, { ...meta, hand: [hc, hrow], mouth: [hr + 1, hb], top: Math.max(ht + 1, has('umbrella') && arms === 'hold' ? ht + 5 : 0) }];
+}
+
+/** An umbrella over the head or a cane, held at column S. */
+function held(g: Grid, L: Full, S: number, sh: number, ht: number) {
+  if (L.extras.includes('umbrella')) {
+    rect(g, S, sh, S, ht + 2, '#2a2018');
+    rect(g, S - 5, ht + 3, S + 5, ht + 3, L.acc); rect(g, S - 4, ht + 4, S + 4, ht + 4, L.acc); rect(g, S - 2, ht + 5, S + 2, ht + 5, shade(L.acc, 1.2));
+    put(g, S - 5, ht + 2, shade(L.acc, 0.6)); put(g, S + 5, ht + 2, shade(L.acc, 0.6));
+  } else rect(g, S, 0, S, sh - 2, '#7a5a3a');
+}
+
+/** Arm paths from the shoulder (side on, the front arm; toward the camera, the right-hand arm). */
+const ARM: Record<Exclude<Arms, 'nod'>, Cell[]> = {
+  down: [], raise: [[0, 0], [0, -1], [1, -1], [1, 0], [0, 1]], phone: [[0, 0], [0, -1], [1, -1], [2, -1]],
+  out: [[0, 0], [1, -1], [2, -1], [3, -1]], point: [[0, 0], [1, 0], [2, 1], [3, 2]], reach: [[0, 0], [1, 0], [2, 0], [3, 0]],
+  up: [[0, 0], [0, 1], [0, 2], [0, 3]], hip: [[0, 0], [1, -1], [1, -2], [0, -2]], fold: [[0, 0], [0, -1]], hold: [[0, 0], [0, -1], [1, -1]],
+  broomA: [[0, 0], [1, -1], [1, -2]], broomB: [[0, 0], [1, -1], [2, -1]], paper: [[0, 0], [1, 0], [1, 1]],
+};
+const armDown = (T: number): Cell[] => Array.from({ length: T }, (_, k) => [0, -k] as Cell);
+
+/**
+ * A person seen from the front (`sitFront`, `front`) or turned three-quarter toward +c (`sit3q`, `front3q`):
+ * on a bench or a train seat that faces the camera, or waiting in a crowd. Same parts and colours as side on.
+ */
+function humanFront(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
+  const B = BODIES[L.body], g = grid(), has = (e: Extra) => L.extras.includes(e);
+  const q = legs === 'sit3q' || legs === 'front3q' ? 1 : 0, sit = legs === 'sitFront' || legs === 'sit3q';
+  const half = (B.tw + 1) >> 1, L0 = CX - half, R0 = CX + half, T = B.torso, belly = B.belly ?? 0, lw = B.lw;
+  const seat = Math.ceil(B.leg / 2), base = sit ? seat + 1 : B.leg, sh = base + T - 1, hb = sh + 1, ht = hb + B.head - 1;
+  const hl = CX - 2 + q, hr = hl + 4, eye = hb + 1;
+  const { top, sleeve, legCol } = clothOf(L);
+  // sitting, an umbrella stays furled against the knee; standing, it is up
+  if (has('umbrella') && !sit || has('cane')) { if (arms === 'down' || arms === 'hip') arms = 'hold'; }
+  else if (has('umbrella')) { rect(g, R0 + 2 + q, 0, R0 + 2 + q, seat + 3, '#2a2018'); rect(g, R0 + 2 + q, 1, R0 + 3 + q, seat + 1, shade(L.acc, 0.8)); }
+  const meta: Partial<Meta> = {};
+  const legL = CX - lw, legR = CX + 1;
+
+  // legs: standing straight, or the lap toward the camera and the shins down to the floor
+  if (sit) {
+    rect(g, L0, seat, R0 + q, seat, L.garb === 'dress' || L.garb === 'robe' ? L.top : legCol);
+    for (let r = 1; r < seat; r++) { rect(g, legL + q, r, CX - 1 + q, r, legCol); rect(g, legR + q, r, CX + lw + q, r, legCol); }
+    rect(g, legL - 1 + q, 0, CX - 1 + q, 0, L.shoes); rect(g, legR + q, 0, CX + lw + 1 + q, 0, L.shoes);
+    if (has('exobrace')) { put(g, legL - 1 + q, seat, L.visor); put(g, CX + lw + 1 + q, seat, L.visor); for (let r = 1; r < seat; r++) { put(g, legL - 1 + q, r, METAL); put(g, CX + lw + 1 + q, r, METAL); } }
+  } else {
+    for (let r = 0; r < B.leg; r++) { const col = r === 0 ? L.shoes : legCol; rect(g, legL, r, CX - 1, r, col); rect(g, legR, r, CX + lw, r, col); }
+    put(g, legL - 1, 0, L.shoes); put(g, CX + lw + 1 + q, 0, L.shoes);
+    if (has('exobrace')) for (let r = 1; r < B.leg; r++) { const k = r === Math.ceil(B.leg / 2) ? L.visor : METAL; put(g, legL - 1, r, k); put(g, CX + lw + 1, r, k); }
   }
-  if (has('visor') && L.hair !== 'helmet') rect(g, hl + 1, eye, hr + 1, eye, L.visor);
-  if (has('glasses')) rect(g, hr - 2, eye, hr, eye, '#0d0806');
-  if (has('mask') && L.hair !== 'scarf') rect(g, hl + 1, hb, hr, hb, acc === '#2a2a30' ? '#e8e0d0' : acc);
-  if (has('headphones')) { put(g, hl, eye, '#2a2a30'); put(g, hl, eye + 1, '#2a2a30'); rect(g, hl + 1, ht + 1, hr - 1, ht + 1, '#2a2a30'); put(g, hl, eye, acc); }
-  return [g, { hand: [hc, hrow], mouth: [hr + 1, hb], top: Math.max(ht + 1, has('umbrella') && arms === 'hold' ? ht + 5 : 0) }];
+  // torso and clothes
+  rect(g, L0, base, R0, sh, top);
+  rect(g, L0, base, R0, base, shade(L.bottom, 0.7));
+  if (belly) rect(g, L0 - belly, base + 1, R0 + belly, Math.min(sh - 1, base + 2), top);
+  if (!sit && LONG.includes(L.garb)) rect(g, L0, L.garb === 'robe' ? 1 : Math.max(1, B.leg - 2), R0, base, top);
+  if (!sit && L.garb === 'dress') rect(g, L0 - 1, Math.max(1, B.leg - 3), R0 + 1, base, top);
+  if (q) rect(g, L0, base, L0, sh, shade(top, 0.8));
+  const lo = sit ? base + 1 : Math.max(1, B.leg - 2);
+  switch (L.garb) {
+    case 'jacket': rect(g, CX + q, base + 1, CX + q, sh - 1, shade(top, 1.3)); break;
+    case 'coat': case 'patched': rect(g, CX + q, lo, CX + q, sh - 1, shade(top, 0.78)); put(g, CX - 1 + q, sh, shade(top, 1.35)); put(g, CX + 1 + q, sh, shade(top, 1.35)); break;
+    case 'robe': for (let k = 0; k < T - 1; k++) put(g, R0 - 1 - k, sh - k, L.acc); break;
+    case 'apron': rect(g, L0 + 1, sit ? base : Math.max(1, base - 2), R0 - 1, sh - 1, '#cbbd9c'); put(g, L0 + 1, sh, '#cbbd9c'); put(g, R0 - 1, sh, '#cbbd9c'); put(g, CX + q, base + 1, '#8a5a3a'); break;
+    case 'hivis': rect(g, L0, sh - 2, R0, sh - 2, '#efe6c8'); rect(g, L0 + 1, sh - 1, L0 + 1, sh, '#efe6c8'); rect(g, R0 - 1, sh - 1, R0 - 1, sh, '#efe6c8'); break;
+    case 'suit': rect(g, CX - 1 + q, sh, CX + 1 + q, sh, '#ddd5c5'); put(g, CX + q, sh - 1, L.tie ?? '#a82020'); put(g, CX + q, sh - 2, L.tie ?? '#a82020'); break;
+    case 'hoodie': rect(g, L0 + 1, base + 1, R0 - 1, base + 1, shade(top, 0.8)); put(g, CX - 1 + q, sh - 1, '#d8d0c0'); put(g, CX + 1 + q, sh - 1, '#d8d0c0'); break;
+    case 'shell': rect(g, L0 + 1, base + 1, L0 + 1, sh - 1, shade(top, 1.25)); rect(g, CX + q, base + 1, CX + q, sh, shade(top, 0.75)); break;
+    case 'oilskin': rect(g, CX + q, lo, CX + q, sh - 1, shade(top, 0.75)); put(g, L0 + 1, base + 2, shade(top, 1.35)); put(g, R0 - 1, sh - 1, shade(top, 1.35)); put(g, CX - 1 + q, sh, shade(top, 0.7)); put(g, CX + 1 + q, sh, shade(top, 0.7)); break;
+    case 'uniform': rect(g, L0, base + 1, R0, base + 1, '#1c1a18'); put(g, CX + q, base + 1, '#c8a050'); put(g, CX + q, base + 3, shade(top, 1.3)); put(g, L0, sh, shade(top, 1.25)); put(g, R0, sh, shade(top, 1.25)); break;
+  }
+  if (L.garb === 'patched' || has('patches')) patches(g, L, [[L0 + 1, base + 2], [R0 - 1, sh - 1], [CX + 1, base + 1]]);
+  if (has('ledtrim')) rect(g, L0, base, R0, base, L.visor);
+  if (has('backpack')) { const s = shade(L.acc, 0.7); rect(g, L0 + 1, sh - 1, L0 + 1, sh, s); rect(g, R0 - 1, sh - 1, R0 - 1, sh, s); }
+  if (has('bag')) { for (let k = 0; k < Math.min(R0 - L0, T); k++) put(g, R0 - k, sh - k, shade(L.acc, 0.6)); if (sit) rect(g, L0 + 1, seat + 1, L0 + 3, seat + 2, L.acc); else rect(g, L0 - 2, base - 1, L0 - 1, base + 1, L.acc); }
+  if (has('parcel')) { rect(g, R0 - 1, sh + 1, R0 + 2, sh + 3, '#a07040'); rect(g, R0 - 1, sh + 2, R0 + 2, sh + 2, '#d8c8a0'); }
+  if (has('muffler')) { rect(g, L0 + 1, sh, R0 - 1, sh, L.acc); put(g, CX - 1 + q, sh - 1, shade(L.acc, 0.85)); put(g, CX - 1 + q, sh - 2, shade(L.acc, 0.85)); }
+
+  // arms: the left-hand one hangs (darker when turned away), the right-hand one does the pose
+  const aL = L0 - 1 - belly, aR = R0 + 1 + belly, cyber = has('cyberarm');
+  const sideSleeve = q ? shade(sleeve, 0.72) : sleeve, front = cyber ? METAL : sleeve, hand = cyber ? '#bfc4cc' : L.skin;
+  let hc = aR, hrow = sh - T + 1;
+  if (arms === 'fold' || arms === 'nod') {
+    rect(g, aL, sh - 1, aL, sh, sideSleeve); rect(g, aR, sh - 1, aR, sh, front); rect(g, L0, sh - 2, R0, sh - 2, shade(front, 0.92));
+    put(g, CX + 2, sh - 2, hand); put(g, CX - 2, sh - 2, L.skin); hc = CX + 2; hrow = sh - 2;
+  } else if (arms === 'paper') {
+    // a paper held up in front of the face: only the forehead and hair show over it
+    rect(g, aL, sh - 1, aL, sh, sideSleeve); rect(g, aR, sh - 1, aR, sh, front); hc = CX; hrow = hb;
+  } else if (arms === 'phone') {
+    // looking down at it in both hands, at the chest
+    rect(g, aL, sh - 2, aL, sh, sideSleeve); rect(g, aR, sh - 2, aR, sh, front);
+    rect(g, L0, sh - 2, CX - 1, sh - 2, sideSleeve); rect(g, CX + 1, sh - 2, R0, sh - 2, front);
+    put(g, CX - 1, sh - 1, L.skin); put(g, CX + 1, sh - 1, hand); put(g, CX, sh - 1, '#e4ecff'); hc = CX; hrow = sh - 1;
+  } else {
+    if (arms === 'hip') { put(g, aL, sh, sideSleeve); put(g, aL - 1, sh - 1, sideSleeve); put(g, aL - 1, sh - 2, sideSleeve); put(g, aL, sh - 2, L.skin); }
+    else { rect(g, aL, sh - T + 2, aL, sh, sideSleeve); put(g, aL, sh - T + 1, L.skin); }
+    const path = arms === 'down' ? armDown(T) : ARM[arms];
+    path.forEach(([dc, dr], i) => put(g, aR + dc, sh + dr, i === path.length - 1 ? hand : front));
+    [hc, hrow] = [aR + path[path.length - 1][0], sh + path[path.length - 1][1]];
+    if (cyber && path.length > 1) put(g, aR + path[1][0], sh + path[1][1], '#ffb030');
+  }
+  if (L.garb === 'tee') { put(g, aL, sh, top); if (!cyber) put(g, aR, sh, top); }
+  if (has('armband')) { put(g, aL, sh - 1, '#a82020'); put(g, aR, sh - 1, '#c83a2a'); }
+  if (has('wristscreen')) { const w: Cell = arms === 'fold' || arms === 'nod' || arms === 'phone' || arms === 'paper' ? [CX - 2, sh - 2] : [aL, sh - T + 2]; put(g, w[0], w[1], L.visor); meta.wrist = w; }
+  if (has('briefcase')) {
+    if (sit) { rect(g, R0 + 2 + q, 0, R0 + 5 + q, 2, '#3a2418'); put(g, R0 + 3 + q, 3, '#2a1a10'); put(g, R0 + 4 + q, 1, '#c8a050'); }
+    else if (arms === 'down') { const hr0 = sh - T + 1; rect(g, aR - 1, Math.max(1, hr0 - 3), aR + 2, Math.max(1, hr0 - 1), '#3a2418'); put(g, aR + 1, Math.max(1, hr0 - 2), '#c8a050'); }
+  }
+  if (arms === 'hold') held(g, L, aR + 1, sh, ht);
+  if (arms === 'broomA' || arms === 'broomB') { for (let r = hrow; r >= 1; r--) put(g, hc + 1, r, '#6a4a2a'); rect(g, hc, 0, hc + 2, 0, '#b89a50'); }
+  if (L.garb === 'hoodie') { put(g, hl - 1, hb, top); put(g, hr + 1, hb, top); }
+
+  // head, face, hair
+  const skin = L.hair === 'hood' ? shade(L.skin, 0.62) : L.skin, lid = arms === 'nod' ? shade(skin, 0.55) : '#1a0d05';
+  rect(g, hl, hb, hr, ht, skin);
+  if (q) { put(g, hl + 2, eye, lid); put(g, hr, eye, lid); put(g, hl, eye, shade(skin, 0.85)); }
+  else { put(g, hl + 1, eye, lid); put(g, hr - 1, eye, lid); }
+  hairOn(g, L, true, hl, hr, hb, ht, eye, top);
+  faceOn(g, L, true, q, hl, hr, hb, ht, eye, meta);
+  if (arms === 'paper') {
+    // the paper goes over the face; the hands hold its edges
+    rect(g, L0, sh - 2, R0, hb + 1, '#d8d0c0');
+    for (const r of [sh - 1, hb]) for (let c = L0 + 1; c < R0; c += 2) put(g, c, r, '#8a8478');
+    rect(g, CX, sh - 2, CX, hb + 1, '#b8ad94'); put(g, L0, sh - 1, L.skin); put(g, R0, sh - 1, cyber ? '#bfc4cc' : L.skin);
+    delete meta.eye;
+  }
+  return [g, { ...meta, hand: [hc, hrow], mouth: [hr - 1 + q, hb], top: Math.max(ht + 1, has('umbrella') && arms === 'hold' ? ht + 5 : 0) }];
 }
 
 
@@ -812,7 +1108,8 @@ function bake(key: string, make: () => [Grid, Meta], ps: number, flip: boolean, 
   if (rim) for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) if (g[r * W + col]) x.fillRect(at(col) * ps, (H - 1 - r) * ps, ps + 2, ps + 2);
   for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) { const v = g[r * W + col]; if (v) { x.fillStyle = v; x.fillRect(1 + at(col) * ps, 1 + (H - 1 - r) * ps, ps, ps); } }
   if (dim > 0) { x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(6,3,2,' + dim + ')'; x.fillRect(0, 0, c.width, c.height); }
-  b = { c, meta: flip ? { ...meta, hand: [at(meta.hand[0]), meta.hand[1]], mouth: [at(meta.mouth[0]), meta.mouth[1]] } : meta };
+  const fl = (p: Cell | undefined): Cell | undefined => p && [at(p[0]), p[1]];
+  b = { c, meta: flip ? { ...meta, hand: fl(meta.hand)!, mouth: fl(meta.mouth)!, eye: fl(meta.eye), wrist: fl(meta.wrist), ear: fl(meta.ear) } : meta };
   BAKED.set(k, b);
   return b;
 }
@@ -927,13 +1224,21 @@ function scanBeam(x: CanvasRenderingContext2D, v: View, beam: Beam | undefined, 
   if (o.line ?? true) { x.fillStyle = 'rgba(' + rgb + ',.55)'; x.fillRect(Math.round(ex - s + 2 + sw), Math.round(foot - 12 - Math.abs(Math.sin(tt * 0.09)) * 30), Math.max(1, 2 * s - 4), 1); }
 }
 
+/** A person's tech lights, live over the baked sprite: AR glasses glint now and then, a wrist screen glows, an earpiece blinks. */
+function techFx(x: CanvasRenderingContext2D, m: Meta, cell: (c: number, r: number) => number[], tt: number, ps: number) {
+  const R = Math.round;
+  if (m.eye && tt % 220 < 10) { const [ex, ey] = cell(m.eye[0], m.eye[1]); x.fillStyle = 'rgba(255,246,226,.95)'; x.fillRect(R(ex - 1), R(ey - ps / 2), 2, 2); x.fillStyle = 'rgba(255,240,210,.25)'; x.fillRect(R(ex - ps), R(ey - ps), ps * 2, ps * 2); }
+  if (m.wrist) { const [wx, wy] = cell(m.wrist[0], m.wrist[1]); x.fillStyle = 'rgba(255,210,140,' + (0.16 + 0.06 * Math.sin(tt * 0.05)).toFixed(3) + ')'; x.fillRect(R(wx - ps), R(wy - ps), ps * 2, ps * 2); }
+  if (m.ear && tt % 90 < 30) { const [qx, qy] = cell(m.ear[0], m.ear[1]); x.fillStyle = 'rgba(255,190,90,.35)'; x.fillRect(R(qx - ps / 2 - 1), R(qy - ps / 2 - 1), ps + 2, ps + 2); }
+}
+
 /**
  * A head-and-shoulders portrait of a seed's person, for screens (WANTED, ID cards, ads that know you):
  * drawn into the box (cx, top, w, h), clipped.
  */
 export function drawPortrait(x: CanvasRenderingContext2D, seed: number, cx: number, top: number, w: number, h: number, ps = 2, look: Look = {}) {
   const full = lookFrom(seed, look), B = BODIES[full.body];
-  const b = bake('P' + seed + JSON.stringify(look), () => human(full, 'stand', 'down'), ps, false, 0);
+  const b = bake('P' + seed + JSON.stringify(look) + '|r' + peopleRevision(), () => human(full, 'stand', 'down'), ps, false, 0);
   const headTopRow = B.leg + B.torso + B.head + 1;
   x.save(); x.beginPath(); x.rect(cx - w / 2, top, w, h); x.clip();
   x.drawImage(b.c, Math.round(cx - CX * ps - ps / 2) - 1, Math.round(top + 3 - (H - headTopRow) * ps));
@@ -976,6 +1281,7 @@ export function drawCharacterFrame(x: CanvasRenderingContext2D, v: View, p: Char
     const [hx, hy] = cell(b.meta.hand[0] + (flip ? -0 : 0), b.meta.hand[1] + 1);
     x.fillStyle = 'rgba(210,225,255,.12)'; x.fillRect(Math.round(hx - 7), Math.round(hy - 10), 14, 12);
   }
+  if (R.full) techFx(x, b.meta, cell, tt, ps);
   if (act === 'sleep' || act === 'doze') {
     const [mx, my] = cell(b.meta.mouth[0], b.meta.mouth[1]);
     for (let i = 0; i < (act === 'doze' ? 2 : 3); i++) {

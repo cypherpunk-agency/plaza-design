@@ -6,7 +6,7 @@
   "timeSamplesSeconds": [0, 1.25, 7.5],
   "facings": [1, -1],
   "families": [
-    {"id":"human","group":"Humans","variants":["seeded"],"actions":["stand","walk","run","talk","sit","lean","smoke","phone","haggle","argue","sweep","queue","sleep","dance","vend","steal","read","doze"]},
+    {"id":"human","group":"Humans","variants":["seeded"],"actions":["stand","walk","run","talk","sit","lean","smoke","phone","haggle","argue","sweep","queue","sleep","dance","vend","steal","read","doze","wait"]},
     {"id":"cat","group":"Animals","variants":["seeded"],"actions":["stand","walk","sit"]},
     {"id":"pigeon","group":"Animals","variants":["seeded"],"actions":["stand","walk"]},
     {"id":"gull","group":"Animals","variants":["seeded"],"actions":["stand","walk","fly"]},
@@ -44,10 +44,12 @@
     {"id":"lime","group":"Special robots","variants":["original"],"actions":["serve"]}
   ],
   "humanAppearanceAxes": {
-    "body":["avg","tall","short","wide","slim","kid","old"],
-    "hair":["bald","short","long","bun","mohawk","cap","beanie","hood","brim","helmet","scarf"],
-    "garb":["tee","jacket","coat","dress","apron","hivis","suit","robe"],
-    "extra":["umbrella","bag","backpack","cyberarm","visor","mask","phone","headphones","glasses","cane","briefcase","parcel","armband"]
+    "body":["avg","tall","short","wide","slim","kid","old","teen","heavy","broad","frail"],
+    "hair":["bald","short","long","bun","mohawk","cap","beanie","hood","brim","helmet","scarf","afro","ponytail","buzz","beret","hardhat","headwrap","peaked"],
+    "garb":["tee","jacket","coat","dress","apron","hivis","suit","robe","hoodie","shell","oilskin","uniform","patched"],
+    "extra":["umbrella","bag","backpack","cyberarm","visor","mask","phone","headphones","glasses","cane","briefcase","parcel","armband","arglasses","respirator","wristscreen","ledtrim","earpiece","exobrace","patches","muffler"],
+    "facial":["none","stubble","moustache","beard"],
+    "archetype":["commuter","reader","office","courier","elder","punk","inspector","sleeper","dockworker","vendor","student","plazastaff","ghost","church","tide","kid","teen","shopper","technician","guard","fixer","drifter"]
   },
   "humanColorCases":{"skin":"#a96b42","hairCol":"#665599","top":"#345678","bottom":"#786543","acc":"#ac5732"},
   "robotColorCases":{"paint":"#345678","trim":"#786543","screen":"#ac5732"},

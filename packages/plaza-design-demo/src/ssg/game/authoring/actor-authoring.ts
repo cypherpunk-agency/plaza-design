@@ -73,7 +73,7 @@ export function renderActor(form:TypedForm,host:HTMLElement,source:SceneDocument
  form.select(host,'Actor family',['human',...actorAxes.critter,...actorAxes.bot],family,v=>{change('Edit actor family',b=>{b.look=v==='human'?{}:v as ActorDefinition['look'];});refresh();});
  if(family==='human'){
   const look=(a.look??{}) as Look;
-  for(const k of ['body','hair','garb'] as const)form.select(host,'Actor '+k,['',...actorAxes[k]],look[k]??'',v=>change('Edit actor '+k,b=>{b.look??={};const l=b.look as Look;if(v)l[k]=v as never;else delete l[k];}));
+  for(const k of ['archetype','body','hair','garb','facial'] as const)form.select(host,'Actor '+k,['',...actorAxes[k]],look[k]??'',v=>change('Edit actor '+k,b=>{b.look??={};const l=b.look as Look;if(v)l[k]=v as never;else delete l[k];}));
   for(const extra of actorAxes.extras)form.check(host,'Actor extra '+extra,look.extras?.includes(extra)??false,on=>change('Edit actor extras',b=>{b.look??={};const l=b.look as Look;const extras=new Set(l.extras??[]);if(on)extras.add(extra);else extras.delete(extra);if(extras.size)l.extras=[...extras];else delete l.extras;}));
   for(const k of ['skin','hairCol','top','bottom','acc'] as const)form.text(host,'Actor color '+k,look[k]??'',v=>change('Edit actor color',b=>{b.look??={};if(v)(b.look as Look)[k]=v;else delete(b.look as Look)[k];}));
  }else if((actorAxes.bot as readonly string[]).includes(family)){

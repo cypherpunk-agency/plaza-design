@@ -9,14 +9,14 @@ import type {TimeWindow} from '../../data/types';
 import {windowProblem} from '../../world/clock';
 import type {resolveComposition} from '../../art/core/composition';
 import {DEPTH_BANDS,isDepthBand,type DepthBand} from '../../art/core/depth';
+import {BODY_KINDS,HAIR_KINDS,GARB_KINDS,EXTRA_KINDS,FACIAL_KINDS} from '../../art/characters/parts';
+import {ARCHETYPE_IDS} from '../../art/characters/archetypes';
+import {DISTRICT_PALETTES} from '../../art/characters/people-style';
 export const actorAxes={
- body:['avg','tall','short','wide','slim','kid','old'],
- hair:['bald','short','long','bun','mohawk','cap','beanie','hood','brim','helmet','scarf'],
- garb:['tee','jacket','coat','dress','apron','hivis','suit','robe'],
- extras:['umbrella','bag','backpack','cyberarm','visor','mask','phone','headphones','glasses','cane','briefcase','parcel','armband'],
+ body:BODY_KINDS,hair:HAIR_KINDS,garb:GARB_KINDS,extras:EXTRA_KINDS,facial:FACIAL_KINDS,archetype:ARCHETYPE_IDS as readonly string[],
  critter:['cat','pigeon','gull','cleaner','drone','courier','crab','robogull'],
  bot:['android','valet','marshal','servbot','sweeper','busker','waiter','loader','porter','mech','litterbot','deliverybot','adbot','crawler','wreck','minidrone','cargodrone','flyerdrone','scandrone','djbot'],
- act:['stand','walk','run','talk','sit','lean','smoke','phone','haggle','argue','sweep','queue','sleep','dance','vend','steal','scan','carry','roll','patrol','serve','crawl','hover','direct','play','weld','scrub','charge','glitch','blink','slump','read','doze','dig','fly'],
+ act:['stand','walk','run','talk','sit','lean','smoke','phone','haggle','argue','sweep','queue','sleep','dance','vend','steal','scan','carry','roll','patrol','serve','crawl','hover','direct','play','weld','scrub','charge','glitch','blink','slump','read','doze','wait','dig','fly'],
  face:['eyes','happy','blink','sad','dots','off','crack'],
 } as const;
 export interface ActorDefinition {
@@ -35,9 +35,9 @@ const id=(v:unknown)=>{if(typeof v!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(v)
 const choice=(v:unknown,values:readonly unknown[])=>{if(!values.includes(v))fail('unknown appearance or action');};
 export function validateActorLook(value:unknown):void {
  if(typeof value==='string'){choice(value,[...actorAxes.critter,...actorAxes.bot]);return;}
- const robot=!!object(value).bot,look=fields(value,robot?['bot','paint','trim','screen','wear','face','v']:['body','hair','garb','extras','skin','hairCol','top','bottom','acc']);
+ const robot=!!object(value).bot,look=fields(value,robot?['bot','paint','trim','screen','wear','face','v']:['archetype','district','kitted','body','hair','garb','extras','facial','skin','hairCol','top','bottom','acc']);
  if(robot){choice(look.bot,actorAxes.bot);if(look.v!==undefined)choice(look.v,[0,1,2]);if(look.face!==undefined)choice(look.face,actorAxes.face);if(look.wear!==undefined)number(look.wear,0,1);}
- else{for(const k of ['body','hair','garb'] as const)if(look[k]!==undefined)choice(look[k],actorAxes[k]);if(look.extras!==undefined){if(!Array.isArray(look.extras)||look.extras.length>10||new Set(look.extras).size!==look.extras.length)fail('extras');(look.extras as unknown[]).forEach(v=>choice(v,actorAxes.extras));}}
+ else{for(const k of ['archetype','body','hair','garb','facial'] as const)if(look[k]!==undefined)choice(look[k],actorAxes[k]);if(look.district!==undefined)choice(look.district,Object.keys(DISTRICT_PALETTES));if(look.kitted!==undefined&&typeof look.kitted!=='boolean')fail('kitted boolean');if(look.extras!==undefined){if(!Array.isArray(look.extras)||look.extras.length>10||new Set(look.extras).size!==look.extras.length)fail('extras');(look.extras as unknown[]).forEach(v=>choice(v,actorAxes.extras));}}
  for(const k of robot?['paint','trim','screen']:['skin','hairCol','top','bottom','acc'])if(look[k]!==undefined&&(typeof look[k]!=='string'||!/^#[0-9a-f]{6}$/i.test(look[k] as string)))fail('hex color');
 }
 export function validateActors(value:unknown):ActorDefinition[]{

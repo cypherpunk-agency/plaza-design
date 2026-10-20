@@ -78,8 +78,11 @@ The tab row has Scene and Logic, plus Library, World and Labs. Play runs on the 
 - **Library** holds the artwork explorer and the Characters/Style frames/Vehicles/Buildings/Signs viewers.
   Artwork has a district bar on the left: a piece belongs to every district whose scenes use it
   ("Elsewhere" is unused or sequence-only artwork). Characters has a **Crowd** view that samples a
-  district's crowd mix (`art/characters/crowds.ts`: plain vs kitted people, wardrobe, acts, robots)
-  across the back, play and near rows. **Style frames** pairs each district's card (`style-frames.ts`:
+  district's crowd mix (`art/characters/crowds.ts`: plain vs kitted people, named looks, acts, robots)
+  across the back, play and near rows; **Show 30** samples thirty of its people and marks near-duplicates.
+  **Archetypes** lists every named look (`art/characters/archetypes.ts`) standing and seated. The
+  **People style** (muted, vivid, legacy) and **Seated** (front, threeQuarter, side) selects switch every
+  person in the editor for comparison (`art/characters/people-style.ts`; the game uses muted and front). **Style frames** pairs each district's card (`style-frames.ts`:
   proposed palette, light, materials, signage, landmark, crowd) with its scenes rendered at a chosen
   time, weather and camera. All three are read-only previews of the 2026-10-20 art direction.
 - **Proposal scenes** (`proposal-scenes.ts`) are editor-only redraws of an existing scene with their own

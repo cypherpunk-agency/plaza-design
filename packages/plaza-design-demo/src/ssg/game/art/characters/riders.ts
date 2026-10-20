@@ -1,34 +1,39 @@
 /**
- * The people of LINE 0: who rides the metro and who waits for it. Each kind is a character-kit person
- * with their own clothes and something they are doing (a phone, a paper, a briefcase, a parcel, a nap),
- * so a car or a platform reads as people, not shadows. `phase` seeds the rest of the look (coats, hair,
- * skin), so two riders of a kind are not twins. Seated riders use the kit's `seated` pose: thighs at
- * about SEAT_H over the floor at the player's scale, which fits the benches and the train seats.
+ * The people of LINE 0: who rides the metro and who waits for it. Each kind is a named look from the
+ * character kit (art/characters/archetypes.ts: commuter, reader, office, courier, elder, punk, inspector,
+ * sleeper) doing what it does (a phone, a paper, a briefcase, a parcel, a nap), so a car or a platform
+ * reads as people, not shadows. `phase` seeds the rest of the look (build, colours, minor parts), so two
+ * riders of a kind are not twins. Seated riders sit facing the camera, three-quarter or side on, as the
+ * people-style `seated` switch says (art/characters/people-style.ts; default front): thighs at about
+ * SEAT_H over the floor at the player's scale, which fits the benches and the train seats.
  */
 
 import { drawDriven, type Act, type Character, type Look } from "../../runtime/characters";
+import type { ArchetypeId } from "./archetypes";
+import { peopleStyle } from "./people-style";
 import { frameView, type View } from "../core/view";
 import { rng } from "../core/primitives";
 
-/** Each kind as a kit look and act. */
+interface RiderSpec { archetype: ArchetypeId; look?: Look; act: Act; legacy: Look }
+/** Each kind: its named look (plus parts it always has on the train), its act, and its look in the `legacy` people style. */
 const RIDERS = {
   // looking down at a phone, its light on the face
-  phone: { look: { extras: ['phone'] }, act: 'phone' },
+  phone: { archetype: 'commuter', act: 'phone', legacy: { extras: ['phone'] } },
   // a paper held up in front of them
-  paper: { look: { hairCol: '#6a6a6a', extras: ['glasses'] }, act: 'read' },
+  paper: { archetype: 'reader', act: 'read', legacy: { hairCol: '#6a6a6a', extras: ['glasses'] } },
   // a suit and a briefcase
-  suit: { look: { garb: 'suit', hair: 'short', extras: ['briefcase'] }, act: 'stand' },
+  suit: { archetype: 'office', look: { extras: ['briefcase'] }, act: 'stand', legacy: { garb: 'suit', hair: 'short', extras: ['briefcase'] } },
   // a courier with a parcel on the shoulder
-  courier: { look: { garb: 'jacket', hair: 'cap', top: '#8a4a10', extras: ['parcel'] }, act: 'stand' },
-  // an old woman with a shopping bag
-  elder: { look: { body: 'old', garb: 'coat', hair: 'scarf', acc: '#3a5a3a', hairCol: '#cfcfcf', extras: ['bag'] }, act: 'stand' },
-  // dyed hair, a dark jacket
-  punk: { look: { hair: 'mohawk', garb: 'jacket', top: '#222428', hairCol: '#8a2a6a', extras: ['headphones'] }, act: 'stand' },
-  // a Registry inspector: grey uniform, red armband, visor
-  inspector: { look: { body: 'tall', garb: 'coat', hair: 'cap', top: '#9aa2ac', bottom: '#222428', acc: '#5a6470', extras: ['visor', 'armband'] }, act: 'stand' },
-  // asleep on their feet, head down, scarf
-  sleeper: { look: { hair: 'scarf', garb: 'coat', acc: '#3a5a3a', extras: [] }, act: 'doze' },
-} satisfies Record<string, { look: Look; act: Act }>;
+  courier: { archetype: 'courier', act: 'stand', legacy: { garb: 'jacket', hair: 'cap', top: '#8a4a10', extras: ['parcel'] } },
+  // an old woman in a coat and a scarf, with a shopping bag
+  elder: { archetype: 'elder', look: { extras: ['bag', 'muffler'] }, act: 'stand', legacy: { body: 'old', garb: 'coat', hair: 'scarf', acc: '#3a5a3a', hairCol: '#cfcfcf', extras: ['bag'] } },
+  // a dyed mohawk over a patched black jacket
+  punk: { archetype: 'punk', act: 'stand', legacy: { hair: 'mohawk', garb: 'jacket', top: '#222428', hairCol: '#8a2a6a', extras: ['headphones'] } },
+  // a Registry inspector: grey uniform, peaked cap, red armband, visor
+  inspector: { archetype: 'inspector', act: 'stand', legacy: { body: 'tall', garb: 'coat', hair: 'cap', top: '#9aa2ac', bottom: '#222428', acc: '#5a6470', extras: ['visor', 'armband'] } },
+  // asleep on their feet, head down into a scarf
+  sleeper: { archetype: 'sleeper', act: 'doze', legacy: { hair: 'scarf', garb: 'coat', acc: '#3a5a3a', extras: [] } },
+} satisfies Record<string, RiderSpec>;
 export type RiderKind = keyof typeof RIDERS;
 export const KINDS = Object.keys(RIDERS) as RiderKind[];
 
@@ -36,13 +41,14 @@ export const KINDS = Object.keys(RIDERS) as RiderKind[];
 export const SEAT_H = 9;
 
 const PEOPLE = new Map<string, Character>();
-/** One stable kit person per kind, phase, pose and size (each is baked once). */
+/** One stable kit person per kind, phase, pose, size and people style (each is baked once). */
 function rider(kind: RiderKind, phase: number, sit: boolean, ps: number): Character {
-  const key = kind + '|' + phase + '|' + (sit ? 1 : 0) + '|' + ps;
+  const style = peopleStyle(), key = kind + '|' + phase + '|' + (sit ? 1 : 0) + '|' + ps + '|' + style;
   let p = PEOPLE.get(key);
   if (!p) {
-    const R = RIDERS[kind];
-    p = { seed: 7001 + Math.floor(phase * 977), x: 0, look: { ...R.look, extras: [...(R.look.extras ?? [])] } as Look, act: R.act as Act, ps, seated: sit, shadow: false };
+    const R: RiderSpec = RIDERS[kind];
+    const look: Look = style === 'legacy' ? structuredClone(R.legacy) : { archetype: R.archetype, ...structuredClone(R.look ?? {}) };
+    p = { seed: 7001 + Math.floor(phase * 977), x: 0, look, act: R.act, ps, seated: sit, shadow: false };
     if (PEOPLE.size > 512) PEOPLE.clear();
     PEOPLE.set(key, p);
   }
