@@ -16,8 +16,8 @@ export function moveInteractionOutcome(rows:InteractionRoute[],index:number,dire
  if(index<0||index>=limit||next<0||next>=limit)throw Error('The final fallback stays last');
  [rows[index],rows[next]]=[rows[next],rows[index]];
 }
-export function setInteractionRotation(use:UseDocument,on:boolean){
- if(on){if(use.routes.some(r=>r.when!==undefined||r.conversation!==undefined))throw Error('Remove conditional and conversation outcomes before enabling rotation');use.cycle=true;}
+export function setInteractionRotation(use:UseDocument,on:boolean,state?:string){
+ if(on){const cursor=state??use.cycleState;if(!cursor)throw Error('Choose a shared rotation state first');if(use.routes.some(r=>r.when!==undefined||r.conversation!==undefined))throw Error('Remove conditional and conversation outcomes before enabling rotation');use.cycle=true;use.cycleState=cursor;}
  else{delete use.cycle;delete use.cycleState;for(const r of use.routes.slice(0,-1))r.when={tokensAtLeast:0};delete use.routes[use.routes.length-1].when;}
 }
 export function addCarriedInteraction(use:UseDocument,item:string){

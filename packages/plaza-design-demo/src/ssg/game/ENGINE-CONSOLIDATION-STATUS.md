@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `cca059c` on main and production.
-Homepage jobs39376188849/39376189044 and design job39376189019 succeeded.
+Last verified deployment: `6eb2a93` on main and production.
+Homepage jobs39377383977/39377384037 and design job39377384006 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -3045,3 +3045,40 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   difference remains open. Conversation entry-failure, free-input and bot regression checks pass.
 - Final-source protected Save/fresh-module/byte-Undo rerun PASS:
   `.scene-system/response-conversations-save-pkdsOt`.
+
+## 2026-10-20: remove the obsolete private interaction rotation path
+
+- Current source audit found a compiler-local Map and injectable cycle read/advance adapter
+  remaining behind rotating interactions. All four shipping uses (Beach gull/crab, Market
+  fortune, Shop goods) and demo counter already declare shared cursor state. Removed both
+  fallback paths and the unused SceneCompileOptions API rather than retaining a second owner.
+- Validation requires an explicit non-negative integer declaration for cycleState. Compiler
+  execution also rejects a missing/invalid cursor. Outcome commands alone advance it, with
+  ordinary transaction refusal/rollback. There is no automatic private counter or schema shim.
+- Scene Logic now exposes the rotation-state selector before enabling rotation. Selecting
+  an inactive draft cursor does not write source/history; enabling commits the binding and
+  rotation atomically. Clearing an active cursor rejects. Conditional/conversation conversion
+  safeguards remain. Actual packaged app-EU2RV4K5.js: missing cursor rejected without history,
+  state selector remains usable before enabling, Undo restores shop.rotation; no console errors.
+- PASS: check-rotation-state (invalid/missing declarations, shared cursor across compiled
+  instances/reload, separate-player isolation, atomic failure, all current rotation sources);
+  check-interaction-crud including typed enable/rebind rejection, commands/items/outcomes,
+  pending native execution, history/bundles/protected Save/reload/byte Undo:
+  `.scene-system/interaction-crud-jcGVNw`.
+- check-persistent-commerce had stale flat-key/private-session-map assertions from the older
+  state representation. Corrected it to read current owner blocks and compare failed commands
+  against the constructor-initialized state. No runtime persistence behavior changed to satisfy
+  it. Current defaults, one shared session-state root, saved stock/rotation, reset lifetimes,
+  price modifiers and atomic purchase cases PASS. Market original outcomes and ENG-05 PASS.
+- Both root builds PASS (play-VYMHZPSV.js); no fallback cycle API references remain in source.
+- Raster source `1dadc2073b90167a0e71c9b8649897521439dc261cf268f462297708181fd110`:
+  `.scene-system/all-game-pixel-check/evidence/1dadc2073b90167a0e71c9b8649897521439dc261cf268f462297708181fd110-1792476000738.json`.
+  All four result arrays exactly equal the pre-change published-source diagnostic. Original
+  baseline still FAIL solely for the existing Mall frame delta; no baseline replacement.
+- This removes a genuine G13 duplicate path, but does not sign the broader G0/G8–G13 audits.
+- Integrated latest main5692d08 (Library style frames/district filters/crowd lineup) by fast-forward;
+  no overlap with this cleanup. Combined-source builds PASS (app-JWWMFMGT.js); interaction
+  CRUD/Save rerun PASS in `.scene-system/interaction-crud-vALSvK`.
+  Combined-source raster evidence:
+  `.scene-system/all-game-pixel-check/evidence/684d0ff4fa8babdc6566b7bbc1d130f9194079ff5a38d0e307b658a224927eca-1792476136946.json`.
+  All four arrays remain identical to the pre-change diagnostic, including the open Mall delta.
