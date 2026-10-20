@@ -4,14 +4,14 @@
   "instances": [
     {
       "id": "spawn",
-      "type": "library.spawn-marker",
+      "type": "scene.player",
       "props": {},
       "placement": {
         "x": 74,
         "h": 0
       },
-      "order": -1,
-      "layer": "logic"
+      "order": 40,
+      "layer": "playfield"
     },
     {
       "id": "room",
@@ -609,17 +609,6 @@
         "h": 0
       },
       "order": 39,
-      "layer": "playfield"
-    },
-    {
-      "id": "player",
-      "type": "scene.player",
-      "props": {},
-      "placement": {
-        "x": 74,
-        "h": 0
-      },
-      "order": 40,
       "layer": "playfield"
     }
   ]
