@@ -44,7 +44,6 @@ export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext)
    form.button(parent,'Add opening phase rule',()=>edit('Add opening phase rule',d=>{d.PHASE_RULES.splice(d.PHASE_RULES.length-1,0,{when:{flag:d.OPENING.home},phase:'home'});}),d.PHASE_RULES.length>=32);return;
   }
   if(path[0]==='OPENING'){for(const[role,flag]of Object.entries(read().OPENING))form.text(parent,'Opening role '+role+' flag',flag,next=>{const documents=new Map(context.documents.map(d=>[d.id,api.get(d.id).value])),changes=renameSharedFlagDocuments(documents,flag,next);if(api.editDocuments)api.editDocuments(changes,'Rename opening role '+role);else if(changes.length===1)api.edit(changes[0].id,'Rename opening role '+role,changes[0].value);else throw Error('Grouped source editing is unavailable');render();});return;}
-  if(path.join('/')==='CONTROLLER/homeRun/scene'){const p=document.createElement('p');p.textContent=name+': '+String(value)+' (registered train primitive)';parent.append(p);return;}
   if(path.join('/')==='CONTROLLER/home'){
    const d=read(),target=d.OPENING_TARGETS.flat![value.scene+'/'+d.CONTROLLER.sleep.target],binding=target.bind;
    homeDraft??={scene:value.scene,jackDevice:value.jackDevice,kind:binding?.kind??'rest',anchorId:binding?.id??'',offsetX:binding?.offsetX??0};const draft=homeDraft;
@@ -79,6 +78,7 @@ export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext)
    return;
   }
   if(value&&typeof value==='object'){
+   if(path.join('/')==='CONTROLLER/homeRun'){const note=document.createElement('p');note.textContent='The train-car scene comes from World / City & travel / Transport boarding.';parent.append(note);}
    const keys=Object.keys(value);
    if(path[0]==='OPENING_EXITS'&&path.length===3){const kind=['say','react','turnstile','concierge'].find(k=>k in value)!;form.select(parent,name+' handler',['say','react','turnstile','concierge'],kind,k=>{const initial=k==='say'?{say:{name:'YOU',pages:['Not yet.']}}:k==='react'?{react:[...(registry[String(path[2]).split('/')[0]]?.data?.devices??[]),...(registry[String(path[2]).split('/')[0]]?.data?.nodes??[])][0]?.id??'',line:['','New response.']}:{[k]:true};set(path,initial);});}
    if(path[0]==='OPENING_PINGS'&&path.length===3){const scene=String(path[2]),story=Object.keys(read().OPENING_TARGETS[path[1] as OpeningState]??{}).filter(k=>k.startsWith(scene+'/')),devices=[...(registry[scene]?.data?.devices??[]),...(registry[scene]?.data?.nodes??[])],exits=registry[scene]?.exits??[],kind=keys[0],kinds=[...(exits.some(e=>e.action==='out')?['door']:[]),...(exits.length?['exit']:[]),...(devices.length?['device']:[]),...(story.length?['story']:[])];form.select(parent,name+' target kind',kinds,kind,k=>set(path,k==='door'?{door:true}:k==='exit'?{exit:exits[0].id}:k==='device'?{device:devices[0].id}:{story:story[0].slice(scene.length+1)}));}

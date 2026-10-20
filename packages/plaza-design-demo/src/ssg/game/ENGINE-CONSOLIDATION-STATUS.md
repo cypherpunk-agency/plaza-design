@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `aff0a3b` on main and production.
-Homepage jobs39378162868/39378163155 and design job39378163313 succeeded.
+Last verified deployment: `571ac3e` on main and production.
+Homepage jobs39379509408/39379509537 and design job39379509549 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -31,7 +31,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G8 | IN PROGRESS | 19/19 ordinary manifests and actor collections now support source CRUD/rebinding/Save; new ordinary catalogue scenes run without TS registration. Native controllers/world/network/story and integrated acceptance remain |
 | G9 | IN PROGRESS | Metro sessions/config/native rules/render bindings checked; full controller/network contracts remain pending |
 | G10 | IN PROGRESS | Typed actor CRUD/source bindings now cover all19 native scenes; catalogue creation/history/bundles/Save are checked. Current combined source still requires all-scene browser Play, controller/network/device entity controls and complete lifecycle acceptance |
-| G11 | IN PROGRESS | Moth Act transition authored through shared handoffs; full world/story/transport source integration pending |
+| G11 | PASS | All19 declared route collections,41 native exit dispatches and30 pending destination/arrival edits; current world/access/map/transport/opening/cinematic source and atomic Save/import evidence. See WORLD-STORY-ACCEPTANCE.md. Other scene categories and whole-goal acceptance remain open |
 | G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
 | G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
 
@@ -3111,3 +3111,34 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
 - Packaged editor verification PASS: Native goals library.goal.lan changed to scan through
   its typed selector; history enabled, Undo restored lan and a clean history; no console
   warnings/errors. No rendering/layer/object changes are included in this batch.
+
+## 2026-10-20: G11 world/story acceptance
+
+- G11 PASS; full requirement-to-evidence audit is WORLD-STORY-ACCEPTANCE.md. Matrix world
+  column now PASS for all19 scenes; other columns retain their separate acceptance status.
+  Accepted gates are G1/G2/G3/G5/G6/G11 (6/14). Remaining eight gates stay open.
+- New all-scene native route check proves exact authored/compiled exit collections with no
+  extra native-only routes,41 actual Game.useExit dispatches,30 pending ordinary destination/
+  arrival edits across the corpus and per-scene dangling-arrival rejection. Harbor Shift has
+  no authored exit and receives no new route. Source-bound raw results:
+  `.scene-system/world-story-routes-ogfjXS/evidence.json`, source9221a015e2657fc02adf5ea5334ae299920f576778bbe798a38d4d7b82ba5536.
+- Removed city version1 source upgrade and its hard-coded shipping train/taxi/harbor arrivals.
+  Current explicit version2 source remains unchanged. Old immutable fixtures remain behavior
+  oracles; the validator rejects old source instead of inventing destinations.
+- Removed opening CONTROLLER.homeRun.scene duplicate/protection and its static editor field.
+  Actual Game.enter initializes the home ride from World TRANSPORT.boarding.scene, the same
+  owner used by native boarding, ride stepping and map state. Three pending car roles and
+  home/free phases PASS; the old train ID has no special effect. Packaged opening editor
+  visibly points to the shared World transport setting.
+- PASS: check-city-source (26 original registries/all19 lookups/13,824 district cases/7,752
+  travel refusals/exact traced plan/532 map cases), transport destinations, world access policy
+  (`world-access-policy-equ7OJ`), platform world source (`platform-world-source-ALnyUs`),
+  opening runtime (42 original comparisons), source/phase rules (64 histories), bound targets,
+  opening source protected Save (`opening-story-save/run-nyWVED`), shared handoffs (1499/1500ms,
+  pause/refusal/disposal/100 cycles), and pending cinematic/native playback/grouped new-scene
+  arrival/atomic import and protected Save (`cinematic-pending/run-4Kp3jV`).
+- Both builds PASS (app-XISW3PUU.js / play-5LJYJ2II.js;97 docs/128 source references).
+  Raster6b2f6bc2 report has all four row arrays identical to the earlier published-source
+  diagnostic. Original-baseline status remains FAIL solely for the existing Mall animation
+  frame. Matrix/status acceptance metadata was updated after that runtime raster capture;
+  no rendering/layer/object implementation changed and no baseline was overwritten.
