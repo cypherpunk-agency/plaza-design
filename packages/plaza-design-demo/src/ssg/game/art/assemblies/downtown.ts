@@ -2,7 +2,7 @@
 import type { View } from '../core/view';
 import { drawSprite, SPR, GLOW_THEM, type Sprite } from "../core/sprites";
 import { windowLit } from "../../world/light";
-import { glass } from "../environment/sky";
+import { bay, cornice, fascia, framedWindow, ledgeEdge, storeyBands, type BayKind } from "../buildings/parts";
 import { addLight, castShadow } from "../atmosphere/lighting";
 import { neon } from "../core/primitives";
 import { neonPlate, plate } from "../signage/kit";
@@ -121,64 +121,10 @@ drawAlley(origin: number, doorOffset: number) {
     bladeSign(x, this.v, { x: origin + 13, h: 150, text: 'YARD', col: P, size: 8, phase: 90 });
   }
 drawWindow(wx: number, wy: number, light: number, ac: boolean, seed: number) {
-    const x = this.x;
-    x.fillStyle = '#040201'; x.fillRect(wx, wy, 14, 28);
-    // the room's light follows the clock (on at dusk, off after midnight); a dark pane reflects the sky by day
-    if (light >= 0 && !windowLit(seed, this.v.lighting)) light = -1;
-    if (light < 0) { const [gc, ga] = glass(this.v.lighting); if (ga > 0.02) { x.fillStyle = 'rgba(' + gc + ',' + ga.toFixed(3) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26); } }
+    light = framedWindow(this.x, wx, wy, light, ac, seed, this.t, this.v.lighting);
     if (light >= 0) addLight(this.v, { x: wx + 7 + this.cam, h: this.gy - wy - 14, kind: 'window', w: 12, hh: 26, r: 14, col: light >= 1 ? '150,170,220' : '255,150,70', a: 0.6 });
-    if (light >= 1) {
-      x.fillStyle = 'rgba(150,170,220,' + (0.1 + 0.06 * Math.sin(this.t * 0.05 + light * 3)) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
-    } else if (light >= 0) {
-      x.fillStyle = 'rgba(255,136,0,' + (0.1 + 0.18 * light) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
-      if (light < 0.35) { x.fillStyle = 'rgba(0,0,0,.4)'; for (let b = 3; b < 27; b += 3) x.fillRect(wx + 1, wy + b, 12, 1); }
-    }
-    x.fillStyle = '#0a0503'; x.fillRect(wx, wy + 11, 14, 1); x.fillRect(wx + 7, wy, 1, 28);
-    x.strokeStyle = 'rgba(194,65,12,.35)'; x.strokeRect(wx + 0.5, wy + 0.5, 13, 27);
-    x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(wx - 1, wy + 28, 16, 2);
-    if (ac) { x.fillStyle = '#16110d'; x.fillRect(wx + 2, wy + 31, 10, 6); x.strokeStyle = 'rgba(194,65,12,.4)'; x.strokeRect(wx + 2.5, wy + 31.5, 9, 5); }
   }
-drawBay(bx: number, w: number, kind: 'door' | 'glass' | 'shutter' | 'sealed') {
-    const x = this.x;
-    if (kind === 'glass') {
-      // A lit shop interior behind glass: shelves, goods, a reflection; an awning above.
-      x.fillStyle = '#120904'; x.fillRect(bx, this.y(6), w, 6);
-      x.fillStyle = 'rgba(255,136,0,.1)'; x.fillRect(bx, this.y(54), w, 48);
-      x.fillStyle = 'rgba(255,170,60,.18)'; x.fillRect(bx + 3, this.y(20), w - 6, 1); x.fillRect(bx + 3, this.y(36), w - 6, 1);
-      for (let gx = bx + 4, j = 0; gx < bx + w - 6; gx += 7, j++) {
-        x.fillStyle = j % 3 ? 'rgba(255,170,60,.22)' : 'rgba(255,217,165,.3)';
-        x.fillRect(gx, this.y(26 + (j % 2) * 2), 4, 6 + (j % 2) * 2); x.fillRect(gx + 1, this.y(43), 3, 7);
-      }
-      x.strokeStyle = 'rgba(255,255,255,.07)'; x.beginPath(); x.moveTo(bx + 6, this.y(50)); x.lineTo(bx + 20, this.y(10)); x.stroke();
-      x.fillStyle = 'rgba(255,136,0,.45)';
-      for (let m = bx + 28; m < bx + w - 10; m += 28) x.fillRect(m, this.y(54), 1, 48);
-      x.strokeStyle = 'rgba(255,136,0,.45)'; x.strokeRect(bx + 0.5, this.y(54) + 0.5, w - 1, 47);
-      for (let ax = bx - 3, j = 0; ax < bx + w + 3; ax += 6, j++) {
-        x.fillStyle = j % 2 ? 'rgba(255,136,0,.3)' : '#120800'; x.fillRect(ax, this.y(62), Math.min(6, bx + w + 3 - ax), 5);
-      }
-    } else if (kind === 'shutter') {
-      // A rolled-down shutter under its housing.
-      x.fillStyle = '#100a06'; x.fillRect(bx, this.y(48), w, 48);
-      x.fillStyle = 'rgba(255,136,0,.1)'; for (let h = 3; h < 48; h += 3) x.fillRect(bx, this.y(h), w, 1);
-      x.fillStyle = 'rgba(255,136,0,.35)'; x.fillRect(bx, this.y(2), w, 2);
-      x.fillStyle = '#1a0f08'; x.fillRect(bx - 2, this.y(54), w + 4, 6);
-      x.strokeStyle = 'rgba(194,65,12,.5)'; x.strokeRect(bx - 1.5, this.y(54) + 0.5, w + 3, 5);
-    } else {
-      // A door on a step. The sealed one (the penthouse) has no handle and no glass.
-      x.fillStyle = '#1a0d05'; x.fillRect(bx - 3, this.y(3), w + 6, 3);
-      x.fillStyle = 'rgba(255,136,0,.35)'; x.fillRect(bx - 3, this.y(3), w + 6, 1);
-      x.fillStyle = '#050201'; x.fillRect(bx, this.y(52), w, 49);
-      x.strokeStyle = 'rgba(255,136,0,.5)'; x.strokeRect(bx + 0.5, this.y(52) + 0.5, w - 1, 48);
-      if (kind === 'door') {
-        x.fillStyle = 'rgba(255,136,0,.22)'; x.fillRect(bx + 6, this.y(46), w - 12, 12);
-        x.fillStyle = 'rgba(255,217,165,.7)'; x.fillRect(bx + w - 6, this.y(28), 2, 4);
-        x.fillStyle = 'rgba(255,200,120,.85)'; x.fillRect(bx + Math.floor(w / 2) - 1, this.y(57), 3, 2);
-      } else {
-        x.fillStyle = 'rgba(194,65,12,.45)'; x.fillRect(bx + Math.floor(w / 2), this.y(50), 1, 46);
-        x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(bx + w + 3, this.y(36), 8, 6);
-      }
-    }
-  }
+drawBay(bx: number, w: number, kind: BayKind) { bay(this.x, h => this.y(h), bx, w, kind); }
 plate(cx: number, cy: number, w: number, h: number, col: string) { plate(this.x, cx, cy, w, h, col); }
 drawStall(stall: Stall) {
     const x = this.x, s0 = this.sx(stall.x), sw = stall.w, cx = s0 + sw / 2;
@@ -213,27 +159,18 @@ drawStall(stall: Stall) {
 drawFrontBody(f: Front, sx: number) {
     const x = this.x, hv = Math.min(f.h, this.gy + 1), top = this.y(hv);
     x.fillStyle = '#0a0503'; x.fillRect(sx, top, f.w, hv);
-    if (f.roof) {
-      // The climbable annex: one storey, with a bright roof edge so it reads as somewhere to stand.
-      x.strokeStyle = 'rgba(255,136,0,.75)'; x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, f.w - 1, hv);
-      x.fillStyle = 'rgba(255,136,0,.8)'; x.fillRect(sx, top, f.w, 2);
-    } else {
+    if (f.roof) ledgeEdge(x, sx, top, f.w, hv);
+    else {
       x.strokeStyle = 'rgba(194,65,12,.45)'; x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, f.w - 1, hv);
-      const storeys = Math.floor((f.h - GROUND) / STOREY);
-      x.fillStyle = 'rgba(194,65,12,.22)';
-      for (let s = 0; s < storeys; s++) { const h = GROUND + s * STOREY; if (h < hv) x.fillRect(sx + 1, this.y(h) - 1, f.w - 2, 2); }
+      storeyBands(x, h => this.y(h), sx, f.w, f.h, hv, GROUND, STOREY);
     }
 }
 drawFrontTrim(f: Front, sx: number) {
     const x = this.x, hv = Math.min(f.h, this.gy + 1), top = this.y(hv);
     if (!f.roof) {
-      if (f.h <= this.gy) {
-        x.fillStyle = '#140a05'; x.fillRect(sx - 2, top, f.w + 4, 4);
-        x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(sx - 2, top, f.w + 4, 1);
-      }
+      if (f.h <= this.gy) cornice(x, sx, top, f.w);
       // Shop fascia over the ground floor.
-      x.fillStyle = '#100804'; x.fillRect(sx + 1, this.y(GROUND) + 1, f.w - 2, 11);
-      x.fillStyle = 'rgba(194,65,12,.35)'; x.fillRect(sx + 1, this.y(GROUND - 12), f.w - 2, 1);
+      fascia(x, h => this.y(h), sx, f.w, GROUND);
     }
 }
 drawPenthouse(wx: number) { const x = this.x;     // Penthouse window, out of reach until the grapple: the one lit room on the tower's top floor.

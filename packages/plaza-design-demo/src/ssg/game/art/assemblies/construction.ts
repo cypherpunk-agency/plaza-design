@@ -31,6 +31,7 @@ import { drawCharacterFrame } from '../characters/appearance';
 import { type View } from '../core/view';
 import { box, onScreen, O, PAPER, reflect, rng, text } from '../core/primitives';
 import { taped, wallSign } from "../signage/screens";
+import { escapeZigzag, laundryBalcony, sillAc, streetShutter, tenementWindow } from "../buildings/parts";
 
 const R0 = rng;
 const pick = <T,>(r: () => number, a: readonly T[]) => a[Math.floor(r() * a.length)];
@@ -44,7 +45,7 @@ const AWNINGS: [string, string][] = [
 const TARPS = ['#3a4a5e', '#5a3a2a', '#4a5a3a', '#6a2a2a', '#5a4a6a'];
 const WOODS = ['#24130a', '#2a1a0e', '#1e140c', '#2c1c12', '#30200f'];
 const FRUIT = ['#d83a2a', '#f08a2a', '#e8c83a', '#7ab83a', '#8a3a8a', '#e85a6a'];
-const PACKS = ['#d83a2a', '#f08a2a', '#e8c83a', '#5aa83a', '#3a6ad8', '#c83a8a', '#e8e0d0', '#8a3ad8', '#2a2a2a', '#d86a2a'];
+export const PACKS = ['#d83a2a', '#f08a2a', '#e8c83a', '#5aa83a', '#3a6ad8', '#c83a8a', '#e8e0d0', '#8a3ad8', '#2a2a2a', '#d86a2a'];
 
 export type Goods = 'fruit' | 'fish' | 'noodles' | 'dumplings' | 'umbrellas' | 'sims' | 'implants' | 'tech' | 'junk' | 'bottles';
 
@@ -311,11 +312,13 @@ export function booth(x: CanvasRenderingContext2D, v: View, s: StallSpec, visual
 export interface FacadeSpec { x: number; w: number; seed: number; parallax?: number; from?: number; alpha?: number; storey?: number; ground?: boolean; fill?: string }
 interface Win { x: number; w: number; state: number; col: string; ac: boolean; drip: number }
 interface FacadeShape { wins: Win[][]; balcony: number[]; escape: boolean; pipe: number; shutter: number; tag: number; laundry: string[] }
-const FACADES = new WeakMap<object, FacadeShape>();
-const CURTAINS = ['255,170,90', '255,140,70', '255,210,150', '230,120,90', '200,160,110'];
+/** Shapes depend only on the seed and the width; keyed by them so a fresh spec each frame still hits. */
+const FACADES = new Map<string, FacadeShape>();
+export const CURTAINS = ['255,170,90', '255,140,70', '255,210,150', '230,120,90', '200,160,110'];
 
 function facadeShape(f: FacadeSpec): FacadeShape {
-  let s = FACADES.get(f);
+  const key = f.seed + ':' + f.w;
+  let s = FACADES.get(key);
   if (s) return s;
   const r = R0(f.seed * 17 + 3), wins: Win[][] = [], ww = 12 + Math.round(r() * 8), gap = 10 + Math.round(r() * 14);
   for (let k = 0; k < 14; k++) {
@@ -331,7 +334,8 @@ function facadeShape(f: FacadeSpec): FacadeShape {
     wins, balcony: Array.from({ length: 14 }, () => (r() < 0.25 ? Math.round(r() * (f.w - 50)) : -1)), escape: r() < 0.35, pipe: Math.round(r() * f.w),
     shutter: r(), tag: r(), laundry: Array.from({ length: 6 }, () => pick(r, PACKS)),
   };
-  FACADES.set(f, s);
+  if (FACADES.size > 512) FACADES.clear();
+  FACADES.set(key, s);
   return s;
 }
 
@@ -351,43 +355,17 @@ export function facade(x: CanvasRenderingContext2D, v: View, f: FacadeSpec) {
     x.fillStyle = rgba('194,65,12', 0.18 * a); x.fillRect(l, y(h0), f.w, 1);
     for (const w of row) {
       const wx = l + w.x, wy = top + 8, wh = st - 16;
-      if (w.state === 0) { box(x, wx, wy, w.w, wh, '#030201', rgba('194,65,12', 0.3 * a)); }
-      else if (w.state === 2) { const fl = 0.25 + 0.2 * Math.sin(v.t * 0.3 + w.drip) * Math.sin(v.t * 0.07); box(x, wx, wy, w.w, wh, 'rgba(170,190,230,' + fl * a + ')', rgba('194,65,12', 0.3 * a)); }
-      else {
-        box(x, wx, wy, w.w, wh, rgba(w.col, 0.22 * a + 0.05), rgba('194,65,12', 0.35 * a));
-        if (w.state === 4) for (let b = 2; b < wh; b += 3) { x.fillStyle = rgba('0,0,0', 0.35); x.fillRect(wx + 1, wy + b, w.w - 2, 1); }
-        if (w.state === 3) { x.fillStyle = 'rgba(8,4,2,.85)'; x.fillRect(wx + w.w / 2 - 2, wy + wh - 11, 5, 4); x.fillRect(wx + w.w / 2 - 4, wy + wh - 7, 9, 7); }
-        x.fillStyle = rgba(w.col, 0.35 * a); x.fillRect(wx + 1, wy + 1, 3, wh - 2);
-      }
-      x.fillStyle = rgba('194,65,12', 0.3 * a); x.fillRect(wx - 1, wy + wh, w.w + 2, 2);
-      if (w.ac) {
-        box(x, wx + 1, wy + wh + 3, 10, 7, '#2a2622', rgba('200,170,140', 0.4 * a));
-        x.fillStyle = rgba('0,0,0', 0.5); x.fillRect(wx + 3, wy + wh + 5, 6, 1); x.fillRect(wx + 3, wy + wh + 7, 6, 1);
-        const d = (v.t * 0.8 + w.drip * 7) % 60; if (d < 40) { x.fillStyle = rgba('170,210,255', 0.35 * a); x.fillRect(wx + 9, wy + wh + 10 + d, 1, 2); }
-      }
+      tenementWindow(x, wx, wy, w.w, wh, w.state, w.col, a, v.t, w.drip);
+      if (w.ac) sillAc(x, wx, wy + wh, a, v.t, w.drip);
     }
     const bx = S.balcony[k % S.balcony.length];
-    if (bx >= 0) {
-      const by = y(h0) - 2;
-      x.fillStyle = rgba('150,100,60', 0.5 * a); x.fillRect(l + bx, by, 46, 2);
-      for (let i = 0; i <= 46; i += 4) x.fillRect(l + bx + i, by - 10, 1, 10);
-      x.fillRect(l + bx, by - 10, 46, 1);
-      x.strokeStyle = rgba('200,170,140', 0.3 * a); x.beginPath(); x.moveTo(l + bx + 2, by - 16); x.lineTo(l + bx + 44, by - 15); x.stroke();
-      for (let i = 0; i < 4; i++) { x.fillStyle = S.laundry[(i + k) % S.laundry.length]; x.globalAlpha = 0.35 * a + 0.1; x.fillRect(l + bx + 5 + i * 10, by - 15, 6, 6 + (i % 2) * 3); x.globalAlpha = 1; }
-    }
+    if (bx >= 0) laundryBalcony(x, l + bx, y(h0) - 2, a, S.laundry, k);
   }
-  if (S.escape) {
-    const ex = l + f.w * 0.62;
-    x.strokeStyle = rgba('150,100,60', 0.45 * a); x.beginPath();
-    for (let h = base + 44 + st; y(h) > -st; h += st) { x.moveTo(ex, y(h)); x.lineTo(ex + 34, y(h)); x.moveTo(ex + 2, y(h)); x.lineTo(ex + 30, y(h + st)); }
-    x.stroke();
-  }
+  if (S.escape) escapeZigzag(x, y, l + f.w * 0.62, base + 44 + st, st, a);
   if (f.ground !== false) {
     // street level: a rolled shutter with a tag on it, or a dark doorway
     const sw = Math.min(f.w - 16, 60), sx0 = l + 8 + Math.round(S.shutter * (f.w - sw - 16));
-    box(x, sx0, y(base + 36), sw, 36, '#1a1612', rgba('194,65,12', 0.4 * a));
-    for (let k = 3; k < 36; k += 3) { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(sx0 + 1, y(base + 36) + k, sw - 2, 1); }
-    if (S.tag > 0.4) { x.strokeStyle = 'rgba(214,170,60,' + 0.35 * a + ')'; x.beginPath(); x.moveTo(sx0 + 8, y(base + 14)); x.bezierCurveTo(sx0 + 18, y(base + 30), sx0 + 26, y(base + 4), sx0 + 40, y(base + 20)); x.stroke(); }
+    streetShutter(x, y, sx0, base, sw, a, S.tag > 0.4);
   }
 }
 

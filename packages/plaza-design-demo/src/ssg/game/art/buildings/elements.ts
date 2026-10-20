@@ -1,0 +1,126 @@
+/**
+ * The building kit's registered elements (Library › Artwork): `building.front` (a street front at the
+ * player's scale), `building.row` (a row of buildings at a distance, with parallax) and
+ * `building.attachment` (one retrofit piece to hang on any anchor). Anchors on a front (roof, ground,
+ * fascia, storey1.., bay0..) let signs, devices, entrances or a custom balcony attach without the kit
+ * knowing about them; `frontMasks` (masks.ts) hides the windows behind what is attached.
+ */
+import type { Element, Field, Properties, Value } from '../core/composition';
+import type { View } from '../core/view';
+import { addLight } from '../atmosphere/lighting';
+import { adScreen } from '../signage/screens';
+import { PACKS } from '../assemblies/construction';
+import { rng } from '../core/primitives';
+import { BAY_KINDS, FRONT_DEFAULTS, GEAR, ROOFS, SIDES, SKINS, WINDOW_KINDS, frontAnchors, paintFront, shapeOf, wallTop, type FrontSpec, type Rect } from './front';
+import { ROW_SKINS, paintRow, rowLook, type RowSpec } from './row';
+import * as P from './parts';
+
+const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
+const select = (label: string, options: readonly string[], value = options[0]): Field => ({ kind: 'select', label, options: [...options], default: value });
+const isRect = (v: unknown) => Array.isArray(v) && v.length === 4 && v.every(n => typeof n === 'number' && Number.isFinite(n));
+const rects = (label: string): Field => ({ kind: 'json', label, default: [], validate: v => { if (!Array.isArray(v) || !v.every(isRect)) throw new Error(label + ': expected [[left,right,bottom,top], …]'); } });
+
+const frontFields: Record<string, Field> = {
+  width: num('Width', 150, 20, 2000, 1, 'units'), height: num('Height (roof)', 340, 20, 3000, 1, 'units'),
+  storey: num('Storey height', 66, 20, 200, 1, 'units'), ground: num('Ground floor height', 76, 0, 400, 1, 'units'),
+  skin: select('Skin', ['auto', ...SKINS]), windows: select('Windows', ['auto', ...WINDOW_KINDS]),
+  columns: num('Windows per storey (0 auto)', 0, 0, 40),
+  bays: { kind: 'json', label: 'Ground floor: "auto" or [[x, width, kind], …] (' + BAY_KINDS.join(', ') + ')', default: 'auto', validate: v => {
+    if (v === 'auto') return;
+    if (!Array.isArray(v) || !v.every(b => Array.isArray(b) && b.length === 3 && typeof b[0] === 'number' && Number.isFinite(b[0]) && typeof b[1] === 'number' && b[1] > 0 && (BAY_KINDS as readonly string[]).includes(b[2] as string))) throw new Error('Bays: expected "auto" or [[x, width, kind], …]');
+  } },
+  roof: select('Roof', ['auto', ...ROOFS]),
+  gear: { kind: 'json', label: 'Roof gear: "auto" or a list of ' + GEAR.join(', '), default: 'auto', validate: v => {
+    if (v === 'auto') return;
+    if (!Array.isArray(v) || !v.every(g => (GEAR as readonly string[]).includes(g as string))) throw new Error('Roof gear: expected "auto" or a list of ' + GEAR.join(', '));
+  } },
+  escape: select('Fire escape', SIDES), balconies: select('Balconies', ['auto', 'none', 'some']),
+  fascia: { kind: 'boolean', label: 'Shop fascia', default: true },
+  density: num('Retrofit density (AC, pipes, cables, screens)', 0.5, 0, 1, 0.05),
+  lit: num('Rooms with a light', 0.45, 0, 1, 0.05),
+  seed: num('Seed', 1, 0, 1000000000),
+  clear: rects('Keep clear of windows'),
+};
+/** The element's stored props as a front spec. */
+export function frontSpec(p: Properties): FrontSpec {
+  return {
+    w: Number(p.width), h: Number(p.height), storey: Number(p.storey), ground: Number(p.ground), skin: p.skin as FrontSpec['skin'], windows: p.windows as FrontSpec['windows'],
+    columns: Number(p.columns), bays: p.bays as FrontSpec['bays'], roof: p.roof as FrontSpec['roof'], gear: p.gear as FrontSpec['gear'], escape: p.escape as FrontSpec['escape'],
+    balconies: p.balconies as FrontSpec['balconies'], fascia: p.fascia !== false, density: Number(p.density), lit: Number(p.lit), seed: Number(p.seed), clear: (p.clear ?? []) as Rect[],
+  };
+}
+/** A view whose coordinates are a piece's own frame (after translating to its foot), for shared screen kernels. */
+const frameOf = (v: View): View => ({ ...v, sx: x => x, y: h => -h, cam: 0, gy: 0, viewW: 1e5, viewH: 1e5 });
+
+export const buildingFrontElement: Element = {
+  type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', parts: ['backdrop'],
+  fields: frontFields, visualFields: { masks: rects('Windows hidden behind attached signs (resolved)') },
+  bounds: p => { const f = frontSpec(p), top = wallTop(f) + (shapeOf(f).gear.length ? 30 : 0); return { x: -2, h: top, w: f.w + 4, tall: top }; },
+  anchors: p => frontAnchors(frontSpec(p)),
+  draw(ctx, v, p, s, _pass, at) {
+    const f = frontSpec(p), sx = v.sx(at.x), end = sx + f.w * at.scale * at.facing;
+    if (Math.max(sx, end) + 40 < 0 || Math.min(sx, end) - 40 > v.viewW) return;
+    const light = at.parallax === 1 ? (lx: number, lh: number, w: number, hh: number, col: string, kind: 'window' | 'screen') =>
+      addLight(v, { x: at.x + lx * at.scale * at.facing, h: at.h + lh * at.scale, kind, w: w * at.scale, hh: hh * at.scale, r: kind === 'screen' ? 40 : 14, col, a: kind === 'screen' ? 0.45 : 0.6 }) : undefined;
+    ctx.save(); ctx.translate(sx, v.y(at.h));
+    try { paintFront(ctx, f, { t: v.t, lighting: v.lighting, view: frameOf(v), masks: (s.masks ?? []) as Rect[], ...(light ? { light } : {}) }); }
+    finally { ctx.restore(); }
+  },
+};
+
+const rowFields: Record<string, Field> = {
+  width: num('Row length', 2400, 50, 40000, 10, 'units'), seed: num('Seed', 7, 0, 1000000000), parallax: num('Parallax', 0.45, 0, 2, 0.01),
+  storey: num('Storey height (detail scale)', 14, 4, 90, 1, 'units'), minHeight: num('Lowest building', 120, 10, 3000, 1, 'units'), maxHeight: num('Tallest building', 300, 10, 4000, 1, 'units'),
+  minWidth: num('Narrowest building', 40, 6, 1000, 1, 'units'), maxWidth: num('Widest building', 90, 6, 2000, 1, 'units'), gap: num('Gap between buildings', 8, 0, 200, 1, 'units'),
+  low: num('Low walk-ups (share)', 0.3, 0, 1, 0.05), skin: select('Skins', ROW_SKINS), lit: num('Lit windows', 0.25, 0, 1, 0.05),
+  haze: num('Haze (distance)', 0.35, 0, 1, 0.05), signs: num('Signs per building (at most)', 0, 0, 4),
+};
+export const rowSpec = (p: Properties): RowSpec => ({ width: Number(p.width), seed: Number(p.seed), storey: Number(p.storey), minHeight: Number(p.minHeight), maxHeight: Math.max(Number(p.minHeight), Number(p.maxHeight)),
+  minWidth: Number(p.minWidth), maxWidth: Math.max(Number(p.minWidth), Number(p.maxWidth)), gap: Number(p.gap), low: Number(p.low), skin: p.skin as RowSpec['skin'], lit: Number(p.lit), haze: Number(p.haze), signs: Number(p.signs) });
+
+export const buildingRowElement: Element = {
+  type: 'building.row', version: 1, label: 'Building row (kit, distance)', category: 'environment', coordinates: 'world', parts: ['backdrop'], fields: rowFields,
+  bounds: (p, _s, c) => {
+    const par = Number(p.parallax), at = c?.placement, shift = at && c ? c.view.cam * (at.parallax - par) / (at.scale * at.facing) : 0, tall = Number(p.maxHeight) + 40;
+    return { x: shift, h: tall, w: Number(p.width), tall };
+  },
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
+  draw(ctx, v, p, _s, _pass, at) {
+    const s = rowSpec(p), par = Number(p.parallax);
+    paintRow(ctx, s, rowLook(s, v.t, v.lighting), dx => v.sx(at.x + dx, par), v.y(at.h), v.viewW);
+  },
+};
+
+export const ATTACHMENTS = ['ac', 'pipe', 'escape', 'balcony', 'screen', 'scanner', 'conduit', 'planter', 'tank', 'vent', 'dish'] as const;
+type Attachment = typeof ATTACHMENTS[number];
+const attachmentBox = (k: Attachment, w: number, h: number) => k === 'ac' ? { x: -7, h: 18, w: 14, tall: 28 } : k === 'pipe' ? { x: -1, h, w: 5, tall: h }
+  : k === 'escape' ? { x: 0, h: h + 10, w, tall: h + 44 } : k === 'balcony' ? { x: 0, h: 18, w: 46, tall: 20 } : k === 'screen' ? { x: -w / 2 - 4, h: h + 4, w: w + 8, tall: h + 8 }
+  : k === 'scanner' ? { x: -3, h: 10, w: 7, tall: 16 } : k === 'conduit' ? { x: -2, h, w: w + 4, tall: h + 10 } : k === 'planter' ? { x: 0, h: 10, w, tall: 10 }
+  : { x: -w / 2 - 2, h: w + 18, w: w + 4, tall: w + 18 };
+export const buildingAttachmentElement: Element = {
+  type: 'building.attachment', version: 1, label: 'Building attachment (kit)', category: 'architecture', parts: ['backdrop'],
+  fields: {
+    kind: select('Piece', ATTACHMENTS), width: num('Width', 40, 2, 400, 1, 'units'), height: num('Height (pipe, escape, screen, riser)', 120, 2, 3000, 1, 'units'),
+    storey: num('Storey height (fire escape)', 66, 20, 200, 1, 'units'), seed: num('Seed', 1, 0, 1000000000), color: { kind: 'color', label: 'Body colour (roof gear)', default: '#0e0806' },
+    mask: { kind: 'json', label: 'Hide front windows [left,right,bottom,top]', default: [], validate: (v: Value) => { if (!Array.isArray(v) || ![0, 4].includes(v.length) || (v.length === 4 && !isRect(v))) throw new Error('Invalid attachment mask'); } },
+  },
+  bounds: p => attachmentBox(p.kind as Attachment, Number(p.width), Number(p.height)),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: 0, h: Number(p.height), role: 'mount' } }),
+  draw(ctx, v, p) {
+    const k = p.kind as Attachment, w = Number(p.width), h = Number(p.height), seed = Number(p.seed), y = (q: number) => -q, fill = String(p.color);
+    if (k === 'ac') P.acUnit(ctx, y, 0, 0);
+    else if (k === 'pipe') P.wallPipe(ctx, 0, y(h), 0);
+    else if (k === 'escape') P.fireEscape(ctx, dx => dx, y, w, 0, Number(p.storey), y(h), w - 7);
+    else if (k === 'balcony') { const r = rng(seed * 11 + 5); P.laundryBalcony(ctx, 0, -2, 1, Array.from({ length: 6 }, () => PACKS[Math.floor(r() * PACKS.length)]), seed); }
+    else if (k === 'screen') adScreen(ctx, frameOf(v), { x: w / 2, h: 0, w, tall: h, mount: 'wall', seed, phase: seed * 13 });
+    else if (k === 'scanner') P.doorScanner(ctx, 0, y(5), v.t, seed);
+    else if (k === 'conduit') P.conduit(ctx, 0, w, 0, 3, 26, Math.round(w / 2), y(h), seed);
+    else if (k === 'planter') P.planter(ctx, 0, 0, w, seed);
+    else if (k === 'tank') P.roofTank(ctx, 0, 0, w, fill);
+    else if (k === 'vent') P.roofVent(ctx, 0, 0, Math.max(6, Math.min(h, 40)), fill);
+    else P.roofDish(ctx, 0, 0, Math.max(4, Math.round(w / 4)), 1, fill);
+  },
+};
+
+export const buildingElements: Element[] = [buildingFrontElement, buildingRowElement, buildingAttachmentElement];
+export { FRONT_DEFAULTS };

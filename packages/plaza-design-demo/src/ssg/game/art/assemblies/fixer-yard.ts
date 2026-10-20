@@ -1,6 +1,7 @@
 /** Pure yard drawing kernels. Placement and immutable animation state are supplied by the scene adapter. */
 import type { View } from '../core/view';
 import { neonPlate } from '../signage/kit';
+import { acUnit, fireEscape, wallTexture } from '../buildings/parts';
 export interface YardVisual {layer:'all'|'world'|'devices';highlight:string;pan:number;gateOpen:boolean;gateAllowed:boolean;held:boolean;hookVisible:boolean;hookX:number;parcel:[number,number]|null;night:number}
 export interface YardWall {width:number;roof:number;brick:boolean;cols:number[];from:number;seed:number}
 export interface YardArtworkInputs {x:number;width:number;height:number;endHeight:number;roof:number;label:string;wall?:YardWall;visual:YardVisual}
@@ -31,22 +32,13 @@ const b=inputs.wall!,i=b.seed;
     const l = sx(inputs.x), r = sx((inputs.x+b.width)), top = b.roof;
     if (r < 0 || l > viewW) return;
     x.fillStyle = b.brick ? '#0b0503' : '#090604'; x.fillRect(l, top, r - l, gy - top);
-    if (b.brick) {
-      x.fillStyle = 'rgba(194,65,12,.07)';
-      for (let yy = top + 4; yy < gy; yy += 4) x.fillRect(l, yy, r - l, 1);
-      // joints only in a few patches, so the wall stays calm
-      x.fillStyle = 'rgba(194,65,12,.13)';
-      for (let k = 0; k < 3; k++) {
-        const px = sx(inputs.x + 6 + Math.floor(hash(i * 7 + k) * ((inputs.x+b.width) - inputs.x - 40)));
-        const py = top + 4 + Math.floor((hash(i * 13 + k) * (gy - top - 30)) / 4) * 4;
-        for (let row = 0; row < 4; row++) for (let jx = (row % 2) * 4; jx < 28; jx += 8) x.fillRect(px + jx, py + row * 4 + 1, 1, 3);
-      }
-    } else {
-      // cast concrete: panel seams
-      x.fillStyle = 'rgba(255,217,165,.04)';
-      for (let h = 35; y(h) > top; h += 35) x.fillRect(l, y(h), r - l, 1);
-      for (let wx = inputs.x + 48; wx < (inputs.x+b.width) - 4; wx += 48) x.fillRect(sx(wx), top, 1, gy - top);
+    const patches: [number, number][] = [], seamY: number[] = [], seamX: number[] = [];
+    if (b.brick) for (let k = 0; k < 3; k++) patches.push([sx(inputs.x + 6 + Math.floor(hash(i * 7 + k) * ((inputs.x+b.width) - inputs.x - 40))), top + 4 + Math.floor((hash(i * 13 + k) * (gy - top - 30)) / 4) * 4]);
+    else {
+      for (let h = 35; y(h) > top; h += 35) seamY.push(y(h));
+      for (let wx = inputs.x + 48; wx < (inputs.x+b.width) - 4; wx += 48) seamX.push(sx(wx));
     }
+    wallTexture(x, b.brick, l, r, top, gy, patches, seamY, seamX);
     x.strokeStyle = 'rgba(194,65,12,.3)'; x.strokeRect(l + 0.5, top + 0.5, r - l - 1, gy - top);
     x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(l, top, r - l, 2);
 
@@ -104,20 +96,7 @@ const {sx,y}=v;
 
   // fire escape on the concrete house: landings one storey apart, stairs between, a drop ladder
   const fe0=inputs.x,fe1=inputs.x+88,feTop=inputs.roof+6;
-  x.lineWidth = 1;
-  for (let h = 86, i = 0; y(h + 10) >= feTop; h += STOREY, i++) {
-    const l = sx(fe0), w = fe1 - fe0;
-    x.fillStyle = 'rgba(194,65,12,.7)'; x.fillRect(l, y(h), w, 2);
-    x.fillStyle = 'rgba(194,65,12,.4)'; x.fillRect(l, y(h + 10), w, 1);
-    for (let xx = 0; xx <= w; xx += 6) x.fillRect(l + xx, y(h + 10), 1, 10);
-    if (y(h + STOREY + 10) >= feTop) {
-      const a = i % 2 ? fe0 + 10 : fe1 - 10, b = i % 2 ? fe0 + 48 : fe1 - 48;
-      x.strokeStyle = 'rgba(194,65,12,.5)'; x.beginPath(); x.moveTo(sx(a) + 0.5, y(h)); x.lineTo(sx(b) + 0.5, y(h + STOREY)); x.stroke();
-    }
-  }
-  x.fillStyle = 'rgba(194,65,12,.45)';
-  x.fillRect(sx(inputs.x + 81), y(86), 1, 34); x.fillRect(sx(inputs.x + 86), y(86), 1, 34);
-  for (let h = 54; h < 86; h += 5) x.fillRect(sx(inputs.x + 81), y(h), 6, 1);
+  fireEscape(x, dx => sx(fe0 + dx), y, fe1 - fe0, 86, STOREY, feTop, 81);
 
 
 }
@@ -139,10 +118,7 @@ function air_conditioner(x:CanvasRenderingContext2D,v:View){
 const {sx,y}=v;
 
 const wx=inputs.x,h=inputs.height;
-    const c = sx(wx);
-    x.fillStyle = '#140a04'; x.fillRect(c - 7, y(h + 10), 14, 10); x.strokeStyle = 'rgba(194,65,12,.5)'; x.strokeRect(c - 6.5, y(h + 10) + 0.5, 13, 9);
-    x.fillStyle = 'rgba(194,65,12,.3)'; for (let k = -4; k <= 4; k += 3) x.fillRect(c + k, y(h + 8), 1, 6);
-    x.fillStyle = 'rgba(194,65,12,.08)'; x.fillRect(c - 1, y(h), 2, 18);
+    acUnit(x, y, sx(wx), h);
 
 }
 
