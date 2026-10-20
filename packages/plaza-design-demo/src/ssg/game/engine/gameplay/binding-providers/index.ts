@@ -2,6 +2,7 @@ import type {Value} from '../../../art/core/composition';
 import type {BindingContext} from '../binding-sources';
 import {mallProvider} from './mall';
 import {marketBindings} from './market';
+import {laundry} from './laundry';
 /**
  * Registered binding providers: a source name `<provider>.<key>` asks the provider for `key`.
  * A provider works out everything it offers once per frame from the scene as it stands (its
@@ -18,4 +19,5 @@ export const BINDING_PROVIDERS:Readonly<Record<string,BindingProvider>>={
  cue:cueProvider,
  shift:shiftProvider,
  market:marketBindings,
+ laundry,
 };

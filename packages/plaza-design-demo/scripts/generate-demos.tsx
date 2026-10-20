@@ -28,7 +28,6 @@ import { BEACH, CAPSULE, DOWNTOWN, ENGINE, LAUNDROMAT, LOGIC, MOTH, NET, YARD } 
 import { CAPSULE_RULES } from "../src/ssg/game/scenes/capsule/rules";
 import { MOTH_RULES } from "../src/ssg/game/scenes/moth/rules";
 import { BEACH_RULES } from "../src/ssg/game/scenes/beach/rules";
-import { LAUNDROMAT_RULES } from "../src/ssg/game/scenes/laundromat/rules";
 import { checkGame } from '../src/ssg/game/data/check';
 import { YARD_RULES } from "../src/ssg/game/scenes/yard/effects";
 import { DOWNTOWN_RULES_SHAPE } from "../src/ssg/game/scenes/downtown/rules";

@@ -4,8 +4,7 @@ import {ConversationSession} from '../../src/ssg/game/engine/gameplay/conversati
 import {talkTo} from '../../src/ssg/game/runtime/characters';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {folderSceneDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
-const shopScene=()=>folderSceneDefinition('shop',FOLDER_SOURCES.shop),libraryScene=()=>folderSceneDefinition('library',FOLDER_SOURCES.library);
-import {laundromatScene} from '../../src/ssg/game/scenes/laundromat';
+const shopScene=()=>folderSceneDefinition('shop',FOLDER_SOURCES.shop),libraryScene=()=>folderSceneDefinition('library',FOLDER_SOURCES.library),laundromatScene=()=>folderSceneDefinition('laundromat',FOLDER_SOURCES.laundromat);
 import type {GameplayDefinition,GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 import {LIBRARY} from '../../src/ssg/game/data';
 for(const scene of [shopScene(),libraryScene(),laundromatScene()]){
