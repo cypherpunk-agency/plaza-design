@@ -163,7 +163,7 @@ async function start() {
       const sceneDistrict = new Map((city?.PLACES ?? []).flatMap(p => p.scenes.map(scene => [scene, p.district] as const)));
       return { list: (city?.DISTRICTS ?? []).map(d => ({ id: d.id, name: d.name })), of: scene => sceneDistrict.get(scene) };
     },
-    assetPreview: createAssetPreview(art, native),
+    assetPreview: createAssetPreview(art, native, (canvas, request) => sequences.render(canvas, request)),
 
     validateDocument(document,documents) {
       if(document.id==='companion-gameplay'){validateCompanionGameplay(document.value);pendingRegistry(new Map(documents.map(d=>[d.id,d.value])));return;}

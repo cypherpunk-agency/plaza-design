@@ -28,7 +28,33 @@ export function isolateArtwork(registry: ArtRegistry, composition: Composition, 
     state: Object.fromEntries(selected.map(row => [row.instance.id, row.state])) } };
 }
 
-export function createAssetPreview(registry: ArtRegistry, native: { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult }) {
+/** Moments sampled for a cutscene piece: the first frame where it has a box on screen is shown. */
+const SEQUENCE_TIMES = [0, 1, 2.5, 4, 6, 9, 12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 78];
+/** The opening composition plays as three sequences; its far town and lamps appear in the later ones. */
+const OPENING_SEQUENCES = ['glide', 'rise', 'title'];
+
+/**
+ * Cutscene pieces are drawn by their sequence's own renderer as one picture, so they cannot be painted alone.
+ * The preview renders the sequence frame and shows the piece's box cut from it, with whatever is behind it.
+ */
+function sequenceCutout(canvas: HTMLCanvasElement, render: (canvas: HTMLCanvasElement, request: PreviewRequest) => PreviewResult | null, composition: Composition, instance: string, settings: Pick<PreviewRequest, 'reduced' | 'environment'>): AssetPreviewReport | string {
+  const frame = document.createElement('canvas'); frame.width = 960; frame.height = 540;
+  const ids = composition.scene === 'sequence-opening' ? OPENING_SEQUENCES : [undefined];
+  for (const sequenceId of ids) for (const time of SEQUENCE_TIMES) {
+    let result: PreviewResult | null;
+    try { result = render(frame, { composition, time, sequenceId, reduced: settings.reduced, overlays: false, selectedId: instance, environment: { ...settings.environment, renderScale: 1 } }); } catch { break; }
+    if (!result) return 'This sequence has no editor renderer. Open this usage to inspect it.';
+    const box = result.bounds.find(b => b.id === instance); if (!box) continue;
+    const x0 = Math.max(0, Math.floor(box.x)), y0 = Math.max(0, Math.floor(box.y)), x1 = Math.min(frame.width, Math.ceil(box.x + box.width)), y1 = Math.min(frame.height, Math.ceil(box.y + box.height));
+    if (x1 - x0 < 2 || y1 - y0 < 2) continue;
+    const ctx = canvas.getContext('2d')!, scale = Math.min(canvas.width / (x1 - x0), canvas.height / (y1 - y0), 6), w = (x1 - x0) * scale, h = (y1 - y0) * scale;
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(frame, x0, y0, x1 - x0, y1 - y0, Math.round((canvas.width - w) / 2), Math.round((canvas.height - h) / 2), Math.round(w), Math.round(h));
+    return { message: `Cut from the ${sequenceId ?? composition.scene.replace('sequence-', '')} sequence at ${time} s, with what is drawn behind it. Open this usage to see it move.` };
+  }
+  return 'Not on screen in the sampled moments of its sequence. Open this usage to find it on the timeline.';
+}
+
+export function createAssetPreview(registry: ArtRegistry, native: { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult }, sequence?: (canvas: HTMLCanvasElement, request: PreviewRequest) => PreviewResult | null) {
   return (canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport => {
     const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Canvas 2D is unavailable');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -39,7 +65,7 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
     if (usage) {
       const source = documents.find(doc => doc.id === usage.document && doc.kind === 'composition'); if (!source) throw new Error('Source composition is unavailable');
       const document = source.value as Composition;
-      if (document.scene.startsWith('sequence-')) return 'Requires cinematic controller context. Open this usage to inspect it in the native sequence preview.';
+      if (document.scene.startsWith('sequence-')) return sequence ? sequenceCutout(canvas, sequence, document, usage.instance, settings) : 'Requires cinematic controller context. Open this usage to inspect it in the native sequence preview.';
       const scratch = documentCanvas(canvas);
       const focused = centerNativePreview(native.render, scratch, { ...settings, composition: document, overlays: false }, result => {
         if (!result.artwork) return undefined;
