@@ -33,16 +33,14 @@ Their ordinary content, existing controller parameters and world/story links use
 responses, native action fields and exit routing in Logic. Touch-specific arrival pages are editable.
 Actor and ordinary-content creation/deletion/rebinding, controller forms and world editing are
 implemented, with separate evidence for content, controllers and world links. All19 scenes have
-native Play; pending edits, Undo/private snapshot isolation and Reset are checked. Whole-goal
-editor, preservation and cleanup acceptance remains separate. See
-[the active execution ledger](../ENGINE-CONSOLIDATION-STATUS.md).
+native Play; pending edits, Undo/private snapshot isolation and Reset are checked. All19 editor, preservation and cleanup gates are accepted. See
+[the completion evidence](../ENGINE-CONSOLIDATION-STATUS.md).
 
 Native device editing now checks actual controller/source dependencies rather than protecting
 every original device or noun. Native targets and presentation cues support collection editing
 within their registered capabilities. The actor inspector also exposes reaction and appearance
 overrides; deleting optional source settings keeps them deleted. World access policies bind map
-admission and gate visuals to actual scene-exit permissions. These changes have focused source
-Save/native runtime evidence; final editor integration and removal acceptance remains separate.
+admission and gate visuals to actual scene-exit permissions. These changes have source Save/native runtime and final integration/removal acceptance evidence.
 
 Historical S0–S13 evidence remains in [the scene-system ledger](../SCENE-SYSTEM-STATUS.md) and
 [stretch evidence](../docs/reference/SCENE-SYSTEM-STRETCH-EVIDENCE.md).

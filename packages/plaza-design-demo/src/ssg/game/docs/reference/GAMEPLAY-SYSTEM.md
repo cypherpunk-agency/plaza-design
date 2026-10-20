@@ -1,6 +1,10 @@
 # Shared gameplay: commands, events and conversations
 
-Implemented pilot, 2026-10-17; persistent commerce and scoped conversation consolidation, 2026-10-18. This is a foundation, not completion of the full game editor.
+Current usage: [ENGINE-HANDBOOK.md](./ENGINE-HANDBOOK.md). All19-scene completion is recorded in
+[FINAL-INTEGRATION-ACCEPTANCE.md](./FINAL-INTEGRATION-ACCEPTANCE.md). The dated pilot sections
+below describe historical scopes and examples, not current missing scene/editor coverage.
+
+Historical implementation: pilot,2026-10-17; persistent commerce and scoped conversation consolidation, 2026-10-18. This is a foundation, not completion of the full game editor.
 The existing device evaluator, render pipeline and player-save format remain in use.
 
 ## Current scalar ownership (2026-10-19)
@@ -65,8 +69,8 @@ changed in this implementation.
 | `authoring/gameplay-authoring.ts` | Typed dialogue, choice, condition, action and reaction editing using ComposerModel history |
 
 New mechanics can later register typed operations rather than becoming executable code inside
-documents. Travel, access, network reach, cutscenes and the rest of the campaign have not yet
-been moved into this kernel. Device guards and permissions continue to be enforced by their
+documents. At the original pilot checkpoint, travel, access, network reach, cutscenes and the rest of the
+campaign had not yet been integrated. Current ownership is described in the handbook. Device guards and permissions continue to be enforced by their
 existing evaluator; this pilot does not fix the separate lockout finding in the hacking review.
 
 ## Supported document vocabulary

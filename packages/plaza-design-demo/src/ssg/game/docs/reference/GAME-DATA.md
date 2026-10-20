@@ -1,5 +1,10 @@
 # ACCESS DENIED: game data
 
+For current engine ownership and extension recipes, start with [ENGINE-HANDBOOK.md](./ENGINE-HANDBOOK.md)
+and [agent instructions](../../AGENTS.md). This device-format reference includes historical
+implementation/design discussion; current types, prospective validators and the handbook take
+precedence over old pilot paths or descriptions of removed code.
+
 Every place in the game is a **scene**, and every scene runs on the engine (`game/engine/`):
 Puzzle scenes (including the train car, library, laundromat and stacks) have data files;
 market, shop, mall, harbor and the metro platforms currently have no devices. Which place and
