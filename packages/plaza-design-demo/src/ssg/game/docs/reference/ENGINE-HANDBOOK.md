@@ -131,7 +131,7 @@ This is a focused selection guide, not a request to rerun every historical fixtu
 | Common scalar ownership/current save | check-common-state-owner.mts; check-all-game-persistence.mts |
 | Immediate persistence triggers | check-persist-source.mts |
 | New ordinary scene and routes | check-scene-catalogue.mts; check-all-scene-world-routes.mts |
-| Layers/scene appearance | check-scene-layers.mts and the applicable immutable raster/controller fixtures |
+| Layers/scene appearance | check-scene-layers.mts, check-all-scene-layers.mts (every scene layered, spawn = player row, paint parity with pass format) and the applicable immutable raster/controller fixtures |
 | Communication behavior | check-communication-review.mts; check-communication-callsite-clocks.mts |
 | Compact demo/isolation | check-demo-district.mts |
 | Public editor packaging | check-public-editor-build.mts |
