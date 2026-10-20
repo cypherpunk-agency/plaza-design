@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `571ac3e` on main and production.
-Homepage jobs39379509408/39379509537 and design job39379509549 succeeded.
+Last verified deployment: `47c4b95` on main and production.
+Homepage jobs39381123804/39381123569 and design job39381123817 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -20,7 +20,7 @@ This source capture is not evidence of pixel parity or playable outcomes.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
-| G0 | IN PROGRESS | Immutable451-file capture verified; original game-subtree dirty diff reconstructed with explicit historical timing limits. BASELINE-RECONCILIATION.md records recovered evidence; final inventory reconciliation remains open |
+| G0 | PASS | User approved retrospective audit2026-10-20; all451 captured hashes, exact19 scene snapshots/inventory,66 conversation IDs,15 flash producers and other retired overlays, controller/callback destinations and six workload manifests verified. Chronology/subtree limits remain explicit; BASELINE-RECONCILIATION.md |
 | G1 | PASS | Retired producer/source routing audit and actual Game/Host/Panels/Schematic/history/causal checks; exact scope and source identity in docs/reference/COMMUNICATION-ACCEPTANCE.md |
 | G2 | PASS | Actual readable-clock, reduced-motion/covered-screen, bounded priority/cancellation/guidance and on/off-screen device checks; COMMUNICATION-ACCEPTANCE.md |
 | G3 | PASS | Exact frozen66-row corpus migrated, zero legacy rows,58 actor/17 bot bindings; original variants/effects/permissions/cursor/retry/rollback checks; COMMUNICATION-ACCEPTANCE.md |
@@ -3142,3 +3142,87 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   diagnostic. Original-baseline status remains FAIL solely for the existing Mall animation
   frame. Matrix/status acceptance metadata was updated after that runtime raster capture;
   no rendering/layer/object implementation changed and no baseline was overwritten.
+
+
+## 2026-10-20: current rule-surface audit and Pixel predicate removal
+
+- Reconciled the current registered SceneRules surface against all19 native scenes, including
+  the Downtown/Stacks player-bound rule factories:51 callable entries with explicit simulation,
+  presentation, canonical-read, validation or ordinary-gap classifications. The check emits source
+  identity and callable hashes. `CONTROLLER-MIGRATION.json` is now explicitly historical, rather
+  than presenting already-migrated fields as current work. See NATIVE-EXECUTION-AUDIT.json and
+  ORDINARY-CONTROLLER-CONSOLIDATION.md. This audit does not cover every runtime/composition/panel
+  body and does not sign G0/G8/G9/G13.
+- Deleted Capsule's ordinary native `pixelOnRouter` predicate. Its existing ID now resolves through
+  a shared source select over canonical capsule.pixelAt; all existing device bindings are retained.
+  No rendering, layer, object or composition implementation changed.
+- PASS:1,728 immutable-original thermal/boot/wire/Pixel/door/goal histories; all3 Pixel positions
+  in actual router status and temperature actions;108 router online histories;12 shared-off cases;
+  12 kettle timelines; strict controller validation; package TypeScript; both production builds.
+- Actual typed query edit changes native status in pending and freshly bundled shipping SCENES;
+  protected paired Save, invalid-reference atomic rejection and exact-byte Undo PASS.
+  Latest Save evidence: `.scene-system/capsule-workflow-save-zbJ6qM`.
+- Source-bound inventory report: `.scene-system/controller-inventory-p1vykb/evidence.json`,
+  source `sha256:184454b78adb72550f74842786440a22fab8ed39911eb9c1e58568f6a7362042`.
+  Four ordinary gaps remain within this bounded surface: Capsule reboot response dispatch,
+  Train where/haltWhere text selection, Sandbox night predicate. This is not all remaining goal work.
+- Build outputs: app-SIEFRVFR.js, play-SRV437B5.js, play-429fe2af05f716a0.html;
+  public editor97 documents/128 references. Only the known Vite large-chunk advisory remains.
+  Full raster/state/save acceptance remains G12 work; no frozen baseline was changed.
+- Six of14 gates remain accepted (G1/G2/G3/G5/G6/G11). Goal remains ACTIVE.
+
+Combined-source verification after fast-forwarding the user's editor changes at eb3c095:
+both builds and the same inventory/typed Save checks PASS. Current inventory raw report:
+`.scene-system/controller-inventory-XHS4Mx/evidence.json`, source
+`sha256:61268ed613e301fcc02f6e26bd2b0aec206427e90b4f8216d6db05c20bba7b21`.
+Current Save evidence: `.scene-system/capsule-workflow-save-eDGnpc`.
+Combined editor app-7PAWGMDI.js / play-SRV437B5.js / play-80d345ad82462556.html,
+98 documents/129 references. The earlier checkpoint artifacts remain scoped to their own source.
+
+
+## 2026-10-20: Capsule response ownership completed
+
+Thermal reboot now emits a declared physical input; its source command/event/reply owns wording
+and speaker. Obsolete controller text/router-response fields removed. The original1,728 histories,
+108 router timelines, current controller controls and protected Save/bundle/fresh shipping/Undo
+checks PASS; both builds and TypeScript PASS. Sources/evidence are recorded in
+ORDINARY-CONTROLLER-CONSOLIDATION.md. Inventory report controller-inventory-PT3pVm identifies
+source `sha256:ccbaef302169cb849196fad646c44d5e9943f7b1859e863615111bfbdd6b8c00`.
+No whole-goal gate promoted. Next work is a combined authoring/isolation acceptance audit using
+existing evidence, with new implementation/checks only for demonstrated missing requirements.
+
+
+## 2026-10-20: combined authoring/isolation audit
+
+G0 accepted under the explicitly revised retrospective condition; see BASELINE-RECONCILIATION.md.
+Fixed two integration gaps in the retained Scene-stage Play mount: source/history edits now refresh
+its fixture controls, and the next explicit Play/Reset takes current document values. A running
+private Game retains its own snapshot. No rendering, layer, object or composition implementation changed.
+
+Actual packaged UI: all19 native scene Play/Stop sessions PASS, including13 starting-state creations.
+Pending Capsule spawn import retained the running466 position; Reset used333. Undo retained the
+running333 then Reset used466; Redo/Reset used333. Every Stop removed its frame; no warning/error logs.
+Source-bound observations: `.scene-system/authoring-stage-audit/observations.json`;
+app-YD4F5ROM.js / play-H3WFLTI2.js / play-d7f0f8908a80ebb9.html, source9f895b8a67cf.
+
+Boundary checks PASS: private/native storage adapters, startup bootstrap/CSP (run-JfY4iv), public
+bundle validation and actual ComposerModel import/history, Test District save/slot/resume sentinels,
+protected Save/conflict/rollback/crash recovery/path/loopback auth, two connected new scenes without
+TS registration (scene-catalogue-check/run-lBKy88), paired source route/command Save/reload/Undo and
+partial-pair crash recovery (contextual-source-save/run-546Ij5). The Windows symlink fixture required
+an unsandboxed retry; the check then passed unchanged. TypeScript and homepage packaging PASS.
+G4/G10 remain open for complete typed-control/source coverage reconciliation, rather than being
+promoted from startup and generic document boundaries alone. Seven of14 gates are accepted.
+
+The same packaged UI created stage-audit-room through World/Scenes and ran its native Game at
+x120 without TypeScript registration. Creation Undo removed the scene and Redo restored it;
+Stop left zero frames. Evidence appended to observations.json. The created room and fixture edits
+were confined to the disposable public-editor test session. Both production builds PASS.
+
+Final Scene-stage lifecycle correction: Undo removing the actively played authored scene now
+stops/disposes its Play mount and returns to a valid existing composition. Composer disposal
+also releases the separately retained stage handle. Actual final-build regression at
+app-CW5KHE4L.js returns to Library with zero frames, Play available and no browser warnings/errors.
+The earlier all19/source-edit observations retain their own9f895b8a67cf checkpoint identity;
+observations.json records final-removal identity and rejected attempts separately. No raster,
+actor, layer or object implementation changed in this batch.
