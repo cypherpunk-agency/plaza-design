@@ -23,7 +23,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
  const d=validateSceneDocument(scene,gameplay,{manifest:true,actors:withActors}),doc=art.validate(composition);
  if(!d.manifest)throw new Error('Declared scene requires manifest bindings');
- if(d.exits?.some(e=>e.engine||e.action))throw new Error('Transport and engine exits require their registered controller');
+ if(d.exits?.some(e=>e.engine||e.action&&e.action!=='taxi'))throw new Error('Transport and engine exits require their registered controller');// a taxi exit is the runtime's own (hail the city taxi)
  if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)))throw new Error('Exit sets an undeclared gameplay flag');
  // artwork binds only to sources the engine works out (binding-sources.ts)
  if(!withActors&&JSON.stringify(doc.instances).match(/"actor\.[^"]+\.pose"/))throw new Error('Actor artwork requires scene.actors source definitions');

@@ -105,7 +105,7 @@ export const SETS: SetEntry[] = [
       'scenes/harbor/index.ts, scenes/stacks/scene.ts, scenes/stations.ts (harbor): seaCols and sunPath on the water',
       'scenes/train/index.ts: the car\'s windows and the sky over its roof (the train home rides into the dawn)',
       'scenes/capsule/scene.ts: the window (drawPane), the shaft when the blinds are up (windowShaft), the light leaking through the slats',
-      'scenes/moth/scene.ts, scenes/laundromat/scene.ts, scenes/library/scene.ts, scenes/shop/index.ts: the window\'s sky and the sun\'s shaft; scenes/mall/index.ts: the skylight',
+      'scenes/moth/scene.ts, scenes/laundromat/scene.ts, scenes/library/scene.ts, scenes/shop/index.ts: the window\'s sky and the sun\'s shaft; the mall folder scene: the skylight',
       'runtime/game.ts drawWindow: dark panes reflect the sky by day (glass)',
     ],
   },

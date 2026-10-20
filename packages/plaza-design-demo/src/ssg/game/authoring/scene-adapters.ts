@@ -13,7 +13,6 @@ import {validateShiftGameplay} from '../scenes/harbor-shift/gameplay-contract';
 import {validateMarketScene} from '../scenes/market/scene-document';
 import {validateMarketGameplay} from '../scenes/market/gameplay';
 import {content as harborContent} from '../scenes/harbor/scene-document';
-import {validateMallScene,validateMallGameplay} from '../scenes/mall/scene-document';
 import {validateBeachGameplay} from '../scenes/beach/gameplay';
 import {content as beachContent} from '../scenes/beach/scene-document';
 import {content as stacksContent} from '../scenes/stacks/scene-document';
@@ -44,8 +43,6 @@ import { harborShiftScene, HARBOR_SHIFT_ACTORS, SHIFT_USES } from '../scenes/har
 import { harborShiftEnvironment, validateHarborShiftComposition } from '../scenes/harbor-shift/composition';
 import { marketScene, marketFrameEnvironment } from '../scenes/market';
 import { validateMarketComposition } from '../scenes/market/composition';
-import { mallScene, mallFrameEnvironment } from '../scenes/mall';
-import { validateMallComposition } from '../scenes/mall/composition';
 import { metroScene } from '../scenes/metro';
 import { validateMetroComposition } from '../scenes/metro/composition';
 import { trainScene } from '../scenes/train';
@@ -76,7 +73,6 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
   harbor: { validate: validateHarborComposition, definition: harborScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=harborContent.validateGameplay(documents.get('harbor-gameplay'));return harborScene(doc,state,options,harborContent.validateScene(documents.get('harbor-scene'),gameplay),gameplay);} },
   harborShift: { validate: validateHarborShiftComposition, definition: harborShiftScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateShiftGameplay(documents.get('harbor-shift-gameplay'));return harborShiftScene(doc,state,options,validateShiftScene(documents.get('harbor-shift-scene'),gameplay),gameplay);}, environment: (doc, v) => harborShiftEnvironment(doc, v, HARBOR_SHIFT_ACTORS, SHIFT_USES) },
   market: { validate: validateMarketComposition, definition: marketScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateMarketGameplay(documents.get('market-gameplay'));return marketScene(doc,state,options,gameplay,validateMarketScene(documents.get('market-scene'),gameplay));}, environment: (doc, v, e) => marketFrameEnvironment(v, e, doc) },
-  mall: { validate: validateMallComposition, definition: mallScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateMallGameplay(documents.get('mall-gameplay'));return mallScene(doc,state,options,validateMallScene(documents.get('mall-scene'),gameplay),gameplay);}, environment: (doc, v, e) => mallFrameEnvironment(v, e, doc) },
   metro: { validate: validateMetroComposition, definition: metroScene },
   train: { validate: validateTrainComposition, definition: trainScene,pendingDefinition:(doc,state,options,documents)=>{const gameplay=trainContent.validateGameplay(documents.get('train-gameplay'));return trainScene(doc,state,options,trainContent.validateScene(documents.get('train-scene'),gameplay),gameplay,documents.get('train-devices') as import('../data/types').SceneData|undefined);} },
   downtown: {

@@ -28,9 +28,6 @@ import s9scene from './market/scene.json';
 import s10data from './laundromat/devices.json';
 import s10art from './laundromat/composition.json';
 import s10scene from './laundromat/scene.json';
-import s12data from './mall/devices.json';
-import s12art from './mall/composition.json';
-import s12scene from './mall/scene.json';
 import s13data from './metro/devices.json';
 import s13art from './metro/composition.json';
 import s13scene from './metro/scene.json';
@@ -60,7 +57,6 @@ export const nativeDeviceSources:Record<string,{devices:SceneData;composition:Co
  stacks:{devices:s7data as unknown as SceneData,composition:s7art as unknown as Composition,scene:s7scene as unknown as SceneDocument},
  market:{devices:s9data as unknown as SceneData,composition:s9art as unknown as Composition,scene:s9scene as unknown as SceneDocument},
  laundromat:{devices:s10data as unknown as SceneData,composition:s10art as unknown as Composition,scene:s10scene as unknown as SceneDocument},
- mall:{devices:s12data as unknown as SceneData,composition:s12art as unknown as Composition,scene:s12scene as unknown as SceneDocument},
  metro:{devices:s13data as unknown as SceneData,composition:s13art as unknown as Composition,scene:s13scene as unknown as SceneDocument},
  galleriaStation:{devices:s14data as unknown as SceneData,composition:s14art as unknown as Composition,scene:s14scene as unknown as SceneDocument},
  harborStation:{devices:s15data as unknown as SceneData,composition:s15art as unknown as Composition,scene:s15scene as unknown as SceneDocument},

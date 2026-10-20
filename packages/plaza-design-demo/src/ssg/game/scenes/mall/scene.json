@@ -1686,7 +1686,10 @@
     }
   ],
   "manifest": {
-    "artwork": {"room":"scene","escalator":"escalator"},
+    "artwork": {
+      "room": "scene",
+      "escalator": "escalator"
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -1750,6 +1753,15 @@
         "instance": "exit-market",
         "promptH": 82
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
     }
   },
   "environment": {
@@ -1758,5 +1770,61 @@
   "companion": {
     "mode": "off"
   },
-  "presentation": {"kind": "mall", "flags": {}, "actors": {"far": {"far-0": 0, "far-1": 1, "far-2": 2, "far-3": 3, "far-4": 4, "far-5": 5, "far-6": 6, "far-7": 7, "far-8": 8, "far-9": 9, "far-10": 10, "far-11": 11, "far-12": 12, "far-13": 13, "far-14": 14, "far-15": 15, "far-16": 16, "far-17": 17, "far-18": 18, "far-19": 19, "far-20": 20, "far-21": 21, "far-22": 22, "far-23": 23, "far-24": 24, "far-25": 25, "far-26": 26, "far-27": 27, "far-28": 28, "far-29": 29}, "gallery": {"gallery-0": 144, "gallery-1": 144, "gallery-2": 144, "gallery-3": 144, "gallery-4": 144, "gallery-5": 144, "gallery-6": 144, "gallery-7": 144, "gallery-8": 144, "gallery-9": 144}, "riders": {"rider-0": 0.0, "rider-1": 0.3333333333333333, "rider-2": 0.6666666666666666}, "deckVendor": "deckTech", "caseVendor": "teen"}}
+  "presentation": {
+    "kind": "mall",
+    "flags": {},
+    "actors": {
+      "far": {
+        "far-0": 0,
+        "far-1": 1,
+        "far-2": 2,
+        "far-3": 3,
+        "far-4": 4,
+        "far-5": 5,
+        "far-6": 6,
+        "far-7": 7,
+        "far-8": 8,
+        "far-9": 9,
+        "far-10": 10,
+        "far-11": 11,
+        "far-12": 12,
+        "far-13": 13,
+        "far-14": 14,
+        "far-15": 15,
+        "far-16": 16,
+        "far-17": 17,
+        "far-18": 18,
+        "far-19": 19,
+        "far-20": 20,
+        "far-21": 21,
+        "far-22": 22,
+        "far-23": 23,
+        "far-24": 24,
+        "far-25": 25,
+        "far-26": 26,
+        "far-27": 27,
+        "far-28": 28,
+        "far-29": 29
+      },
+      "gallery": {
+        "gallery-0": 144,
+        "gallery-1": 144,
+        "gallery-2": 144,
+        "gallery-3": 144,
+        "gallery-4": 144,
+        "gallery-5": 144,
+        "gallery-6": 144,
+        "gallery-7": 144,
+        "gallery-8": 144,
+        "gallery-9": 144
+      },
+      "riders": {
+        "rider-0": 0.0,
+        "rider-1": 0.3333333333333333,
+        "rider-2": 0.6666666666666666
+      },
+      "deckVendor": "deckTech",
+      "caseVendor": "teen"
+    }
+  }
 }

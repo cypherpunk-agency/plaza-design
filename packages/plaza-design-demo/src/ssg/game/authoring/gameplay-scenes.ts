@@ -37,8 +37,6 @@ import {content as harborStationContent} from '../scenes/harborStation/scene-doc
 import {trainScene} from '../scenes/train';
 import {content as trainContent} from '../scenes/train/scene-document';
 const metroAuthoredScene=(...args:Parameters<typeof trainScene>)=>metroScene(args[0],args[1],args[2],undefined,args[3],args[4]);
-import {mallScene} from '../scenes/mall';
-import {validateMallScene,validateMallGameplay} from '../scenes/mall/scene-document';
 import {validateManifestScene,validateManifestGameplay,manifestDemoScene} from '../scenes/demo-manifest';
 import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} from '../demo';
 /** Explicit migrated-scene registry shared by authoring, protected saves and isolated Play. */
@@ -79,7 +77,6 @@ const definitions=[
  {id:'harborStation',prefix:'harborStation',validateScene:harborStationContent.validateScene,validateGameplay:harborStationContent.validateGameplay,definition:harborStationScene},
  {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene,definitionWithDevices:trainWithDevices},
 
- {id:'mall',prefix:'mall',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateMallScene,validateGameplay:validateMallGameplay,definition:mallScene},
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},
  {id:'harborShift',prefix:'harbor-shift',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:validateShiftScene,validateGameplay:validateShiftGameplay,definition:harborShiftScene},
  {id:'laundromat',prefix:'laundromat',bindingGroups:['uses','readables','rests','exits'] as const,data:LAUNDROMAT,validateScene:validateLaundromatScene,validateGameplay:validateLaundromatGameplay,definition:laundromatScene,definitionWithDevices:laundromatWithDevices},
