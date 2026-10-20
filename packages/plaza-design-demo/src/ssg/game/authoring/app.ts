@@ -44,6 +44,8 @@ export interface ComposerConfig {
   sceneLabel?(scene: string): string;
   /** Source documents that belong to a scene beyond its composition, for unsaved-change markers. */
   sceneDocuments?(scene: string,documents:readonly EditorDocument[]): string[];
+  /** The scene picker's structure: districts, their places, each place's scenes. Scenes left out are listed under "Other scenes". */
+  sceneTree?(documents: readonly EditorDocument[]): { label: string; places: { label: string; scenes: string[] }[] }[];
   workbenches?: WorkbenchConfig[];
   /** Tabs for the Scene inspector. Called for the open scene with the selected instance, or none for the scene itself. */
   inspector?(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[];
@@ -347,9 +349,26 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const docs = model.list(), chooser = element('select', 'document-picker'); chooser.setAttribute('aria-label', 'Scene');
     const unsaved = (doc: EditorDocument) => model.dirty(doc.id) || doc.kind === 'composition' && (config.sceneDocuments?.((doc.value as Composition).scene,docs) ?? []).some(id => model.dirty(id));
     const sequenceDoc = (doc: EditorDocument) => doc.kind === 'timeline' || doc.kind === 'composition' && (doc.value as Composition).scene.startsWith('sequence-');
-    for (const [title, list] of [['Places', docs.filter(d => d.kind === 'composition' && !sequenceDoc(d))], ['Sequences', docs.filter(sequenceDoc)]] as const) {
+    const label = (doc: EditorDocument, text?: string) => `${unsaved(doc) ? '● ' : ''}${text ?? (doc.kind === 'timeline' ? `Timeline · ${doc.id}` : sceneName((doc.value as Composition).scene))}`;
+    const option = (doc: EditorDocument, text?: string) => { const node = element('option', '', label(doc, text)); node.value = doc.id; return node; };
+    const places = docs.filter(d => d.kind === 'composition' && !sequenceDoc(d)), listed = new Set<string>();
+    // District → place → scene. A place with one scene is one entry; a place with several gets a heading and indented scenes.
+    let tree: ReturnType<NonNullable<ComposerConfig['sceneTree']>> = [];
+    try { tree = config.sceneTree?.(docs) ?? []; } catch { tree = []; }
+    for (const district of tree) {
+      const optgroup = element('optgroup'); optgroup.label = district.label;
+      for (const place of district.places) {
+        const found = place.scenes.flatMap(scene => places.filter(d => (d.value as Composition).scene === scene && !listed.has(d.id)));
+        if (!found.length) continue; found.forEach(d => listed.add(d.id));
+        if (found.length === 1) { optgroup.append(option(found[0], place.label)); continue; }
+        const heading = element('option', '', place.label); heading.disabled = true; heading.className = 'place-heading'; optgroup.append(heading);
+        for (const doc of found) optgroup.append(option(doc, '\u00a0\u00a0\u00a0' + sceneName((doc.value as Composition).scene)));
+      }
+      if (optgroup.children.length) chooser.append(optgroup);
+    }
+    for (const [title, list] of [[tree.length ? 'Other scenes' : 'Places', places.filter(d => !listed.has(d.id))], ['Sequences', docs.filter(sequenceDoc)]] as const) {
       if (!list.length) continue; const optgroup = element('optgroup'); optgroup.label = title;
-      for (const doc of list) { const option = element('option', '', `${unsaved(doc) ? '● ' : ''}${doc.kind === 'timeline' ? `Timeline · ${doc.id}` : sceneName((doc.value as Composition).scene)}`); option.value = doc.id; optgroup.append(option); }
+      for (const doc of list) optgroup.append(option(doc));
       chooser.append(optgroup);
     }
     chooser.value = currentId; chooser.onchange = () => openDocument(chooser.value); header.append(chooser);
