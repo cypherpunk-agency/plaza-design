@@ -36,8 +36,8 @@ import { validateBeachComposition } from '../scenes/beach/composition';
 import { warehouseScene, warehouseFrameEnvironment, validateWarehouseComposition } from '../scenes/warehouse';
 import { yardScene, yardFrameEnvironment, validateYardComposition } from '../scenes/yard';
 import { stacksScene, stacksFrameEnvironment, validateStacksComposition } from '../scenes/stacks';
-import { harborScene, HARBOR_ACTORS, harborCraneCall } from '../scenes/harbor';
-import { harborEnvironment, validateHarborComposition } from '../scenes/harbor/composition';
+import { harborScene } from '../scenes/harbor';
+import { validateHarborComposition } from '../scenes/harbor/composition';
 import { harborShiftScene, HARBOR_SHIFT_ACTORS, SHIFT_USES } from '../scenes/harbor-shift';
 import { harborShiftEnvironment, validateHarborShiftComposition } from '../scenes/harbor-shift/composition';
 import { marketScene, marketFrameEnvironment } from '../scenes/market';
@@ -66,7 +66,7 @@ export const nativeSceneAdapters: Record<string, NativeSceneAdapter> = {
     frame: () => ({ street: (ctx, view, rain, lit) => renderDowntownStreet(ctx, view, rain, lit) }),
   },
   stacks: { validate: validateStacksComposition, definition: stacksScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=stacksContent.validateGameplay(documents.get('stacks-gameplay'));return stacksScene(doc,state,options,stacksContent.validateScene(documents.get('stacks-scene'),gameplay),gameplay,documents.get('stacks-devices') as import('../data/types').SceneData);}, environment: (doc, v, e) => stacksFrameEnvironment(v, e, doc) },
-  harbor: { validate: validateHarborComposition, definition: harborScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=harborContent.validateGameplay(documents.get('harbor-gameplay'));return harborScene(doc,state,options,harborContent.validateScene(documents.get('harbor-scene'),gameplay),gameplay);}, environment: (doc, v) => harborEnvironment(doc, v, HARBOR_ACTORS, harborCraneCall()) },
+  harbor: { validate: validateHarborComposition, definition: harborScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=harborContent.validateGameplay(documents.get('harbor-gameplay'));return harborScene(doc,state,options,harborContent.validateScene(documents.get('harbor-scene'),gameplay),gameplay);} },
   harborShift: { validate: validateHarborShiftComposition, definition: harborShiftScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateShiftGameplay(documents.get('harbor-shift-gameplay'));return harborShiftScene(doc,state,options,validateShiftScene(documents.get('harbor-shift-scene'),gameplay),gameplay);}, environment: (doc, v) => harborShiftEnvironment(doc, v, HARBOR_SHIFT_ACTORS, SHIFT_USES) },
   market: { validate: validateMarketComposition, definition: marketScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateMarketGameplay(documents.get('market-gameplay'));return marketScene(doc,state,options,gameplay,validateMarketScene(documents.get('market-scene'),gameplay));}, environment: (doc, v, e) => marketFrameEnvironment(v, e, doc) },
   shop: { validate: validateShopComposition, definition: shopScene, pendingDefinition:(doc,state,options,documents)=>{const gameplay=validateShopGameplay(documents.get('shop-gameplay'));return shopScene(doc,state,options,validateShopScene(documents.get('shop-scene'),gameplay),gameplay);}, environment: (doc, v, e) => shopFrameEnvironment(v, e, doc) },

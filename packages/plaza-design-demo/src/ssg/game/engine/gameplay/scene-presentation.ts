@@ -2,10 +2,10 @@ import type {GameplayDefinition} from './types';
 /** Registered visual roles. These refs read authored flags and actor identities; they neither decide nor store gameplay. */
 export const shiftPresentationRoles=['parcel','delivered','case','returned','parked','released','checked','done'] as const;
 export type ShiftPresentationRole=typeof shiftPresentationRoles[number];
-export const scenePresentationRoles={harborShift:shiftPresentationRoles,market:['exitOpen'],beach:[],shop:[],mall:[]} as const;
-export type ScenePresentationRole=ShiftPresentationRole|'exitOpen';
-export type ScenePresentationActorRole='bartender'|'ashore'|'keeper'|'outside'|'far'|'gallery'|'riders'|'deckVendor'|'caseVendor';
-export const scenePresentationActorRoles:Readonly<Partial<Record<keyof typeof scenePresentationRoles,Readonly<Partial<Record<ScenePresentationActorRole,'one'|'many'|'slots'|'phases'>>>>>>={beach:{bartender:'one',ashore:'many'},shop:{keeper:'one',outside:'many'},mall:{far:'slots',gallery:'slots',riders:'phases',deckVendor:'one',caseVendor:'one'}};
+export const scenePresentationRoles={harborShift:shiftPresentationRoles,market:['exitOpen'],beach:[],shop:[],mall:[],harbor:['bribed']} as const;
+export type ScenePresentationRole=ShiftPresentationRole|'exitOpen'|'bribed';
+export type ScenePresentationActorRole='bartender'|'ashore'|'keeper'|'outside'|'far'|'gallery'|'riders'|'deckVendor'|'caseVendor'|'operator0'|'operator1'|'driver'|'watchman'|'guard'|'fishVendor'|'teaVendor'|'denGuests';
+export const scenePresentationActorRoles:Readonly<Partial<Record<keyof typeof scenePresentationRoles,Readonly<Partial<Record<ScenePresentationActorRole,'one'|'many'|'slots'|'phases'>>>>>>={beach:{bartender:'one',ashore:'many'},shop:{keeper:'one',outside:'many'},mall:{far:'slots',gallery:'slots',riders:'phases',deckVendor:'one',caseVendor:'one'},harbor:{operator0:'one',operator1:'one',driver:'one',watchman:'one',guard:'one',fishVendor:'one',teaVendor:'one',denGuests:'many'}};
 export interface ScenePresentation {kind:keyof typeof scenePresentationRoles;flags:Partial<Record<ScenePresentationRole,string>>;actors?:Partial<Record<ScenePresentationActorRole,string|string[]|Record<string,number>>>}
 export function validateScenePresentation(value:unknown,id:string,gameplay:GameplayDefinition,actorIds:readonly string[]=[]):void{
  const fail=():never=>{throw Error('Invalid registered scene presentation');};

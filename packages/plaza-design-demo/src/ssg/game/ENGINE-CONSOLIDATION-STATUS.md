@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `150889b` on main and production.
-Production/main homepage jobs39348693894/39348693514 and design job39348693783 succeeded.
+Last verified deployment: `0142536` on main and production.
+Production/main homepage jobs39349703607/39349702253 and design job39349702311 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2567,3 +2567,29 @@ differences/errors (independently verified). Real packaged inspector filters cra
 correctly and exposes motion/horizon refs; native Harbor Play/Stop PASS without warnings/errors.
 Package app-RBQAFZPC.js / play-FYWKWAH3.js / play-29327c92340e1075.html. Remaining whole-goal gates
 and the final all19/lifecycle/current-state/world/network/removal acceptance reconciliation stay open.
+
+## 2026-10-20 Harbor actor roles / single presentation owner
+
+Harbor operator slots, forklift driver, watchman, guard, booth vendors and den guests now select
+source actor refs; the bribed picture state selects a source flag. No old actor IDs, instance-ID
+parsing or prefix groups decide behavior. New/duplicated Harbor actors receive the common optional
+per-actor clipping binding; old role-named clip aliases are removed. Current geometry roles select
+attachment owners and clip elevations. Shared CRUD inherits/prunes groups and leaves singletons
+explicit. Removed the editor's redundant Harbor environment fallback and standalone signal-read
+alias; real native PresentationSignals is the sole preview/Game owner.
+
+Actual actor/flag controls, new noncanonical actor IDs, inherited clipping/group capability,
+operator/driver motion, watchman clips, guard action/facing, booth embedding, unbound old-prefix
+visibility, group removal, missing refs/optional absence, history/bundle/protected Save/fresh
+shipping/byte Undo PASS (`harbor-actor-role-source-1mLI7X`). Harbor geometry proof PASS
+(`harbor-actor-role-source-Nawrgn`), all19 actor CRUD/Save/reload/Undo PASS
+(`actor-entities/run-XXw1qO`), all19 inspector mounts PASS (`scene-inspector-identities-k4Or1m`),
+Mall/Shop source regressions PASS (`mall-actor-role-source-2ke7pD`, `shop-actor-role-source-HZoPZA`).
+Original Harbor40/tea14/foreground5/shift36 draws,1674 coastal bounds cases, Harbor26 interactions/
+37 NPC pages/weather/current-save semantics and five flight paints PASS. tsc/both builds PASS.
+Source648c38e100b246bfdd57228221fcdb432718627df3e6f222588c089001b0ea1d has173/173 zero-difference/error browser raster rows,
+independently verified; all19 actual native packaged editor Play/Stop PASS with no warning/error
+logs (`editor-native-play-648c38e1-20261020.json`). Actual Harbor role/flag pickers verified. Package
+app-EDXPJ44N.js / play-YQTCQNGC.js / play-e5d0f0af1029afc6.html. Remaining geometry/actor consumers in
+Stacks, Downtown and transit plus the final all19 world/network/current-state/lifecycle/removal
+inventory remain open; no whole-goal gate promotion from this bounded checkpoint.

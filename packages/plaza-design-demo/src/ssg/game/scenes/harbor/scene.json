@@ -1107,5 +1107,6 @@
   },
   "companion": {
     "mode": "off"
-  }
+  },
+  "presentation": {"kind": "harbor", "flags": {"bribed": "harbor:bribed"}, "actors": {"operator0": "operator0", "operator1": "operator1", "driver": "driver", "watchman": "watchman", "guard": "guard", "fishVendor": "fishSeller", "teaVendor": "teaMan", "denGuests": ["den-person0", "den-person1"]}}
 }

@@ -1,3 +1,4 @@
+import {presentationActor,presentationActors,presentationFlag,type ScenePresentationActorRole} from '../../engine/gameplay/scene-presentation';
 import {manifestGeometry} from '../../engine/gameplay/manifest-geometry';
 import {artworkRoleContracts} from '../../engine/gameplay/artwork-roles';
 import type {SceneDocument} from '../../engine/gameplay/scene-document';
@@ -18,11 +19,11 @@ export type HarborRenderOptions=Partial<Pick<Environment,'visibility'|'opacity'|
 export const harborMarkerPolicy={exitAxes:['x'] as const,description:'Exits use horizontal triggers. Other interaction, light and shadow markers resolve their authored heights.'};
 const geometryView:View={...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}};
 const flatten=(nodes:Composition['instances']):Composition['instances']=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
-const bindings=new Set(['layout','visual','fishPose','teaPose','loads','stackOrigins','forkliftOrigin','archVisible','bondedVisible'].map(k=>'harbor.'+k).concat(['clip.hut','clip.crane0','clip.crane1']));
+const bindings=new Set(['layout','visual','fishPose','teaPose','loads','stackOrigins','forkliftOrigin','archVisible','bondedVisible'].map(k=>'harbor.'+k));
 export function validateHarborComposition(input:unknown):Composition{
  const doc=art.validate(input);if(doc.scene!=='harbor')throw new Error('Expected harbor composition');
  for(const n of flatten(doc.instances)){if(n.type==='character.prepared'){
-  if(typeof n.props.actor!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(n.props.actor)||n.bindings?.pose!==actorPoseSource('harbor',n.props.actor)||Object.entries(n.bindings).some(([k,b])=>k!=='pose'&&(k!=='clip'||!bindings.has(b))))throw new Error(n.id+': invalid harbor actor binding');
+  if(typeof n.props.actor!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(n.props.actor)||n.bindings?.pose!==actorPoseSource('harbor',n.props.actor)||Object.entries(n.bindings).some(([k,b])=>k!=='pose'&&(k!=='clip'||b!=='clip.actor.'+n.props.actor)))throw new Error(n.id+': invalid harbor actor binding');
  }else for(const b of Object.values(n.bindings??{}))if(!bindings.has(b))throw new Error(n.id+': unknown harbor binding '+b);}
  return doc;
 }
@@ -40,23 +41,24 @@ export function harborVisual(layout:HarborLayout,t:number,craneCall:number,bribe
 }
 const value=(v:unknown)=>v as Value;
 export function harborEnvironment(doc:Composition,view:View,actorMap:Readonly<Record<string,Character>>,craneCall:number,source:SceneDocument=sceneSource as unknown as SceneDocument):Environment{
- const input=harborInputs(doc,source),{rows,get}=input,attached=(row:typeof rows[number],parent:string)=>row.instance.attach?.instance===parent,L=harborLayoutFrom(input),fork=get('forklift'),vis=harborVisual(L,view.t,craneCall,!!view.flags['harbor:bribed'],{x:fork.placement.x,travel:Number(fork.props.travel)}),b=defaults(doc);
+ const input=harborInputs(doc,source),{rows,get}=input,attached=(row:typeof rows[number],role:string)=>row.instance.attach?.instance===get(role).instance.id,L=harborLayoutFrom(input),fork=get('forklift'),vis=harborVisual(L,view.t,craneCall,presentationFlag(source.presentation,view.flags,'bribed'),{x:fork.placement.x,travel:Number(fork.props.travel)}),b=defaults(doc);
  b['harbor.archVisible']=onScreen(view,view.sx(L.arch.x0)-20,view.sx(L.arch.x1)-view.sx(L.arch.x0)+60);b['harbor.bondedVisible']=onScreen(view,view.sx(L.fence.x0)-20,view.sx(L.fence.x1)-view.sx(L.fence.x0)+40);b['harbor.layout']=value(L);b['harbor.visual']=value(vis);b['harbor.stackOrigins']=[0,1,2,3].map(i=>get('stack'+i).placement.x);b['harbor.forkliftOrigin']=fork.placement.x;
  b['harbor.loads']=[0,1].map(i=>{const p=get('crane'+i+'-load').props;return{w:Number(p.width),p:Number(p.paint),seed:Number(p.seed),code:String(p.code),label:String(p.label)};});
+ const actorRole=(role:ScenePresentationActorRole)=>presentationActor(source.presentation,role),denGuests=new Set(presentationActors(source.presentation,'denGuests'));
  for(const row of rows.filter(r=>r.instance.type==='character.prepared')){
-  const id=String(row.props.actor),actor=actorMap[id];if(!actor)throw new Error('Missing harbor actor '+id);let at={...row.placement},override:Parameters<typeof prepareCharacter>[2];let visible=true;
-  if((id==='operator0'||id==='operator1')&&row.instance.id===id&&attached(row,get('crane'+id.slice(-1)).instance.id)){const i=Number(id.slice(-1)),c=L.cranes[i],cv=vis.cranes[i];at.x+=cv.twx-c.x;visible=onScreen(view,view.sx(c.x-230),460);override={x:at.x,h:at.h};}
-  if(id==='driver'&&row.instance.id==='driver'&&attached(row,get('forklift').instance.id)){at.x+=vis.forklift.x-fork.placement.x+(vis.forklift.dir<0?8:0);visible=onScreen(view,view.sx(vis.forklift.x)-50,100);override={x:at.x,h:at.h,facing:vis.forklift.dir};}
-  if(id==='watchman'&&row.instance.id==='watchman'&&attached(row,get('hut').instance.id))visible=onScreen(view,view.sx(L.hut.x),L.hut.w);
-  if(id.startsWith('den-person')&&row.instance.id===id&&attached(row,get('den').instance.id))visible=onScreen(view,view.sx(L.den)-60,248);
-  if(id==='guard')override={act:vis.bribed?'smoke':'stand',facing:vis.bribed?1:-1};
+  const id=String(row.props.actor),actor=actorMap[id];if(!actor)throw new Error('Missing harbor actor '+id);let at={...row.placement},override:Parameters<typeof prepareCharacter>[2],clip:Value=null,visible=true;
+  const ci=[0,1].find(i=>actorRole(i===0?'operator0':'operator1')===id&&attached(row,'crane'+i)),driving=actorRole('driver')===id&&attached(row,'forklift');
+  if(ci!==undefined){const c=L.cranes[ci],cv=vis.cranes[ci];at.x+=cv.twx-c.x;visible=onScreen(view,view.sx(c.x-230),460);override={x:at.x,h:at.h};clip=[view.sx(cv.twx)-41,view.y(get('crane'+ci).placement.h+188)+4,20,22];}
+  if(driving){at.x+=vis.forklift.x-fork.placement.x+(vis.forklift.dir<0?8:0);visible=onScreen(view,view.sx(vis.forklift.x)-50,100);override={x:at.x,h:at.h,facing:vis.forklift.dir};}
+  if(actorRole('watchman')===id&&attached(row,'hut')){visible=onScreen(view,view.sx(L.hut.x),L.hut.w);clip=[view.sx(L.hut.x)+41,view.y(get('hut').placement.h+60)+1,26,22];}
+  if(denGuests.has(id)&&attached(row,'den'))visible=onScreen(view,view.sx(L.den)-60,248);
+  if(actorRole('guard')===id)override={act:vis.bribed?'smoke':'stand',facing:vis.bribed?1:-1};
   let pose:PreparedCharacter=visible?prepareCharacter(actor,view.t,override):{visible:false,character:{x:actor.x}};
-  if(pose.visible&&!((id==='operator0'||id==='operator1')&&row.instance.id===id&&attached(row,get('crane'+id.slice(-1)).instance.id)||id==='driver'&&row.instance.id==='driver'&&attached(row,get('forklift').instance.id))){const dx=at.x-actor.x,dh=at.h-(actor.h??0);pose={...pose,character:{...pose.character,x:at.x,h:at.h},frame:{...pose.frame,x:pose.frame.x+dx},height:pose.height+dh};}
-  b['actor.'+id+'.pose']=value((id==='fishSeller'&&attached(row,get('fish').instance.id)||id==='teaMan'&&attached(row,get('drinks').instance.id))&&row.instance.id===id?{visible:false,character:{x:actor.x}}:pose);
+  if(pose.visible&&ci===undefined&&!driving){const dx=at.x-actor.x,dh=at.h-(actor.h??0);pose={...pose,character:{...pose.character,x:at.x,h:at.h},frame:{...pose.frame,x:pose.frame.x+dx},height:pose.height+dh};}
+  b['actor.'+id+'.pose']=value((actorRole('fishVendor')===id&&attached(row,'fish')||actorRole('teaVendor')===id&&attached(row,'drinks'))?{visible:false,character:{x:actor.x}}:pose);b['clip.actor.'+id]=clip;
  }
- const vendor=(id:string):PreparedCharacter=>{const row=rows.find(r=>r.instance.type==='character.prepared'&&r.props.actor===id&&r.instance.id===id&&attached(r,get(id==='fishSeller'?'fish':'drinks').instance.id)),actor=actorMap[id];return row&&actor?prepareCharacter(actor,view.t,{x:row.placement.x,h:row.placement.h}):{visible:false,character:{x:0}};};
- b['harbor.fishPose']=value(vendor('fishSeller'));b['harbor.teaPose']=value(vendor('teaMan'));
- b['clip.hut']=rows.some(r=>r.instance.id==='watchman'&&attached(r,get('hut').instance.id))?[view.sx(L.hut.x)+41,view.y(60)+1,26,22]:null;for(const i of[0,1])b['clip.crane'+i]=rows.some(r=>r.instance.id==='operator'+i&&attached(r,get('crane'+i).instance.id))?[view.sx(vis.cranes[i].twx)-41,view.y(188)+4,20,22]:null;
+ const vendor=(role:'fishVendor'|'teaVendor',owner:string):PreparedCharacter=>{const id=actorRole(role),row=rows.find(r=>r.instance.type==='character.prepared'&&r.props.actor===id&&attached(r,owner)),actor=id?actorMap[id]:undefined;return row&&actor?prepareCharacter(actor,view.t,{x:row.placement.x,h:row.placement.h}):{visible:false,character:{x:0}};};
+ b['harbor.fishPose']=value(vendor('fishVendor','fish'));b['harbor.teaPose']=value(vendor('teaVendor','drinks'));
  return{view,state:{},bindings:b,reduced:false};
 }
 export function drawHarborComposition(ctx:CanvasRenderingContext2D,view:View,actorMap:Readonly<Record<string,Character>>,craneCall:number,pass:'backdrop'|'foreground',doc=harborComposition,state:Environment['state']={},options:HarborRenderOptions={},source:SceneDocument=sceneSource as unknown as SceneDocument){drawComposition(ctx,art,doc,{...harborEnvironment(doc,view,actorMap,craneCall,source),state,...options},pass);}
