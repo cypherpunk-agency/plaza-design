@@ -3,9 +3,9 @@ import type {WorkbenchContext,WorkbenchHandle} from './app';
 import {PEOPLE_VOCABULARY,applyPeople,validatePeople,type PeopleDocument} from '../art/characters/people-source';
 import type {CrowdMix} from '../art/characters/crowds';
 /**
- * Library › People: the game-wide people defaults (colour style, seated pose) and each district's
+ * People settings (Library › Characters): the game-wide people defaults (colour style, seated pose) and each district's
  * crowd mix (who walks there, how much of it wears tech, what people do, which robots share the street).
- * Typed edits use ordinary history, bundle and grouped Save; the stage and Characters › Crowd show them live.
+ * Typed edits use ordinary history, bundle and grouped Save; the stage and the People mix view show them live.
  */
 export function mountPeopleAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle{
  const api=context.authoring!;let disposed=false;
@@ -29,22 +29,22 @@ export function mountPeopleAuthoring(host:HTMLElement,context:WorkbenchContext):
  function render(){if(disposed)return;host.replaceChildren(error);
   let d:PeopleDocument;try{d=validatePeople(api.get('people').value);}catch(e){error.textContent=String(e instanceof Error?e.message:e);return;}
   const intro=document.createElement('p');intro.className='muted';
-  intro.textContent='Game-wide defaults for people and the crowd mix of each district. A person’s own colour style and sitting pose (Scene inspector › Behaviour) win over the defaults. Characters › Crowd shows a district’s mix live.';
+  intro.textContent='Game-wide defaults for people and the crowd mix of each district. A person’s own colour style and sitting pose (Scene inspector › Behaviour) win over the defaults. The People mix view above shows a district’s mix live.';
   host.append(intro);
   const defaults=document.createElement('section');defaults.className='people-defaults';host.append(defaults);
   form.select(defaults,'Default colour style',PEOPLE_VOCABULARY.style,d.style,v=>edit('Edit default colour style',d=>{d.style=v as PeopleDocument['style'];}));
   form.select(defaults,'Default seated pose',PEOPLE_VOCABULARY.seated,d.seated,v=>edit('Edit default seated pose',d=>{d.seated=v as PeopleDocument['seated'];}));
   const hint=document.createElement('p');hint.className='muted';hint.textContent='Mixed: everyone sitting picks front, three-quarter or side on and shifts to another every 12 to 26 seconds.';defaults.append(hint);
   for(const mix of d.crowds){
-   const section=form.section(host,'Crowd · '+mix.district);
+   const section=form.section(host,'People mix · '+mix.district);
    form.text(section,mix.district+' note',mix.note,v=>edit('Edit crowd note',d=>{crowd(d,mix.district).note=v;}),true);
    form.number(section,mix.district+' visible tech %',Math.round(mix.kitted*100),v=>edit('Edit crowd tech share',d=>{crowd(d,mix.district).kitted=Math.min(100,Math.max(0,v))/100;}),0,100);
    form.number(section,mix.district+' robots %',Math.round(mix.robots*100),v=>edit('Edit crowd robot share',d=>{crowd(d,mix.district).robots=Math.min(100,Math.max(0,v))/100;}),0,100);
    for(const t of TABLES)weights(section,mix,t);
-   form.button(section,'Remove '+mix.district+' crowd',()=>edit('Remove district crowd',d=>{d.crowds=d.crowds.filter(c=>c.district!==mix.district);}));
+   form.button(section,'Remove '+mix.district+' people mix',()=>edit('Remove district people mix',d=>{d.crowds=d.crowds.filter(c=>c.district!==mix.district);}));
   }
   const free=PEOPLE_VOCABULARY.districts.filter(id=>!d.crowds.some(c=>c.district===id));
-  if(free.length)form.select(host,'Add district crowd',['',...free],'',v=>{if(v)edit('Add district crowd',d=>{d.crowds.push({district:v,note:'',kitted:.3,robots:.1,people:{commuter:1},acts:{walk:1},bots:{sweeper:1}});});});
+  if(free.length)form.select(host,'Add district people mix',['',...free],'',v=>{if(v)edit('Add district people mix',d=>{d.crowds.push({district:v,note:'',kitted:.3,robots:.1,people:{commuter:1},acts:{walk:1},bots:{sweeper:1}});});});
  }
  render();const dispose=(()=>{disposed=true;host.replaceChildren();}) as WorkbenchHandle;dispose.refresh=render;return dispose;
 }

@@ -19,7 +19,8 @@ import {DEPTH_BANDS,DEPTH_ORDER,depthOf,type DepthBand} from '../art/core/depth'
 import {M} from '../art/vehicles/vehicles';
 import {CROWD_MIXES,crowdMix,sampleCrowd,type CrowdMember} from '../art/characters/crowds';
 import {ARCHETYPES,ARCHETYPE_IDS,type ArchetypeId} from '../art/characters/archetypes';
-import {PEOPLE_STYLES,SEATED_VIEWS,peopleStyle,seatedView,setPeopleStyle,setSeatedView,type PeopleStyle,type SeatedView} from '../art/characters/people-style';
+import {peopleStyle,seatedView} from '../art/characters/people-style';
+import type {WorkbenchHandle} from './app';
 import {lookFrom} from '../art/characters/appearance';
 import {SEAT_H} from '../art/characters/riders';
 import cityData from '../world/city.json';
@@ -164,17 +165,20 @@ export function varietySample(district:string,seed:number,minute:number,kitted?:
 }
 /** Self-contained sub-screen. No source API, player services, game construction or storage access. */
 type WorkbenchMode='lineup'|'single'|'crowd'|'archetypes';
-export function mountCharacterWorkbench(host:HTMLElement):()=>void{
+/** `people`: mounts the saved People settings (Library › Characters) into the inspector. */
+export function mountCharacterWorkbench(host:HTMLElement,options:{people?(host:HTMLElement):WorkbenchHandle}={}):WorkbenchHandle{
  const session=createCharacterWorkbenchSession();let config=defaultCharacterConfig(),disposed=false,raf=0,mode:WorkbenchMode='lineup',slots:{x0:number;x1:number;y0?:number;y1?:number;config:CharacterWorkbenchConfig}[]=[];
  const crowd={district:'downtown',seed:1,kitted:undefined as number|undefined,show30:false},grid={seed:11};
  const el=<K extends keyof HTMLElementTagNameMap>(tag:K,text?:string)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
- const title=el('h2','Character workbench'),note=el('p','The game’s own artwork and animation, read-only. Lineup shows up to eight variants next to the player at true scale, with a metre ruler; click one to open it on its own. Crowd shows a district’s mix of plain people, kitted people and robots in the back, play and near rows; Show 30 samples thirty of its people and marks near-duplicates. Archetypes shows every named look, a few seeds standing and one seated. People style and Seated switch the whole editor’s people (art/characters/people-style.ts) for comparison; the game uses the defaults (muted, front). Pixel shows a pose snapshot (its hop does not jump); LIME and the fixer always face one way.');note.className='muted';
+ const title=el('h2','Character workbench'),note=el('p','The game’s own artwork and animation. Lineup shows up to eight variants next to the player at true scale, with a metre ruler; click one to open it on its own. People mix shows a district’s mix of plain people, kitted people and robots in the back, play and near rows; Show 30 samples thirty of its people and marks near-duplicates. Archetypes shows every named look, a few seeds standing and one seated. People settings below are saved: the game’s default colour style and seated pose, and each district’s people mix.');note.className='muted';
  const legend=el('p'),modes=el('div'),controls=el('div'),transportHost=el('div'),canvas=el('canvas'),error=el('p'),details=el('details'),json=el('pre');
  modes.className='segmented';modes.setAttribute('role','group');modes.setAttribute('aria-label','View');modes.style.margin='8px 0';
  canvas.width=960;canvas.height=250;canvas.style.maxWidth='100%';canvas.style.cursor='pointer';canvas.setAttribute('aria-label','Native character preview');error.setAttribute('role','status');
  details.append(el('summary','Details (JSON)'),json);json.style.maxHeight='220px';json.style.overflow='auto';
  legend.className='muted';legend.hidden=true;
- createFrame(host,{nav:[title,modes],stage:[transportHost,canvas,legend,error],inspector:[note,controls,details]},'Characters');
+ const peopleBox=el('details'),peopleHost=el('div');peopleBox.className='people-settings';peopleBox.open=true;peopleBox.append(el('summary','People settings'),peopleHost);
+ createFrame(host,{nav:[title,modes],stage:[transportHost,canvas,legend,error],inspector:[note,controls,...(options.people?[peopleBox]:[]),details]},'Characters');
+ const people=options.people?.(peopleHost);
  const clock=new WorkbenchPlayback(90,()=>draw()),transport=mountWorkbenchPlayback(transportHost,clock);
  const label=(name:string,input:HTMLElement)=>{const l=el('label');l.style.marginRight='12px';l.append(name+' ',input);controls.append(l);return l;};
  const select=(name:string,values:readonly string[],value:string,change:(value:string)=>void,rebuild=false)=>{const s=el('select');s.setAttribute('aria-label',name);for(const v of values){const o=el('option',v);o.value=v;s.append(o);}s.value=value;s.onchange=()=>{change(s.value);if(rebuild)refresh();draw();};label(name,s);return s;};
@@ -183,19 +187,15 @@ export function mountCharacterWorkbench(host:HTMLElement):()=>void{
  /** A colour picker that shows the seeded colour until overridden, with ↺ to go back to it. */
  const colour=(name:string,value:string|undefined,seeded:string|undefined,change:(value:string|undefined)=>void)=>{const input=el('input'),reset=el('button','↺');input.type='color';input.value=value??seeded??'#808080';input.setAttribute('aria-label',name);input.oninput=()=>{change(input.value);draw();};reset.type='button';reset.title='Back to the seeded colour';reset.disabled=value===undefined;reset.onclick=()=>{change(undefined);refresh();draw();};const l=label(name,input);l.append(reset);};
  function setMode(next:WorkbenchMode){mode=next;for(const b of modes.children)b.setAttribute('aria-pressed',String((b as HTMLElement).dataset.mode===mode));refresh();draw();}
- for(const [id,text] of [['lineup','Lineup'],['crowd','Crowd'],['archetypes','Archetypes'],['single','Single']] as const){const b=el('button',text);b.type='button';b.dataset.mode=id;b.onclick=()=>setMode(id);modes.append(b);}
+ for(const [id,text] of [['lineup','Lineup'],['crowd','People mix'],['archetypes','Archetypes'],['single','Single']] as const){const b=el('button',text);b.type='button';b.dataset.mode=id;b.onclick=()=>setMode(id);modes.append(b);}
  function refresh(){controls.replaceChildren();const family=inventory.families.find(f=>f.id===config.family)!;
   for(const b of modes.children)b.setAttribute('aria-pressed',String((b as HTMLElement).dataset.mode===mode));
   legend.hidden=mode!=='crowd'&&mode!=='archetypes';
-  // the two review switches, for every view
-  select('People style',PEOPLE_STYLES,peopleStyle(),v=>setPeopleStyle(v as PeopleStyle),true);
-  select('Seated',SEATED_VIEWS,seatedView(),v=>setSeatedView(v as SeatedView));
   if(mode==='archetypes'){numeric('First seed',grid.seed,0,1e6,1,v=>grid.seed=Math.round(v),true);numeric('City minute',config.minute??580,0,1439,10,v=>config.minute=v);return;}
   if(mode==='crowd'){
    const names=Object.fromEntries(cityData.DISTRICTS.map(d=>[d.id,d.name])),pick=el('select');pick.setAttribute('aria-label','District');
    for(const m of CROWD_MIXES){const o=el('option',names[m.district]??m.district);o.value=m.district;pick.append(o);}pick.value=crowd.district;pick.onchange=()=>{crowd.district=pick.value;crowd.kitted=undefined;refresh();draw();};label('District',pick);
-   const mix=crowdMix(crowd.district)!;numeric('Kitted %',Math.round((crowd.kitted??mix.kitted)*100),0,100,5,v=>crowd.kitted=Math.min(1,Math.max(0,v/100)),true);
-   numeric('Crowd seed',crowd.seed,0,1e6,1,v=>crowd.seed=Math.round(v),true);
+   numeric('Mix seed',crowd.seed,0,1e6,1,v=>crowd.seed=Math.round(v),true);
    const shuffle=el('button','Reshuffle');shuffle.type='button';shuffle.onclick=()=>{crowd.seed=Math.floor(Math.random()*1e6);refresh();draw();};controls.append(shuffle);
    check('Show 30',crowd.show30,v=>crowd.show30=v);
    numeric('City minute',config.minute??580,0,1439,10,v=>config.minute=v);return;
@@ -287,5 +287,6 @@ export function mountCharacterWorkbench(host:HTMLElement):()=>void{
  canvas.onclick=event=>{if(mode==='single')return;const r=canvas.getBoundingClientRect(),x=(event.clientX-r.left)*canvas.width/r.width,y=(event.clientY-r.top)*canvas.height/r.height,slot=[...slots].reverse().find(s=>x>=s.x0&&x<s.x1&&(s.y0===undefined||y>=s.y0&&y<=s.y1!));if(!slot)return;config={...slot.config,inPlace:false};setMode('single');};
  const frame=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(frame);};
  refresh();draw();raf=requestAnimationFrame(frame);
- return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();transport.dispose();session.dispose();host.replaceChildren();host.classList.remove('framed');};
+ const handle=(()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();transport.dispose();session.dispose();people?.();host.replaceChildren();host.classList.remove('framed');}) as WorkbenchHandle;
+ handle.refresh=()=>{people?.refresh?.();refresh();draw();};return handle;
 }

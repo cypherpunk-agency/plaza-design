@@ -86,6 +86,12 @@ import { mountPeopleAuthoring } from './people-authoring';
 
 
 
+/** Play context for a proposal: every document as is, except the base scene's composition, which is the proposal's. */
+function asProposal(context: WorkbenchContext, p: { id: string; base: string }): WorkbenchContext {
+  const swap = (docs: EditorDocument[]) => { const own = docs.find(d => d.id === p.id); return own ? docs.map(d => d.id === p.base ? { ...d, value: { ...(own.value as Composition), scene: p.base } } : d) : docs; };
+  return Object.defineProperty({ ...context }, 'documents', { get: () => swap(context.documents), enumerable: true });
+}
+
 async function start() {
 
   const host = document.getElementById('composer'); if (!host) throw new Error('Missing editor host');
@@ -221,14 +227,14 @@ async function start() {
         }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
       } },
       {id:'play',area:'scene',mode:'play',label:'Play',title:'Play · pending scene from a starting state',authoring:true,documentDependent:true,primaryDocumentId:'play-fixtures',
-        supports:(scene,documents)=>(playScenes as readonly string[]).includes(scene)||scene==='demo-manifest'||!!(documents.find(d=>d.id==='authored-scenes')?.value as SceneCatalogue|undefined)?.scenes.some(s=>s.scene.id===scene),showScene(scene){playSelection.scene=scene==='demo-manifest'?'shop':scene;},
+        supports:(scene,documents)=>(playScenes as readonly string[]).includes(scene)||scene==='demo-manifest'||(playScenes as readonly string[]).includes(proposalScene(scene)?.base??'')||!!(documents.find(d=>d.id==='authored-scenes')?.value as SceneCatalogue|undefined)?.scenes.some(s=>s.scene.id===scene),showScene(scene){playSelection.scene=scene==='demo-manifest'?'shop':proposalScene(scene)?.base??scene;},
         unsupported:'Play runs scenes whose starting state can be set up in the editor. This scene is not one of them yet; play it in the game build instead.',
-        mount:(host,context)=>mountPlayWorkbench(host,context,playSelection,false,context.scene==='demo-manifest')},
+        // A proposal plays as its base scene with the proposal's artwork in place of the base composition.
+        mount:(host,context)=>mountPlayWorkbench(host,proposalScene(context.scene??'')?asProposal(context,proposalScene(context.scene!)!):context,playSelection,false,context.scene==='demo-manifest')},
       {id:'demo-world',area:'labs',label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true,false,'Lab · the Test District: a small separate world on the same engine, with its own private progress. Used to try engine features outside the real city.')},
-      {id:'people',area:'library',label:'People',title:'People defaults and district crowd mixes',authoring:true,documentDependent:true,primaryDocumentId:'people',mount:mountPeopleAuthoring},
-      { id: 'characters', area: 'library', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
+      { id: 'characters', area: 'library', label: 'Characters', title: 'Characters · lineups, named looks and saved people settings', authoring: true, documentDependent: true, documentIds: ['people'], primaryDocumentId: 'people', mount(panel, context) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel, { people: host => mountPeopleAuthoring(host, context) }); } },
 
-      { id: 'style-frames', area: 'library', beside: true, label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
+      { id: 'style-frames', area: 'library', beside: true, label: 'Style frames', title: 'Style frames · each district’s card, people mix and scenes · read-only', documentDependent: true, mount(panel, context) {
         return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => proposalScene(scene)?.label ?? (isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene));
       } },
       { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },

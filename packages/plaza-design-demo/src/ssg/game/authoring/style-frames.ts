@@ -1,6 +1,6 @@
 /**
  * Library › Style frames: one frame per district (art direction, 2026-10-20). Each frame pairs the
- * district's card (palette, light, materials, signage, people, landmark, crowd mix) with its real
+ * district's card (palette, light, materials, signage, people, landmark, people mix) with its real
  * scenes as thumbnails. The panel sits beside the Scene stage; picking a scene shows it there (compared
  * with its proposal when there is one) without leaving the tab.
  * Read-only.
@@ -75,9 +75,9 @@ export function mountStyleFrames(host: HTMLElement, context: WorkbenchContext, r
     const v = view(current), scenes = allOf(current.district), mix = crowdMix(current.district);
     const head = el('header'); head.append(el('h3', nameOf(current.district)), el('p', current.motto, 'motto'));
     const swatches = el('div', undefined, 'swatches'); swatches.setAttribute('aria-label', 'Proposed palette'); for (const c of current.palette) { const s = el('span'); s.style.background = c; s.title = c; swatches.append(s); }
-    const card = el('dl'); for (const [k, text] of [...current.card, ...(mix ? [['Crowd', `${Math.round(mix.kitted * 100)}% kitted, ${Math.round(mix.robots * 100)}% robots. ${mix.note}`] as [string, string]] : [])]) card.append(el('dt', k), el('dd', text));
+    const card = el('dl'); for (const [k, text] of [...current.card, ...(mix ? [['People mix', `${Math.round(mix.kitted * 100)}% kitted, ${Math.round(mix.robots * 100)}% robots. ${mix.note}`] as [string, string]] : [])]) card.append(el('dt', k), el('dd', text));
     main.replaceChildren(head, swatches);
-    if (!scenes.length) { main.append(el('p', 'No scene in this district yet. The card and crowd mix are ready for when the first one is built.', 'muted'), card); return; }
+    if (!scenes.length) { main.append(el('p', 'No scene in this district yet. The card and people mix are ready for when the first one is built.', 'muted'), card); return; }
     // Scenes show on the Scene stage beside this panel, the one viewport for editing, previewing and playing.
     // A scene with a proposal (or a proposal itself) shows the two side by side.
     const strip = el('div', undefined, 'frame-list'), status = el('p', '', 'muted'); status.setAttribute('role', 'status');
