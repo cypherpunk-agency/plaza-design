@@ -851,6 +851,33 @@
     "stacks.tamperTrace": {
       "kind": "tuning",
       "key": "tamperTrace"
+    },
+    "stacks.reefer.present": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "all": [
+              {
+                "state": "stacks.boxAt",
+                "is": "ferry"
+              },
+              {
+                "state": "stacks.departed",
+                "is": false
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
     }
   }
 }

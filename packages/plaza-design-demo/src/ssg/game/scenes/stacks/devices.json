@@ -366,7 +366,8 @@
         "spot": {
           "x": 1452,
           "w": 96,
-          "h": 58
+          "h": 58,
+          "presence": "stacks.reefer.present"
         },
         "board": {
           "x": 0.7,

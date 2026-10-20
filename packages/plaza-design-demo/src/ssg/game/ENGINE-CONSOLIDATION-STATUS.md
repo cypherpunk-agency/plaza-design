@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `aebc591` on main and production.
-Homepage jobs39363089272/39363089965 and design job39363089914 succeeded.
+Last verified deployment: `565d6b3` on main and production.
+Homepage jobs39364392109/39364392219 and design job39364392266 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2948,3 +2948,32 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
 - Final runtime fingerprint45279058a1de38a399f22b022c52699c59ebbf2cd54d6c330b034082ddd606de
   differs from f146f18f only by the source-template documentation comment. No gate promotion;
   G4/G9/G10/G13 advance, all19 completion and the final removal/inventory audit remain mandatory.
+
+## 2026-10-20 device world presence
+
+- Removed Stacks' reefer-specific native `rules.place` branch. Its existing predicate is now
+  the ordinary shared query `stacks.reefer.present`, referenced by `layout.spot.presence`.
+  Source/editor can change or remove this binding without a per-scene code edit. Source
+  validation rejects missing query references; the common model requires boolean true and
+  omits source predicate metadata from returned world geometry. No additional state owner.
+- Logic → Devices has a typed World presence query selector, including bound artwork devices.
+  The existing shared query editor owns the predicate. This controls device world interaction/
+  hack targets; physical cargo trajectories and procedural art retain their registered owner.
+- `check-device-presence.mts` PASS (`.scene-system/device-presence-Yd12Pb`):all six declared
+  original box-location/departure states, actual typed query rebinding, old query deletion,
+  actual pending model and disposed-query behavior, atomic invalid refs, history/bundle,
+  paired protected source Save/native reload/fresh shipping import and byte-exact Undo.
+- Stacks default spots/geometry check,288 immutable permission histories and21x101 return
+  timeline frames PASS. ENG04 PASS48 original Beach cases and protected source transactions.
+  Package TypeScript and both builds PASS; app-DRP233SN.js/play-TZWMK3MT.js.
+- Real packaged native Stacks Play at x1453:removing the presence binding exposes NRLU4040451
+  in hack vision with the box still at stack; restoring the original source query removes it.
+  Each Stop removes the iframe; warning/error log empty. Only disposable pending fixtures used.
+- Runtime checkpoint c4d3cb3f8f6e17189701950af207ea4c9ad54869041a529899d0d57e61f94265 has
+  the same173 raster-row results as the prior published-source diagnostic:172 unchanged and
+  the previously recorded sole282-pixel Mall animation delta. Raw report:
+  `.scene-system/all-game-pixel-check/evidence/c4d3cb3f8f6e17189701950af207ea4c9ad54869041a529899d0d57e61f94265-1792467262517.json`.
+  Stacks matrix evidence appended afterwards; the checkpoint's source identity remains pinned.
+- No new gate promotion. Remaining ordinary-code audit includes Downtown's side-effecting joke
+  formatter and Stacks' foreign Sprat state read; these were identified, not silently retained
+  as accepted controller primitives. Final all19 inventory/removal and G0-G13 signoff remain open.

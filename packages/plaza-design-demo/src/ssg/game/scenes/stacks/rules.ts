@@ -43,7 +43,7 @@ import type {TerminalGeometry} from '../../art/assemblies/terminal-state';
 import type { SceneData } from "../../data/types";
 import type { PlayerServices } from "../../runtime/player";
 import type { Effect, SceneRules, World } from "../../engine/rules";
-import type { SceneModel, Spot } from "../../engine/model";
+import type { SceneModel } from "../../engine/model";
 
 /** Save flags the end of Act I sets (ROADMAP: the ending). */
 export const ACT1_FLAG = 'act1:done';
@@ -192,10 +192,6 @@ const {X}=geometry;
       craneReturning: (m) => m.scratch.retT0 !== undefined,
     },
     tick,
-    place: (m: SceneModel, home: Spot) => {
-      if (home.id === 'reefer') return stacksState(m,'boxAt') === 'ferry' && !stacksState(m,'departed') ? home : null;
-      return home;
-    },
     needs: {
       devices:[],
       texts: {

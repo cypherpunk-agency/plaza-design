@@ -67,6 +67,12 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   game hosts every scene with `new SceneHost(…, def, rules)`.
 - Where devices stand in the world (`layout.spot`), their board home (`layout.board`) and noun
   directions (`layout.dir`, `layout.vision`): **data**.
+  Optional `layout.spot.presence` references a shared gameplay query. The world device is
+  present only while that query returns boolean `true`; no binding means always present.
+  Edit the binding in Logic → Devices → World presence query and its predicate in the shared
+  query editor. It controls world interaction/hack targets; procedural cargo artwork keeps
+  its own physical trajectory presentation. Missing references reject source edits; a
+  disposed/unavailable query cannot expose the device. It adds no persisted visibility flag.
 - Hack vision's noun order (`layout.row`): **data**, optional; the default order by kind is
   **code** (`RANK` in `schematic.ts`). Where a logic part floats in the world: the **save**
   (`logic[].at`), placed beside the player by the host. Where the player dragged a device's

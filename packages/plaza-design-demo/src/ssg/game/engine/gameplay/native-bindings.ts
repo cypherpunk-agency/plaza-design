@@ -51,6 +51,7 @@ export function validateNativeBindings(d:GameplayDefinition,data:SceneData,deriv
   if('wire'in action){const w=action.wire,at=w.from.lastIndexOf(':'),event=vocab.find(n=>n.key===w.from.slice(0,at));if(!event?.events.includes(w.from.slice(at+1))||!vocab.some(n=>n.key===w.to))fail('wire action endpoint');if(w.op==='connect'&&!vocab.find(n=>n.key===w.to)?.verbs.includes(w.verb))fail('wire action verb');}
   if('trace'in action&&![...data.devices,...data.nodes??[]].some(dev=>dev.id===action.trace.device))fail('trace action device');
  }
+ for(const device of data.devices){const ref=device.layout?.spot?.presence;if(ref!==undefined&&!Object.prototype.hasOwnProperty.call(d.queries??{},ref))fail('world presence query '+ref);}
  const b=d.native;if(!b)return d;for(const key of Object.values(b.reads??{}))if(!Object.prototype.hasOwnProperty.call(data.state,key)&&!derived.includes(key)&&!Object.prototype.hasOwnProperty.call(data.observations?.aliases??{},key))fail('native read '+key);
  for(const r of b.verbs){for(const c of r.cases)validateNativeSaySources(c.say,{...engineSource.texts,...data.texts}as unknown as SceneData['texts']);const n=noun(data,r.device+'.'+r.noun);if(!n?.verbs?.includes(r.verb)||!['ACT','SENSE','STORE'].includes(n.kind))fail('unsupported native verb');}
  const vocabulary=nativeVocabulary(data),event=(key:string)=>{const i=key.lastIndexOf(':');return i>0&&!!vocabulary.find(n=>n.key===key.slice(0,i))?.events.includes(key.slice(i+1));};

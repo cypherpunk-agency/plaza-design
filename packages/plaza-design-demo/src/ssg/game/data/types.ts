@@ -229,7 +229,7 @@ export interface LayoutData {
    * street (default 0: it stands on the street; a sign on a wall or a box on a roof sits higher).
    * Devices without a spot live on the board only (net nodes).
    */
-  spot?: { x: number; w: number; h: number; y?: number };
+  spot?: { x: number; w: number; h: number; y?: number; presence?: string };
   /** Its home on the board, as fractions of the stage. */
   board?: { x: number; y: number };
   /** Which side of the device each noun sits on, on the board / in a device's schematic. */

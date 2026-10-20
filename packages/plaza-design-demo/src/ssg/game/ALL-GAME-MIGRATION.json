@@ -1015,6 +1015,13 @@
           "check": "check-stacks-primitive-roles.mts",
           "artifact": ".scene-system/stacks-roles-save-TriYhO/evidence.json",
           "scope": "Actual primitive scanner/warm dependency, typed rebind/remove, source alarm rename and native flash, grouped Save/fresh shipping/byte Undo. Full scene integration remains open."
+        },
+        "devicePresenceCheckpoint": {
+          "status": "PASS",
+          "check": "check-device-presence.mts",
+          "source": "sha256:c4d3cb3f8f6e17189701950af207ea4c9ad54869041a529899d0d57e61f94265",
+          "artifact": ".scene-system/device-presence-Yd12Pb",
+          "scope": "Six declared original presence states; shared query and actual typed rebind; obsolete query deletion; actual native spots; query disposal; atomic history/bundle/protected Save/fresh import/byte Undo. Full G8/G9/G10/G12/G13 remain open."
         }
       }
     },

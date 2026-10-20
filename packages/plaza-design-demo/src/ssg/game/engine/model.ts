@@ -321,7 +321,9 @@ export class SceneModel {
     const out: Spot[] = [];
     for (const d of this.devices.values()) {
       if (d.logic || d.node || !d.data.layout?.spot) continue;
-      const home: Spot = { id: d.id, ...d.data.layout.spot, y: d.data.layout.spot.y ?? 0 };
+      const {presence,...box}=d.data.layout.spot;
+      if(presence!==undefined&&this.gameplayQuery?.(presence)!==true)continue;
+      const home: Spot = { id: d.id, ...box, y: box.y ?? 0 };
       const s = this.rules.place ? this.rules.place(this, home) : home;
       if (s) out.push(s);
     }
