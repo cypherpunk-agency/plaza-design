@@ -256,7 +256,10 @@ export class SceneModel {
   /** Bind the same source once; standalone engine fixtures may attach it after construction. */
   installGameplaySource(source:GameplayDefinition){if(this.checkpointReady)return;this.checkpointProgram=compileCheckpoint(source,this.data.id);this.checkpointReady=true;}
 
-  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>,gameplay?:GameplayDefinition) {
+  /** The scene's rules; a scene without any (folder scenes with no mechanism) has none to run. */
+  readonly rules: SceneRules;
+  constructor(private hooks: SceneHooks, readonly data: SceneData, rules: SceneRules | undefined, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>,gameplay?:GameplayDefinition) {
+    this.rules = rules ?? { effects: {} };
     this.texts = { ...ENGINE.texts, ...data.texts };
     this.nets = net.networks ?? [];
     this.programList = net.programs ?? [];
