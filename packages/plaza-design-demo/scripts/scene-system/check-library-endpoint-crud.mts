@@ -22,7 +22,7 @@ const base=new Map(rows.map(d=>[d.id,d.value])),copy=()=>structuredClone(base),g
 assert(!protectedDevice('library','session'));assert.deepEqual(deviceRules(SCENES.library).needs!.devices,[]);
 const rebound=copy(),picture=get(rebound,'library');
 picture.instances=picture.instances.filter((n:any)=>n.id!=='session');
-picture.instances.push({id:'review-anchor',type:'furniture.stool',props:{seed:71},placement:{x:240,h:8},order:999,pass:'backdrop'});
+picture.instances.push({id:'review-anchor',type:'furniture.stool',props:{seed:71},placement:{x:240,h:8},order:999,layer:'set'});
 get(rebound,'library-scene').manifest.devices={session:{instance:'review-anchor',x:5,h:3}};
 preserveBoundIdentity(get(base,'library'),picture,art);
 const scene=pendingRegistry(rebound).library;

@@ -15,7 +15,7 @@ import { muteWorld } from '../art/atmosphere/hack-vision';
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 export interface SceneFrame {
   context: CanvasRenderingContext2D; scale: number; view: View; scene: SceneDef; sceneId: string;
-  host: Pick<SceneHost, 'visionOn' | 'draw' | 'model'>;
+  host: Pick<SceneHost, 'visionOn' | 'draw' | 'model'> & Partial<Pick<SceneHost, 'drawLayer'>>;
   reduced: boolean; clock: number; weather: () => Weather;
   /** Also installs native shared light/shade inputs before any artwork runs. */
   lighting: (weather: Weather | null) => Light;
@@ -66,8 +66,10 @@ function renderMeasuredFrame(frame: SceneFrame) {
   frame.roomWash?.(x, v);
   s.drawActors?.(x, v);
   frame.actors?.(x, v);
+  zh.drawLayer?.(x, v, 'over-player');
   perfEnd(pass);pass=perfBegin('render.finish');
   if (!vision) drawShade(x, v);
+  zh.drawLayer?.(x, v, 'foreground');
   s.drawFront?.(x, v);
   if (!vision) { drawGrade(x, v, L); drawLights(x, v, s.lights, L); }
   if (look && !vision) weatherFront(x, v, look);

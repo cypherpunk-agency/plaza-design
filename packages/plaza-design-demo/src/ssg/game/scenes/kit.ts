@@ -27,7 +27,7 @@ import type { EngineDraw, Line, SceneModel, SceneRules, SceneTarget } from "../e
 import type { PanelFn } from '../engine/panels';
 import type { WeatherKind } from "../world/weather";
 import type { Caster, SceneLight, Shade } from "../art/atmosphere/lighting";
-import type { Environment, Value } from '../art/core/composition';
+import type { Environment, LayerSlot, Value } from '../art/core/composition';
 
 /** What a scene's draw functions get from the engine, refreshed every frame. */
 export type { View } from '../art/core/view';
@@ -301,6 +301,9 @@ export interface SceneDef {
    * draws everything for 'world' and nothing for 'devices'.
    */
   drawBackdrop: (x: CanvasRenderingContext2D, v: View, e: EngineDraw) => void;
+  /** Layered scenes: playfield rows after the player row ('over-player') and the foreground layer.
+   * Everything behind the player still comes from drawBackdrop. */
+  drawLayer?: (x: CanvasRenderingContext2D, v: View, e: EngineDraw, slot: Exclude<LayerSlot, 'behind-player'>) => void;
   /** Foreground in front of the player (near pillars, passers-by). */
   drawFront?: (x: CanvasRenderingContext2D, v: View) => void;
 }

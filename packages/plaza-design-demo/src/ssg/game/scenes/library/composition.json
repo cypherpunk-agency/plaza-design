@@ -4,14 +4,14 @@
   "instances": [
     {
       "id": "spawn",
-      "type": "library.spawn-marker",
+      "type": "scene.player",
       "props": {},
       "placement": {
         "x": 74,
         "h": 0
       },
-      "order": -1,
-      "pass": "backdrop"
+      "order": 40,
+      "layer": "playfield"
     },
     {
       "id": "room",
@@ -26,7 +26,7 @@
         "h": 0
       },
       "order": 0,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "window-1",
@@ -40,7 +40,7 @@
         "h": 0
       },
       "order": 1,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "window-2",
@@ -54,7 +54,7 @@
         "h": 0
       },
       "order": 2,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "window-3",
@@ -68,7 +68,7 @@
         "h": 0
       },
       "order": 3,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "shelves",
@@ -81,7 +81,7 @@
         "h": 0
       },
       "order": 4,
-      "pass": "backdrop",
+      "layer": "backdrop",
       "bindings": {
         "windows": "architecture.windows"
       }
@@ -98,7 +98,7 @@
         "h": 0
       },
       "order": 5,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "ceiling",
@@ -112,7 +112,7 @@
         "h": 0
       },
       "order": 6,
-      "pass": "backdrop"
+      "layer": "backdrop"
     },
     {
       "id": "registry-strip",
@@ -127,7 +127,7 @@
         "h": 140
       },
       "order": 7,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "registry-camera",
@@ -141,7 +141,7 @@
         "h": 150
       },
       "order": 8,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "wall-clock",
@@ -152,7 +152,7 @@
         "h": 84
       },
       "order": 9,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "pendant-1",
@@ -166,7 +166,7 @@
         "h": 120
       },
       "order": 10,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "pendant-2",
@@ -180,7 +180,7 @@
         "h": 124
       },
       "order": 11,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "pendant-3",
@@ -194,7 +194,7 @@
         "h": 122
       },
       "order": 12,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "pendant-4",
@@ -208,7 +208,7 @@
         "h": 126
       },
       "order": 13,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "downtown-door",
@@ -221,7 +221,7 @@
         "h": 0
       },
       "order": 14,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "notice",
@@ -232,7 +232,7 @@
         "h": 98
       },
       "order": 15,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "free-terminal-note",
@@ -247,7 +247,7 @@
         "h": 50
       },
       "order": 16,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "printer-note",
@@ -262,7 +262,7 @@
         "h": 52
       },
       "order": 17,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "session",
@@ -273,7 +273,7 @@
         "h": 84
       },
       "order": 18,
-      "pass": "backdrop",
+      "layer": "set",
       "bindings": {
         "hover": "device.session.hover"
       }
@@ -290,7 +290,7 @@
         "h": 0
       },
       "order": 19,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "terminal-2",
@@ -304,7 +304,7 @@
         "h": 0
       },
       "order": 20,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "terminal-3",
@@ -318,7 +318,7 @@
         "h": 0
       },
       "order": 21,
-      "pass": "backdrop"
+      "layer": "set"
     },
     {
       "id": "reader",
@@ -329,7 +329,7 @@
         "h": 0
       },
       "order": 22,
-      "pass": "backdrop",
+      "layer": "set",
       "bindings": {
         "hover": "device.reader.hover",
         "online": "catalog.connected"
@@ -346,7 +346,7 @@
         "h": 0
       },
       "order": 23,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.shelfe.pose"
       }
@@ -363,7 +363,7 @@
         "h": 0
       },
       "order": 24,
-      "pass": "backdrop"
+      "layer": "playfield"
     },
     {
       "id": "librarian",
@@ -376,7 +376,7 @@
         "h": 0
       },
       "order": 25,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.librarian.pose"
       }
@@ -390,7 +390,7 @@
         "h": 0
       },
       "order": 26,
-      "pass": "backdrop",
+      "layer": "playfield",
       "attach": {
         "instance": "counter",
         "anchor": "top"
@@ -408,7 +408,7 @@
         "h": 0
       },
       "order": 27,
-      "pass": "backdrop"
+      "layer": "playfield"
     },
     {
       "id": "radiator",
@@ -422,7 +422,7 @@
         "h": 0
       },
       "order": 28,
-      "pass": "backdrop"
+      "layer": "playfield"
     },
     {
       "id": "armchair-1",
@@ -435,7 +435,7 @@
         "h": 0
       },
       "order": 29,
-      "pass": "backdrop"
+      "layer": "playfield"
     },
     {
       "id": "armchair-2",
@@ -448,7 +448,7 @@
         "h": 0
       },
       "order": 30,
-      "pass": "backdrop"
+      "layer": "playfield"
     },
     {
       "id": "armchair-3",
@@ -461,7 +461,7 @@
         "h": 0
       },
       "order": 31,
-      "pass": "backdrop"
+      "layer": "playfield"
     },
     {
       "id": "armchair-4",
@@ -474,7 +474,7 @@
         "h": 0
       },
       "order": 32,
-      "pass": "backdrop"
+      "layer": "playfield"
     },
     {
       "id": "student",
@@ -487,7 +487,7 @@
         "h": 0
       },
       "order": 33,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.student.pose"
       },
@@ -507,7 +507,7 @@
         "h": 0
       },
       "order": 34,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.kid.pose"
       },
@@ -527,7 +527,7 @@
         "h": 0
       },
       "order": 35,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.sleeper.pose"
       },
@@ -547,7 +547,7 @@
         "h": 0
       },
       "order": 36,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.knitter.pose"
       },
@@ -567,7 +567,7 @@
         "h": 0
       },
       "order": 37,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.paper.pose"
       },
@@ -587,7 +587,7 @@
         "h": 0
       },
       "order": 38,
-      "pass": "backdrop",
+      "layer": "playfield",
       "bindings": {
         "pose": "actor.cat.pose"
       },
@@ -609,7 +609,7 @@
         "h": 0
       },
       "order": 39,
-      "pass": "backdrop"
+      "layer": "playfield"
     }
   ]
 }

@@ -1,7 +1,8 @@
 /**
  * Library › Style frames: one frame per district (art direction, 2026-10-20). Each frame pairs the
  * district's card (palette, light, materials, signage, people, landmark, crowd mix) with its real
- * scenes as thumbnails. Scenes open on the Scene stage (comparing with a proposal when there is one).
+ * scenes as thumbnails. The panel sits beside the Scene stage; picking a scene shows it there (compared
+ * with its proposal when there is one) without leaving the tab.
  * Read-only.
  */
 import type { EditorDocument, PreviewRequest, PreviewResult, WorkbenchContext } from './app';
@@ -70,27 +71,35 @@ export function mountStyleFrames(host: HTMLElement, context: WorkbenchContext, r
   function refresh() {
     if (disposed) return;
     const current = STYLE_FRAMES.find(f => f.district === session.district) ?? STYLE_FRAMES[0]; session.district = current.district;
-    bar.replaceChildren(...STYLE_FRAMES.map(f => { const b = button('', () => { session.district = f.district; refresh(); }, 'chip'); b.append(el('span', nameOf(f.district)), el('small', String(allOf(f.district).length))); b.title = `${nameOf(f.district)} · ${scenesOf(f.district).length ? `${scenesOf(f.district).length} scenes` : 'no scenes yet'}${proposalsOf(f.district).length ? `, ${proposalsOf(f.district).length} proposal` : ''}`; b.setAttribute('aria-pressed', String(f === current)); return b; }));
+    bar.replaceChildren(...STYLE_FRAMES.map(f => { const b = button('', () => { session.district = f.district; refresh(); show(); }, 'chip'); b.append(el('span', nameOf(f.district)), el('small', String(allOf(f.district).length))); b.title = `${nameOf(f.district)} · ${scenesOf(f.district).length ? `${scenesOf(f.district).length} scenes` : 'no scenes yet'}${proposalsOf(f.district).length ? `, ${proposalsOf(f.district).length} proposal` : ''}`; b.setAttribute('aria-pressed', String(f === current)); return b; }));
     const v = view(current), scenes = allOf(current.district), mix = crowdMix(current.district);
     const head = el('header'); head.append(el('h3', nameOf(current.district)), el('p', current.motto, 'motto'));
     const swatches = el('div', undefined, 'swatches'); swatches.setAttribute('aria-label', 'Proposed palette'); for (const c of current.palette) { const s = el('span'); s.style.background = c; s.title = c; swatches.append(s); }
     const card = el('dl'); for (const [k, text] of [...current.card, ...(mix ? [['Crowd', `${Math.round(mix.kitted * 100)}% kitted, ${Math.round(mix.robots * 100)}% robots. ${mix.note}`] as [string, string]] : [])]) card.append(el('dt', k), el('dd', text));
     main.replaceChildren(head, swatches);
     if (!scenes.length) { main.append(el('p', 'No scene in this district yet. The card and crowd mix are ready for when the first one is built.', 'muted'), card); return; }
-    // Scenes open on the Scene stage, the one viewport for editing, previewing and playing. A scene with a
-    // proposal (or a proposal itself) opens comparing the two side by side.
-    const strip = el('div', undefined, 'frame-strip'), status = el('p', '', 'muted'); status.setAttribute('role', 'status');
+    // Scenes show on the Scene stage beside this panel, the one viewport for editing, previewing and playing.
+    // A scene with a proposal (or a proposal itself) shows the two side by side.
+    const strip = el('div', undefined, 'frame-list'), status = el('p', '', 'muted'); status.setAttribute('role', 'status');
     const look = { cameraX: 0, minute: v.minute, weather: v.weather };
     for (const scene of scenes) {
       const proposal = PROPOSAL_SCENES.find(p => (p.base === scene || p.id === scene) && docs.get(p.id)?.kind === 'composition');
       const compare = proposal ? (proposal.id === scene ? proposal.base : proposal.id) : undefined;
-      const pick = button('', () => context.openScene(scene, compare), 'asset-card'), thumb = el('canvas'); thumb.width = 240; thumb.height = 135;
-      pick.title = compare ? `Open ${sceneName(scene)} on the Scene stage, compared with ${sceneName(compare)}` : `Open ${sceneName(scene)} on the Scene stage`;
+      const pick = button('', () => { v.scene = scene; show(); for (const card of strip.children) card.setAttribute('aria-pressed', String(card === pick)); }, 'asset-card'), thumb = el('canvas'); thumb.width = 240; thumb.height = 135;
+      pick.title = compare ? `Show ${sceneName(scene)} on the stage beside ${sceneName(compare)}` : `Show ${sceneName(scene)} on the stage`; pick.setAttribute('aria-pressed', String(scene === v.scene));
       pick.append(thumb, el('span', sceneName(scene))); strip.append(pick);
       requestAnimationFrame(() => { if (!disposed) draw(thumb, status, scene, look); });
     }
-    main.append(el('p', 'Click a scene to open it on the Scene stage. Scenes with a proposal open side by side with it.', 'muted'), strip, status, card);
+    main.append(el('p', 'Pick a scene to show it on the stage. Scenes with a proposal show side by side with it.', 'muted'), strip, status, card);
   }
-  refresh();
+  /** Puts the district's chosen scene on the stage (with its proposal or base beside it). */
+  function show() {
+    const current = STYLE_FRAMES.find(f => f.district === session.district) ?? STYLE_FRAMES[0], v = view(current), scenes = allOf(current.district);
+    const scene = v.scene && scenes.includes(v.scene) ? v.scene : scenes[0]; if (!scene) return;
+    const proposal = PROPOSAL_SCENES.find(p => (p.base === scene || p.id === scene) && docs.get(p.id)?.kind === 'composition');
+    context.openScene(scene, proposal ? (proposal.id === scene ? proposal.base : proposal.id) : undefined);
+  }
+  // After mounting finishes: opening a scene refreshes the editor, which must find this panel mounted.
+  refresh(); queueMicrotask(() => { if (!disposed) show(); });
   return () => { disposed = true; host.replaceChildren(); };
 }

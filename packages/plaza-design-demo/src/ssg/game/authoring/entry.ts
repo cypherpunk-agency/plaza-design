@@ -128,6 +128,13 @@ async function start() {
   const logicScenes:string[]=gameplayScenes.filter(s=>!s.id.startsWith('demo')).flatMap(s=>[s.id,s.prefix]),commandScenes:string[]=[...logicScenes,...nativeGameplayScenes.filter(s=>!s.id.startsWith('demo')).map(s=>s.id)];
 
   mountComposer(host, { registry: art, api, documents, projections:[sceneCatalogueProjection], viewport: { width: 960, height: 540 },
+    sceneTree: documents => {
+      // The pending city source, so moving a place in World › City & travel regroups the picker.
+      const city = documents.find(d => d.id === 'city-source')?.value as { DISTRICTS?: { id: string; name: string }[]; PLACES?: { name: string; district: string | null; scenes: string[] }[] } | undefined;
+      if (!city?.DISTRICTS || !city.PLACES) return [];
+      const placesIn = (district: string | null) => city.PLACES!.filter(p => p.district === district).map(p => ({ label: p.name, scenes: p.scenes }));
+      return [...city.DISTRICTS.map(d => ({ label: d.name, places: placesIn(d.id) })), { label: 'Outside the districts', places: placesIn(null) }];
+    },
     sceneLabel: scene => proposalScene(scene) ? proposalScene(scene)!.label : isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene.startsWith('sequence-') ? 'Sequence · ' + scene.slice('sequence-'.length) : scene,
     sceneDocuments:(scene,documents)=>{try{const entry=gameplayScene(scene,documents);return[entry.prefix+'-scene',entry.gameplayId,...(scene==='sandbox'?['sandbox-behavior']:[])];}catch{return nativeGameplayScene(scene)?[nativeGameplayScene(scene)!.gameplayId]:[];}},
 
@@ -216,7 +223,7 @@ async function start() {
       {id:'demo-world',area:'labs',label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true)},
       { id: 'characters', area: 'library', label: 'Characters', title: 'Character workbench · read-only', mount(panel) { panel.classList.add('character-workbench'); return mountCharacterWorkbench(panel); } },
 
-      { id: 'style-frames', area: 'library', label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
+      { id: 'style-frames', area: 'library', beside: true, label: 'Style frames', title: 'Style frames · each district’s card, crowd mix and scenes · read-only', documentDependent: true, mount(panel, context) {
         return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => proposalScene(scene)?.label ?? (isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene));
       } },
       { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
@@ -272,7 +279,7 @@ async function start() {
 
       { key: 'minute', label: 'Time of day', kind: 'number', min: 0, max: 1439, step: 10, quick: true, choices: [{ label: 'Morning', value: 480 }, { label: 'Noon', value: 720 }, { label: 'Evening', value: 1110 }, { label: 'Night', value: 1320 }] },
       { key: 'weather', label: 'Weather', kind: 'select', options: ['forecast', ...WEATHER_KINDS], quick: true },
-      { key: 'hack', label: 'Hack vision', kind: 'boolean', quick: true },
+      { key: 'hack', label: 'Hack vision', kind: 'boolean', quick: true, shortcut: 'h' },
       { key: 'minute', label: 'City minute', kind: 'number', min: 0, max: 1439, step: 10 }, { key: 'day', label: 'City day', kind: 'number', min: 1, step: 1 },
       { key: 'seed', label: 'Weather seed', kind: 'number', min: 0, step: 1 }, { key: 'hover', label: 'Hovered device id', kind: 'text' },
 

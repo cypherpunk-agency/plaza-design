@@ -127,10 +127,30 @@ area around it, deselects. Only the selected artwork can be dragged; pressing an
 it on release and pans while moving. Arrow keys nudge the selection (Shift for 10, otherwise the
 grid step); Delete removes it; Escape clears it; +, − and 0 zoom; F fits. None of this framing is saved.
 
-The outline groups top-level artwork by kind (people, vehicles, lights, signs, props,
-architecture, markers, groups), with nested artwork under its parent. **Order** shows document
-order instead, and the filter matches id, type or label. Kinds are inferred from type, label and
-catalog category in `layer-roles.ts` and are not written to compositions.
+Every row shows its broad kind on the right: Player, Human, Animal, Robot, Vehicle, Furniture,
+Machine, Light, Sign, Prop, Building, Scenery, Effect, Marker or Group. **Kind** groups top-level
+artwork by it, with nested artwork under its parent. The filter matches id, type or label. Kinds
+come from `layer-roles.ts`: characters from their actor look (body, bot or critter), everything else
+from type name and label, with the registered category as a fallback. They are not written to
+compositions. The artwork library and the Add artwork picker filter by the same kinds; the old
+per-artwork category ("family") is still searchable as a tag.
+
+**Order** shows how the scene is drawn. For a layered scene (Library so far) it is the layer stack,
+front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the engine's own layers
+(sky/city/street, shade, light and grade, prompts) as greyed dividers and the Logic layer (markers)
+listed separately. The **Player** in the Playfield is drawn in the preview: its place in the stack
+is where the player and engine-drawn walkers are drawn (rows above it draw over them), and its
+position is where the player arrives (Library's manifest spawn points at it). Drag rows within or
+between layers, or use **Layer**, **Bring forward** and **Send backward** in the inspector. The stack
+is in `layer-stack.ts`.
+
+Each layer folds with its arrow (or a double-click on its heading). The eye at the right of each row and layer hides it in the editor preview (also for selection); Alt-click
+shows only that row or layer, and **Show all** clears it. Hiding is view state: never saved, never
+applied in Play.
+
+Drag the inner edge of the outline or the inspector to resize it; double-click the edge to reset. The
+widths are remembered per browser. Scenes not yet migrated still show document order and the older Drawing
+pass/Draw order fields.
 
 Under 760px the editor becomes one column with a sticky preview, the zoom bar below it, and an
 Outline/Inspector switch; the Add picker covers the screen.

@@ -8,7 +8,7 @@ import {compileManifestDocument} from '../../engine/gameplay/manifest-content-co
 import {withSceneConversations} from '../../engine/gameplay/scene-conversations';
 import type {GameplayDefinition} from '../../engine/gameplay/types';
 import {LIBRARY_GAMEPLAY,LIBRARY_SCENE,validateLibraryGameplay,validateLibraryScene,librarySource,libraryBindingGroups} from './scene-document';
-import { libraryComposition, validateLibraryComposition, libraryGeometry, type LibraryRenderOptions } from './composition';
+import { libraryComposition, validateLibraryComposition, libraryGeometry, drawLibraryLayer, type LibraryRenderOptions } from './composition';
 /**
  * The public library (Act I, between Capsule 7B and Downtown's net puzzles; P16 Long overdue):
  * Downtown's branch, on the street west of the noodle stall. The books were digitized years ago;
@@ -43,6 +43,7 @@ export function librarySceneDefinition(document: Composition = libraryCompositio
     data:commands.native?projectDeviceBindings(content,geometry,{...deviceSource,dialogue:nativeDeviceDialogues(commands,deviceSource)},compiled.content.width):undefined,rules:commands.native?LIBRARY_RULES:undefined,
     people:content.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]),
     drawBackdrop:(ctx,view,engine)=>drawLibrary(ctx,view,engine,doc,state,options,actors),
+    drawLayer:(ctx,view,engine,slot)=>drawLibraryLayer(ctx,view,engine,actors,slot,doc,state,options),
     visualEnvironment:(view,engine)=>libraryFrameEnvironment(view,engine,doc,actors),
     intro:(touch:boolean)=>content.introTouch&&touch?[...content.introTouch]:content.intro.map(page=>touch?page.replace('H shows how the room is wired.','HACK shows how the room is wired.'):page),
   };
