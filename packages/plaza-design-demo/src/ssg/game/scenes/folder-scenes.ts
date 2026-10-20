@@ -43,6 +43,10 @@ import harborStationComposition from './harborStation/composition.json';
 import harborStationScene from './harborStation/scene.json';
 import harborStationGameplay from './harborStation/gameplay.json';
 import harborStationDevices from './harborStation/devices.json';
+import mothComposition from './moth/composition.json';
+import mothScene from './moth/scene.json';
+import mothGameplay from './moth/gameplay.json';
+import mothDevices from './moth/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -60,6 +64,7 @@ export const FOLDER_SOURCES={
  stacks:{composition:stacksComposition,scene:stacksScene,gameplay:stacksGameplay,devices:stacksDevices},
  galleriaStation:{composition:galleriaStationComposition,scene:galleriaStationScene,gameplay:galleriaStationGameplay,devices:galleriaStationDevices},
  harborStation:{composition:harborStationComposition,scene:harborStationScene,gameplay:harborStationGameplay,devices:harborStationDevices},
+ moth:{composition:mothComposition,scene:mothScene,gameplay:mothGameplay,devices:mothDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */
 export const FOLDER_DIRS:Readonly<Record<string,string>>={harborShift:'harbor-shift'};

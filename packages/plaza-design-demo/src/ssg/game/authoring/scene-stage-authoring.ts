@@ -26,6 +26,9 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
  form.select(room,'Horizon from role',[none,...roles],stage.horizon?.role??none,v=>stageEdit('Edit horizon role',s=>{if(v===none)delete s.horizon;else s.horizon={...(s.horizon??{}),role:v};}));
  if(stage.horizon)form.text(room,'Horizon property (blank: artwork height)',stage.horizon.prop??'',v=>stageEdit('Edit horizon property',s=>{if(v.trim())s.horizon!.prop=v.trim();else delete s.horizon!.prop;}));
  form.select(room,'Front shade from role',[none,...roles],stage.shade?.front?.role??none,v=>stageEdit('Edit front shade',s=>{if(v===none)delete s.shade;else s.shade={front:{...(s.shade?.front??{}),role:v}};}));
+ // engine target anchors
+ const anchorBox=form.section(host,'Engine target anchors');
+ for(const role of roles)form.check(anchorBox,'Targets may anchor to '+role,(stage.targetAnchors??[]).includes(role),on=>stageEdit('Edit target anchors',s=>{const list=new Set(s.targetAnchors??[]);if(on)list.add(role);else list.delete(role);if(list.size)s.targetAnchors=roles.filter(r=>list.has(r));else delete s.targetAnchors;}));
  // lights and casters
  const sourceRows=<T extends {type?:string;role?:string}>(box:HTMLElement,key:'lights'|'casters',list:readonly T[],extra:(row:HTMLElement,item:T,i:number)=>void,fresh:()=>T)=>{
   list.forEach((item,i)=>{const row=form.section(box,key.slice(0,-1)+' '+(i+1));

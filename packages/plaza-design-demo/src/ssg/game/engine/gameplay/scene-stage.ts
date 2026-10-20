@@ -37,17 +37,20 @@ export interface SceneStage {
  actors?:StageActorRules;
  /** Registered mechanisms the scene uses (scene-mechanisms.ts), by name. */
  mechanisms?:string[];
+ /** Artwork roles an engine target (scene.nativeTargets) may anchor to; each is bound where its artwork stands. */
+ targetAnchors?:string[];
 }
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 const name=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,95}$/.test(v);
 export function validateSceneStage(value:unknown):SceneStage{
  const fail=(why:string):never=>{throw new Error('Invalid scene stage: '+why);};
  if(!object(value))fail('expected an object');const s=value as Record<string,unknown>;
- if(Object.keys(s).some(k=>!['facing','horizon','shade','lights','casters','actors','mechanisms'].includes(k)))fail('unknown field');
+ if(Object.keys(s).some(k=>!['facing','horizon','shade','lights','casters','actors','mechanisms','targetAnchors'].includes(k)))fail('unknown field');
  if(s.actors!==undefined){const a=s.actors as Record<string,unknown>;if(!object(a)||Object.keys(a).some(k=>k!=='clip'&&k!=='cull'))fail('actors');for(const c of (a.clip??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).sort().join()!=='actors,to'||!name(c.actors)||!name(c.to))fail('actors clip');for(const c of (a.cull??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).some(k=>!['actor','role','margin'].includes(k))||!name(c.actor)||!name(c.role)||c.margin!==undefined&&typeof c.margin!=='number')fail('actors cull');if(a.clip!==undefined&&!Array.isArray(a.clip)||a.cull!==undefined&&!Array.isArray(a.cull))fail('actors lists');}
  if(s.facing!==undefined){const f=s.facing as Record<string,unknown>;if(!object(f)||!name(f.role)||f.prop!==undefined&&!name(f.prop)||f.fallback!==undefined&&typeof f.fallback!=='number')fail('facing');}
  if(s.horizon!==undefined){const h=s.horizon as Record<string,unknown>;if(!object(h)||Object.keys(h).some(k=>k!=='role'&&k!=='prop')||!name(h.role)||h.prop!==undefined&&!name(h.prop))fail('horizon');}
  if(s.shade!==undefined){const sh=s.shade as Record<string,unknown>;if(!object(sh)||Object.keys(sh).some(k=>k!=='front'))fail('shade');const fr=sh.front as Record<string,unknown>|undefined;if(fr!==undefined&&(!object(fr)||!name(fr.role)||fr.gapFrom!==undefined&&typeof fr.gapFrom!=='number'))fail('shade front');}
+ if(s.targetAnchors!==undefined&&(!Array.isArray(s.targetAnchors)||s.targetAnchors.length>16||s.targetAnchors.some(a=>!name(a))||new Set(s.targetAnchors).size!==s.targetAnchors.length))fail('targetAnchors');
  const sources=(list:unknown,what:string,keys:string[])=>{if(list===undefined)return;if(!Array.isArray(list)||list.length>16)fail(what);for(const l of list as unknown[]){const r=l as Record<string,unknown>;if(!object(r)||Object.keys(r).some(k=>!keys.includes(k))||(r.type===undefined)===(r.role===undefined)||r.type!==undefined&&!name(r.type)||r.role!==undefined&&!name(r.role))fail(what);}};
  if(s.mechanisms!==undefined&&(!Array.isArray(s.mechanisms)||new Set(s.mechanisms).size!==s.mechanisms.length||s.mechanisms.some(m=>typeof m!=='string'||!Object.prototype.hasOwnProperty.call(SCENE_MECHANISMS,m))))fail('mechanisms');
  sources(s.lights,'lights',['type','role','style','color','centre','lift','radius','tint']);

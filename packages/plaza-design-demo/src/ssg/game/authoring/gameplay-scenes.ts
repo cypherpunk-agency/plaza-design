@@ -2,6 +2,7 @@ import type {NativeTargetValidationContext} from '../engine/gameplay/native-targ
 import {authoredDocumentId,type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {declaredScene} from '../engine/gameplay/declared-scene';
 import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
+import {declaredSceneOptions} from '../engine/gameplay/declared-scene';
 import {FOLDER_BY_ID,FOLDER_DIRS} from '../scenes/folder-scenes';
 import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
@@ -21,8 +22,6 @@ import {capsuleScene} from '../scenes/capsule';
 import {content as capsuleContent} from '../scenes/capsule/scene-document';
 import {yardScene} from '../scenes/yard';
 import {content as yardContent} from '../scenes/yard/scene-document';
-import {mothScene} from '../scenes/moth';
-import {content as mothContent} from '../scenes/moth/scene-document';
 import {metroScene} from '../scenes/metro';
 import {content as metroContent} from '../scenes/metro/scene-document';
 import {trainScene} from '../scenes/train';
@@ -42,7 +41,6 @@ const sandboxWithDevices=(...args:DeviceSourceArguments)=>sandboxScene(args[0],a
 const downtownWithDevices=(...args:DeviceSourceArguments)=>downtownScene(args[0],undefined,args[2],args[3],args[4],args[5]);
 const beachWithDevices=(...args:DeviceSourceArguments)=>beachScene(args[0],args[1],args[2],args[4],args[3],args[6],args[5]);
 const yardWithDevices=(...args:DeviceSourceArguments)=>yardScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
-const mothWithDevices=(...args:DeviceSourceArguments)=>mothScene(args[0],args[1],args[2],args[3],args[4],args[6],args[5]);
 const trainWithDevices=(...args:DeviceSourceArguments)=>trainScene(args[0],args[1],args[2],args[3],args[4],args[5]);
 const definitions=[
  {id:'downtown',prefix:'downtown',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:downtownContent.validateScene,validateGameplay:downtownContent.validateGameplay,definition:downtownAuthoredScene,definitionWithDevices:downtownWithDevices},
@@ -51,7 +49,6 @@ const definitions=[
  {id:'sandbox',prefix:'sandbox',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:sandboxContent.validateScene,validateGameplay:sandboxContent.validateGameplay,definition:sandboxAuthoredScene,definitionWithDevices:sandboxWithDevices},
  {id:'capsule',prefix:'capsule',bindingGroups:['uses','readables','rests','exits'] as const,data:CAPSULE,validateScene:capsuleContent.validateScene,validateGameplay:capsuleContent.validateGameplay,definition:capsuleScene,definitionWithDevices:capsuleWithDevices},
  {id:'yard',prefix:'yard',bindingGroups:['uses','readables','rests','exits'] as const,data:YARD,validateScene:yardContent.validateScene,validateGameplay:yardContent.validateGameplay,definition:yardScene,definitionWithDevices:yardWithDevices},
- {id:'moth',prefix:'moth',bindingGroups:['uses','readables','rests','exits'] as const,validateScene:mothContent.validateScene,validateGameplay:mothContent.validateGameplay,definition:mothScene,definitionWithDevices:mothWithDevices},
 
  {id:'metro',prefix:'metro',validateScene:metroContent.validateScene,validateGameplay:metroContent.validateGameplay,definition:metroAuthoredScene},
  {id:'train',prefix:'train',validateScene:trainContent.validateScene,validateGameplay:trainContent.validateGameplay,definition:trainScene,definitionWithDevices:trainWithDevices},
@@ -62,7 +59,7 @@ const definitions=[
 ] as const;
 /** Folder scenes (engine/gameplay/folder-scene.ts): one generic registration each, no scene code. */
 const folderDefinitions=FOLDER_SCENE_IDS.map(id=>({id,prefix:FOLDER_DIRS[id]??id,
- validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_BY_ID[id].gameplay))=>{const d=validateSceneDocument(value,g,{manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors)});if(d.id!==id)throw new Error('Scene identity is protected');return d;},
+ validateScene:(value:unknown,g:import('../engine/gameplay/types').GameplayDefinition=validateGameplay(FOLDER_BY_ID[id].gameplay),context?:NativeTargetValidationContext)=>{const d=validateSceneDocument(value,g,declaredSceneOptions(value,context));if(d.id!==id)throw new Error('Scene identity is protected');return d;},
  validateGameplay,
  definition:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay}),
  definitionWithDevices:(c?:Composition,state?:Environment['state'],options?:Partial<Environment>,scene?:SceneDocument,gameplay?:import('../engine/gameplay/types').GameplayDefinition,devices?:unknown,_context?:unknown)=>folderSceneDefinition(id,FOLDER_BY_ID[id],{composition:c,state,options,scene,gameplay,devices}),
