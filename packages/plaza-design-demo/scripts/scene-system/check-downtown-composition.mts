@@ -1,7 +1,12 @@
+import bindingSource from '../../src/ssg/game/scenes/downtown/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import type {SceneData as GeometryDeviceData} from '../../src/ssg/game/data/types';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import {referenceView} from './reference-view';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';import vm from 'node:vm';import ts from 'typescript';
-import { downtownArt,downtownComposition,downtownDeviceData,downtownGeometry,downtownLights,downtownCasters,renderDowntownCity,renderDowntownStreet,renderDowntownPeople,renderDowntownDevices,validateDowntownComposition,SMEARS } from '../../src/ssg/game/scenes/downtown/composition.ts';
+import { downtownArt,downtownComposition,downtownGeometry,downtownLights,downtownCasters,renderDowntownCity,renderDowntownStreet,renderDowntownPeople,renderDowntownDevices,validateDowntownComposition,SMEARS } from '../../src/ssg/game/scenes/downtown/composition.ts';
 import { downtownScene } from '../../src/ssg/game/scenes/downtown/index';
 import { downtownPlacements,downtownDoors } from '../../src/ssg/game/scenes/downtown/placements';
 import { FRONTS, STALL, LEVEL_W, PLATFORMS } from '../../src/ssg/game/scenes/downtown/layout';
@@ -19,6 +24,8 @@ import devices from '../../src/ssg/game/scenes/downtown/devices.json';
 import type { SceneData } from '../../src/ssg/game/data/types';
 import type { SceneModel } from '../../src/ssg/game/engine/model';
 import type { View } from '../../src/ssg/game/art/core/view';
+const downtownDeviceData=(data:GeometryDeviceData,composition=downtownComposition)=>{const source=bindingSource as unknown as SceneDocument,rows=downtownGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalizeGeometry=(data:GeometryDeviceData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 const root=path.resolve('../..'),backup=path.join(root,'.scene-system/downtown-s5-original');
 function methodBodies(file:string,name:string){const s=ts.createSourceFile(file,fs.readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true),c=s.statements.find(n=>ts.isClassDeclaration(n)&&n.name?.text===name) as ts.ClassDeclaration;return new Map(c.members.filter(ts.isMethodDeclaration).map(n=>[n.name.getText(s),n.body!.getText(s).replaceAll('\r','')]));}
 const immutableBodies=methodBodies(path.join(root,'.scene-system/baseline/source/ssg/game/game.ts'),'Game');
@@ -40,7 +47,7 @@ let referenceViewForOld:View;
 const before=load(path.join(backup,'art/assemblies/downtown.ts'),{...sprites,FRONTS:oldLayout.FRONTS,NPCS:oldLayout.NPCS,STALL:oldLayout.STALL,LEVEL_W:oldLayout.LEVEL_W,DOORS:downtownDoors,windowLit:light.windowLit,lightNow:light.light,glass,addLight:(source:Parameters<typeof addLight>[1])=>addLight(referenceViewForOld,source),castShadow,ticker,YELLOW,screenLine,sceneClimate});
 const oldDevices=load(path.join(backup,'art/electronics/downtown-devices.ts'),primitives).createDowntownDevicesArtwork({MAP_KIOSK_X:1392});
 assert.deepEqual(SMEARS,JSON.parse(JSON.stringify(before.SMEARS)));
-assert.deepEqual(downtownDeviceData(devices as SceneData),devices);
+assert.deepEqual(downtownDeviceData(devices as SceneData),normalizeGeometry(devices as SceneData));
 const oldIndexFile=path.join(backup,'scenes/downtown/index.ts'),oldIndex=ts.createSourceFile(oldIndexFile,fs.readFileSync(oldIndexFile,'utf8'),ts.ScriptTarget.Latest,true);
 function originalProperty(name:string):unknown{let code='';function visit(n:ts.Node){if(ts.isVariableDeclaration(n)&&n.name.getText(oldIndex)==='downtown')for(const p of (n.initializer as ts.ObjectLiteralExpression).properties)if(ts.isPropertyAssignment(p)&&p.name.getText(oldIndex)===name)code=p.initializer.getText(oldIndex);ts.forEachChild(n,visit);}visit(oldIndex);return vm.runInNewContext('('+code+')');}
 assert.deepEqual(downtownLights(),JSON.parse(JSON.stringify(originalProperty('lights'))));

@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `ffe3d4a` on main and production.
-Production/main homepage jobs39346800192/39346800107 and design job39346800184 succeeded.
+Last verified deployment: `74b7d36` on main and production.
+Production/main homepage jobs39347266143/39347265633 and design job39347266264 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2494,3 +2494,29 @@ differences/errors (independently verified). Actual Yard/Moth/Library/Laundry/St
 Play/Stop PASS, no warning/error logs. Package app-O4XKOBGX.js / play-Q4T6C5OV.js /
 play-90c93642992aeee9.html. Remaining device adapters: Downtown, Beach, Sandbox, Train (property-driven
 size/height inputs). All remaining whole-goal gates remain open.
+
+## 2026-10-20 Shared device extents / all placement adapters removed
+
+The common manifest device binding now optionally names widthProperty, heightProperty and
+heightOffsetProperty. These are validated finite numeric artwork-property refs with positive
+extents, resolved scale, and the existing point/anchor/offset bounds; no expressions/eval. Actual
+Device inspector selectors edit them, preserve compatible refs on rebind, and clear incompatible
+refs when changing owners. Offset controls continue to apply in local artwork coordinates.
+Downtown, Beach, Sandbox and Train declare their54 device spots/extents through this contract.
+All ten scene-specific DeviceData geometry adapters and the authoring routing table are deleted.
+Native simulation/rules remain their existing sole implementations; no state owner or save bridge.
+
+Committed54-spot pre-change fixture ties to sourcead7e72626a90/commit74b7d36; all spots match exactly
+with optional zero height normalized. Actual four-scene property/offset controls, scale1.25, swapped
+extent refs, former marker deletion, explicit companion-perch dependency rebind, invalid refs/zero
+extent atomic rejection, bundles/protected Save/fresh shipping/byte Undo PASS
+(`device-property-geometry-ZSUCTh`, also dnpXpG before durable fixture-path cleanup). Previous
+five-scene common binding proof PASS (`shared-device-geometry-6qek60`). Ten default device-source
+primitive/cable cases PASS. Original Downtown143, Beach60 and Train270 Canvas-command cases PASS;
+Sandbox37 spot/visual checks,109 ordinary histories, Beach512 and Train188 live/timing histories PASS.
+tsc/both builds PASS. Sourcef4a4078370ca9cfbd761786d1991a119d63273b548759f6c8512cdcb31e4b566 passes173/173 browser raster rows
+with zero differences/errors (independently verified). Actual Downtown/Beach/Sandbox/Train native
+packaged Play/Stop PASS with no warning/error logs; actual inspector dimension selectors confirmed.
+Package app-E4BIS7XE.js / play-PGKPC6MZ.js / play-14bfe9cae75ebdba.html. No whole-goal gate promotion:
+remaining native geometry/actor contracts and all19 inventory/world/network/current-save/lifecycle/
+removal reconciliation still need completion.

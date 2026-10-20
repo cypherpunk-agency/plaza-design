@@ -77,3 +77,24 @@ Interiors10, Stacks22/NPC/tea, Yard native source/controller proof and both buil
 Sourcead7e72626a90 passes173 original raster rows without differences/errors and targeted five-scene
 native Play/Stop without warnings. Four size/offset-derived adapters remain to migrate through a
 shared typed device extent/property contract; none is declared complete by this checkpoint.
+
+## One device artwork projection
+
+2026-10-20: all ten placement adapters and their editor routing table are removed. Common device
+bindings optionally select widthProperty, heightProperty and heightOffsetProperty from their bound
+artwork. Dimensions must resolve positive; offsets finite; scale/anchors and authored local offsets
+use the existing world-point bounds. Controls are in the selected artwork's Device inspector.
+Rebinding keeps compatible property refs; detaching copies the current projected spot into explicit
+device source coordinates. No controller, old marker identity or fallback source is inferred.
+
+Downtown10, Beach6, Sandbox37 and Train1 now own explicit source geometry through this contract.
+The committed fixture scripts/scene-system/fixtures/device-property-spots-before.json records the54
+pre-change spots at sourcead7e72626a90/74b7d36. check-device-property-geometry.mts matches every spot,
+uses actual controls to swap properties/change offsets on scaled replacement artwork, deletes old
+markers after updating real dependencies, rejects invalid refs/zero extents atomically, and covers
+history/bundle/protected Save/fresh import/byte Undo (`device-property-geometry-ZSUCTh`).
+Original Downtown143/Beach60/Train270 paint commands and Sandbox37 geometry cases PASS; Sandbox109,
+Beach512 and Train188 outcome/timing histories PASS. Ten device-source defaults/cables/primitive
+checks, prior five-scene projection proof, both builds/tsc PASS. Sourcef4a4078370ca passes all173
+zero-difference/error raster rows and targeted four-scene native editor Play/Stop without warnings.
+Remaining geometry contracts concern the pictures/controllers themselves, not device placement.

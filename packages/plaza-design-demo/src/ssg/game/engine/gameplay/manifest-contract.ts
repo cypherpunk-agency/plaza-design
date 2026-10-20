@@ -2,8 +2,11 @@
 export const manifestGroups=['uses','people','readables','rests','exits'] as const;
 export type ManifestGroup=typeof manifestGroups[number];
 export type ManifestTarget=string|{instance:string;anchor?:string;x?:number;h?:number;promptH?:number;responseH?:number;responseAboveFloor?:true;promptAboveFloor?:true};
+export const devicePropertyFields=['widthProperty','heightProperty','heightOffsetProperty'] as const;
+export type DevicePropertyFields=Partial<Record<typeof devicePropertyFields[number],string>>;
+export type DeviceManifestTarget=string|(Exclude<ManifestTarget,string>&DevicePropertyFields);
 export type ManifestWidth=number|{instance:string;property:string};
-export interface SceneManifest {artwork?:Record<string,string>;devices?:Record<string,ManifestTarget>;version:1;width:ManifestWidth;spawn:ManifestTarget;uses:Record<string,ManifestTarget>;people?:Record<string,ManifestTarget>;readables?:Record<string,ManifestTarget>;rests?:Record<string,ManifestTarget>;exits?:Record<string,ManifestTarget>}
+export interface SceneManifest {artwork?:Record<string,string>;devices?:Record<string,DeviceManifestTarget>;version:1;width:ManifestWidth;spawn:ManifestTarget;uses:Record<string,ManifestTarget>;people?:Record<string,ManifestTarget>;readables?:Record<string,ManifestTarget>;rests?:Record<string,ManifestTarget>;exits?:Record<string,ManifestTarget>}
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 const id=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(v)&&!['constructor','prototype','__proto__'].includes(v);
 export const targetInstance=(target:ManifestTarget)=>typeof target==='string'?target:target.instance;
@@ -24,6 +27,6 @@ export function validateManifest(value:unknown):SceneManifest{
  for(const group of manifestGroups){const bindings=m[group];if(bindings===undefined&&group!=='uses')continue;
  if(!object(bindings)||Object.keys(bindings).length>32)throw new Error('Invalid manifest '+group+' bindings');
  for(const[key,target]of Object.entries(bindings)){if(!id(key))throw new Error('Invalid manifest content ID');validateManifestTarget(target);}}
- if(m.devices!==undefined){if(!object(m.devices)||Object.keys(m.devices).length>128)throw Error('Invalid manifest device bindings');for(const[key,target]of Object.entries(m.devices)){if(!id(key))throw Error('Invalid device binding ID');validateManifestTarget(target);if(typeof target!=='string'&&Object.keys(target).some(k=>!['instance','anchor','x','h'].includes(k)))throw Error('Device binding has no text-height properties');}}
+ if(m.devices!==undefined){if(!object(m.devices)||Object.keys(m.devices).length>128)throw Error('Invalid manifest device bindings');for(const[key,target]of Object.entries(m.devices)){if(!id(key))throw Error('Invalid device binding ID');if(typeof target==='string')validateManifestTarget(target);else{const base=Object.fromEntries(Object.entries(target).filter(([k])=>!(devicePropertyFields as readonly string[]).includes(k)));validateManifestTarget(base);if(Object.keys(base).some(k=>!['instance','anchor','x','h'].includes(k)))throw Error('Device binding has no text-height properties');for(const field of devicePropertyFields)if(target[field]!==undefined&&!id(target[field]))throw Error('Invalid device artwork property reference');}}}
  return structuredClone(m);
 }

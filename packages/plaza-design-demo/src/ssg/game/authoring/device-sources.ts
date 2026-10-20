@@ -2,7 +2,6 @@ import {stateRequirement} from '../data/state-requirements';
 import {projectSceneState} from '../engine/gameplay/scene-state';
 import {validateCompanionModelBindings} from '../engine/gameplay/scene-companion';
 import type {EngineNetworkContext} from '../engine/network-context';
-import {sandboxDeviceData} from '../scenes/sandbox/composition';
 /** Canonical device documents use the existing engine schema, checker and geometry adapters. */
 import {KEYRING,NET,type SceneData,type NetData,type KeyItem} from '../data';
 import {SCENES,NATIVE_SCENES,type SceneDef} from '../scenes';
@@ -14,10 +13,6 @@ import {manifestCompositionRows} from '../engine/gameplay/manifest-geometry';
 import {projectDeviceBindings} from '../engine/gameplay/device-bindings';
 import type {SceneDocument} from '../engine/gameplay/scene-document';
 import type {Composition} from '../art/core/composition';
-import {downtownDeviceData} from '../scenes/downtown/composition';
-import {beachDeviceData} from '../scenes/beach/composition';
-import {trainDeviceData} from '../scenes/train/composition';
-const geometry:Record<string,(source:SceneData,doc:Composition,scene?:Pick<SceneDocument,'manifest'>)=>SceneData>={downtown:downtownDeviceData,beach:beachDeviceData,train:trainDeviceData,sandbox:sandboxDeviceData};
 export const nativeDeviceSceneIds=Object.values(NATIVE_SCENES).filter(scene=>scene.data?.devices.length).map(scene=>scene.id);
 export const deviceSceneIds=Object.keys(NATIVE_SCENES);
 export const deviceSourceFile=(scene:string)=>deviceSourceIdentity(scene).file;
@@ -33,7 +28,7 @@ export function validateDeviceSource(id:string,value:unknown,scene:SceneDef=SCEN
 }
 /** Geometry and dialogue stay with their composition/shared sources; devices drive the real model. */
 export function applyDeviceSource(id:string,scene:SceneDef,composition:Composition,value:unknown,network?:EngineNetworkContext,sceneDocument?:Pick<SceneDocument,'manifest'>):SceneDef{
- const data=projectSceneState(validateDeviceSource(id,value,scene,network?.net,network?.keyring),scene.gameplay??{});const apply=(definition:SceneDef):SceneDef=>{const adapter=geometry[id];let projected=adapter?adapter(data,composition,sceneDocument):data;if(sceneDocument)projected=projectDeviceBindings(sceneDocument,manifestCompositionRows(composition),projected,definition.width);projected={...projected,dialogue:definition.data?.dialogue??{}};if(definition.gameplay)projected=nativeDeviceData(projected,definition.gameplay,Object.keys(deviceRules(definition).derived??{}),deviceRules(definition).inputs);return {...definition,data:projected,...(definition.bindWorld?{bindWorld:(services:Parameters<NonNullable<SceneDef['bindWorld']>>[0])=>apply(definition.bindWorld!(services))}:{})};};return apply(scene);
+ const data=projectSceneState(validateDeviceSource(id,value,scene,network?.net,network?.keyring),scene.gameplay??{});const apply=(definition:SceneDef):SceneDef=>{let projected=sceneDocument?projectDeviceBindings(sceneDocument,manifestCompositionRows(composition),data,definition.width):data;projected={...projected,dialogue:definition.data?.dialogue??{}};if(definition.gameplay)projected=nativeDeviceData(projected,definition.gameplay,Object.keys(deviceRules(definition).derived??{}),deviceRules(definition).inputs);return {...definition,data:projected,...(definition.bindWorld?{bindWorld:(services:Parameters<NonNullable<SceneDef['bindWorld']>>[0])=>apply(definition.bindWorld!(services))}:{})};};return apply(scene);
 }
 
 export function requiredDeviceNouns(scene:string,device:string){return SCENES[scene]?deviceRules(SCENES[scene]).needs?.devices?.find(r=>r.id===device)?.nouns?.map(n=>n.id)??[]:[];}

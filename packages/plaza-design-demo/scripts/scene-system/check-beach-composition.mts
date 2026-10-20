@@ -1,11 +1,18 @@
+import bindingSource from '../../src/ssg/game/scenes/beach/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import type {SceneData as GeometryDeviceData} from '../../src/ssg/game/data/types';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import {referenceView} from './reference-view';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import vm from 'node:vm';import ts from 'typescript';
 import { beach,beachScene } from '../../src/ssg/game/scenes/beach/index';
-import { beachComposition,beachGeometry,beachLights,beachCasters,beachDeviceData,drawBeachComposition,validateBeachComposition } from '../../src/ssg/game/scenes/beach/composition.ts';
+import { beachComposition,beachGeometry,beachLights,beachCasters,drawBeachComposition,validateBeachComposition } from '../../src/ssg/game/scenes/beach/composition.ts';
 import { BEACH_ACTORS } from '../../src/ssg/game/scenes/beach/scene';
 import * as primitives from '../../src/ssg/game/art/core/primitives';import * as sky from '../../src/ssg/game/art/environment/sky';import * as bar from '../../src/ssg/game/art/assemblies/beach-bar';import * as screens from '../../src/ssg/game/art/signage/screens';import * as chars from '../../src/ssg/game/runtime/characters';
 import { placed } from '../../src/ssg/game/art/core/view';import { drawLounger } from '../../src/ssg/game/art/props/beach-party';import { light } from '../../src/ssg/game/world/light';import { BEACH } from '../../src/ssg/game/data/index';
 import type { View } from '../../src/ssg/game/art/core/view';import type { SceneModel } from '../../src/ssg/game/engine/model';
+const beachDeviceData=(data:GeometryDeviceData,composition=beachComposition)=>{const source=bindingSource as unknown as SceneDocument,rows=beachGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalizeGeometry=(data:GeometryDeviceData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 const root=path.resolve('../..'),backup=path.join(root,'.scene-system/beach-s5-original');
 function bodies(file:string){const sf=ts.createSourceFile(file,fs.readFileSync(file,'utf8'),99,true),out=new Map<string,string>();function visit(n:ts.Node){if(ts.isFunctionDeclaration(n)&&n.name&&n.body)out.set(n.name.text,n.body.getText(sf).replaceAll('\r',''));ts.forEachChild(n,visit);}visit(sf);return out;}
 const immutable=bodies(path.join(root,'.scene-system/baseline/source/ssg/game/beach/scene.ts')),saved=bodies(path.join(backup,'art/assemblies/beach.ts'));
@@ -20,7 +27,7 @@ const L=beachLayout();
 const a=(id:string)=>BEACH_ACTORS[id];
 const original=oldArtwork({...oldInputs,GULL,ASHORE:[0,1,2,3,4,5,6].map(i=>a('ashore-'+i)),SUNBEDS:[a('sunbed-person-0'),a('sunbed-person-1')],sunbather:a('sunbather'),lifeguard:a('guard'),BEACHGOERS:[0,1,2,3,4,5,6].map(i=>a('beachgoer-'+i)),volley:a('volley'),kid:a('kid'),surfer:a('surfer'),fisher:a('fisher'),PEOPLE:[a('cat')]});
 function json(v:unknown){return JSON.stringify(v);}
-assert.equal(json(L),json(oldScene.L));assert.equal(json(beachLayout()),json(oldScene.L));assert.equal(json(beachDeviceData(BEACH)),json(BEACH));
+assert.equal(json(L),json(oldScene.L));assert.equal(json(beachLayout()),json(oldScene.L));assert.deepEqual(beachDeviceData(BEACH),normalizeGeometry(BEACH));
 const before=load(path.join(backup,'scenes/beach/index.ts'),{...oldScene,BEACH,BEACH_RULES:{}}).beach;
 for(const k of ['id','name','width','spawn','exits','intro','keepFace','ambient','facing','lights','casters','pixel'])assert.deepEqual(JSON.parse(json((beach as any)[k])),JSON.parse(json(before[k])),k+' metadata');
 assert.deepEqual(JSON.parse(json(beachLights())),JSON.parse(json(before.lights)));assert.equal(json(beachCasters()),json(before.casters));

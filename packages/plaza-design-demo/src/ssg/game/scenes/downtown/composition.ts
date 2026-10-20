@@ -1,6 +1,5 @@
 import {downtownVisualSnapshot} from '../../engine/controllers/downtown-visual';
 import {downtownController} from '../../engine/controllers/motion';
-import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import {validateActorPresentationNode} from '../../engine/gameplay/actor-presentation';
 import {prepareActor} from '../../engine/gameplay/actor-frame';
 import type {Character} from '../../runtime/characters';
@@ -10,7 +9,6 @@ import { art as downtownArt } from '../../art';
 import type { DowntownDeviceState } from '../../art/electronics/downtown-devices';
 import { frameView, type View } from '../../art/core/view';
 import type { SceneModel } from '../../engine/model';
-import type { SceneData } from '../../data/types';
 import type { SceneLight, Caster } from '../../art/atmosphere/lighting';
 import { screenLine, sceneClimate } from '../../world/weather';
 import { downtownSource } from './source';
@@ -93,9 +91,3 @@ export function renderDowntownCity(ctx:CanvasRenderingContext2D,view:View,doc=do
 export function renderDowntownStreet(ctx:CanvasRenderingContext2D,view:View,rain:number,city:boolean,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={}){drawComposition(ctx,downtownArt,doc,downtownEnvironment(doc,view,{rain,city,overrides,options}),'foreground');}
 export function renderDowntownPeople(ctx:CanvasRenderingContext2D,view:View,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={},actors:Readonly<Record<string,Character>>={}){drawComposition(ctx,downtownArt,doc,downtownEnvironment(doc,view,{overrides,options,actors}),'people');}
 export function renderDowntownDevices(ctx:CanvasRenderingContext2D,view:View,model:SceneModel,hover:string|null,dlv:number|null,doc=downtownComposition,overrides?:Readonly<Record<string,Properties>>,options:DowntownRenderOptions={}){drawComposition(ctx,downtownArt,doc,downtownEnvironment(doc,view,{model,hover,dlv,overrides,options}),'devices');}
-/** Existing device spot metadata follows document placement; noun/verb/rule ids are untouched. */
-export function downtownDeviceData(source:SceneData,doc=downtownComposition,scene?:Pick<SceneDocument,'manifest'>):SceneData {
- const result=structuredClone(source),g=downtownPositions(doc);
- for(const device of result.devices){if(scene?.manifest?.devices?.[device.id])continue;const row=g.rows().find(row=>row.instance.id==='device-'+device.id);if(!row)continue;const p=row.props,spot=device.layout?.spot;if(!spot)continue;spot.x=row.x;const y=Number(p.spotY)*row.scale+row.h;if(spot.y!==undefined||y!==0)spot.y=y;spot.w=Number(p.spotWidth)*row.scale;spot.h=Number(p.spotHeight)*row.scale;}
- return result;
-}

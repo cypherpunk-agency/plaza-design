@@ -13,7 +13,6 @@ import { onScreen } from '../../art/core/primitives';
 import { beachVisualFields } from '../../art/assemblies/beach-elements';
 import { prepareCharacter,type Character,type PreparedCharacter } from '../../runtime/characters';
 import type { SceneModel } from '../../engine/index';
-import type { SceneData } from '../../data/types';
 import type { SceneDef } from '../kit';
 import { light } from '../../world/light';
 import source from './composition.json';
@@ -27,7 +26,6 @@ export function validateBeachComposition(input:unknown):Composition{const doc=ar
 export const beachComposition=validateBeachComposition(source);
 function defaults(doc:Composition):Record<string,Value>{const result:Record<string,Value>={};for(const row of flatten(doc.instances))for(const[field,name]of Object.entries(row.bindings??{}))result[name]=art.get(row.type).visualFields![field].default;return result;}
 export function beachGeometry(doc:Composition=beachComposition){return resolveComposition(art,doc,{view:geometryView,state:{},bindings:defaults(doc),reduced:false});}
-export function beachDeviceData(data:SceneData,doc:Composition=beachComposition,scene?:Pick<import('../../engine/gameplay/scene-document').SceneDocument,'manifest'>):SceneData{const result=structuredClone(data),rows=beachGeometry(doc);for(const d of result.devices){if(scene?.manifest?.devices?.[d.id])continue;const r=rows.find(r=>r.instance.id==='device-'+d.id),spot=d.layout?.spot;if(!r||!spot)continue;spot.x=r.placement.x;if(spot.y!==undefined||r.placement.h!==0)spot.y=r.placement.h;const w=Number(r.props.width)*r.placement.scale,h=Number(r.props.height)*r.placement.scale;if(Number.isFinite(w)&&w>0)spot.w=w;if(Number.isFinite(h)&&h>0)spot.h=h;}return result;}
 export function beachLights(doc:Composition=beachComposition):NonNullable<SceneDef['lights']>{return beachGeometry(doc).filter(r=>r.instance.type==='beach.light').map(r=>({x:r.placement.x,h:r.placement.h,kind:r.props.kind as 'window'|'neon'|'lamp',r:Number(r.props.radius)*r.placement.scale,...(r.props.width?{w:Number(r.props.width)*r.placement.scale,hh:Number(r.props.lightHeight)*r.placement.scale}:{}),...(r.props.color?{col:String(r.props.color)}:{}),...(Number(r.props.alpha)!==1?{a:Number(r.props.alpha)}:{})}));}
 export function beachCasters(doc:Composition=beachComposition):NonNullable<SceneDef['casters']>{return beachGeometry(doc).filter(r=>r.props.role==='caster').map(r=>({x:r.placement.x,h:r.placement.h,w:Number(r.props.width)*r.placement.scale}));}
 export function beachEnvironment(doc:Composition,d:View,m:SceneModel,hover:string|null,actors:Readonly<Record<string,Character>>,gull:{shooed:number},scene:SceneDocument=sceneSource as unknown as SceneDocument):Environment{

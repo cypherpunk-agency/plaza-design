@@ -1,5 +1,10 @@
+import bindingSource from '../../src/ssg/game/scenes/sandbox/scene.json';
+import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
+import type {SceneData as GeometryDeviceData} from '../../src/ssg/game/data/types';
+import {projectDeviceBindings} from '../../src/ssg/game/engine/gameplay/device-bindings';
+import {manifestGeometry} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import assert from 'node:assert/strict';
-import { sandboxArt,sandboxComposition,sandboxDeviceData,sandboxGeometry,sandboxStations,validateSandboxComposition } from '../../src/ssg/game/scenes/sandbox/composition';
+import { sandboxArt,sandboxComposition,sandboxGeometry,sandboxStations,validateSandboxComposition } from '../../src/ssg/game/scenes/sandbox/composition';
 import { sandboxScene,sandboxFrameEnvironment } from '../../src/ssg/game/scenes/sandbox';
 import { SandboxViewState,validateSandboxSnapshot,type SandboxSnapshot } from '../../src/ssg/game/art/assemblies/sandbox-state';
 import { resolveComposition,type Composition,type Value } from '../../src/ssg/game/art';
@@ -10,11 +15,13 @@ import { createSandboxArtwork } from '../../src/ssg/game/art/assemblies/sandbox'
 import { emptySandboxSnapshot } from '../../src/ssg/game/art/assemblies/sandbox-state';
 import { box,onScreen,O,PAPER } from '../../src/ssg/game/art/core/primitives';
 import type { View } from '../../src/ssg/game/art/core/view';
+const sandboxDeviceData=(data:GeometryDeviceData,composition=sandboxComposition)=>{const source=bindingSource as unknown as SceneDocument,rows=sandboxGeometry(composition);return projectDeviceBindings(source,rows,data,manifestGeometry(source,rows,[],{groundSpawn:false}).width);};
+const normalizeGeometry=(data:GeometryDeviceData)=>({...data,devices:data.devices.map(d=>({...d,...(d.layout?.spot?{layout:{...d.layout,spot:{y:0,...d.layout.spot}}}:{})}))});
 // Frozen picture-kernel fixture parameters; not a shipping scene configuration.
 function sandboxLayout(doc:Composition=sandboxComposition):import('../../src/ssg/game/art/assemblies/sandbox').SandboxLayout{const rows=sandboxGeometry(doc),get=(id:string)=>rows.find(r=>r.instance.id===id)!,x=(id:string)=>get(id).placement.x,w=get('window');return{door:x('door'),spawn:x('spawn'),plan:x('plan'),reset:x('reset'),dispenser:x('chip-dispenser'),radiator:x('radiator'),bench:x('wait-bench'),window:{x0:w.placement.x,x1:w.placement.x+Number(w.props.width),h0:w.placement.h,h1:w.placement.h+Number(w.props.height)},end:x('end-wall')};}
 const doc=validateSandboxComposition(JSON.parse(JSON.stringify(sandboxComposition)));
 assert.deepEqual(doc,sandboxComposition);assert.equal(doc.instances.length,155);
-assert.deepEqual(sandboxDeviceData(devices as SceneData),devices,'all37 original physical device spots remain exact');
+assert.deepEqual(sandboxDeviceData(devices as SceneData),normalizeGeometry(devices as SceneData),'all37 original physical device spots remain exact');
 assert.equal(sandboxLayout().spawn,80);assert.equal(sandboxStations().length,10);assert.deepEqual(sandboxStations()[2],{n:3,x0:1210,x1:1610,sign:1215,title:'GUARDS',sub:'PASSWORD · RINGS · CIPHER · CRYPTEX · MORSE'});
 const edit=structuredClone(doc);edit.instances.find(i=>i.id==='workbench-1')!.placement.x+=10;edit.instances.find(i=>i.id==='workbench-1')!.placement.h+=4;edit.instances.find(i=>i.id==='zone-3')!.placement.x+=20;edit.instances.find(i=>i.id==='radiator')!.placement.x+=12;
 const data=sandboxDeviceData(devices as SceneData,edit),spot=data.devices.find(d=>d.id==='sensor')!.layout!.spot!;
