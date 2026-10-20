@@ -143,9 +143,9 @@ compositions. The artwork library and the Add artwork picker filter by the same 
 per-artwork category ("family") is still searchable as a tag.
 
 **Order** shows how the scene is drawn. For a layered scene (every scene now) it is the layer stack,
-front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the engine's own layers
-(sky/city/street, shade, light and grade, prompts) as greyed dividers and the Logic layer (markers)
-listed separately. The **Player** in the Playfield is drawn in the preview: its place in the stack
+front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the Logic layer (markers)
+listed separately. The engine's own drawing (sky/city/street, shade, light and grade, prompts) is
+not listed; drop artwork on a layer's header to move it into an empty layer. The **Player** in the Playfield is drawn in the preview: its place in the stack
 is where the player and engine-drawn walkers are drawn (rows above it draw over them), and its
 position is where the player arrives (each scene's manifest spawn points at it). Drag rows within or
 between layers, or use **Layer**, **Bring forward** and **Send backward** in the inspector. The stack

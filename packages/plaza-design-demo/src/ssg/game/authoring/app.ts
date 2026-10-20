@@ -14,7 +14,7 @@ import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { KIND_HINTS, LAYER_ROLES, layerRole } from './layer-roles';
 import { chipStyles, filterChips } from './kind-chips';
-import { ENGINE_LAYERS, LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
+import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'behavior' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices'; revision: string; value: unknown }
@@ -603,11 +603,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'Nothing matches this filter.' : 'This scene has no artwork yet. Use ＋ Add artwork in the toolbar.'));
         listHost.querySelector<HTMLElement>('button[aria-pressed=true]')?.scrollIntoView({ block: 'nearest' });
       }
-      /** Front at the top, like a paint program's layer list; the engine's own layers are fixed dividers. */
+      /** Front at the top, like a paint program's layer list. */
       function renderStack() {
         let shown = 0, dragged = '';
         const stack = element('div', 'layer-stack');
-        const engine = (text: string, title: string) => { const row = element('div', 'engine-layer', text); row.title = title; return row; };
         const drop = (target: HTMLElement, place: (event: DragEvent) => { layer: Layer; index: number } | undefined) => {
           target.ondragover = event => { if (!dragged || !place(event)) return; event.preventDefault(); target.classList.add('drop-target'); };
           target.ondragleave = () => target.classList.remove('drop-target');
@@ -627,7 +626,6 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           const box = element('section', 'stack-layer'), head = element('div', 'stack-head'), list = element('ul', 'hierarchy'), key = 'stack:' + layer, open = !!layerQuery.trim() || (roleOpen.get(key) ?? true);
           const fold = button(open ? '▾' : '▸', () => { roleOpen.set(key, !open); renderLayers(); }, `${open ? 'Collapse' : 'Expand'} the ${LAYER_LABELS[layer]} layer`); fold.className = 'fold'; fold.setAttribute('aria-expanded', String(open)); list.hidden = !open;
           const count = body(list); shown += count;
-          if (!layerRows(composition, layer).length) { const empty = element('li', 'stack-empty', 'Empty: drag artwork here'); list.append(empty); }
           const ids = () => layerRows(composition, layer).map(n => n.id);
           head.append(fold, element('span', 'stack-name', LAYER_LABELS[layer]), element('span', 'muted', String(ids().length)), ...(ids().length ? [eye(ids, `the ${LAYER_LABELS[layer]} layer`)] : [element('span', 'eye-space')])); head.title = LAYER_HINTS[layer];
           head.ondblclick = event => { if ((event.target as HTMLElement).closest('button')) return; roleOpen.set(key, !open); renderLayers(); };
@@ -635,13 +633,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           box.append(head, list); stack.append(box);
         };
         const list = (target: HTMLElement, nodes: Instance[]) => { let n = 0; for (const node of [...nodes].reverse()) if (matches(node)) { target.append(row(node)); n++; } return n; };
-        const engineAfter = (after: string) => [...ENGINE_LAYERS].reverse().filter(e => e.after === after).forEach(e => stack.append(engine(e.label, e.title)));
-        engineAfter('foreground');
         for (const layer of [...VISUAL_LAYERS].reverse()) {
-          if (layer === 'playfield') engineAfter('player');
           section(layer, target => list(target, layerRows(composition, layer)));
         }
-        engineAfter('start');
         const logic = element('details', 'layer-group logic-group'); logic.open = roleOpen.get('logic-layer') ?? true; logic.ontoggle = () => roleOpen.set('logic-layer', logic.open);
         const logicList = element('ul', 'hierarchy'); shown += list(logicList, layerRows(composition, 'logic'));
         const logicIds = () => layerRows(composition, 'logic').map(n => n.id), summary = element('summary', '', `${LAYER_LABELS.logic} · ${logicIds().length}`);
