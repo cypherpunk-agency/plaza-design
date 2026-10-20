@@ -1,7 +1,7 @@
-import {capsuleController,type CapsuleController} from '../../engine/controllers/capsule';
-export {capsuleController} from '../../engine/controllers/capsule';
+import {capsuleController,type CapsuleController} from '../../controllers/capsule';
+export {capsuleController} from '../../controllers/capsule';
 /**
- * Capsule 7B's code side: the rules too fiddly to be data. The flat's clock
+ * Mechanism `thermal` (scene.json `stage.mechanisms`): Capsule 7B's code side: the rules too fiddly to be data. The flat's clock
  * (the plug's schedule says "night" every few seconds, because in here it is
  * always night), the router booting and warming up, and Pixel, who sleeps on
  * whatever is warm: the bed, the router (until it overheats and reboots), or
@@ -14,9 +14,10 @@ export {capsuleController} from '../../engine/controllers/capsule';
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
-import type { SceneData } from "../../data/types";
-import type { Effect, World, SceneRules } from "../../engine/rules";
-import type { SceneModel } from "../../engine/model";
+import type { SceneData } from "../../../data/types";
+import type { Effect, World, SceneRules } from "../../rules";
+import type { SceneModel } from "../../model";
+import type { SceneMechanism } from '../scene-mechanisms';
 
 /** Where Pixel can be in the flat. */
 export type PixelAt = 'bed' | 'router' | 'sun';
@@ -71,7 +72,7 @@ function tick(w: World, dt: number) {
 
 }
 
-export const CAPSULE_RULES: SceneRules = {
+const THERMAL_RULES: SceneRules = {
   effects: EFFECTS,
   inputs: ['capsule.router.onlineDue', 'capsule.router.rebooted'],
   derived: {
@@ -94,4 +95,11 @@ export const CAPSULE_RULES: SceneRules = {
     if (!['bed', 'router', 'sun'].includes(z.state[capsuleController(z).state.pixelAt] as string)) errs.push('state.pixelAt: bed, router or sun');
     return errs;
   },
+};
+
+/** The flat's clock and the router's thermal simulation; the scene's rules (the controller names its state and tuning). */
+export const thermal: SceneMechanism = {
+  label: 'Thermal router and flat clock (boot, warm-up, reboot, steam)', requires: [], world: false,
+  apply: () => ({ rules: THERMAL_RULES }),
+  rulesShape: () => THERMAL_RULES,
 };
