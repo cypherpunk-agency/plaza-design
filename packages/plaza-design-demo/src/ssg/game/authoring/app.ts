@@ -17,7 +17,7 @@ export interface EditorDocument { id: string; kind: 'composition' | 'timeline' |
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 /** `quick` controls sit in the Scene toolbar; `choices` render as a segmented row of named presets. The rest live under More. */
-export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number; quick?: boolean; choices?: { label: string; value: number | string }[] }
+export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number; quick?: boolean; choices?: { label: string; value: number | string }[]; /** A single key that toggles a boolean control in the Scene view. */ shortcut?: string }
 /** One inspector tab beside Appearance: the logic, device or wiring that belongs to the selection (or to the scene when nothing is selected). */
 export interface InspectorSection { id: string; label: string; title?: string; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }
 export interface WorkbenchContext {
@@ -415,7 +415,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       for (const choice of control.choices) { const pick = button(choice.label, () => change(choice.value), `${control.label}: ${choice.label}`); pick.setAttribute('aria-pressed', String(environment[control.key] === choice.value)); row.append(pick); }
       return inToolbar ? row : label(control.label, row);
     }
-    if (control.kind === 'boolean' && inToolbar) { const toggle = button(control.label, () => change(!environment[control.key])); toggle.className = 'toggle'; toggle.setAttribute('aria-pressed', String(!!environment[control.key])); return toggle; }
+    if (control.kind === 'boolean' && inToolbar) { const toggle = button(control.label, () => change(!environment[control.key]), control.shortcut ? `${control.label} (${control.shortcut.toUpperCase()})` : undefined); toggle.className = 'toggle'; toggle.setAttribute('aria-pressed', String(!!environment[control.key])); return toggle; }
     if (control.kind === 'select') { const input = select((control.options ?? []).map(v => ({ value: v, label: inToolbar ? `${control.label} · ${v}` : v })), String(environment[control.key] ?? ''), change); input.setAttribute('aria-label', control.label); return inToolbar ? input : label(control.label, input); }
     const input = element('input'); input.type = control.kind === 'boolean' ? 'checkbox' : control.kind === 'text' ? 'text' : 'number'; input.checked = !!environment[control.key]; input.value = String(environment[control.key] ?? (control.kind === 'text' ? '' : 0));
     if (control.min !== undefined) input.min = String(control.min); if (control.max !== undefined) input.max = String(control.max); if (control.step !== undefined) input.step = String(control.step);
@@ -756,10 +756,17 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     else if (event.key.toLowerCase() === 'z') { event.preventDefault(); run(() => event.shiftKey ? model.redo() : model.undo()); }
     else if (event.key.toLowerCase() === 'y') { event.preventDefault(); run(() => model.redo()); }
   };
+  /** Single-key preview toggles (H: hack vision) in the Scene view, unless the user is typing in a field. */
+  const shortcuts = (event: KeyboardEvent) => {
+    if (event.ctrlKey || event.metaKey || event.altKey || event.repeat || group !== 'layout' || !root.isConnected) return;
+    const target = event.target as HTMLElement; if (target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]')) return;
+    const control = (config.environmentControls ?? []).find(c => c.kind === 'boolean' && c.shortcut?.toLowerCase() === event.key.toLowerCase()); if (!control) return;
+    event.preventDefault(); environment[control.key] = !environment[control.key]; refreshOptions(); void draw();
+  };
   const closeMenu = (event: Event) => { const menu = header.querySelector<HTMLDetailsElement>('details.menu'); if (menu?.open && (!menu.contains(event.target as Node) || (event.target as HTMLElement).closest('.menu-items button'))) menu.open = false; };
-  window.addEventListener('beforeunload', unload); root.addEventListener('keydown', keyboard); document.addEventListener('click', closeMenu);
+  window.addEventListener('beforeunload', unload); root.addEventListener('keydown', keyboard); document.addEventListener('keydown', shortcuts); document.addEventListener('click', closeMenu);
   let previous = performance.now(), frameId = 0;
   const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous = now; const seq = sequence(); if (animating && group === 'layout' && current()?.kind === 'composition') { time += delta; if (ambientLabel) ambientLabel.textContent = `${time.toFixed(1)} s`; void draw(); } if (playing && seq) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); } } updateTime(); void draw(); } frameId = requestAnimationFrame(tick); };
   frameId = requestAnimationFrame(tick); void load();
-  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); disposeInspector(); thumbnails?.dispose(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); document.removeEventListener('click', closeMenu); root.remove(); } };
+  return { model, openScene, reload: load, save, dispose() { disposed = true; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); disposeInspector(); thumbnails?.dispose(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); document.removeEventListener('keydown', shortcuts); document.removeEventListener('click', closeMenu); root.remove(); } };
 }
