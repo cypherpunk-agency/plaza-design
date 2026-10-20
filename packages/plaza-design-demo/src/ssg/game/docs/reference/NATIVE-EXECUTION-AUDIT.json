@@ -391,17 +391,13 @@
           "classification": "simulation",
           "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
         },
-        "read:haltWhere": {
-          "classification": "ordinary-gap",
-          "reason": "Geographic measurements remain physical; label selection and station-name interpolation still execute inside the native derived callback."
-        },
-        "read:where": {
-          "classification": "ordinary-gap",
-          "reason": "Geographic measurements remain physical; label selection and station-name interpolation still execute inside the native derived callback."
-        },
         "tick": {
           "classification": "simulation",
           "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+        },
+        "read:trainRegion": {
+          "classification": "simulation",
+          "reason": "Classifies physical track position using the unchanged geographic thresholds; source queries own label selection and station-name interpolation."
         }
       },
       "sourcePaths": [
@@ -419,10 +415,6 @@
         "effect:sbx.pulse": {
           "classification": "presentation",
           "reason": "Writes only transient pulse timestamps and requests a redraw; source-owned commands perform counter/resource/environment changes."
-        },
-        "read:night": {
-          "classification": "ordinary-gap",
-          "reason": "Ordinary 18:00-06:00 policy is still a native predicate; shared time conditions already govern environmental gameplay reactions."
         }
       },
       "sourcePaths": [

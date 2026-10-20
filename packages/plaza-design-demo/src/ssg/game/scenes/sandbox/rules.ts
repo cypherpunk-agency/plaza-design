@@ -7,12 +7,11 @@
  *   flashes it for `pulseMs` (the picture controller reads its source-bound duration), nothing is stored;
  * Counter, stamp, brew, reader and till operations are shared commands in gameplay.json.
  * Time and weather reactions use source-owned live condition triggers and replies.
- * - `night` (derived): 18:00–06:00 on the city clock, for the drawing and status.
+ * The night predicate is a shared source query over the city clock.
  *
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
 
-import type { Value } from "../../data/types";
 import type { Effect, SceneRules } from "../../engine/rules";
 import type { Ctx, SceneModel } from "../../engine/model";
 
@@ -20,8 +19,7 @@ import type { Ctx, SceneModel } from "../../engine/model";
 export const CHIP = 'blankchip';
 
 const mark = (m: SceneModel, c: Ctx) => { m.scratch['pulse.' + c.dev] = m.scratch['pulse.' + c.dev + '.' + c.noun] = m.now(); };
-/** 18:00–06:00 on the city clock (`hour` is a city key every scene reads). */
-const isNight = (m: SceneModel) => { const h = Number(m.value('hour') ?? 12); return h >= 18 || h < 6; };
+
 
 const EFFECTS: Record<string, Effect> = {
   'sbx.pulse': (w, c) => { mark(w.m, c); w.changed(); },
@@ -30,6 +28,5 @@ const EFFECTS: Record<string, Effect> = {
 
 export const SANDBOX_RULES: SceneRules = {
   effects: EFFECTS,
-  derived: { night: (m): Value => isNight(m) },
   needs: {devices:[],state:[]},
 };

@@ -700,5 +700,28 @@
         "template": true
       }
     }
+  },
+  "queries": {
+    "night": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "time": {
+              "from": "18:00",
+              "to": "06:00"
+            }
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
+          }
+        }
+      ]
+    }
   }
 }

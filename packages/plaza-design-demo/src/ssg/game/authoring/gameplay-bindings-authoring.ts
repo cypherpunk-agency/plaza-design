@@ -6,7 +6,7 @@ import type {SceneData} from '../data/types';
 import type {GameplayDefinition,NativeBindings,Source} from '../engine/gameplay/types';
 import {nativeVocabulary} from '../engine/gameplay/native-bindings';
 import {TypedForm} from './typed-form';
-export interface GameplayBindingControls {data?:SceneData;derived?:readonly string[];edit(label:string,change:(d:GameplayDefinition)=>void):void;section(parent:HTMLElement,title:string,collapsed?:boolean):HTMLElement;form:TypedForm;draft:Record<string,string>;refresh():void}
+export interface GameplayBindingControls {data?:SceneData;derived?:readonly string[];nativeReads?:Readonly<Record<string,import('../engine/gameplay/queries').NativeReadType>>;edit(label:string,change:(d:GameplayDefinition)=>void):void;section(parent:HTMLElement,title:string,collapsed?:boolean):HTMLElement;form:TypedForm;draft:Record<string,string>;refresh():void}
 const native=(d:GameplayDefinition):NativeBindings=>d.native??={verbs:[],events:{},goals:{}};
 const next=(ids:readonly string[],prefix:string)=>{let i=1;while(ids.includes(prefix+i))i++;return prefix+i;};
 /** Rename a declared shared ID and its typed references together, then let the source validator enforce native requirements. */

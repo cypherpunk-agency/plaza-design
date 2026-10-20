@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `47c4b95` on main and production.
-Homepage jobs39381123804/39381123569 and design job39381123817 succeeded.
+Last verified deployment: `45dff3b` on main and production.
+Homepage jobs39387666632/39387665650 and design job39387666162 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -3226,3 +3226,27 @@ app-CW5KHE4L.js returns to Library with zero frames, Play available and no brows
 The earlier all19/source-edit observations retain their own9f895b8a67cf checkpoint identity;
 observations.json records final-removal identity and rejected attempts separately. No raster,
 actor, layer or object implementation changed in this batch.
+
+## 2026-10-20: final ordinary SceneRules selectors
+
+Train location/status selection and station-name interpolation now use shared typed observation,
+label-variable and ordered-select queries. Sandbox night uses the existing shared time condition.
+The replaced callbacks are deleted. Registered physical observations are read-only and uncached;
+no second save owner is introduced. Editor query controls expose the same source graph.
+
+- `check-controller-inventory.mts`: all19 SceneRules surfaces,49 callables, zero ordinary gaps;
+  source `37774dbbe7de5b4b8b1ec474d6fff0e8f4697cbcd4c366553e94e9c9ca0058e6`,
+  `.scene-system/controller-inventory-QMlY7Q`. This is not whole-controller acceptance.
+- Train immutable-original comparison:6,052 phase/station/geographic-boundary/door/manual/signal
+  histories, exact status/location text and unchanged physical state. Command-step checks:840 cases.
+- Sandbox:504 original time/weather/state/live cases, including night-value comparisons.
+- Actual typed observation and label-variable rebinding, pending runtime, bundle/protected paired
+  Save, fresh shipping import and byte Undo: `.scene-system/train-position-save-Y9drQH`.
+- Edited Sandbox night threshold and environment rules survive protected Save and fresh import:
+  `.scene-system/sandbox-live-condition-save-sUHryo`.
+- Query contract checks cover provider/types, no save mutation, missing/invalid values, cycles,
+  one-pass interpolation and disposal. General device sources cover all19 native scenes.
+- Both builds and package TypeScript pass; native preview clock check remains unchanged.
+
+G4/G7/G8/G9/G10/G12/G13 remain open. No whole-goal acceptance is inferred from the bounded
+SceneRules removal. Drawing, geometry, layer and animation implementation were not edited.

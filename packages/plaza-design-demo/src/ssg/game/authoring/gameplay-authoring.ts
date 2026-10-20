@@ -16,6 +16,7 @@ export interface GameplayAuthoring {
   nativeData?:SceneData;
   nativeDataSource?():SceneData|undefined;
   nativeDerivedSource?():readonly string[];
+  nativeReadTypesSource?():Readonly<Record<string,import('../engine/gameplay/queries').NativeReadType>>;
   objectiveIdsSource?():readonly string[];
   keyringIdsSource?():readonly string[];
   registryLabelsSource?():readonly string[];
@@ -57,7 +58,7 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     renderStateReadsAuthoring(root,doc,{form,section,edit,draft:bindingDraft,refresh});
     renderGameplayPurchasesAuthoring(root,doc,{form,section,edit,draft:bindingDraft,refresh});
     renderCheckpointAuthoring(root,doc,{section,edit,report,owner:nativeData?.id});
-    renderGameplayBindingsAuthoring(root,doc,{data:nativeData,derived:nativeDerived,edit,section,form,draft:bindingDraft,refresh});
+    renderGameplayBindingsAuthoring(root,doc,{data:nativeData,derived:nativeDerived,nativeReads:options.nativeReadTypesSource?.(),edit,section,form,draft:bindingDraft,refresh});
     if(dialogue){const talk=section(root,'Dialogue and choices');
     select(talk,'Conversation',Object.keys(doc.conversations),conversation,id=>{conversation=id;node=Object.keys(doc.conversations[id].nodes)[0];refresh();});
     select(talk,'Dialogue node',Object.keys(dialogue.nodes),node,id=>{node=id;refresh();});

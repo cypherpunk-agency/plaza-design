@@ -43,6 +43,8 @@ export interface SceneRules {
   panels?: string[];
   /** Read-only values computed in code, usable in conditions and templates (`gateOpen`). */
   derived?: Record<string, (m: SceneModel) => Value>;
+  /** Scalar types of physical observations available to authored read-only queries. */
+  derivedTypes?:Readonly<Record<string,import('./gameplay/queries').NativeReadType>>;
   /** What the code relies on: state keys, goals it ticks, text keys it asks for. */
   needs?: { devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;kind?:Kind;events?:readonly string[]}[]}[]; state?: readonly StateRequirement[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
   /** Extra checks only this scene's code knows (a crate the parcel sits in). One message per problem. */

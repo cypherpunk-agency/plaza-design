@@ -1,3 +1,4 @@
+import type {NativeReadType} from './queries';
 import {validateNativeCommandSteps} from './native-command-steps';
 import {validateResponseConversations,attachResponseConversations} from './response-conversations';
 import {validateYardGameplayBindings} from '../controllers/yard';
@@ -40,13 +41,14 @@ export function validateNativeShape(d:GameplayDefinition,condition:(v:unknown)=>
 }
 function noun(data:SceneData,key:string){const i=key.indexOf('.');return [...data.devices,...(data.nodes??[])].find(d=>d.id===key.slice(0,i))?.nouns.find(n=>n.id===key.slice(i+1));}
 export function nativeVocabulary(data:SceneData){return [...data.devices,...(data.nodes??[])].flatMap(d=>[...d.nouns.map(n=>({key:d.id+'.'+n.id,verbs:[...(n.clock?['start','stop']:[]),...(n.link?['scan',...Array.from(new Set([...(n.link.reach??[]),...(n.link.known??[])])).map(id=>'connect '+id)]:[]),...(n.verbs??[])],events:n.events??[]})),...(d.sectors??[]).filter(s=>'sequence'in s.seal).map(s=>({key:d.id+'.'+s.id,verbs:'sequence'in s.seal?s.seal.sequence:[],events:[]})),...((data.watchdog?.route??[]).includes(d.id)?[{key:d.id+'.watchdog',verbs:[],events:['arrives','leaves']}]:[])]);}
-export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[],physical:readonly string[]=[]):GameplayDefinition {
+export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[],physical:readonly string[]=[],nativeReads:Readonly<Record<string,NativeReadType>>={}):GameplayDefinition {
  validateResponseConversations(d,data);
  validateYardGameplayBindings(data,d);
  validateDowntownVisualBindings(data,d);
  validateLaundryGameplayBindings(data,d);
  validateNativeInputSources(d,data,physical);validateNativeCommandSteps(d,data);validateNativeTextQueries(d,data);
- validateGameplayQuerySources(d,{...data,texts:{...engineSource.texts,...data.texts}as unknown as SceneData['texts']});
+ for(const key of Object.keys(nativeReads))if(!derived.includes(key))fail('registered native read provider '+key);
+ validateGameplayQuerySources(d,{...data,texts:{...engineSource.texts,...data.texts}as unknown as SceneData['texts']},nativeReads);
  validateCheckpointOwner(d,data.id);
  for(const command of Object.values(data.camera?.actions??{}))if(!d.commands[command]?.sources.includes('interaction'))fail('camera interaction command '+command);
  const vocab=nativeVocabulary(data);
@@ -68,7 +70,7 @@ export function validateNativeBindings(d:GameplayDefinition,data:SceneData,deriv
 /** Only declared default cables are authored. Player cuts/rewires continue to live in SceneSave. */
 export function projectNativeDeviceData(data:SceneData,d:GameplayDefinition):SceneData{return d.native?.wires?{...data,cables:structuredClone(d.native.wires)}:data;}
 /** Validate after all pending device and gameplay sources have been assembled. */
-export function nativeDeviceData(data:SceneData,d:GameplayDefinition,derived:readonly string[]=[],physical:readonly string[]=[]):SceneData {const projected=projectSceneState(data,d);validateNativeBindings(d,projected,derived,physical);return projectNativeDeviceData(projected,d);}
+export function nativeDeviceData(data:SceneData,d:GameplayDefinition,derived:readonly string[]=[],physical:readonly string[]=[],nativeReads:Readonly<Record<string,NativeReadType>>={}):SceneData {const projected=projectSceneState(data,d);validateNativeBindings(d,projected,derived,physical,nativeReads);return projectNativeDeviceData(projected,d);}
 /** Read-only observations and native goal effects; scalar values have one common owner. */
 export function nativeGameplayPort(d:GameplayDefinition,port:StatePort,model:()=>SceneModel):StatePort{return{
  read(){const s=port.read(),m=model();return {...s,flags:{...s.flags,...Object.fromEntries(Object.entries(d.native?.reads??{}).map(([flag,key])=>[flag,!!m.value(key)]))}};},
@@ -78,10 +80,10 @@ export function nativeRoute(d:GameplayDefinition,c:Pick<Ctx,'dev'|'noun'|'verb'>
 /** Invoked after native watchdog/lock/seal checks. No legacy steps execute for a bound verb. */
 export function attachNativeGameplay(model:SceneModel,session:GameplaySession){
  model.installGameplaySource(session.definition as GameplayDefinition);
- validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}),model.rules.inputs);
+ validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}),model.rules.inputs,model.rules.derivedTypes);
  attachResponseConversations(model,session);
  const domain=()=>model.beginDomainTransaction();session.domain=domain;session.onDispose(()=>{if(session.domain===domain)session.domain=undefined;});
- const queryIds=new Set(Object.keys(session.definition.queries??{})),readContext=()=>({tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates}),query=(id:string)=>queryIds.has(id)?session.query(id):undefined;session.readContext=readContext;model.gameplayQuery=query;model.gameplayQueryIds=queryIds;
+ const queryIds=new Set(Object.keys(session.definition.queries??{})),readContext=()=>({tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates,nativeRead:(key:string)=>model.rules.derivedTypes?.[key]?model.rules.derived?.[key]?.(model):undefined}),query=(id:string)=>queryIds.has(id)?session.query(id):undefined;session.readContext=readContext;model.gameplayQuery=query;model.gameplayQueryIds=queryIds;
  session.onDispose(()=>{if(session.readContext===readContext)session.readContext=undefined;if(model.gameplayQuery===query)model.gameplayQuery=undefined;if(model.gameplayQueryIds===queryIds)model.gameplayQueryIds=undefined;});
  const input=(id:string,origin:import('./native-inputs').NativeInputOrigin)=>dispatchNativeInput(model,session,id,origin);model.gameplayInput=input;session.onDispose(()=>{if(model.gameplayInput===input)model.gameplayInput=undefined;});
  const previousKeyringKnown=session.keyringKnown,previousControlledKnown=session.controlledKnown,labels=new Set(model.registryLabels());session.keyringKnown=id=>!!model.item(id);session.controlledKnown=id=>labels.has(id);

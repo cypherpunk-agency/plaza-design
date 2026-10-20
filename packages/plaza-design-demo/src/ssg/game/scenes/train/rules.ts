@@ -26,7 +26,7 @@ import type {LineSystem} from '../../world/transport/line';
 export const PASS = 'maglev.pass';
 
 export function createTrainRules(metro:LineSystem=defaultMetro,city:CityModel=defaultCity):SceneRules {
- const {LINE,STATIONS}=city;
+ const {STATIONS}=city;
  const {between,BRAKE,brakeRide,LOOP,ride,rideAtSiding,rideDoors,rideNext,rideStop,rideStopsAt,SEG,sidingAlong,TUNNEL_IN}=metro;
 /** Physical region only; wording belongs to source labels. */
 function region(pos: number): string {
@@ -85,6 +85,11 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
     effects,
     inputs:['train.halted','train.resumed','train.doors.opened'],
     tick,
+    derivedTypes: {
+      trainBetween:'boolean', trainAtStation:'boolean', trainStopName:'string', trainNextName:'string',
+      trainKilometres:'string', trainDoorsOpen:'boolean', trainStanding:'boolean', trainBraking:'boolean',
+      trainCanBrake:'boolean', trainHalted:'boolean', trainAtSiding:'boolean', trainHaltSiding:'boolean', trainRegion:'string',
+    },
     derived: {
       /** Physical observations; permissions remain editable native source cases. */
       trainBetween: () => between(),
@@ -99,20 +104,10 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
       trainHalted: () => ride.phase === 'halted',
       trainAtSiding: () => rideAtSiding(),
       trainHaltSiding: () => ride.halt === 'siding',
-      haltWhere: m => m.label('halt.where.'+region(ride.pos)),
-      /** The status line: where the train is. */
-      where: m => rideAtSiding() ? m.label('status.siding')
-        : ride.phase === 'halted' ? m.label('status.halted')
-        : between() ? m.label('status.next',{stop:STATIONS[LINE[ride.to]].name})
-        : m.label('status.station',{stop:STATIONS[rideStop()].name}),
+      trainRegion: () => region(ride.pos),
     },
     needs: {
       devices:[{id:'train',nouns:[{id:'position',kind:'SENSE',events:['tunnel','harbor siding']},{id:'brake',kind:'ACT',events:['stopped']}]}],
-      texts: {
-        'halt.where.tunnel':'label','halt.where.bridge':'label','halt.where.containers':'label','halt.where.towers':'label',
-        'halt.where.viaduct':'label','halt.where.mall':'label','halt.where.downtown':'label',
-        'status.siding':'label','status.halted':'label','status.next':'label','status.station':'label',
-      },
     },
 
   };

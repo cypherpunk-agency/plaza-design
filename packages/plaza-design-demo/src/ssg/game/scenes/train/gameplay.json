@@ -418,6 +418,254 @@
           }
         }
       ]
+    },
+    "train.region": {
+      "kind": "native",
+      "read": "trainRegion",
+      "type": "string"
+    },
+    "train.nextName": {
+      "kind": "native",
+      "read": "trainNextName",
+      "type": "string"
+    },
+    "train.stopName": {
+      "kind": "native",
+      "read": "trainStopName",
+      "type": "string"
+    },
+    "train.isAtSiding": {
+      "kind": "native",
+      "read": "trainAtSiding",
+      "type": "boolean"
+    },
+    "train.isHalted": {
+      "kind": "native",
+      "read": "trainHalted",
+      "type": "boolean"
+    },
+    "train.isBetween": {
+      "kind": "native",
+      "read": "trainBetween",
+      "type": "boolean"
+    },
+    "train.haltLabel.tunnel": {
+      "kind": "label",
+      "key": "halt.where.tunnel"
+    },
+    "train.haltLabel.bridge": {
+      "kind": "label",
+      "key": "halt.where.bridge"
+    },
+    "train.haltLabel.containers": {
+      "kind": "label",
+      "key": "halt.where.containers"
+    },
+    "train.haltLabel.towers": {
+      "kind": "label",
+      "key": "halt.where.towers"
+    },
+    "train.haltLabel.viaduct": {
+      "kind": "label",
+      "key": "halt.where.viaduct"
+    },
+    "train.haltLabel.mall": {
+      "kind": "label",
+      "key": "halt.where.mall"
+    },
+    "train.haltLabel.downtown": {
+      "kind": "label",
+      "key": "halt.where.downtown"
+    },
+    "haltWhere": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.region"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "tunnel"
+              }
+            }
+          },
+          "value": {
+            "query": "train.haltLabel.tunnel"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.region"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "bridge"
+              }
+            }
+          },
+          "value": {
+            "query": "train.haltLabel.bridge"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.region"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "containers"
+              }
+            }
+          },
+          "value": {
+            "query": "train.haltLabel.containers"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.region"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "towers"
+              }
+            }
+          },
+          "value": {
+            "query": "train.haltLabel.towers"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.region"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "viaduct"
+              }
+            }
+          },
+          "value": {
+            "query": "train.haltLabel.viaduct"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.region"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "mall"
+              }
+            }
+          },
+          "value": {
+            "query": "train.haltLabel.mall"
+          }
+        },
+        {
+          "value": {
+            "query": "train.haltLabel.downtown"
+          }
+        }
+      ]
+    },
+    "train.statusLabel.siding": {
+      "kind": "label",
+      "key": "status.siding"
+    },
+    "train.statusLabel.halted": {
+      "kind": "label",
+      "key": "status.halted"
+    },
+    "train.statusLabel.next": {
+      "kind": "label",
+      "key": "status.next",
+      "vars": {
+        "stop": {
+          "query": "train.nextName"
+        }
+      }
+    },
+    "train.statusLabel.station": {
+      "kind": "label",
+      "key": "status.station",
+      "vars": {
+        "stop": {
+          "query": "train.stopName"
+        }
+      }
+    },
+    "where": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.isAtSiding"
+              },
+              "op": "eq",
+              "right": {
+                "literal": true
+              }
+            }
+          },
+          "value": {
+            "query": "train.statusLabel.siding"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.isHalted"
+              },
+              "op": "eq",
+              "right": {
+                "literal": true
+              }
+            }
+          },
+          "value": {
+            "query": "train.statusLabel.halted"
+          }
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "train.isBetween"
+              },
+              "op": "eq",
+              "right": {
+                "literal": true
+              }
+            }
+          },
+          "value": {
+            "query": "train.statusLabel.next"
+          }
+        },
+        {
+          "value": {
+            "query": "train.statusLabel.station"
+          }
+        }
+      ]
     }
   },
   "native": {

@@ -1,3 +1,4 @@
+import {formatNativeText} from './text';
 import {wireConnectEligibility,captureDomains,reduceWireConnect,reduceWireCut,reduceTraceAdd,reduceTraceKick,type SceneDomains,type DomainNotice,type GameplayDomainTransaction} from './scene-domains';
 import {registryLabels} from './gameplay/rewards';
 import {compileCheckpoint} from './gameplay/checkpoint';
@@ -1385,14 +1386,14 @@ export class SceneModel {
   }
 
   private fmt(s: string, c: Ctx, vars?: Vars) {
-    return s.replace(/\{(query:[\w.:-]+|[\w.-]+)\}/g, (m, k: string) => {
+    return formatNativeText(s, (k: string) => {
       // Explicit shared query reads never fall through to native context/vars.
-      if (k.startsWith('query:')) { const v=this.gameplayQuery?.(k.slice(6)); return v===undefined?m:String(v); }
+      if (k.startsWith('query:')) { const v=this.gameplayQuery?.(k.slice(6)); return v; }
       if (vars && k in vars) return String(vars[k]);
       if (k === 'verb') return c.verb;
       if (k === 'via') return c.bySignal ? 'signal → ' : '';
       const v = this.read(k, c);
-      return v === undefined ? m : String(v);
+      return v;
     });
   }
 

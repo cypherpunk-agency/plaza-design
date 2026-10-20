@@ -53,14 +53,14 @@ existing function. A changed body needs semantic review.
 | Downtown | Till, legs, Registry, billboard/peer timers, denial rotation, DLV access/milestone outcomes and finale are shared | DLV trajectory/scanner/collision sampling; read-only canonical player services; camera panel |
 | Yard | Grab/drop, hatch deadline, camera discovery and parcel outcomes are shared | Registered camera validation and source-bound presentation; no rule effect/tick body remains |
 | Stacks | Lift permissions/selection, alarm/return outcomes, watchdog/trace, discovery, landing rewards and cross-owner Sprat state are shared | Trajectories and milestone timing, transient highlight expiry, scope panel |
-| Train | Pass/door/paid/unpaid cases, halt/resume and harbor unlock are shared | Travel/braking/siding calculations; `where` and `haltWhere` wording selection remain native |
-| Sandbox | Counter/resource commands and environmental reactions are shared | Cosmetic pulse stamping; the night predicate remains native |
+| Train | Pass/door/paid/unpaid cases, halt/resume and harbor unlock are shared | Travel/braking/siding calculations and typed read-only observations; `where` and `haltWhere` are now shared label/select queries |
+| Sandbox | Counter/resource commands and environmental reactions are shared | Cosmetic pulse stamping; night is now a shared time-condition query |
 | Beach / Laundromat / Moth / Library | Ordinary workflows and observed goal awards are shared | No registered rule effect, derived read or tick remains; shared engines and source-bound presentation still apply |
 | Harbor / Warehouse / Market / Shop / Mall / platforms / Harbor Shift | Source-authored ordinary content; no additional registered SceneRules callables | Art, actor, travel and presentation bindings require their own scope checks |
 | Opening | Phase rules, targets, access policy, timing and cinematic handoff source have G11 evidence | Existing orchestration/primitive playback remains code; G11 does not sign every other gate |
 
-The bounded SceneRules audit now exposes three ordinary gaps (two Train wording selectors,
-Sandbox night). This is not a count of all remaining goal tasks.
+The bounded SceneRules audit now has zero ordinary gaps across 49 registered callables.
+This does not certify composition/runtime/engine ownership or every remaining goal task.
 
 ### Pixel predicate removal
 
@@ -152,3 +152,20 @@ texts and router speaker binding. Original1,728 histories and108 router timeline
 Actual typed rebind, protected Save/bundle/fresh shipping/Undo and cancellation evidence:
 `.scene-system/capsule-router-online-save-cqmIMt`; mechanical controller Save:
 `.scene-system/capsule-controller/run-EjZ2un`. TypeScript and both builds PASS.
+
+### Final SceneRules selectors, 2026-10-20
+
+Train's `where` and `haltWhere` selectors now use shared native-observation, label-variable and
+ordered-select queries. The registered simulation provides typed physical facts only. Label
+interpolation uses the same one-pass formatter as native text, with no saved copy of observations.
+Sandbox's night predicate uses the existing shared city-time condition. Typed query controls expose
+observation rebinding, label variables and time predicates; prospective source validation rejects
+unregistered providers, wrong types, cycles and dangling references.
+
+`check-train-position-source.mts`: 6,052 immutable-original cases, including geographic boundaries,
+exact status/location wording, phase/station/door/manual/signal/guards.
+`check-sandbox-live-conditions.mts`: 504 original time/weather/state/live histories, now also comparing
+the night value. `check-native-query-text.mts` covers live observations, no save mutation, fail-closed
+values, one-pass label variables and cycles. Train and Sandbox typed-control/Save checks cover actual
+pending execution, saved JSON fresh shipping imports, invalid-edit atomicity and exact-byte Undo.
+No drawing, geometry, actor or animation implementation changed in this batch.
