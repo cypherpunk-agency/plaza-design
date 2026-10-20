@@ -9,7 +9,7 @@ import type {SceneDocument} from '../../engine/gameplay/scene-document';
 import type {Character} from '../../runtime/characters';
 import sceneSource from './scene.json';
 import { frameView } from '../../art/core/view';
-/** Yard composition source, pure bindings, and the explicit legacy presentation controller. */
+/** Yard composition source, pure bindings, and the caller-owned presentation controller. */
 import {art,drawComposition,resolveComposition,type Composition,type Environment,type Instance,type Value} from '../../art';
 import {yardVisualFields} from '../../art/assemblies/yard-elements';
 import type {YardVisual} from '../../art/assemblies/fixer-yard';
@@ -43,7 +43,7 @@ function parcelPosition(model:SceneModel,hookX:number,doc:Composition,gameplay:G
 }
 /** Pure binding evaluation; bounds queries and repeated painting never advance the controller. */
 export function yardVisualSnapshot(controller:Readonly<YardPresentationState>,engine:EngineDraw,doc:Composition=yardComposition,gameplay:GameplayDefinition=defaultGameplay):YardVisual{const l=light(),c=yardController(engine.m.data),held=c!==undefined&&yardRead(engine.m,'parcelAt')===c.places.hook;return{layer:engine.layer,highlight:engine.hover??'',pan:Number(yardRead(engine.m,'pan')??0),gateOpen:!!(c?.gateOpen&&engine.m.value(c.gateOpen)),gateAllowed:!!yardRead(engine.m,'gateAllowed'),held,hookVisible:controller.hookVisible,hookX:controller.hookX,parcel:held&&!controller.hookVisible?null:parcelPosition(engine.m,controller.hookX,doc,gameplay),night:l.night*(1-l.cover)};}
-/** Explicit compatibility preparation: the legacy recurrence ran once for every all/devices draw.
+/** Explicit presentation preparation: preserve the original once-per-all/devices-draw recurrence.
  * The controller belongs to the caller. Art, bounds and environment evaluation never call this.
  * A deterministic editor seek can recreate a controller and replay its known presentation frames.
  */

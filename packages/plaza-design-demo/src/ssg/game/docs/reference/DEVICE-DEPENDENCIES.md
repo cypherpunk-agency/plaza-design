@@ -36,7 +36,7 @@ source-bound whole-game visual verification retain their own gates.
 
 ## Persistence correction
 
-The former Downtown `reconcile` function reconstructed authentication, key grants and gate state from player flags/controlled nodes. It has been deleted entirely. Current-format saves already serialize guard `passed` and sector `open` metadata; `SceneHost.restore` restores that metadata after checking current references. Loading progress now preserves what was actually saved rather than manufacturing authentication/resources from flags. `syncGoals` remains separate and still synchronizes goal markers with player progress.
+The former Downtown `reconcile` function reconstructed authentication, key grants and gate state from player flags/controlled nodes. It has been deleted entirely. Current-format saves already serialize guard `passed` and sector `open` metadata; `SceneHost.restore` restores that metadata after checking current references. Loading progress now preserves what was actually saved rather than manufacturing authentication/resources from flags. The six goal-marker predicates now live in Downtown gameplay onPersist triggers; the hardcoded syncGoals implementation and save.ts are removed.
 
 This intentionally changes historical/injected-flags behavior: setting `till`, controlled-node or `end` flags alone no longer authenticates devices, grants clues or forces gate scalar state. Such shortcuts are not current-format save compatibility requirements. No replacement codec, alias or reconciliation evaluator was introduced.
 

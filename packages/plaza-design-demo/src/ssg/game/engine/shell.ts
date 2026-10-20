@@ -12,13 +12,13 @@
  *
  * "The machine" is the one whose schematic is open, else the one you stand at
  * (the game decides). Lines come from the engine, so the wording is the scene's.
- * Written for Downtown; nothing in it is Downtown-only (the yard uses it too).
+ * Shared by every scene with devices; it delegates every action to SceneModel.
  */
 
-import type { LineData } from "../../data/types";
-import type { LineKind } from "../../ui/terminal";
-import type { SceneHost } from "../../engine/index";
-import type { Noun } from "../../engine/model";
+import type { LineData } from "../data/types";
+import type { LineKind } from "../ui/terminal";
+import type { SceneHost } from "./index";
+import type { Noun } from "./model";
 
 /** What level.ts's terminal asks of a scene (its `Shell`). */
 export interface SceneShell {

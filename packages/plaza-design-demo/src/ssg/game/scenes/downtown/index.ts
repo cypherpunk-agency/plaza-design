@@ -12,9 +12,8 @@ import type {SceneData} from '../../data/types';
  * Downtown, the first street, a scene on the engine: every machine is a device
  * on the board with nouns and verbs, hack vision (H) and the board (B), and
  * the deck's keyboard stays as the last resort. What is on the street is
- * data/downtown.json; its own code is the effects and save bridge (rules.ts,
- * save.ts), CAM-3 (camera.ts), the drawing (scene.ts) and the typed commands
- * (shell.ts). Ordinary source bindings use the shared manifest compiler. The
+ * scenes/downtown/devices.json; its own code is physical effects (rules.ts),
+ * CAM-3 (camera.ts), drawing (scene.ts) and shared engine commands. Ordinary source bindings use the shared manifest compiler. The
  * native sprite people use shared actor recipes and authored conversations;
  * specialist device controllers retain their native behavior.
  */
@@ -27,8 +26,6 @@ import { downtownRules, dlvX } from './rules';
 import {  downtownComposition,downtownReflections,renderDowntownCity,renderDowntownStreet, downtownLights, downtownCasters, downtownGeometry, renderDowntownDevices,renderDowntownPeople,downtownEnvironment, validateDowntownComposition, type DowntownRenderOptions } from './composition';
 import type { Composition, Properties } from '../../art/core/composition';
 
-export { syncGoals } from './save';
-export { sceneShell, type SceneShell } from './shell';
 
 
 /** Downtown, complete. Its rules are made for the player's save (`rules(player)`). */

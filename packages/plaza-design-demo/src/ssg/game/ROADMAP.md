@@ -12,16 +12,17 @@ Story M1–M9 and completed artwork/workbench S0–S13 keep their existing IDs.
 
 ### Current acceptance, 2026-10-20
 
-Eleven gates are signed: G0/G1/G2/G3/G4/G5/G6/G8/G9/G10/G11. G0 uses the explicitly approved
-retrospective baseline audit; see BASELINE-RECONCILIATION.md. World/story acceptance now covers all19 declared
-route collections, pending destinations/arrivals, map/transport access, opening and cinematic
-handoffs, grouped new-scene imports and atomic invalid-reference rejection. See
-[WORLD-STORY-ACCEPTANCE.md](./docs/reference/WORLD-STORY-ACCEPTANCE.md).
-G8 all-scene content acceptance is recorded in [CONTENT-ACCEPTANCE.md](./docs/reference/CONTENT-ACCEPTANCE.md).
-G9 controller/network acceptance is recorded in [CONTROLLER-NETWORK-ACCEPTANCE.md](./docs/reference/CONTROLLER-NETWORK-ACCEPTANCE.md).
-G4/G10 authoring and isolation acceptance is recorded in [AUTHORING-ACCEPTANCE.md](./docs/reference/AUTHORING-ACCEPTANCE.md).
-All19 Layout/Logic/Wiring/Play/source Save-bundle rows now pass. G7/G12/G13 remain open. Current rendering has the separately recorded
-pre-existing Mall animation delta; the original raster baseline remains unchanged.
+The all-game consolidation goal is complete: **G0-G13 PASS, all19 scenes, all12 matrix categories**.
+G0 uses the user-approved retrospective audit; the immutable original capture is unchanged.
+G12 retains the explicitly approved upstream walk-turn pose and its raw Mall difference report.
+See [final integration acceptance](./docs/reference/FINAL-INTEGRATION-ACCEPTANCE.md),
+[execution evidence](./ENGINE-CONSOLIDATION-STATUS.md) and
+[compact review guide](./docs/reference/CONSOLIDATION-REVIEW-GUIDE.md).
+Ordinary content, conversations, existing devices/controllers/network/world/story settings and
+scene creation are editable through the scene-centered editor. New art/physical implementations
+remain registered code. Current-format persistence is shared; no historic-save adapters remain.
+Next: feedback on editor/communication appeal and Harbor M2 pacing, then M3-M6 experience work.
+No new story chapter, remote-presence act or campaign playthrough was included in this goal.
 The dated checkpoints below retain their original scope; the execution ledger owns current gates.
 
 ### Integrated checkpoint D, 2026-10-20
@@ -81,51 +82,25 @@ native dialogue and node/redirect controls, and Stacks/Downtown motion parameter
 Save/fresh-import proofs,173 zero-difference raster comparisons and all19 actual native Play/Stop
 checks pass. See docs/reference/ENGINE-CHECKPOINT-2026-10-19-C.md.
 
-Remaining: other inventoried ordinary controller/reward/story branches, complete all-scene typed
-authoring/lifecycle acceptance, camera/visual bindings and cleanup. No old-format compatibility work
-is planned. Every further implementation batch needs its own integrated preservation evidence.
-The per-scene matrix remains conservative and has not yet reconciled every focused evidence entry;
-NOT RUN entries must not be interpreted as a claim that no underlying implementation exists.
-G1 communication routing, G2 attention/timing and G3 conversations PASS at source377ff1fccc6c.
-G6 now PASSes at source839777ab5e10: all six workloads have three eligible source-bound repeats,
-raw samples, quality/calibration diagnostics and contributor analysis; no optimization retained.
-the full goal remains incomplete. See ENGINE-CONSOLIDATION-STATUS.md and
-[ordinary controller audit](./docs/reference/ORDINARY-CONTROLLER-CONSOLIDATION.md).
-
-The goal is in scene migration and editor integration, not final cleanup. All 19 native scenes
-now have ordinary manifests and shared actor collections (287 original source bodies). Per-scene
-checks cover source CRUD, rebinding, typed recipes, grouped Save, fresh imports and Undo; combined
-verification is in progress. This includes the 36 transit riders and Downtown's four original
-sprite actors, retaining their native art and draw order. Empty Capsule, Yard and Moth collections
-also support creation. Specialized controllers are a separate remaining requirement.
-
-Downtown's shared dialogue graphs match the original exhaustive outcome and target-priority corpus;
-the production duplicate runner is removed. Fixed scene environment settings have moved to source
-with typed controls, while geometry-derived values keep their existing Layout owner. Communication
-consolidation now includes covered-screen/reduced-motion clocks, scan deduplication, explicit device
-routing, feedback receipts and persisted noun/wiring lessons. Success-service receipt plumbing and causal cue checks now pass.
-
-Specialized controllers, existing world/network routes, complete editor coverage, final preservation,
-lifecycle/performance acceptance and removal of superseded paths remain required. No whole-goal
-completion is claimed: G1–G3 pass while G0/G4–G13 remain open. Historical scoped completions below
-do not imply full-game completion.
-
-Latest integrated preservation checkpoint:173 raster comparisons passed at source0928013b951c.
-Further source changes need a new integrated comparison. Story M1 remains a completed design pass and M2 an implemented
-prototype awaiting pacing review. Story M3–M9 remain outside this engineering goal. The user separately
-authorized publishing reasonable stable checkpoints to main and production.
+The preceding dated checkpoints record the migration as it happened. Their remaining-work
+sentences are historical; the final acceptance above supersedes them. G6 has six source-bound
+workloads and three eligible repeats each; no measured optimization was retained. Story M1 remains
+a completed design pass; M2 remains an implemented prototype awaiting pacing review. M3-M9 keep
+their existing identities and remain outside this completed consolidation goal.
 
 | Order | Delivery | Current state / next action |
 | --- | --- | --- |
 | Completed foundation | ENG-01–04, scoped ENG-05 objectives/access, ENG-06 recorder and ENG-08 manifest pilot; further four-actor Market conversation batch | Technically complete within recorded scopes. Reuse these systems; do not restart them |
-| Active autonomous goal | All 19 scenes and full editor support, including shared communication/conversations/controllers/world/network contracts and reliability | [Frozen scope and G0–G13 gates](./ENGINE-CONSOLIDATION-GOAL.md). Authorized 2026-10-18; original source captured, all scene content registrations present; native entity/controller/world migration and final gates remain open |
-| Editor integration within active goal | Extend latest scene-centered editor | Full typed controls and all-scene private Play are required; preserve the current layout and user changes |
-| Included in active goal | ENG-08 all-scene/controller/world authoring and registration | All 19 scenes, editable existing behavior and ordinary scene creation without TS edits; pilot is reused |
+| Completed consolidation | All 19 scenes and full editor support, including shared communication/conversations/controllers/world/network contracts and reliability | [Frozen scope and G0–G13 gates](./ENGINE-CONSOLIDATION-GOAL.md). Authorized2026-10-18; all G0-G13 and all19 scene rows PASS2026-10-20 |
+| Completed editor integration | Extend latest scene-centered editor | Typed controls, all19 private Play, connected ordinary scene creation, atomic history/bundle/protected Save and isolation accepted; preserve the current layout and user changes |
+| Completed existing-game authoring | ENG-08 all-scene/controller/world authoring and registration | All 19 scenes, editable existing behavior and ordinary scene creation without TS edits; pilot is reused |
 | Experience checkpoint | Story M2 Harbor pacing/comprehension review, then M3 ordinary-life prologue | Current demo mechanics feedback does not answer Harbor pacing. M3 depends on actual needs, not completion of the entire engine/editor |
 | Subsequent experience | M4 deletion/first agency → M5 foundational hacking → M6 local Act I | Preserve gradual teaching and independent practice; settle finale causality before implementing it |
 | Later foundations/chapters | ENG-07 remote identity/network lifecycle; M7–M9 body/remote chapters | Prototype required capabilities before their chapter. Do not make remote networking a prerequisite for the prologue |
 
-Current world/controller slice: canonical city source and isolated metro sessions are implemented;
+### Historical world/controller implementation checkpoint
+
+World/controller slice: canonical city source and isolated metro sessions are implemented;
 City & travel edits city names/arrivals/fares plus metro timing/braking. Original native scene,
 map and bound-metro raster checks pass. Full world creation, in-flight controller fixtures and
 other controller/network authoring remain open; see the consolidation evidence ledger.

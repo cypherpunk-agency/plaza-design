@@ -76,7 +76,7 @@ This is implementation coverage, not evidence that the intended teaching order i
 `guessAs` at line 606 checks a watchdog but not that device lock; `check` at line 617
 checks only the guard-specific deadline. Fragment use also reaches `check` directly.
 By contrast, `toyBlocked` at line 673 checks both deadlines. The terminal's login calls
-`guess` through `scenes/downtown/shell.ts`, so these entry paths do not share the same rule.
+`guess` through `engine/shell.ts`, so these entry paths do not share the same rule.
 
 Probe result: after trace reaches 100, the device has a 10,000 ms lockout; its ordinary
 lamp verb is refused, but the correct password still adds the guard to `passed`.

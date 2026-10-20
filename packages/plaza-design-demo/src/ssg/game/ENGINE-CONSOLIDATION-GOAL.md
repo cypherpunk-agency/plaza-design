@@ -1,7 +1,9 @@
 # Autonomous delivery: unified game and full editor coverage
 
 2026-10-18. Parent priority/status owner: [ROADMAP.md](./ROADMAP.md).
-Status: AUTHORIZED FOR EXECUTION by the user on 2026-10-18.
+Status: COMPLETE2026-10-20. Authorized by the user on2026-10-18.
+All G0-G13 and nineteen per-scene rows accepted; see ENGINE-CONSOLIDATION-STATUS.md and
+docs/reference/FINAL-INTEGRATION-ACCEPTANCE.md. The requirements below remain the frozen scope.
 User correction 2026-10-19: old-save-format compatibility was an agent-added assumption, not a
 requested deliverable. Do not build compatibility layers or retain per-scene state adapters to
 satisfy that assumption. Use one common runtime state and shared actions. Preserve current game
@@ -16,6 +18,12 @@ migration; retain that timing limitation and the captured-subtree diff scope exp
 supersedes pre-migration chronology wording below. All preservation requirements remain unchanged.
 
 
+User decision 2026-10-20: retain the upstream `e8cf05f` walk-turn pose as an approved
+actor-animation change. The unchanged original raster comparison records one Mall frame with
+282 differing pixels (maximum channel delta82); a diagnostic removing only the new turn branch
+matches all173 fixtures exactly. Keep both raw reports and the immutable baseline unchanged.
+This exception permits that specific newer animation, not unrelated visual differences.
+
 ## Goal condition
 
 All 19 existing registered scenes run through one shared scene/content system. Every existing
@@ -25,7 +33,7 @@ editor. New ordinary scenes can be created and connected without per-scene TypeS
 Specialized mechanics and procedural art remain registered code implementations with typed editable
 parameters; opaque adapters that hide ordinary content do not satisfy full authoring coverage.
 
-Preserve world pixels, actor presentation, animation timing, simulation/puzzle outcomes and current gameplay behavior, except the explicitly approved communication overlays and persistent-conversation policy.
+Preserve world pixels, actor presentation, animation timing, simulation/puzzle outcomes and current gameplay behavior, except the explicitly approved communication overlays, persistent-conversation policy and upstream walk-turn pose recorded above.
 Remove replaced implementations after migration. Complete only when G0–G13 all PASS with source-bound
 evidence, all 19 scene rows are complete and no mandatory editor hook or legacy content path remains.
 A green build, source viewer, JSON dump, registered document or wrapper around an unchanged content

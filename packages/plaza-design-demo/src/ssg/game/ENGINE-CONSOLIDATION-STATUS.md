@@ -1,6 +1,6 @@
 # All-game consolidation: execution evidence
 
-2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
+2026-10-20. COMPLETE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
 Last verified deployment: `02f35b5` on main and production.
 Homepage jobs39397026012/39397025763 and design job39397025886 succeeded.
@@ -27,19 +27,20 @@ This source capture is not evidence of pixel parity or playable outcomes.
 | G4 | PASS | All19 source paths and integrated typed editor/native Play; portable atomic history/import and protected Save/conflict/recovery/HTTP boundaries; actual private Play and demo save/slot isolation. Current full-corpus device forms and new-scene browser flow pass. See AUTHORING-ACCEPTANCE.md |
 | G5 | PASS | Sourcea3fac97e: cached Game20 cycles, panel/menu/focus/gesture cancellation, actual38 native private Play/Stop cycles, repeated scene visits and complete ownership/preserved simulation inventory. See LIFECYCLE-ACCEPTANCE.md |
 | G6 | PASS | Source839777ab5e10: all six workloads, three eligible repeats each, raw samples/environment/calibration and independent summary validation; top-three exclusive contributor inspection, no optimization retained. See PERFORMANCE-CHECKPOINT-2026-10-19-C.md. Earlier failed Chrome diagnostics remain immutable |
-| G7 | IN PROGRESS | Both builds and source packaging pass; focused editor/browser checks recorded; full integration/handoff pending |
+| G7 | PASS | Both builds,98-document/129-reference public package, production demo review and current relevant technical checks pass. Approved overlay/turn-pose deltas remain explicit. CONSOLIDATION-REVIEW-GUIDE.md and FINAL-INTEGRATION-ACCEPTANCE.md deliver handoff/limits. |
 | G8 | PASS | All19 source content ownership, actual pending ordinary-content CRUD/rebind/permission/outcome dispatch,38-document bundle/history/protected Save/fresh shipping/byte Undo; all19 actor CRUD and removed Downtown native prompt callback. CONTENT-ACCEPTANCE.md. Other matrix categories remain independent |
 | G9 | PASS | All19 controller/device/network rows reconciled to typed source, real native edits and lifecycle/parity evidence; network/motion/camera/Yard/Laundry/Sandbox protected-source checks and Metro11088 platform/211200 ride cases pass. CONTROLLER-NETWORK-ACCEPTANCE.md; full authoring/preservation remain separate |
 | G10 | PASS | All19 Layout/Logic/Wiring/Play/source Save-bundle rows accepted: full-corpus device forms, source-bound ordinary/actor transactions, typed controller/network/world families, actual inspector lookup and pending native Play. Browser-created scene and typed exit reach Library without TS; grouped Undo cleans up. Explicit graph references and fixed-cable author controls close final audit gaps. See AUTHORING-ACCEPTANCE.md |
 | G11 | PASS | All19 declared route collections,41 native exit dispatches and30 pending destination/arrival edits; current world/access/map/transport/opening/cinematic source and atomic Save/import evidence. See WORLD-STORY-ACCEPTANCE.md. Other scene categories and whole-goal acceptance remain open |
-| G12 | IN PROGRESS | Earlier173/173 raster checkpoints remain immutable. Latest combined source has172 unchanged cases and one282-pixel Mall frame delta also reproduced in published pre-scanner source aebc591. Full state/actor/HUD/save acceptance and upstream animation delta reconciliation remain pending |
-| G13 | IN PROGRESS | Legacy conversation evaluators/counters removed; remaining old execution paths and all-gate audit pending |
+| G12 | PASS | Current source99cb740c: all19 actual Game/Menu/current slot/native reload checks;173 browser fixtures with172 exact and user-approved upstream walk-turn pose accounting for sole282-pixel Mall delta. Single-branch diagnostic173 exact; raw FAIL and baseline unchanged. Original outcome/timing checkpoints reconciled in PRESERVATION-ACCEPTANCE.md |
+| G13 | PASS | All19 cleanup rows and G0-G12 pass. REMOVAL-ACCEPTANCE.md reconciles all13 original callback categories and retained sole primitives; final hardcoded progress sync removed, generic terminal adapter shared, no duplicate scalar/dialogue owner. Final source identity is recorded below. |
 
-Current authoring acceptance:11/14 gates PASS. All19 matrix rows pass content,
-devices/controllers,world,Layout,Logic,Wiring,Play and source Save/bundles. This audit fixed
-implicit native conversation references, manifest-bound inspector lookup and fixed-cable
-author controls. Current shared-form/source/security/isolation checks and both builds pass;
-see docs/reference/AUTHORING-ACCEPTANCE.md. G7/G12/G13 remain open.
+Current acceptance:14/14 gates PASS. All19 scenes have all12 matrix categories PASS:
+content,devices/controllers,world,Layout,Logic,Wiring,Play,source Save/bundles,persistence,
+pixels with the explicit approved pose exception,outcomes and cleanup. The current authority is
+FINAL-INTEGRATION-ACCEPTANCE.md plus the gate-specific references. Dated sections below are
+historical evidence, not a remaining backlog. Subjective authoring/communication and Harbor
+pacing feedback remain the next experience work, outside this completed engineering goal.
 
 Package `tsc -b` and `check-communication.mts` pass after the initial communication clock/lane change.
 These are focused implementation checks, not campaign playthrough or final visual acceptance.
@@ -3279,3 +3280,43 @@ Metro's obsolete where/effect-position fixture calls were replaced with actual c
 Train status/action execution;11088 original platform cases and211200 ride frames pass.
 
 Nine gates accepted: G0/G1/G2/G3/G5/G6/G8/G9/G11. Remaining: G4/G7/G10/G12/G13.
+
+## 2026-10-20 preservation signoff and remaining cleanup
+
+G12 accepted with the user's explicit upstream walk-turn exception; see
+PRESERVATION-ACCEPTANCE.md for immutable raw shipping/control reports and all19 current persistence.
+A subsequent cleanup moves Library touch arrival wording from TypeScript into introTouch source;
+check-library-arrival-source.mts verifies unchanged desktop/touch text, editable native variants and
+removable override without hidden text replacement. All19 actual persistence and package TypeScript
+pass after that change (all-game-persistence-GGLYhT). Yard comment wording now describes its sole
+caller-owned presentation recurrence rather than suggesting a save compatibility layer.
+
+Final cleanup found check-library-gameplay.mts still expects the retired observations.goals
+projection; current source has goal.lan and shared goal triggers, already covered by the accepted
+Library observation workflow. That historical check currently fails at its obsolete metadata
+expectation; it is not counted as a current passing check. Reconcile its scope during G13 rather
+than weakening an original behavior oracle. G7 integration/handoff and G13 completeness remain open.
+
+## 2026-10-20 final duplication audit
+
+The historical Library check is reconciled and passing again, retaining its immutable content
+oracle. Downtown's last hardcoded six-goal synchronizer and save.ts are removed: source
+onPersist triggers preserve all64 original progress combinations, immediate timing and repeat
+idempotence; actual typed phase controls and protected source Save/fresh shipping/byte Undo pass
+(check-persist-source, persist-source-0nkc1v). Generic device shell code moved to engine/shell.ts.
+See REMOVAL-ACCEPTANCE.md for the13 callback categories, all19 families and retained primitives.
+
+Test District now has collapsed communication examples using the shipping presenters. Actual
+Game review gating, receipt collapse, speech-deferred help and reduced-motion expiry pass
+check-communication-review.mts. Browser inspection exposed and fixed shortcuts overlapping the
+status lane; they now sit top right. World raster source672751a7 remains172 exact plus the
+approved282-pixel Mall pose, zero errors; raw1792489998357 is preserved.
+
+## Final source and completion receipt
+
+All14 gates and228 per-scene category cells are accepted at `sha256:f96a56dd41f6b6cb51afa42e15569ff3266af980092f51e59698f3ec938f1e01`.
+Final current persistence: all-game-persistence-mTFVzB; immediate-goal preservation/source Save:
+persist-source-MGNTwR; current controller inventory: controller-inventory-R6JhR2; public package:
+public-editor-build-check/run-MEcLfO. The final source raster report1792490808181 retains exactly
+the approved Mall pose delta and no other differences/errors. Final integration and review guide
+are delivered in docs/reference/FINAL-INTEGRATION-ACCEPTANCE.md and CONSOLIDATION-REVIEW-GUIDE.md.

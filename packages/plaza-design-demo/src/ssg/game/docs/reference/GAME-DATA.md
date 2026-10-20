@@ -150,14 +150,15 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   `flags.till`, `flags.end`), as before the engine: **code** reads them as derived values
   (`till`, `controlled2F`, `jump`, `end`, `handle`, …) and its effects write them (`node.control`,
   `legs.install`, `till.pay`, `dlv.drive`), in `downtown/rules.ts`. The scene's own `state` is only
-  what is new on the street (the gate's lock, DLV-9, the billboard's feed). `downtown/save.ts`
-  `reconcile` makes the scene agree with the fields on every load, so old saves keep everything.
+  what is new on the street (the gate's lock, DLV-9, the billboard's feed). Current scalar state
+  has one owner in Save.gameplay. Source-authored onPersist triggers synchronize goal markers;
+  no historic save reconciliation or duplicate scalar store remains.
 - Which node a Registry box frees and the shell's login users: **data**, as Downtown texts
   (`node.box: "0x2F"`, `login.user.box: "maint"`), read by the effects and the shell.
 - The deck's commands on a scene (`ls`, `cat`, `login`, `install`, `use <noun> --<verb>`):
-  **code**, `downtown/shell.ts` (nothing Downtown-only in it; the yard's deck uses it too).
-- The fixer's stepped hints: still **code** (`level.ts` `HINTS`), as before; moving them into
-  `downtown.json` would need a `hints` field (open).
+  **code**, `engine/shell.ts` (nothing Downtown-only in it; the yard's deck uses it too).
+- The fixer's stepped hints: shared conversation graphs and saved cursors in
+  `scenes/downtown/gameplay.json`, using the same runner as choices and other actors.
 - The market gate (P12): the gate's logic is **data** (pre-wired `scanner:matched → lock open`,
   `door:passed → lock shut`; the lock opens only on the scanner's word, `scanned`); DLV-9's drive
   is **code** (`dlv.drive`, `place`). DISPATCH's shield rings are, for now, a `sequence` seal
@@ -819,7 +820,7 @@ At runtime a missing text shows as `[missing text key]` in the terminal rather t
 - **Ids are the glue**: `device.noun:event` for cables, node ids for dialogue, goal ids,
   text keys. Keep them short and stable; rename with care since saves will store them.
 - **Downtown** is built (`downtown.json`): machines are devices, its terminal commands are
-  nouns and verbs (and still type, `downtown/shell.ts`), objectives are `goals`. People and the
+  nouns and verbs (and still type, `engine/shell.ts`), objectives are `goals`. People and the
   fixer stay speech bubbles in `level.ts` for now; its save stays the save's own fields (above).
 - **Localisation**: all wording is already in data. Next step is moving `texts`,
   dialogue and `look`s into `texts.en.json` keyed by id, with the scene file holding keys only.

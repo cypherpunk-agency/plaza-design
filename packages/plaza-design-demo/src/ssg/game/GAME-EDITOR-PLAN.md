@@ -1,6 +1,9 @@
 # Game editor plan: from scene composer to full game editor
 
-Status: direction approved 2026-10-17. The shared-gameplay pilot and four-part Harbor Shift/Sandbox milestone are implemented: selected-scene Play, authored starting fixtures, native inspection and a Harbor scene-document pilot. Shop, Library and Laundromat now also use registered scene/gameplay documents, typed authoring and isolated Play. ENG-02/03 adds persistent commerce, shared conversation paths and a two-area Test District with editor preview. The broader editor phases below remain an evolving roadmap.
+Current status2026-10-20: all19 existing scenes and full source/native editor coverage accepted under G0-G13.
+See [final acceptance](./docs/reference/FINAL-INTEGRATION-ACCEPTANCE.md). The historical pilot/phase notes below retain their original scope; they are not a current backlog.
+
+Historical status: direction approved2026-10-17. The shared-gameplay pilot and four-part Harbor Shift/Sandbox milestone are implemented: selected-scene Play, authored starting fixtures, native inspection and a Harbor scene-document pilot. Shop, Library and Laundromat now also use registered scene/gameplay documents, typed authoring and isolated Play. ENG-02/03 adds persistent commerce, shared conversation paths and a two-area Test District with editor preview. The broader editor phases below remain an evolving roadmap.
 This is a supporting requirements and execution-reference document, not an independent priority list.
 [ROADMAP.md](./ROADMAP.md) owns delivery order; [GAMEPLAY-ENGINE-PLAN.md](./GAMEPLAY-ENGINE-PLAN.md)
 incorporates the shared systems, authoring and demo-world gates. Existing phase numbers below remain

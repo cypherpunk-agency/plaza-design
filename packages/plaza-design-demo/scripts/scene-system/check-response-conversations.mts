@@ -7,7 +7,7 @@ import {attachNativeGameplay,validateNativeBindings} from '../../src/ssg/game/en
 import {nativeSourceLine} from '../../src/ssg/game/engine/gameplay/native-text-source';
 import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
 import {deviceRules} from '../../src/ssg/game/authoring/device-sources';
-import {sceneShell} from '../../src/ssg/game/scenes/downtown/shell';
+import {sceneShell} from '../../src/ssg/game/engine/shell';
 import {fixtureGameplayPort} from './model-gameplay-fixture.mts';
 import {TypedForm} from '../../src/ssg/game/authoring/typed-form';
 import {renderResponseConversationsAuthoring} from '../../src/ssg/game/authoring/response-conversations-authoring';

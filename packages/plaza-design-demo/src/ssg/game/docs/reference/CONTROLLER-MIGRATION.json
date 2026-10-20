@@ -711,5 +711,11 @@
       "harborShift": "shared tasks/day/carry presentation; no independent carry simulator"
     },
     "scope": "Initial remainingAuthoredFields above remain historical inventory; current adapter/native behavior acceptance is reconciled in the reference. G10/G12/G13 retain independent requirements."
+  },
+  "finalRetirements": {
+    "2026-10-20": {
+      "scenes/downtown/save.ts": "Removed. Six goal conditions are shared source triggers in downtown/gameplay.json, evaluated onPersist by the common runtime; check-persist-source.mts preserves all64 original combinations.",
+      "scenes/downtown/shell.ts": "Moved unchanged behavior to engine/shell.ts; single generic device command adapter. Historical field inventories above retain their original paths."
+    }
   }
 }

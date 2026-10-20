@@ -8,7 +8,7 @@ import { SAVE_KEY } from '../../runtime/mode';
 // ---------- terminal ----------
 
 /**
- * A scene's machines as the terminal sees them (downtown/shell.ts `sceneShell`):
+ * A scene's machines as the terminal sees them (engine/shell.ts `sceneShell`):
  * the old commands, now doing what a tap on the schematic would.
  */
 export interface Shell {

@@ -635,3 +635,6 @@ ownership, placement parent/anchor/offsets and world/background participation. L
 placement and drawing order; actor list order controls interaction priority. Clear follower or other
 source references before removing their target. Original surviving actors retain old save identities.
 Other native scenes still need this migration; this is not full19-scene editor acceptance.
+
+For compact player feedback and a short editor workflow, see
+[CONSOLIDATION-REVIEW-GUIDE.md](../docs/reference/CONSOLIDATION-REVIEW-GUIDE.md).

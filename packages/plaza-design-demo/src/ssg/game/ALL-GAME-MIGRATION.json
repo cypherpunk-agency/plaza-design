@@ -33,10 +33,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -161,6 +161,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -193,10 +205,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -346,6 +358,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -378,10 +402,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "IN PROGRESS",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -520,6 +544,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -555,10 +591,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -691,6 +727,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -723,10 +771,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -835,6 +883,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -867,10 +927,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -980,6 +1040,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -1011,10 +1083,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -1102,6 +1174,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -1134,10 +1218,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -1286,6 +1370,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -1316,10 +1412,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "IN PROGRESS",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -1423,6 +1519,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -1455,10 +1563,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -1549,6 +1657,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -1580,10 +1700,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "IN PROGRESS",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -1725,6 +1845,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -1757,10 +1889,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "IN PROGRESS",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -1877,6 +2009,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -1909,10 +2053,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -1997,6 +2141,19 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved.",
+          "approvedVisualChange": "User2026-10-20 retains upstream e8cf05f walk-turn pose: one282-pixel frame delta; single-branch diagnostic173/173 exact. Raw shipping FAIL and baseline unchanged."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -2029,10 +2186,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -2130,6 +2287,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -2160,10 +2329,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -2261,6 +2430,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -2291,10 +2472,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -2392,6 +2573,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -2425,10 +2618,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "IN PROGRESS",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -2574,6 +2767,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -2606,10 +2811,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -2712,6 +2917,18 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     },
@@ -2745,10 +2962,10 @@
       "wiring": "PASS",
       "play": "PASS",
       "saveBundle": "PASS",
-      "persistence": "NOT RUN",
-      "pixels": "NOT RUN",
-      "outcomes": "NOT RUN",
-      "cleanup": "NOT RUN",
+      "persistence": "PASS",
+      "pixels": "PASS",
+      "outcomes": "PASS",
+      "cleanup": "PASS",
       "evidence": {
         "rasterCheckpoint": {
           "status": "PASS",
@@ -2831,12 +3048,24 @@
           "source": "sha256:71754a71ff90a7d4423d1a7257d0b1fa2278661404b3f6ebf6765e0c950f0646",
           "reference": "docs/reference/AUTHORING-ACCEPTANCE.md",
           "scope": "All19 source/entity/actor transaction paths, typed forms and inspector bindings, native private Play; applicable controller/network/world families retain their G8/G9/G11 source-bound evidence. Preservation/persistence and final cleanup remain separate."
+        },
+        "preservationAcceptance": {
+          "status": "PASS",
+          "source": "sha256:99cb740c1db10a9ae13726d0b899066efad11323a73e56a580e4ec572b524bf0",
+          "reference": "docs/reference/PRESERVATION-ACCEPTANCE.md",
+          "persistenceReport": ".scene-system/all-game-persistence-uYz7Xn/evidence.json",
+          "scope": "Current Game/Menu/slot/native restore; immutable world/actor fixtures plus accepted controller/content outcomes at their recorded checkpoints; communication deltas separately approved."
+        },
+        "removalAcceptance": {
+          "status": "PASS",
+          "reference": "docs/reference/REMOVAL-ACCEPTANCE.md",
+          "scope": "Original callback category reconciliation plus all19 shared content/actor/native-source proofs and finite registered controller inventory. Sole native simulation/art primitives retained explicitly; no competing ordinary evaluator or scalar store."
         }
       }
     }
   ],
   "sharedControllerAuthoringCheckpoint": {
-    "status": "focused-PASS-await-combined-browser",
+    "status": "historical-focused-PASS-superseded-by-G9-G10",
     "sourceSaveArtifacts": [
       ".scene-system/general-devices/run-6xH8ED",
       ".scene-system/gameplay-binding-save-hUnO67",
@@ -2844,6 +3073,7 @@
       ".scene-system/companion-source-save/run-ldCOTC",
       ".scene-system/capsule-controller/run-HZib2Y"
     ],
-    "scope": "All19 ordinary device sources and new catalogue devices; existing/native shared state/command bindings; opening/companion/Capsule/observation slices; typed city controls; communication acknowledgment/causal receipt tests. Remaining specialized controllers and G0-G13 final audit remain open."
+    "scope": "All19 ordinary device sources and new catalogue devices; existing/native shared state/command bindings; opening/companion/Capsule/observation slices; typed city controls; communication acknowledgment/causal receipt tests. Remaining specialized controllers and G0-G13 final audit remain open.",
+    "currentReference": "docs/reference/AUTHORING-ACCEPTANCE.md"
   }
 }

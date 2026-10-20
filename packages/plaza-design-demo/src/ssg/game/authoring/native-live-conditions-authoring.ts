@@ -4,7 +4,7 @@ import type {GameplayBindingControls} from './gameplay-bindings-authoring';
 export function renderNativeLiveConditionsAuthoring(parent:HTMLElement,doc:GameplayDefinition,ui:GameplayBindingControls){
  if(!doc.native)return;const{form,section,edit,draft}=ui,box=section(parent,'Live condition triggers',true),rows=Object.entries(doc.native.triggers??{}),commands=Object.entries(doc.commands).filter(([,c])=>c.sources.length===1&&c.sources[0]==='system').map(([id])=>id);
  for(const[id,row]of rows){const host=section(box,'Trigger '+id,true),prefix='Trigger '+id;
-  form.select(host,prefix+' phase',['beforeNative','afterNative'],row.phase??'afterNative',phase=>edit('Edit live workflow phase',g=>{g.native!.triggers![id].phase=phase as 'beforeNative'|'afterNative';}));
+  form.select(host,prefix+' phase',['beforeNative','afterNative','onPersist'],row.phase??'afterNative',phase=>edit('Edit live workflow phase',g=>{g.native!.triggers![id].phase=phase as 'beforeNative'|'afterNative'|'onPersist';}));
   form.text(host,prefix+' ID',id,value=>edit('Rename live condition trigger',g=>{if(value!==id&&g.native!.triggers![value])throw Error('Trigger already exists');g.native!.triggers=Object.fromEntries(Object.entries(g.native!.triggers!).map(([key,row])=>[key===id?value:key,row]));}));
   form.condition(host,prefix+' condition',row.when,when=>edit('Edit live trigger condition',g=>{if(!when)throw Error('Trigger condition required');g.native!.triggers![id].when=when;}),doc);
   form.select(host,prefix+' mode',['level','rising'],row.edge??'level',mode=>edit('Edit live trigger mode',g=>{if(mode==='rising')g.native!.triggers![id].edge='rising';else delete g.native!.triggers![id].edge;}));

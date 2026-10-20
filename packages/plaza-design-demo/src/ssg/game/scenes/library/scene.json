@@ -7,6 +7,11 @@
     "Terminals over there. Thirty minutes each, for people who exist.",
     "H shows how the room is wired."
   ],
+  "introTouch": [
+    "The public library. Warm. Somebody is paying for the heating, and it is not anybody here.",
+    "Terminals over there. Thirty minutes each, for people who exist.",
+    "HACK shows how the room is wired."
+  ],
   "uses": [
     {
       "id": "chair",

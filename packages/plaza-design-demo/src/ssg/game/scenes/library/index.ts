@@ -45,7 +45,7 @@ export function librarySceneDefinition(document: Composition = libraryCompositio
     drawBackdrop:(ctx,view,engine)=>drawLibrary(ctx,view,engine,doc,state,options,actors),
     drawLayer:(ctx,view,engine,slot)=>drawLibraryLayer(ctx,view,engine,actors,slot,doc,state,options),
     visualEnvironment:(view,engine)=>libraryFrameEnvironment(view,engine,doc,actors),
-    intro:(touch:boolean)=>content.introTouch&&touch?[...content.introTouch]:content.intro.map(page=>touch?page.replace('H shows how the room is wired.','HACK shows how the room is wired.'):page),
+    intro:(touch:boolean)=>content.introTouch&&touch?[...content.introTouch]:[...content.intro],
   };
 }
 export function libraryScene(document:Composition=libraryComposition,state:Environment['state']={},options:LibraryRenderOptions={},sceneDocument:SceneDocument=LIBRARY_SCENE,gameplay:GameplayDefinition=LIBRARY_GAMEPLAY,deviceSource:SceneData=LIBRARY):SceneDef{return librarySceneDefinition(document,state,options,validateLibraryScene(sceneDocument,validateLibraryGameplay(gameplay)),gameplay,deviceSource);}

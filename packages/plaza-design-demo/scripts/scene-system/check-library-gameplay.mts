@@ -14,8 +14,13 @@ import type {UseCtx} from '../../src/ssg/game/scenes/kit';
 const legacy=JSON.parse(fs.readFileSync(new URL('./fixtures/library-before.json',import.meta.url),'utf8'));
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(key,value)=>key==='conversation'?undefined:value));
 const scene=libraryScene();
-const originalData=(value:any)=>{const {observations,...data}=plain(value);assert.deepEqual(observations,{aliases:{catalogConnected:{kind:'nodeConnected',node:'catalog'},lendingConnected:{kind:'nodeConnected',node:'lending'}},goals:[{when:'catalogConnected',goal:'lan'},{when:'lendingConnected',goal:'lan'}]},'source observation replacement is explicit');return data;};
-for(const key of ['id','name','width','spawn','people','readables','exits','data'] as const)assert.deepEqual(key==='data'?originalData(scene[key]):plain(scene[key]),legacy[key],key+' parity');
+// The original renderer treated omitted spot.y as zero; talk now names its formerly implicit graph.
+// Keep the original fixture immutable and account for these two explicit schema representations.
+const expectedData=structuredClone(legacy.data);for(const device of expectedData.devices){if(device.layout?.spot)device.layout.spot.y??=0;}
+let explicitTargets=0;const explicitTalk=(value:any)=>{if(!value||typeof value!=='object')return;if(value.open==='talk'){assert.equal(value.with,undefined);value.with='catalog';explicitTargets++;}for(const child of Object.values(value))explicitTalk(child);};explicitTalk(expectedData);assert.equal(explicitTargets,1);
+
+const originalData=(value:any)=>{const {observations,...data}=plain(value);assert.deepEqual(observations,{aliases:{catalogConnected:{kind:'nodeConnected',node:'catalog'},lendingConnected:{kind:'nodeConnected',node:'lending'},'goal.lan':{kind:'goalComplete',goal:'lan'}}},'source observation replacement is explicit');return data;};
+for(const key of ['id','name','width','spawn','people','readables','exits','data'] as const)assert.deepEqual(key==='data'?originalData(scene[key]):plain(scene[key]),key==='data'?expectedData:legacy[key],key+' parity');
 assert.equal(scene.rules,LIBRARY_RULES);
 assert.equal(scene.objective,undefined);assert.equal(scene.storyMinute,undefined);
 assert.equal(typeof scene.intro,'function');
@@ -37,7 +42,7 @@ const pending=structuredClone(LIBRARY_SCENE);
 pending.people![0].talk[0]=['Pending robot dialogue'];pending.readables![0].pages=['Pending notice'];pending.uses[0].routes[0].pages=['Pending chair'];pending.exits![0].label='[E] PENDING EXIT';
 const edited=libraryScene(libraryComposition,{}, {},pending);
 const pendingSession=new GameplaySession(edited.gameplay!,{read:()=>({flags:{},items:{},tokens:0}),write:()=>{}});assert.deepEqual(talkTo(edited.people![0],pendingSession).pages,['Pending robot dialogue']);pendingSession.dispose();assert.deepEqual(edited.readables![0].pages,['Pending notice']);assert.deepEqual(edited.uses![0].use(ctx),['Pending chair']);assert.equal(edited.exits[0].label,'[E] PENDING EXIT');
-assert.deepEqual(originalData(edited.data),legacy.data);
+assert.deepEqual(originalData(edited.data),expectedData);
 const view={...frameView(0,light()),sx:(x:number)=>x,y:(h:number)=>280-h,t:10,cam:0,gy:280,viewW:960,viewH:360,flags:{}};
 const engine={hover:null,m:{value:()=>false}} as unknown as EngineDraw;
 assert.ok(PEOPLE.find(person=>person.id==='librarian')!.talk,'Default render-bound librarian retains the hint mark');
@@ -50,5 +55,5 @@ for(const change of [
  (d:any)=>d.id='shop',(d:any)=>d.time=[{minute:-1}],(d:any)=>d.uses[0].routes[0].command='grant',
 ]){const bad=structuredClone(LIBRARY_SCENE);change(bad);assert.throws(()=>validateLibraryScene(bad));}
 assert.throws(()=>validateLibraryGameplay({...LIBRARY_GAMEPLAY,flags:[]}));
-assert.doesNotThrow(()=>validateLibraryGameplay({...LIBRARY_GAMEPLAY,commands:{grant:{sources:['interaction'],actions:[{tokens:1}]}}}));
+assert.doesNotThrow(()=>validateLibraryGameplay({...LIBRARY_GAMEPLAY,commands:{...LIBRARY_GAMEPLAY.commands,grant:{sources:['interaction'],actions:[{tokens:1}]}}}));
 console.log('Library authored scene: legacy content/geometry/device parity, persistent shared dialogue, pure chair/resources, pending bindings and protected contracts passed.');

@@ -35,8 +35,8 @@
         },
         {
           "if": "end",
-          "then": " · stays open",
-          "else": " · scanner signature required"
+          "then": " \u00b7 stays open",
+          "else": " \u00b7 scanner signature required"
         }
       ],
       "layout": {
@@ -110,7 +110,7 @@
               {
                 "if": "!scanned",
                 "say": [
-                  "signal → lock --open",
+                  "signal \u2192 lock --open",
                   "the lock wants the scanner's word. that signal is not the scanner.",
                   "err"
                 ]
@@ -123,7 +123,7 @@
                   }
                 ],
                 "say": [
-                  "signal → lock --open",
+                  "signal \u2192 lock --open",
                   "signature matched. the shutter rolls up.",
                   "ok"
                 ]
@@ -200,7 +200,7 @@
     {
       "id": "box",
       "name": "JUNCTION BOX 0x2F",
-      "look": "REGISTRY UTILITIES · AUTHORISED STAFF ONLY. Older than you.",
+      "look": "REGISTRY UTILITIES \u00b7 AUTHORISED STAFF ONLY. Older than you.",
       "deck": true,
       "everyday": [
         {
@@ -212,8 +212,8 @@
       "status": [
         {
           "if": "controlled2F",
-          "then": "session: maint · node 0x2F yours",
-          "else": "REGISTRY UTILITIES · maintenance login only"
+          "then": "session: maint \u00b7 node 0x2F yours",
+          "else": "REGISTRY UTILITIES \u00b7 maintenance login only"
         }
       ],
       "layout": {
@@ -321,7 +321,7 @@
           "label": "look at the tubes"
         }
       ],
-      "status": "V·RIFY · tube 2 of 6 dark",
+      "status": "V\u00b7RIFY \u00b7 tube 2 of 6 dark",
       "layout": {
         "spot": {
           "x": 372,
@@ -357,7 +357,7 @@
               ],
               "say": [
                 "cat tubes",
-                "V·RIFY. tube 2 (E): dark. repair ticket open since installation."
+                "V\u00b7RIFY. tube 2 (E): dark. repair ticket open since installation."
               ]
             }
           }
@@ -367,8 +367,8 @@
     {
       "id": "cam3",
       "name": "CAM-3",
-      "look": "A camera on a pole across from the billboard. ● REC.",
-      "status": "● REC · watching the street",
+      "look": "A camera on a pole across from the billboard. \u25cf REC.",
+      "status": "\u25cf REC \u00b7 watching the street",
       "layout": {
         "spot": {
           "x": 520,
@@ -467,7 +467,7 @@
         },
         {
           "if": "controlledTV",
-          "then": " · node 0x3C yours"
+          "then": " \u00b7 node 0x3C yours"
         }
       ],
       "layout": {
@@ -545,7 +545,7 @@
             "read": {
               "say": [
                 "cat terms",
-                "REGISTRY PREMIUM · MINIMUM TERM 36 MONTHS · EARLY CANCELLATION FEE APPLIES · PRICES MAY CHANGE WITHOUT NOTICE."
+                "REGISTRY PREMIUM \u00b7 MINIMUM TERM 36 MONTHS \u00b7 EARLY CANCELLATION FEE APPLIES \u00b7 PRICES MAY CHANGE WITHOUT NOTICE."
               ]
             }
           }
@@ -567,8 +567,8 @@
       "status": [
         {
           "if": "till",
-          "then": "firmware: factory · drawer: empty",
-          "else": "firmware: factory · login required"
+          "then": "firmware: factory \u00b7 drawer: empty",
+          "else": "firmware: factory \u00b7 login required"
         }
       ],
       "layout": {
@@ -606,7 +606,7 @@
             "read": {
               "say": [
                 "cat receipts.log",
-                "#0412 ramen, extra egg ...... 1 token · #0413 ramen, no logs ........ 1 token · #0414 ramen, for a ghost .... on the house"
+                "#0412 ramen, extra egg ...... 1 token \u00b7 #0413 ramen, no logs ........ 1 token \u00b7 #0414 ramen, for a ghost .... on the house"
               ]
             }
           }
@@ -672,16 +672,16 @@
       "status": [
         {
           "if": "routeFixed",
-          "then": "route: NEON MARKET · DUMPLINGS",
-          "else": "status: lost · route: not set"
+          "then": "route: NEON MARKET \u00b7 DUMPLINGS",
+          "else": "status: lost \u00b7 route: not set"
         },
         {
           "if": "dlvAt=market",
-          "then": " · inside the market"
+          "then": " \u00b7 inside the market"
         },
         {
           "if": "dlvAt=driving",
-          "then": " · rolling"
+          "then": " \u00b7 rolling"
         }
       ],
       "layout": {
@@ -740,7 +740,7 @@
                 "if": "routeFixed",
                 "say": [
                   "cat route.dat",
-                  "destination: NEON MARKET · DUMPLINGS. ETA: 2 min."
+                  "destination: NEON MARKET \u00b7 DUMPLINGS. ETA: 2 min."
                 ]
               },
               {
@@ -868,13 +868,13 @@
     {
       "id": "relay",
       "name": "ROOFTOP RELAY 0x31",
-      "look": "ROOFTOP RELAY 0x31 · REGISTRY UTILITIES. It keeps a log of visitors.",
+      "look": "ROOFTOP RELAY 0x31 \u00b7 REGISTRY UTILITIES. It keeps a log of visitors.",
       "deck": true,
       "status": [
         {
           "if": "controlled31",
-          "then": "session: maint · node 0x31 yours",
-          "else": "REGISTRY UTILITIES · maintenance login only"
+          "then": "session: maint \u00b7 node 0x31 yours",
+          "else": "REGISTRY UTILITIES \u00b7 maintenance login only"
         }
       ],
       "layout": {
@@ -1033,7 +1033,7 @@
             "read": {
               "say": [
                 "cat root.frag",
-                "root fragment 1/7 · 9f2c 41ab e07d 3c55 · do not share."
+                "root fragment 1/7 \u00b7 9f2c 41ab e07d 3c55 \u00b7 do not share."
               ]
             },
             "copy": {
@@ -1110,7 +1110,7 @@
             "read": {
               "say": [
                 "cat plate",
-                "REGISTRY PROPERTY · antenna access: root only."
+                "REGISTRY PROPERTY \u00b7 antenna access: root only."
               ]
             }
           }
@@ -1149,7 +1149,7 @@
           "label": "look at the screen"
         }
       ],
-      "status": "subject: {handle} · signatures: 0/3",
+      "status": "subject: {handle} \u00b7 signatures: 0/3",
       "layout": {
         "spot": {
           "x": 1790,
@@ -1176,7 +1176,7 @@
             "read": {
               "say": [
                 "cat scanner",
-                "subject: {handle} · identity: not found · signatures: 0/3."
+                "subject: {handle} \u00b7 identity: not found \u00b7 signatures: 0/3."
               ]
             }
           }
@@ -1266,7 +1266,7 @@
             "read": {
               "say": [
                 "cat routes",
-                "DLV-9 → NEON MARKET · DUMPLINGS (keep warm)."
+                "DLV-9 \u2192 NEON MARKET \u00b7 DUMPLINGS (keep warm)."
               ]
             },
             "send to dlv9": [
@@ -1435,7 +1435,7 @@
     {
       "id": "vrify",
       "kind": "fragment",
-      "label": "V·RIFY sign",
+      "label": "V\u00b7RIFY sign",
       "text": "vrify"
     },
     {
@@ -1560,7 +1560,7 @@
     "node.billboard": "0x3C",
     "control.box": [
       "",
-      "Welcome back, maintenance. node {downtown.node.box} answers to you now · NODES: {nodes} ACTIVE",
+      "Welcome back, maintenance. node {downtown.node.box} answers to you now \u00b7 NODES: {nodes} ACTIVE",
       "ok"
     ],
     "peer.box": [
@@ -1570,12 +1570,12 @@
     ],
     "control.relay": [
       "",
-      "Session opened: maint. node {downtown.node.relay} answers to you now · NODES: {nodes} ACTIVE",
+      "Session opened: maint. node {downtown.node.relay} answers to you now \u00b7 NODES: {nodes} ACTIVE",
       "ok"
     ],
     "control.billboard": [
       "",
-      "the billboard leaves the Registry. node {downtown.node.billboard} answers to you now · NODES: {nodes} ACTIVE",
+      "the billboard leaves the Registry. node {downtown.node.billboard} answers to you now \u00b7 NODES: {nodes} ACTIVE",
       "ok"
     ],
     "dlv.busy": [
@@ -1669,7 +1669,7 @@
     ],
     "cam.zoom.window": [
       "cam3 zoom window",
-      "someone blinks a lamp. long, short, long… on purpose?"
+      "someone blinks a lamp. long, short, long\u2026 on purpose?"
     ],
     "cam.zoom.pigeon": [
       "cam3 zoom pigeon",
@@ -1697,7 +1697,7 @@
       "cam3 tag pigeon",
       "tagged: pigeon #1."
     ],
-    "cam.hud": "● CAM-3 · DOWNTOWN",
+    "cam.hud": "\u25cf CAM-3 \u00b7 DOWNTOWN",
     "cam.on": "ON: {id}",
     "cam.aim": "tap the feed to aim",
     "tv.no-input": [
@@ -1707,7 +1707,7 @@
     ],
     "sign.test": [
       "use tubes --test",
-      "V ok · E dead · R ok · I ok · F ok · Y ok. tube 2 of 6: dead. repair ticket open since installation."
+      "V ok \u00b7 E dead \u00b7 R ok \u00b7 I ok \u00b7 F ok \u00b7 Y ok. tube 2 of 6: dead. repair ticket open since installation."
     ]
   },
   "controller": {
@@ -1742,6 +1742,34 @@
       },
       "lockOpenValue": "open",
       "feedFromCamera": true
+    }
+  },
+  "observations": {
+    "aliases": {
+      "goal.handle": {
+        "kind": "goalComplete",
+        "goal": "handle"
+      },
+      "goal.till": {
+        "kind": "goalComplete",
+        "goal": "till"
+      },
+      "goal.box": {
+        "kind": "goalComplete",
+        "goal": "box"
+      },
+      "goal.install": {
+        "kind": "goalComplete",
+        "goal": "install"
+      },
+      "goal.relay": {
+        "kind": "goalComplete",
+        "goal": "relay"
+      },
+      "goal.gate": {
+        "kind": "goalComplete",
+        "goal": "gate"
+      }
     }
   }
 }

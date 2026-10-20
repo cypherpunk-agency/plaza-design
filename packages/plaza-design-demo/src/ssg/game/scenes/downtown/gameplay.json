@@ -7,7 +7,13 @@
     "gloves",
     "till",
     "downtown.dlv.through",
-    "downtown.dlv.inside"
+    "downtown.dlv.inside",
+    "downtown.progress.has.handle",
+    "downtown.progress.has.till",
+    "downtown.progress.has.box",
+    "downtown.progress.has.install",
+    "downtown.progress.has.relay",
+    "downtown.progress.has.gate"
   ],
   "items": [],
   "events": [
@@ -28,7 +34,13 @@
     "downtown.dlv.bonk",
     "downtown.dlv.finished",
     "downtown.end.present",
-    "downtown.dlv.passed.reply"
+    "downtown.dlv.passed.reply",
+    "downtown.progress.handle",
+    "downtown.progress.till",
+    "downtown.progress.box",
+    "downtown.progress.install",
+    "downtown.progress.relay",
+    "downtown.progress.gate"
   ],
   "commands": {
     "downtown.fixer.first": {
@@ -2077,6 +2089,66 @@
           "set": 0
         }
       ]
+    },
+    "downtown.progress.handle": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.progress.handle"
+        }
+      ]
+    },
+    "downtown.progress.till": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.progress.till"
+        }
+      ]
+    },
+    "downtown.progress.box": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.progress.box"
+        }
+      ]
+    },
+    "downtown.progress.install": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.progress.install"
+        }
+      ]
+    },
+    "downtown.progress.relay": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.progress.relay"
+        }
+      ]
+    },
+    "downtown.progress.gate": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "downtown.progress.gate"
+        }
+      ]
     }
   },
   "reactions": [],
@@ -3358,7 +3430,13 @@
     "goals": {
       "downtown.till.paid": "till",
       "downtown.legs.installed": "install",
-      "downtown.dlv.finished": "gate"
+      "downtown.dlv.finished": "gate",
+      "downtown.progress.handle": "handle",
+      "downtown.progress.till": "till",
+      "downtown.progress.box": "box",
+      "downtown.progress.install": "install",
+      "downtown.progress.relay": "relay",
+      "downtown.progress.gate": "gate"
     },
     "inputs": {
       "downtown.box.control": {
@@ -3594,7 +3672,13 @@
     },
     "reads": {
       "downtown.dlv.through": "dlvThrough",
-      "downtown.dlv.inside": "dlvInside"
+      "downtown.dlv.inside": "dlvInside",
+      "downtown.progress.has.handle": "goal.handle",
+      "downtown.progress.has.till": "goal.till",
+      "downtown.progress.has.box": "goal.box",
+      "downtown.progress.has.install": "goal.install",
+      "downtown.progress.has.relay": "goal.relay",
+      "downtown.progress.has.gate": "goal.gate"
     },
     "responseConversations": {
       "guard.wrong.last": {
@@ -3604,6 +3688,116 @@
       "login.baduser.till": {
         "conversation": "downtown.denial",
         "variable": "joke"
+      }
+    },
+    "triggers": {
+      "downtown.progress.handle": {
+        "phase": "onPersist",
+        "when": {
+          "all": [
+            {
+              "not": {
+                "player": {
+                  "field": "handle",
+                  "is": ""
+                }
+              }
+            },
+            {
+              "flag": "downtown.progress.has.handle",
+              "is": false
+            }
+          ]
+        },
+        "command": "downtown.progress.handle"
+      },
+      "downtown.progress.till": {
+        "phase": "onPersist",
+        "when": {
+          "all": [
+            {
+              "flag": "till"
+            },
+            {
+              "flag": "downtown.progress.has.till",
+              "is": false
+            }
+          ]
+        },
+        "command": "downtown.progress.till"
+      },
+      "downtown.progress.box": {
+        "phase": "onPersist",
+        "when": {
+          "all": [
+            {
+              "player": {
+                "collection": "controlled",
+                "contains": {
+                  "query": "downtown.node.box"
+                }
+              }
+            },
+            {
+              "flag": "downtown.progress.has.box",
+              "is": false
+            }
+          ]
+        },
+        "command": "downtown.progress.box"
+      },
+      "downtown.progress.install": {
+        "phase": "onPersist",
+        "when": {
+          "all": [
+            {
+              "player": {
+                "field": "jump",
+                "is": true
+              }
+            },
+            {
+              "flag": "downtown.progress.has.install",
+              "is": false
+            }
+          ]
+        },
+        "command": "downtown.progress.install"
+      },
+      "downtown.progress.relay": {
+        "phase": "onPersist",
+        "when": {
+          "all": [
+            {
+              "player": {
+                "collection": "controlled",
+                "contains": {
+                  "query": "downtown.node.relay"
+                }
+              }
+            },
+            {
+              "flag": "downtown.progress.has.relay",
+              "is": false
+            }
+          ]
+        },
+        "command": "downtown.progress.relay"
+      },
+      "downtown.progress.gate": {
+        "phase": "onPersist",
+        "when": {
+          "all": [
+            {
+              "flag": "end"
+            },
+            {
+              "flag": "downtown.progress.has.gate",
+              "is": false
+            }
+          ]
+        },
+        "command": "downtown.progress.gate"
       }
     }
   },

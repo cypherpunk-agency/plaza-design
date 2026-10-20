@@ -1,3 +1,5 @@
+import {runCommunicationReview,type CommunicationReview} from '../demo/communication-review';
+import {nativeLiveConditionsTick} from '../engine/gameplay/native-live-conditions';
 import {attachGameplayHandoffs} from '../engine/gameplay/handoffs';
 import {registryLabels} from '../engine/gameplay/rewards';
 import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/gameplay/state';
@@ -51,7 +53,7 @@ import { type MachineData,type NetworkData } from "../data/index";
 import { MAX_EVERYDAY } from "../engine/host";
 import { CITY,NO_RULES,SceneHost } from "../engine/index";
 import type { PopupItem } from "../engine/popup";
-import { sceneShell,syncGoals } from "../scenes/downtown/index";
+import { sceneShell } from "../engine/shell";
 
 import { isSceneId,ITEMS,priceTag,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type SceneView,type UseCtx } from "../scenes/index";
 import { messagesOf,unread } from "../story/contacts";
@@ -154,6 +156,17 @@ export class Game {
   }
   private reviewTalk(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const session=this.gameplayFor(this.here);if(!session?.definition.conversations[id])return;this.bubble=null;this.keys.clear();this.zh.closeAll();this.zh.presentConversation(new ConversationSession(session,id));}
   private reviewUse(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const use=this.def.uses?.find(u=>u.id===id);if(!use||use.available&&!use.available(this.save.flags))return;this.bubble=null;this.zh.closeAll();this.keys.clear();this.runUse(use,use.use);this.canvas.focus();}
+  private reviewCommunication(id:CommunicationReview){
+    if(!DEMO_MODE)return;
+    this.keys.clear();this.zh.closeAll();this.bubble=null;this.hints.sceneChanged();
+    runCommunicationReview(id,{
+      status:(text,tone)=>this.notify(text,tone),
+      remote:()=>{this.reviewJump('devices');this.zh.react('fan',['','Remote device reply example.']);this.zh.ping('fan','look');},
+      dialogue:()=>{this.say('REVIEWER',['A character is speaking. Press E to finish.'],this.p.x,60);this.hints.show('review.waiting','Optional help waited until the character finished.',{repeat:true,first:true});},
+      repeat:()=>{const receipt=mintFeedback('demo','review-repeat','info');for(let n=0;n<4;n++)this.hints.notify('One signal, delivered four times.','info',receipt);this.term.print('One signal, delivered four times.','out',false);},
+      motion:()=>this.reduced=!this.reduced,
+    });this.canvas.focus();
+  }
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   /** The scene the player is in. */
   private here: SceneId = 'downtown';
@@ -411,11 +424,16 @@ export class Game {
   /** Downtown's host: its goals follow the save's own fields. */
   private get downtown(): SceneHost { return this.hostOf('downtown'); }
 
-  /** Write the save, refresh the HUD and Downtown's goals (they follow the save's fields). */
+  /** Write current progress, refresh the HUD and evaluate source-authored persistence triggers. */
   private persist() {
     this.persistSave();
     this.syncHud();
-    syncGoals(this.downtown.model, this.save);
+    for(const id of new Set([...Object.keys(this.content),...Object.keys(SCENES)])){
+      const definition=this.sceneDefinition(id as SceneId).gameplay;
+      if(!Object.values(definition?.native?.triggers??{}).some(row=>row.phase==='onPersist'))continue;
+      const host=this.hostOf(id as SceneId),session=this.gameplayFor(id as SceneId);
+      if(session)nativeLiveConditionsTick(host.model,session,run=>run(),'onPersist');
+    }
   }
 
   /** Pause puzzle time wherever a full-screen interruption holds the world. Wall-clock locks still expire. */
@@ -449,7 +467,7 @@ export class Game {
     const first = !this.started;
     this.started = true;
     this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first);
-    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,open:!EDITOR_PLAY,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
+    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,open:!EDITOR_PLAY,communication:DEMO_MODE?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
   }
 
   /**
@@ -1590,6 +1608,7 @@ export class Game {
    * Touch buttons are labelled, so touch only gets the deck and hack vision.
    */
   private controlHints(vision: boolean) {
+    if(DEMO_MODE)return; // Review cases own attention; campaign control lessons stay in the campaign.
     const h = this.hints;
     if (this.p.moving) h.done('ctl.walk');
     if (!this.touch) {

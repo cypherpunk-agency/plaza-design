@@ -1,8 +1,20 @@
 /** Local technical fixture: rasterize frozen and current native scene previews side by side. */
 import fs from 'node:fs';import path from 'node:path';import {build} from 'esbuild';
+import {createHash} from 'node:crypto';import ts from 'typescript';
 import {gameSourceIdentity} from './source-identity.mts';
 const game=path.resolve('src/ssg/game'),baseline=path.resolve('../../.scene-system/all-game-baseline-2026-10-18/source'),output=path.resolve('../../.scene-system/all-game-pixel-check');
 if(!fs.existsSync(path.join(baseline,'authoring/native-preview.ts')))throw new Error('Capture the immutable source baseline first');
+// Diagnostic control only: isolate the upstream pose change without editing shipping art or baselines.
+const withoutTurns=process.argv.includes('--without-user-turns'),characterPath=path.join(game,'runtime/characters.ts');
+let diagnostic:null|{kind:string;revision:string;functions:string[];originalSha256:string;substitutedSha256:string}=null,diagnosticCharacters:string|undefined;
+if(withoutTurns){
+ const original=fs.readFileSync(characterPath,'utf8'),tree=ts.createSourceFile('characters.ts',original,ts.ScriptTarget.Latest,true),branches:ts.IfStatement[]=[];
+ const walk=(node:ts.Node)=>{if(ts.isIfStatement(node)&&node.expression.getText(tree).includes('since < TURN'))branches.push(node);ts.forEachChild(node,walk);};walk(tree);
+ if(branches.length!==1)throw Error('Expected exactly one upstream turn-pose branch');
+ const branch=branches[0],changed=original.slice(0,branch.getStart(tree))+original.slice(branch.end);diagnosticCharacters=changed;
+ const hash=(text:string)=>createHash('sha256').update(text).digest('hex');
+ diagnostic={kind:'upstream-turn-pose-isolation-control-not-shipping',revision:'e8cf05f',functions:['frameOf: since < TURN branch only'],originalSha256:hash(original),substitutedSha256:hash(changed)};
+}
 fs.mkdirSync(output,{recursive:true});
 const inventory=JSON.parse(fs.readFileSync('scripts/scene-system/fixtures/all-game-initial-inventory.json','utf8'));
 const compositions=Object.fromEntries(inventory.rows.map((r:{id:string})=>[r.id,JSON.parse(fs.readFileSync(path.join(baseline,'scenes',r.id==='harborShift'?'harbor-shift':r.id,'composition.json'),'utf8'))]));
@@ -75,13 +87,13 @@ async function run(){
   }catch(e){error=String(e);}
   mapRows.push({case:index,...c,different,maxDelta,error});if(different||error){const section=document.createElement('section'),title=document.createElement('h2');title.textContent='Map '+c.name+' / '+(error??different+' differing pixels');section.append(title,a,b);document.body.append(section);}
  }
- const result={compositionPolicy:'frozen-original-versus-current-source',deviceCases:deviceRows.length,deviceRows,boundCases:boundRows.length,boundRows,mapCases:mapRows.length,mapRows,status:deviceRows.every(r=>!r.error&&!r.different)&&boundRows.every(r=>!r.error&&!r.different)&&rows.every(r=>!r.error&&!r.different)&&mapRows.every(r=>!r.error&&!r.different)?'PASS':'FAIL',baseline:${JSON.stringify(inventory.sourceFingerprint)},source:${JSON.stringify(gameSourceIdentity(game))},cases:rows.length,scenes:Object.keys(documents).length,rows};
+ const result={compositionPolicy:'frozen-original-versus-current-source',diagnostic:${JSON.stringify(diagnostic)},deviceCases:deviceRows.length,deviceRows,boundCases:boundRows.length,boundRows,mapCases:mapRows.length,mapRows,status:deviceRows.every(r=>!r.error&&!r.different)&&boundRows.every(r=>!r.error&&!r.different)&&rows.every(r=>!r.error&&!r.different)&&mapRows.every(r=>!r.error&&!r.different)?'PASS':'FAIL',baseline:${JSON.stringify(inventory.sourceFingerprint)},source:${JSON.stringify(gameSourceIdentity(game))},cases:rows.length,scenes:Object.keys(documents).length,rows};
  document.getElementById('result').textContent=JSON.stringify(result,null,2);
  document.title='Native raster parity: '+result.status;
  try{const saved=await fetch('/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(result)});if(!saved.ok)throw new Error('HTTP '+saved.status);document.getElementById('archive').textContent='Evidence saved: '+(await saved.text());}catch(error){document.getElementById('archive').textContent='Evidence not archived: '+error;}
  const download=document.createElement('a');download.textContent='Download evidence JSON';download.download='all-game-raster-evidence.json';download.href=URL.createObjectURL(new Blob([JSON.stringify(result,null,2)],{type:'application/json'}));document.body.prepend(download);
 }run().catch(e=>{document.getElementById('result').textContent='ERROR '+e;});`;
-await build({stdin:{contents:source,resolveDir:process.cwd(),sourcefile:'all-game-raster-fixture.ts',loader:'ts'},outfile:path.join(output,'check.js'),bundle:true,platform:'browser',format:'iife',target:'es2022',logLevel:'warning'});
+await build({stdin:{contents:source,resolveDir:process.cwd(),sourcefile:'all-game-raster-fixture.ts',loader:'ts'},outfile:path.join(output,'check.js'),bundle:true,platform:'browser',format:'iife',target:'es2022',logLevel:'warning',plugins:diagnosticCharacters===undefined?[]:[{name:'isolate-upstream-poses',setup(b){b.onLoad({filter:/characters\.ts$/},args=>path.resolve(args.path)===characterPath?{contents:diagnosticCharacters!,loader:'ts'}:undefined);}}]});
 const fontDir=path.resolve('dist-homepage/fonts');fs.mkdirSync(path.join(output,'fonts'),{recursive:true});for(const f of fs.readdirSync(fontDir))fs.copyFileSync(path.join(fontDir,f),path.join(output,'fonts',f));
 const fonts=[400,500,600,700].map(w=>`@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:${w};src:url('./fonts/ibm-plex-mono-latin-${w}-normal.woff2')}`).join('\n');
 fs.writeFileSync(path.join(output,'index.html'),`<!doctype html><html><head><meta charset="utf-8"><title>Native raster parity</title><style>${fonts}\nbody{background:#111;color:#eee;font:13px monospace}canvas{max-width:48%;border:1px solid #777}pre{white-space:pre-wrap}</style></head><body><h1>Frozen baseline versus current native renderer</h1><p id="archive">Evidence pending</p><pre id="result" role="status">RUNNING</pre><script src="./check.js"></script></body></html>`);
