@@ -62,7 +62,7 @@ export function sceneSnapshot(scene:SceneDef,detail?:Record<string,unknown>):Par
 export function compareSnapshots(want:ParitySnapshot,got:ParitySnapshot):string[]{
  const out:string[]=[];
  // rules that change nothing are the same as none (the engine falls back to NO_RULES)
- const noRules=new Set([{effects:{}},{effects:{},needs:{devices:[]}}].map(r=>hash(plain(r))));
+ const noRules=new Set([{effects:{}},{effects:{},needs:{devices:[]}},{effects:{},needs:{devices:[],state:[]}}].map(r=>hash(plain(r))));
  for(const k of new Set([...Object.keys(want.fields),...Object.keys(got.fields)]))if(want.fields[k]!==got.fields[k]&&!(k==='rules'&&noRules.has(want.fields[k]??got.fields[k])&&!(k in want.fields&&k in got.fields)))out.push('field '+k+(k in want.fields?k in got.fields?' differs':' missing':' added'));
  for(const k of Object.keys(want.paint))if(want.paint[k]!==got.paint[k])out.push('paint '+k+' differs');
  return out;
