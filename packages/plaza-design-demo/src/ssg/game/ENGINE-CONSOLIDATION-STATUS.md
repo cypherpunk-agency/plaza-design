@@ -2,8 +2,8 @@
 
 2026-10-18. ACTIVE. Scope: [ENGINE-CONSOLIDATION-GOAL.md](./ENGINE-CONSOLIDATION-GOAL.md).
 Per-scene coverage: [ALL-GAME-MIGRATION.json](./ALL-GAME-MIGRATION.json).
-Last verified deployment: `2ff6905` on main and production.
-Homepage jobs39352732717/39352732577 and design job39352732545 succeeded.
+Last verified deployment: `60e1f9a` on main and production.
+Homepage jobs39353540963/39353540880 and design job39353540879 succeeded.
 Earlier checkpoint3d6e21b was verified live against its successful CI artifact app-AEG6ZUR2.js.
 The gate table describes current acceptance; dated sections retain their original checkpoint scope.
 Checkpoint B is integration-verified at source `0928013b951c`: both builds,
@@ -2680,3 +2680,54 @@ selectors; native Downtown and Yard Play/Stop PASS with no warning/error logs. P
 app-HU3N7NWJ.js / play-52X4TZNU.js / play-10344c31ca11d0bb.html. All19 actor CRUD/history/bundle/protected Save/fresh native reload/byte Undo PASS
 (`actor-entities/run-9VmLGu`). Transit geometry and final all19 lifecycle/current-state/world/
 network/removal reconciliation remain open; no whole-goal gate promotion from this checkpoint.
+
+## 2026-10-20 Train car frame geometry and presentation rebinding
+
+Train ceiling/roof/news/window style/line map/handrail/staff/gangway/door/brake inputs now use
+shared typed artwork refs. Required inputs reject absent/invalid roles at scene construction.
+Width remains in the shared manifest. Removed the fixed required-ID/type floor; defaults and
+validation visit nested composition children. Per-window width streams accept ordinary source
+IDs and validate that the selected window actually exists. Existing ride/actor/stop simulation
+and per-window rendering are unchanged.
+
+A shared authoring restriction prevented retained presentation consumers from rebinding to a
+replacement window. Registered bindingIdentity=presentation now permits same-type rebinding or
+removal; retained artwork type changes and gameplay-owned bindings remain protected. Native source
+validation still rejects dangling/unknown streams. check-presentation-binding-identity.mts covers
+those distinct policies; actual train source edits cover final reference validation.
+
+check-train-artwork-roles.mts PASS (`train-artwork-role-source-hvwBeP`): actual frame/exit controls,
+six replacement inputs, original deletion after attachment/window-reader rebinding, non-numbered
+window ID, native ceiling/roof/news/window/gangway/map/brake geometry, invalid required/window
+refs atomic rejection, history/bundle/protected Save/fresh shipping/byte Undo.270 original draw
+cases,188 live/timing histories,672 permission histories and630 paid-brake actual-LineSystem
+histories PASS. Downtown retained-kernel identity/ordinary protected Save regression PASS
+(`downtown-manifest-save/run-RRCl7H`). tsc and both builds PASS.
+Sourceb1636f78da4950015f627810a62992028866237aa541f2b467dc8893199578f9 passes173/173 zero-difference/error browser raster
+rows (independently asserted). Actual packaged train roof/window role selectors and native
+Play/Stop PASS with no warning/error logs. Package app-S3Y2CI24.js / play-HX7XYK2X.js /
+play-e583dd17752b7a21.html. All19 actor/history/bundle/protected Save/native reload PASS (`actor-entities/run-KwkLNM`) and
+all19 inspector mounts PASS (`scene-inspector-identities-NoHUFd`) at this initial frame checkpoint.
+Three platform scenes' geometry and final whole-corpus lifecycle/current-state/world/network/
+removal reconciliation remain open; no whole-goal gate promotion from this bounded checkpoint.
+
+### Train creation and finite visual-input UI completion
+
+The inspector now exposes only registered finite presentation-binding choices, using shared
+Element.bindingChoices metadata. The common Add/draft path initializes declared inputs from
+those choices; other artwork without that registration retains its existing behavior. Train
+pieces receive train.frame in their supported context, and seats select among real source windows.
+Creation exposed a redundant unused seatWidths frame map that required an attachment and crashed
+on a new free seat; removed that map. Width is owned solely by explicit registered window reads.
+Actual seat creation is included in check-train-artwork-roles.mts PASS
+(`train-artwork-role-source-OsoNO2`), together with source Save/fresh shipping/byte Undo. The finite
+metadata/presentation-vs-gameplay identity test and270 original Train draw cases PASS.
+
+Final source0d1a6738fb29bf2cce3eba023f9368f92e6c15e8288130b200f35d6b3f9efb91 passes tsc/both builds and173/173 zero-difference/error
+browser raster rows (independently asserted). Actual public editor finite seat source picker
+changes window0 to window1 and Undo restores it (earlier UI checkpoint8cbd03a4); final package Add
+artwork creates train-seatBack-1 with six real width choices and automatic frame inputs. The new
+seat previews and runs through pending native Train Play/Stop with zero warning/error logs.
+app-HRWOLHP6.js / play-ATVUIKUD.js / play-44e7534948514b62.html. Source-bound actor/inspector evidence
+above is retained at its earlier checkpoint, not relabelled as a final-source rerun. No whole-goal
+gate promotion; final integrated corpus acceptance follows the remaining platform migrations.

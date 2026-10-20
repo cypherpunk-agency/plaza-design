@@ -203,3 +203,22 @@ Actual Scene geometry/width, Device artwork and Companion perch controls, native
 replacement/deletion/renamed front, protected Save/fresh import/Undo PASS:
 check-downtown-artwork-roles.mts (`downtown-artwork-role-source-r6ejgu`).143 original command cases
 and173 browser raster rows unchanged at source0343b7b81a3e. See the execution ledger for scope.
+
+## Train car geometry and window readers
+
+Train frame roles select ceiling, roof parameters, news text, window style, line map, handrail,
+staff door, gangway wall/door and brake. Required native inputs validate eagerly; width remains
+manifest-owned. Per-window frame-width streams refer to real window artwork with ordinary IDs;
+retained same-type registered presentation readers can rebind while gameplay bindings and kernel
+types remain protected. Source manifests/attachments must be rebound before old artwork deletion.
+Actual frame/exit controls, native outputs, replacement/deletion/read rebinding, protected Save/
+fresh import/Undo: check-train-artwork-roles.mts (`train-artwork-role-source-hvwBeP`).270 original
+command cases and1490 controller histories PASS;173 raster rows unchanged at sourceb1636f78da49.
+
+Finite registered visual-input pickers use Element.bindingChoices. The shared Add/draft path
+initializes declared presentation inputs, and the Appearance inspector can select their finite
+sources. Train parts receive their live frame; seats can choose an existing window's width.
+The unused attachment-dependent seatWidths map is removed. Actual catalogue creation, pending
+Play, source Save/fresh import/Undo and173 unchanged rasters PASS at source0d1a6738fb29;
+check-train-artwork-roles.mts (`train-artwork-role-source-OsoNO2`). This registration supplies
+presentation values, never scripts, gameplay state or a second controller.

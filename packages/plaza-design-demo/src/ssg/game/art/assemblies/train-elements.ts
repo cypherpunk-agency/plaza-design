@@ -5,11 +5,11 @@ import { createTrainInteriorArtwork,type ArtworkInputs,type TrainLayout,type Tra
 import { drawRider,KINDS,type RiderKind } from '../characters/riders';
 import { onScreen } from '../core/primitives';
 export interface TrainRiderVisual{on:boolean;kind:RiderKind;sit:boolean;flip:boolean;phase:number;offset:number}
-export interface TrainFrame extends ArtworkInputs{riders:Record<string,TrainRiderVisual>;seatWidths:Record<string,number>}
+export interface TrainFrame extends ArtworkInputs{riders:Record<string,TrainRiderVisual>}
 const num=(label:string,value=0):Field=>({kind:'number',label,default:value,min:-1e5,max:1e5,step:1});
 const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
 const n=(p:Properties,k:string)=>Number(p[k]);
-function validateFrame(v:Value){if(v===null)return;const f=v as unknown as TrainFrame;if(!f||typeof f!=='object'||!f.L||!f.visual||!f.roof||!f.riders||!f.seatWidths||!Array.isArray(f.windows)||!Array.isArray(f.doors)||![f.L.width,f.L.ceil,f.visual.ride.pos,f.visual.ride.open,f.visual.run,f.roof.cove,f.roof.shell,f.roof.wire,f.roof.messenger].every(Number.isFinite)||typeof f.visual.home!=='boolean'||typeof f.visual.ride.phase!=='string'||!(f.hover===null||typeof f.hover==='string'))throw new Error('Invalid train presentation frame');for(const r of Object.values(f.riders))if(typeof r.on!=='boolean'||!KINDS.includes(r.kind)||![r.phase,r.offset].every(Number.isFinite)||typeof r.sit!=='boolean'||typeof r.flip!=='boolean')throw new Error('Invalid train rider snapshot');for(const w of f.windows)if(![w.x,w.h,w.width,w.h0,w.h1].every(Number.isFinite)||w.width<=0||w.h1<=w.h0)throw new Error('Invalid train window opening');}
+function validateFrame(v:Value){if(v===null)return;const f=v as unknown as TrainFrame;if(!f||typeof f!=='object'||!f.L||!f.visual||!f.roof||!f.riders||!Array.isArray(f.windows)||!Array.isArray(f.doors)||![f.L.width,f.L.ceil,f.visual.ride.pos,f.visual.ride.open,f.visual.run,f.roof.cove,f.roof.shell,f.roof.wire,f.roof.messenger].every(Number.isFinite)||typeof f.visual.home!=='boolean'||typeof f.visual.ride.phase!=='string'||!(f.hover===null||typeof f.hover==='string'))throw new Error('Invalid train presentation frame');for(const r of Object.values(f.riders))if(typeof r.on!=='boolean'||!KINDS.includes(r.kind)||![r.phase,r.offset].every(Number.isFinite)||typeof r.sit!=='boolean'||typeof r.flip!=='boolean')throw new Error('Invalid train rider snapshot');for(const w of f.windows)if(![w.x,w.h,w.width,w.h0,w.h1].every(Number.isFinite)||w.width<=0||w.h1<=w.h0)throw new Error('Invalid train window opening');}
 const frame:Field={kind:'json',label:'Prepared train frame',default:null,validate:validateFrame};
 const fields:Record<string,Field>={width:num('Width'),h0:num('Window sill'),h1:num('Window top'),index:num('Card index'),text:str('Card text'),actor:str('Actor id'),homeText:str('Morning card text'),mode:{kind:'select',label:'Rider role',default:'regular',options:['regular','seat','standing']},slot:num('Crowd slot'),kind:{kind:'select',label:'Regular rider',default:'suit',options:[...KINDS]},sit:{kind:'boolean',label:'Seated',default:false}};
 const origin={x:0,h:0,role:'origin' as const};
@@ -27,3 +27,12 @@ export const trainElements:Element[]=[...methods.filter(m=>!['drawLineMap','draw
 export type TrainPlacement=Readonly<Required<Placement>>;
 export const trainFrameValue=(f:TrainFrame):Value=>f as unknown as Value;
 export type {TrainVisualState};
+
+// Frame bindings carry presentation only; live source refs protect structural inputs.
+for(const element of trainElements)element.bindingIdentity="presentation";
+
+for(const element of trainElements)if(element.visualFields?.frame)element.bindingChoices=composition=>{
+ if(composition.scene!=='train')return{};
+ const flatten=(nodes:readonly import('../core/composition').Instance[]):import('../core/composition').Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
+ return{frame:['train.frame'],...(['train.seatBack','train.seatFront'].includes(element.type)?{width:flatten(composition.instances).filter(n=>n.type==='train.windowFrame').map(n=>'train.'+n.id+'.width')}: {})};
+};

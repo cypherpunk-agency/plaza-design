@@ -152,7 +152,8 @@ export class ComposerModel {
   private insert(doc: Composition, type: string, placement: Instance['placement']) {
     const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
     for (const [key, field] of Object.entries(element.fields)) props[key] = copy(field.default) as Value;
-    doc.instances.push({ id: instanceId, type, props, placement: { ...placement }, order: Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1, pass: element.parts[0] ?? 'backdrop' }); return instanceId;
+    const bindings=element.bindingIdentity==='presentation'?Object.fromEntries(Object.entries(element.bindingChoices?.(doc)??{}).filter(([,choices])=>choices.length).map(([key,choices])=>[key,choices[0]])):{};
+    doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order: Math.max(-1, ...flatten(doc).map(x => x.node.order)) + 1, pass: element.parts[0] ?? 'backdrop' }); return instanceId;
   }
   private unique(doc: Composition, prefix: string) { const ids = new Set(flatten(doc).map(x => x.node.id)); let i = 1; while (ids.has(`${prefix}-${i}`)) i++; return `${prefix}-${i}`; }
   duplicate(id: string, instanceId: string) {
@@ -515,7 +516,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (node.attach) { const owner = candidates.find(n => n.id === node.attach!.instance); if (owner) { const anchors = config.registry.get(owner.type).anchors(config.registry.properties(owner.type, owner.props), {}); anchorDetails.append(label('Owner anchor', select(Object.keys(anchors).map(v => ({ value: v, label: `${v} · ${anchors[v].role}` })), node.attach.anchor, v => editInstance('Change anchor', n => n.attach!.anchor = v)))); } }
     const ownAnchors = art.anchors(config.registry.properties(node.type, node.props), {}); for (const [name, anchor] of Object.entries(ownAnchors)) anchorDetails.append(element('p', 'muted', `${name}: (${anchor.x}, ${anchor.h}) · ${anchor.role}`));
     anchorDetails.append(element('p', 'muted', 'Attachment offsets are local. Changing an owner keeps the existing local offset; review the preview before saving.'));
-    if (Object.keys(node.bindings ?? {}).length) { const binding = part('Gameplay bindings · read-only', false); for (const [key, value] of Object.entries(node.bindings ?? {})) { const row = element('p', 'binding-row'); row.append(element('span', 'muted', key), element('code', '', typeof value === 'string' ? value : JSON.stringify(value))); binding.append(row); } }
+    if (Object.keys(node.bindings ?? {}).length) { const choices=art.bindingIdentity==='presentation'?art.bindingChoices?.(composition):undefined,binding = part(choices?'Visual inputs':'Gameplay bindings · read-only', false); for (const [key, value] of Object.entries(node.bindings ?? {})) { const sources=choices?.[key];if(sources){binding.append(label(art.visualFields?.[key]?.label??key,select(sources.map(value=>({value,label:value})),value,source=>editInstance('Rebind '+key,n=>{n.bindings![key]=source;}))));}else{const row = element('p', 'binding-row'); row.append(element('span', 'muted', key), element('code', '', value)); binding.append(row);} } }
   }
   /** The Add picker: searchable pictures of every registered piece, placed at the centre of the view. */
   let pickerQuery = '', pickerFamily = '';

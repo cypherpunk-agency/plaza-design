@@ -29,7 +29,7 @@
       "id": "gangway",
       "name": "TO CAR 2",
       "pages": [
-        "CAR 2 \u00b7 LOCKED.",
+        "CAR 2 · LOCKED.",
         "INTER-CAR TRAVEL SUSPENDED UNTIL FURTHER NOTICE."
       ],
       "promptH": 132
@@ -100,7 +100,13 @@
     }
   ],
   "manifest": {
-    "devices": {"train": {"instance": "device-train", "widthProperty": "width", "heightProperty": "height"}},
+    "devices": {
+      "train": {
+        "instance": "device-train",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      }
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -150,6 +156,18 @@
         "responseH": 0,
         "responseAboveFloor": true
       }
+    },
+    "artwork": {
+      "ceiling": "ceiling",
+      "roof": "roof",
+      "news": "news",
+      "windowStyle": "window0",
+      "lineMap": "line-map",
+      "handrail": "handrail",
+      "staff": "staff",
+      "gangway": "gangway",
+      "gangDoor": "gang-door",
+      "brake": "brake"
     }
   },
   "actors": [
