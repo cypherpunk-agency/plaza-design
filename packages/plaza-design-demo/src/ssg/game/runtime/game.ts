@@ -617,8 +617,8 @@ export class Game {
     this.disposePerformance?.();this.disposePerformance=undefined;
     this.reviewNav?.dispose();this.reviewNav=undefined;
     this.running = false;
-    this.gameplaySessions.forEach(session=>session.dispose());
-    this.gameplaySessions.clear();
+    // Closing returns to the homepage; cached hosts and source sessions resume together.
+    // Their scene clocks pause below. Private Play destroys the entire owning frame.
     this.openingGameplaySession?.dispose();this.openingGameplaySession=undefined;
     this.shiftGuidance?.hide();
     this.syncEnginePause();
@@ -1049,6 +1049,7 @@ export class Game {
   }
 
   private say(name: string, pages: string[], x: number, h: number) {
+    if(!pages.length)return;
     this.bubble = { name, pages, page: 0, chars: 0, x, h };
     if(pages.length)this.term.print(name+': '+pages.join('\n'),'out',false);
   }

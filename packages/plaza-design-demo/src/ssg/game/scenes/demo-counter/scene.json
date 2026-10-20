@@ -169,5 +169,192 @@
       "text": "Start the optional Guidance example here",
       "gentle": true
     }
-  ]
+  ],
+  "manifest": {
+    "artwork": {
+      "window": "window-back",
+      "counter": "counter"
+    },
+    "version": 1,
+    "width": {
+      "instance": "wall",
+      "property": "width"
+    },
+    "spawn": "spawn",
+    "uses": {
+      "buy": {
+        "instance": "till",
+        "promptH": 62
+      }
+    },
+    "readables": {
+      "shelf": {
+        "instance": "limit",
+        "promptH": 26
+      },
+      "vend": {
+        "instance": "vending",
+        "anchor": "use",
+        "promptH": 16
+      }
+    },
+    "rests": {},
+    "exits": {
+      "downtown": {
+        "instance": "door",
+        "promptH": 82
+      }
+    }
+  },
+  "actors": [
+    {
+      "id": "keeper",
+      "target": "keeper",
+      "seed": 5101,
+      "look": {
+        "body": "avg",
+        "hair": "short",
+        "garb": "jacket",
+        "extras": [
+          "glasses"
+        ],
+        "top": "#6a2a3e"
+      },
+      "act": "vend",
+      "facing": -1,
+      "instance": "keeper",
+      "band": "world",
+      "reaction": "keeper"
+    },
+    {
+      "id": "browser",
+      "target": "browser",
+      "seed": 5102,
+      "act": "walk",
+      "range": [
+        0,
+        250
+      ],
+      "speed": 0.18,
+      "look": {
+        "body": "tall",
+        "extras": [
+          "phone",
+          "backpack"
+        ]
+      },
+      "instance": "browser",
+      "band": "world",
+      "reaction": "browser"
+    },
+    {
+      "id": "person-1",
+      "seed": 5103,
+      "act": "stand",
+      "facing": -1,
+      "look": {
+        "body": "short",
+        "garb": "coat",
+        "hair": "beanie",
+        "extras": [
+          "bag"
+        ]
+      },
+      "instance": "person-1",
+      "band": "world",
+      "reaction": "slot-2"
+    },
+    {
+      "id": "cat",
+      "look": "cat",
+      "seed": 4,
+      "height": "artwork",
+      "act": "sit",
+      "facing": -1,
+      "instance": "cat",
+      "band": "world",
+      "reaction": "slot-3"
+    },
+    {
+      "id": "stockbot",
+      "look": {
+        "bot": "servbot",
+        "v": 0
+      },
+      "seed": 5105,
+      "act": "carry",
+      "range": [
+        0,
+        -170
+      ],
+      "speed": 0.16,
+      "instance": "stockbot",
+      "band": "world",
+      "reaction": "slot-4"
+    },
+    {
+      "id": "android",
+      "target": "android",
+      "seed": 5106,
+      "look": "android",
+      "act": "queue",
+      "facing": 1,
+      "instance": "android",
+      "band": "world",
+      "reaction": "android"
+    },
+    {
+      "id": "crawler",
+      "look": "crawler",
+      "seed": 5107,
+      "height": "artwork",
+      "act": "weld",
+      "facing": 1,
+      "instance": "crawler",
+      "band": "world",
+      "reaction": "slot-6"
+    },
+    {
+      "id": "outside-0",
+      "seed": 5201,
+      "act": "walk",
+      "range": 260,
+      "ps": 2,
+      "dim": 0.45,
+      "parallax": 0.3,
+      "height": "artwork",
+      "speed": 0.4,
+      "look": {
+        "extras": [
+          "umbrella"
+        ]
+      },
+      "instance": "outside-0",
+      "band": "background"
+    },
+    {
+      "id": "outside-1",
+      "seed": 5202,
+      "act": "walk",
+      "range": -260,
+      "ps": 2,
+      "dim": 0.5,
+      "parallax": 0.3,
+      "height": "artwork",
+      "speed": 0.3,
+      "instance": "outside-1",
+      "band": "background"
+    }
+  ],
+  "presentation": {
+    "kind": "shop",
+    "flags": {},
+    "actors": {
+      "keeper": "keeper",
+      "outside": [
+        "outside-0",
+        "outside-1"
+      ]
+    }
+  }
 }

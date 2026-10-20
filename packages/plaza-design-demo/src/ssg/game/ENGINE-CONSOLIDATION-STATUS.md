@@ -2785,3 +2785,31 @@ gate promotion; final integrated corpus acceptance follows the remaining platfor
   precedes the subsequent evidence-only matrix update; do not label it final goal acceptance.
 - Matrix now records these bounded platform checks and latest raster evidence separately. All ten
   previously open gates remain open; remaining world/story/controller coverage needs its own audit.
+
+## 2026-10-20 continuation: cached Game reopening and Test District startup
+
+- Fixed a demonstrated lifetime mismatch: Game.stop retained scene hosts but disposed their paired
+  gameplay sessions, removing native source hooks and canceling paused source work. Stop now retains
+  the host/session pair on the existing paused scene clock. Private Play still destroys its iframe.
+  `check-game-reopen-lifecycle.mts` fails before the fix, passes20 actual stop/start cycles afterwards,
+  including remaining600ms handoff delivery after9000ms stopped time, listener/RAF bounds and true
+  session-disposal cancellation. No new save owner or rebuild/compatibility layer.
+- Packaged `?demo` exposed missed integration: the seven-device review area retained bindings to
+  removed devices, and Counter/Desk documents lacked source actor/manifest definitions required by
+  migrated native factories. Review sources now declare their recipes/bindings explicitly, and the
+  workshop filters device bindings alongside its deliberate device subset. Strict missing-device
+  validation remains enforced. No campaign composition or review-area scenery added.
+- An intentionally silent intro also created an empty bubble and crashed the next game update.
+  Game.say now treats an empty page list as no speech; nonempty speech remains unchanged.
+- `check-demo-district.mts` PASS for compact review areas, shared purchase/dialogue commands,
+  rotation/current-format save persistence, rejected empty stock, and isolated actual save/slot/resume
+  modules with campaign/Harbor sentinels. Updated its stale flat-state fixture to the current owner
+  block and kept VM-cloned JSON inside its own realm. No old-format compatibility added.
+- Both builds, opening42 immutable comparisons, handoff cancellation/reset/restore checks and22
+  communication clock/guidance cases PASS. Runtime source65c6850a1e4fc16ee86c15bc20a61a1e16f189d6b544f432abd8adb7aee9de32:
+  all173 raster cases PASS with zero pixel differences/errors.
+- Actual packaged homepage demo: clean startup; quit/reopen through the normal shortcut; native
+  device wave before/after reopening; shared permission revoke and visible `Operation refused:
+  conditions` afterwards PASS; console warnings/errors empty. app-32GFSBDG.js/play-WRAUES7W.js.
+- `docs/reference/LIFECYCLE-OWNERSHIP.md` records clock/resource owners and preserved off-screen
+  policy. Interrupted schematic gestures still need explicit listener cleanup; G5 remains open.
