@@ -18,10 +18,6 @@ A station bench owns a drawing slot, not a second passenger. It receives the pre
 
 ## Verification
 
-`check-transit-editable.mts` covers ordinary rebinding and deletion, new content, source actors and conversations, mixed Character/rider bodies, duplication, attachment changes, removal of all 36 bodies, protected-controller rejection, native world binding, pending scenes, grouped history, bundle, protected Save, fresh saved-JSON module loading and exact-byte Undo. The passing evidence directory is `.scene-system/transit-editable/run-aBjOIJ`.
-
-`check-transit-editable-forms.mts` exercises the actual actor form callbacks, including recipe/controller/schedule edits and atomic rejection of invalid slots. `check-transit-content.mts` checks ordinary metadata and original gameplay. Immutable native rendering checks pass 72 Metro, 144 station and 270 Train cases. `check-metro-sessions.mts` passes 11,088 original platform/departure/queue/door cases and 211,200 ride frames. The package TypeScript build also passes. These are automated checks; the parent integration run owns browser Play and the all-game raster gate.
-
 ## Remaining specialist work
 
 This migration does not replace the native transit state machine, captured skyline animation, braking logic, turnstile checkpoint or world route controllers with fully authored controller graphs. Their existing behavior and presentation remain active. Required architectural/controller composition IDs remain protected. These specialist controls need their own typed editor contracts before transit can be described as wholly authored gameplay.

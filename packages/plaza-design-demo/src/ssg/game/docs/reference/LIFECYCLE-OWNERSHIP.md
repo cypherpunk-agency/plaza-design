@@ -1,7 +1,5 @@
 # Runtime lifetime and clock ownership
 
-2026-10-20. G5 PASS; source identity and results in [LIFECYCLE-ACCEPTANCE.md](./LIFECYCLE-ACCEPTANCE.md).
-
 | Owner | Lifetime and clock | Release / suspension |
 | --- | --- | --- |
 | Homepage Game (`game/index.ts`) | One cached instance per initialized homepage; `game ??= new Game` on entry | Quit calls `stop`, not destruction. Reentry reuses hosts and their source sessions. Realm destruction releases the page. |

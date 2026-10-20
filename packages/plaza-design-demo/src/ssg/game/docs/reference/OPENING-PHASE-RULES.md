@@ -14,9 +14,3 @@ In the editor's opening-story Phases group, conditions use the existing typed fl
 controls. Authors can change the selected phase, add/remove conditional rows and reorder them.
 The fallback stays last. Validation rejects missing/early fallbacks, unknown phases/flags and
 conditions requiring context that the opening phase selector does not receive.
-
-`check-opening-phase-rules.mts` compares all 64 opening-flag combinations to the immutable
-original and exercises typed pending edits, ordering, nested conditions and rejection paths.
-`check-opening-source-save.mts` covers grouped history/bundle, protected source Save, fresh
-shipping module imports and exact-byte Undo with an edited phase rule. Evidence applies only
-when those checks pass against the current integrated source.

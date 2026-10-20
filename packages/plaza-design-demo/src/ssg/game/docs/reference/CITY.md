@@ -1,10 +1,5 @@
 # ACCESS DENIED: the city
 
-Current source contract: `world/city.json` version2 explicitly owns boarding/siding destinations
-and station/taxi arrivals. Omitted arrivals deliberately use the destination spawn. Version1
-source is rejected; no shipping-ID upgrade fills missing destinations. The opening home ride
-uses this same boarding-scene role. See [G11 acceptance](./WORLD-STORY-ACCEPTANCE.md).
-
 See [ROADMAP.md](../../ROADMAP.md) for the consolidated build sequence and
 [PROLOGUE-ACT-I-PLAN.md](../design/PROLOGUE-ACT-I-PLAN.md) for the detailed new encounter order.
 

@@ -28,11 +28,3 @@ are rejected rather than bypassing metadata validation.
 Typed controls retain the literal Registry picker and member text field, adding
 literal/state/query source selection with string source filtering. Edits still
 pass the same complete source validators.
-
-Proofs: `check-controlled-target-reads.mts`,
-`check-controlled-target-forms.mts`, and `check-controlled-target-save.mts`.
-Save evidence: `.scene-system/controlled-target-save-7V7sat/evidence.json`,
-including actual Game root writes and freshness, paired pending source Save,
-invalid label/removal/query rejection, unassociated reference rejection, fresh
-saved JSON shipping import and byte-exact Undo. Integrated build/raster checks
-remain a separate goal checkpoint.

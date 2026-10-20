@@ -1,3 +1,4 @@
+import { createFrame } from './frame';
 /** Viewing shell: typed kernels and existing source compositions share their native renderers. */
 import type {ArtRegistry,Composition}from'../art/core/composition';
 import type {EditorDocument,PreviewRequest,PreviewResult}from'./app';
@@ -6,18 +7,18 @@ import{createAssetPreview}from'./asset-preview';
 import{centerNativePreview}from'./native-camera';
 import{WorkbenchPlayback,mountWorkbenchPlayback}from'./workbench-playback';
 import{prepareSignage,paintSignage,paintKitSign,signageState,signageFamily,type SignageState}from'./signage-kernels';
-import{SIGNAGE_FAMILIES,SIGN_KIT_CATEGORY}from'./inventories/S11';
-import frozen from'./inventories/S11.embedded.json';
-import nativeStates from'./inventories/S11.states.json';
+import{SIGNAGE_FAMILIES,SIGN_KIT_CATEGORY}from'./catalogues/signage';
+import catalogue from'./catalogues/embedded-signage.json';
+import nativeStates from'./catalogues/signage-states.json';
 export{prepareSignage,paintSignage,signageState,signageFamily};export type{SignageState};
 export interface SignageWorkbenchConfig{registry:ArtRegistry;documents:EditorDocument[];openUsage(usage:AssetUsage):void;renderNative(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult;renderSequence?(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult|null}
 export interface EmbeddedSignage{entry:AssetEntry;usages:AssetUsage[]}
-/** Only frozen ids/placements are admitted; missing source references are concrete errors. */
-export function embeddedSignageInventory(config:Pick<SignageWorkbenchConfig,'registry'|'documents'>):EmbeddedSignage[]{const all=assetInventory(config.registry,config.documents);return frozen.registered.map(row=>{const entry=all.find(e=>e.id===row.id);if(!entry)throw new Error('Missing frozen S11 asset '+row.id);const usages=row.usages.map(ref=>{const u=entry.usages.find(u=>u.document===ref.document&&u.instance===ref.instance);if(!u)throw new Error('Missing frozen S11 source '+ref.document+'/'+ref.instance);return u;});return{entry,usages};});}
+/** Supported catalogue bindings are resolved against current source; missing references are errors. */
+export function embeddedSignageInventory(config:Pick<SignageWorkbenchConfig,'registry'|'documents'>):EmbeddedSignage[]{const all=assetInventory(config.registry,config.documents);return catalogue.registered.map(row=>{const entry=all.find(e=>e.id===row.id);if(!entry)throw new Error('Missing signage asset '+row.id);const usages=row.usages.map(ref=>{const u=entry.usages.find(u=>u.document===ref.document&&u.instance===ref.instance);if(!u)throw new Error('Missing signage source '+ref.document+'/'+ref.instance);return u;});return{entry,usages};});}
 export interface EmbeddedSignageSettings{time:number;minute:number;seed:number;reduced:boolean;weather:'clear'|'rain'|'storm'|'fog';zoom:number;cameraX:number;cameraH:number;mode:'composed'|'isolated';state?:Record<string,boolean|string>}
 export function embeddedSignageRequest(config:SignageWorkbenchConfig,usage:AssetUsage,s:EmbeddedSignageSettings):PreviewRequest{
  const document=config.documents.find(d=>d.id===usage.document&&d.kind==='composition');if(!document)throw new Error('Missing source composition '+usage.document);
- for(const[key,value]of Object.entries(s.state??{})){const control=nativeStates.controls.find(c=>c.scene===usage.scene&&c.key===key);if(!control||!control.values.includes(value as never))throw new Error('Unsupported S11 source light state '+usage.scene+'.'+key);if(key==='nightLight'&&value===true&&s.minute>=360&&s.minute<1080)throw new Error('Night light on preview requires its real 18:00–06:00 window.');}
+ for(const[key,value]of Object.entries(s.state??{})){const control=nativeStates.controls.find(c=>c.scene===usage.scene&&c.key===key);if(!control||!control.values.includes(value as never))throw new Error('Unsupported signage source light state '+usage.scene+'.'+key);if(key==='nightLight'&&value===true&&s.minute>=360&&s.minute<1080)throw new Error('Night light on preview requires its real 18:00–06:00 window.');}
  return{composition:document.value as Composition,time:s.reduced?0:s.time,reduced:s.reduced,overlays:false,selectedId:usage.instance,environment:{day:1,minute:s.minute,seed:s.seed,weather:s.weather,cameraX:s.cameraX,cameraH:s.cameraH,zoom:1,renderScale:s.zoom,flags:'{}',state:JSON.stringify(s.state??{})}};
 }
 /** Whole-scene mode preserves overlapping artwork, grading, reflections and frame-local lights. */
@@ -31,12 +32,12 @@ export function renderEmbeddedSignage(canvas:HTMLCanvasElement,config:SignageWor
  return{message:'Actual native scene frame. Overlaps, shadows, light, grading, reflections and weather use the game render path.'+(focus&&Math.abs(focus.x)+Math.abs(focus.y)>2?' Native bounds may be camera-insensitive; current source context and camera offsets are retained.':''),...focused,focus};
 }
 export function mountSignageWorkbench(host:HTMLElement,config?:SignageWorkbenchConfig):()=>void{
- const root=document.createElement('section'),title=document.createElement('h2'),select=document.createElement('select'),usageSelect=document.createElement('select'),mode=document.createElement('select'),info=document.createElement('p'),controls=document.createElement('div'),transport=document.createElement('div'),canvas=document.createElement('canvas'),output=document.createElement('p'),open=document.createElement('button');
+ const title=document.createElement('h2'),select=document.createElement('select'),usageSelect=document.createElement('select'),mode=document.createElement('select'),info=document.createElement('p'),controls=document.createElement('div'),transport=document.createElement('div'),canvas=document.createElement('canvas'),output=document.createElement('p'),open=document.createElement('button');
  title.textContent='Signs, lighting and architecture';select.setAttribute('aria-label','Signage or architecture family');usageSelect.setAttribute('aria-label','Architecture source usage');mode.setAttribute('aria-label','Artwork context mode');canvas.width=960;canvas.height=540;canvas.style.maxWidth='100%';open.textContent='Open source instance';
  const add=(value:string,label:string)=>{const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);};const kitElements=(config?.registry.catalog()??[]).filter(e=>e.category===SIGN_KIT_CATEGORY);for(const e of kitElements)add('kit:'+e.type,'Kit / '+e.label);for(const f of SIGNAGE_FAMILIES)add(f.id,'Kernel / '+f.label);
  let embedded:EmbeddedSignage[]=[];try{if(config)embedded=embeddedSignageInventory(config);}catch(e){info.textContent=String(e);}for(const e of embedded)add('embedded:'+e.entry.id,'Source / '+e.entry.label);
  for(const value of ['composed','isolated']){const o=document.createElement('option');o.value=value;o.textContent=value==='composed'?'Native composed frame':'Isolated artwork (frame effects excluded)';mode.append(o);}
- root.append(title,select,usageSelect,mode,open,info,controls,transport,canvas,output);host.append(root);let state=signageState(),weather:EmbeddedSignageSettings['weather']='clear',disposed=false,raf=0,ui:ReturnType<typeof mountWorkbenchPlayback>|undefined;
+ const frame=createFrame(host,{nav:[title,select,usageSelect,mode,open],stage:[transport,canvas,output],inspector:[info,controls]},'Signs & light');let state=signageState(),weather:EmbeddedSignageSettings['weather']='clear',disposed=false,raf=0,ui:ReturnType<typeof mountWorkbenchPlayback>|undefined;
  let sourceState:Record<string,boolean|string>={};const clock=new WorkbenchPlayback(90,()=>draw());ui=mountWorkbenchPlayback(transport,clock);
  const current=()=>embedded.find(e=>'embedded:'+e.entry.id===select.value),usage=()=>current()?.usages[Number(usageSelect.value)],kit=()=>kitElements.find(e=>'kit:'+e.type===select.value);
  const draw=()=>{if(disposed)return;state={...state,time:clock.time,reduced:clock.reduced};try{const row=current(),u=usage();const k=kit();if(k&&config){paintKitSign(canvas.getContext('2d')!,config.registry,k.type,state,canvas.width,canvas.height);output.textContent='Registered sign kit element '+k.type+' with its default fields; temporary text only. Place it in a scene from the Library.';}else if(row&&u&&config){const r=renderEmbeddedSignage(canvas,config,row,u,{...state,weather,state:sourceState,mode:mode.value as 'composed'|'isolated'});output.textContent=r.message;}else{paintSignage(canvas.getContext('2d')!,prepareSignage(state,canvas.width,canvas.height));output.textContent='Actual typed kernel; temporary preview only. Scene-wide weather/light passes are available in source usage mode.';}}catch(e){output.textContent='Preview unavailable: '+String(e);}ui?.refresh();};
@@ -53,5 +54,5 @@ export function mountSignageWorkbench(host:HTMLElement,config?:SignageWorkbenchC
   if(sequence){mode.value='composed';(mode.options[1] as HTMLOptionElement).disabled=true;}else(mode.options[1] as HTMLOptionElement).disabled=false;
   draw();};
  select.onchange=()=>{const row=current();usageSelect.replaceChildren();for(const[u,i]of(row?.usages??[]).map((u,i)=>[u,i] as const)){const o=document.createElement('option');o.value=String(i);o.textContent=u.document+' / '+u.path.join(' / ');usageSelect.append(o);}sourceState={};state={...state,cameraX:0,cameraH:0,zoom:1};refresh();};usageSelect.onchange=()=>{sourceState={};refresh();};mode.onchange=draw;open.onclick=()=>{const u=usage();if(u)config?.openUsage(u);};refresh();const loop=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);
- return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();root.remove();};
+ return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();frame.root.remove();host.classList.remove('framed');};
 }

@@ -43,10 +43,3 @@ mutation. Pending native renewal, repeat handling and dialogue selection match
 the current sources. Paired source Save, fresh shipping import and exact history
 and byte Undo complete the proof. `check-rebound-command-removal.mts` separately
 covers replacing a real Capsule route and deleting the original command.
-
-The subsequent all-game work removed the formerly recorded Shop, Laundromat,
-Harbor Shift and other ordinary-content restrictions. Current acceptance is in
-[AUTHORING-ACCEPTANCE.md](./AUTHORING-ACCEPTANCE.md); controller/native dependencies
-have their own G9 evidence. Fixed starting cables are authorable while retaining
-the player's fixed-wire protection. No save aliases, fallback declaration owners
-or second content evaluator were added.

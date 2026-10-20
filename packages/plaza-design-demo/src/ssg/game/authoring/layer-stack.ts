@@ -1,4 +1,4 @@
-/** The editor's layer stack for layered compositions: rows per layer, the engine's fixed layers, and restacking. */
+/** The editor's layer stack for layered compositions: rows per layer and restacking. */
 import { LAYERS, PLAYER_ROW, isLayered, type Composition, type Instance, type Layer } from '../art/core/composition';
 
 export const VISUAL_LAYERS = LAYERS.filter(layer => layer !== 'logic');
@@ -13,14 +13,6 @@ export const LAYER_HINTS: Record<Layer, string> = {
   foreground: 'Anything that covers the player: near crowds, posts, pillars; usually fast parallax',
   logic: 'Never drawn: spawn points, exits, markers',
 };
-/** Engine-drawn layers, read-only, listed after (in front of) the scene layer they follow. */
-export const ENGINE_LAYERS: { after: Layer | 'start' | 'player'; label: string; title: string }[] = [
-  { after: 'start', label: 'Sky, city and street', title: 'Engine: drawn first when the scene has them' },
-  { after: 'player', label: 'Shade', title: 'Engine: shade, after the rows over the player' },
-  { after: 'foreground', label: 'Light, grade and weather in front', title: 'Engine: colour grade, lights, front weather' },
-  { after: 'foreground', label: 'Prompts and speech', title: 'Engine: interface on top of everything' },
-];
-
 const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
 export const layered = isLayered;
 export const isPlayerRow = (node: Instance) => node.type === PLAYER_ROW;

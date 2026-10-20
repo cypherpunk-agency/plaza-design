@@ -6,9 +6,9 @@ The game is in active design. The user's latest direction overrides historical d
 Read [ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md) before changing gameplay or adding
 content. It explains ownership, concrete extension recipes, examples and verification.
 Read [README.md](./README.md) for launch commands and [authoring/README.md](./authoring/README.md)
-for editor work. ROADMAP.md owns priorities; ENGINE-CONSOLIDATION-STATUS.md owns the completed
-all19-scene consolidation evidence. Dated pilot/migration notes are historical, not current limits.
-Do not restart that migration or assume new work is authorized merely because a plan describes it.
+for editor work. ROADMAP.md owns current priorities. Completed migration plans and evidence
+have been retired; do not recreate them or restart the completed consolidation.
+
 
 ## Required implementation boundaries
 
@@ -59,13 +59,14 @@ Do not restart that migration or assume new work is authorized merely because a 
    A source panel, registered JSON, screenshot or green build alone does not prove full authoring.
 4. Run focused checks appropriate to the change and the relevant build. Run package tsc -b from
    packages/plaza-design-demo, not the repository root. The handbook maps mechanics to checks.
-5. For preservation-sensitive changes, compare with immutable fixtures and record exact scope,
-   source identity and deliberate exceptions. Never update a baseline to make a failed comparison
-   pass. The original capture under repository-root .scene-system/all-game-baseline-2026-10-18
-   stays untouched; the user-approved upstream walk-turn exception is recorded separately.
-6. Remove replaced execution paths and update current docs. Retain old source only as clearly
-   isolated test oracles/history, never as a silent runtime fallback. Name any retained primitive
-   and explain why it is the sole owner of that calculation or drawing.
+5. For preservation-sensitive changes, use current contract checks and approved current visual
+   snapshots. Update expectations only for a deliberate behavior/appearance change; never regenerate
+   an expectation merely to silence a failed test. Do not depend on historical engine copies,
+   captured old source, milestone hash pins or migration reports.
+6. Remove replaced execution paths and update current docs. Keep test inputs small and purposeful;
+   fixtures describe current contracts, not a second engine. Name any retained primitive and explain
+   why it is the sole owner of that calculation or drawing.
+
 
 The agent owns mechanical checks. User feedback should concern clarity, appeal, timing and editor
 workflow, using direct Test District shortcuts rather than walking between examples. Do not add

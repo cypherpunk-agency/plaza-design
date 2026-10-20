@@ -1,10 +1,5 @@
 # Opening milestone workflows
 
-Current source ownership: the home ride's car scene comes from World
-`TRANSPORT.boarding.scene`. Opening's `CONTROLLER.homeRun` owns only from/to stations and
-announcement; `HOME_RUN` owns timing. The duplicate fixed train scene field is removed.
-See [world/story acceptance](./WORLD-STORY-ACCEPTANCE.md) for G11 evidence and scope.
-
 Six existing cinematic milestones now dispatch ordinary system commands: home, street, flat,
 slept, uplink and jacked. Their definitions and command references live in opening.json GAMEPLAY
 and WORKFLOWS. They use GameplaySession and the same Game state port as scene commands; no story
@@ -26,18 +21,6 @@ existing pausable model scheduler at the time it is scheduled; leaving a scene r
 scheduler's existing off-screen policy. Session disposal cancels pending callbacks. Delayed
 commits persist through the normal Game Save path. New-game handover and Stop dispose the old
 story session. Non-save story declarations are excluded from current Save serialization.
-
-Preservation: check-opening-runtime.mts passes42 original controller, transcript, timing and
-paint comparisons; check-opening-source.mts passes64 phase/resume/hack histories, original tables
-and20 invalid/reference cases. check-common-game-state.mts passes after extracting the shared port.
-
-check-opening-workflows.mts passes actual nested typed command/condition/reward editing, milestone
-rebinding and old-command deletion; missing references/system-permission changes reject atomically.
-The real Game command path proves shared flags/rewards, guarded repeat refusal, separate private
-instances and disposal. Existing handoffs prove presentation, delayed persistence and cancellation.
-History, portable bundle, protected source Save, fresh shipping Game execution and byte Undo pass
-in .scene-system/opening-workflows-lDkPO9. These are focused mechanical checks, not a browser
-playthrough or complete story/controller acceptance. A new integrated checkpoint remains required.
 
 Opening phase-role flags now support a coherent typed rename rather than protecting their old
 spelling as a saved-format identity. The shared source transaction updates declarations, commands,

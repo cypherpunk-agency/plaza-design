@@ -29,20 +29,4 @@ through the existing typed shared controls. Removing referenced aliases rejects 
 shared read bindings are changed in the same grouped transaction. There is no separate
 observed-goal editor or native goal-condition evaluator.
 
-Verification: `check-native-observations.mts` compares 128 immutable-original Library/Moth
-network/sector/keyring combinations with active/inactive/repeated ticks and native save/reload.
-It checks one shared award event per new goal, typed alias CRUD and invalid references.
-`check-native-observation-save.mts` covers grouped history/bundles, observation changes plus
-a shared Library goal-target edit, protected Save, actual pending execution, fresh shipping
-JSON import/execution, atomic invalid reference rejection and byte Undo.
-Current evidence: `.scene-system/native-observation-save/run-nkzR7G`.
-
-Capsule uses 1,728 immutable-original thermal/boot/Pixel/door/goal timelines plus 108 original
-router timelines and 12 kettle timelines. Goal order is recorded at insertion into the
-canonical goal set on both old and current models. The obsolete native-only mock verifier
-has been replaced by those real shared-session suites and current controller schema checks.
-Typed shared goal-condition edits and protected Save/fresh import/Undo are checked by
-`check-capsule-source-workflow-forms.mts` and `check-capsule-source-workflow-save.mts`.
-Evidence: `.scene-system/capsule-workflow-save-QIZMdu`.
-
 These focused checks do not sign the full controller/editor/preservation gates.

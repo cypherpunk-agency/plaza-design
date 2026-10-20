@@ -17,9 +17,4 @@ Fresh blank-source testing uncovered an older Yard `PARCEL` export indexing targ
 
 ## Evidence
 
-- `scripts/scene-system/check-native-target-crud.mts`: all five collections, direct typed target controls and actual mounted Scene workbench collection entry; create/duplicate/rename/delete/order, ordered prompt/outcome/step/action edits, actual Host dispatch and replies, engine exits, reset capability, collision/invalid-anchor atomic rejection, empty/omitted collections and recreation.
-- `scripts/scene-system/check-native-target-crud-save.mts`: portable bundle, protected grouped Save across 15 registered sources, invalid Save atomicity, actual pending runtime, fresh authored and fully blank saved-JSON imports, no canonical fallback, Undo of blank collections restoring authored behaviour and exact initial byte Undo.
-- Evidence directory: `.scene-system/native-target-crud-save-phqjxa`.
-- Package `tsc -b` passes.
-
 This completes collection editing within existing primitive capabilities. Creating new physical placement anchors or granting a primitive a new reset permission is engine/artwork capability work, rather than ordinary content CRUD.

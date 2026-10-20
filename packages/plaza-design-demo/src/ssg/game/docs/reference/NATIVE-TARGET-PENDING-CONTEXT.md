@@ -15,8 +15,8 @@ Presentation cue output vocabulary is exposed as frozen readonly `content.presen
 
 ## Verification
 
-- `scripts/scene-system/check-native-target-pending.mts`: all five scenes with newly added shared state, label/response keys and a network key; actual typed Scene inspector callbacks; native preview pending definitions; runtime visibility/grants/replies; invalid state/text/key/anchor/reset rejection; readonly cue metadata.
-- `scripts/scene-system/check-native-target-context-save.mts`: the typed outputs across 16 registered documents; portable bundle; protected grouped Save and invalid Save atomicity; exact provided-key vocabulary; source descriptor return shape; fresh saved-JSON shipping imports; exact byte Undo.
+- `scripts/game-tests/check-native-target-pending.mts`: all five scenes with newly added shared state, label/response keys and a network key; actual typed Scene inspector callbacks; native preview pending definitions; runtime visibility/grants/replies; invalid state/text/key/anchor/reset rejection; readonly cue metadata.
+- `scripts/game-tests/check-native-target-context-save.mts`: the typed outputs across 16 registered documents; portable bundle; protected grouped Save and invalid Save atomicity; exact provided-key vocabulary; source descriptor return shape; fresh saved-JSON shipping imports; exact byte Undo.
 - Package `tsc -b` and existing Yard full typed-form regression.
 
 ## Follow-up

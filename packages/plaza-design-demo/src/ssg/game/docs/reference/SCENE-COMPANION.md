@@ -14,8 +14,4 @@ Movement, hopping, stretching, follow distance, random naps, purr timing and fra
 
 Verification:
 
-- `check-companion-source.mts`: 7,347 immutable-original mode/perch/movement/random-consumption/purr/recurrence cases, plus the actual Game interaction path with authored response, final-page completion and choices.
-- `check-companion-forms.mts`: actual typed-form callbacks for policy/perch/pet CRUD, rebinding, offsets, original marker removal and atomic invalid-source rejection.
-- `check-companion-save.mts`: grouped history/bundle/protected Save, actual pending registry/native execution, fresh saved-JSON ESM import without the old perch marker, shared graph creation, invalid source rejection and exact-byte Undo. Evidence: `.scene-system/companion-source-save/run-ldCOTC`.
-
 These scoped checks do not claim all specialized controllers or the final all-game browser/raster gates complete.

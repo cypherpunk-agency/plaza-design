@@ -22,5 +22,3 @@ Play fixtures use the same pending key vocabulary, including newly authored keys
 - Missing metadata and incomplete bundle/source Save edits reject without partial changes.
 - Pending fixture Save accepts the new key only with the correct current vocabulary.
 - Bundle/history, paired protected Save, fresh shipping SCENES import and exact byte Undo pass.
-
-Evidence: `.scene-system/pending-exit-keys-A0PjhW`.

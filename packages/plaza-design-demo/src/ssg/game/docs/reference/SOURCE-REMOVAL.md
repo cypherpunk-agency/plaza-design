@@ -10,12 +10,3 @@ an override uses the normal actor default. Changing reaction identity starts sep
 conversation progress; reordering an unchanged actor retains its existing identity.
 Actual interaction targets, unique identities, valid fields and source references
 continue to validate.
-
-`check-source-removal.mts` verifies typed override removal, the compiled native actor
-metadata, absent companion/environment settings, strict missing-manifest rejection,
-history, bundles, protected Save, fresh shipping imports and byte-exact Undo. Focused
-proof: `.scene-system/source-removal-SeWPuh/evidence.json` at repository root.
-
-`check-actor-identities.mts` preserves all17 default bot identities and saved dialogue
-across reordering/reload. The separate malformed-source checks no longer expect an
-older incomplete source document to regain canonical actors or bindings silently.

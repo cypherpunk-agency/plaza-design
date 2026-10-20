@@ -1,5 +1,5 @@
 /** Read-only character viewer. Native controllers prepare private actors; native artwork paints them. */
-import inventory from './inventories/S9.json';
+import inventory from './catalogues/characters.json';
 import {prepareCharacter,type Act,type Character,type Look,type PreparedCharacter,type BotLook} from '../runtime/characters';
 import {type Bot,drawCharacterFrame} from '../art/characters/appearance';
 import {preparedCharacterElement} from '../art/characters/prepared';
@@ -23,6 +23,7 @@ import {PEOPLE_STYLES,SEATED_VIEWS,peopleStyle,seatedView,setPeopleStyle,setSeat
 import {lookFrom} from '../art/characters/appearance';
 import {SEAT_H} from '../art/characters/riders';
 import cityData from '../world/city.json';
+import {createFrame} from './frame';
 
 export const characterWorkbenchInventory=inventory;
 export interface CharacterWorkbenchConfig {
@@ -173,7 +174,7 @@ export function mountCharacterWorkbench(host:HTMLElement):()=>void{
  canvas.width=960;canvas.height=250;canvas.style.maxWidth='100%';canvas.style.cursor='pointer';canvas.setAttribute('aria-label','Native character preview');error.setAttribute('role','status');
  details.append(el('summary','Details (JSON)'),json);json.style.maxHeight='220px';json.style.overflow='auto';
  legend.className='muted';legend.hidden=true;
- host.replaceChildren(title,note,modes,controls,transportHost,canvas,legend,error,details);
+ createFrame(host,{nav:[title,modes],stage:[transportHost,canvas,legend,error],inspector:[note,controls,details]},'Characters');
  const clock=new WorkbenchPlayback(90,()=>draw()),transport=mountWorkbenchPlayback(transportHost,clock);
  const label=(name:string,input:HTMLElement)=>{const l=el('label');l.style.marginRight='12px';l.append(name+' ',input);controls.append(l);return l;};
  const select=(name:string,values:readonly string[],value:string,change:(value:string)=>void,rebuild=false)=>{const s=el('select');s.setAttribute('aria-label',name);for(const v of values){const o=el('option',v);o.value=v;s.append(o);}s.value=value;s.onchange=()=>{change(s.value);if(rebuild)refresh();draw();};label(name,s);return s;};
@@ -286,5 +287,5 @@ export function mountCharacterWorkbench(host:HTMLElement):()=>void{
  canvas.onclick=event=>{if(mode==='single')return;const r=canvas.getBoundingClientRect(),x=(event.clientX-r.left)*canvas.width/r.width,y=(event.clientY-r.top)*canvas.height/r.height,slot=[...slots].reverse().find(s=>x>=s.x0&&x<s.x1&&(s.y0===undefined||y>=s.y0&&y<=s.y1!));if(!slot)return;config={...slot.config,inPlace:false};setMode('single');};
  const frame=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(frame);};
  refresh();draw();raf=requestAnimationFrame(frame);
- return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();transport.dispose();session.dispose();host.replaceChildren();};
+ return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();transport.dispose();session.dispose();host.replaceChildren();host.classList.remove('framed');};
 }

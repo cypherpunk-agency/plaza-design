@@ -3,7 +3,7 @@
 Current implementation guide,2026-10-20. Read [AGENTS.md](../../AGENTS.md) for working rules.
 All19 existing scenes use shared source and typed editor support. Everything remains in design;
 this guide describes implementation ownership, not immutable product decisions.
-For completion evidence see [final acceptance](./FINAL-INTEGRATION-ACCEPTANCE.md).
+Tests exercise the current engine directly; completed migration evidence is not required.
 
 ## The execution model
 
@@ -19,7 +19,7 @@ inspection do not commit actions or advance dialogue.
 | Commands, conditions, state declarations, purchases, dialogue, reactions, native workflow bindings | scenes/<id>/gameplay.json; engine/gameplay/types.ts, validation.ts and session.ts |
 | Device/noun/verb/event vocabulary, guards, cables and controller inputs | scenes/<id>/devices.json; SceneModel, native bindings and registered controllers |
 | Appearance, placement, layers, attachments and animation | composition.json plus registered art kernels; runtime/render-scene.ts is shared by Game and editor |
-| Places, routes, access, transport and narrative/timeline handoffs | Existing world/story source documents; source-documents.ts and WORLD-STORY-ACCEPTANCE.md identify ownership |
+| Places, routes, access, transport and narrative/timeline handoffs | Existing world/story source documents; authoring/source-documents.ts registers their ownership |
 | Typed controls and pending source | authoring/source-documents.ts, ComposerModel and the appropriate typed authoring module |
 | Player runtime state | Save.gameplay owner blocks, with SceneModel referencing the same block; engine snapshots keep goals/cables/locks/board metadata |
 
@@ -101,8 +101,7 @@ Only a genuinely new physical calculation or drawing algorithm warrants register
 Expose typed source parameters, explicit reads/events and start/update/pause/dispose ownership.
 Ordinary dialogue, access, rewards and timers still use the shared model. See
 [Downtown persistence triggers](../../scenes/downtown/gameplay.json),
-[shared trigger implementation](../../engine/gameplay/native-live-conditions.ts) and
-[controller family inventory](./CONTROLLER-NETWORK-ACCEPTANCE.md). Do not add a second scheduler.
+[shared trigger implementation](../../engine/gameplay/native-live-conditions.ts) and registered physical controller modules. Do not add a second scheduler.
 
 ## Recipe: a scene or editor feature
 
@@ -121,25 +120,38 @@ local loopback service alone writes validated source. See [composer workflow](..
 
 ## Choose verification by what changed
 
-Run these from packages/plaza-design-demo with pnpm exec tsx scripts/scene-system/<file>.
-This is a focused selection guide, not a request to rerun every historical fixture for each edit.
+Run from packages/plaza-design-demo:
 
-| Change | Existing useful check |
+```sh
+pnpm test:game --list
+pnpm test:game conversation
+pnpm test:game scene-batch common-state-owner
+pnpm test:game
+```
+
+The default runs all current contract checks, each in a fresh process. Selectors match check
+filenames; several selectors form a union. `--list` only lists. Logs and scratch source copies
+are disposable under repository-root `.game-test-output/`. Tests never need captured old source,
+Git commit hashes, milestone acceptance reports or a prior test run. Source-save tests use
+isolated copies, not the working game's files or your recovery journal.
+
+| Change | Useful selectors |
 | --- | --- |
-| Ordinary content/source transaction | check-scene-batch.mts |
-| Conversations | check-conversation-structure.mts; check-native-conversation-actions.mts |
-| Common scalar ownership/current save | check-common-state-owner.mts; check-all-game-persistence.mts |
-| Immediate persistence triggers | check-persist-source.mts |
-| New ordinary scene and routes | check-scene-catalogue.mts; check-all-scene-world-routes.mts |
-| Layers/scene appearance | check-scene-layers.mts, check-all-scene-layers.mts (every scene layered, spawn = player row, paint parity with pass format) and the applicable immutable raster/controller fixtures |
-| Communication behavior | check-communication-review.mts; check-communication-callsite-clocks.mts |
-| Compact demo/isolation | check-demo-district.mts |
-| Public editor packaging | check-public-editor-build.mts |
+| Ordinary content/source transactions | scene-batch interaction-crud |
+| Conversations | conversation native-dialogue |
+| Scalar ownership/current save | common-state all-game-persistence |
+| Immediate persistence triggers | persist-source |
+| New scenes/routes | scene-catalogue all-scene-world-routes |
+| Appearance and rendering | all-scene-layers scene-layers drawing-boundaries art-light lighting-context |
+| Communication | communication device-reply |
+| Demo isolation | demo-district |
+| Editor bundles and source service | public-editor-build authoring-save public-document-bundle |
 
-For a concrete mechanic, follow its source-bound checks in the controller/content/authoring
-acceptance references. Preserve immutable baselines and distinguish actual raster images from
-command transcripts. The approved walk-turn exception is explicit; it is not a blanket visual
-waiver. Package TypeScript runs from this package; homepage/design builds run from repository root.
+Choose focused checks for routine work. Run the full suite for broad engine changes. Visual
+snapshots describe the approved current renderer; compare pixels in the same browser/font/viewport
+configuration. Updating expected pixels is an explicit acceptance action for an intentional visual
+change. Render command comparisons test geometry/order, not browser rasterization.
+Package TypeScript runs from this package; homepage/design builds run from repository root.
 
 Before handoff: remove replaced execution paths, update current guidance, report what actually
 ran and keep user appeal feedback separate. Do not reopen the completed consolidation, add old-save
