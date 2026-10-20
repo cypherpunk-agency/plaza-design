@@ -1,9 +1,11 @@
 /** Read-only catalog projections. References point into source documents, never a second scene graph. */
+import { LAYER_ROLES, KIND_HINTS, layerRole } from './layer-roles';
 import { type ArtRegistry, type Composition, type Instance } from '../art/core/composition';
 import type { EditorDocument } from './app';
 import { SETS } from '../art/catalog';
 
 export interface AssetUsage { document: string; scene: string; instance: string; parent?: string; path: string[]; node: Instance }
+/** `family` is the broad kind (layer-roles.ts); the registered category remains a tag. */
 export interface AssetEntry { id: string; label: string; family: string; tags: string[]; preview: 'local' | 'prepared-context' | 'structural'; usages: AssetUsage[] }
 export interface AssetPreviewReport { message: string; snapshot?: unknown }
 export function assetInventory(registry: ArtRegistry, documents: EditorDocument[]): AssetEntry[] {
@@ -18,7 +20,7 @@ export function assetInventory(registry: ArtRegistry, documents: EditorDocument[
     visit(composition.instances, []);
   }
   return registry.catalog().map<AssetEntry>(element => ({
-    id: element.type, label: element.label, family: element.category,
+    id: element.type, label: element.label, family: layerRole(element.type, element.label, element.category),
     tags: [...new Set([element.category, ...element.type.split('.'), ...element.parts,
       ...(element.animationClips ? ['animated'] : []), ...(element.visualFields ? ['visual-state'] : []),
       ...(element.coordinates === 'world' ? ['world'] : ['local'])])],
@@ -51,9 +53,10 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   const button = (text: string, action: () => void) => { const node = el('button', text); node.type = 'button'; node.onclick = action; return node; };
   const entries = assetInventory(options.registry, options.documents), search = el('input'), family = el('select');
   search.type = 'search'; search.placeholder = 'Find type, name or tag'; search.setAttribute('aria-label', 'Search artwork assets'); search.value = session.query ?? '';
-  for (const value of ['', ...new Set(entries.map(entry => entry.family))].sort()) { const option = el('option', value || 'All families'); option.value = value; family.append(option); }
+  const present = new Set(entries.map(entry => entry.family));
+  for (const value of ['', ...LAYER_ROLES.filter(kind => present.has(kind))]) { const option = el('option', value || 'All kinds'); option.value = value; if (value) option.title = KIND_HINTS[value as keyof typeof KIND_HINTS]; family.append(option); }
   const embeddedOption = el('option', 'Embedded library components'); embeddedOption.value = '__embedded__'; family.append(embeddedOption);
-  family.value = session.family ?? ''; family.setAttribute('aria-label', 'Asset family');
+  family.value = session.family ?? ''; family.setAttribute('aria-label', 'Kind of artwork');
   const count = el('p'), list = el('div'), inspector = el('section'); list.className = 'catalog-list'; inspector.setAttribute('aria-label', 'Asset inspection');
   const navigation = el('div'); navigation.append(search, family, count, list);
   // District bar: a piece belongs to every district whose scenes use it. "Elsewhere" is unused or sequence-only artwork.
@@ -113,7 +116,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
       list.append(pick);
     }
     const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    const embedded = SETS.filter(set => (!family.value || family.value === '__embedded__' || set.file.split('/')[1] === family.value) && terms.every(term => `${set.id} ${set.file} ${set.what}`.toLowerCase().includes(term)));
+    const embedded = SETS.filter(set => (!family.value || family.value === '__embedded__') && terms.every(term => `${set.id} ${set.file} ${set.what}`.toLowerCase().includes(term)));
     sets.replaceChildren(el('summary', `Embedded library components (${embedded.length} / ${SETS.length})`));
     for (const set of embedded) { const row = el('details'); row.append(el('summary', set.id), el('code', set.file), el('p', set.what), el('p', 'Embedded component; inspect a registered assembly or source usage. No independent registered preview.')); sets.append(row); }
     if (family.value === '__embedded__') sets.open = true;

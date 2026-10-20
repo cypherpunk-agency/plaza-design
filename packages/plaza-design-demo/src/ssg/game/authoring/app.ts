@@ -11,7 +11,7 @@ import { mountAssetBrowser, assetInventory, filterAssets, type AssetBrowserSessi
 import { createThumbnails } from './asset-thumbnails';
 import type { Environment } from '../art/core/composition';
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
-import { LAYER_ROLES, layerRole } from './layer-roles';
+import { KIND_HINTS, LAYER_ROLES, layerRole } from './layer-roles';
 import { ENGINE_LAYERS, LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, layered, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
@@ -526,6 +526,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       const visit = (nodes: Instance[], parent?: string) => nodes.forEach(node => { if (parent) parents.set(node.id, parent); visit(node.children ?? [], node.id); }); visit(composition.instances);
       const within = (id: string, ancestor: string) => { for (let at = parents.get(id); at; at = parents.get(at)) if (at === ancestor) return true; return false; };
       const art = (node: Instance) => config.registry.get(node.type);
+      // Actor looks from the scene's own documents decide Human / Animal / Robot for characters.
+      const docs = model.list(), looks = new Map<string, unknown>();
+      for (const id of config.sceneDocuments?.(composition.scene, docs) ?? []) { const actors = (docs.find(d => d.id === id)?.value as { actors?: { id: string; instance?: string; look?: unknown }[] } | undefined)?.actors; for (const a of Array.isArray(actors) ? actors : []) looks.set(a.instance ?? a.id, a.look); }
+      const kind = (node: Instance) => layerRole(node.type, art(node).label, art(node).category, looks.get(node.id));
       const matches = (node: Instance) => { const query = layerQuery.trim().toLowerCase(); return !query || `${node.id} ${node.type} ${art(node).label}`.toLowerCase().includes(query); };
       const layerTools = element('div', 'layer-tools'), search = element('input'), order = element('div', 'segmented'), listHost = element('div');
       search.type = 'search'; search.placeholder = 'Filter'; search.value = layerQuery; search.setAttribute('aria-label', 'Filter the outline'); search.oninput = () => { layerQuery = search.value; renderLayers(); };
@@ -551,10 +555,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       };
       // Hovering a row outlines the artwork in the preview, the same box the preview shows on hover.
       const item = (node: Instance, depth: number) => {
-        const li = element('li'), pick = button('', () => select_(node.id === selectedId ? '' : node.id), `${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
+        const li = element('li'), pick = button('', () => select_(node.id === selectedId ? '' : node.id), `${art(node).label} · ${node.type} · ${node.layer ? LAYER_LABELS[node.layer] : node.pass}${node.layer ? '' : ` · order ${node.order}`}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
         pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
-        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + art(node).label)); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId));
+        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.setAttribute('aria-pressed', String(node.id === selectedId));
         if (hidden.has(node.id)) li.classList.add('is-hidden');
         li.append(pick, eye(() => [node.id], node.id)); return li;
       };
@@ -566,13 +570,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         else if (layerSort === 'order') { const list = element('ul', 'hierarchy'); for (const { node, depth } of rows) if (matches(node)) { list.append(item(node, depth)); shown++; } if (shown) listHost.append(list); }
         else for (const role of LAYER_ROLES) {
           const list = element('ul', 'hierarchy'); let count = 0;
-          for (const top of rows.filter(row => !parents.has(row.node.id) && layerRole(row.node.type, art(row.node).label, art(row.node).category) === role)) {
+          for (const top of rows.filter(row => !parents.has(row.node.id) && kind(row.node) === role)) {
             const nested = rows.filter(row => within(row.node.id, top.node.id)); if (!matches(top.node) && !nested.some(row => matches(row.node))) continue;
             list.append(item(top.node, 0)); count++; for (const row of nested) if (matches(row.node) || matches(top.node)) list.append(item(row.node, row.depth - top.depth));
           }
           if (!count) continue; shown += count;
           const group = element('details', 'layer-group'); group.open = layerQuery.trim() ? true : roleOpen.get(role) ?? true; group.ontoggle = () => { if (!layerQuery.trim()) roleOpen.set(role, group.open); };
-          group.append(element('summary', '', `${role} · ${count}`), list); listHost.append(group);
+          const summary = element('summary', '', `${role} · ${count}`); summary.title = KIND_HINTS[role]; group.append(summary, list); listHost.append(group);
         }
         if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'Nothing matches this filter.' : 'This scene has no artwork yet. Use ＋ Add artwork in the toolbar.'));
         listHost.querySelector<HTMLElement>('button[aria-pressed=true]')?.scrollIntoView({ block: 'nearest' });
@@ -706,7 +710,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const entries = assetInventory(config.registry, model.list()), used = new Set(flatten(compositionDocument()!.value as Composition).map(x => x.node.type));
     const head = element('div', 'picker-head'), search = element('input'), grid = element('div', 'picker-grid'), count = element('p', 'muted');
     search.type = 'search'; search.placeholder = 'Search artwork: name, kind or tag'; search.value = pickerQuery; search.setAttribute('aria-label', 'Search artwork'); search.oninput = () => { pickerQuery = search.value; fill(); };
-    const family = select([{ value: '', label: 'All kinds' }, ...[...new Set(entries.map(e => e.family))].sort().map(f => ({ value: f, label: f }))], pickerFamily, value => { pickerFamily = value; fill(); }); family.setAttribute('aria-label', 'Kind of artwork');
+    const family = select([{ value: '', label: 'All kinds' }, ...LAYER_ROLES.filter(kind => entries.some(e => e.family === kind)).map(f => ({ value: f, label: f }))], pickerFamily, value => { pickerFamily = value; fill(); }); family.setAttribute('aria-label', 'Kind of artwork');
     head.append(element('strong', '', 'Add artwork'), search, family, button('✕', closePicker, 'Close (Esc)')); picker.replaceChildren(head, count, grid);
     function fill() {
       const list = filterAssets(entries, pickerQuery, pickerFamily).sort((a, b) => Number(used.has(b.id)) - Number(used.has(a.id))), shown = list.slice(0, 300);

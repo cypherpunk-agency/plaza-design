@@ -127,10 +127,13 @@ area around it, deselects. Only the selected artwork can be dragged; pressing an
 it on release and pans while moving. Arrow keys nudge the selection (Shift for 10, otherwise the
 grid step); Delete removes it; Escape clears it; +, − and 0 zoom; F fits. None of this framing is saved.
 
-The outline groups top-level artwork by kind (people, vehicles, lights, signs, props,
-architecture, markers, groups), with nested artwork under its parent. The filter matches id, type
-or label. Kinds are inferred from type, label and catalog category in `layer-roles.ts` and are not
-written to compositions.
+Every row shows its broad kind on the right: Player, Human, Animal, Robot, Vehicle, Furniture,
+Machine, Light, Sign, Prop, Building, Scenery, Effect, Marker or Group. **Kind** groups top-level
+artwork by it, with nested artwork under its parent. The filter matches id, type or label. Kinds
+come from `layer-roles.ts`: characters from their actor look (body, bot or critter), everything else
+from type name and label, with the registered category as a fallback. They are not written to
+compositions. The artwork library and the Add artwork picker filter by the same kinds; the old
+per-artwork category ("family") is still searchable as a tag.
 
 **Order** shows how the scene is drawn. For a layered scene (Library so far) it is the layer stack,
 front at the top: Foreground, Playfield, Set, Backdrop, Distance, with the engine's own layers
