@@ -6,6 +6,8 @@ import {light} from '../../world/light';
 import {onScreen} from '../../art/core/primitives';
 import type {SceneDocument} from './scene-document';
 import type {EngineDraw} from '../host';
+import type {GameplayDefinition} from './types';
+import {BINDING_PROVIDERS} from './binding-providers';
 /**
  * Binding sources of declared scenes: the names a composition's `bindings` may use, each worked
  * out by the engine every frame. A scene's artwork asks for `actor.keeper.pose` or `world.light`;
@@ -17,6 +19,7 @@ import type {EngineDraw} from '../host';
  * - `device.<id>.hover`: whether the pointer is over that device.
  * - `value.<key>`: a scene value (gameplay values and device observations), as the model reads it.
  * - `artwork.<type>.spans`: where the rows of an artwork type stand, as [x, x + width] pairs.
+ * - `<provider>.<key>`: a registered provider's value (binding-providers/).
  *
  * Stage actor rules (scene.json `stage.actors`) hide actors whose window or counter is off screen
  * and clip actors seen through a window.
@@ -27,9 +30,10 @@ export interface StageActorRules {
  /** An actor (presentation role) is hidden when an artwork role is off screen by more than `margin` px. */
  cull?:{actor:string;role:string;margin?:number}[];
 }
-export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;engine?:EngineDraw}
+export interface BindingContext {view:View;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;actors:Readonly<Record<string,Character>>;source:SceneDocument;gameplay?:GameplayDefinition;engine?:EngineDraw}
 const POSE=/^actor\.([-a-zA-Z0-9_.]+)\.pose$/,CLIP=/^actor\.([-a-zA-Z0-9_.]+)\.clip$/,HOVER=/^device\.([-a-zA-Z0-9_]+)\.hover$/,VALUE=/^value\.([-a-zA-Z0-9_.:]+)$/,SPANS=/^artwork\.([-a-zA-Z0-9_.]+)\.spans$/;
-export const knownBindingSource=(name:string)=>name==='world.light'||[POSE,CLIP,HOVER,VALUE,SPANS].some(r=>r.test(name));
+const providerOf=(name:string)=>{const dot=name.indexOf('.');return dot>0&&Object.prototype.hasOwnProperty.call(BINDING_PROVIDERS,name.slice(0,dot))?name.slice(0,dot):undefined;};
+export const knownBindingSource=(name:string)=>name==='world.light'||[POSE,CLIP,HOVER,VALUE,SPANS].some(r=>r.test(name))||!!providerOf(name);
 const flatten=(nodes:readonly Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 /** Every binding name the composition uses, with its artwork field's default. */
 export function bindingDefaults(doc:Composition):Record<string,Value>{const out:Record<string,Value>={};for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{}))out[source]=art.get(node.type).visualFields![field].default;return out;}
@@ -39,7 +43,9 @@ const roleList=(source:SceneDocument,role:string):readonly string[]=>{const ref=
 export function bindingValues(doc:Composition,ctx:BindingContext,rules:StageActorRules|undefined):Record<string,Value>{
  const out=bindingDefaults(doc),{view,rows,roles}=ctx,used=new Set(Object.keys(out));
  if(used.has('world.light'))out['world.light']=light() as unknown as Value;
- for(const name of used){let m:RegExpExecArray|null;
+ const provided=new Map<string,Record<string,Value>>();
+ for(const name of used){let m:RegExpExecArray|null;const provider=providerOf(name);
+  if(provider&&![POSE,CLIP,HOVER,VALUE,SPANS].some(r=>r.test(name))){if(!provided.has(provider))provided.set(provider,BINDING_PROVIDERS[provider](ctx));const v=provided.get(provider)![name.slice(provider.length+1)];if(v!==undefined)out[name]=v;continue;}
   if((m=HOVER.exec(name)))out[name]=ctx.engine?.hover===m[1];
   else if((m=VALUE.exec(name))){const v=ctx.engine?.m.value(m[1]);if(v!==undefined)out[name]=v;}
   else if((m=SPANS.exec(name))){const type=m[1];out[name]=rows.filter(r=>r.instance.type===type).map(r=>[r.placement.x,r.placement.x+Number(r.props.width)]);}}
