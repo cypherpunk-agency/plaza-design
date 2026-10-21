@@ -59,13 +59,11 @@ export function sceneSnapshot(scene:SceneDef,detail?:Record<string,unknown>):Par
  }
  return{fields,paint};
 }
-/** Fields a scene document gained after its fingerprint was recorded (scene.json `stage.resettable` / `stage.sudoOnly`): data the deck and resume read. A recorded scene may lack them; one that has them must still match everything else. */
-const DECLARED_LATER=new Set(['resettable','sudoOnly']);
 export function compareSnapshots(want:ParitySnapshot,got:ParitySnapshot):string[]{
  const out:string[]=[];
  // values the engine treats as absent: rules that change nothing (NO_RULES) and no people (`people ?? []`)
  const empty:Record<string,Set<string>>={rules:new Set([{effects:{}},{effects:{},needs:{devices:[]}},{effects:{},needs:{devices:[],state:[]}}].map(r=>hash(plain(r)))),people:new Set([hash(plain([]))])};
- for(const k of new Set([...Object.keys(want.fields),...Object.keys(got.fields)]))if(want.fields[k]!==got.fields[k]&&!(DECLARED_LATER.has(k)&&!(k in want.fields))&&!(empty[k]?.has(want.fields[k]??got.fields[k])&&!(k in want.fields&&k in got.fields)))out.push('field '+k+(k in want.fields?k in got.fields?' differs':' missing':' added'));
+ for(const k of new Set([...Object.keys(want.fields),...Object.keys(got.fields)]))if(want.fields[k]!==got.fields[k]&&!(empty[k]?.has(want.fields[k]??got.fields[k])&&!(k in want.fields&&k in got.fields)))out.push('field '+k+(k in want.fields?k in got.fields?' differs':' missing':' added'));
  for(const k of Object.keys(want.paint))if(want.paint[k]!==got.paint[k])out.push('paint '+k+' differs');
  return out;
 }
