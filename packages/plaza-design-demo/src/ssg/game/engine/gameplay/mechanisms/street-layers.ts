@@ -52,6 +52,7 @@ export function renderDowntownStreet(ctx:CanvasRenderingContext2D,view:View,rain
 }
 
 export const streetLayers:SceneMechanism={
+ face:{function:'sense'},
  label:'Downtown street (engine moments, platforms, reflections)',
  requires:['stall','alley','vehicleHome','dumpsterPlatform','annexPlatform','dumpsterWidth','annexWidth','caster',...DOWNTOWN_REFLECTION_ROLES],world:false,
  apply:({roles,composition:doc,environment})=>({

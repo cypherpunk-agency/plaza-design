@@ -11,6 +11,7 @@ const mark=(m:SceneModel,c:Ctx)=>{m.scratch['pulse.'+c.dev]=m.scratch['pulse.'+c
 export const PULSE_EFFECTS:Record<string,Effect>={'sbx.pulse':(w,c)=>{mark(w.m,c);w.changed();}};
 const rules:SceneRules={effects:PULSE_EFFECTS,needs:{devices:[],state:[]}};
 export const devicePulse:SceneMechanism={
+ face:{function:'act'},
  label:'Device pulse (sbx.pulse flashes the device that reacted)',requires:[],world:false,
  apply:()=>({rules}),rulesShape:()=>rules,
 };

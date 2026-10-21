@@ -43,6 +43,8 @@ export interface SceneMechanismContext {composition:Composition;environment(view
 export interface MechanismPresentation<S=unknown> {state:S;prepare(view:View,engine:EngineDraw):void;capture():Value;restore(value:Value):void}
 export interface SceneMechanism {
  label:string;
+ /** How the Circuit shows this mechanism as a device (mechanism-face.ts): its function, and the controller kind in devices.json whose numbers it reads. */
+ face?:{function:import('../../data/types').PartFunction;layer?:import('../../data/types').Layer;controller?:string};
  /** Artwork roles (manifest.artwork) the scene must name. */
  requires:readonly string[];
  /** The game binds the world to the scene (bindWorld). */
@@ -101,6 +103,7 @@ export function mechanismsRulesShape(names:readonly string[]|undefined):SceneRul
  * under the canopy (`roof` role), its horizon line being the stage's.
  */
 const transitPlatform:SceneMechanism={
+ face:{function:'time'},
  label:'LINE 0 platform (train stop, boarding, canopy)',requires:['roof','stop'],world:true,ownsRoom:true,
  apply:({roles,width,content})=>{const {roof,stop,water}=roles;
   return{platformStop:stop.placement.x,...(water?{horizon:Number(water.props.horizon??0)}:{}),...(water||roles.horizon?{ambient:{...content.ambient,covers:[{from:-60,to:width+60,under:Number(roof.props.under)+roof.placement.h}]}}:{})};},

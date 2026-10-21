@@ -55,6 +55,7 @@ export class YardPresentation{
 }
 
 export const yardCrane:SceneMechanism={
+ face:{function:'act',controller:'yard'},
  label:"The fixer's yard (CAM-1, the claw's hook)",requires:['tray'],world:false,ownsRoom:true,
  rulesShape:()=>YARD_RULES,
  apply:()=>({rules:YARD_RULES,panels:{camera:cameraPanel},layers:true,artworkFrame:{street:renderDowntownStreet}}),
