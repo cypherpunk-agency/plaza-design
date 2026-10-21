@@ -609,6 +609,14 @@
       "devicePulse",
       "targetReset",
       "sandboxBay"
-    ]
+    ],
+    "values": {
+      "visual": {
+        "picture": "visual"
+      },
+      "windowClip": {
+        "picture": "windowClip"
+      }
+    }
   }
 }

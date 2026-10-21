@@ -25,22 +25,33 @@ import type {LineSystem} from '../../world/transport/line';
 import {nativeTargetValidator,compileNativeTargets,type NativeTargetValidationContext} from './native-targets';
 import type {SceneData} from '../../data/types';
 import {DEFAULT_COMPANION_FLAG} from './scene-companion';
+import {evaluateValue,valueReferences} from './scene-values';
+import {allPictureFields,pictureFields} from './controller-pictures';
+/** What scene.json `stage.values` and `stage.atrium` name must exist in the scene: interactions, the atrium's artwork roles and picture fields. An artwork role, actor role or flag role the scene lacks reads as nothing (0, false), so an optional role may be left out. */
+function valueProblems(d:SceneDocument){
+ const ref=valueReferences(d.stage?.values),roles=d.manifest?.artwork??{};
+ const bad=(what:string,names:string[],ok:(n:string)=>boolean)=>{const n=names.find(x=>!ok(x));if(n!==undefined)throw new Error('Scene value names '+what+' "'+n+'", which the scene does not have');};
+ bad('an interaction',ref.uses,n=>d.uses.some(u=>u.id===n));
+ bad('an artwork role',d.stage?.atrium?[d.stage.atrium.room,d.stage.atrium.escalator]:[],n=>Object.prototype.hasOwnProperty.call(roles,n));
+ bad('a picture field',ref.pictures,n=>allPictureFields.includes(n));
+}
 
 /** A named mechanism lets the scene's engine targets use the `reset` step (scene-mechanisms.ts `targetReset`). */
 const resetPermitted=(doc:SceneDocument)=>(doc.stage?.mechanisms??[]).some(name=>SCENE_MECHANISMS[name]?.targetReset===true);
 /** validateSceneDocument options of a declared scene: its engine targets anchor to the artwork roles its stage lists. Without a context the check is structural; the editor's assembled context checks them against the scene's devices and network. */
 /** Scene document options of declared scenes; `composition` lets its providers' signals be cue targets. */
 export const declaredSceneOptions=(value:unknown,context:NativeTargetValidationContext={phase:'structural'},composition?:unknown)=>({manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors),
- ...(()=>{const targets=composition?Object.keys(providerSignals(art.validate(composition))):[];return targets.length?{presentationTargets:targets}:{};})(),
+ ...(()=>{const targets=composition?Object.keys(providerSignals(art.validate(composition),(value as SceneDocument).stage?.values)):[];return targets.length?{presentationTargets:targets}:{};})(),
  nativeTargets:(doc:SceneDocument,gameplay:GameplayDefinition)=>nativeTargetValidator(context.phase==='assembled'?context.data:{id:doc.id} as SceneData,{effects:{}},doc.stage?.targetAnchors??[],{reset:resetPermitted(doc)})(doc,gameplay,context)});
 export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
- const doc=art.validate(composition),signals=providerSignals(doc),d=validateSceneDocument(scene,gameplay,declaredSceneOptions(scene,undefined,doc));
+ const doc=art.validate(composition),signals=providerSignals(doc,scene.stage?.values),d=validateSceneDocument(scene,gameplay,declaredSceneOptions(scene,undefined,doc));
  if(!d.manifest)throw new Error('Declared scene requires manifest bindings');
  // transport exits (`action`) are the runtime's; engine exits are opened by engine targets (stage.targetAnchors)
  if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)&&e.sets!==DEFAULT_COMPANION_FLAG&&e.sets!==d.companion?.unlockFlag))throw new Error('Exit sets an undeclared gameplay flag');
  // artwork binds only to sources the engine works out (binding-sources.ts)
  if(!withActors&&JSON.stringify(doc.instances).match(/"actor\.[^"]+\.pose"/))throw new Error('Actor artwork requires scene.actors source definitions');
+ valueProblems(d);
  const unknown=unknownBindingSources(doc);if(unknown.length)throw new Error('Unknown binding sources: '+unknown.join(', '));
  const unoffered=unofferedBindings(doc,d);if(unoffered.length)throw new Error('Binding not offered by its provider: '+unoffered.join('; '));
  const rows=resolveComposition(art,doc,{view:frameView(0),state:{},bindings:bindingDefaults(doc),reduced:false});
@@ -67,6 +78,8 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  // a mechanism's rules widen what the device document may read and emit (derived values, physical milestones)
  const mechanisms=(d.stage?.mechanisms??[]).map(name=>SCENE_MECHANISMS[name]),contract=mechanismsRulesShape(d.stage?.mechanisms);
  const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay,Object.keys(contract?.derived??{}),contract?.inputs,contract?.derivedTypes,contract?.mechanisms);
+ // the picture fields the scene's values ask for are ones its controller prepares
+ for(const f of valueReferences(d.stage?.values).pictures)if(data.controller&&!pictureFields(data.controller.kind).includes(f))throw new Error('Scene value asks for picture field "'+f+'", which the scene\'s controller does not prepare');
  // a controller's geometry names artwork by id: it must exist, and a window must be a rectangle
  for(const[role,ref]of Object.entries((data.controller as {geometry?:Record<string,unknown>}|undefined)?.geometry??{})){const row=typeof ref==='string'?rows.find(r=>r.instance.id===ref):undefined;if(!row)throw new Error('Controller geometry '+role+' names missing artwork '+String(ref));if(role==='window'&&!(Number(row.props.width)>0&&Number(row.props.height)>0))throw new Error('Controller window requires rectangle dimensions');}
  // engine targets (scene.nativeTargets) anchor to the stage's artwork roles and open the scene's engine exits
@@ -85,7 +98,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
    bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
  // each mechanism may return picture-side state (`presentation`); the scene prepares, saves and restores them together, beside its presentation signals

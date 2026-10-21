@@ -1,5 +1,5 @@
 import type {SceneMechanism} from '../scene-mechanisms';
-import {validateSandboxGeometry,sandboxStations} from '../binding-providers/sandbox';
+import {validateSandboxGeometry,sandboxStations} from '../../controllers/sandbox-picture';
 import {sandboxController} from '../../controllers/sandbox';
 /**
  * Mechanism `sandboxBay`: the QA bay's controller (devices.json) must name artwork that exists in the

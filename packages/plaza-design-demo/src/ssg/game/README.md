@@ -60,7 +60,7 @@ resume key. Reload resumes task progress at the work-bay spawn. MENU → NEW GAM
 this prototype's autosave; its manual slots remain. The campaign and sudo saves are unchanged.
 No hacking, map, terminal or jump controls are available in the prototype, including with sudo.
 
-Implemented with `scenes/harbor-shift/` (JSON plus the `dockworkerCarry` mechanism), ordinary `SceneUse` interactions and carried items;
+Implemented with `scenes/harbor-shift/` (JSON, with the carried item a scene value), ordinary `SceneUse` interactions and carried items;
 no engine device data or rule contract is added. `SceneUse.available` stages interactions,
 `SceneDef.objective` supplies the goal. Time is pinned to completed story beats, and wages
 are granted once. The player and workers use the existing character kit; distant water,

@@ -13,7 +13,7 @@
       "order": 0,
       "layer": "distance",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -27,7 +27,7 @@
       "order": 1,
       "layer": "distance",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -43,8 +43,8 @@
       "order": 0,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-0",
-        "clip": "mall.clip.far-0"
+        "pose": "actor.far-0.pose",
+        "clip": "actor.far-0.clip"
       }
     },
     {
@@ -60,8 +60,8 @@
       "order": 1,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-1",
-        "clip": "mall.clip.far-1"
+        "pose": "actor.far-1.pose",
+        "clip": "actor.far-1.clip"
       }
     },
     {
@@ -77,8 +77,8 @@
       "order": 2,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-2",
-        "clip": "mall.clip.far-2"
+        "pose": "actor.far-2.pose",
+        "clip": "actor.far-2.clip"
       }
     },
     {
@@ -94,8 +94,8 @@
       "order": 3,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-3",
-        "clip": "mall.clip.far-3"
+        "pose": "actor.far-3.pose",
+        "clip": "actor.far-3.clip"
       }
     },
     {
@@ -111,8 +111,8 @@
       "order": 4,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-4",
-        "clip": "mall.clip.far-4"
+        "pose": "actor.far-4.pose",
+        "clip": "actor.far-4.clip"
       }
     },
     {
@@ -128,8 +128,8 @@
       "order": 5,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-5",
-        "clip": "mall.clip.far-5"
+        "pose": "actor.far-5.pose",
+        "clip": "actor.far-5.clip"
       }
     },
     {
@@ -145,8 +145,8 @@
       "order": 6,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-6",
-        "clip": "mall.clip.far-6"
+        "pose": "actor.far-6.pose",
+        "clip": "actor.far-6.clip"
       }
     },
     {
@@ -162,8 +162,8 @@
       "order": 7,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-7",
-        "clip": "mall.clip.far-7"
+        "pose": "actor.far-7.pose",
+        "clip": "actor.far-7.clip"
       }
     },
     {
@@ -179,8 +179,8 @@
       "order": 8,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-8",
-        "clip": "mall.clip.far-8"
+        "pose": "actor.far-8.pose",
+        "clip": "actor.far-8.clip"
       }
     },
     {
@@ -196,8 +196,8 @@
       "order": 9,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-9",
-        "clip": "mall.clip.far-9"
+        "pose": "actor.far-9.pose",
+        "clip": "actor.far-9.clip"
       }
     },
     {
@@ -213,8 +213,8 @@
       "order": 10,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-10",
-        "clip": "mall.clip.far-10"
+        "pose": "actor.far-10.pose",
+        "clip": "actor.far-10.clip"
       }
     },
     {
@@ -230,8 +230,8 @@
       "order": 11,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-11",
-        "clip": "mall.clip.far-11"
+        "pose": "actor.far-11.pose",
+        "clip": "actor.far-11.clip"
       }
     },
     {
@@ -247,8 +247,8 @@
       "order": 12,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-12",
-        "clip": "mall.clip.far-12"
+        "pose": "actor.far-12.pose",
+        "clip": "actor.far-12.clip"
       }
     },
     {
@@ -264,8 +264,8 @@
       "order": 13,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-13",
-        "clip": "mall.clip.far-13"
+        "pose": "actor.far-13.pose",
+        "clip": "actor.far-13.clip"
       }
     },
     {
@@ -281,8 +281,8 @@
       "order": 14,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-14",
-        "clip": "mall.clip.far-14"
+        "pose": "actor.far-14.pose",
+        "clip": "actor.far-14.clip"
       }
     },
     {
@@ -298,8 +298,8 @@
       "order": 15,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-15",
-        "clip": "mall.clip.far-15"
+        "pose": "actor.far-15.pose",
+        "clip": "actor.far-15.clip"
       }
     },
     {
@@ -315,8 +315,8 @@
       "order": 16,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-16",
-        "clip": "mall.clip.far-16"
+        "pose": "actor.far-16.pose",
+        "clip": "actor.far-16.clip"
       }
     },
     {
@@ -332,8 +332,8 @@
       "order": 17,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-17",
-        "clip": "mall.clip.far-17"
+        "pose": "actor.far-17.pose",
+        "clip": "actor.far-17.clip"
       }
     },
     {
@@ -349,8 +349,8 @@
       "order": 18,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-18",
-        "clip": "mall.clip.far-18"
+        "pose": "actor.far-18.pose",
+        "clip": "actor.far-18.clip"
       }
     },
     {
@@ -366,8 +366,8 @@
       "order": 19,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-19",
-        "clip": "mall.clip.far-19"
+        "pose": "actor.far-19.pose",
+        "clip": "actor.far-19.clip"
       }
     },
     {
@@ -383,8 +383,8 @@
       "order": 20,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-20",
-        "clip": "mall.clip.far-20"
+        "pose": "actor.far-20.pose",
+        "clip": "actor.far-20.clip"
       }
     },
     {
@@ -400,8 +400,8 @@
       "order": 21,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-21",
-        "clip": "mall.clip.far-21"
+        "pose": "actor.far-21.pose",
+        "clip": "actor.far-21.clip"
       }
     },
     {
@@ -417,8 +417,8 @@
       "order": 22,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-22",
-        "clip": "mall.clip.far-22"
+        "pose": "actor.far-22.pose",
+        "clip": "actor.far-22.clip"
       }
     },
     {
@@ -434,8 +434,8 @@
       "order": 23,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-23",
-        "clip": "mall.clip.far-23"
+        "pose": "actor.far-23.pose",
+        "clip": "actor.far-23.clip"
       }
     },
     {
@@ -451,8 +451,8 @@
       "order": 24,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-24",
-        "clip": "mall.clip.far-24"
+        "pose": "actor.far-24.pose",
+        "clip": "actor.far-24.clip"
       }
     },
     {
@@ -468,8 +468,8 @@
       "order": 25,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-25",
-        "clip": "mall.clip.far-25"
+        "pose": "actor.far-25.pose",
+        "clip": "actor.far-25.clip"
       }
     },
     {
@@ -485,8 +485,8 @@
       "order": 26,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-26",
-        "clip": "mall.clip.far-26"
+        "pose": "actor.far-26.pose",
+        "clip": "actor.far-26.clip"
       }
     },
     {
@@ -502,8 +502,8 @@
       "order": 27,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-27",
-        "clip": "mall.clip.far-27"
+        "pose": "actor.far-27.pose",
+        "clip": "actor.far-27.clip"
       }
     },
     {
@@ -519,8 +519,8 @@
       "order": 28,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-28",
-        "clip": "mall.clip.far-28"
+        "pose": "actor.far-28.pose",
+        "clip": "actor.far-28.clip"
       }
     },
     {
@@ -536,8 +536,8 @@
       "order": 29,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.far-29",
-        "clip": "mall.clip.far-29"
+        "pose": "actor.far-29.pose",
+        "clip": "actor.far-29.clip"
       }
     },
     {
@@ -551,7 +551,7 @@
       "order": 30,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -649,7 +649,7 @@
       "order": 34,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -665,8 +665,8 @@
       "order": 35,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-0",
-        "clip": "mall.clip.gallery-0"
+        "pose": "actor.gallery-0.pose",
+        "clip": "actor.gallery-0.clip"
       }
     },
     {
@@ -682,8 +682,8 @@
       "order": 36,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-1",
-        "clip": "mall.clip.gallery-1"
+        "pose": "actor.gallery-1.pose",
+        "clip": "actor.gallery-1.clip"
       }
     },
     {
@@ -699,8 +699,8 @@
       "order": 37,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-2",
-        "clip": "mall.clip.gallery-2"
+        "pose": "actor.gallery-2.pose",
+        "clip": "actor.gallery-2.clip"
       }
     },
     {
@@ -716,8 +716,8 @@
       "order": 38,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-3",
-        "clip": "mall.clip.gallery-3"
+        "pose": "actor.gallery-3.pose",
+        "clip": "actor.gallery-3.clip"
       }
     },
     {
@@ -733,8 +733,8 @@
       "order": 39,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-4",
-        "clip": "mall.clip.gallery-4"
+        "pose": "actor.gallery-4.pose",
+        "clip": "actor.gallery-4.clip"
       }
     },
     {
@@ -750,8 +750,8 @@
       "order": 40,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-5",
-        "clip": "mall.clip.gallery-5"
+        "pose": "actor.gallery-5.pose",
+        "clip": "actor.gallery-5.clip"
       }
     },
     {
@@ -767,8 +767,8 @@
       "order": 41,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-6",
-        "clip": "mall.clip.gallery-6"
+        "pose": "actor.gallery-6.pose",
+        "clip": "actor.gallery-6.clip"
       }
     },
     {
@@ -784,8 +784,8 @@
       "order": 42,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-7",
-        "clip": "mall.clip.gallery-7"
+        "pose": "actor.gallery-7.pose",
+        "clip": "actor.gallery-7.clip"
       }
     },
     {
@@ -801,8 +801,8 @@
       "order": 43,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-8",
-        "clip": "mall.clip.gallery-8"
+        "pose": "actor.gallery-8.pose",
+        "clip": "actor.gallery-8.clip"
       }
     },
     {
@@ -818,8 +818,8 @@
       "order": 44,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.gallery-9",
-        "clip": "mall.clip.gallery-9"
+        "pose": "actor.gallery-9.pose",
+        "clip": "actor.gallery-9.clip"
       }
     },
     {
@@ -833,7 +833,7 @@
       "order": 45,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -847,7 +847,7 @@
       "order": 46,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -861,7 +861,7 @@
       "order": 47,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -875,7 +875,7 @@
       "order": 48,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -892,7 +892,7 @@
       "order": 49,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -913,7 +913,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -933,8 +933,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "mall.actor.implantClerk",
-        "clip": "mall.clip.implantClerk"
+        "pose": "actor.implantClerk.pose",
+        "clip": "actor.implantClerk.clip"
       }
     },
     {
@@ -955,7 +955,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -972,7 +972,7 @@
       "order": 53,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -993,7 +993,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1013,8 +1013,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "mall.actor.pawnbroker",
-        "clip": "mall.clip.pawnbroker"
+        "pose": "actor.pawnbroker.pose",
+        "clip": "actor.pawnbroker.clip"
       }
     },
     {
@@ -1035,7 +1035,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1052,7 +1052,7 @@
       "order": 57,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1073,7 +1073,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1093,8 +1093,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "mall.actor.florist",
-        "clip": "mall.clip.florist"
+        "pose": "actor.florist.pose",
+        "clip": "actor.florist.clip"
       }
     },
     {
@@ -1115,7 +1115,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1132,7 +1132,7 @@
       "order": 61,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1153,7 +1153,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1173,8 +1173,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "mall.actor.keyCutter",
-        "clip": "mall.clip.keyCutter"
+        "pose": "actor.keyCutter.pose",
+        "clip": "actor.keyCutter.clip"
       }
     },
     {
@@ -1195,7 +1195,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1212,7 +1212,7 @@
       "order": 65,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1233,7 +1233,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1253,8 +1253,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "mall.actor.cook-0",
-        "clip": "mall.clip.cook-0"
+        "pose": "actor.cook-0.pose",
+        "clip": "actor.cook-0.clip"
       }
     },
     {
@@ -1275,7 +1275,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1292,7 +1292,7 @@
       "order": 69,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1313,7 +1313,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1333,8 +1333,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "mall.actor.cook-1",
-        "clip": "mall.clip.cook-1"
+        "pose": "actor.cook-1.pose",
+        "clip": "actor.cook-1.clip"
       }
     },
     {
@@ -1355,7 +1355,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1372,7 +1372,7 @@
       "order": 73,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1393,7 +1393,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1413,8 +1413,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "mall.actor.cook-2",
-        "clip": "mall.clip.cook-2"
+        "pose": "actor.cook-2.pose",
+        "clip": "actor.cook-2.clip"
       }
     },
     {
@@ -1435,7 +1435,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1449,7 +1449,7 @@
       "order": 77,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1465,7 +1465,7 @@
       "order": 78,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1481,7 +1481,7 @@
       "order": 79,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1495,7 +1495,7 @@
       "order": 80,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1509,7 +1509,7 @@
       "order": 81,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1523,7 +1523,7 @@
       "order": 82,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1593,7 +1593,7 @@
       "order": 87,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1609,7 +1609,7 @@
       "order": 88,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1625,8 +1625,8 @@
       "order": 89,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.rider-0",
-        "clip": "mall.clip.rider-0"
+        "pose": "actor.rider-0.pose",
+        "clip": "actor.rider-0.clip"
       }
     },
     {
@@ -1642,8 +1642,8 @@
       "order": 90,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.rider-1",
-        "clip": "mall.clip.rider-1"
+        "pose": "actor.rider-1.pose",
+        "clip": "actor.rider-1.clip"
       }
     },
     {
@@ -1659,8 +1659,8 @@
       "order": 91,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.rider-2",
-        "clip": "mall.clip.rider-2"
+        "pose": "actor.rider-2.pose",
+        "clip": "actor.rider-2.clip"
       }
     },
     {
@@ -1680,7 +1680,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1698,7 +1698,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1714,7 +1714,7 @@
       "order": 94,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1730,8 +1730,8 @@
       "order": 95,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot",
-        "vendorPose": "mall.vendor.deckVendor"
+        "snapshot": "scene.snapshot",
+        "vendorPose": "held.deck-booth"
       }
     },
     {
@@ -1747,8 +1747,8 @@
       "order": 97,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot",
-        "vendorPose": "mall.vendor.caseVendor"
+        "snapshot": "scene.snapshot",
+        "vendorPose": "held.cases-booth"
       }
     },
     {
@@ -1792,7 +1792,7 @@
       "order": 101,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1836,7 +1836,7 @@
       "order": 104,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1880,7 +1880,7 @@
       "order": 107,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1894,7 +1894,7 @@
       "order": 108,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1908,7 +1908,7 @@
       "order": 109,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1922,7 +1922,7 @@
       "order": 110,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -1938,8 +1938,8 @@
       "order": 111,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-0",
-        "clip": "mall.clip.floor-0"
+        "pose": "actor.floor-0.pose",
+        "clip": "actor.floor-0.clip"
       }
     },
     {
@@ -1955,8 +1955,8 @@
       "order": 112,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-1",
-        "clip": "mall.clip.floor-1"
+        "pose": "actor.floor-1.pose",
+        "clip": "actor.floor-1.clip"
       }
     },
     {
@@ -1972,8 +1972,8 @@
       "order": 113,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-2",
-        "clip": "mall.clip.floor-2"
+        "pose": "actor.floor-2.pose",
+        "clip": "actor.floor-2.clip"
       }
     },
     {
@@ -1989,8 +1989,8 @@
       "order": 114,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-3",
-        "clip": "mall.clip.floor-3"
+        "pose": "actor.floor-3.pose",
+        "clip": "actor.floor-3.clip"
       }
     },
     {
@@ -2006,8 +2006,8 @@
       "order": 115,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-4",
-        "clip": "mall.clip.floor-4"
+        "pose": "actor.floor-4.pose",
+        "clip": "actor.floor-4.clip"
       }
     },
     {
@@ -2023,8 +2023,8 @@
       "order": 116,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-5",
-        "clip": "mall.clip.floor-5"
+        "pose": "actor.floor-5.pose",
+        "clip": "actor.floor-5.clip"
       }
     },
     {
@@ -2040,8 +2040,8 @@
       "order": 117,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-6",
-        "clip": "mall.clip.floor-6"
+        "pose": "actor.floor-6.pose",
+        "clip": "actor.floor-6.clip"
       }
     },
     {
@@ -2057,8 +2057,8 @@
       "order": 118,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-7",
-        "clip": "mall.clip.floor-7"
+        "pose": "actor.floor-7.pose",
+        "clip": "actor.floor-7.clip"
       }
     },
     {
@@ -2074,8 +2074,8 @@
       "order": 119,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-8",
-        "clip": "mall.clip.floor-8"
+        "pose": "actor.floor-8.pose",
+        "clip": "actor.floor-8.clip"
       }
     },
     {
@@ -2091,8 +2091,8 @@
       "order": 120,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-9",
-        "clip": "mall.clip.floor-9"
+        "pose": "actor.floor-9.pose",
+        "clip": "actor.floor-9.clip"
       }
     },
     {
@@ -2108,8 +2108,8 @@
       "order": 121,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-10",
-        "clip": "mall.clip.floor-10"
+        "pose": "actor.floor-10.pose",
+        "clip": "actor.floor-10.clip"
       }
     },
     {
@@ -2125,8 +2125,8 @@
       "order": 122,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-11",
-        "clip": "mall.clip.floor-11"
+        "pose": "actor.floor-11.pose",
+        "clip": "actor.floor-11.clip"
       }
     },
     {
@@ -2142,8 +2142,8 @@
       "order": 123,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-12",
-        "clip": "mall.clip.floor-12"
+        "pose": "actor.floor-12.pose",
+        "clip": "actor.floor-12.clip"
       }
     },
     {
@@ -2159,8 +2159,8 @@
       "order": 124,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-13",
-        "clip": "mall.clip.floor-13"
+        "pose": "actor.floor-13.pose",
+        "clip": "actor.floor-13.clip"
       }
     },
     {
@@ -2176,8 +2176,8 @@
       "order": 125,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-14",
-        "clip": "mall.clip.floor-14"
+        "pose": "actor.floor-14.pose",
+        "clip": "actor.floor-14.clip"
       }
     },
     {
@@ -2193,8 +2193,8 @@
       "order": 126,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-15",
-        "clip": "mall.clip.floor-15"
+        "pose": "actor.floor-15.pose",
+        "clip": "actor.floor-15.clip"
       }
     },
     {
@@ -2210,8 +2210,8 @@
       "order": 127,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-16",
-        "clip": "mall.clip.floor-16"
+        "pose": "actor.floor-16.pose",
+        "clip": "actor.floor-16.clip"
       }
     },
     {
@@ -2227,8 +2227,8 @@
       "order": 128,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-17",
-        "clip": "mall.clip.floor-17"
+        "pose": "actor.floor-17.pose",
+        "clip": "actor.floor-17.clip"
       }
     },
     {
@@ -2244,8 +2244,8 @@
       "order": 129,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-18",
-        "clip": "mall.clip.floor-18"
+        "pose": "actor.floor-18.pose",
+        "clip": "actor.floor-18.clip"
       }
     },
     {
@@ -2261,8 +2261,8 @@
       "order": 130,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.floor-19",
-        "clip": "mall.clip.floor-19"
+        "pose": "actor.floor-19.pose",
+        "clip": "actor.floor-19.clip"
       }
     },
     {
@@ -2278,8 +2278,8 @@
       "order": 131,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.kid",
-        "clip": "mall.clip.kid"
+        "pose": "actor.kid.pose",
+        "clip": "actor.kid.clip"
       }
     },
     {
@@ -2295,8 +2295,8 @@
       "order": 132,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.diner",
-        "clip": "mall.clip.diner"
+        "pose": "actor.diner.pose",
+        "clip": "actor.diner.clip"
       }
     },
     {
@@ -2312,8 +2312,8 @@
       "order": 133,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.securityPerson",
-        "clip": "mall.clip.securityPerson"
+        "pose": "actor.securityPerson.pose",
+        "clip": "actor.securityPerson.clip"
       }
     },
     {
@@ -2329,8 +2329,8 @@
       "order": 134,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.dancer",
-        "clip": "mall.clip.dancer"
+        "pose": "actor.dancer.pose",
+        "clip": "actor.dancer.clip"
       }
     },
     {
@@ -2346,8 +2346,8 @@
       "order": 135,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.pigeon",
-        "clip": "mall.clip.pigeon"
+        "pose": "actor.pigeon.pose",
+        "clip": "actor.pigeon.clip"
       }
     },
     {
@@ -2361,7 +2361,7 @@
       "order": 136,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2382,7 +2382,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2403,7 +2403,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2424,7 +2424,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2445,7 +2445,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2466,7 +2466,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2487,7 +2487,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2508,7 +2508,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2526,7 +2526,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2544,7 +2544,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2562,7 +2562,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2580,7 +2580,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2594,7 +2594,7 @@
       "order": 0,
       "layer": "foreground",
       "bindings": {
-        "snapshot": "mall.snapshot"
+        "snapshot": "scene.snapshot"
       }
     },
     {
@@ -2859,7 +2859,7 @@
       "order": 96,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.deckTech"
+        "pose": "actor.deckTech.pose"
       }
     },
     {
@@ -2879,7 +2879,7 @@
       "order": 98,
       "layer": "playfield",
       "bindings": {
-        "pose": "mall.actor.teen"
+        "pose": "actor.teen.pose"
       }
     }
   ]

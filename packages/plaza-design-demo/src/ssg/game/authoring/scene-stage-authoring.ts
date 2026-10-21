@@ -3,6 +3,7 @@ import type {SceneStage,StageLightSource,StageCasterSource} from '../engine/game
 import {manifestGroups,MANIFEST_COMPILE_FLAGS,type ManifestGroup} from '../engine/gameplay/manifest-contract';
 import {SCENE_MECHANISMS} from '../engine/gameplay/scene-mechanisms';
 import type {TypedForm} from './typed-form';
+import {renderSceneValues} from './scene-values-authoring';
 type Edit=(label:string,change:(d:SceneDocument)=>void)=>void;
 const LABELS:Record<string,string>={groundExits:'Exits stand on the ground',groundSpawn:'Spawn stands on the ground',transformedExits:'Exits follow transformed artwork',elevatedResponses:'Responses rise above their artwork',omitGroundRestHeight:'Rests on the ground keep no height'};
 /**
@@ -70,4 +71,6 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
   form.decimal(row,'Margin (px)',c.margin??0,v=>stageEdit('Edit actor cull',s=>{s.actors!.cull![i].margin=v;}),0,2000);
   form.button(row,'Remove hide rule '+(i+1),()=>stageEdit('Remove actor cull',s=>{s.actors!.cull!.splice(i,1);if(!s.actors!.cull!.length)delete s.actors!.cull;if(!Object.keys(s.actors!).length)delete s.actors;}));});
  form.button(actors,'Add hide rule',()=>stageEdit('Add actor cull',s=>{((s.actors??={}).cull??=[]).push({actor:presentationRoles[0],role:roles[0]});}),!presentationRoles.length||!roles.length);
+ // values, the atrium and held/hidden actors (scene-values.ts)
+ renderSceneValues(form,host,d,stageEdit,types);
 }

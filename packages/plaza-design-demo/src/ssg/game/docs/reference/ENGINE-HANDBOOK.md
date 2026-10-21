@@ -154,21 +154,51 @@ and `horizon` (an artwork role's property), `shade` front/back, `lights` (`eleme
 `groundSpawn`, `transformedExits`, `elevatedResponses`, `omitGroundRestHeight`.
 
 **Binding sources** (engine/gameplay/binding-sources.ts). A composition names a source and the engine
-supplies it every frame. Built in: `world.light`, `actor.<id>.pose` / `.clip`, `device.<id>.hover`,
-`value.<key>` (gameplay values and device observations) and `artwork.<type>.spans`. Anything else is
-`<provider>.<key>` from a registered provider.
+supplies it every frame. Built in: `world.light`, `actor.<id>.pose` / `.clip`, `held.<instance>`,
+`device.<id>.hover`, `value.<key>` (gameplay values and device observations), `artwork.<type>.spans` and
+`scene.<name>` (the scene's own values, below). Anything else is `<provider>.<key>` from a registered provider.
+
+**Actors** share one pose source for every scene: `actor.<id>.pose` is the prepared character moved to where its
+artwork stands, `actor.<id>.clip` the window it is seen through. What differs between scenes is data in
+scene.json `stage.actors` (editor: Scene › Stage & compile › Actor visibility, Held and hidden actors):
+`clip` and `cull` (seen through / hidden with an artwork role), `held` (artwork of a type or id that paints its
+actor, a stall's vendor or a booth's clerk: the actor's own artwork shows nothing and the holder binds
+`held.<its id>`; rebinding the holder gives the actor back), `hide` (a presentation role hidden while a value
+holds, e.g. the beach guests ashore until the beach is dangerous) and `stage.atrium` (two artwork roles; the
+`far`, `gallery` and `riders` presentation actors are lifted to a storey, the slab or an escalator step,
+engine/gameplay/scene-atrium.ts). Harbor, the terminal, Downtown, the stations and the train still pose their
+people in their own providers because their positions come from a simulation or a ride.
+
+**Scene values** (scene.json `stage.values`; engine/gameplay/scene-values.ts; editor: Scene › Stage & compile ›
+Values; binding `scene.<name>`). A value is a literal or an object that says where it comes from: `flag` (a
+presentation flag role) and `use` (an interaction is available) as booleans; `not`, `all`, `any`, `sum`, `list`
+and `if/then/else` to combine them ("role A's position if the flag, else role B's"); `role` + `get` (x, h, width,
+height, top, right or `prop:<name>` of an artwork role of manifest.artwork) and `rows` + `get` (x or h of every row
+of an artwork type); `visible` (an artwork role is on screen, within a margin); `actor` (x, h or "bare" of a
+presentation actor); `picture` (a field of the picture the scene's controller prepares,
+engine/gameplay/controller-pictures.ts: moth, beach, capsule, laundromat and sandbox register theirs); `engine`
+(hover), `signal` (a cosmetic cue stamp: the scene's cues may target it), `world` (the ticker, the dusk palette),
+`shared` (a picture a mechanism keeps, e.g. the yard claw) and `live` (only while an engine frame paints,
+otherwise the artwork's own default stands). The value `carry` is also what the scene hands the game as the carried
+item. Everything is a pure function of the frame; nothing here keeps state or advances anything. A value naming
+an interaction, an atrium role or a picture field the scene lacks is refused when the scene is checked
+and on the composer's save. Add a controller's picture by registering one function in controller-pictures.ts;
+do not add a provider for a scene.
 
 **A binding provider** works out what a picture needs once per frame from the scene as it stands
-(`ctx.engine`, `roles`, `presentation`, `shared`, `world`). Add engine/gameplay/binding-providers/<name>.ts
-exporting `provide(keys, (ctx)=>Record<string,Value>)` (binding-keys.ts), add one line to `BINDING_PROVIDERS` in that folder's
-index.ts, and name `<name>.<key>` in the composition's bindings. A provider that drives cues declares
-`signals` (name and starting stamp); the scene's presentation cues may then target them. Nothing else
-registers it: validation and the editor read the same table. `keys` lists what the provider offers:
-exact keys and patterns with one typed hole (`front.<instance:downtown.front>.metrics`, `pose.<actor>`,
-`<role>` for a presentation flag role, `<use>`); `keysOf<T>()` makes a snapshot's key list complete at
-compile time. A composition binding the provider does not offer, or whose hole names nothing that
+(`ctx.engine`, `roles`, `presentation`, `shared`, `world`). It is for what cannot be stated as scene values: a
+simulation's frame (the metro, the train ride, Downtown's machines, the harbor's cranes, the terminal's gantry).
+Add engine/gameplay/binding-providers/<name>.ts exporting `provide(keys, (ctx)=>Record<string,Value>)`
+(binding-keys.ts), add one line to `BINDING_PROVIDERS` in that folder's index.ts, and name `<name>.<key>` in the
+composition's bindings. Current set: `scene` (the generic one), `station`, `train`, `downtown`, `harbor`,
+`terminal`. A provider that drives cues declares `signals` (name and starting stamp); the scene's presentation
+cues may then target them. Nothing else registers it: validation and the editor read the same table. `keys` lists
+what the provider offers: exact keys and patterns with one typed hole (`front.<instance:downtown.front>.metrics`,
+`pose.<actor>`, `<value>` for a value the scene declares); `keysOf<T>()` makes a snapshot's key list complete
+at compile time. A composition binding the provider does not offer, or whose hole names nothing that
 exists, is refused when the scene is checked (also on the composer's save). check-binding-keys.mts
-runs every folder scene and fails when a provider returns a key it does not declare.
+runs every folder scene and fails when a provider returns a key it does not declare; check-scene-values.mts
+proves the editor controls for values, the atrium and the held/hide actor rules drive the pictures and save.
 
 **A mechanism** is what a scene takes from the engine beyond its documents: SceneDef fields, `rules`
 and `panels` (several are merged, `mergeRules`; a name defined twice is refused), `anchors` for engine
@@ -176,7 +206,7 @@ targets, picture-side state and a world binding (`world: true` rebuilds the scen
 the city and line system). Add engine/gameplay/mechanisms/<name>.ts exporting a `SceneMechanism`
 (`label`, `requires` artwork roles, `world`, `apply`, optionally `rulesShape`, `check`, `anchors`), add one line to `SCENE_MECHANISMS` in engine/gameplay/scene-mechanisms.ts, and list
 the name in `stage.mechanisms`. The editor checkbox appears from the registry. Current set: transitPlatform,
-citySkyline, lineRide, gantryLift, dockworkerCarry, devicePulse, targetReset, sandboxBay, yardCrane,
+citySkyline, lineRide, gantryLift, devicePulse, targetReset, sandboxBay, yardCrane,
 thermal, streetLayers, vehicleRun, streetCamera. Add one only for a new physical calculation; a
 fixed value, a light or a shade line is stage data, not a mechanism. Give it a `face`
 (`{function, controller?}`): in Logic › Devices and Wiring the scene's mechanisms appear as devices
