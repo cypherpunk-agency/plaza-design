@@ -497,6 +497,7 @@ export class SceneHost {
     const perf=perfBegin('host.tick',this.id);try{
     this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
     if (this.model.tick(ms, this.active)) { this.schem.meters(); this.vision.meters(); }
+    this.panels.step(ms);
     // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
     const h = this.heat(), now = this.model.now();
     if (h !== this.lastHeat && now - this.heatWritten > HEAT_SAVE_MS) { this.lastHeat = h; this.heatWritten = now; this.persist(); }

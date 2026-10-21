@@ -74,16 +74,16 @@ export function morsePanel(kit: PanelKit, key: string) {
   const tape = el('div', 'toy-lens morse');
   f.area.appendChild(tape);
   // a pause of a few units ends the letter by itself
-  let pause = 0;
-  kit.cleanup(()=>clearTimeout(pause));
-  const later = () => { clearTimeout(pause); pause = window.setTimeout(() => { if(f.live()){toy.next();draw();} }, Math.max(900, toy.unit * 5)); };
+  let cancelPause = () => {};
+  const clearPause = () => { cancelPause(); cancelPause = () => {}; };
+  const later = () => { clearPause(); cancelPause = kit.later(Math.max(900, toy.unit * 5), () => { cancelPause = () => {}; if(f.live()){toy.next();draw();} }); };
   const draw = () => { tape.textContent = toy.codes() ? toy.text() + '   ' + toy.codes() : '_'; };
   let downAt = 0;
-  const press = () => { if (!downAt && f.live()) { downAt = performance.now(); clearTimeout(pause); tapBtn.classList.add('down'); } };
+  const press = () => { if (!downAt && f.live()) { downAt = m.now() + 1; clearPause(); tapBtn.classList.add('down'); } };
   const release = () => {
     if(!f.live()){downAt=0;tapBtn.classList.remove('down');return;}
     if (!downAt) return;
-    toy.tap(toy.mark(performance.now() - downAt)); downAt = 0; tapBtn.classList.remove('down');
+    toy.tap(toy.mark(m.now() + 1 - downAt)); downAt = 0; tapBtn.classList.remove('down');
     draw(); later();
   };
   const tapBtn = f.btn(m.label('toy.morse.tap'), () => {}, 'tap');
@@ -96,10 +96,10 @@ export function morsePanel(kit: PanelKit, key: string) {
   c.addEventListener('pointercancel', release);
   f.btn('·', () => { toy.tap('.'); draw(); later(); });
   f.btn('–', () => { toy.tap('-'); draw(); later(); });
-  f.btn(m.label('toy.morse.next'), () => { clearTimeout(pause); toy.next(); draw(); });
-  f.btn(m.label('toy.morse.back'), () => { clearTimeout(pause); toy.back(); draw(); });
+  f.btn(m.label('toy.morse.next'), () => { clearPause(); toy.next(); draw(); });
+  f.btn(m.label('toy.morse.back'), () => { clearPause(); toy.back(); draw(); });
   const send = () => {
-    clearTimeout(pause); toy.next(); draw();
+    clearPause(); toy.next(); draw();
     if (toy.right) f.solved();
     else if (f.wrong(toy.text().toLowerCase() || '…')) { toy.letters = []; toy.cur = ''; draw(); }
   };
@@ -110,18 +110,16 @@ export function morsePanel(kit: PanelKit, key: string) {
     if (!['.', '-', '/', 'ArrowRight', 'Backspace', 'Enter'].includes(k)) return false;
     if (!down || e.repeat) return true;
     if (k === '.' || k === '-') { toy.tap(k); later(); }
-    else if (k === '/' || k === 'ArrowRight') { clearTimeout(pause); toy.next(); }
-    else if (k === 'Backspace') { clearTimeout(pause); toy.back(); }
+    else if (k === '/' || k === 'ArrowRight') { clearPause(); toy.next(); }
+    else if (k === 'Backspace') { clearPause(); toy.back(); }
     else send();
     draw();
     return true;
   });
   draw();
 
-  let t0 = 0;
-  kit.frame((t) => {
-    if (!t0) t0 = t;
-    const { w, h } = fit(), cx = w / 2, cy = h * 0.42, r = Math.min(w, h) * 0.16, on = toy.lit(t - t0);
+  kit.frame((_ms, t) => {
+    const { w, h } = fit(), cx = w / 2, cy = h * 0.42, r = Math.min(w, h) * 0.16, on = toy.lit(t);
     g.fillStyle = INK.bg; g.fillRect(0, 0, w, h);
     // the window it hangs in, then the lamp: warm when lit, its glow on the frame
     g.strokeStyle = 'rgba(255, 136, 0, 0.6)'; g.lineWidth = 2;

@@ -11,7 +11,7 @@
 
 import type { CipherToyData } from '../../data/types';
 import type { PanelKit } from '../panels';
-import { el } from '../panels';
+import { el, FRAME_MS } from '../panels';
 import { fitCanvas, INK, toyFrame } from './common';
 
 const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -78,11 +78,11 @@ export function cipherPanel(kit: PanelKit, key: string) {
     f.gesture(e,mv);
   });
 
-  kit.frame(() => {
+  kit.frame((ms) => {
     lens.textContent = toy.read();
     lens.title = m.label('toy.cipher.shift', { n: toy.turn });
     let d = toy.turn - shown; if (d > 13) d -= 26; if (d < -13) d += 26;
-    shown = mod(shown + d * 0.25, 26);
+    shown = mod(shown + d * (1 - Math.pow(0.75, ms / FRAME_MS)), 26);
     const { w, h } = fit(), cx = w / 2, cy = h / 2 - 16, R = Math.min(w, h - 44) * 0.46;
     g.fillStyle = INK.bg; g.fillRect(0, 0, w, h);
     g.textAlign = 'center'; g.textBaseline = 'middle';

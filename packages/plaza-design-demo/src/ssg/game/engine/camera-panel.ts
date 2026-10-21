@@ -12,10 +12,12 @@
 
 import type { CrateData } from '../data/types';
 import type { Line, SceneModel } from './model';
-import { button, el, type PanelFn } from './panels';
+import { button, el, FRAME_MS, type PanelFn } from './panels';
 
 /** The feed's virtual size; painters draw in these units. */
 export const CAMERA_W = 320, CAMERA_H = 150;
+/** The crosshair closes this fraction of the distance to the aim per 60 Hz frame (dt-scaled). */
+const EASE = 0.2;
 const ZOOM = 3, CENTRE = { x: CAMERA_W / 2, y: CAMERA_H / 2 };
 
 type Point = { x: number; y: number };
@@ -123,10 +125,11 @@ export function cameraPanel(options: CameraPanelOptions): PanelFn {
     };
     btns.append(...options.buttons.filter((b) => !b.when || b.when(m)).map((b) => button(m.label(b.label), 'hack-btn', () => b.press(controls))));
     let fitted = false;
-    frame((now) => {
+    frame((ms, now) => {
       t = now;
       if (!fitted || c.width !== Math.round(c.clientWidth * (window.devicePixelRatio || 1))) { fit(); fitted = true; }
-      cross.x += (aim.x - cross.x) * 0.2; cross.y += (aim.y - cross.y) * 0.2;
+      const ease = 1 - Math.pow(1 - EASE, ms / FRAME_MS);
+      cross.x += (aim.x - cross.x) * ease; cross.y += (aim.y - cross.y) * ease;
       g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height);
       g.setTransform(s * zoom, 0, 0, s * zoom, ox + s * (CENTRE.x - focus.x * zoom), oy + s * (CENTRE.y - focus.y * zoom));
       g.save(); g.beginPath(); g.rect(0, 0, W, H); g.clip();

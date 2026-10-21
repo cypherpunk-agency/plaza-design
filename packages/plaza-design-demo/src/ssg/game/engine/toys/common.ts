@@ -47,7 +47,7 @@ export function toyFrame(kit: PanelKit, key: string, title: string, hint: string
   const area = el('div', 'toy-area'), controls = el('div', 'toy-controls'), status = el('div', 'toy-status', hint);
   wrap.append(head, area, status, controls);
   body.appendChild(wrap);
-  let over = false,disposed=false,endTimer=0;
+  let over = false,disposed=false;
   const gesture=new PointerGesture();
   const say = (l: Line, quiet = false) => {
     if(disposed)return;
@@ -59,7 +59,7 @@ export function toyFrame(kit: PanelKit, key: string, title: string, hint: string
     wrap.classList.add(cls);
     const stamp = el('div', 'toy-stamp', text); area.appendChild(stamp);
     controls.querySelectorAll('button').forEach((b) => { b.disabled = true; });
-    endTimer=window.setTimeout(() => { if(!disposed&&wrap.isConnected)kit.close(); },1300);
+    kit.later(1300, () => { if(!disposed&&wrap.isConnected)kit.close(); });
   };
   const keyFns: ((e: KeyboardEvent, down: boolean) => boolean)[] = [];
   // capture on window, before the game's own keys (B and H must not leave while you type a cryptex word)
@@ -74,7 +74,7 @@ export function toyFrame(kit: PanelKit, key: string, title: string, hint: string
   };
   window.addEventListener('keydown', onKey, true);
   window.addEventListener('keyup', onKey, true);
-  kit.cleanup(()=>{disposed=true;clearTimeout(endTimer);gesture.cancel();window.removeEventListener('keydown',onKey,true);window.removeEventListener('keyup',onKey,true);});
+  kit.cleanup(()=>{disposed=true;gesture.cancel();window.removeEventListener('keydown',onKey,true);window.removeEventListener('keyup',onKey,true);});
   return {
     area, controls, say,gesture:(start,move,finish=()=>{})=>{if(!disposed&&!over&&wrap.isConnected)gesture.start(start,move,finish);},
     btn: (text, fn, cls = '') => { const b = button(text, 'hack-btn toy-btn ' + cls, () => { if(!disposed&&!over&&wrap.isConnected)fn(); }); controls.appendChild(b); return b; },

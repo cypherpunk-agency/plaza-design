@@ -11,7 +11,11 @@ There is one runtime: the game loop (runtime/game.ts) and each scene's model (Sc
 the loop ticks every hosted scene (`SceneHost.tick`); the model's tick moves its scene time (engine/time.ts
 `SceneTime.advance`), and delayed signals, deadlines, movers, zones, clocks and watchdogs follow that time.
 No browser timer or second loop drives the game; pausing the engine holds scene time still. Wall-clock
-lockouts deliberately keep real time.
+lockouts deliberately keep real time. A scene's open panel (toys, the camera) steps on that same tick
+(`SceneHost.tick` calls `Panels.step`): a panel's `kit.frame((dt, t) => ...)` gets scene-time deltas, so
+easing is scaled by `dt` (`FRAME_MS`), and a panel's delays are `kit.later` (the model's `later`, cancelled
+on close). A panel never calls `requestAnimationFrame` or `setTimeout`. The hint lane takes its time from the
+communication lane's readable clock (`notices.time`), never `performance.now`.
 
 A scene source binds artwork/entities to interactions, dialogue, objectives and exits. A user
 interaction, conversation choice or authorized native event requests a command. GameplaySession

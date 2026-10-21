@@ -105,10 +105,9 @@ export function ringsPanel(kit: PanelKit, key: string) {
     return false;
   });
 
-  let last = 0;
-  kit.frame((t) => {
-    const dt = last ? Math.min(100, t - last) : 0; last = t; now = t;
-    if (f.live()) toy.tick(dt);
+  kit.frame((ms, t) => {
+    now = t;
+    if (f.live()) toy.tick(Math.min(100, ms));
     const { w, h } = fit(), cx = w / 2, cy = h / 2 + 8, R = Math.min(w, h) * 0.42, n = toy.rings.length;
     g.fillStyle = INK.bg; g.fillRect(0, 0, w, h);
     // the port: a notch at the top, where every gap must be

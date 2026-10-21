@@ -27,8 +27,10 @@ export const capsuleState=(m:SceneModel,key:keyof CapsuleController['state'])=>m
 const tune = (m: SceneModel, k:keyof CapsuleController['tuning']) => m.data.tuning[capsuleController(m.data).tuning[k]];
 /** The router's temperature, °C. Starts calm: warm if the plug is on, room temperature if not. */
 const tempOf = (m: SceneModel) => (m.scratch.temp ??= tune(m, capsuleState(m,'plugOn') ? 'idleTemp' : 'roomTemp'));
-/** Powered, and done booting (or rebooting). */
+/** Powered, and done booting (or rebooting). The deadline is scene time, so a paused game holds the boot. */
 export const routerUp = (m: SceneModel) => !!capsuleState(m,'plugOn') && m.now() >= (m.scratch.bootUntil ?? 0);
+/** The kettle's steam is up (a scene-time deadline); the picture reads this, not the scratch. */
+export const steaming = (m: SceneModel) => m.now() < (m.scratch.steamUntil ?? 0);
 
 const EFFECTS: Record<string, Effect> = {
   /** The plug came on: the router boots, and says so when it is up (if the plug is still on by then). */
