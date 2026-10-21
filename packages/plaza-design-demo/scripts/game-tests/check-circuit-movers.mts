@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {SCENES} from '../../src/ssg/game/scenes/index';
 import {SceneModel} from '../../src/ssg/game/engine/model';
-import {LevelRuntime, type LiftDrive} from '../../src/ssg/game/engine/level';
+import {LevelRuntime, moverDrives} from '../../src/ssg/game/engine/level';
 import {Movers} from '../../src/ssg/game/engine/movers';
 import {Zones} from '../../src/ssg/game/engine/zones';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
@@ -39,9 +39,7 @@ assert.deepEqual(m.noun('lift.car')!.verbs, ['go metro', 'go b1', 'go lobby', 'g
 assert.equal(m.movers.position('lift.car'), -190, 'the car starts at its first stop');
 const lift = tower.level!.lifts[0];
 assert.equal(lift.device, 'lift.car', 'the elevator names its mover');
-const stops = car.mover!.stops;
-const drive: LiftDrive = {position: () => m.movers.position('lift.car'), target: () => m.movers.moving('lift.car') ? stops[m.movers.target('lift.car')!] : null, go: h => { const s = Object.keys(stops).find(k => Math.abs(stops[k] - h) < .75); if (s) m.moveTo('lift', 'car', s); }};
-const L = new LevelRuntime(tower.level!, {[lift.id]: drive});
+const L = new LevelRuntime(tower.level!, moverDrives(tower.level!, m));
 const p = {x: tower.spawn, y: 0, vy: 0, face: 1, onGround: true, moving: false};
 L.arrive(p, tower.spawnH ?? 0);
 const frame = (ms = 1000 / 60) => { now += ms; m.player = {x: p.x, h: p.y}; m.tick(1, true); L.update(1, p, 0); };

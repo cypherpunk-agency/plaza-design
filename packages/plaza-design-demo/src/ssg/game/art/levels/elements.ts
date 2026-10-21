@@ -42,11 +42,11 @@ export const doorElement: Element = {
 };
 
 /** Grouping handles: attach a building's facade to its shell and its rooms to its interior. */
-const handle = (type: string, label: string): Element => ({
-  type, version: 1, label, category: 'scene', parts: [], libraryUse: 'reusable', fields: { building: text('Building') },
+const handle = (type: string, label: string, fields: Record<string, Field> = {}): Element => ({
+  type, version: 1, label, category: 'scene', parts: [], libraryUse: 'reusable', fields: { building: text('Building'), ...fields },
   bounds: () => ({ x: -6, h: 0, w: 12, tall: 12 }), anchors: origin, draw() {},
 });
-export const shellElement = handle('level.shell', 'Building shell (fades when inside)');
+export const shellElement = handle('level.shell', 'Building shell (fades when inside)', { revealSpeed: num('Opens and closes (share per frame)', 0.07, 0.01, 1, 0.01) });
 export const interiorElement = handle('level.interior', 'Building interior (shown when inside)');
 
 /** Steps from the foot (origin) to the top at (run, rise): a concrete flight with a stringer and a handrail. */
@@ -72,7 +72,10 @@ function drawFlight(x: CanvasRenderingContext2D, v: View, run: number, rise: num
 
 export const stairsElement: Element = {
   type: 'level.stairs', version: 1, label: 'Stairs between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
-  fields: { run: num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units') },
+  fields: {
+    run: num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units'),
+    speed: num('Climbing speed (units per frame)', 1, 0.1, 4, 0.05), reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
+  },
   bounds: p => { const r = Number(p.run), h = Number(p.rise); return { x: Math.min(0, r), h: Math.min(0, h) - 10, w: Math.max(8, Math.abs(r)), tall: Math.abs(h) + 42 }; },
   anchors: p => ({ ...origin(), top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
   draw: (x, v, p) => drawFlight(x, v, Number(p.run), Number(p.rise), null),
@@ -83,6 +86,7 @@ export const escalatorElement: Element = {
   fields: {
     run: num('Run (to the top, negative: leftwards)', 150, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 90, -2000, 2000, 1, 'units'),
     direction: { kind: 'select', label: 'Runs', options: ['up', 'down'], default: 'up' }, speed: num('Speed', 0.6, 0.1, 3, 0.05),
+    reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
   },
   bounds: p => { const r = Number(p.run), h = Number(p.rise); return { x: Math.min(0, r) - 14, h: Math.min(0, h) - 14, w: Math.abs(r) + 28, tall: Math.abs(h) + 50 }; },
   anchors: p => ({ ...origin(), top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
@@ -109,7 +113,8 @@ export const escalatorElement: Element = {
  */
 export const elevatorElement: Element = {
   type: 'level.elevator', version: 1, label: 'Lift between floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
-  fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units'), device: text('Driven by a mover (device.part; empty: it drives itself)') },
+  fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units'), device: text('Driven by a mover (device.part; empty: it drives itself)'),
+    speed: num('Car speed when it drives itself (units per frame)', 1.4, 0.1, 10, 0.05), doorSpeed: num('Doors (share per frame)', 0.06, 0.01, 1, 0.01) },
   visualFields: { car: num('Car height over the bottom stop', 0, -100, 4000, 0.01), doors: num('Doors open', 0, 0, 1, 0.01) },
   bounds: p => ({ x: -Number(p.width) / 2 - 4, h: -4, w: Number(p.width) + 8, tall: Number(p.height) + 58 }),
   anchors: p => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),

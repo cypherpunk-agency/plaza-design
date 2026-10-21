@@ -126,7 +126,7 @@ vertical movement there (the floor under the player, rides, lift cars, building 
 runtime/game.ts only asks it. A scene without floors keeps one street line and its jump ledges. Arrival
 uses the spawn's or the exit marker's height (`spawnH`, `SceneExit.arriveH`). The renderer receives
 `View.level` (reveal, lift cars); the editor previews it at rest or opened (environment `inside`).
-Check with `pnpm test:game levels`; the Tower lab (scenes/authored.json) is the example.
+Speeds, reach and door/reveal timing are kit fields (stairs, escalator, elevator, shell handle). The lift's mover drive (`moverDrives`) and the choice of what E acts on (`nearestPrompt`: a level prompt wins over a device on the same spot) live in engine/level.ts. Check with `pnpm test:game levels tower-lift`; the Tower lab (scenes/tower) is the example.
 
 ## Recipe: make or change any scene (folder scenes)
 

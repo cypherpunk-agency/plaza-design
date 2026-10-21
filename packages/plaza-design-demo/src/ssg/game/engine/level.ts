@@ -13,13 +13,15 @@
 import type { Resolved } from '../art/core/composition';
 
 export interface LevelFloor { id: string; x: number; w: number; h: number; building: string; label: string }
-export interface LevelLink { id: string; kind: 'stairs' | 'escalator'; low: { x: number; h: number }; high: { x: number; h: number }; runs: 'both' | 'up' | 'down'; speed: number }
+export interface LevelLink { id: string; kind: 'stairs' | 'escalator'; low: { x: number; h: number }; high: { x: number; h: number }; runs: 'both' | 'up' | 'down'; speed: number; reach?: number }
 export interface LevelDoor { id: string; x: number; h: number; w: number; building: string }
-export interface LevelLift { id: string; x: number; w: number; bottom: number; height: number; stops: { h: number; floor: string; label: string }[]; device?: string }
+export interface LevelLift { id: string; x: number; w: number; bottom: number; height: number; stops: { h: number; floor: string; label: string }[]; device?: string; speed?: number; doorSpeed?: number }
 export interface LevelSource {
   floors: LevelFloor[]; links: LevelLink[]; doors: LevelDoor[]; lifts: LevelLift[];
   /** Instance ids of each building's shell and interior handles (their attached artwork follows them). */
   shells: Record<string, string[]>; interiors: Record<string, string[]>;
+  /** A building's own reveal speed, where its shell handle sets one other than the default. */
+  revealSpeed?: Record<string, number>;
   /** The lowest and highest floor: how far the camera may look down and up. */
   low: number; high: number;
 }
@@ -27,6 +29,9 @@ export interface LevelSource {
 export interface LevelView { reveal: Record<string, number>; lifts: Record<string, { car: number; doors: number }> }
 
 const near = (a: number, b: number, d = 0.75) => Math.abs(a - b) <= d;
+/** The level kit's defaults (art/levels/elements.ts); a compiled piece carries a tuned value only where it differs. */
+export const LEVEL_DEFAULTS = { stairSpeed: 1, reach: 10, liftSpeed: 1.4, doorSpeed: 0.06, revealSpeed: 0.07 } as const;
+const tuned = <K extends string>(key: K, value: unknown, fallback: number): Partial<Record<K, number>> => { const n = Number(value); return value !== undefined && Number.isFinite(n) && n !== fallback ? { [key]: n } as Record<K, number> : {}; };
 const group = (rows: readonly Resolved[], type: string) => {
   const out: Record<string, string[]> = {};
   for (const r of rows) if (r.element.type === type) (out[String(r.props.building ?? '')] ??= []).push(r.instance.id);
@@ -45,7 +50,8 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     const [low, high] = top.h >= foot.h ? [foot, top] : [top, foot], stairs = r.element.type === 'level.stairs';
     // an escalator runs from its foot to its top ('up') or back; physically that may be downhill
     const footToTop = (r.props.direction ?? 'up') !== 'down', uphill = top.h >= foot.h;
-    return { id: r.instance.id, kind: stairs ? 'stairs' : 'escalator', low, high, runs: stairs ? 'both' : footToTop === uphill ? 'up' : 'down', speed: stairs ? 1 : Number(r.props.speed) } as LevelLink;
+    const speed = Number(r.props.speed ?? LEVEL_DEFAULTS.stairSpeed);
+    return { id: r.instance.id, kind: stairs ? 'stairs' : 'escalator', low, high, runs: stairs ? 'both' : footToTop === uphill ? 'up' : 'down', speed, ...tuned('reach', r.props.reach, LEVEL_DEFAULTS.reach) } as LevelLink;
   });
   const doors: LevelDoor[] = rows.filter(r => r.element.type === 'level.door').map(r => ({ id: r.instance.id, x: r.placement.x, h: r.placement.h, w: Number(r.props.width) * r.placement.scale, building: String(r.props.building ?? '').trim() }));
   const lifts: LevelLift[] = rows.filter(r => r.element.type === 'level.elevator').map(r => {
@@ -54,10 +60,11 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     const crossed = floors.filter(f => p.x >= f.x && p.x <= f.x + f.w && f.h >= bottom - 0.75 && f.h <= bottom + height + 0.75).sort((a, b) => a.h - b.h || Number(!a.building) - Number(!b.building));
     const stops = crossed.filter((f, i) => i === 0 || !near(f.h, crossed[i - 1].h)).map(f => ({ h: f.h, floor: f.id, label: f.label || f.id }));
     const device = String(r.props.device ?? '').trim();
-    return { id: r.instance.id, x: p.x, w: Number(r.props.width) * p.scale, bottom, height, stops, ...(device ? { device } : {}) };
+    return { id: r.instance.id, x: p.x, w: Number(r.props.width) * p.scale, bottom, height, stops, ...(device ? { device } : {}), ...tuned('speed', r.props.speed, LEVEL_DEFAULTS.liftSpeed), ...tuned('doorSpeed', r.props.doorSpeed, LEVEL_DEFAULTS.doorSpeed) };
   });
-  const hs = floors.map(f => f.h);
-  return { floors, links, doors, lifts, shells: group(rows, 'level.shell'), interiors: group(rows, 'level.interior'), low: Math.min(...hs), high: Math.max(...hs) };
+  const hs = floors.map(f => f.h), revealSpeed: Record<string, number> = {};
+  for (const r of rows) if (r.element.type === 'level.shell') Object.assign(revealSpeed, tuned(String(r.props.building ?? ''), r.props.revealSpeed, LEVEL_DEFAULTS.revealSpeed));
+  return { floors, links, doors, lifts, shells: group(rows, 'level.shell'), interiors: group(rows, 'level.interior'), low: Math.min(...hs), high: Math.max(...hs), ...(Object.keys(revealSpeed).length ? { revealSpeed } : {}) };
 }
 
 /** The player as the level sees it (the same object game.ts moves). */
@@ -70,10 +77,50 @@ type Ride = { kind: 'link'; link: LevelLink; t: number; dir: 1 | -1 } | { kind: 
  * the mover to go to a stop's height; cables and hack vision can send it too.
  */
 export interface LiftDrive { position(): number | undefined; target(): number | null; go(h: number): void }
+/** What a lift needs from the scene's model (SceneModel): its device parts with movers, and the movers themselves. */
+export interface MoverModel {
+  devices: ReadonlyMap<string, { data: { nouns: readonly { id: string; mover?: { stops: Readonly<Record<string, number>> } }[] } }>;
+  movers: { position(key: string): number | undefined; moving(key: string): boolean; target(key: string): string | undefined };
+  moveTo(dev: string, noun: string, stop: string): unknown;
+}
+/** The drives of the lifts whose `device` names a mover part (device.part) the model has; the rest drive themselves. */
+export function moverDrives(source: LevelSource, m: MoverModel): Record<string, LiftDrive> {
+  const out: Record<string, LiftDrive> = {};
+  for (const lift of source.lifts) {
+    if (!lift.device) continue;
+    const i = lift.device.indexOf('.'), dev = lift.device.slice(0, i), noun = lift.device.slice(i + 1), key = dev + '.' + noun;
+    const stops = m.devices.get(dev)?.data.nouns.find(n => n.id === noun)?.mover?.stops;
+    if (!stops) continue;
+    out[lift.id] = {
+      position: () => m.movers.position(key),
+      target: () => { const t = m.movers.moving(key) ? m.movers.target(key) : undefined; return t === undefined ? null : stops[t]; },
+      go: h => { const stop = Object.keys(stops).find(k => Math.abs(stops[k] - h) < 0.75); if (stop) m.moveTo(dev, noun, stop); },
+    };
+  }
+  return out;
+}
+
+/** A prompt the player may act on with E: where it stands and whose it is ('level' for a door, flight or lift). */
+export interface Prompt { kind: string; x: number; h: number }
+/** How far E reaches along the floor, and how far off the player's height a prompt may stand. */
+export const PROMPT_REACH = 26, PROMPT_FLOOR = 8;
+/**
+ * The prompt E acts on: the nearest in reach on the player's floor. A level's own (door, flight, lift)
+ * wins over anything else in reach: it is the way on, and a device on the same spot (the lift's own
+ * mover) stays reachable through hack vision and the deck.
+ */
+export function nearestPrompt<T extends Prompt>(list: readonly T[], at: { x: number; y: number }): T | null {
+  let best: T | null = null, bd = PROMPT_REACH, level = false;
+  for (const t of list) {
+    if (Math.abs(at.y - t.h) > PROMPT_FLOOR) continue;
+    const d = Math.abs(at.x - t.x), isLevel = t.kind === 'level';
+    if (d >= PROMPT_REACH) continue;
+    if ((isLevel && !level) || (isLevel === level && d < bd)) { best = t; bd = d; level = isLevel; }
+  }
+  return best;
+}
 interface Car { h: number; target: number | null; doors: number; open: boolean }
 
-/** Walking speed on stairs (units per frame along the flight); lift speed; door speed per frame. */
-const STAIR_SPEED = 1.0, LIFT_SPEED = 1.4, DOOR_SPEED = 0.06, REVEAL_SPEED = 0.07, REACH = 10;
 
 export class LevelRuntime {
   floor: LevelFloor;
@@ -106,7 +153,7 @@ export class LevelRuntime {
 
   private doorHere(p: LevelPlayer) { return this.source.doors.find(d => near(d.h, this.floor.h, 2) && Math.abs(p.x - d.x) <= d.w / 2 + 4 && (!this.floor.building || this.floor.building === d.building)); }
   private linkEnd(p: LevelPlayer, end: 'low' | 'high') {
-    return this.source.links.find(l => near(l[end].h, this.floor.h, 2) && Math.abs(p.x - l[end].x) <= REACH && (end === 'low' ? l.runs !== 'down' : l.runs !== 'up') && this.floorAt(l[end === 'low' ? 'high' : 'low'].x, l[end === 'low' ? 'high' : 'low'].h));
+    return this.source.links.find(l => near(l[end].h, this.floor.h, 2) && Math.abs(p.x - l[end].x) <= (l.reach ?? LEVEL_DEFAULTS.reach) && (end === 'low' ? l.runs !== 'down' : l.runs !== 'up') && this.floorAt(l[end === 'low' ? 'high' : 'low'].x, l[end === 'low' ? 'high' : 'low'].h));
   }
   private liftHere(p: LevelPlayer) {
     return this.source.lifts.find(l => Math.abs(p.x - l.x) <= l.w / 2 + 4 && l.stops.some(s => s.floor === this.floor.id));
@@ -194,21 +241,21 @@ export class LevelRuntime {
    */
   update(dt: number, p: LevelPlayer, walk: number): boolean {
     for (const lift of this.source.lifts) {
-      const car = this.cars.get(lift.id)!, drive = this.drives[lift.id];
+      const car = this.cars.get(lift.id)!, drive = this.drives[lift.id], doorSpeed = lift.doorSpeed ?? LEVEL_DEFAULTS.doorSpeed;
       if (drive) {
         // the mover moves the car; the doors shut while it travels and open when it stops
         const h = drive.position(), target = drive.target();
         if (h !== undefined) car.h = h;
-        if (target !== null) { car.target = target; car.doors = Math.max(0, car.doors - DOOR_SPEED * 3 * dt); }
-        else { if (car.target !== null) car.open = true; car.target = null; if (car.open) car.doors = Math.min(1, car.doors + DOOR_SPEED * dt); }
+        if (target !== null) { car.target = target; car.doors = Math.max(0, car.doors - doorSpeed * 3 * dt); }
+        else { if (car.target !== null) car.open = true; car.target = null; if (car.open) car.doors = Math.min(1, car.doors + doorSpeed * dt); }
         continue;
       }
       if (car.target !== null) {
-        if (car.doors > 0) car.doors = Math.max(0, car.doors - DOOR_SPEED * dt);
-        else { const d = car.target - car.h, step = Math.sign(d) * Math.min(Math.abs(d), LIFT_SPEED * dt); car.h += step; if (near(car.h, car.target, 0.01)) { car.h = car.target; car.target = null; car.open = true; } }
-      } else if (car.open) car.doors = Math.min(1, car.doors + DOOR_SPEED * dt);
+        if (car.doors > 0) car.doors = Math.max(0, car.doors - doorSpeed * dt);
+        else { const d = car.target - car.h, step = Math.sign(d) * Math.min(Math.abs(d), (lift.speed ?? LEVEL_DEFAULTS.liftSpeed) * dt); car.h += step; if (near(car.h, car.target, 0.01)) { car.h = car.target; car.target = null; car.open = true; } }
+      } else if (car.open) car.doors = Math.min(1, car.doors + doorSpeed * dt);
     }
-    for (const [b, v] of this.reveal) { const goal = this.floor.building === b ? 1 : 0; this.reveal.set(b, v + (goal - v) * Math.min(1, REVEAL_SPEED * dt)); }
+    for (const [b, v] of this.reveal) { const goal = this.floor.building === b ? 1 : 0; this.reveal.set(b, v + (goal - v) * Math.min(1, (this.source.revealSpeed?.[b] ?? LEVEL_DEFAULTS.revealSpeed) * dt)); }
     const r = this.ride;
     if (!r) return false;
     if (r.kind === 'lift') {
@@ -219,7 +266,7 @@ export class LevelRuntime {
       return this.riding;
     }
     const l = r.link, len = Math.hypot(l.high.x - l.low.x, l.high.h - l.low.h) || 1;
-    r.t += r.dir * (l.kind === 'stairs' ? STAIR_SPEED : l.speed) * dt / len;
+    r.t += r.dir * l.speed * dt / len;
     const t = Math.max(0, Math.min(1, r.t));
     p.x = l.low.x + (l.high.x - l.low.x) * t; p.y = l.low.h + (l.high.h - l.low.h) * t;
     p.face = Math.sign((l.high.x - l.low.x) * r.dir) || p.face; p.moving = l.kind === 'stairs'; p.onGround = true; p.vy = 0;
