@@ -2,7 +2,7 @@ import type {Value} from '../../art/core/composition';
 import {mothVisualSnapshot,beachVisualSnapshot} from '../controllers/visual';
 import {laundryController,laundryVisualSnapshot,washerRoles} from '../controllers/laundromat';
 import {sandboxPicture} from '../controllers/sandbox-picture';
-import {capsuleState,routerUp} from './mechanisms/thermal';
+import {capsuleState,routerUp,steaming} from './mechanisms/thermal';
 import type {SceneModel} from '../model';
 import type {ValueEnv} from './scene-values';
 /**
@@ -12,7 +12,7 @@ import type {ValueEnv} from './scene-values';
  * scene.json `stage.values`; this table is the one place that knows which controller offers which field.
  * Nothing here advances the model; there is no picture without an engine frame.
  */
-const capsulePicture=(m:SceneModel):Record<string,Value>=>({plugOn:!!capsuleState(m,'plugOn'),up:routerUp(m),sun:!!capsuleState(m,'sun'),open:!!capsuleState(m,'doorOpen'),hot:!!m.value('hot'),temp:Number(m.value('temp')??22),steam:m.now()<(m.scratch.steamUntil??0),pixelAt:String(capsuleState(m,'pixelAt')??'')});
+const capsulePicture=(m:SceneModel):Record<string,Value>=>({plugOn:!!capsuleState(m,'plugOn'),up:routerUp(m),sun:!!capsuleState(m,'sun'),open:!!capsuleState(m,'doorOpen'),hot:!!m.value('hot'),temp:Number(m.value('temp')??22),steam:steaming(m),pixelAt:String(capsuleState(m,'pixelAt')??'')});
 function laundryPicture(m:SceneModel,env:ValueEnv):Record<string,Value>{
  if(!env.gameplay)return{};
  const rows=env.rows??[],view=env.view!,c=laundryController(m.data),get=(id:string)=>{const row=rows.find(r=>r.instance.id===id);if(!row)throw new Error('Laundromat artwork reference '+id);return row;};
