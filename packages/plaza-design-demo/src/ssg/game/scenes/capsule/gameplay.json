@@ -387,7 +387,8 @@
       "type": "number",
       "default": 0,
       "min": 0,
-      "max": 1000
+      "max": 1000,
+      "integer": false
     },
     "capsule.bootUntil": {
       "owner": "capsule",
@@ -395,7 +396,8 @@
       "type": "number",
       "default": 0,
       "min": 0,
-      "max": 1000000000000
+      "max": 1000000000000,
+      "integer": false
     },
     "capsule.steamUntil": {
       "owner": "capsule",
@@ -403,7 +405,8 @@
       "type": "number",
       "default": 0,
       "min": 0,
-      "max": 1000000000000
+      "max": 1000000000000,
+      "integer": false
     }
   },
   "native": {
