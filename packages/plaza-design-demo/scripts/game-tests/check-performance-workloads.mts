@@ -13,8 +13,8 @@ const noFrames=structuredClone(report);noFrames.samples=[];noFrames.summary={};a
 const unfocused=structuredClone(report);(unfocused.environment.activation as any).parentTrusted=false;assert.equal(validateReport(unfocused,source).status,'INVALID');
 assert.equal(workloads.length,6);assert.equal(new Set(workloads.map(w=>w.id)).size,6);
 assert(!performanceRecording());const time=new SceneTime();let ran=0;
-await new Promise<void>(resolve=>time.later(0,()=>{ran++;resolve();}));assert.equal(stopPerformance(),undefined);
-startPerformance({source,scenario:'timer-callback',capacity:32});await new Promise<void>(resolve=>time.later(5,()=>{ran++;resolve();}));
+time.later(0,()=>{ran++;});time.advance(1);assert.equal(stopPerformance(),undefined);
+startPerformance({source,scenario:'timer-callback',capacity:32});time.later(5,()=>{ran++;});time.advance(5);
 const measured=stopPerformance()!;assert.equal(ran,2);assert.equal(measured.summary['timer.callback']!.count,1);assert.equal(measured.summary['timer.lateness']!.count,1);assert.equal(measured.samples.find(s=>s.span==='timer.callback')!.parent,-1);assert.equal(measured.incomplete,0);assert.equal(measured.invalidEnds,0);
 time.clear();assert(!performanceRecording());
 console.log('Performance workloads PASS: six finite manifests, raw/summary/source integrity, overflow/incomplete rejection, visibility/render/activation diagnostics, opt-in actual SceneTime callback CPU/lateness and unchanged disabled execution.');

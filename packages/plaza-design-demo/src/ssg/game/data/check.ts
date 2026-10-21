@@ -84,7 +84,7 @@ const KEYS: Record<string, string[]> = {
   morse: ['message', 'unitMs'],
   clock: ['every', 'first', 'set', 'start', 'once'],
   mover: ['stops', 'axis', 'speed', 'start', 'across', 'set'],
-  zone: ['from', 'to', 'watch', 'axis', 'within', 'set', 'armed'],
+  zone: ['from', 'to', 'watch', 'axis', 'within', 'building', 'set', 'armed'],
   watchdog: ['id', 'name', 'route', 'dwellMs', 'moveMs'],
   log: ['rate', 'fall', 'when', 'archive', 'linger', 'lockMs'],
   link: ['reach', 'known', 'when'],
@@ -557,6 +557,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         if (zn.axis !== undefined && zn.axis !== 'x' && zn.axis !== 'h') err(wz, 'axis is "x" (across) or "h" (up)');
         if (zn.within !== undefined && !(Array.isArray(zn.within) && zn.within.length === 2 && zn.within.every(num))) err(wz, 'within is [low, high] on the other axis (world units)');
         if (zn.armed !== undefined && typeof zn.armed !== 'boolean') err(wz, 'armed is true or false (raising events when the scene starts)');
+        if (zn.building !== undefined && (typeof zn.building !== 'string' || zn.watch !== 'player')) err(wz, 'building names the floors a watched player must stand on ("" the street)');
         if (zn.set !== undefined && !writable.has(zn.set)) err(wz, `set "${zn.set}": not a state key (it holds whether something is inside)`);
         for (const v of ZONE_VERBS) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a zone: leave it out of verbs`);
         for (const e of n.events ?? []) if (e !== 'enters' && e !== 'leaves') err(w, `a zone raises "enters" and "leaves", not "${e}"`);

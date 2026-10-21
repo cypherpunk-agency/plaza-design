@@ -420,7 +420,7 @@
       "type": "level.elevator",
       "props": {
         "height": 480,
-        "width": 34,
+        "width": 60,
         "device": "lift.car"
       },
       "placement": {
@@ -428,6 +428,108 @@
         "h": -190
       },
       "order": 230,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-metro",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": -190
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-b1",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": -90
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-lobby",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 0
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-f2",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 110
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-f3",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 200
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-roof",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 290
+      },
+      "order": 231,
       "layer": "set",
       "attach": {
         "instance": "tower-interior",
@@ -529,7 +631,7 @@
       "props": {
         "width": 460,
         "building": "tower",
-        "label": "2 \u00b7 Offices"
+        "label": "2 · Offices"
       },
       "placement": {
         "x": 520,
@@ -544,7 +646,7 @@
       "props": {
         "width": 460,
         "building": "tower",
-        "label": "3 \u00b7 Offices"
+        "label": "3 · Offices"
       },
       "placement": {
         "x": 520,
@@ -574,7 +676,7 @@
       "props": {
         "width": 460,
         "building": "tower",
-        "label": "B1 \u00b7 Service"
+        "label": "B1 · Service"
       },
       "placement": {
         "x": 520,
@@ -596,20 +698,6 @@
         "h": -190
       },
       "order": 340,
-      "layer": "logic"
-    },
-    {
-      "id": "tower-door",
-      "type": "level.door",
-      "props": {
-        "building": "tower",
-        "width": 30
-      },
-      "placement": {
-        "x": 750,
-        "h": 0
-      },
-      "order": 350,
       "layer": "logic"
     }
   ]

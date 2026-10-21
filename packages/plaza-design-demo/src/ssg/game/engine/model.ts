@@ -230,7 +230,7 @@ export class SceneModel {
   readonly movers: Movers;
   readonly zones = new Zones();
   /** Where the player stands in this scene (world x, height over the street), for zones; the game sets it each frame. */
-  player: { x: number; h: number } | null = null;
+  player: { x: number; h: number; building?: string } | null = null;
   private cuts = new Set<string>();
   private spans = new Map<string, number>();
   private ownModules: string[] = [];
@@ -898,6 +898,8 @@ export class SceneModel {
    * (the host redraws the meters, or everything when a lock ended).
    */
   tick(dt: number, live = true): boolean {
+    // the frame moves scene time on (`dt` ms): delayed signals, deadlines and movers follow it
+    this.time.advance(dt);
     if (live) { this.gameplayTick?.(dt,run=>this.withCue(run,true),'beforeNative');this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true),'afterNative');this.tickMechanisms(); }
     let moved = false;
     for (const d of this.devices.values()) {

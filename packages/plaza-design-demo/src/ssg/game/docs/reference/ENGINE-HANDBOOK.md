@@ -7,6 +7,12 @@ Tests exercise the current engine directly; completed migration evidence is not 
 
 ## The execution model
 
+There is one runtime: the game loop (runtime/game.ts) and each scene's model (SceneModel). Every frame
+the loop ticks every hosted scene (`SceneHost.tick`); the model's tick moves its scene time (engine/time.ts
+`SceneTime.advance`), and delayed signals, deadlines, movers, zones, clocks and watchdogs follow that time.
+No browser timer or second loop drives the game; pausing the engine holds scene time still. Wall-clock
+lockouts deliberately keep real time.
+
 A scene source binds artwork/entities to interactions, dialogue, objectives and exits. A user
 interaction, conversation choice or authorized native event requests a command. GameplaySession
 checks permission and conditions, stages actions and reactions atomically, commits once, then
@@ -121,12 +127,26 @@ local loopback service alone writes validated source. See [composer workflow](..
 ## Recipe: floors, stairs, lifts and buildings (levels)
 
 Place the level kit in the composition (ART-GUIDE §12, "Levels"); no code. Declared scenes compile it
-with engine/level.ts `compileLevel` into `SceneDef.level`; `LevelRuntime` is the single owner of
-vertical movement there (the floor under the player, rides, lift cars, building reveal) and
-runtime/game.ts only asks it. A scene without floors keeps one street line and its jump ledges. Arrival
-uses the spawn's or the exit marker's height (`spawnH`, `SceneExit.arriveH`). The renderer receives
-`View.level` (reveal, lift cars); the editor previews it at rest or opened (environment `inside`).
-Speeds, reach and door/reveal timing are kit fields (stairs, escalator, elevator, shell handle). The lift's mover drive (`moverDrives`) and the choice of what E acts on (`nearestPrompt`: a level prompt wins over a device on the same spot) live in engine/level.ts. Check with `pnpm test:game levels tower-lift`; the Tower lab (scenes/tower) is the example.
+with engine/level.ts `compileLevel` into `SceneDef.level` (data). There is no level runtime: the game
+loop keeps the player's place in the level (`LevelState`: floor, a walk on a flight or a ride in a car,
+each building's openness) beside the player and steps it with the pure functions in engine/level.ts
+(`levelStep`, `levelUp`/`levelDown`, `levelInteract`, `levelHints`, `levelView`). A lift car is only
+its Circuit mover in the scene's model (the elevator's `device`, required); the level reads where it
+is, asks it to go, and derives its doors from the mover's trip. A scene without floors keeps one street
+line and its jump ledges. Arrival uses the spawn's or the exit marker's height (`spawnH`,
+`SceneExit.arriveH`). The renderer receives `View.level` (reveal, lift cars, call buttons); the editor
+previews it at rest or opened (environment `inside`).
+
+What the player sees is what the player can use: a flight or lift attached to a building's interior
+handle works only from that building's floors. A building floor at street height is walked into from
+either side (floor `entry: walk`, the default; `door` keeps a `level.door`); its facade fades with the
+player's depth and inside the shell keeps only its `ghost` (none by default). Stairs: ↑/↓ steps on, ←/→
+walk along it and letting go stops. An escalator takes whoever walks onto its boarding end. In a car,
+↑/↓ choose a floor on its panel and E sends the car; `level.lift-button` pieces (their `lift` field)
+light while it is called to their floor. A zone may watch only one `building`'s floors. Stair speed,
+reach, door time and reveal speed are kit fields. What E acts on is `nearestPrompt` (a level prompt wins
+over a device on the same spot). Check with `pnpm test:game levels tower-lift circuit-movers`; the Tower
+lab (scenes/tower) is the example.
 
 ## Recipe: make or change any scene (folder scenes)
 

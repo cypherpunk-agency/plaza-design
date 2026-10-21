@@ -202,6 +202,8 @@ export interface ZoneData {
   axis?: 'x' | 'h';
   /** Optional limits on the other axis (a zone on one floor: `[0, 60]` in height). */
   within?: [number, number];
+  /** Only while the player stands on this building's floors (a level's `building`; '' the street); not on a flight or riding a lift car. Movers have no building. */
+  building?: string;
   /** A state key that holds whether something is inside. */
   set?: string;
   /** Raising events when the scene starts (default true). */

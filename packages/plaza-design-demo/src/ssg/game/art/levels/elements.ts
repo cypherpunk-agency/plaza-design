@@ -26,13 +26,16 @@ const rect = (x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: nu
 /** A walkable line. `building` names whose floor it is (empty: outdoors, the street); `label` is what a lift shows. */
 export const floorElement: Element = {
   type: 'level.floor', version: 1, label: 'Floor (walkable line)', category: 'scene', parts: [], libraryUse: 'reusable',
-  fields: { width: num('Width', 300, 10, 10000, 1, 'units'), building: text('Building (empty: outdoors)'), label: text('Name on the lift panel') },
+  fields: {
+    width: num('Width', 300, 10, 10000, 1, 'units'), building: text('Building (empty: outdoors)'), label: text('Name on the lift panel'),
+    entry: { kind: 'select', label: 'Entered (a building floor at street height)', options: ['walk', 'door'], default: 'walk' },
+  },
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: 4 }),
   anchors: p => ({ ...origin(), end: { x: Number(p.width), h: 0, role: 'mount' } }),
   draw() {},
 };
 
-/** Where the street meets a building's floor at the same height: ↑ steps in, ↓ steps out. */
+/** Where the street meets a door-only building floor at the same height: ↑ steps in, ↓ steps out. Walk-in floors need none. */
 export const doorElement: Element = {
   type: 'level.door', version: 1, label: 'Way into a building', category: 'scene', parts: [], libraryUse: 'reusable',
   fields: { building: text('Building'), width: num('Width', 24, 8, 200, 1, 'units') },
@@ -46,7 +49,7 @@ const handle = (type: string, label: string, fields: Record<string, Field> = {})
   type, version: 1, label, category: 'scene', parts: [], libraryUse: 'reusable', fields: { building: text('Building'), ...fields },
   bounds: () => ({ x: -6, h: 0, w: 12, tall: 12 }), anchors: origin, draw() {},
 });
-export const shellElement = handle('level.shell', 'Building shell (fades when inside)', { revealSpeed: num('Opens and closes (share per frame)', 0.07, 0.01, 1, 0.01) });
+export const shellElement = handle('level.shell', 'Building shell (fades when inside)', { revealSpeed: num('Opens and closes (share per frame)', 0.07, 0.01, 1, 0.01), ghost: num('Wall left while inside', 0, 0, 1, 0.01) });
 export const interiorElement = handle('level.interior', 'Building interior (shown when inside)');
 
 /** Steps from the foot (origin) to the top at (run, rise): a concrete flight with a stringer and a handrail. */
@@ -109,12 +112,13 @@ export const escalatorElement: Element = {
 
 /**
  * A lift shaft from its bottom stop (origin) up `height`: frame, cables, counterweight, the car at
- * `car` (units over the bottom) with doors open by `doors` (0..1). The engine moves both.
+ * `car` (units over the bottom) with doors open by `doors` (0..1). The car is a Circuit mover (`device`):
+ * its stops, speed and wiring live in the scene's devices; the doors follow its trips.
  */
 export const elevatorElement: Element = {
   type: 'level.elevator', version: 1, label: 'Lift between floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
-  fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units'), device: text('Driven by a mover (device.part; empty: it drives itself)'),
-    speed: num('Car speed when it drives itself (units per frame)', 1.4, 0.1, 10, 0.05), doorSpeed: num('Doors (share per frame)', 0.06, 0.01, 1, 0.01) },
+  fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units'), device: text('Car: the Circuit mover that moves it (device.part)'),
+    doorMs: num('Doors open in', 280, 40, 3000, 10, 'ms') },
   visualFields: { car: num('Car height over the bottom stop', 0, -100, 4000, 0.01), doors: num('Doors open', 0, 0, 1, 0.01) },
   bounds: p => ({ x: -Number(p.width) / 2 - 4, h: -4, w: Number(p.width) + 8, tall: Number(p.height) + 58 }),
   anchors: p => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),
@@ -126,10 +130,12 @@ export const elevatorElement: Element = {
     rect(x, v, -2, car + 46, 1, top - car - 46, C.rail); rect(x, v, 1, car + 46, 1, top - car - 46, C.rail);
     rect(x, v, hw - 6, Number(p.height) - car + 8, 4, 22, C.mid);
     rect(x, v, -hw - 4, top - 6, w + 8, 6, C.mid);
-    // the car: lit inside, a hairline frame, two sliding doors
+    // the car: lit inside, a hairline frame, a handrail and the floor panel, two sliding doors
     rect(x, v, -hw, car, w, 46, C.face);
     rect(x, v, -hw + 2, car + 2, w - 4, 42, '#a89a7c');
     rect(x, v, -hw + 3, car + 40, w - 6, 3, C.lamp);
+    rect(x, v, -hw + 3, car + 2, w - 6, 2, '#6f6552');
+    if (w >= 44) { rect(x, v, -hw + 4, car + 17, w - 8, 1, C.rail); rect(x, v, hw - 8, car + 20, 3, 12, C.mid); for (let i = 0; i < 4; i++) rect(x, v, hw - 7.5, car + 22 + i * 2.5, 2, 1, open > 0.5 && i === 0 ? C.go : C.lamp); }
     const leaf = (w / 2 - 2) * (1 - open);
     rect(x, v, -hw + 2, car + 2, leaf, 40, C.edge); rect(x, v, hw - 2 - leaf, car + 2, leaf, 40, C.edge);
     rect(x, v, -hw, car + 46, w, 2, C.rim);
@@ -138,4 +144,19 @@ export const elevatorElement: Element = {
   },
 };
 
-export const levelElements: Element[] = [floorElement, doorElement, shellElement, interiorElement, stairsElement, escalatorElement, elevatorElement];
+/** A call button beside a lift's doors on one floor: press E at the lift to call it; the button lights while the car is on its way here. */
+export const liftButtonElement: Element = {
+  type: 'level.lift-button', version: 1, label: 'Lift call button', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+  fields: { lift: text('Lift (its instance id)') },
+  visualFields: { lit: num('Lit (called here)', 0, 0, 1, 1) },
+  bounds: () => ({ x: -4, h: 20, w: 8, tall: 14 }),
+  anchors: origin,
+  draw: (x, v, _p, s) => {
+    const lit = Number(s.lit ?? 0) > 0.5;
+    rect(x, v, -3, 22, 6, 11, C.mid); rect(x, v, -3, 22, 6, 1, C.edge); rect(x, v, -3, 32, 6, 1, C.rim);
+    rect(x, v, -1, 28, 2, 2, lit ? C.lamp : C.edge); rect(x, v, -1, 24, 2, 2, lit ? C.lamp : C.edge);
+    if (lit) { x.fillStyle = 'rgba(255,214,138,.25)'; x.fillRect(v.sx(-5), v.y(35), Math.max(1, v.sx(5) - v.sx(-5)), Math.max(1, v.y(20) - v.y(35))); }
+  },
+};
+
+export const levelElements: Element[] = [floorElement, doorElement, shellElement, interiorElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement];

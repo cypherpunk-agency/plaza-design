@@ -1,7 +1,7 @@
 /**
  * Zones: sense parts that watch a stretch of the scene (docs/design/CIRCUIT-VOCABULARY.md). A zone
  * runs `from`..`to` along an axis (`x` across the scene, `h` up it), optionally `within` limits on
- * the other axis (one floor of a tower), and watches the player or a
+ * the other axis (one floor of a tower) or a `building` whose floors the player must stand on, and watches the player or a
  * mover (`device.noun`). It raises `enters` and `leaves` (when the part lists them), and `set`
  * writes true or false into a state key. The engine gives it `arm` and `disarm`: a disarmed zone
  * raises nothing.
@@ -21,7 +21,8 @@ export interface Crossing { dev: string; noun: string; event: 'enters' | 'leaves
 export const ZONE_VERBS = ['arm', 'disarm'] as const;
 
 /** Where a watched thing is: the player, or a mover's key. Undefined: not here (no crossing). */
-export type Locate = (watch: string) => { x: number; h: number } | undefined;
+/** `building`: the building whose floor the player stands on ('' the street; undefined on a flight or in a lift car). */
+export type Locate = (watch: string) => { x: number; h: number; building?: string } | undefined;
 
 export class Zones {
   private zones = new Map<string, Zone>();
@@ -56,7 +57,7 @@ export class Zones {
       const at = locate(z.data.watch);
       if (at === undefined) continue;
       const h = z.data.axis === 'h', p = h ? at.h : at.x, q = h ? at.x : at.h, w = z.data.within;
-      const now = p >= Math.min(z.data.from, z.data.to) && p <= Math.max(z.data.from, z.data.to) && (!w || (q >= Math.min(w[0], w[1]) && q <= Math.max(w[0], w[1])));
+      const now = p >= Math.min(z.data.from, z.data.to) && p <= Math.max(z.data.from, z.data.to) && (!w || (q >= Math.min(w[0], w[1]) && q <= Math.max(w[0], w[1]))) && (z.data.building === undefined || at.building === z.data.building);
       const was = z.inside;
       z.inside = now;
       if (was === null || was === now || !z.armed) continue;

@@ -88,6 +88,8 @@ export class Movers {
   }
 
   home(key: string) { const m = this.movers.get(key); return m ? home(m.data) : undefined; }
+  /** When its last trip set off and when it arrives (scene time, ms): what follows it (a lift's doors) reads these. */
+  trip(key: string) { const m = this.movers.get(key); return m ? { t0: m.t0, t1: m.t1 } : undefined; }
 
   /** The arrivals since the last tick. */
   tick(): Arrival[] {

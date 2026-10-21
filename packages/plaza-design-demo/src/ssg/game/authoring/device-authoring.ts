@@ -69,6 +69,7 @@ export function mountDeviceAuthoring(host:HTMLElement,context:WorkbenchContext,s
   if(key==='mover'||key==='zone'){if(!('set'in value))form.button(parent,'Write a state key from '+name,()=>{const state=Object.keys(localState())[0];if(!state)throw Error('Declare a native state first');edit('Add state key',d=>{get(d,path).set=state;});});}
   if(key==='clock'&&!('once'in value))form.button(parent,'Make '+name+' fire once',()=>edit('One-shot clock',d=>{get(d,path).once=true;}));
   if(key==='zone'&&!('within'in value))form.button(parent,'Limit '+name+' on the other axis',()=>edit('Limit zone',d=>{get(d,path).within=[0,60];}));
+  if(key==='zone'&&!('building'in value)&&value.watch==='player')form.button(parent,'Watch '+name+' only inside a building',()=>edit('Zone in a building',d=>{get(d,path).building='';}));
   if(key==='mover'&&!('across'in value))form.button(parent,'Place '+name+' on the other axis',()=>edit('Place mover',d=>{get(d,path).across=0;}));
   const nativeCase=path.at(-2)==='on'||typeof path.at(-1)==='number'&&path.at(-3)==='on';
   if(nativeCase){form.text(parent,name+' condition',value.if??'',v=>edit('Edit native case condition',d=>{const row=get(d,path);if(v.trim())row.if=v.trim();else delete row.if;}));if(path.at(-2)==='on')form.button(parent,'Add case to '+name,()=>edit('Expand native case list',d=>{const owner=get(d,path.slice(0,-1)),current=owner[key];owner[key]=[{if:'signal',do:[],say:['','Nothing happens yet.']},current];}));}

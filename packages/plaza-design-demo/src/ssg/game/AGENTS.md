@@ -12,6 +12,13 @@ have been retired; do not recreate them or restart the completed consolidation.
 
 ## Required implementation boundaries
 
+- There is one runtime: the game loop (runtime/game.ts) and the scene model (SceneModel: the
+  Circuit's devices, movers, zones, clocks). A new feature never brings its own runtime, engine,
+  update loop, scheduler or class that keeps per-frame state beside them. It is source data compiled
+  into what exists, plus pure functions the game loop or the model call: player movement state lives
+  with the player in the game loop, anything that moves is a mover, any place that notices is a zone.
+  Levels are the example: engine/level.ts compiles the kit and holds pure rules; a lift car is only
+  its mover.
 - Ordinary interactions, dialogue, objectives, access, rewards, prices, state and progression are
   authored scene/gameplay/device/world documents executed by existing shared compilers and
   engine/gameplay. Start there. runtime/game.ts orchestrates systems; it is not the place for a
