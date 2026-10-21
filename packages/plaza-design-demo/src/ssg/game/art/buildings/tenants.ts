@@ -171,6 +171,19 @@ export const TENANTS: Record<string, Tenant> = {
       }
     },
   },
+  lobby: {
+    label: 'Residence lobby (the Spire)', sign: 'RESIDENCE', col: '216,180,90', lit: true,
+    interior(x, y, bx, w) {
+      // cold white light on black stone, a gold line along the desk, one guard station; nobody waiting
+      x.fillStyle = 'rgba(220,235,245,.1)'; x.fillRect(bx, y(54), w, 48);
+      x.fillStyle = 'rgba(255,255,255,.55)'; x.fillRect(bx + 4, y(53), w - 8, 1);
+      x.fillStyle = 'rgba(0,0,0,.35)'; for (let k = bx + 14; k < bx + w - 6; k += 22) x.fillRect(k, y(52), 1, 46);
+      const dw = Math.min(40, w - 16), dx = bx + Math.round((w - dw) / 2);
+      x.fillStyle = '#0c0d10'; x.fillRect(dx, y(18), dw, 12); x.fillStyle = 'rgba(216,180,90,.75)'; x.fillRect(dx, y(18), dw, 1);
+      x.fillStyle = 'rgba(207,230,240,.6)'; x.fillRect(dx + dw - 8, y(24), 5, 4);
+      x.fillStyle = 'rgba(216,180,90,.35)'; x.fillRect(bx + 4, y(7), w - 8, 1);
+    },
+  },
   empty: {
     label: 'Empty unit', sign: '', col: '120,110,100', lit: false,
     interior(x, y, bx, w) {

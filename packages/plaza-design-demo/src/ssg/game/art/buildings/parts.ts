@@ -13,6 +13,10 @@ import { windowLit, type Light } from '../../world/light';
 import { glass } from '../environment/sky';
 import { box } from '../core/primitives';
 
+/** The trim colour (r,g,b) the parts draw rims, courses and bands in: Downtown's rust by default; a front sets its own while it paints. */
+export let TRIM = '194,65,12';
+export const setTrim = (rgb: string) => { const was = TRIM; TRIM = rgb; return was; };
+
 type Y = (h: number) => number;
 const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a + ')';
 
@@ -36,9 +40,9 @@ export function framedWindow(x: CanvasRenderingContext2D, wx: number, wy: number
     if (light < 0.35) { x.fillStyle = 'rgba(0,0,0,.4)'; for (let b = 3; b < 27; b += 3) x.fillRect(wx + 1, wy + b, 12, 1); }
   }
   x.fillStyle = '#0a0503'; x.fillRect(wx, wy + 11, 14, 1); x.fillRect(wx + 7, wy, 1, 28);
-  x.strokeStyle = 'rgba(194,65,12,.35)'; x.strokeRect(wx + 0.5, wy + 0.5, 13, 27);
-  x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(wx - 1, wy + 28, 16, 2);
-  if (ac) { x.fillStyle = '#16110d'; x.fillRect(wx + 2, wy + 31, 10, 6); x.strokeStyle = 'rgba(194,65,12,.4)'; x.strokeRect(wx + 2.5, wy + 31.5, 9, 5); }
+  x.strokeStyle = 'rgba(' + TRIM + ',.35)'; x.strokeRect(wx + 0.5, wy + 0.5, 13, 27);
+  x.fillStyle = 'rgba(' + TRIM + ',.5)'; x.fillRect(wx - 1, wy + 28, 16, 2);
+  if (ac) { x.fillStyle = '#16110d'; x.fillRect(wx + 2, wy + 31, 10, 6); x.strokeStyle = 'rgba(' + TRIM + ',.4)'; x.strokeRect(wx + 2.5, wy + 31.5, 9, 5); }
   return light;
 }
 
@@ -75,7 +79,7 @@ export function punchedWindow(x: CanvasRenderingContext2D, wx: number, wy: numbe
   else if (light >= 1) { x.fillStyle = 'rgba(150,170,220,' + (0.12 + 0.07 * Math.sin(t * 0.05 + seed)) + ')'; x.fillRect(wx + 1, wy + 2, ww - 2, wh - 3); }
   else { x.fillStyle = 'rgba(255,150,70,' + (0.14 + 0.2 * light) + ')'; x.fillRect(wx + 1, wy + 2, ww - 2, wh - 3); x.fillStyle = 'rgba(40,18,10,.45)'; x.fillRect(wx + 1, wy + 2, ww - 2, Math.round(wh * 0.3)); }
   x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(wx, wy, ww, 2);
-  x.fillStyle = 'rgba(194,65,12,.4)'; x.fillRect(wx - 2, wy - 2, ww + 4, 1); x.fillRect(wx - 1, wy + wh, ww + 2, 2);
+  x.fillStyle = 'rgba(' + TRIM + ',.4)'; x.fillRect(wx - 2, wy - 2, ww + 4, 1); x.fillRect(wx - 1, wy + wh, ww + 2, 2);
   return light;
 }
 
@@ -106,7 +110,7 @@ export function bay(x: CanvasRenderingContext2D, y: Y, bx: number, w: number, ki
     x.fillStyle = 'rgba(255,136,0,.1)'; for (let h = 3; h < 48; h += 3) x.fillRect(bx, y(h), w, 1);
     x.fillStyle = 'rgba(255,136,0,.35)'; x.fillRect(bx, y(2), w, 2);
     x.fillStyle = '#1a0f08'; x.fillRect(bx - 2, y(54), w + 4, 6);
-    x.strokeStyle = 'rgba(194,65,12,.5)'; x.strokeRect(bx - 1.5, y(54) + 0.5, w + 3, 5);
+    x.strokeStyle = 'rgba(' + TRIM + ',.5)'; x.strokeRect(bx - 1.5, y(54) + 0.5, w + 3, 5);
   } else {
     // A door on a step. The sealed one (the penthouse) has no handle and no glass.
     x.fillStyle = '#1a0d05'; x.fillRect(bx - 3, y(3), w + 6, 3);
@@ -118,7 +122,7 @@ export function bay(x: CanvasRenderingContext2D, y: Y, bx: number, w: number, ki
       x.fillStyle = 'rgba(255,217,165,.7)'; x.fillRect(bx + w - 6, y(28), 2, 4);
       x.fillStyle = 'rgba(255,200,120,.85)'; x.fillRect(bx + Math.floor(w / 2) - 1, y(57), 3, 2);
     } else {
-      x.fillStyle = 'rgba(194,65,12,.45)'; x.fillRect(bx + Math.floor(w / 2), y(50), 1, 46);
+      x.fillStyle = 'rgba(' + TRIM + ',.45)'; x.fillRect(bx + Math.floor(w / 2), y(50), 1, 46);
       x.fillStyle = 'rgba(255,217,165,.35)'; x.fillRect(bx + w + 3, y(36), 8, 6);
     }
   }
@@ -140,7 +144,7 @@ export function tag(x: CanvasRenderingContext2D, y: Y, sx0: number, base: number
 /** Thin storey bands across a wall from `ground` up every `storey`, below the visible height `hv`. */
 export function storeyBands(x: CanvasRenderingContext2D, y: Y, sx: number, w: number, h: number, hv: number, ground: number, storey: number) {
   const storeys = Math.floor((h - ground) / storey);
-  x.fillStyle = 'rgba(194,65,12,.22)';
+  x.fillStyle = 'rgba(' + TRIM + ',.22)';
   for (let s = 0; s < storeys; s++) { const hh = ground + s * storey; if (hh < hv) x.fillRect(sx + 1, y(hh) - 1, w - 2, 2); }
 }
 /** The climbable annex's bright roof edge and rim, so it reads as somewhere to stand. */
@@ -151,12 +155,12 @@ export function ledgeEdge(x: CanvasRenderingContext2D, sx: number, top: number, 
 /** A slab cornice standing out 2 units each side at the wall's top. */
 export function cornice(x: CanvasRenderingContext2D, sx: number, top: number, w: number) {
   x.fillStyle = '#140a05'; x.fillRect(sx - 2, top, w + 4, 4);
-  x.fillStyle = 'rgba(194,65,12,.5)'; x.fillRect(sx - 2, top, w + 4, 1);
+  x.fillStyle = 'rgba(' + TRIM + ',.5)'; x.fillRect(sx - 2, top, w + 4, 1);
 }
 /** The shop fascia band under the first floor (`ground` is the first floor's height). */
 export function fascia(x: CanvasRenderingContext2D, y: Y, sx: number, w: number, ground: number) {
   x.fillStyle = '#100804'; x.fillRect(sx + 1, y(ground) + 1, w - 2, 11);
-  x.fillStyle = 'rgba(194,65,12,.35)'; x.fillRect(sx + 1, y(ground - 12), w - 2, 1);
+  x.fillStyle = 'rgba(' + TRIM + ',.35)'; x.fillRect(sx + 1, y(ground - 12), w - 2, 1);
 }
 
 /**
@@ -166,10 +170,10 @@ export function fascia(x: CanvasRenderingContext2D, y: Y, sx: number, w: number,
  */
 export function wallTexture(x: CanvasRenderingContext2D, brick: boolean, l: number, r: number, top: number, bottom: number, patches: readonly [number, number][], seamY: readonly number[], seamX: readonly number[]) {
   if (brick) {
-    x.fillStyle = 'rgba(194,65,12,.07)';
+    x.fillStyle = 'rgba(' + TRIM + ',.07)';
     for (let yy = top + 4; yy < bottom; yy += 4) x.fillRect(l, yy, r - l, 1);
     // joints only in a few patches, so the wall stays calm
-    x.fillStyle = 'rgba(194,65,12,.13)';
+    x.fillStyle = 'rgba(' + TRIM + ',.13)';
     for (const [px, py] of patches) for (let row = 0; row < 4; row++) for (let jx = (row % 2) * 4; jx < 28; jx += 8) x.fillRect(px + jx, py + row * 4 + 1, 1, 3);
   } else {
     // cast concrete: panel seams
@@ -183,9 +187,9 @@ export function wallTexture(x: CanvasRenderingContext2D, brick: boolean, l: numb
 
 /** A wall AC unit (14 x 10) centred on `c`, its bottom at height `h`, with a damp stain under it. From the yard. */
 export function acUnit(x: CanvasRenderingContext2D, y: Y, c: number, h: number) {
-  x.fillStyle = '#140a04'; x.fillRect(c - 7, y(h + 10), 14, 10); x.strokeStyle = 'rgba(194,65,12,.5)'; x.strokeRect(c - 6.5, y(h + 10) + 0.5, 13, 9);
-  x.fillStyle = 'rgba(194,65,12,.3)'; for (let k = -4; k <= 4; k += 3) x.fillRect(c + k, y(h + 8), 1, 6);
-  x.fillStyle = 'rgba(194,65,12,.08)'; x.fillRect(c - 1, y(h), 2, 18);
+  x.fillStyle = '#140a04'; x.fillRect(c - 7, y(h + 10), 14, 10); x.strokeStyle = 'rgba(' + TRIM + ',.5)'; x.strokeRect(c - 6.5, y(h + 10) + 0.5, 13, 9);
+  x.fillStyle = 'rgba(' + TRIM + ',.3)'; for (let k = -4; k <= 4; k += 3) x.fillRect(c + k, y(h + 8), 1, 6);
+  x.fillStyle = 'rgba(' + TRIM + ',.08)'; x.fillRect(c - 1, y(h), 2, 18);
 }
 
 /**
@@ -198,15 +202,15 @@ export function fireEscape(x: CanvasRenderingContext2D, at: (dx: number) => numb
   x.lineWidth = 1;
   for (let h = from, i = 0; y(h + 10) >= stop; h += storey, i++) {
     const l = at(0);
-    x.fillStyle = 'rgba(194,65,12,.7)'; x.fillRect(l, y(h), w, 2);
-    x.fillStyle = 'rgba(194,65,12,.4)'; x.fillRect(l, y(h + 10), w, 1);
+    x.fillStyle = 'rgba(' + TRIM + ',.7)'; x.fillRect(l, y(h), w, 2);
+    x.fillStyle = 'rgba(' + TRIM + ',.4)'; x.fillRect(l, y(h + 10), w, 1);
     for (let xx = 0; xx <= w; xx += 6) x.fillRect(l + xx, y(h + 10), 1, 10);
     if (y(h + storey + 10) >= stop) {
       const a = i % 2 ? 10 : w - 10, b = i % 2 ? 48 : w - 48;
-      x.strokeStyle = 'rgba(194,65,12,.5)'; x.beginPath(); x.moveTo(at(a) + 0.5, y(h)); x.lineTo(at(b) + 0.5, y(h + storey)); x.stroke();
+      x.strokeStyle = 'rgba(' + TRIM + ',.5)'; x.beginPath(); x.moveTo(at(a) + 0.5, y(h)); x.lineTo(at(b) + 0.5, y(h + storey)); x.stroke();
     }
   }
-  x.fillStyle = 'rgba(194,65,12,.45)';
+  x.fillStyle = 'rgba(' + TRIM + ',.45)';
   x.fillRect(at(ladder), y(from), 1, 34); x.fillRect(at(ladder + 5), y(from), 1, 34);
   for (let h = from - 32; h < from; h += 5) x.fillRect(at(ladder), y(h), 6, 1);
 }
@@ -245,11 +249,11 @@ export function conduit(x: CanvasRenderingContext2D, l: number, r: number, cy: n
     for (let a = l; a < r; a += span) { const b = Math.min(r, a + span), sag = 2 + ((seed + k + a) % 3); x.moveTo(a, cy + k * 2); x.quadraticCurveTo((a + b) / 2, cy + k * 2 + sag, b, cy + k * 2); }
     x.stroke();
   }
-  x.fillStyle = 'rgba(194,65,12,.55)'; for (let a = l; a <= r; a += span) x.fillRect(Math.round(a) - 1, cy - 1, 3, n * 2 + 1);
+  x.fillStyle = 'rgba(' + TRIM + ',.55)'; for (let a = l; a <= r; a += span) x.fillRect(Math.round(a) - 1, cy - 1, 3, n * 2 + 1);
   x.fillStyle = 'rgba(255,170,90,.18)'; x.fillRect(l, cy, r - l, 1);
   if (riser > l && riser < r && riserTop < cy) {
     x.fillStyle = 'rgba(30,24,22,.95)'; x.fillRect(riser, riserTop, 2, cy - riserTop);
-    box(x, riser - 4, cy - 6, 10, 8, '#16100c', 'rgba(194,65,12,.6)');
+    box(x, riser - 4, cy - 6, 10, 8, '#16100c', 'rgba(' + TRIM + ',.6)');
     x.fillStyle = 'rgba(255,190,60,.8)'; x.fillRect(riser - 2, cy - 4, 1, 1);
   }
 }
@@ -275,20 +279,20 @@ export function planter(x: CanvasRenderingContext2D, px: number, py: number, w: 
 export function roofTank(x: CanvasRenderingContext2D, cx: number, base: number, w: number, fill: string) {
   const h = Math.round(w * 0.9), l = Math.round(cx - w / 2);
   x.fillStyle = fill; x.fillRect(l + 2, base - 10, 2, 10); x.fillRect(l + w - 4, base - 10, 2, 10);
-  box(x, l, base - 10 - h, w, h, fill, 'rgba(194,65,12,.5)');
+  box(x, l, base - 10 - h, w, h, fill, 'rgba(' + TRIM + ',.5)');
   x.fillStyle = 'rgba(0,0,0,.3)'; for (let k = 4; k < h; k += 5) x.fillRect(l + 1, base - 10 - h + k, w - 2, 1);
   x.fillStyle = fill; x.beginPath(); x.moveTo(l - 1, base - 10 - h); x.lineTo(cx, base - 16 - h); x.lineTo(l + w + 1, base - 10 - h); x.closePath(); x.fill();
-  x.strokeStyle = 'rgba(194,65,12,.5)'; x.stroke();
+  x.strokeStyle = 'rgba(' + TRIM + ',.5)'; x.stroke();
 }
 /** A roof vent stack with its cap. */
 export function roofVent(x: CanvasRenderingContext2D, cx: number, base: number, h: number, fill: string) {
-  box(x, cx - 3, base - h, 6, h, fill, 'rgba(194,65,12,.45)');
-  box(x, cx - 5, base - h - 3, 10, 3, fill, 'rgba(194,65,12,.55)');
+  box(x, cx - 3, base - h, 6, h, fill, 'rgba(' + TRIM + ',.45)');
+  box(x, cx - 5, base - h - 3, 10, 3, fill, 'rgba(' + TRIM + ',.55)');
 }
 /** A satellite dish on a short mast, facing left or right. */
 export function roofDish(x: CanvasRenderingContext2D, cx: number, base: number, r: number, face: 1 | -1, fill: string) {
   x.fillStyle = fill; x.fillRect(cx - 1, base - r, 2, r);
   x.beginPath(); x.ellipse(cx + face * 2, base - r - 2, r * 0.45, r, face * 0.5, 0, Math.PI * 2); x.fill();
-  x.strokeStyle = 'rgba(194,65,12,.55)'; x.stroke();
+  x.strokeStyle = 'rgba(' + TRIM + ',.55)'; x.stroke();
   x.fillStyle = 'rgba(200,190,170,.6)'; x.fillRect(cx + face * (r * 0.6), base - r - 3, 2, 2);
 }

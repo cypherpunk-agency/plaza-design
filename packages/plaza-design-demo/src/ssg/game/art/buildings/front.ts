@@ -25,13 +25,15 @@ import { CURTAINS, PACKS } from '../assemblies/construction';
 import * as P from './parts';
 import { TENANTS, seededTenant, shopWindow } from './tenants';
 
-export const SKINS = ['brick', 'concrete', 'tenement', 'panel', 'glass'] as const;
+export const SKINS = ['brick', 'concrete', 'tenement', 'panel', 'glass', 'timber', 'stone'] as const;
+/** The skins a seeded ('auto') front picks from; timber and stone (the Old Quarter) are only chosen by name. */
+const SEEDED_SKINS: readonly Skin[] = ['brick', 'concrete', 'tenement', 'panel', 'glass'];
 export type Skin = typeof SKINS[number];
 export const WINDOW_KINDS = ['punched', 'framed', 'curtained', 'none'] as const;
 export type WindowKind = typeof WINDOW_KINDS[number];
 export const BAY_KINDS = ['door', 'glass', 'shutter', 'tagged', 'sealed'] as const;
 export type FrontBayKind = typeof BAY_KINDS[number];
-export const ROOFS = ['flat', 'parapet', 'cornice', 'stepped', 'ledge'] as const;
+export const ROOFS = ['flat', 'parapet', 'cornice', 'stepped', 'ledge', 'tiled'] as const;
 export type Roof = typeof ROOFS[number];
 export const GEAR = ['tank', 'vent', 'dish', 'ac'] as const;
 export type Gear = typeof GEAR[number];
@@ -64,11 +66,17 @@ export interface FrontSpec {
   seed: number;
   /** Areas kept clear of windows, e.g. behind a sign that has no mask of its own. */
   clear: Rect[];
+  /** The trim (r,g,b): rims, courses, bands, mullions. The district's colour: rust Downtown, gold in the Spire. */
+  trim: string;
+  /** The wall colour (#rrggbb); empty: the skin's own dark tone. */
+  wall: string;
+  /** The rooms' light behind glass: warm lamps, or the cold white of the Spire's offices. */
+  rooms: 'warm' | 'cold';
 }
 
 export const FRONT_DEFAULTS: FrontSpec = {
   w: 150, h: 340, storey: 66, ground: 76, skin: 'auto', windows: 'auto', columns: 0, bays: 'auto', roof: 'auto', gear: 'auto',
-  escape: 'auto', balconies: 'auto', fascia: true, density: 0.5, lit: 0.45, seed: 1, clear: [],
+  escape: 'auto', balconies: 'auto', fascia: true, density: 0.5, lit: 0.45, seed: 1, clear: [], trim: '194,65,12', wall: '', rooms: 'warm',
 };
 
 interface Cell { x: number; w: number; wh: number; sill: number; light: number; state: number; col: string; ac: boolean; phase: number; seed: number; plant: boolean }
@@ -85,7 +93,7 @@ interface Shape {
 const pick = <T,>(r: () => number, a: readonly T[]) => a[Math.floor(r() * a.length)];
 const hex = (n: number) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, '0');
 /** Dark wall colours by skin: one family each, nudged by the seed so neighbours differ. */
-const FILLS: Record<Skin, [number, number, number]> = { brick: [24, 10, 6], concrete: [18, 16, 14], tenement: [22, 14, 9], panel: [15, 14, 19], glass: [8, 8, 13] };
+const FILLS: Record<Skin, [number, number, number]> = { brick: [24, 10, 6], concrete: [18, 16, 14], tenement: [22, 14, 9], panel: [15, 14, 19], glass: [8, 8, 13], timber: [30, 24, 17], stone: [22, 20, 18] };
 const tone = (skin: Skin, r: () => number) => { const [a, b, c] = FILLS[skin], d = Math.round(r() * 4) - 2; return '#' + hex(a + d) + hex(b + Math.round(d / 2)) + hex(c + (r() < 0.5 ? 0 : 1)); };
 
 const SHAPES = new Map<string, Shape>();
@@ -94,14 +102,15 @@ export function shapeOf(f: FrontSpec): Shape {
   const key = JSON.stringify(f);
   const had = SHAPES.get(key); if (had) return had;
   const r = rng((f.seed * 7919 + 13) % 233280), d = Math.max(0, Math.min(1, f.density));
-  const skin: Skin = f.skin === 'auto' ? pick(r, SKINS) : f.skin;
+  const skin: Skin = f.skin === 'auto' ? pick(r, SEEDED_SKINS) : f.skin;
   const windows: WindowKind = f.windows !== 'auto' ? f.windows
-    : skin === 'glass' ? 'none' : skin === 'tenement' ? 'curtained' : skin === 'panel' ? 'punched'
+    : skin === 'glass' ? 'none' : skin === 'tenement' ? 'curtained' : skin === 'panel' || skin === 'stone' ? 'punched' : skin === 'timber' ? 'framed'
     : skin === 'brick' ? (r() < 0.6 ? 'framed' : 'curtained') : (r() < 0.5 ? 'punched' : 'framed');
   const roof: Roof = f.roof !== 'auto' ? f.roof
+    : skin === 'timber' ? 'tiled' : skin === 'stone' ? (r() < 0.6 ? 'cornice' : 'tiled')
     : skin === 'brick' ? (r() < 0.6 ? 'cornice' : 'parapet') : skin === 'tenement' ? (r() < 0.5 ? 'parapet' : 'flat')
     : skin === 'glass' ? (r() < 0.6 ? 'stepped' : 'flat') : skin === 'panel' ? 'flat' : pick(r, ['flat', 'parapet', 'stepped'] as const);
-  const fill = tone(skin, r), storeys = Math.max(0, Math.floor((f.h - f.ground) / f.storey));
+  const fill = /^#[0-9a-f]{6}$/i.test(f.wall) ? f.wall : tone(skin, r), storeys = Math.max(0, Math.floor((f.h - f.ground) / f.storey));
   const setback = roof === 'stepped' && storeys > 1 && f.w > 70 ? Math.round(f.w * (0.1 + r() * 0.08)) : 0;
   // the window grid: one size per building, an even or paired rhythm, centred
   const ww = windows === 'framed' ? 14 : windows === 'curtained' ? 14 + Math.round(r() * 8) : 12 + Math.round(r() * 6);
@@ -162,7 +171,9 @@ export function shapeOf(f: FrontSpec): Shape {
 /** A storey's floor height (storey 1 is the first above the shop floor). */
 export const storeyFloor = (f: FrontSpec, k: number) => f.ground + (k - 1) * f.storey;
 /** The top of the wall including a parapet, for bounds and the roof anchor. */
-export const wallTop = (f: FrontSpec) => f.h + (shapeOf(f).roof === 'parapet' ? 10 : 0);
+export const wallTop = (f: FrontSpec) => { const roof = shapeOf(f).roof; return f.h + (roof === 'parapet' ? 10 : roof === 'tiled' ? tiledRise(f.w) : 0); };
+/** How high a tiled roof rises over the wall: a low pitch, capped so a wide front does not grow a barn roof. */
+const tiledRise = (w: number) => Math.min(34, Math.round(w * 0.22));
 
 export interface FrontLook {
   t: number; lighting: Light;
@@ -178,6 +189,10 @@ const overlaps = (rs: readonly Rect[], x0: number, x1: number, h0: number, h1: n
 
 /** Paint a front in its own frame (the canvas origin at its foot, left edge). */
 export function paintFront(x: CanvasRenderingContext2D, f: FrontSpec, o: FrontLook) {
+  const was = P.setTrim(f.trim || FRONT_DEFAULTS.trim);
+  try { paintFrontIn(x, f, o); } finally { P.setTrim(was); }
+}
+function paintFrontIn(x: CanvasRenderingContext2D, f: FrontSpec, o: FrontLook) {
   const S = shapeOf(f), y = (h: number) => -h, [, hi] = visible(x), top = Math.min(f.h, hi + 2), w = f.w;
   const masks: Rect[] = [...(o.masks ?? []), ...f.clear, ...S.screens.map(s => [s.x - s.w / 2 - 2, s.x + s.w / 2 + 2, s.h - 2, s.h + s.tall + 6] as Rect)];
   const body = (h0: number, h1: number, l: number, rr: number) => { x.fillStyle = S.fill; x.fillRect(l, y(h1), rr - l, h1 - h0); };
@@ -191,16 +206,18 @@ export function paintFront(x: CanvasRenderingContext2D, f: FrontSpec, o: FrontLo
   if (S.skin === 'brick') for (const [px, ph] of S.patches) if (ph < wallTo - 20) { x.fillStyle = px % 3 ? 'rgba(0,0,0,.16)' : 'rgba(255,120,70,.05)'; x.fillRect(px + 4, y(ph + 8), 8 + (px % 7), 8); }
   if (S.skin === 'tenement') for (const [px, ph] of S.patches) if (ph < wallTo - 16) { x.fillStyle = px % 2 ? 'rgba(255,217,165,.05)' : 'rgba(0,0,0,.18)'; x.fillRect(px, y(ph + 14), 22 + (px % 9), 14 + (ph % 7)); }
   if (S.skin === 'panel') { x.fillStyle = 'rgba(0,0,0,.3)'; for (const sx of S.seamX) x.fillRect(sx, y(wallTo), 1, wallTo - f.ground); }
+  if (S.skin === 'timber') timberFrame(x, f, S, wallTo);
+  if (S.skin === 'stone') stoneCourses(x, f, S, wallTo);
   if (S.skin === 'concrete') for (const [sx, sh, len] of S.stains) if (sh < wallTo) { x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(sx, y(sh), 3, Math.min(len * 2, sh)); }
   if (S.roof === 'ledge') P.ledgeEdge(x, 0, y(top), w, top);
-  else { x.strokeStyle = 'rgba(194,65,12,.45)'; x.lineWidth = 1; x.strokeRect(0.5, y(wallTo) + 0.5, w - 1, wallTo); if (S.setback && top > stepAt) x.strokeRect(S.setback + 0.5, y(top) + 0.5, w - 2 * S.setback - 1, top - stepAt); }
+  else { x.strokeStyle = 'rgba(' + P.TRIM + ',.45)'; x.lineWidth = 1; x.strokeRect(0.5, y(wallTo) + 0.5, w - 1, wallTo); if (S.setback && top > stepAt) x.strokeRect(S.setback + 0.5, y(top) + 0.5, w - 2 * S.setback - 1, top - stepAt); }
   if (S.skin !== 'glass' && S.skin !== 'panel' && S.roof !== 'ledge') P.storeyBands(x, y, 0, w, f.h, top, f.ground, f.storey);
   // the storeys
   for (let s = 0; s < S.storeys; s++) {
     const floor = f.ground + s * f.storey; if (floor > top) break;
     const inset = S.setback && floor >= stepAt ? S.setback : 0, l = inset, rr = w - inset;
     if (S.skin === 'panel') { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l + 1, y(floor + 2), rr - l - 2, 3); x.fillStyle = 'rgba(255,200,150,.1)'; x.fillRect(l + 1, y(floor + 3), rr - l - 2, 1); }
-    if (S.skin === 'glass') { curtainFloor(x, o, l, rr, floor, f.storey, S.mullion, f.seed * 31 + s, f.lit, masks); continue; }
+    if (S.skin === 'glass') { curtainFloor(x, o, l, rr, floor, f.storey, S.mullion, f.seed * 31 + s, f.lit, masks, f.rooms === 'cold' ? '220,232,245' : '255,190,120'); continue; }
     for (const c of S.rows[s]) {
       if (c.x < l || c.x + c.w > rr) continue;
       const h0 = floor + c.sill, h1 = h0 + c.wh;
@@ -260,29 +277,31 @@ function roofOf(x: CanvasRenderingContext2D, f: FrontSpec, S: Shape, y: (h: numb
     else P.acUnit(x, y, g.x, f.h);
   }
   if (S.roof === 'parapet') {
-    box(x, l, top - 10, rr - l, 10, S.fill, 'rgba(194,65,12,.45)');
-    x.fillStyle = 'rgba(194,65,12,.6)'; x.fillRect(l - 1, top - 11, rr - l + 2, 2);
+    box(x, l, top - 10, rr - l, 10, S.fill, 'rgba(' + P.TRIM + ',.45)');
+    x.fillStyle = 'rgba(' + P.TRIM + ',.6)'; x.fillRect(l - 1, top - 11, rr - l + 2, 2);
     x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(rr - 14, top - 3, 4, 2);
   } else if (S.roof === 'cornice') {
     P.cornice(x, l, top, rr - l);
-    x.fillStyle = 'rgba(194,65,12,.3)'; for (let k = l + 2; k < rr - 2; k += 6) x.fillRect(k, top + 5, 2, 2);
+    x.fillStyle = 'rgba(' + P.TRIM + ',.3)'; for (let k = l + 2; k < rr - 2; k += 6) x.fillRect(k, top + 5, 2, 2);
+  } else if (S.roof === 'tiled') {
+    tiledRoof(x, l, top, rr - l, tiledRise(f.w), S.fill);
   } else if (S.roof !== 'ledge') {
-    x.fillStyle = '#140a05'; x.fillRect(l - 1, top, rr - l + 2, 2); x.fillStyle = 'rgba(194,65,12,.55)'; x.fillRect(l - 1, top, rr - l + 2, 1);
-    if (S.setback) { const st = y(f.h - f.storey); x.fillStyle = '#140a05'; x.fillRect(-1, st, w + 2, 2); x.fillStyle = 'rgba(194,65,12,.55)'; x.fillRect(-1, st, w + 2, 1); }
+    x.fillStyle = '#140a05'; x.fillRect(l - 1, top, rr - l + 2, 2); x.fillStyle = 'rgba(' + P.TRIM + ',.55)'; x.fillRect(l - 1, top, rr - l + 2, 1);
+    if (S.setback) { const st = y(f.h - f.storey); x.fillStyle = '#140a05'; x.fillRect(-1, st, w + 2, 2); x.fillStyle = 'rgba(' + P.TRIM + ',.55)'; x.fillRect(-1, st, w + 2, 1); }
   }
 }
 
 /** The glass skin's floor: the curtain wall's tint, mullions, a dark spandrel, the floor lit or not (on the clock). */
-function curtainFloor(x: CanvasRenderingContext2D, o: FrontLook, l: number, rr: number, floor: number, st: number, pitch: number, seed: number, lit: number, masks: readonly Rect[]) {
+function curtainFloor(x: CanvasRenderingContext2D, o: FrontLook, l: number, rr: number, floor: number, st: number, pitch: number, seed: number, lit: number, masks: readonly Rect[], room: string) {
   const y = (h: number) => -h, g0 = floor + st * 0.22, g1 = floor + st * 0.9, h = g1 - g0;
   const on = (seed * 9301 + 49297) % 233280 / 233280 < lit && windowLit(seed, o.lighting);
-  x.fillStyle = on ? 'rgba(255,190,120,.16)' : 'rgba(110,90,150,.12)'; x.fillRect(l + 2, y(g1), rr - l - 4, h);
+  x.fillStyle = on ? 'rgba(' + room + ',.16)' : 'rgba(110,90,150,.12)'; x.fillRect(l + 2, y(g1), rr - l - 4, h);
   if (on) { x.fillStyle = 'rgba(40,20,20,.35)'; x.fillRect(l + 2, y(g1), rr - l - 4, Math.round(h * 0.25)); }
   x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(l + 1, y(g0), rr - l - 2, Math.round(st * 0.22));
-  x.fillStyle = 'rgba(255,200,170,.16)'; for (let k = l + pitch; k < rr - 4; k += pitch) x.fillRect(k, y(g1), 1, h);
+  x.fillStyle = P.TRIM === FRONT_DEFAULTS.trim ? 'rgba(255,200,170,.16)' : 'rgba(' + P.TRIM + ',.22)'; for (let k = l + pitch; k < rr - 4; k += pitch) x.fillRect(k, y(g1), 1, h);
   x.fillStyle = 'rgba(255,160,110,.07)'; x.beginPath(); x.moveTo(l + (rr - l) * 0.2, y(g1)); x.lineTo(l + (rr - l) * 0.34, y(g1)); x.lineTo(l + (rr - l) * 0.14, y(g0)); x.lineTo(l + 2, y(g0)); x.closePath(); x.fill();
   for (const [a, b, c, e] of masks) if (c < g1 && e > g0) { x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(Math.max(l, a), y(Math.min(g1, e)), Math.min(rr, b) - Math.max(l, a), Math.min(g1, e) - Math.max(g0, c)); }
-  if (on) o.light?.((l + rr) / 2, (g0 + g1) / 2, rr - l - 4, h, '255,190,120', 'window');
+  if (on) o.light?.((l + rr) / 2, (g0 + g1) / 2, rr - l - 4, h, room, 'window');
 }
 
 /** Anchor points other pieces attach to: the roof, the ground, the fascia, each storey, each bay. */
@@ -294,4 +313,41 @@ export function frontAnchors(f: FrontSpec) {
   for (let k = 1; k <= S.storeys; k++) out['storey' + k] = { x: f.w / 2, h: storeyFloor(f, k), role: 'mount' };
   S.bays.forEach((b, i) => { out['bay' + i] = { x: b.x + b.w / 2, h: 0, role: 'entrance' }; });
   return out;
+}
+
+/** Timber framing on plaster: dark posts and a beam at every floor, a brace here and there, the plaster patched. */
+function timberFrame(x: CanvasRenderingContext2D, f: FrontSpec, S: Shape, wallTo: number) {
+  const y = (h: number) => -h, beam = '#120c08';
+  x.fillStyle = 'rgba(255,230,190,.05)'; for (const [px, ph] of S.patches) if (ph < wallTo - 16) x.fillRect(px, y(ph + 12), 18 + (px % 11), 12);
+  x.fillStyle = beam;
+  for (let h = f.ground; h < wallTo; h += f.storey) x.fillRect(0, y(h + 2), f.w, 4);
+  x.fillRect(0, y(wallTo), 3, wallTo - f.ground); x.fillRect(f.w - 3, y(wallTo), 3, wallTo - f.ground);
+  const posts = S.seamX.length ? S.seamX : [Math.round(f.w / 2)];
+  for (const px of posts) x.fillRect(px - 1, y(wallTo), 3, wallTo - f.ground);
+  x.strokeStyle = beam; x.lineWidth = 2;
+  S.stains.forEach(([sx], i) => { const h = f.ground + (i % Math.max(1, S.storeys)) * f.storey; if (h + f.storey > wallTo || i % 2) return; const a = Math.max(4, Math.min(f.w - 24, sx)); x.beginPath(); x.moveTo(a, y(h + 4)); x.lineTo(a + 18, y(h + f.storey - 4)); x.stroke(); });
+  x.fillStyle = 'rgba(' + P.TRIM + ',.18)'; for (let h = f.ground; h < wallTo; h += f.storey) x.fillRect(0, y(h + 2), f.w, 1);
+}
+
+/** Dressed stone: block courses with offset joints, darker at the foot where the street splashes it. */
+function stoneCourses(x: CanvasRenderingContext2D, f: FrontSpec, S: Shape, wallTo: number) {
+  const y = (h: number) => -h, course = 9;
+  x.fillStyle = 'rgba(0,0,0,.22)';
+  for (let h = f.ground + course, row = 0; h < wallTo; h += course, row++) {
+    x.fillRect(0, y(h), f.w, 1);
+    for (let jx = (row % 2) * 11 + (S.mullion % 7); jx < f.w; jx += 22) x.fillRect(jx, y(h), 1, course);
+  }
+  x.fillStyle = 'rgba(' + P.TRIM + ',.06)'; for (let h = f.ground + course * 2; h < wallTo; h += course * 3) x.fillRect(0, y(h) + 1, f.w, 1);
+  const g = x.createLinearGradient(0, y(f.ground + 30), 0, y(f.ground)); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.25)');
+  x.fillStyle = g; x.fillRect(0, y(f.ground + 30), f.w, 30);
+}
+
+/** A low tiled roof over the wall: eaves standing out, rows of tiles, a ridge with the trim catching the light. */
+function tiledRoof(x: CanvasRenderingContext2D, l: number, top: number, w: number, rise: number, fill: string) {
+  const eave = 5, ridge = top - rise;
+  x.fillStyle = '#0d0706'; x.beginPath(); x.moveTo(l - eave, top + 2); x.lineTo(l + w * 0.18, ridge); x.lineTo(l + w * 0.82, ridge); x.lineTo(l + w + eave, top + 2); x.closePath(); x.fill();
+  x.strokeStyle = 'rgba(' + P.TRIM + ',.22)'; x.lineWidth = 1;
+  for (let k = 1; k * 4 < rise; k++) { const yy = ridge + k * 4, t = (yy - ridge) / (top + 2 - ridge), a = l + w * 0.18 - t * (w * 0.18 + eave), b = l + w * 0.82 + t * (w * 0.18 + eave); x.beginPath(); x.moveTo(a, yy + 0.5); x.lineTo(b, yy + 0.5); x.stroke(); }
+  x.fillStyle = 'rgba(' + P.TRIM + ',.55)'; x.fillRect(l + w * 0.18, ridge, w * 0.64, 1);
+  x.fillStyle = fill; x.fillRect(l - eave, top + 1, w + eave * 2, 2); x.fillStyle = 'rgba(0,0,0,.6)'; x.fillRect(l - eave, top + 3, w + eave * 2, 2);
 }

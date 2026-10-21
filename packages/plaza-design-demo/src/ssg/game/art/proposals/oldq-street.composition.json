@@ -1,0 +1,1077 @@
+{
+  "version": 1,
+  "scene": "oldq-street",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "width": 2400,
+        "seed": 52,
+        "parallax": 0.2,
+        "minHeight": 60,
+        "maxHeight": 140,
+        "haze": 0.75,
+        "lit": 0.15,
+        "skin": "stone",
+        "low": 0.7
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "width": 2200,
+        "seed": 13,
+        "parallax": 0.45,
+        "minHeight": 70,
+        "maxHeight": 150,
+        "haze": 0.45,
+        "lit": 0.25,
+        "skin": "timber",
+        "low": 0.8
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.8,
+        "fill": "#0a0812",
+        "edge": 0.06,
+        "traffic": false
+      },
+      "placement": {
+        "x": 470,
+        "h": 30,
+        "parallax": 0.1
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "front-0",
+      "type": "building.front",
+      "props": {
+        "width": 120,
+        "floors": 2,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 50,
+            "tenant": "grocer",
+            "sign": "GREENGROCER"
+          },
+          {
+            "kind": "door",
+            "from": 76,
+            "width": 24
+          }
+        ],
+        "seed": 401,
+        "skin": "timber",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "framed",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-1",
+      "type": "building.front",
+      "props": {
+        "width": 100,
+        "floors": 2,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 12,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 46,
+            "width": 46,
+            "tenant": "pharmacy",
+            "sign": "APOTHECARY"
+          }
+        ],
+        "seed": 402,
+        "skin": "stone",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "punched",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-2",
+      "type": "building.front",
+      "props": {
+        "width": 140,
+        "floors": 3,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 56,
+            "tenant": "bar",
+            "sign": "THE LANTERN"
+          },
+          {
+            "kind": "door",
+            "from": 76,
+            "width": 24
+          },
+          {
+            "kind": "shutter",
+            "from": 108,
+            "width": 24
+          }
+        ],
+        "seed": 403,
+        "skin": "timber",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "framed",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 220,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley-0",
+      "type": "building.alley",
+      "props": {
+        "width": 44,
+        "height": 200,
+        "depth": 0.6,
+        "light": "warm",
+        "escape": "none",
+        "bins": false,
+        "steam": false,
+        "cables": false,
+        "yard": true,
+        "seed": 2
+      },
+      "placement": {
+        "x": 360,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-3",
+      "type": "building.front",
+      "props": {
+        "width": 110,
+        "floors": 2,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 44,
+            "tenant": "laundry",
+            "sign": "WASH HOUSE"
+          },
+          {
+            "kind": "door",
+            "from": 66,
+            "width": 24
+          }
+        ],
+        "seed": 404,
+        "skin": "timber",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "framed",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 404,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-4",
+      "type": "building.front",
+      "props": {
+        "width": 190,
+        "floors": 4,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 80,
+            "width": 30
+          }
+        ],
+        "seed": 405,
+        "skin": "stone",
+        "density": 0.05,
+        "lit": 0.3,
+        "trim": "#a07a52",
+        "windows": "punched",
+        "roof": "cornice",
+        "escape": "none",
+        "gear": [],
+        "storey": 72,
+        "ground": 70,
+        "fascia": false,
+        "columns": 4
+      },
+      "placement": {
+        "x": 514,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-5",
+      "type": "building.front",
+      "props": {
+        "width": 120,
+        "floors": 2,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 52,
+            "tenant": "repair",
+            "sign": "CLOCKS · RADIOS"
+          },
+          {
+            "kind": "door",
+            "from": 80,
+            "width": 24
+          }
+        ],
+        "seed": 406,
+        "skin": "timber",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "framed",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 704,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-6",
+      "type": "building.front",
+      "props": {
+        "width": 130,
+        "floors": 3,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 10,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 44,
+            "width": 56,
+            "tenant": "noodles",
+            "sign": "SOUP"
+          }
+        ],
+        "seed": 407,
+        "skin": "timber",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "framed",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 824,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley-1",
+      "type": "building.alley",
+      "props": {
+        "width": 38,
+        "height": 180,
+        "depth": 0.75,
+        "light": "warm",
+        "escape": "none",
+        "bins": true,
+        "steam": false,
+        "cables": false,
+        "yard": false,
+        "seed": 6
+      },
+      "placement": {
+        "x": 954,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-7",
+      "type": "building.front",
+      "props": {
+        "width": 120,
+        "floors": 2,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 50,
+            "tenant": "pawn",
+            "sign": "BUY · SELL · MEND"
+          },
+          {
+            "kind": "door",
+            "from": 78,
+            "width": 24
+          }
+        ],
+        "seed": 408,
+        "skin": "stone",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "punched",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 992,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-8",
+      "type": "building.front",
+      "props": {
+        "width": 140,
+        "floors": 3,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 60,
+            "tenant": "hotel",
+            "sign": "ROOMS"
+          },
+          {
+            "kind": "door",
+            "from": 90,
+            "width": 24
+          }
+        ],
+        "seed": 409,
+        "skin": "timber",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "framed",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 1112,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-9",
+      "type": "building.front",
+      "props": {
+        "width": 348,
+        "floors": 2,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 10,
+            "width": 50
+          },
+          {
+            "kind": "door",
+            "from": 80,
+            "width": 24
+          }
+        ],
+        "seed": 410,
+        "skin": "timber",
+        "density": 0.05,
+        "lit": 0.5,
+        "trim": "#a07a52",
+        "windows": "framed",
+        "roof": "tiled",
+        "escape": "none",
+        "gear": [],
+        "storey": 58,
+        "ground": 70
+      },
+      "placement": {
+        "x": 1252,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1600,
+        "ground": "#0b0806",
+        "edge": "#ffcf8a",
+        "sheen": 0.3,
+        "cobbles": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 2,
+        "seed": 10
+      },
+      "placement": {
+        "x": 96,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 3,
+        "seed": 11
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 2,
+        "seed": 12
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-3",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 3,
+        "seed": 13
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-4",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 2,
+        "seed": 14
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-5",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 3,
+        "seed": 15
+      },
+      "placement": {
+        "x": 1380,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bulbs-church",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 150,
+        "count": 8,
+        "height": 120,
+        "seed": 41,
+        "color": "#ffcf8a",
+        "reach": 0.6
+      },
+      "placement": {
+        "x": 480,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-0",
+      "type": "sign.hanging",
+      "props": {
+        "text": "GREENS",
+        "color": "255,217,165",
+        "board": "#2a1a10",
+        "drop": 8
+      },
+      "placement": {
+        "x": 60,
+        "h": 128
+      },
+      "order": 25,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-1",
+      "type": "sign.hanging",
+      "props": {
+        "text": "THE LANTERN",
+        "color": "255,207,138",
+        "board": "#3a1810",
+        "drop": 10
+      },
+      "placement": {
+        "x": 380,
+        "h": 150
+      },
+      "order": 26,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-2",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 46,
+        "height": 30,
+        "lines": [
+          "ST. AGNES",
+          "CASH ACCEPTED"
+        ],
+        "inset": true,
+        "post": true
+      },
+      "placement": {
+        "x": 610,
+        "h": 52
+      },
+      "order": 27,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-3",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 60,
+        "height": 18,
+        "lines": [
+          "MASS 6 AND 9"
+        ],
+        "ink": "255,217,165"
+      },
+      "placement": {
+        "x": 700,
+        "h": 210
+      },
+      "order": 28,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-4",
+      "type": "sign.hanging",
+      "props": {
+        "text": "CLOCKS",
+        "color": "255,217,165",
+        "board": "#24160c",
+        "drop": 6
+      },
+      "placement": {
+        "x": 860,
+        "h": 128
+      },
+      "order": 29,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-5",
+      "type": "sign.taped",
+      "props": {
+        "lines": [
+          "ROOM TO LET",
+          "ASK INSIDE"
+        ]
+      },
+      "placement": {
+        "x": 1010,
+        "h": 46
+      },
+      "order": 30,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-6",
+      "type": "sign.hanging",
+      "props": {
+        "text": "MEND",
+        "color": "255,207,138",
+        "board": "#2a1a10",
+        "drop": 8
+      },
+      "placement": {
+        "x": 1120,
+        "h": 132
+      },
+      "order": 31,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-7",
+      "type": "sign.plate",
+      "props": {
+        "text": "ROOMS",
+        "color": "255,154,74",
+        "size": 9,
+        "printed": true,
+        "bolts": false
+      },
+      "placement": {
+        "x": 1300,
+        "h": 150
+      },
+      "order": 32,
+      "layer": "backdrop"
+    },
+    {
+      "id": "crowd-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 700,
+        "archetype": "vendor",
+        "act": "vend"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 741,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "mixed"
+      },
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 782,
+        "act": "walk",
+        "range": 260
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 823,
+        "act": "talk"
+      },
+      "placement": {
+        "x": 430,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 61,
+        "act": "talk"
+      },
+      "placement": {
+        "x": 452,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 905,
+        "archetype": "church",
+        "act": "sweep"
+      },
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-6",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 946,
+        "archetype": "elder",
+        "act": "read"
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-7",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 987,
+        "act": "lean"
+      },
+      "placement": {
+        "x": 840,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-8",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 1028,
+        "archetype": "kid",
+        "act": "run",
+        "range": -300
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-9",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 1069,
+        "archetype": "elder",
+        "act": "doze",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 42,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-10",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 1110,
+        "act": "wait"
+      },
+      "placement": {
+        "x": 1320,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-11",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 1151,
+        "act": "walk",
+        "range": -360
+      },
+      "placement": {
+        "x": 1480,
+        "h": 0
+      },
+      "order": 44,
+      "layer": "playfield"
+    },
+    {
+      "id": "cat-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 45,
+      "layer": "playfield"
+    },
+    {
+      "id": "cat-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "walk",
+        "range": 120
+      },
+      "placement": {
+        "x": 1240,
+        "h": 0
+      },
+      "order": 46,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "walk",
+        "range": 40
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 47,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 790,
+        "h": 0
+      },
+      "order": 48,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 49,
+      "layer": "playfield"
+    }
+  ]
+}

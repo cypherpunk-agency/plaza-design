@@ -59,13 +59,19 @@ const frontFields: Record<string, Field> = {
   lit: num('Rooms with a light', 0.45, 0, 1, 0.05),
   seed: num('Seed', 1, 0, 1000000000),
   clear: rects('Keep clear of windows'),
+  trim: { kind: 'color', label: 'Trim colour (rims, courses, mullions)', default: '#c2410c' },
+  rooms: select('Room light behind glass', ['warm', 'cold']),
+  wall: { kind: 'json', label: 'Wall colour', default: '', editor: { kind: 'colour', empty: 'The skin’s own' },
+    validate: v => { if (v !== '' && !(typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v))) throw new Error('Wall colour: expected a #rrggbb colour or empty'); } },
 };
+const rgbOf = (hex: unknown) => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex)); return m ? m.slice(1).map(h => parseInt(h, 16)).join(',') : FRONT_DEFAULTS.trim; };
 /** The element's stored props as a front spec. */
 export function frontSpec(p: Properties): FrontSpec {
   return {
     w: Number(p.width), h: Number(p.ground) + Number(p.floors) * Number(p.storey) + Number(p.top), storey: Number(p.storey), ground: Number(p.ground), skin: p.skin as FrontSpec['skin'], windows: p.windows as FrontSpec['windows'],
     columns: Number(p.columns), bays: p.bays === 'auto' ? 'auto' : (p.bays as Properties[]).map(b => [Number(b.from), Number(b.width), b.kind as FrontBayKind, b.tenant as string | undefined, b.sign as string | undefined]), roof: p.roof as FrontSpec['roof'], gear: p.gear as FrontSpec['gear'], escape: p.escape as FrontSpec['escape'],
     balconies: p.balconies as FrontSpec['balconies'], fascia: p.fascia !== false, density: Number(p.density), lit: Number(p.lit), seed: Number(p.seed), clear: (p.clear ?? []) as Rect[],
+    trim: rgbOf(p.trim ?? '#c2410c'), wall: typeof p.wall === 'string' ? p.wall : '', rooms: p.rooms === 'cold' ? 'cold' : 'warm',
   };
 }
 /** A view whose coordinates are a piece's own frame (after translating to its foot), for shared screen kernels. */

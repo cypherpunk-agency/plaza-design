@@ -13,6 +13,11 @@ import type { NativeSceneAdapter } from './native-preview';
 export interface ProposalScene { id: string; base: string; file: string; label: string; district: string }
 export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'downtown-next', base: 'downtown', file: 'art/proposals/downtown-next.composition.json', label: 'Downtown · proposal', district: 'downtown' },
+  // District reference streets (Tommi, 2026-10-21): one street per district from kit pieces only, to compare identities.
+  // They borrow the Tower lab's empty scene (no people, devices or story of its own).
+  { id: 'market-street', base: 'tower', file: 'art/proposals/market-street.composition.json', label: 'Neon Market · reference street', district: 'market' },
+  { id: 'oldq-street', base: 'tower', file: 'art/proposals/oldq-street.composition.json', label: 'Old Quarter · reference street', district: 'oldq' },
+  { id: 'spire-street', base: 'tower', file: 'art/proposals/spire-street.composition.json', label: 'Spire · reference street', district: 'spire' },
 ];
 export const proposalScene = (id: string) => PROPOSAL_SCENES.find(p => p.id === id);
 

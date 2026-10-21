@@ -20,7 +20,7 @@ export interface RowSpec {
   /** Signs per building, at most (0 for a quiet back row). */
   signs: number;
 }
-const asTower = (s: Skin | 'capsule'): TowerSkin => s === 'tenement' ? 'brick' : s;
+const asTower = (s: Skin | 'capsule'): TowerSkin => s === 'tenement' || s === 'timber' ? 'brick' : s === 'stone' ? 'concrete' : s;
 const MIXED: TowerSkin[] = ['concrete', 'glass', 'panel', 'brick', 'capsule'];
 const ROWS = new Map<string, (Tower & { x: number })[]>();
 /** The row's buildings (left edges in `x`), seeded and cached by spec. */
