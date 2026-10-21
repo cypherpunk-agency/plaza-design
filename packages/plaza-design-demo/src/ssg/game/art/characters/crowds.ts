@@ -11,6 +11,7 @@
 import type {Act, Look} from '../../runtime/characters';
 import {ARCHETYPES, type ArchetypeId} from './archetypes';
 import PEOPLE from './people.json';
+import {touchPeople} from './people-style';
 
 type Weights<T extends string> = Partial<Record<T, number>>;
 export interface CrowdMix {
@@ -18,6 +19,8 @@ export interface CrowdMix {
  district: string;
  /** One line on who the crowd is. */
  note: string;
+ /** The district's colour style, instead of the game-wide default (the Old Quarter is muted). */
+ style?: 'vivid' | 'muted';
  /** Share of people (0–1) wearing visible tech. */
  kitted: number;
  /** Share of the crowd (0–1) that is robots. */
@@ -32,8 +35,10 @@ export interface CrowdMix {
 /** The mixes in the People document (`people.json`, Library › People); the editor swaps in pending edits. */
 export const CROWD_MIXES: CrowdMix[] = structuredClone(PEOPLE.crowds) as unknown as CrowdMix[];
 /** Replaces the mixes in place (everyone holding CROWD_MIXES sees the new ones). */
-export function setCrowdMixes(mixes: readonly CrowdMix[]) { CROWD_MIXES.splice(0, CROWD_MIXES.length, ...structuredClone(mixes) as CrowdMix[]); }
+export function setCrowdMixes(mixes: readonly CrowdMix[]) { CROWD_MIXES.splice(0, CROWD_MIXES.length, ...structuredClone(mixes) as CrowdMix[]); touchPeople(); }
 export const crowdMix = (district: string) => CROWD_MIXES.find(m => m.district === district);
+/** A district's own colour style, if its people mix sets one. */
+export const districtStyle = (district?: string) => district ? crowdMix(district)?.style : undefined;
 
 export type CrowdMember =
  | {kind: 'person'; kitted: boolean; seed: number; look: Look; act: Act; facing: 1 | -1}

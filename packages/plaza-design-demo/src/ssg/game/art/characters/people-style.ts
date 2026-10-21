@@ -33,6 +33,8 @@ export const seatedView = (): SeatedView => settings.seated;
 /** Bumped whenever a switch changes; cached looks older than this are rebuilt. */
 export const peopleRevision = () => revision;
 export function setPeopleStyle(style: PeopleStyle) { if (settings.style !== style) { settings.style = style; revision++; } }
+/** Re-dresses every person on their next draw (e.g. after a district's colour style changed). */
+export function touchPeople() { revision++; }
 export function setSeatedView(view: SeatedView) { if (settings.seated !== view) { settings.seated = view; revision++; } }
 
 /** How often each pose comes up: front and three-quarter twice as often as side on. */

@@ -38,6 +38,7 @@ export function mountPeopleAuthoring(host:HTMLElement,context:WorkbenchContext):
   for(const mix of d.crowds){
    const section=form.section(host,'People mix · '+mix.district);
    form.text(section,mix.district+' note',mix.note,v=>edit('Edit crowd note',d=>{crowd(d,mix.district).note=v;}),true);
+   form.select(section,mix.district+' colour style',['default','vivid','muted'],mix.style??'default',v=>edit('Edit district colour style',d=>{const c=crowd(d,mix.district);if(v==='default')delete c.style;else c.style=v as CrowdMix['style'];}));
    form.number(section,mix.district+' visible tech %',Math.round(mix.kitted*100),v=>edit('Edit crowd tech share',d=>{crowd(d,mix.district).kitted=Math.min(100,Math.max(0,v))/100;}),0,100);
    form.number(section,mix.district+' robots %',Math.round(mix.robots*100),v=>edit('Edit crowd robot share',d=>{crowd(d,mix.district).robots=Math.min(100,Math.max(0,v))/100;}),0,100);
    for(const t of TABLES)weights(section,mix,t);

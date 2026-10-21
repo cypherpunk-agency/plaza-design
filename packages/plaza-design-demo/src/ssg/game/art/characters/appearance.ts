@@ -4,6 +4,7 @@ import type { Character, Body, Hair, Garb, Extra, Critter, Look, Act, Ready, Fra
 import { castShadow } from '../atmosphere/lighting';
 import { ARCHETYPES, EVERYDAY, archetypeOf, type Archetype, type ArchetypeId, type Facial } from './archetypes';
 import { HAIR_GREY, HAIR_NATURAL, SKIN_TONES, lightness, paletteFor, peopleRevision, peopleStyle, vivify } from './people-style';
+import { districtStyle } from './crowds';
 
 
 // ---------- parts ----------
@@ -87,7 +88,8 @@ export function lookFrom(seed: number, fix: Look = {}): Full {
     const r = rnd(seed + 5);
     return { ...legacyLook(seed, { body: pick(r, A.body), hair: pick(r, A.hair), garb: pick(r, A.garb), extras: [...(A.extras ?? [])], ...fix }), archetype: fix.archetype };
   }
-  return curatedLook(seed, fix, (fix.style ?? peopleStyle()) === 'vivid');
+  // a person's own style, else their district's (people.json), else the game-wide default
+  return curatedLook(seed, fix, (fix.style ?? districtStyle(fix.district) ?? peopleStyle()) === 'vivid');
 }
 
 /** The kit before named looks (people style `legacy`): every part and colour at random. */
@@ -145,10 +147,10 @@ function curatedLook(seed: number, fix: Look, vivid: boolean): Full {
   const cloth = (pinned: string[] | undefined, list: string[], k: number) => pinned ? pick(r, pinned) : vivid ? vivify(pick(r, list), k) : pick(r, list);
   const top = fix.top ?? cloth(C.top, P.tops, 1);
   let bottom = fix.bottom ?? cloth(C.bottom, P.bottoms, 0.45);
-  // keep the top and the trousers apart (a dress or a robe is one piece anyway)
-  if (Math.abs(lightness(top) - lightness(bottom)) < 0.07) bottom = shade(bottom, lightness(top) > 0.3 ? 0.62 : 1.5);
+  // keep seeded trousers apart from the top (a dress or a robe is one piece anyway); a colour someone set always wins
+  if (fix.bottom === undefined && Math.abs(lightness(top) - lightness(bottom)) < 0.07) bottom = shade(bottom, lightness(top) > 0.3 ? 0.62 : 1.5);
   let acc = fix.acc ?? cloth(C.acc, P.accs, 1.2);
-  if (acc === top && !C.acc) acc = shade(acc, 1.35);
+  if (fix.acc === undefined && acc === top && !C.acc) acc = shade(acc, 1.35);
   const grey = age === 'elder' || body === 'old' || body === 'frail';
   // an old body goes grey unless its named look has greys of its own to pick from
   const hairCol = fix.hairCol ?? (grey && !C.hair?.some((h) => HAIR_GREY.includes(h)) ? pick(r, HAIR_GREY) : pick(r, C.hair ?? HAIR_NATURAL));

@@ -119,6 +119,7 @@
   {
    "district": "oldq",
    "note": "The old and the Ghosts. Almost nobody shows tech; that is the point.",
+   "style": "muted",
    "kitted": 0.05,
    "robots": 0.03,
    "people": {

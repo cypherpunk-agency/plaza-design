@@ -50,10 +50,11 @@ export function validatePeople(value: unknown): PeopleDocument {
  const seen = new Set<string>();
  for (const raw of d.crowds as unknown[]) {
   const c = plain(raw, 'crowd');
-  if (Object.keys(c).some(k => !['district', 'note', 'kitted', 'robots', 'people', 'acts', 'bots'].includes(k))) fail('unknown crowd field');
+  if (Object.keys(c).some(k => !['district', 'note', 'style', 'kitted', 'robots', 'people', 'acts', 'bots'].includes(k))) fail('unknown crowd field');
   if (!PEOPLE_VOCABULARY.districts.includes(c.district as string)) fail(`unknown district "${String(c.district)}"`);
   if (seen.has(c.district as string)) fail(`two crowds for ${String(c.district)}`); seen.add(c.district as string);
   if (typeof c.note !== 'string' || c.note.length > 240) fail('note must be text (240 characters at most)');
+  if (c.style !== undefined && c.style !== 'vivid' && c.style !== 'muted') fail(c.district + ' colour style must be vivid or muted');
   share(c.kitted, c.district + ' kitted share'); share(c.robots, c.district + ' robot share');
   weights(c.people, PEOPLE_VOCABULARY.people, c.district + ' people', (c.robots as number) < 1);
   weights(c.acts, PEOPLE_VOCABULARY.acts, c.district + ' acts', (c.robots as number) < 1);
